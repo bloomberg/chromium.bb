@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -310,8 +311,7 @@ class ServiceForDownloadTests : public MockService {
 
   // Add a fake crx installer to be returned by a call to UpdateExtension()
   // with a specific ID.  Caller keeps ownership of |crx_installer|.
-  void AddFakeCrxInstaller(std::string& id,
-                           CrxInstaller* crx_installer) {
+  void AddFakeCrxInstaller(const std::string& id, CrxInstaller* crx_installer) {
     fake_crx_installers_[id] = crx_installer;
   }
 

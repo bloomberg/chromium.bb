@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
@@ -76,7 +77,6 @@
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
-#include "base/command_line.h"
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
 #endif
 

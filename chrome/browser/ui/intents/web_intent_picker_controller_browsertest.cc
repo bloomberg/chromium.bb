@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -79,16 +80,16 @@ const char kCWSFakeIconURLFormat[] = "http://example.com/%s/icon.png";
 
 class DummyURLFetcherFactory : public net::URLFetcherFactory {
  public:
-   DummyURLFetcherFactory() {}
-   virtual ~DummyURLFetcherFactory() {}
+  DummyURLFetcherFactory() {}
+  virtual ~DummyURLFetcherFactory() {}
 
-   virtual net::URLFetcher* CreateURLFetcher(
-       int id,
-       const GURL& url,
-       net::URLFetcher::RequestType request_type,
-       net::URLFetcherDelegate* d) OVERRIDE {
-     return new net::TestURLFetcher(id, url, d);
-   }
+  virtual net::URLFetcher* CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* d) OVERRIDE {
+    return new net::TestURLFetcher(id, url, d);
+  }
 };
 
 }  // namespace
@@ -431,8 +432,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   EXPECT_EQ(original, chrome::GetActiveWebContents(browser())->GetURL());
 }
 
-class WebIntentPickerControllerIncognitoBrowserTest :
-    public WebIntentPickerControllerBrowserTest {
+class WebIntentPickerControllerIncognitoBrowserTest
+    : public WebIntentPickerControllerBrowserTest {
  public:
   WebIntentPickerControllerIncognitoBrowserTest() {}
 

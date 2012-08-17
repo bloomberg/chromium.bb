@@ -7,11 +7,9 @@
 
 #include <list>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -46,6 +44,7 @@
 #include "sync/api/syncable_service.h"
 
 class BookmarkExtensionEventRouter;
+class CommandLine;
 class ExtensionErrorUI;
 class ExtensionFontSettingsEventRouter;
 class ExtensionManagementEventRouter;
@@ -85,7 +84,6 @@ class WindowEventRouter;
 }
 
 namespace syncer {
-class SyncData;
 class SyncErrorFactory;
 }
 
@@ -175,10 +173,10 @@ class ExtensionService
   static const char* kStateStoreName;
 
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
-  const extensions::Extension* GetInstalledApp(const GURL& url);
+  const extensions::Extension* GetInstalledApp(const GURL& url) const;
 
   // Returns whether the URL is from either a hosted or packaged app.
-  bool IsInstalledApp(const GURL& url);
+  bool IsInstalledApp(const GURL& url) const;
 
   // Associates a renderer process with the given installed app.
   void SetInstalledAppForRenderer(int renderer_child_id,
@@ -187,7 +185,7 @@ class ExtensionService
   // If the renderer is hosting an installed app, returns it, otherwise returns
   // NULL.
   const extensions::Extension* GetInstalledAppForRenderer(
-      int renderer_child_id);
+      int renderer_child_id) const;
 
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
@@ -246,13 +244,13 @@ class ExtensionService
 
   // Returns true if the given extension can see events and data from another
   // sub-profile (incognito to original profile, or vice versa).
-  bool CanCrossIncognito(const extensions::Extension* extension);
+  bool CanCrossIncognito(const extensions::Extension* extension) const;
 
   // Returns true if the given extension can be loaded in incognito.
   bool CanLoadInIncognito(const extensions::Extension* extension) const;
 
   // Whether this extension can inject scripts into pages with file URLs.
-  bool AllowFileAccess(const extensions::Extension* extension);
+  bool AllowFileAccess(const extensions::Extension* extension) const;
   // Will reload the extension since this permission is applied at loading time
   // only.
   void SetAllowFileAccess(const extensions::Extension* extension, bool allow);
@@ -260,18 +258,18 @@ class ExtensionService
   // Whether the persistent background page, if any, is ready. We don't load
   // other components until then. If there is no background page, or if it is
   // non-persistent (lazy), we consider it to be ready.
-  bool IsBackgroundPageReady(const extensions::Extension* extension);
+  bool IsBackgroundPageReady(const extensions::Extension* extension) const;
   void SetBackgroundPageReady(const extensions::Extension* extension);
 
   // Getter and setter for the flag that specifies whether the extension is
   // being upgraded.
-  bool IsBeingUpgraded(const extensions::Extension* extension);
+  bool IsBeingUpgraded(const extensions::Extension* extension) const;
   void SetBeingUpgraded(const extensions::Extension* extension, bool value);
 
   // Getter and setter for the flag that specifies if the extension has used
   // the webrequest API.
   // TODO(mpcomplete): remove. http://crbug.com/100411
-  bool HasUsedWebRequest(const extensions::Extension* extension);
+  bool HasUsedWebRequest(const extensions::Extension* extension) const;
   void SetHasUsedWebRequest(const extensions::Extension* extension, bool value);
 
   // Getter for the extension's runtime data PropertyBag.

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -702,7 +703,7 @@ WebContents* LocationBarViewGtk::GetWebContents() const {
 }
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
-    ExtensionAction *page_action,
+    ExtensionAction* page_action,
     bool preview_enabled) {
   DCHECK(page_action);
   for (ScopedVector<PageActionViewGtk>::iterator iter =
@@ -717,7 +718,7 @@ void LocationBarViewGtk::SetPreviewEnabledPageAction(
 }
 
 GtkWidget* LocationBarViewGtk::GetPageActionWidget(
-    ExtensionAction *page_action) {
+    ExtensionAction* page_action) {
   DCHECK(page_action);
   for (ScopedVector<PageActionViewGtk>::iterator iter =
            page_action_views_.begin();

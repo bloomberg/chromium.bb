@@ -106,7 +106,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
@@ -122,7 +121,6 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
 
-using base::Time;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
@@ -261,16 +259,13 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   return true;
 }
 
-const Extension* ExtensionService::GetInstalledApp(const GURL& url) {
+const Extension* ExtensionService::GetInstalledApp(const GURL& url) const {
   const Extension* extension = extensions_.GetExtensionOrAppByURL(
       ExtensionURLInfo(url));
-  if (extension && extension->is_app())
-    return extension;
-
-  return NULL;
+  return (extension && extension->is_app()) ? extension : NULL;
 }
 
-bool ExtensionService::IsInstalledApp(const GURL& url) {
+bool ExtensionService::IsInstalledApp(const GURL& url) const {
   return !!GetInstalledApp(url);
 }
 
@@ -280,11 +275,10 @@ void ExtensionService::SetInstalledAppForRenderer(int renderer_child_id,
 }
 
 const Extension* ExtensionService::GetInstalledAppForRenderer(
-    int renderer_child_id) {
-  InstalledAppMap::iterator i = installed_app_hosts_.find(renderer_child_id);
-  if (i == installed_app_hosts_.end())
-    return NULL;
-  return i->second;
+    int renderer_child_id) const {
+  InstalledAppMap::const_iterator i =
+      installed_app_hosts_.find(renderer_child_id);
+  return i == installed_app_hosts_.end() ? NULL : i->second;
 }
 
 // static
@@ -809,8 +803,9 @@ bool ExtensionService::UninstallExtension(
 bool ExtensionService::IsExtensionEnabled(
     const std::string& extension_id) const {
   if (extensions_.Contains(extension_id) ||
-      terminated_extensions_.Contains(extension_id))
+      terminated_extensions_.Contains(extension_id)) {
     return true;
+  }
 
   if (disabled_extensions_.Contains(extension_id))
     return false;
@@ -1584,7 +1579,7 @@ void ExtensionService::SetAppNotificationDisabled(
   SyncExtensionChangeIfNeeded(*extension);
 }
 
-bool ExtensionService::CanCrossIncognito(const Extension* extension) {
+bool ExtensionService::CanCrossIncognito(const Extension* extension) const {
   // We allow the extension to see events and data from another profile iff it
   // uses "spanning" behavior and it has incognito access. "split" mode
   // extensions only see events for a matching profile.
@@ -1616,7 +1611,7 @@ void ExtensionService::OnExtensionMoved(
     SyncExtensionChangeIfNeeded(*extension);
 }
 
-bool ExtensionService::AllowFileAccess(const Extension* extension) {
+bool ExtensionService::AllowFileAccess(const Extension* extension) const {
   return (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableExtensionsFileAccessCheck) ||
           extension_prefs_->AllowFileAccess(extension->id()));
@@ -2465,9 +2460,13 @@ ExtensionIdSet ExtensionService::GetAppIds() const {
   return result;
 }
 
-bool ExtensionService::IsBackgroundPageReady(const Extension* extension) {
-  return (!extension->has_persistent_background_page() ||
-          extension_runtime_data_[extension->id()].background_page_ready);
+bool ExtensionService::IsBackgroundPageReady(const Extension* extension) const {
+  if (!extension->has_persistent_background_page())
+    return true;
+  ExtensionRuntimeDataMap::const_iterator it =
+      extension_runtime_data_.find(extension->id());
+  return it == extension_runtime_data_.end() ? false :
+                                               it->second.background_page_ready;
 }
 
 void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
@@ -2479,8 +2478,11 @@ void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
       content::NotificationService::NoDetails());
 }
 
-bool ExtensionService::IsBeingUpgraded(const Extension* extension) {
-  return extension_runtime_data_[extension->id()].being_upgraded;
+bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {
+  ExtensionRuntimeDataMap::const_iterator it =
+      extension_runtime_data_.find(extension->id());
+  return it == extension_runtime_data_.end() ? false :
+                                               it->second.being_upgraded;
 }
 
 void ExtensionService::SetBeingUpgraded(const Extension* extension,
@@ -2488,8 +2490,11 @@ void ExtensionService::SetBeingUpgraded(const Extension* extension,
   extension_runtime_data_[extension->id()].being_upgraded = value;
 }
 
-bool ExtensionService::HasUsedWebRequest(const Extension* extension) {
-  return extension_runtime_data_[extension->id()].has_used_webrequest;
+bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {
+  ExtensionRuntimeDataMap::const_iterator it =
+      extension_runtime_data_.find(extension->id());
+  return it == extension_runtime_data_.end() ? false :
+                                               it->second.has_used_webrequest;
 }
 
 void ExtensionService::SetHasUsedWebRequest(const Extension* extension,

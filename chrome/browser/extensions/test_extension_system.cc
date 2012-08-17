@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/test_extension_system.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"

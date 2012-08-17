@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
