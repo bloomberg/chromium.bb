@@ -417,6 +417,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 
   gesture_event.boundingBox = event->details().bounding_box();
   gesture_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
+  gesture_event.timeStampSeconds = event->time_stamp().InSecondsF();
 
   return gesture_event;
 }
