@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, HistorySearchXSS) {
   // Should a race condition ever trigger, it won't result in flakiness.
   int num = ui_test_utils::FindInPage(
       chrome::GetActiveTabContents(browser()), ASCIIToUTF16("<img"), true,
-      true, NULL);
+      true, NULL, NULL);
   EXPECT_GT(num, 0);
   EXPECT_EQ(ASCIIToUTF16("History"),
             chrome::GetActiveWebContents(browser())->GetTitle());

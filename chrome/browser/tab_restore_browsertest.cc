@@ -509,7 +509,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
 
   // See if content is as expected.
   EXPECT_GT(
-      ui_test_utils::FindInPage(tab, ASCIIToUTF16("webkit"), true, false, NULL),
+      ui_test_utils::FindInPage(tab, ASCIIToUTF16("webkit"), true, false, NULL,
+                                NULL),
       0);
 }
 
@@ -540,6 +541,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
   // Go back, and see if content is as expected.
   GoBack(browser());
   EXPECT_GT(
-      ui_test_utils::FindInPage(tab, ASCIIToUTF16("webkit"), true, false, NULL),
+      ui_test_utils::FindInPage(tab, ASCIIToUTF16("webkit"), true, false, NULL,
+                                NULL),
       0);
 }

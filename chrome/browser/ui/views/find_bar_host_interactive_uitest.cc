@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   ui_test_utils::FindInPage(chrome::GetActiveTabContents(browser()),
-                            ASCIIToUTF16("a"), true, false, NULL);
+                            ASCIIToUTF16("a"), true, false, NULL, NULL);
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelectionOnPage,
       FindBarController::kKeepResultsInFindBox);
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
 
   // Search for 'a'.
   ui_test_utils::FindInPage(chrome::GetActiveTabContents(browser()),
-                            ASCIIToUTF16("a"), true, false, NULL);
+                            ASCIIToUTF16("a"), true, false, NULL, NULL);
   EXPECT_TRUE(ASCIIToUTF16("a") == find_bar->GetFindSelectedText());
 
   // Open another tab (tab B).
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
 
   // Search for 'b'.
   ui_test_utils::FindInPage(chrome::GetActiveTabContents(browser()),
-                            ASCIIToUTF16("b"), true, false, NULL);
+                            ASCIIToUTF16("b"), true, false, NULL, NULL);
   EXPECT_TRUE(ASCIIToUTF16("b") == find_bar->GetFindSelectedText());
 
   // Set focus away from the Find bar (to the Location bar).

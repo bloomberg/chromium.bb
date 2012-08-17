@@ -110,7 +110,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
     string16 query = UTF8ToUTF16(
         std::string("xyzxyz" + base::IntToString(next_dummy_search_value_++)));
     ASSERT_EQ(0, ui_test_utils::FindInPage(
-        chrome::GetActiveTabContents(browser()), query, true, false, NULL));
+        chrome::GetActiveTabContents(browser()), query, true, false, NULL,
+                                     NULL));
   }
 
  private:
@@ -265,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   // Verifies that find in page works.
   ASSERT_EQ(3, ui_test_utils::FindInPage(
       chrome::GetActiveTabContents(browser()), UTF8ToUTF16("adipiscing"),
-      true, false, NULL));
+      true, false, NULL, NULL));
 
   // Verify that copying selected text works.
   ui::Clipboard clipboard;

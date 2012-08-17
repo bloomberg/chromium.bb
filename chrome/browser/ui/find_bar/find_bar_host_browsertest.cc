@@ -140,7 +140,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
                       int* ordinal) {
     return ui_test_utils::FindInPage(
         tab, WideToUTF16(std::wstring(search_str)),
-        forward, case_sensitive, ordinal);
+        forward, case_sensitive, ordinal, NULL);
   }
 
   // Calls FindInPageWchar till the find box's x position != |start_x_position|.
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // Simulate what happens when you press F3 for FindNext. We should get a
   // response here (a hang means search was aborted).
   EXPECT_EQ(0, ui_test_utils::FindInPage(tab, string16(),
-                                         kFwd, kIgnoreCase, &ordinal));
+                                         kFwd, kIgnoreCase, &ordinal, NULL));
   EXPECT_EQ(0, ordinal);
 
   // Open another tab (tab C).
@@ -821,7 +821,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // Simulate what happens when you press F3 for FindNext. We should get a
   // response here (a hang means search was aborted).
   EXPECT_EQ(0, ui_test_utils::FindInPage(tab, string16(),
-                                         kFwd, kIgnoreCase, &ordinal));
+                                         kFwd, kIgnoreCase, &ordinal, NULL));
   EXPECT_EQ(0, ordinal);
 }
 
@@ -908,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
   // Simulate what happens when you press F3 for FindNext. Still should show
   // one match. This cleared the pre-populate string at one point (see bug).
   EXPECT_EQ(1, ui_test_utils::FindInPage(tab, string16(),
-                                         kFwd, kIgnoreCase, &ordinal));
+                                         kFwd, kIgnoreCase, &ordinal, NULL));
   EXPECT_EQ(1, ordinal);
 
   // End the Find session, thereby making the next F3 start afresh.
@@ -952,7 +952,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
       FindBarController::kKeepSelectionOnPage,
       FindBarController::kKeepResultsInFindBox);
   // Simulate F3.
-  ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
+  ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal,
+                            NULL);
   EXPECT_EQ(tab1->find_tab_helper()->find_text(), WideToUTF16(L"text"));
 }
 

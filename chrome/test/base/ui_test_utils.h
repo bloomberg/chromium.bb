@@ -138,12 +138,14 @@ AppModalDialog* WaitForAppModalDialog();
 
 // Performs a find in the page of the specified tab. Returns the number of
 // matches found.  |ordinal| is an optional parameter which is set to the index
-// of the current match.
+// of the current match. |selection_rect| is an optional parameter which is set
+// to the location of the current match.
 int FindInPage(TabContents* tab,
                const string16& search_string,
                bool forward,
                bool case_sensitive,
-               int* ordinal);
+               int* ordinal,
+               gfx::Rect* selection_rect);
 
 // Closes all infobars |tab| has open, if any.  Tests that depend on there being
 // no InfoBar open when the test starts may need to use this.
