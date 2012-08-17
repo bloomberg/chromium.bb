@@ -17,7 +17,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using extensions::Extension;
+namespace extensions {
 
 namespace {
 // Allow tests to disable shortcut creation, to prevent developers' desktops
@@ -153,3 +153,5 @@ void AppShortcutManager::DeleteApplicationShortcuts(
       ShortcutInfoForExtensionAndProfile(extension, profile_);
   web_app::DeleteAllShortcuts(delete_info);
 }
+
+}  // namespace extensions

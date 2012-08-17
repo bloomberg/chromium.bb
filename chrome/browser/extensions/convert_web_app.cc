@@ -29,10 +29,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+namespace extensions {
+
 namespace keys = extension_manifest_keys;
 
 using base::Time;
-using extensions::Extension;
 
 namespace {
 
@@ -195,3 +196,5 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   temp_dir.Take();  // The caller takes ownership of the directory.
   return extension;
 }
+
+}  // namespace extensions

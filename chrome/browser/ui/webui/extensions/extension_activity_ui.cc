@@ -52,7 +52,7 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
 
 ExtensionActivityUI::~ExtensionActivityUI() {
   if (extension_)
-    ExtensionActivityLog::GetInstance()->RemoveObserver(extension_, this);
+    extensions::ActivityLog::GetInstance()->RemoveObserver(extension_, this);
 }
 
 void ExtensionActivityUI::HandleRequestExtensionData(
@@ -88,12 +88,12 @@ void ExtensionActivityUI::HandleRequestExtensionData(
   web_ui()->CallJavascriptFunction("extension_activity.handleExtensionData",
                                    result);
 
-  ExtensionActivityLog::GetInstance()->AddObserver(extension_, this);
+  extensions::ActivityLog::GetInstance()->AddObserver(extension_, this);
 }
 
 void ExtensionActivityUI::OnExtensionActivity(
       const extensions::Extension* extension,
-      ExtensionActivityLog::Activity activity,
+      extensions::ActivityLog::Activity activity,
       const std::string& msg) {
   DictionaryValue result;
   result.SetInteger("activity", activity);

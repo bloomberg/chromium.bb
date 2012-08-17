@@ -12,7 +12,7 @@
 #include "base/process_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_activity_log.h"
+#include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -45,9 +45,9 @@ const char kQuotaExceeded[] = "quota exceeded";
 
 void LogSuccess(const Extension* extension,
                 const ExtensionHostMsg_Request_Params& params) {
-  ExtensionActivityLog* extension_activity_log =
-      ExtensionActivityLog::GetInstance();
-  if (extension_activity_log->HasObservers(extension)) {
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance();
+  if (activity_log->HasObservers(extension)) {
     std::string call_signature = params.name + "(";
     ListValue::const_iterator it = params.arguments.begin();
     for (; it != params.arguments.end(); ++it) {
@@ -61,23 +61,21 @@ void LogSuccess(const Extension* extension,
     }
     call_signature += ")";
 
-    extension_activity_log->Log(
-        extension,
-        ExtensionActivityLog::ACTIVITY_EXTENSION_API_CALL,
-        call_signature);
+    activity_log->Log(extension,
+                      extensions::ActivityLog::ACTIVITY_EXTENSION_API_CALL,
+                      call_signature);
   }
 }
 
 void LogFailure(const Extension* extension,
                 const std::string& func_name,
                 const char* reason) {
-  ExtensionActivityLog* extension_activity_log =
-      ExtensionActivityLog::GetInstance();
-  if (extension_activity_log->HasObservers(extension)) {
-    extension_activity_log->Log(
-        extension,
-        ExtensionActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
-        func_name + ": " + reason);
+  extensions::ActivityLog* activity_log =
+      extensions::ActivityLog::GetInstance();
+  if (activity_log->HasObservers(extension)) {
+    activity_log->Log(extension,
+                      extensions::ActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
+                      func_name + ": " + reason);
   }
 }
 

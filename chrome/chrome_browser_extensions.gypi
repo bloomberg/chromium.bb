@@ -59,6 +59,8 @@
         # tests and mocks.
         'browser/extensions/active_tab_permission_manager.cc',
         'browser/extensions/active_tab_permission_manager.h',
+        'browser/extensions/activity_log.cc',
+        'browser/extensions/activity_log.h',
         'browser/extensions/admin_policy.cc',
         'browser/extensions/admin_policy.h',
         'browser/extensions/api/api_function.cc',
@@ -330,8 +332,6 @@
         'browser/extensions/event_router.h',
         'browser/extensions/event_router_forwarder.cc',
         'browser/extensions/event_router_forwarder.h',
-        'browser/extensions/extension_activity_log.cc',
-        'browser/extensions/extension_activity_log.h',
         'browser/extensions/extension_context_menu_model.cc',
         'browser/extensions/extension_context_menu_model.h',
         'browser/extensions/extension_creator.cc',

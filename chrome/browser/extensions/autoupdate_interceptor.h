@@ -11,6 +11,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
+namespace extensions {
+
 // This url request interceptor lets us respond to localhost http request urls
 // with the contents of files on disk for use in tests.
 class AutoUpdateInterceptor
@@ -41,5 +43,7 @@ class AutoUpdateInterceptor
 
   DISALLOW_COPY_AND_ASSIGN(AutoUpdateInterceptor);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_AUTOUPDATE_INTERCEPTOR_H_

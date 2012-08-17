@@ -619,7 +619,9 @@ class ExtensionService
     return &extension_warnings_;
   }
 
-  AppShortcutManager* app_shortcut_manager() { return &app_shortcut_manager_; }
+  extensions::AppShortcutManager* app_shortcut_manager() {
+    return &app_shortcut_manager_;
+  }
 
   // Specialization of syncer::SyncableService::AsWeakPtr.
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
@@ -856,7 +858,7 @@ class ExtensionService
 
   extensions::ProcessMap process_map_;
 
-  AppShortcutManager app_shortcut_manager_;
+  extensions::AppShortcutManager app_shortcut_manager_;
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
 

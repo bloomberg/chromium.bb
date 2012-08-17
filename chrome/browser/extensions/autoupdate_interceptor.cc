@@ -13,6 +13,8 @@
 
 using content::BrowserThread;
 
+namespace extensions {
+
 // This is a specialized version of net::URLRequestTestJob that lets us specify
 // response data and make sure the response code is 200, which the autoupdate
 // code relies on.
@@ -91,3 +93,5 @@ void AutoUpdateInterceptor::SetResponseOnIOThread(const std::string url,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AutoUpdateInterceptor::SetResponse, this, url, path));
 }
+
+}  // namespace extensions

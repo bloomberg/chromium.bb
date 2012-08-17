@@ -14,11 +14,10 @@ namespace base {
 class Time;
 }
 
+struct WebApplicationInfo;
+
 namespace extensions {
 class Extension;
-}
-
-struct WebApplicationInfo;
 
 // Generates a version number for an extension from a time. The goal is to make
 // use of the version number to communicate the date in a human readable form,
@@ -38,8 +37,10 @@ std::string ConvertTimeToExtensionVersion(const base::Time& time);
 // NOTE: This function does file IO and should not be called on the UI thread.
 // NOTE: The caller takes ownership of the directory at extension->path() on the
 // returned object.
-scoped_refptr<extensions::Extension> ConvertWebAppToExtension(
+scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app_info,
     const base::Time& create_time);
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CONVERT_WEB_APP_H_

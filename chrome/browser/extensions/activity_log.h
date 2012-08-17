@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTIVITY_LOG_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTIVITY_LOG_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
+#define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
 
 #include <map>
 #include <string>
@@ -14,10 +14,9 @@
 
 namespace extensions {
 class Extension;
-}
 
 // A utility for tracing interesting activity for each extension.
-class ExtensionActivityLog {
+class ActivityLog {
  public:
   enum Activity {
     ACTIVITY_EXTENSION_API_CALL,  // Extension API invocation is called.
@@ -27,30 +26,30 @@ class ExtensionActivityLog {
   // Observers can listen for activity events.
   class Observer {
    public:
-    virtual void OnExtensionActivity(const extensions::Extension* extension,
+    virtual void OnExtensionActivity(const Extension* extension,
                                      Activity activity,
                                      const std::string& msg) = 0;
   };
 
-  ~ExtensionActivityLog();
-  static ExtensionActivityLog* GetInstance();
+  ~ActivityLog();
+  static ActivityLog* GetInstance();
 
   // Add/remove observer.
-  void AddObserver(const extensions::Extension* extension, Observer* observer);
-  void RemoveObserver(const extensions::Extension* extension,
+  void AddObserver(const Extension* extension, Observer* observer);
+  void RemoveObserver(const Extension* extension,
                       Observer* observer);
 
   // Check for the existence observer list by extension_id.
-  bool HasObservers(const extensions::Extension* extension) const;
+  bool HasObservers(const Extension* extension) const;
 
   // Log |activity| for |extension|.
-  void Log(const extensions::Extension* extension,
+  void Log(const Extension* extension,
            Activity activity,
            const std::string& msg) const;
 
  private:
-  ExtensionActivityLog();
-  friend struct DefaultSingletonTraits<ExtensionActivityLog>;
+  ActivityLog();
+  friend struct DefaultSingletonTraits<ActivityLog>;
 
   static const char* ActivityToString(Activity activity);
 
@@ -62,12 +61,14 @@ class ExtensionActivityLog {
   bool log_activity_to_stdout_;
 
   typedef ObserverListThreadSafe<Observer> ObserverList;
-  typedef std::map<const extensions::Extension*, scoped_refptr<ObserverList> >
+  typedef std::map<const Extension*, scoped_refptr<ObserverList> >
       ObserverMap;
   // A map of extensions to activity observers for that extension.
   ObserverMap observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActivityLog);
+  DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTIVITY_LOG_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_H_
