@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+case $1 in
+  "configure")
+    echo "Shutting down remoting hosts (they will restart automatically)..."
+    killall -q remoting_me2me_host || true
+    ;;
+esac
+
+#DEBHELPER#
