@@ -873,10 +873,11 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   DCHECK_EQ(cairo_image_surface_get_format(page_surface), CAIRO_FORMAT_ARGB32);
 
   // Transform context coordinates into surface coordinates.
-  double page_x_double = rect.x();
-  double page_y_double = rect.y();
-  cairo_user_to_device(context, &page_x_double, &page_y_double);
-  gfx::Rect full_content_rect(0, 0,
+  double page_x_double = 0;
+  double page_y_double = 0;
+  cairo_device_to_user(context, &page_x_double, &page_y_double);
+  gfx::Rect full_content_rect(static_cast<int>(page_x_double),
+                              static_cast<int>(page_y_double),
                               cairo_image_surface_get_width(page_surface),
                               cairo_image_surface_get_height(page_surface));
 #endif
@@ -909,8 +910,8 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   cairo_surface_flush(page_surface);
   const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
   int page_stride = cairo_image_surface_get_stride(page_surface);
-  int page_start_x = static_cast<int>(page_x_double);
-  int page_start_y = static_cast<int>(page_y_double);
+  int page_start_x = content_rect.x() - static_cast<int>(page_x_double);
+  int page_start_y = content_rect.y() - static_cast<int>(page_y_double);
 
   skia::ScopedPlatformPaint scoped_platform_paint(
       background_store_.canvas.get());
