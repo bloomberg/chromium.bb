@@ -61,6 +61,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual void Close() OVERRIDE;
   virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;

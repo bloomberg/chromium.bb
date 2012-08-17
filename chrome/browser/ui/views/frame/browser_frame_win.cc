@@ -65,6 +65,7 @@ extern "C" {
 typedef void (*SetFrameWindow)(HWND window);
 typedef void (*CloseFrameWindow)(HWND window);
 typedef void (*FlipFrameWindows)();
+typedef void (*MetroSetFullscreen)(bool fullscreen);
 }
 #endif  // USE_AURA
 
@@ -287,6 +288,22 @@ void BrowserFrameWin::FrameTypeChanged() {
   // etc.
   if (base::win::IsMetroProcess())
     Show();
+}
+
+void BrowserFrameWin::SetFullscreen(bool fullscreen) {
+  if (base::win::IsMetroProcess()) {
+    HMODULE metro = base::win::GetMetroModule();
+    if (metro) {
+      MetroSetFullscreen set_full_screen = reinterpret_cast<MetroSetFullscreen>(
+        ::GetProcAddress(metro, "SetFullscreen"));
+      DCHECK(set_full_screen);
+      if (set_full_screen)
+        set_full_screen(fullscreen);
+    } else {
+      NOTREACHED() << "Failed to get metro driver module";
+    }
+  }
+  views::NativeWidgetWin::SetFullscreen(fullscreen);
 }
 
 
