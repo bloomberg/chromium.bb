@@ -35,11 +35,13 @@ this utility can download as as subdirectory into the SDK.
 
 Commands:
   help [command] - Get either general or command-specific help
+  info - Displays information about a bundle
   list - Lists the available bundles
   update/install - Updates/installs bundles in the SDK
   sources - Manage external package sources
 
 Example Usage:
+  naclsdk info pepper_canary
   naclsdk list
   naclsdk update --force pepper_17
   naclsdk install recommended
@@ -360,33 +362,111 @@ class SDKConfig(object):
 # Commands
 
 
+def Info(options, argv, config):
+  '''Usage: %prof [global_options] info [options] bundle_names...
+
+  Displays information about a SDK bundle.'''
+
+  DebugPrint("Running List command with: %s, %s" %(options, argv))
+
+  parser = optparse.OptionParser(usage=Info.__doc__)
+  (info_options, args) = parser.parse_args(argv)
+
+  if not args:
+    parser.print_help()
+    return
+
+  manifest = LoadManifestFromURLs([options.manifest_url] + config.GetSources())
+  valid_bundles = [bundle.name for bundle in manifest.GetBundles()]
+  valid_args = set(args) & set(valid_bundles)
+  invalid_args = set(args) - valid_args
+  if invalid_args:
+    InfoPrint('Unknown bundle(s): %s\n' % (', '.join(invalid_args)))
+
+  for bundle_name in args:
+    if bundle_name not in valid_args:
+      continue
+
+    bundle = manifest.GetBundle(bundle_name)
+
+    InfoPrint('%s' % bundle.name)
+    for key, value in bundle.iteritems():
+      if key == manifest_util.ARCHIVES_KEY:
+        archive = bundle.GetHostOSArchive()
+        InfoPrint('  Archive:')
+        for archive_key, archive_value in archive.iteritems():
+          InfoPrint('    %s: %s' % (archive_key, archive_value))
+      elif key not in (manifest_util.ARCHIVES_KEY, manifest_util.NAME_KEY):
+        InfoPrint('  %s: %s' % (key, value))
+    InfoPrint('')
+
+
 def List(options, argv, config):
-  '''Usage: %prog [options] list
+  '''Usage: %prog [global_options] list [options]
 
   Lists the available SDK bundles that are available for download.'''
-  def PrintBundles(bundles):
-    for bundle in bundles:
-      InfoPrint('  %s' % bundle.name)
-      for key, value in bundle.iteritems():
-        if key not in (manifest_util.ARCHIVES_KEY, manifest_util.NAME_KEY):
-          InfoPrint('    %s: %s' % (key, value))
+
+  def PrintBundle(local_bundle, bundle, needs_update, display_revisions):
+    installed = local_bundle is not None
+    # If bundle is None, there is no longer a remote bundle with this name.
+    if bundle is None:
+      bundle = local_bundle
+
+    if display_revisions:
+      if needs_update:
+        revision = ' (r%s -> r%s)' % (local_bundle.revision, bundle.revision)
+      else:
+        revision = ' (r%s)' % (bundle.revision,)
+    else:
+      revision = ''
+
+    InfoPrint('  %s%s %s (%s)%s' % (
+      'I' if installed else ' ',
+      '*' if needs_update else ' ',
+      bundle.name,
+      bundle.stability,
+      revision))
+
 
   DebugPrint("Running List command with: %s, %s" %(options, argv))
 
   parser = optparse.OptionParser(usage=List.__doc__)
+  parser.add_option(
+      '-r', '--revision', dest='revision',
+      default=False, action='store_true',
+      help='display revision numbers')
   (list_options, args) = parser.parse_args(argv)
+
   manifest = LoadManifestFromURLs([options.manifest_url] + config.GetSources())
-  InfoPrint('Available bundles:')
-  PrintBundles(manifest.GetBundles())
-  # Print the local information.
   manifest_path = os.path.join(options.user_data_dir, options.manifest_filename)
   local_manifest = LoadFromFile(manifest_path, manifest_util.SDKManifest())
-  InfoPrint('\nCurrently installed bundles:')
-  PrintBundles(local_manifest.GetBundles())
+
+  any_bundles_need_update = False
+  InfoPrint('Bundles:')
+  InfoPrint(' I: installed\n *: update available\n')
+  for bundle in manifest.GetBundles():
+    local_bundle = local_manifest.GetBundle(bundle.name)
+    installed = local_bundle is not None
+    needs_update = local_bundle and local_manifest.BundleNeedsUpdate(bundle)
+    if needs_update:
+      any_bundles_need_update = True
+
+    PrintBundle(local_bundle, bundle, needs_update, list_options.revision)
+
+  if not any_bundles_need_update:
+    InfoPrint('\nAll installed bundles are up-to-date.')
+
+  local_only_bundles = set([b.name for b in local_manifest.GetBundles()])
+  local_only_bundles -= set([b.name for b in manifest.GetBundles()])
+  if local_only_bundles:
+    InfoPrint('\nBundles installed locally that are not available remotely:')
+    for bundle_name in local_only_bundles:
+      local_bundle = local_manifest.GetBundle(bundle_name)
+      PrintBundle(local_bundle, None, False, list_options.revision)
 
 
 def Update(options, argv, config):
-  '''Usage: %prog [options] update [target]
+  '''Usage: %prog [global_options] update [options] [target]
 
   Updates the Native Client SDK to a specified version.  By default, this
   command updates all the recommended components.  The update process works
@@ -498,7 +578,7 @@ def Update(options, argv, config):
       InfoPrint('%s is already up-to-date.' % bundle.name)
 
 def Sources(options, argv, config):
-  '''Usage: %prog [options] sources [--list,--add URL,--remove URL]
+  '''Usage: %prog [global_options] sources [options] [--list,--add URL,--remove URL]
 
   Manage additional package sources.  URL should point to a valid package
   manifest file for download.
@@ -545,9 +625,13 @@ def Sources(options, argv, config):
 
 def main(argv):
   '''Main entry for the sdk_update utility'''
-  parser = optparse.OptionParser(usage=GLOBAL_HELP)
+  parser = optparse.OptionParser(usage=GLOBAL_HELP, add_help_option=False)
   DEFAULT_SDK_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+  # Manually add help options so we can ignore it when auto-updating.
+  parser.add_option(
+      '-h', '--help', dest='help', action='store_true',
+      help='show this help message and exit')
   parser.add_option(
       '-U', '--manifest-url', dest='manifest_url',
       default='https://commondatastorage.googleapis.com/nativeclient-mirror/'
@@ -590,6 +674,7 @@ def main(argv):
 
 
   COMMANDS = {
+      'info': Info,
       'list': List,
       'update': Update,
       'install': Update,
@@ -631,6 +716,9 @@ def main(argv):
 
   if not args:
     print "Need to supply a command"
+    PrintHelpAndExit()
+
+  if options.help:
     PrintHelpAndExit()
 
   def DefaultHandler(unused_options=None, unused_args=None, unused_config=None):
