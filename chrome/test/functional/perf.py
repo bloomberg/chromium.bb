@@ -748,8 +748,8 @@ class BenchmarkPerfTest(BasePerfTest):
       if iteration:
         for key, val in result_dict.items():
           timings.setdefault(key, []).append(val)
-        logging.info('Iteration %d of %d:\n%s', iteration, self._num_iterations,
-                     self.pformat(result_dict))
+        logging.info('Iteration %d of %d:\n%s', iteration,
+                     self._num_iterations, self.pformat(result_dict))
 
     for key, val in timings.items():
       if key == 'final_score':
@@ -1628,40 +1628,32 @@ class FileUploadDownloadTest(BasePerfTest):
                               'upload_file')
 
 
-class FrameTimes(object):
-  """Container for a list of frame times."""
-
-  def __init__(self, frame_times):
-    self._frame_times = frame_times
-
-  def GetFps(self):
-    if not self._frame_times:
-      return 0
-    avg = sum(self._frame_times) / len(self._frame_times)
-    if not avg:
-      return 0
-    return int(1000.0 / avg)
-
-  def GetMeanFrameTime(self):
-    return Mean(self._frame_times)
-
-  def GetPercentBelow60Fps(self):
-    if not self._frame_times:
-      return 0
-    threshold = math.ceil(1000 / 60.)
-    num_frames_below_60 = len([t for t in self._frame_times if t > threshold])
-    num_frames = len(self._frame_times)
-    return (100. * num_frames_below_60) / num_frames
-
-
 class ScrollResults(object):
   """Container for ScrollTest results."""
 
-  def __init__(self, first_paint_seconds, frame_times_lists):
-    assert len(frame_times_lists) == 2, 'Expecting initial and repeat times'
-    self.first_paint_time = 1000.0 * first_paint_seconds
-    self.initial_frame_times = FrameTimes(frame_times_lists[0])
-    self.repeat_frame_times = FrameTimes(frame_times_lists[1])
+  def __init__(self, first_paint_seconds, results_list):
+    assert len(results_list) == 2, 'Expecting initial and repeat results.'
+    self._first_paint_time = 1000.0 * first_paint_seconds
+    self._results_list = results_list
+
+  def GetFirstPaintTime(self):
+    return self._first_paint_time
+
+  def GetFrameCount(self, index):
+    results = self._results_list[index]
+    return results.get('numFramesSentToScreen', results['numAnimationFrames'])
+
+  def GetFps(self, index):
+    return (self.GetFrameCount(index) /
+            self._results_list[index]['totalTimeInSeconds'])
+
+  def GetMeanFrameTime(self, index):
+    return (self._results_list[index]['totalTimeInSeconds'] /
+            self.GetFrameCount(index))
+
+  def GetPercentBelow60Fps(self, index):
+    return (float(self._results_list[index]['droppedFrameCount']) /
+            self.GetFrameCount(index))
 
 
 class BaseScrollTest(BasePerfTest):
@@ -1674,57 +1666,50 @@ class BaseScrollTest(BasePerfTest):
     with open(scroll_file) as f:
       self._scroll_text = f.read()
 
-  def RunSingleInvocation(self, url, setup_js=''):
+  def ExtraChromeFlags(self):
+    """Ensures Chrome is launched with custom flags.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    # Extra flag used by scroll performance tests.
+    return (super(BaseScrollTest, self).ExtraChromeFlags() +
+            ['--enable-gpu-benchmarking'])
+
+  def RunSingleInvocation(self, url, is_gmail_test=False):
     """Runs a single invocation of the scroll test.
 
     Args:
       url: The string url for the webpage on which to run the scroll test.
-      setup_js: String representing additional Javascript setup code to execute
-          in the webpage immediately before running the scroll test.
+      is_gmail_test: True iff the test is a GMail test.
 
     Returns:
       Instance of ScrollResults.
     """
+
     self.assertTrue(self.AppendTab(pyauto.GURL(url)),
                     msg='Failed to append tab for webpage.')
 
-    js = """
-        %s
-        %s
-        __scroll_test();
-        window.domAutomationController.send('done');
-    """ % (self._scroll_text, setup_js)
-    self.ExecuteJavascript(js, tab_index=1)
+    timeout = pyauto.PyUITest.ActionTimeoutChanger(self, 300 * 1000)  # ms
+    test_js = """%s;
+        new __ScrollTest(function(results) {
+          var stringify = JSON.stringify || JSON.encode;
+          window.domAutomationController.send(stringify(results));
+        }, %s);
+    """ % (self._scroll_text, 'true' if is_gmail_test else 'false')
+    results = simplejson.loads(self.ExecuteJavascript(test_js, tab_index=1))
 
-    # Poll the webpage until the test is complete.
-    def IsTestComplete():
-      done_js = """
-        if (__scrolling_complete)
-          window.domAutomationController.send('complete');
-        else
-          window.domAutomationController.send('incomplete');
-      """
-      return self.ExecuteJavascript(done_js, tab_index=1) == 'complete'
+    first_paint_js = ('window.domAutomationController.send('
+                      '(chrome.loadTimes().firstPaintTime - '
+                      'chrome.loadTimes().requestTime).toString());')
+    first_paint_time = float(self.ExecuteJavascript(first_paint_js,
+                                                    tab_index=1))
 
-    self.assertTrue(
-        self.WaitUntil(IsTestComplete, timeout=300, expect_retval=True,
-                       retry_sleep=1),
-        msg='Timed out when waiting for scrolling tests to complete.')
-
-    # Get the scroll test results from the webpage.
-    results_js = """
-      var __stringify = JSON.stringify || JSON.encode;
-      window.domAutomationController.send(__stringify({
-          'first_paint_time': chrome.loadTimes().firstPaintTime -
-                              chrome.loadTimes().requestTime,
-          'frame_times': __frame_times,
-      }));
-    """
-    results = eval(self.ExecuteJavascript(results_js, tab_index=1))
     self.CloseTab(tab_index=1)
-    return ScrollResults(results['first_paint_time'], results['frame_times'])
 
-  def RunScrollTest(self, url, description, graph_name, setup_js=''):
+    return ScrollResults(first_paint_time, results)
+
+  def RunScrollTest(self, url, description, graph_name, is_gmail_test=False):
     """Runs a scroll performance test on the specified webpage.
 
     Args:
@@ -1732,21 +1717,20 @@ class BaseScrollTest(BasePerfTest):
       description: A string description for the particular test being run.
       graph_name: A string name for the performance graph associated with this
           test.  Only used on Chrome desktop.
-      setup_js: String representing additional Javascript setup code to execute
-          in the webpage immediately before running the scroll test.
+      is_gmail_test: True iff the test is a GMail test.
     """
     results = []
     for iteration in range(self._num_iterations + 1):
-      result = self.RunSingleInvocation(url, setup_js)
+      result = self.RunSingleInvocation(url, is_gmail_test)
       # Ignore the first iteration.
       if iteration:
-        fps = result.repeat_frame_times.GetFps()
+        fps = result.GetFps(1)
         assert fps, '%s did not scroll' % url
         logging.info('Iteration %d of %d: %f fps', iteration,
                      self._num_iterations, fps)
         results.append(result)
     self._PrintSummaryResults(
-        description, [r.repeat_frame_times.GetFps() for r in results],
+        description, [r.GetFps(1) for r in results],
         'FPS', graph_name)
 
 
@@ -1776,21 +1760,21 @@ class PopularSitesScrollTest(BaseScrollTest):
 
   def _PrintScrollResults(self, results):
     self._PrintSummaryResults(
-        'initial', [r.initial_frame_times.GetMeanFrameTime() for r in results],
+        'initial', [r.GetMeanFrameTime(0) for r in results],
         'ms', 'FrameTimes')
     self._PrintSummaryResults(
-        'repeat', [r.repeat_frame_times.GetMeanFrameTime() for r in results],
+        'repeat', [r.GetMeanFrameTime(1) for r in results],
         'ms', 'FrameTimes')
     self._PrintSummaryResults(
         'initial',
-        [r.initial_frame_times.GetPercentBelow60Fps() for r in results],
+        [r.GetPercentBelow60Fps(0) for r in results],
         'percent', 'PercentBelow60FPS')
     self._PrintSummaryResults(
         'repeat',
-        [r.repeat_frame_times.GetPercentBelow60Fps() for r in results],
+        [r.GetPercentBelow60Fps(1) for r in results],
         'percent', 'PercentBelow60FPS')
     self._PrintSummaryResults(
-        'first_paint_time', [r.first_paint_time for r in results],
+        'first_paint_time', [r.GetFirstPaintTime() for r in results],
         'ms', 'FirstPaintTime')
 
   def test2012Q3(self):
@@ -1803,9 +1787,9 @@ class PopularSitesScrollTest(BaseScrollTest):
       for iteration in range(self._num_iterations):
         for url in urls:
           result = self.RunSingleInvocation(url)
-          fps = result.initial_frame_times.GetFps()
+          fps = result.GetFps(0)
           assert fps, '%s did not scroll' % url
-          logging.info('Iteration %d of %d: %f fps', iteration,
+          logging.info('Iteration %d of %d: %f fps', iteration + 1,
                        self._num_iterations, fps)
           results.append(result)
     self._PrintScrollResults(results)
@@ -1844,8 +1828,8 @@ class ScrollTest(BaseScrollTest):
   def testGmailScroll(self):
     """Runs the scroll test using the live Gmail site."""
     self._LoginToGoogleAccount(account_key='test_google_account_gmail')
-    self.RunScrollTest('http://www.gmail.com', 'ScrollGmail', 'scroll_fps',
-                       setup_js='__is_gmail_test = true;')
+    self.RunScrollTest('http://www.gmail.com', 'ScrollGmail',
+                       'scroll_fps', True)
 
 
 class FlashTest(BasePerfTest):

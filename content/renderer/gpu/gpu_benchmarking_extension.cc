@@ -181,26 +181,16 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     render_view_impl->GetRenderingStats(stats);
 
     v8::Handle<v8::Object> stats_object = v8::Object::New();
-    if (stats.numAnimationFrames)
-      stats_object->Set(v8::String::New("numAnimationFrames"),
-                        v8::Integer::New(stats.numAnimationFrames),
-                        v8::ReadOnly);
-    if (stats.numFramesSentToScreen)
-      stats_object->Set(v8::String::New("numFramesSentToScreen"),
-                        v8::Integer::New(stats.numFramesSentToScreen),
-                        v8::ReadOnly);
-    if (stats.droppedFrameCount)
-      stats_object->Set(v8::String::New("droppedFrameCount"),
-                        v8::Integer::New(stats.droppedFrameCount),
-                        v8::ReadOnly);
-    if (stats.totalPaintTimeInSeconds)
-      stats_object->Set(v8::String::New("totalPaintTimeInSeconds"),
-                        v8::Number::New(stats.totalPaintTimeInSeconds),
-                        v8::ReadOnly);
-    if (stats.totalRasterizeTimeInSeconds)
-      stats_object->Set(v8::String::New("totalRasterizeTimeInSeconds"),
-                        v8::Number::New(stats.totalRasterizeTimeInSeconds),
-                        v8::ReadOnly);
+    stats_object->Set(v8::String::New("numAnimationFrames"),
+                      v8::Integer::New(stats.numAnimationFrames));
+    stats_object->Set(v8::String::New("numFramesSentToScreen"),
+                      v8::Integer::New(stats.numFramesSentToScreen));
+    stats_object->Set(v8::String::New("droppedFrameCount"),
+                      v8::Integer::New(stats.droppedFrameCount));
+    stats_object->Set(v8::String::New("totalPaintTimeInSeconds"),
+                      v8::Number::New(stats.totalPaintTimeInSeconds));
+    stats_object->Set(v8::String::New("totalRasterizeTimeInSeconds"),
+                      v8::Number::New(stats.totalRasterizeTimeInSeconds));
     return stats_object;
   }
 
