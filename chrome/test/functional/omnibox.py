@@ -117,21 +117,6 @@ class OmniboxTest(pyauto.PyUITest):
     self.OmniboxAcceptInput()
     self.assertEqual(title1, self.GetActiveTabTitle())
 
-  def testGoogleSearch(self):
-    """Verify Google search item in omnibox results."""
-    search_text = 'hello world'
-    verify_str = 'Google Search'
-    url_re = 'http://www.google.com/search\?.*q=hello\+world.*'
-    matches_description = test_utils.GetOmniboxMatchesFor(
-        self, search_text, attr_dict={'description': verify_str})
-    self.assertTrue(matches_description)
-    # There should be a least one entry with the description Google. Suggest
-    # results may end up having 'Google Search' in them, so use >=.
-    self.assertTrue(len(matches_description) >= 1)
-    item = matches_description[0]
-    self.assertTrue(re.search(url_re, item['destination_url']))
-    self.assertEqual('search-what-you-typed', item['type'])
-
   def testInlineAutoComplete(self):
     """Verify inline autocomplete for a pre-visited URL."""
     self.NavigateToURL('http://www.google.com')
@@ -525,6 +510,35 @@ class OmniboxTest(pyauto.PyUITest):
     search_str = 'Car'
     app_url = 'http://webstore.limexgames.com/cargo_bridge'
     self._VerifyAppSearchNewTab(app_name, search_str, app_url)
+
+
+class OmniboxLiveTest(pyauto.PyUITest):
+  """Test cases for the omnibox that hit live servers (such as Google)."""
+
+  def ExtraChromeFlags(self):
+    """Override default list of extra flags used in pyauto tests."""
+    # Force the suggest field trial group. This doesn't guarantee that there
+    # will be no experimental behaviour, but there's no other way to disable
+    # all suggest field trials at the moment. TODO(mpearson): Consider allowing
+    # the suggest_url to be overridden using a flag (so that we can omit the
+    # "sugexp=chrome,mod=<n>" CGI param), or provide some other way to turn off
+    # all suggest field trials.
+    return ['--force-fieldtrials=OmniboxSearchSuggest/10/']
+
+  def testGoogleSearch(self):
+    """Verify Google search item in omnibox results."""
+    search_text = 'hello world'
+    verify_str = 'Google Search'
+    url_re = 'http://www.google.com/search\?.*q=hello\+world.*'
+    matches_description = test_utils.GetOmniboxMatchesFor(
+        self, search_text, attr_dict={'description': verify_str})
+    self.assertTrue(matches_description)
+    # There should be a least one entry with the description Google. Suggest
+    # results may end up having 'Google Search' in them, so use >=.
+    self.assertTrue(len(matches_description) >= 1)
+    item = matches_description[0]
+    self.assertTrue(re.search(url_re, item['destination_url']))
+    self.assertEqual('search-what-you-typed', item['type'])
 
 
 if __name__ == '__main__':
