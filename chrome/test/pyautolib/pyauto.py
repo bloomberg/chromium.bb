@@ -821,7 +821,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       debug: if True, displays debug info at each retry.
 
     Returns:
-      True, if returning when |function| evaluated to True
+      The return value of the calling function when |function| evaluates to
+          True.
       False, when returning due to timeout
     """
     if timeout == -1:  # Default
@@ -831,8 +832,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     debug_begin = begin
     while timeout is None or time.time() - begin <= timeout:
       retval = function(*args)
-      if (expect_retval is None and retval) or expect_retval == retval:
-        return True
+      if (expect_retval is None and retval) or \
+         (expect_retval is not None and expect_retval == retval):
+        return retval
       if debug and time.time() - debug_begin > 5:
         debug_begin += 5
         if function.func_name == (lambda: True).func_name:
@@ -5501,21 +5503,34 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
        connected_service_path in service_list['wifi_networks']:
        return service_list['wifi_networks'][connected_service_path]['name']
 
-  def GetServicePath(self, ssid):
-    """Returns the service path associated with an SSID.
+  def GetServicePath(self, ssid, encryption=None, timeout=30):
+    """Waits until the SSID is observed and returns its service path.
 
     Args:
       ssid: String defining the SSID we are searching for.
+      encryption: Encryption type of the network; either None to return the
+                  first instance of network that matches the ssid, '' for
+                  an empty network, 'PSK', 'WEP' or '8021X'.
+      timeout: Duration to wait for ssid to appear.
 
     Returns:
-      The service path or None if SSID does not exist.
+      The service path or None if SSID does not exist after timeout period.
     """
-    service_list = self.GetNetworkInfo()
-    service_list = service_list.get('wifi_networks', [])
-    for service_path, service_obj in service_list.iteritems():
-      if service_obj['name'] == ssid:
-        return service_path
-    return None
+    def _get_service_path():
+      service_list = self.GetNetworkInfo().get('wifi_networks', [])
+      for service_path, service_obj in service_list.iteritems():
+        service_encr = 'PSK' if service_obj['encryption'] in ['WPA', 'RSN'] \
+                       else service_obj['encryption']
+
+        if service_obj['name'] == ssid and \
+           (encryption == None or service_encr == encryption):
+          return service_path
+      self.NetworkScan()
+      return None
+
+    service_path = self.WaitUntil(_get_service_path, timeout=timeout,
+                                  retry_sleep=1)
+    return service_path or None
 
   def NetworkScan(self):
     """Causes ChromeOS to scan for available wifi networks.
