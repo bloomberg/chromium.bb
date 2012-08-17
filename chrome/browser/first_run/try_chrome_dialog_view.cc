@@ -335,8 +335,10 @@ void TryChromeDialogView::ButtonPressed(views::Button* sender,
       NOTREACHED() << "Unknown radio button selected";
   }
 
-  if ((result_ == TRY_CHROME) && make_default_->checked())
-      result_ = TRY_CHROME_AS_DEFAULT;
+  if (make_default_) {
+    if ((result_ == TRY_CHROME) && make_default_->checked())
+        result_ = TRY_CHROME_AS_DEFAULT;
+  }
 
   popup_->Close();
   MessageLoop::current()->Quit();
