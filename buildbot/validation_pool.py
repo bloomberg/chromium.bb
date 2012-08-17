@@ -192,7 +192,7 @@ class PatchSeries(object):
   """Class representing a set of patches applied to a single git repository."""
 
   def __init__(self, path, helper_pool=None, force_content_merging=False,
-               forced_manifest=None):
+               forced_manifest=None, deps_filter_fn=None):
 
     self.manifest = forced_manifest
     self._content_merging_projects = {}
@@ -202,6 +202,9 @@ class PatchSeries(object):
       helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
     self._helper_pool = helper_pool
     self._path = path
+    if deps_filter_fn is None:
+      deps_filter_fn = lambda x:x
+    self.deps_filter_fn = deps_filter_fn
 
     self.applied = []
     self.failed = []
@@ -344,7 +347,9 @@ class PatchSeries(object):
                   ).startswith(dep))
 
       unsatisfied.append(dep_change)
-    return unsatisfied
+
+    # Perform last minute custom filtering.
+    return [x for x in unsatisfied if self.deps_filter_fn(x)]
 
   def CreateTransaction(self, change, limit_to=None):
     """Given a change, resolve it into a transaction.

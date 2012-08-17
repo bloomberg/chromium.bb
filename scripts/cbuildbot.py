@@ -145,8 +145,7 @@ class Builder(object):
   Vars:
     build_config:  The configuration dictionary from cbuildbot_config.
     options:  The options provided from optparse in main().
-    archive_url:  Where our artifacts for this builder will be archived.
-    tracking_branch: The tracking branch for this build.
+    archive_urls:  Where our artifacts for this builder will be archived.
     release_tag:  The associated "chrome os version" of this build.
   """
 
@@ -290,11 +289,12 @@ class Builder(object):
     """
     stage = None
     chromite_pool = self.patch_pool.Filter(project=constants.CHROMITE_PROJECT)
+    manifest_pool = self.patch_pool.FilterManifest()
     chromite_branch = cros_build_lib.GetChromiteTrackingBranch()
-    if (chromite_pool or self.options.test_bootstrap
+    if (chromite_pool or manifest_pool or self.options.test_bootstrap
         or chromite_branch != self.options.branch):
       stage = stages.BootstrapStage(self.options, self.build_config,
-                                    chromite_pool)
+                                    chromite_pool, manifest_pool)
     return stage
 
   def Run(self):
@@ -566,6 +566,7 @@ def _BackupPreviousLog(log_file, backup_limit=25):
       last = int(old_logs.pop().rpartition('.')[2])
 
     os.rename(log_file, log_file + '.' + str(last + 1))
+
 
 def _RunBuildStagesWrapper(options, build_config):
   """Helper function that wraps RunBuildStages()."""

@@ -26,6 +26,7 @@ from chromite.buildbot import manifest_version
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
+from chromite.buildbot import trybot_patch_pool
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -152,15 +153,14 @@ class PatchChangesStage(bs.BuilderStage):
 
     Args:
       options, build_config: See arguments to bs.BuilderStage.__init__()
-      gerrit_patches: A list of GerritPatch objects to apply. Cannot be None.
-      local_patches: A list of LocalPatch objects to apply.  Cannot be None.
-      remote_patches: A list of UploadedLocalPatch objects to apply. Cannot be
-                      None.
+      patch_pool: A TrybotPatchPool object containing the different types of
+                  patches to apply.
     """
     bs.BuilderStage.__init__(self, options, build_config)
     self.patch_pool = patch_pool
 
-  def _CheckForDuplicatePatches(self, _series, changes):
+  @staticmethod
+  def _CheckForDuplicatePatches(_series, changes):
     conflicts = {}
     duplicates = []
     for change in changes:
@@ -183,11 +183,12 @@ class PatchChangesStage(bs.BuilderStage):
 
     cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
 
-  def _FixIncompleteRemotePatches(self, series, changes):
+  @staticmethod
+  def _FixIncompleteRemotePatches(series, changes):
     """Identify missing remote patches from older cbuildbot instances.
 
     Cbuildbot, prior to I8ab6790de801900c115a437b5f4ebb9a24db542f, uploaded
-    a single patch per project- despite if their may have been a hundred
+    a single patch per project- despite if there may have been a hundred
     patches actually pulled in by that patch.  This method detects when
     we're dealing w/ the old incomplete version, and fills in those gaps."""
     broken = [x for x in changes
@@ -220,7 +221,8 @@ class PatchChangesStage(bs.BuilderStage):
       changes = self._FixIncompleteRemotePatches(series, changes)
     return self._CheckForDuplicatePatches(series, changes)
 
-  def _ApplyPatchSeries(self, series, **kwargs):
+  def _ApplyPatchSeries(self, series, patch_pool, **kwargs):
+    """Applies a patch pool using a patch series."""
     kwargs.setdefault('frozen', False)
     # Honor the given ordering, so that if a gerrit/remote patch
     # conflicts w/ a local patch, the gerrit/remote patch are
@@ -230,7 +232,7 @@ class PatchChangesStage(bs.BuilderStage):
     kwargs['changes_filter'] = self._PatchSeriesFilter
 
     _applied, failed_tot, failed_inflight = series.Apply(
-        list(self.patch_pool), **kwargs)
+        list(patch_pool), **kwargs)
 
     failures = failed_tot + failed_inflight
     if failures:
@@ -238,7 +240,6 @@ class PatchChangesStage(bs.BuilderStage):
                          "\n".join(map(str, failures)))
 
   def _PerformStage(self):
-
     class NoisyPatchSeries(validation_pool.PatchSeries):
       """Custom PatchSeries that adds links to buildbot logs for remote trys."""
 
@@ -251,9 +252,13 @@ class PatchChangesStage(bs.BuilderStage):
         return validation_pool.PatchSeries.ApplyChange(self, change,
                                                        dryrun=dryrun)
 
-    self._ApplyPatchSeries(
-        NoisyPatchSeries(self._build_root,
-                         force_content_merging=True))
+    # Limit our resolution to non-manifest patches.
+    patch_series = NoisyPatchSeries(
+        self._build_root,
+        force_content_merging=True,
+        deps_filter_fn=lambda p: not trybot_patch_pool.ManifestFilter(p))
+
+    self._ApplyPatchSeries(patch_series, self.patch_pool)
 
 
 class BootstrapStage(PatchChangesStage):
@@ -265,15 +270,45 @@ class BootstrapStage(PatchChangesStage):
   """
   option_name = 'bootstrap'
 
-  def __init__(self, options, build_config, patch_pool):
+  def __init__(self, options, build_config, chromite_patch_pool,
+               manifest_patch_pool=None):
     super(BootstrapStage, self).__init__(
-        options, build_config, patch_pool)
+        options, build_config, trybot_patch_pool.TrybotPatchPool())
+    self.chromite_patch_pool = chromite_patch_pool
+    self.manifest_patch_pool = manifest_patch_pool
     self.returncode = None
+
+  def _ApplyManifestPatches(self, patch_pool):
+    """Apply a pool of manifest patches to a temp manifest checkout.
+
+    Arguments:
+      filter_fn: Used to filter changes during dependency resolution.
+
+    Returns:
+      The path to the patched manifest checkout.
+
+    Raises:
+      Exception, if the new patched manifest cannot be parsed.
+    """
+    checkout_dir = os.path.join(self.tempdir, 'manfest-checkout')
+    repository.CloneGitRepo(checkout_dir,
+                            self._build_config['manifest_repo_url'])
+
+    patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+        checkout_dir, deps_filter_fn=trybot_patch_pool.ManifestFilter,
+        tracking_branch=self._target_manifest_branch)
+
+    self._ApplyPatchSeries(patch_series, patch_pool)
+    # Verify that the patched manifest loads properly. Propagate any errors as
+    # exceptions.
+    # TODO(rcui): Do validation on other manifests if we start relying on them.
+    cros_build_lib.Manifest.Cached(
+        os.path.join(checkout_dir, constants.DEFAULT_MANIFEST))
+    return checkout_dir
 
   #pylint: disable=E1101
   @osutils.TempDirDecorator
   def _PerformStage(self):
-
     # The plan for the builders is to use master branch to bootstrap other
     # branches. Now, if we wanted to test patches for both the bootstrap code
     # (on master) and the branched chromite (say, R20), we need to filter the
@@ -282,22 +317,23 @@ class BootstrapStage(PatchChangesStage):
     if self._options.test_bootstrap:
       filter_branch = 'master'
 
-    self.patch_pool = self.patch_pool.FilterBranch(filter_branch)
     chromite_dir = os.path.join(self.tempdir, 'chromite')
     reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
     repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
                             reference=reference_repo)
     cros_build_lib.RunGitCommand(chromite_dir, ['checkout', filter_branch])
 
-    class FilteringSeries(validation_pool.PatchSeries):
-      def _LookupUncommittedChanges(self, *args, **kwargs):
-        changes = validation_pool.PatchSeries._LookupUncommittedChanges(
-            self, *args, **kwargs)
-        return [x for x in changes if x.project == constants.CHROMITE_PROJECT
-                and x.tracking_branch == filter_branch]
+    def BranchAndChromiteFilter(patch):
+      return (trybot_patch_pool.BranchFilter(filter_branch, patch) and
+              trybot_patch_pool.ChromiteFilter(patch))
 
-    self._ApplyPatchSeries(FilteringSeries.WorkOnSingleRepo(
-        chromite_dir, self._target_manifest_branch))
+    patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+        chromite_dir, filter_branch,
+        deps_filter_fn=BranchAndChromiteFilter)
+
+    filtered_pool = self.chromite_patch_pool.FilterBranch(filter_branch)
+    if filtered_pool:
+      self._ApplyPatchSeries(patch_series, filtered_pool)
 
     extra_params = ['--sourceroot=%s' % self._options.sourceroot]
     extra_params.extend(self._options.bootstrap_args)
@@ -307,8 +343,12 @@ class BootstrapStage(PatchChangesStage):
       argv = [a for a in argv if a != '--test-bootstrap']
     else:
       # If we've already done the desired number of bootstraps, disable
-      # bootstrapping for the next execution.
+      # bootstrapping for the next execution.  Also pass in the patched manifest
+      # repository.
       extra_params.append('--nobootstrap')
+      if self.manifest_patch_pool:
+        manifest_dir = self._ApplyManifestPatches(self.manifest_patch_pool)
+        extra_params.extend(['--manifest-repo-url', manifest_dir])
 
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):

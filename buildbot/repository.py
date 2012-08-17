@@ -68,7 +68,8 @@ def IsInternalRepoCheckout(root):
           == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
 
 
-def CloneGitRepo(working_dir, repo_url, reference=None, bare=False, retries=2):
+def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
+                 mirror=False, retries=2):
   """Clone given git repo
   Args:
     repo_url: git repo to clone
@@ -77,6 +78,7 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False, retries=2):
       from.  Note that the reference must exist as long as the newly created
       repo is to be usable.
     bare: Clone a bare checkout.
+    mirror: Clone a mirror checkout.
     retries: If error code 128 is encountered, how many times to retry.  When
       128 is returned from git, it's essentially a server error- specifically
       common to manifest-versions and gerrit.
@@ -87,6 +89,8 @@ def CloneGitRepo(working_dir, repo_url, reference=None, bare=False, retries=2):
     cmd += ['--reference', reference]
   if bare:
     cmd += ['--bare']
+  if mirror:
+    cmd += ['--mirror']
   cros_build_lib.RunCommandWithRetries(
       retries, cmd, cwd=working_dir, redirect_stdout=True, redirect_stderr=True,
       retry_on=[128])
