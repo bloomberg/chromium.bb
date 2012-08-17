@@ -39,6 +39,7 @@ readonly MERGE_LOG_FILE="${PNACL_ROOT}/merge.log"
 # These should match the values in build.sh
 readonly TC_SRC="${PNACL_ROOT}/git"
 readonly TC_SRC_LLVM="${TC_SRC}"/llvm
+readonly TC_SRC_CLANG="${TC_SRC}"/clang
 
 readonly PREDIFF="${TC_SRC}/prediff"
 readonly POSTDIFF="${TC_SRC}/postdiff"
@@ -59,12 +60,15 @@ auto() {
   INTERACTIVE_MERGE=false
   export DISPLAY=""
   merge-all "tip"
+  checkout-clang $(get-clang-rev ${MERGE_REVISION})
 }
 
 #@ manual [git rev or "tip"]          - Interactive merge
 manual() {
   INTERACTIVE_MERGE=true
   merge-all "$@"
+  echo "Clang rev corresponging to LLVM rev ${MERGE_REVISION} is"
+  get-clang-rev ${MERGE_REVISION}
 }
 
 #@ upstream-remote-setup - Add the LLVM remote repo to a pnacl git checkout
@@ -195,6 +199,15 @@ find-last-good-rev() {
   done
 }
 
+#+ checkout-clang [rev]   - Checkout the specified revision of clang
+checkout-clang() {
+  local rev=$1
+  spushd "${TC_SRC_CLANG}"
+  git-assert-no-changes .
+  git checkout $1
+  spopd
+}
+
 #@ find-first-bad-rev    - Find the first revision with a merge conflict
 find-first-bad-rev() {
   cd "${TC_SRC_LLVM}"
@@ -211,6 +224,17 @@ find-first-bad-rev() {
       return 0
     fi
   done
+}
+
+#@ get-clang-rev   - Find last clang rev before the given LLVM rev
+get-clang-rev() {
+  local rev=$1
+  spushd "${TC_SRC_LLVM}"
+  local timestamp=$(git rev-list --timestamp --max-count=1 ${rev} \
+    | cut --fields=1 --delimiter=' ')
+  cd "${TC_SRC_CLANG}"
+  git rev-list --before=${timestamp} --max-count=1 master
+  spopd
 }
 
 #@ help                  - Usage information.
