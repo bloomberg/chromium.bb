@@ -12,8 +12,8 @@
 #include <sstream>
 #include <vector>
 
-#include "native_client/src/trusted/gdb_rsp/packet.h"
-#include "native_client/src/trusted/gdb_rsp/test.h"
+#include "native_client/src/trusted/debug_stub/packet.h"
+#include "native_client/src/trusted/debug_stub/test.h"
 
 using gdb_rsp::Packet;
 

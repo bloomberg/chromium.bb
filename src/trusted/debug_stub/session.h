@@ -30,8 +30,8 @@
 #include <sstream>
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/port/mutex.h"
-#include "native_client/src/trusted/port/transport.h"
+#include "native_client/src/trusted/debug_stub/mutex.h"
+#include "native_client/src/trusted/debug_stub/transport.h"
 
 namespace gdb_rsp {
 

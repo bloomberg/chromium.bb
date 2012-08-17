@@ -6,7 +6,7 @@
 
 #include <pthread.h>
 
-#include "native_client/src/trusted/port/mutex.h"
+#include "native_client/src/trusted/debug_stub/mutex.h"
 
 /*
  * Unfortunately NaClSync does not have the correct recursive

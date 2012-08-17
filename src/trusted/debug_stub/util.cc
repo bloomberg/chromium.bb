@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "native_client/src/trusted/gdb_rsp/util.h"
+#include "native_client/src/trusted/debug_stub/util.h"
 
 using std::string;
 

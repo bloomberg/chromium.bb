@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/trusted/gdb_rsp/abi.h"
+#include "native_client/src/trusted/debug_stub/abi.h"
 
 using gdb_rsp::Abi;
 

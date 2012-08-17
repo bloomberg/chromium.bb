@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "native_client/src/trusted/port/thread.h"
+#include "native_client/src/trusted/debug_stub/thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*

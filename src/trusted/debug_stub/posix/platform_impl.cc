@@ -18,10 +18,9 @@
 #include "native_client/src/include/concurrency_ops.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/gdb_rsp/abi.h"
-#include "native_client/src/trusted/gdb_rsp/util.h"
-#include "native_client/src/trusted/port/platform.h"
-
+#include "native_client/src/trusted/debug_stub/abi.h"
+#include "native_client/src/trusted/debug_stub/util.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"

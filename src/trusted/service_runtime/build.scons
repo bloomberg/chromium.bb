@@ -10,11 +10,6 @@ Import('env')
 
 env.Append(CPPPATH=['${TARGET_ROOT}/gen'])
 
-# There is a circular dependency between debug_stub and sel. Adding sel to this
-# list is a quick and dirty workaround.
-# TODO(eaeltsin): refactor to avoid circular dependencies.
-DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub', 'sel']
-
 # normally comment out -- uncomment out to test the pedantic removal
 # check below.
 #if env.Bit('linux') or env.Bit('mac'):
@@ -325,13 +320,13 @@ sel_ldr_libs = ['sel',
                 'platform',
                 'platform_qual_lib',
                 'validators',
-                ] + DEBUG_LIBS
+                ]
 
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
   sel_main_objs = [env.ComponentObject('sel_main.c')]
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_objs,
-                                      EXTRA_LIBS=sel_ldr_libs)
+                                      EXTRA_LIBS=['sel', 'debug_stub'])
   if env.Bit('mac'):
     # This target exists only to check that the service_runtime code
     # can successfully be linked into a Mac OS X dynamic library.  Our
@@ -344,7 +339,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     dylib_env = env.Clone()
     dylib_env.Append(LINKFLAGS=['-bundle'])
     dylib_env.ComponentProgram('dummy_sel_ldr.dylib', sel_main_objs,
-                               EXTRA_LIBS=sel_ldr_libs)
+                               EXTRA_LIBS=['sel', 'debug_stub'])
 
   # NOTE: we do not have segments on ARM
   if env.Bit('build_x86'):
@@ -498,7 +493,7 @@ if (not env.CrossToolsBuild() and
                   'nacl_interval',
                   'platform',
                   'sel_test',
-                  ] + DEBUG_LIBS)
+                  ])
   gtest_env.Requires(unit_tests_exe, crt)
 
   node = gtest_env.CommandTest(
@@ -556,7 +551,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_interval',
                   'platform',
                   'sel_test',
-                  ] + DEBUG_LIBS)
+                  ])
   env.Requires(mmap_test_exe, crt)
 
   mmap_test_file = env.File(arch_testdata_dir + '/hello_world.nexe')
@@ -606,7 +601,7 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'nacl_fault_inject',
                 'nacl_interval',
                 'platform',
-                ] + DEBUG_LIBS)
+                ])
 env.Requires(nacl_sync_cond_test_exe, crt)
 node = env.CommandTest(
     'nacl_sync_cond_test.out',
@@ -958,7 +953,7 @@ if (not env.CrossToolsBuild() and
                   'nacl_fault_inject',
                   'nacl_interval',
                   'platform',
-                  ] + DEBUG_LIBS)
+                  ])
 
   # NaClAbort() behaves differently when code coverage is enabled: it
   # calls exit() rather than abort().

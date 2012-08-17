@@ -12,18 +12,17 @@
  * NaCl Functions for intereacting with debuggers
  */
 
-#include "native_client/src/trusted/gdb_rsp/session.h"
-#include "native_client/src/trusted/gdb_rsp/target.h"
-#include "native_client/src/trusted/port/platform.h"
-#include "native_client/src/trusted/port/thread.h"
-
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/debug_stub/nacl_debug.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
+#include "native_client/src/trusted/debug_stub/session.h"
+#include "native_client/src/trusted/debug_stub/target.h"
+#include "native_client/src/trusted/debug_stub/thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"

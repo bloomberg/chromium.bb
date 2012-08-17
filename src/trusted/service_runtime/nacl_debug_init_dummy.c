@@ -10,7 +10,7 @@
 /*
  * This stub implementation allows service_runtime code to be linked
  * without pulling in the debug stub implementation from
- * src/trusted/gdb_rsp and src/trusted/debug_stub.
+ * src/trusted/debug_stub.
  */
 int NaClDebugInit(struct NaClApp *nap) {
   UNREFERENCED_PARAMETER(nap);

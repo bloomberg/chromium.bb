@@ -26,11 +26,10 @@
 #include <map>
 #include <string>
 
-#include "native_client/src/trusted/gdb_rsp/util.h"
-
-#include "native_client/src/trusted/port/platform.h"
-#include "native_client/src/trusted/port/mutex.h"
-#include "native_client/src/trusted/port/thread.h"
+#include "native_client/src/trusted/debug_stub/mutex.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
+#include "native_client/src/trusted/debug_stub/thread.h"
+#include "native_client/src/trusted/debug_stub/util.h"
 
 struct NaClApp;
 

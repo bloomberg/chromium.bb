@@ -9,11 +9,22 @@
   ],
   'variables': {
     'common_sources': [
-      'debug_stub.h',
+      'abi.cc',
       'debug_stub.cc',
       'nacl_debug.cc',
+      'packet.cc',
+      'session.cc',
+      'target.cc',
       'thread_common.cc',
       'transport_common.cc',
+      'util.cc',
+    ],
+    'test_sources': [
+      'abi_test.cc',
+      'packet_test.cc',
+      'session_test.cc',
+      'util_test.cc',
+      'test.cc',
     ],
     'conditions': [
       ['OS=="linux" or OS=="mac"', {
@@ -76,8 +87,18 @@
         'target_base': 'debug_stub',
       },
       'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
+    },
+    {
+      'target_name': 'gdb_rsp_test',
+      'type': 'executable',
+      'sources': [
+        '<@(test_sources)',
+      ],
+      'dependencies': [
+        'debug_stub',
+      ]
     },
   ],
   'conditions': [
@@ -92,8 +113,23 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
+        },
+        {
+          'target_name': 'gdb_rsp_test64',
+          'type': 'executable',
+          'sources': [
+            '<@(test_sources)',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+          'dependencies': [
+            'debug_stub64',
+          ]
         },
       ],
     }],

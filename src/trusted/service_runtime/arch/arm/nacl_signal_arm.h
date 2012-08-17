@@ -15,7 +15,7 @@
 
 /*
  * Architecture specific context object.  Register order matches that
- * found in src/trusted/gdb_rsp/abi.cc, which allows us to use an
+ * found in src/trusted/debug_stub/abi.cc, which allows us to use an
  * abi context (GDB ordered context), and a signal context interchangably.
  * In addition, we use common names for the stack and program counter to
  * allow functions which use them to avoid conditional compilation.

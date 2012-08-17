@@ -12,9 +12,9 @@
 #include <string>
 #include <sstream>
 
-#include "native_client/src/trusted/gdb_rsp/session.h"
-#include "native_client/src/trusted/gdb_rsp/test.h"
-#include "native_client/src/trusted/port/platform.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
+#include "native_client/src/trusted/debug_stub/session.h"
+#include "native_client/src/trusted/debug_stub/test.h"
 
 using gdb_rsp::Session;
 using gdb_rsp::Packet;

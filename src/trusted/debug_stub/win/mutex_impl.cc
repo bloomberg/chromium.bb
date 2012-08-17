@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <exception>
 
-#include "native_client/src/trusted/port/mutex.h"
+#include "native_client/src/trusted/debug_stub/mutex.h"
 
 /*
  * Define the IMutex interface to use the NaCl version.

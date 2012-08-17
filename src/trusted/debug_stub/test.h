@@ -8,14 +8,13 @@
 
 #include <vector>
 
-#include "native_client/src/trusted/port/platform.h"
-#include "native_client/src/trusted/port/transport.h"
-
-#include "native_client/src/trusted/gdb_rsp/abi.h"
-#include "native_client/src/trusted/gdb_rsp/packet.h"
-#include "native_client/src/trusted/gdb_rsp/session.h"
-#include "native_client/src/trusted/gdb_rsp/target.h"
-#include "native_client/src/trusted/gdb_rsp/util.h"
+#include "native_client/src/trusted/debug_stub/abi.h"
+#include "native_client/src/trusted/debug_stub/packet.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
+#include "native_client/src/trusted/debug_stub/session.h"
+#include "native_client/src/trusted/debug_stub/target.h"
+#include "native_client/src/trusted/debug_stub/transport.h"
+#include "native_client/src/trusted/debug_stub/util.h"
 
 typedef void (*PacketFunc_t)(void *ctx,
                              gdb_rsp::Packet *wr,

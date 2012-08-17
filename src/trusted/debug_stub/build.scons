@@ -3,20 +3,20 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-# This file needs to be in sync with $MAIN_DIR/src/third_party/ppapi/ppapi.gyp
-# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
-
 Import('env')
 
 debug_sources = [
+  'abi.cc',
   'debug_stub.cc',
+  'nacl_debug.cc',
+  'packet.cc',
+  'session.cc',
+  'target.cc',
   'thread_common.cc',
   'transport_common.cc',
+  'util.cc',
   ]
 
-# TODO(noelallen)
-# Still need to add Linux and Mac implementation.  Move "common" to
-# above section once their dependancies are satisfied.
 if env.Bit('windows'):
   debug_sources += [
     'win/debug_stub_win.cc',
@@ -32,12 +32,19 @@ else:
     'posix/thread_impl.cc',
   ]
 
+rsp_test_sources = [
+  'abi_test.cc',
+  'packet_test.cc',
+  'session_test.cc',
+  'util_test.cc',
+  'test.cc'
+  ]
+
 
 env.DualLibrary('debug_stub', debug_sources)
 
-# nacl_debug.cc currently cannot be put in the 'debug_stub' library
-# because that creates a circular dependency between 'debug_stub' and
-# 'gdb_rsp', which fails when linking sel_ldr because Scons does not
-# use "-Wl,--start-group" for linking.  We work around this by putting
-# nacl_debug.cc in a separate library.
-env.DualLibrary('debug_stub_init', ['nacl_debug.cc'])
+gdb_rsp_test_exe = env.ComponentProgram(
+    'gdb_rsp_unittest', rsp_test_sources, EXTRA_LIBS=['debug_stub'])
+
+node = env.CommandTest('gdb_rsp_unittest.out', command=[gdb_rsp_test_exe])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_gdb_rsp_tests')

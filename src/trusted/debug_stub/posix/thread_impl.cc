@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/port/thread.h"
+#include "native_client/src/trusted/debug_stub/thread.h"
 
 /*
  * Define the OS specific portions of IThread interface.

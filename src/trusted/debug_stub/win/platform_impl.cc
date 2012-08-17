@@ -12,8 +12,8 @@
 #include <exception>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/gdb_rsp/abi.h"
-#include "native_client/src/trusted/port/platform.h"
+#include "native_client/src/trusted/debug_stub/abi.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
 
 /*
  * Define the OS specific portions of IPlatform interface.

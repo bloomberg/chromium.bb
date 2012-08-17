@@ -32,6 +32,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'gio',
         'validators',
         ],
+    'debug_stub': [
+        'sel',
+        ],
     }
 
 

@@ -10,16 +10,13 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-
-#include "native_client/src/trusted/gdb_rsp/abi.h"
-#include "native_client/src/trusted/gdb_rsp/packet.h"
-#include "native_client/src/trusted/gdb_rsp/target.h"
-#include "native_client/src/trusted/gdb_rsp/session.h"
-#include "native_client/src/trusted/gdb_rsp/util.h"
-
-#include "native_client/src/trusted/port/platform.h"
-#include "native_client/src/trusted/port/thread.h"
-
+#include "native_client/src/trusted/debug_stub/abi.h"
+#include "native_client/src/trusted/debug_stub/packet.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
+#include "native_client/src/trusted/debug_stub/session.h"
+#include "native_client/src/trusted/debug_stub/target.h"
+#include "native_client/src/trusted/debug_stub/thread.h"
+#include "native_client/src/trusted/debug_stub/util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"

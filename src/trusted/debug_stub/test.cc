@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/trusted/gdb_rsp/test.h"
-#include "native_client/src/trusted/port/platform.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
+#include "native_client/src/trusted/debug_stub/test.h"
 
 //  Mock portability objects
 namespace port {

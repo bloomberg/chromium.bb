@@ -12,9 +12,9 @@
 #include <string>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/gdb_rsp/packet.h"
-#include "native_client/src/trusted/gdb_rsp/util.h"
-#include "native_client/src/trusted/port/platform.h"
+#include "native_client/src/trusted/debug_stub/packet.h"
+#include "native_client/src/trusted/debug_stub/util.h"
+#include "native_client/src/trusted/debug_stub/platform.h"
 
 using std::string;
 using port::IPlatform;
