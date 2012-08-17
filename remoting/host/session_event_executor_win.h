@@ -24,8 +24,9 @@ class ChannelProxy;
 
 namespace remoting {
 
-class SessionEventExecutorWin : public EventExecutor,
-                                public IPC::Listener {
+class SasInjector;
+
+class SessionEventExecutorWin : public EventExecutor {
  public:
   SessionEventExecutorWin(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -46,9 +47,6 @@ class SessionEventExecutorWin : public EventExecutor,
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
-  // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
  private:
   // Switches to the desktop receiving a user input if different from
   // the current one.
@@ -61,8 +59,7 @@ class SessionEventExecutorWin : public EventExecutor,
 
   ScopedThreadDesktop desktop_;
 
-  // The Chromoting IPC channel connecting the host with the service.
-  scoped_ptr<IPC::ChannelProxy> chromoting_channel_;
+  scoped_ptr<SasInjector> sas_injector_;
 
   // Keys currently pressed by the client, used to detect Ctrl-Alt-Del.
   std::set<uint32> pressed_keys_;

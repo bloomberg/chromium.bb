@@ -8,10 +8,3 @@
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ChromotingMsgStart
-
-//-----------------------------------------------------------------------------
-// The Chrmomoting session messages
-
-// Asks the service to send the Secure Attention Sequence (SAS) to the current
-// console session.
-IPC_MESSAGE_CONTROL0(ChromotingHostMsg_SendSasToConsole)

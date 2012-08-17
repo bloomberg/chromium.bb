@@ -14,14 +14,11 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/sas_injector.h"
 #include "remoting/host/win/desktop.h"
-#include "remoting/host/win/scoped_thread_desktop.h"
 #include "remoting/proto/event.pb.h"
 
 namespace {
-
-// The command line switch specifying the name of the Chromoting IPC channel.
-const char kProcessChannelId[] = "chromoting-ipc";
 
 const uint32 kUsbLeftControl =  0x0700e0;
 const uint32 kUsbRightControl = 0x0700e4;
@@ -36,33 +33,6 @@ bool CheckCtrlAndAltArePressed(const std::set<uint32>& pressed_keys) {
     pressed_keys.count(kUsbRightAlt);
   return ctrl_keys != 0 && alt_keys != 0 &&
     (ctrl_keys + alt_keys == pressed_keys.size());
-}
-
-// Emulates Secure Attention Sequence (Ctrl+Alt+Del) by switching to
-// the Winlogon desktop and injecting Ctrl+Alt+Del as a hot key.
-// N.B. Windows XP/W2K3 only.
-void EmulateSecureAttentionSequence() {
-  const wchar_t kWinlogonDesktopName[] = L"Winlogon";
-  const wchar_t kSasWindowClassName[] = L"SAS window class";
-  const wchar_t kSasWindowTitle[] = L"SAS window";
-
-  scoped_ptr<remoting::Desktop> winlogon_desktop(
-      remoting::Desktop::GetDesktop(kWinlogonDesktopName));
-  if (!winlogon_desktop.get())
-    return;
-
-  remoting::ScopedThreadDesktop desktop;
-  if (!desktop.SetThreadDesktop(winlogon_desktop.Pass()))
-    return;
-
-  HWND window = FindWindow(kSasWindowClassName, kSasWindowTitle);
-  if (!window)
-    return;
-
-  PostMessage(window,
-              WM_HOTKEY,
-              0,
-              MAKELONG(MOD_ALT | MOD_CONTROL, VK_DELETE));
 }
 
 } // namespace
@@ -85,16 +55,6 @@ SessionEventExecutorWin::SessionEventExecutorWin(
   // |weak_ptr_| and |weak_ptr_factory_| share a ThreadChecker, so the
   // following line affects both of them.
   weak_ptr_factory_.DetachFromThread();
-
-  std::string channel_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kProcessChannelId);
-
-  // Connect to the Chromoting IPC channel if the name was passed in the command
-  // line.
-  if (!channel_name.empty()) {
-    chromoting_channel_.reset(new IPC::ChannelProxy(
-        channel_name, IPC::Channel::MODE_CLIENT, this, io_task_runner));
-  }
 }
 
 SessionEventExecutorWin::~SessionEventExecutorWin() {
@@ -157,11 +117,9 @@ void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
           CheckCtrlAndAltArePressed(pressed_keys_)) {
         VLOG(3) << "Sending Secure Attention Sequence to console";
 
-        if (base::win::GetVersion() == base::win::VERSION_XP) {
-          EmulateSecureAttentionSequence();
-        } else if (chromoting_channel_.get()) {
-          chromoting_channel_->Send(new ChromotingHostMsg_SendSasToConsole());
-        }
+        if (sas_injector_.get() == NULL)
+          sas_injector_ = SasInjector::Create();
+        sas_injector_->InjectSas();
       }
 
       pressed_keys_.insert(event.usb_keycode());
@@ -185,10 +143,6 @@ void SessionEventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
 
   SwitchToInputDesktop();
   nested_executor_->InjectMouseEvent(event);
-}
-
-bool SessionEventExecutorWin::OnMessageReceived(const IPC::Message& message) {
-  return false;
 }
 
 void SessionEventExecutorWin::SwitchToInputDesktop() {

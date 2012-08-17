@@ -30,7 +30,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/chromoting_messages.h"
-#include "remoting/host/sas_injector.h"
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/win/wts_console_monitor.h"
 
@@ -207,13 +206,7 @@ void WtsSessionProcessLauncher::OnChannelConnected() {
 bool WtsSessionProcessLauncher::OnMessageReceived(const IPC::Message& message) {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
 
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WtsSessionProcessLauncher, message)
-      IPC_MESSAGE_HANDLER(ChromotingHostMsg_SendSasToConsole,
-                          OnSendSasToConsole)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  return false;
 }
 
 void WtsSessionProcessLauncher::OnSessionAttached(uint32 session_id) {
@@ -438,20 +431,6 @@ void WtsSessionProcessLauncher::OnLauncherStopped() {
     // Try to launch the worker process.
     timer_.Start(FROM_HERE, launch_backoff_,
                  this, &WtsSessionProcessLauncher::LaunchProcess);
-  }
-}
-
-void WtsSessionProcessLauncher::OnSendSasToConsole() {
-  DCHECK(main_message_loop_->BelongsToCurrentThread());
-
-  if (attached_) {
-    if (sas_injector_.get() == NULL) {
-      sas_injector_ = SasInjector::Create();
-    }
-
-    if (sas_injector_.get() != NULL) {
-      sas_injector_->InjectSas();
-    }
   }
 }
 

@@ -32,7 +32,6 @@ class Message;
 
 namespace remoting {
 
-class SasInjector;
 class WtsConsoleMonitor;
 
 class WtsSessionProcessLauncher
@@ -99,10 +98,6 @@ class WtsSessionProcessLauncher
   // Called when the launcher reports the process to be stopped.
   void OnLauncherStopped();
 
-  // Sends the Secure Attention Sequence to the session represented by
-  // |session_token_|.
-  void OnSendSasToConsole();
-
   // |true| if this object is currently attached to the console session.
   bool attached_;
 
@@ -146,8 +141,6 @@ class WtsSessionProcessLauncher
 
   // The token to be used to launch a process in a different session.
   base::win::ScopedHandle session_token_;
-
-  scoped_ptr<SasInjector> sas_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(WtsSessionProcessLauncher);
 };
