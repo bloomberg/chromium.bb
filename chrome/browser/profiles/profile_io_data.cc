@@ -64,6 +64,10 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/url_request.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/managed_mode.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
@@ -479,6 +483,11 @@ void ProfileIOData::LazyInitialize() const {
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params_->extension_info_map,
         url_blacklist_manager_.get(),
+#if !defined(OS_ANDROID)
+        ManagedMode::GetURLFilter(),
+#else
+        NULL,
+#endif
         profile_params_->profile,
         profile_params_->cookie_settings,
         &enable_referrers_,

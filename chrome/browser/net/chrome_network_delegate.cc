@@ -33,6 +33,10 @@
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/managed_mode_url_filter.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
 #endif
@@ -129,6 +133,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     extensions::EventRouterForwarder* event_router,
     ExtensionInfoMap* extension_info_map,
     const policy::URLBlacklistManager* url_blacklist_manager,
+    const ManagedModeURLFilter* managed_mode_url_filter,
     void* profile,
     CookieSettings* cookie_settings,
     BooleanPrefMember* enable_referrers,
@@ -139,6 +144,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       extension_info_map_(extension_info_map),
       enable_referrers_(enable_referrers),
       url_blacklist_manager_(url_blacklist_manager),
+      managed_mode_url_filter_(managed_mode_url_filter),
       cache_stats_(cache_stats) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
@@ -181,6 +187,14 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
         net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
         net::NetLog::StringCallback("url",
                                     &request->url().possibly_invalid_spec()));
+    return net::ERR_NETWORK_ACCESS_DENIED;
+  }
+#endif
+
+#if !defined(OS_ANDROID)
+  if (managed_mode_url_filter_ &&
+      !managed_mode_url_filter_->IsURLWhitelisted(request->url())) {
+    // Block for now.
     return net::ERR_NETWORK_ACCESS_DENIED;
   }
 #endif

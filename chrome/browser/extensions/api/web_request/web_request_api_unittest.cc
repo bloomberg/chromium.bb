@@ -128,7 +128,7 @@ class ExtensionWebRequestTest : public testing::Test {
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, NULL, &profile_,
+        event_router_.get(), NULL, NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
         NULL));
     context_.reset(new TestURLRequestContext(true));
@@ -443,7 +443,7 @@ class ExtensionWebRequestHeaderModificationTest :
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, NULL, &profile_,
+        event_router_.get(), NULL, NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
         NULL));
     context_.reset(new TestURLRequestContext(true));

@@ -12,6 +12,7 @@
 
 class CookieSettings;
 class ExtensionInfoMap;
+class ManagedModeURLFilter;
 class PrefService;
 template<class T> class PrefMember;
 
@@ -43,6 +44,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       extensions::EventRouterForwarder* event_router,
       ExtensionInfoMap* extension_info_map,
       const policy::URLBlacklistManager* url_blacklist_manager,
+      const ManagedModeURLFilter* managed_mode_url_filter,
       void* profile,
       CookieSettings* cookie_settings,
       BooleanPrefMember* enable_referrers,
@@ -120,6 +122,10 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;
+
+  // Weak pointer. The owner of this object needs to make sure that the
+  // |managed_mode_url_filter_| outlives it.
+  const ManagedModeURLFilter* managed_mode_url_filter_;
 
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;

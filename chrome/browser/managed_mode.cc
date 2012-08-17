@@ -6,24 +6,61 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/managed_mode_url_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
+
+// A bridge from ManagedMode (which lives on the UI thread) to
+// ManagedModeURLFilter (which lives on the IO thread).
+class ManagedMode::URLFilterContext {
+ public:
+  URLFilterContext() {}
+  ~URLFilterContext() {}
+
+  const ManagedModeURLFilter* url_filter() const {
+    return &url_filter_;
+  }
+
+  void SetActive(bool in_managed_mode) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Because ManagedMode is a singleton, we can pass the pointer to
+    // |url_filter_| unretained.
+    BrowserThread::PostTask(BrowserThread::IO,
+                            FROM_HERE,
+                            base::Bind(
+                                &ManagedModeURLFilter::SetActive,
+                                base::Unretained(&url_filter_),
+                                in_managed_mode));
+  }
+
+  void ShutdownOnUIThread() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+  }
+
+ private:
+  ManagedModeURLFilter url_filter_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
+};
+
 // static
 ManagedMode* ManagedMode::GetInstance() {
-  return Singleton<ManagedMode>::get();
+  return Singleton<ManagedMode, LeakySingletonTraits<ManagedMode> >::get();
 }
 
 // static
@@ -133,6 +170,16 @@ void ManagedMode::LeaveManagedModeImpl() {
     SetInManagedMode(NULL);
 }
 
+// static
+const ManagedModeURLFilter* ManagedMode::GetURLFilter() {
+  return GetInstance()->GetURLFilterImpl();
+}
+
+const ManagedModeURLFilter* ManagedMode::GetURLFilterImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return url_filter_context_->url_filter();
+}
+
 std::string ManagedMode::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
 #ifdef NDEBUG
@@ -188,14 +235,18 @@ void ManagedMode::OnBrowserRemoved(Browser* browser) {
     FinalizeEnter(true);
 }
 
-ManagedMode::ManagedMode() : managed_profile_(NULL) {
+ManagedMode::ManagedMode() : managed_profile_(NULL),
+                             url_filter_context_(new URLFilterContext) {
   BrowserList::AddObserver(this);
 }
 
 ManagedMode::~ManagedMode() {
+  // This class usually is a leaky singleton, so this destructor shouldn't be
+  // called. We still do some cleanup, in case we're owned by a unit test.
   BrowserList::RemoveObserver(this);
   DCHECK_EQ(0u, callbacks_.size());
   DCHECK_EQ(0u, browsers_to_close_.size());
+  url_filter_context_.release()->ShutdownOnUIThread();
 }
 
 void ManagedMode::Observe(int type,
@@ -216,10 +267,14 @@ void ManagedMode::Observe(int type,
         FinalizeEnter(false);
       return;
     }
-    default: {
-      NOTREACHED();
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      if (managed_profile_)
+        UpdateWhitelist();
       break;
     }
+    default:
+      NOTREACHED();
   }
 }
 
@@ -249,21 +304,39 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
   // Register the ManagementPolicy::Provider before changing the pref when
   // setting it, and unregister it after changing the pref when clearing it,
   // so pref observers see the correct ManagedMode state.
-  if (newly_managed_profile) {
+  bool in_managed_mode = !!newly_managed_profile;
+  if (in_managed_mode) {
     DCHECK(!managed_profile_ || managed_profile_ == newly_managed_profile);
     extensions::ExtensionSystem::Get(
         newly_managed_profile)->management_policy()->RegisterProvider(this);
-    g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode, true);
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                   content::Source<Profile>(newly_managed_profile));
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   content::Source<Profile>(newly_managed_profile));
   } else {
     extensions::ExtensionSystem::Get(
         managed_profile_)->management_policy()->UnregisterProvider(this);
-    g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode, false);
+    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                      content::Source<Profile>(managed_profile_));
+    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                      content::Source<Profile>(managed_profile_));
   }
+
   managed_profile_ = newly_managed_profile;
+  url_filter_context_->SetActive(in_managed_mode);
+  g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode,
+                                               in_managed_mode);
+  if (in_managed_mode)
+    UpdateWhitelist();
 
   // This causes the avatar and the profile menu to get updated.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllBrowserContextsAndSources(),
       content::NotificationService::NoDetails());
+}
+
+void ManagedMode::UpdateWhitelist() {
+  DCHECK(managed_profile_);
+  // TODO(bauerb): Update URL filter with whitelist.
 }
