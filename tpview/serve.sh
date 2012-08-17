@@ -6,5 +6,6 @@
 
 PORT=9915
 
+cd "$(dirname "$0")"
 echo "http://$(hostname):${PORT}/view.html"
 exec python -m SimpleHTTPServer $PORT
