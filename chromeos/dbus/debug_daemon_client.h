@@ -96,6 +96,19 @@ class CHROMEOS_EXPORT DebugDaemonClient {
   // Returns an empty SystemTracingCallback that does nothing.
   static StopSystemTracingCallback EmptyStopSystemTracingCallback();
 
+  // Called once TestICMP() is complete. Takes two parameters:
+  // - succeeded: information was obtained successfully.
+  // - status: information about ICMP connectivity to a specified host as json.
+  //   For details please refer to
+  //   https://gerrit.chromium.org/gerrit/#/c/30310/2/src/helpers/icmp.cc
+  typedef base::Callback<void(bool succeeded, const std::string& status)>
+      TestICMPCallback;
+
+  // Tests ICMP connectivity to a specified host. The |ip_address| contains the
+  // IPv4 or IPv6 address of the host, for example "8.8.8.8".
+  virtual void TestICMP(const std::string& ip_address,
+                        const TestICMPCallback& callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static DebugDaemonClient* Create(DBusClientImplementationType type,

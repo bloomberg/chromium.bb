@@ -27,6 +27,7 @@ class MockDebugDaemonClient : public DebugDaemonClient {
   MOCK_METHOD1(RequestStopSystemTracing,
       bool(const StopSystemTracingCallback&));
   MOCK_METHOD0(StartSystemTracing, void());
+  MOCK_METHOD2(TestICMP, void(const std::string&, const TestICMPCallback&));
 };
 
 }  // namespace chromeos

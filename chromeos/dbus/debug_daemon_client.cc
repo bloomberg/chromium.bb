@@ -306,6 +306,20 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     return true;
   }
 
+  virtual void TestICMP(const std::string& ip_address,
+                        const TestICMPCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kTestICMP);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(ip_address);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnTestICMP,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
  private:
   // Called to check descriptor validity on a thread where i/o is permitted.
   static void CheckValidity(dbus::FileDescriptor* file_descriptor) {
@@ -458,6 +472,14 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     // NB: requester is signaled when i/o completes
   }
 
+  void OnTestICMP(const TestICMPCallback& callback, dbus::Response* response) {
+    std::string status;
+    if (response && dbus::MessageReader(response).PopString(&status))
+      callback.Run(true, status);
+    else
+      callback.Run(false, "");
+  }
+
   // Called when pipe i/o completes; pass data on and delete the instance.
   void OnIOComplete() {
     callback_.Run(base::RefCountedString::TakeString(pipe_reader_->data()));
@@ -511,6 +533,11 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
   virtual void GetAllLogs(const GetAllLogsCallback& callback) OVERRIDE {
     std::map<std::string, std::string> empty;
     callback.Run(false, empty);
+  }
+
+  virtual void TestICMP(const std::string& ip_address,
+                        const TestICMPCallback& callback) OVERRIDE {
+    callback.Run(false, "");
   }
 };
 
