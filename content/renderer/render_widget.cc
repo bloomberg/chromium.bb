@@ -109,7 +109,8 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       invalidation_task_posted_(false),
       screen_info_(screen_info),
       device_scale_factor_(1),
-      throttle_input_events_(true) {
+      throttle_input_events_(true),
+      next_smooth_scroll_gesture_id_(0) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -247,6 +248,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
+    IPC_MESSAGE_HANDLER(ViewMsg_SmoothScrollCompleted,
+                        OnMsgSmoothScrollCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_SetDeviceScaleFactor, OnSetDeviceScaleFactor)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
@@ -1531,6 +1534,14 @@ void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
   }
 }
 
+void RenderWidget::OnMsgSmoothScrollCompleted(int gesture_id) {
+  PendingSmoothScrollGestureMap::iterator it =
+      pending_smooth_scroll_gestures_.find(gesture_id);
+  DCHECK(it != pending_smooth_scroll_gestures_.end());
+  it->second.Run();
+  pending_smooth_scroll_gestures_.erase(it);
+}
+
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
@@ -1796,8 +1807,14 @@ void RenderWidget::GetRenderingStats(WebKit::WebRenderingStats& stats) const {
   stats.totalPaintTimeInSeconds += software_stats_.totalPaintTimeInSeconds;
 }
 
-void RenderWidget::BeginSmoothScroll(bool down, bool scroll_far) {
-  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, down, scroll_far));
+void RenderWidget::BeginSmoothScroll(
+    bool down,
+    bool scroll_far,
+    const SmoothScrollCompletionCallback& callback) {
+  DCHECK(!callback.is_null());
+  int id = next_smooth_scroll_gesture_id_++;
+  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, id, down, scroll_far));
+  pending_smooth_scroll_gestures_.insert(std::make_pair(id, callback));
 }
 
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {

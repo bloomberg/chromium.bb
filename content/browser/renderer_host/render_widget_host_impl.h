@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 
 #include <deque>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -515,7 +516,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
                           bool processed);
-  void OnMsgBeginSmoothScroll(bool scroll_down, bool scroll_far);
+  void OnMsgBeginSmoothScroll(int gesture_id,
+                              bool scroll_down,
+                              bool scroll_far);
   void OnMsgSelectRangeAck();
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
@@ -791,7 +794,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
-  scoped_ptr<SmoothScrollGesture> active_smooth_scroll_gesture_;
+  typedef std::map<int, scoped_refptr<SmoothScrollGesture> >
+      SmoothScrollGestureMap;
+  SmoothScrollGestureMap active_smooth_scroll_gestures_;
 
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
 

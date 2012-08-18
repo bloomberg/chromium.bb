@@ -891,6 +891,10 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SwapBuffers_ACK)
 //    to a keyboard shortcut of the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
 
+// Tells the render widget that a smooth scroll completed.
+IPC_MESSAGE_ROUTED1(ViewMsg_SmoothScrollCompleted,
+                    int /* gesture_id */)
+
 // This message notifies the renderer that the next key event is bound to one
 // or more pre-defined edit commands. If the next key event is not handled
 // by webkit, the specified edit commands shall be executed against current
@@ -1596,7 +1600,8 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_HandleInputEvent_ACK,
                     WebKit::WebInputEvent::Type,
                     bool /* processed */)
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_BeginSmoothScroll,
+IPC_MESSAGE_ROUTED3(ViewHostMsg_BeginSmoothScroll,
+                    int /* gesture_id */,
                     bool /* scroll_down */,
                     bool /* scroll_far */)
 

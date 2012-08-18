@@ -158,6 +158,7 @@ class BasicMouseWheelSmoothScrollGesture
   }
 
  private:
+  virtual ~BasicMouseWheelSmoothScrollGesture() { }
   base::TimeTicks start_time_;
   bool scroll_down_;
   bool scroll_far_;

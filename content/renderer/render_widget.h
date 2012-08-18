@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_H_
 
 #include <deque>
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -159,9 +160,15 @@ class CONTENT_EXPORT RenderWidget
   // as it blocks on the compositor thread.
   void GetRenderingStats(WebKit::WebRenderingStats&) const;
 
+  // Callback for use with BeginSmoothScroll.
+  typedef base::Callback<void()> SmoothScrollCompletionCallback;
+
   // Directs the host to begin a smooth scroll. This scroll should have the same
-  // performance characteristics as a user-initiated scroll.
-  void BeginSmoothScroll(bool scroll_down, bool scroll_far);
+  // performance characteristics as a user-initiated scroll. Returns an ID of
+  // the scroll gesture.
+  void BeginSmoothScroll(bool scroll_down,
+                         bool scroll_far,
+                         const SmoothScrollCompletionCallback& callback);
 
   // Close the underlying WebWidget.
   virtual void Close();
@@ -265,6 +272,7 @@ class CONTENT_EXPORT RenderWidget
                         const gfx::Size& page_size,
                         const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
+  void OnMsgSmoothScrollCompleted(int gesture_id);
   virtual void OnSetDeviceScaleFactor(float device_scale_factor);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
@@ -577,6 +585,12 @@ class CONTENT_EXPORT RenderWidget
 
   // Specifies whether input event throttling is enabled for this widget.
   bool throttle_input_events_;
+
+  // State associated with the BeginSmoothScroll synthetic scrolling function.
+  int next_smooth_scroll_gesture_id_;
+  typedef std::map<int, SmoothScrollCompletionCallback>
+      PendingSmoothScrollGestureMap;
+  PendingSmoothScrollGestureMap pending_smooth_scroll_gestures_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

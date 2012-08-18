@@ -1575,16 +1575,18 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
 }
 
 void RenderWidgetHostImpl::OnMsgBeginSmoothScroll(
-    bool scroll_down, bool scroll_far) {
+    int gesture_id, bool scroll_down, bool scroll_far) {
   if (!view_)
     return;
-  active_smooth_scroll_gesture_.reset(
-      view_->CreateSmoothScrollGesture(scroll_down, scroll_far));
+  active_smooth_scroll_gestures_.insert(
+      std::make_pair(gesture_id,
+                     view_->CreateSmoothScrollGesture(
+                         scroll_down, scroll_far)));
   TickActiveSmoothScrollGesture();
 }
 
 void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
-  if (!active_smooth_scroll_gesture_.get())
+  if (active_smooth_scroll_gestures_.size() == 0)
     return;
 
   TimeTicks now = TimeTicks::HighResNow();
@@ -1596,11 +1598,27 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kSyntheticScrollMessageIntervalMs));
 
+  // Separate ticking of gestures from sending their completion messages.
+  std::vector<int> ids_that_are_done;
+  for (SmoothScrollGestureMap::iterator it =
+           active_smooth_scroll_gestures_.begin();
+       it != active_smooth_scroll_gestures_.end();
+       ++it) {
 
-  bool active = active_smooth_scroll_gesture_->ForwardInputEvents(now, this);
-  if (!active) {
-    active_smooth_scroll_gesture_.reset();
-    // TODO(nduca): send "smooth scroll done" event to RenderWidget.
+    bool active = it->second->ForwardInputEvents(now, this);
+    if (!active)
+      ids_that_are_done.push_back(it->first);
+  }
+
+  // Delete completed gestures and send their completion event.
+  for(size_t i = 0; i < ids_that_are_done.size(); i++) {
+    int id = ids_that_are_done[i];
+    SmoothScrollGestureMap::iterator it =
+        active_smooth_scroll_gestures_.find(id);
+    DCHECK(it != active_smooth_scroll_gestures_.end());
+    active_smooth_scroll_gestures_.erase(it);
+
+    Send(new ViewMsg_SmoothScrollCompleted(routing_id_, id));
   }
 }
 
