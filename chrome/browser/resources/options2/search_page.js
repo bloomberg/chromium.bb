@@ -295,20 +295,9 @@ cr.define('options', function() {
       this.unhighlightMatches_();
       this.removeSearchBubbles_();
 
-      // Generate search text by applying lowercase and escaping any characters
-      // that would be problematic for regular expressions.
-      var searchText =
-          text.toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-
-      // Generate a regular expression and replace string for hilighting
-      // search terms.
-      var regEx = new RegExp('(' + searchText + ')', 'ig');
-      var replaceString = '<span class="search-highlighted">$1</span>';
-
-      var page, length;
       var pagesToSearch = this.getSearchablePages_();
       for (var key in pagesToSearch) {
-        page = pagesToSearch[key];
+        var page = pagesToSearch[key];
         var elements = page.pageDiv.querySelectorAll('section');
         for (var i = 0, node; node = elements[i]; i++) {
           node.classList.add('search-hidden');
@@ -317,14 +306,21 @@ cr.define('options', function() {
 
       var bubbleControls = [];
 
+      // Generate search text by applying lowercase and escaping any characters
+      // that would be problematic for regular expressions.
+      var searchText =
+          text.toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      // Generate a regular expression for hilighting search terms.
+      var regExp = new RegExp('(' + searchText + ')', 'ig');
+
       if (searchText.length) {
         // Search all top-level sections for anchored string matches.
         for (var key in pagesToSearch) {
-          page = pagesToSearch[key];
+          var page = pagesToSearch[key];
           var elements =
               page.pageDiv.querySelectorAll('section');
           for (var i = 0, node; node = elements[i]; i++) {
-            if (this.performReplace_(regEx, replaceString, node)) {
+            if (this.highlightMatches_(regExp, node)) {
               node.classList.remove('search-hidden');
               if (!node.hidden)
                 foundMatches = true;
@@ -337,8 +333,8 @@ cr.define('options', function() {
         var subPagesToSearch = this.getSearchableSubPages_();
         var control, node;
         for (var key in subPagesToSearch) {
-          page = subPagesToSearch[key];
-          if (this.performReplace_(regEx, replaceString, page.pageDiv)) {
+          var page = subPagesToSearch[key];
+          if (this.highlightMatches_(regExp, page.pageDiv)) {
             this.revealAssociatedSections_(page);
 
             bubbleControls =
@@ -390,14 +386,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Performs a string replacement based on a regex and replace string.
-     * @param {RegEx} regex A regular expression for finding search matches.
-     * @param {String} replace A string to apply the replace operation.
-     * @param {Element} element An HTML container element.
+     * Wraps matches in spans.
+     * @param {RegExp} regExp The search query (in regexp form).
+     * @param {Element} element An HTML container element to recursively search
+     *     within.
      * @return {boolean} true if the element was changed.
      * @private
      */
-    performReplace_: function(regex, replace, element) {
+    highlightMatches_: function(regExp, element) {
       var found = false;
       var div, child, tmp;
 
@@ -408,30 +404,26 @@ cr.define('options', function() {
                                              false);
       var node = walker.nextNode();
       while (node) {
+        var textContent = node.nodeValue;
         // Perform a search and replace on the text node value.
-        var newValue = node.nodeValue.replace(regex, replace);
-        if (newValue != node.nodeValue) {
-          // The text node has changed so that means we found at least one
-          // match.
+        var split = textContent.split(regExp);
+        if (split.length > 1) {
           found = true;
+          var nextNode = walker.nextNode();
+          var parentNode = node.parentNode;
+          parentNode.removeChild(node);
+          node = nextNode;
 
-          // Create a temporary div element and set the innerHTML to the new
-          // value.
-          div = document.createElement('div');
-          div.innerHTML = newValue;
-
-          // Insert all the child nodes of the temporary div element into the
-          // document, before the original node.
-          child = div.firstChild;
-          while (child = div.firstChild) {
-            node.parentNode.insertBefore(child, node);
+          for (var i = 0; i < split.length; ++i) {
+            if (i % 2 == 0) {
+              parentNode.appendChild(document.createTextNode(split[i]));
+            } else {
+              var span = document.createElement('span');
+              span.className = 'search-highlighted';
+              span.textContent = split[i];
+              parentNode.appendChild(span);
+            }
           }
-
-          // Delete the old text node and advance the walker to the next
-          // node.
-          tmp = node;
-          node = walker.nextNode();
-          tmp.parentNode.removeChild(tmp);
         } else {
           node = walker.nextNode();
         }
