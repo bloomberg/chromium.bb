@@ -227,7 +227,7 @@ class MetricsService
   // generate the entropy source value if it has not been called before.
   int GetLowEntropySource();
 
-  // Returns the last entropy source that was returned by this service since
+  // Returns the first entropy source that was returned by this service since
   // start up, or NONE if neither was returned yet. This is exposed for testing
   // only.
   EntropySourceReturned entropy_source_returned() const {

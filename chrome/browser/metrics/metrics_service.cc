@@ -549,10 +549,14 @@ std::string MetricsService::GetEntropySource(bool reporting_will_be_enabled) {
   //  2) It makes the final entropy source resettable.
   std::string low_entropy_source = base::IntToString(GetLowEntropySource());
   if (reporting_will_be_enabled) {
-    entropy_source_returned_ = LAST_ENTROPY_HIGH;
+    if (entropy_source_returned_ == LAST_ENTROPY_NONE)
+      entropy_source_returned_ = LAST_ENTROPY_HIGH;
+    DCHECK_EQ(LAST_ENTROPY_HIGH, entropy_source_returned_);
     return client_id_ + low_entropy_source;
   }
-  entropy_source_returned_ = LAST_ENTROPY_LOW;
+  if (entropy_source_returned_ == LAST_ENTROPY_NONE)
+    entropy_source_returned_ = LAST_ENTROPY_LOW;
+  DCHECK_EQ(LAST_ENTROPY_LOW, entropy_source_returned_);
   return low_entropy_source;
 }
 
