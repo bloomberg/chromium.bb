@@ -81,6 +81,16 @@ ChromotingHost::ChromotingHost(
   DCHECK(signal_strategy);
   DCHECK(desktop_environment_);
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  if (!desktop_environment_->audio_capturer()) {
+    // Disable audio by replacing our list of supported audio configurations
+    // with the NONE config.
+    protocol_config_->mutable_audio_configs()->clear();
+    protocol_config_->mutable_audio_configs()->push_back(
+        protocol::ChannelConfig(protocol::ChannelConfig::TRANSPORT_NONE,
+                                protocol::kDefaultStreamVersion,
+                                protocol::ChannelConfig::CODEC_VERBATIM));
+  }
 }
 
 ChromotingHost::~ChromotingHost() {
