@@ -104,6 +104,7 @@ struct InstanceInfo* FindInstance(PP_Instance instance) {
   while (cur) {
     if (cur->pp_instance == instance)
       return cur;
+    cur = cur->next;
   }
   return NULL;
 }
