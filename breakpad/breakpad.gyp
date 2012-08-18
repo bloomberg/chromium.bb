@@ -613,6 +613,14 @@
             '..',
             '.',
           ],
+          'conditions': [
+            [ 'clang == 1', {
+              'cflags': [
+                # See http://crbug.com/138571#c18
+                '-Wno-unused-value',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'linux_dumper_unittest_helper',
