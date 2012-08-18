@@ -492,35 +492,12 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
                        FALSE, 0);
   }
 
-  GtkWidget* show_content_settings_link = theme_service_->BuildChromeLinkButton(
-      l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_SHOW_PERMISSION_SETTINGS));
-  g_signal_connect(show_content_settings_link, "clicked",
-                   G_CALLBACK(OnPermissionsSettingsLinkClickedThunk), this);
-  GtkWidget* link_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(link_hbox), show_content_settings_link,
-                     FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(permissions_section_contents_), link_hbox,
-                     FALSE, FALSE, 0);
-
   gtk_widget_show_all(permissions_section_contents_);
 }
 
 void WebsiteSettingsPopupGtk::OnCookiesLinkClicked(GtkWidget* widget) {
   new CollectedCookiesGtk(GTK_WINDOW(parent_),
                           tab_contents_);
-  bubble_->Close();
-}
-
-void WebsiteSettingsPopupGtk::OnPermissionsSettingsLinkClicked(
-    GtkWidget* widget) {
-  browser_->OpenURL(OpenURLParams(
-      GURL(std::string(
-           chrome::kChromeUISettingsURL) + chrome::kContentSettingsSubPage),
-      content::Referrer(),
-      NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK,
-      false));
   bubble_->Close();
 }
 

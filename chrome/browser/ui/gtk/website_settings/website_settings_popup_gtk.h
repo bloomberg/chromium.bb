@@ -81,8 +81,6 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   // Callbacks for the link buttons.
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCookiesLinkClicked);
-  CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void,
-                       OnPermissionsSettingsLinkClicked);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnViewCertLinkClicked);
 
   // Parent window.
