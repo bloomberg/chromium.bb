@@ -93,12 +93,8 @@ bool PanelManager::UseBrowserlessPanels() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOldPanels))
     return false;
 
-  // http://crbug.com/143506
-  // TODO(jennb): Remove after channel check can be used.
-// return chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV;
-  // For now, use former flag to turn on browserless panels.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kBrowserlessPanels));
+  return chrome::VersionInfo::GetChannel() <=
+      chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
 
 PanelManager::PanelManager()
