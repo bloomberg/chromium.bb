@@ -73,7 +73,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
 #include "chrome/browser/ui/gtk/update_recommended_dialog.h"
-#include "chrome/browser/ui/gtk/website_settings_popup_gtk.h"
+#include "chrome/browser/ui/gtk/website_settings/website_settings_popup_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/page_info_bubble.h"

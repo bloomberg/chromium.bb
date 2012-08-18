@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_WEBSITE_SETTINGS_POPUP_GTK_H_
-#define CHROME_BROWSER_UI_GTK_WEBSITE_SETTINGS_POPUP_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_GTK_H_
+#define CHROME_BROWSER_UI_GTK_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_GTK_H_
 
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
+#include "chrome/browser/ui/gtk/website_settings/permission_selector_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
 class Browser;
 class GtkThemeService;
 class GURL;
+class PermissionSelector;
 class Profile;
 class TabContents;
 class WebsiteSettings;
@@ -26,6 +29,7 @@ struct SSLStatus;
 
 // GTK implementation of the website settings UI.
 class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
+                                public PermissionSelectorObserver,
                                 public BubbleDelegateGtk {
  public:
   // Creates a |WebsiteSettingsPopupGtk| and displays the UI. The |url|
@@ -54,6 +58,10 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
   virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
 
+  // PermissionSelectorObserver implementations.
+  virtual void OnPermissionChanged(PermissionSelector* selector) OVERRIDE;
+  virtual void OnComboboxShown() OVERRIDE;
+
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
@@ -66,9 +74,6 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // Removes all children of |container|.
   void ClearContainer(GtkWidget* container);
 
-  // Creates a label that contains the given |text| and has the given |width|.
-  GtkWidget* CreateTextLabel(const std::string& text, int width);
-
   // Creates a popup section and returns a virtual box that contains the
   // section content.
   GtkWidget* CreateSection(std::string section_title,
@@ -76,11 +81,8 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   // Callbacks for the link buttons.
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCookiesLinkClicked);
-  CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnPermissionChanged);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void,
                        OnPermissionsSettingsLinkClicked);
-  CHROMEGTK_CALLBACK_1(WebsiteSettingsPopupGtk, void, OnComboBoxShown,
-                       GParamSpec*);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnViewCertLinkClicked);
 
   // Parent window.
@@ -129,7 +131,11 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // |presenter_|. The |presenter_| handles these events and updates the UI.
   scoped_ptr<WebsiteSettings> presenter_;
 
+  // The permission selectors that allow the user to change individual
+  // permissions.
+  ScopedVector<PermissionSelector> selectors_;
+
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_WEBSITE_SETTINGS_POPUP_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_GTK_H_

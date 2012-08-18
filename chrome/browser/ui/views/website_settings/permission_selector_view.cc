@@ -320,10 +320,9 @@ void PermissionSelectorView::SelectionChanged() {
 
   // Update the menu button text to reflect the new setting.
   menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
-        menu_button_model_->current_setting(),
-        menu_button_model_->default_setting(),
-        content_settings::SETTING_SOURCE_USER));
-
+      menu_button_model_->current_setting(),
+      menu_button_model_->default_setting(),
+      content_settings::SETTING_SOURCE_USER));
 
   FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
                     observer_list_,
