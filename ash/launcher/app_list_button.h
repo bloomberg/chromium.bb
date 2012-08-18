@@ -19,6 +19,9 @@ class AppListButton : public views::ImageButton {
                 LauncherButtonHost* host);
   virtual ~AppListButton();
 
+  void StartLoadingAnimation();
+  void StopLoadingAnimation();
+
  protected:
   // View overrides:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -39,4 +42,4 @@ class AppListButton : public views::ImageButton {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_BUTTON_H_
+#endif  // ASH_LAUNCHER_APP_LIST_BUTTON_H_

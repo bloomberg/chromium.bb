@@ -182,6 +182,7 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual void LauncherItemChanged(int model_index,
                                    const ash::LauncherItem& old_item) OVERRIDE;
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
+  virtual void LauncherStatusChanged() OVERRIDE;
 
   // Overridden from LauncherButtonHost:
   virtual void PointerPressedOnButton(

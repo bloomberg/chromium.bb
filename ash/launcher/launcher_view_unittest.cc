@@ -536,9 +536,6 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
   item.status = ash::STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
-  item.status = ash::STATUS_IS_PENDING;
-  model_->Set(index, item);
-  ASSERT_EQ(internal::LauncherButton::STATE_PENDING, button->state());
 }
 
 // Confirm that item status changes are reflected in the buttons
@@ -559,9 +556,6 @@ TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
   item.status = ash::STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
-  item.status = ash::STATUS_IS_PENDING;
-  model_->Set(index, item);
-  ASSERT_EQ(internal::LauncherButton::STATE_PENDING, button->state());
 }
 
 TEST_F(LauncherViewTest, LauncherTooltipTest) {

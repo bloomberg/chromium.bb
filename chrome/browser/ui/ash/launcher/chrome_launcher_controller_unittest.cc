@@ -172,28 +172,6 @@ TEST_F(ChromeLauncherControllerTest, Policy) {
   EXPECT_FALSE(launcher_controller.IsAppPinned(extension3_->id()));
 }
 
-TEST_F(ChromeLauncherControllerTest, UnloadAndLoad) {
-  extension_service_->AddExtension(extension3_.get());
-  extension_service_->AddExtension(extension4_.get());
-
-  ChromeLauncherController launcher_controller(profile_.get(), &model_);
-  launcher_controller.Init();
-
-  EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
-  EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
-
-  extension_service_->UnloadExtension(extension3_->id(),
-                                      extension_misc::UNLOAD_REASON_UPDATE);
-  EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
-  EXPECT_EQ(ash::STATUS_IS_PENDING, model_.items()[1].status);
-
-  extension_service_->AddExtension(extension3_.get());
-  EXPECT_TRUE(launcher_controller.IsAppPinned(extension3_->id()));
-  EXPECT_EQ(ash::STATUS_CLOSED, model_.items()[1].status);
-
-  EXPECT_TRUE(launcher_controller.IsAppPinned(extension4_->id()));
-}
-
 TEST_F(ChromeLauncherControllerTest, UnpinWithUninstall) {
   extension_service_->AddExtension(extension3_.get());
   extension_service_->AddExtension(extension4_.get());

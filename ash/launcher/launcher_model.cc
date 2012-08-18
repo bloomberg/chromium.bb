@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_model_observer.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -37,7 +36,7 @@ bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
 
 }  // namespace
 
-LauncherModel::LauncherModel() : next_id_(1) {
+LauncherModel::LauncherModel() : next_id_(1), status_(STATUS_NORMAL) {
   LauncherItem app_list;
   app_list.type = TYPE_APP_LIST;
   app_list.is_incognito = false;
@@ -116,6 +115,15 @@ LauncherItems::const_iterator LauncherModel::ItemByID(int id) const {
       return i;
   }
   return items_.end();
+}
+
+void LauncherModel::SetStatus(Status status) {
+  if (status_ == status)
+    return;
+
+  status_ = status;
+  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
+                    LauncherStatusChanged());
 }
 
 void LauncherModel::AddObserver(LauncherModelObserver* observer) {

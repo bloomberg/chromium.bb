@@ -56,11 +56,6 @@ enum LauncherItemStatus {
   STATUS_ACTIVE,
   // A LauncherItem that needs user's attention.
   STATUS_ATTENTION,
-  // A LauncherItem that has pending operations.
-  //   e.g. A TYEE_APP_SHORTCUT item whose application is
-  //        being installed/upgraded.
-  // Note STATUS_PENDING is a macro in WinNT.h on Windows.
-  STATUS_IS_PENDING,
 };
 
 struct ASH_EXPORT LauncherItem {
