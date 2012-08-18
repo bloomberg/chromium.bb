@@ -5778,29 +5778,6 @@
    fun:_ZN15ExtensionAction13SetAppearanceEiNS_10AppearanceE
 }
 {
-   bug_143401_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK10extensions16SocketPermission*
-   fun:_ZN10extensions16APIPermissionSet*
-   ...
-   fun:_ZN10extensions*Permission*Test*
-}
-{
-   bug_143401_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIN10extensions20SocketPermissionDataEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeIN10extensions20SocketPermissionDataES1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIN10extensions20SocketPermissionDataES1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE14_M_create_nodeERKS1_
-   fun:_ZNSt8_Rb_treeIN10extensions20SocketPermissionDataES1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE10_M_insert_EPKSt18_Rb_tree_node_baseSA_RKS1_
-   ...
-   fun:_ZNK10extensions16SocketPermission*
-   fun:_ZN10extensions16APIPermissionSet*
-   ...
-   fun:_ZN10extensions*Permission*Test*
-}
-{
    bug_143431
    Memcheck:Leak
    fun:_Znw*
