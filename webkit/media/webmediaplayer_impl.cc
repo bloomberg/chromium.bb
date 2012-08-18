@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/audio/null_audio_sink.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
@@ -90,6 +91,10 @@ COMPILE_ASSERT_MATCHING_ENUM(Anonymous);
 COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
 #undef COMPILE_ASSERT_MATCHING_ENUM
 
+#define BIND_TO_RENDER_LOOP(function) \
+  media::BindToLoop(main_loop_->message_loop_proxy(), base::Bind( \
+      function, AsWeakPtr()))
+
 static WebKit::WebTimeRanges ConvertToWebTimeRanges(
     const media::Ranges<base::TimeDelta>& ranges) {
   WebKit::WebTimeRanges result(ranges.size());
@@ -160,7 +165,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   scoped_refptr<media::VideoRendererBase> video_renderer =
       new media::VideoRendererBase(
           base::Bind(&WebMediaPlayerProxy::Repaint, proxy_),
-          base::Bind(&WebMediaPlayerProxy::SetOpaque, proxy_.get()),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetOpaque),
           true);
   filter_collection_->AddVideoRenderer(video_renderer);
   proxy_->set_frame_provider(video_renderer);
@@ -257,12 +262,12 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   proxy_->set_data_source(
       new BufferedDataSource(main_loop_, frame_, media_log_,
                              base::Bind(&WebMediaPlayerImpl::NotifyDownloading,
-                                        base::Unretained(this))));
+                                        AsWeakPtr())));
   proxy_->data_source()->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
       base::Bind(
           &WebMediaPlayerImpl::DataSourceInitialized,
-          base::Unretained(this), gurl));
+          AsWeakPtr(), gurl));
 
   is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 
@@ -336,8 +341,7 @@ void WebMediaPlayerImpl::seek(float seconds) {
   // Kick off the asynchronous seek!
   pipeline_->Seek(
       seek_time,
-      base::Bind(&WebMediaPlayerProxy::PipelineSeekCallback,
-                 proxy_.get()));
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek));
 }
 
 void WebMediaPlayerImpl::setEndTime(float seconds) {
@@ -969,11 +973,10 @@ void WebMediaPlayerImpl::StartPipeline() {
   starting_ = true;
   pipeline_->Start(
       filter_collection_.Pass(),
-      base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback, proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback, proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::PipelineSeekCallback, proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::PipelineBufferingStateCallback,
-                 proxy_.get()));
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingState));
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {

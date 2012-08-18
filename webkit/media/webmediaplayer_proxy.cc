@@ -45,11 +45,6 @@ void WebMediaPlayerProxy::Repaint() {
   }
 }
 
-void WebMediaPlayerProxy::SetOpaque(bool opaque) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::SetOpaqueTask, this, opaque));
-}
-
 void WebMediaPlayerProxy::Paint(SkCanvas* canvas,
                                 const gfx::Rect& dest_rect,
                                 uint8_t alpha) {
@@ -89,28 +84,6 @@ void WebMediaPlayerProxy::Detach() {
   frame_provider_ = NULL;
 }
 
-void WebMediaPlayerProxy::PipelineSeekCallback(PipelineStatus status) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::PipelineSeekTask, this, status));
-}
-
-void WebMediaPlayerProxy::PipelineEndedCallback(PipelineStatus status) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::PipelineEndedTask, this, status));
-}
-
-void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
-  DCHECK_NE(error, media::PIPELINE_OK);
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::PipelineErrorTask, this, error));
-}
-
-void WebMediaPlayerProxy::PipelineBufferingStateCallback(
-    media::Pipeline::BufferingState buffering_state) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::PipelineBufferingStateTask, this, buffering_state));
-}
-
 void WebMediaPlayerProxy::RepaintTask() {
   DCHECK(render_loop_->BelongsToCurrentThread());
   {
@@ -121,37 +94,6 @@ void WebMediaPlayerProxy::RepaintTask() {
   if (webmediaplayer_) {
     webmediaplayer_->Repaint();
   }
-}
-
-void WebMediaPlayerProxy::PipelineSeekTask(PipelineStatus status) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnPipelineSeek(status);
-}
-
-void WebMediaPlayerProxy::PipelineEndedTask(PipelineStatus status) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnPipelineEnded(status);
-}
-
-void WebMediaPlayerProxy::PipelineErrorTask(PipelineStatus error) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnPipelineError(error);
-}
-
-void WebMediaPlayerProxy::PipelineBufferingStateTask(
-    media::Pipeline::BufferingState buffering_state) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnPipelineBufferingState(buffering_state);
-}
-
-void WebMediaPlayerProxy::SetOpaqueTask(bool opaque) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->SetOpaque(opaque);
 }
 
 void WebMediaPlayerProxy::GetCurrentFrame(
