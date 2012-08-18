@@ -597,15 +597,70 @@ class BasePerfTest(pyauto.PyUITest):
 
     self._PrintSummaryResults(description, timings, 'milliseconds', graph_name)
 
+  def _GetConfig(self):
+    """Load perf test configuration file.
+
+    Returns:
+      A dictionary that represents the config information.
+    """
+    config_file = os.path.join(os.path.dirname(__file__), 'perf.cfg')
+    config = {'username': None,
+              'password': None,
+              'google_account_url': 'https://accounts.google.com/',
+              'gmail_url': 'https://www.gmail.com',
+              'plus_url': 'https://plus.google.com',
+              'docs_url': 'https://docs.google.com'}
+    if os.path.exists(config_file):
+      try:
+        new_config = pyauto.PyUITest.EvalDataFrom(config_file)
+        for key in new_config:
+          if new_config.get(key) is not None:
+            config[key] = new_config.get(key)
+      except SyntaxError, e:
+        logging.info('Could not read %s: %s', config_file, str(e))
+    return config
+
   def _LoginToGoogleAccount(self, account_key='test_google_account'):
     """Logs in to a test Google account.
 
+    Login with user-defined credentials if they exist.
+    Else login with private test credentials if they exist.
+    Else fail.
+
     Args:
-      account_key: The string key associated with the test account login
-          credentials to use.
+      account_key: The string key in private_tests_info.txt which is associated
+                   with the test account login credentials to use. It will only
+                   be used when fail to load user-defined credentials.
+
+    Raises:
+      RuntimeError: if could not get credential information.
     """
-    creds = self.GetPrivateInfo()[account_key]
-    test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
+    private_file = os.path.join(pyauto.PyUITest.DataDir(), 'pyauto_private',
+                                'private_tests_info.txt')
+    config_file = os.path.join(os.path.dirname(__file__), 'perf.cfg')
+    config = self._GetConfig()
+    google_account_url = config.get('google_account_url')
+    username = config.get('username')
+    password = config.get('password')
+    if username and password:
+      logging.info(
+          'Using google account credential from %s',
+          os.path.join(os.path.dirname(__file__), 'perf.cfg'))
+    elif os.path.exists(private_file):
+      creds = self.GetPrivateInfo()[account_key]
+      username = creds['username']
+      password = creds['password']
+      logging.info(
+          'User-defined credentials not found,' +
+          ' using private test credentials instead.')
+    else:
+      message = 'No user-defined or private test ' \
+                'credentials could be found. ' \
+                'Please specify credential information in %s.' \
+                % config_file
+      raise RuntimeError(message)
+    test_utils.GoogleAccountsLogin(
+        self, username, password, url=google_account_url)
     self.NavigateToURL('about:blank')  # Clear the existing tab.
 
   def _GetCPUUsage(self):

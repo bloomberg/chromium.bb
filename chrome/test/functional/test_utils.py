@@ -75,7 +75,8 @@ def RemoveDownloadedTestFile(test, file_name):
   pyauto_utils.RemovePath(downloaded_pkg + '.crdownload')
 
 
-def GoogleAccountsLogin(test, username, password, tab_index=0, windex=0):
+def GoogleAccountsLogin(test, username, password,
+                        tab_index=0, windex=0, url=None):
   """Log into Google Accounts.
 
   Attempts to login to Google by entering the username/password into the google
@@ -87,8 +88,10 @@ def GoogleAccountsLogin(test, username, password, tab_index=0, windex=0):
     password: users login password input.
     tab_index: The tab index, default is 0.
     windex: The window index, default is 0.
+    url: an alternative url for login page, if None, original one will be used.
   """
-  test.NavigateToURL('https://accounts.google.com/', windex, tab_index)
+  url = url or 'https://accounts.google.com/'
+  test.NavigateToURL(url, windex, tab_index)
   email_id = 'document.getElementById("Email").value = "%s"; ' \
              'window.domAutomationController.send("done")' % username
   password = 'document.getElementById("Passwd").value = "%s"; ' \
