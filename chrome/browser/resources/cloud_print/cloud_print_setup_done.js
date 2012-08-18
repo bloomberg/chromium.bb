@@ -4,12 +4,12 @@
 
 cr.define('cloudprint', function() {
   function printTestPage() {
-    chrome.send('PrintTestPage', ['']);
-    chrome.send('DialogClose', ['']);
+    chrome.send('PrintTestPage');
+    chrome.send('DialogClose');
   }
 
   function setMessage(msg) {
-    $('msgContent').innerHTML = msg;
+    $('msg-content').innerHTML = msg;
   }
 
   function onPageShown() {
