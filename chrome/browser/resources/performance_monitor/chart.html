@@ -5,46 +5,47 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file. -->
 
 <!-- This page uses Flot version 0.7 in compressed form for efficiency.
-Readable Flot source is available at http://code.google.com/p/flot/ 
+Readable Flot source is available at http://code.google.com/p/flot/
 Good caliber Flot API docs are at: http://people.iola.dk/olau/flot/API.txt
-as of 6/2012 -->
+as of 6/2012. -->
 
 <html>
   <head>
-    <script type="text/javascript" 
-        src="../../../../third_party/flot/jquery.min.js"></script>
-    <script type="text/javascript" 
-        src="../../../../third_party/flot/jquery.flot.min.js"></script>
     <link rel="stylesheet" type="text/css" href="chart.css"/>
   </head>
   <body>
-    <div id="chooseBlock">
-      <div id="chooseMetrics">
+    <div id="choose-block">
+      <div id="choose-metrics">
         <h2>Choose Metrics</h2>
       </div>
-      <div id="chooseEvents">
+      <div id="choose-events">
         <h2>Choose Events</h2>
       </div>
-      <div id="chooseTimeRange">
+      <div class="spacer"></div>
+      <div id="choose-time-range">
         <h2>Choose Time Range</h2>
       </div>
     </div>
     <div id="charts"></div>
-    <div id="templates" class="hidden">
-      <div id="labelTemplate" class="event-label"></div>
-      <div id="checkboxTemplate" class="checkbox">
+    <div id="templates" hidden>
+      <div id="label-template" class="event-label"></div>
+      <div id="checkbox-template" class="checkbox">
         <label>
           <input type="checkbox"></input>
           <span>Change this label</span>
         </label>
       </div>
-      <div id="radioTemplate" class="radio">
+      <div id="radio-template" class="radio">
         <label>
-          <input type="radio" name="TimeRange"/>
+          <input type="radio" name="time-range"/>
           <span>Change this label</span>
         </label>
       </div>
     </div>
-    <script type="text/javascript" src="chart.js"></script>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="jquery.js"></script>
+    <script src="flot.js"></script>
+    <script src="chart.js"></script>
   </body>
 </html>

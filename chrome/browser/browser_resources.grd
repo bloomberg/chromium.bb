@@ -124,6 +124,13 @@
       <include name="IDR_INSTANT_JS" file="resources\instant\instant.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="resources\media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS" file="resources\media_internals\media_internals.js" flattenhtml="true" type="BINDATA" />
+      <if expr="not pp_ifdef('android')">
+        <include name="IDR_PERFORMANCE_MONITOR_CHART_CSS" file="resources\performance_monitor\chart.css" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_PERFORMANCE_MONITOR_CHART_JS" file="resources\performance_monitor\chart.js" type="BINDATA" />
+        <include name="IDR_PERFORMANCE_MONITOR_HTML" file="resources\performance_monitor\chart.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_PERFORMANCE_MONITOR_JQUERY_FLOT_JS" file="..\..\third_party\flot\jquery.flot.min.js" type="BINDATA" />
+        <include name="IDR_PERFORMANCE_MONITOR_JQUERY_JS" file="..\..\third_party\flot\jquery.min.js" type="BINDATA" />
+      </if>
       <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" flattenhtml="true" type="BINDATA" />
       <if expr="not pp_ifdef('android')">

@@ -2,41 +2,29 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-div#chooseMetrics {
-   float: left;
+#choose-block {
+  -webkit-box-orient: horizontal;
+  background: #eee;
+  display: -webkit-box;
 }
 
-div#chooseEvents {
-   float: left;
-   margin-left: 20px;
+.spacer {
+  -webkit-box-flex: 1;
 }
 
-div#chooseTimeRange {
-   float: right;
-}
-
-div#chooseBlock {
-   background: #eee;
-   overflow: hidden;
-}
-
-div#charts {
-   height: 500px;
-   width: 900px;
-}
-
-div.chart {
-   height: 500px;
-   width: 900px;
+/* |charts| is the style for the div enclosing all charts, collectively. Its
+ * dimensions must increase if the div encloses more than one chart.
+ * |chart| is the style for any div that encloses a single chart -- a
+ * child div of the larger #charts div. */
+#charts,
+.chart {
+  height: 500px;
+  width: 900px;
 }
 
 div.event-label {
-   background: #fff;
-   border: 1px solid;
-   font: 0.6em;
-   position: absolute;
-}
-
-.hidden {
-   visibility: hidden;
+  background: white;
+  border: 1px solid;
+  font: 0.6em;
+  position: absolute;
 }
