@@ -123,7 +123,8 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     os.environ.pop("CROS_SUDO_KEEP_ALIVE", None)
 
 
-def SetFileContents(path, value):
+def SetFileContents(path, value, cwd=None):
   """Set a given filepath contents w/ the passed in value."""
   cros_build_lib.SudoRunCommand(['tee', path], redirect_stdout=True,
-                                print_cmd=False, input=value)
+                                redirect_stderr=True, print_cmd=False,
+                                input=value, cwd=cwd)

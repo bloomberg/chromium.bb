@@ -55,11 +55,13 @@ class CommandResult(object):
 
 class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
-  def __init__(self, msg, result):
-    self.result = result
-    self.msg = msg
+  def __init__(self, msg, result, exception=None):
+    self.msg, self.result, self.exception = msg, result, exception
+    if exception is not None and not isinstance(exception, Exception):
+      raise ValueError("exception must be an exception instance; got %r"
+                       % (exception,))
     Exception.__init__(self, msg)
-    self.args = (msg, result)
+    self.args = (msg, result, exception)
 
   def Stringify(self, error=True, output=True):
     """Custom method for controlling what is included in stringifying this.
@@ -446,7 +448,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     if e.errno == errno.EACCES:
       estr += '; does the program need `chmod a+x`?'
     if not error_ok:
-      raise RunCommandError(estr, CommandResult(cmd=cmd))
+      raise RunCommandError(estr, CommandResult(cmd=cmd),
+                            exception=e)
     else:
       Warning(estr)
   except Exception, e:
@@ -1839,7 +1842,7 @@ def GetChromiteTrackingBranch():
   cwd = os.path.dirname(os.path.realpath(__file__))
   result = GetTrackingBranch(cwd, for_checkout=False, fallback=False)
   if result:
-    remote, branch = result
+    _remote, branch = result
     if branch.startswith('refs/heads/'):
       # Normal scenario.
       return StripLeadingRefsHeads(branch)

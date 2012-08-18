@@ -319,27 +319,45 @@ class Cgroup(object):
         raise
       return default
 
+  def _AddSingleGroup(self, name, **kwds):
+    """Method for creating a node nested within this one.
+
+    Derivative classes should override this method rather than AddGroup;
+    see __init__ for the supported keywords."""
+    return self.__class__(os.path.join(self.namespace, name), **kwds)
+
   def AddGroup(self, name, **kwds):
     """Add and return a cgroup nested in this one.
 
     See __init__ for the supported keywords.  If this isn't a direct child
     (for example this instance is cbuildbot, and the name is 1823/x), it'll
-    create the intermediate groups as lazy_init=True and autoclean=True.
+    create the intermediate groups as lazy_init=True, setting autoclean to
+    via the logic described for autoclean_parents below.
+
+    Args:
+      autoclean_parents: Optional keyword argument; if unspecified, it takes
+        the value of autoclean (or True if autoclean isn't specified).  This
+        controls whether any intermediate nodes that must be created for
+        multilevel groups are autocleaned.
     """
     name = self._LimitName(name, multilevel=True)
 
+    autoclean = kwds.pop('autoclean', True)
+    autoclean_parents = kwds.pop('autoclean_parents', autoclean)
     chunks = name.split('/', 1)
-    immediate = os.path.join(self.namespace, chunks[0])
-    if len(chunks) == 1:
-      return self.__class__(immediate, parent=self, **kwds)
-    parent = self.__class__(immediate, parent=self, lazy_init=True)
-    return parent.AddGroup(chunks[-1], **kwds)
+    node = self
+    # pylint: disable=W0212
+    for chunk in chunks[:-1]:
+      node = node._AddSingleGroup(chunk, parent=node,
+                                  autoclean=autoclean_parents, **kwds)
+    return node._AddSingleGroup(chunks[-1], parent=node,
+                                autoclean=autoclean, **kwds)
 
   @MemoizedSingleCall
   def Instantiate(self):
     """Ensure this group exists on disk in the cgroup hierarchy"""
 
-    if not self.namespace:
+    if self.namespace == '.':
       # If it's the root of the hierarchy, leave it alone.
       return True
 
@@ -388,10 +406,17 @@ class Cgroup(object):
 
   def _SudoSet(self, key, value):
     """Set a cgroup file in this namespace to a specific value"""
+    name = self._LimitName(key, True)
     try:
-      return sudo.SetFileContents(self._LimitName(key, True), value)
+      return sudo.SetFileContents(name, value, cwd=os.path.dirname(name))
     except cros_build_lib.RunCommandError, e:
-      raise _GroupWasRemoved(self.namespace, e)
+      if e.exception is not None:
+        # Command failed before the exec itself; convert ENOENT
+        # appropriately.
+        exc = e.exception
+        if isinstance(exc, EnvironmentError) and exc.errno == errno.ENOENT:
+          raise _GroupWasRemoved(self.namespace, e)
+      raise
 
   def RemoveThisGroup(self, strict=False):
     """Remove this specific cgroup
@@ -449,31 +474,59 @@ class Cgroup(object):
       return True
     return False
 
-  def _GetCurrentProcessThreads(self):
-    """Lookup the given tasks (pids fundamentally) for our process."""
-    return map(int, os.listdir('/proc/self/task'))
-
   def TransferCurrentProcess(self, threads=True):
     """Move the current process into this cgroup.
 
     If threads is True, we move our threads into the group in addition.
     Note this must be called in a threadsafe manner; it primarily exists
     as a helpful default since python stdlib generates some background
-    threads (even when the code is operated synchronously).
+    threads (even when the code is operated synchronously).  While we
+    try to handle that scenario, it's implicitly racy since python
+    gives no clean/sane way to control/stop thread creation; thus it's
+    on the invokers head to ensure no new threads are being generated
+    while this is ran.
     """
-    if threads:
-      # Task helpfully tracks all TIDs for a given process.
-      pids = self._GetCurrentProcessThreads()
-    else:
-      pids = [os.getpid()]
+    if not threads:
+      return self.TransferPid(os.getpid())
 
-    map(self.TransferPid, pids)
+    seen = set()
+    while True:
+      force_run = False
+      threads = set(self._GetCurrentProcessThreads())
+      for tid in threads:
+        # Track any failures; a failure means the thread died under
+        # feet, implying we shouldn't trust the current state.
+        force_run |= not self.TransferPid(tid, True)
+      if not force_run and threads == seen:
+        # We got two runs of this code seeing the same threads; assume
+        # we got them all since the first run moved those threads into
+        # our cgroup, and the second didn't see any new threads.  While
+        # there may have been new threads between run1/run2, we do run2
+        # purely to snag threads we missed in run1; anything split by
+        # a thread from run1 would auto inherit our cgroup.
+        return
+      seen = threads
+
+  def _GetCurrentProcessThreads(self):
+    """Lookup the given tasks (pids fundamentally) for our process."""
+    # Note that while we could try doing tricks like threading.enumerate,
+    # that's not guranteed to pick up background c/ffi threads; generally
+    # that's ultra rare, but the potential exists thus we ask the kernel
+    # instead.  What sucks however is that python releases the GIL; thus
+    # consuming code has to know of this, and protect against it.
+    return map(int, os.listdir('/proc/self/task'))
 
   @EnsureInitialized
-  def TransferPid(self, pid):
+  def TransferPid(self, pid, allow_missing=False):
     """Assigns a given process to this cgroup."""
     # Assign this root process to the new cgroup.
-    self._SudoSet('tasks', '%d' % pid)
+    try:
+      self._SudoSet('tasks', '%d' % int(pid))
+      return True
+    except cros_build_lib.RunCommandError:
+      if not allow_missing:
+        raise
+      return False
 
   # TODO(ferringb): convert to snakeoil.weakref.WeakRefFinalizer
   def __del__(self):
@@ -501,7 +554,7 @@ class Cgroup(object):
       self.TransferCurrentProcess()
 
   @contextlib.contextmanager
-  def ContainChildren(self, pool_name=None):
+  def ContainChildren(self, pool_name=None, sigterm_timeout=10):
     """Context manager for containing children processes.
 
     This manager creates a job pool derived from this instance, transfers
@@ -542,12 +595,12 @@ class Cgroup(object):
       with signals.DeferSignals():
         self.TransferCurrentProcess()
         if run_kill:
-          node.KillProcesses(remove=True)
+          node.KillProcesses(remove=True, sigterm_timeout=sigterm_timeout)
         else:
           # Non strict since the group may have failed to be created.
           node.RemoveThisGroup(strict=False)
 
-  def KillProcesses(self, poll_interval=0.05, remove=False):
+  def KillProcesses(self, poll_interval=0.05, remove=False, sigterm_timeout=10):
     """Kill all processes in this namespace."""
 
     my_pids = set(map(str, self._GetCurrentProcessThreads()))
@@ -561,7 +614,7 @@ class Cgroup(object):
     # First sigterm what we can, exiting after 2 runs w/out seeing pids.
     # Let this phase run for a max of 10 seconds; afterwards, switch to
     # sigkilling.
-    time_end = time.time() + 10
+    time_end = time.time() + sigterm_timeout
     saw_pids, pids = True, set()
     while time.time() < time_end:
       previous_pids = pids
@@ -676,8 +729,14 @@ class Cgroup(object):
     return cpuset[len("/cros/"):].strip("/")
 
   @classmethod
-  def CreateProcessGroup(cls, process_name, nesting=True):
-    """Create and return a cgroup for ourselves nesting if allowed.
+  def FindStartingGroup(cls, process_name, nesting=True):
+    """Create and return the starting cgroup for ourselves nesting if allowed.
+
+    Note that the node returned is either a generic process pool (e.g.
+    cros/cbuildbot), or the parent pool we're nested within; processes
+    generated in this group are the responsibility of this process to
+    deal with- nor should this process ever try triggering a kill w/in this
+    portion of the tree since they don't truly own it.
 
     Args:
       process_name: See the hierarchy comments at the start of this module.
@@ -696,27 +755,24 @@ class Cgroup(object):
     if target is None:
       target = process_name
 
-    return _cros_node.AddGroup(target, autoclean=(target!=process_name))
+    return _cros_node.AddGroup(target, autoclean=False)
 
 
-def SimpleContainChildren(process_name, nesting=True):
+def SimpleContainChildren(process_name, nesting=True, **kwds):
   """Convenience context manager to create a cgroup for children containment
 
-  See Cgroup.CreateProcessGroup and Cgroup.ContainChildren for specifics.
+  See Cgroup.FindStartingGroup and Cgroup.ContainChildren for specifics.
   If Cgroups aren't supported on this system, this is a noop context manager.
   """
-  node = Cgroup.CreateProcessGroup(process_name, nesting=nesting)
-  if node is not None:
-    name = '%s:%i' % (process_name, os.getpid())
-    return node.ContainChildren(name)
-  return cros_build_lib.NoOpContextManager()
+  node = Cgroup.FindStartingGroup(process_name, nesting=nesting)
+  if node is None:
+    return cros_build_lib.NoOpContextManager()
+  name = '%s:%i' % (process_name, os.getpid())
+  return node.ContainChildren(name, **kwds)
 
-# Note that it's fairly important that any module level defined cgroups like
-# this need to be autoclean=False.  If autoclean=True, they can trigger
-# SudoRunCommand during sys.exit; we really don't want that occurring.
-# Regardless, an ephemeral cgroup that is autocleaned really shouldn't be
-# at module level- should be in a function scope.  These are the sole
-# exceptions to that rule.
+# This is a generic group, not associated with any specific process id, so
+# we shouldn't autoclean it on exit; doing so would delete the group from
+# under the feet of any other processes interested in using the group.
 _root_node = Cgroup(None, _is_root=True, autoclean=False, lazy_init=True)
 _cros_node = _root_node.AddGroup('cros', autoclean=False, lazy_init=True,
                                  _overwrite=False)
