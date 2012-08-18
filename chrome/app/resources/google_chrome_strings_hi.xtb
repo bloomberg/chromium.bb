@@ -92,7 +92,6 @@
 <translation id="5941830788786076944">Google Chrome को डिफ़ॉल्ट ब्राउज़र बनाएं</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
-<translation id="4573769928351971197">Google Chrome स्‍टार्टअप पर आपके पिछले सत्र पुनर्स्‍थापित करेगा. आपकी कुछ सत्र-आधारित सेटिंग, जैसे कि वह जो बाहर निकलने पर डेटा साफ़ करती है, अक्षम हो जाएगी.</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="6650142020817594541">यह साइट Google Chrome Frame (पहले से इंस्टॉल किया गया) की अनुशंसा करती है.</translation>
@@ -149,7 +148,6 @@
 <translation id="3836351788193713666">लगभग अद्यतित! अपडेट करना समाप्त करने के लिए Google Chrome पुन: लॉन्‍च करें.</translation>
 <translation id="546394857889685352">आपका उपकरण <ph name="VERSION"/> पर अपडेट कर दिया गया है</translation>
 <translation id="7106741999175697885">कार्य प्रबंधक - Google Chrome</translation>
-<translation id="1826482739472655104">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; पर पहुंचने का प्रयास किया, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्‍तुत किया जो अभी तक मान्‍य नहीं हो. प्रमाणपत्र पर विश्वास किया जा सकता है या नहीं इस बारे में कोई जानकारी उपलब्ध नहीं है. Google Chrome विश्वसनीय रूप से इस बात की गारंटी नहीं दे सकता कि आप &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; से संचार कर रहे हैं न कि किसी हमलावर से. आपके कंप्‍यूटर की घड़ी <ph name="CURRENT_TIME"/> पर सेट है. क्‍या यह सही लगता है? यदि नहीं, तो आपको त्रुटि सही करनी चाहिए और इस पृष्ठ को रीफ़्रेश करना चाहिए.</translation>
 <translation id="8449380764213232436">Google Chrome अब <ph name="BROWSER_COMPONENT"/> से निम्न आइटम आयात कर रहा है:</translation>
 <translation id="852884188147941900">Chrome कार्यकर्ता</translation>
 <translation id="3396977131400919238">स्थापित करने के दौरान ऑपरेटिंग सिस्टम में त्रुटि आई. कृपया Google Chrome पुनः डाउनलोड करें.</translation>

@@ -13,6 +13,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="3454512769850953877">Yes, exit Chrome</translation>
 <translation id="386202838227397562">Please close all Google Chrome windows and try again.</translation>
 <translation id="2770231113462710648">Change default browser to:</translation>
+<translation id="741045321678647133">Google Chrome App Host</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>
 <translation id="1065672644894730302">Your preferences cannot be read.
 
@@ -30,6 +31,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1872436416934435136">Google Chrome is no longer updating because your operating system is obsolete.</translation>
 <translation id="5339639696978861456">Chrome Frame has been updated. Please relaunch your browser. Chrome version: <ph name="TODO_0001"/>, Chrome Frame version: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Terms of Service</translation>
+<translation id="5775197990071433230">This computer already has a more recent version of the Google Chrome components. Please use a more recent installer.</translation>
 <translation id="8398145039500709259">Use this Google Account to sync all your Chrome stuff?</translation>
 <translation id="1779550429052479749">A conflicting installation of Google Chrome or Google Chrome Frame was found on the system. Please uninstall it and try again.</translation>
 <translation id="3555616473548901994">Uninstallation complete.</translation>
@@ -60,6 +62,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
 <translation id="7451721381978275812">Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.</translation>
+<translation id="8684521613357479262">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct your system's clock and then refresh this page.</translation>
 <translation id="4585888816441913908">This computer already has a more recent version of Google Chrome and Google Chrome Frame. If the software is not working, please uninstall both Google Chrome and Google Chrome Frame and try again.</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Set up Sync to save your personalised browser features to the web and access them from Google Chrome on any computer.</translation>
@@ -95,10 +98,10 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="7062966102157262887">A download is currently in progress. Do you want to exit Google Chrome and cancel the download?</translation>
 <translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
 <translation id="1104959162601287462">About the &amp;Chrome OS</translation>
+<translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
-<translation id="4573769928351971197">Google Chrome will restore your previous session on startup. Some of your session-based settings, such as those that clear data on exit, will be disabled.</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="61852838583753520">Update the &amp;Chrome OS</translation>
 <translation id="6650142020817594541">This site recommends Google Chrome Frame (already installed).</translation>
@@ -117,6 +120,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="5699533844376998780">The extension &quot;<ph name="EXTENSION_NAME"/>&quot; has been installed.</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
+<translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>
 <translation id="5046764976540625289">Exit Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="2680623880102270805">Google Chrome cannot create an application shortcut because it cannot determine the current desktop environment.</translation>
@@ -155,7 +159,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="3836351788193713666">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
 <translation id="546394857889685352">Your device has been updated to <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
-<translation id="1826482739472655104">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. Your computer's clock is currently set to <ph name="CURRENT_TIME"/>. Does that look right? If not, you should correct any error the refresh this page.</translation>
 <translation id="8449380764213232436">Google Chrome is now importing the following items from <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">An operating system error occurred during installation. Please download Google Chrome again.</translation>

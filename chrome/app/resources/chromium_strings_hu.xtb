@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Már telepítve van a Chromium vagy a Chromium Frame a rendszeren, és ez ütközést okoz. Kérjük, távolítsa el, majd próbálkozzon újra.</translation>
 <translation id="6953661834318318668">Chromium eszköztár</translation>
 <translation id="7097100943370017396">A Chromium nem frissül tovább, mert az operációs rendszer elavult.</translation>
-<translation id="2777754523825675150">A Chromium visszaállítja az előző munkamenetet indításkor. Egyes munkamenet-alapú beállítások, így például azok, amelyek törlik az adatokat kilépéskor, le lesznek tiltva.</translation>
 <translation id="4103959775970322855">A Chromium a következő verzióra frissült: <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="2589479092236095792">A Chromium automatikus kitöltési beállításai</translation>
@@ -120,7 +119,6 @@
 <translation id="7483335560992089831">Nem lehet ugyanazt a Chromium-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromiumot, és próbálja újra.</translation>
 <translation id="7641113255207688324">A Chromium nem az alapértelmezett böngésző.</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
-<translation id="2174090135251659490">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Chromium nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/> Ez megfelelőnek tűnik? Ha nem, javítsa ki a hibát, és töltse újra az oldalt.</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
 <translation id="5859758987635973787">A Chromium naprakész (<ph name="VERSION"/>)</translation>

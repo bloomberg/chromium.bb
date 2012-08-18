@@ -22,6 +22,8 @@
 <translation id="3234408098842461169">Nuoli al.</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="6364916375976753737">Vieritä vasemmalle</translation>
+<translation id="6945221475159498467">Valitse</translation>
+<translation id="6620110761915583480">Tallenna tiedosto</translation>
 <translation id="8210608804940886430">Sivu alas</translation>
 <translation id="5329858601952122676">&amp;Poista</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kt</translation>
@@ -43,12 +45,14 @@
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="2666092431469916601">Yleisin</translation>
 <translation id="8331626408530291785">Vieritä ylös</translation>
+<translation id="7907591526440419938">Avaa tiedosto</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Vieritä alas</translation>
 <translation id="3157931365184549694">Palauta</translation>
 <translation id="8179976553408161302">Sisään</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> Pt</translation>
+<translation id="6845383723252244143">Valitse kansio</translation>
 <translation id="5583640892426849032">Askelpalautin</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> Gt/s</translation>
 <translation id="436869212180315161">Paina</translation>
@@ -59,5 +63,6 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> Pt/s</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Pienennä</translation>
+<translation id="3036649622769666520">Avaa tiedostot</translation>
 <translation id="8328145009876646418">Vasen reuna</translation>
 </translationbundle>

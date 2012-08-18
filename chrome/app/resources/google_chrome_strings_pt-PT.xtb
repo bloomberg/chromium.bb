@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Tornar o Google Chrome no browser padrão.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
-<translation id="4573769928351971197">O Google Chrome irá restaurar a sua sessão anterior no arranque. Algumas das suas definições baseadas na sessão, tal como as que limpam os dados à saída, serão desativadas.</translation>
 <translation id="3612333635265770873">É conhecido um módulo com o mesmo nome que entra em conflito com o Google Chrome.</translation>
 <translation id="61852838583753520">Atualizar o SO &amp;Chrome</translation>
 <translation id="6650142020817594541">Este Web site recomenda o Google Chrome Frame (já instalado).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Está quase atualizado! Reinicie o Google Chrome para concluir a atualização.</translation>
 <translation id="546394857889685352">O dispositivo foi atualizado para <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Gestor de tarefas - Google Chrome</translation>
-<translation id="1826482739472655104">Tentou aceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Não existem informações disponíveis que indiquem que o certificado é de confiança. O Google Chrome não pode garantir que está a comunicar com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um utilizador mal intencionado. O relógio do computador está atualmente definido para <ph name="CURRENT_TIME"/>. Parece-lhe que está correto? Se não estiver, deve corrigir o erro e atualizar esta página.</translation>
 <translation id="8449380764213232436">O Google Chrome está neste momento a importar os seguintes itens do <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Ocorreu um erro no sistema operativo durante a instalação. Transfira de novo o Google Chrome.</translation>

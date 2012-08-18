@@ -109,11 +109,6 @@
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="1353966721814789986">Oppstartssider</translation>
 <translation id="5564962323737505851">Konfigurerer passordbehandling. Hvis passordbehandling er aktivert, kan du velge å aktivere eller deaktivere hvorvidt brukeren kan vise lagrede passord i klartekst.</translation>
-<translation id="7989334138134558357">Denne retningslinjen er aktiv bare i detaljistmodus.
-
-      Når verdien til denne retningslinjen er angitt og ikke er 0 (null), blir den påloggede demo-brukeren automatisk avlogget etter den spesifiserte tiden.
-
-      Retningslinjeverdien må angis i millisekunder.</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
 <translation id="7161193985878519056">Inkognitomodus er deaktivert.</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>
@@ -214,8 +209,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Retningslinjeverdien må angis i millisekunder.</translation>
 <translation id="6368011194414932347">Konfigurer nettadresse for startsiden</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
-<translation id="6378014222084506939">Tilgjengelighet for inkognitomodus.</translation>
-<translation id="3706027163744097186">Begrensning av hvilke brukere som har tillatelse til å logge seg på <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="1283072268083088623">Angir hvilke HTTP-autentiseringsskjemaer som håndteres av <ph name="PRODUCT_NAME"/>.
 
@@ -252,15 +245,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="8391419598427733574">Operativsystem for rapportering og fastvareversjon for registrerte enheter. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
-<translation id="3413139738214204027">Konfigurerer standard startsidenettadresse i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre det.
-
-          Startsiden kan enten være en nettadresse du skriver inn her, eller siden Ny fane.
-
-          Hvis du velger siden Ny fane, ignoreres denne retningslinjen.
-
-          Hvis du aktiverer denne innstillingen, kan ikke brukerne endre startsidenettadressen i <ph name="PRODUCT_NAME"/>, men de kan likevel velge siden Ny fane som startside.
-
-          Hvis denne retningslinjen ikke angis, kan brukeren velge startside på egen hånd hvis HomepageIsNewTabPage heller ikke er angitt.</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="8170882486743832400">Konfigurer GData-alternativer</translation>
 <translation id="2322733497952278056">Gir tilgang til de oppførte nettadressene, som unntak for nettadressene på svartelisten.
@@ -309,19 +293,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis denne innstillingen er konfigurert, blir programsettet festet og kan ikke endres av brukeren.
 
       Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
-<translation id="6177482277304066047">Angir en målversjon for automatiske oppdateringer.
-
-      Spesifiserer prefiksen for en målversjon som <ph name="PRODUCT_OS_NAME"/> skal oppdateres til. Hvis enheten kjører en versjon som er eldre en den angitte prefiksen, blir den oppdatert til den nyeste versjonen med den angitte prefiksen. Hvis enheten allerede har en nyere versjon, får det ingen følger (det vil si at nedgraderinger ikke utføres) og enheten forblir på den gjeldende versjonen. Prefiksformatet fungerer på komponentnivå, som demonstrert i det følgende eksempelet:
-
-      &quot;&quot; (eller ikke konfigurert): oppdater til den nyeste versjonen som er tilgjengelig
-      &quot;1412.&quot;: oppdater til hvilken som helst underversjon av 1412 (f.eks. 1412.24.34 eller 1412.60.2)
-      &quot;1412.2.&quot;: oppdater til hvilken som helst underversjon av 1412.2 (f.eks. 1412.2.34 eller 1412.2.2)
-      &quot;1412.24.34&quot;: oppdater bare til denne spesifikke versjonen
-      </translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
 <translation id="5289914968905023866">Blokkerer tilgang til de angitte nettadressene. Denne retningslinjen hindrer brukeren i å laste inn nettsider fra nettadresser som er svartelistet. En nettadresse har formatet scheme://host:port/path. Det valgfrie skjemaet kan være http, https eller ftp. Bare dette skjemaet vil bli blokkert, og hvis ingenting angis, blokkeres alle skjemaer. Verten kan være et vertsnavn eller en IP-adresse. Underdomener til et vertsnavn vil også bli blokkert. Hvis du vil forhindre blokkering av underdomener, legger du til et punktum (.) før vertsnavnet. Det spesielle vertsnavnet * vil blokkere alle domener. Den valgfrie porten er et gyldig portnummer fra 1 til 65535. Hvis ingenting angis, blokkeres alle porter. Hvis den valgfrie banen angis, vil bare baner med det aktuelle prefikset blokkeres. Det kan angis unntak i retningslinjenene for nettadressenes godkjenningsliste. Disse retningslinjene er begrenset til 100 oppføringer. Oppføringer etter de første 100 blir ignorert. Hvis denne retningslinjen ikke angis, vil ingen nettadresser svartelistes i nettleseren.</translation>
-<translation id="3586489081967749966">Angir maksimalt antall samtidige tilkoblinger til mellomtjeneren. Noen mellomtjenere kan ikke behandle høyere antall samtidige tilkoblinger per klient, og dette kan løses ved å innstille denne retningslinjen til en lavere verdi. Verdien i denne retningslinjen bør være lavere enn 100 og høyere enn 6, og standardverdien er 32. Noen nettprogrammer er kjent for å forbruke mange tilkoblinger med hengende GET-er, så å angi en lavere verdi enn 32 kan føre til at nettverket i nettleseren henger seg opp hvis for mange sånne nettprogrammer er åpne. Angi lavere verdi enn standard på egen risiko. Hvis denne retningslinjen ikke angis, brukes standardverdien på 32.</translation>
 <translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
 <translation id="7151201297958662315">Avgjør om en <ph name="PRODUCT_NAME"/>-prosess er startet ved pålogging til operativsystemet og fortsetter å kjøre når det siste nettleservinduet er lukket, og lar bakgrunnsprogrammer forbli aktive. Bakgrunnsprosessen viser et ikon i systemstatusfeltet og kan alltid lukkes derifra.
 
@@ -365,11 +339,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="7880891067740158163">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som <ph name="PRODUCT_NAME"/> automatisk skal velge klientsertifikater for, hvis nettstedet ber om et sertifikat.
 
           Hvis denne retningslinjen ikke angis, vil det ikke utføres automatiske valg for noen nettsteder.</translation>
-<translation id="583542926035627341">Denne retningslinjen er aktiv bare i detaljistmodus.
-
-      Listeoppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
-
-      Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse. Det valgfrie «bare på nettet»-feltet kan angis som Sann, for å indikere at denne utvidelsen skal installeres bare når enheten er tilkoblet Internett ved pålogging.</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="5192837635164433517">Aktiverer bruken av alternative sider for feilmeldinger som er innebygd i <ph name="PRODUCT_NAME"/> (for eksempel «Siden ble ikke funnet»), og hindrer brukerne i å endre denne innstillingen. 
 
@@ -497,13 +466,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME"/>.
 
       Hvis denne innstillingen ikke angis, kan brukeren selv avgjøre om denne funksjonen skal brukes eller ikke.</translation>
-<translation id="869575100785642004">Lar deg angi hvilke nettadresser som har tillatelse til å installere utvidelser, apper og temaer.
-
-          Fra og med Chrome 21 er det vanskeligere å installere utvidelser, programmer og brukerskript fra andre steder enn Chrome Nettmarked. Tidligere kunne brukere klikke på en kobling til en *.crx-fil, så tilbød Chrome å installere filen etter noen advarsler. Etter Chrome 21 må slike filer lastes ned og dras inn på innstillingssiden i Chrome. Denne innstillingen gjør at bestemte nettadresser kan bruke den gamle, enklere installasjonsflyten.
-
-          Hvert element i denne listen er et samsvarsmønster med samme stil som en utvidelse (les http://code.google.com/chrome/extensions/match_patterns.html). Brukere kan enkelt installere elementer fra alle nettadresser som samsvarer med et element i denne listen.
-
-          ExtensionInstallBlacklist prioriteres over denne retningslinjen. Det vil si at en utvidelse på svartelisten ikke blir installert, selv om den er knyttet til nettsted på denne listen.</translation>
 <translation id="5475361623548884387">Aktiver utskrift</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="4445684791305970001">Deaktiverer utviklerverktøyene og JavaScript-konsollen.
@@ -516,7 +478,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="5378985487213287085">Gjør at du kan angi om nettstedene får vise skrivebordvarsler. Visning av skrivebordvarsler kan tillates som standard, nektes som standard, eller brukeren kan bli spurt hver gang et nettsted vil vise slike.
 
           Hvis denne retningslinjen ikke angis, brukes AskNotification, og brukeren kan endre på dette.</translation>
-<translation id="3744263630913802110">Operativsystem for rapportering og fastvareversjon.</translation>
 <translation id="6908640907898649429">Konfigurerer standard søkeleverandør. Du kan angi hvilken søkeleverandør brukeren får som standard, eller velge å deaktivere standardsøk.</translation>
 <translation id="389421284571827139">Gjør at du kan angi proxytjeneren <ph name="PRODUCT_NAME"/> skal bruke, og hindre brukerne i å endre mellomtjenerinnstillinger.
 
@@ -539,7 +500,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
-<translation id="8288507390252297611">Deaktiver forhåndsvisning av utskrift. Denne innstillingen brukes for å tvinge frem bruk av systemdialogen for utskrift i stedet for forhåndsvisning av utskrift.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="6373222873250380826">Deaktiverer automatiske oppdateringer når angitt som Sann.
 
@@ -548,7 +508,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
 <translation id="8951350807133946005">Angi katalog for diskbufring</translation>
-<translation id="9055197679339967051">Om lanseringskanalen skal kunne angis av brukeren eller være låst.</translation>
 <translation id="2592091433672667839">Varighet av inaktivitet før skjermspareren vises på påloggingssiden i detaljistmodus</translation>
 <translation id="166427968280387991">Proxytjener</translation>
 <translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
@@ -615,13 +574,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
       Hvis denne innstillingen ikke angis, kan brukeren velge om denne funksjonen skal brukes eller ikke.</translation>
 <translation id="3264793472749429012">Kodinger av standard søkeleverandør</translation>
-<translation id="3366530054462553357">Angir en liste over programtillegg som er deaktivert i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre denne innstillingen.
-
-      Jokertegnene * og ? kan brukes for å samsvare sekvenser med vilkårlige tegn. Tegnet * samvarer et vilkårlig antall tegn, mens tegnet ? angir et alternativt enkeltstående tegn, dvs. samsvarer med ingen tegn eller ett tegn. 
-
-Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et ? setter du en \ foran dem.
-
-      Hvis du aktiverer denne innstillingen, brukes aldri den angitte listen over programtillegg i <ph name="PRODUCT_NAME"/>. Programtilleggene er merket som aktivert i about:plugins, og brukerne kan ikke deaktivere dem. Vær oppmerksom på at denne retningslinjen kan overstyres av EnabledPlugins og DisabledPluginsExceptions. Hvis denne retningslinjen ikke angis, kan brukeren deaktivere alle programtillegg som er installert i systemet, unntatt hardkodede og inkompatible, foreldede eller farlige programtillegg.</translation>
 <translation id="8101760444435022591">Som et resultat av at opphevelsekontroller for myke systemstopp ikke gir noen effektiv sikkerhetsfordel, blir de som standard deaktivert for versjon 19 og nyere av <ph name="PRODUCT_NAME"/>. Hvis du angir denne innstillingen som Sann, gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.</translation>
 <translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
 
@@ -688,9 +640,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="7006788746334555276">Innstillinger for innhold</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
-<translation id="3940756655305062524">Hvis denne retningslinjen er angitt som Sann og ChromeOsReleaseChannel-retningslinjen ikke er spesifisert, vil brukerne av registreringsdomenet kunne endre lanseringskanalen for enheten. Hvis denne retningslinjen er angitt som Usann, låses enheten til kanalen som som sist ble angitt.
-
-      Den brukervalgte kanalen overstyres av ChromeOsReleaseChannel-retningslinjen, men hvis retningslinjekanalen er mer stabil enn den som ble installert på enheten, byttes det kanal etter at den mer stabile versjonen når et høyere antall enn kanalen som ble installert på enheten.</translation>
 <translation id="187819629719252111">Gir tilgang til lokale filer på maskinen ved å tillate <ph name="PRODUCT_NAME"/> å vise dialoger om filutvalg.
       Hvis du aktiverer denne innstillingen, kan brukerne åpne filutvalgdialogene som normalt.
       Hvis du deaktiverer denne innstillingen, vil det hver gang brukeren utfører en handling som kan utløse en filutvalgsdialog (som import av bokmerker, opplasting av filer, lagring av koblinger osv.), vises det en melding i stedet, og det antas at brukeren har klikket Avbryt i filutvalgdialogen.
@@ -708,9 +657,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="868187325500643455">Tillat alle nettsteder å kjøre programtillegg</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="5226033722357981948">Angir hvorvidt programtilleggssøket skal deaktiveres</translation>
-<translation id="584083164257867276">Definerer listen over brukere som kan logge seg på enheten. Oppføringer er i formatet <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, som for eksempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Hvis du vil tillate vilkårlige brukere på domenet, må oppføringer bruke formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
-
-      Hvis denne retningslinjen ikke er konfigurert, fins det ingen begrensninger for hvilke brukere som kan logge seg på. Vær oppmerksom på at oppretting av nye brukere fortsatt krever at <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>-retningslinjen er konfigurert som den skal.</translation>
 <translation id="3428247105888806363">Aktivering av nettverksforslag.</translation>
 <translation id="6145799962557135888">Gjør at du kan angi en liste over nettadressemønstre som angir hvilke nettsteder som får kjøre JavaScript.
 
@@ -727,20 +673,8 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="1843117931376765605">Oppdateringsfrekvens for brukerinnstilling</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
-<translation id="1991398966873139530">Angir en liste over programtillegg som brukeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME"/>.
-
-      Jokertegnene * og ? kan brukes til å samsvare sekvenser av vilkårlige tegn. Tegnet * samsvarer med et vilkårlig antall tegn, mens tegnet ? angir et valgfritt enkeltstående tegn, dvs. ingen tegn eller ett tegn. Nødutgangtegnet er \, så for å matche tegn som faktisk er et * eller et ? setter du en \ foran dem.
-
-      Hvis du aktiverer  denne innstillingen, kan den spesifiserte listen over programtillegg brukes i <ph name="PRODUCT_NAME"/>. Brukerne kan aktivere dem i about:plugins, også hvis programtillegget også samsvarer med et mønster i DisabledPlugins. Brukerne kan også aktivere eller deaktivere programtillegg som ikke samsvarer noe mønster i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
-
-      Denne retningslinjen er beregnet på å tillate streng svartelisting av programtillegg der listen DisabledPlugins innholder jokertegnoppføringer som deaktiver alle programtillegg * eller deaktiver alle Java-programtillegg *Java*, men der administratoren ønsker å aktivere enkelte bestemte versjoner, som IcedTea Java 2.3. Denne spesielle versjonen kan angis i denne retningslinjen.
-
-      Hvis denne retningslinjen ikke angis, vil alle programtillegg som samsvarer med mønsteret i DisabledPlugins, bli låst, og brukeren kan ikke aktivere dem.</translation>
 <translation id="3808945828600697669">Angi en liste over deaktiverte programtillegg</translation>
 <translation id="4525521128313814366">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultImagesSetting, eller fra brukerens egne retningslinjer hvis den nevnte retningslinjen ikke er angitt.</translation>
-<translation id="1894491175123948728">Denne retningslinjen er aktiv bare i detaljistmodus.
-
-      Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet, som er konfigurert for dette domenet gjennom AppPack-retningslinjene.</translation>
 <translation id="3866530186104388232">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME"/> eksisterende brukere på påloggingssiden og tillate valg av én. Hvis denne retningslinjen er angitt som Usann, ber <ph name="PRODUCT_OS_NAME"/> om brukernavn og passord ved pålogging.</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
 <translation id="1151353063931113432">Tillat bilder på disse nettstedene</translation>
@@ -758,10 +692,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 
       Hvis denne innstillingen er deaktivert, kan ikke brukerne skrive ut fra <ph name="PRODUCT_NAME"/>. Utskrift er da deaktivert i verktøymenyen, utvidelsene, JavaScript-programmene og så videre. Det er fortsatt mulig å skrive ut fra programtillegg som går forbi <ph name="PRODUCT_NAME"/> under utskrift. Enkelte Flash-programmer har for eksempel utskriftsalternativet i kontekstmenyen, og vil ikke deaktiveres.
       Hvis denne retningslinjen ikke angis, vil den være aktivert, men brukeren har mulighet til å endre på dette.</translation>
-<translation id="210513196702568522"> Hvilke typer tilkoblinger som kan brukes for oppdateringer av operativsystemet. Oppdateringer av operativsystemet kan utgjøre en tung belastning av tilkoblingen på grunn av store datamengder, og kan medføre ekstra kostnader. På grunn av dette er de som standard ikke aktivert for tilkoblingstyper som anses å være kostbare. Dette omfatter for øyeblikket WiMax, Bluetooth og  mobilnettverk.
-
-      Følgende identifikatorer for tilkoblingstyper gjenkjennes: Ethernet, Wi-Fi, WiMAX, Bluetooth og mobilnettverk.
-      </translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="7635471475589566552">Konfigurerer programmets språk i <ph name="PRODUCT_NAME"/>, og hindrer brukeren i å endre på språket.
@@ -774,11 +704,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="6985168562472482191">Navnet på nettbutikken, som vises under program-ikonet på siden Ny fane. Denne innstillingen har ingen effekt hvis EnterpriseWebStoreURL ikke er angitt. Hvis denne innstillingen er deaktivert, merkes nettbutikk-programmet (hvis dette foreligger) med sin egen nettadresse.</translation>
 <translation id="1734716591049455502">Konfigurer eksterne tilgangsalternativer</translation>
 <translation id="8777120694819070607">Lar <ph name="PRODUCT_NAME"/> kjøre programtillegg som er foreldede. Hvis du aktiverer denne innstillingen, brukes foreldede programtillegg som normale programtillegg. Hvis du deaktiverer denne innstillingen, brukes ikke foreldede programtillegg, og brukerne blir ikke bedt om tillatelse til å kjøre dem. Hvis denne innstillingen ikke er angitt, blir brukerne spurt om tillatelse til å kjøre foreldede programtillegg.</translation>
-<translation id="4922427744878251344">Deaktiverer synkronisering av Google Dokumenter ved bruk av en mobilnett-tilkobling, når angitt som Sann.
-
-          - Dette innebærer at data synkroniseres med Google Dokumenter bare ved tilkobling via Wi-Fi eller Ethernet.
-
-          - Hvis innstillingen ikke er angitt eller angitt som Usann, kan brukere overføre filer til Google Dokumenter via tilkoblinger over mobilnett.</translation>
 <translation id="2629448496147630947">Konfigurer eksterne tilgangsalternativer i <ph name="PRODUCT_NAME"/>. Disse funksjonene ignoreres dersom nettprogrammet for fjerntilgang ikke er installert.</translation>
 <translation id="1310699457130669094">Du kan angi nettadresse til en .pac-fil til mellomtjener her.
 
@@ -815,7 +740,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
 <translation id="4025586928523884733">Blokkerer informasjonskapsler fra tredjepart. Aktivering av denne innstillingen hindrer informasjonskapsler i å bli angitt av nettsideelementer som ikke kommer fra domenet som er i nettleserens adresselinje. Deaktivering av denne innstillingen tillater at informasjonskapsler angis av nettstedelementer som ikke kommer fra domenet som er i nettleserens adresselinje, og hindrer brukerne i å endre denne innstillingen. Hvis denne retningslinjen ikke angis, aktiveres informasjonskapsler fra tredjepart, men brukeren har mulighet til å endre på dette.</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
-<translation id="57127641120127115">Aktiver lås når enheten blir inaktiv eller suspendert.</translation>
 <translation id="6672934768721876104">Denne retningsinjen er foreldet. Bruk ProxyMode i stedet.
 
           Gjør at du kan angi proxytjeneren som brukes av <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre mellomtjenerinnstillinger.
@@ -833,7 +757,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 
           Hvis denne retningslinjen ikke angis, kan brukerne velge mellomtjenerinnstillinger på egen hånd.</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
-<translation id="5883954255534074144">Gi <ph name="PRODUCT_FRAME_NAME"/> tillatelse til å håndtere oppførte innholdstyper.</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
 <translation id="5512418063782665071">Nettadresse for startside</translation>
@@ -845,26 +768,13 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
           Hvis du vil ha mer detaljerte eksempler, kan du gå til:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
-<translation id="6630106909870121131">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Retningslinjer for HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="282142179381950064">Deaktiverer synkronisering av Google Dokumenter når angitt som Sann.
-
-          - Dette innebærer at ikke noe data lastes opp til Google Dokumenter.
-
-          - Hvis innstillingen ikke er angitt eller angitt som Usann, kan brukere laste opp filer til Google Dokumenter.</translation>
 <translation id="8303314579975657113">Angir hvilket GSSAPI-bibliotek som skal brukes for HTTP-autentisering. Du kan angi enten et biblioteksnavn eller en fullstendig bane.
 
           Hvis ingen innstillinger oppgis, går <ph name="PRODUCT_NAME"/> tilbake til å bruke et standard biblioteknavn.</translation>
 <translation id="384743459174066962">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får åpne forgrunnsvinduer. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultPopupsSetting hvis denne er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="5645779841392247734">Tillat informasjonskapsler på disse nettstedene</translation>
-<translation id="8220342550735772883">Konfigurerer bufferstørrelsen <ph name="PRODUCT_NAME"/> vil bruke til lagring av bufrede mediefiler på disken.
-
-      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte størrelsen uansett om brukren har angitt «--media-cache-size»-flagget eller ikke.
-
-      Hvis verdien til denne retningslinjen er 0, brukes standard bufferstørrelse, men brukeren kan ikke endre på dette.
-
-     Hvis denne retningslinjen ikke er angitt, brukes standard størrelse, og brukeren kan overstyre dette med «--media-cache-size»-flagget.</translation>
 <translation id="7049373494483449255">Gjør at <ph name="PRODUCT_NAME"/> kan sende dokumenter til <ph name="CLOUD_PRINT_NAME"/> for utskrift.  MERK: Dette påvirker bare støtte av <ph name="CLOUD_PRINT_NAME"/> i <ph name="PRODUCT_NAME"/>. Det hindrer ikke brukeren i å sende utskriftsjobber på nettsteder.
 
       Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukerne sende utskrift til <ph name="CLOUD_PRINT_NAME"/> fra <ph name="PRODUCT_NAME"/>-utskriftsdialogen.

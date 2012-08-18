@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
-<translation id="4573769928351971197">Google Chrome は、起動時に前回のセッションを復元します。終了時のデータの消去など、セッションベースの設定の一部は無効になります。</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
 <translation id="6650142020817594541">このサイトでは Google Chrome Frame（インストール済み）が推奨されています。</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Google Chrome を再起動して更新を完了してください</translation>
 <translation id="546394857889685352">お使いの端末が <ph name="VERSION"/> に更新されました。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
-<translation id="1826482739472655104">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるのかどうかについて確認できる情報はありません。Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="8449380764213232436"><ph name="BROWSER_COMPONENT"/> から Google Chrome にインポートしています:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">インストール中にオペレーティング システム エラーが発生しました。Google Chrome をダウンロード直してください。</translation>

@@ -21,7 +21,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4330297532943865716">Se ha producido un conflicto al instalar Chromium o Chromium Frame en el sistema. Desinstala el software y vuelve a intentarlo.</translation>
 <translation id="6953661834318318668">Barra de herramientas de Chromium</translation>
 <translation id="7097100943370017396">Chromium ha dejado de actualizarse porque el sistema operativo está obsoleto.</translation>
-<translation id="2777754523825675150">Chromium restaurará la sesión anterior al iniciarse. Se inhabilitarán algunas de las opciones basadas en la sesión, por ejemplo, las opciones para eliminar datos al salir del navegador.</translation>
 <translation id="4103959775970322855">Chromium se ha actualizado a <ph name="VERSION"/>.</translation>
 <translation id="4285930937574705105">La instalación ha fallado debido a un error no especificado. Si Chromium se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
 <translation id="2589479092236095792">Configuración de la función Autocompletar de Chromium</translation>
@@ -125,7 +124,6 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="7483335560992089831">No se puede instalar la misma versión de Chromium que se está ejecutando actualmente. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7641113255207688324">Chromium no es tu navegador predeterminado.</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
-<translation id="2174090135251659490">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado que ya no es válido. No disponemos de información que indique si el certificado es fiable. Chromium no puede garantizar de manera fiable que estés estableciendo una comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca las <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? Si no lo es, debes corregir el error y actualizar la página.</translation>
 <translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="5859758987635973787">Chromium está actualizado (<ph name="VERSION"/>).</translation>

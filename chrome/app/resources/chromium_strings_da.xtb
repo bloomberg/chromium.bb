@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">En modstridende installation af Chromium eller Chromium Frame blev fundet på systemet. Afinstaller den, og prøv igen.</translation>
 <translation id="6953661834318318668">Værktøjslinje i Chromium</translation>
 <translation id="7097100943370017396">Chromium opdateres ikke længere, fordi dit operativsystem er forældet.</translation>
-<translation id="2777754523825675150">Chromium genopretter din forrige session ved opstart. Nogle af dine sessionsbaserede indstillinger, f.eks. dem, der sletter data ved nedlukning, deaktiveres.</translation>
 <translation id="4103959775970322855">Chromium er opdateret til <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Chromium kører, skal du lukke programmet og prøve igen.</translation>
 <translation id="2589479092236095792">Indstillinger for AutoFyld i Chromium</translation>
@@ -122,7 +121,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
 <translation id="7641113255207688324">Chromium er ikke din standardbrowser.</translation>
 <translation id="4458285410772214805">Du skal logge ud og logge ind igen, for at denne ændring kan træde i kraft.</translation>
-<translation id="2174090135251659490">Du forsøgte at besøge &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren præsenterede et certifikat, som endnu ikke er gyldigt. Chromium kan ikke garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en ondsindet person. Computerens ur er i øjeblikket angivet til til <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, skal du korrigere fejlen og opdatere siden.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
 <translation id="5859758987635973787">Chromium er opdateret (<ph name="VERSION"/>)</translation>

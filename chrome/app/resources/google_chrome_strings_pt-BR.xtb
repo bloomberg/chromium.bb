@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">O Google Chrome permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
-<translation id="4573769928351971197">O Google Chrome restaurará a sessão anterior na inicialização. Algumas de suas configurações baseadas na sessão, como as que limpam dados na saída, serão desativadas.</translation>
 <translation id="3612333635265770873">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Google Chrome.</translation>
 <translation id="61852838583753520">Atualizar o Chrome OS</translation>
 <translation id="6650142020817594541">O site recomenda o Frame do Google Chrome (já instalado).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Quase atualizado! Reinicie o Google Chrome para concluir a atualização.</translation>
 <translation id="546394857889685352">O dispositivo foi atualizado para <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Gerenciador de tarefas - Google Chrome</translation>
-<translation id="1826482739472655104">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Nenhuma informação está disponível para indicar se o certificado é confiável. O Google Chrome não pode garantir que você está se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, e não com um invasor. O relógio do computador está definido como <ph name="CURRENT_TIME"/>. Isso está correto? Caso contrário, você deve corrigir o erro e atualizar esta página.</translation>
 <translation id="8449380764213232436">O Google Chrome agora está importando os seguintes itens do <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Operador do Google Chrome</translation>
 <translation id="3396977131400919238">Ocorreu um erro no sistema operacional durante a instalação. Baixe o Google Chrome novamente.</translation>

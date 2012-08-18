@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">התקנה מתנגשת של Chromium או Chromium Frame נמצאה במערכת. הסר אותה ונסה שוב.</translation>
 <translation id="6953661834318318668">סרגל הכלים של Chromium</translation>
 <translation id="7097100943370017396">Chromium‏ אינו מתעדכן יותר, כי מערכת ההפעלה שלך מיושנת.</translation>
-<translation id="2777754523825675150">Chromium ישחזר את ההפעלה הקודמת שלך בעת ההפעלה. חלק מההגדרות המבוססות על ההפעלה, כגון אלו שמנקות נתונים ביציאה, יושבתו.</translation>
 <translation id="4103959775970322855">Chromium‏ עודכן ל-‏<ph name="VERSION"/></translation>
 <translation id="4285930937574705105">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="2589479092236095792">הגדרות מילוי אוטומטי של Chromium</translation>
@@ -120,7 +119,6 @@
 <translation id="7483335560992089831">לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="7641113255207688324">Chromium אינו דפדפן ברירת המחדל שלך.</translation>
 <translation id="4458285410772214805">צא מהמערכת והיכנס שוב כדי שהשינוי ייכנס לתוקף.</translation>
-<translation id="2174090135251659490">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שעדיין אינו תקף. אין מידע זמין שיכול לציין אם ניתן לבטוח באישור. Chromium אינו יכול להבטיח באופן מהימן שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את השגיאה ולרענן את דף.</translation>
 <translation id="2119636228670142020">מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="1708666629004767631">גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
 <translation id="5859758987635973787">Chromium‏ מעודכן (<ph name="VERSION"/>)</translation>

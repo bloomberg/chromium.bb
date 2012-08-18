@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">系統在安裝 Chromium 或 Chromium 頁框時發生衝突問題，請先解除安裝，然後再試一次。</translation>
 <translation id="6953661834318318668">Chromium 工具列</translation>
 <translation id="7097100943370017396">您的作業系統版本過舊，因此 Chromium 無法繼續更新。 </translation>
-<translation id="2777754523825675150">啟用時，Chromium 會還原您之前的工作階段，並且會停用某些工作階段設定，例如結束時清除資料。</translation>
 <translation id="4103959775970322855">Chromium 已更新為 <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="2589479092236095792">Chromium 自動填入設定</translation>
@@ -122,7 +121,6 @@
 <translation id="7483335560992089831">無法安裝這個版本的 Chromium，因為目前正在執行相同版本。請關閉 Chromium，然後再試一次。</translation>
 <translation id="7641113255207688324">Chromium 不是您的預設瀏覽器。</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
-<translation id="2174090135251659490">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器提供了無效的憑證。我們沒有足夠資訊判斷憑證是否可信，因此 Chromium 無法保證您的連線對像是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="2119636228670142020">關於 Chromium 作業系統(&amp;C)</translation>
 <translation id="1708666629004767631">新版 Chromium 現已推出，安全更上一層樓。</translation>
 <translation id="5859758987635973787">Chromium 目前是最新版本 (<ph name="VERSION"/>)</translation>

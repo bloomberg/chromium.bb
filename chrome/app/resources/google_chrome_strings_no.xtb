@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på Internett og ringe ved bruk av Skype!</translation>
-<translation id="4573769928351971197">Google Chrome gjenoppretter den forrige økten din ved oppstart. Noen av de øktbaserte innstillingene dine, som blant annet de som sletter data ved avslutning, blir deaktivert.</translation>
 <translation id="3612333635265770873">Det er kjent at en modul med samme navn har vært i konflikt med Google Chrome.</translation>
 <translation id="61852838583753520">Oppdater &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Dette nettstedet anbefaler Google Chrome Frame (allerede installert).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Nå er oppdateringen snart ferdig! Start Google Chrome på nytt for å fullføre oppdateringen.</translation>
 <translation id="546394857889685352">Enheten er oppdatert til <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Oppgavebehandling – Google Chrome</translation>
-<translation id="1826482739472655104">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat som ikke er gyldig enda. Vi finner ikke tilgjengelig informasjon som kan bekrefte at sertifikatet er pålitelig. Google Chrome kan ikke med sikkerhet garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Klokken på datamaskinen din er satt til <ph name="CURRENT_TIME"/>. Er det korrekt? Hvis ikke, må du rette opp feilen og laste inn denne siden på nytt.</translation>
 <translation id="8449380764213232436">Google Chrome importerer nå følgende elementer fra <ph name="BROWSER_COMPONENT"/>.</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Det oppstod en feil i operativsystemet under installeringen. Last ned Google Chrome på nytt.</translation>

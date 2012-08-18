@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
-<translation id="4573769928351971197">Google Chrome 浏览器会在启动时恢复上一会话。这会停用某些基于会话的设置，例如在退出时清除数据的设置。</translation>
 <translation id="3612333635265770873">已发现一个同名的模块与 Google Chrome 浏览器存在冲突。</translation>
 <translation id="61852838583753520">更新 Chrome 操作系统(&amp;C)</translation>
 <translation id="6650142020817594541">此网站建议使用 Google Chrome 浏览器内嵌框架（已安装）。</translation>
@@ -148,7 +147,6 @@
 <translation id="3836351788193713666">即将更新到最新版本！重新启动 Google Chrome 以完成更新。</translation>
 <translation id="546394857889685352">您的设备已更新到 <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">任务管理器 - Google Chrome</translation>
-<translation id="1826482739472655104">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有任何信息可表明该证书是否可以信任。Google Chrome 浏览器无法准确保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="8449380764213232436">Google Chrome 浏览器正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>
 <translation id="852884188147941900">Chrome 浏览器工作应用</translation>
 <translation id="3396977131400919238">安装过程中出现操作系统错误。请重新下载 Google Chrome。</translation>

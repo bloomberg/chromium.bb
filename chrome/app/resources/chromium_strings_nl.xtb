@@ -21,7 +21,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4330297532943865716">Er is een conflicterende versie van Chromium of Chromium Frame gevonden op het systeem. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="6953661834318318668">Chromium-werkbalk</translation>
 <translation id="7097100943370017396">Chromium wordt niet langer bijgewerkt omdat uw besturingssysteem verouderd is.</translation>
-<translation id="2777754523825675150">Chromium herstelt uw vorige sessie bij het opstarten. Enkele van uw sessiegebaseerde instellingen, waaronder de instellingen die gegevens bij afsluiten wissen, worden uitgeschakeld.</translation>
 <translation id="4103959775970322855">Chromium is bijgewerkt naar <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet u Chromium sluiten en het opnieuw proberen.</translation>
 <translation id="2589479092236095792">Instellingen voor Automatisch aanvullen in Chromium</translation>
@@ -124,7 +123,6 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="7641113255207688324">Chromium is niet uw standaardbrowser.</translation>
 <translation id="4458285410772214805">Meld u af en weer aan om deze wijziging door te voeren.</translation>
-<translation id="2174090135251659490">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat nog niet geldig is. Er is geen informatie beschikbaar om te bepalen of dat certificaat betrouwbaar is. Chromium kan niet volledig garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="5859758987635973787">Chromium is bijgewerkt (<ph name="VERSION"/>)</translation>

@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">システム上に競合している Chromium または Chromium Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="6953661834318318668">Chromium ツールバー</translation>
 <translation id="7097100943370017396">お使いのオペレーティング システムはサポートが終了しているため、今後 Chromium は更新されません。</translation>
-<translation id="2777754523825675150">Chromium は、起動時に前回のセッションを復元します。終了時のデータの消去など、セッションベースの設定の一部は無効になります。</translation>
 <translation id="4103959775970322855">Chromium を <ph name="VERSION"/> に更新しました</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="2589479092236095792">Chromium 自動入力設定</translation>
@@ -122,7 +121,6 @@
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="7641113255207688324">Chromium は既定のブラウザとして設定されていません。</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
-<translation id="2174090135251659490">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるのかどうかについて確認できる情報はありません。Chromium では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="5859758987635973787">Chromium は最新版（<ph name="VERSION"/>）です</translation>

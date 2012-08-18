@@ -3,7 +3,6 @@
 <translationbundle lang="te">
 <translation id="3595596368722241419">బ్యాటరీ  నిండింది</translation>
 <translation id="5250713215130379958">లాంచర్‌ను స్వయంచాలకంగా దాచు</translation>
-<translation id="8328777765163860529">అన్నింటినీ మూసివేయి</translation>
 <translation id="30155388420722288">అతివ్యాప్తి బటన్</translation>
 <translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -12,9 +11,11 @@
 <translation id="3626281679859535460">ప్రకాశం</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="5565793151875479467">ప్రాక్సీ...</translation>
+<translation id="938582441709398163">కీబోర్డ్ అవలోకనం</translation>
 <translation id="6979158407327259162">Google డిస్క్</translation>
 <translation id="2297568595583585744">స్థితి ట్రే</translation>
 <translation id="2946640296642327832">Bluetoothని ప్రారంభించు</translation>
+<translation id="8206859287963243715">సెల్యులార్</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
 <translation id="5233638681132016545">క్రొత్త టాబ్</translation>
 <translation id="3846575436967432996">నెట్‌వర్క్ సమాచారం అందుబాటులో లేదు</translation>
@@ -26,8 +27,6 @@
 <translation id="1525975890706558596">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి Shift + శోధన కీని నొక్కండి.</translation>
 <translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
-<translation id="3845909655305837528">మీ ఇన్‌పుట్ పద్ధతి మార్చబడింది.
-        మారడానికి Shift + Alt నొక్కండి.</translation>
 <translation id="5182671122927417841">పొడిగింపును నిలిపివేయి</translation>
 <translation id="598295083618286569">Bluetooth కనెక్ట్ చేయబడింది</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
@@ -45,9 +44,9 @@
 <translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2570059561924004903">మాట్లాడిన అభిప్రాయాన్ని నిలిపివేయండి</translation>
+<translation id="1895658205118569222">షట్‌డౌన్</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
 <translation id="1383876407941801731">శోధన</translation>
-<translation id="3557139239102318020">టైల్‌కు ఎడమవైపు లేదా కుడివైపు కనిష్టీకరించడానికి క్రిందికి లాగండి</translation>
 <translation id="5980301590375426705">అతిథిగా నిష్క్రమించు</translation>
 <translation id="8308637677604853869">మునుపటి మెను</translation>
 <translation id="1346748346194534595">కుడి</translation>
@@ -58,17 +57,22 @@
 <translation id="5543001071567407895">SMS</translation>
 <translation id="6223565363550976998">బ్యాటరీ: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="3784455785234192852">లాక్ చేయి</translation>
 <translation id="2805756323405976993">Apps</translation>
+<translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
 <translation id="7052914147756339792">వాల్‌పేపర్‌ను సెట్ చేయి...</translation>
 <translation id="1602076796624386989">మొబైల్ డేటాను ప్రారంభించు</translation>
+<translation id="3157931365184549694">పునరుద్ధరించు</translation>
 <translation id="8573351908869164327"><ph name="HOUR"/>h <ph name="MINUTE"/>m మిగిలి ఉంది</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
 <translation id="2983818520079887040">సెట్టింగ్‌లు...</translation>
+<translation id="2712866615167520691">ప్రాప్యత లక్షణాలు ప్రారంభించబడ్డాయి. రద్దు చేయడానికి Ctrl+Alt+Zను నొక్కండి.</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> ఫైల్(ల)ను సమకాలీకరిస్తోంది</translation>
 <translation id="639644700271529076">CAPS LOCK ఆపివేయబడింది</translation>
 <translation id="4864165860509564259">లాంచర్ స్థానం</translation>
+<translation id="7649070708921625228">సహాయం</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
 <translation id="7871882211137875558">ఇతరం చేర్చండి ...</translation>
@@ -76,6 +80,7 @@
 <translation id="8103386449138765447">SMS సందేశాలు: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
 <translation id="48607902311828362">ఎయిర్‌ప్లైన్ మోడ్</translation>
+<translation id="5941711191222866238">కనిష్టీకరించు</translation>
 <translation id="9169585155162064169">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి శోధన కీని నొక్కండి.</translation>
 <translation id="412065659894267608">నిండే వరకు <ph name="HOUR"/>h <ph name="MINUTE"/>m అవుతుంది</translation>

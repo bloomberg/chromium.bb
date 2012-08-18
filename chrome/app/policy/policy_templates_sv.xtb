@@ -132,11 +132,6 @@
 <translation id="2231817271680715693">Importera webbhistorik från standardwebbläsaren första gången den körs</translation>
 <translation id="1353966721814789986">Startsidor</translation>
 <translation id="5564962323737505851">Konfigurerar lösenordshanteraren. Om lösenordshanteraren är aktiverad kan du välja att aktivera eller inaktivera huruvida användare får visa sparade lösenord med vanlig text.</translation>
-<translation id="7989334138134558357">Den här policyn är bara aktiv i återförsäljarläge.
-
-      När policyn har ett värde som inte är 0 loggas den inloggade demoanvändaren ut automatiskt efter den tid som anges.
-
-      Policyns värde anges i millisekunder.</translation>
 <translation id="4668325077104657568">Standardinställning för bilder</translation>
 <translation id="7161193985878519056">Inkognitoläget är inaktiverat.</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
@@ -250,8 +245,6 @@
       Policyns värde anges i millisekunder.</translation>
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
-<translation id="6378014222084506939">Tillgänglighet för inkognitoläge.</translation>
-<translation id="3706027163744097186">Begränsa vilka användare som får logga in på <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
 <translation id="1283072268083088623">Policyn anger vilka scheman för HTTP-autentisering som stöds  <ph name="PRODUCT_NAME"/>.
 
@@ -292,15 +285,6 @@
 <translation id="8391419598427733574">Rapportera version av operativsystem och fast programvara för registrerade enheter. Om inställningen är False kommer registrerade enheter regelbundet att rapportera versionen av operativsystemet och den fasta programvaran. Om inställningen inte är angiven eller inställd på False kommer versionsinformationen inte att rapporteras.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
-<translation id="3413139738214204027">Policyn konfigurerar adressen för standardstartsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar den.
-
-          Startsidans typ kan vara en webbadress du anger här eller inställd på sidan Ny flik.
-
-          Om du väljer sidan Ny flik används inte den här policyn.
-
-          Om du aktiverar den här policyn kan användarna inte ändra webbadressen för startsidan i <ph name="PRODUCT_NAME"/>, men de kan fortfarande välja att använda sidan Ny flik som startsida.
-
-          Om den här policyn inte anges kan användarna själva välja sin startsida, förutsatt att inte HomepageIsNewTabPage heller är inställd.</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
 <translation id="8170882486743832400">Konfigurera GData-alternativ</translation>
 <translation id="2322733497952278056">Policyn ger åtkomst till de webbadresser som anges, som undantag till de svartlistade webbadresserna.
@@ -353,15 +337,6 @@
       Om den här policyn är konfigurerad är appuppsättningen fast och kan inte ändras av användaren.
 
       Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
-<translation id="6177482277304066047">Anger en målversion för automatiska uppdateringar.
-
-      Anger prefix för en målversion som <ph name="PRODUCT_OS_NAME"/> ska uppdateras till. Om enheten har en version som är äldre än det angivna prefixet uppdateras den till den senaste versionen med det angivna prefixet. Om enheten redan har en nyare version händer ingenting (ingen nedgradering görs) och enhetens befintliga version påverkas inte. Prefixformatet fungerar per komponent som i följande exempel:
-
-      &quot;&quot; (eller inte konfigurerad): uppdatera till den senaste tillgängliga versionen.
-      &quot;1412.&quot;: uppdatera till alla delversioner av 1412 (t.ex. 1412.24.34 eller 1412.60.2)
-      &quot;1412.2.&quot;: uppdatera till alla delversioner av 1412.2 (t.ex. 1412.2.34 eller 1412.2.2)
-      &quot;1412.24.34&quot;: uppdatera bara till denna specifika version.
-      </translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
@@ -379,15 +354,6 @@
       Undantag kan anges i policyn för listan över godkända webbadresser. Dessa policyer är begränsade till 100 poster. Efterföljande poster kommer att ignoreras.
 
       Om policyn inte anges svartlistas inga webbadresser i webbläsaren.</translation>
-<translation id="3586489081967749966">Policyn anger det maximala antalet anslutningar till proxyservern som kan göras samtidigt.
-
-      Vissa proxyservrar kan inte hantera stora antal anslutningar per klient samtidigt och detta kan åtgärdas genom att den här policyn ställs in på ett lägre värde.
-
-      Policyns värde ska vara lägre än 100 och högre än 6. Standardvärdet är 32.
-
-      Vissa webbappar kräver många anslutningar med hängande GET-kommandon, så om du sänker under 32 kanske webbläsaren hänger sig om för många sådana webbappar körs samtidigt. Använd värden under standardvärdet på egen risk.
-
-      Om policyn inte anges används standardvärdet 32.</translation>
 <translation id="3864818549971490907">Standardinställning för plugin-program</translation>
 <translation id="7151201297958662315">Avgör om en <ph name="PRODUCT_NAME"/>-process startas när användaren loggar in i operativsystemet och fortsätter köras när det sista webbläsarfönstret stängs så att bakgrundsappar kan fortsätta vara aktiva. Bakgrundsprocessen visas som en ikon i systemfältet och kan alltid stängas därifrån.
 
@@ -452,11 +418,6 @@
 <translation id="7880891067740158163">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som <ph name="PRODUCT_NAME"/> ska välja klientcertifikat för automatiskt om webbplatsen efterfrågar certifikat.
 
           Om policyn inte anges görs inget automatiskt val för någon webbplats.</translation>
-<translation id="583542926035627341">Den här policyn är bara aktiv i återförsäljarläge.
-
-      Listan med tillägg som installeras automatiskt för demoanvändaren för enheter i återförsäljarläge. Dessa tillägg sparas i enheten och kan installeras offline efter installationen.
-
-      Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url. Det valfria fältet online-only kan ställas in på sant för att visa att tillägget bara ska installeras om enheten är online vid inloggningstillfället.</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="5192837635164433517">Policyn gör att det går att använda alternativa felsidor som finns inbyggda i <ph name="PRODUCT_NAME"/> (till exempel Sidan hittades inte) och förhindrar att användarna ändrar inställningen.
 
@@ -594,13 +555,6 @@
       Om du aktiverar eller inaktiverar inställningen kan den inte ändras i <ph name="PRODUCT_NAME"/> av användarna.
 
       Om inställningen inte anges kan användaren avgöra om funktionen ska användas eller inte.</translation>
-<translation id="869575100785642004">Här kan du ange med vilka webbadresser det ska vara tillåtet att installera tillägg, program och teman.
-
-          Från och med Chrome 21 är det svårare att installera tillägg, appar och användarskript utanför Chrome Web Store. Tidigare kunde användare klicka på en länk till en *.CRX-fil och sedan installera filen via Chrome efter att några varningar visades. Efter Chrome 21 måste sådana filer hämtas och dras till Chromes inställningssida. Med den här inställningen kan du göra det möjligt för särskilda webbadresser att använda det äldre och enklare installationsflödet.
-
-          Varje objekt i listan motsvarar en matchning i form av ett tillägg (se http://code.google.com/chrome/extensions/match_patterns.html). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan.
-
-          ExtensionInstallBlacklist har företräde framför den här policyn. Det innebär att ett tillägg på den svarta listan inte kommer att installeras även om det sker från en webbplats på den här listan.</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="4445684791305970001">Policyn inaktiverar utvecklarverktygen och JavaScript-konsolen.
@@ -613,7 +567,6 @@
 <translation id="5378985487213287085">Policyn gör att du kan ange om webbplatser får visa meddelanden på skrivbordet. Meddelanden på skrivbordet kan vara tillåtet som standard, otillåtet som standard eller så kan användaren tillfrågas varje gång en webbplats försöker visa meddelanden på skrivbordet.
 
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
-<translation id="3744263630913802110">Rapportera version av operativsystem och fast programvara.</translation>
 <translation id="6908640907898649429">Konfigurerar standardsökleverantör. Du kan ange vilken standardsökleverantör som ska användas eller inaktivera standardsökning.</translation>
 <translation id="389421284571827139">Policyn gör att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar proxyinställningar.
 
@@ -642,7 +595,6 @@
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
-<translation id="8288507390252297611">Inaktivera förhandsgranskning av utskrift. Inställningen används för att systemets dialogruta Skriv ut ska användas istället för förhandsgranskning av utskrift.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="6373222873250380826">Inaktiverar automatiska uppdateringar när inställningen är sant.
 
@@ -651,7 +603,6 @@
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
-<translation id="9055197679339967051">Anger om lanseringskanalen ska kunna ställas in av användaren eller vara låst.</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
@@ -721,15 +672,6 @@
 
       Om inställningen inte anges kan användaren välja om funktionen ska användas eller inte.</translation>
 <translation id="3264793472749429012">Kodningar för standardsökleverantör</translation>
-<translation id="3366530054462553357">Policyn anger en lista med plugin-program som inaktiveras i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
-
-      Jokertecknen * och ? kan användas för att matcha sekvenser med arbiträra tecken. * matchar ett arbiträrt antal tecken medan? anger ett valfritt enstaka tecken, dvs. noll eller ett tecken. Escape-tecknet är \, så om du vill matcha det faktiska tecknet *, ? eller \ kan du skriva \ framför dem.
-
-      Om du aktiverar inställningen används aldrig den angivna listan med plugin-program i <ph name="PRODUCT_NAME"/>. plugin-programmen markeras som inaktiverade i about:plugins och kan inte aktiveras av användare.
-
-      Observera att den här policyn kan åsidosättas av EnabledPlugins och DisabledPluginsExceptions.
-
-      Om den här policyn inte anges kan användaren använda alla plugin-program som är installerade på datorn förutom hårdkodade inkompatibla, föråldrade eller farliga plugin-program.</translation>
 <translation id="8101760444435022591">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME"/> version 19 och senare. Om du aktiverar den här policyn återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
 
       Om policyn inte ställs in eller ställs in på falskt görs ingen återkallelsekontroll online i Chrome 19.</translation>
@@ -802,9 +744,6 @@
 <translation id="7006788746334555276">Innehållsinställningar</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
-<translation id="3940756655305062524">Om den här policyn är inställd på sant och policyn ChromeOsReleaseChannel inte har angetts kan användarna ändra enhetens lanseringskanal. Om policyn är inställd på falskt är enheten låst på den senast inställda kanalen.
-
-      Den kanal som användaren valt ersätts av policyn ChromeOsReleaseChannel men om policykanalen är mer stabil än den som installerades på enheten kan kanalbytet bara göras efter att den stabilare kanalens versionsnummer blivit högre än den som är installerad på enheten.</translation>
 <translation id="187819629719252111">Policyn tillåter åtkomst till lokala filer på datorn genom att tillåta att <ph name="PRODUCT_NAME"/> visar dialogrutor för filval.
 
       Om du aktiverar den här inställningen kan användarna öppna dialogrutor för filval som vanligt.
@@ -824,9 +763,6 @@
 <translation id="868187325500643455">Tillåt alla webbplatser att köra pluginprogram automatiskt</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
-<translation id="584083164257867276">Definierar listan med användare som får logga in på enheten. Poster har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, till exempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Om du vill att användare ska kunna logga in på en domän helt godtyckligt använder du poster i formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
-
-      Om den här policyn inte är konfigurerad finns inga begränsningar för vilka användare som får logga in. Observera att policyn <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/> fortfarande måste vara korrekt konfigurerad för att det ska gå att skapa nya användare.</translation>
 <translation id="3428247105888806363">Aktivera nätverksförslag</translation>
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
@@ -847,22 +783,10 @@
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
 <translation id="4056910949759281379">Inaktivera SPDY-protokoll</translation>
-<translation id="1991398966873139530">Policyn anger en lista med plugin-program som kan aktiveras och inaktiveras av användaren i <ph name="PRODUCT_NAME"/>.
-
-      Jokertecknen * och ? kan användas för att matcha sekvenser med arbiträra tecken. * matchar ett arbiträrt antal tecken medan ? anger ett valfritt enstaka tecken, dvs. noll eller ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? och \ kan du skriva \ framför dem.
-
-      Om du aktiverar inställningen kan den angivna listan med plugin-program användas i <ph name="PRODUCT_NAME"/>. Användarna kan aktivera eller inaktivera dem i about:plugins, även om plugin-programmet också matchar ett mönster i DisabledPlugins. Användarna kan också aktivera och inaktivera plugin-program som inte matchar några mönster i DisabledPlugins, DisabledPluginsExceptions och EnabledPlugins.
-
-      Policyn är avsedd att tillåta strikt svartlistning av plugin-program genom att listan DisabledPlugins innehåller jokerposter som inaktiverar alla plugin-program (*) eller inaktiverar alla Java-plugin-program (*Java*) men administratören vill aktivera vissa specifika version som IcedTea Java 2.3. Dessa specifika versioner kan anges i den här policyn.
-
-      Om policyn inte anges låses alla plugin-program som matchar mönstren i DisabledPlugins och användaren kan inte aktivera dem.</translation>
 <translation id="3808945828600697669">Ange en lista med inaktiverade plugin-program</translation>
 <translation id="4525521128313814366">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
 
           Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
-<translation id="1894491175123948728">Den här policyn är bara aktiv i återförsäljarläge.
-
-      Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn AppPacks.</translation>
 <translation id="3866530186104388232">Om den här policyn är inställd på sant eller inte är konfigurerad visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME"/> och det går att välja en. Om policyn är inställd på falskt används inloggningsfönstret för användarnamn och lösenord i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
 <translation id="1151353063931113432">Tillåt bilder på dessa webbplatser</translation>
@@ -888,10 +812,6 @@
       Om inställningen är inaktiverad kan användarna inte skriva ut från <ph name="PRODUCT_NAME"/>. Utskrift är inaktiverad på skiftnyckelmenyn, i tillägg, i JavaScript-program osv. Det går fortfarande att skriva ut från plugin-program som förbigår <ph name="PRODUCT_NAME"/> under utskriften. Vissa Flash-program har till exempel alternativet Skriv ut på snabbmenyn, och det inaktiveras inte.
 
       Om policyn inte anges är inställningen aktiverad men kan ändras av användaren.</translation>
-<translation id="210513196702568522"> Typer av anslutningar som får användas för uppdateringar av operativsystem. Operativsystemsuppdateringar kan orsaka stor belastning på anslutningen på grund av sin storlek och kan medföra extra kostnader. Därför är de som standard inte aktiverade för de anslutningstyper som anses dyra. Dessa typer omfattar just nu WiMax, Bluetooth och Cellular.
-
-      Identifierare som tillhör erkända anslutningstyper är Ethernet, Wi-Fi, WiMAX, Bluetooth och mobilnät.
-      </translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="7635471475589566552">Policyn konfigurerar appens språkversion i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar språk.
@@ -914,11 +834,6 @@
       Om du inaktiverar den här inställningen går det inte att använda äldre plugin-program och användarna tillfrågas inte om tillåtelse att köra dem.
 
       Om du inte anger inställningen får användarna välja om de vill köra föråldrade program.</translation>
-<translation id="4922427744878251344">Inaktiverar synkronisering av Google Dokument när en mobildataanslutning används om värdet är sant.
-
-          – data synkroniseras bara med Google Dokument om det finns en Wi-Fi- eller Ethernet-anslutning
-
-          – om policyn inte är inställd eller om värdet är falskt kan användarna överföra filer till Google Dokument via mobildataanslutningar.</translation>
 <translation id="2629448496147630947">Konfigurera alternativ för fjärråtkomst i <ph name="PRODUCT_NAME"/>. Dessa funktioner ignoreras om inte webbappen för fjärråtkomst har installerats.</translation>
 <translation id="1310699457130669094">Här kan du ange webbadressen till en PAC-fil för proxy.
 
@@ -961,7 +876,6 @@
 
       Om policyn inte anges är cookies från tredje part tillåtna, men inställningen kan ändras av användaren.</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
-<translation id="57127641120127115">Aktivera lås när enheten är i viloläge eller vänteläge.</translation>
 <translation id="6672934768721876104">Den här policyn gäller inte längre. Använd ProxyMode istället.
 
       Den innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
@@ -978,7 +892,6 @@
 
       Om du inte anger policyn kan användarna själva välja sina proxyinställningar.</translation>
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
-<translation id="5883954255534074144">Tillåt att <ph name="PRODUCT_FRAME_NAME"/> hanterar följande innehållstyper.</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
 <translation id="5512418063782665071">Webbadress för startsida</translation>
@@ -991,14 +904,8 @@
           Mer detaljerade exempel finns på:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Anger hur många sekunder en hämtning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att hämtas.</translation>
-<translation id="6630106909870121131">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Policy för HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="282142179381950064">Inaktiverar synkronisering av Google Dokument när värdet är sant.
-
-          – inga data överförs till Google Dokument
-
-          – om policyn inte ställs in eller värdet är falskt kan användarna överföra filer till Google Dokument.</translation>
 <translation id="8303314579975657113">Policyn anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg.
 
       Om du inte anger något använder <ph name="PRODUCT_NAME"/> ett standardbiblioteksnamn.</translation>
@@ -1006,13 +913,6 @@
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
-<translation id="8220342550735772883">Policyn konfigurerar storleken på den cache som <ph name="PRODUCT_NAME"/> använder för att spara cachelagrade mediefiler på hårddisken.
-
-      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna cachestorleken oavsett om användaren har angett flaggan --media-cache-size eller inte.
-
-      Om policyns värde är 0 används standardstorleken för cache och användaren kan inte ändra den.
-
-      Om policyn inte anges används standardstorleken och användaren kan åsidosätta den med flaggan --media-cache-size.</translation>
 <translation id="7049373494483449255">Policyn gör att <ph name="PRODUCT_NAME"/> kan skicka dokument till <ph name="CLOUD_PRINT_NAME"/> för utskrift. Obs! Detta påverkar bara stöd för <ph name="CLOUD_PRINT_NAME"/> i <ph name="PRODUCT_NAME"/>. Det förhindrar inte att användarna skickar utskriftsjobb på webbplatser.
 
       Om inställningen är aktiverad eller inte konfigurerad kan användarna skriva ut till <ph name="CLOUD_PRINT_NAME"/> från dialogrutan Skriv ut i <ph name="PRODUCT_NAME"/>.

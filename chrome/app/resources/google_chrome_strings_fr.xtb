@@ -97,7 +97,6 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Avec Google Chrome, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
-<translation id="4573769928351971197">Google Chrome va restaurer votre session précédente au démarrage. Certains des paramètres spécifiques à votre session, tels que ceux permettant d'effacer les données à la fermeture, seront désactivés.</translation>
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Ce site recommande Google Chrome Frame (déjà installé).</translation>
@@ -154,7 +153,6 @@ Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un r
 <translation id="3836351788193713666">Mise à jour presque terminée. Relancez Google Chrome pour terminer la mise à jour.</translation>
 <translation id="546394857889685352">La version <ph name="VERSION"/> a été installée sur votre appareil.</translation>
 <translation id="7106741999175697885">Gestionnaire de tâches - Google Chrome</translation>
-<translation id="1826482739472655104">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat qui n'est pas encore valide. Aucune information n'indique que ce certificat est fiable. Google Chrome ne peut donc pas garantir que vous communiquez avec &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; et non avec un pirate informatique. L'horloge de votre ordinateur indique qu'il est actuellement <ph name="CURRENT_TIME"/>. Est-ce correct ? Si ce n'est pas le cas, corrigez toute erreur, puis actualisez cette page.</translation>
 <translation id="8449380764213232436">Chrome importe actuellement les éléments suivants à partir de <ph name="BROWSER_COMPONENT"/> :</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Erreur de système d'exploitation pendant l'installation. Veuillez télécharger de nouveau Google Chrome.</translation>

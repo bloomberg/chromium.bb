@@ -21,7 +21,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4330297532943865716">V systému byla nalezena konfliktní instalace prohlížeče Chromium. Odinstalujte prosím tuto instanci a zkuste to znovu.</translation>
 <translation id="6953661834318318668">Panel nástrojů Chromium</translation>
 <translation id="7097100943370017396">Chromium se již neaktualizuje, protože váš operační systém je zastaralý.</translation>
-<translation id="2777754523825675150">Chromium obnoví předchozí relaci při spuštění. Některá nastavení založená na relaci, jako jsou ta, která při ukončení mažou data, budou deaktivována.</translation>
 <translation id="4103959775970322855">Prohlížeč Chromium byl aktualizován na verzi <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="2589479092236095792">Nastavení Automatického vyplňování v prohlížeči Chromium</translation>
@@ -124,7 +123,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="7483335560992089831">Nelze nainstalovat verzi prohlížeče Chromium, která je právě spuštěná. Ukončete prohlížeč Chromium a zkuste to znovu.</translation>
 <translation id="7641113255207688324">Chromium není vaším výchozím prohlížečem.</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
-<translation id="2174090135251659490">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát, který ještě není platný. Nejsou k dispozici žádné informace, které by naznačovaly, zda je možné certifikátu důvěřovat. Aplikace Chromium nemůže spolehlivě zaručit, že komunikujete se serverem &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na hodnotu <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
 <translation id="5859758987635973787">Chromium je aktuální (<ph name="VERSION"/>)</translation>

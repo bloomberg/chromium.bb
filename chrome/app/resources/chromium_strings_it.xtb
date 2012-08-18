@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Sul sistema è stata trovata un'installazione in conflitto di Chromium o Chromium Frame. Disinstalla questa installazione e riprova.</translation>
 <translation id="6953661834318318668">Barra degli strumenti di Chromium</translation>
 <translation id="7097100943370017396">Chromium non viene più aggiornato perché il sistema operativo è obsoleto.</translation>
-<translation id="2777754523825675150">Chromium ripristinerà la sessione precedente all'avvio. Alcune impostazioni basate sulle sessioni, ad esempio quelle che cancellano i dati alla chiusura, verranno disattivate.</translation>
 <translation id="4103959775970322855">Chromium è stato aggiornato alla versione <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Installazione non riuscita a causa di un errore imprecisato. Se Chromium è in esecuzione, chiudilo e riprova.</translation>
 <translation id="2589479092236095792">Impostazioni di Compilazione automatica Chromium</translation>
@@ -122,7 +121,6 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="7483335560992089831">Impossibile installare una versione di Chromium uguale a quella in esecuzione. Chiudi Chromium e riprova.</translation>
 <translation id="7641113255207688324">Chromium non è il browser predefinito.</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
-<translation id="2174090135251659490">Hai tentato di visitare &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il server ha presentato un certificato non ancora valido. Non sono disponibili informazioni che consentano di stabilire se il certificato può essere considerato attendibile. Chromium non può garantire con certezza che tu stia comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un malintenzionato. Al momento l'orologio del tuo computer è impostato su <ph name="CURRENT_TIME"/>. È giusto? In caso contrario, dovresti correggere l'errore e aggiornare la pagina.</translation>
 <translation id="2119636228670142020">Informazioni su &amp;Chromium OS</translation>
 <translation id="1708666629004767631">È disponibile una nuova versione più sicura di Chromium.</translation>
 <translation id="5859758987635973787">Chromium è aggiornato (<ph name="VERSION"/>)</translation>

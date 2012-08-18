@@ -98,7 +98,6 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 <translation id="5941830788786076944">Establecer Google Chrome como navegador predeterminado</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
-<translation id="4573769928351971197">Google Chrome restaurará la sesión anterior al iniciarse. Se inhabilitarán algunas de las opciones basadas en la sesión, por ejemplo, las opciones para eliminar datos al salir del navegador.</translation>
 <translation id="3612333635265770873">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Google Chrome.</translation>
 <translation id="61852838583753520">Información de &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Este sitio recomienda Google Chrome Frame (ya instalado).</translation>
@@ -155,7 +154,6 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 <translation id="3836351788193713666">Google Chrome casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="546394857889685352">El dispositivo se ha actualizado a la versión <ph name="VERSION"/>.</translation>
 <translation id="7106741999175697885">Administrador de tareas de Google Chrome</translation>
-<translation id="1826482739472655104">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado que ya no es válido. No disponemos de información que indique si el certificado es fiable. Google Chrome no puede garantizar de manera fiable que estés estableciendo una comunicación con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y no con un hacker. Actualmente, el reloj de tu ordenador marca las <ph name="CURRENT_TIME"/>. ¿Esta información es correcta? Si no lo es, debes corregir el error y actualizar la página.</translation>
 <translation id="8449380764213232436">Google Chrome está importando los siguientes elementos de <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Worker de Chrome</translation>
 <translation id="3396977131400919238">Se ha producido un error de sistema operativo durante el proceso de instalación. Vuelve a descargar Google Chrome.</translation>

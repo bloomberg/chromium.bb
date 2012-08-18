@@ -20,7 +20,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4330297532943865716">Une installation conflictuelle de Chromium ou de Chromium Frame a été trouvée sur le système. Veuillez la désinstaller, puis réessayer.</translation>
 <translation id="6953661834318318668">Barre d'outils Chromium</translation>
 <translation id="7097100943370017396">Impossible de mettre à jour Chromium, car la version de votre système d'exploitation est obsolète.</translation>
-<translation id="2777754523825675150">Chromium va restaurer votre session précédente au démarrage. Certains des paramètres spécifiques à votre session, tels que ceux permettant d'effacer les données à la fermeture, seront désactivés.</translation>
 <translation id="4103959775970322855">La nouvelle version <ph name="VERSION"/> de Chromium a été installée.</translation>
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="2589479092236095792">Paramètres de saisie automatique de Chromium</translation>
@@ -123,7 +122,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="7641113255207688324">Chromium n'est pas votre navigateur par défaut.</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
-<translation id="2174090135251659490">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat qui n'est pas encore valide. Aucune information n'indique que ce certificat est fiable. Chromium ne peut donc pas garantir que vous communiquez avec &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; et non avec un pirate informatique. L'horloge de votre ordinateur indique qu'il est actuellement <ph name="CURRENT_TIME"/>. Est-ce correct ? Si ce n'est pas le cas, corrigez toute erreur, puis actualisez cette page.</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
 <translation id="5859758987635973787">Chromium est à jour (<ph name="VERSION"/>).</translation>

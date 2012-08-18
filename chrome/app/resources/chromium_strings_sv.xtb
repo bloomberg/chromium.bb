@@ -21,7 +21,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4330297532943865716">Det finns en installation av Chromium eller Chromium Frame i datorn och det förhindrar installationen. Avinstallera och försök igen.</translation>
 <translation id="6953661834318318668">Chromiums verktygsfält</translation>
 <translation id="7097100943370017396">Chromium uppdateras inte längre eftersom operativsystemet är inaktuellt.</translation>
-<translation id="2777754523825675150">Chromium återställer din tidigare session vid start. Vissa sessionbaserade inställningar, till exempel sådana som tar bort data när programmet avslutas, kommer att inaktiveras.</translation>
 <translation id="4103959775970322855">Chromium har uppdaterats till <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
 <translation id="2589479092236095792">Inställningar för Autofyll i Chromium</translation>
@@ -124,7 +123,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
 <translation id="7641113255207688324">Chromium är inte din standardwebbläsare.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
-<translation id="2174090135251659490">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som inte är giltigt ännu. Det finns ingen information som anger om certifikatet är tillförlitligt. Chromium kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Datorns klocka är inställd på <ph name="CURRENT_TIME"/>. Ser det rätt ut? Om det inte gör det bör du rätta till den och uppdatera sidan.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
 <translation id="5859758987635973787">Chromium är uppdaterat (<ph name="VERSION"/>)</translation>

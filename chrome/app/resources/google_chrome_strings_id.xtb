@@ -17,7 +17,7 @@
 <translation id="1484802885942301358">Ini adalah Google Chrome versi terbaru (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Aktifkan Google Chrome</translation>
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
-<translation id="2879385160622431163">Google Chrome Sekejap</translation>
+<translation id="2879385160622431163">Google Chrome Instan</translation>
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame yang sama dengan yang sedang dijalankan. Tutup Google Chrome Frame dan coba lagi.</translation>
 <translation id="2040709530900803995">Pengaju Google Chrome</translation>
@@ -30,7 +30,7 @@
 <translation id="1779550429052479749">Terjadi konflik pemasangan Google Chrome atau Google Chrome Frame pada sistem. Hapus pemasangan dan coba lagi.</translation>
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
 <translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
-<translation id="4728575227883772061">Penginstalan gagal karena galat yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
+<translation id="4728575227883772061">Penginstalan gagal karena kesalahan yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="3080151273017101988">Terus jalankan apl latar belakang saat Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
@@ -53,7 +53,7 @@
 <translation id="3282568296779691940">Masuk ke Chrome</translation>
 <translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
 <translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
-<translation id="7451721381978275812">Parameter tidak valid. Google Chrome Frame tidak dapat dipasang dalam modus siap bila Google Chrome belum dipasang.</translation>
+<translation id="7451721381978275812">Parameter tidak valid. Google Chrome Frame tidak dapat dipasang dalam mode siap bila Google Chrome belum dipasang.</translation>
 <translation id="4585888816441913908">Komputer ini telah memiliki Google Chrome dan Google Chrome Frame versi teranyar. Jika perangkat lunak tidak bekerja, copot pemasangan Google Chrome dan Google Chrome Frame, kemudian coba lagi.</translation>
 <translation id="6368958679917195344">OS Chrome terwujud karena <ph name="BEGIN_LINK_CROS_OSS"/>perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
 <translation id="7459554271817304652">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Google Chrome di komputer mana pun.</translation>
@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
-<translation id="4573769928351971197">Google Chrome akan memulihkan sesi sebelumnya saat dihidupkan. Beberapa setelan berbasis sesi, seperti yang menghapus data saat keluar, akan dinonaktifkan.</translation>
 <translation id="3612333635265770873">Modul dengan nama yang sama biasanya konflik dengan Google Chrome.</translation>
 <translation id="61852838583753520">Pembaruan OS &amp;Chrome</translation>
 <translation id="6650142020817594541">Situs ini merekomendasikan Google Chrome Frame (sudah terpasang).</translation>
@@ -136,7 +135,7 @@
 <translation id="2246246234298806438">Google Chrome tidak dapat menampilkan pratinjau cetak jika penampil PDF default hilang.</translation>
 <translation id="6626317981028933585">Sayangnya, setelan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
-<translation id="1698376642261615901">Google Chrome adalah browser web yang menjalankan laman dan aplikasi web secepat kilat. Cepat, stabil, dan mudah digunakan. Jelajahi web secara lebih aman dengan perlindungan terhadap perangkat lunak jahat dan phishing yang disertakan dalam Google Chrome.</translation>
+<translation id="1698376642261615901">Google Chrome adalah browser web yang menjalankan laman dan aplikasi web secepat kilat. Cepat, stabil, dan mudah digunakan. Jelajahi web secara lebih aman dengan perlindungan terhadap perangkat lunak perusak dan phishing yang disertakan dalam Google Chrome.</translation>
 <translation id="3419750618886995598">Pembaruan Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome atau Google Chrome Frame tidak dapat diperbarui karena setelan Kebijakan Grup Google Pembaruan tidak konsisten. Gunakan Editor Kebijakan Grup untuk menyetel penimpaan kebijakan pembaruan untuk aplikasi Google Chrome Binaries dan coba lagi; lihat http://goo.gl/uJ9gV untuk detailnya.</translation>
 <translation id="6049075767726609708">Administrator telah menginstal Google Chrome di sistem ini dan tersedia bagi seluruh pengguna. Sekarang tingkat sistem Google Chrome akan mengganti penginstalan tingkat pengguna Anda.</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Hampir diperbarui! Luncurkan ulang Google Chrome untuk menyelesaikan pembaruan.</translation>
 <translation id="546394857889685352">Perangkat Anda telah diperbarui ke <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Pengelola Tugas - Google Chrome</translation>
-<translation id="1826482739472655104">Anda mencoba menjangkau &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server menampilkan sertifikat yang belum valid. Tidak tersedia informasi yang menunjukkan bahwa sertifikat tersebut dapat dipercaya. Google Chrome tidak dapat menjamin bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_TIME"/>. Apakah sudah benar? Jika tidak, Anda perlu mengoreksi kesalahan ini dan menyegarkan laman.</translation>
 <translation id="8449380764213232436">Kini Google Chrome mengimpor item berikut dari <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Pekerja Chrome</translation>
 <translation id="3396977131400919238">Terjadi kesalahan pada sistem operasi saat penginstalan berlangsung. Unduh kembali Google Chrome.</translation>

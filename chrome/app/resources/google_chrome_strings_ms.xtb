@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
-<translation id="4573769928351971197">Google Chrome akan memulihkan sesi terdahulu anda semasa bermula. Beberapa tetapan anda yang berasaskan sesi, seperti yang mengosongkan data apabila keluar, akan dilumpuhkan.</translation>
 <translation id="3612333635265770873">Modul dengan nama yang sama telah diketahui bercanggah dengan Google Chrome.</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Tapak ini mencadangkan Google Chrome Frame (sudah dipasang).</translation>
@@ -126,6 +125,7 @@
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
 <translation id="2666187591945638709">Google Chrome telah dikemas kini kepada <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Modul ini diketahui bercanggah dengan Google Chrome.</translation>
+<translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="6634887557811630702">Google Chrome telah dikemas kini.</translation>
 <translation id="2084710999043359739">Tambahkan pada Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame telah dipasang dan boleh didapati oleh semua pengguna komputer ini. Jika anda mahu memasang Google Chrome Frame di peringkat pengguna, anda mesti terlebih dahulu menyahpasang versi peringkat sistem yang dipasang oleh pentadbir.</translation>
@@ -146,7 +146,6 @@
 <translation id="3836351788193713666">Hampir terkini! Lancarkan semula Google Chrome untuk selesai mengemas kini.</translation>
 <translation id="546394857889685352">Peranti anda telah dikemaskinikan kepada <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Pengurus Tugas - Google Chrome</translation>
-<translation id="1826482739472655104">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang belum lagi sah. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut boleh dipercayai. Google Chrome tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan pada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan sebarang kesilapan, kemudian, memuatkan semula halaman ini.</translation>
 <translation id="8449380764213232436">Google Chrome kini mengimport item berikut daripada <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Pekerja Chrome</translation>
 <translation id="3396977131400919238">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Google Chrome semula.</translation>

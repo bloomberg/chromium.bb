@@ -92,7 +92,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 作為我的預設瀏覽器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
-<translation id="4573769928351971197">Google Chrome 會在啟用時還原先前的工作階段，但會停用部分工作階段相關設定，例如結束時清除資料。</translation>
 <translation id="3612333635265770873">依據名稱判斷，這個模組可能會與 Google Chrome 衝突。</translation>
 <translation id="61852838583753520">更新 Chrome 作業系統(&amp;C)</translation>
 <translation id="6650142020817594541">建議您使用「Google Chrome 內嵌框架」(已安裝) 瀏覽這個網站。</translation>
@@ -149,7 +148,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3836351788193713666">即將更新成最新版本！重新啟動 Google Chrome，即可完成更新程序。</translation>
 <translation id="546394857889685352">您的裝置已更新為 <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
-<translation id="1826482739472655104">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;&gt;，但伺服器提供了無效的憑證。我們沒有足夠資訊判斷憑證是否可靠，因此 Google Chrome 無法保證您的連線對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，而非攻擊者。目前您的電腦時鐘設為 <ph name="CURRENT_TIME"/>，時間正確嗎？如果不正確，請修正錯誤並重新整理網頁。</translation>
 <translation id="8449380764213232436">Google Chrome 正從 <ph name="BROWSER_COMPONENT"/> 匯入下列項目:</translation>
 <translation id="852884188147941900">Chrome 作業工具</translation>
 <translation id="3396977131400919238">安裝過程中發生作業系統錯誤，請再次下載 Google Chrome。</translation>

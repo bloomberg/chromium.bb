@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Sistēmā tika atrasta konfliktējoša Chromium vai Chromium Frame instalācija. Atinstalējiet to un mēģiniet vēlreiz.</translation>
 <translation id="6953661834318318668">Chromium rīkjosla</translation>
 <translation id="7097100943370017396">Chromium vairs netiek atjaunināts, jo jūsu operētājsistēma ir novecojusi.</translation>
-<translation id="2777754523825675150">Chromium atjaunos iepriekšējo sesiju tā startēšanas brīdī. Daži sesijas iestatījumi, piemēram, tie, kas notīra datus iziešanas brīdī, tiks atspējoti.</translation>
 <translation id="4103959775970322855">Chromium ir atjaunināts uz <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="2589479092236095792">Chromium automātiskās aizpildes iestatījumi</translation>
@@ -122,7 +121,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7483335560992089831">Nevar instalēt to pašu Chromium versiju, kas jau šobrīd darbojas. Aizveriet Chromium un mēģiniet vēlreiz.</translation>
 <translation id="7641113255207688324">Chromium nav jūsu noklusējuma pārlūks.</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
-<translation id="2174090135251659490">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, kas pagaidām nav derīgs. Nav pieejama informācija, kas apliecinātu, ka sertifikāts ir uzticams. Pārlūks Chromium nevar uzticami garantēt, ka jūs sazināties ar &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nevis uzbrucēju. Jūsu datora pulkstenis šobrīd ir iestatīts uz <ph name="CURRENT_TIME"/>. Vai tas ir pareizs? Ja tā nav, novērsiet kļūdu un atsvaidziniet šo lapu.</translation>
 <translation id="2119636228670142020">Par &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
 <translation id="5859758987635973787">Chromium ir atjaunināts (<ph name="VERSION"/>)</translation>

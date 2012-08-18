@@ -21,7 +21,6 @@
 <translation id="4330297532943865716">Chromium 또는 Chromium 프레임을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요</translation>
 <translation id="6953661834318318668">Chromium 툴바</translation>
 <translation id="7097100943370017396">지원되지 않는 운영체제이므로 Chromium이  더 이상 업데이트되지 않습니다.</translation>
-<translation id="2777754523825675150">Chromium은 시작 시 이전 세션을 복원합니다. 종료 시 데이터 삭제와 같은 세션 기반 설정의 일부를 사용할 수 없습니다.</translation>
 <translation id="4103959775970322855">Chromium이 <ph name="VERSION"/>(으)로 업데이트되었습니다.</translation>
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="2589479092236095792">Chromium 자동완성 설정</translation>
@@ -124,7 +123,6 @@
 <translation id="7483335560992089831">이미 실행 중인 Chromium과 동일한 버전을 설치할 수 없습니다. Chromium을 종료한 뒤 다시 시도하세요.</translation>
 <translation id="7641113255207688324">Chromium이 기본 브라우저로 설정되어 있지 않습니다.</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
-<translation id="2174090135251659490">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려고 했지만 서버가 유효하지 않은 인증서를 제공했습니다. 인증서가 신뢰할 수 있는지 여부를 알 수 있는 정보가 없습니다. Chromium은 사용자가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;와(과) 통신하고 있으며 침입자가 아니라는 것을 확인할 수 없습니다. 컴퓨터 시계가 현재 <ph name="CURRENT_TIME"/>(으)로 설정되어 있습니다. 시간이 정확하지 않으면 오류를 수정한 뒤 이 페이지를 새로고침하세요.</translation>
 <translation id="2119636228670142020">Chromium OS 정보</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="5859758987635973787">Chromium이 최신 버전임(<ph name="VERSION"/>)</translation>

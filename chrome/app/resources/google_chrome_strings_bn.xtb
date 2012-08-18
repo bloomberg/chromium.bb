@@ -94,7 +94,6 @@
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
-<translation id="4573769928351971197">Google Chrome আপনার পূর্ববর্তী সেশন চালুকে পুনরুদ্ধার করবে৷ আপনার কিছু সেশন-ভিত্তিক সেটিংস, উদাহরণস্বরূপ যেগুলিতে প্রস্থান সম্পর্কে সুস্পষ্ট তথ্য আছে, সেগুলি অক্ষম হবে৷</translation>
 <translation id="3612333635265770873">একই নামের একটি মডিউল Google Chrome-এর সাথে বিবাদ করছে বলে জানা গেছে৷</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="6650142020817594541">এই সাইটটি Google Chrome Frame(ইতিমধ্যে ইনস্টল আছে)-এর পরামর্শ দেয়৷</translation>
@@ -153,7 +152,6 @@
 <translation id="3836351788193713666">প্রায় আপ-টু-ডেট! আপডেটিং শেষ করতে Google Chrome পুনরায় চালু করুন৷</translation>
 <translation id="546394857889685352">আপনার ডিভাইস <ph name="VERSION"/>এ আপডেট করা হয়েছে</translation>
 <translation id="7106741999175697885">কার্য পরিচালক - Google Chrome</translation>
-<translation id="1826482739472655104">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;এতে পৌঁছাতে চেষ্টা করেছেন, কিন্তু সার্ভারটি একটি শংসাপত্র পেশ করেছে যা এখন পর্যন্ত বৈধ নয়৷ সেইরকম কোন তথ্য পাওয়া যায়নি যাতে নির্দেশ করবে যে শংসাপত্র বিশ্বস্ত হতে পারে৷ Google Chrome নির্ভরযোগ্যভাবে অঙ্গীকারবদ্ধ হতে পারেনা যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;এর সঙ্গে যোগাযোগ করছেন এবং কোন আক্রমণকারী হিসাবে নয়৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/>-এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার ত্রুটিটি ঠিক করা ও এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
 <translation id="8449380764213232436">Google Chrome বর্তমানে <ph name="BROWSER_COMPONENT"/> থেকে নিম্নোক্ত আইটেমগুলি আমদানি করছে:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">ইনস্টলেশনের সময় অপারেটিং সিস্টেমে একটি ত্রুটি ঘটেছিল৷ দয়া করে পুনরায় Google Chrome ডাউনলোড করুন৷</translation>

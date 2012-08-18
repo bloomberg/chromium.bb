@@ -141,7 +141,6 @@
 <translation id="3280237271814976245">አስቀምጥ &amp;እንደ…</translation>
 <translation id="7658239707568436148">ሰርዝ</translation>
 <translation id="3435896845095436175">አንቃ</translation>
-<translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="3241680850019875542">ለመሸከፍ የቅጥያውን ስርወ ማውጫ ይምረጡ። ቅጥያውን ለማዘመን እንዲሁ የግል ቁልፍ ፋይልን እንደገና ለመጠቀም ይምረጡ።</translation>
 <translation id="6163363155248589649">&amp;መደበኛ</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 ከRSA ምስጠራ ጋር</translation>
@@ -343,7 +342,6 @@ nil</translation>
 <translation id="246059062092993255">በዚህ ገጽ ተሰኪዎች ታግደዋል።</translation>
 <translation id="2870560284913253234">ጣቢያ</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
-<translation id="6620110761915583480">ፋይል አስቀምጥ</translation>
 <translation id="2175607476662778685">የፈጣን አጀማመር አሞሌ</translation>
 <translation id="6434309073475700221">አስወግድ</translation>
 <translation id="1425127764082410430">ስለ '<ph name="SEARCH_TERMS"/>' &amp;ፈልግ <ph name="SEARCH_ENGINE"/></translation>
@@ -363,7 +361,6 @@ nil</translation>
 <translation id="4222982218026733335">ልክ ያልሆነ የአገልጋይ ሰርቲፊኬት</translation>
 <translation id="8494214181322051417">አዲስ!</translation>
 <translation id="2135787500304447609">&amp;ከቆመበት ቀጥል</translation>
-<translation id="2356762928523809690">የማዘመኛ አገልጋይ የለም (ስህተት፦ <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="219008588003277019">የውስጥ ተገልጋይ ሞዱል፦ <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">ፍለጋ ከ<ph name="SITE_NAME"/>፦</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> ሰዓት</translation>
@@ -512,7 +509,6 @@ nil</translation>
 <translation id="9142623379911037913"><ph name="SITE"/> የዴስክቶፕ ማስታወቂያዎችን እንዲያሳይ ይፈቅዳሉ?</translation>
 <translation id="9118804773997839291">ከዚህ በታች የገጹን ሁሉንም ደህንነታቸው ያልተጠበቀ አባሎችን ዝርዝር የሚያሳይ ነው። ለተጨማሪ መረጃ የማስተካከያ አገናኝ ላይ፣ ለአንድ የተወሰነ አባል ከሆነ ደግሞ የራሱ ቅደም ተከተል ላይ ጠቅ ያድርጉ።</translation>
 <translation id="7754704193130578113">እያንዳንዱ ፋይል ከመውረዱ በፊት የት እንደሚቀመጥ ጠይቅ</translation>
-<translation id="2497284189126895209">ሁሉም ፋይሎች</translation>
 <translation id="1682548588986054654">አዲስ ማንነትን የማያሳውቅ መስኮት</translation>
 <translation id="6833901631330113163">ደቡብ ዩሮፕያን</translation>
 <translation id="6065289257230303064">የሰርቲፊኬት ርዕስ የማውጫ አይነታዎች</translation>
@@ -590,6 +586,7 @@ nil</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> ደቂቃ ይቀራል</translation>
 <translation id="2192505247865591433">ከ፦</translation>
 <translation id="7143207342074048698">በመያያዝ ላይ</translation>
+<translation id="3727187387656390258">ብቅባይ መርምር</translation>
 <translation id="1715941336038158809">የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል።</translation>
 <translation id="1901303067676059328">&amp;ሁሉንም ምረጥ</translation>
 <translation id="2168039046890040389">ወደላይ አንቀሳቅስ</translation>
@@ -719,6 +716,7 @@ nil</translation>
 <translation id="895347679606913382">በመጀመር ላይ…</translation>
 <translation id="3319048459796106952">አዲስ ማን&amp;ነትን የማያሳውቅ መስኮት</translation>
 <translation id="3127919023693423797">በማረጋገጥ ላይ...</translation>
+<translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="8030169304546394654">አልተያያዘም</translation>
 <translation id="4010065515774514159">የአሳሽ ተገባር</translation>
 <translation id="1154228249304313899">ይህን ገጽ ክፈት፦</translation>
@@ -742,7 +740,6 @@ nil</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="5685236799358487266">እንደ ፍለጋ ፕሮ&amp;ግራም አክል…</translation>
 <translation id="2195729137168608510">የኢሜይል መከላከያ</translation>
-<translation id="7907591526440419938">ፋይል ክፈት</translation>
 <translation id="2568774940984945469">መረጃአሞሌ መያዣ</translation>
 <translation id="21133533946938348">ትር አጣብቅ</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> ቀን ይቀራል</translation>
@@ -870,7 +867,6 @@ nil</translation>
 <translation id="3748412725338508953">በርካታ የአድራሻ ቅየራዎች አሉ።</translation>
 <translation id="8831104962952173133">አስጋሪ ተገኝቷል!</translation>
 <translation id="2812989263793994277">ምንም አይነት ምስል አታሳይ</translation>
-<translation id="6845383723252244143">አቃፊ ምረጥ</translation>
 <translation id="8948393169621400698">ሁልጊዜ በ<ph name="HOST"/> ላይ ተሰኪዎች ፍቀድ</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> ሰከንድ</translation>
 <translation id="5139955368427980650">&amp;ክፈት</translation>
@@ -911,6 +907,7 @@ nil</translation>
 <translation id="4839303808932127586">ቪዲዮ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="5626134646977739690">ስም፦</translation>
 <translation id="3681007416295224113">የሰርቲፊኬት መረጃ</translation>
+<translation id="7196020411877309443">ለምን ይህን አያለሁ?</translation>
 <translation id="721197778055552897">ሰለዚህ ችግር <ph name="BEGIN_LINK"/>ተጨማሪ ይወቁ<ph name="END_LINK"/> ።</translation>
 <translation id="8156020606310233796">ዝርዝር እይታ</translation>
 <translation id="146000042969587795">ይህ ፍሬም ታግዷል። ምክንያቱም ደኅንነቱ ያልተጠበቀ ይዘት ይዟል</translation>
@@ -1135,7 +1132,6 @@ nil
 nil
 ቁልፍ ፋይልዎ የቅጥያዎን አዲስ ስሪት ለመፍጠር ስለሚያስፈልግዎ ደህንነቱ በተጠበቀ ቦታ ያስቀምጡ። '
 nil</translation>
-<translation id="3036649622769666520">ፋይሎች ክፈት</translation>
 <translation id="7685049629764448582">JavaScript ማህደረ ትውስታ</translation>
 <translation id="6059652578941944813">የሰርቲፊኬት ተዋረድ</translation>
 <translation id="5729712731028706266">&amp;እይታ</translation>

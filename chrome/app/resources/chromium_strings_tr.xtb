@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Sistemde Chromium veya Chromium Frame'in çakışan bir yüklemesi bulundu. Bunu kaldırın ve tekrar deneyin.</translation>
 <translation id="6953661834318318668">Chromium Araç Çubuğu</translation>
 <translation id="7097100943370017396">İşletim sisteminiz eski olduğundan Chromium artık güncellenmiyor.</translation>
-<translation id="2777754523825675150">Chromium, sistem başlangıcında önceki oturumu geri yükler. Oturuma özgü bazı ayarlarınız ise (örneğin, çıkışta verileri temizleme ayarı) devre dışı bırakılır.</translation>
 <translation id="4103959775970322855">Chromium <ph name="VERSION"/> sürümüne güncellendi</translation>
 <translation id="4285930937574705105">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Chromium şu anda çalışır durumdaysa kapatıp yeniden deneyin.</translation>
 <translation id="2589479092236095792">Chromium Otomatik Doldurma ayarları</translation>
@@ -120,7 +119,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7483335560992089831">Şu anda çalışan aynı Chromium sürümünü yükleyemezsiniz. Lütfen Chromium'u kapatın ve yeniden deneyin.</translation>
 <translation id="7641113255207688324">Chromium varsayılan tarayıcınız değil.</translation>
 <translation id="4458285410772214805">Bu değişikliğin geçerli olabilmesi için lütfen çıkış yapıp tekrar oturum açın.</translation>
-<translation id="2174090135251659490">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmaya çalıştınız, ancak sunucu süresi bitmiş bir sertifika sundu. Sertifikanın güvenilir olup olmadığı konusunda hiçbir bilgi yok. Chromium, bir saldırganla değil &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzu garanti edemiyor. Bilgisayarınızın saati <ph name="CURRENT_TIME"/> olarak ayarlı. Bu doğru mu? Değilse, hatayı düzeltip bu sayfayı yenileyin.</translation>
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="5859758987635973787">Chromium güncel durumda (<ph name="VERSION"/>)</translation>

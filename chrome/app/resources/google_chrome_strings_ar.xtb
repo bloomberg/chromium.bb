@@ -11,6 +11,7 @@
 <translation id="3454512769850953877">نعم، الخروج من Chrome</translation>
 <translation id="386202838227397562">الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
+<translation id="741045321678647133">مضيف تطبيق Google Chrome</translation>
 <translation id="7400722733683201933">معلومات عن Google Chrome</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="7781002470561365167">يتوفر إصدار جديد من متصفح Google Chrome.</translation>
@@ -26,6 +27,7 @@
 <translation id="1872436416934435136">لم يعد يتم تحديث Google Chrome لأن نظام التشغيل لديك قديم.</translation>
 <translation id="5339639696978861456">تم تحديث Chrome Frame. الرجاء إعادة تشغيل متصفحك. إصدار Chrome: <ph name="TODO_0001"/>, إصدار Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">شروط الخدمة</translation>
+<translation id="5775197990071433230">يوجد على هذا الكمبيوتر إصدارًا أحدث من مكونات Google Chrome. الرجاء استخدام أداة تثبيت أحدث.</translation>
 <translation id="8398145039500709259">هل تريد استخدام حساب Google هذا لمزامنة جميع عناصر Chrome؟</translation>
 <translation id="1779550429052479749">تم العثور على تثبيت متضارب لـ Google Chrome أو إطار Google Chrome على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="3555616473548901994">تمت عملية الإزالة.</translation>
@@ -56,6 +58,7 @@
 <translation id="3089968997497233615">يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
 <translation id="5037239767309817516">الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
 <translation id="7451721381978275812">وسيطات غير صالحة. لا يمكن تثبيت إطار Google Chrome في وضع الاستعداد بدون تثبيت Google Chrome أيضًا.</translation>
+<translation id="8684521613357479262">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الخادم قدم شهادة لا تُعد صالحة حتى الآن. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة يمكن الوثوق بها أم لا. لا يمكن أن يضمن Google Chrome على نحو موثوق أنك تتصل بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
 <translation id="4585888816441913908">يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من Google Chrome وإطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة كل من Google Chrome وإطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="6368958679917195344">أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
 <translation id="7459554271817304652">يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Google Chrome على أي كمبيوتر.</translation>
@@ -91,10 +94,10 @@
 <translation id="7062966102157262887">هناك تنزيل قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيل؟</translation>
 <translation id="4273752058983339720">تمت تهيئة Google Chrome لإطلاقه تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="1104959162601287462">حول &amp;نظام التشغيل Google Chrome</translation>
+<translation id="5328989068199000832">ثنائيات Google Chrome</translation>
 <translation id="5941830788786076944">جعل Google Chrome المتصفّح الافتراضي</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
-<translation id="4573769928351971197">سيستعيد Google Chrome جلستك السابقة عند بدء التشغيل. وسيتم تعطيل بعض الإعدادات التي تعتمد على الجلسة، مثل الإعدادات المتعلقة بمحو البيانات عند الإغلاق.</translation>
 <translation id="3612333635265770873">هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
 <translation id="61852838583753520">تحديث ن&amp;ظام التشغيل Google Chrome</translation>
 <translation id="6650142020817594541">يوصي هذا الموقع باستخدام إطار Google Chrome (المثبت من قبل).</translation>
@@ -113,6 +116,7 @@
 <translation id="5318056482164160049">مضيف المكون الإضافي لمتصفح Google Chrome</translation>
 <translation id="5699533844376998780">تم إضافة الإضافة &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="6126631249883707068">هل تريد من Google Chrome حفظ كلمة المرور؟</translation>
+<translation id="7773845170078702898">هل تريد من Google Chrome حفظ كلمة المرور لهذا الموقع؟</translation>
 <translation id="5046764976540625289">إنهاء Chrome</translation>
 <translation id="9039578207253536065">عامل Google Chrome</translation>
 <translation id="2680623880102270805">يتعذر على Google Chrome إنشاء اختصار للتطبيق بسبب عدم التمكن من تحديد بيئة سطح المكتب الحالية.</translation>
@@ -151,7 +155,6 @@
 <translation id="3836351788193713666">أوشك الانتهاء من التحديث! إعادة تشغيل Google Chrome لإنهاء التحديث.</translation>
 <translation id="546394857889685352">تم تحديث جهازك إلى <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">مدير المهام - Google Chrome</translation>
-<translation id="1826482739472655104">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ولكن الخادم قدم شهادة لا تُعد صالحة حتى الآن. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة يمكن الوثوق بها أم لا. لا يمكن أن يضمن Google Chrome على نحو موثوق أنك تتصل بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
 <translation id="8449380764213232436">Google Chrome في صدد استيراد العناصر التالية من <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">عامل Chrome</translation>
 <translation id="3396977131400919238">حدث خطأ في نظام التشغيل أثناء عملية التثبيت. يُرجى تنزيل Google Chrome مرة أخرى.</translation>

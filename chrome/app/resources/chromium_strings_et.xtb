@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Süsteemist leiti Chromiumi või Chromium Frame'i vastuoluline install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="6953661834318318668">Chromiumi tööriistariba</translation>
 <translation id="7097100943370017396">Chromium ei ole enam ajakohane, kuna teie operatsioonisüsteem on aegunud.</translation>
-<translation id="2777754523825675150">Chromium taastab käivitumisel teie eelmise seansi. Keelatakse mõned seansipõhised seaded, näiteks need, mis kustutavad väljumisel andmed.</translation>
 <translation id="4103959775970322855">Chromium on värskendatud versioonile <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Installimine ebaõnnestus tundmatu vea tõttu. Kui Chromium praegu töötab, siis sulgege see ja proovige uuesti.</translation>
 <translation id="2589479092236095792">Chromiumi automaatse täitmise seaded</translation>
@@ -122,7 +121,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="7483335560992089831">Ei saa installida sama Chromiumi versiooni, mis praegu töötab. Sulgege Chromium ja proovige uuesti.</translation>
 <translation id="7641113255207688324">Chromium ei ole teie vaikebrauser.</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
-<translation id="2174090135251659490">Üritasite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mis ei kehti veel. Saadaval ei ole teavet, mis näitab, kas sertifikaat on usaldusväärne. Chromium ei saa tagada, et suhtlete domeeniga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Teie arvuti kell on praegu <ph name="CURRENT_TIME"/>. Kas see on õige? Vastasel korral parandage viga ja värskendage lehte.</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
 <translation id="5859758987635973787">Chromium on ajakohane (<ph name="VERSION"/>)</translation>

@@ -132,11 +132,6 @@
 <translation id="2231817271680715693">Importar el historial de navegación desde el navegador predeterminado en la primera ejecución</translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
 <translation id="5564962323737505851">Permite configurar el Administrador de contraseñas. Si el Administrador de contraseñas está habilitado, tienes la posibilidad de habilitar o inhabilitar la opción de visualización de contraseñas almacenadas de los usuarios sin encriptar.</translation>
-<translation id="7989334138134558357">Esta política solo se encuentra activa en el modo de venta.
-
-      Si se establece el valor correspondiente a esta política y este no es 0, la sesión de demostración del usuario actual se cerrará automáticamente cuando transcurra el tiempo especificado.
-
-      El valor correspondiente a esta política se debe especificar en milisegundos.</translation>
 <translation id="4668325077104657568">Configuración de imágenes predeterminada</translation>
 <translation id="7161193985878519056">Modo de incógnito inhabilitado</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
@@ -250,8 +245,6 @@
       El valor de la política se debe especificar en milisegundos.</translation>
 <translation id="6368011194414932347">Configurar la URL de la página de inicio</translation>
 <translation id="2877225735001246144">Inhabilitar la consulta de nombre canónico en negociación de autenticación Kerberos</translation>
-<translation id="6378014222084506939">Disponibilidad del modo de incógnito</translation>
-<translation id="3706027163744097186">Restringir los usuarios que pueden iniciar sesión en <ph name="PRODUCT_NAME"/></translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="1283072268083088623">Permite especificar los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME"/>.
 
@@ -296,15 +289,6 @@
       Si se establece el valor &quot;true&quot;, los dispositivos registrados informarán periódicamente sobre la versión del firmware y del sistema operativo. Si no se establece esta política o se establece el valor &quot;false&quot;, no se indicará ninguna información sobre la versión.</translation>
 <translation id="467449052039111439">Abrir una lista de URL</translation>
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
-<translation id="3413139738214204027">Permite configurar la URL de página de inicio predeterminada de <ph name="PRODUCT_NAME"/> e impide que los usuarios la modifiquen.
-
-          El tipo de página de inicio puede ser una URL especificada o la página Nueva pestaña.
-
-          Si seleccionas la página Nueva pestaña, se ignorará esta política.
-
-          Si habilitas esta opción, los usuarios no podrán cambiar la URL de página de inicio de <ph name="PRODUCT_NAME"/>, pero podrán seleccionar la página Nueva pestaña como página principal.
-
-          Si no se establece esta política ni HomepageIsNewTabPage, el usuario podrá seleccionar la página de inicio que quiera.</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
 <translation id="8170882486743832400">Configurar las opciones GData</translation>
 <translation id="2322733497952278056">Permite acceder a las URL especificadas en la lista como excepciones de la lista negra de URL.
@@ -359,15 +343,6 @@
       Si se configura esta política, se fija el conjunto de aplicaciones y el usuario no puede cambiarlo.
 
       Si no se establece la política, el usuario puede cambiar la lista de aplicaciones fijadas de la barra de aplicaciones.</translation>
-<translation id="6177482277304066047">Establece una versión de destino para las actualizaciones automáticas.
-
-      Especifica el prefijo de una versión de destino a la que se debería actualizar <ph name="PRODUCT_OS_NAME"/>. Si el dispositivo está ejecutando una versión anterior al prefijo especificado, esta se actualizará a la versión más reciente con el prefijo especificado. Si el dispositivo ya dispone de una versión posterior, no ocurrirá nada (por ejemplo, no se cambiará a una versión anterior) y el dispositivo mantendrá la versión actual. El formato del prefijo depende del componente, tal como se observa en el ejemplo que aparece a continuación.
-
-      &quot;&quot; (o no configurado): actualización a la última versión disponible
-      &quot;1412.&quot;: actualización a cualquier versión secundaria de 1412 (por ejemplo, 1412.24.34 o 1412.60.2)
-      &quot;1412.2.&quot;: actualización a cualquier versión secundaria de 1412.2 (por ejemplo, 1412.2.34 o 1412.2.2)
-      &quot;1412.24.34&quot;: actualización únicamente a esta versión específica
-      </translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
 <translation id="2240879329269430151">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.
 
@@ -385,15 +360,6 @@
       Se pueden definir excepciones en la política de listas blancas de URL. Estas políticas se limitan a 100 entradas, y se ignorarán las entradas que superen este número.
 
       Si no se establece esta política, no se incluirá ninguna URL en una lista negra del navegador.</translation>
-<translation id="3586489081967749966">Especifica el número máximo de conexiones simultáneas que se pueden establecer con el servidor proxy.
-
-      Algunos servidores proxy no admiten un número elevado de conexiones simultáneas por cliente, lo que se puede resolver estableciendo un valor inferior para esta política.
-
-      El valor de esta política debe ser inferior a 100 y superior a 6 (el valor predeterminado es 32).
-
-      Algunas aplicaciones web consumen muchas conexiones con las solicitudes GET que se bloquean, por lo que un valor inferior a 32 puede hacer que la red del navegador se bloquee si se abren muchas aplicaciones web. Si estableces un valor inferior al predeterminado, debes hacerlo bajo tu propia responsabilidad.
-
-      Si no se establece esta política, se usará el valor predeterminado, es decir, 32.</translation>
 <translation id="3864818549971490907">Configuración de complementos predeterminada</translation>
 <translation id="7151201297958662315">Permite determinar si se sigue ejecutando un proceso <ph name="PRODUCT_NAME"/> iniciado en el inicio de sesión OS cuando se cierre la última ventana del navegador, permitiendo así que las aplicaciones en segundo plano permanezcan activas. En la bandeja del sistema, se muestra un icono que corresponde al proceso en segundo plano, por lo que siempre puedes cerrarlo desde ahí.
 
@@ -459,11 +425,6 @@
 <translation id="7880891067740158163">Permite especificar una lista de patrones de URL correspondientes a los sitios para los que <ph name="PRODUCT_NAME"/> deberá seleccionar automáticamente certificados de cliente (si lo solicitan).
 
           Si no se establece esta política, no se seleccionarán certificados de cliente para ningún sitio de forma automática.</translation>
-<translation id="583542926035627341">Esta política solo se encuentra activa en el modo de venta.
-
-      Permite realizar una lista de las extensiones que se instalan de forma automática en una sesión de demostración, para dispositivos que se encuentren en el modo de venta. Este paquete se guarda en el dispositivo y cada una de las extensiones que contiene se puede instalar sin conexión tras la instalación del mismo.
-
-      Cada entrada de la lista contiene un diccionario, que debe incluir un ID de extensión en el campo &quot;extension-id&quot; y una URL de actualización en el campo &quot;update-url&quot;. El campo opcional &quot;online-only&quot; se puede establecer en &quot;true&quot; para indicar que la extensión se debe instalar solo cuando el dispositivo esté online al iniciar sesión.</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="5192837635164433517">Permite habilitar el uso de páginas de error alternativas integradas en <ph name="PRODUCT_NAME"/> (por ejemplo, &quot;No se encuentra la página&quot;) e impide que los usuarios modifiquen esta configuración.
 
@@ -603,13 +564,6 @@
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME"/>.
 
       Si no se establece esta opción, el usuario puede decidir si le interesa usar esta función o no.</translation>
-<translation id="869575100785642004">Te permite especificar las URL que pueden instalar extensiones, aplicaciones y temas.
-
-          Google Chrome 21 dificulta la instalación de extensiones, aplicaciones y secuencias de comandos de usuario que no procedan de Chrome Web Store. Anteriormente, los usuarios podían hacer clic en un enlace para acceder a un archivo *.crx y, después de algunas advertencias, Google ofrecía la posibilidad de instalar el archivo. A partir de Google Chrome 21, los usuarios deben descargar este tipo de archivos y arrastrarlos a la página de configuración del navegador. Esta opción permite que determinadas URL sigan utilizando el flujo de instalación anterior que era más sencillo.
-
-          Todos los elementos de esta lista son patrones que coinciden con el estilo de las extensiones (consulta la página http://code.google.com/chrome/extensions/match_patterns.html). Los usuarios podrán instalar fácilmente elementos procedentes de cualquier URL que coincida con un elemento de la lista.
-
-          ExtensionInstallBlacklist prevalecerá sobre esta política. Es decir, las extensiones incluidas en la lista negra no se instalarán aunque procedan de un sitio indicado en esta lista.</translation>
 <translation id="5475361623548884387">Habilitar impresión</translation>
 <translation id="3653237928288822292">Icono del proveedor de búsquedas predeterminadas</translation>
 <translation id="4445684791305970001">Permite inhabilitar las Herramientas para desarrolladores y la Consola JavaScript.
@@ -622,7 +576,6 @@
 <translation id="5378985487213287085">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Se puede permitir o denegar que se muestren notificaciones de escritorio de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.
 
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
-<translation id="3744263630913802110">Notificar versión de firmware y de sistema operativo</translation>
 <translation id="6908640907898649429">Permite configurar el proveedor de búsquedas predeterminadas. Puedes especificar el proveedor de búsquedas predeterminadas que utilizarán los usuarios o inhabilitar las búsquedas predeterminadas.</translation>
 <translation id="389421284571827139">Permite especificar el servidor proxy que usa <ph name="PRODUCT_NAME"/> e impide que los usuarios cambien los ajustes de proxy.
 
@@ -651,9 +604,6 @@
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="1530812829012954197">Mostrar siempre los patrones de URL que se indican a continuación en el navegador del host</translation>
-<translation id="8288507390252297611">Permite inhabilitar la vista previa de impresión.
-
-      Cuando se utiliza esta opción, se fuerza el uso del cuadro de diálogo de impresión del sistema en lugar de la vista previa de impresión.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="6373222873250380826">Permite inhabilitar las actualizacioes automáticas si se establece en &quot;true&quot;.
 
@@ -662,7 +612,6 @@
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
 <translation id="8951350807133946005">Establecer directorio de caché de disco</translation>
-<translation id="9055197679339967051">Configuración o bloqueo del canal de versiones por parte del usuario</translation>
 <translation id="2592091433672667839">Duración de la inactividad antes de que se muestre el protector de pantalla en el modo de venta</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="2805707493867224476">Permitir que todos los sitios muestren pop-ups</translation>
@@ -732,15 +681,6 @@
 
       Si no se establece esta opción, el usuario podrá decidir si quiere usar esta función o no.</translation>
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
-<translation id="3366530054462553357">Permite especificar una lista de complementos inhabilitados en <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
-
-      Se pueden usar los caracteres comodín &quot;*&quot; y &quot;?&quot; para obtener coincidencias de secuencias de caracteres arbitrarios. &quot;*&quot; puede coincidir con un número arbitrario de caracteres y &quot;?&quot; especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape (&quot;\&quot;) delante de &quot;*&quot;, de &quot;?&quot; o de &quot;\&quot; para obtener coincidencias con los propios caracteres.
-
-      Si habilitas esta opción, <ph name="PRODUCT_NAME"/> nunca usará la lista de complementos especificada. Los complementos se marcan como inhabilitados en &quot;about:plugins&quot; y los usuarios no los pueden habilitar.
-
-      Ten en cuenta que las políticas EnabledPlugins y DisabledPluginsExceptions pueden anular esta política.
-
-      Si no se establece esta política, el usuario podrá usar cualquier complemento que esté instalado en el sistema, siempre que no sean complementos codificados incompatibles, obsoletos o peligrosos.</translation>
 <translation id="8101760444435022591">Teniendo en cuenta el hecho de que las comprobaciones de revocación online de fallos leves no proporcionan ventajas de seguridad efectivas, se inhabilitan de forma predeterminada en la versión 19 y posteriores de <ph name="PRODUCT_NAME"/>. Al establecer el valor correspondiente a esta política en &quot;true&quot;, se restaura el comportamiento anterior y se realizan comprobaciones OCSP/CRL online.
 
       Si no se establece esta política, o si se establece el valor &quot;false&quot;, Chrome no realizará comprobaciones de revocación online en Chrome 19 y versiones posteriores.</translation>
@@ -813,9 +753,6 @@
 <translation id="7006788746334555276">Configuración de contenido</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configurar lista de admisión de instalación de extensiones</translation>
-<translation id="3940756655305062524">Si el valor correspondiente a esta política se establece en &quot;true&quot; y no se especifica la política ChromeOsReleaseChannel, los usuarios del dominio pertinente podrán cambiar el canal de versiones del dispositivo. Si el valor correspondiente a esta política se establece en &quot;false&quot;, el dispositivo se bloqueará en el último canal configurado.
-
-      La política ChromeOsReleaseChannel anulará el canal seleccionado por el usuario, pero si el canal de la política es más estable que el instalado en el dispositivo, se podrá cambiar el canal únicamente después de que la versión del canal más estable supere a la instalada en el dispositivo.</translation>
 <translation id="187819629719252111">Permite que <ph name="PRODUCT_NAME"/> muestre cuadros de diálogo de selección de archivos para acceder a los archivos locales del ordenador.
 
       Si habilitas esta opción, los usuarios podrán abrir cuadros de diálogo de selección de archivos de la forma habitual.
@@ -835,9 +772,6 @@
 <translation id="868187325500643455">Permitir que todos los sitios ejecuten complementos automáticamentej</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="5226033722357981948">Especificar si se debe inhabilitar el buscador de complementos</translation>
-<translation id="584083164257867276">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas se introducen en el formato <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, por ejemplo <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Para permitir usuarios aleatorios en un dominio, utiliza las entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
-
-      Si no se configura esta política, no se establecerán restricciones sobre los usuarios con permiso para iniciar sesión. Ten en cuenta que para crear nuevos usuarios, sigue siendo necesario configurar adecuadamente la política <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>.</translation>
 <translation id="3428247105888806363">Habilitar predicción de red</translation>
 <translation id="6145799962557135888">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.
 
@@ -858,29 +792,17 @@
 <translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="4056910949759281379">Inhabilitar protocolo SPDY</translation>
-<translation id="1991398966873139530">Especifica una lista de complementos que el usuario puede habilitar o inhabilitar en <ph name="PRODUCT_NAME"/>.
-
-      Se pueden utilizar los caracteres comodín &quot;*&quot; y &quot;?&quot; para obtener coincidencias de secuencias de caracteres arbitrarios. &quot;*&quot; puede coincidir con un número arbitrario de caracteres y &quot;?&quot; especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape (&quot;\&quot;) delante de &quot;*&quot;, de &quot;?&quot; o de &quot;\&quot; para obtener coincidencias con los propios caracteres.
-
-      Si habilitas esta opción, se podrá utilizar la lista de complementos especificada en <ph name="PRODUCT_NAME"/>. Los usuarios podrán habilitarlos o inhabilitarlos en &quot;about:plugins&quot; aunque el complemento también coincida con un patrón de DisabledPlugins. Los usuarios también pueden habilitar o inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugins, DisabledPluginsExceptions y EnabledPlugins.
-
-      Con esta política, los complementos se podrán incluir en una lista negra cuando la lista &quot;DisabledPlugins&quot; contenga entradas con un carácter comodín, como habilitar todos los complementos &quot;*&quot; o inhabilitar todos los complementos Java &quot;*Java*&quot;, y el administrador quiera habilitar alguna versión concreta, como &quot;IcedTea Java 2.3&quot;. Las versiones concretas se pueden especificar en esta política.
-
-      Si no se establece esta política, cualquier complemento que coincida con los patrones de DisabledPlugins se inhabilitará y el usuario no podrá habilitarlo.</translation>
 <translation id="3808945828600697669">Especificar una lista de complementos inhabilitados</translation>
 <translation id="4525521128313814366">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar imágenes.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultImagesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
-<translation id="1894491175123948728">Esta política solo se encuentra activa en el modo de venta.
-
-      Permite determinar el ID de la extensión que se debe utilizar como protector de pantalla en la página de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para este dominio a través de la política AppPacks.</translation>
 <translation id="3866530186104388232">Si esta política no se configura o el valor correspondiente se establece en &quot;true&quot;, <ph name="PRODUCT_OS_NAME"/> mostrará usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos. Si el valor correspondiente a esta política se establece en &quot;false&quot;, <ph name="PRODUCT_OS_NAME"/> solicitará el nombre de usuario y la contraseña para iniciar sesión.</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y de datos sobre fallos</translation>
 <translation id="1151353063931113432">Permitir imágenes en estos sitios</translation>
 <translation id="1297182715641689552">Utilizar una secuencia de comandos .pac de proxy</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
-<translation id="4906194810004762807">Frecuencia de actualización de la política del dispositivo</translation>
+<translation id="4906194810004762807">Frecuencia de actualización de la política de dispositivo</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.
           Permite habilitar la utilización del protocolo STUN y de servidores de retransmisión al conectar con un cliente remoto.
 
@@ -899,10 +821,6 @@
       Si esta opción se inhabilita, los usuarios no podrán imprimir en <ph name="PRODUCT_NAME"/>. No se podrá imprimir desde el menú de la llave inglesa, las extensiones, las aplicaciones de JavaScript, etc, aunque sí desde complementos que ignoren la configuración de <ph name="PRODUCT_NAME"/> al imprimir. Por ejemplo, no se inhabilitará la opción de impresión del menú contextual de algunas aplicaciones Flash.
 
       Si no se establece esta política, se podrá inhabilitar esta opción pero el usuario podrá modificarla.</translation>
-<translation id="210513196702568522"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión por su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexión que se consideran caros como, por ejemplo, WiMAX, Bluetooth y redes móviles.
-
-      Los identificadores de tipos de conexión reconocidos son Ethernet, Wi-Fi, WiMAX, Bluetooth y redes móviles.
-      </translation>
 <translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="7635471475589566552">Establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME"/> e impide que los usuarios la modifiquen.
@@ -925,11 +843,6 @@
       Si inhabilitas esta opción, no se utilizarán los complementos obsoletos y no se pedirá permiso a los usuarios para ejecutarlos.
 
       Si no se configura esta opción, se pedirá permiso a los usuarios para ejecutar complementos obsoletos.</translation>
-<translation id="4922427744878251344">Permite inhabilitar la sincronización de Google Docs al utilizar una conexión móvil si el valor se establece en &quot;true&quot;. Es decir:
-
-          - Los datos solo se sincronizan en Google Docs cuando se establece una conexión Wi-Fi o Ethernet.
-
-          - Si no se configura o si el valor se establece en &quot;false&quot;, los usuarios podrán transferir archivos a Google Docs a través de conexiones móviles.</translation>
 <translation id="2629448496147630947">Configura las opciones de acceso remoto en <ph name="PRODUCT_NAME"/>.
 
       Estas funciones se ignoran a menos que se instale la aplicación web de acceso remoto.</translation>
@@ -974,7 +887,6 @@
 
       Si no se establece esta política, se habilitarán las cookies de terceros, pero los usuarios podrán modificar esta opción.</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
-<translation id="57127641120127115">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
 <translation id="6672934768721876104">Esta política está obsoleta. Te recomendamos que utilices ProxyMode en su lugar.
 
           Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen la configuración del proxy.
@@ -992,7 +904,6 @@
 
           Si no se establece esta política, los usuarios podrán elegir la configuración de proxy que quieran.</translation>
 <translation id="3780152581321609624">Incluir un puerto no estándar en SPN de Kerberos</translation>
-<translation id="5883954255534074144">Permitir que <ph name="PRODUCT_FRAME_NAME"/> gestione los tipos de contenido indicados</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivos</translation>
 <translation id="5512418063782665071">URL de la página de inicio</translation>
@@ -1005,14 +916,8 @@
           Puedes consultar ejemplos detallados en la siguiente página:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
-<translation id="6630106909870121131">Permite aplicar la configuración de red a todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME"/>. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Políticas de autenticación HTTP</translation>
 <translation id="5946082169633555022">Canal beta</translation>
-<translation id="282142179381950064">Permite inhabilitar la sincronización de Google Docs si el valor se establece en &quot;true&quot;. Es decir:
-
-          - No se subirán datos a Google Docs.
-
-          - Si no se establece o si el valor se establece en &quot;false&quot;, los usuarios podrán transferir archivos a Google Docs.</translation>
 <translation id="8303314579975657113">Permite especificar la biblioteca GSSAPI que se debe utilizar para la autenticación HTTP. Puedes definir simplemente el nombre de una biblioteca o una ruta completa.
 
           Si no se proporciona ningún parámetro, <ph name="PRODUCT_NAME"/> volverá a utilizar un nombre de biblioteca predeterminado.</translation>
@@ -1020,13 +925,6 @@
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
-<translation id="8220342550735772883">Configura el tamaño de la caché que <ph name="PRODUCT_NAME"/> utilizará para almacenar archivos multimedia almacenados en caché en el disco.
-
-      Si estableces esta política, <ph name="PRODUCT_NAME"/> utilizará el tamaño de caché proporcionado aunque el usuario haya especificado la instrucción &quot;--media-cache-size&quot;.
-
-      Si el valor de esta política es 0, se utilizará el tamaño de caché predeterminado y el usuario no podrá modificarlo.
-
-      Si no se establece esta política, se utilizará el tamaño predeterminado y el usuario podrá anularlo con la instrucción &quot;--media-cache-size&quot;.</translation>
 <translation id="7049373494483449255">Permite que <ph name="PRODUCT_NAME"/> envíe documentos a <ph name="CLOUD_PRINT_NAME"/> para imprimirlos. NOTA: Esto solo afecta a la asistencia de <ph name="CLOUD_PRINT_NAME"/> en <ph name="PRODUCT_NAME"/>. No evita que otros usuarios envíen trabajos de impresión a través sitios web.
 
       Si esta opción está habilitada o no se ha configurado, los usuarios pueden imprimir en <ph name="CLOUD_PRINT_NAME"/> desde el cuadro de diálogo de impresión de <ph name="PRODUCT_NAME"/>.

@@ -98,7 +98,6 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome vam omogoča, da na spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
-<translation id="4573769928351971197">Google Chrome bo ob zagonu obnovil prejšnjo sejo. Nekatere nastavitve seje, na primer za brisanje podatkov ob zaprtju, bodo onemogočene.</translation>
 <translation id="3612333635265770873">Modul z istim imenom je že bil v sporu z Google Chromom.</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
 <translation id="6650142020817594541">To spletno mesto priporoča vtičnik Google Chrome Frame (že nameščen).</translation>
@@ -155,7 +154,6 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="3836351788193713666">Samo še malo. Znova zaženite Google Chrome, da dokončate posodobitev.</translation>
 <translation id="546394857889685352">Naprava je posodobljena na različico <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Upravitelj opravil – Google Chrome</translation>
-<translation id="1826482739472655104">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki še ni veljavno. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je potrdilu mogoče zaupati. Google Chrome ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in z ne napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, odpravite napako in osvežite stran.</translation>
 <translation id="8449380764213232436">Google Chrome zdaj uvaža naslednje elemente iz komponente <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Med namestitvijo je prišlo do napake v operacijskem sistemu. Ponovno prenesite program Google Chrome.</translation>

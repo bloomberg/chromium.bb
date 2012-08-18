@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">W systemie znaleziono instalacje Chromium lub Chromium Frame, które powodują konflikt. Odinstaluj je i spróbuj ponownie.</translation>
 <translation id="6953661834318318668">Pasek narzędzi Chromium</translation>
 <translation id="7097100943370017396">Chromium nie jest już aktualizowany, bo Twój system operacyjny jest przestarzały.</translation>
-<translation id="2777754523825675150">Chromium przywróci Twoją poprzednią sesję przy uruchomieniu. Niektóre ustawienia związane z sesją, takie jak te usuwające dane przy zamknięciu przeglądarki, zostaną wyłączone.</translation>
 <translation id="4103959775970322855">Chromium został zaktualizowany do wersji <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
 <translation id="2589479092236095792">Ustawienia autouzupełniania Chromium</translation>
@@ -120,7 +119,6 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="7483335560992089831">Nie można zainstalować tej samej wersji Chromium co obecnie uruchomiona. Zamknij Chromium i spróbuj ponownie.</translation>
 <translation id="7641113255207688324">Chromium nie jest domyślną przeglądarką.</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
-<translation id="2174090135251659490">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Chromium nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, popraw błąd i odśwież stronę.</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
 <translation id="5859758987635973787">Chromium jest aktualny (<ph name="VERSION"/>)</translation>

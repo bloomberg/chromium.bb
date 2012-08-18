@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
-<translation id="4573769928351971197">Під час запуску Google Chrome відновить ваш попередній сеанс. Деякі ваші налаштування на основі сеансу, як-от очищення даних під час виходу, буде вимкнено.</translation>
 <translation id="3612333635265770873">Відомо, що модуль із такою назвою конфліктує з Google Chrome.</translation>
 <translation id="61852838583753520">Оновити &amp;ОС Chrome</translation>
 <translation id="6650142020817594541">Цей сайт рекомендує Google Chrome Frame (уже встановлено).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Майже оновлено. Перезапустіть Google Chrome, щоб закінчити оновлення.</translation>
 <translation id="546394857889685352">Версію пристрою оновлено до <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Диспетчер завдань - Google Chrome</translation>
-<translation id="1826482739472655104">Ви спробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, який ще недійсний. Немає доступних даних, які б допомогли встановити, чи можна довіряти цьому сертифікату. Google Chrome не може повністю гарантувати, що ви обмінюєтеся даними з &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не зі зловмисником. Годинник вашого комп’ютера зараз показує такий час: <ph name="CURRENT_TIME"/>. Правильно? Якщо ні, потрібно виправити помилку й оновити цю сторінку.</translation>
 <translation id="8449380764213232436">Google Chrome не імпортує наступні компоненти з <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Виконавець Chrome</translation>
 <translation id="3396977131400919238">Під час установлення сталася помилка операційної системи. Завантажте Google Chrome ще раз.</translation>

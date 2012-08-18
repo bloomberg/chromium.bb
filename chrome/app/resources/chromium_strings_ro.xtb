@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">În sistem a fost găsită o instalare conflictuală a uneia dintre aplicaţiile Chromium sau Chromium Frame. Dezinstalaţi aplicaţia şi încercaţi din nou.</translation>
 <translation id="6953661834318318668">Bara de instrumente Chromium</translation>
 <translation id="7097100943370017396">Chromium nu se mai actualizează, deoarece sistemul de operare este învechit.</translation>
-<translation id="2777754523825675150">Chromium va restabili sesiunea precedentă la pornire. Unele dintre setările bazate pe sesiune, cum ar fi cele care şterg datele la ieşire, vor fi dezactivate.</translation>
 <translation id="4103959775970322855">Chromium a fost actualizat la versiunea <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Instalarea a eşuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideţi-l şi încercaţi din nou.</translation>
 <translation id="2589479092236095792">Setările Completării automate din Chromium</translation>
@@ -122,7 +121,6 @@ Este posibil ca unele funcţii să nu fie disponibile. Specificaţi un director 
 <translation id="7483335560992089831">Nu se poate instala aceeaşi versiune de Chromium care rulează în prezent. Închideţi Chromium şi încercaţi din nou.</translation>
 <translation id="7641113255207688324">Chromium nu este browserul dvs. prestabilit.</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectaţi-vă şi conectaţi-vă din nou.</translation>
-<translation id="2174090135251659490">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat care încă nu este valabil. Nu sunt disponibile informaţii care să indice dacă certificatul respectiv este de încredere. Chromium nu vă poate garanta în mod sigur că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; şi nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeţi că această setare este corectă? În caz contrar, trebuie să corectaţi eroarea şi să actualizaţi această pagină.</translation>
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă şi mai sigură.</translation>
 <translation id="5859758987635973787">Chromium este actualizat (<ph name="VERSION"/>)</translation>

@@ -132,11 +132,6 @@
 <translation id="2231817271680715693">Importuoti naršymo istoriją iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="1353966721814789986">Paleisties puslapiai</translation>
 <translation id="5564962323737505851">Konfigūruojama slaptažodžių tvarkytuvė. Jei slaptažodžių tvarkytuvė įgalinta, galite pasirinkti įgalinti naudotojo galimybę pateikti saugomus slaptažodžius aiškiu tekstu arba neleisti naudotis šia galimybe.</translation>
-<translation id="7989334138134558357">Ši politika aktyvi tik dirbant mažmeninės prekybos režimu.
-
-      Kai šios politikos vertė nustatyta ir nėra 0, šiuo metu prisijungęs demonstracinės versijos naudotojas automatiškai atjungiamas praėjus nurodytam laikui.
-
-      Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="4668325077104657568">Numatytasis vaizdų nustatymas</translation>
 <translation id="7161193985878519056">Inkognito režimas neleidžiamas.</translation>
 <translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>
@@ -250,8 +245,6 @@
       Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="6368011194414932347">Konfigūruoti pagrindinio puslapio URL</translation>
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>
-<translation id="6378014222084506939">Inkognito režimo prieinamumas.</translation>
-<translation id="3706027163744097186">Riboti, kuriems naudotojams leidžiama prisijungti prie „<ph name="PRODUCT_NAME"/>“.</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="1283072268083088623">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME"/>“.
 
@@ -294,15 +287,6 @@
       Jei šis nustatymas nustatytas į „Taip“, užregistruoti įrenginiai periodiškai praneš OS ir programinės aparatinės įrangos versiją. Jei nustatymas nenustatytas ar nustatytas į „Ne“, versijų informacija nebus pranešama.</translation>
 <translation id="467449052039111439">Atidaryti URL sąrašą</translation>
 <translation id="5883015257301027298">Numatytasis slapukų nustatymas</translation>
-<translation id="3413139738214204027">Konfigūruojamas numatytojo pagrindinio puslapio URL „<ph name="PRODUCT_NAME"/>“ ir neleidžiama naudotojams jo pakeisti.
-
-          Pagrindinio puslapio tipas gali būti nustatytas kaip URL, kurį čia nurodote, arba naujo skirtuko puslapis.
-
-          Jei pasirenkate naujo skirtuko puslapį, tada šios politikos nepaisoma.
-
-          Jei įgalinate šį nustatymą, naudotojai negali keisti pagrindinio puslapio URL „<ph name="PRODUCT_NAME"/>“, bet vis tiek gali pasirinkti naujo skirtuko puslapį kaip pagrindinį.
-
-          Nenustačius šios politikos naudotojas (-a) galės pats (-i) pasirinkti savo pagrindinį puslapį, jei nenustatyta ir „Pagrindinis puslapis yra naujo skirtuko puslapis“.</translation>
 <translation id="8955719471735800169">Į pradžią</translation>
 <translation id="8170882486743832400">Konfigūruoti „Google“ duomenų parinktis</translation>
 <translation id="2322733497952278056">Leidžiama prieiga prie nurodytų URL kaip URL juodojo sąrašo išimčių.
@@ -357,15 +341,6 @@
       Jei sukonfigūruota ši politika, nustatomas programų sąrašas ir naudotojas jo keisti negali.
 
       Jei ši politika paliekama nenustatyta, naudotojas gali pakeisti paleidimo priemonėje prisegtų programų sąrašą.</translation>
-<translation id="6177482277304066047">Nustato taikomą automatinių naujinių versiją.
-
-      Nurodo taikomos versijos „<ph name="PRODUCT_OS_NAME"/>“ priešdėlį, į kurį reikia naujinti. Jei įrenginyje veikia ankstesnė versija, nei nurodytas priešdėlis, ji bus atnaujinta į naujausią versiją su nurodytu priešdėliu. Jei įrenginyje jau naudojama naujausia versija, nebus atliekami jokie veiksmai (t. y. nebus grąžinama ankstesnė versija) ir įrenginyje liks dabartinė versija. Priešdėlio formatas veikia pagal komponentus, kaip parodyta toliau pateiktame pavyzdyje:
-
-      „“ (arba nesukonfigūruota): naujinti į naujausią versiją.
-      „1412.“: naujinti į bet kurią mažąją 1412 versiją (pvz., 1412.24.34 arba 1412.60.2)
-      „1412.2.“: naujinti į bet kurią mažąją 1412.2 versiją (pvz., 1412.2.34 arba 1412.2.2)
-      „1412.24.34“: naujinti tik i šią konkrečią versiją
-      </translation>
 <translation id="7625444193696794922">Nurodomas leidimo kanalas, su kuriuo šis įrenginys turėtų būti sujungtas.</translation>
 <translation id="2240879329269430151">Leidžiama nustatyti, ar svetainėse leidžiama rodyti iššokančiuosius langus. Iššokančiųjų langų rodymas gali būti leidžiamas arba draudžiamas visose svetainėse.
 
@@ -383,15 +358,6 @@
       Išimtis galima nurodyti URL baltojo sąrašo politikoje. Į politiką galima įtraukti iki 100 įrašų – į kitus nebus atsižvelgiama.
 
       Nenustačius šios politikos, joks URL nebus įtrauktas į juodąjį sąrašą naršyklėje.</translation>
-<translation id="3586489081967749966">Nurodomas didžiausias galimas prisijungimų prie įgaliotojo serverio vienu metu skaičius.
-
-      Kai kurie įgaliotieji serveriai negali suvaldyti didelio vieno kliento prisijungimų skaičiaus vienu metu. Šią problemą galima išspręsti nustačius mažesnę vertę šioje politikoje.
-
-      Šios politikos vertė turėtų būti mažesnė nei 100 ir didesnė nei 6; numatytoji vertė yra 32.
-
-      Kai kurios žiniatinklio programos naudoja daug prisijungimų su užribiniais GET, taigi nustačius mažesnį skaičių nei 32, naršyklės darbas tinkle strigs, jei bus atidaryta per daug tokių žiniatinklio programų. Nustatę mažesnę vertę nei numatytoji, atsakomybę prisiimsite patys.
-
-      Nenustačius šios politikos, bus naudojama numatytoji vertė, kuri yra 32.</translation>
 <translation id="3864818549971490907">Numatytasis papildinių nustatymas</translation>
 <translation id="7151201297958662315">Nustatoma, ar „<ph name="PRODUCT_NAME"/>“ procesas pradedamas prisijungiant prie OS ir toliau vykdomas, kai paskutinis naršyklės langas uždaromas, leidžiant foninėms programoms likti aktyvioms. Vykdant fono procesą sistemos dėkle pateikiama piktograma ir jį visada galima čia uždaryti.
 
@@ -454,11 +420,6 @@
 <translation id="7880891067740158163">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kurioms „<ph name="PRODUCT_NAME"/>“ turėtų automatiškai parinkti programų sertifikatus, jei svetainėje pateikiama sertifikato užklausa, sąrašą.
 
           Nenustačius šios politikos automatinis parinkimas neatliekamas jokioje svetainėje.</translation>
-<translation id="583542926035627341">Ši politika aktyvi tik dirbant mažmeninės prekybos režimu.
-
-      Pateikiamas plėtinių, kurie automatiškai įdiegiami demonstracinės versijos naudotojui įrenginiuose, veikiančiuose mažmeninės prekybos režimu, sąrašas. Šie plėtiniai išsaugomi įrenginyje ir juos galima įdiegti neprisijungus, baigus diegimą.
-
-      Kiekviename sąrašo įraše pateikiamas žodynas, kurio „plėtinio ID“ lauke turi būti įtrauktas plėtinio ID ir naujinio URL „naujinio URL“ lauke. Pasirenkamą lauką „tik prisijungus“ galima nustatyti į „True“ (tiesa), norint nurodyti, kad šis plėtinys turėtų būti įdiegtas, tik kai įrenginys prijungtas prisijungimo metu.</translation>
 <translation id="3866249974567520381">Aprašas</translation>
 <translation id="5192837635164433517">Įgalinamas alternatyvių klaidų puslapių, integruotų „<ph name="PRODUCT_NAME"/>“ (pvz., „puslapis nerastas“), naudojimas ir neleidžiama naudotojams keisti šio nustatymo.
 
@@ -598,10 +559,6 @@
       Jei įgalinsite šį nustatymą ar jo neleisite, naudotojai negalės jo pakeisti ar panaikinti „<ph name="PRODUCT_NAME"/>“.
 
       Nenustačius šio nustatymo, naudotojas (-a) gali nuspręsti, ar naudoti šią funkciją.</translation>
-<translation id="869575100785642004">Galima nurodyti, iš kurių URL galima įdiegti plėtinius, programas ir temas.
-          21 vers. „Chrome“ sudėtingiau įdiegti plėtinius, programas ir naudotojo scenarijus ne iš „Chrome“ internetinės parduotuvės. Anksčiau naudotojai galėjo spustelėti *.crx failo nuorodą ir „Chrome“ buvo leidžiama įdiegti failą po kelių įspėjimų. Naujesnės nei 21 vers. „Chrome“ tokius failus reikia atsisiųsti ir nutempti į „Chrome“ nustatymų puslapį. Naudojant šį nustatymą galima iš konkrečių URL įdiegti senu, lengvesniu įdiegimo būdu.
-          Kiekvienas šio sąrašo elementas yra plėtinio stiliaus atitikmens šablonas (žr. http://code.google.com/chrome/extensions/match_patterns.html). Naudotojai galės paprastai įdiegti elementus iš bet kurio URL, atitinkančio šio sąrašo elementą.
-          Į plėtinių diegimo juodąjį sąrašą įtrauktiems plėtiniams ši politika negalioja. T. y. juodajame sąraše esantis plėtinys įdiegtas nebus, net jei tai atliekama iš šio sąrašo svetainės.</translation>
 <translation id="5475361623548884387">Įgalinti spausdinimą</translation>
 <translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
 <translation id="4445684791305970001">Neleidžiami kūrėjo įrankiai ir „JavaScript“ konsolė.
@@ -614,7 +571,6 @@
 <translation id="5378985487213287085">Leidžiama nustatyti, ar svetainėse leidžiama pateikti darbalaukio pranešimus. Pagal numatytuosius nustatymus gali būti leidžiama, draudžiama pateikti darbalaukio pranešimus arba naudotojo (-os) gali būti klausiama kaskart svetainėje norint rodyti darbalaukio pranešimus.
 
           Nenustačius šios politikos, bus naudojama „Paklausti dėl pranešimų“ ir naudotojas (-a) galės tai pakeisti.</translation>
-<translation id="3744263630913802110">Pranešti OS ir programinės aparatinės įrangos versiją.</translation>
 <translation id="6908640907898649429">Konfigūruojamas numatytasis paieškos teikėjas. Galite nurodyti numatytąjį paieškos teikėją, kurį naudotojas naudos, arba pasirinkti neleisti numatytosios paieškos.</translation>
 <translation id="389421284571827139">Leidžiama nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą įgaliotąjį serverį ir neleidžiama naudotojams keisti įgaliotojo serverio nustatymų.
 
@@ -643,9 +599,6 @@
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
-<translation id="8288507390252297611">Neleisti spaudinio peržiūros.
-
-      Šis nustatymas naudojamas nustatyti, kad būtų rodomas sistemos spausdinimo dialogo langas, o ne spaudinio peržiūra.</translation>
 <translation id="913195841488580904">Blokuoti prieigą prie URL sąrašo</translation>
 <translation id="6373222873250380826">Neleidžiami automatiniai naujiniai, kai nustatyta į „True“ (tiesa).
 
@@ -654,7 +607,6 @@
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
 <translation id="8951350807133946005">Nustatyti disko talpyklos katalogą</translation>
-<translation id="9055197679339967051">Ar paleidimo kanalą turėtų būti leidžiama nustatyti naudotojui ar jis turėtų būti užrakintas.</translation>
 <translation id="2592091433672667839">Neveikos iki parodant ekrano užsklandą prisijungimo ekrane, dirbant mažmeninės prekybos režimu, trukmė</translation>
 <translation id="166427968280387991">Tarpinis serveris</translation>
 <translation id="2805707493867224476">Leisti visose svetainėse rodyti iššokančiuosius langus</translation>
@@ -724,15 +676,6 @@
 
       Nenustačius šio nustatymo, naudotojas (-a) gali nuspręsti, ar naudoti šią funkciją.</translation>
 <translation id="3264793472749429012">Numatytojo paieškos teikėjo koduotės</translation>
-<translation id="3366530054462553357">Nurodomas „<ph name="PRODUCT_NAME"/>“ neleidžiamų papildinių sąrašas ir naudotojams šio nustatymo keisti neleidžiama.
-
-       Kad įrašai atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio arba vieneto simbolį. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
-
-      Jei įgalinate šį nustatymą, nurodytas papildinių sąrašas niekada nenaudojamas „<ph name="PRODUCT_NAME"/>“. Papildiniai žymimi kaip neleidžiami skiltyje „about:plugins“ ir naudotojai negali jų įgalinti.
-
-      Atminkite, kad šią politiką galima pakeisti taikant „Įgalinti papildiniai“ ir „Neleidžiamų papildinių išimtys“.
-
-      Nenustačius šios politikos, naudotojas (-a) gali naudoti bet kokį sistemoje įdiegtą papildinį, išskyrus užprogramuotuosius nesuderinamus, pasenusius ar pavojingus plėtinius.</translation>
 <translation id="8101760444435022591">Atsiradus programiniam gedimui, prisijungus atliekami panaikinimo patikrinimai neužtikrina tinkamo saugumo, todėl jie pagal numatytuosius nustatymus neleidžiami 19 ir naujesnių versijų „<ph name="PRODUCT_NAME"/>“. Nustačius šią politiką į „true“ (tiesa), atkuriama ankstesnė elgsena ir atliekami OCSP / CRL patikrinimai prisijungus.
 
       Nenustačius politikos arba nustačius į „false“ (netiesa), „Chrome“ neatlieka panaikinimo patikrinimų prisijungus 19 ir naujesnių versijų „Chrome“.</translation>
@@ -805,9 +748,6 @@
 <translation id="7006788746334555276">Turinio nustatymai</translation>
 <translation id="5142301680741828703">„<ph name="PRODUCT_FRAME_NAME"/>“ visada pateikti šiuos URL šablonus</translation>
 <translation id="4625915093043961294">Konfigūruoti plėtinių diegimo baltąjį sąrašą</translation>
-<translation id="3940756655305062524">Jei ši politika nustatyta į „True“ (tiesa) ir „Chrome“ OS paleidimo kanalo“ politika nenurodyta, užregistruoto domeno naudotojams leidžiama pakeisti įrenginio paleidimo kanalą. Jei ši politika nustatyta į „false“ (netiesa), įrenginys užrakinamas bet kuriame paskutinį kartą nustatytame kanale.
-
-      Naudotojo pasirinktas kanalas panaikinamas pagal „Chrome“ OS paleidimo kanalo“ politiką, bet jei politikos kanalas pastovesnis nei tas, kuris buvo įdiegtas įrenginyje, kanalas gali būti perjungtas, tik kai pastovesnio kanalo versija yra aukštesnė nei įdiegta įrenginyje.</translation>
 <translation id="187819629719252111">Leidžiama pasiekti įrenginyje saugomus vietinius failus leidžiant „<ph name="PRODUCT_NAME"/>“ pateikti failų pasirinkimo dialogo langus.
 
       Jei įgalinsite šį nustatymą, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.
@@ -827,9 +767,6 @@
 <translation id="868187325500643455">Leisti visose svetainėse automatiškai paleisti papildinius</translation>
 <translation id="7421483919690710988">Nustatyti medijos disko talpyklos dydį baitais</translation>
 <translation id="5226033722357981948">Nurodyti, ar turi būti neleidžiamas papildinių ieškiklis</translation>
-<translation id="584083164257867276">Apibrėžiamas naudotojų, kuriems leidžiama prisijungti prie įrenginio, sąrašas. Įrašai pateikiami <ph name="USER_WHITELIST_ENTRY_FORMAT"/> formos, pvz., <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Jei norite leisti atsitiktinius naudotojus domene, naudokite <ph name="USER_WHITELIST_ENTRY_WILDCARD"/> formos įrašus.
-
-      Jei ši politika nesukonfigūruota, netaikomi naudotojų, kuriems leidžiama prisijungti, apribojimai. Atminkite, kad sukūrus naujų naudotojų vis tiek reikia atitinkamai sukonfigūruoti „<ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>“ politiką.</translation>
 <translation id="3428247105888806363">Įgalinti tinklo prognozę</translation>
 <translation id="6145799962557135888">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.
 
@@ -850,22 +787,10 @@
 <translation id="1843117931376765605">Atnaujinti naudotojo politikos reitingą</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
 <translation id="4056910949759281379">Neleisti SPDY protokolo</translation>
-<translation id="1991398966873139530">Nurodomas papildinių, kuriuos naudotojas (-a) gali įgalinti ar neleisti „<ph name="PRODUCT_NAME"/>“, sąrašas.
-
-      Kad įrašai atitiktų abejotinų simbolių sekas, galima naudoti pakaitos simbolius „*“ ir „?“. „*“ atitinka abejotiną simbolių skaičių, o „?“ nurodo vieną pasirinktinį simbolį, t. y. atitinka nulio arba vieneto simbolį. Kaitos simbolis yra „\“, taigi, kad simboliai atitiktų faktinius „*“, „?“ arba „\“ simbolius, prieš juos galite įvesti „\“.
-
-      Jei įgalinate šį nustatymą, nurodytas papildinių sąrašas gali būti naudojamas „<ph name="PRODUCT_NAME"/>“. Naudotojai gali įgalinti juos ar jų neleisti skiltyje „about:plugins“, net jei papildinys taip pat atitinka šabloną politikoje „Neleisti papildinių“. Be to, naudotojai gali įgalinti papildinius, neatitinkančius jokių šablonų politikoje „Neleidžiami papildiniai“, „Neleidžiamų papildinių išimtys“ ir „Įgalinti papildiniai“, bei jų neleisti.
-
-      Pagal šią politiką leidžiama tiksliai įtraukti papildinius į juodąjį sąrašą, kur sąraše „Neleidžiami papildiniai“ yra pakaitos simbolių įrašų, pvz., neleisti visų papildinių „*“ arba neleisti visų „Java“ papildinių „*Java*“, bet administratorius nori įgalinti konkrečią versiją, pvz., „IcedTea Java 2.3“. Šias konkrečias versijas galima nurodyti šioje politikoje.
-
-      Nenustačius šios politikos bet koks šablonus politikoje „Neleidžiami papildiniai“ atitinkantis papildinys bus užrakintas bei neleidžiamas ir naudotojas (-a) negalės jo įgalinti.</translation>
 <translation id="3808945828600697669">Nurodyti neleidžiamų papildinių sąrašą</translation>
 <translation id="4525521128313814366">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
-<translation id="1894491175123948728">Ši politika aktyvi tik dirbant mažmeninės prekybos režimu.
-
-      Nustatomas plėtinio, naudotino kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti programų paketo, sukonfigūruoto šiam domenui taikant programų paketo politiką, dalis.</translation>
 <translation id="3866530186104388232">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME"/>“ rodomi esami naudotojai prisijungimo ekrane ir leidžiama juos pasirinkti. Jei ši politika nustatyta į „false“ (netiesa), „<ph name="PRODUCT_OS_NAME"/>“ prisijungiant naudojamas naudotojo vardo / slaptažodžio raginimas.</translation>
 <translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
 <translation id="1151353063931113432">Leisti vaizdus šiose svetainėse</translation>
@@ -890,10 +815,6 @@
       Jei šio nustatymo neleisite, naudodami „<ph name="PRODUCT_NAME"/>“ naudotojai negalės spausdinti. Spausdinti bus neleidžiama naudojant veržliarakčio meniu, plėtinius, „JavaScript“ programas ir kt. Spausdinti vis tiek bus leidžiama naudojant papildinius, kurie spausdinant apeina „<ph name="PRODUCT_NAME"/>“. Pvz., tam tikrų „Flash“ programų kontekstinių meniu spausdinimo parinktys vis tiek bus įgalintos.
 
       Nenustačius šios politikos, tai bus įgalinta, bet naudotojas (-a) galės tai pakeisti.</translation>
-<translation id="210513196702568522"> Ryšio tipai, tinkami naudoti naujinant OS. Dėl OS naujinių dydžio labai apkraunamas ryšys ir galite būti papildomai apmokestinami. Todėl jie pagal numatytuosius nustatymus neįgalinti naudojant ryšio tipus, dabar laikomus brangiais, įskaitant „WiMax“, „Bluetooth“ ir mobilųjį ryšį.
-
-      Atpažįstami ryšio tipo identifikatoriai yra eternetas, „Wi-Fi“, „WiMax“, „Bluetooth“ ir mobilusis ryšys.
-      </translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="7635471475589566552">„<ph name="PRODUCT_NAME"/>“ konfigūruojama programos lokalė ir naudotojams neleidžiama jos keisti.
@@ -916,11 +837,6 @@
       Jei šio nustatymo neleisite, pasenę papildiniai nebus naudojami, o naudotojų nebus prašoma suteikti leidimo juos paleisti.
 
       Nenustačius šio nustatymo, naudotojų bus prašoma suteikti leidimą paleisti pasenusius papildinius.</translation>
-<translation id="4922427744878251344">Kai nustatyta į „True“ (tiesa) ir naudojamas mobilusis ryšys, neleidžiamas „Google“ dokumentų sinchronizavimas.
-
-          – T. y. duomenys sinchronizuojami su „Google“ dokumentais, tik kai prisijungta per „WiFi“ ar eternetą.
-
-          – Jei nenustatyta ar nustatyta į „false“ (netiesa), naudotojai gali perkelti failus į „Google“ dokumentus naudodami mobiliuosius ryšius.</translation>
 <translation id="2629448496147630947">Konfigūruoti nuotolinės prieigos parinktis <ph name="PRODUCT_NAME"/>.
 
       Šių funkcijų nepaisoma, jei neįdiegta Nuotolinės prieigos žiniatinklio programa.</translation>
@@ -965,7 +881,6 @@
 
       Nenustačius šios politikos, trečiųjų šalių slapukai bus įgalinti, bet naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
-<translation id="57127641120127115">Įgalinti užraktą, kai įrenginys yra neveikos būsenos arba sustabdytas.</translation>
 <translation id="6672934768721876104">Ši politika nepatvirtinta, todėl geriau naudokite įgaliotojo serverio režimą.
 
           Leidžiama jums nurodyti „<ph name="PRODUCT_NAME"/>“ naudojamą įgaliotąjį serverį ir neleidžiama naudotojams keisti įgaliotojo serverio nustatymų.
@@ -983,7 +898,6 @@
 
           Nenustačius šios politikos, naudotojai galės patys pasirinkti įgaliotojo serverio nustatymus.</translation>
 <translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
-<translation id="5883954255534074144">Leisti „<ph name="PRODUCT_FRAME_NAME"/>“ naudoti nurodytų tipų turinį.</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
 <translation id="5512418063782665071">Pagrindinio puslapio URL</translation>
@@ -996,14 +910,8 @@
           Jei reikia išsamesnių pavyzdžių, apsilankykite šiuo adresu:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
-<translation id="6630106909870121131">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma visiems „<ph name="PRODUCT_OS_NAME"/>“ įrenginio naudotojams. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">HTTP tapatumo nustatymo politika</translation>
 <translation id="5946082169633555022">Beta versijos kanalas</translation>
-<translation id="282142179381950064">Kai nustatyta į „True“ (tiesa), neleidžiamas „Google“ dokumentų sinchronizavimas.
-
-          – T. y. į „Google“ dokumentus negalima įkelti jokių duomenų.
-
-          – Jei nenustatyta ar nustatyta į „false“ (netiesa), naudotojai gali perkelti failus į „Google“ dokumentus.</translation>
 <translation id="8303314579975657113">Nurodoma, kurią GSSAPI biblioteką reikia naudoti, nustatant HTTP autentifikavimą. Galima nustatyti vien tik bibliotekos pavadinimą arba visą kelią.
 
           Nustatymų nepateikus „<ph name="PRODUCT_NAME"/>“ naudos atsarginį numatytąjį bibliotekos pavadinimą.</translation>
@@ -1011,13 +919,6 @@
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
-<translation id="8220342550735772883">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME"/>“ naudos talpykloje esantiems medijos failams saugoti diske, dydis.
-
-      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME"/>“ bus naudojama pateikto dydžio talpykla, neatsižvelgiant, ar naudotojas (-a) nurodė žymą „--media-cache-size“.
-
-      Jei šios politikos vertė 0, bus naudojama numatytojo dydžio talpykla, bet naudotojas (-a) negalės jos pakeisti.
-
-      Nenustačius šios politikos, bus naudojamas numatytasis dydis ir naudotojas (-a) galės jį pakeisti taikydamas (-a) žymą „--media-cache-size“.</translation>
 <translation id="7049373494483449255">Įgalinama „<ph name="PRODUCT_NAME"/>“ pateikti dokumentus „<ph name="CLOUD_PRINT_NAME"/>“, kad būtų spausdinami. PASTABA: tai turi įtakos tik palaikant „<ph name="CLOUD_PRINT_NAME"/>“ „<ph name="PRODUCT_NAME"/>“. Dėl to nėra draudžiama naudotojams pateikti spausdinimo darbų svetainėse.
 
       Jei šis nustatymas įgalintas arba nesukonfigūruotas, naudotojai gali spausdinti „<ph name="CLOUD_PRINT_NAME"/>“ iš „<ph name="PRODUCT_NAME"/>“ spausdinimo dialogo lango.

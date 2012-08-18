@@ -90,11 +90,10 @@
 <translation id="5941830788786076944">הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
-<translation id="4573769928351971197">Google Chrome ישחזר את ההפעלה הקודמת שלך בעת ההפעלה. חלק מההגדרות המבוססות על ההפעלה, כגון אלו שמנקות נתונים ביציאה, יושבתו.</translation>
 <translation id="3612333635265770873">מודול בעל אותו שם מתנגש עם Google Chrome.</translation>
 <translation id="61852838583753520">עדכן את מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="6650142020817594541">אתר זה ממליץ על Google Chrome Frame (כבר מותקן).</translation>
-<translation id="4535984553437295350">השק מחדש את Google Chrome כדי לסיים את העדכון.</translation>
+<translation id="4535984553437295350">פתח שוב את Google Chrome כדי לסיים את העדכון.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
 <translation id="5577648424992741236">במחשב זה מותקנת כבר גירסה מתקדמת יותר של Google Chrome Frame. אם התוכנה אינה פועלת, הסר את ההתקנה של Google Chrome Frame ונסה שוב.</translation>
 <translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">כמעט מעודכן! הפעל מחדש את Google Chrome כדי לסיים את העדכון.</translation>
 <translation id="546394857889685352">המכשיר עודכן לגירסה <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">מנהל המשימות - Google Chrome</translation>
-<translation id="1826482739472655104">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שעדיין אינו תקף. אין מידע זמין שיכול לציין אם ניתן לבטוח באישור. Google Chrome אינו יכול להבטיח באופן מהימן שאתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. השעון של המחשב מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם זה נכון? אם לא, עליך לתקן את השגיאה ולרענן את דף.</translation>
 <translation id="8449380764213232436">Google Chrome מייבא כעת את הפריטים הבאים מ <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Google Chrome.</translation>

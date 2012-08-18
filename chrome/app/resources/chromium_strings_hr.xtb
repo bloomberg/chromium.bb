@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">U sustavu je pronađena sukobljena instalacija preglednika Chromium ili aplikacije Chromium Frame. Deinstalirajte je i pokušajte ponovo.</translation>
 <translation id="6953661834318318668">Alatna traka preglednika Chromium</translation>
 <translation id="7097100943370017396">Chromium se više ne ažurira jer je vaš operativni sustav zastario.</translation>
-<translation id="2777754523825675150">Chromium će vratiti vašu prethodnu sesiju pri pokretanju. Neke od vaših postavki koje se temelje na sesijama, primjerice, one koje brišu podatke na izlazu, bit će onemogućene.</translation>
 <translation id="4103959775970322855">Chromium je ažuriran u verziju <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Instalacija nije uspjela zbog nepoznate pogreške. Ako je Chromium trenutačno otvoren, zatvorite ga i pokušajte ponovo.</translation>
 <translation id="2589479092236095792">Postavke automatske ispune za Chromium</translation>
@@ -122,7 +121,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="7483335560992089831">Ne možete instalirati istu verziju Chromiuma koja se trenutačno izvršava. Zatvorite Chromium i pokušajte ponovo.</translation>
 <translation id="7641113255207688324">Chromium nije vaš zadani preglednik.</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
-<translation id="2174090135251659490">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali je poslužitelj ponudio certifikat koji još ne vrijedi. Nema dostupnih informacija o tome može li se taj certifikat smatrati pouzdanim. Chromium ne može pouzdano jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, ispravite pogrešku i osvježite stranicu.</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
 <translation id="5859758987635973787">Chromium je ažuran (<ph name="VERSION"/>)</translation>

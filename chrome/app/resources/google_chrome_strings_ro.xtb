@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Setați Google Chrome ca browser prestabilit</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome vă permite să faceţi clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
-<translation id="4573769928351971197">Google Chrome va restabili sesiunea precedentă la pornire. Unele dintre setările bazate pe sesiune, cum ar fi cele care şterg datele la ieşire, vor fi dezactivate.</translation>
 <translation id="3612333635265770873">Un modul cu acelaşi nume este cunoscut ca având conflicte cu Google Chrome.</translation>
 <translation id="61852838583753520">Actualizaţi sistemul de operare &amp;Chrome</translation>
 <translation id="6650142020817594541">Acest site recomandă Google Chrome Frame (deja instalat).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Sistemul de operare este aproape actualizat! Reporniţi Google Chrome pentru a finaliza actualizarea.</translation>
 <translation id="546394857889685352">Dispozitivul a fost actualizat la versiunea <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Manager de activități - Google Chrome</translation>
-<translation id="1826482739472655104">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat care încă nu este valabil. Nu sunt disponibile informaţii care să indice dacă certificatul respectiv este de încredere. Google Chrome nu vă poate garanta în mod sigur că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; şi nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeţi că această setare este corectă? În caz contrar, trebuie să corectaţi eroarea şi să actualizaţi această pagină.</translation>
 <translation id="8449380764213232436">Google Chrome importă acum următoarele elemente din <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">S-a produs o eroare de sistem de operare în timpul instalării. Descărcați din nou Google Chrome.</translation>

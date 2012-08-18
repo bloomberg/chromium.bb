@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">S'ha trobat una instal·lació conflictiva de Chromium al sistema. Desinstal·leu l'aplicació i torneu-ho a provar.</translation>
 <translation id="6953661834318318668">Barra d'eines de Chromium</translation>
 <translation id="7097100943370017396">Chromium ja no s'actualitza perquè el sistema operatiu ha quedat obsolet.</translation>
-<translation id="2777754523825675150">Chromium restaurarà la sessió anterior en iniciar-se. Alguns dels paràmetres basats en la sessió, com els que esborren dades en tancar, es desactivaran.</translation>
 <translation id="4103959775970322855">Chromium s'ha actualitzat a la versió <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">S'ha produït un error no especificat durant la instal·lació. Si Chromium s'està executant en aquests moments, tanqueu-lo i torneu-ho a provar.</translation>
 <translation id="2589479092236095792">Configuració d'Emplenament automàtic de Chromium</translation>
@@ -122,7 +121,6 @@
 <translation id="7483335560992089831">No es pot instal·lar la mateixa versió de Chromium que s'està executant actualment. Tanqueu Chromium i torneu-ho a provar.</translation>
 <translation id="7641113255207688324">Chromium no és el navegador predeterminat.</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
-<translation id="2174090135251659490">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que encara no és vàlid. No hi ha informació disponible que indiqui si el certificat és de confiança. Per tant, Chromium no pot garantir amb seguretat que us estigueu comunicant amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no un amb un atacant. El rellotge del vostre equip està definit en aquest moment a <ph name="CURRENT_TIME"/>. És l'hora correcta? Si no, hauríeu de corregir l'error i d'actualitzar aquesta pàgina.</translation>
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="5859758987635973787">Chromium està actualitzat (<ph name="VERSION"/>)</translation>

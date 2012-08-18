@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Gør Google Chrome til din standardbrowser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
-<translation id="4573769928351971197">Google Chrome gendanner din forrige session ved opstart. Nogle af dine sessionbaserede indstillinger, f.eks. dem, der sletter data ved nedlukning, deaktiveres.</translation>
 <translation id="3612333635265770873">Et modul med samme navn konflikter med Google Chrome.</translation>
 <translation id="61852838583753520">Opdater &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Dette website anbefaler Google Chrome Frame (installeret).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Næsten opdateret! Genstart Google Chrome for at gennemføre opdateringen.</translation>
 <translation id="546394857889685352">Din enhed er blevet opdateret til <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Jobliste – Google Chrome</translation>
-<translation id="1826482739472655104">Du forsøgte at besøge &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et certifikat, som endnu ikke er gyldigt. Google Chrome kan ikke garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en ondsindet person. Computerens ur er i øjeblikket angivet til til <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, skal du korrigere fejlen og opdatere siden.</translation>
 <translation id="8449380764213232436">Google Chrome importerer nu de følgende elementer fra <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Der opstod en fejl ved operativsystemet under installation. Download Google Chrome igen.</translation>

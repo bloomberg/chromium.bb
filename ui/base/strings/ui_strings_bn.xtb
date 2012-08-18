@@ -22,6 +22,8 @@
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3087734570205094154">নীচে</translation>
 <translation id="6364916375976753737">বাম দিকে স্ক্রোল করুন</translation>
+<translation id="6945221475159498467">নির্বাচন</translation>
+<translation id="6620110761915583480">ফাইল সংরক্ষণ করুন</translation>
 <translation id="8210608804940886430">পৃষ্ঠা উপরে</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
@@ -43,12 +45,14 @@
 <translation id="4588090240171750605">ডান দিকে স্ক্রোল করুন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
 <translation id="8331626408530291785">উপরে স্ক্রোল করুন</translation>
+<translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">নীচে স্ক্রোল করুন</translation>
 <translation id="3157931365184549694">পুনরুদ্ধার করুন</translation>
 <translation id="8179976553408161302">প্রবেশ করুন</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="6845383723252244143">ফোল্ডার নির্বাচন করুন</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
 <translation id="436869212180315161">টিপুন</translation>
@@ -59,5 +63,6 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="6965382102122355670">ওকে</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
+<translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="8328145009876646418">বাম প্রান্ত</translation>
 </translationbundle>

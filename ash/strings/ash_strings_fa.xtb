@@ -3,7 +3,6 @@
 <translationbundle lang="fa">
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="5250713215130379958">مخفی کردن خودکار راه انداز</translation>
-<translation id="8328777765163860529">بستن همه</translation>
 <translation id="30155388420722288">دکمه سرریز</translation>
 <translation id="5571066253365925590">بلوتوث فعال شد</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
@@ -12,11 +11,13 @@
 <translation id="3626281679859535460">روشنایی</translation>
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="5565793151875479467">پراکسی...</translation>
+<translation id="938582441709398163">هم پوشانی صفحه‌کلید</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">سینی وضعیت</translation>
 <translation id="2946640296642327832">فعال کردن بلوتوث</translation>
+<translation id="8206859287963243715">سلولی</translation>
 <translation id="6596816719288285829">آدرس IP</translation>
-<translation id="5233638681132016545">برگه جدید</translation>
+<translation id="5233638681132016545">برگهٔ جدید</translation>
 <translation id="3846575436967432996">اطلاعات شبکه در دسترس نیست</translation>
 <translation id="3026237328237090306">تنظیم اطلاعات تلفن همراه</translation>
 <translation id="785750925697875037">مشاهده حساب تلفن همراه</translation>
@@ -25,10 +26,8 @@
 <translation id="3126069444801937830">راه‌اندازی مجدد برای به‌روزرسانی</translation>
 <translation id="1525975890706558596">CAPS LOCK روشن است.
 برای لغو، Shift + Search را فشار دهید.</translation>
-<translation id="8190698733819146287">سفارشی کردن زبان ها و ورودی...</translation>
-<translation id="3845909655305837528">روش ورودی شما تغییر کرد.
-        برای تغییر Shift + Alt را فشار دهید.</translation>
-<translation id="5182671122927417841">غیرفعال کردن برنامه افزودنی</translation>
+<translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
+<translation id="5182671122927417841">غیرفعال کردن برنامهٔ افزودنی</translation>
 <translation id="598295083618286569">بلوتوث متصل شد</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="2091132388437059185">وقتی راه انداز بزرگ می‌شود بطور خودکار مخفی شود</translation>
@@ -45,9 +44,9 @@
 <translation id="9089416786594320554">روش‌های ورودی</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2570059561924004903">غیرفعال کردن بازخورد صوتی</translation>
+<translation id="1895658205118569222">بسته شدن</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="1383876407941801731">جستجو</translation>
-<translation id="3557139239102318020">برای کوچک کردن به پایین بکشید، برای کاشی کاشی کردن به سمت راست یا چپ بکشید</translation>
 <translation id="5980301590375426705">خروج از مهمان</translation>
 <translation id="8308637677604853869">منوی قبلی</translation>
 <translation id="1346748346194534595">راست</translation>
@@ -58,24 +57,30 @@
 <translation id="5543001071567407895">پیامک</translation>
 <translation id="6223565363550976998">باتری: <ph name="PERCENTAGE"/>%</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="3784455785234192852">قفل</translation>
-<translation id="2805756323405976993">برنامه ها</translation>
+<translation id="2805756323405976993">برنامه‌ها</translation>
+<translation id="2482878487686419369">اعلام ها</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
 <translation id="7052914147756339792">تنظیم کاغذدیواری...</translation>
 <translation id="1602076796624386989">فعال کردن اطلاعات تلفن همراه</translation>
+<translation id="3157931365184549694">بازیابی</translation>
 <translation id="8573351908869164327"><ph name="HOUR"/>ساعت <ph name="MINUTE"/>دقیقه مانده است</translation>
 <translation id="7029814467594812963">خروج از جلسه</translation>
 <translation id="2983818520079887040">تنظیمات...</translation>
-<translation id="8660803626959853127">درحال همگام سازی فایل(های) <ph name="COUNT"/></translation>
+<translation id="2712866615167520691">ویژگی‌های قابلیت دسترسی فعال هستند. برای لغو Ctrl+Alt+Z را فشار دهید.</translation>
+<translation id="8660803626959853127">در حال همگام سازی فایل(های) <ph name="COUNT"/></translation>
 <translation id="639644700271529076">CAPS LOCK خاموش است</translation>
 <translation id="4864165860509564259">موقعیت راه‌انداز</translation>
+<translation id="7649070708921625228">راهنما</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
 <translation id="7871882211137875558">پیوستن به شبکه دیگر…</translation>
-<translation id="3573179567135747900">به &quot;<ph name="FROM_LOCALE"/>&quot; تغییر دهید (به راه اندازی دوباره نیاز دارد)</translation>
+<translation id="3573179567135747900">به &quot;<ph name="FROM_LOCALE"/>&quot; تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
 <translation id="8103386449138765447">پیامک‌ها: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">تنظیمات Google Drive...</translation>
 <translation id="48607902311828362">حالت هواپیما</translation>
+<translation id="5941711191222866238">کوچک کردن</translation>
 <translation id="9169585155162064169">CAPS LOCK روشن است.
 برای لغو Search را فشار دهید.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ساعت <ph name="MINUTE"/>دقیقه مانده تا باتری شارژ شود</translation>

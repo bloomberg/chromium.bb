@@ -18,6 +18,7 @@
 <translation id="3234408098842461169">ዝቅዝቅ ቀስት</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
 <translation id="6364916375976753737">ወደ ግራ ሸብልል</translation>
+<translation id="6620110761915583480">ፋይል አስቀምጥ</translation>
 <translation id="8210608804940886430">ወደታች አንቀሳቅስ</translation>
 <translation id="5329858601952122676">&amp;ሠርዝ</translation>
 <translation id="6659594942844771486">ትር</translation>
@@ -35,16 +36,19 @@
 <translation id="4588090240171750605">ወደ ቀኝ ሸብልል</translation>
 <translation id="2666092431469916601">ላይ</translation>
 <translation id="8331626408530291785">ወደ ላይ ሸብልል</translation>
+<translation id="7907591526440419938">ፋይል ክፈት</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">ወደ ታች ሸብልል</translation>
 <translation id="3157931365184549694">እነበረበት መልስ</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
+<translation id="6845383723252244143">አቃፊ ምረጥ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="436869212180315161">ተጫን</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6965382102122355670">ይሁን</translation>
 <translation id="5941711191222866238">አሳንስ</translation>
+<translation id="3036649622769666520">ፋይሎች ክፈት</translation>
 <translation id="8328145009876646418">የግራ ጠርዝ</translation>
 </translationbundle>

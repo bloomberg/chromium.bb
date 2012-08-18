@@ -98,7 +98,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
-<translation id="4573769928351971197">Google Chrome återställer din föregående session när du startar programmet. Vissa sessionsbaserade inställningar, till exempel sådana som tar bort data när programmet avslutas, används inte.</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Webbplatsen rekommenderar Google Chrome Frame (redan installerat)</translation>
@@ -155,7 +154,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="3836351788193713666">Nästan klart! Slutför uppdateringen genom att starta om Google Chrome.</translation>
 <translation id="546394857889685352">Enheten har uppdaterats till <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
-<translation id="1826482739472655104">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som inte är giltigt ännu. Det finns ingen information som anger om certifikatet är tillförlitligt. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Datorns klocka är inställd på <ph name="CURRENT_TIME"/>. Ser det rätt ut? Om det inte gör det bör du rätta till den och uppdatera sidan.</translation>
 <translation id="8449380764213232436">Google Chrome importerar följande objekt från <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Hämta Google Chrome igen.</translation>

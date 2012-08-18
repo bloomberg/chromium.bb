@@ -94,7 +94,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ļauj jums noklikšķināt uz tālruņa numura un zvanīt ar to pakalpojumā Skype!</translation>
-<translation id="4573769928351971197">Google Chrome atjaunos jūsu iepriekšējo sesiju startēšanas brīdī. Daži no sesijas iestatījumiem, piemēram, tie, kuri notīra datus iziešanas brīdī, tiks atspējoti.</translation>
 <translation id="3612333635265770873">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Google Chrome.</translation>
 <translation id="61852838583753520">Atjaunināt &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Šī vietne iesaka Google Chrome Frame (jau instalēta).</translation>
@@ -151,7 +150,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="3836351788193713666">Atjaunināšana gandrīz pabeigta! Lai pabeigtu atjaunināšanu, atkārtoti palaidiet Google Chrome.</translation>
 <translation id="546394857889685352">Ierīce ir atjaunināta uz versiju <ph name="VERSION"/>.</translation>
 <translation id="7106741999175697885">Uzdevumu pārvaldnieks - Google Chrome</translation>
-<translation id="1826482739472655104">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, kas pagaidām nav derīgs. Nav pieejama informācija, kas apliecinātu, ka sertifikāts ir uzticams. Pārlūks Google Chrome nevar uzticami garantēt, ka jūs sazināties ar &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nevis uzbrucēju. Jūsu datora pulkstenis šobrīd ir iestatīts uz <ph name="CURRENT_TIME"/>. Vai tas ir pareizs? Ja tā nav, novērsiet kļūdu un atsvaidziniet šo lapu.</translation>
 <translation id="8449380764213232436">Google Chrome pašlaik importē šādas vienības no <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Instalācijas laikā radās operētājsistēmas kļūda. Lūdzu, vēlreiz lejupielādējiet Google Chrome.</translation>

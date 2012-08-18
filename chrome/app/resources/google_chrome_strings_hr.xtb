@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Neka Google Chrome bude zadani preglednik.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
-<translation id="4573769928351971197">Google Chrome vratit će vašu prethodnu sesiju pri pokretanju. Neke vaše postavke koje se temelje na sesiji, na primjer, one koje brišu podatke pri izlasku, bit će onemogućene.</translation>
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
 <translation id="61852838583753520">Ažuriraj OS &amp;Chrome</translation>
 <translation id="6650142020817594541">Ova web-lokacija preporučuje Google Chrome Frame (već instaliran).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Još malo i ažuran! Ponovo pokrenite Google Chrome da biste završili ažuriranje.</translation>
 <translation id="546394857889685352">Uređaj je ažuriran na verziju <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Upravitelj zadacima - Google Chrome:</translation>
-<translation id="1826482739472655104">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali je poslužitelj ponudio certifikat koji još ne vrijedi. Nema dostupnih informacija o tome može li se taj certifikat smatrati pouzdanim. Google Chrome ne može pouzdano jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, ispravite pogrešku i osvježite stranicu.</translation>
 <translation id="8449380764213232436">Google Chrome sada iz komponente <ph name="BROWSER_COMPONENT"/> unosi sljedeće stavke:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Došlo je do pogreške operacijskog sustava tijekom instalacije. Ponovno preuzmite program Google Chrome.</translation>

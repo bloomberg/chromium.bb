@@ -132,11 +132,6 @@
 <translation id="2231817271680715693">Pārlūkošanas vēstures importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="1353966721814789986">Sākumlapas</translation>
 <translation id="5564962323737505851">Konfigurē paroļu pārvaldnieku. Ja paroļu pārvaldnieks ir iespējots, var izvēlēties iespējot vai atspējot saglabāto paroļu rādīšanu nešifrētā tekstā.</translation>
-<translation id="7989334138134558357">Šī politika darbojas tikai mazumtirdzniecības režīmā.
-
-      Ja šīs politikas vērtība tiek iestatīta un nav nulle, šobrīd pieteiktais demonstrācijas lietotājs tiek automātiski atteikts pēc noteikta laika.
-
-      Politikas vērtība ir jānorāda milisekundēs.</translation>
 <translation id="4668325077104657568">Noklusējuma attēlu iestatījums</translation>
 <translation id="7161193985878519056">Inkognito režīms atspējots.</translation>
 <translation id="6368403635025849609">Atļauj izmantot JavaScript šajās vietnēs</translation>
@@ -250,8 +245,6 @@
       Politikas vērtība ir jānorāda milisekundēs.</translation>
 <translation id="6368011194414932347">Konfigurē sākumlapas URL</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
-<translation id="6378014222084506939">Inkognito režīma pieejamība.</translation>
-<translation id="3706027163744097186">Ierobežo lietotājus, kuriem ir atļauts pierakstīties produktā <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
 <translation id="1283072268083088623">Norāda <ph name="PRODUCT_NAME"/> atbalstītās HTTP autentifikācijas shēmas.
 
@@ -290,15 +283,6 @@
       Ja šī iestatījuma statuss ir Patiess, reģistrētās ierīces ik pa laikam ziņos par OS un programmaparatūras versiju. Ja šis iestatījums nav iestatīts vai tam piešķirts statuss Aplami, informācija par versiju netiek ziņota.</translation>
 <translation id="467449052039111439">Atvērt vietrāžu URL sarakstu</translation>
 <translation id="5883015257301027298">Noklusējuma sīkfailu iestatījums</translation>
-<translation id="3413139738214204027">Konfigurē <ph name="PRODUCT_NAME"/> noklusējuma sākumlapas URL un neļauj lietotājiem to mainīt.
-
-          Par sākumlapu var tikt iestatīts šeit norādītais URL vai Jaunas cilnes lapa.
-
-          Ja tiek atlasīta Jaunas cilnes lapa, šī politika tiek ignorēta.
-
-          Ja šis iestatījums ir iestatīts, lietotāji nevar mainīt savu <ph name="PRODUCT_NAME"/> sākumlapas URL, bet joprojām par savu sākumlapu var iestatīt Jaunas cilnes lapu.
-
-          Ja šī politika nav iestatīta, lietotāji varēs izvēlēties savu sākumlapu (ja vien nebūs iestatīta arī politika HomepageIsNewTabPage).</translation>
 <translation id="8955719471735800169">Augšup</translation>
 <translation id="8170882486743832400">Konfigurēt GData opcijas</translation>
 <translation id="2322733497952278056">Ļauj piekļūt sarakstā iekļautajiem vietrāžiem URL kā URL melnā saraksta izņēmumiem.
@@ -352,15 +336,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Konfigurējot šo politiku, lietojumprogrammu kopa tiek fiksēta un lietotājs to nevar mainīt.
 
       Ja šī politika netiek iestatīta, lietotājs var mainīt piesprausto lietotņu sarakstu palaišanas lapā.</translation>
-<translation id="6177482277304066047">Tiek iestatīta automātisko atjauninājumu vēlamā versija.
-
-      Tiek norādīts tās vēlamās versijas prefikss, kas ir jāatjaunina operētājsistēmā <ph name="PRODUCT_OS_NAME"/>. Ja ierīcē tiek izmantota versija, kas ir vecāka par prefiksā noteikto, tā tiks atjaunināta uz jaunāko versiju ar noteikto prefiksu. Ja ierīcē jau tiek izmantota jaunākā versija, netiek veiktas nekādas darbības (t.i., netiek izmantota vecāka versija) un ierīcē tiek saglabāta pašreizējā versija. Prefiksa formāta pamatā ir dažādi komponenti, piemēram:
-
-      &quot;&quot; (vai nav konfigurēta): atjaunināt uz jaunāko pieejamo versiju;
-      &quot;1412.&quot;: atjaunināt uz jebkuru versijas 1412 papildversiju (piem., 1412.24.34 vai 1412.60.2);
-      &quot;1412.2.&quot;: atjaunināt uz jebkuru versijas 1412.2 papildversiju (piem., 1412.2.34 vai 1412.2.2);
-      &quot;1412.24.34&quot;: atjaunināt tikai uz šo konkrēto versiju.
-      </translation>
 <translation id="7625444193696794922">Norāda atbrīvošanas kanālu, pie kura jābūt piesaistītai šai ierīcei.</translation>
 <translation id="2240879329269430151">Ļauj iestatīt, vai vietnēm ir atļauts rādīt uznirstošos logus. Uznirstošo logu rādīšana var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
@@ -378,15 +353,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Izņēmumi var tikt definēti vietrāžu URL baltā saraksta politikā. Šajās politikās var ievadīt ne vairāk kā 100 ierakstus; pārējie ieraksti tiks ignorēti.
 
       Ja šī politika nav iestatīta, pārlūka melnajā sarakstā netiks iekļauts neviens URL.</translation>
-<translation id="3586489081967749966">Norāda maksimālo vienlaicīgo savienojumu skaitu ar starpniekserveri.
-
-      Daži starpniekserveri nevar apstrādāt lielu skaitu vienlaicīgu savienojumu vienam klientam, un to var atrisināt, šai politikai iestatot zemāku vērtību.
-
-      Šīs politikas vērtībai ir jābūt zemākai par 100 un lielākai par 6. Noklusējuma vērtība ir 32.
-
-      Ir zināms, ka dažas tīmekļa lietotnes izmanto daudz savienojumu, uz laiku pārtraucot GET darbību, tāpēc, samazinot vērtību zem 32, pārlūka tīklošanas darbības var tikt uz laiku pārtrauktas, ja ir atvērtas pārāk daudzas tīmekļa lietotnes. Jūs uzņematies pilnīgu atbildību par vērtības samazināšanu zem noklusējuma.
-
-      Ja šī politika nav iestatīta, tiks lietota noklusējuma vērtība: 32.</translation>
 <translation id="3864818549971490907">Noklusējuma spraudņu iestatījums</translation>
 <translation id="7151201297958662315">Nosaka, vai produkta <ph name="PRODUCT_NAME"/> process tiek sākts, kad kāds piesakās operētājsistēmā, un turpina darboties, kad pēdējais pārlūka logs tiek aizvērts, ļaujot fona lietotnēm palikt aktīvām. Fona process rāda ikonu sistēmas teknē, un to vienmēr var aizvērt no šīs vietas.
 
@@ -447,11 +413,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="7880891067740158163">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām <ph name="PRODUCT_NAME"/> ir automātiski jāatlasa klientu sertifikāti, ja konkrētā vietne pieprasa sertifikātu.
 
           Ja šī politika nav iestatīta, nevienai vietnei netiks izpildīta automātiskā atlase.</translation>
-<translation id="583542926035627341">Šī politika darbojas tikai mazumtirdzniecības režīmā.
-
-      Norāda paplašinājumus, kas tiek automātiski instalēti demonstrācijas lietotājam ierīcēs, kurās atvērts mazumtirdzniecības režīms. Šie paplašinājumi tiek saglabāti ierīcē, un pēc instalēšanas tos var instalēt bezsaistē.
-
-      Katrā saraksta ierakstā ir ietverta vārdnīca, kurai jāiekļauj paplašinājuma ID laukā extension-id un tā atjaunināšanas URL laukā update-url. Izvēles lauku online-only var iestatīt uz Patiess, lai norādītu, ka šis paplašinājums ir jāinstalē tikai tad, kad pierakstīšanās brīdī ierīce ir tiešsaistē.</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="5192837635164433517">Iespējo alternatīvo produktā <ph name="PRODUCT_NAME"/> iebūvēto kļūdu lapu lietošanu (piem., lapa nav atrasta) un neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -589,13 +550,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt vai ignorēt šo iestatījumu produktā <ph name="PRODUCT_NAME"/>.
 
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai lietot šo funkciju.</translation>
-<translation id="869575100785642004">Ļauj norādīt, kuriem URL ir atļauts instalēt paplašinājumus, lietotnes un motīvus.
-
-          Sākot ar pārlūkprogrammas Chrome versiju 21, ir daudz grūtāk instalēt paplašinājumus, lietotnes un lietotāja skriptus no avota, kas nav ietverts Chrome interneta veikalā. Iepriekš lietotāji varēja noklikšķināt uz saites, kas novirza uz *.crx failu, un pārlūkprogrammā Chrome pēc dažu brīdinājumu parādīšanas tika piedāvāts instalēt failu. Ieviešot pārlūkprogrammas Chrome versiju 21, šāda veida faili ir jālejupielādē un jāievelk Chrome iestatījumu lapā. Šis iestatījums ļauj noteiktiem URL saglabāt iepriekšējo vienkāršāko instalēšanas plūsmu.
-
-          Katrs šī saraksta vienums ir paplašinājuma veida atbilstības modelis (skatiet vietni http://code.google.com/chrome/extensions/match_patterns.html). Lietotāji var ērti instalēt vienumus no jebkura URL, kas atbilst kādam saraksta vienumam.
-
-          Paplašinājumu instalēšanas melnais saraksts ir svarīgāks nekā šī politika. Tas nozīmē, ka melnajā sarakstā esošs paplašinājums netiks instalēts, pat ja tas atrodas šajā sarakstā minētā vietnē.</translation>
 <translation id="5475361623548884387">Iespējo drukāšanu</translation>
 <translation id="3653237928288822292">Noklusējuma meklētājprogrammas ikona</translation>
 <translation id="4445684791305970001">Atspējo izstrādātāju rīkus un JavaScript konsoli.
@@ -608,7 +562,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="5378985487213287085">Ļauj iestatīt, vai vietnēm ir atļauts attēlot darbvirsmas paziņojumus. Darbvirsmas paziņojumu attēlošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne vēlas rādīt darbvirsmas paziņojumus.
 
           Ja šī politika nav iestatīta, tiks lietota politika AskNotifications un lietotājs to varēs mainīt.</translation>
-<translation id="3744263630913802110">Ziņot par OS un programmaparatūras versiju.</translation>
 <translation id="6908640907898649429">Konfigurē noklusējuma meklētājprogrammu. Var norādīt noklusējuma meklētājprogrammu, kas jāizmanto lietotājam, vai atspējot noklusējuma meklēšanu.</translation>
 <translation id="389421284571827139">Ļauj norādīt <ph name="PRODUCT_NAME"/> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
 
@@ -637,7 +590,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="1530812829012954197">Norādītās URL struktūras vienmēr tiek renderētas ar saimniekdatora pārlūku</translation>
-<translation id="8288507390252297611">Atspējot drukas priekšskatījumu. Šis iestatījums tiek izmantots, lai piespiestu izmantot sistēmas drukas dialoglodziņu, nevis drukas priekšskatījumu.</translation>
 <translation id="913195841488580904">Bloķēt piekļuvi vietrāžu URL sarakstam</translation>
 <translation id="6373222873250380826">Atspējo automātiskos atjauninājumus, kad politika ir iestatīta uz Patiesa.
 
@@ -646,7 +598,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="847472800012384958">Neļaut nevienai vietnei rādīt uznirstošos logus</translation>
 <translation id="4733471537137819387">Ar integrēto HTTP autentifikāciju saistītās politikas</translation>
 <translation id="8951350807133946005">Iestatīt diska kešatmiņas direktoriju</translation>
-<translation id="9055197679339967051">Vai izlaišanas versijai ir jābūt lietotāja iestatāmai vai bloķētai.</translation>
 <translation id="2592091433672667839">Neaktivitātes ilgums, pirms ekrānsaudzētājs tiek parādīts mazumtirdzniecības režīma pierakstīšanās ekrānā</translation>
 <translation id="166427968280387991">Starpniekserveris</translation>
 <translation id="2805707493867224476">Atļaut visām vietnēm rādīt uznirstošos logus</translation>
@@ -714,15 +665,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai lietot šo funkciju.</translation>
 <translation id="3264793472749429012">Noklusējuma meklētājprogrammas kodējumi</translation>
-<translation id="3366530054462553357">Norāda atspējoto <ph name="PRODUCT_NAME"/> spraudņu sarakstu un neļauj lietotājiem mainīt šo iestatījumu.
-
-      Var lietot aizstājējzīmes * un ?, lai veidotu atbilstību mainīgām rakstzīmēm. * atbilst mainīgu rakstzīmju virknei, bet ? norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir \, tādējādi, lai veidotu atbilstību faktiskajām rakstzīmēm *, ? un \, to sākumā var ievadīt \.
-
-      Ja šis iestatījums ir iespējots, produktā <ph name="PRODUCT_NAME"/> nekad netiek lietoti sarakstā iekļautie spraudņi. Politikā about:plugins norādītie spraudņi tiek atzīmēti kā atspējoti, un lietotāji tos nevar iespējot.
-
-      Ņemiet vērā, ka šo politiku var ignorēt ar politikām EnabledPlugins un DisabledPluginsExceptions.
-
-      Ja šī politika nav iestatīta, lietotājs var lietot jebkuru datorā instalēto spraudni, izņemot nesaderīgus, novecojušus vai bīstamus spraudņus.</translation>
 <translation id="8101760444435022591">Ņemot vērā to, ka pastāvīgas atteices atsaukšanas pārbaudes tiešsaistē nenodrošina nevienu efektīvu drošības priekšrocību, tās tiek atspējotas pēc noklusējuma produkta <ph name="PRODUCT_NAME"/> 19. vai jaunākā versijā. Iestatot šo politiku uz Patiesa, tiek atjaunota iepriekšējā darbība un tiek veiktas OCSP/CRL pārbaudes tiešsaistē.
 
       Ja politika netiek iestatīta vai iestatīta uz Aplama, pārlūks Chrome neveic atsaukšanas pārbaudes tiešsaistē pārlūka Chrome 19. vai jaunākā versijā.</translation>
@@ -795,9 +737,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="7006788746334555276">Satura iestatījumi</translation>
 <translation id="5142301680741828703">Norādītās URL struktūras vienmēr tiek renderētas produktā <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurē paplašinājumu instalēšanas balto sarakstu</translation>
-<translation id="3940756655305062524">Ja šī politika ir iestatīta uz Patiesa un politika ChromeOsReleaseChannel nav norādīta, reģistrēšanas domēna lietotājiem ir atļauts mainīt ierīces izlaišanas versiju. Ja šī politika ir iestatīta uz Aplama, ierīce tiek bloķēta neatkarīgi no versijas, kurā tā tika iestatīta pēdējo reizi.
-
-      Politika ChromeOsReleaseChannel ignorēs lietotāja iestatīto versiju, bet, ja politikas versija ir stabilāka par to, kas instalēta ierīcē, versijas pārslēgšana var notikt tikai pēc tam, kad stabilāka versija sasniedz skaitli, kas lielāks par to, kas instalēts ierīcē.</translation>
 <translation id="187819629719252111">Ļauj piekļūt datora lokālajiem failiem, ļaujot produktam <ph name="PRODUCT_NAME"/> rādīt failu atlases dialoglodziņus.
 
       Ja šis iestatījums ir iespējots, lietotāji var atvērt failu atlases dialoglodziņus, kā ierasts.
@@ -817,9 +756,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="868187325500643455">Atļaut visām vietnēm automātiski izpildīt spraudņus</translation>
 <translation id="7421483919690710988">Iestatīt datu nesēja kešatmiņas lielumu baitos</translation>
 <translation id="5226033722357981948">Norāda, vai ir jāatspējo spraudņu meklētājs</translation>
-<translation id="584083164257867276">Nosaka to lietotāju sarakstu, kuriem ir atļauts pieteikties ierīcē. Ieraksti ir šādā formā: <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, piemēram, <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Lai ļautu neregulāriem lietotājiem izmantot domēnu, lietojiet ierakstus formā <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
-
-      Ja politika nav konfigurēta, nav nekādu ierobežojumu attiecībā uz to, kuriem lietotājiem ir atļauts pierakstīties. Ņemiet vērā, ka jaunu lietotāju izveidei joprojām ir atbilstoši jākonfigurē politika <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>.</translation>
 <translation id="3428247105888806363">Iespējo tīkla paredzēšanu</translation>
 <translation id="6145799962557135888">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt JavaScript.
 
@@ -840,22 +776,10 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="1843117931376765605">Lietotāja politikas atsvaidzes ātrums</translation>
 <translation id="5535973522252703021">Kerberos deleģējamo serveru baltais saraksts</translation>
 <translation id="4056910949759281379">Atspējo SPDY protokolu</translation>
-<translation id="1991398966873139530">Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot produktā <ph name="PRODUCT_NAME"/>.
-
-      Var lietot aizstājējzīmes * un ?, lai veidotu atbilstību mainīgām rakstzīmēm. * atbilst mainīgu rakstzīmju virknei, bet ? norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir \, tādējādi, lai veidotu atbilstību faktiskajām rakstzīmēm *, ? un \, to sākumā var ievadīt \.
-
-      Ja šis iestatījums ir iespējots, produktā <ph name="PRODUCT_NAME"/> var lietot sarakstā iekļautos spraudņus. Lietotāji tos var iespējot vai atspējot politikā about:plugins arī tad, ja konkrēts spraudnis atbilst arī politikā DisabledPlugins norādītam rakstam. Lietotāji var iespējot vai atspējot arī spraudņus, kas neatbilst nevienam no politikās DisabledPlugins, DisabledPluginsExceptions un EnabledPlugins norādītajiem rakstiem.
-
-      Šī politika ir domāta, lai nodrošinātu stingru spraudņu uzraudzību ar melnā saraksta palīdzību, iekļaujot DisabledPlugins sarakstā aizstājējzīmju ierakstus, piemēram, atspējot visus spraudņus (*) vai atspējot visus Java spraudņus (*Java*), bet administrators vēlas iespējot kādu konkrētu versiju, piemēram, IcedTea Java 2.3. Šīs konkrētās versijas var tikt norādītas šajā politikā.
-
-      Ja šī politika nav iestatīta, tiks atspējoti visi spraudņi, kas atbilst politikā DisabledPlugins iekļautajiem rakstiem, un lietotājs nevarēs tos mainīt.</translation>
 <translation id="3808945828600697669">Norāda atspējoto spraudņu sarakstu</translation>
 <translation id="4525521128313814366">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
-<translation id="1894491175123948728">Šī politika darbojas tikai mazumtirdzniecības režīmā.
-
-      Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku AppPacks.</translation>
 <translation id="3866530186104388232">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME"/> rāda esošos lietotājus pieteikšanās ekrānā un ļauj kādu izvēlēties. Ja politika ir iestatīta uz Aplama, produkts <ph name="PRODUCT_OS_NAME"/> pieteikšanās sesijai izmanto lietotājvārda/paroles uzvedni.</translation>
 <translation id="2098658257603918882">Iespējo lietošanas un ar avārijām saistītu datu ziņošanu</translation>
 <translation id="1151353063931113432">Atļauj attēlus šajās vietnēs</translation>
@@ -881,10 +805,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šis iestatījums ir atspējots, lietotāji nevar drukāt no <ph name="PRODUCT_NAME"/>. Drukāšana ir atspējota uzgriežņu atslēgas izvēlnē, paplašinājumos, JavaScript lietojumprogrammās un citur. Joprojām var drukāt no spraudņiem, kas drukāšanas brīdī apiet produktu <ph name="PRODUCT_NAME"/>. Piemēram, noteiktu Flash lietojumprogrammu kontekstizvēlnēs ir drukāšanas opcija, un tā nebūs atspējota.
 
       Ja šī politika nav iestatīta, tā tiks iespējota, bet lietotājs to varēs mainīt.</translation>
-<translation id="210513196702568522"> Savienojumu veidi, kuru laikā ir atļauts veikt operētājsistēmas atjaunināšanu. OS atjauninājumi to apjoma dēļ, iespējams, ļoti noslogo datplūsmu, un no jums var tikt pieprasīta papildu samaksa. Tādēļ pēc noklusējuma ir iestatīts, ka atjaunināšana nav atļauta, ja ir izveidots kāds no, iespējams, dārgiem savienojuma veidiem — šobrīd tie ir WiMax, Bluetooth un Cellular tīkli.
-
-      Tiek atpazīti šādi savienojumu veidu identifikatori: ethernet, wifi, wimax, bluetooth, cellular.
-      </translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="7635471475589566552">Konfigurē produktā <ph name="PRODUCT_NAME"/> izmantoto lietojumprogrammas lokalizāciju un neļauj lietotājiem mainīt šo lokalizāciju.
@@ -907,11 +827,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šis iestatījums ir atspējots, novecojuši spraudņi netiek lietoti un lietotājiem netiek vaicāts, vai atļaut tos izpildīt.
 
       Ja šis iestatījums nav iestatīts, lietotājiem tiek vaicāts, vai atļaut izpildīt novecojušus spraudņus.</translation>
-<translation id="4922427744878251344">Atspējo pakalpojuma Google dokumenti sinhronizāciju, izmantojot mobilo savienojumu, kad politika ir iestatīta uz Patiesa.
-
-          - Piemēram, dati tiek sinhronizēti pakalpojumā Google dokumenti tikai tad, kad savienojums izveidots, izmantojot Wi-Fi vai Ethernet.
-
-          - Ja politika nav iestatīta vai ir iestatīta uz Aplama, lietotāji var pārsūtīt failus uz pakalpojumu Google dokumenti, izmantojot mobilos savienojumus.</translation>
 <translation id="2629448496147630947">Konfigurēt attālās piekļuves iespējas pakalpojumā <ph name="PRODUCT_NAME"/>. Šīs funkcijas tiek ignorētas, ja attālās piekļuves tīmekļa lietojumprogramma nav instalēta.</translation>
 <translation id="1310699457130669094">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
 
@@ -954,7 +869,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
       Ja šī politika nav iestatīta, trešo pušu sīkfaili tiks iespējoti, bet lietotājs to varēs mainīt.</translation>
 <translation id="6810445994095397827">Bloķēt JavaScript šajās vietnēs</translation>
-<translation id="57127641120127115">Iespējot blokatoru, ja ierīce pāriet dīkstāvē vai tās darbība tiek apturēta.</translation>
 <translation id="6672934768721876104">Šī politika ir izbeigta. Tās vietā lietojiet ProxyMode.
 
           Ļauj norādīt <ph name="PRODUCT_NAME"/> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekservera iestatījumus.
@@ -972,7 +886,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja šī politika nav iestatīta, lietotāji varēs izvēlēties savus starpniekserveru iestatījumus.</translation>
 <translation id="3780152581321609624">Ietver Kerberos SPN nestandarta portu</translation>
-<translation id="5883954255534074144">Ļauj sarakstā iekļauto satura veidu apstrādi veikt produktam <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
 <translation id="5512418063782665071">Sākumlapas URL</translation>
@@ -985,15 +898,8 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
           Detalizētus piemērus skatiet vietnē:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Norāda sekunžu skaitu, kuru laikā ierīce var nejaušā secībā atlikt atjauninājuma lejupielādi, sākot ar laiku, kad serveris pirmo reizi nosūtīja atjauninājumu. Daļa no šī ierīces gaidīšanas laika var būt pulksteņa laiks, un daļa — atjauninājuma pārbaužu skaits. Jebkurā gadījumā izkliede ir saistīta ar noteiktu laika periodu, lai ierīces nebūtu bezgalīgi jāgaida atjauninājuma lejupielāde.</translation>
-<translation id="6630106909870121131">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot visiem lietotājiem <ph name="PRODUCT_OS_NAME"/> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
-definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">HTTP autentifikācijas politikas</translation>
 <translation id="5946082169633555022">Beta versija</translation>
-<translation id="282142179381950064">Atspējo pakalpojuma Google dokumenti sinhronizāciju, ja politika iestatīta uz Patiesa.
-
-          - Piemēram, dati nav augšupielādēti pakalpojumā Google dokumenti.
-
-          - Ja politika nav iestatīta vai iestatīta uz Aplama, lietotāji var pārsūtīt failus uz pakalpojumu Google dokumenti.</translation>
 <translation id="8303314579975657113">Norāda, kura GSSAPI bibliotēka jāizmanto HTTP autentifikācijai. Var iestatīt tikai bibliotēkas nosaukumu vai pilnu ceļu.
 
           Ja iestatījums netiks norādīts, <ph name="PRODUCT_NAME"/> atkāpsies un izmantos noklusējuma bibliotēkas nosaukumu.</translation>
@@ -1001,13 +907,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
-<translation id="8220342550735772883">Konfigurē, cik lielu kešatmiņu <ph name="PRODUCT_NAME"/> izmantos kešoto multivides failu glabāšanai diskā.
-
-      Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME"/> lietos norādīto kešatmiņas lielumu neatkarīgi no tā, vai lietotājs ir norādījis karogu --media-cache-size.
-
-      Ja šīs politikas vērtība ir 0, tiks lietots noklusētais kešatmiņas lielums, bet lietotājs nevarēs to mainīt.
-
-      Ja šī politika nav iestatīta, tiks lietots noklusētais lielums un lietotājs to varēs ignorēt ar karogu --media-cache-size.</translation>
 <translation id="7049373494483449255">Iespējo dokumentu iesniegšanu no <ph name="PRODUCT_NAME"/> pakalpojumā <ph name="CLOUD_PRINT_NAME"/>. Piezīme: šis iestatījums ietekmē tikai <ph name="CLOUD_PRINT_NAME"/> atbalstu pakalpojumā <ph name="PRODUCT_NAME"/>. Tas nenovērš iespēju lietotājiem iesniegt drukas darbus no vietnēm.
 
       Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var iesniegt drukas darbus pakalpojumā <ph name="CLOUD_PRINT_NAME"/> no <ph name="PRODUCT_NAME"/> drukas dialoglodziņa.

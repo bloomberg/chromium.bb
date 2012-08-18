@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">ทำให้ Google Chrome เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
-<translation id="4573769928351971197">Google Chrome จะคืนค่าเซสชันก่อนหน้าของคุณเมื่อเริ่มต้นระบบ การตั้งค่าที่อิงกับเซสชันบางประการ เช่น การตั้งค่าที่จะล้างข้อมูลเมื่อออกจากระบบจะถูกปิดใช้งาน</translation>
 <translation id="3612333635265770873">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันจะมีความขัดแย้งกับ Google Chrome</translation>
 <translation id="61852838583753520">อัปเดต &amp;Chrome OS</translation>
 <translation id="6650142020817594541">ไซต์นี้แนะนำให้ใช้งาน Google Chrome Frame (ติดตั้งไว้แล้ว)</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว! เปิด Google Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="546394857889685352">อุปกรณ์ของคุณได้รับการอัปเดตเป็น <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">ตัวจัดการงาน - Google Chrome</translation>
-<translation id="1826482739472655104">คุณพยายามที่จะเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่เซิร์ฟเวอร์แสดงใบรับรองที่ยังไม่ถูกต้อง ไม่มีข้อมูลที่ระบุได้ว่าใบรับรองนั้นเชื่อถือได้หรือไม่ Google Chrome ไม่สามารถรับประกันได้ว่าคุณกำลังสื่อสารกับ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ไม่ใช่กับผู้บุกรุก เวลาปัจจุบันในเครื่องคอมพิวเตอร์ของคุณถูกตั้งค่าเป็น <ph name="CURRENT_TIME"/> เวลานี้ถูกต้องหรือไม่ ถ้าไม่ คุณควรจะแก้ไขให้ถูกต้องและรีเฟรชหน้าเว็บนี้</translation>
 <translation id="8449380764213232436">Google Chrome กำลังนำเข้าข้อมูลต่อไปนี้จาก <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">โปรแกรมทำงานของ Chrome</translation>
 <translation id="3396977131400919238">มีข้อผิดพลาดของระบบปฏิบัติการเกิดขึ้นในระหว่างการติดตั้ง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>

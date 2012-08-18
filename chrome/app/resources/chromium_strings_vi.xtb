@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Đã phát hiện thấy cài đặt Chromium hoặc Chromium Frame xung đột trên hệ thống. Hãy gỡ cài đặt và thử lại.</translation>
 <translation id="6953661834318318668">Thanh công cụ của Chromium</translation>
 <translation id="7097100943370017396">Chromium hiện không còn cập nhật nhật do hệ điều hành của bạn đã lỗi thời.</translation>
-<translation id="2777754523825675150">Chromium sẽ khôi phục phiên trước đó của bạn khi khởi động. Một số các cài đặt dựa trên phiên của bạn, chẳng hạn như các cài đặt xóa dữ liệu khi thoát, sẽ bị tắt.</translation>
 <translation id="4103959775970322855">Chromium đã được cập nhật lên <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="2589479092236095792">Cài đặt tự động điền trong Chromium</translation>
@@ -122,7 +121,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
 <translation id="7641113255207688324">Chromium không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
-<translation id="2174090135251659490">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ chưa hợp lệ. Không có thông tin nào có sẵn cho biết liệu chứng chỉ đó có đáng tin cậy hay không. Chromium không thể đảm bảo một cách chắc chắn rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải với kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Như vậy có ổn không? Nếu không, bạn phải sửa lỗi và làm mới trang này.</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
 <translation id="5859758987635973787">Chromium đã được cập nhật (<ph name="VERSION"/>)</translation>

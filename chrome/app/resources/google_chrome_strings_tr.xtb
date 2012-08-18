@@ -92,7 +92,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
-<translation id="4573769928351971197">Google Chrome, başlangıçta önceki oturumunuzu geri yükler. Çıkış yaparken verileri temizleme gibi oturuma özgü bazı ayarlarınız devre dışı bırakılır.</translation>
 <translation id="3612333635265770873">Aynı isme sahip bir modülün Google Chrome'la çakıştığı bilinmektedir.</translation>
 <translation id="61852838583753520">&amp;Chrome OS'u güncelle</translation>
 <translation id="6650142020817594541">Bu site, Google Chrome Frame kullanmanızı tavsiye eder (zaten yüklü).</translation>
@@ -149,7 +148,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="3836351788193713666">Neredeyse güncel! Güncelleştirmeyi tamamlamak için Google Chrome'u yeniden başlatın.</translation>
 <translation id="546394857889685352">Cihazınız <ph name="VERSION"/> sürümüne güncellendi</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
-<translation id="1826482739472655104">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; alanına ulaşmaya çalıştınız, ancak sunucu süresi bitmiş bir sertifika sundu. Sertifikanın güvenilir olup olmadığı konusunda hiçbir bilgi yok. Google Chrome, bir saldırganla değil &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ile iletişim kurduğunuzu garanti edemiyor. Bilgisayarınızın saati <ph name="CURRENT_TIME"/> olarak ayarlı. Bu doğru mu? Değilse, hatayı düzeltip bu sayfayı yenileyin.</translation>
 <translation id="8449380764213232436">Google Chrome, şu anda <ph name="BROWSER_COMPONENT"/> bölümünden aşağıdaki öğeleri alıyor:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Google Chrome'u yeniden indirin.</translation>

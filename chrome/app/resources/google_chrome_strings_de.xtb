@@ -60,7 +60,7 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das von einer Entität ausgestellt wurde, der das Betriebssystem des Computers nicht vertraut. Dies bedeutet möglicherweise, dass der Server seine eigenen Sicherheitsinformationen erzeugt hat, auf die Google Chrome als Identitätsinformation nicht vertrauen kann, oder dass ein Hacker versucht, Ihre Kommunikation abzufangen.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="1195935957447623558">Google Chrome wurde nicht richtig heruntergefahren. Klicken Sie auf &quot;Wiederherstellen&quot;, um die zuvor geöffneten Seiten erneut anzuzeigen.</translation>
+<translation id="1195935957447623558">Google Chrome wurde nicht richtig beendet. Klicken Sie auf &quot;Wiederherstellen&quot;, um die zuvor geöffneten Seiten erneut anzuzeigen.</translation>
 <translation id="2783467918276328046">Erfahren Sie, welche <ph name="BEGIN_LINK"/>weiteren Vorteile<ph name="END_LINK"/> die Anmeldung bei Chrome bietet.</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="1457721931618994305">Google Chrome wird aktualisiert...</translation>
@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">In Google Chrome können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
-<translation id="4573769928351971197">Google Chrome stellt Ihre vorherige Sitzung beim Start wieder her. Einige sitzungsbasierte Einstellungen, wie das Löschen von Daten beim Beenden der Sitzung, werden deaktiviert.</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="6650142020817594541">Diese Website empfiehlt Google Chrome Frame (bereits installiert).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Fast fertig! Starten Sie Google Chrome neu, um die Aktualisierung abzuschließen.</translation>
 <translation id="546394857889685352">Ihr Gerät wurde auf <ph name="VERSION"/> aktualisiert.</translation>
 <translation id="7106741999175697885">Taskmanager - Google Chrome</translation>
-<translation id="1826482739472655104">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das noch nicht gültig ist. Es liegen keine Informationen hinsichtlich der Vertrauenswürdigkeit des Zertifikats vor. Daher kann Google Chrome nicht zuverlässig garantieren, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Die Uhr Ihres Computers zeigt aktuell <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, korrigieren Sie dies bitte und aktualisieren Sie diese Seite.</translation>
 <translation id="8449380764213232436">Google Chrome importiert nun die folgenden Elemente aus <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Während der Installation ist ein Fehler im Betriebssystem aufgetreten. Laden Sie Google Chrome erneut herunter.</translation>

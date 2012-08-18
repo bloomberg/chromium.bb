@@ -98,7 +98,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
-<translation id="4573769928351971197">Chrome은 시작 시 이전 세션을 복원합니다. 종료 시 데이터 삭제와 같은 세션 기반 설정의 일부를 사용할 수 없습니다.</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="61852838583753520">Chrome OS 업데이트(&amp;C)</translation>
 <translation id="6650142020817594541">이 사이트는 Chrome 프레임을 권장함(이미 설치됨)</translation>
@@ -155,7 +154,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3836351788193713666">설치가 거의 완료되었습니다. 업데이트를 완료하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="546394857889685352">기기가 <ph name="VERSION"/>(으)로 업데이트되었습니다.</translation>
 <translation id="7106741999175697885">작업 관리자 - Chrome</translation>
-<translation id="1826482739472655104">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려고 했지만 서버가 유효하지 않은 인증서를 제공했습니다. 인증서가 신뢰할 수 있는지 여부를 알 수 있는 정보가 없습니다. Chrome은 사용자가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;와(과) 통신하고 있으며 침입자가 아니라는 것을 확인할 수 없습니다. 컴퓨터 시계가 현재 <ph name="CURRENT_TIME"/>(으)로 설정되어 있습니다. 시간이 정확하지 않으면 오류를 수정한 뒤 이 페이지를 새로고침하세요.</translation>
 <translation id="8449380764213232436">Chrome이 <ph name="BROWSER_COMPONENT"/>에서 다음 항목을 가져오는 중입니다.</translation>
 <translation id="852884188147941900">Chrome 작업자</translation>
 <translation id="3396977131400919238">설치 중 운영체제 오류가 발생했습니다. Chrome을 다시 다운로드하세요.</translation>

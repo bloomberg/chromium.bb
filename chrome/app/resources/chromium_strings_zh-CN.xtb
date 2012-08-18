@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">在系统中安装 Chromium 或 Chromium 内嵌框架时发现已存在冲突的版本，请先卸载然后重试。</translation>
 <translation id="6953661834318318668">Chromium 工具栏</translation>
 <translation id="7097100943370017396">您的操作系统已过期，因此 Chromium 将不再更新。</translation>
-<translation id="2777754523825675150">Chromium 会在启动时恢复上一会话。这会停用某些基于会话的设置，例如在退出时清除数据的设置。</translation>
 <translation id="4103959775970322855">Chromium 已更新到 <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="2589479092236095792">Chromium 自动填充设置</translation>
@@ -122,7 +121,6 @@
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
 <translation id="7641113255207688324">Chromium 不是您的默认浏览器。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
-<translation id="2174090135251659490">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有任何信息可表明该证书是否可以信任。Chromium 无法准确保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
 <translation id="5859758987635973787">Chromium 已是最新版本 (<ph name="VERSION"/>)</translation>

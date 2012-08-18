@@ -98,7 +98,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
-<translation id="4573769928351971197">Paleidus „Google Chrome“ bus atkurta ankstesnė sesija. Kai kurie sesijos nustatymai, pvz., dėl kurių išvalomi duomenys išėjus, bus neleidžiami.</translation>
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
 <translation id="61852838583753520">Atnaujinti „&amp;Chrome“ OS</translation>
 <translation id="6650142020817594541">Šioje svetainėje rekomenduojamas „Google Chrome“ rėmelis (jau įdiegtas).</translation>
@@ -155,7 +154,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="3836351788193713666">Beveik atnaujinta! Paleiskite „Google Chrome“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="546394857889685352">Įrenginio programinė įranga atnaujinta į <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Užduočių tvarkyklė – „Google Chrome“</translation>
-<translation id="1826482739472655104">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė sertifikatą, kuris dar negalioja. Nėra pasiekiamos informacijos, kur būtų nurodyta, ar tas sertifikatas patikimas. „Google Chrome“ negali patikimai garantuoti, kad susisiekiate su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne užgrobėju. Kompiuterio laikrodis šiuo metu nustatytas į <ph name="CURRENT_TIME"/>. Ar teisingai? Jei ne, turėtumėte ištaisyti klaidą ir atnaujinti šį puslapį.</translation>
 <translation id="8449380764213232436">„Google Chrome“ dabar importuoja toliau pateikiamus elementus iš <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">„Chrome“ darbuotojas</translation>
 <translation id="3396977131400919238">Diegimo metu įvyko operacinės sistemos klaida. Atsisiųskite „Google Chrome“ dar kartą.</translation>

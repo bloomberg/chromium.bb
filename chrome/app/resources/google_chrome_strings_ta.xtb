@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Google Chrome ஐ இயல்புநிலை உலாவியாக அமை</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">வலையில் ஒரு தொலைபேசி எண்ணைக் கிளிக் செய்து, அதனை Skype மூலமாக அழைப்பதற்கு உங்களை Google Chrome அனுமதிக்கிறது!</translation>
-<translation id="4573769928351971197">Google Chrome துவங்கும்போது உங்கள் முந்தைய அமர்வை மீட்டமைக்கும். வெளியேறுதல் தரவை அழிக்கக்கூடியவைப் போன்ற உங்கள் அமர்வு சார்ந்த அமைப்புகள் முடக்கப்படும்.</translation>
 <translation id="3612333635265770873">இதே பெயரைக் கொண்ட தொகுதிக்கூறு, Google Chrome உடன் முரண்பட்டிருப்பதாக அறியப்பட்டுள்ளது.</translation>
 <translation id="61852838583753520">&amp;Chrome OS ஐப் புதுப்பி</translation>
 <translation id="6650142020817594541">Google Chrome சட்டகத்தை (ஏற்கனவே நிறுவப்பட்டது) இந்த தளம் பரிந்துரைக்கிறது.</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">புதுப்பித்த நிலையில்! புதுப்பித்தலை முடிக்க Google Chrome ஐ மீண்டும் தொடங்குக.</translation>
 <translation id="546394857889685352"><ph name="VERSION"/> க்கு உங்கள் சாதனம் புதுப்பிக்கப்பட்டது</translation>
 <translation id="7106741999175697885">பணி நிர்வாகி - Google Chrome</translation>
-<translation id="1826482739472655104">நீங்கள் &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ஐ அடைய முயற்சித்தீர்கள், ஆனால் சேவையகம் இதுவரை செல்லுபடியாகத சான்றிதழை வழங்கியுள்ளது. இந்தச் சான்றிதழை நம்பகமானதா என்பதைக் குறிக்கும் வகையில் எந்த தகவலும் இல்லை. நீங்கள் நம்பத்தக்க &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; உடன் தான் தொடர்புகொள்கிறீர்கள், மேலும் தீங்கிழைப்பவருடன் அல்ல என்பதை Google Chrome உறுதிப்படுத்தாது. உங்கள் கணினியின் கடிகாரம் தற்போது <ph name="CURRENT_TIME"/> நேரத்தில் அமைக்கப்பட்டுள்ளது. இது சரியா? இல்லையெனில் பிழையைச் சரிசெய்து பக்கத்தைப் புதுப்பிக்கவும்.</translation>
 <translation id="8449380764213232436">Google Chrome இப்போது பின்வருபவற்றை <ph name="BROWSER_COMPONENT"/> இலிருந்து இறக்குமதி செய்கிறது:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">நிறுவலின்போது இயக்கமுறைமையில் பிழை ஏற்பட்டது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>

@@ -22,6 +22,8 @@
 <translation id="3234408098842461169">Seta para baixo</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="6364916375976753737">Percorrer à esquerda</translation>
+<translation id="6945221475159498467">Selecionar</translation>
+<translation id="6620110761915583480">Salvar arquivo</translation>
 <translation id="8210608804940886430">Página para baixo</translation>
 <translation id="5329858601952122676">&amp;Excluir</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
@@ -43,12 +45,14 @@
 <translation id="4588090240171750605">Percorrer à direita</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="8331626408530291785">Percorrer para cima</translation>
+<translation id="7907591526440419938">Abrir arquivo</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">Percorrer para baixo</translation>
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="8179976553408161302">Entrar</translation>
 <translation id="9170848237812810038">&amp;Desfazer</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="6845383723252244143">Selecionar pasta</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
 <translation id="436869212180315161">Imprensa</translation>
@@ -59,5 +63,6 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Minimizar</translation>
+<translation id="3036649622769666520">Abrir arquivos</translation>
 <translation id="8328145009876646418">Borda esquerda</translation>
 </translationbundle>

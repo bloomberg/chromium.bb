@@ -56,7 +56,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
-<translation id="3282568296779691940">Přihlášení do Chromu</translation>
+<translation id="3282568296779691940">Přihlášení do Chrome</translation>
 <translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
 <translation id="5037239767309817516">Aby se změna projevila, zavřete prosím všechna okna aplikace Google Chrome a spusťte ji znovu.</translation>
 <translation id="7451721381978275812">Neplatné argumenty. Plugin Google Chrome Frame nemůže být v pohotovostním režimu nainstalován bez toho, aby byl zároveň nainstalován prohlížeč Google Chrome.</translation>
@@ -98,7 +98,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
-<translation id="4573769928351971197">Google Chrome při spuštění obnoví předchozí relaci. Některá nastavení založená na relaci, jako jsou ta, která při ukončení mažou data, budou deaktivována.</translation>
 <translation id="3612333635265770873">Je známo, že s aplikací Google Chrome koliduje modul se stejným názvem.</translation>
 <translation id="61852838583753520">Aktualizace operačního systému &amp;Chrome</translation>
 <translation id="6650142020817594541">Tento web doporučuje plugin Google Chrome Frame, který je již nainstalovaný.</translation>
@@ -155,7 +154,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="3836351788193713666">Aktualizace již je skoro hotova. Dokončíte ji restartováním prohlížeče Google Chrome.</translation>
 <translation id="546394857889685352">Zařízení bylo aktualizováno na verzi <ph name="VERSION"/>.</translation>
 <translation id="7106741999175697885">Správce úloh - Google Chrome</translation>
-<translation id="1826482739472655104">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server předložil certifikát, který není ještě platný. Nejsou k dispozici žádné informace, které by naznačovaly, zda je možné certifikátu důvěřovat. Google Chrome nemůže spolehlivě zaručit, že komunikujete se serverem&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nikoli s útočníkem. Čas ve vašem počítači je aktuálně nastaven na <ph name="CURRENT_TIME"/>. Je to v pořádku? Pokud ne, měli byste chybu opravit a stránku načíst znovu.</translation>
 <translation id="8449380764213232436">Google Chrome právě importuje tyto položky z <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Během instalace došlo k chybě operačního systému. Stáhněte prosím Google Chrome ještě jednou.</translation>

@@ -42,7 +42,7 @@
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="5204098752394657250">Google Chromen <ph name="TERMS_OF_SERVICE_LINK"/>käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Apua Chromen käytössä</translation>
-<translation id="3487814320513494737">Chromen uusi välilehti -sivua on uudistettu. Vaihtele kohtien välillä napsauttamalla tunnisteita. Chrome muistaa asetuksesi seuraavalla kerralla.</translation>
+<translation id="3487814320513494737">Chromen uusi välilehti -sivua on uudistettu. Vaihtele kohtien välillä klikkaamalla tunnisteita. Chrome muistaa asetuksesi seuraavalla kerralla.</translation>
 <translation id="1697213158865901863">Google Chrome -kehys</translation>
 <translation id="6423071462708908582">Yritit siirtyä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti vanhentuneen varmenteen. Emme voi selvittää, onko varmenne vaarantunut voimassaolon päättymisen jälkeen. Google Chrome ei siis voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="3197823471738295152">Laite on ajan tasalla.</translation>
@@ -60,7 +60,7 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin esitti varmenteen, jonka myöntäjään tietokoneesi käyttöjärjestelmä ei luota. Tämä voi tarkoittaa, että palvelin on luonut omat suojausmääritykset, joista Google Chrome ei saa identiteettitietoja, tai että hakkeri yrittää kaapata yhteyden.</translation>
 <translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
-<translation id="1195935957447623558">Avaa avoinna olleet sivut uudelleen napsauttamalla Palauta.</translation>
+<translation id="1195935957447623558">Avaa avoinna olleet sivut uudelleen klikkaamalla Palauta.</translation>
 <translation id="2783467918276328046">Katso, <ph name="BEGIN_LINK"/>mitä muuta hyötyä<ph name="END_LINK"/> Chromeen kirjautumisesta on.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="1457721931618994305">Päivitetään Google Chromea...</translation>
@@ -89,8 +89,7 @@
 <translation id="1104959162601287462">Tietoja &amp;Chrome-käyttöjärjestelmästä</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="4561051373932531560">Google Chromen avulla voit napsauttaa puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
-<translation id="4573769928351971197">Google Chrome palauttaa edellisen käyttökerran käynnistyksen yhteydessä. Käytöstä poistetaan joitakin käyttökertoihin liittyviä asetuksia, jotka esimerkiksi poistavat tietoja selaimen sulkemisen yhteydessä.</translation>
+<translation id="4561051373932531560">Google Chromen avulla voit klikata puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
 <translation id="3612333635265770873">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Google Chromen kanssa.</translation>
 <translation id="61852838583753520">Päivitä &amp;Chrome-käyttöjärjestelmä</translation>
 <translation id="6650142020817594541">Tämä sivusto suosittelee käyttämään Google Chrome -kehystä (jo asennettu).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Lähes valmista! Viimeistele päivitys käynnistämällä Chrome uudelleen.</translation>
 <translation id="546394857889685352">Laite on päivitetty versioon <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Tehtävänhallinta - Google Chrome</translation>
-<translation id="1826482739472655104">Yritit siirtyä osoitteeseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti varmenteen, joka ei ole vielä voimassa.  Emme voi selvittää, onko varmenne luotettava. Google Chrome ei voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="8449380764213232436">Google Chrome tuo seuraavia kohteita, joiden alkuperä on <ph name="BROWSER_COMPONENT"/></translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Asennuksessa havaittiin käyttöjärjestelmävirhe. Lataa Google Chrome uudelleen.</translation>

@@ -21,7 +21,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4330297532943865716">V systéme sa našla kolidujúca inštalácia prehliadača Chromium alebo aplikácie Chromium Frame. Odinštalujte ju a skúste to znova.</translation>
 <translation id="6953661834318318668">Panel s nástrojmi Chromium</translation>
 <translation id="7097100943370017396">Prehliadač Chromium sa už neaktualizuje, pretože váš operačný systém je zastaraný.</translation>
-<translation id="2777754523825675150">Prehliadač Chromium pri spustení obnoví predchádzajúcu reláciu. Niektoré nastavenia súvisiace s reláciou, napríklad nastavenia vymazania údajov po uzavretí, budú zakázané.</translation>
 <translation id="4103959775970322855">Prehliadač Chromium bol aktualizovaný na verziu <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Inštalácia zlyhala kvôli neurčenej chybe. Ak je prehliadač Chromium momentálne spustený, zatvorte ho a skúste znova.</translation>
 <translation id="2589479092236095792">Nastavenia Automatického dopĺňania v prehliadači Chromium</translation>
@@ -124,7 +123,6 @@ Niektoré funkcie nemusia byť k dispozícii. Zadajte iný adresár profilu aleb
 <translation id="7483335560992089831">Nemôžete nainštalovať rovnakú verziu prehliadača Chromium ako je tá, ktorá je momentálne spustená. Zatvorte prehliadač Chromium a skúste to znova.</translation>
 <translation id="7641113255207688324">Prehliadač Chromium nie je váš predvolený prehliadač.</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
-<translation id="2174090135251659490">Pokúšali ste sa dostať na doménu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server poskytol certifikát, ktorý ešte nie je platný. K dispozícii nie sú žiadne informácie o tom, či je tento certifikát dôveryhodný alebo nie. Prehliadač Chromium nemôže zaručiť, že komunikujete s doménou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; a nie s útočníkom. Hodiny vo vašom počítači sú momentálne nastavené na čas <ph name="CURRENT_TIME"/>. je to v poriadku? Ak nie, mali by ste opraviť chybu a obnoviť túto stránku.</translation>
 <translation id="2119636228670142020">Informácie o systéme &amp;Chromium OS</translation>
 <translation id="1708666629004767631">K dispozícii je nová bezpečnejšia verzia prehliadača Chromium.</translation>
 <translation id="5859758987635973787">Prehliadač Chromium bol aktualizovaný (<ph name="VERSION"/>)</translation>

@@ -90,7 +90,6 @@
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">W przeglądarce Google Chrome możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić na niego za pośrednictwem usługi Skype!</translation>
-<translation id="4573769928351971197">Google Chrome przywróci Twoją poprzednią sesję przy uruchomieniu. Niektóre ustawienia związane z sesją, takie jak te usuwające dane przy zamknięciu przeglądarki, zostaną wyłączone.</translation>
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="61852838583753520">Aktualizuj system operacyjny &amp;Chrome</translation>
 <translation id="6650142020817594541">W tej witrynie jest zalecana wtyczka Google Chrome Frame (już zainstalowana).</translation>
@@ -147,7 +146,6 @@
 <translation id="3836351788193713666">Prawie aktualny. Uruchom ponownie Google Chrome, by zakończyć aktualizację.</translation>
 <translation id="546394857889685352">Urządzenie zostało zaktualizowane do wersji <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Menedżer zadań – Google Chrome</translation>
-<translation id="1826482739472655104">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, popraw błąd i odśwież stronę.</translation>
 <translation id="8449380764213232436">Google Chrome rozpoczął importowanie następujących elementów z przeglądarki <ph name="BROWSER_COMPONENT"/></translation>
 <translation id="852884188147941900">Moduł roboczy Chrome</translation>
 <translation id="3396977131400919238">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Google Chrome ponownie.</translation>

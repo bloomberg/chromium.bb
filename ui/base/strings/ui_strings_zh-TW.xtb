@@ -22,6 +22,8 @@
 <translation id="3234408098842461169">向下鍵</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="6364916375976753737">向左捲動</translation>
+<translation id="6945221475159498467">選取</translation>
+<translation id="6620110761915583480">儲存檔案</translation>
 <translation id="8210608804940886430">向下翻頁</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
@@ -43,12 +45,14 @@
 <translation id="4588090240171750605">向右捲動</translation>
 <translation id="2666092431469916601">置頂</translation>
 <translation id="8331626408530291785">向上捲動</translation>
+<translation id="7907591526440419938">開啟檔案</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="815598010540052116">向下捲動</translation>
 <translation id="3157931365184549694">還原</translation>
 <translation id="8179976553408161302">進入</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
+<translation id="6845383723252244143">選取資料夾</translation>
 <translation id="5583640892426849032">Backspace 鍵</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/秒</translation>
 <translation id="436869212180315161">按下</translation>
@@ -59,5 +63,6 @@
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/秒</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="5941711191222866238">縮到最小</translation>
+<translation id="3036649622769666520">開啟檔案</translation>
 <translation id="8328145009876646418">左邊緣</translation>
 </translationbundle>

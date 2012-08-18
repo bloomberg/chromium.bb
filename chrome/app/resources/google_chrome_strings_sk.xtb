@@ -96,7 +96,6 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 <translation id="5941830788786076944">Nastaviť prehľadávač Google Chrome ako predvolený</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Prehliadač Google Chrome vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
-<translation id="4573769928351971197">Prehliadač Google Chrome pri spustení obnoví predchádzajúcu reláciu. Niektoré nastavenia súvisiace s reláciou, napríklad nastavenia vymazania údajov po uzavretí, budú zakázané.</translation>
 <translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
 <translation id="61852838583753520">Aktualizácia systému &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Na týchto stránkach je odporúčaný doplnok Google Chrome Frame (už je nainštalovaný).</translation>
@@ -155,7 +154,6 @@ Vaše záložky, história a ďalšie nastavenia budú synchronizované s vaší
 <translation id="3836351788193713666">Prehliadač už je skoro aktualizovaný. Proces dokončíte reštartovaním prehliadača Google Chrome.</translation>
 <translation id="546394857889685352">Zariadenie bolo aktualizované na verziu <ph name="VERSION"/></translation>
 <translation id="7106741999175697885">Správca úloh – Google Chrome</translation>
-<translation id="1826482739472655104">Pokúšali ste sa dostať na doménu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server poskytol certifikát, ktorý ešte nie je platný. K dispozícii nie sú žiadne informácie o tom, či je tento certifikát dôveryhodný alebo nie. Prehliadač Google Chrome nemôže zaručiť, že komunikujete s doménou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; a nie s útočníkom. Hodiny vo vašom počítači sú momentálne nastavené na čas <ph name="CURRENT_TIME"/>. je to v poriadku? Ak nie, mali by ste opraviť chybu a obnoviť túto stránku.</translation>
 <translation id="8449380764213232436">Prehľadávač Google Chrome teraz importuje nasledujúce položky z komponentu <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">V priebehu inštalácie sa vyskytla chyba operačného systému. Prevezmite prehliadač Google Chrome znova.</translation>

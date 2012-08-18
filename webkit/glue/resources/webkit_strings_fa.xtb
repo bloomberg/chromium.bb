@@ -12,7 +12,7 @@
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="795667975304826397">فایلی انتخاب نشده است</translation>
 <translation id="8141602879876242471">این نمایه قابل جستجو است. کلمات کلیدی جستجو را وارد کنید:</translation>
-<translation id="370665806235115550">درحال بارگیری...</translation>
+<translation id="370665806235115550">در حال بارگیری...</translation>
 <translation id="6845533974506654842">فشار دادن</translation>
 <translation id="8244226242650769279">نقشه تصویر</translation>
 <translation id="310520048233152454">لطفاً یک URL وارد کنید.</translation>
@@ -26,7 +26,7 @@
 <translation id="2674318244760992338">پانویس</translation>
 <translation id="8987927404178983737">ماه</translation>
 <translation id="7364796246159120393">انتخاب فایل</translation>
-<translation id="2761667185364618470">در صورتی که می خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
+<translation id="2761667185364618470">در صورتی که می‌خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
 <translation id="8964020114565522021">فایل را اینجا بکشید</translation>
 <translation id="838869780401515933">علامتگذاری</translation>
 <translation id="2846343701378493991">1024 (درجه متوسط)</translation>
@@ -36,17 +36,18 @@
 <translation id="2507943997699731163">لطفاً این قسمت را تکمیل کنید.</translation>
 <translation id="5919473608089529604">افزونه بارگیری نشد.</translation>
 <translation id="6663448176199120256">جستجوهای جدید</translation>
-<translation id="2597378329261239068">این سند توسط رمز ورود محافظت می شود.  لطفاً یک رمز ورود وارد کنید.</translation>
+<translation id="2597378329261239068">این سند توسط رمز ورود محافظت می‌شود.  لطفاً یک رمز ورود وارد کنید.</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
-<translation id="8750798805984357768">لطفاً یکی از این گزینه ها را انتخاب کنید.</translation>
+<translation id="8750798805984357768">لطفاً یکی از این گزینه‌ها را انتخاب کنید.</translation>
 <translation id="7740050170769002709">محتوای HTML</translation>
-<translation id="2226276347425096477">لطفاً این متن را به اندازه <ph name="MAX_CHARACTERS"/> نویسه یا کمتر کوتاه کنید (شما در حال حاضر از <ph name="CURRENT_LENGTH"/> نویسه استفاده می کنید).</translation>
+<translation id="2226276347425096477">لطفاً این متن را به اندازه <ph name="MAX_CHARACTERS"/> نویسه یا کمتر کوتاه کنید (شما در حال حاضر از <ph name="CURRENT_LENGTH"/> نویسه استفاده می‌کنید).</translation>
 <translation id="1639239467298939599">بارگیری</translation>
-<translation id="2908441821576996758">لطفاً لیستی از آدرس های ایمیل که با کاما از هم جدا شده اند را وارد کنید.</translation>
+<translation id="2908441821576996758">لطفاً لیستی از آدرس‌های ایمیل که با کاما از هم جدا شده‌اند را وارد کنید.</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM"/> باشد.</translation>
+<translation id="668171684555832681">دیگر...</translation>
 <translation id="6119846243427417423">فعالسازی</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> فایل</translation>
 <translation id="6643016212128521049">پاک کردن</translation>

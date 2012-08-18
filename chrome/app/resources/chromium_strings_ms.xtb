@@ -19,7 +19,6 @@
 <translation id="4330297532943865716">Pemasangan Chromium atau Chromium Frame yang bercanggah telah dijumpai pada sistem. Sila nyahpasang dan cuba lagi.</translation>
 <translation id="6953661834318318668">Bar Alat Chromium</translation>
 <translation id="7097100943370017396">Chromium tidak lagi dikemas kini kerana sistem pengendalian anda usang.</translation>
-<translation id="2777754523825675150">Chromium akan memulihkan sesi terdahulu anda semasa bermula. Beberapa tetapan anda yang berasaskan sesi, seperti yang mengosongkan data apabila keluar, akan dilumpuhkan.</translation>
 <translation id="4103959775970322855">Chromium telah dikemas kini kepada <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="2589479092236095792">Tetapan Autoisi Chromium</translation>
@@ -122,7 +121,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="7483335560992089831">Tidak boleh memasang versi Chromium yang sama dengan yang sedang dijalankan. Sila tutup Chromium dan cuba lagi.</translation>
 <translation id="7641113255207688324">Chromium bukan penyemak imbas lalai anda.</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
-<translation id="2174090135251659490">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang belum lagi sah. Tiada maklumat tersedia yang menunjukkan sama ada sijil tersebut boleh dipercayai. Chromium tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan penyerang. Jam komputer anda pada masa ini ditetapkan pada <ph name="CURRENT_TIME"/>. Adakah itu betul? Jika tidak, anda harus membetulkan sebarang kesilapan, kemudian, memuatkan semula halaman ini.</translation>
 <translation id="2119636228670142020">Mengenai &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
 <translation id="5859758987635973787">Chromium telah dikemas kini (<ph name="VERSION"/>)</translation>
