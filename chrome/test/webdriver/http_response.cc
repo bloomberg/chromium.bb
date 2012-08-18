@@ -15,12 +15,24 @@ const int HttpResponse::kNoContent = 204;
 const int HttpResponse::kSeeOther = 303;
 const int HttpResponse::kNotModified = 304;
 const int HttpResponse::kBadRequest = 400;
+const int HttpResponse::kForbidden = 403;
 const int HttpResponse::kNotFound = 404;
 const int HttpResponse::kMethodNotAllowed = 405;
 const int HttpResponse::kInternalServerError = 500;
+const int HttpResponse::kNotImplemented = 501;
+
+namespace {
+
+const char* kContentLengthHeader = "content-length";
+
+}  // namespace
 
 HttpResponse::HttpResponse()
     : status_(kOk) {
+}
+
+HttpResponse::HttpResponse(int status)
+    : status_(status) {
 }
 
 HttpResponse::~HttpResponse() {
@@ -69,24 +81,8 @@ void HttpResponse::ClearHeaders() {
   headers_.clear();
 }
 
-void HttpResponse::UpdateHeader(const std::string& name,
-                                const std::string& new_value) {
-  RemoveHeader(name);
-  AddHeader(name, new_value);
-}
-
 void HttpResponse::SetMimeType(const std::string& mime_type) {
   UpdateHeader("Content-Type", mime_type);
-}
-
-void HttpResponse::SetBody(const std::string& data) {
-  SetBody(data.data(), data.length());
-}
-
-void HttpResponse::SetBody(const char* const data, size_t length) {
-  data_ = std::string(data, length);
-  UpdateHeader("Content-Length",
-               base::StringPrintf("%"PRIuS"", data_.length()));
 }
 
 std::string HttpResponse::GetReasonPhrase() const {
@@ -101,15 +97,40 @@ std::string HttpResponse::GetReasonPhrase() const {
       return "Not Modified";
     case kBadRequest:
       return "Bad Request";
+    case kForbidden:
+      return "Forbidden";
     case kNotFound:
       return "Not Found";
     case kMethodNotAllowed:
       return "Method Not Allowed";
     case kInternalServerError:
       return "Internal Server Error";
+    case kNotImplemented:
+      return "Not Implemented";
     default:
       return "Unknown";
   }
+}
+
+void HttpResponse::GetData(std::string* data) const {
+  *data += base::StringPrintf("HTTP/1.1 %d %s\r\n",
+      status_, GetReasonPhrase().c_str());
+
+  typedef HttpResponse::HeaderMap::const_iterator HeaderIter;
+  for (HeaderIter header = headers_.begin(); header != headers_.end();
+       ++header) {
+    *data += header->first + ":" + header->second + "\r\n";
+  }
+  std::string length;
+  if (!GetHeader(kContentLengthHeader, &length)) {
+    *data += base::StringPrintf(
+        "%s:%"PRIuS"\r\n",
+        kContentLengthHeader, body_.length());
+  }
+  *data += "\r\n";
+
+  if (body_.length())
+    *data += body_;
 }
 
 int HttpResponse::status() const {
@@ -120,16 +141,18 @@ void HttpResponse::set_status(int status) {
   status_ = status;
 }
 
-const HttpResponse::HeaderMap* HttpResponse::headers() const {
-  return &headers_;
+const std::string& HttpResponse::body() const {
+  return body_;
 }
 
-const char* HttpResponse::data() const {
-  return data_.data();
+void HttpResponse::set_body(const std::string& body) {
+  body_ = body;
 }
 
-size_t HttpResponse::length() const {
-  return data_.length();
+void HttpResponse::UpdateHeader(const std::string& name,
+                                const std::string& new_value) {
+  RemoveHeader(name);
+  AddHeader(name, new_value);
 }
 
 }  // namespace webdriver

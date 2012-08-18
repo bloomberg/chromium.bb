@@ -59,6 +59,7 @@
 #include "chrome/test/webdriver/webdriver_dispatch.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
 #include "chrome/test/webdriver/webdriver_session_manager.h"
+#include "chrome/test/webdriver/webdriver_switches.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/mongoose/mongoose.h"
 
@@ -259,7 +260,7 @@ int RunChromeDriver() {
       return 1;
     }
   }
-  if (cmd_line->HasSwitch("enable-keep-alive"))
+  if (cmd_line->HasSwitch(kEnableKeepAlive))
     enable_keep_alive = true;
 
   bool logging_success = InitWebDriverLogging(log_path, kAllLogLevel);

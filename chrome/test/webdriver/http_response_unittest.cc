@@ -65,25 +65,17 @@ TEST(HttpResponseTest, CanSetMimeType) {
   ExpectHeaderValue(response, "content-type", "text/html");
 }
 
-TEST(HttpResponseTest, SetBody) {
+TEST(HttpResponseTest, GetData) {
   HttpResponse response;
-
-  std::string body("foo bar");
-  response.SetBody(body);
-  ASSERT_EQ(body.length(), response.length());
-  ASSERT_EQ(body, std::string(response.data(), response.length()));
-
-  // Grow the response size.
-  body.append(" baz");
-  response.SetBody(body);
-  ASSERT_EQ(body.length(), response.length());
-  ASSERT_EQ(body, std::string(response.data(), response.length()));
-
-  // Shrink the response size.
-  body = "small";
-  response.SetBody(body);
-  ASSERT_EQ(body.length(), response.length());
-  ASSERT_EQ(body, std::string(response.data(), response.length()));
+  response.set_body("my body");
+  std::string data;
+  response.GetData(&data);
+  const char* expected =
+      "HTTP/1.1 200 OK\r\n"
+      "content-length:7\r\n"
+      "\r\n"
+      "my body";
+  ASSERT_STREQ(expected, data.c_str());
 }
 
 }  // namespace webdriver

@@ -22,11 +22,15 @@ class HttpResponse {
   static const int kSeeOther;
   static const int kNotModified;
   static const int kBadRequest;
+  static const int kForbidden;
   static const int kNotFound;
   static const int kMethodNotAllowed;
   static const int kInternalServerError;
+  static const int kNotImplemented;
 
+  // Creates an HTTP response with a 200 OK status.
   HttpResponse();
+  explicit HttpResponse(int status);
   ~HttpResponse();
 
   // Sets a header in this response. If a header with the same |name| already
@@ -48,30 +52,26 @@ class HttpResponse {
   // Convenience function for setting the Content-Type header for this response.
   void SetMimeType(const std::string& mime_type);
 
-  // Sets the message body for this response; will also set the "Content-Length"
-  // message header.
-  void SetBody(const std::string& data);
-  void SetBody(const char* const data, size_t length);
-
   // Returns the status phrase recommended by RFC 2616 section 6.1.1 for this
   // response's status code. If the status code is not recognized, the default
   // "Unknown" status phrase will be used.
   std::string GetReasonPhrase() const;
 
+  // Appends this response to |data|, abiding by HTTP 1.1.
+  // This will add an appropriate "Content-Length" header if not already set.
+  void GetData(std::string* data) const;
+
   int status() const;
   void set_status(int status);
-  const HeaderMap* headers() const;
-  const char* data() const;
-  size_t length() const;
+  const std::string& body() const;
+  void set_body(const std::string& body);
 
  private:
   void UpdateHeader(const std::string& name, const std::string& new_value);
 
   int status_;
   HeaderMap headers_;
-  std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpResponse);
+  std::string body_;
 };
 
 }  // webdriver

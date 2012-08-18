@@ -121,23 +121,18 @@ TEST(DispatchTest, ReturnsCommandResponseAsJson) {
   EXPECT_EQ(HttpResponse::kOk, http_response.status());
   ExpectHeaderValue(http_response, "content-type",
                     "application/json; charset=utf-8");
-  ExpectHeaderValue(http_response, "content-length",
-                    base::StringPrintf("%"PRIuS, kExpectedData.length()));
 
   // We do not know whether the response status or value will be
   // encoded first, so we have to parse the response body to
   // verify it is correct.
-  std::string actual_data(http_response.data(),
-                          http_response.length());
-
   int error_code;
   std::string error_message;
   scoped_ptr<Value> parsed_response(base::JSONReader::ReadAndReturnError(
-      actual_data, base::JSON_PARSE_RFC, &error_code, &error_message));
+      http_response.body(), base::JSON_PARSE_RFC, &error_code, &error_message));
 
   ASSERT_TRUE(parsed_response.get() != NULL) << error_message;
   ASSERT_TRUE(parsed_response->IsType(Value::TYPE_DICTIONARY))
-      << "Response should be a dictionary: " << actual_data;
+      << "Response should be a dictionary: " << http_response.body();
 
   DictionaryValue* dict = static_cast<DictionaryValue*>(parsed_response.get());
   EXPECT_EQ(2u, dict->size());

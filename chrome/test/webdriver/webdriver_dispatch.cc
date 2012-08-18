@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -25,6 +26,7 @@
 #include "chrome/test/webdriver/http_response.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
 #include "chrome/test/webdriver/webdriver_session_manager.h"
+#include "chrome/test/webdriver/webdriver_switches.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
 namespace webdriver {
@@ -34,14 +36,6 @@ namespace {
 // Maximum safe size of HTTP response message. Any larger than this,
 // the message may not be transferred at all.
 const size_t kMaxHttpMessageSize = 1024 * 1024 * 16;  // 16MB
-
-bool ForbidsMessageBody(const std::string& request_method,
-                        const HttpResponse& response) {
-  return request_method == "HEAD" ||
-         response.status() == HttpResponse::kNoContent ||
-         response.status() == HttpResponse::kNotModified ||
-         (response.status() >= 100 && response.status() < 200);
-}
 
 void ReadRequestBody(const struct mg_request_info* const request_info,
                      struct mg_connection* const connection,
@@ -69,6 +63,16 @@ void ReadRequestBody(const struct mg_request_info* const request_info,
   }
 }
 
+void WriteHttpResponse(struct mg_connection* connection,
+                       const HttpResponse& response) {
+  HttpResponse modified_response(response);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kEnableKeepAlive))
+    modified_response.AddHeader("connection", "close");
+  std::string data;
+  modified_response.GetData(&data);
+  mg_write(connection, data.data(), data.length());
+}
+
 void DispatchCommand(Command* const command,
                      const std::string& method,
                      Response* response) {
@@ -89,12 +93,9 @@ void DispatchCommand(Command* const command,
 
 void SendOkWithBody(struct mg_connection* connection,
                     const std::string& content) {
-  const char* response_fmt = "HTTP/1.1 200 OK\r\n"
-                             "Content-Length:%d\r\n\r\n"
-                             "%s";
-  std::string response = base::StringPrintf(
-      response_fmt, content.length(), content.c_str());
-  mg_write(connection, response.data(), response.length());
+  HttpResponse response;
+  response.set_body(content);
+  WriteHttpResponse(connection, response);
 }
 
 void Shutdown(struct mg_connection* connection,
@@ -102,7 +103,7 @@ void Shutdown(struct mg_connection* connection,
               void* user_data) {
   base::WaitableEvent* shutdown_event =
       reinterpret_cast<base::WaitableEvent*>(user_data);
-  mg_printf(connection, "HTTP/1.1 200 OK\r\n\r\n\r\n");
+  WriteHttpResponse(connection, HttpResponse());
   shutdown_event->Signal();
 }
 
@@ -161,16 +162,13 @@ void SimulateHang(struct mg_connection* connection,
 void SendNoContentResponse(struct mg_connection* connection,
                            const struct mg_request_info* request_info,
                            void* user_data) {
-  std::string response = "HTTP/1.1 204 No Content\r\n"
-                         "Content-Length:0\r\n"
-                         "\r\n";
-  mg_write(connection, response.data(), response.length());
+  WriteHttpResponse(connection, HttpResponse(HttpResponse::kNoContent));
 }
 
 void SendForbidden(struct mg_connection* connection,
                    const struct mg_request_info* request_info,
                    void* user_data) {
-  mg_printf(connection, "HTTP/1.1 403 Forbidden\r\n\r\n");
+  WriteHttpResponse(connection, HttpResponse(HttpResponse::kForbidden));
 }
 
 void SendNotImplementedError(struct mg_connection* connection,
@@ -183,14 +181,10 @@ void SendNotImplementedError(struct mg_connection* connection,
       "\"Command has not been implemented yet: %s %s\"}}",
       kUnknownCommand, request_info->request_method, request_info->uri);
 
-  std::string header = base::StringPrintf(
-      "HTTP/1.1 501 Not Implemented\r\n"
-      "Content-Type:application/json\r\n"
-      "Content-Length:%" PRIuS "\r\n"
-      "\r\n", body.length());
-
-  mg_write(connection, header.data(), header.length());
-  mg_write(connection, body.data(), body.length());
+  HttpResponse response(HttpResponse::kNotImplemented);
+  response.AddHeader("Content-Type", "application/json");
+  response.set_body(body);
+  WriteHttpResponse(connection, response);
 }
 
 }  // namespace
@@ -214,7 +208,7 @@ void PrepareHttpResponse(const Response& command_response,
       if (!value->GetAsString(&location)) {
         // This should never happen.
         http_response->set_status(HttpResponse::kInternalServerError);
-        http_response->SetBody("Unable to set 'Location' header: response "
+        http_response->set_body("Unable to set 'Location' header: response "
                                "value is not a string: " +
                                command_response.ToJSON());
         return;
@@ -234,7 +228,7 @@ void PrepareHttpResponse(const Response& command_response,
       if (!value->IsType(Value::TYPE_LIST)) {
         // This should never happen.
         http_response->set_status(HttpResponse::kInternalServerError);
-        http_response->SetBody(
+        http_response->set_body(
             "Unable to set 'Allow' header: response value was "
             "not a list of strings: " + command_response.ToJSON());
         return;
@@ -250,7 +244,7 @@ void PrepareHttpResponse(const Response& command_response,
         } else {
           // This should never happen.
           http_response->set_status(HttpResponse::kInternalServerError);
-          http_response->SetBody(
+          http_response->set_body(
               "Unable to set 'Allow' header: response value was "
               "not a list of strings: " + command_response.ToJSON());
           return;
@@ -270,7 +264,7 @@ void PrepareHttpResponse(const Response& command_response,
   }
 
   http_response->SetMimeType("application/json; charset=utf-8");
-  http_response->SetBody(command_response.ToJSON());
+  http_response->set_body(command_response.ToJSON());
 }
 
 void SendResponse(struct mg_connection* const connection,
@@ -278,22 +272,7 @@ void SendResponse(struct mg_connection* const connection,
                   const Response& response) {
   HttpResponse http_response;
   PrepareHttpResponse(response, &http_response);
-
-  std::string message_header = base::StringPrintf("HTTP/1.1 %d %s\r\n",
-      http_response.status(), http_response.GetReasonPhrase().c_str());
-
-  typedef HttpResponse::HeaderMap::const_iterator HeaderIter;
-  for (HeaderIter header = http_response.headers()->begin();
-       header != http_response.headers()->end();
-       ++header) {
-    message_header.append(base::StringPrintf("%s:%s\r\n",
-        header->first.c_str(), header->second.c_str()));
-  }
-  message_header.append("\r\n");
-
-  mg_write(connection, message_header.data(), message_header.length());
-  if (!ForbidsMessageBody(request_method, http_response))
-    mg_write(connection, http_response.data(), http_response.length());
+  WriteHttpResponse(connection, http_response);
 }
 
 bool ParseRequestInfo(const struct mg_request_info* const request_info,

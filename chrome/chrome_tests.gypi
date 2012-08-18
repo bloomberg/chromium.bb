@@ -806,6 +806,8 @@
         'test/webdriver/webdriver_session.h',
         'test/webdriver/webdriver_session_manager.cc',
         'test/webdriver/webdriver_session_manager.h',
+        'test/webdriver/webdriver_switches.cc',
+        'test/webdriver/webdriver_switches.h',
         'test/webdriver/webdriver_util.cc',
         'test/webdriver/webdriver_util.h',
         'test/webdriver/webdriver_util_mac.mm',
