@@ -6,6 +6,12 @@
 
 namespace chromeos {
 
+MockBluetoothDeviceClient::Properties::Properties()
+    : BluetoothDeviceClient::Properties::Properties(
+        NULL, PropertyChangedCallback()) {}
+
+MockBluetoothDeviceClient::Properties::~Properties() {}
+
 MockBluetoothDeviceClient::MockBluetoothDeviceClient() {}
 
 MockBluetoothDeviceClient::~MockBluetoothDeviceClient() {}

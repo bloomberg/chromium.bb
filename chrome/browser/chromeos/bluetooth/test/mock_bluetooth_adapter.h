@@ -17,6 +17,19 @@ namespace chromeos {
 
 class MockBluetoothAdapter : public BluetoothAdapter {
  public:
+  class Observer : public BluetoothAdapter::Observer {
+   public:
+    Observer();
+    virtual ~Observer();
+
+    MOCK_METHOD2(AdapterPresentChanged, void(BluetoothAdapter*, bool));
+    MOCK_METHOD2(AdapterPoweredChanged, void(BluetoothAdapter*, bool));
+    MOCK_METHOD2(AdapterDiscoveringChanged, void(BluetoothAdapter *, bool));
+    MOCK_METHOD2(DeviceAdded, void(BluetoothAdapter *, BluetoothDevice *));
+    MOCK_METHOD2(DeviceChanged, void(BluetoothAdapter *, BluetoothDevice *));
+    MOCK_METHOD2(DeviceRemoved, void(BluetoothAdapter *, BluetoothDevice *));
+  };
+
   MockBluetoothAdapter();
 
   MOCK_CONST_METHOD0(IsPresent, bool());

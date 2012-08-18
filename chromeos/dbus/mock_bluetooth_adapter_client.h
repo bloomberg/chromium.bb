@@ -14,6 +14,21 @@ namespace chromeos {
 
 class MockBluetoothAdapterClient : public BluetoothAdapterClient {
  public:
+  struct Properties : public BluetoothAdapterClient::Properties {
+    Properties();
+    virtual ~Properties();
+
+    MOCK_METHOD0(ConnectSignals, void());
+
+    MOCK_METHOD2(Get, void(dbus::PropertyBase* property,
+                           dbus::PropertySet::GetCallback callback));
+    MOCK_METHOD0(GetAll, void());
+    MOCK_METHOD2(Set, void(dbus::PropertyBase* property,
+                           dbus::PropertySet::SetCallback callback));
+
+    MOCK_METHOD1(ChangedReceived, void(dbus::Signal*));
+  };
+
   MockBluetoothAdapterClient();
   virtual ~MockBluetoothAdapterClient();
 

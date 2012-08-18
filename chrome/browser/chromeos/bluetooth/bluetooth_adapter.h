@@ -33,9 +33,9 @@ class BluetoothDevice;
 // The class may be instantiated for either a specific adapter, or for the
 // generic "default adapter" which may change depending on availability.
 class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
-                         private BluetoothManagerClient::Observer,
-                         private BluetoothAdapterClient::Observer,
-                         private BluetoothDeviceClient::Observer {
+                         public BluetoothManagerClient::Observer,
+                         public BluetoothAdapterClient::Observer,
+                         public BluetoothDeviceClient::Observer {
  public:
   // Interface for observing changes from bluetooth adapters.
   class Observer {

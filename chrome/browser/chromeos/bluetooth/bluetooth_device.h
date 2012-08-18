@@ -37,8 +37,8 @@ class BluetoothSocket;
 // Since the lifecycle of BluetoothDevice instances is managed by
 // BluetoothAdapter, that class rather than this provides observer methods
 // for devices coming and going, as well as properties being updated.
-class BluetoothDevice : private BluetoothDeviceClient::Observer,
-                        private BluetoothAgentServiceProvider::Delegate {
+class BluetoothDevice : public BluetoothDeviceClient::Observer,
+                        public BluetoothAgentServiceProvider::Delegate {
  public:
   // Possible values that may be returned by GetDeviceType(), representing
   // different types of bluetooth device that we support or are aware of

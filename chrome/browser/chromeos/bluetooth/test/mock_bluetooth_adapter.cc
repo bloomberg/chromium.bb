@@ -6,6 +6,9 @@
 
 namespace chromeos {
 
+MockBluetoothAdapter::Observer::Observer() {}
+MockBluetoothAdapter::Observer::~Observer() {}
+
 MockBluetoothAdapter::MockBluetoothAdapter() {}
 MockBluetoothAdapter::~MockBluetoothAdapter() {}
 
