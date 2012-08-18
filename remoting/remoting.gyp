@@ -993,7 +993,6 @@
         [ 'OS=="win"', {
           'dependencies': [
             '../google_update/google_update.gyp:google_update',
-            '../ipc/ipc.gyp:ipc',
             'remoting_elevated_controller',
             'remoting_version_resources',
           ],
@@ -1415,13 +1414,6 @@
       'sources': [
         'host/simple_host_process.cc',
       ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            '../ipc/ipc.gyp:ipc'
-          ],
-        }],
-      ],
     },  # end of target 'remoting_simple_host'
 
     {
@@ -1436,6 +1428,7 @@
         'remoting_jingle_glue',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
       ],
@@ -1477,7 +1470,6 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../ipc/ipc.gyp:ipc',
             'remoting_version_resources',
           ],
           'sources': [
@@ -1800,9 +1792,6 @@
         [ 'OS=="win"', {
           'include_dirs': [
             '../breakpad/src',
-          ],
-          'dependencies': [
-            '../ipc/ipc.gyp:ipc'
           ],
           'link_settings': {
             'libraries': [

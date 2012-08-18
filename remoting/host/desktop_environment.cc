@@ -53,7 +53,6 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
 #if defined(OS_WIN)
   event_executor.reset(new SessionEventExecutorWin(
       context->desktop_task_runner(),
-      context->file_task_runner(),
       event_executor.Pass()));
 #endif
 

@@ -10,17 +10,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "ipc/ipc_channel.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/win/scoped_thread_desktop.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 } // namespace base
-
-namespace IPC {
-class ChannelProxy;
-} // namespace IPC
 
 namespace remoting {
 
@@ -30,7 +25,6 @@ class SessionEventExecutorWin : public EventExecutor {
  public:
   SessionEventExecutorWin(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_ptr<EventExecutor> nested_executor);
   ~SessionEventExecutorWin();
 

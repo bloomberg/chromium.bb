@@ -24,6 +24,8 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/breakpad.h"
@@ -73,6 +75,9 @@ namespace {
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
 
+// The command line switch specifying the name of the Chromoting IPC channel.
+const char kDaemonIpcSwitchName[] = "chromoting-ipc";
+
 // These are used for parsing the config-file locations from the command line,
 // and for defining the default locations if the switches are not present.
 const char kAuthConfigSwitchName[] = "auth-config";
@@ -97,7 +102,8 @@ const char kOfficialOAuth2ClientSecret[] = "Bgur6DFiOMM1h8x-AQpuTQlK";
 namespace remoting {
 
 class HostProcess
-    : public HeartbeatSender::Listener {
+    : public HeartbeatSender::Listener,
+      public IPC::Listener {
  public:
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
@@ -127,6 +133,21 @@ class HostProcess
   }
 
   bool InitWithCommandLine(const CommandLine* cmd_line) {
+    // Connect to the daemon process.
+    std::string channel_name =
+        cmd_line->GetSwitchValueASCII(kDaemonIpcSwitchName);
+
+#if defined(REMOTING_MULTI_PROCESS)
+    if (channel_name.empty())
+      return false;
+#endif  // defined(REMOTING_MULTI_PROCESS)
+
+    if (!channel_name.empty()) {
+      daemon_channel_.reset(new IPC::ChannelProxy(
+          channel_name, IPC::Channel::MODE_CLIENT, this,
+          context_->network_task_runner()));
+    }
+
     FilePath default_config_dir = remoting::GetConfigDir();
     if (cmd_line->HasSwitch(kAuthConfigSwitchName)) {
       FilePath path = cmd_line->GetSwitchValuePath(kAuthConfigSwitchName);
@@ -217,6 +238,11 @@ class HostProcess
     host_->SetAuthenticatorFactory(factory.Pass());
   }
 
+  // IPC::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    return false;
+  }
+
   int Run() {
     if (!LoadConfig()) {
       return kInvalidHostConfigurationExitCode;
@@ -240,6 +266,7 @@ class HostProcess
     host_user_interface_.reset();
 #endif
 
+    daemon_channel_.reset();
     base::WaitableEvent done_event(true, false);
     policy_watcher_->StopWatching(&done_event);
     done_event.Wait();
@@ -573,6 +600,7 @@ class HostProcess
 
   MessageLoop message_loop_;
   scoped_ptr<ChromotingHostContext> context_;
+  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   FilePath host_config_path_;

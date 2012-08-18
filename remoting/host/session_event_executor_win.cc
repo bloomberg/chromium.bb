@@ -7,13 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/win/desktop.h"
 #include "remoting/proto/event.pb.h"
@@ -45,7 +42,6 @@ using protocol::KeyEvent;
 
 SessionEventExecutorWin::SessionEventExecutorWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_ptr<EventExecutor> nested_executor)
     : nested_executor_(nested_executor.Pass()),
       task_runner_(main_task_runner),
