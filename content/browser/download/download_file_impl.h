@@ -14,13 +14,14 @@
 #include "base/timer.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/byte_stream.h"
-#include "content/browser/download/download_request_handle.h"
+#include "content/public/browser/download_save_info.h"
 #include "net/base/net_log.h"
 
 struct DownloadCreateInfo;
 
 namespace content {
 class ByteStreamReader;
+class DownloadDestinationObserver;
 class DownloadManager;
 class PowerSaveBlocker;
 }
@@ -29,17 +30,27 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
  public:
   // Takes ownership of the object pointed to by |request_handle|.
   // |bound_net_log| will be used for logging the download file's events.
-  DownloadFileImpl(const DownloadCreateInfo* info,
-                   scoped_ptr<content::ByteStreamReader> stream,
-                   DownloadRequestHandleInterface* request_handle,
-                   scoped_refptr<content::DownloadManager> download_manager,
-                   bool calculate_hash,
-                   scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-                   const net::BoundNetLog& bound_net_log);
+  // May be constructed on any thread.  All methods besides the constructor
+  // (including destruction) must occur on the FILE thread.
+  //
+  // Note that the DownloadFileImpl automatically reads from the passed in
+  // stream, and sends updates and status of those reads to the
+  // DownloadDestinationObserver.
+  DownloadFileImpl(
+    const content::DownloadSaveInfo& save_info,
+    const GURL& url,
+    const GURL& referrer_url,
+    int64 received_bytes,
+    bool calculate_hash,
+    scoped_ptr<content::ByteStreamReader> stream,
+    const net::BoundNetLog& bound_net_log,
+    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
+    base::WeakPtr<content::DownloadDestinationObserver> observer);
+
   virtual ~DownloadFileImpl();
 
   // DownloadFile functions.
-  virtual content::DownloadInterruptReason Initialize() OVERRIDE;
+  virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
   virtual void Rename(const FilePath& full_path,
                       bool overwrite_existing_file,
                       const RenameCompletionCallback& callback) OVERRIDE;
@@ -52,11 +63,6 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   virtual int64 CurrentSpeed() const OVERRIDE;
   virtual bool GetHash(std::string* hash) OVERRIDE;
   virtual std::string GetHashState() OVERRIDE;
-  virtual void CancelDownloadRequest() OVERRIDE;
-  virtual int Id() const OVERRIDE;
-  virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
-  virtual const content::DownloadId& GlobalId() const OVERRIDE;
-  virtual std::string DebugString() const OVERRIDE;
 
  protected:
   // For test class overrides.
@@ -80,19 +86,8 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   // with DownloadFile and get rid of BaseFile.
   scoped_ptr<content::ByteStreamReader> stream_reader_;
 
-  // The unique identifier for this download, assigned at creation by
-  // the DownloadFileManager for its internal record keeping.
-  content::DownloadId id_;
-
   // Used to trigger progress updates.
   scoped_ptr<base::RepeatingTimer<DownloadFileImpl> > update_timer_;
-
-  // The handle to the request information.  Used for operations outside the
-  // download system, specifically canceling a download.
-  scoped_ptr<DownloadRequestHandleInterface> request_handle_;
-
-  // DownloadManager this download belongs to.
-  scoped_refptr<content::DownloadManager> download_manager_;
 
   // Statistics
   size_t bytes_seen_;
@@ -100,6 +95,8 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   base::TimeTicks download_start_;
 
   net::BoundNetLog bound_net_log_;
+
+  base::WeakPtr<content::DownloadDestinationObserver> observer_;
 
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
 

@@ -19,7 +19,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
-#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_request_handle.h"
@@ -118,6 +117,19 @@ class NullDownloadRequestHandle : public DownloadRequestHandleInterface {
     return "Null DownloadRequestHandle";
   }
 };
+
+// Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
+// takes ownership of the DownloadFile and hence implicitly destroys it
+// at the end of the function.
+static void DownloadFileDetach(scoped_ptr<DownloadFile> download_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  download_file->Detach();
+}
+
+static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  download_file->Cancel();
+}
 
 }  // namespace
 
@@ -292,9 +304,20 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
 
 DownloadItemImpl::~DownloadItemImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Should always have been nuked before now, at worst in
+  // DownloadManager shutdown.
+  DCHECK(!download_file_.get());
+
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
   delegate_->AssertStateConsistent(this);
   delegate_->Detach();
+}
+
+base::WeakPtr<content::DownloadDestinationObserver>
+DownloadItemImpl::DestinationObserverAsWeakPtr() {
+  // Return does private downcast.
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void DownloadItemImpl::AddObserver(Observer* observer) {
@@ -385,21 +408,6 @@ void DownloadItemImpl::DangerousDownloadValidated() {
   delegate_->MaybeCompleteDownload(this);
 }
 
-void DownloadItemImpl::ProgressComplete(int64 bytes_so_far,
-                                        const std::string& final_hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  hash_ = final_hash;
-  hash_state_ = "";
-
-  received_bytes_ = bytes_so_far;
-
-  // If we've received more data than we were expecting (bad server info?),
-  // revert to 'unknown size mode'.
-  if (received_bytes_ > total_bytes_)
-    total_bytes_ = 0;
-}
-
 // Updates from the download thread may have been posted while this download
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
@@ -456,8 +464,33 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
 
   TransitionTo(CANCELLED);
+
+  // Cancel and remove the download file.
+  DCHECK(download_file_.get());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      // Will be deleted at end of task execution.
+      base::Bind(&DownloadFileCancel, base::Passed(download_file_.Pass())));
+
+  // Cancel the originating URL request.
+  request_handle_->CancelRequest();
+
   if (user_cancel)
     delegate_->DownloadStopped(this);
+}
+
+// We're starting the download.
+void DownloadItemImpl::Start(scoped_ptr<content::DownloadFile> download_file) {
+  DCHECK(!download_file_.get());
+  download_file_ = download_file.Pass();
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFile::Initialize,
+                 // Safe because we control download file lifetime.
+                 base::Unretained(download_file_.get()),
+                 base::Bind(&DownloadItemImpl::OnDownloadFileInitialized,
+                            weak_ptr_factory_.GetWeakPtr())));
 }
 
 // An error occurred somewhere.
@@ -477,6 +510,17 @@ void DownloadItemImpl::Interrupt(content::DownloadInterruptReason reason) {
 
   last_reason_ = reason;
   TransitionTo(INTERRUPTED);
+
+  // Cancel and remove the download file.
+  DCHECK(download_file_.get());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      // Will be deleted at end of task execution.
+      base::Bind(&DownloadFileCancel, base::Passed(download_file_.Pass())));
+
+  // Cancel the originating URL request.
+  request_handle_->CancelRequest();
+
   download_stats::RecordDownloadInterrupted(
       reason, received_bytes_, total_bytes_);
   delegate_->DownloadStopped(this);
@@ -496,12 +540,17 @@ void DownloadItemImpl::DelayedDownloadOpened(bool auto_opened) {
 }
 
 void DownloadItemImpl::OnAllDataSaved(
-    int64 size, const std::string& final_hash) {
+    const std::string& final_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  DCHECK_EQ(IN_PROGRESS, state_);
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
-  ProgressComplete(size, final_hash);
+
+  // Store final hash and null out intermediate serialized hash state.
+  hash_ = final_hash;
+  hash_state_ = "";
+
   UpdateObservers();
 }
 
@@ -696,29 +745,32 @@ void DownloadItemImpl::TogglePause() {
 void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (!IsInProgress())
+    return;
+
   VLOG(20) << __FUNCTION__ << "()"
            << " needs rename = " << NeedsRename()
            << " " << DebugString(true);
   DCHECK(!GetTargetName().empty());
   DCHECK_NE(DANGEROUS, GetSafetyState());
 
+  DCHECK(download_file_.get());
   if (NeedsRename()) {
-    DownloadFileManager::RenameCompletionCallback callback =
+    content::DownloadFile::RenameCompletionCallback callback =
         base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                    weak_ptr_factory_.GetWeakPtr());
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::RenameDownloadFile,
-                   delegate_->GetDownloadFileManager(), GetGlobalId(),
+        base::Bind(&DownloadFile::Rename,
+                   base::Unretained(download_file_.get()),
                    GetTargetFilePath(), true, callback));
   } else {
     // Complete the download and release the DownloadFile.
-    BrowserThread::PostTask(
+    BrowserThread::PostTaskAndReply(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::CompleteDownload,
-                   delegate_->GetDownloadFileManager(), GetGlobalId(),
-                   base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
-                              weak_ptr_factory_.GetWeakPtr())));
+        base::Bind(&DownloadFileDetach, base::Passed(download_file_.Pass())),
+        base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -726,6 +778,9 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
     content::DownloadInterruptReason reason,
     const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsInProgress())
+    return;
 
   VLOG(20) << __FUNCTION__ << "()"
            << " full_path = \"" << full_path.value() << "\""
@@ -745,12 +800,33 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
   delegate_->DownloadRenamedToFinalName(this);
 
   // Complete the download and release the DownloadFile.
-  BrowserThread::PostTask(
+  // TODO(rdsmith): Unify this path with the !NeedsRename() path in
+  // OnDownloadCompleting above.  This can happen easily after history
+  // is made into an observer and the path accessors are cleaned up;
+  // that should allow OnDownloadCompleting to simply call
+  // OnDownloadRenamedToFinalName directly.
+  DCHECK(download_file_.get());
+  BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CompleteDownload,
-                 delegate_->GetDownloadFileManager(), GetGlobalId(),
-                 base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
-                            weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&DownloadFileDetach, base::Passed(download_file_.Pass())),
+      base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DownloadItemImpl::OnDownloadFileInitialized(
+    content::DownloadInterruptReason result) {
+  if (result != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    Interrupt(result);
+    // TODO(rdsmith): It makes no sense to continue along the
+    // regular download path after we've gotten an error.  But it's
+    // the way the code has historically worked, and this allows us
+    // to get the download persisted and observers of the download manager
+    // notified, so tests work.  When we execute all side effects of cancel
+    // (including queue removal) immedately rather than waiting for
+    // persistence we should replace this comment with a "return;".
+  }
+
+  delegate_->DelegateStart(this);
 }
 
 void DownloadItemImpl::OnDownloadFileReleased() {
@@ -881,18 +957,30 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   // space/permission/availability constraints.
   DCHECK(intermediate_path.DirName() == target_path.DirName());
 
+  if (!IsInProgress()) {
+    // If we've been cancelled or interrupted while the target was being
+    // determined, continue the cascade with a null name.
+    // The error doesn't matter as the cause of download stoppaged
+    // will already have been recorded.
+    OnDownloadRenamedToIntermediateName(
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, FilePath());
+    return;
+  }
+
   // Rename to intermediate name.
   // TODO(asanka): Skip this rename if AllDataSaved() is true. This avoids a
   //               spurious rename when we can just rename to the final
   //               filename. Unnecessary renames may cause bugs like
   //               http://crbug.com/74187.
-  DownloadFileManager::RenameCompletionCallback callback =
+  DCHECK(download_file_.get());
+  DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::RenameDownloadFile,
-                 delegate_->GetDownloadFileManager(), GetGlobalId(),
+      base::Bind(&DownloadFile::Rename,
+                 // Safe because we control download file lifetime.
+                 base::Unretained(download_file_.get()),
                  intermediate_path, false, callback));
 }
 
@@ -923,14 +1011,53 @@ FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {
       GetTargetFilePath() : GetFullPath();
 }
 
-void DownloadItemImpl::OffThreadCancel() {
+void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
+                                         int64 bytes_per_sec,
+                                         const std::string& hash_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  request_handle_->CancelRequest();
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CancelDownload,
-                 delegate_->GetDownloadFileManager(), download_id_));
+  if (!IsInProgress()) {
+    // Ignore if we're no longer in-progress.  This can happen if we race a
+    // Cancel on the UI thread with an update on the FILE thread.
+    //
+    // TODO(rdsmith): Arguably we should let this go through, as this means
+    // the download really did get further than we know before it was
+    // cancelled.  But the gain isn't very large, and the code is more
+    // fragile if it has to support in progress updates in a non-in-progress
+    // state.  This issue should be readdressed when we revamp performance
+    // reporting.
+    return;
+  }
+  bytes_per_sec_ = bytes_per_sec;
+  hash_state_ = hash_state;
+  received_bytes_ = bytes_so_far;
+
+  // If we've received more data than we were expecting (bad server info?),
+  // revert to 'unknown size mode'.
+  if (received_bytes_ > total_bytes_)
+    total_bytes_ = 0;
+
+  if (bound_net_log_.IsLoggingAllEvents()) {
+    bound_net_log_.AddEvent(
+        net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
+        net::NetLog::Int64Callback("bytes_so_far", received_bytes_));
+  }
+
+  UpdateObservers();
+}
+
+void DownloadItemImpl::DestinationError(
+    content::DownloadInterruptReason reason) {
+  // The DestinationError and Interrupt routines are being kept separate
+  // to allow for a future merging of the Cancel and Interrupt routines..
+  Interrupt(reason);
+}
+
+void DownloadItemImpl::DestinationCompleted(const std::string& final_hash) {
+  if (!IsInProgress())
+    return;
+  OnAllDataSaved(final_hash);
+  delegate_->MaybeCompleteDownload(this);
 }
 
 void DownloadItemImpl::Init(bool active,
@@ -1040,7 +1167,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " etag = '%s'"
         " url_chain = \n\t\"%s\"\n\t"
         " full_path = \"%" PRFilePath "\""
-        " target_path = \"%" PRFilePath "\"",
+        " target_path = \"%" PRFilePath "\""
+        " has download file = %s",
         GetDbHandle(),
         GetTotalBytes(),
         GetReceivedBytes(),
@@ -1051,7 +1179,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         GetETag().c_str(),
         url_list.c_str(),
         GetFullPath().value().c_str(),
-        GetTargetFilePath().value().c_str());
+        GetTargetFilePath().value().c_str(),
+        download_file_.get() ? "true" : "false");
   } else {
     description += base::StringPrintf(" url = \"%s\"", url_list.c_str());
   }
