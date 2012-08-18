@@ -387,7 +387,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ExtensionInfoUI>;
   }
 
-  DLOG(WARNING) << "Unknown WebUI:" << url;
   return NULL;
 }
 
