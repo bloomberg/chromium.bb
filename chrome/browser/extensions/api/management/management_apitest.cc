@@ -165,10 +165,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   LoadAndWaitForLaunch("management/launch_app_panel", &app_id);
   ASSERT_FALSE(HasFatalFailure());  // Stop the test if any ASSERT failed.
 
-  // Find the app's browser.  Check that it is a panel.
+  // Find the app's browser.  Check that it is a popup.
   ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
   Browser* app_browser = FindOtherBrowser(browser());
-  ASSERT_TRUE(app_browser->is_type_panel());
+  ASSERT_TRUE(app_browser->is_type_popup());
   ASSERT_TRUE(app_browser->is_app());
 
   // Close the app panel.
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_FALSE(service->GetExtensionById(app_id, true));
 
   // Set a pref indicating that the user wants to launch in a regular tab.
-  // This should be ignored, because panel apps always load in a panel.
+  // This should be ignored, because panel apps always load in a popup.
   service->extension_prefs()->SetLaunchType(
       app_id, extensions::ExtensionPrefs::LAUNCH_REGULAR);
 
@@ -198,10 +198,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   ASSERT_EQ(app_id, app_id_new);
 
   // Find the app's browser.  Apps that should load in a panel ignore
-  // prefs, so we should still see the launch in a panel.
+  // prefs, so we should still see the launch in a popup.
   ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
   app_browser = FindOtherBrowser(browser());
-  ASSERT_TRUE(app_browser->is_type_panel());
+  ASSERT_TRUE(app_browser->is_type_popup());
   ASSERT_TRUE(app_browser->is_app());
 }
 

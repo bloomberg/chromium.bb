@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -30,11 +29,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
-
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
-#include "chrome/browser/ui/views/ash/panel_view_aura.h"
-#endif
 
 using content::WebContents;
 using extensions::Extension;
@@ -69,11 +63,6 @@ GURL UrlForExtension(const Extension* extension,
   return url;
 }
 
-bool AllowPanels(const std::string& app_name) {
-  return PanelManager::ShouldUsePanels(
-      web_app::GetExtensionIdFromApplicationName(app_name));
-}
-
 WebContents* OpenApplicationWindow(
     Profile* profile,
     const Extension* extension,
@@ -89,11 +78,6 @@ WebContents* OpenApplicationWindow(
       web_app::GenerateApplicationNameFromURL(url);
 
   Browser::Type type = Browser::TYPE_POPUP;
-  if (extension &&
-      container == extension_misc::LAUNCH_PANEL &&
-      AllowPanels(app_name)) {
-    type = Browser::TYPE_PANEL;
-  }
 
   gfx::Rect window_bounds;
   if (extension) {
@@ -130,12 +114,6 @@ WebContents* OpenApplicationWindow(
   WebContents* contents = tab_contents->web_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
-  // TODO(stevenjb): Find the right centralized place to do this. Currently it
-  // is only done for app tabs in normal browsers through SetExtensionAppById.
-  if (extension && type == Browser::TYPE_PANEL) {
-    tab_contents->extension_tab_helper()->
-        SetExtensionAppIconById(extension->id());
-  }
 
   browser->window()->Show();
 
@@ -234,28 +212,6 @@ WebContents* OpenApplicationTab(Profile* profile,
 #endif
 
   return contents;
-}
-
-WebContents* OpenApplicationPanel(
-    Profile* profile,
-    const Extension* extension,
-    const GURL& url_input) {
-  GURL url = UrlForExtension(extension, url_input);
-  std::string app_name =
-      web_app::GenerateApplicationNameFromExtensionId(extension->id());
-  gfx::Rect panel_bounds;
-  panel_bounds.set_width(extension->launch_width());
-  panel_bounds.set_height(extension->launch_height());
-#if defined(USE_ASH)
-  PanelViewAura* panel_view = new PanelViewAura(app_name);
-  panel_view->Init(profile, url, panel_bounds);
-  return panel_view->WebContents();
-#else
-  Panel* panel = PanelManager::GetInstance()->CreatePanel(
-      app_name, profile, url, panel_bounds.size());
-  panel->Show();
-  return panel->GetWebContents();
-#endif
 }
 
 }  // namespace
