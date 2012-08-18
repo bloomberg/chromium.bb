@@ -34,6 +34,10 @@ namespace {
 // At values above 10, Google starts returning 503 errors.
 const int kMaxPhotoDownloadsPerSecond = 10;
 
+// Give up after seeing more than this many transient errors while trying to
+// download a photo for a single contact.
+const int kMaxTransientPhotoDownloadErrorsPerContact = 2;
+
 // Hardcoded system group ID for the "My Contacts" group, per
 // https://developers.google.com/google-apps/contacts/v3/#contact_group_entry.
 const char kMyContactsSystemGroupId[] = "Contacts";
@@ -661,10 +665,13 @@ class GDataContactsService::DownloadContactsRequest {
 
     if (error == HTTP_INTERNAL_SERVER_ERROR ||
         error == HTTP_SERVICE_UNAVAILABLE) {
-      LOG(WARNING) << "Got error " << error << " while downloading photo "
-                   << "for " << contact->provider_id() << "; retrying";
-      contacts_needing_photo_downloads_.push_back(contact);
-      return;
+      int num_errors = ++transient_photo_download_errors_per_contact_[contact];
+      if (num_errors <= kMaxTransientPhotoDownloadErrorsPerContact) {
+        LOG(WARNING) << "Got error " << error << " while downloading photo "
+                     << "for " << contact->provider_id() << "; retrying";
+        contacts_needing_photo_downloads_.push_back(contact);
+        return;
+      }
     }
 
     if (error == HTTP_NOT_FOUND) {
@@ -716,6 +723,12 @@ class GDataContactsService::DownloadContactsRequest {
 
   // Number of in-progress photo downloads.
   int num_in_progress_photo_downloads_;
+
+  // Map from a contact to the number of transient errors that we've encountered
+  // while trying to download its photo.  Contacts for which no errors have been
+  // encountered aren't represented in the map.
+  std::map<contacts::Contact*, int>
+      transient_photo_download_errors_per_contact_;
 
   // Did we encounter a fatal error while downloading a photo?
   bool photo_download_failed_;
