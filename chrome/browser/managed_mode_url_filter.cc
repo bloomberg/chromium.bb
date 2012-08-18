@@ -70,8 +70,10 @@ bool ManagedModeURLFilter::IsURLWhitelisted(const GURL& url) const {
   if (!active_)
     return true;
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   if (!policy::URLBlacklist::HasStandardScheme(url))
     return true;
+#endif
 
   std::set<URLMatcherConditionSet::ID> matching_ids =
       url_matcher_->MatchURL(url);
