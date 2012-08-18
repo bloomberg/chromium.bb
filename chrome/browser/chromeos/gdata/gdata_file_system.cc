@@ -2033,15 +2033,9 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
     return;
   }
 
-  feed_loader_->LoadFromServer(
+  feed_loader_->LoadDirectoryFromServer(
       directory_service_->origin(),
-      0,  // start_changestamp - Not a delta feed.
-      0,  // root_feed_changestamp - Not used.
-      true,  // multiple feeds
-      std::string(),  // No search query
-      GURL(),  // feed_to_load - Feed not explicitly set
-      entry_proto->resource_id(),  // Load the feed for this directory.
-      FileOperationCallback(),  // load_finished_callback.
+      entry_proto->resource_id(),
       base::Bind(&GDataFileSystem::OnRequestDirectoryRefresh,
                  ui_weak_ptr_,
                  file_path));
@@ -2442,21 +2436,11 @@ void GDataFileSystem::SearchAsyncOnUIThread(
     const GURL& next_feed,
     const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<std::vector<DocumentFeed*> > feed_list(
-      new std::vector<DocumentFeed*>);
 
-  ContentOrigin initial_origin = directory_service_->origin();
-  feed_loader_->LoadFromServer(
-      initial_origin,
-      0, 0,  // We don't use change stamps when fetching search
-      // data; we always fetch the whole result feed.
-      false,  // Stop fetching search results after first feed
-      // chunk to avoid displaying huge number of search
-      // results (especially since we don't cache them).
+  feed_loader_->SearchFromServer(
+      directory_service_->origin(),
       search_query,
       next_feed,
-      std::string(),  // No directory resource ID.
-      FileOperationCallback(),  // Not used.
       base::Bind(&GDataFileSystem::OnSearch, ui_weak_ptr_, callback));
 }
 

@@ -10,8 +10,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-
-class GURL;
+#include "googleurl/src/gurl.h"
 
 namespace base {
 class Value;
@@ -30,7 +29,6 @@ struct GetDocumentsParams {
   GetDocumentsParams(int64 start_changestamp,
                      int64 root_feed_changestamp,
                      std::vector<DocumentFeed*>* feed_list,
-                     bool should_fetch_multiple_feeds,
                      const std::string& search_query,
                      const std::string& directory_resource_id,
                      const FileOperationCallback& callback,
@@ -44,9 +42,6 @@ struct GetDocumentsParams {
   int64 start_changestamp;
   int64 root_feed_changestamp;
   scoped_ptr<std::vector<DocumentFeed*> > feed_list;
-  // Should we stop after getting first feed chunk, even if there is more
-  // data.
-  bool should_fetch_multiple_feeds;
   std::string search_query;
   std::string directory_resource_id;
   FileOperationCallback callback;
@@ -123,34 +118,23 @@ class GDataWapiFeedLoader {
   void LoadFromCache(bool should_load_from_server,
                      const FileOperationCallback& callback);
 
-  // Starts root feed load from the server. Value of |start_changestamp|
-  // determines the type of feed to load - 0 means root feed, every other
-  // value would trigger delta feed.
-  // In the case of loading the root feed we use |root_feed_changestamp| as its
-  // initial changestamp value since it does not come with that info.
-  //
-  // When all feeds are loaded, |feed_load_callback| is invoked with the
-  // retrieved feeds. Then |load_finished_callback| is invoked with the error
-  // code.
-  //
-  // |should_fetch_multiple_feeds| is true iff don't want to stop feed loading
-  // after we retrieve first feed chunk.
-  // If invoked as a part of content search, query will be set in
-  // |search_query|.
-  // If |feed_to_load| is set, this is feed url that will be used to load feed.
-  //
-  // |load_finished_callback| may be null.
+  // Starts retrieving feed for a directory specified by |directory_resource_id|
+  // from the server. Upon completion, |feed_load_callback| is invoked.
   // |feed_load_callback| must not be null.
-  void LoadFromServer(
+  void LoadDirectoryFromServer(
       ContentOrigin initial_origin,
-      int64 start_changestamp,
-      int64 root_feed_changestamp,
-      bool should_fetch_multiple_feeds,
-      const std::string& search_query,
-      const GURL& feed_to_load,
       const std::string& directory_resource_id,
-      const FileOperationCallback& load_finished_callback,
       const LoadDocumentFeedCallback& feed_load_callback);
+
+  // Starts retrieving search results for |search_query| from the server.
+  // If |next_feed| is set, this is the feed url that will be fetched.
+  // If |next_feed| is an empty string, the default URL is used.
+  // Upon completion, |feed_load_callback| is invoked.
+  // |feed_load_callback| must not be null.
+  void SearchFromServer(ContentOrigin initial_origin,
+                        const std::string& search_query,
+                        const GURL& next_feed,
+                        const LoadDocumentFeedCallback& feed_load_callback);
 
   // Retrieves account metadata and determines from the last change timestamp
   // if the feed content loading from the server needs to be initiated.
@@ -171,6 +155,11 @@ class GDataWapiFeedLoader {
     int64 root_feed_changestamp);
 
  private:
+  struct LoadFeedParams;
+
+  // Starts root feed load from the server, with detail specified in |param|.
+  void LoadFromServer(const LoadFeedParams& param);
+
   // Callback for handling root directory refresh from the cache.
   void OnProtoLoaded(LoadRootFeedParams* params);
 
