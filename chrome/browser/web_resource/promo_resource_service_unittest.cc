@@ -464,7 +464,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
       "      \"date\":"
       "        ["
       "          {"
-      "            \"start\":\"15 Jan 2012 10:50:85 PST\","
+      "            \"start\":\"3 Aug 1999 9:26:06 GMT\","
       "            \"end\":\"7 Jan 2013 5:40:75 PST\""
       "          }"
       "        ],"
@@ -504,8 +504,11 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
       "Like Chrome? Go http://www.google.com/chrome/",
       "It\'s simple. Go http://www.google.com/chrome/",
       "ACTION_EMAIL", "This is the body.", "XXX value",
-      1326653485,  // unix epoch for 15 Jan 2012 10:50:85 PST.
-      1357566075,  // unix epoch for 7 Jan 2013 5:40:75 PST.
+      // We hardcode the unix epoch time to make sure our parsing works.
+      // The starting date is in 1999 to make tests pass on Android devices
+      // with incorrect or unset date/time.
+      933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
+      1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
       1000, 200, 100, 3600, 400, 30, false);
 #endif  // !defined(OS_ANDROID)
 
