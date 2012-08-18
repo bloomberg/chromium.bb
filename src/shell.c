@@ -1373,8 +1373,8 @@ shell_surface_set_maximized(struct wl_client *client,
 	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
 
 	shsurf->client->send_configure(shsurf->surface, edges,
-				       shsurf->output->current->width,
-				       shsurf->output->current->height - panel_height);
+				       shsurf->output->width,
+				       shsurf->output->height - panel_height);
 
 	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
 }
@@ -1419,8 +1419,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 			create_black_surface(surface->compositor,
 					     surface,
 					     output->x, output->y,
-					     output->current->width,
-					     output->current->height);
+					     output->width,
+					     output->height);
 
 	wl_list_remove(&shsurf->fullscreen.black_surface->layer_link);
 	wl_list_insert(&surface->layer_link,
@@ -1436,23 +1436,23 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 		matrix = &shsurf->fullscreen.transform.matrix;
 		weston_matrix_init(matrix);
 
-		output_aspect = (float) output->current->width /
-			(float) output->current->height;
+		output_aspect = (float) output->width /
+			(float) output->height;
 		surface_aspect = (float) surface->geometry.width /
 			(float) surface->geometry.height;
 		if (output_aspect < surface_aspect)
-			scale = (float) output->current->width /
+			scale = (float) output->width /
 				(float) surface->geometry.width;
 		else
-			scale = (float) output->current->height /
+			scale = (float) output->height /
 				(float) surface->geometry.height;
 
 		weston_matrix_scale(matrix, scale, scale, 1);
 		wl_list_remove(&shsurf->fullscreen.transform.link);
 		wl_list_insert(&surface->geometry.transformation_list,
 			       &shsurf->fullscreen.transform.link);
-		x = output->x + (output->current->width - surface->geometry.width * scale) / 2;
-		y = output->y + (output->current->height - surface->geometry.height * scale) / 2;
+		x = output->x + (output->width - surface->geometry.width * scale) / 2;
+		y = output->y + (output->height - surface->geometry.height * scale) / 2;
 		weston_surface_set_position(surface, x, y);
 
 		break;
@@ -1466,8 +1466,8 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 			if (weston_output_switch_mode(output, &mode) == 0) {
 				weston_surface_configure(shsurf->fullscreen.black_surface, 
 					                 output->x, output->y,
-							 output->current->width,
-							 output->current->height);
+							 output->width,
+							 output->height);
 				weston_surface_set_position(surface, output->x, output->y);
 				break;
 			}
@@ -1498,8 +1498,8 @@ shell_stack_fullscreen(struct shell_surface *shsurf)
 			create_black_surface(surface->compositor,
 					     surface,
 					     output->x, output->y,
-					     output->current->width,
-					     output->current->height);
+					     output->width,
+					     output->height);
 
 	wl_list_remove(&shsurf->fullscreen.black_surface->layer_link);
 	wl_list_insert(&surface->layer_link,
@@ -1537,8 +1537,8 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
 
 	shsurf->client->send_configure(shsurf->surface, 0,
-				       shsurf->output->current->width,
-				       shsurf->output->current->height);
+				       shsurf->output->width,
+				       shsurf->output->height);
 }
 
 static void
@@ -1915,8 +1915,8 @@ desktop_shell_set_background(struct wl_client *client,
 	surface->output = output_resource->data;
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
-				     surface->output->current->width,
-				     surface->output->current->height);
+				     surface->output->width,
+				     surface->output->height);
 }
 
 static void
@@ -1948,8 +1948,8 @@ desktop_shell_set_panel(struct wl_client *client,
 	surface->output = output_resource->data;
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
-				     surface->output->current->width,
-				     surface->output->current->height);
+				     surface->output->width,
+				     surface->output->height);
 }
 
 static void
@@ -2567,9 +2567,8 @@ hide_input_panels(struct wl_listener *listener, void *data)
 static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
-	struct weston_mode *mode = output->current;
-	GLfloat x = (mode->width - surface->buffer->width) / 2;
-	GLfloat y = (mode->height - surface->buffer->height) / 2;
+	GLfloat x = (output->width - surface->buffer->width) / 2;
+	GLfloat y = (output->height - surface->buffer->height) / 2;
 
 	weston_surface_configure(surface, output->x + x, output->y + y,
 				 surface->buffer->width,
@@ -2618,8 +2617,8 @@ weston_surface_set_initial_position (struct weston_surface *surface,
 	 * output.
 	 */
 	panel_height = get_output_panel_height(shell, target_output);
-	range_x = target_output->current->width - surface->geometry.width;
-	range_y = (target_output->current->height - panel_height) -
+	range_x = target_output->width - surface->geometry.width;
+	range_y = (target_output->height - panel_height) -
 		  surface->geometry.height;
 
 	if (range_x > 0)

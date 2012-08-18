@@ -1148,6 +1148,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		output->border.left + output->border.right;
 	height = output->current->height +
 		output->border.top + output->border.bottom;
+
 	glViewport(0, 0, width, height);
 
 	/* Rebuild the surface list and update surface transforms up front. */
@@ -1731,14 +1732,14 @@ clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
 	if (!valid) {
 		if (x < prev->x)
 			*fx = wl_fixed_from_int(prev->x);
-		else if (x >= prev->x + prev->current->width)
+		else if (x >= prev->x + prev->width)
 			*fx = wl_fixed_from_int(prev->x +
-						prev->current->width - 1);
+						prev->width - 1);
 		if (y < prev->y)
 			*fy = wl_fixed_from_int(prev->y);
 		else if (y >= prev->y + prev->current->height)
 			*fy = wl_fixed_from_int(prev->y +
-						prev->current->height - 1);
+						prev->height - 1);
 	}
 }
 
@@ -2972,6 +2973,62 @@ weston_output_destroy(struct weston_output *output)
 	wl_display_remove_global(c->wl_display, output->global);
 }
 
+static void
+weston_output_compute_transform(struct weston_output *output)
+{
+	struct weston_matrix transform;
+	int flip;
+
+	weston_matrix_init(&transform);
+
+	switch(output->transform) {
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		flip = -1;
+		break;
+	default:
+		flip = 1;
+		break;
+	}
+
+        switch(output->transform) {
+        case WL_OUTPUT_TRANSFORM_NORMAL:
+        case WL_OUTPUT_TRANSFORM_FLIPPED:
+                transform.d[0] = flip;
+                transform.d[1] = 0;
+                transform.d[4] = 0;
+                transform.d[5] = 1;
+                break;
+        case WL_OUTPUT_TRANSFORM_90:
+        case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+                transform.d[0] = 0;
+                transform.d[1] = -flip;
+                transform.d[4] = 1;
+                transform.d[5] = 0;
+                break;
+        case WL_OUTPUT_TRANSFORM_180:
+        case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+                transform.d[0] = -flip;
+                transform.d[1] = 0;
+                transform.d[4] = 0;
+                transform.d[5] = -1;
+                break;
+        case WL_OUTPUT_TRANSFORM_270:
+        case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+                transform.d[0] = 0;
+                transform.d[1] = flip;
+                transform.d[4] = -1;
+                transform.d[5] = 0;
+                break;
+        default:
+                break;
+        }
+
+	weston_matrix_multiply(&output->matrix, &transform);
+}
+
 WL_EXPORT void
 weston_output_update_matrix(struct weston_output *output)
 {
@@ -2981,12 +3038,14 @@ weston_output_update_matrix(struct weston_output *output)
 
 	weston_matrix_init(&output->matrix);
 	weston_matrix_translate(&output->matrix,
-				-(output->x + (output->border.right + output->current->width - output->border.left) / 2.0),
-				-(output->y + (output->border.bottom + output->current->height - output->border.top) / 2.0), 0);
+				-(output->x + (output->border.right + output->width - output->border.left) / 2.0),
+				-(output->y + (output->border.bottom + output->height - output->border.top) / 2.0), 0);
 
 	weston_matrix_scale(&output->matrix,
-			    2.0 / (output->current->width + output->border.left + output->border.right),
-			    -2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
+			    2.0 / (output->width + output->border.left + output->border.right),
+			    -2.0 / (output->height + output->border.top + output->border.bottom), 1);
+
+	weston_output_compute_transform(output);
 
 	if (output->zoom.active) {
 		magnification = 1 / (1 - output->zoom.spring_z.current);
@@ -3003,6 +3062,32 @@ weston_output_update_matrix(struct weston_output *output)
 	output->dirty = 0;
 }
 
+static void
+weston_output_transform_init(struct weston_output *output, uint32_t transform)
+{
+	output->transform = transform;
+
+	switch (transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		/* Swap width and height */
+		output->width = output->current->height;
+		output->height = output->current->width;
+		break;
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	case WL_OUTPUT_TRANSFORM_180:
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		output->width = output->current->width;
+		output->height = output->current->height;
+		break;
+	default:
+		break;
+	}
+}
+
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
@@ -3011,13 +3096,13 @@ weston_output_move(struct weston_output *output, int x, int y)
 
 	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, x, y,
-				  output->current->width,
-				  output->current->height);
+				  output->width,
+				  output->height);
 }
 
 WL_EXPORT void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height)
+		   int x, int y, int width, int height, uint32_t transform)
 {
 	output->compositor = c;
 	output->x = x;
@@ -3029,8 +3114,11 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->mm_width = width;
 	output->mm_height = height;
 	output->dirty = 1;
-	output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
 
+	if (transform != WL_OUTPUT_TRANSFORM_NORMAL)
+		output->disable_planes++;
+
+	weston_output_transform_init(output, transform);
 	weston_output_init_zoom(output);
 
 	weston_output_move(output, x, y);

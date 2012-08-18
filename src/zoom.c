@@ -187,11 +187,55 @@ zoom_area_center_from_pointer(struct weston_output *output,
 	float level = output->zoom.spring_z.current;
 	wl_fixed_t offset_x = wl_fixed_from_int(output->x);
 	wl_fixed_t offset_y = wl_fixed_from_int(output->y);
-	wl_fixed_t w = wl_fixed_from_int(output->current->width);
-	wl_fixed_t h = wl_fixed_from_int(output->current->height);
+	wl_fixed_t w = wl_fixed_from_int(output->width);
+	wl_fixed_t h = wl_fixed_from_int(output->height);
 
 	*x -= ((((*x - offset_x) / (float) w) - 0.5) * (w * (1.0 - level)));
 	*y -= ((((*y - offset_y) / (float) h) - 0.5) * (h * (1.0 - level)));
+}
+
+static void
+weston_zoom_apply_output_transform(struct weston_output *output,
+						float *x, float *y)
+{
+	float tx, ty;
+
+	switch(output->transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		return;
+	case WL_OUTPUT_TRANSFORM_90:
+		tx = -*y;
+		ty = *x;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		tx = -*x;
+		ty = -*y;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		tx = *y;
+		ty = -*x;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		tx = -*x;
+		ty = *y;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		tx = -*y;
+		ty = -*x;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		tx = *x;
+		ty = -*y;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		tx = *y;
+		ty = *x;
+		break;
+	}
+
+	*x = tx;
+	*y = ty;
 }
 
 static void
@@ -218,11 +262,14 @@ weston_output_update_zoom_transform(struct weston_output *output)
 	global_y = wl_fixed_to_double(y);
 
 	output->zoom.trans_x =
-		((((global_x - output->x) / output->current->width) *
+		((((global_x - output->x) / output->width) *
 		(level * 2)) - level) * ratio;
 	output->zoom.trans_y =
-		((((global_y - output->y) / output->current->height) *
+		((((global_y - output->y) / output->height) *
 		(level * 2)) - level) * ratio;
+
+	weston_zoom_apply_output_transform(output, &output->zoom.trans_x,
+						   &output->zoom.trans_y);
 
 	trans_max = level * 2 - level;
 	trans_min = -trans_max;

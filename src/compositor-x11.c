@@ -52,6 +52,7 @@
 
 static char *output_name;
 static char *output_mode;
+static char *output_transform;
 static int option_width;
 static int option_height;
 static int option_count;
@@ -60,6 +61,7 @@ static struct wl_list configured_output_list;
 struct x11_configured_output {
 	char *name;
 	int width, height;
+	uint32_t transform;
 	struct wl_list link;
 };
 
@@ -471,12 +473,15 @@ x11_output_set_icon(struct x11_compositor *c,
 	pixman_image_unref(image);
 }
 
-static int
+static struct x11_output *
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen,
-			     int no_input, const char *name)
+			     int no_input, char *configured_name,
+			     uint32_t transform)
 {
+	static const char name[] = "Weston Compositor";
 	static const char class[] = "weston-1\0Weston Compositor";
+	char title[32];
 	struct x11_output *output;
 	xcb_screen_iterator_t iter;
 	struct wm_normal_hints normal_hints;
@@ -487,6 +492,11 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		XCB_EVENT_MASK_STRUCTURE_NOTIFY,
 		0
 	};
+
+	if (configured_name)
+		sprintf(title, "%s - %s", name, configured_name);
+	else
+		strcpy(title, name);
 
 	if (!no_input)
 		values[0] |=
@@ -502,7 +512,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
-		return -1;
+		return NULL;
 
 	memset(output, 0, sizeof *output);
 
@@ -517,7 +527,8 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.current = &output->mode;
 	output->base.make = "xwayland";
 	output->base.model = "none";
-	weston_output_init(&output->base, &c->base, x, y, width, height);
+	weston_output_init(&output->base, &c->base,
+			   x, y, width, height, transform);
 
 	values[1] = c->null_cursor;
 	output->window = xcb_generate_id(c->conn);
@@ -550,7 +561,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	/* Set window name.  Don't bother with non-EWMH WMs. */
 	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
 			    c->atom.net_wm_name, c->atom.utf8_string, 8,
-			    strlen(name), name);
+			    strlen(title), title);
 	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
 			    c->atom.wm_class, c->atom.string, 8,
 			    sizeof class, class);
@@ -570,12 +581,12 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 				       output->window, NULL);
 	if (!output->egl_surface) {
 		weston_log("failed to create window surface\n");
-		return -1;
+		return NULL;
 	}
 	if (!eglMakeCurrent(c->base.egl_display, output->egl_surface,
 			    output->egl_surface, c->base.egl_context)) {
 		weston_log("failed to make surface current\n");
-		return -1;
+		return NULL;
 	}
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
@@ -595,7 +606,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	weston_log("x11 output %dx%d, window id %d\n",
 		   width, height, output->window);
 
-	return 0;
+	return output;
 }
 
 static struct x11_output *
@@ -739,6 +750,98 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 			      WL_POINTER_BUTTON_STATE_RELEASED);
 }
 
+static void
+x11_output_transform_coordinate(struct x11_output *x11_output,
+						wl_fixed_t *x, wl_fixed_t *y)
+{
+	struct weston_output *output = &x11_output->base;
+	wl_fixed_t tx, ty;
+	wl_fixed_t width = wl_fixed_from_int(output->width - 1);
+	wl_fixed_t height = wl_fixed_from_int(output->height - 1);
+
+	switch(output->transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		tx = *x;
+		ty = *y;
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		tx = *y;
+		ty = height - *x;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		tx = width - *x;
+		ty = height - *y;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		tx = width - *y;
+		ty = *x;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		tx = width - *x;
+		ty = *y;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		tx = width - *y;
+		ty = height - *x;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		tx = *x;
+		ty = height - *y;
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		tx = *y;
+		ty = *x;
+		break;
+	}
+
+	tx += wl_fixed_from_int(output->x);
+	ty += wl_fixed_from_int(output->y);
+
+	*x = tx;
+	*y = ty;
+}
+
+static void
+x11_compositor_deliver_motion_event(struct x11_compositor *c,
+					xcb_generic_event_t *event)
+{
+	struct x11_output *output;
+	wl_fixed_t x, y;
+	xcb_motion_notify_event_t *motion_notify =
+			(xcb_motion_notify_event_t *) event;
+
+	if (!c->has_xkb)
+		update_xkb_state_from_core(c, motion_notify->state);
+	output = x11_compositor_find_output(c, motion_notify->event);
+	x = wl_fixed_from_int(motion_notify->event_x);
+	y = wl_fixed_from_int(motion_notify->event_y);
+	x11_output_transform_coordinate(output, &x, &y);
+
+	notify_motion(&c->core_seat, weston_compositor_get_time(), x, y);
+}
+
+static void
+x11_compositor_deliver_enter_event(struct x11_compositor *c,
+					xcb_generic_event_t *event)
+{
+	struct x11_output *output;
+	wl_fixed_t x, y;
+
+	xcb_enter_notify_event_t *enter_notify =
+			(xcb_enter_notify_event_t *) event;
+	if (enter_notify->state >= Button1Mask)
+		return;
+	if (!c->has_xkb)
+		update_xkb_state_from_core(c, enter_notify->state);
+	output = x11_compositor_find_output(c, enter_notify->event);
+	x = wl_fixed_from_int(enter_notify->event_x);
+	y = wl_fixed_from_int(enter_notify->event_y);
+	x11_output_transform_coordinate(output, &x, &y);
+
+	notify_pointer_focus(&c->core_seat, &output->base, x, y);
+}
+
 static int
 x11_compositor_next_event(struct x11_compositor *c,
 			  xcb_generic_event_t **event, uint32_t mask)
@@ -763,7 +866,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	struct x11_output *output;
 	xcb_generic_event_t *event, *prev;
 	xcb_client_message_event_t *client_message;
-	xcb_motion_notify_event_t *motion_notify;
 	xcb_enter_notify_event_t *enter_notify;
 	xcb_key_press_event_t *key_press, *key_release;
 	xcb_keymap_notify_event_t *keymap_notify;
@@ -772,7 +874,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	xcb_atom_t atom;
 	uint32_t *k;
 	uint32_t i, set;
-	wl_fixed_t x, y;
 	int count;
 
 	prev = NULL;
@@ -872,14 +973,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			x11_compositor_deliver_button_event(c, event, 0);
 			break;
 		case XCB_MOTION_NOTIFY:
-			motion_notify = (xcb_motion_notify_event_t *) event;
-			if (!c->has_xkb)
-				update_xkb_state_from_core(c, motion_notify->state);
-			output = x11_compositor_find_output(c, motion_notify->event);
-			x = wl_fixed_from_int(output->base.x + motion_notify->event_x);
-			y = wl_fixed_from_int(output->base.y + motion_notify->event_y);
-			notify_motion(&c->core_seat,
-				      weston_compositor_get_time(), x, y);
+			x11_compositor_deliver_motion_event(c, event);
 			break;
 
 		case XCB_EXPOSE:
@@ -889,17 +983,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			break;
 
 		case XCB_ENTER_NOTIFY:
-			enter_notify = (xcb_enter_notify_event_t *) event;
-			if (enter_notify->state >= Button1Mask)
-				break;
-			if (!c->has_xkb)
-				update_xkb_state_from_core(c, enter_notify->state);
-			output = x11_compositor_find_output(c, enter_notify->event);
-			x = wl_fixed_from_int(output->base.x + enter_notify->event_x);
-			y = wl_fixed_from_int(output->base.y + enter_notify->event_y);
-
-			notify_pointer_focus(&c->core_seat,
-					     &output->base, x, y);
+			x11_compositor_deliver_enter_event(c, event);
 			break;
 
 		case XCB_LEAVE_NOTIFY:
@@ -1063,10 +1147,9 @@ x11_compositor_create(struct wl_display *display,
 		      int no_input,
 		      int argc, char *argv[], const char *config_file)
 {
-	static const char name[] = "Weston Compositor";
-	char configured_name[32];
 	struct x11_compositor *c;
 	struct x11_configured_output *o;
+	struct x11_output *output;
 	xcb_screen_iterator_t s;
 	int i, x = 0, output_count = 0;
 	int width, height, count;
@@ -1117,26 +1200,30 @@ x11_compositor_create(struct wl_display *display,
 	count = option_count ? option_count : 1;
 
 	wl_list_for_each(o, &configured_output_list, link) {
-		sprintf(configured_name, "%s - %s", name, o->name);
-		if (x11_compositor_create_output(c, x, 0,
-						option_width ? option_width :
-						o->width,
-						option_height ? option_height :
-						o->height,
-						fullscreen, no_input,
-						configured_name) < 0)
+		output = x11_compositor_create_output(c, x, 0,
+						      option_width ? width :
+						      o->width,
+						      option_height ? height :
+						      o->height,
+						      fullscreen, no_input,
+						      o->name, o->transform);
+		if (output == NULL)
 			goto err_x11_input;
-		x += option_width ? option_width : o->width;
+
+		x = pixman_region32_extents(&output->base.region)->x2;
+
 		output_count++;
 		if (option_count && output_count >= option_count)
 			break;
 	}
 
 	for (i = output_count; i < count; i++) {
-		if (x11_compositor_create_output(c, x, 0, width, height,
-						 fullscreen, no_input, name) < 0)
+		output = x11_compositor_create_output(c, x, 0, width, height,
+						      fullscreen, no_input, NULL,
+						      WL_OUTPUT_TRANSFORM_NORMAL);
+		if (output == NULL)
 			goto err_x11_input;
-		x += width;
+		x = pixman_region32_extents(&output->base.region)->x2;
 	}
 
 	c->xcb_source =
@@ -1160,37 +1247,77 @@ err_free:
 }
 
 static void
+x11_output_set_transform(struct x11_configured_output *output)
+{
+	if (!output_transform) {
+		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+		return;
+	}
+
+	if (!strcmp(output_transform, "normal"))
+		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	else if (!strcmp(output_transform, "90"))
+		output->transform = WL_OUTPUT_TRANSFORM_90;
+	else if (!strcmp(output_transform, "180"))
+		output->transform = WL_OUTPUT_TRANSFORM_180;
+	else if (!strcmp(output_transform, "270"))
+		output->transform = WL_OUTPUT_TRANSFORM_270;
+	else if (!strcmp(output_transform, "flipped"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED;
+	else if (!strcmp(output_transform, "flipped-90"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_90;
+	else if (!strcmp(output_transform, "flipped-180"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_180;
+	else if (!strcmp(output_transform, "flipped-270"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_270;
+	else {
+		weston_log("Invalid transform \"%s\" for output %s\n",
+						output_transform, output_name);
+		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	}
+}
+
+static void
 output_section_done(void *data)
 {
 	struct x11_configured_output *output;
 
 	output = malloc(sizeof *output);
 
-	if (!output || !output_name || !output_mode) {
-		free(output_name);
+	if (!output || !output_name || (output_name[0] != 'X') ||
+				(!output_mode && !output_transform)) {
+		if (output_name)
+			free(output_name);
 		output_name = NULL;
 		goto err_free;
 	}
 
 	output->name = output_name;
 
-	if (output_name[0] != 'X') {
-		x11_free_configured_output(output);
-		goto err_free;
+	if (output_mode) {
+		if (sscanf(output_mode, "%dx%d", &output->width,
+						&output->height) != 2) {
+			weston_log("Invalid mode \"%s\" for output %s\n",
+							output_mode, output_name);
+			x11_free_configured_output(output);
+			goto err_free;
+		}
+	} else {
+		output->width = 1024;
+		output->height = 640;
 	}
 
-	if (sscanf(output_mode, "%dx%d", &output->width, &output->height) != 2) {
-		weston_log("Invalid mode \"%s\" for output %s\n",
-						output_mode, output_name);
-		x11_free_configured_output(output);
-		goto err_free;
-	}
+	x11_output_set_transform(output);
 
 	wl_list_insert(configured_output_list.prev, &output->link);
 
 err_free:
-	free(output_mode);
+	if (output_mode)
+		free(output_mode);
+	if (output_transform)
+		free(output_transform);
 	output_mode = NULL;
+	output_transform = NULL;
 }
 
 WL_EXPORT struct weston_compositor *
@@ -1215,6 +1342,7 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 	const struct config_key x11_config_keys[] = {
 		{ "name", CONFIG_KEY_STRING, &output_name },
 		{ "mode", CONFIG_KEY_STRING, &output_mode },
+		{ "transform", CONFIG_KEY_STRING, &output_transform },
 	};
 
 	const struct config_section config_section[] = {

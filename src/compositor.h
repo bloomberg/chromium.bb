@@ -155,7 +155,8 @@ struct weston_output {
 	struct weston_compositor *compositor;
 	struct weston_matrix matrix;
 	struct wl_list animation_list;
-	int32_t x, y, mm_width, mm_height;
+	int32_t x, y, width, height;
+	int32_t mm_width, mm_height;
 	struct weston_border border;
 	pixman_region32_t region;
 	pixman_region32_t previous_damage;
@@ -678,7 +679,7 @@ void
 weston_output_move(struct weston_output *output, int x, int y);
 void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height);
+		   int x, int y, int width, int height, uint32_t transform);
 void
 weston_output_destroy(struct weston_output *output);
 

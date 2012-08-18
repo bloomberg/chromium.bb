@@ -46,6 +46,7 @@
 static int option_current_mode = 0;
 static char *output_name;
 static char *output_mode;
+static char *output_transform;
 static struct wl_list configured_output_list;
 
 enum output_config {
@@ -60,6 +61,7 @@ enum output_config {
 struct drm_configured_output {
 	char *name;
 	char *mode;
+	uint32_t transform;
 	int32_t width, height;
 	drmModeModeInfo crtc_mode;
 	enum output_config config;
@@ -1434,7 +1436,8 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	wl_list_for_each(temp, &configured_output_list, link) {
 		if (strcmp(temp->name, output->name) == 0) {
-			weston_log("%s mode \"%s\" in config\n",
+			if (temp->mode)
+				weston_log("%s mode \"%s\" in config\n",
 							temp->name, temp->mode);
 			o = temp;
 			break;
@@ -1450,9 +1453,9 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
-		if (o && o->width == drm_mode->base.width &&
-			o->height == drm_mode->base.height &&
-			o->config == OUTPUT_CONFIG_MODE)
+		if (o && o->config == OUTPUT_CONFIG_MODE &&
+			o->width == drm_mode->base.width &&
+			o->height == drm_mode->base.height)
 			configured = drm_mode;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
 			current = drm_mode;
@@ -1528,7 +1531,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	weston_output_init(&output->base, &ec->base, x, y,
-			   connector->mmWidth, connector->mmHeight);
+			   connector->mmWidth, connector->mmHeight,
+			   o ? o->transform : WL_OUTPUT_TRANSFORM_NORMAL);
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
@@ -1695,7 +1699,7 @@ create_outputs(struct drm_compositor *ec, uint32_t option_connector,
 
 			x += container_of(ec->base.output_list.prev,
 					  struct weston_output,
-					  link)->current->width;
+					  link)->width;
 		}
 
 		drmModeFreeConnector(connector);
@@ -1751,7 +1755,7 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 
 			/* XXX: not yet needed, we die with 0 outputs */
 			if (!wl_list_empty(&ec->base.output_list))
-				x = last->x + last->current->width;
+				x = last->x + last->width;
 			else
 				x = 0;
 			y = 0;
@@ -1779,7 +1783,7 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 				disconnects &= ~(1 << output->connector_id);
 				weston_log("connector %d disconnected\n",
 				       output->connector_id);
-				x_offset += output->base.current->width;
+				x_offset += output->base.width;
 				drm_output_destroy(&output->base);
 			}
 		}
@@ -2412,17 +2416,54 @@ check_for_modeline(struct drm_configured_output *output)
 }
 
 static void
+drm_output_set_transform(struct drm_configured_output *output)
+{
+	if (!output_transform) {
+		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+		return;
+	}
+
+	if (!strcmp(output_transform, "normal"))
+		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	else if (!strcmp(output_transform, "90"))
+		output->transform = WL_OUTPUT_TRANSFORM_90;
+	else if (!strcmp(output_transform, "180"))
+		output->transform = WL_OUTPUT_TRANSFORM_180;
+	else if (!strcmp(output_transform, "270"))
+		output->transform = WL_OUTPUT_TRANSFORM_270;
+	else if (!strcmp(output_transform, "flipped"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED;
+	else if (!strcmp(output_transform, "flipped-90"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_90;
+	else if (!strcmp(output_transform, "flipped-180"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_180;
+	else if (!strcmp(output_transform, "flipped-270"))
+		output->transform = WL_OUTPUT_TRANSFORM_FLIPPED_270;
+	else {
+		weston_log("Invalid transform \"%s\" for output %s\n",
+						output_transform, output_name);
+		output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
+	}
+
+	free(output_transform);
+	output_transform = NULL;
+}
+
+static void
 output_section_done(void *data)
 {
 	struct drm_configured_output *output;
 
 	output = malloc(sizeof *output);
 
-	if (!output || !output_name || !output_mode) {
+	if (!output || !output_name || (output_name[0] == 'X') ||
+					(!output_mode && !output_transform)) {
 		free(output_name);
-		output_name = NULL;
 		free(output_mode);
+		free(output_transform);
+		output_name = NULL;
 		output_mode = NULL;
+		output_transform = NULL;
 		return;
 	}
 
@@ -2430,24 +2471,32 @@ output_section_done(void *data)
 	output->name = output_name;
 	output->mode = output_mode;
 
-	if (strcmp(output_mode, "off") == 0)
-		output->config = OUTPUT_CONFIG_OFF;
-	else if (strcmp(output_mode, "preferred") == 0)
-		output->config = OUTPUT_CONFIG_PREFERRED;
-	else if (strcmp(output_mode, "current") == 0)
-		output->config = OUTPUT_CONFIG_CURRENT;
-	else if (sscanf(output_mode, "%dx%d", &output->width, &output->height) == 2)
-		output->config = OUTPUT_CONFIG_MODE;
-	else if (check_for_modeline(output) == 0)
-		output->config = OUTPUT_CONFIG_MODELINE;
+	if (output_mode) {
+		if (strcmp(output_mode, "off") == 0)
+			output->config = OUTPUT_CONFIG_OFF;
+		else if (strcmp(output_mode, "preferred") == 0)
+			output->config = OUTPUT_CONFIG_PREFERRED;
+		else if (strcmp(output_mode, "current") == 0)
+			output->config = OUTPUT_CONFIG_CURRENT;
+		else if (sscanf(output_mode, "%dx%d",
+					&output->width, &output->height) == 2)
+			output->config = OUTPUT_CONFIG_MODE;
+		else if (check_for_modeline(output) == 0)
+			output->config = OUTPUT_CONFIG_MODELINE;
 
-	if (output->config != OUTPUT_CONFIG_INVALID)
-		wl_list_insert(&configured_output_list, &output->link);
-	else {
-		weston_log("Invalid mode \"%s\" for output %s\n",
-						output_mode, output_name);
-		drm_free_configured_output(output);
+		if (output->config == OUTPUT_CONFIG_INVALID)
+			weston_log("Invalid mode \"%s\" for output %s\n",
+							output_mode, output_name);
+		output_mode = NULL;
 	}
+
+	drm_output_set_transform(output);
+
+	wl_list_insert(&configured_output_list, &output->link);
+
+	if (output_transform)
+		free(output_transform);
+	output_transform = NULL;
 }
 
 WL_EXPORT struct weston_compositor *
@@ -2471,6 +2520,7 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 	const struct config_key drm_config_keys[] = {
 		{ "name", CONFIG_KEY_STRING, &output_name },
 		{ "mode", CONFIG_KEY_STRING, &output_mode },
+		{ "transform", CONFIG_KEY_STRING, &output_transform },
 	};
 
 	const struct config_section config_section[] = {
