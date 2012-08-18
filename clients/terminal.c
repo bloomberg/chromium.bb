@@ -20,6 +20,7 @@
  * OF THIS SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -2116,7 +2117,8 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	struct terminal *terminal = data;
 	char ch[MAX_RESPONSE];
 	uint32_t modifiers, serial;
-	int len = 0;
+	int ret, len = 0;
+	bool convert_utf8 = true;
 
 	modifiers = input_get_modifiers(input);
 	if ((modifiers & MOD_CONTROL_MASK) &&
@@ -2229,15 +2231,29 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 			else if (sym == '/') sym = 0x1F;
 			else if (sym == '8' || sym == '?') sym = 0x7F;
 		}
-		if ((terminal->mode & MODE_ALT_SENDS_ESC) &&
-		    (modifiers & MOD_ALT_MASK)) {
-			ch[len++] = 0x1b;
-		} else if (modifiers & MOD_ALT_MASK) {
-			sym = sym | 0x80;
+		if (modifiers & MOD_ALT_MASK) {
+			if (terminal->mode & MODE_ALT_SENDS_ESC) {
+				ch[len++] = 0x1b;
+			} else {
+				sym = sym | 0x80;
+				convert_utf8 = false;
+			}
 		}
 
-		if (sym < 256)
+		if ((sym < 128) ||
+		    (!convert_utf8 && sym < 256)) {
 			ch[len++] = sym;
+		} else {
+			ret = xkb_keysym_to_utf8(sym, ch + len,
+						 MAX_RESPONSE - len);
+			if (ret < 0)
+				fprintf(stderr,
+					"Warning: buffer too small to encode "
+					"UTF8 character\n");
+			else
+				len += ret;
+		}
+
 		break;
 	}
 
