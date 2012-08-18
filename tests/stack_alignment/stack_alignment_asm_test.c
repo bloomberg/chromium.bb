@@ -18,7 +18,8 @@
  */
 
 static struct nacl_irt_thread irt_thread;
-/* We use 'volatile' because we spin waiting for this variable to be set. */
+/* We use 'volatile' because we spin waiting for these variables to be set. */
+static volatile int32_t g_stack_in_use;
 static char *volatile g_stack_ptr;
 static char stack[0x1000];
 
@@ -69,11 +70,10 @@ void ThreadStart(char *stack_ptr) {
   /*
    * We do not have TLS set up in this thread, so we don't use libc
    * functions like assert() here.  Instead, we save stack_ptr and let
-   * the main thread check it.  Additionally, setting g_stack_ptr
-   * indicates that this thread has finished.
+   * the main thread check it.
    */
   g_stack_ptr = stack_ptr;
-  irt_thread.thread_exit(NULL);
+  irt_thread.thread_exit((int32_t *) &g_stack_in_use);
 }
 
 int main() {
@@ -84,12 +84,13 @@ int main() {
     char *stack_top = stack + sizeof(stack) - offset;
     printf("Checking offset %i: stack_top=%p...\n", offset, stack_top);
     g_stack_ptr = NULL;
+    g_stack_in_use = 1;
     void *dummy_tls = &dummy_tls;
     int rc = irt_thread.thread_create((void *) (uintptr_t) ThreadStartWrapper,
                                       stack_top, dummy_tls);
     assert(rc == 0);
     /* Spin until the thread exits. */
-    while (g_stack_ptr == NULL) {
+    while (g_stack_in_use) {
       sched_yield();
     }
     printf("got g_stack_ptr=%p\n", g_stack_ptr);
