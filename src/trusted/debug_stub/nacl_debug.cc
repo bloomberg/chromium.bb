@@ -100,18 +100,14 @@ void WINAPI NaClStubThread(void *ptr) {
 }
 
 void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
-  UNREFERENCED_PARAMETER(natp);
-
-  uint32_t id = IPlatform::GetCurrentThread();
-  IThread* thread = IThread::Create(id, natp);
+  // natp->thread_num values are 0-based indexes, but 0 is treated as
+  // "not a thread ID" by target.cc, so we add 1.
+  IThread* thread = IThread::Create(natp->thread_num + 1, natp);
   g_target->TrackThread(thread);
 }
 
 void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
-  UNREFERENCED_PARAMETER(natp);
-
-  uint32_t id = IPlatform::GetCurrentThread();
-  IThread* thread = IThread::Acquire(id);
+  IThread* thread = IThread::Acquire(natp->thread_num + 1);
   g_target->IgnoreThread(thread);
   IThread::Release(thread);  /* for Acquire */
   IThread::Release(thread);  /* for Create at NaClDebugThreadPrepDebugging */

@@ -32,11 +32,6 @@ static DWORD Reprotect(void *ptr, uint32_t len, DWORD newflags) {
 
 namespace port {
 
-// Called to request the platform start/stop the thread
-uint32_t IPlatform::GetCurrentThread() {
-  return static_cast<uint32_t>(GetCurrentThreadId());
-}
-
 void IPlatform::Relinquish(uint32_t msec) {
   Sleep(msec);
 }

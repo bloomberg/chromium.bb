@@ -21,9 +21,6 @@ namespace port {
 
 class IPlatform {
  public:
-  //  Get the id of the currently executing thread
-  static uint32_t GetCurrentThread();
-
   //  Request the current thread relinquish execution of msec milliseconds
   static void Relinquish(uint32_t msec);
 

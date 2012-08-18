@@ -33,11 +33,6 @@
 
 namespace port {
 
-// Get the OS id of this thread
-uint32_t IPlatform::GetCurrentThread() {
-  return static_cast<uint32_t>(syscall(SYS_gettid));
-}
-
 void IPlatform::Relinquish(uint32_t msec) {
   usleep(msec * 1000);
 }
