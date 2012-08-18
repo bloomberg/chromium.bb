@@ -59,6 +59,8 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
+#else
+#include "chrome/browser/ui/webui/ntp/android/bookmarks_handler.h"
 #endif
 
 using content::BrowserThread;
@@ -127,7 +129,10 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
   }
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  // These handlers are specific to the Android NTP page.
+  web_ui->AddMessageHandler((new BookmarksHandler()));
+#else
   // Android uses native UI for sync setup.
   if (NTPLoginHandler::ShouldShow(GetProfile()))
     web_ui->AddMessageHandler(new NTPLoginHandler());

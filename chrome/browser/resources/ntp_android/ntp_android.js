@@ -472,7 +472,7 @@ cr.define('ntp', function() {
       browseToBookmarkFolder(item.id);
     } else {
       if (bookmarkShortcutMode) {
-        chrome.send('shortcutToBookmark', [item.id]);
+        chrome.send('createHomeScreenBookmarkShortcut', [item.id]);
       } else if (!!item.url) {
         window.location = item.url;
       }
@@ -1107,7 +1107,7 @@ cr.define('ntp', function() {
 
       case ContextMenuItemIds.BOOKMARK_SHORTCUT:
         if (contextMenuUrl != null)
-          chrome.send('shortcutToBookmark', [contextMenuItem.id]);
+          chrome.send('createHomeScreenBookmarkShortcut', [contextMenuItem.id]);
         break;
 
       case ContextMenuItemIds.RECENTLY_CLOSED_REMOVE:
