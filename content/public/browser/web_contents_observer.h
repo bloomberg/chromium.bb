@@ -126,6 +126,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // It is safe to delete 'this' from here.
   virtual void WebContentsDestroyed(WebContents* web_contents) {}
 
+  // Called when the user agent override for a WebContents has been changed.
+  virtual void UserAgentOverrideSet(const std::string& user_agent) {}
+
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

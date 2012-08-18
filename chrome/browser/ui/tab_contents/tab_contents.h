@@ -255,6 +255,7 @@ class TabContents : public content::WebContentsObserver {
 
   // content::WebContentsObserver overrides:
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
 
  private:
   // Used to retrieve this object from |web_contents_|, which is placed in

@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -57,6 +58,8 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     url1_ = GURL("http://1");
     url2_ = GURL("http://2");
     url3_ = GURL("http://3");
+    user_agent_override_ = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
+        " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19";
   }
 
   ~TabRestoreServiceTest() {
@@ -139,6 +142,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   GURL url1_;
   GURL url2_;
   GURL url3_;
+  std::string user_agent_override_;
   scoped_ptr<TabRestoreService> service_;
   TabRestoreTimeFactory* time_factory_;
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
@@ -165,19 +169,21 @@ TEST_F(TabRestoreServiceTest, Basic) {
   EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
   EXPECT_TRUE(url2_ == tab->navigations[1].virtual_url());
   EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());
+  EXPECT_EQ("", tab->user_agent_override);
   EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
             tab->timestamp.ToInternalValue());
 
   NavigateToIndex(1);
 
-  // And check again.
+  // And check again, but set the user agent override this time.
+  contents()->SetUserAgentOverride(user_agent_override_);
   service_->CreateHistoricalTab(contents(), -1);
 
   // There should be two entries now.
   ASSERT_EQ(2U, service_->entries().size());
 
-  // Make sure the entry matches
+  // Make sure the entry matches.
   entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   tab = static_cast<Tab*>(entry);
@@ -186,6 +192,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   EXPECT_EQ(url1_, tab->navigations[0].virtual_url());
   EXPECT_EQ(url2_, tab->navigations[1].virtual_url());
   EXPECT_EQ(url3_, tab->navigations[2].virtual_url());
+  EXPECT_EQ(user_agent_override_, tab->user_agent_override);
   EXPECT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
             tab->timestamp.ToInternalValue());

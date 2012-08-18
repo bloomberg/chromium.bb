@@ -392,6 +392,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   tab.pinned = false;
   tab.navigations.push_back(nav1);
   tab.navigations.push_back(nav2);
+  tab.user_agent_override = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
+      " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19";
 
   ASSERT_EQ(1, browser()->tab_count());
 
@@ -405,8 +407,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
     observer.Wait();
   }
   ASSERT_EQ(1, browser()->tab_count());
-  VerifyNavigationEntries(
-      chrome::GetWebContentsAt(browser(), 0)->GetController(), url1, url2);
+  content::WebContents* web_contents = chrome::GetWebContentsAt(browser(), 0);
+  VerifyNavigationEntries(web_contents->GetController(), url1, url2);
+  ASSERT_EQ(tab.user_agent_override, web_contents->GetUserAgentOverride());
 
   // Restore in a new tab.
   {
@@ -419,8 +422,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   }
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(0, browser()->active_index());
-  VerifyNavigationEntries(
-      chrome::GetWebContentsAt(browser(), 1)->GetController(), url1, url2);
+  web_contents = chrome::GetWebContentsAt(browser(), 1);
+  VerifyNavigationEntries(web_contents->GetController(), url1, url2);
+  ASSERT_EQ(tab.user_agent_override, web_contents->GetUserAgentOverride());
 
   // Restore in a new window.
   ui_test_utils::BrowserAddedObserver browser_observer;
@@ -429,8 +433,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
 
   ASSERT_EQ(1, new_browser->tab_count());
-  VerifyNavigationEntries(
-      chrome::GetWebContentsAt(new_browser, 0)->GetController(), url1, url2);
+  web_contents = chrome::GetWebContentsAt(new_browser, 0);
+  VerifyNavigationEntries(web_contents->GetController(), url1, url2);
+  ASSERT_EQ(tab.user_agent_override, web_contents->GetUserAgentOverride());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
@@ -442,6 +447,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
         std::string(), content::PAGE_TRANSITION_TYPED);
   TabNavigation nav2(0, url2, content::Referrer(), ASCIIToUTF16("two"),
         std::string(), content::PAGE_TRANSITION_TYPED);
+  nav1.set_is_overriding_user_agent(false);
+  nav2.set_is_overriding_user_agent(true);
 
   // Set up the restore data -- one window with two tabs.
   std::vector<const SessionWindow*> session;
@@ -451,6 +458,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   tab1.current_navigation_index = 0;
   tab1.pinned = true;
   tab1.navigations.push_back(nav1);
+  tab1.user_agent_override = "user_agent_override";
   window.tabs.push_back(&tab1);
 
   SessionTab tab2;
@@ -458,6 +466,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   tab2.current_navigation_index = 0;
   tab2.pinned = false;
   tab2.navigations.push_back(nav2);
+  tab2.user_agent_override = "user_agent_override_2";
   window.tabs.push_back(&tab2);
 
   session.push_back(static_cast<const SessionWindow*>(&window));
@@ -469,8 +478,25 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   ASSERT_EQ(2u, BrowserList::size());
   ASSERT_EQ(2, new_browser->tab_count());
 
-  ASSERT_EQ(url1, chrome::GetWebContentsAt(new_browser, 0)->GetURL());
-  ASSERT_EQ(url2, chrome::GetWebContentsAt(new_browser, 1)->GetURL());
+  content::WebContents* web_contents_1 =
+      chrome::GetWebContentsAt(new_browser, 0);
+  content::WebContents* web_contents_2 =
+      chrome::GetWebContentsAt(new_browser, 1);
+  ASSERT_EQ(url1, web_contents_1->GetURL());
+  ASSERT_EQ(url2, web_contents_2->GetURL());
+
+  // Check user agent override state.
+  ASSERT_EQ(tab1.user_agent_override, web_contents_1->GetUserAgentOverride());
+  ASSERT_EQ(tab2.user_agent_override, web_contents_2->GetUserAgentOverride());
+
+  content::NavigationEntry* entry =
+      web_contents_1->GetController().GetActiveEntry();
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(nav1.is_overriding_user_agent(), entry->GetIsOverridingUserAgent());
+
+  entry = web_contents_2->GetController().GetActiveEntry();
+  ASSERT_TRUE(entry);
+  ASSERT_EQ(nav2.is_overriding_user_agent(), entry->GetIsOverridingUserAgent());
 
   // The SessionWindow destructor deletes the tabs, so we have to clear them
   // here to avoid a crash.
@@ -725,6 +751,32 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ShareProcessesOnRestore) {
   ASSERT_EQ(3, new_browser->tab_count());
 
   ASSERT_EQ(expected_process_count, RenderProcessHostCount());
+}
+
+// Test that changing the user agent override will persist it to disk.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
+  // Create a tab with an overridden user agent.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ASSERT_EQ(0, browser()->active_index());
+  chrome::GetWebContentsAt(browser(), 0)->SetUserAgentOverride("override");
+
+  // Create a tab without an overridden user agent.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_EQ(1, browser()->active_index());
+
+  // Kill the original browser then open a new one to trigger a restore.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(2, new_browser->tab_count());
+  ASSERT_EQ(1, new_browser->active_index());
+
+  // Confirm that the user agent overrides are properly set.
+  EXPECT_EQ("override",
+      chrome::GetWebContentsAt(new_browser, 0)->GetUserAgentOverride());
+  EXPECT_EQ("",
+      chrome::GetWebContentsAt(new_browser, 1)->GetUserAgentOverride());
 }
 
 // Regression test for crbug.com/125958. When restoring a pinned selected tab in

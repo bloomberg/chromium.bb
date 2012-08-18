@@ -379,7 +379,8 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
                                      static_cast<int>(tab_i) ==
                                          window->selected_tab_index,
                                      tab.pinned, tab.from_last_session,
-                                     tab.session_storage_namespace);
+                                     tab.session_storage_namespace,
+                                     tab.user_agent_override);
         if (restored_tab) {
           restored_tab->GetController().LoadIfNecessary();
           RecordAppLaunch(profile(), tab);
@@ -545,6 +546,9 @@ void TabRestoreService::PopulateTab(Tab* tab,
     if (extension)
       tab->extension_app_id = extension->id();
   }
+
+  tab->user_agent_override =
+      controller->GetWebContents()->GetUserAgentOverride();
 
   // TODO(ajwong): This does not correctly handle storage for isolated apps.
   tab->session_storage_namespace =
@@ -997,7 +1001,8 @@ TabRestoreServiceDelegate* TabRestoreService::RestoreTab(
                                  tab.current_navigation_index,
                                  tab.from_last_session,
                                  tab.extension_app_id,
-                                 tab.session_storage_namespace);
+                                 tab.session_storage_namespace,
+                                 tab.user_agent_override);
   } else {
     // We only respsect the tab's original browser if there's no disposition.
     if (disposition == UNKNOWN && tab.has_browser())
@@ -1031,7 +1036,8 @@ TabRestoreServiceDelegate* TabRestoreService::RestoreTab(
         disposition != NEW_BACKGROUND_TAB,
         tab.pinned,
         tab.from_last_session,
-        tab.session_storage_namespace);
+        tab.session_storage_namespace,
+        tab.user_agent_override);
     web_contents->GetController().LoadIfNecessary();
   }
   RecordAppLaunch(profile(), tab);

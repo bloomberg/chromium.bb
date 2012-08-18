@@ -697,7 +697,9 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
 TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
-  std::string user_agent_override("overridden user agent");
+  std::string user_agent_override = "Mozilla/5.0 (X11; Linux x86_64) "
+      "AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.45 "
+      "Safari/535.19";
 
   TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
                      ASCIIToUTF16("abc"), std::string(),

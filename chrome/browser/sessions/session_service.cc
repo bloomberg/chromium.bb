@@ -482,6 +482,19 @@ void SessionService::SetSelectedTabInWindow(const SessionID& window_id,
   ScheduleCommand(CreateSetSelectedTabInWindow(window_id, index));
 }
 
+void SessionService::SetTabUserAgentOverride(
+    const SessionID& window_id,
+    const SessionID& tab_id,
+    const std::string& user_agent_override) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(CreateSetTabUserAgentOverrideCommand(
+                      kCommandSetTabUserAgentOverride,
+                      tab_id.id(),
+                      user_agent_override));
+}
+
 SessionService::Handle SessionService::GetLastSession(
     CancelableRequestConsumerBase* consumer,
     const SessionCallback& callback) {
@@ -731,19 +744,6 @@ void SessionService::SetTabExtensionAppID(
                       kCommandSetExtensionAppID,
                       tab_id.id(),
                       extension_app_id));
-}
-
-void SessionService::SetTabUserAgentOverride(
-    const SessionID& window_id,
-    const SessionID& tab_id,
-    const std::string& user_agent_override) {
-  if (!ShouldTrackChangesToWindow(window_id))
-    return;
-
-  ScheduleCommand(CreateSetTabUserAgentOverrideCommand(
-                      kCommandSetTabUserAgentOverride,
-                      tab_id.id(),
-                      user_agent_override));
 }
 
 SessionCommand* SessionService::CreateSetSelectedTabInWindow(

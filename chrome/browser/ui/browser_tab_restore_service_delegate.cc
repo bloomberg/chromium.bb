@@ -58,10 +58,12 @@ WebContents* BrowserTabRestoreServiceDelegate::AddRestoredTab(
       bool select,
       bool pin,
       bool from_last_session,
-      SessionStorageNamespace* storage_namespace) {
+      SessionStorageNamespace* storage_namespace,
+      const std::string& user_agent_override) {
   return chrome::AddRestoredTab(browser_, navigations, tab_index,
                                 selected_navigation, extension_app_id, select,
-                                pin, from_last_session, storage_namespace);
+                                pin, from_last_session, storage_namespace,
+                                user_agent_override);
 }
 
 void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
@@ -69,10 +71,11 @@ void BrowserTabRestoreServiceDelegate::ReplaceRestoredTab(
       int selected_navigation,
       bool from_last_session,
       const std::string& extension_app_id,
-      SessionStorageNamespace* session_storage_namespace) {
+      SessionStorageNamespace* session_storage_namespace,
+      const std::string& user_agent_override) {
   chrome::ReplaceRestoredTab(browser_, navigations, selected_navigation,
                              from_last_session, extension_app_id,
-                             session_storage_namespace);
+                             session_storage_namespace, user_agent_override);
 }
 
 void BrowserTabRestoreServiceDelegate::CloseTab() {

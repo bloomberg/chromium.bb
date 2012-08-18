@@ -40,7 +40,8 @@ content::WebContents* AddRestoredTab(
     bool select,
     bool pin,
     bool from_last_session,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace,
+    const std::string& user_agent_override) {
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
   // TODO(ajwong): Remove the temporary session_storage_namespace_map when
   // we teach session restore to understand that one tab can have multiple
@@ -60,6 +61,7 @@ content::WebContents* AddRestoredTab(
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       browser->profile(), navigations, &entries);
+  new_tab->SetUserAgentOverride(user_agent_override);
   new_tab->GetController().Restore(
       selected_navigation, from_last_session, &entries);
   DCHECK_EQ(0u, entries.size());
@@ -100,7 +102,8 @@ void ReplaceRestoredTab(
     int selected_navigation,
     bool from_last_session,
     const std::string& extension_app_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace,
+    const std::string& user_agent_override) {
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
   // TODO(ajwong): Remove the temporary session_storage_namespace_map when
   // we teach session restore to understand that one tab can have multiple
@@ -117,6 +120,7 @@ void ReplaceRestoredTab(
       session_storage_namespace_map);
   tab_contents->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   WebContents* replacement = tab_contents->web_contents();
+  replacement->SetUserAgentOverride(user_agent_override);
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       browser->profile(), navigations, &entries);

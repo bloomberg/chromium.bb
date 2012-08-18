@@ -165,6 +165,11 @@ class SessionService : public BaseSessionService,
   // Sets the index of the selected tab in the specified window.
   void SetSelectedTabInWindow(const SessionID& window_id, int index);
 
+  // Sets the user agent override of the specified tab.
+  void SetTabUserAgentOverride(const SessionID& window_id,
+                               const SessionID& tab_id,
+                               const std::string& user_agent_override);
+
   // Callback from GetSavedSession of GetLastSession.
   //
   // The contents of the supplied vector are deleted after the callback is
@@ -218,11 +223,6 @@ class SessionService : public BaseSessionService,
   void SetTabExtensionAppID(const SessionID& window_id,
                             const SessionID& tab_id,
                             const std::string& extension_app_id);
-
-  // Sets the user agent override of the specified tab.
-  void SetTabUserAgentOverride(const SessionID& window_id,
-                               const SessionID& tab_id,
-                               const std::string& user_agent_override);
 
   // Methods to create the various commands. It is up to the caller to delete
   // the returned the SessionCommand* object.
