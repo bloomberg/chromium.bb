@@ -5786,6 +5786,14 @@
    fun:_ZN15ManagedModeTestC2Ev
    fun:_ZN*ManagedModeTest_*
 }
+{
+   bug_143545
+   Memcheck:Uninitialized
+   fun:_ZN4aura10RootWindow10ShowCursorEb
+   fun:_ZN3ash5Shell10ShowCursorEb
+   fun:_ZN3ash13CursorManager10ShowCursorEb
+   fun:_ZN3ash4test11AshTestBase5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

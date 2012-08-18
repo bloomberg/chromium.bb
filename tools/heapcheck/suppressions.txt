@@ -1481,3 +1481,11 @@
    ...
    fun:ExtensionAction::GetIconAnimation
 }
+{
+   bug_143431
+   Heapcheck:Leak
+   ...
+   fun:ManagedMode::ManagedMode
+   fun:*FakeManagedMode
+   fun:ManagedModeTest::ManagedModeTest
+}
