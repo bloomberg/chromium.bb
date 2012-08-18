@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/storage_partition.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -25,7 +26,8 @@ BrowsingDataLocalStorageHelper::LocalStorageInfo::~LocalStorageInfo() {}
 BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
     Profile* profile)
     : dom_storage_context_(
-          BrowserContext::GetDefaultDOMStorageContext(profile)),
+          BrowserContext::GetDefaultStoragePartition(profile)->
+              GetDOMStorageContext()),
       is_fetching_(false) {
   DCHECK(dom_storage_context_);
 }

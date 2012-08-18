@@ -135,12 +135,18 @@ class SiteInstanceTest : public testing::Test {
 
     content::GetContentClient()->set_browser_for_testing(old_browser_client_);
     content::SetContentClient(old_client_);
-    MessageLoop::current()->RunAllPending();
-    message_loop_.RunAllPending();
   }
 
   void set_privileged_process_id(int process_id) {
     browser_client_.set_privileged_process_id(process_id);
+  }
+
+  void DrainMessageLoops() {
+    // We don't just do this in TearDown() because we create TestBrowserContext
+    // objects in each test, which will be destructed before
+    // TearDown() is called.
+    MessageLoop::current()->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
  private:
@@ -258,7 +264,7 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
 
   // Make sure that we flush any messages related to the above WebContentsImpl
   // destruction.
-  MessageLoop::current()->RunAllPending();
+  DrainMessageLoops();
 
   EXPECT_EQ(2, site_delete_counter);
   EXPECT_EQ(2, browsing_delete_counter);
@@ -303,6 +309,8 @@ TEST_F(SiteInstanceTest, CloneNavigationEntry) {
 
   // Both BrowsingInstances are also now deleted
   EXPECT_EQ(2, browsing_delete_counter);
+
+  DrainMessageLoops();
 }
 
 // Test to ensure GetProcess returns and creates processes correctly.
@@ -322,6 +330,8 @@ TEST_F(SiteInstanceTest, GetProcess) {
   scoped_ptr<content::RenderProcessHost> host2(instance2->GetProcess());
   EXPECT_TRUE(host2.get() != NULL);
   EXPECT_NE(host1.get(), host2.get());
+
+  DrainMessageLoops();
 }
 
 // Test to ensure SetSite and site() work properly.
@@ -335,6 +345,8 @@ TEST_F(SiteInstanceTest, SetSite) {
   EXPECT_EQ(GURL("http://google.com"), instance->GetSite());
 
   EXPECT_TRUE(instance->HasSite());
+
+  DrainMessageLoops();
 }
 
 // Test to ensure GetSiteForURL properly returns sites for URLs.
@@ -368,6 +380,8 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
   // "file://home/" as the site, which seems broken.
   // test_url = GURL("file://home/");
   // EXPECT_EQ(GURL(), SiteInstanceImpl::GetSiteForURL(NULL, test_url));
+
+  DrainMessageLoops();
 }
 
 // Test of distinguishing URLs from different sites.  Most of this logic is
@@ -394,6 +408,8 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_https));
   EXPECT_TRUE(SiteInstance::IsSameWebSite(NULL, url_javascript, url_foo_port));
+
+  DrainMessageLoops();
 }
 
 // Test to ensure that there is only one SiteInstance per site in a given
@@ -468,6 +484,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 
   // browsing_instances will be deleted when their SiteInstances are deleted.
   // The processes will be unregistered when the RPH scoped_ptrs go away.
+
+  DrainMessageLoops();
 }
 
 // Test to ensure that there is only one RenderProcessHost per site for an
@@ -553,6 +571,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
 
   // browsing_instances will be deleted when their SiteInstances are deleted.
   // The processes will be unregistered when the RPH scoped_ptrs go away.
+
+  DrainMessageLoops();
 }
 
 static SiteInstanceImpl* CreateSiteInstance(
@@ -618,6 +638,8 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   }
 
   STLDeleteContainerPointers(hosts.begin(), hosts.end());
+
+  DrainMessageLoops();
 }
 
 // Test to ensure that HasWrongProcessForURL behaves properly for different
@@ -650,4 +672,6 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
       GURL("javascript:alert(document.location.href);")));
 
   EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://settings")));
+
+  DrainMessageLoops();
 }

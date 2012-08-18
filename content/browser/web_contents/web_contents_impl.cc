@@ -54,6 +54,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -1247,14 +1248,17 @@ void WebContentsImpl::CreateNewWindow(
                           params.opener_suppressed ? NULL : this);
 
   // We must assign the SessionStorageNamespace before calling Init().
+  //
+  // http://crbug.com/142685
   const std::string& partition_id =
       content::GetContentClient()->browser()->
           GetStoragePartitionIdForSiteInstance(GetBrowserContext(),
                                                site_instance);
+  content::StoragePartition* partition =
+      BrowserContext::GetStoragePartition(GetBrowserContext(),
+                                          site_instance);
   DOMStorageContextImpl* dom_storage_context =
-      static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDOMStorageContextByPartitionId(
-              GetBrowserContext(), partition_id));
+      static_cast<DOMStorageContextImpl*>(partition->GetDOMStorageContext());
   SessionStorageNamespaceImpl* session_storage_namespace_impl =
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
   CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));

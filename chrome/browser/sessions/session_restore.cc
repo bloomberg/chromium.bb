@@ -43,6 +43,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/session_storage_namespace.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/network_change_notifier.h"
@@ -740,8 +741,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (windows->empty()) {
       // Restore was unsuccessful. The DOM storage system can also delete its
       // data, since no session restore will happen at a later point in time.
-      content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
-          StartScavengingUnusedSessionStorage();
+      content::BrowserContext::GetDefaultStoragePartition(profile_)->
+          GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
       return FinishedTabCreation(false, false);
     }
 
@@ -834,8 +835,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // sessionStorages needed for the session restore have now been recreated
     // by RestoreTab. Now it's safe for the DOM storage system to start
     // deleting leftover data.
-    content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
-        StartScavengingUnusedSessionStorage();
+    content::BrowserContext::GetDefaultStoragePartition(profile_)->
+        GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
     return last_browser;
   }
 
@@ -893,8 +894,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
     if (!tab.session_storage_persistent_id.empty()) {
       session_storage_namespace =
-          content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
-          RecreateSessionStorage(tab.session_storage_persistent_id);
+          content::BrowserContext::GetDefaultStoragePartition(profile_)->
+              GetDOMStorageContext()->RecreateSessionStorage(
+                  tab.session_storage_persistent_id);
     }
 
     WebContents* web_contents =

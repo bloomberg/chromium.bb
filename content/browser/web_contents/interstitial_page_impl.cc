@@ -32,6 +32,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
@@ -487,14 +488,10 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   BrowserContext* browser_context = web_contents()->GetBrowserContext();
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::Create(browser_context);
-  const std::string& partition_id =
-      content::GetContentClient()->browser()->
-          GetStoragePartitionIdForSiteInstance(browser_context,
-                                               site_instance);
   DOMStorageContextImpl* dom_storage_context =
       static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDOMStorageContextByPartitionId(browser_context,
-                                                            partition_id));
+          BrowserContext::GetStoragePartition(
+              browser_context, site_instance)->GetDOMStorageContext());
   SessionStorageNamespaceImpl* session_storage_namespace_impl =
       new SessionStorageNamespaceImpl(dom_storage_context);
 

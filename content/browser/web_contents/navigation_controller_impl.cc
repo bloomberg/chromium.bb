@@ -27,6 +27,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
@@ -1269,11 +1270,15 @@ NavigationControllerImpl::GetSessionStorageNamespace(
     return it->second.get();
 
   // Create one if no one has accessed session storage for this partition yet.
+  //
+  // TODO(ajwong): Should this use the |partition_id| directly rather than
+  // re-lookup via |instance|?  http://crbug.com/142685
+  content::StoragePartition* partition =
+              BrowserContext::GetStoragePartition(browser_context_, instance);
   SessionStorageNamespaceImpl* session_storage_namespace =
       new SessionStorageNamespaceImpl(
           static_cast<DOMStorageContextImpl*>(
-              BrowserContext::GetDOMStorageContextByPartitionId(
-                  browser_context_, partition_id)));
+              partition->GetDOMStorageContext()));
   session_storage_namespace_map_[partition_id] = session_storage_namespace;
 
   return session_storage_namespace;

@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/storage_partition.h"
+#include "content/browser/storage_partition_impl.h"
 
-#include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
-#include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/database/database_tracker.h"
@@ -15,14 +12,14 @@
 
 namespace content {
 
-StoragePartition::StoragePartition(
+StoragePartitionImpl::StoragePartitionImpl(
     const FilePath& partition_path,
     quota::QuotaManager* quota_manager,
     ChromeAppCacheService* appcache_service,
     fileapi::FileSystemContext* filesystem_context,
     webkit_database::DatabaseTracker* database_tracker,
     DOMStorageContextImpl* dom_storage_context,
-    IndexedDBContext* indexed_db_context)
+    IndexedDBContextImpl* indexed_db_context)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -32,24 +29,25 @@ StoragePartition::StoragePartition(
       indexed_db_context_(indexed_db_context) {
 }
 
-StoragePartition::~StoragePartition() {
+StoragePartitionImpl::~StoragePartitionImpl() {
   // These message loop checks are just to avoid leaks in unittests.
-  if (database_tracker() &&
+  if (GetDatabaseTracker() &&
       BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&webkit_database::DatabaseTracker::Shutdown,
-                   database_tracker()));
+                   GetDatabaseTracker()));
   }
 
-  if (dom_storage_context())
-    dom_storage_context()->Shutdown();
+  if (GetDOMStorageContext())
+    GetDOMStorageContext()->Shutdown();
 }
 
 // TODO(ajwong): Break the direct dependency on |context|. We only
 // need 3 pieces of info from it.
-StoragePartition* StoragePartition::Create(BrowserContext* context,
-                                           const FilePath& partition_path) {
+StoragePartitionImpl* StoragePartitionImpl::Create(
+    BrowserContext* context,
+    const FilePath& partition_path) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -92,13 +90,37 @@ StoragePartition* StoragePartition::Create(BrowserContext* context,
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
 
-  return new StoragePartition(partition_path,
-                              quota_manager,
-                              appcache_service,
-                              filesystem_context,
-                              database_tracker,
-                              dom_storage_context,
-                              indexed_db_context);
+  return new StoragePartitionImpl(partition_path,
+                                  quota_manager,
+                                  appcache_service,
+                                  filesystem_context,
+                                  database_tracker,
+                                  dom_storage_context,
+                                  indexed_db_context);
+}
+
+quota::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
+  return quota_manager_;
+}
+
+ChromeAppCacheService* StoragePartitionImpl::GetAppCacheService() {
+  return appcache_service_;
+}
+
+fileapi::FileSystemContext* StoragePartitionImpl::GetFileSystemContext() {
+  return filesystem_context_;
+}
+
+webkit_database::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
+  return database_tracker_;
+}
+
+DOMStorageContextImpl* StoragePartitionImpl::GetDOMStorageContext() {
+  return dom_storage_context_;
+}
+
+IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
+  return indexed_db_context_;
 }
 
 }  // namespace content

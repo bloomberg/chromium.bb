@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/storage_partition_map.h"
+#include "content/browser/storage_partition_impl_map.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/storage_partition.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
@@ -22,19 +22,20 @@ namespace content {
 const FilePath::CharType kStoragePartitionDirName[] =
     FILE_PATH_LITERAL("Storage Partitions");
 
-StoragePartitionMap::StoragePartitionMap(
+StoragePartitionImplMap::StoragePartitionImplMap(
     BrowserContext* browser_context)
     : browser_context_(browser_context) {
 }
 
-StoragePartitionMap::~StoragePartitionMap() {
+StoragePartitionImplMap::~StoragePartitionImplMap() {
   STLDeleteContainerPairSecondPointers(partitions_.begin(),
                                        partitions_.end());
 }
 
-StoragePartition* StoragePartitionMap::Get(const std::string& partition_id) {
+StoragePartitionImpl* StoragePartitionImplMap::Get(
+    const std::string& partition_id) {
   // Find the previously created partition if it's available.
-  std::map<std::string, StoragePartition*>::const_iterator it =
+  std::map<std::string, StoragePartitionImpl*>::const_iterator it =
       partitions_.find(partition_id);
   if (it != partitions_.end())
     return it->second;
@@ -42,14 +43,14 @@ StoragePartition* StoragePartitionMap::Get(const std::string& partition_id) {
   // There was no previous partition, so let's make a new one.
   FilePath partition_path = browser_context_->GetPath();
   if (!partition_id.empty()) {
-    // TODO(ajwong): This should check the pth is valid?
+    // TODO(ajwong): This should check the path is valid?
     CHECK(IsStringASCII(partition_id));
     partition_path = partition_path.Append(kStoragePartitionDirName)
         .AppendASCII(partition_id);
   }
 
-  StoragePartition* storage_partition =
-      StoragePartition::Create(browser_context_, partition_path);
+  StoragePartitionImpl* storage_partition =
+      StoragePartitionImpl::Create(browser_context_, partition_path);
   partitions_[partition_id] = storage_partition;
 
   PostCreateInitialization(storage_partition, partition_path);
@@ -64,25 +65,25 @@ StoragePartition* StoragePartitionMap::Get(const std::string& partition_id) {
   return storage_partition;
 }
 
-void StoragePartitionMap::ForEach(
-    const base::Callback<void(StoragePartition*)>& callback) {
-  for (std::map<std::string, StoragePartition*>::const_iterator it =
+void StoragePartitionImplMap::ForEach(
+    const BrowserContext::StoragePartitionCallback& callback) {
+  for (std::map<std::string, StoragePartitionImpl*>::const_iterator it =
            partitions_.begin();
        it != partitions_.end();
        ++it) {
-    callback.Run(it->second);
+    callback.Run(it->first, it->second);
   }
 }
 
-void StoragePartitionMap::PostCreateInitialization(
-    StoragePartition* partition,
+void StoragePartitionImplMap::PostCreateInitialization(
+    StoragePartitionImpl* partition,
     const FilePath& partition_path) {
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                   partition->appcache_service(),
+                   partition->GetAppCacheService(),
                    browser_context_->IsOffTheRecord() ? FilePath() :
                        partition_path.Append(kAppCacheDirname),
                        browser_context_->GetResourceContext(),

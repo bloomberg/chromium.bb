@@ -26,6 +26,7 @@ class RendererMainThread;
 class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
+class StoragePartitionImpl;
 
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).
@@ -41,11 +42,18 @@ class RenderWidgetHostImpl;
 // keeps a list of RenderView (renderer) and WebContentsImpl (browser) which
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
+//
+// A RenderProcessHost is also associated with one and only one
+// StoragePartition.  This allows us to implement strong storage isolation
+// because all the IPCs from the RenderViews (renderer) will only ever be able
+// to access the partition they are assigned to.
 class CONTENT_EXPORT RenderProcessHostImpl
     : public RenderProcessHost,
       public ChildProcessLauncher::Client {
  public:
-  RenderProcessHostImpl(BrowserContext* browser_context, bool is_guest);
+  RenderProcessHostImpl(BrowserContext* browser_context,
+                        StoragePartitionImpl* storage_partition_impl,
+                        bool is_guest);
   virtual ~RenderProcessHostImpl();
 
   // RenderProcessHost implementation (public portion).
@@ -258,6 +266,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int id_;
 
   BrowserContext* browser_context_;
+
+  // Owned by |browser_context_|.
+  StoragePartitionImpl* storage_partition_impl_;
 
   // True if the process can be shut down suddenly.  If this is true, then we're
   // sure that all the RenderViews in the process can be shutdown suddenly.  If

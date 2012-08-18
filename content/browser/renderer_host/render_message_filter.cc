@@ -276,7 +276,8 @@ RenderMessageFilter::RenderMessageFilter(
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
-    MediaObserver* media_observer)
+    MediaObserver* media_observer,
+    DOMStorageContextImpl* dom_storage_context)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),
@@ -284,9 +285,7 @@ RenderMessageFilter::RenderMessageFilter(
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),
-      dom_storage_context_(static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDOMStorageContext(browser_context,
-                                               render_process_id))),
+      dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
       cpu_usage_(0),
       media_observer_(media_observer) {

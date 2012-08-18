@@ -78,6 +78,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/locale_settings.h"
@@ -647,8 +648,8 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
   // to start deleting leftover data.
   if (pref.type != SessionStartupPref::LAST &&
       !HasPendingUncleanExit(profile_)) {
-    content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
-        StartScavengingUnusedSessionStorage();
+    content::BrowserContext::GetDefaultStoragePartition(profile_)->
+        GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
   }
 
   return true;

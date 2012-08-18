@@ -52,6 +52,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_errors.h"
 #include "net/base/server_bound_cert_service.h"
@@ -373,9 +374,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_LOCAL_STORAGE) {
     waiting_for_clear_local_storage_ = true;
-    if (!dom_storage_context_)
+    if (!dom_storage_context_) {
       dom_storage_context_ =
-          BrowserContext::GetDefaultDOMStorageContext(profile_);
+          BrowserContext::GetDefaultStoragePartition(profile_)->
+              GetDOMStorageContext();
+    }
     ClearLocalStorageOnUIThread();
   }
 

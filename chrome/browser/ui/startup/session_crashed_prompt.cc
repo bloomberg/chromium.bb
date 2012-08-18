@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -72,8 +73,8 @@ SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
   // If the info bar wasn't accepted, it was either dismissed or expired. In
   // that case, session restore won't happen.
   if (!accepted_ && !removed_notification_received_) {
-    content::BrowserContext::GetDefaultDOMStorageContext(
-        browser_->profile())->StartScavengingUnusedSessionStorage();
+    content::BrowserContext::GetDefaultStoragePartition(browser_->profile())->
+        GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
   }
 }
 
@@ -120,8 +121,8 @@ void SessionCrashedInfoBarDelegate::Observe(
       this)
     return;
   if (!accepted_) {
-    content::BrowserContext::GetDefaultDOMStorageContext(
-        browser_->profile())->StartScavengingUnusedSessionStorage();
+    content::BrowserContext::GetDefaultStoragePartition(browser_->profile())->
+        GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
     removed_notification_received_ = true;
   }
 }

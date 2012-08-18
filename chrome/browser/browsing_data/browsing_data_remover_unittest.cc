@@ -26,6 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/base/server_bound_cert_store.h"
@@ -316,7 +317,8 @@ class RemoveLocalStorageTester : public BrowsingDataRemoverTester {
   explicit RemoveLocalStorageTester(TestingProfile* profile)
       : profile_(profile), dom_storage_context_(NULL) {
     dom_storage_context_ =
-        content::BrowserContext::GetDefaultDOMStorageContext(profile);
+        content::BrowserContext::GetDefaultStoragePartition(profile)->
+            GetDOMStorageContext();
   }
 
   // Returns true, if the given origin URL exists.

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 
+#include "base/callback_forward.h"
 #include "base/hash_tables.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
@@ -40,27 +41,39 @@ class DownloadManagerDelegate;
 class GeolocationPermissionContext;
 class IndexedDBContext;
 class ResourceContext;
+class SiteInstance;
 class SpeechRecognitionPreferences;
+class StoragePartition;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
 // thread.
 class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
  public:
+  // Used in ForEachStoragePartition(). The first argument is the partition id.
+  // The second argument is the StoragePartition object for that partition id.
+  typedef base::Callback<void(const std::string&, StoragePartition*)>
+      StoragePartitionCallback;
+
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
   static quota::QuotaManager* GetQuotaManager(BrowserContext* browser_context);
-  static DOMStorageContext* GetDefaultDOMStorageContext(
-      BrowserContext* browser_context);
-  static DOMStorageContext* GetDOMStorageContext(
-      BrowserContext* browser_context, int renderer_child_id);
-  static content::DOMStorageContext* GetDOMStorageContextByPartitionId(
-      BrowserContext* browser_context, const std::string& partition_id);
   static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
   static webkit_database::DatabaseTracker* GetDatabaseTracker(
       BrowserContext* browser_context);
   static appcache::AppCacheService* GetAppCacheService(
       BrowserContext* browser_context);
   static fileapi::FileSystemContext* GetFileSystemContext(
+      BrowserContext* browser_context);
+
+  static content::StoragePartition* GetStoragePartition(
+      BrowserContext* browser_context, SiteInstance* site_instance);
+  static void ForEachStoragePartition(
+      BrowserContext* browser_context,
+      const StoragePartitionCallback& callback);
+
+  // DON'T USE THIS. GetDefaultStoragePartition() is going away.
+  // Use GetStoragePartition() instead. Ask ajwong@ if you have problems.
+  static content::StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
 
   // Ensures that the corresponding ResourceContext is initialized. Normally the

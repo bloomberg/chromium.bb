@@ -15,6 +15,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -47,8 +48,8 @@ void DataDeleter::StartDeleting(Profile* profile,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&DataDeleter::DeleteCookiesOnIOThread, deleter));
 
-  BrowserContext::GetDefaultDOMStorageContext(profile)->DeleteOrigin(
-      storage_origin);
+  content::BrowserContext::GetDefaultStoragePartition(profile)->
+      GetDOMStorageContext()->DeleteOrigin(storage_origin);
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,

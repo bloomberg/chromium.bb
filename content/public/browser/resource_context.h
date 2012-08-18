@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_CONTEXT_H_
 
+#include "base/basictypes.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 

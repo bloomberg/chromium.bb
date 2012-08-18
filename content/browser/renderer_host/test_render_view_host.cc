@@ -12,6 +12,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "ui/gfx/rect.h"
 #include "webkit/dom_storage/dom_storage_types.h"
@@ -31,8 +32,8 @@ SessionStorageNamespaceImpl* CreateSessionStorageNamespace(
     SiteInstance* instance) {
   RenderProcessHost* process_host = instance->GetProcess();
   DOMStorageContext* dom_storage_context =
-      BrowserContext::GetDOMStorageContext(process_host->GetBrowserContext(),
-                                           process_host->GetID());
+      BrowserContext::GetStoragePartition(process_host->GetBrowserContext(),
+                                          instance)->GetDOMStorageContext();
   return new SessionStorageNamespaceImpl(
       static_cast<DOMStorageContextImpl*>(dom_storage_context));
 }

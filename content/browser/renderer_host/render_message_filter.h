@@ -78,7 +78,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
                       BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper,
-                      MediaObserver* media_observer);
+                      MediaObserver* media_observer,
+                      DOMStorageContextImpl* dom_storage_context);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;

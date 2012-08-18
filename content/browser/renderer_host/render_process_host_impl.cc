@@ -81,6 +81,7 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
@@ -321,7 +322,9 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 }
 
 RenderProcessHostImpl::RenderProcessHostImpl(
-    BrowserContext* browser_context, bool is_guest)
+    BrowserContext* browser_context,
+    StoragePartitionImpl* storage_partition_impl,
+    bool is_guest)
         : fast_shutdown_started_(false),
           deleting_soon_(false),
           pending_views_(0),
@@ -333,6 +336,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           is_initialized_(false),
           id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
+          storage_partition_impl_(storage_partition_impl),
           sudden_termination_allowed_(true),
           ignore_input_events_(false),
           is_guest_(is_guest) {
@@ -512,7 +516,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
           widget_helper_,
-          media_observer));
+          media_observer,
+          storage_partition_impl_->GetDOMStorageContext()));
   channel_->AddFilter(render_message_filter);
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
@@ -534,9 +539,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           BrowserContext::GetAppCacheService(browser_context)),
       GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
-  channel_->AddFilter(new DOMStorageMessageFilter(GetID(),
-      static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDOMStorageContext(browser_context, GetID()))));
+  channel_->AddFilter(
+      new DOMStorageMessageFilter(
+          GetID(),
+          storage_partition_impl_->GetDOMStorageContext()));
   channel_->AddFilter(new IndexedDBDispatcherHost(GetID(),
       static_cast<IndexedDBContextImpl*>(
           BrowserContext::GetIndexedDBContext(browser_context))));
@@ -596,7 +602,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetRequestContextForRenderProcess(GetID())));
   channel_->AddFilter(new QuotaDispatcherHost(
       GetID(),
-      BrowserContext::GetQuotaManager(browser_context),
+      storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new GamepadBrowserMessageFilter(this));
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
