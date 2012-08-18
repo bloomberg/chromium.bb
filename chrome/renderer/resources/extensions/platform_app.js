@@ -7,9 +7,11 @@
  *
  * @param {string} messagePrefix text to prepend to the exception message.
  */
-function generateStub(messagePrefix) {
+function generateStub(messagePrefix, opt_messageSuffix) {
   return function() {
-    throw messagePrefix + ' is not available in packaged apps.';
+    var message = messagePrefix + ' is not available in packaged apps.';
+    if (opt_messageSuffix) message = message + ' ' + opt_messageSuffix;
+    throw message;
   };
 }
 
@@ -41,10 +43,11 @@ function stubOutMethods(object, objectName, methodNames) {
  *     to by web developers, e.g. "document" instead of "HTMLDocument").
  * @param {Array.<string>} propertyNames property names
  */
-function stubOutGetters(object, objectName, propertyNames) {
+function stubOutGetters(object, objectName, propertyNames, opt_messageSuffix) {
   propertyNames.forEach(function(propertyName) {
     object.__defineGetter__(
-        propertyName, generateStub(objectName + '.' + propertyName));
+        propertyName, generateStub(
+            objectName + '.' + propertyName, opt_messageSuffix));
   });
 }
 
@@ -74,6 +77,11 @@ stubOutMethods(Window.prototype, 'window', ['alert', 'confirm', 'prompt']);
 stubOutGetters(window, 'window',
     ['locationbar', 'menubar', 'personalbar', 'scrollbars', 'statusbar',
     'toolbar']);
+
+// Disable window.localStorage.
+stubOutGetters(window, 'window',
+    ['localStorage'],
+    'Use chrome.storage.local instead.');
 
 // Disable onunload, onbeforeunload.
 Window.prototype.__defineSetter__(
