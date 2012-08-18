@@ -54,7 +54,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/options2_resources.h"
+#include "grit/options_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/layout.h"
@@ -148,11 +148,11 @@ void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (path == kOptionsBundleJsFile) {
     // Return (and cache) the options javascript code.
     response_bytes = ui::ResourceBundle::GetSharedInstance().
-        LoadDataResourceBytes(IDR_OPTIONS2_BUNDLE_JS, ui::SCALE_FACTOR_NONE);
+        LoadDataResourceBytes(IDR_OPTIONS_BUNDLE_JS, ui::SCALE_FACTOR_NONE);
   } else {
     // Return (and cache) the main options html page as the default.
     response_bytes = ui::ResourceBundle::GetSharedInstance().
-        LoadDataResourceBytes(IDR_OPTIONS2_HTML, ui::SCALE_FACTOR_NONE);
+        LoadDataResourceBytes(IDR_OPTIONS_HTML, ui::SCALE_FACTOR_NONE);
   }
 
   SendResponse(request_id, response_bytes);

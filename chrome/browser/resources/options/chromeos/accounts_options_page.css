@@ -85,7 +85,7 @@
 
 #ownerOnlyWarning {
   -webkit-padding-start: 20px;
-  background-image: url('../../options/chromeos/warning.png');
+  background-image: url('warning.png');
   background-repeat: no-repeat;
   margin-bottom: 10px;
   margin-top: 10px;

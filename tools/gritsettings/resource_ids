@@ -159,7 +159,7 @@
   "chrome/browser/resources/options_resources.grd": {
     "includes": [23000],
   },
-  "chrome/browser/resources/options2_resources.grd": {
+  "chrome/browser/resources/options_resources.grd": {
     "structures": [23200],
   },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {

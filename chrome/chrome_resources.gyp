@@ -32,9 +32,9 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'options2_resources',
+          'action_name': 'options_resources',
           'variables': {
-            'grit_grd_file': 'browser/resources/options2_resources.grd',
+            'grit_grd_file': 'browser/resources/options_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
