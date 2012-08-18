@@ -12,6 +12,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
+#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_info.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -55,7 +56,8 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       details =
           l10n_util::GetStringFUTF16(IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
                                      UTF8ToUTF16(request_url.host()),
-                                     UTF8ToUTF16(dns_names[i]),
+                                     net::EscapeForHTML(
+                                         UTF8ToUTF16(dns_names[i])),
                                      UTF8ToUTF16(request_url.host()));
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
@@ -64,7 +66,7 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       extra_info.push_back(
           l10n_util::GetStringFUTF16(
               IDS_CERT_ERROR_COMMON_NAME_INVALID_EXTRA_INFO_2,
-              UTF8ToUTF16(cert->subject().common_name),
+              net::EscapeForHTML(UTF8ToUTF16(cert->subject().common_name)),
               UTF8ToUTF16(request_url.host())));
       break;
     }
