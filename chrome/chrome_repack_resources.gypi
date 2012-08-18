@@ -9,7 +9,7 @@
       '<(grit_out_dir)/component_extension_resources.pak',
       '<(grit_out_dir)/devtools_discovery_page_resources.pak',
       '<(grit_out_dir)/net_internals_resources.pak',
-      '<(grit_out_dir)/options2_resources.pak',
+      '<(grit_out_dir)/options_resources.pak',
       '<(grit_out_dir)/quota_internals_resources.pak',
       '<(grit_out_dir)/shared_resources.pak',
       '<(grit_out_dir)/sync_internals_resources.pak',
