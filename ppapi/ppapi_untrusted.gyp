@@ -35,7 +35,6 @@
       'dependencies': [
          'ppapi_cpp_lib',
          'native_client/native_client.gyp:ppapi_lib',
-         'native_client/native_client.gyp:nacl_irt',
       ],
       'variables': {
         # TODO(bradnelson): Remove this compile flag once new nacl_rev is

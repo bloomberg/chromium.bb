@@ -3111,6 +3111,7 @@
               ],
               'dependencies': [
                 'test/data/nacl/nacl_test_data.gyp:nacl_tests',
+                '../ppapi/native_client/native_client.gyp:nacl_irt',
                 '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
               ],
             }],
