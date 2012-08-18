@@ -179,6 +179,9 @@ class CloudPrintConnector
   JobHandlerMap job_handler_map_;
   // Next response handler.
   ResponseHandler next_response_handler_;
+  // If |true| printers that are not found locally will be deleted on GCP
+  // even if the local enumeration failed.
+  bool delete_on_enum_fail_;
   // The list of pending tasks to be done in the background.
   std::list<PendingTask> pending_tasks_;
   // The CloudPrintURLFetcher instance for the current request.

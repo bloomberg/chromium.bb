@@ -19,6 +19,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+const char kDeleteOnEnumFail[] = "delete_on_enum_fail";
+
 CloudPrintConnector::CloudPrintConnector(
     Client* client,
     const std::string& proxy_id,
@@ -27,7 +29,8 @@ CloudPrintConnector::CloudPrintConnector(
   : client_(client),
     proxy_id_(proxy_id),
     cloud_print_server_url_(cloud_print_server_url),
-    next_response_handler_(NULL) {
+    next_response_handler_(NULL),
+    delete_on_enum_fail_(false) {
   if (print_system_settings) {
     // It is possible to have no print settings specified.
     print_system_settings_.reset(print_system_settings->DeepCopy());
@@ -42,6 +45,12 @@ bool CloudPrintConnector::InitPrintSystem() {
   if (!print_system_.get()) {
     NOTREACHED();
     return false;  // No memory.
+  }
+  if (print_system_settings_.get()) {
+    bool delete_on_enum_fail = false;
+    print_system_settings_->GetBoolean(kDeleteOnEnumFail,
+                                       &delete_on_enum_fail);
+    delete_on_enum_fail_ = delete_on_enum_fail;
   }
   cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
   if (!result.succeeded()) {
@@ -222,7 +231,13 @@ CloudPrintConnector::HandlePrinterListResponse(
           // Cloud printer is not found on the local system.
           std::string printer_id;
           printer_data->GetString(kIdValue, &printer_id);
-          if (full_list) {  // Delete only if we get the full list of printer.
+          if (full_list || delete_on_enum_fail_) {
+            // Delete if we get the full list of printers or
+            // |delete_on_enum_fail_| is set.
+            VLOG(1) << "CP_CONNECTOR: Deleting " << printer_name <<
+              " id: " << printer_id <<
+              " full_list: " << full_list <<
+              " delete_on_enum_fail: " << delete_on_enum_fail_;
             AddPendingDeleteTask(printer_id);
           } else {
             LOG(ERROR) << "CP_CONNECTOR: Printer: " << printer_name <<
