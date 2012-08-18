@@ -15847,7 +15847,7 @@ var keyboardOverlayData = {
     'right<>CTRL<>SHIFT': 'keyboardOverlaySelectWordAtATime',
     's<>ALT<>SHIFT': 'keyboardOverlayFocusStatusIcon',
     's<>CTRL': 'keyboardOverlaySave',
-    'search<>SHIFT': 'keyboardOverlayToggleCapsLock',
+    'search<>ALT': 'keyboardOverlayToggleCapsLock',
     'space<>CTRL': 'keyboardOverlaySelectPreviousInputMethod',
     'space<>SHIFT': 'keyboardOverlayScrollUpOnePage',
     'switch window<>CTRL': 'keyboardOverlayTakeScreenshot',

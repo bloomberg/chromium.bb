@@ -603,13 +603,13 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // ToggleCapsLock
   {
     EXPECT_FALSE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_SHIFT_DOWN)));
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     DummyCapsLockDelegate* delegate = new DummyCapsLockDelegate(false);
     GetController()->SetCapsLockDelegate(
         scoped_ptr<CapsLockDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_caps_lock_count());
     EXPECT_FALSE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_SHIFT_DOWN)));
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     EXPECT_EQ(1, delegate->handle_caps_lock_count());
   }
   {
@@ -618,7 +618,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
         scoped_ptr<CapsLockDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_caps_lock_count());
     EXPECT_TRUE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_SHIFT_DOWN)));
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
     EXPECT_EQ(1, delegate->handle_caps_lock_count());
   }
   // Volume
