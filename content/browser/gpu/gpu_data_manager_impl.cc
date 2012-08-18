@@ -118,6 +118,13 @@ content::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   return gpu_info_;
 }
 
+void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate() {
+  GpuProcessHost::SendOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+      new GpuMsg_GetVideoMemoryUsageStats());
+}
+
 void GpuDataManagerImpl::AddLogMessage(Value* msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   log_messages_.Append(msg);
@@ -296,6 +303,12 @@ void GpuDataManagerImpl::SetGpuFeatureType(GpuFeatureType feature_type) {
 
 void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
   observer_list_->Notify(&GpuDataManagerObserver::OnGpuInfoUpdate);
+}
+
+void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
+    const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
+  observer_list_->Notify(&GpuDataManagerObserver::OnVideoMemoryUsageStatsUpdate,
+                         video_memory_usage_stats);
 }
 
 void GpuDataManagerImpl::UpdateGpuFeatureType(

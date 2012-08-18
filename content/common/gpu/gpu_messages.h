@@ -14,6 +14,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_info.h"
+#include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -162,6 +163,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUInfo)
 #endif
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats::ProcessStats)
+  IPC_STRUCT_TRAITS_MEMBER(video_memory)
+  IPC_STRUCT_TRAITS_MEMBER(has_duplicates)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats)
+  IPC_STRUCT_TRAITS_MEMBER(process_map)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(GpuMemoryAllocationForRenderer)
   IPC_STRUCT_TRAITS_MEMBER(gpu_resource_size_in_bytes)
   IPC_STRUCT_TRAITS_MEMBER(suggest_have_backbuffer)
@@ -220,6 +230,9 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 // Tells the GPU process to create a context for collecting graphics card
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
+
+// Tells the GPU process to report video_memory information for the task manager
+IPC_MESSAGE_CONTROL0(GpuMsg_GetVideoMemoryUsageStats)
 
 // Tells the GPU process that the browser process has finished resizing the
 // view.
@@ -281,6 +294,10 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyCommandBuffer,
 // Response from GPU to a GpuMsg_CollectGraphicsInfo.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
                      content::GPUInfo /* GPU logging stats */)
+
+// Response from GPU to a GpuMsg_GetVideoMemory.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_VideoMemoryUsageStats,
+                     content::GPUVideoMemoryUsageStats /* GPU memory stats */)
 
 // Message from GPU to add a GPU log message to the about:gpu page.
 IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,

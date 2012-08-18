@@ -47,6 +47,10 @@ class GpuDataManager {
 
   virtual bool IsCompleteGPUInfoAvailable() const = 0;
 
+  // Requests that the GPU process report its current video memory usage stats,
+  // which can be retrieved via the GPU data manager's on-update function.
+  virtual void RequestVideoMemoryUsageStatsUpdate() = 0;
+
   // Returns true if the software rendering should currently be used.
   virtual bool ShouldUseSoftwareRendering() = 0;
 

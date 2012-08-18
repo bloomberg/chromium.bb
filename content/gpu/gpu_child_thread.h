@@ -52,6 +52,7 @@ class GpuChildThread : public ChildThread {
   // Message handlers.
   void OnInitialize();
   void OnCollectGraphicsInfo();
+  void OnGetVideoMemoryUsageStats();
   void OnClean();
   void OnCrash();
   void OnHang();

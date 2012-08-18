@@ -104,6 +104,18 @@ Value* CreateColumnValue(const TaskManagerModel* tm,
     tm->GetFPS(i, &fps);
     return Value::CreateDoubleValue(fps);
   }
+  if (column_name == "videoMemory")
+    return Value::CreateStringValue(tm->GetResourceVideoMemory(i));
+  if (column_name == "videoMemoryValue") {
+    size_t video_memory;
+    bool has_duplicates;
+    double value;
+    if (tm->GetVideoMemory(i, &video_memory, &has_duplicates))
+      value = static_cast<double>(video_memory);
+    else
+      value = 0;
+    return Value::CreateDoubleValue(value);
+  }
   if (column_name == "sqliteMemoryUsed")
     return Value::CreateStringValue(tm->GetResourceSqliteMemoryUsed(i));
   if (column_name == "sqliteMemoryUsedValue") {
@@ -170,6 +182,7 @@ const ColumnType kColumnsList[] = {
   {"profileName", false, true},
   {"networkUsage", true, true},
   {"fps", true, true},
+  {"videoMemory", true, false},
   {"goatsTeleported", true, true},
   {"canInspect", false, true},
   {"canActivate", false, true}

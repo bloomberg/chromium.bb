@@ -4140,6 +4140,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
           CSS cache
         </message>
+        <message name="IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN" desc="The text of the video memory usage column">
+          GPU Memory
+        </message>
         <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
           FPS
         </message>
@@ -4201,6 +4204,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         </message>
         <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
           CSS Cache
+        </message>
+        <message name="IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN" desc="The text of the video memory usage column">
+          GPU Memory
         </message>
         <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
           FPS

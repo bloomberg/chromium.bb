@@ -31,6 +31,8 @@
 #include "chrome/common/view_type.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -83,7 +85,8 @@ string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
-    : update_requests_(0),
+    : pending_video_memory_usage_stats_update_(false),
+      update_requests_(0),
       listen_requests_(0),
       update_state_(IDLE),
       goat_salt_(base::RandUint64()),
@@ -253,6 +256,25 @@ string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
   return FormatStatsSize(stats.cssStyleSheets);
+}
+
+string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
+  CHECK_LT(index, ResourceCount());
+
+  bool result;
+  size_t video_memory;
+  bool has_duplicates;
+  result = GetVideoMemory(index, &video_memory, &has_duplicates);
+
+  if (!result || !video_memory) {
+    return ASCIIToUTF16("N/A");
+  } else if (has_duplicates) {
+    return ASCIIToUTF16("(") +
+           GetMemCellText(video_memory) +
+           ASCIIToUTF16(")");
+  } else {
+    return GetMemCellText(video_memory);
+  }
 }
 
 string16 TaskManagerModel::GetResourceFPS(
@@ -448,6 +470,13 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
   } else if (col_id == IDS_TASK_MANAGER_FPS_COLUMN) {
     return ValueCompare<float>(resources_[row1]->GetFPS(),
                                resources_[row2]->GetFPS());
+  } else if (col_id == IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN) {
+    size_t value1;
+    size_t value2;
+    bool has_duplicates;
+    if (!GetVideoMemory(row1, &value1, &has_duplicates)) value1 = 0;
+    if (!GetVideoMemory(row2, &value2, &has_duplicates)) value2 = 0;
+    return ValueCompare<size_t>(value1, value2);
   } else if (col_id == IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN) {
     return ValueCompare<int>(GetGoatsTeleported(row1),
                              GetGoatsTeleported(row2));
@@ -564,6 +593,22 @@ bool TaskManagerModel::GetWebCoreCacheStats(
     return false;
 
   *result = resources_[index]->GetWebCoreCacheStats();
+  return true;
+}
+
+bool TaskManagerModel::GetVideoMemory(
+    int index, size_t* video_memory, bool* has_duplicates) const {
+  TaskManager::Resource* resource = resources_[index];
+  base::ProcessId pid = base::GetProcId(resource->GetProcess());
+  content::GPUVideoMemoryUsageStats::ProcessMap::const_iterator i =
+      video_memory_usage_stats_.process_map.find(pid);
+  if (i == video_memory_usage_stats_.process_map.end()) {
+    *video_memory = 0;
+    *has_duplicates = false;
+    return false;
+  }
+  *video_memory = (*i).second.video_memory;
+  *has_duplicates = (*i).second.has_duplicates;
   return true;
 }
 
@@ -885,6 +930,13 @@ void TaskManagerModel::NotifyFPS(base::ProcessId renderer_id,
   }
 }
 
+void TaskManagerModel::NotifyVideoMemoryUsageStats(
+    const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
+  DCHECK(pending_video_memory_usage_stats_update_);
+  video_memory_usage_stats_ = video_memory_usage_stats;
+  pending_video_memory_usage_stats_update_ = false;
+}
+
 void TaskManagerModel::NotifyV8HeapStats(base::ProcessId renderer_id,
                                          size_t v8_memory_allocated,
                                          size_t v8_memory_used) {
@@ -894,6 +946,50 @@ void TaskManagerModel::NotifyV8HeapStats(base::ProcessId renderer_id,
       (*it)->NotifyV8HeapStats(v8_memory_allocated, v8_memory_used);
     }
   }
+}
+
+class TaskManagerModelGpuDataManagerObserver
+    : public content::GpuDataManagerObserver {
+ public:
+
+  TaskManagerModelGpuDataManagerObserver() {
+    content::GpuDataManager::GetInstance()->AddObserver(this);
+  }
+
+  virtual ~TaskManagerModelGpuDataManagerObserver() {
+    content::GpuDataManager::GetInstance()->RemoveObserver(this);
+  }
+
+  static void NotifyVideoMemoryUsageStats(
+      content::GPUVideoMemoryUsageStats video_memory_usage_stats) {
+    TaskManager::GetInstance()->model()->NotifyVideoMemoryUsageStats(
+        video_memory_usage_stats);
+  }
+
+  virtual void OnGpuInfoUpdate() OVERRIDE {}
+
+  virtual void OnVideoMemoryUsageStatsUpdate(
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
+          OVERRIDE {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      NotifyVideoMemoryUsageStats(video_memory_usage_stats);
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, base::Bind(
+              &TaskManagerModelGpuDataManagerObserver::
+                  NotifyVideoMemoryUsageStats,
+              video_memory_usage_stats));
+    }
+    delete this;
+  }
+};
+
+void TaskManagerModel::RefreshVideoMemoryUsageStats()
+{
+  if (pending_video_memory_usage_stats_update_) return;
+  pending_video_memory_usage_stats_update_ = true;
+  new TaskManagerModelGpuDataManagerObserver;
+  content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate();
 }
 
 void TaskManagerModel::Refresh() {
@@ -927,6 +1023,9 @@ void TaskManagerModel::Refresh() {
 
   // Clear the memory values so they can be querried lazily.
   memory_usage_map_.clear();
+
+  // Send a request to refresh GPU memory consumption values
+  RefreshVideoMemoryUsageStats();
 
   // Compute the new network usage values.
   displayed_network_usage_map_.clear();

@@ -68,6 +68,9 @@ class GpuMessageHandler
 
   // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnVideoMemoryUsageStatsUpdate(
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
+          OVERRIDE {}
 
   // CrashUploadList::Delegate implemenation.
   virtual void OnCrashListAvailable() OVERRIDE;

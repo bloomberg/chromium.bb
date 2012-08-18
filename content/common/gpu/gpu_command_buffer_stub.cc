@@ -15,6 +15,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
@@ -38,15 +39,22 @@ namespace {
 // ContextGroup's memory type managers and the GpuMemoryManager class.
 class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
  public:
-  GpuCommandBufferMemoryTracker(GpuMemoryManager* gpu_memory_manager)
-    : gpu_memory_manager_(gpu_memory_manager) {}
+  GpuCommandBufferMemoryTracker(GpuChannel* channel) {
+    gpu_memory_manager_tracking_group_ = new GpuMemoryTrackingGroup(
+        channel->renderer_pid(),
+        channel->gpu_channel_manager()->gpu_memory_manager());
+  }
+
   void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) {
-    gpu_memory_manager_->TrackMemoryAllocatedChange(old_size, new_size);
+    gpu_memory_manager_tracking_group_->TrackMemoryAllocatedChange(
+        old_size, new_size);
   }
 
  private:
-  ~GpuCommandBufferMemoryTracker() {}
-  GpuMemoryManager* gpu_memory_manager_;
+  ~GpuCommandBufferMemoryTracker() {
+    delete gpu_memory_manager_tracking_group_;
+  }
+  GpuMemoryTrackingGroup* gpu_memory_manager_tracking_group_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
 };
@@ -122,10 +130,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     context_group_ = share_group->context_group_;
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
-      mailbox_manager,
-      new GpuCommandBufferMemoryTracker(
-        channel->gpu_channel_manager()->gpu_memory_manager()),
-      true);
+        mailbox_manager,
+        new GpuCommandBufferMemoryTracker(channel),
+        true);
   }
   if (surface_id != 0)
     surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(

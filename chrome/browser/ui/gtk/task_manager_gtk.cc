@@ -67,6 +67,7 @@ enum TaskManagerColumn {
   kTaskManagerWebCoreImageCache,
   kTaskManagerWebCoreScriptsCache,
   kTaskManagerWebCoreCssCache,
+  kTaskManagerVideoMemory,
   kTaskManagerFPS,
   kTaskManagerSqliteMemoryUsed,
   kTaskManagerGoatsTeleported,
@@ -104,6 +105,8 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
       return kTaskManagerWebCoreScriptsCache;
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
       return kTaskManagerWebCoreCssCache;
+    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
+      return kTaskManagerVideoMemory;
     case IDS_TASK_MANAGER_FPS_COLUMN:
       return kTaskManagerFPS;
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
@@ -140,6 +143,8 @@ int TaskManagerColumnIDToResourceID(int id) {
       return IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN;
     case kTaskManagerWebCoreCssCache:
       return IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN;
+    case kTaskManagerVideoMemory:
+      return IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN;
     case kTaskManagerFPS:
       return IDS_TASK_MANAGER_FPS_COLUMN;
     case kTaskManagerSqliteMemoryUsed:
@@ -579,7 +584,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   process_list_ = gtk_list_store_new(kTaskManagerColumnCount,
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_COLOR);
 
   // Support sorting on all columns.
@@ -619,6 +624,9 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
                                   kTaskManagerWebCoreCssCache,
                                   CompareWebCoreCssCache, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerVideoMemory,
+                                  CompareVideoMemory, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
                                   kTaskManagerFPS,
                                   CompareFPS, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
@@ -643,6 +651,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_,
                        IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_FPS_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
@@ -655,6 +664,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreImageCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreScriptsCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreCssCache, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerVideoMemory, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerSqliteMemoryUsed, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerGoatsTeleported, false);
 
@@ -715,6 +725,9 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
       return UTF16ToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
+
+    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
+      return UTF16ToUTF8(model_->GetResourceVideoMemory(row));
 
     case IDS_TASK_MANAGER_FPS_COLUMN:
       return UTF16ToUTF8(model_->GetResourceFPS(row));
@@ -778,6 +791,9 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
     wk_css_cache =
         GetModelText(row, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
   }
+  std::string video_memory;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerVideoMemory))
+    video_memory = GetModelText(row, IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN);
   std::string fps;
   if (TreeViewColumnIsVisible(treeview_, kTaskManagerFPS))
     fps = GetModelText(row, IDS_TASK_MANAGER_FPS_COLUMN);
@@ -805,6 +821,7 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerWebCoreImageCache, wk_img_cache.c_str(),
                      kTaskManagerWebCoreScriptsCache, wk_scripts_cache.c_str(),
                      kTaskManagerWebCoreCssCache, wk_css_cache.c_str(),
+                     kTaskManagerVideoMemory, video_memory.c_str(),
                      kTaskManagerFPS, fps.c_str(),
                      kTaskManagerSqliteMemoryUsed, sqlite_memory.c_str(),
                      kTaskManagerGoatsTeleported, goats.c_str(),

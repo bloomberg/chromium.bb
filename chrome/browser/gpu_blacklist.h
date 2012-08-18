@@ -385,6 +385,8 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
 
   // GpuDataManager::Observer implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnVideoMemoryUsageStatsUpdate(
+      const content::GPUVideoMemoryUsageStats& video_memory) OVERRIDE {}
 
   // Returns the number of entries.  This is only for tests.
   size_t num_entries() const;

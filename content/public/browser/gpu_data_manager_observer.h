@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_OBSERVER_H_
 
 #include "content/common/content_export.h"
+#include "content/public/common/gpu_memory_stats.h"
 
 namespace content {
 
@@ -15,6 +16,10 @@ class GpuDataManagerObserver {
  public:
   // Called for any observers whenever there is a GPU info update.
   virtual void OnGpuInfoUpdate() = 0;
+
+  // Called for any observers whenever there is a GPU video memory update.
+  virtual void OnVideoMemoryUsageStatsUpdate(
+      const GPUVideoMemoryUsageStats& video_memory_usage_stats) = 0;
 
  protected:
   virtual ~GpuDataManagerObserver() {}

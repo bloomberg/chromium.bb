@@ -7,6 +7,7 @@
 
 #if defined(ENABLE_GPU)
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -15,9 +16,11 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "content/public/common/gpu_memory_stats.h"
 #include "ui/gfx/size.h"
 
 class GpuCommandBufferStubBase;
+class GpuMemoryTrackingGroup;
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -63,6 +66,14 @@ class CONTENT_EXPORT GpuMemoryManager :
   // queued delayed manage.
   void ScheduleManage(bool immediate);
 
+  // Retrieve GPU Resource consumption statistics for the task manager
+  void GetVideoMemoryUsageStats(
+      content::GPUVideoMemoryUsageStats& video_memory_usage_stats) const;
+
+  // Add and remove structures to track context groups' memory consumption
+  void AddTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
+  void RemoveTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
+
   // Returns StubMemoryStat's for each GpuCommandBufferStubBase, which were
   // assigned during the most recent call to Manage().
   // Useful for tracking the memory-allocation-related presumed state of the
@@ -80,6 +91,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   friend class GpuMemoryManagerTest;
 
   void Manage();
+
+  // The context groups' tracking structures
+  std::set<GpuMemoryTrackingGroup*> tracking_groups_;
 
   size_t CalculateBonusMemoryAllocationBasedOnSize(gfx::Size size) const;
 

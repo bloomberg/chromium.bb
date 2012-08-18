@@ -207,7 +207,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnAcceleratedSurfaceNew)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
-
+    IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
+                        OnVideoMemoryUsageStatsReceived);
 #if defined(TOOLKIT_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
@@ -367,3 +368,10 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceRelease(
     return;
   view->AcceleratedSurfaceRelease(params.identifier);
 }
+
+void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
+    const content::GPUVideoMemoryUsageStats& video_memory_usage_stats) {
+  GpuDataManagerImpl::GetInstance()->UpdateVideoMemoryUsageStats(
+      video_memory_usage_stats);
+}
+

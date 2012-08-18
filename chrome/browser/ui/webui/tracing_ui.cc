@@ -90,6 +90,8 @@ class TracingMessageHandler
 
   // GpuDataManagerObserver implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnVideoMemoryUsageStatsUpdate(
+      const content::GPUVideoMemoryUsageStats& video_memory) OVERRIDE {}
 
   // Messages.
   void OnTracingControllerInitialized(const ListValue* list);

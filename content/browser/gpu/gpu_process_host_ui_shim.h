@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "content/public/common/gpu_info.h"
+#include "content/public/common/gpu_memory_stats.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -100,6 +101,8 @@ class GpuProcessHostUIShim
       const GpuHostMsg_AcceleratedSurfaceNew_Params& params);
   void OnAcceleratedSurfaceRelease(
       const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
+  void OnVideoMemoryUsageStatsReceived(
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

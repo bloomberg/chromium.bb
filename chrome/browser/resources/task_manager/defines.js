@@ -30,6 +30,7 @@ var DEFAULT_COLUMNS = [
   ['webCoreScriptsCacheSize', 'webcoreScriptsCacheColumn', 120, false],
   ['webCoreCSSCacheSize', 'webcoreCSSCacheColumn', 120, false],
   ['fps', 'fpsColumn', 50, true],
+  ['videoMemory', 'videoMemoryColumn', 80, false],
   ['sqliteMemoryUsed', 'sqliteMemoryUsedColumn', 80, false],
   ['goatsTeleported', 'goatsTeleportedColumn', 80, false],
   ['v8MemoryAllocatedSize', 'javascriptMemoryAllocatedColumn', 120, false],

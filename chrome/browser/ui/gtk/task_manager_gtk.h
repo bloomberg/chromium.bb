@@ -185,6 +185,13 @@ class TaskManagerGtk : public TaskManagerModelObserver {
         CompareImpl(model, a, b, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
   }
 
+  // Video memory sorting callback.
+  static gint CompareVideoMemory(GtkTreeModel* model, GtkTreeIter* a,
+                                 GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN);
+  }
+
   // FPS sorting callback.
   static gint CompareFPS(GtkTreeModel* model, GtkTreeIter* a,
                          GtkTreeIter* b, gpointer task_manager) {

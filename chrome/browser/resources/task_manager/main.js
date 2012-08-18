@@ -115,8 +115,8 @@ TaskManager.prototype = {
     var COLUMNS_SORTED_BY_VALUE = [
         'cpuUsage', 'physicalMemory', 'sharedMemory', 'privateMemory',
         'networkUsage', 'webCoreImageCacheSize', 'webCoreScriptsCacheSize',
-        'webCoreCSSCacheSize', 'fps', 'sqliteMemoryUsed', 'goatsTeleported',
-        'v8MemoryAllocatedSize'];
+        'webCoreCSSCacheSize', 'fps', 'videoMemory', 'sqliteMemoryUsed',
+        'goatsTeleported', 'v8MemoryAllocatedSize'];
 
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
       var columnId = DEFAULT_COLUMNS[i][0];

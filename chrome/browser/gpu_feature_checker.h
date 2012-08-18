@@ -29,6 +29,9 @@ class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
 
   // content::GpuDataManagerObserver
   virtual void OnGpuInfoUpdate() OVERRIDE;
+  virtual void OnVideoMemoryUsageStatsUpdate(
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats)
+          OVERRIDE {}
  private:
   friend class base::RefCountedThreadSafe<GPUFeatureChecker>;
 

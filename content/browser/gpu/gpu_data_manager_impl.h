@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/gpu_info.h"
+#include "content/public/common/gpu_memory_stats.h"
 
 class CommandLine;
 
@@ -33,6 +34,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual bool GpuAccessAllowed() OVERRIDE;
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
   virtual bool IsCompleteGPUInfoAvailable() const OVERRIDE;
+  virtual void RequestVideoMemoryUsageStatsUpdate() OVERRIDE;
   virtual bool ShouldUseSoftwareRendering() OVERRIDE;
   virtual void RegisterSwiftShaderPath(const FilePath& path) OVERRIDE;
   virtual const base::ListValue& GetLogMessages() const OVERRIDE;
@@ -42,6 +44,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   // Only update if the current GPUInfo is not finalized.
   void UpdateGpuInfo(const content::GPUInfo& gpu_info);
+
+  void UpdateVideoMemoryUsageStats(
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
   void AddLogMessage(Value* msg);
 

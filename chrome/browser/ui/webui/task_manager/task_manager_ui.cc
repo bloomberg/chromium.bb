@@ -55,6 +55,8 @@ ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
                              IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
   source->AddLocalizedString("webcoreCSSCacheColumn",
                              IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+  source->AddLocalizedString("videoMemoryColumn",
+                             IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN);
   source->AddLocalizedString("fpsColumn", IDS_TASK_MANAGER_FPS_COLUMN);
   source->AddLocalizedString("sqliteMemoryUsedColumn",
                              IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);

@@ -18,6 +18,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
+#include "content/public/common/gpu_memory_stats.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class TaskManagerModel;
@@ -312,6 +313,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   string16 GetResourceWebCoreImageCacheSize(int index) const;
   string16 GetResourceWebCoreScriptsCacheSize(int index) const;
   string16 GetResourceWebCoreCSSCacheSize(int index) const;
+  string16 GetResourceVideoMemory(int index) const;
   string16 GetResourceFPS(int index) const;
   string16 GetResourceSqliteMemoryUsed(int index) const;
   string16 GetResourceGoatsTeleported(int index) const;
@@ -335,6 +337,11 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // isn't a renderer.
   bool GetWebCoreCacheStats(int index,
                             WebKit::WebCache::ResourceTypeStats* result) const;
+
+  // Gets the GPU memory allocated of the given page.
+  bool GetVideoMemory(int index,
+                      size_t* video_memory,
+                      bool* has_duplicates) const;
 
   // Gets the fps of the given page. Return false if the resource for the given
   // row isn't a renderer.
@@ -437,6 +444,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
                  int routing_id,
                  float fps);
 
+  void NotifyVideoMemoryUsageStats(
+      const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
+
   void NotifyV8HeapStats(base::ProcessId renderer_id,
                          size_t v8_memory_allocated,
                          size_t v8_memory_used);
@@ -491,6 +501,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Updates the values for all rows.
   void Refresh();
+
+  void RefreshVideoMemoryUsageStats();
 
   void AddItem(TaskManager::Resource* resource, bool notify_table);
   void RemoveItem(TaskManager::Resource* resource);
@@ -555,6 +567,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // A map that contains the CPU usage (in %) for a process since last refresh.
   CPUUsageMap cpu_usage_map_;
+
+  // A map that contains the video memory usage for a process
+  content::GPUVideoMemoryUsageStats video_memory_usage_stats_;
+  bool pending_video_memory_usage_stats_update_;
 
   // A map that contains the private/shared memory usage of the process. We
   // cache this because the same APIs are called on linux and windows, and
