@@ -150,18 +150,25 @@ Compositor::Compositor(CompositorDelegate* delegate,
   settings.refreshRate =
       test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
 
+#if defined(WEBLAYER_IS_PURE_VIRTUAL)
+  host_.initialize(this, *root_web_layer_, settings);
+  root_web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
+#else
   host_.initialize(this, root_web_layer_, settings);
-  host_.setSurfaceReady();
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
+#endif
+  host_.setSurfaceReady();
 }
 
 Compositor::~Compositor() {
   // Don't call |CompositorDelegate::ScheduleDraw| from this point.
   delegate_ = NULL;
+#if !defined(WEBLAYER_IS_PURE_VIRTUAL)
   // There's a cycle between |root_web_layer_| and |host_|, which results in
   // leaking and/or crashing. Explicitly set the root layer to NULL so the cycle
   // is broken.
   host_.setRootLayer(NULL);
+#endif
   if (root_layer_)
     root_layer_->SetCompositor(NULL);
 
@@ -212,9 +219,15 @@ void Compositor::SetRootLayer(Layer* root_layer) {
   root_layer_ = root_layer;
   if (root_layer_ && !root_layer_->GetCompositor())
     root_layer_->SetCompositor(this);
+#if defined(WEBLAYER_IS_PURE_VIRTUAL)
+  root_web_layer_->removeAllChildren();
+  if (root_layer_)
+    root_web_layer_->addChild(root_layer_->web_layer());
+#else
   root_web_layer_.removeAllChildren();
   if (root_layer_)
     root_web_layer_.addChild(root_layer_->web_layer());
+#endif
 }
 
 void Compositor::Draw(bool force_clear) {
@@ -268,7 +281,11 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
     return;
   size_ = size_in_pixel;
   host_.setViewportSize(size_in_pixel);
+#if defined(WEBLAYER_IS_PURE_VIRTUAL)
+  root_web_layer_->setBounds(size_in_pixel);
+#else
   root_web_layer_.setBounds(size_in_pixel);
+#endif
 
   if (device_scale_factor_ != scale) {
     device_scale_factor_ = scale;

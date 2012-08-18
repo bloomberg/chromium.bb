@@ -14,6 +14,9 @@
 #include "base/message_loop.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/compositor/compositor.h"
@@ -258,7 +261,11 @@ class COMPOSITOR_EXPORT Layer
                              WebKit::WebRect& opaque);
 #endif
 
+#if defined(WEBLAYER_IS_PURE_VIRTUAL)
+  WebKit::WebLayer* web_layer() { return web_layer_; }
+#else
   WebKit::WebLayer web_layer() { return web_layer_; }
+#endif
 
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -373,7 +380,16 @@ class COMPOSITOR_EXPORT Layer
 
   scoped_ptr<LayerAnimator> animator_;
 
+#if defined(WEBLAYER_IS_PURE_VIRTUAL)
+  // Ownership of the layer is held through one of the strongly typed layer
+  // pointers, depending on which sort of layer this is.
+  scoped_ptr<WebKit::WebContentLayer> content_layer_;
+  scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;
+  scoped_ptr<WebKit::WebSolidColorLayer> solid_color_layer_;
+  WebKit::WebLayer* web_layer_;
+#else
   WebKit::WebLayer web_layer_;
+#endif
   bool web_layer_is_accelerated_;
   bool show_debug_borders_;
 
