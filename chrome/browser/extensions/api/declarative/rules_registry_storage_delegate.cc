@@ -141,6 +141,7 @@ void RulesRegistryStorageDelegate::InitOnUIThread(
 void RulesRegistryStorageDelegate::CleanupOnUIThread() {
   // The registrar must be deleted on the UI thread.
   inner_->registrar_.reset();
+  inner_->profile_ = NULL;  // no longer safe to use.
 }
 
 bool RulesRegistryStorageDelegate::IsReady() {
@@ -229,6 +230,9 @@ void RulesRegistryStorageDelegate::Inner::Observe(
 void RulesRegistryStorageDelegate::Inner::ReadFromStorage(
     const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!profile_)
+    return;
+
   extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
   if (store) {
     waiting_for_extensions_.insert(extension_id);
@@ -252,6 +256,9 @@ void RulesRegistryStorageDelegate::Inner::ReadFromStorageCallback(
 void RulesRegistryStorageDelegate::Inner::WriteToStorage(
     const std::string& extension_id, scoped_ptr<base::Value> value) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!profile_)
+    return;
+
   StateStore* store = ExtensionSystem::Get(profile_)->state_store();
   if (store)
     store->SetExtensionValue(extension_id, storage_key_, value.Pass());
