@@ -70,7 +70,8 @@ bool FontConfigIPC::Match(std::string* result_family,
     return false;
   }
 
-  *result_filefaceid = reply_filefaceid;
+  if (result_filefaceid)
+    *result_filefaceid = reply_filefaceid;
   if (result_family)
     *result_family = reply_family;
 

@@ -32,8 +32,10 @@ class FontConfigInterface {
 
     /** Performs config match
      *
-     *  @param result_family (output) on success, the resulting family name.
-     *  @param result_filefaceid (output) on success, the resulting fileface id.
+     *  @param result_family (optional, set to NULL to ignore, output)
+     *      on success, set to the resulting family name.
+     *  @param result_filefaceid (optional, set to NULL to ignore, output)
+     *      on success, set to the resulting fileface id.
      *  @param filefaceid_valid if true, then |filefaceid| is valid
      *  @param filefaceid the filefaceid (as returned by this function)
      *         which we are trying to match.
