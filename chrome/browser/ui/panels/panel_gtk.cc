@@ -344,7 +344,7 @@ gboolean PanelGtk::OnConfigure(GtkWidget* widget,
   if (!GetFrameSize().IsEmpty())
     return FALSE;
 
-  // Save the frame size allocated by the system after as the
+  // Save the frame size allocated by the system as the
   // frame size will be affected when we shrink the panel smaller
   // than the frame (e.g. when the panel is minimized).
   SetFrameSize(GetNonClientFrameSize());
@@ -764,15 +764,17 @@ void PanelGtk::SetBoundsInternal(const gfx::Rect& bounds, bool animate) {
   if (bounds == bounds_)
     return;
 
-  if (!animate) {
-    // If no animation is in progress, apply bounds change instantly. Otherwise,
-    // continue the animation with new target bounds.
-    if (!IsAnimatingBounds())
-      gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window_)),
-                             bounds.x(), bounds.y(),
-                             bounds.width(), bounds.height());
-  } else if (is_shown_) {
-    StartBoundsAnimation(bounds_, bounds);
+  if (is_shown_) {
+    if (!animate) {
+      // If no animation is in progress, apply bounds change instantly.
+      // Otherwise, continue the animation with new target bounds.
+      if (!IsAnimatingBounds())
+        gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window_)),
+                               bounds.x(), bounds.y(),
+                               bounds.width(), bounds.height());
+    } else {
+      StartBoundsAnimation(bounds_, bounds);
+    }
   }
 
   bounds_ = bounds;

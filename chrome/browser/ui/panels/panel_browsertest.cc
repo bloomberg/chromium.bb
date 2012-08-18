@@ -269,9 +269,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CheckDockedPanelProperties) {
   Panel* panel2 = CreatePanelWithBounds("2", gfx::Rect(0, 0, 100, 100));
   Panel* panel3 = CreatePanelWithBounds("3", gfx::Rect(0, 0, 100, 100));
   panel2->SetExpansionState(Panel::TITLE_ONLY);
-  WaitForExpansionStateChanged(panel2, Panel::TITLE_ONLY);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
   panel3->SetExpansionState(Panel::MINIMIZED);
-  WaitForExpansionStateChanged(panel3, Panel::MINIMIZED);
+  EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
   scoped_ptr<NativePanelTesting> panel1_testing(
       CreateNativePanelTesting(panel1));
   scoped_ptr<NativePanelTesting> panel2_testing(
@@ -366,6 +366,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
       FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
   params.url = url;
   Panel* panel = CreatePanelWithParams(params);
+
+  // Ensure panel has auto resized to original web content size.
+  // The resize will update the docked panel strip.
+  content::WindowedNotificationObserver initial_resize(
+      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+      content::NotificationService::AllSources());
+  if (panel->GetBounds().height() < panel->TitleOnlyHeight())
+    initial_resize.Wait();
 
   // Expand the test page. The resize will update the docked panel strip.
   gfx::Rect initial_bounds = panel->GetBounds();
@@ -746,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
   panel1->FlashFrame(true);
   EXPECT_TRUE(panel1->IsDrawingAttention());
 
-  test_panel2->PressLeftMouseButtonTitlebar(panel3->GetBounds().origin(),
+  test_panel2->PressLeftMouseButtonTitlebar(panel2->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
   EXPECT_FALSE(panel1->IsMinimized());
@@ -1041,7 +1049,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   // Test that the attention is drawn and the title-bar is brought up when the
   // minimized panel is drawing attention.
   panel->Minimize();
-  WaitForExpansionStateChanged(panel, Panel::MINIMIZED);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
@@ -1251,19 +1259,17 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
+  PanelActiveStateObserver signal(panel, false);
   panel->Minimize();  // this should deactivate.
-  MessageLoop::current()->RunAllPending();
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  signal.Wait();
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
 
   panel->Restore();
-  MessageLoop::current()->RunAllPending();
-  WaitForExpansionStateChanged(panel, Panel::EXPANDED);
+  EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
 
   // Verify that minimizing a panel right after expansion works.
   panel->Minimize();
-  MessageLoop::current()->RunAllPending();
-  WaitForExpansionStateChanged(panel, Panel::MINIMIZED);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
 
   panel->Close();
 }

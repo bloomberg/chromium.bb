@@ -271,24 +271,16 @@ void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
 void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<Panel>(panel));
-  if (!panel_testing->IsAnimatingBounds())
-    return;
-  signal.Wait();
-  EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
-}
-
-void BasePanelBrowserTest::WaitForExpansionStateChanged(
-    Panel* panel, Panel::ExpansionState expansion_state) {
-  content::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
-      content::Source<Panel>(panel));
-  if (panel->expansion_state() == expansion_state)
-    return;
-  signal.Wait();
-  EXPECT_EQ(expansion_state, panel->expansion_state());
+  // Sometimes there are several animations in sequence due to content
+  // auto resizing. Wait for all animations to finish.
+  while (panel_testing->IsAnimatingBounds()) {
+    content::WindowedNotificationObserver signal(
+        chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+        content::Source<Panel>(panel));
+    if (!panel_testing->IsAnimatingBounds())
+      return;
+    signal.Wait();
+  }
 }
 
 BasePanelBrowserTest::CreatePanelParams::CreatePanelParams(
