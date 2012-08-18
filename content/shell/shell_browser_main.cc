@@ -20,12 +20,6 @@ namespace {
 
 GURL GetURLForLayoutTest(const char* test_name,
                          std::string* expected_pixel_hash) {
-#if defined(OS_ANDROID)
-  // DumpRenderTree is not currently supported for Android using the content
-  // shell.
-  NOTIMPLEMENTED();
-  return GURL::EmptyGURL();
-#else
   std::string path_or_url = test_name;
   std::string pixel_hash;
   std::string::size_type separator_position = path_or_url.find('\'');
@@ -42,7 +36,6 @@ GURL GetURLForLayoutTest(const char* test_name,
     webkit_support::SetCurrentDirectoryForFileURL(test_url);
   }
   return test_url;
-#endif
 }
 
 }  // namespace
@@ -70,6 +63,11 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
     content::ShellBrowserContext* browser_context =
         static_cast<content::ShellContentBrowserClient*>(
             content::GetContentClient()->browser())->browser_context();
+
+#if defined(OS_ANDROID)
+    puts("#READY");
+    fflush(stdout);
+#endif
 
     while (fgets(test_string, sizeof(test_string), stdin)) {
       char *new_line_position = strchr(test_string, '\n');

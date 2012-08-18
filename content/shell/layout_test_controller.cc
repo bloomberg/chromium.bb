@@ -5,6 +5,7 @@
 #include "content/shell/layout_test_controller.h"
 
 #include "base/md5.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/shell_messages.h"
@@ -188,13 +189,29 @@ void LayoutTestController::OnCaptureImageDump(
 
   SkAutoLockPixels snapshot_lock(snapshot);
   base::MD5Digest digest;
+#if defined(OS_ANDROID)
+  // On Android, pixel layout is RGBA, however, other Chrome platforms use BGRA.
+  const uint8_t* raw_pixels =
+      reinterpret_cast<const uint8_t*>(snapshot.getPixels());
+  size_t snapshot_size = snapshot.getSize();
+  scoped_array<uint8_t> reordered_pixels(new uint8_t[snapshot_size]);
+  for (size_t i = 0; i < snapshot_size; i += 4) {
+    reordered_pixels[i] = raw_pixels[i + 2];
+    reordered_pixels[i + 1] = raw_pixels[i + 1];
+    reordered_pixels[i + 2] = raw_pixels[i];
+    reordered_pixels[i + 3] = raw_pixels[i + 3];
+  }
+  base::MD5Sum(reordered_pixels.get(), snapshot_size, &digest);
+#else
   base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
+#endif
   std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
 
   if (actual_pixel_hash == expected_pixel_hash) {
     SkBitmap empty_image;
     Send(new ShellViewHostMsg_ImageDump(
         routing_id(), actual_pixel_hash, empty_image));
+    return;
   }
   Send(new ShellViewHostMsg_ImageDump(
       routing_id(), actual_pixel_hash, snapshot));

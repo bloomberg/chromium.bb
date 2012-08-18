@@ -118,11 +118,6 @@ void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
 void LayoutTestControllerHost::OnImageDump(
     const std::string& actual_pixel_hash,
     const SkBitmap& image) {
-#if !defined(OS_ANDROID)
-  // DumpRenderTree is not currently supported for Android. Also, on Android
-  // the required webkit_support methods are not defined, so this method just
-  // doesn't compile.
-
   SkAutoLockPixels image_lock(image);
 
   printf("\nActualHash: %s\n", actual_pixel_hash.c_str());
@@ -141,14 +136,27 @@ void LayoutTestControllerHost::OnImageDump(
     bool discard_transparency = true;
 #endif
 
-    if (webkit_support::EncodeBGRAPNGWithChecksum(
-            reinterpret_cast<const unsigned char*>(image.getPixels()),
-            image.width(),
-            image.height(),
-            static_cast<int>(image.rowBytes()),
-            discard_transparency,
-            actual_pixel_hash,
-            &png)) {
+    bool success = false;
+#if defined(OS_ANDROID)
+    success = webkit_support::EncodeRGBAPNGWithChecksum(
+        reinterpret_cast<const unsigned char*>(image.getPixels()),
+        image.width(),
+        image.height(),
+        static_cast<int>(image.rowBytes()),
+        discard_transparency,
+        actual_pixel_hash,
+        &png);
+#else
+    success = webkit_support::EncodeBGRAPNGWithChecksum(
+        reinterpret_cast<const unsigned char*>(image.getPixels()),
+        image.width(),
+        image.height(),
+        static_cast<int>(image.rowBytes()),
+        discard_transparency,
+        actual_pixel_hash,
+        &png);
+#endif
+    if (success) {
       printf("Content-Type: image/png\n");
       printf("Content-Length: %u\n", static_cast<unsigned>(png.size()));
       fwrite(&png[0], 1, png.size(), stdout);
@@ -156,7 +164,6 @@ void LayoutTestControllerHost::OnImageDump(
   }
 
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-#endif
 }
 
 void LayoutTestControllerHost::OnNotifyDone() {
