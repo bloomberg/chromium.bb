@@ -247,6 +247,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return gesture_event_filter_->fling_in_progress_;
   }
 
+  void set_maximum_tap_gap_time_ms(int delay_ms) {
+    gesture_event_filter_->maximum_tap_gap_time_ms_ = delay_ms;
+  }
+
  protected:
   virtual void NotifyRendererUnresponsive() OVERRIDE {
     unresponsive_timer_fired_ = true;
@@ -809,6 +813,7 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
 
   // Make sure that the queue contains what we think it should.
   WebGestureEvent merged_event = host_->GestureEventLastQueueEvent();
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
 
   // Coalesced.
@@ -895,7 +900,7 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
 
   // Advance state realistically.
   SendInputEventACK(WebInputEvent::GestureFlingStart, true);
@@ -908,45 +913,111 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
   process_->sink().ClearMessages();
   SimulateGestureEvent(8, -7, 0, WebInputEvent::GestureScrollUpdate);
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingStart);
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(1U, process_->sink().message_count());
   WebGestureEvent merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
-  EXPECT_FALSE(host_->FlingInProgress());
-  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_TRUE(host_->FlingInProgress());
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
 
   // GFS in queue means that a GFC is added to the queue
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
   merged_event =host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(host_->FlingInProgress());
-  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
-
+  EXPECT_EQ(3U, host_->GestureEventLastQueueEventSize());
 
   // Adding a second GFC is dropped.
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
   EXPECT_FALSE(host_->FlingInProgress());
-  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(3U, host_->GestureEventLastQueueEventSize());
 
   // Adding another GFS will add it to the queue.
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingStart);
   merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
-  EXPECT_FALSE(host_->FlingInProgress());
-  EXPECT_EQ(3U, host_->GestureEventLastQueueEventSize());
+  EXPECT_TRUE(host_->FlingInProgress());
+  EXPECT_EQ(4U, host_->GestureEventLastQueueEventSize());
 
   // GFS in queue means that a GFC is added to the queue
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
   merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(host_->FlingInProgress());
-  EXPECT_EQ(4U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(5U, host_->GestureEventLastQueueEventSize());
 
   // Adding another GFC with a GFC already there is dropped.
   SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
   merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(host_->FlingInProgress());
-  EXPECT_EQ(4U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(5U, host_->GestureEventLastQueueEventSize());
+}
+
+// Test that GestureTapDown events are deferred.
+TEST_F(RenderWidgetHostTest, DeferredGestureTapDown) {
+  process_->sink().ClearMessages();
+
+  // Set some sort of short deferral timeout
+  host_->set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureTapDown);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  // Wait long enough for first timeout and see if it fired.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+}
+
+// Test that GestureTapDown events are sent immediately on GestureTap.
+TEST_F(RenderWidgetHostTest, DeferredGestureTapDownSentOnTap) {
+  process_->sink().ClearMessages();
+
+  // Set some sort of short deferral timeout
+  host_->set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureTapDown);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureTap);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
+  MessageLoop::current()->Run();
+
+  // If the deferral timer incorrectly fired, it sent an extra message.
+  EXPECT_EQ(1U, process_->sink().message_count());
+}
+
+// Test that scroll events during the deferral internal drop the GestureTapDown.
+TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnScroll) {
+  process_->sink().ClearMessages();
+
+  // Set some sort of short deferral timeout
+  host_->set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureTapDown);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
+  MessageLoop::current()->Run();
+
+  // If the deferral timer incorrectly fired, it will send an extra message.
+  EXPECT_EQ(1U, process_->sink().message_count());
 }
 
 // Test that the hang monitor timer expires properly if a new timer is started

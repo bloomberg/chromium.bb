@@ -12,6 +12,13 @@ using WebKit::WebInputEvent;
 
 namespace content {
 namespace {
+
+// Default maximum time between the GestureRecognizer generating a
+// GestureTapDown and when it is forwarded to the renderer.
+// TODO(rjkroege): Make this configurable.
+static const int kMaxiumTapGapTimeMs = 100;
+
+// TODO(rjkroege): Coalesce pinch updates.
 // Returns |true| if two gesture events should be coalesced.
 bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
                                  const WebKit::WebGestureEvent& new_event) {
@@ -24,15 +31,14 @@ bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
 GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)
      : render_widget_host_(rwhv),
        fling_in_progress_(false),
-       gesture_event_pending_(false),
-       tap_suppression_controller_(new TapSuppressionController(rwhv)) {
+       tap_suppression_controller_(new TapSuppressionController(rwhv)),
+       maximum_tap_gap_time_ms_(kMaxiumTapGapTimeMs) {
 }
 
 GestureEventFilter::~GestureEventFilter() { }
 
 bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
     const WebKit::WebGestureEvent& gesture_event) {
-  DCHECK(gesture_event.type == WebInputEvent::GestureFlingCancel);
   if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
   GestureEventQueue::reverse_iterator it =
@@ -47,59 +53,64 @@ bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
   return true;
 }
 
+// TODO(rjkroege): separate touchpad and touchscreen events.
 bool GestureEventFilter::ShouldForward(const WebGestureEvent& gesture_event) {
-  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
-    if (ShouldDiscardFlingCancelEvent(gesture_event))
+  switch (gesture_event.type) {
+    case WebInputEvent::GestureFlingCancel:
+      if (!ShouldDiscardFlingCancelEvent(gesture_event)) {
+        coalesced_gesture_events_.push_back(gesture_event);
+        fling_in_progress_ = false;
+        return ShouldHandleEventNow();
+      }
       return false;
-    fling_in_progress_ = false;
+    case WebInputEvent::GestureFlingStart:
+      fling_in_progress_ = true;
+      coalesced_gesture_events_.push_back(gesture_event);
+      return ShouldHandleEventNow();
+    case WebInputEvent::GestureTapDown:
+      deferred_tap_down_event_ = gesture_event;
+      send_gtd_timer_.Start(FROM_HERE,
+          base::TimeDelta::FromMilliseconds(maximum_tap_gap_time_ms_),
+          this,
+          &GestureEventFilter::SendGestureTapDownNow);
+      return false;
+    case WebInputEvent::GestureTap:
+      send_gtd_timer_.Stop();
+      coalesced_gesture_events_.push_back(deferred_tap_down_event_);
+      if (ShouldHandleEventNow()) {
+          render_widget_host_->ForwardGestureEventImmediately(
+              deferred_tap_down_event_);
+      }
+      coalesced_gesture_events_.push_back(gesture_event);
+      return false;
+    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::GesturePinchBegin:
+      send_gtd_timer_.Stop();
+      coalesced_gesture_events_.push_back(gesture_event);
+      return ShouldHandleEventNow();
+    case WebInputEvent::GestureScrollUpdate:
+      MergeOrInsertScrollEvent(gesture_event);
+      return ShouldHandleEventNow();
+    default:
+      coalesced_gesture_events_.push_back(gesture_event);
+      return ShouldHandleEventNow();
   }
 
-  if (gesture_event_pending_) {
-    if (coalesced_gesture_events_.empty() ||
-        !ShouldCoalesceGestureEvents(coalesced_gesture_events_.back(),
-                                     gesture_event)) {
-     coalesced_gesture_events_.push_back(gesture_event);
-    } else {
-      WebGestureEvent* last_gesture_event =
-          &coalesced_gesture_events_.back();
-      last_gesture_event->deltaX += gesture_event.deltaX;
-      last_gesture_event->deltaY += gesture_event.deltaY;
-      DCHECK_GE(gesture_event.timeStampSeconds,
-                last_gesture_event->timeStampSeconds);
-      last_gesture_event->timeStampSeconds = gesture_event.timeStampSeconds;
-    }
-    return false;
-  }
-  gesture_event_pending_ = true;
-
-  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
-    tap_suppression_controller_->GestureFlingCancel(
-        gesture_event.timeStampSeconds);
-  } else if (gesture_event.type == WebInputEvent::GestureFlingStart) {
-    fling_in_progress_ = true;
-  }
-
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 void GestureEventFilter::Reset() {
   fling_in_progress_ = false;
   coalesced_gesture_events_.clear();
-  gesture_event_pending_ = false;
+  // TODO(rjkroege): Reset the tap suppression controller.
 }
 
 void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
-  if (type == WebInputEvent::GestureFlingCancel)
-    tap_suppression_controller_->GestureFlingCancelAck(processed);
-
-  gesture_event_pending_ = false;
-
-  // Now send the next (coalesced) gesture event.
+  coalesced_gesture_events_.pop_front();
   if (!coalesced_gesture_events_.empty()) {
-    WebGestureEvent next_gesture_event =
-        coalesced_gesture_events_.front();
-    coalesced_gesture_events_.pop_front();
-    render_widget_host_->ForwardGestureEvent(next_gesture_event);
+    WebGestureEvent next_gesture_event = coalesced_gesture_events_.front();
+    render_widget_host_->ForwardGestureEventImmediately(next_gesture_event);
   }
 }
 
@@ -109,6 +120,38 @@ TapSuppressionController*  GestureEventFilter::GetTapSuppressionController() {
 
 void GestureEventFilter::FlingHasBeenHalted() {
   fling_in_progress_ = false;
+}
+
+bool GestureEventFilter::ShouldHandleEventNow() {
+  return coalesced_gesture_events_.size() == 1;
+}
+
+void GestureEventFilter::SendGestureTapDownNow() {
+  coalesced_gesture_events_.push_back(deferred_tap_down_event_);
+  if (ShouldHandleEventNow()) {
+      render_widget_host_->ForwardGestureEventImmediately(
+          deferred_tap_down_event_);
+  }
+}
+
+void GestureEventFilter::MergeOrInsertScrollEvent(
+    const WebGestureEvent& gesture_event) {
+  WebGestureEvent* last_gesture_event = coalesced_gesture_events_.empty() ? 0 :
+      &coalesced_gesture_events_.back();
+  if (coalesced_gesture_events_.size() > 1 &&
+      last_gesture_event->type == gesture_event.type &&
+      last_gesture_event->modifiers == gesture_event.modifiers) {
+    last_gesture_event->deltaX += gesture_event.deltaX;
+    last_gesture_event->deltaY += gesture_event.deltaY;
+    DLOG_IF(WARNING,
+            gesture_event.timeStampSeconds >=
+            last_gesture_event->timeStampSeconds)
+            << "Event time not monotonic?\n";
+    DCHECK(last_gesture_event->type == WebInputEvent::GestureScrollUpdate);
+    last_gesture_event->timeStampSeconds = gesture_event.timeStampSeconds;
+  } else {
+    coalesced_gesture_events_.push_back(gesture_event);
+  }
 }
 
 } // namespace content

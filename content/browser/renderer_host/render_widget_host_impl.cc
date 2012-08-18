@@ -928,6 +928,13 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
 }
 
+void RenderWidgetHostImpl::ForwardGestureEventImmediately(
+    const WebKit::WebGestureEvent& gesture_event) {
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
+    return;
+  ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
+}
+
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardKeyboardEvent");

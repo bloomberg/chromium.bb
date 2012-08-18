@@ -232,6 +232,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ForwardGestureEvent(const WebKit::WebGestureEvent& gesture_event);
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
 
+  // Forwards the given event immediately to the renderer.
+  void ForwardGestureEventImmediately(
+      const WebKit::WebGestureEvent& gesture_event);
+
 #if defined(TOOLKIT_GTK)
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.
