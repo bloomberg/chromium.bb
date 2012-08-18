@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
@@ -28,12 +29,14 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
+class ChannelMultiplexer;
 class JingleSessionManager;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. Instances of this class are
 // created by the JingleSessionManager.
 class JingleSession : public Session,
+                      public ChannelFactory,
                       public Transport::EventHandler {
  public:
   virtual ~JingleSession();
@@ -41,6 +44,15 @@ class JingleSession : public Session,
   // Session interface.
   virtual void SetEventHandler(Session::EventHandler* event_handler) OVERRIDE;
   virtual ErrorCode error() OVERRIDE;
+  virtual const std::string& jid() OVERRIDE;
+  virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
+  virtual const SessionConfig& config() OVERRIDE;
+  virtual void set_config(const SessionConfig& config) OVERRIDE;
+  virtual ChannelFactory* GetTransportChannelFactory() OVERRIDE;
+  virtual ChannelFactory* GetMultiplexedChannelFactory() OVERRIDE;
+  virtual void Close() OVERRIDE;
+
+  // ChannelFactory interface.
   virtual void CreateStreamChannel(
       const std::string& name,
       const StreamChannelCallback& callback) OVERRIDE;
@@ -48,11 +60,6 @@ class JingleSession : public Session,
       const std::string& name,
       const DatagramChannelCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
-  virtual const std::string& jid() OVERRIDE;
-  virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
-  virtual const SessionConfig& config() OVERRIDE;
-  virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual void Close() OVERRIDE;
 
   // Transport::EventHandler interface.
   virtual void OnTransportCandidate(
@@ -142,6 +149,7 @@ class JingleSession : public Session,
   std::list<IqRequest*> pending_requests_;
 
   ChannelsMap channels_;
+  scoped_ptr<ChannelMultiplexer> channel_multiplexer_;
 
   base::OneShotTimer<JingleSession> transport_infos_timer_;
   std::list<JingleMessage::NamedCandidate> pending_candidates_;

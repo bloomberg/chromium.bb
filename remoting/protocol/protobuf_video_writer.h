@@ -20,6 +20,7 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
+class ChannelFactory;
 class Session;
 
 class ProtobufVideoWriter : public VideoWriter {
@@ -41,11 +42,9 @@ class ProtobufVideoWriter : public VideoWriter {
  private:
   void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
 
-  Session* session_;
-
   InitializedCallback initialized_callback_;
 
-  // TODO(sergeyu): Remove |channel_| and let |buffered_writer_| own it.
+  ChannelFactory* channel_factory_;
   scoped_ptr<net::StreamSocket> channel_;
 
   BufferedSocketWriter buffered_writer_;

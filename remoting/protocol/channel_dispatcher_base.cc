@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
@@ -13,21 +14,21 @@ namespace protocol {
 
 ChannelDispatcherBase::ChannelDispatcherBase(const char* channel_name)
     : channel_name_(channel_name),
-      session_(NULL) {
+      channel_factory_(NULL) {
 }
 
 ChannelDispatcherBase::~ChannelDispatcherBase() {
-  if (session_)
-    session_->CancelChannelCreation(channel_name_);
+  if (channel_factory_)
+    channel_factory_->CancelChannelCreation(channel_name_);
 }
 
 void ChannelDispatcherBase::Init(Session* session,
                                  const InitializedCallback& callback) {
   DCHECK(session);
-  session_ = session;
+  channel_factory_ = session->GetTransportChannelFactory();
   initialized_callback_ = callback;
 
-  session_->CreateStreamChannel(channel_name_, base::Bind(
+  channel_factory_->CreateStreamChannel(channel_name_, base::Bind(
       &ChannelDispatcherBase::OnChannelReady, base::Unretained(this)));
 }
 

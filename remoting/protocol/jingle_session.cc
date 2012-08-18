@@ -13,6 +13,7 @@
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/channel_multiplexer.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
@@ -38,6 +39,9 @@ const int kTransportInfoSendDelayMs = 2;
 // |transport-info|.
 const int kMessageResponseTimeoutSeconds = 10;
 
+// Name of the multiplexed channel.
+const char kMuxChannelName[] = "mux";
+
 ErrorCode AuthRejectionReasonToErrorCode(
     Authenticator::RejectionReason reason) {
   switch (reason) {
@@ -61,6 +65,7 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 }
 
 JingleSession::~JingleSession() {
+  channel_multiplexer_.reset();
   STLDeleteContainerPointers(pending_requests_.begin(),
                              pending_requests_.end());
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
@@ -170,6 +175,46 @@ void JingleSession::AcceptIncomingConnection(
   return;
 }
 
+const std::string& JingleSession::jid() {
+  DCHECK(CalledOnValidThread());
+  return peer_jid_;
+}
+
+const CandidateSessionConfig* JingleSession::candidate_config() {
+  DCHECK(CalledOnValidThread());
+  return candidate_config_.get();
+}
+
+const SessionConfig& JingleSession::config() {
+  DCHECK(CalledOnValidThread());
+  return config_;
+}
+
+void JingleSession::set_config(const SessionConfig& config) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!config_is_set_);
+  config_ = config;
+  config_is_set_ = true;
+}
+
+ChannelFactory* JingleSession::GetTransportChannelFactory() {
+  DCHECK(CalledOnValidThread());
+  return this;
+}
+
+ChannelFactory* JingleSession::GetMultiplexedChannelFactory() {
+  DCHECK(CalledOnValidThread());
+  if (!channel_multiplexer_.get())
+    channel_multiplexer_.reset(new ChannelMultiplexer(this, kMuxChannelName));
+  return channel_multiplexer_.get();
+}
+
+void JingleSession::Close() {
+  DCHECK(CalledOnValidThread());
+
+  CloseInternal(OK);
+}
+
 void JingleSession::CreateStreamChannel(
       const std::string& name,
       const StreamChannelCallback& callback) {
@@ -204,34 +249,6 @@ void JingleSession::CancelChannelCreation(const std::string& name) {
     delete it->second;
     DCHECK(!channels_[name]);
   }
-}
-
-const std::string& JingleSession::jid() {
-  DCHECK(CalledOnValidThread());
-  return peer_jid_;
-}
-
-const CandidateSessionConfig* JingleSession::candidate_config() {
-  DCHECK(CalledOnValidThread());
-  return candidate_config_.get();
-}
-
-const SessionConfig& JingleSession::config() {
-  DCHECK(CalledOnValidThread());
-  return config_;
-}
-
-void JingleSession::set_config(const SessionConfig& config) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!config_is_set_);
-  config_ = config;
-  config_is_set_ = true;
-}
-
-void JingleSession::Close() {
-  DCHECK(CalledOnValidThread());
-
-  CloseInternal(OK);
 }
 
 void JingleSession::OnTransportCandidate(Transport* transport,

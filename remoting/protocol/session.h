@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/session_config.h"
 
@@ -18,12 +17,13 @@ class IPEndPoint;
 namespace remoting {
 namespace protocol {
 
+class ChannelFactory;
 struct TransportRoute;
 
 // Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
-class Session : public ChannelFactory {
+class Session {
  public:
   enum State {
     // Created, but not connecting yet.
@@ -97,6 +97,12 @@ class Session : public ChannelFactory {
   // called on the host before the connection is accepted, from
   // ChromotocolServer::IncomingConnectionCallback.
   virtual void set_config(const SessionConfig& config) = 0;
+
+  // GetTransportChannelFactory() returns a factory that creates a new transport
+  // channel for each logical channel. GetMultiplexedChannelFactory() channels
+  // share a single underlying transport channel
+  virtual ChannelFactory* GetTransportChannelFactory() = 0;
+  virtual ChannelFactory* GetMultiplexedChannelFactory() = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called
   // after this method returns. Must be called before the object is

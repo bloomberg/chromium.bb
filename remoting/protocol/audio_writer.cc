@@ -16,53 +16,20 @@ namespace remoting {
 namespace protocol {
 
 AudioWriter::AudioWriter()
-    : session_(NULL) {
+    : ChannelDispatcherBase(kAudioChannelName) {
 }
 
 AudioWriter::~AudioWriter() {
-  Close();
 }
 
-void AudioWriter::Init(protocol::Session* session,
-                               const InitializedCallback& callback) {
-  session_ = session;
-  initialized_callback_ = callback;
-
-  session_->CreateStreamChannel(
-      kAudioChannelName,
-      base::Bind(&AudioWriter::OnChannelReady, base::Unretained(this)));
-}
-
-void AudioWriter::OnChannelReady(scoped_ptr<net::StreamSocket> socket) {
-  if (!socket.get()) {
-    initialized_callback_.Run(false);
-    return;
-  }
-
-  DCHECK(!channel_.get());
-  channel_ = socket.Pass();
-  // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
+void AudioWriter::OnInitialized() {
+  // TODO(sergeyu): Provide a non-null WriteFailedCallback for the writer.
   buffered_writer_.Init(
-      channel_.get(), BufferedSocketWriter::WriteFailedCallback());
-
-  initialized_callback_.Run(true);
-}
-
-void AudioWriter::Close() {
-  buffered_writer_.Close();
-  channel_.reset();
-  if (session_) {
-    session_->CancelChannelCreation(kAudioChannelName);
-    session_ = NULL;
-  }
-}
-
-bool AudioWriter::is_connected() {
-  return channel_.get() != NULL;
+      channel(), BufferedSocketWriter::WriteFailedCallback());
 }
 
 void AudioWriter::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
-                                             const base::Closure& done) {
+                                     const base::Closure& done) {
   buffered_writer_.Write(SerializeAndFrameMessage(*packet), done);
 }
 

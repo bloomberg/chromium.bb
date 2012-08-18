@@ -152,11 +152,8 @@ class MockSession : public Session {
 
   MOCK_METHOD1(SetEventHandler, void(Session::EventHandler* event_handler));
   MOCK_METHOD0(error, ErrorCode());
-  MOCK_METHOD2(CreateStreamChannel, void(
-      const std::string& name, const StreamChannelCallback& callback));
-  MOCK_METHOD2(CreateDatagramChannel, void(
-      const std::string& name, const DatagramChannelCallback& callback));
-  MOCK_METHOD1(CancelChannelCreation, void(const std::string& name));
+  MOCK_METHOD0(GetTransportChannelFactory, ChannelFactory*());
+  MOCK_METHOD0(GetMultiplexedChannelFactory, ChannelFactory*());
   MOCK_METHOD0(jid, const std::string&());
   MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig&());

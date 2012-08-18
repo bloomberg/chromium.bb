@@ -308,23 +308,6 @@ ErrorCode FakeSession::error() {
   return error_;
 }
 
-void FakeSession::CreateStreamChannel(
-    const std::string& name, const StreamChannelCallback& callback) {
-  scoped_ptr<FakeSocket> channel(new FakeSocket());
-  stream_channels_[name] = channel.get();
-  callback.Run(channel.PassAs<net::StreamSocket>());
-}
-
-void FakeSession::CreateDatagramChannel(
-    const std::string& name, const DatagramChannelCallback& callback) {
-  scoped_ptr<FakeUdpSocket> channel(new FakeUdpSocket());
-  datagram_channels_[name] = channel.get();
-  callback.Run(channel.PassAs<net::Socket>());
-}
-
-void FakeSession::CancelChannelCreation(const std::string& name) {
-}
-
 const std::string& FakeSession::jid() {
   return jid_;
 }
@@ -341,8 +324,33 @@ void FakeSession::set_config(const SessionConfig& config) {
   config_ = config;
 }
 
+ChannelFactory* FakeSession::GetTransportChannelFactory() {
+  return this;
+}
+
+ChannelFactory* FakeSession::GetMultiplexedChannelFactory() {
+  return this;
+}
+
 void FakeSession::Close() {
   closed_ = true;
+}
+
+void FakeSession::CreateStreamChannel(
+    const std::string& name, const StreamChannelCallback& callback) {
+  scoped_ptr<FakeSocket> channel(new FakeSocket());
+  stream_channels_[name] = channel.get();
+  callback.Run(channel.PassAs<net::StreamSocket>());
+}
+
+void FakeSession::CreateDatagramChannel(
+    const std::string& name, const DatagramChannelCallback& callback) {
+  scoped_ptr<FakeUdpSocket> channel(new FakeUdpSocket());
+  datagram_channels_[name] = channel.get();
+  callback.Run(channel.PassAs<net::Socket>());
+}
+
+void FakeSession::CancelChannelCreation(const std::string& name) {
 }
 
 }  // namespace protocol

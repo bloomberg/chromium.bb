@@ -56,6 +56,11 @@ class ChannelMultiplexerTest : public testing::Test {
     host_mux_.reset(new ChannelMultiplexer(&host_session_, kMuxChannelName));
     client_mux_.reset(new ChannelMultiplexer(&client_session_,
                                              kMuxChannelName));
+  }
+
+  // Connect sockets to each other. Must be called after we've created at least
+  // one channel with each multiplexer.
+  void ConnectSockets() {
     FakeSocket* host_socket =
         host_session_.GetStreamChannel(ChannelMultiplexer::kMuxChannelName);
     FakeSocket* client_socket =
@@ -123,6 +128,8 @@ TEST_F(ChannelMultiplexerTest, OneChannel) {
   scoped_ptr<net::StreamSocket> client_socket;
   ASSERT_NO_FATAL_FAILURE(CreateChannel("test", &host_socket, &client_socket));
 
+  ConnectSockets();
+
   StreamConnectionTester tester(host_socket.get(), client_socket.get(),
                                 kMessageSize, kMessages);
   tester.Start();
@@ -140,6 +147,8 @@ TEST_F(ChannelMultiplexerTest, TwoChannels) {
   scoped_ptr<net::StreamSocket> client_socket2_;
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel("ch2", &host_socket2_, &client_socket2_));
+
+  ConnectSockets();
 
   StreamConnectionTester tester1(host_socket1_.get(), client_socket1_.get(),
                                 kMessageSize, kMessages);
@@ -176,6 +185,8 @@ TEST_F(ChannelMultiplexerTest, FourChannels) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel("ch4", &host_socket4, &client_socket4));
 
+  ConnectSockets();
+
   StreamConnectionTester tester1(host_socket1_.get(), client_socket1_.get(),
                                 kMessageSize, kMessages);
   StreamConnectionTester tester2(host_socket2_.get(), client_socket2_.get(),
@@ -209,6 +220,8 @@ TEST_F(ChannelMultiplexerTest, SyncFail) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel("ch2", &host_socket2_, &client_socket2_));
 
+  ConnectSockets();
+
   host_session_.GetStreamChannel(kMuxChannelName)->
       set_next_write_error(net::ERR_FAILED);
   host_session_.GetStreamChannel(kMuxChannelName)->
@@ -239,6 +252,8 @@ TEST_F(ChannelMultiplexerTest, AsyncFail) {
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel("ch2", &host_socket2_, &client_socket2_));
 
+  ConnectSockets();
+
   host_session_.GetStreamChannel(kMuxChannelName)->
       set_next_write_error(net::ERR_FAILED);
   host_session_.GetStreamChannel(kMuxChannelName)->
@@ -266,6 +281,8 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
       CreateChannel("test", &host_socket1_, &client_socket1_));
   ASSERT_NO_FATAL_FAILURE(
       CreateChannel("ch2", &host_socket2_, &client_socket2_));
+
+  ConnectSockets();
 
   host_session_.GetStreamChannel(kMuxChannelName)->
       set_next_write_error(net::ERR_FAILED);

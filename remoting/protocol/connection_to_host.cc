@@ -171,8 +171,9 @@ void ConnectionToHost::OnSessionStateChange(
 
       audio_reader_ = AudioReader::Create(session_->config());
       if (audio_reader_.get()) {
-        audio_reader_->Init(session_.get(), audio_stub_, base::Bind(
+        audio_reader_->Init(session_.get(), base::Bind(
             &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
+        audio_reader_->set_audio_stub(audio_stub_);
       }
 
       control_dispatcher_.reset(new ClientControlDispatcher());

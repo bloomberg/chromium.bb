@@ -17,6 +17,7 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
+class ChannelFactory;
 class Session;
 
 class ProtobufVideoReader : public VideoReader {
@@ -35,13 +36,11 @@ class ProtobufVideoReader : public VideoReader {
   void OnNewData(scoped_ptr<VideoPacket> packet,
                  const base::Closure& done_task);
 
-  Session* session_;
-
   InitializedCallback initialized_callback_;
 
   VideoPacketFormat::Encoding encoding_;
 
-  // TODO(sergeyu): Remove |channel_| and let |reader_| own it.
+  ChannelFactory* channel_factory_;
   scoped_ptr<net::StreamSocket> channel_;
 
   ProtobufMessageReader<VideoPacket> reader_;

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/protocol/channel_dispatcher_base.h"
 
 namespace net {
 class StreamSocket;
@@ -24,41 +25,24 @@ namespace protocol {
 class Session;
 class SessionConfig;
 
-class AudioWriter : public AudioStub {
+class AudioWriter : public ChannelDispatcherBase,
+                    public AudioStub {
  public:
-  virtual ~AudioWriter();
-
-  // The callback is called when initialization is finished. The
-  // parameter is set to true on success.
-  typedef base::Callback<void(bool)> InitializedCallback;
-
+  // Once AudioWriter is created, the Init() method of ChannelDispatcherBase
+  // should be used to initialize it for the session.
   static scoped_ptr<AudioWriter> Create(const SessionConfig& config);
 
-  // Initializes the writer.
-  void Init(Session* session, const InitializedCallback& callback);
-
-  // Stops writing. Must be called on the network thread before this
-  // object is destroyed.
-  void Close();
-
-  // Returns true if the channel is connected.
-  bool is_connected();
+  virtual ~AudioWriter();
 
   // AudioStub interface.
   virtual void ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
                                   const base::Closure& done) OVERRIDE;
 
+ protected:
+  virtual void OnInitialized() OVERRIDE;
+
  private:
   AudioWriter();
-
-  void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
-
-  Session* session_;
-
-  InitializedCallback initialized_callback_;
-
-  // TODO(sergeyu): Remove |channel_| and let |buffered_writer_| own it.
-  scoped_ptr<net::StreamSocket> channel_;
 
   BufferedSocketWriter buffered_writer_;
 

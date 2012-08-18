@@ -228,13 +228,15 @@ class JingleSessionTest : public testing::Test {
   }
 
   void CreateChannel() {
-    client_session_->CreateStreamChannel(kChannelName, base::Bind(
-        &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
-    host_session_->CreateStreamChannel(kChannelName, base::Bind(
-        &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
+    client_session_->GetTransportChannelFactory()->CreateStreamChannel(
+        kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                                 base::Unretained(this)));
+    host_session_->GetTransportChannelFactory()->CreateStreamChannel(
+        kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                                 base::Unretained(this)));
 
     int counter = 2;
-    ExpectRouteChange();
+    ExpectRouteChange(kChannelName);
     EXPECT_CALL(client_channel_callback_, OnDone(_))
         .WillOnce(QuitThreadOnCounter(&counter));
     EXPECT_CALL(host_channel_callback_, OnDone(_))
@@ -245,12 +247,12 @@ class JingleSessionTest : public testing::Test {
     EXPECT_TRUE(host_socket_.get());
   }
 
-  void ExpectRouteChange() {
+  void ExpectRouteChange(const std::string& channel_name) {
     EXPECT_CALL(host_session_event_handler_,
-                OnSessionRouteChange(kChannelName, _))
+                OnSessionRouteChange(channel_name, _))
         .Times(AtLeast(1));
     EXPECT_CALL(client_session_event_handler_,
-                OnSessionRouteChange(kChannelName, _))
+                OnSessionRouteChange(channel_name, _))
         .Times(AtLeast(1));
   }
 
@@ -357,6 +359,37 @@ TEST_F(JingleSessionTest, TestStreamChannel) {
   tester.CheckResults();
 }
 
+// Verify that data can be sent over a multiplexed channel.
+TEST_F(JingleSessionTest, TestMuxStreamChannel) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  client_session_->GetMultiplexedChannelFactory()->CreateStreamChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  host_session_->GetMultiplexedChannelFactory()->CreateStreamChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                               base::Unretained(this)));
+
+  int counter = 2;
+  ExpectRouteChange("mux");
+  EXPECT_CALL(client_channel_callback_, OnDone(_))
+      .WillOnce(QuitThreadOnCounter(&counter));
+  EXPECT_CALL(host_channel_callback_, OnDone(_))
+      .WillOnce(QuitThreadOnCounter(&counter));
+  message_loop_->Run();
+
+  EXPECT_TRUE(client_socket_.get());
+  EXPECT_TRUE(host_socket_.get());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_->Run();
+  tester.CheckResults();
+}
+
 // Verify that we can connect channels with multistep auth.
 TEST_F(JingleSessionTest, TestMultistepAuthStreamChannel) {
   CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
@@ -378,10 +411,12 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  client_session_->CreateStreamChannel(kChannelName, base::Bind(
-      &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
-  host_session_->CreateStreamChannel(kChannelName, base::Bind(
-      &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
+  client_session_->GetTransportChannelFactory()->CreateStreamChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  host_session_->GetTransportChannelFactory()->CreateStreamChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                               base::Unretained(this)));
 
   // Terminate the message loop when we get rejection notification
   // from the host.
@@ -389,7 +424,7 @@ TEST_F(JingleSessionTest, TestFailedChannelAuth) {
       .WillOnce(QuitThread());
   EXPECT_CALL(client_channel_callback_, OnDone(_))
       .Times(AtMost(1));
-  ExpectRouteChange();
+  ExpectRouteChange(kChannelName);
 
   message_loop_->Run();
 

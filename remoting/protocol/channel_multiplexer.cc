@@ -365,10 +365,6 @@ ChannelMultiplexer::ChannelMultiplexer(ChannelFactory* factory,
       base_channel_name_(base_channel_name),
       next_channel_id_(0),
       destroyed_flag_(NULL) {
-  factory->CreateStreamChannel(
-      base_channel_name,
-      base::Bind(&ChannelMultiplexer::OnBaseChannelReady,
-                 base::Unretained(this)));
 }
 
 ChannelMultiplexer::~ChannelMultiplexer() {
@@ -396,6 +392,14 @@ void ChannelMultiplexer::CreateStreamChannel(
   } else {
     // Still waiting for the |base_channel_|.
     pending_channels_.push_back(PendingChannel(name, callback));
+
+    // If this is the first multiplexed channel then create the base channel.
+    if (pending_channels_.size() == 1U) {
+      base_channel_factory_->CreateStreamChannel(
+          base_channel_name_,
+          base::Bind(&ChannelMultiplexer::OnBaseChannelReady,
+                     base::Unretained(this)));
+    }
   }
 }
 

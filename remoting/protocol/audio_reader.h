@@ -10,6 +10,7 @@
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/channel_dispatcher_base.h"
 
 namespace net {
 class StreamSocket;
@@ -21,37 +22,24 @@ namespace protocol {
 class Session;
 class SessionConfig;
 
-class AudioReader {
+class AudioReader : public ChannelDispatcherBase {
  public:
-  // The callback is called when initialization is finished. The
-  // parameter is set to true on success.
-  typedef base::Callback<void(bool)> InitializedCallback;
+  static scoped_ptr<AudioReader> Create(const SessionConfig& config);
 
   virtual ~AudioReader();
 
-  static scoped_ptr<AudioReader> Create(const SessionConfig& config);
+  void set_audio_stub(AudioStub* audio_stub) { audio_stub_ = audio_stub; }
 
-  // Initializies the reader.
-  void Init(Session* session,
-            AudioStub* audio_stub,
-            const InitializedCallback& callback);
-  bool is_connected();
+ protected:
+  virtual void OnInitialized() OVERRIDE;
 
  private:
   explicit AudioReader(AudioPacket::Encoding encoding);
 
-  void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
   void OnNewData(scoped_ptr<AudioPacket> packet,
                  const base::Closure& done_task);
 
-  Session* session_;
-
-  InitializedCallback initialized_callback_;
-
   AudioPacket::Encoding encoding_;
-
-  // TODO(sergeyu): Remove |channel_| and let |reader_| own it.
-  scoped_ptr<net::StreamSocket> channel_;
 
   ProtobufMessageReader<AudioPacket> reader_;
 

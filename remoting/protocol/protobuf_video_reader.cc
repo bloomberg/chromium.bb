@@ -8,30 +8,31 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
 namespace protocol {
 
 ProtobufVideoReader::ProtobufVideoReader(VideoPacketFormat::Encoding encoding)
-    : session_(NULL),
-      encoding_(encoding),
+    : encoding_(encoding),
+      channel_factory_(NULL),
       video_stub_(NULL) {
 }
 
 ProtobufVideoReader::~ProtobufVideoReader() {
-  if (session_)
-    session_->CancelChannelCreation(kVideoChannelName);
+  if (channel_factory_)
+    channel_factory_->CancelChannelCreation(kVideoChannelName);
 }
 
 void ProtobufVideoReader::Init(protocol::Session* session,
                                VideoStub* video_stub,
                                const InitializedCallback& callback) {
-  session_ = session;
+  channel_factory_ = session->GetTransportChannelFactory();
   initialized_callback_ = callback;
   video_stub_ = video_stub;
 
-  session_->CreateStreamChannel(
+  channel_factory_->CreateStreamChannel(
       kVideoChannelName,
       base::Bind(&ProtobufVideoReader::OnChannelReady, base::Unretained(this)));
 }

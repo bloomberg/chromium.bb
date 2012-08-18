@@ -8,6 +8,7 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/util.h"
 
@@ -15,7 +16,7 @@ namespace remoting {
 namespace protocol {
 
 ProtobufVideoWriter::ProtobufVideoWriter()
-    : session_(NULL) {
+    : channel_factory_(NULL) {
 }
 
 ProtobufVideoWriter::~ProtobufVideoWriter() {
@@ -24,10 +25,10 @@ ProtobufVideoWriter::~ProtobufVideoWriter() {
 
 void ProtobufVideoWriter::Init(protocol::Session* session,
                                const InitializedCallback& callback) {
-  session_ = session;
+  channel_factory_ = session->GetTransportChannelFactory();
   initialized_callback_ = callback;
 
-  session_->CreateStreamChannel(
+  channel_factory_->CreateStreamChannel(
       kVideoChannelName,
       base::Bind(&ProtobufVideoWriter::OnChannelReady, base::Unretained(this)));
 }
@@ -50,9 +51,9 @@ void ProtobufVideoWriter::OnChannelReady(scoped_ptr<net::StreamSocket> socket) {
 void ProtobufVideoWriter::Close() {
   buffered_writer_.Close();
   channel_.reset();
-  if (session_) {
-    session_->CancelChannelCreation(kVideoChannelName);
-    session_ = NULL;
+  if (channel_factory_) {
+    channel_factory_->CancelChannelCreation(kVideoChannelName);
+    channel_factory_ = NULL;
   }
 }
 
