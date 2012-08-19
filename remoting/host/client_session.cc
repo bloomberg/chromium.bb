@@ -39,27 +39,13 @@ ClientSession::ClientSession(
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
   // set before channels are connected. Make it possible to set stubs
   // later and set them only when connection is authenticated.
-  connection_->set_clipboard_stub(this);
+  connection_->set_clipboard_stub(&auth_clipboard_filter_);
   connection_->set_host_stub(this);
   connection_->set_input_stub(this);
   clipboard_echo_filter_.set_host_stub(host_clipboard_stub_);
 }
 
 ClientSession::~ClientSession() {
-}
-
-void ClientSession::InjectClipboardEvent(
-    const protocol::ClipboardEvent& event) {
-  DCHECK(CalledOnValidThread());
-
-  // TODO(wez): Disable clipboard in both directions on local activity, and
-  // replace these tests with a HostInputFilter (or ClipboardFilter).
-  if (auth_input_filter_.input_stub() == NULL)
-    return;
-  if (disable_input_filter_.input_stub() == NULL)
-    return;
-
-  clipboard_echo_filter_.host_filter()->InjectClipboardEvent(event);
 }
 
 void ClientSession::InjectKeyEvent(const protocol::KeyEvent& event) {
@@ -99,15 +85,20 @@ void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+
   is_authenticated_ = true;
   auth_input_filter_.set_input_stub(&disable_input_filter_);
+  auth_clipboard_filter_.set_clipboard_stub(&disable_clipboard_filter_);
+
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
+
   if (max_duration_ > base::TimeDelta()) {
     // TODO(simonmorris): Let Disconnect() tell the client that the
     // disconnection was caused by the session exceeding its maximum duration.
     max_duration_timer_.Start(FROM_HERE, max_duration_,
                               this, &ClientSession::Disconnect);
   }
+
   event_handler_->OnSessionAuthenticated(this);
 }
 
@@ -127,6 +118,7 @@ void ClientSession::OnConnectionClosed(
   if (!is_authenticated_)
     event_handler_->OnSessionAuthenticationFailed(this);
   auth_input_filter_.set_input_stub(NULL);
+  auth_clipboard_filter_.set_clipboard_stub(NULL);
 
   // Ensure that any pressed keys or buttons are released.
   input_tracker_.ReleaseAll();
@@ -171,9 +163,12 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 
   if (disable_inputs) {
     disable_input_filter_.set_input_stub(NULL);
+    disable_clipboard_filter_.set_clipboard_stub(NULL);
     input_tracker_.ReleaseAll();
   } else {
     disable_input_filter_.set_input_stub(&mouse_input_filter_);
+    disable_clipboard_filter_.set_clipboard_stub(
+        clipboard_echo_filter_.host_filter());
   }
 }
 

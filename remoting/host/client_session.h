@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
+#include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
@@ -27,8 +28,7 @@ class VideoFrameCapturer;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
-class ClientSession : public protocol::ClipboardStub,
-                      public protocol::HostStub,
+class ClientSession : public protocol::HostStub,
                       public protocol::InputStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public base::NonThreadSafe {
@@ -73,10 +73,6 @@ class ClientSession : public protocol::ClipboardStub,
                 VideoFrameCapturer* capturer,
                 const base::TimeDelta& max_duration);
   virtual ~ClientSession();
-
-  // protocol::ClipboardStub interface.
-  virtual void InjectClipboardEvent(
-      const protocol::ClipboardEvent& event) OVERRIDE;
 
   // protocol::InputStub interface.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
@@ -152,11 +148,13 @@ class ClientSession : public protocol::ClipboardStub,
   // Filter used to clamp mouse events to the current display dimensions.
   protocol::MouseInputFilter mouse_input_filter_;
 
-  // Filter used to manage enabling & disabling of client input events.
+  // Filters used to manage enabling & disabling of input & clipboard.
   protocol::InputFilter disable_input_filter_;
+  protocol::ClipboardFilter disable_clipboard_filter_;
 
-  // Filter used to disable inputs when we're not authenticated.
+  // Filters used to disable input & clipboard when we're not authenticated.
   protocol::InputFilter auth_input_filter_;
+  protocol::ClipboardFilter auth_clipboard_filter_;
 
   // Filter to used to stop clipboard items sent from the client being echoed
   // back to it.
@@ -165,7 +163,7 @@ class ClientSession : public protocol::ClipboardStub,
   // Factory for weak pointers to the client clipboard stub.
   // This must appear after |clipboard_echo_filter_|, so that it won't outlive
   // it.
-  base::WeakPtrFactory<ClipboardStub> client_clipboard_factory_;
+  base::WeakPtrFactory<protocol::ClipboardStub> client_clipboard_factory_;
 
   // VideoFrameCapturer, used to determine current screen size for ensuring
   // injected mouse events fall within the screen area.

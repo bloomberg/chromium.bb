@@ -80,14 +80,29 @@ void ConnectionToClient::set_clipboard_stub(
   clipboard_stub_ = clipboard_stub;
 }
 
+ClipboardStub* ConnectionToClient::clipboard_stub() {
+  DCHECK(CalledOnValidThread());
+  return clipboard_stub_;
+}
+
 void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
   DCHECK(CalledOnValidThread());
   host_stub_ = host_stub;
 }
 
+HostStub* ConnectionToClient::host_stub() {
+  DCHECK(CalledOnValidThread());
+  return host_stub_;
+}
+
 void ConnectionToClient::set_input_stub(protocol::InputStub* input_stub) {
   DCHECK(CalledOnValidThread());
   input_stub_ = input_stub;
+}
+
+InputStub* ConnectionToClient::input_stub() {
+  DCHECK(CalledOnValidThread());
+  return input_stub_;
 }
 
 void ConnectionToClient::OnSessionStateChange(Session::State state) {

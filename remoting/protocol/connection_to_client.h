@@ -82,21 +82,20 @@ class ConnectionToClient : public base::NonThreadSafe,
   // will be called.
   virtual void UpdateSequenceNumber(int64 sequence_number);
 
-  // Send encoded update stream data to the viewer.
+  // Get the stubs used by the host to transmit messages to the client.
+  // Note that the audio stub will be NULL if audio is not enabled.
   virtual VideoStub* video_stub();
-
-  // Send audio stream data to the viewer.
-  // Returns NULL if audio is not enabled.
   virtual AudioStub* audio_stub();
-
-  // Send control data to the viewer/client.
   virtual ClientStub* client_stub();
 
-  // Stubs for receiving data from the client.
-  // These three setters should be called before Init().
+  // Set/get the stubs which will handle messages we receive from the client.
+  // All stubs MUST be set before the session's channels become connected.
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub);
+  virtual ClipboardStub* clipboard_stub();
   virtual void set_host_stub(HostStub* host_stub);
+  virtual HostStub* host_stub();
   virtual void set_input_stub(InputStub* input_stub);
+  virtual InputStub* input_stub();
 
   // Session::EventHandler interface.
   virtual void OnSessionStateChange(Session::State state) OVERRIDE;

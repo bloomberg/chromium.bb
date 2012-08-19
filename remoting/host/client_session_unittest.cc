@@ -41,6 +41,7 @@ class ClientSessionTest : public testing::Test {
     EXPECT_CALL(*session, Close());
     scoped_ptr<protocol::ConnectionToClient> connection(
         new protocol::ConnectionToClient(session));
+    connection_ = connection.get();
     client_session_.reset(new ClientSession(
         &session_event_handler_, connection.Pass(),
         &host_clipboard_stub_, &host_input_stub_, &capturer_,
@@ -71,6 +72,9 @@ class ClientSessionTest : public testing::Test {
   MockVideoFrameCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
   scoped_ptr<ClientSession> client_session_;
+
+  // ClientSession owns |connection_| but tests need it to inject fake events.
+  protocol::ConnectionToClient* connection_;
 };
 
 MATCHER_P2(EqualsClipboardEvent, m, d, "") {
@@ -100,15 +104,15 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
 
   // This event should not get through to the clipboard stub,
   // because the client isn't authenticated yet.
-  client_session_->InjectClipboardEvent(clipboard_event1);
+  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event1);
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
   // This event should get through to the clipboard stub.
-  client_session_->InjectClipboardEvent(clipboard_event2);
+  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event2);
   DisconnectClientSession();
   // This event should not get through to the clipboard stub,
   // because the client has disconnected.
-  client_session_->InjectClipboardEvent(clipboard_event3);
+  connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event3);
 }
 
 MATCHER_P2(EqualsKeyEvent, keycode, pressed, "") {
@@ -162,19 +166,19 @@ TEST_F(ClientSessionTest, InputStubFilter) {
 
   // These events should not get through to the input stub,
   // because the client isn't authenticated yet.
-  client_session_->InjectKeyEvent(key_event1);
-  client_session_->InjectMouseEvent(mouse_event1);
+  connection_->input_stub()->InjectKeyEvent(key_event1);
+  connection_->input_stub()->InjectMouseEvent(mouse_event1);
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
   // These events should get through to the input stub.
-  client_session_->InjectKeyEvent(key_event2_down);
-  client_session_->InjectKeyEvent(key_event2_up);
-  client_session_->InjectMouseEvent(mouse_event2);
+  connection_->input_stub()->InjectKeyEvent(key_event2_down);
+  connection_->input_stub()->InjectKeyEvent(key_event2_up);
+  connection_->input_stub()->InjectMouseEvent(mouse_event2);
   DisconnectClientSession();
   // These events should not get through to the input stub,
   // because the client has disconnected.
-  client_session_->InjectKeyEvent(key_event3);
-  client_session_->InjectMouseEvent(mouse_event3);
+  connection_->input_stub()->InjectKeyEvent(key_event3);
+  connection_->input_stub()->InjectMouseEvent(mouse_event3);
 }
 
 TEST_F(ClientSessionTest, LocalInputTest) {
@@ -198,15 +202,15 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
   // This event should get through to the input stub.
-  client_session_->InjectMouseEvent(mouse_event1);
+  connection_->input_stub()->InjectMouseEvent(mouse_event1);
   // This one should too because the local event echoes the remote one.
   client_session_->LocalMouseMoved(SkIPoint::Make(mouse_event1.x(),
                                                   mouse_event1.y()));
-  client_session_->InjectMouseEvent(mouse_event2);
+  connection_->input_stub()->InjectMouseEvent(mouse_event2);
   // This one should not.
   client_session_->LocalMouseMoved(SkIPoint::Make(mouse_event1.x(),
                                                   mouse_event1.y()));
-  client_session_->InjectMouseEvent(mouse_event3);
+  connection_->input_stub()->InjectMouseEvent(mouse_event3);
   // TODO(jamiewalch): Verify that remote inputs are re-enabled eventually
   // (via dependency injection, not sleep!)
   DisconnectClientSession();
@@ -241,9 +245,9 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
 
-  client_session_->InjectKeyEvent(key1);
-  client_session_->InjectKeyEvent(key2);
-  client_session_->InjectMouseEvent(mousedown);
+  connection_->input_stub()->InjectKeyEvent(key1);
+  connection_->input_stub()->InjectKeyEvent(key2);
+  connection_->input_stub()->InjectMouseEvent(mousedown);
 
   DisconnectClientSession();
 }
@@ -272,7 +276,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
       event.set_y(input_y[j]);
       EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(
           expected_x[i], expected_y[j])));
-      client_session_->InjectMouseEvent(event);
+      connection_->input_stub()->InjectMouseEvent(event);
     }
   }
 
