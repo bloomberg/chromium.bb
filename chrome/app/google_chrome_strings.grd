@@ -218,9 +218,6 @@ Chrome supports. -->
       <message name="IDS_ABOUT_VERSION_COPYRIGHT" desc="Copyright information on the about pages">
         Copyright © 2006-2012 Google Inc. All Rights Reserved.
       </message>
-      <message name="IDS_ABOUT_OLD_VERSION_LICENSE" desc="The label below the copyright message, containing the URLs.">
-        Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM">BEGIN_LINK_CHR</ph>Chromium<ph name="END_LINK_CHROMIUM">END_LINK_CHR</ph> open source project and other <ph name="BEGIN_LINK_OSS">BEGIN_LINK_OSS</ph>open source software<ph name="END_LINK_OSS">END_LINK_OSS</ph>.
-      </message>
       <message name="IDS_ABOUT_VERSION_LICENSE" desc="The label below the copyright message, containing the URLs.">
         Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Chromium<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> open source project and other <ph name="BEGIN_LINK_OSS">&lt;a target="_blank" href="$2"&gt;</ph>open source software<ph name="END_LINK_OSS">&lt;/a&gt;</ph>.
       </message>
@@ -231,12 +228,6 @@ Chrome supports. -->
       </if>
       <message name="IDS_ABOUT_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
         Google Chrome <ph name="TERMS_OF_SERVICE_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK">&lt;/a&gt;</ph>
-      </message>
-      <message name="IDS_ABOUT_OLD_TERMS_OF_SERVICE" desc="The terms of service label in the About box.">
-        Google Chrome <ph name="TERMS_OF_SERVICE_LINK">$1<ex>Terms of Service</ex></ph>
-      </message>
-      <message name="IDS_TERMS_OF_SERVICE" desc="The Terms of Service link text in the About box. Used in IDS_ABOUT_TERMS_OF_SERVICE.">
-        Terms of Service
       </message>
       <message name="IDS_ACCNAME_APP" desc="The accessible name for the app menu.">
         Chrome
@@ -254,16 +245,6 @@ Chrome supports. -->
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
         Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.
       </message>
-      <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_ABOUT_CHROME_TITLE" desc="Title of the about page.">
-          About Google Chrome
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_ABOUT_CHROME_TITLE" desc="Title of the about page.">
-          About Chrome OS
-        </message>
-      </if>
       <!-- Uninstall messages -->
       <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
         Please close all Google Chrome windows and try again.
@@ -590,16 +571,6 @@ For Google Chrome, processes used to display diagnostics information (such as th
 
       <!-- About Chrome page -->
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Google Chrome">
-          Google Chrome has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Chrome OS">
-          Your device has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
-        </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Google Chrome">
           Nearly up-to-date! Relaunch Google Chrome to finish updating.
         </message>
@@ -629,14 +600,6 @@ For Google Chrome, processes used to display diagnostics information (such as th
           Updating your device...
         </message>
       </if>
-
-      <!-- About Chrome View (only used on Windows: http://crbug.com/115123) -->
-      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
-        Relaunch Google Chrome to finish updating
-      </message>
-      <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
-        Google Chrome is up to date (<ph name="VERSION">$1<ex>0.1.131</ex></ph>)
-      </message>
 
       <!-- Extension/App install prompt -->
       <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">

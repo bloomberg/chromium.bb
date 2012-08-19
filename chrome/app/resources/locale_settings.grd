@@ -240,15 +240,6 @@
         en-US
       </message>
 
-      <!-- The width and height of the About dialog box in characters and lines (See -->
-      <!-- above). -->
-      <message name="IDS_ABOUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        86
-      </message>
-      <message name="IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
-        4
-      </message>
-
       <!-- The width of the Crucial Notification bubble in characters (See above). -->
       <message name="IDS_CRUCIAL_NOTIFICATION_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
         55

@@ -7343,9 +7343,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Set Up Automatic Updates for All Users
         </message>
       </if>
-      <message name="IDS_ABOUT_CHROME_UPDATE_CHECK" desc="The Check for Updates button">
-        Update Now
-      </message>
       <message name="IDS_UPGRADE_CHECK_STARTED" desc="Status label: About to start checking for updates">
         Checking for updates...
       </message>
@@ -9212,12 +9209,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
         Platform
       </message>
-      <message name="IDS_ABOUT_PAGE_LOADING" desc="Label used for async data before data is available. Example is Chrome OS version.">
-        Loading&#x2026;
-      </message>
-      <message name="IDS_ABOUT_PAGE_MORE_INFO" desc="Title for _More_info_ link.">
-        More Info
-      </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL" desc="The channel label under _More_Info_.">
         Channel
       </message>
@@ -9229,18 +9220,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
         Dev - Unstable
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CANARY" desc="The canary option in the channel select.">
-        Canary
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_WARNING_HEADER" desc="Text right before the warning body text.">
-        WARNING
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_WARNING_TEXT" desc="The warning text show on the release channel switching UI.">
-        The development channel is where ideas get tested, but can be very unstable at times. Please proceed with caution.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHECK_NOW" desc="Button title for checking for updates now.">
-        Check for update
       </message>
 
       <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
