@@ -76,7 +76,7 @@ void FakeContactDatabase::MergeContacts(
     for (ScopedVector<Contact>::const_iterator existing_it = contacts_.begin();
          existing_it != contacts_.end(); ++existing_it) {
       Contact* existing_contact = *existing_it;
-      if (existing_contact->provider_id() == updated_contact.provider_id()) {
+      if (existing_contact->contact_id() == updated_contact.contact_id()) {
         *existing_contact = updated_contact;
         found = true;
         break;

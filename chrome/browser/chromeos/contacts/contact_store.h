@@ -30,10 +30,9 @@ class ContactStore {
   // Appends all (non-deleted) contacts to |contacts_out|.
   virtual void AppendContacts(ContactPointers* contacts_out) = 0;
 
-  // Returns the contact identified by |provider_id|.
+  // Returns the contact identified by |contact_id|.
   // NULL is returned if the contact doesn't exist.
-  virtual const Contact* GetContactByProviderId(
-      const std::string& provider_id) = 0;
+  virtual const Contact* GetContactById(const std::string& contact_id) = 0;
 
   // Adds or removes an observer.
   virtual void AddObserver(ContactStoreObserver* observer) = 0;

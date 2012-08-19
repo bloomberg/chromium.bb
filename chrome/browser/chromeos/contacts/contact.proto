@@ -17,7 +17,7 @@ message Contact {
   // Next ID to use: 15
 
   // Provider-assigned unique identifier.
-  optional string provider_id = 1;
+  optional string contact_id = 1;
 
   // Last time at which this contact was updated within the upstream provider,
   // as given by base::Time::ToInternalValue().

@@ -230,7 +230,7 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   DCHECK(contact);
   contact->Clear();
 
-  if (!dict.GetString(kIdField, contact->mutable_provider_id()))
+  if (!dict.GetString(kIdField, contact->mutable_contact_id()))
     return false;
 
   std::string updated;
@@ -589,7 +589,7 @@ class GDataContactsService::DownloadContactsRequest {
       }
 
       VLOG(1) << "Got contact " << index << ":"
-              << " id=" << contact->provider_id()
+              << " id=" << contact->contact_id()
               << " full_name=\"" << contact->full_name() << "\""
               << " update_time=" << contact->update_time();
 
@@ -641,7 +641,7 @@ class GDataContactsService::DownloadContactsRequest {
       std::string url = contact_photo_urls_[contact];
 
       VLOG(1) << "Starting download of photo " << url << " for "
-              << contact->provider_id();
+              << contact->contact_id();
       runner_->StartOperationWithRetry(
           new GetContactPhotoOperation(
               runner_->operation_registry(),
@@ -659,7 +659,7 @@ class GDataContactsService::DownloadContactsRequest {
                        GDataErrorCode error,
                        scoped_ptr<std::string> download_data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    VLOG(1) << "Got photo data for " << contact->provider_id()
+    VLOG(1) << "Got photo data for " << contact->contact_id()
             << " (error=" << error << " size=" << download_data->size() << ")";
     num_in_progress_photo_downloads_--;
 
@@ -668,7 +668,7 @@ class GDataContactsService::DownloadContactsRequest {
       int num_errors = ++transient_photo_download_errors_per_contact_[contact];
       if (num_errors <= kMaxTransientPhotoDownloadErrorsPerContact) {
         LOG(WARNING) << "Got error " << error << " while downloading photo "
-                     << "for " << contact->provider_id() << "; retrying";
+                     << "for " << contact->contact_id() << "; retrying";
         contacts_needing_photo_downloads_.push_back(contact);
         return;
       }
@@ -676,14 +676,14 @@ class GDataContactsService::DownloadContactsRequest {
 
     if (error == HTTP_NOT_FOUND) {
       LOG(WARNING) << "Got error " << error << " while downloading photo "
-                   << "for " << contact->provider_id() << "; skipping";
+                   << "for " << contact->contact_id() << "; skipping";
       CheckCompletion();
       return;
     }
 
     if (error != HTTP_SUCCESS) {
       LOG(WARNING) << "Got error " << error << " while downloading photo "
-                   << "for " << contact->provider_id() << "; giving up";
+                   << "for " << contact->contact_id() << "; giving up";
       photo_download_failed_ = true;
       // Make sure we don't start any more downloads.
       contacts_needing_photo_downloads_.clear();

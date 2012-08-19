@@ -214,15 +214,15 @@ void ContactDatabase::SaveContactsFromTaskRunner(
   for (ContactPointers::const_iterator it = contacts->begin();
        it != contacts->end(); ++it) {
     const contacts::Contact& contact = **it;
-    if (contact.provider_id() == kUpdateMetadataKey) {
+    if (contact.contact_id() == kUpdateMetadataKey) {
       LOG(WARNING) << "Skipping contact with reserved ID "
-                   << contact.provider_id();
+                   << contact.contact_id();
       continue;
     }
-    updates.Put(leveldb::Slice(contact.provider_id()),
+    updates.Put(leveldb::Slice(contact.contact_id()),
                 leveldb::Slice(contact.SerializeAsString()));
     if (is_full_update)
-      keys_to_delete.erase(contact.provider_id());
+      keys_to_delete.erase(contact.contact_id());
   }
 
   for (std::set<std::string>::const_iterator it = keys_to_delete.begin();

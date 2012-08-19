@@ -74,8 +74,7 @@ class GoogleContactStore
   // ContactStore implementation:
   virtual void Init() OVERRIDE;
   virtual void AppendContacts(ContactPointers* contacts_out) OVERRIDE;
-  virtual const Contact* GetContactByProviderId(
-      const std::string& provider_id) OVERRIDE;
+  virtual const Contact* GetContactById(const std::string& contact_id) OVERRIDE;
   virtual void AddObserver(ContactStoreObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ContactStoreObserver* observer) OVERRIDE;
 

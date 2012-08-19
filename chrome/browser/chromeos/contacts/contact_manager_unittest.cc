@@ -115,13 +115,13 @@ TEST_F(ContactManagerTest, NotifyOnUpdate) {
 
 TEST_F(ContactManagerTest, GetContacts) {
   // Create two contacts and tell the store to return them.
-  const std::string kProviderId1 = "1";
+  const std::string kContactId1 = "1";
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact(kProviderId1, "1", false, contact1.get());
+  InitContact(kContactId1, "1", false, contact1.get());
 
-  const std::string kProviderId2 = "2";
+  const std::string kContactId2 = "2";
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact(kProviderId2, "2", false, contact2.get());
+  InitContact(kContactId2, "2", false, contact2.get());
 
   const std::string kProfileName = "test_profile";
   TestingProfile* profile =
@@ -141,19 +141,18 @@ TEST_F(ContactManagerTest, GetContacts) {
   EXPECT_EQ(ContactsToString(store_contacts),
             ContactsToString(*loaded_contacts));
 
-  // Check that we can get individual contacts using GetContactByProviderId().
-  const Contact* loaded_contact =
-      contact_manager_->GetContactByProviderId(profile, kProviderId1);
+  // Check that we can get individual contacts using GetContactById().
+  const Contact* loaded_contact = contact_manager_->GetContactById(profile,
+                                                                   kContactId1);
   ASSERT_TRUE(loaded_contact);
   EXPECT_EQ(ContactToString(*contact1), ContactToString(*loaded_contact));
 
-  loaded_contact =
-      contact_manager_->GetContactByProviderId(profile, kProviderId2);
+  loaded_contact = contact_manager_->GetContactById(profile, kContactId2);
   ASSERT_TRUE(loaded_contact);
   EXPECT_EQ(ContactToString(*contact2), ContactToString(*loaded_contact));
 
-  // We should get NULL if we pass a nonexistent provider ID.
-  EXPECT_FALSE(contact_manager_->GetContactByProviderId(profile, "foo"));
+  // We should get NULL if we pass a nonexistent contact ID.
+  EXPECT_FALSE(contact_manager_->GetContactById(profile, "foo"));
 
   profile_manager_->DeleteTestingProfile(kProfileName);
 }

@@ -52,10 +52,10 @@ class ContactManager : public ContactStoreObserver,
   // refer to them again after unblocking the UI thread.
   scoped_ptr<ContactPointers> GetAllContacts(Profile* profile);
 
-  // Returns the contact identified by |provider_id|.
+  // Returns the contact identified by |contact_id|.
   // NULL is returned if the contact doesn't exist.
-  const Contact* GetContactByProviderId(Profile* profile,
-                                        const std::string& provider_id);
+  const Contact* GetContactById(Profile* profile,
+                                const std::string& contact_id);
 
   // ContactStoreObserver overrides:
   virtual void OnContactsUpdated(ContactStore* store) OVERRIDE;

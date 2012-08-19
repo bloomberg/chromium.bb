@@ -29,7 +29,7 @@ void FakeContactStore::SetContacts(const ContactPointers& contacts) {
   contacts_.clear();
   for (ContactPointers::const_iterator it = contacts.begin();
        it != contacts.end(); ++it) {
-    contacts_[(*it)->provider_id()] = new Contact(**it);
+    contacts_[(*it)->contact_id()] = new Contact(**it);
   }
 }
 
@@ -51,9 +51,8 @@ void FakeContactStore::AppendContacts(ContactPointers* contacts_out) {
   }
 }
 
-const Contact* FakeContactStore::GetContactByProviderId(
-    const std::string& provider_id) {
-  ContactMap::const_iterator it = contacts_.find(provider_id);
+const Contact* FakeContactStore::GetContactById(const std::string& contact_id) {
+  ContactMap::const_iterator it = contacts_.find(contact_id);
   return (it != contacts_.end() && !it->second->deleted()) ? it->second : NULL;
 }
 

@@ -123,10 +123,10 @@ void GoogleContactStore::AppendContacts(ContactPointers* contacts_out) {
   }
 }
 
-const Contact* GoogleContactStore::GetContactByProviderId(
-    const std::string& provider_id) {
+const Contact* GoogleContactStore::GetContactById(
+    const std::string& contact_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ContactMap::const_iterator it = contacts_.find(provider_id);
+  ContactMap::const_iterator it = contacts_.find(contact_id);
   return (it != contacts_.end() && !it->second->deleted()) ? it->second : NULL;
 }
 
@@ -249,10 +249,10 @@ void GoogleContactStore::MergeContacts(
   for (ScopedVector<Contact>::iterator it = updated_contacts->begin();
        it != updated_contacts->end(); ++it) {
     Contact* contact = *it;
-    VLOG(1) << "Updating " << contact->provider_id();
-    ContactMap::iterator map_it = contacts_.find(contact->provider_id());
+    VLOG(1) << "Updating " << contact->contact_id();
+    ContactMap::iterator map_it = contacts_.find(contact->contact_id());
     if (map_it == contacts_.end()) {
-      contacts_[contact->provider_id()] = contact;
+      contacts_[contact->contact_id()] = contact;
     } else {
       delete map_it->second;
       map_it->second = contact;

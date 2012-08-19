@@ -31,7 +31,7 @@ class FakeContactStore : public ContactStore {
   virtual ~FakeContactStore();
 
   // Makes an internal copy of |contacts| so they can be returned by
-  // AppendContacts() and GetContactByProviderId().
+  // AppendContacts() and GetContactById().
   void SetContacts(const ContactPointers& contacts);
 
   // Invokes observers' OnContactsUpdated() methods.
@@ -40,13 +40,12 @@ class FakeContactStore : public ContactStore {
   // ContactStore implementation:
   virtual void Init() OVERRIDE;
   virtual void AppendContacts(ContactPointers* contacts_out) OVERRIDE;
-  virtual const Contact* GetContactByProviderId(
-      const std::string& provider_id) OVERRIDE;
+  virtual const Contact* GetContactById(const std::string& contact_id) OVERRIDE;
   virtual void AddObserver(ContactStoreObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ContactStoreObserver* observer) OVERRIDE;
 
  private:
-  // Map from a contact's provider ID to the contact itself.
+  // Map from a contact's ID to the contact itself.
   typedef std::map<std::string, Contact*> ContactMap;
 
   // Factory that created this store.  Not owned.

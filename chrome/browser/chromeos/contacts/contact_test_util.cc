@@ -71,7 +71,7 @@ std::string InstantMessagingAddressToString(
 
 std::string ContactToString(const Contact& contact) {
   std::string result =
-      contact.provider_id() + "," +
+      contact.contact_id() + "," +
       base::Int64ToString(contact.update_time()) + "," +
       base::IntToString(contact.deleted()) + "," +
       contact.full_name() + "," +
@@ -150,13 +150,13 @@ void CopyContacts(const ScopedVector<Contact>& source,
   CopyContacts(pointers, dest);
 }
 
-void InitContact(const std::string& provider_id,
+void InitContact(const std::string& contact_id,
                  const std::string& name_suffix,
                  bool deleted,
                  Contact* contact) {
   DCHECK(contact);
   contact->Clear();
-  contact->set_provider_id(provider_id);
+  contact->set_contact_id(contact_id);
   contact->set_update_time(base::Time::Now().ToInternalValue());
   contact->set_deleted(deleted);
   contact->set_full_name("full_name_" + name_suffix);

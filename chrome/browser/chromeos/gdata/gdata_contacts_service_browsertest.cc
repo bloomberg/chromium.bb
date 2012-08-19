@@ -42,7 +42,7 @@ const char kGroupsFeedFilename[] = "groups.json";
 const int kPhotoSize = 48;
 
 // Initializes |contact| using the passed-in values.
-void InitContact(const std::string& provider_id,
+void InitContact(const std::string& contact_id,
                  const std::string& rfc_3339_update_time,
                  bool deleted,
                  const std::string& full_name,
@@ -53,7 +53,7 @@ void InitContact(const std::string& provider_id,
                  const std::string& name_suffix,
                  contacts::Contact* contact) {
   DCHECK(contact);
-  contact->set_provider_id(provider_id);
+  contact->set_contact_id(contact_id);
   base::Time update_time;
   CHECK(util::GetTimeFromString(rfc_3339_update_time, &update_time))
       << "Unable to parse time \"" << rfc_3339_update_time << "\"";

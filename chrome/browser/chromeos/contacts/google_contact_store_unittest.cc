@@ -91,12 +91,12 @@ class GoogleContactStoreTest : public testing::Test {
 
 TEST_F(GoogleContactStoreTest, LoadFromDatabase) {
   // Store two contacts in the database.
-  const std::string kProviderId1 = "provider1";
-  const std::string kProviderId2 = "provider2";
+  const std::string kContactId1 = "contact1";
+  const std::string kContactId2 = "contact2";
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact(kProviderId1, "1", false, contact1.get());
+  InitContact(kContactId1, "1", false, contact1.get());
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact(kProviderId2, "2", false, contact2.get());
+  InitContact(kContactId2, "2", false, contact2.get());
   ContactPointers db_contacts;
   db_contacts.push_back(contact1.get());
   db_contacts.push_back(contact2.get());
@@ -115,20 +115,20 @@ TEST_F(GoogleContactStoreTest, LoadFromDatabase) {
   EXPECT_EQ(1, observer_.num_updates());
 
   // Check that we can also grab the contact via its ID.
-  const Contact* loaded_contact1 = store_->GetContactByProviderId(kProviderId1);
+  const Contact* loaded_contact1 = store_->GetContactById(kContactId1);
   ASSERT_TRUE(loaded_contact1);
   EXPECT_EQ(ContactToString(*contact1), ContactToString(*loaded_contact1));
 
   // We should get NULL if we request a nonexistent contact.
-  EXPECT_FALSE(store_->GetContactByProviderId("bogus_id"));
+  EXPECT_FALSE(store_->GetContactById("bogus_id"));
 }
 
 TEST_F(GoogleContactStoreTest, LoadFromGData) {
   // Store two contacts in the GData service.
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact("provider1", "1", false, contact1.get());
+  InitContact("contact1", "1", false, contact1.get());
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact("provider2", "2", false, contact2.get());
+  InitContact("contact2", "2", false, contact2.get());
   ContactPointers gdata_contacts;
   gdata_contacts.push_back(contact1.get());
   gdata_contacts.push_back(contact2.get());
@@ -150,11 +150,11 @@ TEST_F(GoogleContactStoreTest, LoadFromGData) {
 
 TEST_F(GoogleContactStoreTest, UpdateFromGData) {
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact("provider1", "1", false, contact1.get());
+  InitContact("contact1", "1", false, contact1.get());
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact("provider2", "2", false, contact2.get());
+  InitContact("contact2", "2", false, contact2.get());
   scoped_ptr<Contact> contact3(new Contact);
-  InitContact("provider3", "3", false, contact3.get());
+  InitContact("contact3", "3", false, contact3.get());
 
   // Store the first two contacts in the database.
   ContactPointers db_contacts;
@@ -194,11 +194,11 @@ TEST_F(GoogleContactStoreTest, UpdateFromGData) {
 
 TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact("provider1", "1", false, contact1.get());
+  InitContact("contact1", "1", false, contact1.get());
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact("provider2", "2", false, contact2.get());
+  InitContact("contact2", "2", false, contact2.get());
   scoped_ptr<Contact> contact3(new Contact);
-  InitContact("provider3", "3", false, contact3.get());
+  InitContact("contact3", "3", false, contact3.get());
 
   ContactPointers kAllContacts;
   kAllContacts.push_back(contact1.get());
@@ -267,20 +267,20 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
 
 TEST_F(GoogleContactStoreTest, DontReturnDeletedContacts) {
   // Tell GData to return a single deleted contact.
-  const std::string kProviderId = "provider";
+  const std::string kContactId = "contact";
   scoped_ptr<Contact> contact(new Contact);
-  InitContact(kProviderId, "1", true, contact.get());
+  InitContact(kContactId, "1", true, contact.get());
   ContactPointers gdata_contacts;
   gdata_contacts.push_back(contact.get());
   gdata_service_->SetContacts(gdata_contacts, base::Time());
 
   // The contact shouldn't be returned by AppendContacts() or
-  // GetContactByProviderId().
+  // GetContactById().
   store_->Init();
   ContactPointers loaded_contacts;
   store_->AppendContacts(&loaded_contacts);
   EXPECT_TRUE(loaded_contacts.empty());
-  EXPECT_FALSE(store_->GetContactByProviderId(kProviderId));
+  EXPECT_FALSE(store_->GetContactById(kContactId));
 }
 
 // Test that we do a full refresh from GData if enough time has passed since the
@@ -292,10 +292,10 @@ TEST_F(GoogleContactStoreTest, FullRefreshAfterThirtyDays) {
 
   base::Time kOldUpdateTime = kInitTime - base::TimeDelta::FromDays(31);
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact("provider1", "1", false, contact1.get());
+  InitContact("contact1", "1", false, contact1.get());
   contact1->set_update_time(kOldUpdateTime.ToInternalValue());
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact("provider2", "2", false, contact2.get());
+  InitContact("contact2", "2", false, contact2.get());
   contact2->set_update_time(kOldUpdateTime.ToInternalValue());
 
   // Put both contacts in the database, along with metadata saying that the last
@@ -354,7 +354,7 @@ TEST_F(GoogleContactStoreTest, FullRefreshAfterThirtyDays) {
 
 TEST_F(GoogleContactStoreTest, HandleDatabaseInitFailure) {
   scoped_ptr<Contact> contact1(new Contact);
-  InitContact("provider1", "1", false, contact1.get());
+  InitContact("contact1", "1", false, contact1.get());
 
   // Store a contact in the database but make initialization fail.
   ContactPointers db_contacts;
@@ -365,7 +365,7 @@ TEST_F(GoogleContactStoreTest, HandleDatabaseInitFailure) {
 
   // Create a second contact and tell the GData service to return it.
   scoped_ptr<Contact> contact2(new Contact);
-  InitContact("provider2", "2", false, contact2.get());
+  InitContact("contact2", "2", false, contact2.get());
   ContactPointers gdata_contacts;
   gdata_contacts.push_back(contact2.get());
   gdata_service_->SetContacts(gdata_contacts, base::Time());

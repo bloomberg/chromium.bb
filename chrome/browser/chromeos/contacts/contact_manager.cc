@@ -106,14 +106,13 @@ scoped_ptr<ContactPointers> ContactManager::GetAllContacts(Profile* profile) {
   return contacts.Pass();
 }
 
-const Contact* ContactManager::GetContactByProviderId(
-    Profile* profile,
-    const std::string& provider_id) {
+const Contact* ContactManager::GetContactById(Profile* profile,
+                                              const std::string& contact_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
   ContactStoreMap::const_iterator it = contact_stores_.find(profile);
   return it != contact_stores_.end() ?
-         it->second->GetContactByProviderId(provider_id) :
+         it->second->GetContactById(contact_id) :
          NULL;
 }
 

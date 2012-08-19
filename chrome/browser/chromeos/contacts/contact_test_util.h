@@ -37,11 +37,11 @@ void CopyContacts(const ScopedVector<Contact>& source,
                   ScopedVector<Contact>* dest);
 
 // Initializes |contact| with the passed-in data.  The photo and all address
-// fields are cleared.  |provider_id| corresponds to Contact::provider_id,
+// fields are cleared.  |contact_id| corresponds to Contact::contact_id,
 // |deleted| to Contact::deleted, and a unique string should be passed to
 // |name_suffix| to make the name-related fields be distinct from those in other
 // contacts.
-void InitContact(const std::string& provider_id,
+void InitContact(const std::string& contact_id,
                  const std::string& name_suffix,
                  bool deleted,
                  Contact* contact);
