@@ -44,13 +44,6 @@ static const FilePath::CharType kDiskCacheDirectoryName[] =
 
 namespace {
 
-// Helper with no return value for use with base::Bind.
-// TODO(jhawkins): Figure out why base::IgnoreResult does not work for
-// file_util::Delete on Windows.
-void DeleteDirectory(const FilePath& path) {
-  file_util::Delete(path, true);
-}
-
 // Helpers for clearing data from the AppCacheDatabase.
 bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
                                   int64 group_id,
@@ -1810,7 +1803,8 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     if (!is_incognito_) {
       VLOG(1) << "Deleting existing appcache data and starting over.";
       db_thread_->PostTask(
-          FROM_HERE, base::Bind(&DeleteDirectory, cache_directory_));
+          FROM_HERE, base::Bind(base::IgnoreResult(&file_util::Delete),
+                                cache_directory_, true));
     }
   }
 }
