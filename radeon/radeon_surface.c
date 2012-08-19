@@ -165,7 +165,7 @@ static void surf_minify(struct radeon_surface *surf,
     surf->level[level].nblk_z  = ALIGN(surf->level[level].nblk_z, zalign);
 
     surf->level[level].offset = offset;
-    surf->level[level].pitch_bytes = surf->level[level].nblk_x * surf->bpe;
+    surf->level[level].pitch_bytes = surf->level[level].nblk_x * surf->bpe * surf->nsamples;
     surf->level[level].slice_size = surf->level[level].pitch_bytes * surf->level[level].nblk_y;
 
     surf->bo_size = offset + surf->level[level].slice_size * surf->level[level].nblk_z * surf->array_size;
