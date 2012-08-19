@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
-#include "chrome/browser/ui/webui/options2/options_ui.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"

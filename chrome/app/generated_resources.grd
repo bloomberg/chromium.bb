@@ -9225,7 +9225,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
         On startup
       </message>
-      <message name="IDS_OPTIONS2_STARTUP_SHOW_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
+      <message name="IDS_OPTIONS_STARTUP_SHOW_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
         Open the New Tab page
       </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
@@ -9237,13 +9237,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Continue where I left off' startup option radio button">
         Continue where I left off
       </message>
-      <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button on the old settings page">
-        Open the following pages:
-      </message>
-      <message name="IDS_OPTIONS2_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
+      <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
         Open a specific page or set of pages.
       </message>
-      <message name="IDS_OPTIONS2_STARTUP_SET_PAGES" desc="The link that is clicked to choose the set of pages that will be shown at startup">
+      <message name="IDS_OPTIONS_STARTUP_SET_PAGES" desc="The link that is clicked to choose the set of pages that will be shown at startup">
         Set pages
       </message>
       <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
@@ -9258,7 +9255,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog">
         Enter URL...
       </message>
-      <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
+      <message name="IDS_OPTIONS_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
         Startup pages
       </message>
       <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="The label of the 'Use Current' button for the custom startup urls list">
@@ -9273,19 +9270,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home page group">
         Home page
       </message>
-      <message name="IDS_OPTIONS2_HOMEPAGE_TITLE" desc="The title of the home page overlay">
+      <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay">
         Home page
       </message>
       <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
-        Toolbar
-      </message>
-      <message name="IDS_OPTIONS2_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
         Toolbar appearance
       </message>
-      <message name="IDS_OPTIONS2_HOMEPAGE_DIALOG_LABEL" desc="The label for the homepage textbox in the dialog">
+      <message name="IDS_OPTIONS_HOMEPAGE_DIALOG_LABEL" desc="The label for the homepage textbox in the dialog">
         Home page:
       </message>
-      <message name="IDS_OPTIONS2_HOMEPAGE" desc="The label for the homepage selector">
+      <message name="IDS_OPTIONS_HOMEPAGE" desc="The label for the homepage selector">
         Home page:
       </message>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
@@ -12102,7 +12096,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Advanced...
       </message>
-      <message name="IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
+      <message name="IDS_OPTIONS_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Advanced sync settings...
       </message>
       <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
@@ -13822,25 +13816,25 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
         Keyboard settings...
       </message>
-      <message name="IDS_OPTIONS2_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
+      <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
         Keyboard settings
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
         Pointer sensitivity:
       </message>
-      <message name="IDS_OPTIONS2_DEVICE_GROUP_POINTER_SECTION">
+      <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
         Pointer speed:
       </message>
-      <message name="IDS_OPTIONS2_SETTINGS_MOUSE_SPEED_DESCRIPTION">
+      <message name="IDS_OPTIONS_SETTINGS_MOUSE_SPEED_DESCRIPTION">
         Mouse speed:
       </message>
-      <message name="IDS_OPTIONS2_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION">
+      <message name="IDS_OPTIONS_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION">
         Touchpad speed:
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
         Pointer settings...
       </message>
-      <message name="IDS_OPTIONS2_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
+      <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
         Pointer settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">

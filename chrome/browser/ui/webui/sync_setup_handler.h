@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/signin/signin_tracker.h"
-#include "chrome/browser/ui/webui/options2/options_ui.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class LoginUIService;

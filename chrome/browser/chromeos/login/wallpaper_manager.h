@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
-#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/set_wallpaper_options_handler.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

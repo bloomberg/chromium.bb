@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
-#include "chrome/browser/ui/webui/options2/options_ui.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/performance_monitor/web_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"

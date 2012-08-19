@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/set_wallpaper_options_handler.h"
 
 class FilePath;
 class PrefService;

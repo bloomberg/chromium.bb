@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/options2/chromeos/cros_language_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

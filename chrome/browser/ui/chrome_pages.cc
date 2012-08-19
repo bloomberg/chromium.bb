@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/webui/options2/content_settings_handler.h"
+#include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
