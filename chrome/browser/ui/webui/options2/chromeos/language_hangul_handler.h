@@ -14,10 +14,10 @@ class ListValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Hangul options page UI handler.
-class LanguageHangulHandler : public ::options2::OptionsPageUIHandler {
+class LanguageHangulHandler : public ::options::OptionsPageUIHandler {
  public:
   LanguageHangulHandler();
   virtual ~LanguageHangulHandler();
@@ -33,7 +33,7 @@ class LanguageHangulHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(LanguageHangulHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_HANGUL_HANDLER_H_

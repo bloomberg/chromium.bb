@@ -23,7 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/forms/password_form.h"
 
-namespace options2 {
+namespace options {
 
 PasswordManagerHandler::PasswordManagerHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(populater_(this)),
@@ -279,4 +279,4 @@ void PasswordManagerHandler::PasswordExceptionListPopulater::
   page_->SetPasswordExceptionList();
 }
 
-}  // namespace options2
+}  // namespace options

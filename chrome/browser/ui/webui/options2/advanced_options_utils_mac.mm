@@ -12,7 +12,7 @@
 
 using content::WebContents;
 
-namespace options2 {
+namespace options {
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       WebContents* web_contents) {
@@ -45,4 +45,4 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
    launchIdentifier:nil];
 }
 
-}  // namespace options2
+}  // namespace options

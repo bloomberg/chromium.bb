@@ -12,7 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 
-namespace options2 {
+namespace options {
 
 static void ValidateFontFamily(PrefService* prefs,
                                const char* family_pref_name) {
@@ -39,4 +39,4 @@ void FontSettingsUtilities::ValidateSavedFonts(PrefService* prefs) {
   ValidateFontFamily(prefs, prefs::kWebKitFixedFontFamily);
 }
 
-}  // namespace options2
+}  // namespace options

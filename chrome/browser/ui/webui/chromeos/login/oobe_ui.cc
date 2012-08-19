@@ -176,14 +176,14 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   ChromeURLDataManager::AddDataSource(profile, html_source);
 
   // Set up the chrome://userimage/ source.
-  options2::UserImageSource* user_image_source =
-      new options2::UserImageSource();
+  options::UserImageSource* user_image_source =
+      new options::UserImageSource();
   ChromeURLDataManager::AddDataSource(profile, user_image_source);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe)) {
     // Set up the chrome://wallpaper/ source.
-    chromeos::options2::WallpaperImageSource* wallpaper_image_source =
-        new chromeos::options2::WallpaperImageSource();
+    chromeos::options::WallpaperImageSource* wallpaper_image_source =
+        new chromeos::options::WallpaperImageSource();
     ChromeURLDataManager::AddDataSource(profile, wallpaper_image_source);
   }
 }

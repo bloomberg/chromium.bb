@@ -26,7 +26,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace options2 {
+namespace options {
 
 ImportDataHandler::ImportDataHandler() : importer_host_(NULL),
                                          import_did_succeed_(false) {
@@ -189,4 +189,4 @@ void ImportDataHandler::ImportEnded() {
   }
 }
 
-}  // namespace options2
+}  // namespace options

@@ -41,7 +41,7 @@ bool WhitelistUser(const std::string& username) {
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 AccountsOptionsHandler::AccountsOptionsHandler() {
 }
@@ -135,5 +135,5 @@ void AccountsOptionsHandler::HandleWhitelistExistingUsers(
   cros_settings->Set(kAccountsPrefUsers, *new_list.get());
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

@@ -18,7 +18,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace options2 {
+namespace options {
 
 class AutofillOptionsHandler : public OptionsPageUIHandler,
                                public PersonalDataManagerObserver {
@@ -92,6 +92,6 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(AutofillOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_AUTOFILL_OPTIONS_HANDLER_H_

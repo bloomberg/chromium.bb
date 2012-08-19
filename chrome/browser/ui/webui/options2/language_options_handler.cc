@@ -28,7 +28,7 @@
 
 using content::UserMetricsAction;
 
-namespace options2 {
+namespace options {
 
 LanguageOptionsHandler::LanguageOptionsHandler() {
 }
@@ -129,4 +129,4 @@ void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
   browser::AttemptRestart();
 }
 
-}  // namespace options2
+}  // namespace options

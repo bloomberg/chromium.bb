@@ -109,7 +109,7 @@ std::string NetErrorToString(int net_error) {
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  CertIdMap
@@ -1091,4 +1091,4 @@ gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
   return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
 }
 
-}  // namespace options2
+}  // namespace options

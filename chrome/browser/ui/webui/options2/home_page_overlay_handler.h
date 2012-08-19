@@ -18,7 +18,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace options2 {
+namespace options {
 
 class HomePageOverlayHandler : public OptionsPageUIHandler,
                                public AutocompleteControllerDelegate {
@@ -42,6 +42,6 @@ class HomePageOverlayHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(HomePageOverlayHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_HOME_PAGE_OVERLAY_HANDLER_H_

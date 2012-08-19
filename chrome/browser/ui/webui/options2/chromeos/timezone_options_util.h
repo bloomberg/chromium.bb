@@ -11,11 +11,11 @@ namespace base {
 class ListValue;
 }
 
-namespace options2 {
+namespace options {
 
 // Creates a list of pairs of each timezone's ID and name.
 scoped_ptr<base::ListValue> GetTimezoneList();
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_TIMEZONE_OPTIONS_UTIL_H_

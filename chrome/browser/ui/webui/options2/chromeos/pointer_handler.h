@@ -12,11 +12,11 @@
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Pointer settings overlay page UI handler.
 class PointerHandler
-    : public ::options2::OptionsPageUIHandler,
+    : public ::options::OptionsPageUIHandler,
       public chromeos::system::PointerDeviceObserver::Observer {
  public:
   PointerHandler();
@@ -40,7 +40,7 @@ class PointerHandler
   DISALLOW_COPY_AND_ASSIGN(PointerHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_POINTER_HANDLER_H_

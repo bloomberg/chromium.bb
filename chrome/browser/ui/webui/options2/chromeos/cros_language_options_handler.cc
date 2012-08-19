@@ -32,7 +32,7 @@
 using content::UserMetricsAction;
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 CrosLanguageOptionsHandler::CrosLanguageOptionsHandler() {
 }
@@ -42,7 +42,7 @@ CrosLanguageOptionsHandler::~CrosLanguageOptionsHandler() {
 
 void CrosLanguageOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
-  ::options2::LanguageOptionsHandlerCommon::GetLocalizedValues(
+  ::options::LanguageOptionsHandlerCommon::GetLocalizedValues(
       localized_strings);
 
   RegisterTitle(localized_strings, "languagePage",
@@ -78,7 +78,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
 }
 
 void CrosLanguageOptionsHandler::RegisterMessages() {
-  ::options2::LanguageOptionsHandlerCommon::RegisterMessages();
+  ::options::LanguageOptionsHandlerCommon::RegisterMessages();
 
   web_ui()->RegisterMessageCallback("inputMethodDisable",
       base::Bind(&CrosLanguageOptionsHandler::InputMethodDisableCallback,
@@ -242,5 +242,5 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   content::RecordComputedAction(action);
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

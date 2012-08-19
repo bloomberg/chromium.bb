@@ -32,7 +32,7 @@ class PointerDeviceObserver;
 }  // namespace chromeos
 #endif
 
-namespace options2 {
+namespace options {
 
 // The base class handler of Javascript messages of options pages.
 class OptionsPageUIHandler : public content::WebUIMessageHandler,
@@ -136,6 +136,6 @@ class OptionsUI : public content::WebUIController,
   DISALLOW_COPY_AND_ASSIGN(OptionsUI);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_UI_H_

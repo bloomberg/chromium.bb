@@ -29,7 +29,7 @@
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 namespace {
 
@@ -137,7 +137,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
           pref_service->FindPreference(prefs::kProxy);
       return CreateValueForPref(pref, controlling_pref);
     }
-    return ::options2::CoreOptionsHandler::FetchPref(pref_name);
+    return ::options::CoreOptionsHandler::FetchPref(pref_name);
   }
 
   const base::Value* pref_value = CrosSettings::Get()->GetPref(pref_name);
@@ -164,7 +164,7 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
     return;
   }
   if (!CrosSettings::IsCrosSettings(pref_name))
-    return ::options2::CoreOptionsHandler::ObservePref(pref_name);
+    return ::options::CoreOptionsHandler::ObservePref(pref_name);
   CrosSettings::Get()->AddSettingsObserver(pref_name.c_str(), this);
 }
 
@@ -178,7 +178,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
     return;
   }
   if (!CrosSettings::IsCrosSettings(pref_name))
-    return ::options2::CoreOptionsHandler::SetPref(pref_name, value, metric);
+    return ::options::CoreOptionsHandler::SetPref(pref_name, value, metric);
   handling_change_ = true;
   CrosSettings::Get()->Set(pref_name, *value);
   handling_change_ = false;
@@ -193,7 +193,7 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
   if (CrosSettings::IsCrosSettings(path))
     CrosSettings::Get()->RemoveSettingsObserver(path.c_str(), this);
   else  // Call base class to handle regular preferences.
-    ::options2::CoreOptionsHandler::StopObservingPref(path);
+    ::options::CoreOptionsHandler::StopObservingPref(path);
 }
 
 void CoreChromeOSOptionsHandler::GetLocalizedValues(
@@ -227,7 +227,7 @@ void CoreChromeOSOptionsHandler::Observe(
       return;
     }
   }
-  ::options2::CoreOptionsHandler::Observe(type, source, details);
+  ::options::CoreOptionsHandler::Observe(type, source, details);
 }
 
 void CoreChromeOSOptionsHandler::NotifySettingsChanged(
@@ -250,5 +250,5 @@ void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
   }
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

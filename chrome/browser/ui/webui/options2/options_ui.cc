@@ -98,7 +98,7 @@ const char kOptionsBundleJsFile[]  = "options_bundle.js";
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -218,7 +218,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
 
   CoreOptionsHandler* core_handler;
 #if defined(OS_CHROMEOS)
-  core_handler = new chromeos::options2::CoreChromeOSOptionsHandler();
+  core_handler = new chromeos::options::CoreChromeOSOptionsHandler();
 #else
   core_handler = new CoreOptionsHandler();
 #endif
@@ -239,7 +239,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new WebIntentsSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::CrosLanguageOptionsHandler());
+                          new chromeos::options::CrosLanguageOptionsHandler());
 #else
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
 #endif
@@ -252,39 +252,39 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       g_browser_process->profile_manager()));
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::AccountsOptionsHandler());
+                          new chromeos::options::AccountsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::BluetoothOptionsHandler());
+                          new chromeos::options::BluetoothOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::DisplayOptionsHandler());
+                          new chromeos::options::DisplayOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::LanguageChewingHandler());
+                          new chromeos::options::LanguageChewingHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::KeyboardHandler());
+                          new chromeos::options::KeyboardHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::LanguageHangulHandler());
+                          new chromeos::options::LanguageHangulHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::LanguageMozcHandler());
+                          new chromeos::options::LanguageMozcHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::LanguagePinyinHandler());
+                          new chromeos::options::LanguagePinyinHandler());
 
-  chromeos::options2::PointerHandler* pointer_handler =
-      new chromeos::options2::PointerHandler();
+  chromeos::options::PointerHandler* pointer_handler =
+      new chromeos::options::PointerHandler();
   AddOptionsPageUIHandler(localized_strings, pointer_handler);
 
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::ProxyHandler());
+                          new chromeos::options::ProxyHandler());
   AddOptionsPageUIHandler(
       localized_strings,
-      new chromeos::options2::ChangePictureOptionsHandler());
+      new chromeos::options::ChangePictureOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options2::StatsOptionsHandler());
+                          new chromeos::options::StatsOptionsHandler());
 #endif
 #if defined(OS_CHROMEOS) && defined(USE_ASH)
   AddOptionsPageUIHandler(
       localized_strings,
-      new chromeos::options2::SetWallpaperOptionsHandler());
+      new chromeos::options::SetWallpaperOptionsHandler());
 #endif
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());
@@ -305,13 +305,13 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
 
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
-  chromeos::options2::UserImageSource* user_image_source =
-      new chromeos::options2::UserImageSource();
+  chromeos::options::UserImageSource* user_image_source =
+      new chromeos::options::UserImageSource();
   ChromeURLDataManager::AddDataSource(profile, user_image_source);
 
   // Set up the chrome://wallpaper-thumb/ source.
-  chromeos::options2::WallpaperThumbnailSource* wallpaper_thumbnail_source =
-      new chromeos::options2::WallpaperThumbnailSource();
+  chromeos::options::WallpaperThumbnailSource* wallpaper_thumbnail_source =
+      new chromeos::options::WallpaperThumbnailSource();
   ChromeURLDataManager::AddDataSource(profile, wallpaper_thumbnail_source);
 
   pointer_device_observer_.reset(
@@ -393,4 +393,4 @@ void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
   }
 }
 
-}  // namespace options2
+}  // namespace options

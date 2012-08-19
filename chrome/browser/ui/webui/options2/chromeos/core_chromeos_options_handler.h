@@ -12,10 +12,10 @@
 class PrefSetObserver;
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // CoreChromeOSOptionsHandler handles ChromeOS settings.
-class CoreChromeOSOptionsHandler : public ::options2::CoreOptionsHandler {
+class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
  public:
   CoreChromeOSOptionsHandler();
   virtual ~CoreChromeOSOptionsHandler();
@@ -51,7 +51,7 @@ class CoreChromeOSOptionsHandler : public ::options2::CoreOptionsHandler {
   base::WeakPtrFactory<CoreChromeOSOptionsHandler> pointer_factory_;
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_

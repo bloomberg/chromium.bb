@@ -16,10 +16,10 @@ class ListValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Display options overlay page UI handler.
-class DisplayOptionsHandler : public ::options2::OptionsPageUIHandler,
+class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
                               public aura::DisplayObserver {
  public:
   DisplayOptionsHandler();
@@ -63,7 +63,7 @@ class DisplayOptionsHandler : public ::options2::OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(DisplayOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_DISPLAY_OPTIONS_HANDLER_H_

@@ -28,7 +28,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 class WallpaperThumbnailSource::ThumbnailEncodingOperation
   : public base::RefCountedThreadSafe<
@@ -257,5 +257,5 @@ void WallpaperThumbnailSource::SendCurrentUserDefaultThumbnail(
                rb.LoadDataResourceBytes(idr, scale_factor));
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

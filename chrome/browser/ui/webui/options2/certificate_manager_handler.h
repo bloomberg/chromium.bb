@@ -21,7 +21,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #endif
 
-namespace options2 {
+namespace options {
 
 class CertIdMap;
 class FileAccessProvider;
@@ -183,6 +183,6 @@ class CertificateManagerHandler
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CERTIFICATE_MANAGER_HANDLER_H_

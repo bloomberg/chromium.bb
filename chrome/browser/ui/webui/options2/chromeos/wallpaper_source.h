@@ -14,7 +14,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // A DataSource for chrome://wallpaper/ URL, provides current user's wallpaper.
 class WallpaperImageSource : public ChromeURLDataManager::DataSource {
@@ -55,7 +55,7 @@ class WallpaperImageSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(WallpaperImageSource);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_WALLPAPER_SOURCE_H_

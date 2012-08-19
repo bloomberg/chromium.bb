@@ -261,7 +261,7 @@ scoped_ptr<ListValue> ValidatePhoneArguments(const ListValue* args) {
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 AutofillOptionsHandler::AutofillOptionsHandler()
     : personal_data_(NULL) {
@@ -626,4 +626,4 @@ bool AutofillOptionsHandler::IsPersonalDataLoaded() const {
   return personal_data_ && personal_data_->IsDataLoaded();
 }
 
-}  // namespace options2
+}  // namespace options

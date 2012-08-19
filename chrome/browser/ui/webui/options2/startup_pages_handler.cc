@@ -20,7 +20,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
-namespace options2 {
+namespace options {
 
 StartupPagesHandler::StartupPagesHandler()
     : startup_custom_pages_table_model_(NULL) {
@@ -256,4 +256,4 @@ void StartupPagesHandler::OnResultChanged(bool default_match_changed) {
       "StartupOverlay.updateAutocompleteSuggestions", suggestions);
 }
 
-}  // namespace options2
+}  // namespace options

@@ -13,10 +13,10 @@ class DictionaryValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Mozc options page UI handler.
-class LanguageMozcHandler : public ::options2::OptionsPageUIHandler {
+class LanguageMozcHandler : public ::options::OptionsPageUIHandler {
  public:
   LanguageMozcHandler();
   virtual ~LanguageMozcHandler();
@@ -29,7 +29,7 @@ class LanguageMozcHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(LanguageMozcHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_MOZC_HANDLER_H_

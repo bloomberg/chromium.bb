@@ -19,10 +19,10 @@ class DictionaryValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Handler for Bluetooth options on the system options page.
-class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
+class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
                                 public chromeos::BluetoothAdapter::Observer,
                                 public BluetoothDevice::PairingDelegate {
  public:
@@ -192,7 +192,7 @@ class BluetoothOptionsHandler : public ::options2::OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(BluetoothOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_BLUETOOTH_OPTIONS_HANDLER_H_

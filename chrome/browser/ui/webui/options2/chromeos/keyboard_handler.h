@@ -10,10 +10,10 @@
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Customize modifier keys overlay page UI handler.
-class KeyboardHandler : public ::options2::OptionsPageUIHandler {
+class KeyboardHandler : public ::options::OptionsPageUIHandler {
  public:
   KeyboardHandler();
   virtual ~KeyboardHandler();
@@ -25,7 +25,7 @@ class KeyboardHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(KeyboardHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_KEYBOARD_HANDLER_H_

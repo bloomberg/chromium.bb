@@ -10,12 +10,12 @@
 #include "chrome/browser/ui/webui/options2/language_options_handler.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Language options page UI handler for Chrome OS.  For non-Chrome OS,
 // see LanguageOptionsHnadler.
 class CrosLanguageOptionsHandler
-    : public ::options2::LanguageOptionsHandlerCommon {
+    : public ::options::LanguageOptionsHandlerCommon {
  public:
   CrosLanguageOptionsHandler();
   virtual ~CrosLanguageOptionsHandler();
@@ -69,7 +69,7 @@ class CrosLanguageOptionsHandler
   DISALLOW_COPY_AND_ASSIGN(CrosLanguageOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_

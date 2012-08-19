@@ -9,7 +9,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "content/public/browser/web_ui.h"
 
-namespace options2 {
+namespace options {
 
 OptionsSyncSetupHandler::OptionsSyncSetupHandler(
     ProfileManager* profile_manager) : SyncSetupHandler(profile_manager) {
@@ -24,4 +24,4 @@ void OptionsSyncSetupHandler::ShowSetupUI() {
   web_ui()->CallJavascriptFunction("OptionsPage.navigateToPage", *page);
 }
 
-}  // options2
+}  // namespace options

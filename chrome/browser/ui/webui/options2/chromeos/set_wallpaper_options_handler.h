@@ -28,10 +28,10 @@ class WallpaperDelegate {
   virtual ~WallpaperDelegate() {}
 };
 
-namespace options2 {
+namespace options {
 
 // ChromeOS user image options page UI handler.
-class SetWallpaperOptionsHandler : public ::options2::OptionsPageUIHandler,
+class SetWallpaperOptionsHandler : public ::options::OptionsPageUIHandler,
                                    public ui::SelectFileDialog::Listener,
                                    public WallpaperDelegate {
  public:
@@ -90,7 +90,7 @@ class SetWallpaperOptionsHandler : public ::options2::OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(SetWallpaperOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_SET_WALLPAPER_OPTIONS_HANDLER_H_

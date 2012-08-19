@@ -9,10 +9,10 @@
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // ChromeOS proxy options page UI handler.
-class ProxyHandler : public ::options2::OptionsPageUIHandler {
+class ProxyHandler : public ::options::OptionsPageUIHandler {
  public:
   explicit ProxyHandler();
   virtual ~ProxyHandler();
@@ -26,7 +26,7 @@ class ProxyHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(ProxyHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_PROXY_HANDLER_H_

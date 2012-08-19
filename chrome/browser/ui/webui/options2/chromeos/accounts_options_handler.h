@@ -9,10 +9,10 @@
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // ChromeOS accounts options page handler.
-class AccountsOptionsHandler : public ::options2::OptionsPageUIHandler {
+class AccountsOptionsHandler : public ::options::OptionsPageUIHandler {
  public:
   AccountsOptionsHandler();
   virtual ~AccountsOptionsHandler();
@@ -35,7 +35,7 @@ class AccountsOptionsHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_ACCOUNTS_OPTIONS_HANDLER_H_

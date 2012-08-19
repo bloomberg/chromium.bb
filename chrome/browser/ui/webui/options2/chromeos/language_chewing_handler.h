@@ -14,10 +14,10 @@ class DictionaryValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Chewing options page UI handler.
-class LanguageChewingHandler : public ::options2::OptionsPageUIHandler {
+class LanguageChewingHandler : public ::options::OptionsPageUIHandler {
  public:
   LanguageChewingHandler();
   virtual ~LanguageChewingHandler();
@@ -30,7 +30,7 @@ class LanguageChewingHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(LanguageChewingHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_CHEWING_HANDLER_H_

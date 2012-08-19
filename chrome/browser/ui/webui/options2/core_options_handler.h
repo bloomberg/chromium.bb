@@ -14,7 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 
-namespace options2 {
+namespace options {
 
 // Core options UI handler.
 // Handles resource and JS calls common to all options sub-pages.
@@ -154,6 +154,6 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CORE_OPTIONS_HANDLER_H_

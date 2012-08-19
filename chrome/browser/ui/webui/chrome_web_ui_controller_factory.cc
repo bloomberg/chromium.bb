@@ -250,7 +250,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
   if (url.host() == chrome::kChromeUISettingsFrameHost)
-    return &NewWebUI<options2::OptionsUI>;
+    return &NewWebUI<options::OptionsUI>;
   if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
     return &NewWebUI<SuggestionsInternalsUI>;
   // chrome://flags is currently unsupported on Android.
@@ -542,7 +542,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 
   // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
-    return options2::OptionsUI::GetFaviconResourceBytes();
+    return options::OptionsUI::GetFaviconResourceBytes();
 
   // Android doesn't use the plugins pages.
   if (page_url.host() == chrome::kChromeUIPluginsHost)

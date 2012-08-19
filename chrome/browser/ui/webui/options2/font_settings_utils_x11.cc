@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/options2/font_settings_utils.h"
 
-namespace options2 {
+namespace options {
 
 // static
 void FontSettingsUtilities::ValidateSavedFonts(PrefService* prefs) {
   // Nothing to do for X11.
 }
 
-}  // namespace options2
+}  // namespace options

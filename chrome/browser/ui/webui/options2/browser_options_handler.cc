@@ -106,7 +106,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
 
-namespace options2 {
+namespace options {
 
 BrowserOptionsHandler::BrowserOptionsHandler()
     : template_url_service_(NULL),
@@ -1439,4 +1439,4 @@ void BrowserOptionsHandler::SetupSSLConfigSettings() {
       "BrowserOptions.setCheckRevocationCheckboxState", checked, disabled);
 }
 
-}  // namespace options2
+}  // namespace options

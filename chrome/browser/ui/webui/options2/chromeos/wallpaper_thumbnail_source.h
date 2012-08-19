@@ -20,7 +20,7 @@ namespace chromeos {
 
 class User;
 
-namespace options2 {
+namespace options {
 
 // Returns a string consisting of the prefix specified and the index of the
 // image. For example: chrome://wallpaper/default_2.
@@ -77,7 +77,7 @@ class WallpaperThumbnailSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(WallpaperThumbnailSource);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_WALLPAPER_THUMBNAIL_SOURCE_H_

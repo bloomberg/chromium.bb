@@ -23,7 +23,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace options2 {
+namespace options {
 
 class HandlerOptionsHandler : public OptionsPageUIHandler {
  public:
@@ -83,6 +83,6 @@ class HandlerOptionsHandler : public OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(HandlerOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_HANDLER_OPTIONS_HANDLER_H_

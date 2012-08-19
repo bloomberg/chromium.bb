@@ -27,7 +27,7 @@ extern "C" {
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Operation class that encodes existing in-memory image as PNG.
 // It uses NO-COMPRESSION to save time.
@@ -183,5 +183,5 @@ void WallpaperImageSource::SendCurrentUserWallpaper(int request_id,
   TRACE_EVENT_ASYNC_END0("SCREEN_LOCK", "GetUserWallpaper", request_id);
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

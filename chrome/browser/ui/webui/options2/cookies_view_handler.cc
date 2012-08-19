@@ -28,7 +28,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace options2 {
+namespace options {
 
 CookiesViewHandler::CookiesViewHandler()
   : batch_update_(false),
@@ -321,4 +321,4 @@ std::string CookiesViewHandler::GetCallback(
   return callback.append(".").append(method);
 }
 
-}  // namespace options2
+}  // namespace options

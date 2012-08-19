@@ -50,7 +50,7 @@ std::string MaybeGetLocalizedFontName(const std::string& font_name) {
 }  // namespace
 
 
-namespace options2 {
+namespace options {
 
 FontSettingsHandler::FontSettingsHandler() {
 }
@@ -245,4 +245,4 @@ void FontSettingsHandler::SetUpMinimumFontSample() {
                                    size_value);
 }
 
-}  // namespace options2
+}  // namespace options

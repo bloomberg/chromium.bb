@@ -31,7 +31,7 @@
 
 using content::UserMetricsAction;
 
-namespace options2 {
+namespace options {
 
 CoreOptionsHandler::CoreOptionsHandler()
     : handlers_host_(NULL) {
@@ -480,4 +480,4 @@ void CoreOptionsHandler::UpdatePepperFlashSettingsEnabled() {
       "OptionsPage.setPepperFlashSettingsEnabled", *enabled);
 }
 
-}  // namespace options2
+}  // namespace options

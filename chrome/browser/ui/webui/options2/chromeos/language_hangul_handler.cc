@@ -11,7 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 LanguageHangulHandler::LanguageHangulHandler() {
 }
@@ -45,5 +45,5 @@ ListValue* LanguageHangulHandler::GetKeyboardLayoutList() {
   return keyboard_layout_list;
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

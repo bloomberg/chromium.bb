@@ -7,7 +7,7 @@
 
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
-namespace options2 {
+namespace options {
 
 // The handler for Javascript messages related to sync setup UI in the options
 // page.
@@ -20,6 +20,6 @@ class OptionsSyncSetupHandler : public SyncSetupHandler {
   virtual void ShowSetupUI() OVERRIDE;
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_OPTIONS_SYNC_SETUP_HANDLER_H_

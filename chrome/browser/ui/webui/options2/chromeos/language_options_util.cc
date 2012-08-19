@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/language_options_util.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // See comments in .h.
 Value* CreateValue(const char* in_value) {
@@ -16,5 +16,5 @@ Value* CreateValue(int in_value) {
   return Value::CreateIntegerValue(in_value);
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

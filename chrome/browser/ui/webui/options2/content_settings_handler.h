@@ -20,7 +20,7 @@
 class HostContentSettingsMap;
 class ProtocolHandlerRegistry;
 
-namespace options2 {
+namespace options {
 
 class ContentSettingsHandler : public OptionsPageUIHandler,
                                public PepperFlashSettingsManager::Client {
@@ -181,6 +181,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CONTENT_SETTINGS_HANDLER_H_

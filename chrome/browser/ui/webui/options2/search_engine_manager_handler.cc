@@ -31,7 +31,7 @@ enum EngineInfoIndexes {
 
 };  // namespace
 
-namespace options2 {
+namespace options {
 
 SearchEngineManagerHandler::SearchEngineManagerHandler() {
 }
@@ -314,4 +314,4 @@ void SearchEngineManagerHandler::EditCompleted(const ListValue* args) {
     edit_controller_->AcceptAddOrEdit(name, keyword, url);
 }
 
-}  // namespace options2
+}  // namespace options

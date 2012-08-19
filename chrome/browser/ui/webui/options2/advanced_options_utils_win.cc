@@ -21,7 +21,7 @@
 using content::BrowserThread;
 using content::WebContents;
 
-namespace options2 {
+namespace options {
 
 // Callback that opens the Internet Options control panel dialog with the
 // Connections tab selected.
@@ -70,4 +70,4 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
   ::CryptUIDlgCertMgr(&cert_mgr);
 }
 
-}  // namespace options2
+}  // namespace options

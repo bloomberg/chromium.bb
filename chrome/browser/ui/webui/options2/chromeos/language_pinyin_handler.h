@@ -13,10 +13,10 @@ class DictionaryValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Pinyin options page UI handler.
-class LanguagePinyinHandler : public ::options2::OptionsPageUIHandler {
+class LanguagePinyinHandler : public ::options::OptionsPageUIHandler {
  public:
   LanguagePinyinHandler();
   virtual ~LanguagePinyinHandler();
@@ -29,7 +29,7 @@ class LanguagePinyinHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(LanguagePinyinHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_PINYIN_HANDLER_H_

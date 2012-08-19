@@ -20,10 +20,10 @@ class ListValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // ChromeOS user image options page UI handler.
-class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
+class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
                                     public ui::SelectFileDialog::Listener,
                                     public TakePhotoDialog::Delegate,
                                     public ImageDecoder::Delegate {
@@ -130,7 +130,7 @@ class ChangePictureOptionsHandler : public ::options2::OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(ChangePictureOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_CHANGE_PICTURE_OPTIONS_HANDLER_H_

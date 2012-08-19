@@ -37,7 +37,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 namespace {
 
@@ -446,5 +446,5 @@ void ChangePictureOptionsHandler::OnDecodeImageFailed(
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

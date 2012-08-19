@@ -17,7 +17,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace options2 {
+namespace options {
 
 HandlerOptionsHandler::HandlerOptionsHandler() {
 }
@@ -205,4 +205,4 @@ void HandlerOptionsHandler::Observe(
     NOTREACHED();
 }
 
-}  // namespace options2
+}  // namespace options

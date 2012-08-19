@@ -10,7 +10,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
-namespace options2 {
+namespace options {
 
 // Handles messages related to adding or removing media galleries.
 class MediaGalleriesHandler : public OptionsPageUIHandler,
@@ -49,6 +49,6 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_MEDIA_GALLERIES_HANDLER_H_

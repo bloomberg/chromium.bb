@@ -18,7 +18,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
-namespace options2 {
+namespace options {
 
 MediaGalleriesHandler::MediaGalleriesHandler() {
 }
@@ -120,4 +120,4 @@ void MediaGalleriesHandler::Observe(
   }
 }
 
-}  // namespace options2
+}  // namespace options

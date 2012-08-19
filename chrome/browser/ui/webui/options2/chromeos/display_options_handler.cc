@@ -27,7 +27,7 @@
 #include "ui/gfx/rect.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 using ash::internal::DisplayController;
 
@@ -192,5 +192,5 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
           static_cast<int>(offset)));
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

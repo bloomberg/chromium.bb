@@ -12,7 +12,7 @@
 
 class CookiesTreeModelUtil;
 
-namespace options2 {
+namespace options {
 
 class CookiesViewHandler : public OptionsPageUIHandler,
                            public CookiesTreeModel::Observer {
@@ -92,6 +92,6 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_COOKIES_VIEW_HANDLER_H_

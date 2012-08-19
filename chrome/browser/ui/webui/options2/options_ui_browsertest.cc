@@ -15,7 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace options2 {
+namespace options {
 
 OptionsBrowserTest::OptionsBrowserTest() {
 }
@@ -48,4 +48,4 @@ IN_PROC_BROWSER_TEST_F(OptionsBrowserTest, FLAKY_LoadOptionsByURL) {
   VerifyNavbar();
 }
 
-}  // namespace options2
+}  // namespace options

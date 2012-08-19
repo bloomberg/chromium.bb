@@ -285,7 +285,7 @@ bool IsValidHost(const std::string& host) {
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 class ContentSettingsHandler::ExContentSettingsType {
  public:
@@ -1338,4 +1338,4 @@ std::string ContentSettingsHandler::ExContentSettingsTypeToGroupName(
   return std::string();
 }
 
-}  // namespace options2
+}  // namespace options

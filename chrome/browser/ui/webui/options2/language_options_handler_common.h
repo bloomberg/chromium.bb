@@ -12,7 +12,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace options2 {
+namespace options {
 
 // The base class for language options page UI handlers.  This class has code
 // common to the Chrome OS and non-Chrome OS implementation of the handler.
@@ -67,6 +67,6 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandlerCommon);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_LANGUAGE_OPTIONS_HANDLER_COMMON_H_

@@ -24,7 +24,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
-namespace options2 {
+namespace options {
 
 // Command used to configure GNOME 2 proxy settings.
 const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
@@ -154,6 +154,6 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
                  web_contents->GetRenderViewHost()->GetRoutingID()));
 }
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // !defined(OS_CHROMEOS)

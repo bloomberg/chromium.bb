@@ -9,7 +9,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 
-namespace options2 {
+namespace options {
 
 // Clear browser data handler page UI handler.
 class ClearBrowserDataHandler : public OptionsPageUIHandler,
@@ -43,6 +43,6 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CLEAR_BROWSER_DATA_HANDLER_H_

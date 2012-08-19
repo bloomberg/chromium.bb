@@ -12,7 +12,7 @@
 
 class WebIntentsRegistry;
 
-namespace options2 {
+namespace options {
 
 // Manage setting up the backing data for the web intents options page.
 class WebIntentsSettingsHandler : public OptionsPageUIHandler,
@@ -75,6 +75,6 @@ class WebIntentsSettingsHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(WebIntentsSettingsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_WEB_INTENTS_SETTINGS_HANDLER_H_

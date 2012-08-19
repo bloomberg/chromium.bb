@@ -13,7 +13,7 @@ namespace base {
 class ListValue;
 }
 
-namespace options2 {
+namespace options {
 
 // Font settings overlay page UI handler.
 class FontSettingsHandler : public OptionsPageUIHandler {
@@ -56,6 +56,6 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(FontSettingsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_FONT_SETTINGS_HANDLER_H_

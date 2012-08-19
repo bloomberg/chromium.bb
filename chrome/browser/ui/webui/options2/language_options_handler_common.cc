@@ -29,7 +29,7 @@
 
 using content::UserMetricsAction;
 
-namespace options2 {
+namespace options {
 
 LanguageOptionsHandlerCommon::LanguageOptionsHandlerCommon() {
 }
@@ -166,4 +166,4 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
   content::RecordComputedAction(action);
 }
 
-}  // namespace options2
+}  // namespace options

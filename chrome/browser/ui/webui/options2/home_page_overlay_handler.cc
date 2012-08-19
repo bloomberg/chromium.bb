@@ -15,7 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace options2 {
+namespace options {
 
 HomePageOverlayHandler::HomePageOverlayHandler() {
 }
@@ -59,4 +59,4 @@ void HomePageOverlayHandler::OnResultChanged(bool default_match_changed) {
       "HomePageOverlay.updateAutocompleteSuggestions", suggestions);
 }
 
-}  // namespace options2
+}  // namespace options

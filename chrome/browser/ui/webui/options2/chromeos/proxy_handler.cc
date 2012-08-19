@@ -19,7 +19,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 ProxyHandler::ProxyHandler() {
 }
@@ -61,5 +61,5 @@ void ProxyHandler::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES)));
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

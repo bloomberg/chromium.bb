@@ -18,7 +18,7 @@ class RefCountedMemory;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // UserImageSource is the data source that serves user images for users that
 // have it.
@@ -47,7 +47,7 @@ class UserImageSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(UserImageSource);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_USER_IMAGE_SOURCE_H_

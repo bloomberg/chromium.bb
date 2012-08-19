@@ -24,7 +24,7 @@ namespace views {
 class WidgetDelegate;
 }
 
-namespace options2 {
+namespace options {
 
 // ChromeOS internet options page UI handler.
 class InternetOptionsHandler
@@ -188,6 +188,6 @@ class InternetOptionsHandler
   DISALLOW_COPY_AND_ASSIGN(InternetOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_INTERNET_OPTIONS_HANDLER_H_

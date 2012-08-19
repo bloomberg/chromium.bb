@@ -20,7 +20,7 @@ struct PasswordForm;
 }
 }
 
-namespace options2 {
+namespace options {
 
 class PasswordManagerHandler : public OptionsPageUIHandler,
                                public PasswordStore::Observer {
@@ -134,6 +134,6 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_PASSWORD_MANAGER_HANDLER_H_

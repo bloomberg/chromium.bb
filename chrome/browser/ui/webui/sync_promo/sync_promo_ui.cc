@@ -76,7 +76,7 @@ class SyncPromoUIHTMLSource : public ChromeWebUIDataSource {
 SyncPromoUIHTMLSource::SyncPromoUIHTMLSource(content::WebUI* web_ui)
     : ChromeWebUIDataSource(chrome::kChromeUISyncPromoHost) {
   DictionaryValue localized_strings;
-  options2::CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
+  options::CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
   AddLocalizedStrings(localized_strings);
 }

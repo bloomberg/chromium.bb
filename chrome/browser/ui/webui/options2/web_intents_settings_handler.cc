@@ -21,7 +21,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace options2 {
+namespace options {
 
 WebIntentsSettingsHandler::WebIntentsSettingsHandler()
     : web_intents_registry_(NULL),
@@ -161,4 +161,4 @@ void WebIntentsSettingsHandler::SendChildren(WebIntentsTreeNode* parent) {
   web_ui()->CallJavascriptFunction("IntentsView.loadChildren", args);
 }
 
-}  // namespace options2
+}  // namespace options

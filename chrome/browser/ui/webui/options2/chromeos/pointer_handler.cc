@@ -13,7 +13,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 PointerHandler::PointerHandler()
   : has_touchpad_(false),
@@ -78,5 +78,5 @@ void PointerHandler::UpdateTitle() {
   web_ui()->CallJavascriptFunction("PointerOverlay.setTitle", val);
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

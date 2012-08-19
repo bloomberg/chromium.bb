@@ -17,7 +17,7 @@ const char kI18nPrefix[] = "mozc_";
 }  // namespace
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 LanguageMozcHandler::LanguageMozcHandler() {
 }
@@ -68,5 +68,5 @@ void LanguageMozcHandler::GetLocalizedValues(
   }
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

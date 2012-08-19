@@ -28,7 +28,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 namespace {
 
@@ -261,5 +261,5 @@ gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {
   return browser->window()->GetNativeWindow();
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

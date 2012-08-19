@@ -14,7 +14,7 @@
 using content::UserMetricsAction;
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 StatsOptionsHandler::StatsOptionsHandler() {
 }
@@ -43,5 +43,5 @@ void StatsOptionsHandler::HandleMetricsReportingCheckbox(
 #endif
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

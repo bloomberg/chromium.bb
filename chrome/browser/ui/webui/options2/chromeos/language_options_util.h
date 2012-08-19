@@ -17,7 +17,7 @@ class ListValue;
 }
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // Returns an i18n-content value corresponding to |preference|.
 template <typename T>
@@ -78,7 +78,7 @@ base::ListValue* CreateMultipleChoiceList(
   return list_value;
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_LANGUAGE_OPTIONS_UTIL_H_

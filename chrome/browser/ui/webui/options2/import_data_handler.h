@@ -16,7 +16,7 @@
 class ImporterHost;
 class ImporterList;
 
-namespace options2 {
+namespace options {
 
 // Chrome personal stuff import data overlay UI handler.
 class ImportDataHandler : public OptionsPageUIHandler,
@@ -58,6 +58,6 @@ class ImportDataHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_IMPORT_DATA_HANDLER_H_

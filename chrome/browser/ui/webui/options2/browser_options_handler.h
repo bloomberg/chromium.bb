@@ -28,7 +28,7 @@ class CloudPrintSetupHandler;
 class CustomHomePagesTableModel;
 class TemplateURLService;
 
-namespace options2 {
+namespace options {
 
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler
@@ -321,6 +321,6 @@ class BrowserOptionsHandler
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_BROWSER_OPTIONS_HANDLER_H_

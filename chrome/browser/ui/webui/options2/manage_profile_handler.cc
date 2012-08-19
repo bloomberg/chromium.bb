@@ -25,7 +25,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
-namespace options2 {
+namespace options {
 
 namespace {
 
@@ -287,4 +287,4 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
                                    gaia_name_value);
 }
 
-}  // namespace options2
+}  // namespace options

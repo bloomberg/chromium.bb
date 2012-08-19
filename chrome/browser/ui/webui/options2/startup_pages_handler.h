@@ -18,7 +18,7 @@ class AutocompleteController;
 class CustomHomePagesTableModel;
 class TemplateURLService;
 
-namespace options2 {
+namespace options {
 
 // Chrome browser options page UI handler.
 class StartupPagesHandler : public OptionsPageUIHandler,
@@ -96,6 +96,6 @@ class StartupPagesHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(StartupPagesHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_STARTUP_PAGES_HANDLER_H_

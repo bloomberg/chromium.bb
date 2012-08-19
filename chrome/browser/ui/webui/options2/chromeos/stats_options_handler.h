@@ -9,13 +9,13 @@
 #include "chrome/browser/ui/webui/options2/options_ui.h"
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 // ChromeOS handler for "Stats/crash reporting to Google" option of the Advanced
 // settings page. This handler does only ChromeOS-specific actions while default
 // code is in Chrome's AdvancedOptionsHandler
 // (chrome/browser/webui/advanced_options_handler.cc).
-class StatsOptionsHandler : public ::options2::OptionsPageUIHandler {
+class StatsOptionsHandler : public ::options::OptionsPageUIHandler {
  public:
   StatsOptionsHandler();
 
@@ -32,7 +32,7 @@ class StatsOptionsHandler : public ::options2::OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(StatsOptionsHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_CHROMEOS_STATS_OPTIONS_HANDLER_H_

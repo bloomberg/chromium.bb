@@ -475,7 +475,7 @@ DictionaryValue* BuildIPInfoDictionary(const DictionaryValue& shill_properties,
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 InternetOptionsHandler::InternetOptionsHandler()
   : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -1757,4 +1757,4 @@ void InternetOptionsHandler::SetValueDictionary(
   settings->Set(key, value_dict);
 }
 
-}  // namespace options2
+}  // namespace options

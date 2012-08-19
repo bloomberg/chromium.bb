@@ -9,7 +9,7 @@
 
 class PrefService;
 
-namespace options2 {
+namespace options {
 
 // Chrome advanced options utility methods.
 class FontSettingsUtilities {
@@ -20,6 +20,6 @@ class FontSettingsUtilities {
   DISALLOW_IMPLICIT_CONSTRUCTORS(FontSettingsUtilities);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_FONT_SETTINGS_UTILS_H_

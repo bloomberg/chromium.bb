@@ -10,7 +10,7 @@ namespace {
 
 // Same as OptionsBrowserTest but launches with Guest mode command line
 // switches.
-class GuestModeOptionsBrowserTest : public options2::OptionsBrowserTest {
+class GuestModeOptionsBrowserTest : public options::OptionsBrowserTest {
  public:
    GuestModeOptionsBrowserTest() : OptionsBrowserTest() {}
 

@@ -11,7 +11,7 @@ namespace content {
 class WebContents;
 }
 
-namespace options2 {
+namespace options {
 
 // Chrome advanced options utility methods.
 class AdvancedOptionsUtilities {
@@ -26,6 +26,6 @@ class AdvancedOptionsUtilities {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AdvancedOptionsUtilities);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_ADVANCED_OPTIONS_UTILS_H_

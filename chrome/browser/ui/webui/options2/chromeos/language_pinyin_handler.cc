@@ -15,7 +15,7 @@ const char kI18nPrefix[] = "Pinyin";
 }  // namespace
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 LanguagePinyinHandler::LanguagePinyinHandler() {
 }
@@ -65,5 +65,5 @@ void LanguagePinyinHandler::GetLocalizedValues(
       list_value);
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

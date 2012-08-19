@@ -20,7 +20,7 @@ const char kI18nPrefix[] = "Chewing_";
 }  // namespace
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 LanguageChewingHandler::LanguageChewingHandler() {
 }
@@ -101,5 +101,5 @@ void LanguageChewingHandler::GetLocalizedValues(
       CreateMultipleChoiceList(language_prefs::kChewingHsuSelKeyType));
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

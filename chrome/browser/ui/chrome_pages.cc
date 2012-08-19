@@ -133,7 +133,7 @@ void ShowContentSettings(Browser* browser,
   ShowSettingsSubPage(
       browser,
       kContentSettingsExceptionsSubPage + std::string(kHashMark) +
-      options2::ContentSettingsHandler::ContentSettingsTypeToGroupName(
+      options::ContentSettingsHandler::ContentSettingsTypeToGroupName(
           content_settings_type));
 }
 

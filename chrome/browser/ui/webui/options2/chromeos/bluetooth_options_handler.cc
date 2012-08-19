@@ -48,7 +48,7 @@ const char kConfirmPasskey[] = "bluetoothConfirmPasskey";
 }  // namespace
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 BluetoothOptionsHandler::BluetoothOptionsHandler() : weak_ptr_factory_(this) {
 }
@@ -424,5 +424,5 @@ void BluetoothOptionsHandler::DeviceRemoved(BluetoothAdapter* adapter,
       address);
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

@@ -11,7 +11,7 @@ namespace base {
 class StringValue;
 }
 
-namespace options2 {
+namespace options {
 
 // Chrome personal stuff profiles manage overlay UI handler.
 class ManageProfileHandler : public OptionsPageUIHandler {
@@ -76,6 +76,6 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(ManageProfileHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_MANAGE_PROFILE_HANDLER_H_

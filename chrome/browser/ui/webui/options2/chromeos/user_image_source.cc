@@ -47,7 +47,7 @@ void ParseRequest(const GURL& url,
 }  // namespace
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 base::RefCountedMemory* UserImageSource::GetUserImage(
     const std::string& email,
@@ -110,5 +110,5 @@ std::string UserImageSource::GetMimeType(const std::string& path) const {
   return "image/png";
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos

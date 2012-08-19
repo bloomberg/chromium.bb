@@ -28,7 +28,7 @@ const char kClearBrowsingDataLearnMoreUrl[] =
     "https://support.google.com/chrome/?p=settings_clear_browsing_data";
 }
 
-namespace options2 {
+namespace options {
 
 ClearBrowserDataHandler::ClearBrowserDataHandler()
     : remover_(NULL) {
@@ -158,4 +158,4 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
 }
 
-}  // namespace options2
+}  // namespace options

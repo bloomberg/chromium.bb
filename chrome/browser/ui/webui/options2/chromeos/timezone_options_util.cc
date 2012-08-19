@@ -121,7 +121,7 @@ string16 GetTimezoneName(const icu::TimeZone& timezone) {
 
 }  // namespace
 
-namespace options2 {
+namespace options {
 
 // Creates a list of pairs of each timezone's ID and name.
 scoped_ptr<base::ListValue> GetTimezoneList() {
@@ -140,4 +140,4 @@ scoped_ptr<base::ListValue> GetTimezoneList() {
   return timezoneList.Pass();
 }
 
-}  // namespace options2
+}  // namespace options

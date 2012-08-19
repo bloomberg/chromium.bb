@@ -76,8 +76,8 @@ namespace chromeos {
 
 ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
-      proxy_handler_(new options2::ProxyHandler()),
-      core_handler_(new options2::CoreChromeOSOptionsHandler()) {
+      proxy_handler_(new options::ProxyHandler()),
+      core_handler_(new options::CoreChromeOSOptionsHandler()) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   DictionaryValue* localized_strings = new DictionaryValue();
 

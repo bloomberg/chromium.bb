@@ -15,7 +15,7 @@ namespace extensions {
 class Extension;
 }
 
-namespace options2 {
+namespace options {
 
 class SearchEngineManagerHandler : public OptionsPageUIHandler,
                                    public ui::TableModelObserver,
@@ -81,6 +81,6 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(SearchEngineManagerHandler);
 };
 
-}  // namespace options2
+}  // namespace options
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS2_SEARCH_ENGINE_MANAGER_HANDLER_H_

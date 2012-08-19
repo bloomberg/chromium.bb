@@ -17,7 +17,7 @@ class ProfileManager;
 class ProfileSyncService;
 class SigninManager;
 
-class SyncSetupHandler : public options2::OptionsPageUIHandler,
+class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SigninTracker::Observer,
                          public LoginUIService::LoginUI {
  public:

@@ -34,7 +34,7 @@ const char* kDataValuesNames[] = {
 }  // namespace
 
 namespace chromeos {
-namespace options2 {
+namespace options {
 
 KeyboardHandler::KeyboardHandler() {
 }
@@ -78,5 +78,5 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   }
 }
 
-}  // namespace options2
+}  // namespace options
 }  // namespace chromeos
