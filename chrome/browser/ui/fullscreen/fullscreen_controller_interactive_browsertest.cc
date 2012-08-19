@@ -80,7 +80,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {
 }
 
 // Times out sometimes on Linux. http://crbug.com/135115
-#if defined(OS_LINUX)
+// Mac: http://crbug.com/103912
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_EscapingMouseLockAndFullscreen \
     DISABLED_EscapingMouseLockAndFullscreen
 #else
@@ -202,7 +203,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // Times out sometimes on Linux. http://crbug.com/135115
-#if defined(OS_LINUX)
+// Mac: http://crbug.com/103912
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_MouseLockAndFullscreen DISABLED_MouseLockAndFullscreen
 #else
 #define MAYBE_MouseLockAndFullscreen MouseLockAndFullscreen
@@ -420,8 +422,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsMouseLocked());
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 // http://crbug.com/137486
+// mac: http://crbug.com/103912
 #define ReloadExitsMouseLockAndFullscreen DISABLED_ReloadExitsMouseLockAndFullscreen
 #endif
 // Tests Mouse Lock and Fullscreen are exited upon reload.

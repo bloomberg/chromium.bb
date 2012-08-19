@@ -512,9 +512,16 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen)
   RunTestViaHTTP("FlashFullscreen");
 }
 
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(Fullscreen)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(Fullscreen)
-TEST_PPAPI_NACL_VIA_HTTP(Fullscreen)
+#if defined(OS_MACOSX)
+// http://crbug.com/103912
+#define MAYBE_Fullscreen DISABLED_Fullscreen
+#else
+#define MAYBE_Fullscreen Fullscreen
+#endif
+
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_Fullscreen)
 
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)

@@ -32,18 +32,20 @@
 #define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
 #else
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
 // Maximizing/fullscreen popup window doesn't work on aura's managed mode.
 // See bug crbug.com/116305.
+// Mac: http://crbug.com/103912
 #define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
 #else
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
-#endif  // defined(USE_AURA)
+#endif  // defined(USE_AURA) || defined(OS_MACOSX)
 
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #define MAYBE_UpdateWindowResize UpdateWindowResize
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
+
 
 class ExtensionApiNewTabTest : public ExtensionApiTest {
  public:

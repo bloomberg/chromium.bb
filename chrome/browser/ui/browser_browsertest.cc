@@ -1486,7 +1486,13 @@ class KioskModeTest : public BrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(KioskModeTest, EnableKioskModeTest) {
+#if defined(OS_MACOSX)
+// http://crbug.com/103912
+#define MAYBE_EnableKioskModeTest DISABLED_EnableKioskModeTest
+#else
+#define MAYBE_EnableKioskModeTest EnableKioskModeTest
+#endif
+IN_PROC_BROWSER_TEST_F(KioskModeTest, MAYBE_EnableKioskModeTest) {
   // Check if browser is in fullscreen mode.
   ASSERT_TRUE(browser()->window()->IsFullscreen());
   ASSERT_FALSE(browser()->window()->IsFullscreenBubbleVisible());

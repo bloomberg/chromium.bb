@@ -70,7 +70,8 @@ class VideoDecodeAccelerationSupportTest : public ui::CocoaTest {
 
 // Test that creating VideoDecodeAccelerationSupport works on hardware that
 // supports it.
-TEST_F(VideoDecodeAccelerationSupportTest, Create) {
+// http://crbug.com/103912
+TEST_F(VideoDecodeAccelerationSupportTest, DISABLED_Create) {
   scoped_refptr<gfx::VideoDecodeAccelerationSupport> vda(
       new gfx::VideoDecodeAccelerationSupport);
   gfx::VideoDecodeAccelerationSupport::Status status = vda->Create(
