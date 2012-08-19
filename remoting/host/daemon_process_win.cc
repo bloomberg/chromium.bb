@@ -13,6 +13,7 @@ namespace remoting {
 class DaemonProcessWin : public DaemonProcess {
  public:
   DaemonProcessWin(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+                   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                    const base::Closure& stopped_callback);
   virtual ~DaemonProcessWin();
 
@@ -25,8 +26,9 @@ class DaemonProcessWin : public DaemonProcess {
 
 DaemonProcessWin::DaemonProcessWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
-    : DaemonProcess(main_task_runner, stopped_callback) {
+    : DaemonProcess(main_task_runner, io_task_runner, stopped_callback) {
 }
 
 DaemonProcessWin::~DaemonProcessWin() {
@@ -39,9 +41,10 @@ bool DaemonProcessWin::LaunchNetworkProcess() {
 
 scoped_ptr<DaemonProcess> DaemonProcess::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback) {
   scoped_ptr<DaemonProcessWin> daemon_process(
-      new DaemonProcessWin(main_task_runner, stopped_callback));
+      new DaemonProcessWin(main_task_runner, io_task_runner, stopped_callback));
   return daemon_process.PassAs<DaemonProcess>();
 }
 

@@ -26,9 +26,11 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
 
 DaemonProcess::DaemonProcess(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
     : Stoppable(main_task_runner, stopped_callback),
-      main_task_runner_(main_task_runner) {
+      main_task_runner_(main_task_runner),
+      io_task_runner_(io_task_runner) {
   // Initialize on the same thread that will be used for shutting down.
   main_task_runner_->PostTask(
     FROM_HERE,
@@ -37,15 +39,6 @@ DaemonProcess::DaemonProcess(
 
 void DaemonProcess::Init() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // Launch the IPC thread.
-  ipc_thread_.reset(new base::Thread(kIpcThreadName));
-  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
-  if (!ipc_thread_->StartWithOptions(io_thread_options)) {
-    LOG(ERROR) << "Failed to start the Daemon process IPC thread.";
-    Stop();
-    return;
-  }
 
   if (!LaunchNetworkProcess()) {
     LOG(ERROR) << "Failed to launch the networking process.";
@@ -56,10 +49,6 @@ void DaemonProcess::Init() {
 
 void DaemonProcess::DoStop() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  if (ipc_thread_.get()) {
-    ipc_thread_->Stop();
-  }
 
   CompleteStopping();
 }

@@ -197,15 +197,6 @@ int HostService::Run() {
 }
 
 void HostService::RunMessageLoop(MessageLoop* message_loop) {
-#if defined(REMOTING_MULTI_PROCESS)
-
-  child_ = DaemonProcess::Create(
-      main_task_runner_,
-      base::Bind(&HostService::OnChildStopped,
-                 base::Unretained(this))).PassAs<Stoppable>();
-
-#else  // !defined(REMOTING_MULTI_PROCESS)
-
   // Launch the I/O thread.
   base::Thread io_thread(kIoThreadName);
   base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
@@ -214,6 +205,16 @@ void HostService::RunMessageLoop(MessageLoop* message_loop) {
     stopped_event_.Signal();
     return;
   }
+
+#if defined(REMOTING_MULTI_PROCESS)
+
+  child_ = DaemonProcess::Create(
+      main_task_runner_,
+      io_thread.message_loop_proxy(),
+      base::Bind(&HostService::OnChildStopped,
+                 base::Unretained(this))).PassAs<Stoppable>();
+
+#else  // !defined(REMOTING_MULTI_PROCESS)
 
   // Create the session process launcher.
   child_.reset(new WtsSessionProcessLauncher(

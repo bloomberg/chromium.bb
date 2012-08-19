@@ -34,6 +34,7 @@ class DaemonProcess : public Stoppable, public IPC::Listener {
   // Creates a platform-specific implementation of the daemon process object.
   static scoped_ptr<DaemonProcess> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
 
   // IPC::Listener implementation.
@@ -41,6 +42,7 @@ class DaemonProcess : public Stoppable, public IPC::Listener {
 
  protected:
   DaemonProcess(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+                scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                 const base::Closure& stopped_callback);
 
   // Reads the host configuration and launches the networking process.
@@ -56,8 +58,8 @@ class DaemonProcess : public Stoppable, public IPC::Listener {
   // The main task runner. Typically it is the UI message loop.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  // A dedicated thread for handling IPC requests.
-  scoped_ptr<base::Thread> ipc_thread_;
+  // Handles IPC and background I/O tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The IPC channel connecting the daemon process to the networking process.
   scoped_ptr<IPC::ChannelProxy> network_process_channel_;
