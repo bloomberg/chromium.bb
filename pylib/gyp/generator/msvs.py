@@ -838,18 +838,25 @@ def _GetGuidOfProject(proj_path, spec):
   return guid
 
 
-def _GetMsbuildToolsetOfProject(proj_path, spec):
+def _GetMsbuildToolsetOfProject(proj_path, spec, version):
   """Get the platform toolset for the project.
 
   Arguments:
     proj_path: Path of the vcproj or vcxproj file to generate.
     spec: The target dictionary containing the properties of the target.
+    version: The MSVSVersion object.
   Returns:
     the platform toolset string or None.
   """
   # Pluck out the default configuration.
   default_config = _GetDefaultConfiguration(spec)
-  return default_config.get('msbuild_toolset')
+  toolset = default_config.get('msbuild_toolset')
+  if not toolset and version.ShortName().startswith('2012'):
+    # Visual Studio 2012 defaults to 2010 toolset if not explicitly specified.
+    # We set an explicit default here if the user hasn't otherwise specified
+    # one.
+    toolset = 'v110'
+  return toolset
 
 
 def _GenerateProject(project, options, version, generator_flags):
@@ -1669,7 +1676,8 @@ def _CreateProjectObjects(target_list, target_dicts, options, msvs_version):
         fixpath_prefix=fixpath_prefix)
     # Set project toolset if any (MS build only)
     if msvs_version.UsesVcxproj():
-      obj.set_msbuild_toolset(_GetMsbuildToolsetOfProject(proj_path, spec))
+      obj.set_msbuild_toolset(
+          _GetMsbuildToolsetOfProject(proj_path, spec, msvs_version))
     projects[qualified_target] = obj
   # Set all the dependencies
   for project in projects.values():
