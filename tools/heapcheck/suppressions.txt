@@ -1489,3 +1489,11 @@
    fun:*FakeManagedMode
    fun:ManagedModeTest::ManagedModeTest
 }
+{
+   bug_143563
+   Heapcheck:Leak
+   ...
+   fun:TaskManagerModel::RefreshVideoMemoryUsageStats
+   fun:TaskManagerModel::Refresh
+   fun:TaskManagerTest_RefreshCalled_Test::TestBody
+}

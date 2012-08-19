@@ -5794,6 +5794,15 @@
    fun:_ZN3ash13CursorManager10ShowCursorEb
    fun:_ZN3ash4test11AshTestBase5SetUpEv
 }
+{
+   bug_143563
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN16TaskManagerModel28RefreshVideoMemoryUsageStatsEv
+   fun:_ZN16TaskManagerModel7RefreshEv
+   fun:_ZN34TaskManagerTest_RefreshCalled_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
