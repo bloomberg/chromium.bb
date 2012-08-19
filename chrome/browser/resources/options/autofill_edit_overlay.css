@@ -40,7 +40,7 @@ div.input {
 #autofill-edit-address-overlay list {
   /* Min height is a multiple of the list item height (32) */
   min-height: 32px;
-  width: 176px;
+  width: 17em;
 }
 
 #autofill-edit-address-overlay list div.static-text {
@@ -54,11 +54,11 @@ div.input {
    */
   line-height: 1.75em;
   min-height: 1.75em;
-  width: 141px;
+  width: 16em;
 }
 
 #autofill-edit-address-overlay list input {
-  width: 151px;
+  width: 16em;
 }
 
 #autofill-name-labels {
@@ -76,7 +76,8 @@ div.input {
   /* Set the minimum width to the size of an input element, so that all boxes
    * have an equal amount of flex space to work with.
    */
-  min-width: 141px;
+  min-width: 16em;
+  padding: 0 3px;
 }
 
 #autofill-edit-address-overlay list#full-name-list div.static-text {
@@ -84,7 +85,7 @@ div.input {
 }
 
 #autofill-edit-address-overlay list#full-name-list input {
-  width: 141px;
+  width: 16em;
 }
 
 #autofill-edit-address-overlay list#full-name-list {
