@@ -1497,3 +1497,11 @@
    fun:TaskManagerModel::Refresh
    fun:TaskManagerTest_RefreshCalled_Test::TestBody
 }
+{
+   bug_143565
+   Heapcheck:Leak
+   ...
+   fun:appcache::AppCacheStorageImpl::Initialize
+   fun:appcache::AppCacheService::Initialize
+   fun:ChromeAppCacheService::InitializeOnIOThread
+}
