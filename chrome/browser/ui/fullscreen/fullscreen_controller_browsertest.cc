@@ -174,17 +174,24 @@ void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
 #define MAYBE_FullscreenMouseLockContentSettings \
     FullscreenMouseLockContentSettings
 #endif
-
 // Tests fullscreen and Mouse Lock with varying content settings ALLOW & BLOCK.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerBrowserTest,
                        MAYBE_FullscreenMouseLockContentSettings) {
   TestFullscreenMouseLockContentSettings();
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com/103912
+#define MAYBE_BrowserFullscreenMouseLockContentSettings \
+    DISABLED_BrowserFullscreenMouseLockContentSettings
+#else
+#define MAYBE_BrowserFullscreenMouseLockContentSettings \
+    BrowserFullscreenMouseLockContentSettings
+#endif
 // Tests fullscreen and Mouse Lock with varying content settings ALLOW & BLOCK,
 // but with the browser initiated in fullscreen mode first.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerBrowserTest,
-                       BrowserFullscreenMouseLockContentSettings) {
+                       MAYBE_BrowserFullscreenMouseLockContentSettings) {
   // Enter browser fullscreen first.
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
   TestFullscreenMouseLockContentSettings();
