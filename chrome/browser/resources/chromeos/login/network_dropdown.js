@@ -403,7 +403,7 @@ cr.define('cr.ui', function() {
   DropDown.hide = function(elementId) {
     if (DropDown.activeElementId_ == elementId) {
       DropDown.activeElementId_ = '';
-      chrome.send('networkDropdownHide', []);
+      chrome.send('networkDropdownHide');
     }
   };
 
@@ -411,7 +411,7 @@ cr.define('cr.ui', function() {
    * Refreshes network drop-down. Should be called on language change.
    */
   DropDown.refresh = function() {
-    chrome.send('networkDropdownRefresh', []);
+    chrome.send('networkDropdownRefresh');
   };
 
   return {

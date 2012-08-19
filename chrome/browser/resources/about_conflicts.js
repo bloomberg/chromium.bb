@@ -30,12 +30,12 @@ var moduleListDataFormat = {
 * Takes the |moduleListData| input argument which represents data about
 * the currently available modules and populates the html jstemplate
 * with that data. It expects an object structure like the above.
-* @param {Object} moduleListData Information about available modules
+* @param {Object} moduleListData Information about available modules.
 */
 function renderTemplate(moduleListData) {
   // This is the javascript code that processes the template:
   var input = new JsEvalContext(moduleListData);
-  var output = document.getElementById('modulesTemplate');
+  var output = $('modulesTemplate');
   jstProcess(input, output);
 }
 
@@ -45,17 +45,18 @@ function renderTemplate(moduleListData) {
 * should reply to returnModuleList() (below).
 */
 function requestModuleListData() {
-  chrome.send('requestModuleList', []);
+  chrome.send('requestModuleList');
 }
 
 /**
 * Called by the WebUI to re-populate the page with data representing the
 * current state of installed modules.
+* @param {Object} moduleListData Information about available modules.
 */
 function returnModuleList(moduleListData) {
   renderTemplate(moduleListData);
-  document.getElementById('loading-message').style.visibility = 'hidden';
-  document.getElementById('body-container').style.visibility = 'visible';
+  $('loading-message').style.visibility = 'hidden';
+  $('body-container').style.visibility = 'visible';
 }
 
 // Get data and have it displayed upon loading.

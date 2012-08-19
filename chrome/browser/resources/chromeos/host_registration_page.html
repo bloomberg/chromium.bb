@@ -26,7 +26,7 @@ var registerSkipUrl = 'cros://register/skipped';
 var registrationUrl = '';
 
 function load() {
-  chrome.send('getRegistrationUrl', []);
+  chrome.send('getRegistrationUrl');
 }
 function $(o) {
   return document.getElementById(o);
@@ -39,7 +39,7 @@ function processMessage(e) {
   }
 
   if (e.data.type == 'get_user_info') {
-    chrome.send('getUserInfo', []);
+    chrome.send('getUserInfo');
   } else if (e.data.type == 'complete_registration') {
     location.replace(e.data.payload.registration_status ? registerDoneUrl :
                                                           registerSkipUrl);
