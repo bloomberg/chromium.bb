@@ -115,6 +115,11 @@ void MediaGalleriesDialogController::DialogFinished(bool accepted) {
   delete this;
 }
 
+const MediaGalleriesDialogController::KnownGalleryPermissions&
+MediaGalleriesDialogController::permissions() const {
+  return known_galleries_;
+}
+
 void MediaGalleriesDialogController::FileSelected(const FilePath& path,
                                                   int index,
                                                   void* params) {

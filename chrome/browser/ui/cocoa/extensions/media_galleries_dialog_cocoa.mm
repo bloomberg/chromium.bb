@@ -93,7 +93,9 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
       controller_->HasPermittedGalleries()];
 
   set_sheet(alert_);
-  window_ = new ConstrainedWindowMac(controller->tab_contents(), this);
+  // May be NULL during tests.
+  if (controller->tab_contents())
+    window_ = new ConstrainedWindowMac(controller->tab_contents(), this);
 }
 
 MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {
@@ -124,10 +126,12 @@ void MediaGalleriesDialogCocoa::SheetDidEnd(NSInteger result) {
   switch (result) {
     case NSAlertFirstButtonReturn:
       accepted_ = true;
-      window_->CloseConstrainedWindow();
+      if (window_)
+        window_->CloseConstrainedWindow();
       break;
     case NSAlertSecondButtonReturn:
-      window_->CloseConstrainedWindow();
+      if (window_)
+        window_->CloseConstrainedWindow();
       break;
     default:
       NOTREACHED();

@@ -66,22 +66,19 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
                                  const base::Callback<void(void)>& on_finish);
 
   // Called by the view.
-  string16 GetHeader() const;
-  string16 GetSubtext() const;
-  bool HasPermittedGalleries() const;
-  void OnAddFolderClicked();
+  virtual string16 GetHeader() const;
+  virtual string16 GetSubtext() const;
+  virtual bool HasPermittedGalleries() const;
+  virtual void OnAddFolderClicked();
   virtual void DidToggleGallery(const MediaGalleryPrefInfo* pref_info,
                                 bool enabled);
   virtual void DialogFinished(bool accepted);
+  virtual const KnownGalleryPermissions& permissions() const;
 
   // SelectFileDialog::Listener implementation:
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
-  const KnownGalleryPermissions& permissions() const {
-    return known_galleries_;
-  }
-
   TabContents* tab_contents() const {
     return tab_contents_;
   }
@@ -91,10 +88,6 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   MediaGalleriesDialogController();
 
   virtual ~MediaGalleriesDialogController();
-
-  // This map excludes those galleries which have been blacklisted; it only
-  // counts active known galleries.
-  KnownGalleryPermissions known_galleries_;
 
  private:
   // This type is for media galleries that have been added via "add gallery"
@@ -116,6 +109,9 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   // while the dialog is showing. Will be NULL only during tests.
   const extensions::Extension* extension_;
 
+  // This map excludes those galleries which have been blacklisted; it only
+  // counts active known galleries.
+  KnownGalleryPermissions known_galleries_;
   NewGalleryPermissions new_galleries_;
 
   // We run this callback when done.

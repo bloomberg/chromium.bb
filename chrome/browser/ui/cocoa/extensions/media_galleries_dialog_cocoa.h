@@ -7,12 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 
 @class MediaGalleriesCocoaController;
 
 namespace chrome {
+
+class MediaGalleriesDialogTest;
 
 // This class displays an alert that can be used to grant permission for
 // extensions to access a gallery (media folders).
@@ -40,6 +43,10 @@ class MediaGalleriesDialogCocoa :
   virtual void DeleteDelegate() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ToggleCheckboxes);
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
+
   void UpdateGalleryCheckbox(NSButton* checkbox,
                              const MediaGalleryPrefInfo* gallery,
                              bool permitted);
