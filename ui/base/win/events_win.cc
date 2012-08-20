@@ -111,10 +111,6 @@ int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
 // Returns a mask corresponding to the set of pressed mouse buttons.
 // This includes the button of the given message, even if it is being released.
 int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
-  // TODO(msw): ORing the pressed/released button into the flags is _wrong_.
-  // It makes it impossible to tell which button was modified when multiple
-  // buttons are/were held down. Instead, we need to track the modified button
-  // independently and audit event consumers to do the right thing.
   int win_flags = GetNativeMouseKey(native_event);
 
   // Client mouse messages provide key states in their WPARAMs.
@@ -233,7 +229,17 @@ bool IsMouseEvent(const base::NativeEvent& native_event) {
 
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
-  // TODO(sky): implement me.
+  switch (GetNativeMouseKey(native_event)) {
+    case MK_LBUTTON:
+      return EF_LEFT_MOUSE_BUTTON;
+    case MK_MBUTTON:
+      return EF_MIDDLE_MOUSE_BUTTON;
+    case MK_RBUTTON:
+      return EF_RIGHT_MOUSE_BUTTON;
+    // TODO: add support for MK_XBUTTON1.
+    default:
+      break;
+  }
   return 0;
 }
 
