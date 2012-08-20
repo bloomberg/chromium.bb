@@ -30,7 +30,7 @@
 #include "webkit/fileapi/file_system_url_request_job_factory.h"
 
 // Key names on ResourceContext.
-static const char* kAppCacheServicKeyName = "content_appcache_service_tracker";
+static const char* kAppCacheServiceKeyName = "content_appcache_service_tracker";
 static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
 static const char* kDatabaseTrackerKeyName = "content_database_tracker";
 static const char* kFileSystemContextKeyName = "content_file_system_context";
@@ -184,7 +184,7 @@ void InitializeRequestContext(
 AppCacheService* ResourceContext::GetAppCacheService(ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return UserDataAdapter<ChromeAppCacheService>::Get(
-      context, kAppCacheServicKeyName);
+      context, kAppCacheServiceKeyName);
 }
 
 ResourceContext::ResourceContext() {
@@ -255,7 +255,7 @@ void InitializeResourceContext(BrowserContext* browser_context) {
       new UserDataAdapter<webkit_database::DatabaseTracker>(
           BrowserContext::GetDatabaseTracker(browser_context)));
   resource_context->SetUserData(
-      kAppCacheServicKeyName,
+      kAppCacheServiceKeyName,
       new UserDataAdapter<ChromeAppCacheService>(
           static_cast<ChromeAppCacheService*>(
               BrowserContext::GetAppCacheService(browser_context))));

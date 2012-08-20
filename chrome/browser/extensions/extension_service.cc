@@ -2502,11 +2502,6 @@ void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
   extension_runtime_data_[extension->id()].has_used_webrequest = value;
 }
 
-base::PropertyBag* ExtensionService::GetPropertyBag(
-    const Extension* extension) {
-  return &extension_runtime_data_[extension->id()].property_bag;
-}
-
 void ExtensionService::RegisterNaClModule(const GURL& url,
                                           const std::string& mime_type) {
   NaClModuleInfo info;

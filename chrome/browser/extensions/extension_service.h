@@ -16,7 +16,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/property_bag.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/tuple.h"
@@ -271,9 +270,6 @@ class ExtensionService
   // TODO(mpcomplete): remove. http://crbug.com/100411
   bool HasUsedWebRequest(const extensions::Extension* extension) const;
   void SetHasUsedWebRequest(const extensions::Extension* extension, bool value);
-
-  // Getter for the extension's runtime data PropertyBag.
-  base::PropertyBag* GetPropertyBag(const extensions::Extension* extension);
 
   // Initialize and start all installed extensions.
   void Init();
@@ -638,9 +634,6 @@ class ExtensionService
 
     // True if the extension has used the webRequest API.
     bool has_used_webrequest;
-
-    // Generic bag of runtime data that users can associate with extensions.
-    base::PropertyBag property_bag;
 
     ExtensionRuntimeData();
     ~ExtensionRuntimeData();

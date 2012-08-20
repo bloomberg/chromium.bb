@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
-#include "base/property_bag.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -131,12 +130,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   int surface_id() const { return surface_id_; }
 
   bool empty() const { return current_size_.IsEmpty(); }
-
-  // Returns the property bag for this widget, where callers can add extra data
-  // they may wish to associate with it. Returns a pointer rather than a
-  // reference since the PropertyAccessors expect this.
-  const base::PropertyBag* property_bag() const { return &property_bag_; }
-  base::PropertyBag* property_bag() { return &property_bag_; }
 
   // Called when a renderer object already been created for this host, and we
   // just need to be attached to it. Used for window.open, <select> dropdown
@@ -627,9 +620,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // The ID of the corresponding object in the Renderer Instance.
   int routing_id_;
-
-  // Stores random bits of data for others to associate with this object.
-  base::PropertyBag property_bag_;
 
   // The ID of the surface corresponding to this render widget.
   int surface_id_;
