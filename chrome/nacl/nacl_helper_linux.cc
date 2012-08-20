@@ -198,6 +198,21 @@ static size_t CheckReservedAtZero() {
   return prereserved_sandbox_size;
 }
 
+#if defined(ADDRESS_SANITIZER)
+// Do not install the SIGSEGV handler in ASan. This should make the NaCl
+// platform qualification test pass.
+static const char kAsanDefaultOptionsNaCl[] = "handle_segv=0";
+
+// Override the default ASan options for the NaCl helper.
+// __asan_default_options should not be instrumented, because it is called
+// before ASan is initialized.
+extern "C"
+__attribute__((no_address_safety_analysis))
+const char *__asan_default_options() {
+  return kAsanDefaultOptionsNaCl;
+}
+#endif
+
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
