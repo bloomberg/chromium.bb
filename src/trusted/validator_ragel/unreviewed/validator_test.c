@@ -202,7 +202,8 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
     return TRUE;
 }
 
-int ValidateFile(const char *filename, int repeat_count,
+Bool ValidateFile(const char *filename, int repeat_count,
+                 enum validation_options options,
                  const NaClCPUFeaturesX86 *cpu_features) {
   size_t data_size;
   uint8_t *data;
@@ -226,7 +227,7 @@ int ValidateFile(const char *filename, int repeat_count,
 
         if ((section->sh_flags & SHF_EXECINSTR) != 0) {
           struct ValidateState state;
-          int res;
+          Bool res;
 
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
@@ -239,11 +240,10 @@ int ValidateFile(const char *filename, int repeat_count,
           CheckBounds(data, data_size,
                       data + section->sh_offset, section->sh_size);
           res = ValidateChunkIA32(data + section->sh_offset, section->sh_size,
-                                  0 /*options*/, cpu_features,
+                                  options, cpu_features,
                                   ProcessError, &state);
-          if (res != 0) {
+          if (!res)
             return res;
-          }
         }
       }
     }
@@ -263,7 +263,7 @@ int ValidateFile(const char *filename, int repeat_count,
 
         if ((section->sh_flags & SHF_EXECINSTR) != 0) {
           struct ValidateState state;
-          int res;
+          Bool res;
 
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
@@ -279,9 +279,10 @@ int ValidateFile(const char *filename, int repeat_count,
                       data + section->sh_offset, (size_t)section->sh_size);
           res = ValidateChunkAMD64(data + section->sh_offset,
                                    (size_t)section->sh_size,
-                                   0 /*options*/,
+                                   options,
                                    cpu_features, ProcessError, &state);
-          return res;
+          if (!res)
+            return res;
         }
       }
     }
@@ -289,34 +290,42 @@ int ValidateFile(const char *filename, int repeat_count,
     printf("Unknown ELF class: %s\n", filename);
     exit(1);
   }
-  return 0;
+  return TRUE;
 }
 
 int main(int argc, char **argv) {
   int index, initial_index = 1, repeat_count = 1;
   int use_old_features = 0;
+  enum validation_options options = 0;
+
   if (argc == 1) {
     printf("%s: no input files\n", argv[0]);
     return 2;
   }
-  for (;;) {
+  while (initial_index < argc) {
     if (!strcmp(argv[initial_index], "--repeat")) {
+      if (initial_index+1 >= argc) {
+        printf("%s: no integer after --repeat\n", argv[0]);
+        return 2;
+      }
       repeat_count = atoi(argv[initial_index + 1]);
       initial_index += 2;
-      if (initial_index < argc)
-        continue;
     }
-    if (!strcmp(argv[initial_index], "--compatible")) {
+    else if (!strcmp(argv[initial_index], "--compatible")) {
       use_old_features = 1;
-      ++initial_index;
-      if (initial_index < argc)
-        continue;
+      initial_index++;
     }
-    break;
+    else if (!strcmp(argv[initial_index], "--nobundles")) {
+      options |= PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM;
+      initial_index++;
+    }
+    else
+      break;
   }
   for (index = initial_index; index < argc; ++index) {
     const char *filename = argv[index];
-    int rc = ValidateFile(filename, repeat_count,
+    Bool rc = ValidateFile(filename, repeat_count,
+                          options,
                           use_old_features ? &old_validator_features :
                                              &full_validator_features);
     if (!rc) {
