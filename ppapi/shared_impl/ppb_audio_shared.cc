@@ -5,9 +5,8 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #include "base/logging.h"
+#include "media/audio/shared_memory_util.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-
-using base::subtle::Atomic32;
 
 namespace ppapi {
 
@@ -17,29 +16,6 @@ namespace {
 PP_ThreadFunctions thread_functions;
 }
 #endif  // defined(OS_NACL)
-
-// FIXME: The following two functions (TotalSharedMemorySizeInBytes,
-// SetActualDataSizeInBytes) are copied from audio_util.cc.
-// Remove these functions once a minimal media library is provided for them.
-// code.google.com/p/chromium/issues/detail?id=123203
-
-uint32 TotalSharedMemorySizeInBytes(uint32 packet_size) {
-  // Need to reserve extra 4 bytes for size of data.
-  return packet_size + sizeof(Atomic32);
-}
-
-void SetActualDataSizeInBytes(base::SharedMemory* shared_memory,
-                              uint32 shared_memory_size,
-                              uint32 actual_data_size) {
-  char* ptr = static_cast<char*>(shared_memory->memory()) + shared_memory_size;
-  DCHECK_EQ(0u, reinterpret_cast<size_t>(ptr) & 3);
-
-  // Set actual data size at the end of the buffer.
-  base::subtle::Release_Store(reinterpret_cast<volatile Atomic32*>(ptr),
-                              actual_data_size);
-}
-
-const int PPB_Audio_Shared::kPauseMark = -1;
 
 PPB_Audio_Shared::PPB_Audio_Shared()
     : playing_(false),
@@ -93,7 +69,8 @@ void PPB_Audio_Shared::SetStreamInfo(
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
 
-  if (!shared_memory_->Map(TotalSharedMemorySizeInBytes(shared_memory_size_))) {
+  if (!shared_memory_->Map(
+          media::TotalSharedMemorySizeInBytes(shared_memory_size_))) {
     PpapiGlobals::Get()->LogWithSource(instance, PP_LOGLEVEL_WARNING, "",
       "Failed to map shared memory for PPB_Audio_Shared.");
   }
@@ -167,12 +144,12 @@ void PPB_Audio_Shared::Run() {
 
   while (sizeof(pending_data) ==
       socket_->Receive(&pending_data, sizeof(pending_data)) &&
-      pending_data != kPauseMark) {
+      pending_data != media::kPauseMark) {
     callback_(buffer, shared_memory_size_, user_data_);
 
     // Let the host know we are done.
-    SetActualDataSizeInBytes(shared_memory_.get(), shared_memory_size_,
-        shared_memory_size_);
+    media::SetActualDataSizeInBytes(
+        shared_memory_.get(), shared_memory_size_, shared_memory_size_);
   }
 }
 

@@ -10,7 +10,7 @@
 #include "base/shared_memory.h"
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_buffers_state.h"
-#include "media/audio/audio_util.h"
+#include "media/audio/shared_memory_util.h"
 
 #if defined(OS_WIN)
 const int kMinIntervalBetweenReadCallsInMs = 10;
@@ -31,7 +31,7 @@ bool AudioSyncReader::DataReady() {
 
 // media::AudioOutputController::SyncReader implementations.
 void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
-  if (bytes != static_cast<uint32>(media::AudioOutputController::kPauseMark)) {
+  if (bytes != static_cast<uint32>(media::kPauseMark)) {
     // Store unknown length of data into buffer, so we later
     // can find out if data became available.
     media::SetUnknownDataSize(

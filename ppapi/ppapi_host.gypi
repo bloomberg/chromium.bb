@@ -13,6 +13,7 @@
         'ppapi_internal.gyp:ppapi_shared',
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
+        '../media/media.gyp:shared_memory_support',
         '../ui/surface/surface.gyp:surface',
       ],
       'defines': [
