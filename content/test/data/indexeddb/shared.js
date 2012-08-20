@@ -5,10 +5,7 @@
 window.indexedDB = window.indexedDB || window.webkitIndexedDB;
 
 function result(message) {
-  var div = document.createElement('div');
-  div.id = "result";
-  div.innerText = message;
-  document.body.appendChild(div);
+    document.title = message;
 }
 
 function unexpectedErrorCallback()
