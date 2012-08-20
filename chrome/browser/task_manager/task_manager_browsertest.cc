@@ -456,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // gets reloaded and noticed in the task manager.
   InfoBarTabHelper* infobar_helper =
       chrome::GetActiveTabContents(browser())->infobar_tab_helper();
-  ASSERT_EQ(1U, infobar_helper->infobar_count());
+  ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
   ConfirmInfoBarDelegate* delegate = infobar_helper->
       GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);

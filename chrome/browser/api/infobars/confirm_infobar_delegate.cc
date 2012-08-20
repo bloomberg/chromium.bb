@@ -41,8 +41,9 @@ bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(InfoBarTabHelper* infobar_helper)
-    : InfoBarDelegate(infobar_helper) {
+ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(
+    InfoBarTabService* infobar_service)
+    : InfoBarDelegate(infobar_service) {
 }
 
 ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() {

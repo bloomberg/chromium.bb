@@ -384,7 +384,7 @@ int FindInPage(TabContents* tab_contents, const string16& search_string,
 
 void CloseAllInfoBars(TabContents* tab) {
   InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-  while (infobar_helper->infobar_count() > 0)
+  while (infobar_helper->GetInfoBarCount() > 0)
     infobar_helper->RemoveInfoBar(infobar_helper->GetInfoBarDelegateAt(0));
 }
 

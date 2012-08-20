@@ -158,7 +158,7 @@ void CheckAutoLaunchCallback(Profile* profile) {
 
   // Don't show the info-bar if there are already info-bars showing.
   InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-  if (infobar_helper->infobar_count() > 0)
+  if (infobar_helper->GetInfoBarCount() > 0)
     return;
 
   infobar_helper->AddInfoBar(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_INFOBARS_INFOBAR_TAB_HELPER_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -13,43 +14,23 @@
 class InfoBarDelegate;
 
 // Per-tab info bar manager.
-class InfoBarTabHelper : public content::WebContentsObserver,
+class InfoBarTabHelper : public InfoBarTabService,
+                         public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
   explicit InfoBarTabHelper(content::WebContents* web_contents);
   virtual ~InfoBarTabHelper();
 
-  // Adds an InfoBar for the specified |delegate|.
-  //
-  // If infobars are disabled for this tab or the tab already has a delegate
-  // which returns true for InfoBarDelegate::EqualsDelegate(delegate),
-  // |delegate| is closed immediately without being added.
-  //
-  // Returns whether |delegate| was successfully added.
-  bool AddInfoBar(InfoBarDelegate* delegate);
+  // InfoBarTabService implementation.
+  virtual bool AddInfoBar(InfoBarDelegate* delegate) OVERRIDE;
+  virtual void RemoveInfoBar(InfoBarDelegate* delegate) OVERRIDE;
+  virtual bool ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                              InfoBarDelegate* new_delegate) OVERRIDE;
+  virtual size_t GetInfoBarCount() const OVERRIDE;
+  virtual InfoBarDelegate* GetInfoBarDelegateAt(size_t index) OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
 
-  // Removes the InfoBar for the specified |delegate|.
-  //
-  // If infobars are disabled for this tab, this will do nothing, on the
-  // assumption that the matching AddInfoBar() call will have already closed the
-  // delegate (see above).
-  void RemoveInfoBar(InfoBarDelegate* delegate);
-
-  // Replaces one infobar with another, without any animation in between.
-  //
-  // If infobars are disabled for this tab, |new_delegate| is closed immediately
-  // without being added, and nothing else happens.
-  //
-  // Returns whether |new_delegate| was successfully added.
-  //
-  // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
-  bool ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                      InfoBarDelegate* new_delegate);
-
-  // Enumeration and access functions.
-  size_t infobar_count() const { return infobars_.size(); }
-  // WARNING: This does not sanity-check |index|!
-  InfoBarDelegate* GetInfoBarDelegateAt(size_t index);
+  // Enables or disables infobars for the given tab.
   void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
 
   // content::WebContentsObserver overrides:
@@ -60,11 +41,6 @@ class InfoBarTabHelper : public content::WebContentsObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Helper functions for infobars:
-  content::WebContents* web_contents() {
-    return content::WebContentsObserver::web_contents();
-  }
 
  private:
   typedef std::vector<InfoBarDelegate*> InfoBars;

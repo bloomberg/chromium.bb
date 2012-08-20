@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/media/media_stream_devices_menu_model.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
@@ -15,9 +16,9 @@
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 
-InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
+InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
   DCHECK(owner);
-  return new MediaStreamInfoBarGtk(owner, this);
+  return new MediaStreamInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
 }
 
 MediaStreamInfoBarGtk::MediaStreamInfoBarGtk(

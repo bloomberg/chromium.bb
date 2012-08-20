@@ -1387,7 +1387,7 @@ void InfoBarCountObserver::Observe(
 }
 
 void InfoBarCountObserver::CheckCount() {
-  if (tab_contents_->infobar_tab_helper()->infobar_count() != target_count_)
+  if (tab_contents_->infobar_tab_helper()->GetInfoBarCount() != target_count_)
     return;
 
   if (automation_) {
@@ -2360,7 +2360,7 @@ AutofillFormSubmittedObserver::~AutofillFormSubmittedObserver() {
 
   if (infobar_helper_) {
     InfoBarDelegate* infobar = NULL;
-    if (infobar_helper_->infobar_count() > 0 &&
+    if (infobar_helper_->GetInfoBarCount() > 0 &&
         (infobar = infobar_helper_->GetInfoBarDelegateAt(0))) {
       infobar_helper_->RemoveInfoBar(infobar);
     }

@@ -10,6 +10,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class LinkInfoBarDelegate;
+class InfoBarTabHelper;
 
 // An infobar that shows a string with an embedded link.
 class LinkInfoBarGtk : public InfoBarGtk {

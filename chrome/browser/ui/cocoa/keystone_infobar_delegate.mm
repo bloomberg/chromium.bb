@@ -39,7 +39,7 @@ namespace {
 
 class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  KeystonePromotionInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  KeystonePromotionInfoBarDelegate(InfoBarTabService* infobar_service,
                                    PrefService* prefs);
 
  private:
@@ -71,9 +71,9 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     PrefService* prefs)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),
       can_expire_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -198,7 +198,7 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
       // default browser info bar works.
       if (tabContents) {
         InfoBarTabHelper* infobar_helper = tabContents->infobar_tab_helper();
-        if (infobar_helper->infobar_count() == 0) {
+        if (infobar_helper->GetInfoBarCount() == 0) {
           infobar_helper->AddInfoBar(
               new KeystonePromotionInfoBarDelegate(
                   infobar_helper,

@@ -8,6 +8,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
@@ -67,10 +68,16 @@ bool InsecureContentInfoBarDelegate::Cancel() {
       (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
       NUM_EVENTS);
 
-  int32 routing_id = owner()->routing_id();
-  owner()->Send((type_ == DISPLAY) ? static_cast<IPC::Message*>(
-      new ChromeViewMsg_SetAllowDisplayingInsecureContent(routing_id, true)) :
-      new ChromeViewMsg_SetAllowRunningInsecureContent(routing_id, true));
+  content::WebContents* web_contents = owner()->GetWebContents();
+  if (web_contents) {
+    int32 routing_id = web_contents->GetRoutingID();
+    web_contents->Send((type_ == DISPLAY) ?
+                       static_cast<IPC::Message*>(
+                           new ChromeViewMsg_SetAllowDisplayingInsecureContent(
+                               routing_id, true)) :
+                       new ChromeViewMsg_SetAllowRunningInsecureContent(
+                           routing_id, true));
+  }
   return true;
 }
 
@@ -80,7 +87,7 @@ string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(OpenURLParams(
+  owner()->GetWebContents()->OpenURL(OpenURLParams(
       google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=1342714")),
       content::Referrer(),

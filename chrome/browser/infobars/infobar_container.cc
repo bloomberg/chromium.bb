@@ -54,7 +54,7 @@ void InfoBarContainer::ChangeTabContents(InfoBarTabHelper* tab_helper) {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
                    th_source);
 
-    for (size_t i = 0; i < tab_helper_->infobar_count(); ++i) {
+    for (size_t i = 0; i < tab_helper_->GetInfoBarCount(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(

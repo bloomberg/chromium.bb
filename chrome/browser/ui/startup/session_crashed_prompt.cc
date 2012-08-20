@@ -60,7 +60,7 @@ SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_helper),
       accepted_(false),
       removed_notification_received_(false),
-      browser_(browser::FindBrowserWithWebContents(owner()->web_contents())) {
+      browser_(browser::FindBrowserWithWebContents(owner()->GetWebContents())) {
   // TODO(pkasting,marja): Once InfoBars own they delegates, this is not needed
   // any more. Then we can rely on delegates getting destroyed, and we can
   // initiate the session storage scavenging only in the destructor. (Currently,
@@ -144,7 +144,7 @@ void ShowSessionCrashedPrompt(Browser* browser) {
     return;
 
   // Don't show the info-bar if there are already info-bars showing.
-  if (tab->infobar_tab_helper()->infobar_count() > 0)
+  if (tab->infobar_tab_helper()->GetInfoBarCount() > 0)
     return;
 
   tab->infobar_tab_helper()->AddInfoBar(

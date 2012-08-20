@@ -7,6 +7,8 @@
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
+class InfoBarTabHelper;
+
 // This class configures an infobar shown when the collected cookies dialog
 // is closed and the settings for one or more cookies have been changed.  The
 // user is shown a message indicating that a reload of the page is

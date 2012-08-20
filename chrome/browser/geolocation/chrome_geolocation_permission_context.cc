@@ -178,7 +178,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       requesting_frame_url_(requesting_frame_url),
       display_languages_(display_languages) {
   const NavigationEntry* committed_entry =
-      infobar_helper->web_contents()->GetController().GetLastCommittedEntry();
+      infobar_helper->GetWebContents()->GetController().GetLastCommittedEntry();
   set_contents_unique_id(committed_entry ? committed_entry->GetUniqueID() : 0);
 }
 
@@ -205,13 +205,13 @@ string16 GeolocationConfirmInfoBarDelegate::GetButtonLabel(
 
 bool GeolocationConfirmInfoBarDelegate::Accept() {
   controller_->OnPermissionSet(render_process_id_, render_view_id_, bridge_id_,
-      requesting_frame_url_, owner()->web_contents()->GetURL(), true);
+      requesting_frame_url_, owner()->GetWebContents()->GetURL(), true);
   return true;
 }
 
 bool GeolocationConfirmInfoBarDelegate::Cancel() {
   controller_->OnPermissionSet(render_process_id_, render_view_id_, bridge_id_,
-      requesting_frame_url_, owner()->web_contents()->GetURL(),
+      requesting_frame_url_, owner()->GetWebContents()->GetURL(),
       false);
   return true;
 }
@@ -234,7 +234,7 @@ bool GeolocationConfirmInfoBarDelegate::LinkClicked(
       Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  owner()->GetWebContents()->OpenURL(params);
   return false;  // Do not dismiss the info bar.
 }
 

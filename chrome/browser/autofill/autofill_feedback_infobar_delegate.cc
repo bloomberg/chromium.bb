@@ -5,7 +5,7 @@
 #include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -17,11 +17,11 @@
 const char kCategoryTagAutofill[] = "Autofill";
 
 AutofillFeedbackInfoBarDelegate::AutofillFeedbackInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     const string16& message,
     const string16& link_text,
     const std::string& feedback_message)
-    : LinkInfoBarDelegate(infobar_helper),
+    : LinkInfoBarDelegate(infobar_service),
       message_(message),
       link_text_(link_text),
       feedback_message_(feedback_message),
@@ -45,7 +45,7 @@ string16 AutofillFeedbackInfoBarDelegate::GetLinkText() const {
 bool AutofillFeedbackInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   chrome::ShowFeedbackPage(
-      browser::FindBrowserWithWebContents(owner()->web_contents()),
+      browser::FindBrowserWithWebContents(owner()->GetWebContents()),
       feedback_message_,
       std::string(kCategoryTagAutofill));
   return true;

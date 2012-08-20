@@ -10,7 +10,7 @@
 #import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
-class InfoBarTabHelper;
+class InfoBarTabService;
 class MediaStreamDevicesMenuModel;
 class MediaStreamInfoBarDelegate;
 @class NSButton;
@@ -32,7 +32,7 @@ class MediaStreamInfoBarDelegate;
 }
 
 - (id)initWithDelegate:(MediaStreamInfoBarDelegate*)delegate
-                 owner:(InfoBarTabHelper*)owner;
+                 owner:(InfoBarTabService*)owner;
 
 // Called when the selection in the device menu has changed.
 - (IBAction)deviceMenuChanged:(id)sender;

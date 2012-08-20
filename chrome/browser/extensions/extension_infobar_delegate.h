@@ -12,6 +12,7 @@
 
 class Browser;
 class GURL;
+class InfoBarTabService;
 
 namespace extensions {
 class Extension;
@@ -33,7 +34,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   };
 
   ExtensionInfoBarDelegate(Browser* browser,
-                           InfoBarTabHelper* infobar_helper,
+                           InfoBarTabService* infobar_service,
                            const extensions::Extension* extension,
                            const GURL& url,
                            int height);
@@ -50,7 +51,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   virtual ~ExtensionInfoBarDelegate();
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarTabHelper* owner) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarTabService* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

@@ -1,6 +1,0 @@
-# TODO(joi): Reduce this list to zero exceptions.
-specific_include_rules = {
-  "infobar_delegate\.cc": [
-    "!chrome/browser/infobars/infobar_tab_helper.h",
-  ]
-}

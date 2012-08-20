@@ -29,7 +29,7 @@ using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
 // TranslateInfoBarDelegate views specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:
@@ -100,7 +100,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 @implementation TranslateInfoBarControllerBase
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarTabHelper*)owner {
+                 owner:(InfoBarTabService*)owner {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
       originalLanguageMenuModel_.reset(
           new LanguagesMenuModel([self delegate],

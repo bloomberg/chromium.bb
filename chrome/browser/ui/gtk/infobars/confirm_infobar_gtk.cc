@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
@@ -15,8 +16,8 @@
 
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
-  return new ConfirmInfoBarGtk(owner, this);
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+  return new ConfirmInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
 }
 
 // ConfirmInfoBarGtk -----------------------------------------------------------

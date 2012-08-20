@@ -28,12 +28,12 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
     TabContents* tab = chrome::GetActiveTabContents(browser());
     ASSERT_TRUE(tab);
     InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-    ASSERT_EQ(1U, infobar_helper->infobar_count());
+    ASSERT_EQ(1U, infobar_helper->GetInfoBarCount());
     ConfirmInfoBarDelegate* delegate = infobar_helper->
         GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0U, infobar_helper->infobar_count());
+    ASSERT_EQ(0U, infobar_helper->GetInfoBarCount());
   }
 
   const Extension* GetTheme() const {

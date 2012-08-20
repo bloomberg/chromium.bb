@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
@@ -18,18 +19,19 @@
 
 // TranslateInfoBarDelegate ---------------------------------------------------
 
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+  InfoBarTabHelper* helper = static_cast<InfoBarTabHelper*>(owner);
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case BEFORE_TRANSLATE:
-      infobar = new BeforeTranslateInfoBar(owner, this);
+      infobar = new BeforeTranslateInfoBar(helper, this);
       break;
     case AFTER_TRANSLATE:
-      infobar = new AfterTranslateInfoBar(owner, this);
+      infobar = new AfterTranslateInfoBar(helper, this);
       break;
     case TRANSLATING:
     case TRANSLATION_ERROR:
-      infobar = new TranslateMessageInfoBar(owner, this);
+      infobar = new TranslateMessageInfoBar(helper, this);
       break;
     default:
       NOTREACHED();

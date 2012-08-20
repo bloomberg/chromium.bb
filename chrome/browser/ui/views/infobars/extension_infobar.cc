@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
@@ -25,8 +26,9 @@
 
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
-  return new ExtensionInfoBar(browser_, owner, this);
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+  return new ExtensionInfoBar(
+      browser_, static_cast<InfoBarTabHelper*>(owner), this);
 }
 
 // ExtensionInfoBar ------------------------------------------------------------

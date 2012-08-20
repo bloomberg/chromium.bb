@@ -7,6 +7,7 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
@@ -15,6 +16,10 @@
 
 using content::NavigationController;
 using content::WebContents;
+
+InfoBarTabService* InfoBarTabService::ForTab(TabContents* tab) {
+  return tab->infobar_tab_helper();
+}
 
 InfoBarTabHelper::InfoBarTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -94,8 +99,16 @@ bool InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   return true;
 }
 
+size_t InfoBarTabHelper::GetInfoBarCount() const {
+  return infobars_.size();
+}
+
 InfoBarDelegate* InfoBarTabHelper::GetInfoBarDelegateAt(size_t index) {
   return infobars_[index];
+}
+
+content::WebContents* InfoBarTabHelper::GetWebContents() {
+  return content::WebContentsObserver::web_contents();
 }
 
 void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
@@ -129,7 +142,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
 
 void InfoBarTabHelper::RemoveAllInfoBars(bool animate) {
   while (!infobars_.empty())
-    RemoveInfoBarInternal(GetInfoBarDelegateAt(infobar_count() - 1), animate);
+    RemoveInfoBarInternal(GetInfoBarDelegateAt(GetInfoBarCount() - 1), animate);
 }
 
 void InfoBarTabHelper::OnDidBlockDisplayingInsecureContent() {

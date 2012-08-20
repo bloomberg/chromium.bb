@@ -11,6 +11,9 @@
 #include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
+class InfoBarTabHelper;
+class InfoBarTabService;
+
 // This class configures an infobar shown when a page requests access to a
 // user's microphone and/or video camera.  The user is shown a message asking
 // which audio and/or video devices he wishes to use with the current page, and
@@ -51,7 +54,7 @@ class MediaStreamInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarTabHelper* owner) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarTabService* owner) OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

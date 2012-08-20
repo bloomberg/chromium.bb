@@ -4,15 +4,16 @@
 
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     DownloadRequestLimiter::TabDownloadState* host)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       host_(host) {
 }
 

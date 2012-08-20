@@ -5,8 +5,8 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -18,10 +18,10 @@ using content::Referrer;
 using content::UserMetricsAction;
 
 RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     ProtocolHandlerRegistry* registry,
     const ProtocolHandler& handler)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       registry_(registry),
       handler_(handler) {
 }
@@ -97,7 +97,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->web_contents()->OpenURL(params);
+  owner()->GetWebContents()->OpenURL(params);
   return false;
 }
 

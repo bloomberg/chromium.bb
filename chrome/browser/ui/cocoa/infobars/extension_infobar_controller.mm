@@ -6,10 +6,10 @@
 
 #include <cmath>
 
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
@@ -140,7 +140,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 @implementation ExtensionInfoBarController
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarTabHelper*)owner
+                 owner:(InfoBarTabService*)owner
                 window:(NSWindow*)window {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
     window_ = window;
@@ -150,7 +150,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     extensions::ExtensionHost* extensionHost =
         delegate_->AsExtensionInfoBarDelegate()->extension_host();
     Browser* browser =
-        browser::FindBrowserWithWebContents(owner->web_contents());
+        browser::FindBrowserWithWebContents(owner->GetWebContents());
     contextMenu_.reset([[ExtensionActionContextMenu alloc]
         initWithExtension:extensionHost->extension()
                   browser:browser
@@ -272,9 +272,9 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
 @end
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
   NSWindow* window =
-      [(NSView*)owner->web_contents()->GetContentNativeView() window];
+      [(NSView*)owner->GetWebContents()->GetContentNativeView() window];
   ExtensionInfoBarController* controller =
       [[ExtensionInfoBarController alloc] initWithDelegate:this
                                                      owner:owner

@@ -12,7 +12,7 @@
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SimpleAlertInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+  SimpleAlertInfoBarDelegate(InfoBarTabService* infobar_service,
                              gfx::Image* icon,  // May be NULL.
                              const string16& message,
                              bool auto_expire);

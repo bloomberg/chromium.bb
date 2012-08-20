@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   EXPECT_TRUE(result);
 
   EXPECT_EQ(1U, chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
-            infobar_count());
+            GetInfoBarCount());
 }
 
 // If this flakes, use http://crbug.com/62311.
@@ -53,5 +53,5 @@ IN_PROC_BROWSER_TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
           "files/notifications/notifications_request_inline.html"));
 
   EXPECT_EQ(0U, chrome::GetTabContentsAt(browser(), 0)->infobar_tab_helper()->
-            infobar_count());
+            GetInfoBarCount());
 }

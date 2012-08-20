@@ -329,18 +329,18 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
 
 TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_EQ(0u, infobar_tab_helper()->infobar_count());
+  EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
   website_settings()->OnUIClosing();
-  EXPECT_EQ(0u, infobar_tab_helper()->infobar_count());
+  EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
 }
 
 TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_EQ(0u, infobar_tab_helper()->infobar_count());
+  EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   website_settings()->OnUIClosing();
-  EXPECT_EQ(1u, infobar_tab_helper()->infobar_count());
+  EXPECT_EQ(1u, infobar_tab_helper()->GetInfoBarCount());
 
   // Removing an |InfoBarDelegate| from the |InfoBarTabHelper| does not delete
   // it. Hence the |delegate| must be cleaned up after it was removed from the

@@ -144,7 +144,7 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
   if (currentTabContents_) {
     InfoBarTabHelper* infobar_helper =
         currentTabContents_->infobar_tab_helper();
-    for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+    for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
       InfoBar* infobar = infobar_helper->
           GetInfoBarDelegateAt(i)->CreateInfoBar(infobar_helper);
       [self addInfoBar:infobar animate:NO];

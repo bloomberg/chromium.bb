@@ -38,7 +38,7 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 }
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                  owner:(InfoBarTabHelper*)owner {
+                  owner:(InfoBarTabService*)owner {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
     [self initializeExtraControls];
   }

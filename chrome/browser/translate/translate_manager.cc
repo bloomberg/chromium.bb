@@ -898,7 +898,7 @@ TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
     return NULL;
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
 
-  for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
     TranslateInfoBarDelegate* delegate =
         infobar_helper->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
     if (delegate)

@@ -5,9 +5,9 @@
 #include "chrome/browser/plugin_infobar_delegates.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
@@ -35,10 +35,10 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
 
-PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarTabService* infobar_service,
                                              const string16& name,
                                              const std::string& identifier)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       name_(name),
       identifier_(identifier) {
 }
@@ -52,13 +52,16 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->web_contents()->OpenURL(params);
+  owner()->GetWebContents()->OpenURL(params);
   return false;
 }
 
 void PluginInfoBarDelegate::LoadBlockedPlugins() {
-  owner()->Send(
-      new ChromeViewMsg_LoadBlockedPlugins(owner()->routing_id(), identifier_));
+  content::WebContents* web_contents = owner()->GetWebContents();
+  if (web_contents) {
+    web_contents->Send(new ChromeViewMsg_LoadBlockedPlugins(
+        web_contents->GetRoutingID(), identifier_));
+  }
 }
 
 gfx::Image* PluginInfoBarDelegate::GetIcon() const {
@@ -73,11 +76,11 @@ string16 PluginInfoBarDelegate::GetLinkText() const {
 // UnauthorizedPluginInfoBarDelegate ------------------------------------------
 
 UnauthorizedPluginInfoBarDelegate::UnauthorizedPluginInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     HostContentSettingsMap* content_settings,
     const string16& utf16_name,
     const std::string& identifier)
-    : PluginInfoBarDelegate(infobar_helper, utf16_name, identifier),
+    : PluginInfoBarDelegate(infobar_service, utf16_name, identifier),
       content_settings_(content_settings) {
   content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
@@ -126,8 +129,8 @@ bool UnauthorizedPluginInfoBarDelegate::Accept() {
 bool UnauthorizedPluginInfoBarDelegate::Cancel() {
   content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  content_settings_->AddExceptionForURL(owner()->web_contents()->GetURL(),
-                                        owner()->web_contents()->GetURL(),
+  content_settings_->AddExceptionForURL(owner()->GetWebContents()->GetURL(),
+                                        owner()->GetWebContents()->GetURL(),
                                         CONTENT_SETTINGS_TYPE_PLUGINS,
                                         std::string(),
                                         CONTENT_SETTING_ALLOW);
@@ -173,7 +176,8 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
     const string16& message)
     : PluginInfoBarDelegate(
-        observer->tab_contents()->infobar_tab_helper(),
+
+InfoBarTabService::ForTab(observer->tab_contents()),
         installer->name(),
         installer->identifier()),
       WeakPluginInstallerObserver(installer),
@@ -226,7 +230,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
     return false;
   }
 
-  content::WebContents* web_contents = owner()->web_contents();
+  content::WebContents* web_contents = owner()->GetWebContents();
   if (installer()->url_for_display()) {
     installer()->OpenDownloadURL(web_contents);
   } else {
@@ -297,12 +301,12 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
 // PluginInstallerInfoBarDelegate ---------------------------------------------
 
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     PluginInstaller* installer,
     const base::Closure& callback,
     bool new_install,
     const string16& message)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    : ConfirmInfoBarDelegate(infobar_service),
       WeakPluginInstallerObserver(installer),
       callback_(callback),
       new_install_(new_install),
@@ -313,7 +317,7 @@ PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
 }
 
 InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     PluginInstaller* installer,
     const base::Closure& callback) {
   string16 message;
@@ -328,7 +332,7 @@ InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
       break;
   }
   return new PluginInstallerInfoBarDelegate(
-      infobar_helper, installer, callback, true, message);
+      infobar_service, installer, callback, true, message);
 }
 
 gfx::Image* PluginInstallerInfoBarDelegate::GetIcon() const {
@@ -373,7 +377,7 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
       url, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  owner()->GetWebContents()->OpenURL(params);
   return false;
 }
 
@@ -421,16 +425,16 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
 // PluginMetroModeInfoBarDelegate ---------------------------------------------
 #if defined(OS_WIN)
 InfoBarDelegate* PluginMetroModeInfoBarDelegate::Create(
-    InfoBarTabHelper* infobar_helper, const string16& plugin_name) {
+    InfoBarTabService* infobar_service, const string16& plugin_name) {
   string16 message = l10n_util::GetStringFUTF16(
       IDS_METRO_MISSING_PLUGIN_PROMPT, plugin_name);
   return new PluginMetroModeInfoBarDelegate(
-      infobar_helper, message);
+      infobar_service, message);
 }
 
 PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper, const string16& message)
-    : ConfirmInfoBarDelegate(infobar_helper),
+    InfoBarTabService* infobar_service, const string16& message)
+    : ConfirmInfoBarDelegate(infobar_service),
       message_(message) {
 }
 
@@ -457,7 +461,7 @@ string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
-  content::WebContents* web_contents = owner()->web_contents();
+  content::WebContents* web_contents = owner()->GetWebContents();
   if (!web_contents)
     return false;
   // Note that empty urls are not valid.
@@ -485,7 +489,7 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
       url, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  owner()->GetWebContents()->OpenURL(params);
   return false;
 }
 #endif  // defined(OS_WIN)

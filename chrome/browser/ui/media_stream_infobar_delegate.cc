@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

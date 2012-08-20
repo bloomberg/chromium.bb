@@ -33,7 +33,7 @@ OptionsMenuModel::OptionsMenuModel(
 
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
-  if (!translate_delegate->owner()->web_contents()->
+  if (!translate_delegate->owner()->GetWebContents()->
       GetBrowserContext()->IsOffTheRecord()) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
@@ -90,9 +90,9 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       // we don't report errors that happened on secure URLs.
       DCHECK(translate_infobar_delegate_ != NULL);
       DCHECK(translate_infobar_delegate_->owner() != NULL);
-      DCHECK(translate_infobar_delegate_->owner()->web_contents() != NULL);
+      DCHECK(translate_infobar_delegate_->owner()->GetWebContents() != NULL);
       NavigationEntry* entry = translate_infobar_delegate_->owner()->
-          web_contents()->GetController().GetActiveEntry();
+          GetWebContents()->GetController().GetActiveEntry();
       // Delegate and tab contents should never be NULL, but active entry
       // can be NULL when running tests. We want to return false if NULL.
       return (entry != NULL) && !entry->GetURL().SchemeIsSecure();
@@ -131,7 +131,7 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
 
     case IDC_TRANSLATE_OPTIONS_ABOUT: {
       WebContents* web_contents =
-          translate_infobar_delegate_->owner()->web_contents();
+          translate_infobar_delegate_->owner()->GetWebContents();
       if (web_contents) {
         OpenURLParams params(
             GURL(chrome::kAboutGoogleTranslateURL), Referrer(),

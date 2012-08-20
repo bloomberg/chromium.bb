@@ -23,7 +23,7 @@ using InfoBarUtilities::MoveControl;
 using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using l10n_util::GetNSStringWithFixup;
 
-InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
+InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
   MediaStreamInfoBarController* infobar_controller =
       [[MediaStreamInfoBarController alloc] initWithDelegate:this
                                                        owner:owner];
@@ -52,7 +52,7 @@ InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 @implementation MediaStreamInfoBarController
 
 - (id)initWithDelegate:(MediaStreamInfoBarDelegate*)delegate
-                 owner:(InfoBarTabHelper*)owner {
+                 owner:(InfoBarTabService*)owner {
   if (self = [super initWithDelegate:delegate owner:owner]) {
     deviceMenuModel_.reset(new MediaStreamDevicesMenuModel(delegate));
   }

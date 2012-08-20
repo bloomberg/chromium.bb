@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 
+#include "chrome/browser/api/infobars/infobar_tab_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -17,11 +17,11 @@
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     Browser* browser,
-    InfoBarTabHelper* infobar_helper,
+    InfoBarTabService* infobar_service,
     const extensions::Extension* extension,
     const GURL& url,
     int height)
-        : InfoBarDelegate(infobar_helper),
+        : InfoBarDelegate(infobar_service),
           browser_(browser),
           observer_(NULL),
           extension_(extension),
@@ -29,7 +29,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   extension_host_.reset(manager->CreateInfobarHost(url, browser));
-  extension_host_->SetAssociatedWebContents(infobar_helper->web_contents());
+  extension_host_->SetAssociatedWebContents(infobar_service->GetWebContents());
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(browser->profile()));

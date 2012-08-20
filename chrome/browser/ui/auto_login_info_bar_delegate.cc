@@ -176,7 +176,7 @@ AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
                  content::Source<Profile>(Profile::FromBrowserContext(
-                     owner->web_contents()->GetBrowserContext())));
+                     owner->GetWebContents()->GetBrowserContext())));
 }
 
 AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
@@ -215,7 +215,7 @@ string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 
 bool AutoLoginInfoBarDelegate::Accept() {
   // AutoLoginRedirector deletes itself.
-  new AutoLoginRedirector(&owner()->web_contents()->GetController(),
+  new AutoLoginRedirector(&owner()->GetWebContents()->GetController(),
                           params_.args);
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
   button_pressed_ = true;
@@ -224,7 +224,7 @@ bool AutoLoginInfoBarDelegate::Accept() {
 
 bool AutoLoginInfoBarDelegate::Cancel() {
   PrefService* pref_service = TabContents::FromWebContents(
-      owner()->web_contents())->profile()->GetPrefs();
+      owner()->GetWebContents())->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kAutologinEnabled, false);
   RecordHistogramAction(HISTOGRAM_REJECTED);
   button_pressed_ = true;

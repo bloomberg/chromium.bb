@@ -153,7 +153,7 @@ bool OneClickLoginInfoBarDelegate::Accept() {
   // User has accepted one-click sign-in for this account. Never ask again for
   // this profile.
   DisableOneClickSignIn();
-  content::WebContents* web_contents = owner()->web_contents();
+  content::WebContents* web_contents = owner()->GetWebContents();
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   browser::FindBrowserWithWebContents(web_contents)->window()->
       ShowOneClickSigninBubble(base::Bind(&StartSync, web_contents,
@@ -179,7 +179,7 @@ bool OneClickLoginInfoBarDelegate::LinkClicked(
   content::OpenURLParams params(
       GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(), disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  owner()->GetWebContents()->OpenURL(params);
   return false;
 }
 
@@ -191,7 +191,7 @@ InfoBarDelegate::InfoBarAutomationType
 
 void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {
   PrefService* pref_service =
-      TabContents::FromWebContents(owner()->web_contents())->
+      TabContents::FromWebContents(owner()->GetWebContents())->
           profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
@@ -199,7 +199,7 @@ void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {
 void OneClickLoginInfoBarDelegate::AddEmailToOneClickRejectedList(
     const std::string& email) {
   PrefService* pref_service =
-      TabContents::FromWebContents(owner()->web_contents())->
+      TabContents::FromWebContents(owner()->GetWebContents())->
           profile()->GetPrefs();
   ListPrefUpdate updater(pref_service,
                          prefs::kReverseAutologinRejectedEmailList);

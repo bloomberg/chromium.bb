@@ -915,7 +915,7 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
                                                  registry,
                                                  handler);
 
-  for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
+  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); i++) {
     InfoBarDelegate* delegate = infobar_helper->GetInfoBarDelegateAt(i);
     RegisterProtocolHandlerInfoBarDelegate* cast_delegate =
         delegate->AsRegisterProtocolHandlerInfoBarDelegate();
@@ -962,7 +962,7 @@ void Browser::RequestMediaAccessPermissionHelper(
   if (!controller->DismissInfoBarAndTakeActionOnSettings()) {
     InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
     InfoBarDelegate* old_infobar = NULL;
-    for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+    for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
       old_infobar = infobar_helper->GetInfoBarDelegateAt(i)->
           AsMediaStreamInfoBarDelegate();
       if (old_infobar)

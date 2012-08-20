@@ -2175,7 +2175,7 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   ListValue* infobars = new ListValue;
   InfoBarTabHelper* infobar_helper =
       TabContents::FromWebContents(wc)->infobar_tab_helper();
-  for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
     switch (infobar->GetInfoBarAutomationType()) {
@@ -2267,7 +2267,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
 
   InfoBarDelegate* infobar = NULL;
   size_t infobar_index = static_cast<size_t>(infobar_index_int);
-  if (infobar_index >= infobar_helper->infobar_count()) {
+  if (infobar_index >= infobar_helper->GetInfoBarCount()) {
     reply.SendError(StringPrintf("No such infobar at index %" PRIuS,
                                  infobar_index));
     return;
@@ -3786,7 +3786,7 @@ TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
     WebContents* web_contents) {
   InfoBarTabHelper* infobar_helper =
       TabContents::FromWebContents(web_contents)->infobar_tab_helper();
-  for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
+  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); i++) {
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
     if (infobar->AsTranslateInfoBarDelegate())
       return infobar->AsTranslateInfoBarDelegate();

@@ -23,6 +23,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleURLTrackerInfoBarDelegate;
+class InfoBarTabHelper;
 class PrefService;
 class Profile;
 
