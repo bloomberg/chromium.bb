@@ -28,12 +28,12 @@
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/cache_stats.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
+#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/net/transport_security_persister.h"
@@ -226,9 +226,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 }
 
 ProfileIOData::AppRequestContext::AppRequestContext(
-    chrome_browser_net::CacheStats* cache_stats)
+    chrome_browser_net::LoadTimeStats* load_time_stats)
     : ChromeURLRequestContext(ChromeURLRequestContext::CONTEXT_TYPE_APP,
-                              cache_stats) {
+                              load_time_stats) {
 }
 
 void ProfileIOData::AppRequestContext::SetCookieStore(
@@ -466,16 +466,16 @@ void ProfileIOData::LazyInitialize() const {
   IOThread* const io_thread = profile_params_->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  cache_stats_ = GetCacheStats(io_thread_globals);
+  load_time_stats_ = GetLoadTimeStats(io_thread_globals);
 
   // Create the common request contexts.
   main_request_context_.reset(
       new ChromeURLRequestContext(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
-                                  cache_stats_));
+                                  load_time_stats_));
   extensions_request_context_.reset(
       new ChromeURLRequestContext(
           ChromeURLRequestContext::CONTEXT_TYPE_EXTENSIONS,
-          cache_stats_));
+          load_time_stats_));
 
   chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend);
 
@@ -491,7 +491,7 @@ void ProfileIOData::LazyInitialize() const {
         profile_params_->profile,
         profile_params_->cookie_settings,
         &enable_referrers_,
-        cache_stats_));
+        load_time_stats_));
 
   fraudulent_certificate_reporter_.reset(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(

@@ -10,7 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/cache_stats.h"
+#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -293,19 +293,19 @@ void ChromeURLRequestContextGetter::OnDefaultCharsetChange(
 
 ChromeURLRequestContext::ChromeURLRequestContext(
     ContextType type,
-    chrome_browser_net::CacheStats* cache_stats)
+    chrome_browser_net::LoadTimeStats* load_time_stats)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       is_incognito_(false),
-      cache_stats_(cache_stats) {
+      load_time_stats_(load_time_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (cache_stats_)
-    cache_stats_->RegisterURLRequestContext(this, type);
+  if (load_time_stats_)
+    load_time_stats_->RegisterURLRequestContext(this, type);
 }
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (cache_stats_)
-    cache_stats_->UnregisterURLRequestContext(this);
+  if (load_time_stats_)
+    load_time_stats_->UnregisterURLRequestContext(this);
 }
 
 void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {

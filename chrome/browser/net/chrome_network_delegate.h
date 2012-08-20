@@ -19,7 +19,7 @@ template<class T> class PrefMember;
 typedef PrefMember<bool> BooleanPrefMember;
 
 namespace chrome_browser_net {
-class CacheStats;
+class LoadTimeStats;
 }
 
 namespace extensions {
@@ -48,7 +48,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       void* profile,
       CookieSettings* cookie_settings,
       BooleanPrefMember* enable_referrers,
-      chrome_browser_net::CacheStats* cache_stats);
+      chrome_browser_net::LoadTimeStats* load_time_stats);
   virtual ~ChromeNetworkDelegate();
 
   // Causes |OnCanThrottleRequest| to always return false, for all
@@ -108,8 +108,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSocketStreamConnect(
       net::SocketStream* stream,
       const net::CompletionCallback& callback) OVERRIDE;
-  virtual void OnCacheWaitStateChange(const net::URLRequest& request,
-                                      CacheWaitState state) OVERRIDE;
+  virtual void OnRequestWaitStateChange(const net::URLRequest& request,
+                                        RequestWaitState state) OVERRIDE;
 
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   void* profile_;
@@ -139,7 +139,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   static bool g_never_throttle_requests_;
 
   // Pointer to IOThread global, should outlive ChromeNetworkDelegate.
-  chrome_browser_net::CacheStats* cache_stats_;
+  chrome_browser_net::LoadTimeStats* load_time_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

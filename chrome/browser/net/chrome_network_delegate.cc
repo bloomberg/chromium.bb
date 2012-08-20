@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/net/cache_stats.h"
+#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -137,7 +137,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     void* profile,
     CookieSettings* cookie_settings,
     BooleanPrefMember* enable_referrers,
-    chrome_browser_net::CacheStats* cache_stats)
+    chrome_browser_net::LoadTimeStats* load_time_stats)
     : event_router_(event_router),
       profile_(profile),
       cookie_settings_(cookie_settings),
@@ -145,7 +145,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       enable_referrers_(enable_referrers),
       url_blacklist_manager_(url_blacklist_manager),
       managed_mode_url_filter_(managed_mode_url_filter),
-      cache_stats_(cache_stats) {
+      load_time_stats_(load_time_stats) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
   DCHECK(!profile || cookie_settings);
@@ -411,9 +411,9 @@ int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
   return net::OK;
 }
 
-void ChromeNetworkDelegate::OnCacheWaitStateChange(
+void ChromeNetworkDelegate::OnRequestWaitStateChange(
     const net::URLRequest& request,
-    CacheWaitState state) {
-  if (cache_stats_)
-    cache_stats_->OnCacheWaitStateChange(request, state);
+    RequestWaitState state) {
+  if (load_time_stats_)
+    load_time_stats_->OnRequestWaitStateChange(request, state);
 }

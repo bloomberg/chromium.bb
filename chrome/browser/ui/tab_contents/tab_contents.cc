@@ -18,7 +18,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/net/cache_stats.h"
+#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
@@ -105,8 +105,8 @@ TabContents::TabContents(WebContents* contents)
 #endif
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
-  cache_stats_tab_helper_.reset(
-      new chrome_browser_net::CacheStatsTabHelper(this));
+  load_time_stats_tab_helper_.reset(
+      new chrome_browser_net::LoadTimeStatsTabHelper(this));
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal_tab_helper_.reset(
       new captive_portal::CaptivePortalTabHelper(profile(), web_contents()));

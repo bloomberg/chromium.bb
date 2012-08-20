@@ -270,7 +270,7 @@ void ProfileImplIOData::LazyInitializeInternal(
   ChromeURLRequestContext* main_context = main_request_context();
   ChromeURLRequestContext* extensions_context = extensions_request_context();
   media_request_context_.reset(new ChromeURLRequestContext(
-      ChromeURLRequestContext::CONTEXT_TYPE_MEDIA, cache_stats()));
+      ChromeURLRequestContext::CONTEXT_TYPE_MEDIA, load_time_stats()));
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
@@ -508,7 +508,7 @@ ChromeURLRequestContext*
 ProfileImplIOData::InitializeAppRequestContext(
     ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
-  AppRequestContext* context = new AppRequestContext(cache_stats());
+  AppRequestContext* context = new AppRequestContext(load_time_stats());
 
   // If this is for a guest process, we should not persist cookies and http
   // cache.
@@ -595,9 +595,9 @@ ProfileImplIOData::AcquireIsolatedAppRequestContext(
   return app_request_context;
 }
 
-chrome_browser_net::CacheStats* ProfileImplIOData::GetCacheStats(
+chrome_browser_net::LoadTimeStats* ProfileImplIOData::GetLoadTimeStats(
     IOThread::Globals* io_thread_globals) const {
-  return io_thread_globals->cache_stats.get();
+  return io_thread_globals->load_time_stats.get();
 }
 
 void ProfileImplIOData::CreateFtpProtocolHandler(

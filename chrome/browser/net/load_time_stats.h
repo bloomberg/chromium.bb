@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_CACHE_STATS_H_
-#define CHROME_BROWSER_NET_CACHE_STATS_H_
+#ifndef CHROME_BROWSER_NET_LOAD_TIME_STATS_H_
+#define CHROME_BROWSER_NET_LOAD_TIME_STATS_H_
 
 #include <map>
 #include <vector>
@@ -45,24 +45,39 @@ struct hash<const net::URLRequestContext*> {
 namespace chrome_browser_net {
 
 // This class collects UMA stats about cache performance.
-class CacheStats {
+class LoadTimeStats {
  public:
   enum TabEvent {
     SPINNER_START,
     SPINNER_STOP
   };
-  CacheStats();
-  ~CacheStats();
+  enum RequestStatus {
+    REQUEST_STATUS_CACHE_WAIT,
+    REQUEST_STATUS_NETWORK_WAIT,
+    REQUEST_STATUS_ACTIVE,
+    REQUEST_STATUS_NONE,
+    REQUEST_STATUS_MAX
+  };
+  enum HistogramType {
+    HISTOGRAM_FINAL_AGGREGATE,
+    HISTOGRAM_FINAL_CUMULATIVE_PERCENTAGE,
+    HISTOGRAM_INTERMEDIATE_AGGREGATE,
+    HISTOGRAM_INTERMEDIATE_CUMULATIVE_PERCENTAGE,
+    HISTOGRAM_MAX
+  };
 
-  void OnCacheWaitStateChange(const net::URLRequest& request,
-                              net::NetworkDelegate::CacheWaitState state);
+  LoadTimeStats();
+  ~LoadTimeStats();
+
+  void OnRequestWaitStateChange(const net::URLRequest& request,
+                                net::NetworkDelegate::RequestWaitState state);
   void OnTabEvent(std::pair<int, int> render_view_id, TabEvent event);
   void RegisterURLRequestContext(const net::URLRequestContext* context,
                                  ChromeURLRequestContext::ContextType type);
   void UnregisterURLRequestContext(const net::URLRequestContext* context);
 
  private:
-  struct TabLoadStats;
+  class TabLoadStats;
   // A map mapping a renderer's process id and route id to a TabLoadStats,
   // representing that renderer's load statistics.
   typedef std::map<std::pair<int, int>, TabLoadStats*> TabLoadStatsMap;
@@ -77,28 +92,25 @@ class CacheStats {
   void ScheduleTimer(TabLoadStats* stats);
   // The callback when a timer fires to collect stats again.
   void TimerCallback(TabLoadStats* stats);
-  // Helper function to put the current set of cache statistics into an UMA
-  // histogram.
-  void RecordCacheFractionHistogram(base::TimeDelta elapsed,
-                                    base::TimeDelta cache_time,
-                                    bool is_load_done,
-                                    int timer_index);
+  // Helper function to put the current set of statistics into UMA histograms.
+  void RecordHistograms(base::TimeDelta elapsed,
+                        TabLoadStats* stats,
+                        bool is_load_done);
 
   TabLoadStatsMap tab_load_stats_;
-  std::vector<base::Histogram*> final_histograms_;
-  std::vector<base::Histogram*> intermediate_histograms_;
+  std::vector<base::Histogram*> histograms_[REQUEST_STATUS_MAX][HISTOGRAM_MAX];
   base::hash_set<const net::URLRequestContext*> main_request_contexts_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheStats);
+  DISALLOW_COPY_AND_ASSIGN(LoadTimeStats);
 };
 
-// A WebContentsObserver watching all tabs, notifying CacheStats
+// A WebContentsObserver watching all tabs, notifying LoadTimeStats
 // whenever the spinner starts or stops for a given tab, and when a renderer
 // is no longer used.
-class CacheStatsTabHelper : public content::WebContentsObserver {
+class LoadTimeStatsTabHelper : public content::WebContentsObserver {
  public:
-  explicit CacheStatsTabHelper(TabContents* tab);
-  virtual ~CacheStatsTabHelper();
+  explicit LoadTimeStatsTabHelper(TabContents* tab);
+  virtual ~LoadTimeStatsTabHelper();
 
   // content::WebContentsObserver implementation
   virtual void DidStartProvisionalLoadForFrame(
@@ -111,17 +123,16 @@ class CacheStatsTabHelper : public content::WebContentsObserver {
       content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
-  // Calls into CacheStats to notify that a reportable event has occurred
+  // Calls into LoadTimeStats to notify that a reportable event has occurred
   // for the tab being observed.
-  void NotifyCacheStats(CacheStats::TabEvent event,
+  void NotifyLoadTimeStats(LoadTimeStats::TabEvent event,
                         content::RenderViewHost* render_view_host);
 
-  CacheStats* cache_stats_;
   bool is_otr_profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheStatsTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(LoadTimeStatsTabHelper);
 };
 
 }  // namespace chrome_browser_net
 
-#endif  // CHROME_BROWSER_NET_CACHE_STATS_H_
+#endif  // CHROME_BROWSER_NET_LOAD_TIME_STATS_H_

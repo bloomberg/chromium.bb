@@ -139,7 +139,7 @@ class ProfileImplIOData : public ProfileIOData {
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
           const std::string& app_id) const OVERRIDE;
-  virtual chrome_browser_net::CacheStats* GetCacheStats(
+  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;
 
   void CreateFtpProtocolHandler(net::URLRequestJobFactory* job_factory,

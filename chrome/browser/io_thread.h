@@ -24,8 +24,8 @@ class PrefService;
 class SystemURLRequestContextGetter;
 
 namespace chrome_browser_net {
-class CacheStats;
 class HttpPipeliningCompatibilityClient;
+class LoadTimeStats;
 }
 
 namespace extensions {
@@ -112,7 +112,7 @@ class IOThread : public content::BrowserThreadDelegate {
         extension_event_router_forwarder;
     scoped_ptr<chrome_browser_net::HttpPipeliningCompatibilityClient>
         http_pipelining_compatibility_client;
-    scoped_ptr<chrome_browser_net::CacheStats> cache_stats;
+    scoped_ptr<chrome_browser_net::LoadTimeStats> load_time_stats;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

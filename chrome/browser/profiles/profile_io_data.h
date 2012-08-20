@@ -30,7 +30,7 @@ class ProtocolHandlerRegistry;
 class TransportSecurityPersister;
 
 namespace chrome_browser_net {
-class CacheStats;
+class LoadTimeStats;
 class HttpServerPropertiesManager;
 class ResourcePrefetchPredictorObserver;
 }
@@ -137,7 +137,8 @@ class ProfileIOData {
  protected:
   class AppRequestContext : public ChromeURLRequestContext {
    public:
-    explicit AppRequestContext(chrome_browser_net::CacheStats* cache_stats);
+    explicit AppRequestContext(
+        chrome_browser_net::LoadTimeStats* load_time_stats);
 
     void SetCookieStore(net::CookieStore* cookie_store);
     void SetHttpTransactionFactory(net::HttpTransactionFactory* http_factory);
@@ -240,8 +241,8 @@ class ProfileIOData {
     return main_request_context_.get();
   }
 
-  chrome_browser_net::CacheStats* cache_stats() const {
-    return cache_stats_;
+  chrome_browser_net::LoadTimeStats* load_time_stats() const {
+    return load_time_stats_;
   }
 
   // Destroys the ResourceContext first, to cancel any URLRequests that are
@@ -296,8 +297,8 @@ class ProfileIOData {
           ChromeURLRequestContext* main_context,
           const std::string& app_id) const = 0;
 
-  // Returns the CacheStats object to be used for this profile.
-  virtual chrome_browser_net::CacheStats* GetCacheStats(
+  // Returns the LoadTimeStats object to be used for this profile.
+  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const = 0;
 
   // The order *DOES* matter for the majority of these member variables, so
@@ -373,7 +374,7 @@ class ProfileIOData {
   mutable scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
       resource_prefetch_predictor_observer_;
 
-  mutable chrome_browser_net::CacheStats* cache_stats_;
+  mutable chrome_browser_net::LoadTimeStats* load_time_stats_;
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;

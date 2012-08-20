@@ -21,7 +21,7 @@ class Profile;
 class ProfileIOData;
 
 namespace chrome_browser_net {
-class CacheStats;
+class LoadTimeStats;
 }
 
 // Subclass of net::URLRequestContext which can be used to store extra
@@ -38,7 +38,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     CONTEXT_TYPE_APP
   };
   ChromeURLRequestContext(ContextType type,
-                          chrome_browser_net::CacheStats* cache_stats);
+                          chrome_browser_net::LoadTimeStats* load_time_stats);
   virtual ~ChromeURLRequestContext();
 
   base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
@@ -81,7 +81,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 
   ChromeURLDataManagerBackend* chrome_url_data_manager_backend_;
   bool is_incognito_;
-  chrome_browser_net::CacheStats* cache_stats_;
+  chrome_browser_net::LoadTimeStats* load_time_stats_;
 
   // ---------------------------------------------------------------------------
   // Important: When adding any new members above, consider whether they need to

@@ -188,8 +188,8 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
     return net::OK;
   }
 
-  virtual void OnCacheWaitStateChange(const net::URLRequest& request,
-                                      CacheWaitState state) OVERRIDE {
+  virtual void OnRequestWaitStateChange(const net::URLRequest& request,
+                                        RequestWaitState state) OVERRIDE {
   }
 };
 

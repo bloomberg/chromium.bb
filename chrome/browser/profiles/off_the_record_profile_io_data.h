@@ -110,7 +110,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   void CreateFtpProtocolHandler(net::URLRequestJobFactory* job_factory,
                                 net::FtpAuthCache* ftp_auth_cache) const;
 
-  virtual chrome_browser_net::CacheStats* GetCacheStats(
+  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
       IOThread::Globals* io_thread_globals) const OVERRIDE;
 
   mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
