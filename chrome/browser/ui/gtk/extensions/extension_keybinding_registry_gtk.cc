@@ -59,12 +59,10 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(profile_);
   extensions::CommandMap commands;
-  if (!command_service->GetNamedCommands(
+  command_service->GetNamedCommands(
           extension->id(),
           extensions::CommandService::ACTIVE_ONLY,
-          &commands)) {
-    return;
-  }
+          &commands);
 
   for (extensions::CommandMap::const_iterator iter = commands.begin();
        iter != commands.end(); ++iter) {
@@ -108,6 +106,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
       std::make_pair(extension->id(), browser_action.command_name());
   }
 
+  // Add the Page Action (if any).
   extensions::Command page_action;
   if (command_service->GetPageActionCommand(
           extension->id(),
@@ -120,6 +119,21 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
                                    page_action.accelerator().IsAltDown());
     event_targets_[accelerator] =
         std::make_pair(extension->id(), page_action.command_name());
+  }
+
+  // Add the Script Badge (if any).
+  extensions::Command script_badge;
+  if (command_service->GetScriptBadgeCommand(
+          extension->id(),
+          extensions::CommandService::ACTIVE_ONLY,
+          &script_badge,
+          NULL)) {
+    ui::AcceleratorGtk accelerator(script_badge.accelerator().key_code(),
+                                   script_badge.accelerator().IsShiftDown(),
+                                   script_badge.accelerator().IsCtrlDown(),
+                                   script_badge.accelerator().IsAltDown());
+    event_targets_[accelerator] =
+        std::make_pair(extension->id(), script_badge.command_name());
   }
 }
 
@@ -135,15 +149,13 @@ void ExtensionKeybindingRegistryGtk::RemoveExtensionKeybinding(
     }
 
     // On GTK, unlike Windows, the Event Targets contain all events but we must
-    // only unregister the ones we own.
-    if (ShouldIgnoreCommand(iter->second.second)) {
-      ++iter;
-      continue;
+    // only unregister the ones we registered targets for.
+    if (!ShouldIgnoreCommand(iter->second.second)) {
+      gtk_accel_group_disconnect_key(accel_group_,
+                                     iter->first.GetGdkKeyCode(),
+                                     iter->first.gdk_modifier_type());
     }
 
-    gtk_accel_group_disconnect_key(accel_group_,
-                                   iter->first.GetGdkKeyCode(),
-                                   iter->first.gdk_modifier_type());
     EventTargets::iterator old = iter++;
     event_targets_.erase(old);
   }
