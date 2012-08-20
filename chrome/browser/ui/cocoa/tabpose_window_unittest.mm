@@ -63,6 +63,12 @@ TEST_F(TabposeWindowTest, TestShow) {
 }
 
 TEST_F(TabposeWindowTest, TestModelObserver) {
+  // Skip this test on 10.7
+  // http://code.google.com/p/chromium/issues/detail?id=127845
+  if (base::mac::IsOSLionOrLater()) {
+    return;
+  }
+
   NSWindow* parent = browser()->window()->GetNativeWindow();
   [parent orderFront:nil];
 
