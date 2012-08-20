@@ -6,6 +6,7 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/cursor_manager.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
@@ -137,8 +138,11 @@ void DragDropController::DragUpdate(aura::Window* target,
 
   DCHECK(drag_image_.get());
   if (drag_image_->visible()) {
+    gfx::Point root_location_in_screen = event.root_location();
+    ash::wm::ConvertPointToScreen(target->GetRootWindow(),
+                                  &root_location_in_screen);
     drag_image_->SetScreenPosition(
-        event.root_location().Subtract(drag_image_offset_));
+        root_location_in_screen.Subtract(drag_image_offset_));
   }
 }
 
