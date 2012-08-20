@@ -801,6 +801,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     if ((!strcmp(instruction_name, "clflush")) ||
         (!strcmp(instruction_name, "int")) ||
         (!strcmp(instruction_name, "invlpg")) ||
+        (!strcmp(instruction_name, "nop/reserved")) ||
         (!strcmp(instruction_name, "prefetch")) ||
         (!strcmp(instruction_name, "prefetchnta")) ||
         (!strcmp(instruction_name, "prefetcht0")) ||

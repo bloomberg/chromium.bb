@@ -43,7 +43,7 @@ maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMX nacl-amd64-forbidden
 # Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
 # and 64bit separately.
 movd Ed Pq, 0x0f 0x6e, norexw CPUFeature_MMX
-movd Pq Ed, 0x0f 0x7e, norexw CPUFeature_MMX
+movd Pq Ed, 0x0f 0x7e, norexw CPUFeature_MMX nacl-amd64-zero-extends
 movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
 movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVNTQ ################################################################
@@ -108,6 +108,8 @@ pcmpgtd Qq Pq, 0x0f 0x66, CPUFeature_MMX
 ######## PCMPGTW ###############################################################
 pcmpgtw Qq Pq, 0x0f 0x65, CPUFeature_MMX
 ######## PEXTRW ################################################################
+# “pextrw” is not marked as nacl-amd64-zero-extends because you shouldn't use
+# MMX registers to hold addresses.
 # This is description according to AMD/Intel manual.
 #  pextrw Ib Nq Gd, 0x0f 0xc5, CPUFeature_EMMXSSE
 # GNU as accepts this description, but objdump decodes last operand as “Gy”.

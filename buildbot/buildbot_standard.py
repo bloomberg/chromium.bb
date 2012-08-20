@@ -382,13 +382,10 @@ def BuildScript(status, context):
   # Smoke tests for the R-DFA validator.
   with Step('validator_ragel_tests', status):
     args = ['validator_ragel=1',
-            'run_dfa_validator_hello_world_test',
-            'run_hello_world_test_irt',
+            'small_tests',
+            'medium_tests',
+            'large_tests',
             ]
-    # Run R-DFA validator command-line tool only on Linux because it cannot
-    # recognize ELF class on other systems.
-    if context.Linux():
-      args.append('run_validator_test_py')
     # Add nacl_irt_test mode to be able to run run_hello_world_test_irt that
     # tests validation of the IRT.
     SCons(context,

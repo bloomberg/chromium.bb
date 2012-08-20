@@ -56,9 +56,15 @@ else:
     expect_sse_Z_status=1
     expect_x87_Z_status=1
   elif env.Bit('target_x86_64'):
-    # 64-bit newlib: requires MMX, CLFLUSH, FXSR
-    expect_null_Z_status=1
-    expect_sse_Z_status=1
+    if env.Bit('validator_ragel'):
+      # R-DFA does not support x64-64 validation with LM bit unset
+      expect_null_Z_status=0
+      expect_sse_Z_status=0
+    else:
+      # 64-bit newlib: requires LM(cltq), MMX(prefetchnta), CLFLUSH/FXSR(sfence)
+      # Most instructions are incorrectly classified, cltq is "genuine"
+      expect_null_Z_status=1
+      expect_sse_Z_status=1
     expect_x87_Z_status=1
 
 test_suites = ['small_tests', 'sel_ldr_tests', 'validator_tests']

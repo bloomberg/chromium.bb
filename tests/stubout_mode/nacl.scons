@@ -35,6 +35,10 @@ if env.Bit('build_arm'):
 if env.Bit('tests_use_irt') and env.Bit('nacl_glibc'):
   Return()
 
+# R-DFA does not support stubout mode
+if env.Bit('validator_ragel'):
+  Return()
+
 if 'TRUSTED_ENV' not in env:
   Return()
 

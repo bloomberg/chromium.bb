@@ -40,17 +40,7 @@
                   &instruction_info_collected);
   }
 
-  action imm2_operand { instruction_info_collected |= IMMEDIATE_2BIT; }
-  # Note: we use += below instead of |=. This means two immediate fields will
-  # be treated as one.  It's not important for safety.  */
-  action imm8_operand { instruction_info_collected += IMMEDIATE_8BIT; }
-  action imm16_operand { instruction_info_collected += IMMEDIATE_16BIT; }
-  action imm32_operand { instruction_info_collected += IMMEDIATE_32BIT; }
-  action imm64_operand { instruction_info_collected += IMMEDIATE_64BIT; }
-  action imm8_second_operand { instruction_info_collected += IMMEDIATE_8BIT; }
-  action imm16_second_operand { instruction_info_collected += IMMEDIATE_16BIT; }
-  action imm32_second_operand { instruction_info_collected += IMMEDIATE_32BIT; }
-  action imm64_second_operand { instruction_info_collected += IMMEDIATE_64BIT; }
+  action opcode_in_imm { instruction_info_collected |= IMMEDIATE_IS_OPCODE; }
 
   include decode_x86_32 "validator_x86_32_instruction.rl";
 
@@ -65,6 +55,8 @@
      0x83 0xe7 0xe0 0xff (0xd7|0xe7))   # naclcall/jmp %edi
     @{
       BitmapClearBit(valid_targets, (current_position - data) - 1);
+      instruction_start -= 3;
+      instruction_info_collected |= SPECIAL_INSTRUCTION;
     } |
     (0x65 0xa1 (0x00|0x04) 0x00 0x00 0x00      | # mov %gs:0x0/0x4,%eax
      0x65 0x8b (0x05|0x0d|0x015|0x1d|0x25|0x2d|0x35|0x3d)
@@ -76,7 +68,7 @@
      }
      @{
        if (instruction_info_collected & VALIDATION_ERRORS ||
-           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+           options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);
        }
@@ -102,17 +94,29 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                        const NaClCPUFeaturesX86 *cpu_features,
                        validation_callback_func user_callback,
                        void *callback_data) {
-  bitmap_word *valid_targets = BitmapAllocate(size);
-  bitmap_word *jump_dests = BitmapAllocate(size);
+  bitmap_word valid_targets_small;
+  bitmap_word jump_dests_small;
+  bitmap_word *valid_targets;
+  bitmap_word *jump_dests;
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
   int result = TRUE;
 
   CHECK(size % kBundleSize == 0);
 
-  if (!valid_targets || !jump_dests) {
-    result = FALSE;
-    goto error_detected;
+  /* For a very small sequence (one bundle) malloc is too expensive.  */
+  if (size <= sizeof(bitmap_word)) {
+    valid_targets_small = 0;
+    valid_targets = &valid_targets_small;
+    jump_dests_small = 0;
+    jump_dests = &jump_dests_small;
+  } else {
+    valid_targets = BitmapAllocate(size);
+    jump_dests = BitmapAllocate(size);
+    if (!valid_targets || !jump_dests) {
+      result = FALSE;
+      goto error_detected;
+    }
   }
 
   if (options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM)
@@ -137,7 +141,10 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                                       user_callback, callback_data);
 
 error_detected:
-  free(jump_dests);
-  free(valid_targets);
+  /* We only use malloc for a large code sequences  */
+  if (size > sizeof(bitmap_word)) {
+    free(jump_dests);
+    free(valid_targets);
+  }
   return result;
 }

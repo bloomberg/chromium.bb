@@ -72,7 +72,7 @@ env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', benchmark))
 
 # Python-based regression test. TODO(pasko): remove it when validator_tests are
 # migrated to be able to run with the new validator.
-if env.Bit('validator_ragel'):
+if env.Bit('validator_ragel') and env.Bit('host_linux'):
   test_node = env.CommandTest('validator_test_py.out',
                               command=['${PYTHON}',
                                        env.File('unreviewed/validator_test.py'),
@@ -187,7 +187,7 @@ if generate:
       '32', 'validator',
       ('check_access,opcode,parse_operands,parse_operands_states,'
        'instruction_name,mark_data_fields,nacl-forbidden,'
-       'imm_operand_action,rel_operand_action'),
+       'rel_operand_action'),
       '-G2')
   decoder64 = MakeAutomaton(
       '64', 'decoder',
@@ -195,12 +195,11 @@ if generate:
       '-T0')
   validator64 = MakeAutomaton(
       '64', 'validator',
-      ('opcode,instruction_name,mark_data_fields,imm_operand_action,'
-       'rel_operand_action,nacl-forbidden,parse_nonwrite_registers,'
-       'parse_x87_operands,parse_mmx_operands,parse_xmm_operands,'
-       'parse_ymm_operands,parse_relative_operands,'
-       'parse_immediate_operands,parse_operands_states,'
-       'parse_operand_positions'),
+      ('opcode,instruction_name,mark_data_fields,rel_operand_action,'
+       'nacl-forbidden,parse_nonwrite_registers,parse_x87_operands,'
+       'parse_mmx_operands,parse_xmm_operands,parse_ymm_operands,'
+       'parse_relative_operands,parse_immediate_operands,'
+       'parse_operands_states,parse_operand_positions'),
       '-GT2')
 
   automata = list(decoder32 + validator32 + decoder64 + validator64)

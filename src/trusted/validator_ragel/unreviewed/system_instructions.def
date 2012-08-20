@@ -33,6 +33,7 @@ invlpga, 0x0f 0x01 0xdf, CPUFeature_SVM nacl-forbidden
 iret, 0xcf, norexw nacl-forbidden
 iretq, rexw 0xcf, amd64 nacl-forbidden
 ######## LAR ###################################################################
+# “lar” is not marked as nacl-amd64-zero-extends because they shouldn't be.
 lar Ew Gv, 0x0f 0x02, nacl-forbidden
 ######## LGDT ##################################################################
 lgdtl Ms, 0x0f 0x01 /2, ia32 nacl-forbidden
@@ -45,6 +46,8 @@ lldt Ew, 0x0f 0x00 /2, nacl-forbidden
 ######## LMSW ##################################################################
 lmsw Ew, 0x0f 0x01 /6, nacl-forbidden
 ######## LSL ###################################################################
+# “lsl” is not marked as nacl-amd64-zero-extends because segment addresses
+# shouldn't be used.
 lsl Ew Gv, 0x0f 0x03, nacl-forbidden
 ######## LTR ###################################################################
 ltr Ew, 0x0f 0x00 /3, nacl-forbidden
@@ -61,12 +64,20 @@ mov Rr Dr, 0x0f 0x23, nacl-forbidden
 ######## MWAIT #################################################################
 mwait ar cr, 0x0f 0x01 0xc9, CPUFeature_MON
 ######## RDMSR #################################################################
+# “rdmsr” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# reading model specific registers.
 rdmsr, 0x0f 0x32, CPUFeature_MSR nacl-forbidden
 ######## RDPMC #################################################################
+# “rdpmc” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# basing addresses on the performance-monitor counter.
 rdpmc, 0x0f 0x33, nacl-forbidden
 ######## RDTSC #################################################################
+# “rdtsc” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# basing addresses on the time-stamp counter.
 rdtsc, 0x0f 0x31, CPUFeature_TSC
 ######## RDTSCP ################################################################
+# “rdtsc” is not marked as nacl-amd64-zero-extends because you shouldn't be
+# basing addresses on the time-stamp counter or the processor id.
 rdtscp, 0x0f 0x01 0xf9, CPUFeature_TSCP nacl-forbidden
 ######## RSM ###################################################################
 rsm, 0x0f 0xaa, CPUFeature_SVM nacl-forbidden
@@ -82,6 +93,8 @@ skinit, 0x0f 0x01 0xde, CPUFeature_SKINIT nacl-forbidden
 sldt Mw, 0x0f 0x00 /0, nacl-forbidden
 sldt Rv, 0x0f 0x00 /0, nacl-forbidden
 ######## SMSW ##################################################################
+# “smsw” is not marked as nacl-amd64-zero-extends since you shouldn't be basing
+# addresses on the machine status word.
 smsw Mw, 0x0f 0x01 /4, nacl-forbidden
 smsw Rv, 0x0f 0x01 /4, nacl-forbidden
 ######## STGI ##################################################################

@@ -241,7 +241,9 @@ namespace {
      "amd64",
      "nacl-ia32-forbidden",
      "nacl-amd64-forbidden",
-     "nacl-forbidden"
+     "nacl-forbidden",
+     "nacl-amd64-zero-extends",
+     "nacl-amd64-modifiable"
   };
 
   class Instruction {
@@ -431,9 +433,13 @@ namespace {
           auto enabled_instruction = true;
           if (*it == ',') {
             ++it;
+            if (it == line_end)
+                      line_end = std::find_if(++it, file_content.end(), is_eol);
             instruction.opcodes = split_till_comma(&it, line_end);
             if (*it == ',') {
               ++it;
+              if (it == line_end)
+                      line_end = std::find_if(++it, file_content.end(), is_eol);
               auto flags = split_till_comma(&it, line_end);
               for (auto flag_it = flags.begin();
                    flag_it != flags.end(); ++flag_it) {
@@ -1563,11 +1569,13 @@ namespace {
           print_one_size_definition_w_unused();
           break;
         case InstructionClass::kSize8RexW:
+          instruction_class = InstructionClass::kRexW;
+          /* Falltrought: the rest is as in kRexW.  */
         case InstructionClass::kRexW:
           print_one_size_definition_rexw();
           break;
         case InstructionClass::kSize8Data16:
-          instruction_class = kSize8;
+          instruction_class = InstructionClass::kSize8;
           /* Falltrought: the rest is as in kData16.  */
         case InstructionClass::kData16:
           print_one_size_definition();
@@ -1937,7 +1945,13 @@ namespace {
               }
             }
           }
-          fprintf(out_file, " @process_%d_operands", operands_count);
+          if (operands_count == 1)
+            fprintf(out_file, " @process_1_operand");
+          else
+            fprintf(out_file, " @process_%d_operands", operands_count);
+          if ((operands_count != 0) && has_flag("nacl-amd64-zero-extends") &&
+              (instruction_class == kDefault))
+            fprintf(out_file, "_zero_extends");
         }
       }
     }
@@ -2276,6 +2290,12 @@ namespace {
       }
       if (enabled(Actions::kInstructionName)) {
         fprintf(out_file, " @instruction_%s", c_identifier(name).c_str());
+      } else if (opcode_in_imm) {
+        fprintf(out_file, " @opcode_in_imm");
+      } else if (has_flag("nacl-amd64-modifiable") &&
+                 enabled(Actions::kParseOperands) &&
+                 !enabled(Actions::kParseOperandPositions)) {
+        fprintf(out_file, " @modifiable_instruction");
       }
       for (auto flag_it = flags.begin(); flag_it != flags.end(); ++flag_it) {
         auto &flag = *flag_it;

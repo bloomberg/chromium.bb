@@ -28,7 +28,12 @@
     instruction_info_collected |= CPUID_UNSUPPORTED_INSTRUCTION; \
   }
 #define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
-#define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
+/*
+ * AMD documentation claims it's always available if CPUFeature_LM is present,
+ * But Intel documentation does not even mention it!
+ * Keep it as 3DNow! instruction.
+ */
+#define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE
 #define CPUFeature_AES      cpu_features->data[NaClCPUFeature_AES]
 #define CPUFeature_AESAVX   CPUFeature_AES && CPUFeature_AVX
 #define CPUFeature_AVX      cpu_features->data[NaClCPUFeature_AVX]
@@ -130,12 +135,27 @@ enum operand_kind {
 #define SET_BRANCH_TAKEN(S)
 #define SET_BRANCH_NOT_TAKEN(S)
 #define SET_MODRM_SCALE(S)
-#define SET_DISP_TYPE(T)
 #define SET_DISP_PTR(P)
-#define SET_IMM_TYPE(T)
 #define SET_IMM_PTR(P)
-#define SET_IMM2_TYPE(T)
 #define SET_IMM2_PTR(P)
+
+/*
+ * Collect information about anyfields (offsets and immediates).
+ * Note: we use += below instead of |=. This means two immediate fields will
+ * be treated as one.  It's not important for safety.
+ */
+#define SET_DISP_TYPE(T) SET_DISP_TYPE_##T
+#define SET_DISP_TYPE_DISPNONE
+#define SET_DISP_TYPE_DISP8 (instruction_info_collected += DISPLACEMENT_8BIT)
+#define SET_DISP_TYPE_DISP32 (instruction_info_collected += DISPLACEMENT_32BIT)
+#define SET_IMM_TYPE(T) SET_IMM_TYPE_##T
+#define SET_IMM2_TYPE(T) SET_IMM_TYPE_##T
+/* imm2 field is a flag, not accumulator, like with other immediates  */
+#define SET_IMM_TYPE_IMM2 (instruction_info_collected |= IMMEDIATE_2BIT)
+#define SET_IMM_TYPE_IMM8 (instruction_info_collected += IMMEDIATE_8BIT)
+#define SET_IMM_TYPE_IMM16 (instruction_info_collected += IMMEDIATE_16BIT)
+#define SET_IMM_TYPE_IMM32 (instruction_info_collected += IMMEDIATE_32BIT)
+#define SET_IMM_TYPE_IMM64 (instruction_info_collected += IMMEDIATE_64BIT)
 
 #define BITMAP_WORD_NAME BITMAP_WORD_NAME1(NACL_HOST_WORDSIZE)
 #define BITMAP_WORD_NAME1(size) BITMAP_WORD_NAME2(size)
@@ -155,7 +175,7 @@ static INLINE bitmap_word *BitmapAllocate(size_t indexes) {
 
 static FORCEINLINE int BitmapIsBitSet(bitmap_word *bitmap, size_t index) {
   return (bitmap[index / NACL_HOST_WORDSIZE] &
-          (((bitmap_word)1) << (index % NACL_HOST_WORDSIZE))) != 0;
+                       (((bitmap_word)1) << (index % NACL_HOST_WORDSIZE))) != 0;
 }
 
 static FORCEINLINE void BitmapSetBit(bitmap_word *bitmap, size_t index) {
@@ -166,6 +186,20 @@ static FORCEINLINE void BitmapSetBit(bitmap_word *bitmap, size_t index) {
 static FORCEINLINE void BitmapClearBit(bitmap_word *bitmap, size_t index) {
   bitmap[index / NACL_HOST_WORDSIZE] &=
                             ~(((bitmap_word)1) << (index % NACL_HOST_WORDSIZE));
+}
+
+/* All the bits must be in a single 32-bit bundle.  */
+static FORCEINLINE int BitmapIsAnyBitSet(bitmap_word *bitmap,
+                                         size_t index, size_t bits) {
+  return (bitmap[index / NACL_HOST_WORDSIZE] &
+       (((((bitmap_word)1) << bits) - 1) << (index % NACL_HOST_WORDSIZE))) != 0;
+}
+
+/* All the bits must be in a single 32-bit bundle. */
+static FORCEINLINE void BitmapSetBits(bitmap_word *bitmap,
+                                      size_t index, size_t bits) {
+  bitmap[index / NACL_HOST_WORDSIZE] |=
+               ((((bitmap_word)1) << bits) - 1) << (index % NACL_HOST_WORDSIZE);
 }
 
 /* Mark the destination of a jump instruction and make an early validity check:
@@ -262,11 +296,12 @@ static INLINE void check_access(ptrdiff_t instruction_start,
                                 uint32_t *instruction_info_collected) {
   if ((base == REG_RIP) || (base == REG_R15) ||
       (base == REG_RSP) || (base == REG_RBP)) {
-    if (index == restricted_register) {
+    if ((index == NO_REG) || (index == REG_RIZ))
+      { /* do nothing. */ }
+    else if (index == restricted_register)
       BitmapClearBit(valid_targets, instruction_start);
-    } else if ((index != NO_REG) && (index != REG_RIZ)) {
+    else
       *instruction_info_collected |= UNRESTRICTED_INDEX_REGISTER;
-    }
   } else {
     *instruction_info_collected |= FORBIDDEN_BASE_REGISTER;
   }
@@ -285,10 +320,10 @@ static INLINE void process_0_operands(enum register_name *restricted_register,
   *restricted_register = NO_REG;
 }
 
-static INLINE void process_1_operands(enum register_name *restricted_register,
-                                      uint32_t *instruction_info_collected,
-                                      uint8_t rex_prefix,
-                                      uint32_t operand_states) {
+static INLINE void process_1_operand(enum register_name *restricted_register,
+                                     uint32_t *instruction_info_collected,
+                                     uint8_t rex_prefix,
+                                     uint32_t operand_states) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
    * instruction, not with regular instruction.  */
   if (*restricted_register == REG_RSP) {
@@ -302,10 +337,37 @@ static INLINE void process_1_operands(enum register_name *restricted_register,
       CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
     *instruction_info_collected |= R15_MODIFIED;
   } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
-             CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
+              CHECK_OPERAND(0, REG_RBP, OperandSandboxRestricted) ||
+              CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
     *instruction_info_collected |= BPL_MODIFIED;
   } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
-             CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
+              CHECK_OPERAND(0, REG_RSP, OperandSandboxRestricted) ||
+              CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
+    *instruction_info_collected |= SPL_MODIFIED;
+  }
+}
+
+static INLINE void process_1_operand_zero_extends(
+    enum register_name *restricted_register,
+    uint32_t *instruction_info_collected, uint8_t rex_prefix,
+    uint32_t operand_states) {
+  /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
+   * instruction, not with regular instruction.  */
+  if (*restricted_register == REG_RSP) {
+    *instruction_info_collected |= RESTRICTED_RSP_UNPROCESSED;
+  } else if (*restricted_register == REG_RBP) {
+    *instruction_info_collected |= RESTRICTED_RBP_UNPROCESSED;
+  }
+  *restricted_register = NO_REG;
+  if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
+    *instruction_info_collected |= R15_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
+              CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
+    *instruction_info_collected |= BPL_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
+              CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
     *instruction_info_collected |= SPL_MODIFIED;
   /* Take 2 bits of operand type from operand_states as *restricted_register,
    * make sure operand_states denotes a register (4th bit == 0). */
@@ -334,14 +396,50 @@ static INLINE void process_2_operands(enum register_name *restricted_register,
       CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
     *instruction_info_collected |= R15_MODIFIED;
   } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
-             CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
+              CHECK_OPERAND(0, REG_RBP, OperandSandboxRestricted) ||
+              CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
              (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
-             CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
+              CHECK_OPERAND(1, REG_RBP, OperandSandboxRestricted) ||
+              CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
     *instruction_info_collected |= BPL_MODIFIED;
   } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
-             CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
+              CHECK_OPERAND(0, REG_RSP, OperandSandboxRestricted) ||
+              CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
              (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
-             CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
+              CHECK_OPERAND(1, REG_RSP, OperandSandboxRestricted) ||
+              CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
+    *instruction_info_collected |= SPL_MODIFIED;
+  }
+}
+
+static INLINE void process_2_operands_zero_extends(
+     enum register_name *restricted_register,
+     uint32_t *instruction_info_collected,
+     uint8_t rex_prefix, uint32_t operand_states) {
+  /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
+   * instruction, not with regular instruction.  */
+  if (*restricted_register == REG_RSP) {
+    *instruction_info_collected |= RESTRICTED_RSP_UNPROCESSED;
+  } else if (*restricted_register == REG_RBP) {
+    *instruction_info_collected |= RESTRICTED_RBP_UNPROCESSED;
+  }
+  *restricted_register = NO_REG;
+  if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted) ||
+      CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
+      CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
+      CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
+    *instruction_info_collected |= R15_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
+              CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
+             (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
+              CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
+    *instruction_info_collected |= BPL_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
+              CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
+             (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
+              CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
     *instruction_info_collected |= SPL_MODIFIED;
   /* Take 2 bits of operand type from operand_states as *restricted_register,
    * make sure operand_states denotes a register (4th bit == 0).  */

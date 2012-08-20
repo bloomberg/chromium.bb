@@ -77,19 +77,18 @@ $(OBJD)/validator_x86_32_instruction_consts.c \
 	$(GEN_DFA) -o $(OBJD)/validator_x86_32_instruction.rl $(INST_DEFS) \
 	  -d check_access,opcode,parse_operands,parse_operands_states \
 	  -d instruction_name,mark_data_fields,nacl-forbidden \
-	  -d imm_operand_action,rel_operand_action
+	  -d rel_operand_action
 
 $(OBJD)/validator_x86_64.c: $(OBJD)/validator_x86_64_instruction_consts.c
 $(OBJD)/validator_x86_64.c: $(OBJD)/validator_x86_64_instruction.rl
 $(OBJD)/validator_x86_64_instruction_consts.c \
   $(OBJD)/validator_x86_64_instruction.rl: $(GEN_DFA) $(INST_DEFS)
 	$(GEN_DFA) -o $(OBJD)/validator_x86_64_instruction.rl $(INST_DEFS) \
-	  -d opcode,instruction_name,mark_data_fields,imm_operand_action \
-	  -d rel_operand_action,nacl-forbidden,parse_nonwrite_registers \
-	  -d parse_x87_operands,parse_mmx_operands,parse_xmm_operands \
-	  -d parse_ymm_operands,parse_relative_operands \
-	  -d parse_immediate_operands,parse_operands_states \
-	  -d parse_operand_positions -m amd64
+	  -d opcode,instruction_name,mark_data_fields,rel_operand_action \
+	  -d nacl-forbidden,parse_nonwrite_registers,parse_x87_operands \
+	  -d parse_mmx_operands,parse_xmm_operands,parse_ymm_operands \
+	  -d parse_relative_operands,parse_immediate_operands \
+	  -d parse_operands_states,parse_operand_positions -m amd64
 
 # Facilities for testing:
 #   one_instruction.dot: the description of the DFA that accepts all instruction
