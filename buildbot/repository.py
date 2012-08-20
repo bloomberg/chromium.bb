@@ -286,11 +286,11 @@ class RepoRepository(object):
       except cros_build_lib.RunCommandError:
         manifest = cros_build_lib.ManifestCheckout.Cached(self.directory)
         targets = set(project['path'].split('/', 1)[0]
-                      for project in manifest.projects)
+                      for project in manifest.projects.itervalues())
         if not targets:
           # No directories to wipe, thus nothing we can fix.
           raise
-        cros_build_lib.SudoRunCommand(['rm', '-rf', sorted(targets)],
+        cros_build_lib.SudoRunCommand(['rm', '-rf'] + sorted(targets),
                                       cwd=self.directory)
 
         # Retry the sync now; if it fails, let the exception propagate.
