@@ -15,6 +15,9 @@
 
 namespace skia {
 
+#define CHECK_FOR_NODRAW_ANNOTATION(paint) \
+    do { if (paint.isNoDrawAnnotation()) { return; } } while (0)
+
 // static
 SkDevice* VectorPlatformDeviceEmf::CreateDevice(
     int width, int height, bool is_opaque, HANDLE shared_section) {
@@ -173,6 +176,7 @@ void VectorPlatformDeviceEmf::drawPoints(const SkDraw& draw,
 void VectorPlatformDeviceEmf::drawRect(const SkDraw& draw,
                                        const SkRect& rect,
                                        const SkPaint& paint) {
+  CHECK_FOR_NODRAW_ANNOTATION(paint);
   if (paint.getPathEffect()) {
     // Draw a path instead.
     SkPath path_orginal;
@@ -210,6 +214,7 @@ void VectorPlatformDeviceEmf::drawPath(const SkDraw& draw,
                                        const SkPaint& paint,
                                        const SkMatrix* prePathMatrix,
                                        bool pathIsMutable) {
+  CHECK_FOR_NODRAW_ANNOTATION(paint);
   if (paint.getPathEffect()) {
     // Apply the path effect forehand.
     SkPath path_modified;
