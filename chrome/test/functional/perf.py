@@ -731,16 +731,6 @@ class TabPerfTest(BasePerfTest):
     self._RunNewTabTest('NewTabPage',
                         lambda: self._AppendTab('chrome://newtab'), 'open_tab')
 
-  def testNewTabPdf(self):
-    """Measures time to open a new tab navigated to a PDF file."""
-    self.assertTrue(
-        os.path.exists(os.path.join(self.DataDir(), 'pyauto_private', 'pdf',
-                                    'TechCrunch.pdf')),
-        msg='Missing required PDF data file.')
-    url = self.GetFileURLForDataPath('pyauto_private', 'pdf', 'TechCrunch.pdf')
-    self._RunNewTabTest('NewTabPdfPage', lambda: self._AppendTab(url),
-                        'open_tab')
-
   def testNewTabFlash(self):
     """Measures time to open a new tab navigated to a flash page."""
     self.assertTrue(
