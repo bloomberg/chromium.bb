@@ -216,7 +216,6 @@
         '../ipc/ipc.gyp:test_support_ipc',
         '../jingle/jingle.gyp:jingle_glue_test_util',
         '../media/media.gyp:media_test_support',
-        '../media/media.gyp:shared_memory_support',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',

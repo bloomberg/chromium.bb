@@ -60,7 +60,6 @@
             'target_base': 'ppNaClPlugin',
           },
           'dependencies': [
-            '<(DEPTH)/media/media.gyp:shared_memory_support',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
@@ -93,7 +92,6 @@
             ],
           },
           'dependencies': [
-            '<(DEPTH)/media/media.gyp:shared_memory_support',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',

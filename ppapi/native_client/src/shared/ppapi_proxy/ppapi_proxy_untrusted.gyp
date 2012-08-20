@@ -11,8 +11,7 @@
       'target_name': 'ppruntime_lib',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-        '<(DEPTH)/media/media_untrusted.gyp:shared_memory_support_untrusted',
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain'
       ],
       'variables': {
         'nlib_target': 'libppruntime.a',
@@ -20,7 +19,6 @@
         'build_newlib': 1,
         'include_dirs': [
           '<(DEPTH)/gpu',
-          '<(DEPTH)/media',
           '<(DEPTH)/third_party/khronos',
           '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/untrusted',
         ],

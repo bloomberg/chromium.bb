@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/media_observer.h"
-#include "media/audio/shared_memory_util.h"
+#include "media/audio/audio_util.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;

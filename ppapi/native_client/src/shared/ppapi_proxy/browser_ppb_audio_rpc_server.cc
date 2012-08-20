@@ -13,7 +13,6 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "media/audio/shared_memory_util.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/pp_errors.h"
@@ -89,7 +88,7 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
     return;
   }
   size_t total_shared_memory_size =
-      media::TotalSharedMemorySizeInBytes(audio_buffer_size);
+      ppapi_proxy::TotalAudioSharedMemorySizeInBytes(audio_buffer_size);
   nacl::DescWrapperFactory factory;
   NaClHandle nacl_shm_handle = NaClHandle(shared_memory_handle);
   NaClHandle nacl_sync_handle = NaClHandle(sync_socket_handle);
