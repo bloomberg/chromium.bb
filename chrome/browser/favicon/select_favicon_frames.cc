@@ -24,7 +24,9 @@ size_t BiggestCandidate(const std::vector<SkBitmap>& bitmaps) {
   return max_index;
 }
 
-SkBitmap PadWithBorder(SkBitmap contents, int desired_size, int source_size) {
+SkBitmap PadWithBorder(const SkBitmap& contents,
+                       int desired_size,
+                       int source_size) {
   SkBitmap bitmap;
   bitmap.setConfig(
       SkBitmap::kARGB_8888_Config, desired_size, desired_size);
@@ -41,7 +43,7 @@ SkBitmap PadWithBorder(SkBitmap contents, int desired_size, int source_size) {
   return bitmap;
 }
 
-SkBitmap SampleNearestNeighbor(SkBitmap contents, int desired_size) {
+SkBitmap SampleNearestNeighbor(const SkBitmap& contents, int desired_size) {
   SkBitmap bitmap;
   bitmap.setConfig(
       SkBitmap::kARGB_8888_Config, desired_size, desired_size);
