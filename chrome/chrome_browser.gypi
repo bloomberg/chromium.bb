@@ -613,6 +613,8 @@
         'browser/chromeos/gdata/gdata_wapi_parser.h',
         'browser/chromeos/gdata/operations_base.cc',
         'browser/chromeos/gdata/operations_base.h',
+        'browser/chromeos/gdata/stale_cache_files_remover.cc',
+        'browser/chromeos/gdata/stale_cache_files_remover.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/imageburner/burn_controller.cc',

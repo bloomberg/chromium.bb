@@ -34,6 +34,7 @@ class DocumentsServiceInterface;
 class DriveWebAppsRegistryInterface;
 class GDataUploaderInterface;
 class GDataWapiFeedLoader;
+class StaleCacheFilesRemover;
 struct UploadFileInfo;
 
 // The production implementation of GDataFileSystemInterface.
@@ -841,6 +842,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // The loader is used to load the feeds.
   scoped_ptr<GDataWapiFeedLoader> feed_loader_;
+
+  // The remover is used to remove stale cache files.
+  scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
 
   ObserverList<GDataFileSystemInterface::Observer> observers_;
 

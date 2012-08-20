@@ -75,6 +75,14 @@ void DriveSearchCallback(
   message_loop->Quit();
 }
 
+// Callback for GDataCache::StoreOnUIThread used in RemoveStaleCacheFiles test.
+// Verifies that the result is not an error.
+void VerifyCacheFileState(GDataFileError error,
+                          const std::string& resource_id,
+                          const std::string& md5) {
+  EXPECT_EQ(GDATA_FILE_OK, error);
+}
+
 // Action used to set mock expectations for
 // DocumentsService::GetDocumentEntry().
 ACTION_P2(MockGetDocumentEntry, status, value) {
@@ -2641,6 +2649,50 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
 
   // It must fail.
   EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+}
+
+TEST_F(GDataFileSystemTest, RemoveStaleCacheFiles) {
+  FilePath dummy_file = GetTestFilePath("root_feed.json");
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
+  // Create a stale cache file.
+  cache_->StoreOnUIThread(resource_id, md5, dummy_file,
+                          GDataCache::FILE_OPERATION_COPY,
+                          base::Bind(&gdata::VerifyCacheFileState));
+  test_util::RunBlockingPoolTask();
+
+  // Verify that the cache file exists.
+  FilePath path = cache_->GetCacheFilePath(resource_id,
+                                           md5,
+                                           GDataCache::CACHE_TYPE_TMP,
+                                           GDataCache::CACHED_FILE_FROM_SERVER);
+  EXPECT_TRUE(file_util::PathExists(path));
+
+  // Verify that the corresponding file entry doesn't exist.
+  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "", _, _))
+      .Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
+
+  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(path);
+  ASSERT_FALSE(entry.get());
+
+  // Load a root feed.
+  LoadRootFeedDocument("root_feed.json");
+
+  // Wait for StaleCacheFilesRemover to finish cleaning up the stale file.
+  test_util::RunBlockingPoolTask();
+
+  // Verify that the cache file is deleted.
+  path = cache_->GetCacheFilePath(resource_id,
+                                  md5,
+                                  GDataCache::CACHE_TYPE_TMP,
+                                  GDataCache::CACHED_FILE_FROM_SERVER);
+  EXPECT_FALSE(file_util::PathExists(path));
 }
 
 }   // namespace gdata
