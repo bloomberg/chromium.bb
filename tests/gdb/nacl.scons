@@ -58,15 +58,6 @@ env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_print_symbol_test',
                        is_broken=env.Bit('build_x86_64'))
 
 node = env.CommandTest(
-    'gdb_break_inside_function.out',
-    command=['${PYTHON}', env.File('break_inside_function.py')],
-    osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest])
-
-env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_break_inside_function_test')
-
-node = env.CommandTest(
     'gdb_stack_trace.out',
     command=['${PYTHON}', env.File('stack_trace.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],

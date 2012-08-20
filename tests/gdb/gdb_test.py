@@ -241,16 +241,6 @@ class Gdb(object):
   def Eval(self, expression):
     return self.Command('-data-evaluate-expression ' + expression)['value']
 
-  def LoadSymbolFile(self):
-    self.Command('symbol-file ' + FilenameToUnix(self._program))
-
-  def ReloadSymbols(self):
-    self.Command('symbol-file')
-    if os.environ.has_key('NACL_LD_SO'):
-      self.Command('file ' + FilenameToUnix(os.environ['NACL_LD_SO']))
-    else:
-      self.Command('file ' + FilenameToUnix(self._program))
-
   def Connect(self):
     self._GetResponse()
     if os.environ.has_key('NACL_LD_SO'):
