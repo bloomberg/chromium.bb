@@ -10923,15 +10923,11 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Automatically send usage statistics and crash reports to Google
       </message>
-      <message name="IDS_WINDOWS8_PRIVACY_HANDLING_INFO" desc="The text which describes how user data is handled differently in Windows8">
-        Your data is handled differently in Windows 8.
-        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">
-          &lt;/a&gt;<ex>&lt;/a&gt;</ex>
-        </ph>.
-      </message>
-      <message name="IDS_WINDOWS8_PRIVACY_HANDLING_INFO_URL" desc="URL of help center page describing how user data is handled differently in Windows8">
-        "https://support.google.com/chrome/?p=win8_directories"
-      </message>
+      <if expr="is_win">
+        <message name="IDS_WINDOWS8_PRIVACY_HANDLING_INFO" desc="The text which describes how user data is handled differently in Windows8">
+          Your data is handled differently in Windows 8.
+        </message>
+      </if>
       <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
         Pressing Tab on a webpage highlights links, as well as form fields
       </message>

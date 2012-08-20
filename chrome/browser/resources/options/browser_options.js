@@ -245,6 +245,11 @@ cr.define('options', function() {
       }
 
       // Privacy section.
+      var winVerMatch = /Windows NT (\d+(?:\.\d+))?/.exec(navigator.userAgent);
+      var isWin8 = winVerMatch && winVerMatch[1] >= 6.2;
+      var win8Element = $('privacy-win8-data-settings');
+      if (win8Element)
+        win8Element.hidden = !isWin8;
       $('privacyContentSettingsButton').onclick = function(event) {
         OptionsPage.navigateToPage('content');
         OptionsPage.showTab($('cookies-nav-tab'));

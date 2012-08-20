@@ -407,6 +407,11 @@ const char kKillReasonURL[] =
     "https://support.google.com/chrome/?p=e_deadjim";
 #endif
 
+#if defined(OS_WIN)
+const char kPrivacyWin8DataLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=win8_directories";
+#endif
+
 const char kPrivacyLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_privacy";
