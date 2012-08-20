@@ -597,7 +597,30 @@ cr.define('options', function() {
         // This allows the list items to be garbage collected when they scroll
         // out of view (except the expanded item, which we cache). This is
         // transparent except in the setter and getter, where we handle it.
-        this.parent_ = parent.listIndex;
+        if (this.parent_ == undefined || parent.listIndex != -1) {
+          // Setting the parent is somewhat tricky because the CookieListItem
+          // constructor has side-effects on the |origin| that it wraps. Every
+          // time a CookieListItem is created for an |origin|, it registers
+          // itself as the parent of the |origin|.
+          // The List implementation may create a temporary CookieListItem item
+          // that wraps the |origin| of the very first entry of the CokiesList,
+          // when the List is redrawn the first time. This temporary
+          // CookieListItem is fresh (has listIndex = -1) and is never inserted
+          // into the List. Therefore it gets never updated. This destroys the
+          // chain of parent pointers.
+          // This is the stack trace:
+          //     CookieListItem
+          //     CookiesList.createItem
+          //     List.measureItem
+          //     List.getDefaultItemSize_
+          //     List.getDefaultItemHeight_
+          //     List.getIndexForListOffset_
+          //     List.getItemsInViewPort
+          //     List.redraw
+          //     List.endBatchUpdates
+          //     CookiesList.loadChildren
+          this.parent_ = parent.listIndex;
+        }
         this.list_ = parent.list;
         parent.addEventListener('listIndexChange',
                                 this.parentIndexChanged_.bind(this));
