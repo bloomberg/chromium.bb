@@ -96,6 +96,7 @@ const char ShellWindowFrameView::kViewClassName[] =
 
 ShellWindowFrameView::ShellWindowFrameView(ShellWindowViews* window)
     : window_(window),
+      frame_(NULL),
       close_button_(NULL) {
 }
 
