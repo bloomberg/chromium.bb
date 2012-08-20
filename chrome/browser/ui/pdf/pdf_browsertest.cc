@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   clipboard.WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
 
   chrome::GetActiveWebContents(browser())->GetRenderViewHost()->Copy();
-  ASSERT_NO_FATAL_FAILURE(WaitForResponse());gcl try x4b0
+  ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
 
   std::string text;
