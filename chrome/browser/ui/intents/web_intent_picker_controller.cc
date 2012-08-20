@@ -862,6 +862,8 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
       break;
 
     case kPickerHidden:
+      // Once the picker dialog is closed, abandon all pending callbacks.
+      weak_ptr_factory_.InvalidateWeakPtrs();
       break;
 
     default:
