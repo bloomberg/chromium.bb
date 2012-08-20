@@ -57,7 +57,7 @@ int top_padding() {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-        value = 8;
+        value = 6;
         break;
       case ui::LAYOUT_TOUCH:
         value = 12;
@@ -166,7 +166,7 @@ static const int kCloseButtonVertFuzz = 1;
 static const int kCloseButtonVertFuzz = 0;
 #endif
 // Additional horizontal offset for close button relative to title text.
-static const int kCloseButtonHorzFuzz = 7;
+static const int kCloseButtonHorzFuzz = 3;
 
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab

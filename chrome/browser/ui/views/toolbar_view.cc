@@ -117,7 +117,7 @@ int location_bar_vert_spacing() {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-        value = 4;
+        value = 5;
         break;
       case ui::LAYOUT_TOUCH:
         value = 6;

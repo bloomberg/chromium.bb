@@ -146,7 +146,7 @@ int tab_h_offset() {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-        value = -29;
+        value = -26;
         break;
       case ui::LAYOUT_TOUCH:
         value = -39;
