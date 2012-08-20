@@ -642,14 +642,16 @@ void BluetoothDevice::GetServiceRecordsForConnectCallback(
     const std::string& service_uuid,
     const SocketCallback& callback,
     const ServiceRecordList& list) {
-  // If multiple service records are found, use the first one that works.
   for (ServiceRecordList::const_iterator i = list.begin();
       i != list.end(); ++i) {
-    scoped_refptr<BluetoothSocket> socket(
-        BluetoothSocket::CreateBluetoothSocket(**i));
-    if (socket.get() != NULL) {
-      callback.Run(socket);
-      return;
+    if ((*i)->uuid() == service_uuid) {
+      // If multiple service records are found, use the first one that works.
+      scoped_refptr<BluetoothSocket> socket(
+          BluetoothSocket::CreateBluetoothSocket(**i));
+      if (socket.get() != NULL) {
+        callback.Run(socket);
+        return;
+      }
     }
   }
   callback.Run(NULL);
