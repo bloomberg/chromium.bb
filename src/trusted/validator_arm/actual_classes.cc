@@ -511,19 +511,6 @@ bool Breakpoint::is_literal_pool_head(const Instruction i) const {
       && i.Bits(3, 0) == 0x7;
 }
 
-// Data processing and arithmetic
-SafetyLevel DataProc::safety(const Instruction i) const {
-  if (defs(i).Contains(kRegisterPc)) {
-    return FORBIDDEN_OPERANDS;
-  }
-  return MAY_BE_SAFE;
-}
-
-RegisterList DataProc::defs(const Instruction i) const {
-  return RegisterList(Rd(i)).
-      Add(UpdatesConditions(i) ? kConditions : kRegisterNone);
-}
-
 SafetyLevel PackSatRev::safety(const Instruction i) const {
   if (defs(i).Contains(kRegisterPc)) {
     return FORBIDDEN_OPERANDS;
@@ -552,10 +539,6 @@ RegisterList LongMultiply::defs(const Instruction i) const {
   return RegisterList(RdHi(i)).Add(RdLo(i));
 }
 
-
-RegisterList SatAddSub::defs(const Instruction i) const {
-  return DataProc::defs(i).Add(kConditions);
-}
 
 // MSR
 
@@ -814,4 +797,4 @@ bool Unary1RegisterBitRange::clears_bits(Instruction i, uint32_t mask) const {
   }
 }
 
-}  // namespace
+}  // namespace nacl_arm_dec

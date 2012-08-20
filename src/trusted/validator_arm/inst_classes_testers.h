@@ -1381,25 +1381,7 @@ class Unary2RegisterImmedShiftedOpTester : public CondDecoderTester {
 };
 
 // Implements a decoder tester for decoder Unary2RegisterImmedShiftedOp, and
-// should not parse when imm5=0
-class Unary2RegisterImmedShiftedOpTesterImm5NotZero
-    : public Unary2RegisterImmedShiftedOpTester {
- public:
-  explicit Unary2RegisterImmedShiftedOpTesterImm5NotZero(
-      const NamedClassDecoder& decoder);
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpTesterImm5NotZero);
-};
-
-// Implements a decoder tester for decoder Unary2RegisterImmedShiftedOp, and
-// should not parse when Rd=1111 and S=1
+// should not parse when Rd=1111 and S=1.
 class Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
     : public Unary2RegisterImmedShiftedOpTester {
  public:
@@ -1415,6 +1397,24 @@ class Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS);
+};
+
+// Implements a decoder tester for decoder Unary2RegisterImmedShiftedOp, and
+// should not parse when neither imm5=0, nor Rd=1111 and S=1.
+class Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS
+    : public Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+ public:
+  explicit Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS(
+      const NamedClassDecoder& decoder);
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS);
 };
 
 // Implements a decoder tester for Unary2RegisterImmedShiftedOpRegsNotPc, which
@@ -2007,6 +2007,6 @@ class DuplicateToVfpRegistersTester : public CondVfpOpTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToVfpRegistersTester);
 };
 
-}  // namespace
+}  // namespace nacl_arm_test
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_TESTERS_H_

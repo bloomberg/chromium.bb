@@ -607,10 +607,6 @@ class CoprocessorOp_None
     : public CoprocessorOp {
 };
 
-class DataProc_None
-    : public DataProc {
-};
-
 class Deprecated_None
     : public Deprecated {
 };
@@ -923,7 +919,11 @@ class Unary1RegisterImmediateOp_Mov_Rule_96_A1_P194
     : public Unary1RegisterImmediateOp {
 };
 
-class Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194
+class Unary1RegisterImmediateOp_Mov_Rule_96_A2_P194
+    : public Unary1RegisterImmediateOp {
+};
+
+class Unary1RegisterImmediateOp_Mov_Rule_99_A1_P200
     : public Unary1RegisterImmediateOp {
 };
 
@@ -1143,11 +1143,15 @@ class Defs12To15_Mov_Rule_96_A1_P194
     : public Defs12To15 {
 };
 
-class Defs12To15_Mov_Rule_96_A2_P_194
+class Defs12To15_Mov_Rule_96_A2_P194
     : public Defs12To15 {
 };
 
 class Defs12To15_Mov_Rule_97_A1_P196
+    : public Defs12To15 {
+};
+
+class Defs12To15_Mov_Rule_99_A1_P200
     : public Defs12To15 {
 };
 
@@ -3738,18 +3742,6 @@ class NamedCoprocessorOp_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedCoprocessorOp_None);
 };
 
-class NamedDataProc_None
-    : public NamedClassDecoder {
- public:
-  NamedDataProc_None()
-    : NamedClassDecoder(decoder_, "DataProc None")
-  {}
-
- private:
-  nacl_arm_dec::DataProc_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDataProc_None);
-};
-
 class NamedDeprecated_None
     : public NamedClassDecoder {
  public:
@@ -4686,16 +4678,28 @@ class NamedUnary1RegisterImmediateOp_Mov_Rule_96_A1_P194
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp_Mov_Rule_96_A1_P194);
 };
 
-class NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194
+class NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P194
     : public NamedClassDecoder {
  public:
-  NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194()
-    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOp Mov_Rule_96_A2_P_194")
+  NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P194()
+    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOp Mov_Rule_96_A2_P194")
   {}
 
  private:
-  nacl_arm_dec::Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194);
+  nacl_arm_dec::Unary1RegisterImmediateOp_Mov_Rule_96_A2_P194 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P194);
+};
+
+class NamedUnary1RegisterImmediateOp_Mov_Rule_99_A1_P200
+    : public NamedClassDecoder {
+ public:
+  NamedUnary1RegisterImmediateOp_Mov_Rule_99_A1_P200()
+    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOp Mov_Rule_99_A1_P200")
+  {}
+
+ private:
+  nacl_arm_dec::Unary1RegisterImmediateOp_Mov_Rule_99_A1_P200 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp_Mov_Rule_99_A1_P200);
 };
 
 class NamedUnary1RegisterImmediateOp_Mvn_Rule_106_A1_P214
@@ -5346,16 +5350,16 @@ class NamedDefs12To15_Mov_Rule_96_A1_P194
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Mov_Rule_96_A1_P194);
 };
 
-class NamedDefs12To15_Mov_Rule_96_A2_P_194
+class NamedDefs12To15_Mov_Rule_96_A2_P194
     : public NamedClassDecoder {
  public:
-  NamedDefs12To15_Mov_Rule_96_A2_P_194()
-    : NamedClassDecoder(decoder_, "Defs12To15 Mov_Rule_96_A2_P_194")
+  NamedDefs12To15_Mov_Rule_96_A2_P194()
+    : NamedClassDecoder(decoder_, "Defs12To15 Mov_Rule_96_A2_P194")
   {}
 
  private:
-  nacl_arm_dec::Defs12To15_Mov_Rule_96_A2_P_194 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Mov_Rule_96_A2_P_194);
+  nacl_arm_dec::Defs12To15_Mov_Rule_96_A2_P194 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Mov_Rule_96_A2_P194);
 };
 
 class NamedDefs12To15_Mov_Rule_97_A1_P196
@@ -5368,6 +5372,18 @@ class NamedDefs12To15_Mov_Rule_97_A1_P196
  private:
   nacl_arm_dec::Defs12To15_Mov_Rule_97_A1_P196 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Mov_Rule_97_A1_P196);
+};
+
+class NamedDefs12To15_Mov_Rule_99_A1_P200
+    : public NamedClassDecoder {
+ public:
+  NamedDefs12To15_Mov_Rule_99_A1_P200()
+    : NamedClassDecoder(decoder_, "Defs12To15 Mov_Rule_99_A1_P200")
+  {}
+
+ private:
+  nacl_arm_dec::Defs12To15_Mov_Rule_99_A1_P200 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Mov_Rule_99_A1_P200);
 };
 
 class NamedDefs12To15_Mvn_Rule_106_A1_P214

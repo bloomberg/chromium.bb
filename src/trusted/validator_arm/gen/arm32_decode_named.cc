@@ -259,11 +259,11 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_misc(
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
       (insn.Bits() & 0x01F00000) == 0x01000000 /* op1(24:20) == 10000 */)
-    return Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194_instance_;
+    return Unary1RegisterImmediateOp_Mov_Rule_96_A2_P194_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
       (insn.Bits() & 0x01F00000) == 0x01400000 /* op1(24:20) == 10100 */)
-    return DataProc_None_instance_;
+    return Unary1RegisterImmediateOp_Mov_Rule_99_A1_P200_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
       (insn.Bits() & 0x01B00000) == 0x01200000 /* op1(24:20) == 10x10 */)

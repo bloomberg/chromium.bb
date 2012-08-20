@@ -1648,31 +1648,6 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Unary2RegisterImmedShiftedOpTesterImm5NotZero
-Unary2RegisterImmedShiftedOpTesterImm5NotZero::
-Unary2RegisterImmedShiftedOpTesterImm5NotZero(
-    const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTester(decoder) {}
-
-bool Unary2RegisterImmedShiftedOpTesterImm5NotZero::
-PassesParsePreconditions(Instruction inst,
-                         const NamedClassDecoder& decoder) {
-  // Check that we don't parse when imm5=0.
-  NC_PRECOND(0 != expected_decoder_.imm.value(inst));
-  return Unary2RegisterImmedShiftedOpTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-bool Unary2RegisterImmedShiftedOpTesterImm5NotZero::
-ApplySanityChecks(Instruction inst,
-                  const NamedClassDecoder& decoder) {
-  // Check that we don't parse when imm5=0.
-  if (0 == expected_decoder_.imm.value(inst)) {
-    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
-  }
-  return Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder);
-}
-
 // Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
 Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
 Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(
@@ -1698,6 +1673,32 @@ ApplySanityChecks(Instruction inst,
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
   return Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder);
+}
+
+// Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS
+Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS::
+Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS(
+    const NamedClassDecoder& decoder)
+    : Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+
+bool Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS::
+PassesParsePreconditions(Instruction inst,
+                         const NamedClassDecoder& decoder) {
+  // Check that we don't parse when imm5=0.
+  NC_PRECOND(0 != expected_decoder_.imm.value(inst));
+  return Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+      PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check that we don't parse when imm5=0.
+  if (0 == expected_decoder_.imm.value(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+  return Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+      ApplySanityChecks(inst, decoder);
 }
 
 // Unary2RegisterImmedShiftedOpRegsNotPcTester
@@ -2214,4 +2215,4 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-}  // namespace
+}  // namespace nacl_arm_test

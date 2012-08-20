@@ -158,7 +158,6 @@ class Arm32DecoderState : DecoderState {
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
   const CoprocessorOp CoprocessorOp_instance_;
-  const DataProc DataProc_instance_;
   const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;

@@ -79,11 +79,13 @@
 # make sure we don't test these cases.
 #
 # Parse preconditions:
-#    Imm5NotZero - The immediate (5-bit) value must not be zero
+#    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
 #    NeitherRdIsPcAndSNorRnIsPcAndNotS - Neither
 #        (1) Rd is Pc and S=1; nor
 #        (2) Rn is Pc ans S=0;
-#    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
+#    NeitherImm5NotZeroNorNotRdIsPcAndS - Neither combination of the above two
+#        (1) The immediate (5-bit) value must not be zero; nor
+#        (2) Not (Rd is Pc (R15) and S=1 (updates register bit)).
 #    NotRnIsPc - Rn!=Pc.
 #    NotRnIsSp - Rn!=Sp.
 #
@@ -162,18 +164,22 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "      0xx1x      1011     =Forbidden  # Load/Store Unprivileged, plus undef
 | "      "          11x1     "
 | 1      ~10xx0     -        ->dp_immed
-| "      10000      -        = Unary1RegisterImmediateOp => Defs12To15
-                               Mov_Rule_96_A2_P_194
+| "      10000      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVW A8-194
+                               Mov_Rule_96_A2_P194
                                cccc00110000iiiiddddIIIIIIIIIIII
                                RegsNotPc
                                (v6T2)
-| "      10100      -        =DataProc(v6T2)  # MOVT A8-200
+| "      10100      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVT A8-200
+                               Mov_Rule_99_A1_P200
+                               cccc00110100iiiiddddIIIIIIIIIIII
+                               RegsNotPc
+                               (v6T2)
 | "      10x10      -        ->msr_and_hints
 +--
 
 # Note: We track conditions flags on many of the class decoders
 # in this section, since they can be used to change the value of SP,
-# and we want to all masking to follow in the next instruction.
+# and we want to allow masking to follow in the next instruction.
 +-- dp_reg (See Section A5.2.1)
 | op1(24:20) op2(11:7) op3(6:5)
 | 0000x      -         -        = Binary3RegisterImmedShiftedOp
@@ -247,27 +253,30 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                      cccc0001101u0000dddd00000000mmmm
                                      NotRdIsPcAndS
 | "          ~00000    00       = Unary2RegisterImmedShiftedOp
-                                    => Defs12To15
-                                    Lsl_Rule_88_A1_P178
-                                    cccc0001101u0000ddddiiiii000mmmm
-                                    Imm5NotZero
+                                     => Defs12To15
+                                     Lsl_Rule_88_A1_P178
+                                     cccc0001101u0000ddddiiiii000mmmm
+                                     NeitherImm5NotZeroNorNotRdIsPcAndS
 | "          -         01       = Unary2RegisterImmedShiftedOp
-                                    => Defs12To15
-                                    Lsr_Rule_90_A1_P182
-                                    cccc0001101u0000ddddiiiii010mmmm
+                                     => Defs12To15
+                                     Lsr_Rule_90_A1_P182
+                                     cccc0001101u0000ddddiiiii010mmmm
+                                     NotRdIsPcAndS
 | "          -         10       = Unary2RegisterImmedShiftedOp
-                                    => Defs12To15
-                                    Asr_Rule_14_A1_P40
-                                    cccc0001101u0000ddddiiiii100mmmm
+                                     => Defs12To15
+                                     Asr_Rule_14_A1_P40
+                                     cccc0001101u0000ddddiiiii100mmmm
+                                     NotRdIsPcAndS
 | "          00000     11       = Unary2RegisterOp
-                                    => Defs12To15
-                                    Rrx_Rule_141_A1_P282
-                                    cccc0001101u0000dddd00000110mmmm
+                                     => Defs12To15
+                                     Rrx_Rule_141_A1_P282
+                                     cccc0001101u0000dddd00000110mmmm
+                                     NotRdIsPcAndS
 | "          ~00000    11       = Unary2RegisterImmedShiftedOp
-                                    => Defs12To15
+                                     => Defs12To15
                                      Ror_Rule_139_A1_P278
                                      cccc0001101u0000ddddiiiii110mmmm
-                                     Imm5NotZero
+                                     NeitherImm5NotZeroNorNotRdIsPcAndS
 | 1110x      -         -        = Binary3RegisterImmedShiftedOp
                                      => Defs12To15
                                      Bic_Rule_20_A1_P52

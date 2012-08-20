@@ -709,37 +709,6 @@ class Breakpoint : public Roadblock {
   NACL_DISALLOW_COPY_AND_ASSIGN(Breakpoint);
 };
 
-// Models the most common class of data processing instructions.  We use this
-// for any operation that
-//  - writes a single register, specified in 15:12;
-//  - does not write memory,
-//  - should not be permitted to cause a jump by writing r15,
-//  - writes flags when bit 20 is set.
-//
-// Includes:
-// MOVT,
-// ROR(register),
-// AND(immediate),
-// EOR(immediate), SUB(immediate), ADR, RSB(immediate), ADD(immediate), ADR,
-// ADC(immediate), SBC(immediate), RSC(immediate), ORR(immediate),
-// MOV(immediate), MVN(immediate), MRS, CLZ, SBFX, BFC, BFI, UBFX, UADD16,
-// UASX, USAX, USUB16, UADD8, USUB8, UQADD16, UQASX, UQSAX, UQSUB16, UQADD8,
-// UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
-class DataProc : public OldClassDecoder {
- public:
-  DataProc() : OldClassDecoder() {}
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
-
-  // Defines the destination register of the data operation.
-  Register Rd(const Instruction& i) const {
-    return i.Reg(15, 12);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(DataProc);
-};
-
 // Models the Pack/Saturate/Reverse instructions, which
 //  - Write a register identified by 15:12,
 //  - Are not permitted to affect r15,
@@ -827,21 +796,6 @@ class LongMultiply : public Multiply {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LongMultiply);
-};
-
-// Saturating adds and subtracts.  Conceptually equivalent to DataProc,
-// except for the use of the S bit (bit 20) -- they always set flags.
-//
-// Includes:
-// QADD, QSUB, QDADD, QDSUB
-//
-class SatAddSub : public DataProc {
- public:
-  SatAddSub() {}
-  virtual RegisterList defs(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(SatAddSub);
 };
 
 // Move to Status Register.  Used from application code to alter or restore
@@ -1179,6 +1133,6 @@ class Unary1RegisterBitRange : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRange);
 };
 
-}  // namespace
+}  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_ACTUAL_CLASSES_H_
