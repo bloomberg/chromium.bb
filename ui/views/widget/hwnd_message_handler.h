@@ -65,6 +65,7 @@ class VIEWS_EXPORT HWNDMessageHandler {
   void OnSetFocus(HWND last_focused_window);
   LRESULT OnSetIcon(UINT size_type, HICON new_icon);
   LRESULT OnSetText(const wchar_t* text);
+  void OnSize(UINT param, const CSize& size);
   void OnThemeChanged();
   void OnVScroll(int scroll_type, short position, HWND scrollbar);
 
@@ -73,6 +74,11 @@ class VIEWS_EXPORT HWNDMessageHandler {
   void set_remove_standard_frame(bool remove_standard_frame) {
     remove_standard_frame_ = remove_standard_frame;
   }
+
+  // Resets the window region for the current widget bounds if necessary.
+  // If |force| is true, the window region is reset to NULL even for native
+  // frame windows.
+  void ResetWindowRegion(bool force);
 
  private:
   // TODO(beng): This won't be a style violation once this object becomes the

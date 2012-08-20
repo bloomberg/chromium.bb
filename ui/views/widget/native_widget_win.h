@@ -542,11 +542,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // or subsequently.
   void ClientAreaSizeChanged();
 
-  // Resets the window region for the current widget bounds if necessary.
-  // If |force| is true, the window region is reset to NULL even for native
-  // frame windows.
-  void ResetWindowRegion(bool force);
-
   // When removing the standard frame, tells the DWM how much glass we want on
   // the edges. Currently hardcoded to 10px on all sides.
   void UpdateDWMFrame();

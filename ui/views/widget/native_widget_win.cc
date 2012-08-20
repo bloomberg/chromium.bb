@@ -544,7 +544,7 @@ NonClientFrameView* NativeWidgetWin::CreateNonClientFrameView() {
 
 void NativeWidgetWin::UpdateFrameAfterFrameChange() {
   // We've either gained or lost a custom window region, so reset it now.
-  ResetWindowRegion(true);
+  message_handler_->ResetWindowRegion(true);
 }
 
 bool NativeWidgetWin::ShouldUseNativeFrame() const {
@@ -1906,10 +1906,7 @@ void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
 }
 
 void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
-  RedrawWindow(GetNativeView(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-  // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
-  // invoked OnSize we ensure the RootView has been laid out.
-  ResetWindowRegion(false);
+  message_handler_->OnSize(param, size);
 }
 
 void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
@@ -2498,49 +2495,6 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
 void NativeWidgetWin::UpdateDWMFrame() {
   MARGINS m = {10, 10, 10, 10};
   DwmExtendFrameIntoClientArea(GetNativeView(), &m);
-}
-
-void NativeWidgetWin::ResetWindowRegion(bool force) {
-  // A native frame uses the native window region, and we don't want to mess
-  // with it.
-  if (GetWidget()->ShouldUseNativeFrame() || !GetWidget()->non_client_view()) {
-    if (force)
-      SetWindowRgn(NULL, TRUE);
-    return;
-  }
-
-  // Changing the window region is going to force a paint. Only change the
-  // window region if the region really differs.
-  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
-  int current_rgn_result = GetWindowRgn(GetNativeView(), current_rgn);
-
-  CRect window_rect;
-  GetWindowRect(&window_rect);
-  HRGN new_region;
-  if (IsMaximized()) {
-    HMONITOR monitor =
-        MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST);
-    MONITORINFO mi;
-    mi.cbSize = sizeof mi;
-    GetMonitorInfo(monitor, &mi);
-    CRect work_rect = mi.rcWork;
-    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
-    new_region = CreateRectRgnIndirect(&work_rect);
-  } else {
-    gfx::Path window_mask;
-    GetWidget()->non_client_view()->GetWindowMask(
-        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
-    new_region = window_mask.CreateNativeRegion();
-  }
-
-  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
-    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
-    SetWindowRgn(new_region, TRUE);
-  } else {
-    DeleteObject(new_region);
-  }
-
-  DeleteObject(current_rgn);
 }
 
 LRESULT NativeWidgetWin::DefWindowProcWithRedrawLock(UINT message,

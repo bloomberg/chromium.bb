@@ -280,6 +280,13 @@ LRESULT HWNDMessageHandler::OnSetText(const wchar_t* text) {
                                      reinterpret_cast<LPARAM>(text));
 }
 
+void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
+  RedrawWindow(hwnd(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+  // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
+  // invoked OnSize we ensure the RootView has been laid out.
+  ResetWindowRegion(false);
+}
+
 void HWNDMessageHandler::OnThemeChanged() {
   ui::NativeThemeWin::instance()->CloseHandles();
 }
@@ -288,6 +295,48 @@ void HWNDMessageHandler::OnVScroll(int scroll_type,
                                    short position,
                                    HWND scrollbar) {
   SetMsgHandled(FALSE);
+}
+
+void HWNDMessageHandler::ResetWindowRegion(bool force) {
+  // A native frame uses the native window region, and we don't want to mess
+  // with it.
+  if (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow()) {
+    if (force)
+      SetWindowRgn(hwnd(), NULL, TRUE);
+    return;
+  }
+
+  // Changing the window region is going to force a paint. Only change the
+  // window region if the region really differs.
+  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
+  int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
+
+  CRect window_rect;
+  GetWindowRect(hwnd(), &window_rect);
+  HRGN new_region;
+  if (delegate_->AsNativeWidgetWin()->IsMaximized()) {
+    HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi;
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(monitor, &mi);
+    CRect work_rect = mi.rcWork;
+    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    new_region = CreateRectRgnIndirect(&work_rect);
+  } else {
+    gfx::Path window_mask;
+    delegate_->GetWindowMask(
+        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = window_mask.CreateNativeRegion();
+  }
+
+  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
+    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
+    SetWindowRgn(hwnd(), new_region, TRUE);
+  } else {
+    DeleteObject(new_region);
+  }
+
+  DeleteObject(current_rgn);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
