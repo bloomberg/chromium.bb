@@ -38,7 +38,7 @@ class TabposeWindowTest : public CocoaProfileTest {
 TEST_F(TabposeWindowTest, TestShow) {
   // Skip this test on 10.7
   // http://code.google.com/p/chromium/issues/detail?id=127845
-  if (IsOSLionOrLater()) {
+  if (base::mac::IsOSLionOrLater()) {
     return;
   }
 
