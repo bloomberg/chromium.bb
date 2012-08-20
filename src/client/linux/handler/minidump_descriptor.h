@@ -33,6 +33,8 @@
 #include <assert.h>
 #include <string>
 
+#include "common/using_std_string.h"
+
 // The MinidumpDescriptor describes how to access a minidump: it can contain
 // either a file descriptor or a path.
 // Note that when using files, it is created with the path to a directory.
@@ -71,9 +73,9 @@ class MinidumpDescriptor {
   const int fd_;
 
   // The directory where the minidump should be generated.
-  const std::string directory_;
+  const string directory_;
   // The full path to the generated minidump.
-  std::string path_;
+  string path_;
   // The C string of |path_|. Precomputed so it can be access from a compromised
   // context.
   const char* c_path_;

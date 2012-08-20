@@ -30,14 +30,14 @@
 #include <stdio.h>
 
 #include "client/linux/handler/exception_handler.h"
+#include "client/linux/handler/minidump_descriptor.h"
 
 namespace {
 
-bool DumpCallback(const char* dump_path,
-                  const char* minidump_id,
+bool DumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
                   void* context,
                   bool succeeded) {
-  printf("Dump path: %s/%s.dmp\n", dump_path, minidump_id);
+  printf("Dump path: %s\n", descriptor.path());
   return succeeded;
 }
 
@@ -49,7 +49,9 @@ void Crash() {
 }  // namespace
 
 int main(int argc, char* argv[]) {
-  google_breakpad::ExceptionHandler eh(".", NULL, DumpCallback, NULL, true);
+  google_breakpad::MinidumpDescriptor descriptor(".");
+  google_breakpad::ExceptionHandler eh(descriptor, NULL, DumpCallback,
+                                       NULL, true, -1);
   Crash();
   return 0;
 }

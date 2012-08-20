@@ -77,6 +77,7 @@ LOCAL_ARM_MODE := arm
 LOCAL_SRC_FILES := \
     src/client/linux/crash_generation/crash_generation_client.cc \
     src/client/linux/handler/exception_handler.cc \
+    src/client/linux/handler/minidump_descriptor.cc \
     src/client/linux/log/log.cc \
     src/client/linux/minidump_writer/linux_dumper.cc \
     src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
