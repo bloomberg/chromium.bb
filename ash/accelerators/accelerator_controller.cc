@@ -370,7 +370,7 @@ bool AcceleratorController::PerformAction(int action,
   ash::Shell* shell = ash::Shell::GetInstance();
   bool at_login_screen = false;
 #if defined(OS_CHROMEOS)
-  at_login_screen = (shell->delegate() && !shell->delegate()->IsUserLoggedIn());
+  at_login_screen = shell->delegate() && !shell->delegate()->IsSessionStarted();
 #endif
   bool at_lock_screen = shell->IsScreenLocked();
 
