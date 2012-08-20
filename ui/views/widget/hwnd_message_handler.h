@@ -48,6 +48,15 @@ class VIEWS_EXPORT HWNDMessageHandler {
   LRESULT OnEraseBkgnd(HDC dc);
   void OnExitMenuLoop(BOOL is_track_popup_menu);
   void OnExitSizeMove();
+  LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnInputLangChange(DWORD character_set, HKL input_language_id);
+  void OnMove(const CPoint& point);
+  void OnMoving(UINT param, const RECT* new_bounds);
+  LRESULT OnNCUAHDrawCaption(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
+  void OnThemeChanged();
+  void OnVScroll(int scroll_type, short position, HWND scrollbar);
 
   // TODO(beng): Can be removed once this object becomes the WindowImpl.
   bool remove_standard_frame() const { return remove_standard_frame_; }
@@ -56,6 +65,15 @@ class VIEWS_EXPORT HWNDMessageHandler {
   }
 
  private:
+  // TODO(beng): This won't be a style violation once this object becomes the
+  //             WindowImpl.
+  HWND hwnd();
+
+  // TODO(beng): Remove once this class becomes the WindowImpl.
+  LRESULT DefWindowProcWithRedrawLock(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param);
+
   // TODO(beng): Remove once this class becomes the WindowImpl.
   void SetMsgHandled(BOOL handled);
 

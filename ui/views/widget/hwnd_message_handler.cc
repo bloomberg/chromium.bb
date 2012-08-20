@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/hwnd_message_handler.h"
 
+#include "base/system_monitor/system_monitor.h"
+#include "ui/base/native_theme/native_theme_win.h"
+#include "ui/views/ime/input_method_win.h"
 #include "ui/views/widget/hwnd_message_handler_delegate.h"
 #include "ui/views/widget/native_widget_win.h"
 
@@ -113,8 +116,90 @@ void HWNDMessageHandler::OnExitSizeMove() {
   SetMsgHandled(FALSE);
 }
 
+LRESULT HWNDMessageHandler::OnImeMessages(UINT message,
+                                          WPARAM w_param,
+                                          LPARAM l_param) {
+  InputMethod* input_method = delegate_->GetInputMethod();
+  if (!input_method || input_method->IsMock()) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
+  BOOL handled = FALSE;
+  LRESULT result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
+  SetMsgHandled(handled);
+  return result;
+}
+
+void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
+                                           HKL input_language_id) {
+  InputMethod* input_method = delegate_->GetInputMethod();
+  if (input_method && !input_method->IsMock()) {
+    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
+        character_set, input_language_id);
+  }
+}
+
+void HWNDMessageHandler::OnMove(const CPoint& point) {
+  delegate_->HandleMove();
+  SetMsgHandled(FALSE);
+}
+
+void HWNDMessageHandler::OnMoving(UINT param, const RECT* new_bounds) {
+  delegate_->HandleMove();
+}
+
+LRESULT HWNDMessageHandler::OnNCUAHDrawCaption(UINT message,
+                                               WPARAM w_param,
+                                               LPARAM l_param) {
+  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
+  // an explanation about why we need to handle this message.
+  SetMsgHandled(delegate_->IsUsingCustomFrame());
+  return 0;
+}
+
+LRESULT HWNDMessageHandler::OnNCUAHDrawFrame(UINT message,
+                                             WPARAM w_param,
+                                             LPARAM l_param) {
+  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
+  // an explanation about why we need to handle this message.
+  SetMsgHandled(delegate_->IsUsingCustomFrame());
+  return 0;
+}
+
+LRESULT HWNDMessageHandler::OnPowerBroadcast(DWORD power_event, DWORD data) {
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  if (monitor)
+    monitor->ProcessWmPowerBroadcastMessage(power_event);
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+void HWNDMessageHandler::OnThemeChanged() {
+  ui::NativeThemeWin::instance()->CloseHandles();
+}
+
+void HWNDMessageHandler::OnVScroll(int scroll_type,
+                                   short position,
+                                   HWND scrollbar) {
+  SetMsgHandled(FALSE);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
+
+HWND HWNDMessageHandler::hwnd() {
+  return delegate_->AsNativeWidgetWin()->hwnd();
+}
+
+LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
+                                                        WPARAM w_param,
+                                                        LPARAM l_param) {
+  return delegate_->AsNativeWidgetWin()->DefWindowProcWithRedrawLock(message,
+                                                                     w_param,
+                                                                     l_param);
+}
 
 void HWNDMessageHandler::SetMsgHandled(BOOL handled) {
   delegate_->AsNativeWidgetWin()->SetMsgHandled(handled);

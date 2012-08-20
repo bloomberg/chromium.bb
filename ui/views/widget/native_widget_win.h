@@ -494,6 +494,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;
   virtual bool IsUsingCustomFrame() const OVERRIDE;
+  virtual InputMethod* GetInputMethod() OVERRIDE;
   virtual void HandleAppDeactivated() OVERRIDE;
   virtual bool HandleAppCommand(short command) OVERRIDE;
   virtual void HandleCaptureLost() OVERRIDE;
@@ -504,6 +505,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void HandleGlassModeChange() OVERRIDE;
   virtual void HandleBeginWMSizeMove() OVERRIDE;
   virtual void HandleEndWMSizeMove() OVERRIDE;
+  virtual void HandleMove() OVERRIDE;
   virtual NativeWidgetWin* AsNativeWidgetWin() OVERRIDE;
 
   // Called after the WM_ACTIVATE message has been processed by the default

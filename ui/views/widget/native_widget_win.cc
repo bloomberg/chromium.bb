@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -22,7 +21,6 @@
 #include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
@@ -1459,18 +1457,7 @@ void NativeWidgetWin::OnHScroll(int scroll_type,
 LRESULT NativeWidgetWin::OnImeMessages(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
-  if (!input_method || input_method->IsMock()) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-
-  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
-  BOOL handled = FALSE;
-  LRESULT result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
-
-  SetMsgHandled(handled);
-  return result;
+  return message_handler_->OnImeMessages(message, w_param, l_param);
 }
 
 void NativeWidgetWin::OnInitMenu(HMENU menu) {
@@ -1500,12 +1487,7 @@ void NativeWidgetWin::OnInitMenuPopup(HMENU menu,
 
 void NativeWidgetWin::OnInputLangChange(DWORD character_set,
                                         HKL input_language_id) {
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
-
-  if (input_method && !input_method->IsMock()) {
-    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
-        character_set, input_language_id);
-  }
+  message_handler_->OnInputLangChange(character_set, input_language_id);
 }
 
 LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
@@ -1634,12 +1616,11 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
 }
 
 void NativeWidgetWin::OnMove(const CPoint& point) {
-  delegate_->OnNativeWidgetMove();
-  SetMsgHandled(FALSE);
+  message_handler_->OnMove(point);
 }
 
 void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
-  delegate_->OnNativeWidgetMove();
+  message_handler_->OnMoving(param, new_bounds);
 }
 
 LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
@@ -1889,19 +1870,13 @@ void NativeWidgetWin::OnNCPaint(HRGN rgn) {
 LRESULT NativeWidgetWin::OnNCUAHDrawCaption(UINT msg,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
-  // an explanation about why we need to handle this message.
-  SetMsgHandled(!GetWidget()->ShouldUseNativeFrame());
-  return 0;
+  return message_handler_->OnNCUAHDrawCaption(msg, w_param, l_param);
 }
 
 LRESULT NativeWidgetWin::OnNCUAHDrawFrame(UINT msg,
                                           WPARAM w_param,
                                           LPARAM l_param) {
-  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
-  // an explanation about why we need to handle this message.
-  SetMsgHandled(!GetWidget()->ShouldUseNativeFrame());
-  return 0;
+  return message_handler_->OnNCUAHDrawFrame(msg, w_param, l_param);
 }
 
 LRESULT NativeWidgetWin::OnNotify(int w_param, NMHDR* l_param) {
@@ -1939,11 +1914,7 @@ void NativeWidgetWin::OnPaint(HDC dc) {
 }
 
 LRESULT NativeWidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
-    monitor->ProcessWmPowerBroadcastMessage(power_event);
-  SetMsgHandled(FALSE);
-  return 0;
+  return message_handler_->OnPowerBroadcast(power_event, data);
 }
 
 LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
@@ -2059,8 +2030,7 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 }
 
 void NativeWidgetWin::OnThemeChanged() {
-  // Notify NativeThemeWin.
-  ui::NativeThemeWin::instance()->CloseHandles();
+  message_handler_->OnThemeChanged();
 }
 
 LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
@@ -2085,7 +2055,7 @@ LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
 void NativeWidgetWin::OnVScroll(int scroll_type,
                                 short position,
                                 HWND scrollbar) {
-  SetMsgHandled(FALSE);
+  message_handler_->OnVScroll(scroll_type, position, scrollbar);
 }
 
 void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
@@ -2291,6 +2261,10 @@ bool NativeWidgetWin::IsUsingCustomFrame() const {
   return GetWidget()->ShouldUseNativeFrame();
 }
 
+InputMethod* NativeWidgetWin::GetInputMethod() {
+  return GetWidget()->GetInputMethodDirect();
+}
+
 void NativeWidgetWin::HandleAppDeactivated() {
   // Another application was activated, we should reset any state that
   // disables inactive rendering now.
@@ -2344,6 +2318,10 @@ void NativeWidgetWin::HandleBeginWMSizeMove() {
 
 void NativeWidgetWin::HandleEndWMSizeMove() {
   delegate_->OnNativeWidgetEndUserBoundsChange();
+}
+
+void NativeWidgetWin::HandleMove() {
+  delegate_->OnNativeWidgetMove();
 }
 
 NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {

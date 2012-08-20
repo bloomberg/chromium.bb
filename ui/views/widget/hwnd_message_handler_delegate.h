@@ -9,6 +9,7 @@
 
 namespace views {
 
+class InputMethod;
 class NativeWidgetWin;
 
 // Implemented by the object that uses the HWNDMessageHandler to handle
@@ -20,6 +21,8 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // TODO(beng): resolve this more satisfactorily vis-a-vis ShouldUseNativeFrame
   //             to avoid confusion.
   virtual bool IsUsingCustomFrame() const = 0;
+
+  virtual InputMethod* GetInputMethod() = 0;
 
   // TODO(beng): Investigate migrating these methods to On* prefixes once
   // HWNDMessageHandler is the WindowImpl.
@@ -54,6 +57,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // manager.
   virtual void HandleBeginWMSizeMove() = 0;
   virtual void HandleEndWMSizeMove() = 0;
+
+  // Called when the window's position changed.
+  virtual void HandleMove() = 0;
 
   // This is provided for methods that need to call private methods on NWW.
   // TODO(beng): should be removed once HWNDMessageHandler is the WindowImpl.
