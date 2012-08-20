@@ -14,7 +14,6 @@
 #include "content/renderer/all_rendering_benchmarks.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/rendering_benchmark.h"
-#include "content/renderer/rendering_benchmark_results.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -84,37 +83,6 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
 }  // namespace
 
 namespace content {
-
-// Benchmark results object that populates a v8 array.
-class V8BenchmarkResults : public content::RenderingBenchmarkResults {
- public:
-  explicit V8BenchmarkResults()
-    : results_array_(v8::Array::New(0)) { }
-  virtual ~V8BenchmarkResults() {}
-
-  void AddResult(const std::string& benchmark_name,
-                 const std::string& result_name,
-                 const std::string& result_unit,
-                 double result) {
-    v8::Handle<v8::Object> result_object = v8::Object::New();
-    result_object->Set(v8::String::New("benchmarkName", 13),
-                       v8::String::New(benchmark_name.c_str(), -1));
-    result_object->Set(v8::String::New("resultName", 10),
-                       v8::String::New(result_name.c_str(), -1));
-    result_object->Set(v8::String::New("resultUnit", 10),
-                       v8::String::New(result_unit.c_str(), -1));
-    result_object->Set(v8::String::New("result", 6), v8::Number::New(result));
-
-    results_array_->Set(results_array_->Length(), result_object);
-  }
-
-  v8::Handle<v8::Array> results_array() {
-    return results_array_;
-  }
-
- private:
-  v8::Handle<v8::Array> results_array_;
-};
 
 class GpuBenchmarkingWrapper : public v8::Extension {
  public:
@@ -322,7 +290,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     ScopedVector<RenderingBenchmark> benchmarks = AllRenderingBenchmarks();
 
-    V8BenchmarkResults results;
+    v8::Handle<v8::Array> results = v8::Array::New(0);
     ScopedVector<RenderingBenchmark>::const_iterator it;
     for (it = benchmarks.begin(); it != benchmarks.end(); it++) {
       RenderingBenchmark* benchmark = *it;
@@ -332,11 +300,17 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         continue;
       }
       benchmark->SetUp(support);
-      benchmark->Run(&results, support);
+      double result = benchmark->Run(support);
       benchmark->TearDown(support);
+
+      v8::Handle<v8::Object> result_object = v8::Object::New();
+      result_object->Set(v8::String::New("benchmark", 9),
+                         v8::String::New(name.c_str(), -1));
+      result_object->Set(v8::String::New("result", 6), v8::Number::New(result));
+      results->Set(results->Length(), result_object);
     }
 
-    return results.results_array();
+    return results;
   }
 };
 

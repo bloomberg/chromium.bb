@@ -23,8 +23,7 @@ class RenderingBenchmark {
 
   virtual void SetUp(WebKit::WebViewBenchmarkSupport* benchmarkSupport) {}
 
-  virtual void Run(RenderingBenchmarkResults* results,
-                   WebKit::WebViewBenchmarkSupport* benchmarkSupport) = 0;
+  virtual double Run(WebKit::WebViewBenchmarkSupport* benchmarkSupport) = 0;
 
   virtual void TearDown(WebKit::WebViewBenchmarkSupport* benchmarkSupport) {}
 

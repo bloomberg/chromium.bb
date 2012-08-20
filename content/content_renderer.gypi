@@ -245,7 +245,6 @@
     'renderer/renderer_webkitplatformsupport_impl.h',
     'renderer/rendering_benchmark.cc',
     'renderer/rendering_benchmark.h',
-    'renderer/rendering_benchmark_results.h',
     'renderer/speech_recognition_dispatcher.cc',
     'renderer/speech_recognition_dispatcher.h',
     'renderer/text_input_client_observer.cc',

@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "content/renderer/rendering_benchmark.h"
-#include "content/renderer/rendering_benchmark_results.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
@@ -54,14 +53,10 @@ class CustomPaintBenchmark
     delete canvas;
   }
 
-  virtual void Run(content::RenderingBenchmarkResults* results,
-                   WebViewBenchmarkSupport* support) OVERRIDE {
+  virtual double Run(WebViewBenchmarkSupport* support) OVERRIDE {
     paint_time_total_ = TimeDelta();
     support->paint(this, paint_mode_);
-    results->AddResult(name(),
-                       "paintTime",
-                       "s",
-                       paint_time_total_.InSecondsF());
+    return paint_time_total_.InMillisecondsF();
   }
 
  private:
@@ -84,30 +79,45 @@ class BitmapCanvasPaintBenchmark : public CustomPaintBenchmark {
   }
 };
 
-class NullCanvasPaintBenchmark : public CustomPaintBenchmark {
+class CanvasCountBenchmark
+    : public content::RenderingBenchmark,
+      public WebViewBenchmarkSupport::PaintClient {
  public:
-  NullCanvasPaintBenchmark(const std::string& name,
-                           WebViewBenchmarkSupport::PaintMode paint_mode)
-      : CustomPaintBenchmark(name, paint_mode),
-        canvas_count_(0) { }
+  CanvasCountBenchmark(const std::string& name,
+                       WebViewBenchmarkSupport::PaintMode paint_mode)
+      : content::RenderingBenchmark(name),
+        canvas_count_(0),
+        paint_mode_(paint_mode) { }
 
-  virtual void Run(content::RenderingBenchmarkResults* results,
-                   WebViewBenchmarkSupport* support) OVERRIDE {
-    canvas_count_ = 0;
-    CustomPaintBenchmark::Run(results, support);
-    results->AddResult(name(),
-                       "canvasCount",
-                       "i",
-                       canvas_count_);
-  }
-
- private:
-  virtual WebCanvas* createCanvas(const WebSize& size) OVERRIDE {
+  virtual WebCanvas* willPaint(const WebSize& size) OVERRIDE {
     ++canvas_count_;
     return SkCreateNullCanvas();
   }
 
+  virtual void didPaint(WebCanvas* canvas) OVERRIDE {
+    delete canvas;
+  }
+
+  virtual double Run(WebViewBenchmarkSupport* support) OVERRIDE {
+    canvas_count_ = 0;
+    support->paint(this, paint_mode_);
+    return canvas_count_;
+  }
+ private:
   int canvas_count_;
+  const WebViewBenchmarkSupport::PaintMode paint_mode_;
+};
+
+class NullCanvasPaintBenchmark : public CustomPaintBenchmark {
+ public:
+  NullCanvasPaintBenchmark(const std::string& name,
+                           WebViewBenchmarkSupport::PaintMode paint_mode)
+      : CustomPaintBenchmark(name, paint_mode) { }
+
+ private:
+  virtual WebCanvas* createCanvas(const WebSize& size) OVERRIDE {
+    return SkCreateNullCanvas();
+  }
 };
 
 class SkPicturePaintBenchmark : public CustomPaintBenchmark {
@@ -163,14 +173,10 @@ class TiledReplayBenchmark
     }
   }
 
-  virtual void Run(content::RenderingBenchmarkResults* results,
-                   WebViewBenchmarkSupport* support) {
+  virtual double Run(WebViewBenchmarkSupport* support) {
     paint_time_total_ = TimeDelta();
     support->paint(this, paint_mode_);
-    results->AddResult(name(),
-                       "repaintTime",
-                       "s",
-                       paint_time_total_.InSecondsF());
+    return paint_time_total_.InMillisecondsF();
   }
 
  private:
@@ -239,40 +245,43 @@ namespace content {
 ScopedVector<RenderingBenchmark> AllRenderingBenchmarks() {
   ScopedVector<RenderingBenchmark> benchmarks;
   benchmarks.push_back(new BitmapCanvasPaintBenchmark(
-      "PaintEverythingToBitmap",
+      "PaintEverythingToBitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything));
   benchmarks.push_back(new NullCanvasPaintBenchmark(
-      "PaintEverythingToNullCanvas",
+      "PaintEverythingToNullCanvasMs",
+      WebViewBenchmarkSupport::PaintModeEverything));
+  benchmarks.push_back(new CanvasCountBenchmark(
+      "LayerCount",
       WebViewBenchmarkSupport::PaintModeEverything));
   benchmarks.push_back(new SkPicturePaintBenchmark(
-      "PaintEverythingToSkPicture",
+      "PaintEverythingToSkPictureMs",
       WebViewBenchmarkSupport::PaintModeEverything));
   benchmarks.push_back(new SquareTiledReplayBenchmark(
-      "RepaintEverythingTo256x256Bitmap",
+      "RepaintEverythingTo256x256BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       256));
   benchmarks.push_back(new SquareTiledReplayBenchmark(
-      "RepaintEverythingTo128x128Bitmap",
+      "RepaintEverythingTo128x128BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       128));
   benchmarks.push_back(new SquareTiledReplayBenchmark(
-      "RepaintEverythingTo512x512Bitmap",
+      "RepaintEverythingTo512x512BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       512));
   benchmarks.push_back(new LayerWidthTiledReplayBenchmark(
-      "RepaintEverythingToLayerWidthx256Bitmap",
+      "RepaintEverythingToLayerWidthx256BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       256));
   benchmarks.push_back(new LayerWidthTiledReplayBenchmark(
-      "RepaintEverythingToLayerWidthx128Bitmap",
+      "RepaintEverythingToLayerWidthx128BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       128));
   benchmarks.push_back(new LayerWidthTiledReplayBenchmark(
-      "RepaintEverythingToLayerWidthx64Bitmap",
+      "RepaintEverythingToLayerWidthx64BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       64));
   benchmarks.push_back(new LayerWidthTiledReplayBenchmark(
-      "RepaintEverythingToLayerWidthx512Bitmap",
+      "RepaintEverythingToLayerWidthx512BitmapMs",
       WebViewBenchmarkSupport::PaintModeEverything,
       512));
   return benchmarks.Pass();
