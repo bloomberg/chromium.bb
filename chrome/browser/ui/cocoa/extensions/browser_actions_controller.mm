@@ -213,7 +213,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
         if (!extension)
           break;
         BrowserActionButton* button = [owner_ buttonForExtension:extension];
-        [owner_ browserActionClicked:button];
+        // |button| can be nil when the browser action has its button hidden.
+        if (button)
+          [owner_ browserActionClicked:button];
         break;
       }
       default:

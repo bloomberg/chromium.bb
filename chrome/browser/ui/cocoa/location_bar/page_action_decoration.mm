@@ -285,8 +285,8 @@ void PageActionDecoration::Observe(
         break;
       if (extension_id != page_action_->extension_id())
         break;
-      NSRect frame = owner_->GetPageActionFrame(page_action_);
-      ActivatePageAction(frame);
+      if (IsVisible())
+        ActivatePageAction(owner_->GetPageActionFrame(page_action_));
       break;
     }
 

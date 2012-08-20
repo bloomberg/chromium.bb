@@ -411,7 +411,6 @@ NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
 
   AutocompleteTextFieldCell* cell = [field_ cell];
   NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
-  DCHECK(!NSIsEmptyRect(frame));
   return frame;
 }
 
@@ -422,8 +421,13 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
     return NSZeroPoint;
 
   NSRect frame = GetPageActionFrame(page_action);
-  if (NSIsEmptyRect(frame))
+  if (NSIsEmptyRect(frame)) {
+    // The bubble point positioning assumes that the page action is visible. If
+    // not, something else needs to be done otherwise the bubble will appear
+    // near the top left corner (unanchored).
+    NOTREACHED();
     return NSZeroPoint;
+  }
 
   NSPoint bubble_point = decoration->GetBubblePointInFrame(frame);
   return [field_ convertPoint:bubble_point toView:nil];
