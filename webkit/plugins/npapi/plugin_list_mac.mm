@@ -87,8 +87,15 @@ void PluginList::GetPluginsInDir(
   }
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   ScopedVector<PluginGroup>* plugin_groups) {
+  return !IsBlacklistedPlugin(info);
+}
+
+bool PluginList::ShouldLoadPluginUsingPluginList(
+    const WebPluginInfo& info,
+    std::vector<webkit::WebPluginInfo>* plugins) {
   return !IsBlacklistedPlugin(info);
 }
 

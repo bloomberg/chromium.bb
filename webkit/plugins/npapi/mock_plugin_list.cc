@@ -29,10 +29,18 @@ bool MockPluginList::GetPluginsNoRefresh(
   return true;
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 void MockPluginList::LoadPluginsInternal(
     ScopedVector<PluginGroup>* plugin_groups) {
   for (size_t i = 0; i < plugins_to_load_.size(); ++i)
     AddToPluginGroups(plugins_to_load_[i], plugin_groups);
+}
+
+void MockPluginList::LoadPluginsIntoPluginListInternal(
+    std::vector<webkit::WebPluginInfo>* plugins) {
+  for (size_t i = 0; i < plugins_to_load_.size(); ++i) {
+    plugins->push_back(plugins_to_load_[i]);
+  }
 }
 
 }  // npapi

@@ -148,25 +148,35 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
                           std::vector<webkit::WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Populates the given vector with all available plugin groups. If
   // |load_if_necessary| is true, this will potentially load the plugin list
   // synchronously.
   void GetPluginGroups(bool load_if_necessary,
                        std::vector<PluginGroup>* plugin_groups);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Returns a copy of the PluginGroup corresponding to the given WebPluginInfo.
   // The caller takes ownership of the returned PluginGroup.
   PluginGroup* GetPluginGroup(const webkit::WebPluginInfo& web_plugin_info);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Returns the name of the PluginGroup with the given identifier.
   // If no such group exists, an empty string is returned.
   string16 GetPluginGroupName(const std::string& identifier);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Load a specific plugin with full path. Return true iff loading the plug-in
   // was successful.
   bool LoadPlugin(const FilePath& filename,
                   ScopedVector<PluginGroup>* plugin_groups,
                   webkit::WebPluginInfo* plugin_info);
+
+  // Load a specific plugin with full path. Return true iff loading the plug-in
+  // was successful.
+  bool LoadPluginIntoPluginList(const FilePath& filename,
+                                std::vector<webkit::WebPluginInfo>* plugins,
+                                webkit::WebPluginInfo* plugin_info);
 
   // The following functions are used to support probing for WebPluginInfo
   // using a different instance of this class.
@@ -174,6 +184,7 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Computes a list of all plugins to potentially load from all sources.
   void GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Returns the list of hardcoded plug-in groups for testing.
   const std::vector<PluginGroup*>& GetHardcodedPluginGroups() const;
 
@@ -185,10 +196,12 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   virtual ~PluginList();
 
  protected:
+  // TODO(ibraaaa): DELETE and add a different one. http://crbug.com/124396
   // This constructor is used in unit tests to override the platform-dependent
   // real-world plugin group definitions with custom ones.
   PluginList(const PluginGroupDefinition* definitions, size_t num_definitions);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Adds the given WebPluginInfo to its corresponding group, creating it if
   // necessary, and returns the group.
   PluginGroup* AddToPluginGroups(const webkit::WebPluginInfo& web_plugin_info,
@@ -213,11 +226,13 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Constructors are private for singletons.
   PluginList();
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Creates PluginGroups for the hardcoded group definitions, and stores them
   // in |hardcoded_plugin_groups_|.
   void AddHardcodedPluginGroups(const PluginGroupDefinition* group_definitions,
                                 size_t num_group_definitions);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Creates a new PluginGroup either from a hardcoded group definition, or from
   // the plug-in information.
   // Caller takes ownership of the returned PluginGroup.
@@ -228,6 +243,11 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // test classes can mock these out.
   virtual void LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups);
 
+  // Implements all IO dependent operations of the LoadPlugins method so that
+  // test classes can mock these out.
+  virtual void LoadPluginsIntoPluginListInternal(
+      std::vector<webkit::WebPluginInfo>* plugins);
+
   // Load all plugins from the default plugins directory.
   void LoadPlugins();
 
@@ -235,11 +255,19 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // load in that directory.
   void GetPluginsInDir(const FilePath& path, std::vector<FilePath>* plugins);
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Returns true if we should load the given plugin, or false otherwise.
   // |plugins| is the list of plugins we have crawled in the current plugin
   // loading run.
   bool ShouldLoadPlugin(const webkit::WebPluginInfo& info,
                         ScopedVector<PluginGroup>* plugins);
+
+  // Returns true if we should load the given plugin, or false otherwise.
+  // |plugins| is the list of plugins we have crawled in the current plugin
+  // loading run.
+  bool ShouldLoadPluginUsingPluginList(
+      const webkit::WebPluginInfo& info,
+      std::vector<webkit::WebPluginInfo>* plugins);
 
   // Returns true if the plugin supports |mime_type|. |mime_type| should be all
   // lower case.
@@ -254,6 +282,10 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   bool SupportsExtension(const webkit::WebPluginInfo& plugin,
                          const std::string& extension,
                          std::string* actual_mime_type);
+
+  // Removes a plug-in from |plugins_list_| by its path.
+  static bool RemovePlugin(const FilePath& filename,
+                           std::vector<webkit::WebPluginInfo>* plugins);
 
   //
   // Platform functions
@@ -293,12 +325,16 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Holds information about internal plugins.
   std::vector<InternalPlugin> internal_plugins_;
 
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   // Holds the currently available plugin groups.
   ScopedVector<PluginGroup> plugin_groups_;
 
   // Holds the hardcoded definitions of well-known plug-ins.
   // This should only be modified during construction of the PluginList.
   ScopedVector<PluginGroup> hardcoded_plugin_groups_;
+
+  // A list holding all plug-ins.
+  std::vector<webkit::WebPluginInfo> plugins_list_;
 
   // Callback that is invoked whenever the PluginList will reload the plugins.
   base::Closure will_load_plugins_callback_;

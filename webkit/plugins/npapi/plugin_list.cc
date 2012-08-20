@@ -53,6 +53,7 @@ bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
 namespace webkit {
 namespace npapi {
 
+// TODO(ibraaaa): DELETE all hardcoded definitions. http://crbug.com/124396
 // Note: If you change the plug-in definitions here, also update
 // chrome/browser/resources/plugins_*.json correspondingly!
 // In particular, the identifier needs to be kept in sync.
@@ -290,6 +291,7 @@ PluginList::PluginList()
                            ARRAYSIZE_UNSAFE(kGroupDefinitions));
 }
 
+// TODO(ibraaaa): DELETE and add a different one. http://crbug.com/124396
 PluginList::PluginList(const PluginGroupDefinition* definitions,
                        size_t num_definitions)
     :
@@ -301,6 +303,7 @@ PluginList::PluginList(const PluginGroupDefinition* definitions,
   AddHardcodedPluginGroups(definitions, num_definitions);
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 PluginGroup* PluginList::CreatePluginGroup(
       const webkit::WebPluginInfo& web_plugin_info) const {
   for (size_t i = 0; i < hardcoded_plugin_groups_.size(); ++i) {
@@ -311,6 +314,7 @@ PluginGroup* PluginList::CreatePluginGroup(
   return PluginGroup::FromWebPluginInfo(web_plugin_info);
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
   base::Closure will_load_callback;
   {
@@ -331,6 +335,27 @@ void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
   }
 }
 
+void PluginList::LoadPluginsIntoPluginListInternal(
+    std::vector<webkit::WebPluginInfo>* plugins) {
+  base::Closure will_load_callback;
+  {
+    base::AutoLock lock(lock_);
+    will_load_callback = will_load_plugins_callback_;
+  }
+  if (!will_load_callback.is_null())
+    will_load_callback.Run();
+
+  std::vector<FilePath> plugin_paths;
+  GetPluginPathsToLoad(&plugin_paths);
+
+  for (std::vector<FilePath>::const_iterator it = plugin_paths.begin();
+       it != plugin_paths.end();
+       ++it) {
+    WebPluginInfo plugin_info;
+    LoadPluginIntoPluginList(*it, plugins, &plugin_info);
+  }
+}
+
 void PluginList::LoadPlugins() {
   {
     base::AutoLock lock(lock_);
@@ -340,18 +365,25 @@ void PluginList::LoadPlugins() {
     loading_state_ = LOADING_STATE_REFRESHING;
   }
 
-  ScopedVector<PluginGroup> new_plugin_groups;
+  ScopedVector<PluginGroup> new_plugin_groups;  // TODO(ibraaaa): DELETE
   // Do the actual loading of the plugins.
-  LoadPluginsInternal(&new_plugin_groups);
+  LoadPluginsInternal(&new_plugin_groups);  // TODO(ibraaaa): DELETE
+
+  std::vector<webkit::WebPluginInfo> new_plugins;
+  // Do the actual loading of the plugins.
+  LoadPluginsIntoPluginListInternal(&new_plugins);
 
   base::AutoLock lock(lock_);
-  plugin_groups_.swap(new_plugin_groups);
+  plugin_groups_.swap(new_plugin_groups);  // TODO(ibraaaa): DELETE
+  plugins_list_.swap(new_plugins);
+
   // If we haven't been invalidated in the mean time, mark the plug-in list as
   // up-to-date.
   if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
     loading_state_ = LOADING_STATE_UP_TO_DATE;
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 bool PluginList::LoadPlugin(const FilePath& path,
                             ScopedVector<PluginGroup>* plugin_groups,
                             WebPluginInfo* plugin_info) {
@@ -379,6 +411,37 @@ bool PluginList::LoadPlugin(const FilePath& path,
     }
   }
   AddToPluginGroups(*plugin_info, plugin_groups);
+  return true;
+}
+
+bool PluginList::LoadPluginIntoPluginList(
+    const FilePath& path,
+    std::vector<webkit::WebPluginInfo>* plugins,
+    WebPluginInfo* plugin_info) {
+  LOG_IF(ERROR, PluginList::DebugPluginLoading())
+      << "Loading plugin " << path.value();
+  const PluginEntryPoints* entry_points;
+
+  if (!ReadPluginInfo(path, plugin_info, &entry_points))
+    return false;
+
+  if (!ShouldLoadPluginUsingPluginList(*plugin_info, plugins))
+    return false;
+
+#if defined(OS_WIN) && !defined(NDEBUG)
+  if (path.BaseName().value() != L"npspy.dll")  // Make an exception for NPSPY
+#endif
+  {
+    for (size_t i = 0; i < plugin_info->mime_types.size(); ++i) {
+      // TODO: don't load global handlers for now.
+      // WebKit hands to the Plugin before it tries
+      // to handle mimeTypes on its own.
+      const std::string &mime_type = plugin_info->mime_types[i].mime_type;
+      if (mime_type == "*")
+        return false;
+    }
+  }
+  plugins->push_back(*plugin_info);
   return true;
 }
 
@@ -416,6 +479,7 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
 #endif
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 const std::vector<PluginGroup*>& PluginList::GetHardcodedPluginGroups() const {
   return hardcoded_plugin_groups_.get();
 }
@@ -426,12 +490,16 @@ void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
   DCHECK_NE(LOADING_STATE_REFRESHING, loading_state_);
   loading_state_ = LOADING_STATE_UP_TO_DATE;
 
+  // TODO(ibraaaa): DELETE
   plugin_groups_.clear();
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end();
        ++it) {
     AddToPluginGroups(*it, &plugin_groups_);
-  }
+  } // END OF DELETE
+
+  plugins_list_.clear();
+  plugins_list_.insert(plugins_list_.end(), plugins.begin(), plugins.end());
 }
 
 void PluginList::set_will_load_plugins_callback(const base::Closure& callback) {
@@ -442,21 +510,14 @@ void PluginList::set_will_load_plugins_callback(const base::Closure& callback) {
 void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
   LoadPlugins();
   base::AutoLock lock(lock_);
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<webkit::WebPluginInfo>& gr_plugins =
-        plugin_groups_[i]->web_plugin_infos();
-    plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
-  }
+  plugins->insert(plugins->end(), plugins_list_.begin(), plugins_list_.end());
 }
 
 bool PluginList::GetPluginsNoRefresh(
     std::vector<webkit::WebPluginInfo>* plugins) {
   base::AutoLock lock(lock_);
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<webkit::WebPluginInfo>& gr_plugins =
-        plugin_groups_[i]->web_plugin_infos();
-    plugins->insert(plugins->end(), gr_plugins.begin(), gr_plugins.end());
-  }
+  plugins->insert(plugins->end(), plugins_list_.begin(), plugins_list_.end());
+
   return loading_state_ == LOADING_STATE_UP_TO_DATE;
 }
 
@@ -482,17 +543,13 @@ void PluginList::GetPluginInfoArray(
   std::set<FilePath> visited_plugins;
 
   // Add in plugins by mime type.
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        plugin_groups_[i]->web_plugin_infos();
-    for (size_t i = 0; i < plugins.size(); ++i) {
-      if (SupportsType(plugins[i], mime_type, allow_wildcard)) {
-        FilePath path = plugins[i].path;
-        if (visited_plugins.insert(path).second) {
-          info->push_back(plugins[i]);
-          if (actual_mime_types)
-            actual_mime_types->push_back(mime_type);
-        }
+  for (size_t i = 0; i < plugins_list_.size(); ++i) {
+    if (SupportsType(plugins_list_[i], mime_type, allow_wildcard)) {
+      FilePath path = plugins_list_[i].path;
+      if (visited_plugins.insert(path).second) {
+        info->push_back(plugins_list_[i]);
+        if (actual_mime_types)
+          actual_mime_types->push_back(mime_type);
       }
     }
   }
@@ -503,24 +560,21 @@ void PluginList::GetPluginInfoArray(
   if (last_dot != std::string::npos) {
     std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
     std::string actual_mime_type;
-    for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-      const std::vector<webkit::WebPluginInfo>& plugins =
-          plugin_groups_[i]->web_plugin_infos();
-      for (size_t i = 0; i < plugins.size(); ++i) {
-        if (SupportsExtension(plugins[i], extension, &actual_mime_type)) {
-          FilePath path = plugins[i].path;
-          if (visited_plugins.insert(path).second &&
-              AllowMimeTypeMismatch(mime_type, actual_mime_type)) {
-            info->push_back(plugins[i]);
-            if (actual_mime_types)
-              actual_mime_types->push_back(actual_mime_type);
-          }
+    for (size_t i = 0; i < plugins_list_.size(); ++i) {
+      if (SupportsExtension(plugins_list_[i], extension, &actual_mime_type)) {
+        FilePath path = plugins_list_[i].path;
+        if (visited_plugins.insert(path).second &&
+            AllowMimeTypeMismatch(mime_type, actual_mime_type)) {
+          info->push_back(plugins_list_[i]);
+          if (actual_mime_types)
+            actual_mime_types->push_back(actual_mime_type);
         }
       }
     }
   }
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 void PluginList::GetPluginGroups(
     bool load_if_necessary,
     std::vector<PluginGroup>* plugin_groups) {
@@ -536,6 +590,7 @@ void PluginList::GetPluginGroups(
   }
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 PluginGroup* PluginList::GetPluginGroup(
     const webkit::WebPluginInfo& web_plugin_info) {
   base::AutoLock lock(lock_);
@@ -553,6 +608,7 @@ PluginGroup* PluginList::GetPluginGroup(
   return group;
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 string16 PluginList::GetPluginGroupName(const std::string& identifier) {
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     if (plugin_groups_[i]->identifier() == identifier)
@@ -561,6 +617,7 @@ string16 PluginList::GetPluginGroupName(const std::string& identifier) {
   return string16();
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 void PluginList::AddHardcodedPluginGroups(
     const PluginGroupDefinition* group_definitions,
     size_t num_group_definitions) {
@@ -570,6 +627,7 @@ void PluginList::AddHardcodedPluginGroups(
   }
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 PluginGroup* PluginList::AddToPluginGroups(
     const webkit::WebPluginInfo& web_plugin_info,
     ScopedVector<PluginGroup>* plugin_groups) {
@@ -633,6 +691,21 @@ bool PluginList::SupportsExtension(const webkit::WebPluginInfo& plugin,
     }
   }
   return false;
+}
+
+/*static*/
+bool PluginList::RemovePlugin(const FilePath& filename,
+                              std::vector<webkit::WebPluginInfo>* plugins) {
+  bool did_remove = false;
+  for (size_t i = 0; i < plugins->size();) {
+    if ((*plugins)[i].path == filename) {
+      plugins->erase(plugins->begin() + i);
+      did_remove = true;
+    } else {
+      i++;
+    }
+  }
+  return did_remove;
 }
 
 PluginList::~PluginList() {

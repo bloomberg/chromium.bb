@@ -29,8 +29,13 @@ class MockPluginList : public PluginList {
   std::vector<WebPluginInfo> plugins_to_load_;
 
   // PluginList methods:
+
+  // TODO(ibraaaa): DELETE. http://crbug.com/124396
   virtual void LoadPluginsInternal(
       ScopedVector<PluginGroup>* plugin_groups) OVERRIDE;
+
+  virtual void LoadPluginsIntoPluginListInternal(
+        std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
 };
 
 }  // npapi

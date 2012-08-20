@@ -266,6 +266,7 @@ void PluginList::GetPluginsInDir(
   }
 }
 
+// TODO(ibraaaa): DELETE. http://crbug.com/124396
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   ScopedVector<PluginGroup>* plugin_groups) {
   LOG_IF(ERROR, PluginList::DebugPluginLoading())
@@ -289,6 +290,36 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
               << plugins[j].path.value();
           return false;
         }
+      }
+    }
+  }
+
+  // TODO(evanm): prefer the newest version of flash, etc. here?
+
+  VLOG_IF(1, PluginList::DebugPluginLoading()) << "Using " << info.path.value();
+
+  return true;
+}
+
+bool PluginList::ShouldLoadPluginUsingPluginList(
+    const WebPluginInfo& info, std::vector<webkit::WebPluginInfo>* plugins) {
+  LOG_IF(ERROR, PluginList::DebugPluginLoading())
+      << "Considering " << info.path.value() << " (" << info.name << ")";
+
+  if (IsUndesirablePlugin(info)) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << info.path.value() << " is undesirable.";
+
+    // See if we have a better version of this plugin.
+    for (size_t j = 0; j < plugins->size(); ++j) {
+      if ((*plugins)[j].name == info.name &&
+          !IsUndesirablePlugin((*plugins)[j])) {
+        // Skip the current undesirable one so we can use the better one
+        // we just found.
+        LOG_IF(ERROR, PluginList::DebugPluginLoading())
+            << "Skipping " << info.path.value() << ", preferring "
+            << (*plugins)[j].path.value();
+        return false;
       }
     }
   }
