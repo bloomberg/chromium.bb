@@ -356,7 +356,7 @@ static int r6_surface_init_2d(struct radeon_surface_manager *surf_man,
         surf->bo_alignment =
             MAX2(surf_man->hw_info.num_pipes *
                  surf_man->hw_info.num_banks *
-                 surf->bpe * 64,
+                 surf->nsamples * surf->bpe * 64,
                  xalign * yalign * surf->nsamples * surf->bpe);
     }
 
