@@ -313,7 +313,7 @@ def main(argv):
   else:
     cros_build_lib.logger.setLevel(logging.INFO)
 
-  with sudo.SudoKeepAlive():
+  with sudo.SudoKeepAlive(ttyless_sudo=False):
     with osutils.TempDirContextManager(sudo_rm=True) as tempdir:
       deploy = DeployChrome(options, tempdir)
       deploy.Perform()

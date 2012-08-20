@@ -19,14 +19,18 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
   see crosbug/18393.
   """
 
-  def __init__(self, repeat_interval=4):
+  def __init__(self, ttyless_sudo=True, repeat_interval=4):
     """Run sudo with a noop, to reset the sudo timestamp.
+
     Args:
-     repeat_interval: In minutes, the frequency to run the update.
+      ttyless_sudo: Whether to update the tty-less cookie.
+      repeat_interval: In minutes, the frequency to run the update.
     """
     cros_build_lib.MasterPidContextManager.__init__(self)
+    self._ttyless_sudo = ttyless_sudo
     self._repeat_interval = repeat_interval
     self._proc = None
+    self._existing_keepalive_value = None
 
   @staticmethod
   def _IdentifyTTY():
@@ -40,61 +44,68 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     return 'unknown'
 
   def _DaemonNeeded(self):
-    """
-    Discern if we need to run the sudo keep alive code.
+    """Discern which TTYs require sudo keep alive code.
 
     Returns:
-     None if the daemon isn't needed, else the string of the pts needed.
+      A string representing the set of ttys we need daemons for.
+      This will be the empty string if no daemon is needed.
     """
-    existing = os.environ.get("CROS_SUDO_KEEP_ALIVE")
-    tty = self._IdentifyTTY()
-
-    if existing is None:
-      return tty
-    elif tty == existing:
-      # Same auth ticket as our parent; we can use it.
-      return None
-    elif tty == 'unknown':
-      # The existing instance still covers us, despite us being bound to no pts.
-      return None
-
-    # Reaching here means that somehow, we're on a literal different pts than
-    # the original.  This requires a daemon.
-    return tty
+    existing = os.environ.get('CROS_SUDO_KEEP_ALIVE')
+    needed = set([self._IdentifyTTY()])
+    if self._ttyless_sudo:
+      needed.add('unknown')
+    if existing is not None:
+      needed -= set(existing.split(':'))
+    return ':'.join(needed)
 
   def _enter(self):
+    if os.getuid() == 0:
+      cros_build_lib.Die('This script cannot be run as root.')
+
     start_for_tty = self._DaemonNeeded()
-    if start_for_tty is None or os.getuid() == 0:
-      # We're root; we don't need the sudo keep alive hack.
+    if not start_for_tty:
+      # Daemon is already started.
       return
 
     # Note despite the impulse to use 'sudo -v' instead of 'sudo true', the
     # builder's sudoers configuration is slightly whacked resulting in it
     # asking for password everytime.  As such use 'sudo true' instead.
+    cmds = ['sudo -n true 2>/dev/null',
+            'sudo -n true < /dev/null > /dev/null 2>&1']
 
     # First check to see if we're already authed.  If so, then we don't
     # need to prompt the user for their password.
+    for idx, cmd in enumerate(cmds):
+      ret = cros_build_lib.RunCommand(
+          cmd, print_cmd=False, shell=True, error_code_ok=True)
 
-    ret = cros_build_lib.RunCommand(
-        'sudo -n true 2> /dev/null && ' +
-        'sudo -n true < /dev/null > /dev/null 2>&1',
-        print_cmd=False, shell=True, error_code_ok=True)
+      if ret.returncode != 0:
+        url = 'http://goo.gl/fz9YW'
+        tty_msg = 'Please disable tty_tickets using these instructions: %s'
 
-    if ret.returncode != 0:
-      # We need to go interactive and allow sudo to ask for credentials.
+        # If ttyless sudo is not strictly required for this script, don't
+        # prompt for a password a second time. Instead, just complain.
+        if idx > 0:
+          cros_build_lib.Warning(tty_msg, url)
+          if not self._ttyless_sudo:
+            break
 
-      cros_build_lib.Info('Launching sudo keepalive process. '
-                          'This may ask for your password twice.')
+        # We need to go interactive and allow sudo to ask for credentials.
+        interactive_cmd = cmd.replace(' -n', '')
+        cros_build_lib.RunCommand(interactive_cmd, shell=True, print_cmd=False)
 
-      cros_build_lib.RunCommand(
-          'sudo true; sudo true < /dev/null > /dev/null 2>&1',
-          shell=True, print_cmd=False)
+        # Verify that sudo access is set up properly.
+        try:
+          cros_build_lib.RunCommand(cmd, shell=True, print_cmd=False)
+        except cros_build_lib.RunCommandError:
+          if idx == 0:
+            raise
+          cros_build_lib.Die('tty_tickets must be disabled. ' + tty_msg, url)
 
-    repeat_interval = self._repeat_interval * 60
-    cmd = 'sudo -n true && sudo -n true < /dev/null > /dev/null 2>&1'
     # Anything other than a timeout results in us shutting down.
+    repeat_interval = self._repeat_interval * 60
     cmd = ('while :; do read -t %i; [ $? -le 128 ] && exit; %s; done' %
-           (repeat_interval, cmd))
+           (repeat_interval, '; '.join(cmds)))
 
     def ignore_sigint():
       # We don't want our sudo process shutdown till we shut it down;
@@ -106,7 +117,8 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
                                   close_fds=True, preexec_fn=ignore_sigint,
                                   stdin=subprocess.PIPE)
 
-    os.environ["CROS_SUDO_KEEP_ALIVE"] = start_for_tty
+    self._existing_keepalive_value = os.environ.get('CROS_SUDO_KEEP_ALIVE')
+    os.environ['CROS_SUDO_KEEP_ALIVE'] = start_for_tty
 
   # pylint: disable=W0613
   def _exit(self, exc_type, exc_value, traceback):
@@ -120,7 +132,10 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
       if e.errno != errno.ESRCH:
         raise
 
-    os.environ.pop("CROS_SUDO_KEEP_ALIVE", None)
+    if self._existing_keepalive_value is not None:
+      os.environ['CROS_SUDO_KEEP_ALIVE'] = self._existing_keepalive_value
+    else:
+      os.environ.pop('CROS_SUDO_KEEP_ALIVE', None)
 
 
 def SetFileContents(path, value, cwd=None):

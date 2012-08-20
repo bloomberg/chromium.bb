@@ -9,7 +9,6 @@
 import logging
 import optparse
 import os
-import sys
 import urlparse
 
 from chromite.buildbot import constants
@@ -378,7 +377,7 @@ Action taken is the following:
   lock_path = os.path.dirname(chroot_path)
   lock_path = os.path.join(lock_path,
                            '.%s_lock' % os.path.basename(chroot_path))
-  with sudo.SudoKeepAlive():
+  with sudo.SudoKeepAlive(ttyless_sudo=False):
     with cgroups.SimpleContainChildren('cros_sdk'):
       _CreateLockFile(lock_path)
       with locking.FileLock(lock_path, 'chroot lock') as lock:
