@@ -16,6 +16,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -27,6 +28,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/database/database_tracker.h"
@@ -250,6 +252,27 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   main_job_factory_.reset(new net::URLRequestJobFactory);
   extensions_job_factory_.reset(new net::URLRequestJobFactory);
+
+  int set_protocol = main_job_factory_->SetProtocolHandler(
+      chrome::kFileScheme, new net::FileProtocolHandler(network_delegate()));
+  DCHECK(set_protocol);
+  // TODO(shalev): Without a network_delegate this protocol handler will never
+  // handle file: requests, but as a side effect it makes
+  // job_factory::IsHandledProtocol return true, which prevents attempts to
+  // handle the protocol externally.
+  set_protocol = extensions_job_factory_->SetProtocolHandler(
+      chrome::kFileScheme, new net::FileProtocolHandler(NULL));
+  DCHECK(set_protocol);
+
+  set_protocol = main_job_factory_->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(),
+                                    network_delegate()));
+  DCHECK(set_protocol);
+  set_protocol = extensions_job_factory_->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(), NULL));
+  DCHECK(set_protocol);
 
   net::URLRequestJobFactory* job_factories[2];
   job_factories[0] = main_job_factory_.get();

@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_file_job.h"
 
 namespace {
@@ -16,8 +17,10 @@ namespace {
 class ExtensionResourcesJob : public net::URLRequestFileJob {
  public:
   explicit ExtensionResourcesJob(net::URLRequest* request)
-    : net::URLRequestFileJob(request, FilePath()),
-      thread_id_(content::BrowserThread::UI) {
+      : net::URLRequestFileJob(request,
+                               FilePath(),
+                               request->context()->network_delegate()),
+        thread_id_(content::BrowserThread::UI) {
   }
 
   virtual void Start() OVERRIDE;

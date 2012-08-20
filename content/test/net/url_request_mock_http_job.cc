@@ -12,6 +12,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 
 const char kMockHostname[] = "mock.http";
@@ -82,7 +83,9 @@ FilePath URLRequestMockHTTPJob::GetOnDiskPath(const FilePath& base_path,
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(net::URLRequest* request,
                                              const FilePath& file_path)
-    : net::URLRequestFileJob(request, file_path) { }
+    : net::URLRequestFileJob(request,
+                             file_path,
+                             request->context()->network_delegate()) { }
 
 // Public virtual version.
 void URLRequestMockHTTPJob::GetResponseInfo(net::HttpResponseInfo* info) {

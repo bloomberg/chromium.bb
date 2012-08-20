@@ -568,10 +568,6 @@ void ProfileIOData::SetUpJobFactoryDefaults(
           chrome_url_data_manager_backend_.get()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
-      chrome::kChromeDevToolsScheme,
-      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
-  DCHECK(set_protocol);
-  set_protocol = job_factory->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)

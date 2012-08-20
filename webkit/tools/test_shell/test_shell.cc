@@ -94,7 +94,9 @@ class URLRequestTestShellFileJob : public net::URLRequestFileJob {
 
  private:
   URLRequestTestShellFileJob(net::URLRequest* request, const FilePath& path)
-      : net::URLRequestFileJob(request, path) {
+      : net::URLRequestFileJob(request,
+                               path,
+                               request->context()->network_delegate()) {
   }
   virtual ~URLRequestTestShellFileJob() { }
 

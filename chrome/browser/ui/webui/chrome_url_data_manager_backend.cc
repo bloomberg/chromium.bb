@@ -568,21 +568,26 @@ bool IsSupportedURL(const GURL& url, FilePath* path) {
 class DevToolsJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  explicit DevToolsJobFactory(ChromeURLDataManagerBackend* backend);
+  DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
+                     net::NetworkDelegate* network_delegate);
   virtual ~DevToolsJobFactory();
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request) const OVERRIDE;
 
  private:
-  // |backend_| is owned by ProfileIOData, which owns this ProtocolHandler.
+  // |backend_| and |network_delegate_| are owned by ProfileIOData, which owns
+  // this ProtocolHandler.
   ChromeURLDataManagerBackend* const backend_;
+  net::NetworkDelegate* network_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsJobFactory);
 };
 
-DevToolsJobFactory::DevToolsJobFactory(ChromeURLDataManagerBackend* backend)
-    : backend_(backend) {
+DevToolsJobFactory::DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
+                                       net::NetworkDelegate* network_delegate)
+    : backend_(backend),
+      network_delegate_(network_delegate) {
   DCHECK(backend_);
 }
 
@@ -593,7 +598,7 @@ DevToolsJobFactory::MaybeCreateJob(net::URLRequest* request) const {
   if (ShouldLoadFromDisk()) {
     FilePath path;
     if (IsSupportedURL(request->url(), &path))
-      return new net::URLRequestFileJob(request, path);
+      return new net::URLRequestFileJob(request, path, network_delegate_);
   }
 
   return new URLRequestChromeJob(request, backend_);
@@ -602,6 +607,7 @@ DevToolsJobFactory::MaybeCreateJob(net::URLRequest* request) const {
 }  // namespace
 
 net::URLRequestJobFactory::ProtocolHandler*
-CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend) {
-  return new DevToolsJobFactory(backend);
+CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
+                              net::NetworkDelegate* network_delegate) {
+  return new DevToolsJobFactory(backend, network_delegate);
 }

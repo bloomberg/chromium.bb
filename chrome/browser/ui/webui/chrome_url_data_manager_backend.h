@@ -23,6 +23,7 @@ class RefCountedMemory;
 }
 
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }
@@ -85,6 +86,7 @@ class ChromeURLDataManagerBackend {
 };
 
 net::URLRequestJobFactory::ProtocolHandler*
-CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend);
+CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
+                              net::NetworkDelegate* network_delegate);
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_

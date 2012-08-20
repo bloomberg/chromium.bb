@@ -31,6 +31,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
@@ -195,7 +196,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                          const FilePath& directory_path,
                          const std::string& content_security_policy,
                          bool send_cors_header)
-    : net::URLRequestFileJob(request, FilePath()),
+    : net::URLRequestFileJob(request,
+                             FilePath(),
+                             request->context()->network_delegate()),
       // TODO(tc): Move all of these files into resources.pak so we don't break
       // when updating on Linux.
       resource_(extension_id, directory_path,

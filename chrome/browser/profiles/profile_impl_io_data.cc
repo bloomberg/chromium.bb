@@ -21,6 +21,7 @@
 #include "chrome/browser/net/sqlite_server_bound_cert_store.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -32,6 +33,7 @@
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
+#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -448,6 +450,35 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_job_factory_.reset(new net::URLRequestJobFactory);
   media_request_job_factory_.reset(new net::URLRequestJobFactory);
   extensions_job_factory_.reset(new net::URLRequestJobFactory);
+
+  int set_protocol = main_job_factory_->SetProtocolHandler(
+      chrome::kFileScheme, new net::FileProtocolHandler(network_delegate()));
+  DCHECK(set_protocol);
+  set_protocol = media_request_job_factory_->SetProtocolHandler(
+      chrome::kFileScheme, new net::FileProtocolHandler(network_delegate()));
+  DCHECK(set_protocol);
+  // TODO(shalev): Without a network_delegate this protocol handler will never
+  // handle file: requests, but as a side effect it makes
+  // job_factory::IsHandledProtocol return true, which prevents attempts to
+  // handle the protocol externally.
+  set_protocol = extensions_job_factory_->SetProtocolHandler(
+      chrome::kFileScheme, new net::FileProtocolHandler(NULL));
+  DCHECK(set_protocol);
+
+  set_protocol = main_job_factory_->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(),
+                                    network_delegate()));
+  DCHECK(set_protocol);
+  set_protocol = media_request_job_factory_->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(),
+                                    network_delegate()));
+  DCHECK(set_protocol);
+  set_protocol = extensions_job_factory_->SetProtocolHandler(
+      chrome::kChromeDevToolsScheme,
+      CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(), NULL));
+  DCHECK(set_protocol);
 
   net::URLRequestJobFactory* job_factories[3];
   job_factories[0] = main_job_factory_.get();
