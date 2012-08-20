@@ -7,22 +7,23 @@
 namespace remoting {
 namespace protocol {
 
-InputFilter::InputFilter() : input_stub_(NULL) {
+InputFilter::InputFilter() : input_stub_(NULL), enabled_(true) {
 }
 
-InputFilter::InputFilter(InputStub* input_stub) : input_stub_(input_stub) {
+InputFilter::InputFilter(InputStub* input_stub)
+  : input_stub_(input_stub), enabled_(true) {
 }
 
 InputFilter::~InputFilter() {
 }
 
 void InputFilter::InjectKeyEvent(const KeyEvent& event) {
-  if (input_stub_ != NULL)
+  if (enabled_ && input_stub_ != NULL)
     input_stub_->InjectKeyEvent(event);
 }
 
 void InputFilter::InjectMouseEvent(const MouseEvent& event) {
-  if (input_stub_ != NULL)
+  if (enabled_ && input_stub_ != NULL)
     input_stub_->InjectMouseEvent(event);
 }
 

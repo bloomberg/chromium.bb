@@ -20,7 +20,7 @@ MATCHER_P2(EqualsClipboardEvent, mime_type, data, "") {
 }
 
 static ClipboardEvent MakeClipboardEvent(const std::string& mime_type,
-                                  const std::string& data) {
+                                         const std::string& data) {
   ClipboardEvent event;
   event.set_mime_type(mime_type);
   event.set_data(data);

@@ -110,7 +110,7 @@ class ClientSession : public protocol::HostStub,
 
   const std::string& client_jid() { return client_jid_; }
 
-  bool is_authenticated() { return is_authenticated_;  }
+  bool is_authenticated() { return auth_input_filter_.enabled();  }
 
   // Indicate that local mouse activity has been detected. This causes remote
   // inputs to be ignored for a short time so that the local user will always
@@ -131,7 +131,6 @@ class ClientSession : public protocol::HostStub,
   scoped_ptr<protocol::ConnectionToClient> connection_;
 
   std::string client_jid_;
-  bool is_authenticated_;
 
   // The host clipboard and input stubs to which this object delegates.
   // These are the final elements in the clipboard & input pipelines, which
@@ -148,6 +147,10 @@ class ClientSession : public protocol::HostStub,
   // Filter used to clamp mouse events to the current display dimensions.
   protocol::MouseInputFilter mouse_input_filter_;
 
+  // Filter to used to stop clipboard items sent from the client being echoed
+  // back to it.
+  protocol::ClipboardEchoFilter clipboard_echo_filter_;
+
   // Filters used to manage enabling & disabling of input & clipboard.
   protocol::InputFilter disable_input_filter_;
   protocol::ClipboardFilter disable_clipboard_filter_;
@@ -155,10 +158,6 @@ class ClientSession : public protocol::HostStub,
   // Filters used to disable input & clipboard when we're not authenticated.
   protocol::InputFilter auth_input_filter_;
   protocol::ClipboardFilter auth_clipboard_filter_;
-
-  // Filter to used to stop clipboard items sent from the client being echoed
-  // back to it.
-  protocol::ClipboardEchoFilter clipboard_echo_filter_;
 
   // Factory for weak pointers to the client clipboard stub.
   // This must appear after |clipboard_echo_filter_|, so that it won't outlive

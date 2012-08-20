@@ -25,12 +25,15 @@ ClientSession::ClientSession(
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
-      is_authenticated_(false),
       host_clipboard_stub_(host_clipboard_stub),
       host_input_stub_(host_input_stub),
       input_tracker_(host_input_stub_),
       remote_input_filter_(&input_tracker_),
       mouse_input_filter_(&remote_input_filter_),
+      disable_input_filter_(&mouse_input_filter_),
+      disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
+      auth_input_filter_(&disable_input_filter_),
+      auth_clipboard_filter_(&disable_clipboard_filter_),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       capturer_(capturer),
       max_duration_(max_duration) {
@@ -43,6 +46,10 @@ ClientSession::ClientSession(
   connection_->set_host_stub(this);
   connection_->set_input_stub(this);
   clipboard_echo_filter_.set_host_stub(host_clipboard_stub_);
+
+  // |auth_*_filter_|'s states reflect whether the session is authenticated.
+  auth_input_filter_.set_enabled(false);
+  auth_clipboard_filter_.set_enabled(false);
 }
 
 ClientSession::~ClientSession() {
@@ -86,9 +93,8 @@ void ClientSession::OnConnectionAuthenticated(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
-  is_authenticated_ = true;
-  auth_input_filter_.set_input_stub(&disable_input_filter_);
-  auth_clipboard_filter_.set_clipboard_stub(&disable_clipboard_filter_);
+  auth_input_filter_.set_enabled(true);
+  auth_clipboard_filter_.set_enabled(true);
 
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
 
@@ -115,10 +121,15 @@ void ClientSession::OnConnectionClosed(
     protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-  if (!is_authenticated_)
+
+  if (!auth_input_filter_.enabled())
     event_handler_->OnSessionAuthenticationFailed(this);
-  auth_input_filter_.set_input_stub(NULL);
-  auth_clipboard_filter_.set_clipboard_stub(NULL);
+
+  // Block any further input events from the client.
+  // TODO(wez): Fix ChromotingHost::OnSessionClosed not to check our
+  // is_authenticated(), so that we can disable |auth_*_filter_| here.
+  disable_input_filter_.set_enabled(false);
+  disable_clipboard_filter_.set_enabled(false);
 
   // Ensure that any pressed keys or buttons are released.
   input_tracker_.ReleaseAll();
@@ -161,15 +172,11 @@ void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {
 void ClientSession::SetDisableInputs(bool disable_inputs) {
   DCHECK(CalledOnValidThread());
 
-  if (disable_inputs) {
-    disable_input_filter_.set_input_stub(NULL);
-    disable_clipboard_filter_.set_clipboard_stub(NULL);
+  if (disable_inputs)
     input_tracker_.ReleaseAll();
-  } else {
-    disable_input_filter_.set_input_stub(&mouse_input_filter_);
-    disable_clipboard_filter_.set_clipboard_stub(
-        clipboard_echo_filter_.host_filter());
-  }
+
+  disable_input_filter_.set_enabled(!disable_inputs);
+  disable_clipboard_filter_.set_enabled(!disable_inputs);
 }
 
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {

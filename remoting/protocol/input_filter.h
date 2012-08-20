@@ -12,19 +12,26 @@
 namespace remoting {
 namespace protocol {
 
-// Forwards input events to |input_stub|, iif |input_stub| is not NULL.
+// Forwards input events to |input_stub|, if configured.  Input forwarding may
+// also be disabled independently of the |input_stub| being set.  InputFilters
+// initially have input forwarding enabled.
 class InputFilter : public InputStub {
  public:
   InputFilter();
   explicit InputFilter(InputStub* input_stub);
   virtual ~InputFilter();
 
-  // Return the InputStub that events will be forwarded to.
-  InputStub* input_stub() { return input_stub_; }
-
   // Set the InputStub that events will be forwarded to.
   void set_input_stub(InputStub* input_stub) {
     input_stub_ = input_stub;
+  }
+
+  // Enable/disable routing of events to the InputStub.
+  void set_enabled(bool enabled) {
+    enabled_ = enabled;
+  }
+  bool enabled() const {
+    return enabled_;
   }
 
   // InputStub interface.
@@ -33,6 +40,7 @@ class InputFilter : public InputStub {
 
  private:
   InputStub* input_stub_;
+  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(InputFilter);
 };

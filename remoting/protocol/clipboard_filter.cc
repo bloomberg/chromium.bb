@@ -8,7 +8,11 @@
 namespace remoting {
 namespace protocol {
 
-ClipboardFilter::ClipboardFilter() : clipboard_stub_(NULL) {
+ClipboardFilter::ClipboardFilter() : clipboard_stub_(NULL), enabled_(true) {
+}
+
+ClipboardFilter::ClipboardFilter(ClipboardStub* clipboard_stub)
+    : clipboard_stub_(clipboard_stub), enabled_(true) {
 }
 
 ClipboardFilter::~ClipboardFilter() {
@@ -19,7 +23,7 @@ void ClipboardFilter::set_clipboard_stub(ClipboardStub* clipboard_stub) {
 }
 
 void ClipboardFilter::InjectClipboardEvent(const ClipboardEvent& event) {
-  if (clipboard_stub_ != NULL)
+  if (enabled_ && clipboard_stub_ != NULL)
     clipboard_stub_->InjectClipboardEvent(event);
 }
 
