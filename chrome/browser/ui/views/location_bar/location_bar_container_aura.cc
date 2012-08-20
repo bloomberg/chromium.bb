@@ -29,7 +29,7 @@ void LocationBarContainer::PlatformInit() {
 
 // static
 SkColor LocationBarContainer::GetBackgroundColor() {
-  return SK_ColorWHITE;
+  return LocationBarView::kOmniboxBackgroundColor;
 }
 
 void LocationBarContainer::StackAtTop() {

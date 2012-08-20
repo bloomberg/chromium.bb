@@ -237,7 +237,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
   if (chrome::search::IsInstantExtendedAPIEnabled(
           location_bar_view_->profile())) {
     set_background(views::Background::CreateSolidBackground(
-        chrome::search::kOmniboxBackgroundColor));
+        LocationBarView::kOmniboxBackgroundColor));
   }
 }
 
@@ -262,6 +262,7 @@ void OmniboxViewViews::Init(views::View* popup_parent_view) {
   textfield_ = new AutocompleteTextfield(this, location_bar_view_);
   textfield_->SetController(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
+  textfield_->SetBackgroundColor(LocationBarView::kOmniboxBackgroundColor);
 
   if (popup_window_mode_)
     textfield_->SetReadOnly(true);

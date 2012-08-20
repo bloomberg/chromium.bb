@@ -363,6 +363,8 @@ class LocationBarView : public LocationBar,
   static const int kIconInternalPadding;
   // Space between the edge and a bubble.
   static const int kBubbleHorizontalPadding;
+  // Background color of the location bar.
+  static const SkColor kOmniboxBackgroundColor;
 
  protected:
   virtual void OnFocus() OVERRIDE;

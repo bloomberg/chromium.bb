@@ -128,6 +128,13 @@ const int LocationBarView::kNormalHorizontalEdgeThickness = 2;
 const int LocationBarView::kVerticalEdgeThickness = 3;
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kBubbleHorizontalPadding = 1;
+#if defined(OS_CHROMEOS)
+const SkColor LocationBarView::kOmniboxBackgroundColor =
+    SkColorSetARGB(0, 255, 255, 255);
+#else
+const SkColor LocationBarView::kOmniboxBackgroundColor =
+    SkColorSetARGB(255, 255, 255, 255);
+#endif
 const char LocationBarView::kViewClassName[] =
     "browser/ui/views/location_bar/LocationBarView";
 
@@ -325,7 +332,7 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
     case SELECTED_TEXT: return color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
 #else
     // TODO(beng): source from theme provider.
-    case BACKGROUND:    return SK_ColorWHITE;
+    case BACKGROUND:    return LocationBarView::kOmniboxBackgroundColor;
     case TEXT:          return SK_ColorBLACK;
     case SELECTED_TEXT: return SK_ColorWHITE;
 #endif

@@ -355,11 +355,10 @@
       <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="omnibox_r.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="common/browser_omnibox_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="ash/browser_omnibox_border.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="common/browser_omnibox_border.png" />
       </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" />
