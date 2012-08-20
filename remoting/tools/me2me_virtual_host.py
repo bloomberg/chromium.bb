@@ -634,16 +634,20 @@ def daemonize(log_filename):
 def cleanup():
   logging.info("Cleanup.")
 
+  global g_pidfile
   if g_pidfile:
     try:
       g_pidfile.delete_file()
+      g_pidfile = None
     except Exception, e:
       logging.error("Unexpected error deleting PID file: " + str(e))
 
+  global g_desktops
   for desktop in g_desktops:
     if desktop.x_proc:
       logging.info("Terminating Xvfb")
       desktop.x_proc.terminate()
+  g_desktops = []
 
 
 def reload_config():
@@ -659,6 +663,11 @@ def signal_handler(signum, stackframe):
   else:
     # Exit cleanly so the atexit handler, cleanup(), gets called.
     raise SystemExit
+
+
+def relaunch_self():
+  cleanup()
+  os.execvp(sys.argv[0], sys.argv)
 
 
 def main():
@@ -871,32 +880,35 @@ def main():
   last_launch_time = 0
 
   while True:
-    # If the session process stops running (e.g. because the user logged out),
-    # the X server should be reset and the session restarted, to provide a
-    # completely clean new session.
+    # If the session process or X server stops running (e.g. because the user
+    # logged out), kill the other. This will trigger the next conditional block
+    # as soon as the os.wait() call (below) returns.
     if desktop.session_proc is None and desktop.x_proc is not None:
       logging.info("Terminating X server")
       desktop.x_proc.terminate()
+    elif desktop.x_proc is None and desktop.session_proc is not None:
+      logging.info("Terminating X session")
+      desktop.session_proc.terminate()
+    elif desktop.x_proc is None and desktop.session_proc is None:
+      # Neither X server nor X session are running.
+      elapsed = time.time() - last_launch_time
+      if elapsed < 60:
+        logging.error("The session lasted less than 1 minute.  Waiting " +
+                      "before starting new session.")
+        time.sleep(60 - elapsed)
 
-    if desktop.x_proc is None:
-      if desktop.session_proc is not None:
-        # The X session would probably die soon if the X server is not
-        # running (because of the loss of the X connection).  Terminate it
-        # anyway, to be sure.
-        logging.info("Terminating X session")
-        desktop.session_proc.terminate()
-      else:
-        # Neither X server nor X session are running.
-        elapsed = time.time() - last_launch_time
-        if elapsed < 60:
-          logging.error("The session lasted less than 1 minute.  Waiting " +
-                        "before starting new session.")
-          time.sleep(60 - elapsed)
-
-        logging.info("Launching X server and X session")
+      if last_launch_time == 0:
+        # Neither process has been started yet. Do so now.
+        logging.info("Launching X server and X session.")
         last_launch_time = time.time()
         desktop.launch_x_server(args)
         desktop.launch_x_session()
+      else:
+        # Both processes have terminated. Since the user's desktop is already
+        # gone at this point, there's no state to lose and now is a good time
+        # to pick up any updates to this script that might have been installed.
+        logging.info("Relaunching self")
+        relaunch_self()
 
     if desktop.host_proc is None:
       logging.info("Launching host process")

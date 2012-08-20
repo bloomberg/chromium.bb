@@ -15,14 +15,12 @@ SHARE = $(DESTDIR)/usr/share/chrome-remote-desktop
 
 all:
 
-# TODO(lambroslambrou): Decide what to do about bundling Xvfb-randr.
-# For now, treat it as if it were a build artifact from the Chrome tree, and
-# pull it from $(RELEASE).
 install:
 	install -d $(BIN) $(LIB) $(SHARE)
 	install $(TOOLS)/me2me_virtual_host.py -m 0755 \
 	  $(BIN)/me2me_virtual_host
 	install $(TOOLS)/gaia_auth.py -m 0644 $(SHARE)
 	install $(TOOLS)/keygen.py -m 0644 $(SHARE)
+	install $(TOOLS)/is_me2me_desktop $(LIB)
 	install $(RELEASE)/remoting_host_keygen -m 0755 $(LIB)
 	install $(RELEASE)/remoting_me2me_host -m 0755 $(LIB)
