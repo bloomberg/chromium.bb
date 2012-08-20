@@ -77,6 +77,7 @@ MinidumpGenerator::MinidumpGenerator()
       crashing_task_(mach_task_self()),
       handler_thread_(mach_thread_self()),
       cpu_type_(DynamicImages::GetNativeCPUType()),
+      task_context_(NULL),
       dynamic_images_(NULL),
       memory_blocks_(&allocator_) {
   GatherSystemInformation();
@@ -94,6 +95,7 @@ MinidumpGenerator::MinidumpGenerator(mach_port_t crashing_task,
       crashing_task_(crashing_task),
       handler_thread_(handler_thread),
       cpu_type_(DynamicImages::GetNativeCPUType()),
+      task_context_(NULL),
       dynamic_images_(NULL),
       memory_blocks_(&allocator_) {
   if (crashing_task != mach_task_self()) {
@@ -166,6 +168,10 @@ void MinidumpGenerator::GatherSystemInformation() {
   os_major_version_ = IntegerValueAtIndex(product_str, 0);
   os_minor_version_ = IntegerValueAtIndex(product_str, 1);
   os_build_number_ = IntegerValueAtIndex(product_str, 2);
+}
+
+void MinidumpGenerator::SetTaskContext(ucontext_t *task_context) {
+  task_context_ = task_context;
 }
 
 string MinidumpGenerator::UniqueNameInDirectory(const string &dir,
@@ -770,6 +776,19 @@ bool MinidumpGenerator::WriteContextX86_64(
 bool MinidumpGenerator::GetThreadState(thread_act_t target_thread,
                                        thread_state_t state,
                                        mach_msg_type_number_t *count) {
+  if (task_context_ && target_thread == mach_thread_self()) {
+    switch (cpu_type_) {
+#ifdef HAS_ARM_SUPPORT
+      case CPU_TYPE_ARM: {
+        size_t final_size =
+            std::min(static_cast<size_t>(*count), sizeof(arm_thread_state_t));
+        memcpy(state, &task_context_->uc_mcontext->__ss, final_size);
+        *count = final_size;
+        return true;
+      }
+#endif
+    }
+  }
   thread_state_flavor_t flavor;
   switch (cpu_type_) {
 #ifdef HAS_ARM_SUPPORT
@@ -878,10 +897,7 @@ bool MinidumpGenerator::WriteMemoryListStream(
     mach_msg_type_number_t stateCount
       = static_cast<mach_msg_type_number_t>(sizeof(state));
 
-    if (thread_get_state(exception_thread_,
-                         BREAKPAD_MACHINE_THREAD_STATE,
-                         state,
-                         &stateCount) == KERN_SUCCESS) {
+    if (GetThreadState(exception_thread_, state, &stateCount)) {
       u_int64_t ip = CurrentPCForStack(state);
       // Bound it to the upper and lower bounds of the region
       // it's contained within. If it's not in a known memory region,

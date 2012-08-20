@@ -329,6 +329,7 @@ bool ExceptionHandler::WriteMinidumpForChild(mach_port_t child,
 bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
                                                   int exception_code,
                                                   int exception_subcode,
+                                                  ucontext_t *task_context,
                                                   mach_port_t thread_name,
                                                   bool exit_after_write,
                                                   bool report_current_thread) {
@@ -366,6 +367,7 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
       MinidumpGenerator md(mach_task_self(),
                            report_current_thread ? MACH_PORT_NULL :
                                                    mach_thread_self());
+      md.SetTaskContext(task_context);
       if (exception_type && exception_code) {
         // If this is a real exception, give the filter (if any) a chance to
         // decide if this should be sent.
@@ -509,7 +511,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         // Write out the dump and save the result for later retrieval
         self->last_minidump_write_result_ =
           self->WriteMinidumpWithException(exception_type, exception_code,
-                                           0, thread,
+                                           0, NULL, thread,
                                            false, false);
 
 #if USE_PROTECTED_ALLOCATIONS
@@ -544,8 +546,8 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
         // Generate the minidump with the exception data.
         self->WriteMinidumpWithException(receive.exception, receive.code[0],
-                                         subcode, receive.thread.name, true,
-                                         false);
+                                         subcode, NULL, receive.thread.name,
+                                         true, false);
 
 #if USE_PROTECTED_ALLOCATIONS
         // This may have become protected again within
@@ -590,6 +592,7 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
       EXC_SOFTWARE,
       MD_EXCEPTION_CODE_MAC_ABORT,
       0,
+      static_cast<ucontext_t*>(uc),
       mach_thread_self(),
       true,
       true);
