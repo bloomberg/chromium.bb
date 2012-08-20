@@ -105,6 +105,7 @@ const char kSessionManagerEmitLoginPromptVisible[] = "EmitLoginPromptVisible";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
+const char kSessionManagerRestartJobWithAuth[] = "RestartJobWithAuth";
 const char kSessionManagerRestartEntd[] = "RestartEntd";
 const char kSessionManagerSetOwnerKey[] = "SetOwnerKey";
 const char kSessionManagerUnwhitelist[] = "Unwhitelist";
