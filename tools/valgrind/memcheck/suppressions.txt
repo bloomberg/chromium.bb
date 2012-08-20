@@ -5468,14 +5468,6 @@
    fun:vp8cx_encode_inter_macroblock
 }
 {
-   bug_134717
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2ui15InputMethodIBus13CreateContextEv
-   fun:_ZN2ui15InputMethodIBus4InitEb
-}
-
-{
    bug_138032
    Memcheck:Unaddressable
    fun:_ZN7WebCore22WorkerScriptControllerD1Ev
