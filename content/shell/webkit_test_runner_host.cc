@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/layout_test_controller_host.h"
+#include "content/shell/webkit_test_runner_host.h"
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -17,14 +17,14 @@ namespace {
 const int kTestTimeoutMilliseconds = 30 * 1000;
 }  // namespace
 
-std::map<RenderViewHost*, LayoutTestControllerHost*>
-    LayoutTestControllerHost::controllers_;
-std::string LayoutTestControllerHost::expected_pixel_hash_;
+std::map<RenderViewHost*, WebKitTestRunnerHost*>
+    WebKitTestRunnerHost::controllers_;
+std::string WebKitTestRunnerHost::expected_pixel_hash_;
 
 // static
-LayoutTestControllerHost* LayoutTestControllerHost::FromRenderViewHost(
+WebKitTestRunnerHost* WebKitTestRunnerHost::FromRenderViewHost(
     RenderViewHost* render_view_host) {
-  const std::map<RenderViewHost*, LayoutTestControllerHost*>::iterator it =
+  const std::map<RenderViewHost*, WebKitTestRunnerHost*>::iterator it =
       controllers_.find(render_view_host);
   if (it == controllers_.end())
     return NULL;
@@ -32,12 +32,12 @@ LayoutTestControllerHost* LayoutTestControllerHost::FromRenderViewHost(
 }
 
 // static
-void LayoutTestControllerHost::Init(const std::string& expected_pixel_hash) {
+void WebKitTestRunnerHost::Init(const std::string& expected_pixel_hash) {
   // TODO(jochen): We should only dump the results for the "main window".
   expected_pixel_hash_ = expected_pixel_hash;
 }
 
-LayoutTestControllerHost::LayoutTestControllerHost(
+WebKitTestRunnerHost::WebKitTestRunnerHost(
     RenderViewHost* render_view_host)
     : RenderViewHostObserver(render_view_host),
       captured_dump_(false),
@@ -49,12 +49,12 @@ LayoutTestControllerHost::LayoutTestControllerHost(
   controllers_[render_view_host] = this;
 }
 
-LayoutTestControllerHost::~LayoutTestControllerHost() {
+WebKitTestRunnerHost::~WebKitTestRunnerHost() {
   controllers_.erase(render_view_host());
   watchdog_.Cancel();
 }
 
-void LayoutTestControllerHost::CaptureDump() {
+void WebKitTestRunnerHost::CaptureDump() {
   if (captured_dump_)
     return;
   captured_dump_ = true;
@@ -71,16 +71,16 @@ void LayoutTestControllerHost::CaptureDump() {
   }
 }
 
-void LayoutTestControllerHost::TimeoutHandler() {
+void WebKitTestRunnerHost::TimeoutHandler() {
   printf("FAIL: Timed out waiting for notifyDone to be called\n");
   fprintf(stderr, "FAIL: Timed out waiting for notifyDone to be called\n");
   CaptureDump();
 }
 
-bool LayoutTestControllerHost::OnMessageReceived(
+bool WebKitTestRunnerHost::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(LayoutTestControllerHost, message)
+  IPC_BEGIN_MESSAGE_MAP(WebKitTestRunnerHost, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
@@ -100,14 +100,14 @@ bool LayoutTestControllerHost::OnMessageReceived(
   return handled;
 }
 
-void LayoutTestControllerHost::OnDidFinishLoad() {
+void WebKitTestRunnerHost::OnDidFinishLoad() {
   if (wait_until_done_)
     return;
 
   CaptureDump();
 }
 
-void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
+void WebKitTestRunnerHost::OnTextDump(const std::string& dump) {
   printf("%s#EOF\n", dump.c_str());
   fprintf(stderr, "#EOF\n");
 
@@ -115,7 +115,7 @@ void LayoutTestControllerHost::OnTextDump(const std::string& dump) {
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-void LayoutTestControllerHost::OnImageDump(
+void WebKitTestRunnerHost::OnImageDump(
     const std::string& actual_pixel_hash,
     const SkBitmap& image) {
   SkAutoLockPixels image_lock(image);
@@ -166,35 +166,35 @@ void LayoutTestControllerHost::OnImageDump(
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-void LayoutTestControllerHost::OnNotifyDone() {
+void WebKitTestRunnerHost::OnNotifyDone() {
   if (!wait_until_done_)
     return;
   watchdog_.Cancel();
   CaptureDump();
 }
 
-void LayoutTestControllerHost::OnDumpAsText() {
+void WebKitTestRunnerHost::OnDumpAsText() {
   dump_as_text_ = true;
 }
 
-void LayoutTestControllerHost::OnSetPrinting() {
+void WebKitTestRunnerHost::OnSetPrinting() {
   is_printing_ = true;
 }
 
-void LayoutTestControllerHost::OnSetShouldStayOnPageAfterHandlingBeforeUnload(
+void WebKitTestRunnerHost::OnSetShouldStayOnPageAfterHandlingBeforeUnload(
     bool should_stay_on_page) {
   should_stay_on_page_after_handling_before_unload_ = should_stay_on_page;
 }
 
-void LayoutTestControllerHost::OnDumpChildFramesAsText() {
+void WebKitTestRunnerHost::OnDumpChildFramesAsText() {
   dump_child_frames_ = true;
 }
 
-void LayoutTestControllerHost::OnWaitUntilDone() {
+void WebKitTestRunnerHost::OnWaitUntilDone() {
   if (wait_until_done_)
     return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
-    watchdog_.Reset(base::Bind(&LayoutTestControllerHost::TimeoutHandler,
+    watchdog_.Reset(base::Bind(&WebKitTestRunnerHost::TimeoutHandler,
                                base::Unretained(this)));
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -204,7 +204,7 @@ void LayoutTestControllerHost::OnWaitUntilDone() {
   wait_until_done_ = true;
 }
 
-void LayoutTestControllerHost::OnNotImplemented(
+void WebKitTestRunnerHost::OnNotImplemented(
     const std::string& object_name,
     const std::string& property_name) {
   if (captured_dump_)

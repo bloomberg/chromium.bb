@@ -29,7 +29,7 @@ var textInputController = textInputController || {};
     return Proxy.create(handler);
   }
 
-  var LayoutTestController = function() {
+  var TestRunner = function() {
     Object.defineProperty(this, "notifyDone", {value: NotifyDone});
     Object.defineProperty(this, "dumpAsText", {value: SetDumpAsText});
     Object.defineProperty(this,
@@ -42,8 +42,8 @@ var textInputController = textInputController || {};
         {value: SetShouldStayOnPageAfterHandlingBeforeUnload});
     Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
   }
-  LayoutTestController.prototype = DefaultHandler("testRunner");
-  testRunner = new LayoutTestController();
+  TestRunner.prototype = DefaultHandler("testRunner");
+  testRunner = new TestRunner();
 
   var AccessibilityController = function() {}
   AccessibilityController.prototype = DefaultHandler("accessibilityController");

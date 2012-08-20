@@ -8,13 +8,13 @@
 #include "base/file_path.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/shell/geolocation/shell_access_token_store.h"
-#include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_runner_host.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -43,7 +43,7 @@ void ShellContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  new LayoutTestControllerHost(render_view_host);
+  new WebKitTestRunnerHost(render_view_host);
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

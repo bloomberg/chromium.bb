@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/layout_test_controller_bindings.h"
+#include "content/shell/webkit_test_runner_bindings.h"
 
 #include "base/string_piece.h"
 #include "content/public/renderer/render_view.h"
@@ -116,21 +116,21 @@ v8::Handle<v8::Value> NotImplemented(const v8::Arguments& args) {
 
 }  // namespace
 
-LayoutTestControllerBindings::LayoutTestControllerBindings()
-    : v8::Extension("layout_test_controller.js",
+WebKitTestRunnerBindings::WebKitTestRunnerBindings()
+    : v8::Extension("webkit_test_runner.js",
                     GetStringResource(
-                        IDR_CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_JS).data(),
+                        IDR_CONTENT_SHELL_WEBKIT_TEST_RUNNER_JS).data(),
                     0,     // num dependencies.
                     NULL,  // dependencies array.
                     GetStringResource(
-                        IDR_CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_JS).size()) {
+                        IDR_CONTENT_SHELL_WEBKIT_TEST_RUNNER_JS).size()) {
 }
 
-LayoutTestControllerBindings::~LayoutTestControllerBindings() {
+WebKitTestRunnerBindings::~WebKitTestRunnerBindings() {
 }
 
 v8::Handle<v8::FunctionTemplate>
-LayoutTestControllerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
+WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
   if (name->Equals(v8::String::New("NotifyDone")))
     return v8::FunctionTemplate::New(NotifyDone);
   if (name->Equals(v8::String::New("SetDumpAsText")))

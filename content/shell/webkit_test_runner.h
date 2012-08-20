@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
-#define CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
+#ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
+#define CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_
 
 #include "content/public/renderer/render_view_observer.h"
 
 namespace content {
 
-// This is the renderer side of the layout test controller.
-class LayoutTestController : public RenderViewObserver {
+// This is the renderer side of the webkit test runner.
+class WebKitTestRunner : public RenderViewObserver {
  public:
-  explicit LayoutTestController(RenderView* render_view);
-  virtual ~LayoutTestController();
+  explicit WebKitTestRunner(RenderView* render_view);
+  virtual ~WebKitTestRunner();
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -25,9 +25,9 @@ class LayoutTestController : public RenderViewObserver {
   void OnCaptureTextDump(bool as_text, bool printing, bool recursive);
   void OnCaptureImageDump(const std::string& expected_pixel_hash);
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestController);
+  DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_H_
+#endif  // CONTENT_SHELL_WEBKIT_TEST_RUNNER_H_

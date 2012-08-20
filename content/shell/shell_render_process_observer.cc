@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/shell/layout_test_controller_bindings.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_runner_bindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/support/gc_extension.h"
 
@@ -26,7 +26,7 @@ void ShellRenderProcessObserver::WebKitInitialized() {
 
   // To implement a catch-all for not yet implemented controller properties.
   webkit_glue::SetJavaScriptFlags(" --harmony_proxies");
-  RenderThread::Get()->RegisterExtension(new LayoutTestControllerBindings());
+  RenderThread::Get()->RegisterExtension(new WebKitTestRunnerBindings());
 
   // We always expose GC to layout tests.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");

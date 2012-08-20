@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_HOST_H_
-#define CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_HOST_H_
+#ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
+#define CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
 
 #include <map>
 #include <string>
@@ -15,16 +15,16 @@ class SkBitmap;
 
 namespace content {
 
-class LayoutTestControllerHost : public RenderViewHostObserver {
+class WebKitTestRunnerHost : public RenderViewHostObserver {
  public:
-  static LayoutTestControllerHost* FromRenderViewHost(
+  static WebKitTestRunnerHost* FromRenderViewHost(
       RenderViewHost* render_view_host);
 
-  // Initialize the LayoutTestControllerHost for a given test.
+  // Initialize the WebKitTestRunnerHost for a given test.
   static void Init(const std::string& expected_pixel_hash);
 
-  explicit LayoutTestControllerHost(RenderViewHost* render_view_host);
-  virtual ~LayoutTestControllerHost();
+  explicit WebKitTestRunnerHost(RenderViewHost* render_view_host);
+  virtual ~WebKitTestRunnerHost();
 
   bool should_stay_on_page_after_handling_before_unload() const {
     return should_stay_on_page_after_handling_before_unload_;
@@ -53,7 +53,7 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);
 
-  static std::map<RenderViewHost*, LayoutTestControllerHost*> controllers_;
+  static std::map<RenderViewHost*, WebKitTestRunnerHost*> controllers_;
   static std::string expected_pixel_hash_;
 
   bool captured_dump_;
@@ -66,9 +66,9 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
 
   base::CancelableClosure watchdog_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestControllerHost);
+  DISALLOW_COPY_AND_ASSIGN(WebKitTestRunnerHost);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_LAYOUT_TEST_CONTROLLER_HOST_H_
+#endif  // CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_

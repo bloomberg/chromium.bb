@@ -9,9 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell_javascript_dialog.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_runner_host.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -87,8 +87,8 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     printf("CONFIRM NAVIGATION: %s\n", UTF16ToUTF8(message_text).c_str());
-    LayoutTestControllerHost* controller =
-        LayoutTestControllerHost::FromRenderViewHost(
+    WebKitTestRunnerHost* controller =
+        WebKitTestRunnerHost::FromRenderViewHost(
             web_contents->GetRenderViewHost());
     callback.Run(
         !controller->should_stay_on_page_after_handling_before_unload(),

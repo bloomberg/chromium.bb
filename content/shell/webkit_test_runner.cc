@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/layout_test_controller.h"
+#include "content/shell/webkit_test_runner.h"
 
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
@@ -137,25 +137,25 @@ void CaptureSnapshot(WebView* view, SkBitmap* snapshot) {
 
 }  // namespace
 
-LayoutTestController::LayoutTestController(RenderView* render_view)
+WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
 
-LayoutTestController::~LayoutTestController() {
+WebKitTestRunner::~WebKitTestRunner() {
 }
 
-void LayoutTestController::DidClearWindowObject(WebFrame* frame) {
+void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
 }
 
-void LayoutTestController::DidFinishLoad(WebFrame* frame) {
+void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
   if (!frame->parent())
     Send(new ShellViewHostMsg_DidFinishLoad(routing_id()));
 }
 
-bool LayoutTestController::OnMessageReceived(const IPC::Message& message) {
+bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(LayoutTestController, message)
+  IPC_BEGIN_MESSAGE_MAP(WebKitTestRunner, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureTextDump, OnCaptureTextDump)
     IPC_MESSAGE_HANDLER(ShellViewMsg_CaptureImageDump, OnCaptureImageDump)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -164,7 +164,7 @@ bool LayoutTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void LayoutTestController::OnCaptureTextDump(bool as_text,
+void WebKitTestRunner::OnCaptureTextDump(bool as_text,
                                              bool printing,
                                              bool recursive) {
   WebFrame* frame = render_view()->GetWebView()->mainFrame();
@@ -182,7 +182,7 @@ void LayoutTestController::OnCaptureTextDump(bool as_text,
   Send(new ShellViewHostMsg_TextDump(routing_id(), dump));
 }
 
-void LayoutTestController::OnCaptureImageDump(
+void WebKitTestRunner::OnCaptureImageDump(
     const std::string& expected_pixel_hash) {
   SkBitmap snapshot;
   CaptureSnapshot(render_view()->GetWebView(), &snapshot);

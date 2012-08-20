@@ -45,12 +45,6 @@
       'sources': [
         'shell/geolocation/shell_access_token_store.cc',
         'shell/geolocation/shell_access_token_store.h',
-        'shell/layout_test_controller.cc',
-        'shell/layout_test_controller.h',
-        'shell/layout_test_controller_bindings.cc',
-        'shell/layout_test_controller_bindings.h',
-        'shell/layout_test_controller_host.cc',
-        'shell/layout_test_controller_host.h',
         'shell/paths_mac.h',
         'shell/paths_mac.mm',
         'shell/shell.cc',
@@ -106,6 +100,12 @@
         'shell/shell_switches.h',
         'shell/shell_url_request_context_getter.cc',
         'shell/shell_url_request_context_getter.h',
+        'shell/webkit_test_runner.cc',
+        'shell/webkit_test_runner.h',
+        'shell/webkit_test_runner_bindings.cc',
+        'shell/webkit_test_runner_bindings.h',
+        'shell/webkit_test_runner_host.cc',
+        'shell/webkit_test_runner_host.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

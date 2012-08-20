@@ -9,11 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "content/shell/layout_test_controller_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_runner_host.h"
 #include "webkit/support/webkit_support.h"
 
 namespace {
@@ -86,7 +86,7 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
           NULL,
           MSG_ROUTING_NONE,
           NULL);
-      content::LayoutTestControllerHost::Init(pixel_hash);
+      content::WebKitTestRunnerHost::Init(pixel_hash);
 
       main_runner_->Run();
 
