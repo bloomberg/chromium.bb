@@ -785,7 +785,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return PyUITest.EvalDataFrom(private_file)
 
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[],
-                expect_retval=None, debug=True):
+                expect_retval=None, return_retval=False, debug=True):
     """Poll on a condition until timeout.
 
     Waits until the |function| evalues to |expect_retval| or until |timeout|
@@ -818,11 +818,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                      exit criteria. In case this is None (the default),
                      |function|'s return value is checked for truth,
                      so 'non-empty-string' should match with True
+      return_retval: If True, return the value returned by the last call to
+                     |function()|
       debug: if True, displays debug info at each retry.
 
     Returns:
-      The return value of the calling function when |function| evaluates to
-          True.
+      The return value of the |function| (when return_retval == True)
+      True, if returning when |function| evaluated to True (when
+          return_retval == False)
       False, when returning due to timeout
     """
     if timeout == -1:  # Default
@@ -830,11 +833,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert callable(function), "function should be a callable"
     begin = time.time()
     debug_begin = begin
+    retval = None
     while timeout is None or time.time() - begin <= timeout:
       retval = function(*args)
       if (expect_retval is None and retval) or \
          (expect_retval is not None and expect_retval == retval):
-        return retval
+        return retval if return_retval else True
       if debug and time.time() - debug_begin > 5:
         debug_begin += 5
         if function.func_name == (lambda: True).func_name:
@@ -849,7 +853,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                       True if expect_retval is None else expect_retval,
                       retval)
       time.sleep(retry_sleep)
-    return False
+    return retval if return_retval else False
 
   def StartSyncServer(self):
     """Start a local sync server.
@@ -5516,7 +5520,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Returns:
       The service path or None if SSID does not exist after timeout period.
     """
-    def _get_service_path():
+    def _GetServicePath():
       service_list = self.GetNetworkInfo().get('wifi_networks', [])
       for service_path, service_obj in service_list.iteritems():
         service_encr = 'PSK' if service_obj['encryption'] in ['WPA', 'RSN'] \
@@ -5528,8 +5532,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       self.NetworkScan()
       return None
 
-    service_path = self.WaitUntil(_get_service_path, timeout=timeout,
-                                  retry_sleep=1)
+    service_path = self.WaitUntil(_GetServicePath, timeout=timeout,
+                                  retry_sleep=1, return_retval=True)
     return service_path or None
 
   def NetworkScan(self):
