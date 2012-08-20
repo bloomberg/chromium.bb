@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html i18n-values="dir:textdirection">
 <head>
+<if expr="pp_ifdef('android')">
+<meta name="viewport" content="width=device-width" />
+</if>
 <title i18n-content="title">
 </title>
 <style>
@@ -14,13 +17,22 @@ html[main-frame] body {
   background-color: #CCC;
 }
 
+/* On Android, gradient is broken due to background-attachment: fixed being
+   currently disabled on Android; see crbug.com/135942 */
+<if expr="not pp_ifdef('android')">
 html[main-frame][high-color-depth] body {
   background: -webkit-linear-gradient(#CCC, #AAA);
   background-attachment: fixed;
 }
+</if>
 
 html[main-frame] #cell {
+<if expr="not pp_ifdef('android')">
   padding: 40px;
+</if>
+<if expr="pp_ifdef('android')">
+  padding: 20px;
+</if>
 }
 
 #box {
@@ -37,8 +49,14 @@ html[main-frame] #cell {
 html[main-frame] #box {
   border-radius: 5px;
   -webkit-box-shadow: 2px 5px 12px #555;
+<if expr="not pp_ifdef('android')">
   padding: 20px;
   width: 80%;
+</if>
+<if expr="pp_ifdef('android')">
+  padding: 10px;
+  width: 90%;
+</if>
 }
 
 ul {
