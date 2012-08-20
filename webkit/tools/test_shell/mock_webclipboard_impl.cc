@@ -105,12 +105,20 @@ WebKit::WebData MockWebClipboardImpl::readImage(
   // for endianess reasons, it will be BGRA8888 on Windows.
   const SkBitmap& bitmap = m_image.getSkBitmap();
   SkAutoLockPixels lock(bitmap);
+#if defined(OS_ANDROID)
+  webkit_support::EncodeRGBAPNG(static_cast<unsigned char*>(bitmap.getPixels()),
+                                bitmap.width(),
+                                bitmap.height(),
+                                bitmap.rowBytes(),
+                                &encoded_image);
+#else
   webkit_support::EncodeBGRAPNG(static_cast<unsigned char*>(bitmap.getPixels()),
                                 bitmap.width(),
                                 bitmap.height(),
                                 bitmap.rowBytes(),
                                 false,
                                 &encoded_image);
+#endif
   data.assign(reinterpret_cast<char*>(vector_as_array(&encoded_image)),
               encoded_image.size());
   return data;
