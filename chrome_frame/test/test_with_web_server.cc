@@ -750,7 +750,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AnchorUrlNavigateTest) {
 
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
+// https://code.google.com/p/chromium/issues/detail?id=143699
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_TestPostReissue) {
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
     L"full_tab_post_mshtml.html",
