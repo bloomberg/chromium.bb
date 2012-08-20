@@ -113,14 +113,18 @@ void AppShortcutManager::SetShortcutCreationDisabledForTesting(bool disabled) {
 void AppShortcutManager::InstallApplicationShortcuts(
     const Extension* extension) {
   shortcut_info_ = ShortcutInfoForExtensionAndProfile(extension, profile_);
-  std::vector<ImageLoadingTracker::ImageInfo> info_list;
+
+  std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
   for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
     int size = kDesiredSizes[i];
     ExtensionResource resource = extension->GetIconResource(
         size, ExtensionIconSet::MATCH_EXACTLY);
     if (!resource.empty()) {
-      info_list.push_back(
-          ImageLoadingTracker::ImageInfo(resource, gfx::Size(size, size)));
+      info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+          resource,
+          ImageLoadingTracker::ImageRepresentation::RESIZE_WHEN_LARGER,
+          gfx::Size(size, size),
+          ui::SCALE_FACTOR_100P));
     }
   }
 
@@ -137,8 +141,11 @@ void AppShortcutManager::InstallApplicationShortcuts(
       resource = extension->GetIconResource(
           size, ExtensionIconSet::MATCH_SMALLER);
     }
-    info_list.push_back(
-        ImageLoadingTracker::ImageInfo(resource, gfx::Size(size, size)));
+    info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+        resource,
+        ImageLoadingTracker::ImageRepresentation::RESIZE_WHEN_LARGER,
+        gfx::Size(size, size),
+        ui::SCALE_FACTOR_100P));
   }
 
   // |icon_resources| may still be empty at this point, in which case LoadImage

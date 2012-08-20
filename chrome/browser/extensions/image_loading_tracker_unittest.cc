@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/image_loading_tracker.h"
+
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -198,14 +199,17 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
       "image_loading_tracker", Extension::INVALID));
   ASSERT_TRUE(extension.get() != NULL);
 
-  std::vector<ImageLoadingTracker::ImageInfo> info_list;
+  std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
   int sizes[] = {extension_misc::EXTENSION_ICON_SMALLISH,
                  extension_misc::EXTENSION_ICON_BITTY};
   for (size_t i = 0; i < arraysize(sizes); ++i) {
     ExtensionResource resource =
         extension->GetIconResource(sizes[i], ExtensionIconSet::MATCH_EXACTLY);
-    info_list.push_back(ImageLoadingTracker::ImageInfo(
-        resource, gfx::Size(sizes[i], sizes[i])));
+    info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+        resource,
+        ImageLoadingTracker::ImageRepresentation::RESIZE_WHEN_LARGER,
+        gfx::Size(sizes[i], sizes[i]),
+        ui::SCALE_FACTOR_NONE));
   }
 
   ImageLoadingTracker loader(this);

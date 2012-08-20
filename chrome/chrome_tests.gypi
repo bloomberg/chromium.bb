@@ -1257,6 +1257,7 @@
         'browser/extensions/extension_creator_filter_unittest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
+        'browser/extensions/extension_icon_image_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_info_map_unittest.cc',
         'browser/extensions/extension_pref_value_map_unittest.cc',

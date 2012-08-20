@@ -366,6 +366,8 @@
         'browser/extensions/extension_host.h',
         'browser/extensions/extension_host_mac.h',
         'browser/extensions/extension_host_mac.mm',
+        'browser/extensions/extension_icon_image.cc',
+        'browser/extensions/extension_icon_image.h',
         'browser/extensions/extension_icon_manager.cc',
         'browser/extensions/extension_icon_manager.h',
         'browser/extensions/extension_info_map.cc',
