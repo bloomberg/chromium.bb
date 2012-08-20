@@ -55,7 +55,7 @@ FileTasks.prototype.onTasks_ = function(tasks) {
  */
 FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
-  var id = this.fileManager_.getExtensionId();
+  var id = util.getExtensionId();
   var is_on_drive = false;
   for (var index = 0; index < this.urls_.length; ++index) {
     if (FileType.isOnGDrive(this.urls_[index])) {
@@ -162,7 +162,7 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
     chrome.fileBrowserPrivate.executeTask(taskId, urls);
 
     var task_parts = taskId.split('|');
-    if (task_parts[0] == this.fileManager_.getExtensionId()) {
+    if (task_parts[0] == util.getExtensionId()) {
       // For internal tasks we do not listen to the event to avoid
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
@@ -465,7 +465,7 @@ FileTasks.prototype.updateMenuItem_ = function() {
  */
 FileTasks.prototype.getExternals_ = function(callback) {
   var externals = [];
-  var id = this.fileManager_.getExtensionId();
+  var id = util.getExtensionId();
   for (var index = 0; index < this.tasks_.length; index++) {
     var task = this.tasks_[index];
     var task_parts = task.taskId.split('|');

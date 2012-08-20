@@ -127,8 +127,7 @@ chrome.fileBrowserPrivate = {
     if (urlList.length == 0)
       return callback([]);
 
-    // This is how File Manager gets the extension id.
-    var extensionId = chrome.extension.getURL('').split('/')[2];
+    var extensionId = util.getExtensionId();
 
     if (!callback)
       throw new Error('Missing callback');
@@ -157,7 +156,13 @@ chrome.fileBrowserPrivate = {
         taskId: 'fake-extension-id|fake-item',
         title: 'External action',
         regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
-        iconUrl: 'images/icon16.png'
+        iconUrl: 'images/files/file_types/generic.png'
+      },
+      {
+        taskId: 'fake-extension-id|upload',
+        title: 'Upload video',
+        regexp: /\.(3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
+        iconUrl: 'images/files/file_types/video.png'
       },
       {
         taskId: extensionId + '|view-in-browser',

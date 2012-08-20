@@ -569,6 +569,13 @@ util.makeFilesystemUrl = function(path) {
 };
 
 /**
+ * @return {string} Id of the current Chrome extension.
+ */
+util.getExtensionId = function() {
+  return chrome.extension.getURL('').split('/')[2];
+};
+
+/**
  * Traverses a tree up to a certain depth.
  * @param {FileEntry} root Root entry.
  * @param {function(Array.<Entry>)} callback The callback is called at the very
@@ -612,6 +619,22 @@ util.traverseTree = function(root, callback, max_depth) {
 };
 
 /**
+ * A shortcut function to create a child element with given tag and class.
+ *
+ * @param {HTMLElement} parent Parent element.
+ * @param {string} opt_className Class name.
+ * @param {string} opt_tag Element tag, DIV is omitted.
+ * @return {Element} Newly created element.
+ */
+util.createChild = function(parent, opt_className, opt_tag) {
+  var child = parent.ownerDocument.createElement(opt_tag || 'div');
+  if (opt_className)
+    child.className = opt_className;
+  parent.appendChild(child);
+  return child;
+};
+
+/**
  * Return a translated string.
  *
  * Wrapper function to make dealing with translated strings more concise.
@@ -637,4 +660,3 @@ function str(id) {
 function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
-

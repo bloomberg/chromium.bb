@@ -7,13 +7,14 @@
  * everything needed for image editing.
  * @param {Viewport} viewport The viewport.
  * @param {ImageView} imageView The ImageView containing the images to edit.
+ * @param {ImageEditor.Prompt} prompt Prompt instance.
  * @param {Object} DOMContainers Various DOM containers required for the editor.
  * @param {Array.<ImageEditor.Mode>} modes Available editor modes.
  * @param {function} displayStringFunction String formatting function.
  * @constructor
  */
 function ImageEditor(
-    viewport, imageView, DOMContainers, modes, displayStringFunction) {
+    viewport, imageView, prompt, DOMContainers, modes, displayStringFunction) {
   this.rootContainer_ = DOMContainers.root;
   this.container_ = DOMContainers.image;
   this.modes_ = modes;
@@ -45,27 +46,12 @@ function ImageEditor(
       DOMContainers.mode, displayStringFunction,
       this.onOptionsChange.bind(this));
 
-  this.prompt_ = new ImageEditor.Prompt(
-      this.rootContainer_, displayStringFunction);
+  this.prompt_ = prompt;
 
   this.createToolButtons();
 
   this.commandQueue_ = null;
 }
-
-/**
- * Attach a resize listener to a window.
- *
- * @param {DOMWindow} window Window to track.
- */
-ImageEditor.prototype.trackWindow = function(window) {
-  if (window.resizeListener) {
-    // Make sure we do not leak the previous instance.
-    window.removeEventListener('resize', window.resizeListener, false);
-  }
-  window.resizeListener = this.resizeFrame.bind(this);
-  window.addEventListener('resize', window.resizeListener, false);
-};
 
 /**
  * @return {boolean} True if no user commands are to be accepted.
@@ -111,17 +97,15 @@ ImageEditor.prototype.onContentUpdate_ = function() {
 
 /**
  * Request prefetch for an image.
- * @param {number} id The content id for caching.
  * @param {string} url Image url.
  */
-ImageEditor.prototype.prefetchImage = function(id, url) {
-  this.imageView_.prefetch(id, url);
+ImageEditor.prototype.prefetchImage = function(url) {
+  this.imageView_.prefetch(url);
 };
 
 /**
  * Open the editing session for a new image.
  *
- * @param {number} id The content id for caching.
  * @param {string} url Image url.
  * @param {object} metadata Metadata.
  * @param {number} slide Slide direction.
@@ -129,14 +113,14 @@ ImageEditor.prototype.prefetchImage = function(id, url) {
  * @param {function} callback Completion callback.
  */
 ImageEditor.prototype.openSession = function(
-    id, url, metadata, slide, saveFunction, callback) {
+    url, metadata, slide, saveFunction, callback) {
   if (this.commandQueue_)
     throw new Error('Session not closed');
 
   this.lockUI(true);
 
   var self = this;
-  this.imageView_.load(id, url, metadata, slide, function(loadType) {
+  this.imageView_.load(url, metadata, slide, function(loadType) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument,
@@ -232,14 +216,6 @@ ImageEditor.prototype.updateUndoRedo = function() {
  */
 ImageEditor.prototype.getCanvas = function() {
   return this.getImageView().getCanvas();
-};
-
-/**
- * Window resize handler.
- */
-ImageEditor.prototype.resizeFrame = function() {
-  this.getViewport().sizeByFrameAndFit(this.container_);
-  this.getViewport().repaint();
 };
 
 /**

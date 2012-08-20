@@ -295,14 +295,12 @@ ImageView.prototype.cancelLoad = function() {
  * Loads the thumbnail first, then replaces it with the main image.
  * Takes into account the image orientation encoded in the metadata.
  *
- * @param {number} id Unique image id for caching purposes.
  * @param {string} url Image url.
  * @param {Object} metadata Metadata.
  * @param {Object} slide Slide-in animation direction.
  * @param {function(number} opt_callback The parameter is the load type.
  */
-ImageView.prototype.load = function(
-    id, url, metadata, slide, opt_callback) {
+ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
 
   metadata = metadata || {};
 
@@ -310,7 +308,7 @@ ImageView.prototype.load = function(
 
   var self = this;
 
-  this.contentID_ = id;
+  this.contentID_ = url;
   this.contentRevision_ = -1;
 
   var loadingVideo = FileType.getMediaType(url) == 'video';
@@ -337,12 +335,12 @@ ImageView.prototype.load = function(
     }
     return;
   }
-  var cached = this.contentCache_.getItem(id);
+  var cached = this.contentCache_.getItem(this.contentID_);
   if (cached) {
     displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, slide,
         false /* no preview */, cached);
   } else {
-    var cachedScreen = this.screenCache_.getItem(id);
+    var cachedScreen = this.screenCache_.getItem(this.contentID_);
     if (cachedScreen) {
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
       displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, slide, cachedScreen);
@@ -376,7 +374,7 @@ ImageView.prototype.load = function(
     self.lastLoadTime_ = time;
 
     if (canvas.width) {
-      if (!!metadata.media.width) {
+      if (!metadata.media.width) {
         // We do not know the main image size, but chances are that it is large
         // enough. Show the thumbnail at the maximum possible scale.
         var bounds = self.viewport_.getScreenBounds();
@@ -456,17 +454,16 @@ ImageView.prototype.load = function(
 /**
  * Prefetch an image.
  *
- * @param {number} id Unique image id for caching purposes.
  * @param {string} url The image url.
  */
-ImageView.prototype.prefetch = function(id, url) {
+ImageView.prototype.prefetch = function(url) {
   var self = this;
   function prefetchDone(canvas) {
     if (canvas.width)
-      self.contentCache_.putItem(id, canvas);
+      self.contentCache_.putItem(url, canvas);
   }
 
-  var cached = this.contentCache_.getItem(id);
+  var cached = this.contentCache_.getItem(url);
   if (cached) {
     prefetchDone(cached);
   } else if (FileType.getMediaType(url) == 'image') {
@@ -480,6 +477,26 @@ ImageView.prototype.prefetch = function(id, url) {
         prefetchDone,
         ImageView.ANIMATION_WAIT_INTERVAL);
   }
+};
+
+/**
+ * Rename the current image.
+ *
+ * @param {string} newUrl The new image url.
+ */
+ImageView.prototype.changeUrl = function(newUrl) {
+  this.contentCache_.renameItem(this.contentID_, newUrl);
+  this.screenCache_.renameItem(this.contentID_, newUrl);
+  this.contentID_ = newUrl;
+};
+
+/**
+ * Unload content.
+ */
+ImageView.prototype.unload = function() {
+  this.container_.textContent = '';
+  this.screenImage_ = null;
+  this.videoElement_ = null;
 };
 
 /**
@@ -803,4 +820,22 @@ ImageView.Cache.prototype.evictLRU = function() {
     var id = this.order_.shift();
     delete this.map_[id];
   }
+};
+
+/**
+ * Change the id of an entry.
+ * @param {string} oldId The old ID.
+ * @param {string} newId The new ID.
+ */
+ImageView.Cache.prototype.renameItem = function(oldId, newId) {
+  if (oldId == newId)
+    return;  // No need to rename.
+
+  var pos = this.order_.indexOf(oldId);
+  if (pos < 0)
+    return;  // Not cached.
+
+  this.order_[pos] = newId;
+  this.map_[newId] = this.map_[oldId];
+  delete this.map_[oldId];
 };

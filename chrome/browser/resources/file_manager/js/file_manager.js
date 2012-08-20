@@ -1486,10 +1486,10 @@ FileManager.prototype = {
           // 2. Reloading a Gallery page. Must be an image or a video file.
           // 3. A user manually entered a URL pointing to a file.
           if (FileType.isImageOrVideo(path)) {
-            tasks.execute(self.getExtensionId() + '|gallery');
+            tasks.execute(util.getExtensionId() + '|gallery');
           } else if (FileType.getMediaType(path) == 'archive') {
             self.show_();
-            tasks.execute(self.getExtensionId() + '|mount-archive');
+            tasks.execute(util.getExtensionId() + '|mount-archive');
           } else {
             self.show_();
             return;
@@ -2399,10 +2399,6 @@ FileManager.prototype = {
 
   FileManager.prototype.isOnGData = function() {
     return this.directoryModel_.getCurrentRootType() === RootType.GDATA;
-  };
-
-  FileManager.prototype.getExtensionId = function() {
-    return chrome.extension.getURL('').split('/')[2];
   };
 
   FileManager.prototype.onExternalLinkClick_ = function(url) {

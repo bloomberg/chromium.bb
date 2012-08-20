@@ -103,9 +103,10 @@ FileType.types = [
 FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
 
 /**
- * Get the file type object that matches a given url.
+ * Get the file type object for a given file.
  *
  * @param {string|Entry} file Reference to the file.
+ *     Can be a name, a path, a url or a File API Entry.
  * @return {Object} The matching file type object or an empty object.
  */
 FileType.getType = function(file) {
@@ -148,51 +149,48 @@ FileType.isOnGDrive = function(url) {
 
 
 /**
- * Get the media type for a given url.
+ * Get the media type for a given file.
  *
- * @param {string} url Reference to the file.
+ * @param {string|Entry} file Reference to the file.
  * @return {string} The value of 'type' property from one of the elements in
  *   FileType.types or undefined.
  */
-FileType.getMediaType = function(url) {
-  return FileType.getType(url).type;
+FileType.getMediaType = function(file) {
+  return FileType.getType(file).type;
 };
 
 /**
- * True if the url refers an audio file.
- * @param {string} url Reference to the file.
- * @return {boolean} True if audio.
+ * @param {string|Entry} file Reference to the file.
+ * @return {boolean} True if audio file.
  */
-FileType.isAudio = function(url) {
-  return FileType.getMediaType(url) == 'audio';
+FileType.isAudio = function(file) {
+  return FileType.getMediaType(file) == 'audio';
 };
 
 /**
- * True if the url refers an image file.
- * @param {string} url Reference to the file.
- * @return {boolean} True if image.
+ * @param {string|Entry} file Reference to the file.
+ * @return {boolean} True if image file.
  */
-FileType.isImage = function(url) {
-  return FileType.getMediaType(url) == 'image';
+FileType.isImage = function(file) {
+  return FileType.getMediaType(file) == 'image';
 };
 
 /**
- * True if the url refers a video file.
- * @param {string} url Reference to the file.
- * @return {boolean} True if video.
+ * @param {string|Entry} file Reference to the file.
+ * @return {boolean} True if video file.
  */
-FileType.isVideo = function(url) {
-  return FileType.getMediaType(url) == 'video';
+FileType.isVideo = function(file) {
+  return FileType.getMediaType(file) == 'video';
 };
 
 
 /**
  * Files with more pixels won't have preview.
- * @param {string} url Reference to the file.
+ * @param {string|Entry} file Reference to the file.
  * @return {boolean} True if image or video.
  */
-FileType.isImageOrVideo = function(url) {
-  var type = FileType.getMediaType(url);
+FileType.isImageOrVideo = function(file) {
+  var type = FileType.getMediaType(file);
   return type == 'image' || type == 'video';
 };
 
