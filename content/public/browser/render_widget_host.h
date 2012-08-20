@@ -165,9 +165,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Copies the given subset of the backing store into the given (uninitialized)
   // PlatformCanvas. If |src_rect| is empty, the whole contents is copied.
-  // NOTE: |src_rect| is not supported yet when accelerated compositing is
-  // active (http://crbug.com/118571) and the whole content is always copied
-  // regardless of |src_rect|.
   // If non empty |accelerated_dest_size| is given and accelerated compositing
   // is active, the content is shrinked so that it fits in
   // |accelerated_dest_size|. If |accelerated_dest_size| is larger than the
