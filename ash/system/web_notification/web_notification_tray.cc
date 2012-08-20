@@ -717,7 +717,6 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
     init_params.bubble_width = kWebNotificationWidth;
     if (bubble_type == BUBBLE_TYPE_MESAGE_CENTER) {
       init_params.max_height = kWebNotificationBubbleMaxHeight;
-      init_params.can_activate = true;
     } else {
       init_params.arrow_color = kBackgroundColor;
       init_params.close_on_deactivate = false;
@@ -789,10 +788,6 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
   virtual void OnClickedOutsideView() OVERRIDE {
     // May delete |this|.
     tray_->HideMessageCenterBubble();
-  }
-
-  virtual string16 GetAccessibleName() OVERRIDE {
-    return tray_->GetAccessibleName();
   }
 
   // Overridden from views::WidgetObserver:
@@ -1000,11 +995,6 @@ void WebNotificationTray::AnchorUpdated() {
   }
   if (message_center_bubble_.get())
     message_center_bubble_->bubble_view()->UpdateBubble();
-}
-
-string16 WebNotificationTray::GetAccessibleName() {
-  return l10n_util::GetStringUTF16(
-      IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME);
 }
 
 // Protected methods (invoked only from Bubble and its child classes)

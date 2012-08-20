@@ -49,7 +49,6 @@ class SystemTrayBubble : public TrayBubbleView::Host,
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
   virtual void OnClickedOutsideView() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
 
   BubbleType bubble_type() const { return bubble_type_; }
   TrayBubbleView* bubble_view() const { return bubble_view_; }

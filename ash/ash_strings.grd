@@ -443,9 +443,6 @@ Press Search key to cancel.
       <message name="IDS_ASH_WEB_NOTFICATION_TRAY_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         You have no notifications. Relax!
       </message>
-      <message name="IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the web notification tray (message center).">
-        Message Center
-      </message>
       <message name="IDS_ASH_MAXIMIZE_WINDOW" desc="A help text to show that when the button gets clicked the window get maximized.">
         Maximize
       </message>

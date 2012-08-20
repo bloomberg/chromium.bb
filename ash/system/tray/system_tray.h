@@ -156,7 +156,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   virtual void Initialize() OVERRIDE;
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
   virtual void AnchorUpdated() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
 
  private:
   friend class internal::SystemTrayBubble;
@@ -192,6 +191,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
+
+  // Overridden from views::View.
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Owned items.
   ScopedVector<SystemTrayItem> items_;

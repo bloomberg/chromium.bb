@@ -11,7 +11,6 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -207,13 +206,8 @@ void TrayBackgroundView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // The tray itself expands to the right and bottom edge of the screen to make
   // sure clicking on the edges brings up the popup. However, the focus border
   // should be only around the container.
-  if (HasFocus() && (focusable() || IsAccessibilityFocusable()))
+  if (GetWidget() && GetWidget()->IsActive())
     DrawBorder(canvas, GetContentsBounds());
-}
-
-void TrayBackgroundView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = GetAccessibleName();
 }
 
 void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -257,8 +251,9 @@ void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
 
 void TrayBackgroundView::SetBorder() {
   views::View* parent = status_area_widget_->status_area_widget_delegate();
-  // Tray views are laid out right-to-left or bottom-to-top
-  int on_edge = (this == parent->child_at(0));
+  int child_count = parent->child_count();
+  DCHECK(child_count > 0);
+  int on_edge = (this == parent->child_at(child_count-1));
   // Change the border padding for different shelf alignment.
   if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
     set_border(views::Border::CreateEmptyBorder(

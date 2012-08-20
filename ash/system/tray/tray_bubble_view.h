@@ -45,7 +45,6 @@ class TrayBubbleView : public views::BubbleDelegateView {
     virtual void OnMouseEnteredView() = 0;
     virtual void OnMouseExitedView() = 0;
     virtual void OnClickedOutsideView() = 0;
-    virtual string16 GetAccessibleName() = 0;
 
     // Overridden from aura::EventFilter.
     virtual bool PreHandleKeyEvent(aura::Window* target,

@@ -67,7 +67,6 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
   // Overridden from internal::ActionableView.
@@ -81,8 +80,6 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
 
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
-
-  virtual string16 GetAccessibleName() = 0;
 
   // Sets |contents| as a child and sets its background to |background_|.
   void SetContents(views::View* contents);

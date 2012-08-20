@@ -333,10 +333,6 @@ void SystemTrayBubble::OnClickedOutsideView() {
     bubble_widget_->Close();
 }
 
-string16 SystemTrayBubble::GetAccessibleName() {
-  return tray_->GetAccessibleName();
-}
-
 void SystemTrayBubble::DestroyItemViews() {
   for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
        it != items_.end();
