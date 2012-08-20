@@ -583,8 +583,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
 }
 
 // Test that Instant can't be fooled into committing a URL.
-// Disabled: http://crbug.com/143207
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_DoesNotCommitURLs) {
+IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLs) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 

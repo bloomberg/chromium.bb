@@ -78,6 +78,7 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
 
 void BrowserInstantController::ShowInstant() {
   TabContents* preview = instant_->GetPreviewContents();
+  preview->web_contents()->WasShown();
   browser_->window()->ShowInstant(preview);
 
   content::NotificationService::current()->Notify(
@@ -88,10 +89,12 @@ void BrowserInstantController::ShowInstant() {
   // TODO(beng): Investigate if we can avoid this and instead rely on the
   //             visibility of the WebContentsView.
   chrome::GetActiveWebContents(browser_)->WasHidden();
-  preview->web_contents()->WasShown();
 }
 
 void BrowserInstantController::HideInstant() {
+  if (chrome::GetActiveWebContents(browser_))
+    chrome::GetActiveWebContents(browser_)->WasShown();
+
   browser_->window()->HideInstant();
 
   content::NotificationService::current()->Notify(
@@ -99,8 +102,6 @@ void BrowserInstantController::HideInstant() {
       content::Source<InstantController>(instant()),
       content::NotificationService::NoDetails());
 
-  if (chrome::GetActiveWebContents(browser_))
-    chrome::GetActiveWebContents(browser_)->WasShown();
   if (TabContents* preview = instant_->GetPreviewContents())
     preview->web_contents()->WasHidden();
 }
