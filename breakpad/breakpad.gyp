@@ -522,7 +522,8 @@
           ],
 
           'conditions': [
-            ['target_arch=="arm"', {
+            # Android NDK toolchain doesn't support -mimplicit-it=always
+            ['target_arch=="arm" and OS!="android"', {
               'cflags': ['-Wa,-mimplicit-it=always'],
             }],
             ['OS=="android"', {
