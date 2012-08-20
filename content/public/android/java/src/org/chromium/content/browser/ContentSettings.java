@@ -82,6 +82,8 @@ public class ContentSettings {
     private boolean mJavaScriptCanOpenWindowsAutomatically = false;
     private PluginState mPluginState = PluginState.OFF;
     private boolean mDomStorageEnabled = false;
+    private boolean mAllowFileUrlAccess = true;
+    private boolean mAllowContentUrlAccess = true;
 
     // Not accessed by the native side.
     private String mDefaultUserAgent = "";
@@ -299,6 +301,51 @@ public class ContentSettings {
      */
     public boolean getDisplayZoomControls() {
         return mDisplayZoomControls;
+    }
+
+    /**
+     * Enables or disables file access within ContentView. File access is enabled by
+     * default.  Note that this enables or disables file system access only.
+     * Assets and resources are still accessible using file:///android_asset and
+     * file:///android_res.
+     */
+    public synchronized void setAllowFileAccess(boolean allow) {
+        assert mCanModifySettings;
+        if (mAllowFileUrlAccess != allow) {
+            mAllowFileUrlAccess = allow;
+            sendSyncMessage();
+        }
+    }
+
+    /**
+     * Gets whether this ContentView supports file access.
+     *
+     * @see #setAllowFileAccess
+     */
+    public synchronized boolean getAllowFileAccess() {
+        return mAllowFileUrlAccess;
+    }
+
+    /**
+     * Enables or disables content URL access within ContentView.  Content URL
+     * access allows ContentView to load content from a content provider installed
+     * in the system. The default is enabled.
+     */
+    public synchronized void setAllowContentAccess(boolean allow) {
+        assert mCanModifySettings;
+        if (mAllowContentUrlAccess != allow) {
+            mAllowContentUrlAccess = allow;
+            sendSyncMessage();
+        }
+    }
+
+    /**
+     * Gets whether this ContentView supports content URL access.
+     *
+     * @see #setAllowContentAccess
+     */
+    public synchronized boolean getAllowContentAccess() {
+        return mAllowContentUrlAccess;
     }
 
     boolean supportsMultiTouchZoom() {

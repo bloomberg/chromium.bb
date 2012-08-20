@@ -7,15 +7,46 @@ package org.chromium.base.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.Arrays;
 
 /**
  * Utility class for dealing with files for test.
  */
 public class TestFileUtil {
+    public static void createNewHtmlFile(String name, String title, String body)
+            throws IOException {
+        File file = new File(name);
+        if (!file.createNewFile()) {
+            throw new IOException("File \"" + name + "\" already exists");
+        }
+
+        Writer writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+            writer.write("<html><meta charset=\"UTF-8\" />" +
+                         "<head><title>" + title + "</title></head>" +
+                         "<body>" +
+                         (body != null ? body : "") +
+                         "</body>" +
+                         "</html>");
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+    }
+
+    public static void deleteFile(String name) {
+        File file = new File(name);
+        file.delete();
+    }
+
     /**
      * @param fileName the file to read in.
      * @param sizeLimit cap on the file size: will throw an exception if exceeded

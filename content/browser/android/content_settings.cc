@@ -74,6 +74,10 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mJavaScriptCanOpenWindowsAutomatically", "Z");
     dom_storage_enabled =
         GetFieldID(env, clazz, "mDomStorageEnabled", "Z");
+    allow_file_url_access =
+        GetFieldID(env, clazz, "mAllowFileUrlAccess", "Z");
+    allow_content_url_access =
+        GetFieldID(env, clazz, "mAllowContentUrlAccess", "Z");
   }
 
   // Field ids
@@ -95,6 +99,8 @@ struct ContentSettings::FieldIds {
   jfieldID allow_file_access_from_file_urls;
   jfieldID java_script_can_open_windows_automatically;
   jfieldID dom_storage_enabled;
+  jfieldID allow_file_url_access;
+  jfieldID allow_content_url_access;
 };
 
 ContentSettings::ContentSettings(JNIEnv* env,
