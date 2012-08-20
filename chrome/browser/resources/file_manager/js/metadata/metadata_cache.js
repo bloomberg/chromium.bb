@@ -843,7 +843,7 @@ ContentProvider.prototype.onMessage_ = function(event) {
       'on' + data.verb.substr(0, 1).toUpperCase() + data.verb.substr(1) + '_';
 
   if (!(methodName in this)) {
-    console.log('Unknown message from metadata reader: ' + data.verb, data);
+    console.error('Unknown message from metadata reader: ' + data.verb, data);
     return;
   }
 
@@ -928,7 +928,8 @@ ContentProvider.prototype.onResult_ = function(url, metadata) {
  * @private
  */
 ContentProvider.prototype.onError_ = function(url, step, error, metadata) {
-  console.warn('metadata: ' + url + ': ' + step + ': ' + error);
+  if (localStorage.logMetadata)  // Avoid log spam by default.
+    console.warn('metadata: ' + url + ': ' + step + ': ' + error);
   metadata = metadata || {};
   // Prevent asking for thumbnail again.
   metadata.thumbnailURL = '';
@@ -941,5 +942,6 @@ ContentProvider.prototype.onError_ = function(url, step, error, metadata) {
  * @private
  */
 ContentProvider.prototype.onLog_ = function(arglist) {
-  console.log.apply(console, ['metadata:'].concat(arglist));
+  if (localStorage.logMetadata)  // Avoid log spam by default.
+    console.log.apply(console, ['metadata:'].concat(arglist));
 };
