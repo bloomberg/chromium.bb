@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/program_cache.h"
 
 using base::TimeDelta;
+using base::TimeTicks;
 
 namespace gpu {
 namespace gles2 {
@@ -385,26 +386,28 @@ void ProgramManager::ProgramInfo::ExecuteBindAttribLocationCalls() {
 void ProgramManager::DoCompileShader(ShaderManager::ShaderInfo* info,
                                      ShaderTranslator* translator,
                                      FeatureInfo* feature_info) {
-  base::Time before = base::Time::Now();
+  TimeTicks before = TimeTicks::HighResNow();
   if (program_cache_ &&
       program_cache_->GetShaderCompilationStatus(info->source() ?
                                                  *info->source() : "") ==
           ProgramCache::COMPILATION_SUCCEEDED) {
     info->SetStatus(true, "", translator);
     info->FlagSourceAsCompiled(false);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheHitTime",
-                                (base::Time::Now() - before).InMicroseconds(),
-                                0,
-                                TimeDelta::FromSeconds(1).InMicroseconds(),
-                                50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "GPU.ProgramCache.CompilationCacheHitTime",
+        (TimeTicks::HighResNow() - before).InMicroseconds(),
+        0,
+        TimeDelta::FromSeconds(1).InMicroseconds(),
+        50);
     return;
   }
   ForceCompileShader(info->source(), info, translator, feature_info);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.ProgramCache.CompilationCacheMissTime",
-                              (base::Time::Now() - before).InMicroseconds(),
-                              0,
-                              TimeDelta::FromSeconds(1).InMicroseconds(),
-                              50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "GPU.ProgramCache.CompilationCacheMissTime",
+      (TimeTicks::HighResNow() - before).InMicroseconds(),
+      0,
+      TimeDelta::FromSeconds(1).InMicroseconds(),
+      50);
 }
 
 void ProgramManager::ForceCompileShader(const std::string* source,
@@ -486,7 +489,7 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
   }
   ExecuteBindAttribLocationCalls();
 
-  base::Time before_time = base::Time::Now();
+  TimeTicks before_time = TimeTicks::HighResNow();
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
   if (cache) {
@@ -527,7 +530,7 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
   }
 
   if (link) {
-    before_time = base::Time::Now();
+    before_time = TimeTicks::HighResNow();
     if (cache && gfx::g_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
                           PROGRAM_BINARY_RETRIEVABLE_HINT,
@@ -547,18 +550,17 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
                                &bind_attrib_location_map_);
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",
-          (base::Time::Now() - before_time).InMicroseconds(),
+          (TimeTicks::HighResNow() - before_time).InMicroseconds(),
           0,
           TimeDelta::FromSeconds(10).InMicroseconds(),
           50);
-    } else if (cache) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "GPU.ProgramCache.BinaryCacheHitTime",
-          (base::Time::Now() - before_time).InMicroseconds(),
-          0,
-          TimeDelta::FromSeconds(1).InMicroseconds(),
-          50);
     }
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "GPU.ProgramCache.BinaryCacheHitTime",
+        (TimeTicks::HighResNow() - before_time).InMicroseconds(),
+        0,
+        TimeDelta::FromSeconds(1).InMicroseconds(),
+        50);
   } else {
     UpdateLogInfo();
   }
