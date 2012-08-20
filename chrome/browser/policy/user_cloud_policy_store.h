@@ -29,6 +29,9 @@ class UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
 
+ protected:
+  virtual void RemoveStoredPolicy() OVERRIDE;
+
  private:
   // Starts policy blob validation. |callback| is invoked once validation is
   // complete.

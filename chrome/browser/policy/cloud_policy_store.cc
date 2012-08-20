@@ -15,6 +15,13 @@ CloudPolicyStore::CloudPolicyStore()
 
 CloudPolicyStore::~CloudPolicyStore() {}
 
+void CloudPolicyStore::Clear() {
+  RemoveStoredPolicy();
+  policy_.reset();
+  policy_map_.Clear();
+  NotifyStoreLoaded();
+}
+
 void CloudPolicyStore::AddObserver(CloudPolicyStore::Observer* observer) {
   observers_.AddObserver(observer);
 }

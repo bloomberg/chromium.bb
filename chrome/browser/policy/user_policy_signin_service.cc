@@ -107,7 +107,7 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
   if (signin_manager->GetAuthenticatedUsername().empty()) {
-    manager_->Shutdown();
+    manager_->ShutdownAndRemovePolicy();
   } else {
     if (!manager_->cloud_policy_service()) {
       // Make sure we've initialized the DeviceManagementService. It's OK to

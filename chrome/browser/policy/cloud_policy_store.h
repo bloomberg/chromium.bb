@@ -87,6 +87,10 @@ class CloudPolicyStore {
   // failure.
   virtual void Load() = 0;
 
+  // Deletes any existing policy blob and notifies observers via OnStoreLoaded()
+  // that the blob has changed. Virtual for mocks.
+  virtual void Clear();
+
   // Registers an observer to be notified when policy changes.
   void AddObserver(Observer* observer);
 
@@ -103,6 +107,9 @@ class CloudPolicyStore {
   // Invokes the corresponding callback on all registered observers.
   void NotifyStoreLoaded();
   void NotifyStoreError();
+
+  // Invoked by Clear() to remove stored policy.
+  virtual void RemoveStoredPolicy() = 0;
 
   // Decoded version of the currently effective policy.
   PolicyMap policy_map_;

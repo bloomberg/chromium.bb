@@ -182,6 +182,13 @@ void UserCloudPolicyStoreChromeOS::Load() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void UserCloudPolicyStoreChromeOS::RemoveStoredPolicy() {
+  // This should never be called on ChromeOS since it is not possible to sign
+  // out of a Profile. The underlying policy store is only removed if the
+  // Profile itself is deleted.
+  NOTREACHED();
+}
+
 void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
     const std::string& policy_blob) {
   if (policy_blob.empty()) {

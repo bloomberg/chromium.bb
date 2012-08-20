@@ -40,13 +40,17 @@ class UserCloudPolicyManager : public ConfigurationPolicyProvider,
                                                    bool wait_for_policy_fetch);
 
   // Initializes the cloud connection. |local_prefs| and |service| must stay
-  // valid until Shutdown() gets called. Virtual for mocking.
+  // valid until this object is deleted or ShutdownAndRemovePolicy() gets
+  // called. Virtual for mocking.
   virtual void Initialize(PrefService* local_prefs,
                           DeviceManagementService* service,
                           UserAffiliation user_affiliation);
 
-  // Virtual for mocks.
-  virtual void Shutdown();
+  // Shuts down the UserCloudPolicyManager (removes and stops refreshing the
+  // cached cloud policy). This is typically called when a profile is being
+  // disassociated from a given user (e.g. during signout). No policy will be
+  // provided by this object until the next time Initialize() is invoked.
+  void ShutdownAndRemovePolicy();
 
   // Cancels waiting for the policy fetch and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks
@@ -86,6 +90,10 @@ class UserCloudPolicyManager : public ConfigurationPolicyProvider,
 
   // Completion handler for policy refresh operations.
   void OnRefreshComplete();
+
+  // Frees the CloudPolicyService and stops refreshing policy. Any previously
+  // cached policy will continue to be served.
+  void Shutdown();
 
   // Whether to wait for a policy fetch to complete before reporting
   // IsInitializationComplete().

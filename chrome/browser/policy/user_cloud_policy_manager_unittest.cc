@@ -209,6 +209,19 @@ TEST_F(UserCloudPolicyManagerTest, Init) {
   EXPECT_TRUE(manager_->IsInitializationComplete());
 }
 
+TEST_F(UserCloudPolicyManagerTest, ShutdownAndRemovePolicy) {
+  // Load policy, make sure it goes away when ShutdownAndRemove() is called.
+  CreateManager(false);
+  store_->policy_map_.CopyFrom(policy_map_);
+  EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));
+  store_->NotifyStoreLoaded();
+  EXPECT_TRUE(expected_bundle_.Equals(manager_->policies()));
+  EXPECT_TRUE(manager_->IsInitializationComplete());
+  EXPECT_CALL(*store_, Clear());
+  manager_->ShutdownAndRemovePolicy();
+  EXPECT_FALSE(manager_->cloud_policy_service());
+}
+
 TEST_F(UserCloudPolicyManagerTest, Update) {
   CreateManager(false);
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get()));

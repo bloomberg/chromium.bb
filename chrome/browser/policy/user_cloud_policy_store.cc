@@ -28,6 +28,10 @@ void UserCloudPolicyStore::Load() {
   NotifyStoreLoaded();
 }
 
+void UserCloudPolicyStore::RemoveStoredPolicy() {
+  // TODO(atwilson): Remove policy from disk.
+}
+
 void UserCloudPolicyStore::Store(
     const enterprise_management::PolicyFetchResponse& policy) {
   // Stop any pending requests to store policy, then validate the new policy

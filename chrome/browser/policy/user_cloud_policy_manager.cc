@@ -95,12 +95,9 @@ void UserCloudPolicyManager::Initialize(PrefService* prefs,
   }
 }
 
-void UserCloudPolicyManager::Shutdown() {
-  refresh_scheduler_.reset();
-  if (service_.get())
-    service_->client()->RemoveObserver(this);
-  service_.reset();
-  prefs_ = NULL;
+void UserCloudPolicyManager::ShutdownAndRemovePolicy() {
+  Shutdown();
+  store_->Clear();
 }
 
 void UserCloudPolicyManager::CancelWaitForPolicyFetch() {
@@ -194,6 +191,14 @@ void UserCloudPolicyManager::OnInitialPolicyFetchComplete() {
 void UserCloudPolicyManager::OnRefreshComplete() {
   wait_for_policy_refresh_ = false;
   CheckAndPublishPolicy();
+}
+
+void UserCloudPolicyManager::Shutdown() {
+  refresh_scheduler_.reset();
+  if (service_.get())
+    service_->client()->RemoveObserver(this);
+  service_.reset();
+  prefs_ = NULL;
 }
 
 }  // namespace policy

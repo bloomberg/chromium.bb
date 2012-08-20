@@ -17,6 +17,8 @@ class MockCloudPolicyStore : public CloudPolicyStore {
 
   MOCK_METHOD1(Store, void(const enterprise_management::PolicyFetchResponse&));
   MOCK_METHOD0(Load, void(void));
+  MOCK_METHOD0(Clear, void(void));
+  MOCK_METHOD0(RemoveStoredPolicy, void(void));
 
   // Publish the protected members.
   using CloudPolicyStore::NotifyStoreLoaded;
