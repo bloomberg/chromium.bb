@@ -315,6 +315,37 @@ TEST(GDataDirectoryServiceTest, GetEntryByResourceId_RootDirectory) {
   EXPECT_EQ(kGDataRootDirectoryResourceId, entry->resource_id());
 }
 
+TEST(GDataDirectoryServiceTest, GetEntryInfoByResourceId) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  GDataDirectoryService directory_service;
+  InitDirectoryService(&directory_service);
+
+  // Confirm that an existing file is found.
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  scoped_ptr<GDataEntryProto> entry_proto;
+  directory_service.GetEntryInfoByResourceId(
+      "file_resource_id:file4",
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_OK, error);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file4", entry_proto->base_name());
+
+  // Confirm that a non existing file is not found.
+  error = GDATA_FILE_ERROR_FAILED;
+  entry_proto.reset();
+  directory_service.GetEntryInfoByResourceId(
+      "file:non_existing",
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entry_proto.get());
+}
+
 TEST(GDataDirectoryServiceTest, GetEntryInfoByPath) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,

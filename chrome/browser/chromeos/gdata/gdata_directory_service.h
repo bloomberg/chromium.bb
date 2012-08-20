@@ -188,23 +188,34 @@ class GDataDirectoryService {
   GDataEntry* FindEntryByPathSync(const FilePath& file_path);
 
   // Returns the GDataEntry* with the corresponding |resource_id|.
-  // TODO(achuith): Get rid of this in favor of async version crbug.com/13957.
+  // TODO(satorux): Remove this in favor of GetEntryInfoByResourceId()
+  // but can be difficult. See crbug.com/137374
   GDataEntry* GetEntryByResourceId(const std::string& resource_id);
 
   // Returns the GDataEntry* in the callback with the corresponding
-  // |resource_id|. TODO(achuith): Rename this to GetEntryByResourceId.
+  // |resource_id|. TODO(satorux): Remove this in favor of
+  // GetEntryInfoByResourceId(). crbug.com/137512
   void GetEntryByResourceIdAsync(const std::string& resource_id,
                                  const GetEntryByResourceIdCallback& callback);
+
+  // Finds an entry (a file or a directory) by |resource_id|.
+  //
+  // Must be called from UI thread. |callback| is run on UI thread.
+  // |callback| must not be null.
+  void GetEntryInfoByResourceId(const std::string& resource_id,
+                                const GetEntryInfoCallback& callback);
 
   // Finds an entry (a file or a directory) by |file_path|.
   //
   // Must be called from UI thread. |callback| is run on UI thread.
+  // |callback| must not be null.
   void GetEntryInfoByPath(const FilePath& file_path,
                           const GetEntryInfoCallback& callback);
 
   // Finds and reads a directory by |file_path|.
   //
   // Must be called from UI thread. |callback| is run on UI thread.
+  // |callback| must not be null.
   void ReadDirectoryByPath(const FilePath& file_path,
                            const ReadDirectoryCallback& callback);
 
@@ -214,6 +225,7 @@ class GDataDirectoryService {
   // entry of |second_path|.
   //
   // Must be called from UI thread. |callback| is run on UI thread.
+  // |callback| must not be null.
   void GetEntryInfoPairByPaths(
       const FilePath& first_path,
       const FilePath& second_path,
