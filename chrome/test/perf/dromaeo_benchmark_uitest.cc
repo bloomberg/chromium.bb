@@ -134,7 +134,13 @@ class DromaeoReferenceTest : public DromaeoTest {
   }
 };
 
-TEST_F(DromaeoTest, DOMCorePerf) {
+#if defined(OS_WIN)
+// http://crbug.com/134570 - is flaky on Win7 perf bot
+#define MAYBE_DOMCorePerf DISABLED_DOMCorePerf
+#else
+#define MAYBE_DOMCorePerf DOMCorePerf
+#endif
+TEST_F(DromaeoTest, MAYBE_DOMCorePerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
@@ -148,7 +154,7 @@ TEST_F(DromaeoTest, JSLibPerf) {
   RunTest("jslib");
 }
 
-TEST_F(DromaeoReferenceTest, DOMCorePerf) {
+TEST_F(DromaeoReferenceTest, MAYBE_DOMCorePerf) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
     return;
 
