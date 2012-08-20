@@ -16,7 +16,7 @@ class VisualStudioVersion(object):
 
   def __init__(self, short_name, description,
                solution_version, project_version, flat_sln, uses_vcxproj,
-               path, sdk_based):
+               path, sdk_based, default_toolset=None):
     self.short_name = short_name
     self.description = description
     self.solution_version = solution_version
@@ -25,6 +25,7 @@ class VisualStudioVersion(object):
     self.uses_vcxproj = uses_vcxproj
     self.path = path
     self.sdk_based = sdk_based
+    self.default_toolset = default_toolset
 
   def ShortName(self):
     return self.short_name
@@ -59,6 +60,11 @@ class VisualStudioVersion(object):
   def ToolPath(self, tool):
     """Returns the path to a given compiler tool. """
     return os.path.normpath(os.path.join(self.path, "VC/bin", tool))
+
+  def DefaultToolset(self):
+    """Returns the msbuild toolset version that will be used in the absence
+    of a user override."""
+    return self.default_toolset
 
   def SetupScript(self, target_arch):
     """Returns a command (with arguments) to be used to set up the
@@ -195,7 +201,8 @@ def _CreateVersion(name, path, sdk_based=False):
                                   flat_sln=False,
                                   uses_vcxproj=True,
                                   path=path,
-                                  sdk_based=sdk_based),
+                                  sdk_based=sdk_based,
+                                  default_toolset='v110'),
       '2012e': VisualStudioVersion('2012e',
                                    'Visual Studio 2012',
                                    solution_version='12.00',
@@ -203,7 +210,8 @@ def _CreateVersion(name, path, sdk_based=False):
                                    flat_sln=True,
                                    uses_vcxproj=True,
                                    path=path,
-                                   sdk_based=sdk_based),
+                                   sdk_based=sdk_based,
+                                   default_toolset='v110'),
       '2010': VisualStudioVersion('2010',
                                   'Visual Studio 2010',
                                   solution_version='11.00',

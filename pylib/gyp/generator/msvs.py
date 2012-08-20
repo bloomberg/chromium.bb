@@ -851,11 +851,8 @@ def _GetMsbuildToolsetOfProject(proj_path, spec, version):
   # Pluck out the default configuration.
   default_config = _GetDefaultConfiguration(spec)
   toolset = default_config.get('msbuild_toolset')
-  if not toolset and version.ShortName().startswith('2012'):
-    # Visual Studio 2012 defaults to 2010 toolset if not explicitly specified.
-    # We set an explicit default here if the user hasn't otherwise specified
-    # one.
-    toolset = 'v110'
+  if not toolset and version.DefaultToolset():
+    toolset = version.DefaultToolset()
   return toolset
 
 
