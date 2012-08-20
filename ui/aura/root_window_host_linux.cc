@@ -1051,12 +1051,17 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
 }
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
-  ::Cursor xcursor =
-      image_cursors_->IsImageCursor(cursor) ?
-      image_cursors_->ImageCursorFromNative(cursor) :
-      (cursor == ui::kCursorNone ? invisible_cursor_ :
-       (cursor == ui::kCursorCustom ? cursor.platform() :
-        ui::GetXCursor(CursorShapeFromNative(cursor))));
+  ::Cursor xcursor;
+  if (image_cursors_->IsImageCursor(cursor))
+    xcursor = image_cursors_->ImageCursorFromNative(cursor);
+  else if (cursor == ui::kCursorNone)
+    xcursor =  invisible_cursor_;
+  else if (cursor == ui::kCursorCustom)
+    xcursor = cursor.platform();
+  else if (delegate_->GetDeviceScaleFactor() == 1.0)
+    xcursor = ui::GetXCursor(CursorShapeFromNative(cursor));
+  else
+    xcursor = image_cursors_->ImageCursorFromNative(ui::kCursorPointer);
   XDefineCursor(xdisplay_, xwindow_, xcursor);
 }
 
