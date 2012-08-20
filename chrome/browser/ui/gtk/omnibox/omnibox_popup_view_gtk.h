@@ -82,9 +82,9 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
   // Accept a line of the results, for example, when the user clicks a line.
   void AcceptLine(size_t line, WindowOpenDisposition disposition);
 
-  const gfx::Image* IconForMatch(const AutocompleteMatch& match,
-                                 bool selected,
-                                 bool is_selected_keyword);
+  gfx::Image IconForMatch(const AutocompleteMatch& match,
+                          bool selected,
+                          bool is_selected_keyword);
 
   // Returns the |index|th element of match, unless we're selected and showing
   // the associated keyword match.
@@ -121,11 +121,6 @@ class OmniboxPopupViewGtk : public OmniboxPopupView,
   // Font used for suggestions after being derived from the constructor's
   // |font|.
   gfx::Font font_;
-
-  // Used to cache GdkPixbufs and map them from the SkBitmaps they were created
-  // from.
-  typedef std::map<const SkBitmap*, gfx::Image*> ImageMap;
-  ImageMap images_;
 
   // A list of colors which we should use for drawing the popup. These change
   // between gtk and normal mode.

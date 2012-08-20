@@ -161,7 +161,8 @@ class SearchBuilderResult : public app_list::SearchResult,
       return;
     }
 
-    SetIcon(profile_->GetExtensionService()->GetOmniboxPopupIcon(extension_id));
+    SetIcon(profile_->GetExtensionService()->GetOmniboxPopupIcon(extension_id).
+        AsImageSkia());
   }
 
   Profile* profile_;

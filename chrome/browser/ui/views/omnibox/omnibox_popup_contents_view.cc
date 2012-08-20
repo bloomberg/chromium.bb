@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 
@@ -275,10 +276,10 @@ bool OmniboxPopupContentsView::IsHoveredIndex(size_t index) const {
   return index == model_->hovered_line();
 }
 
-const SkBitmap* OmniboxPopupContentsView::GetIconIfExtensionMatch(
+gfx::Image OmniboxPopupContentsView::GetIconIfExtensionMatch(
     size_t index) const {
   if (!HasMatchAt(index))
-    return NULL;
+    return gfx::Image();
   return model_->GetIconIfExtensionMatch(GetMatchAtIndex(index));
 }
 

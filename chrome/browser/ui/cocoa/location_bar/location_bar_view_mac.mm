@@ -64,7 +64,6 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -545,9 +544,8 @@ NSImage* LocationBarViewMac::GetKeywordImage(const string16& keyword) {
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
       profile_)->GetTemplateURLForKeyword(keyword);
   if (template_url && template_url->IsExtensionKeyword()) {
-    const SkBitmap& bitmap = profile_->GetExtensionService()->
-        GetOmniboxIcon(template_url->GetExtensionId());
-    return gfx::SkBitmapToNSImage(bitmap);
+    return profile_->GetExtensionService()->GetOmniboxIcon(
+        template_url->GetExtensionId()).AsNSImage();
   }
 
   return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);

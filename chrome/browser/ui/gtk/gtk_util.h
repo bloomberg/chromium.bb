@@ -207,7 +207,7 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
 // Draw an entire pixbuf without dithering.
 void DrawFullImage(cairo_t* cr,
                    GtkWidget* widget,
-                   const gfx::Image* image,
+                   const gfx::Image& image,
                    gint dest_x,
                    gint dest_y);
 

@@ -102,7 +102,7 @@ class OmniboxResultView : public views::View,
   static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);
   static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
 
-  const SkBitmap* GetIcon() const;
+  gfx::ImageSkia GetIcon() const;
   const gfx::ImageSkia* GetKeywordIcon() const;
 
   // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in

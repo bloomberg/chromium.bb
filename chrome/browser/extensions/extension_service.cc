@@ -2250,14 +2250,14 @@ bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
                        extension->location() == Extension::COMPONENT);
 }
 
-const SkBitmap& ExtensionService::GetOmniboxIcon(
+gfx::Image ExtensionService::GetOmniboxIcon(
     const std::string& extension_id) {
-  return omnibox_icon_manager_.GetIcon(extension_id);
+  return gfx::Image(omnibox_icon_manager_.GetIcon(extension_id));
 }
 
-const SkBitmap& ExtensionService::GetOmniboxPopupIcon(
+gfx::Image ExtensionService::GetOmniboxPopupIcon(
     const std::string& extension_id) {
-  return omnibox_popup_icon_manager_.GetIcon(extension_id);
+  return gfx::Image(omnibox_popup_icon_manager_.GetIcon(extension_id));
 }
 
 bool ExtensionService::OnExternalExtensionFileFound(

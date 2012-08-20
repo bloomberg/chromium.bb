@@ -203,10 +203,10 @@ bool InlineOmniboxPopupView::IsHoveredIndex(size_t index) const {
   return index == model_->hovered_line();
 }
 
-const SkBitmap* InlineOmniboxPopupView::GetIconIfExtensionMatch(
+gfx::Image InlineOmniboxPopupView::GetIconIfExtensionMatch(
     size_t index) const {
   if (!HasMatchAt(index))
-    return NULL;
+    return gfx::Image();
   return model_->GetIconIfExtensionMatch(GetMatchAtIndex(index));
 }
 

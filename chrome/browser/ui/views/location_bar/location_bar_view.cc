@@ -717,10 +717,9 @@ void LocationBarView::Layout() {
           TemplateURLServiceFactory::GetForProfile(profile_)->
           GetTemplateURLForKeyword(keyword);
       if (template_url && template_url->IsExtensionKeyword()) {
-        const SkBitmap& bitmap =
-            profile_->GetExtensionService()->GetOmniboxIcon(
-                template_url->GetExtensionId());
-        selected_keyword_view_->SetImage(bitmap);
+        gfx::Image image = profile_->GetExtensionService()->GetOmniboxIcon(
+            template_url->GetExtensionId());
+        selected_keyword_view_->SetImage(image.AsImageSkia());
         selected_keyword_view_->set_is_extension_icon(true);
       } else {
         ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

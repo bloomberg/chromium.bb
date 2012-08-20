@@ -277,10 +277,10 @@ bool OmniboxResultView::SortRunsVisually(const RunData& lhs,
 // static
 int OmniboxResultView::default_icon_size_ = 0;
 
-const SkBitmap* OmniboxResultView::GetIcon() const {
-  const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(model_index_);
-  if (bitmap)
-    return bitmap;
+gfx::ImageSkia OmniboxResultView::GetIcon() const {
+  const gfx::Image image = model_->GetIconIfExtensionMatch(model_index_);
+  if (!image.IsEmpty())
+    return image.AsImageSkia();
 
   int icon = match_.starred ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
@@ -303,7 +303,7 @@ const SkBitmap* OmniboxResultView::GetIcon() const {
         break;
     }
   }
-  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon);
 }
 
 const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
@@ -561,12 +561,12 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
 }
 
 void OmniboxResultView::Layout() {
-  const SkBitmap* icon = GetIcon();
+  const gfx::ImageSkia icon = GetIcon();
 
   icon_bounds_.SetRect(edge_item_padding_ +
-      ((icon->width() == default_icon_size_) ?
+      ((icon.width() == default_icon_size_) ?
           0 : LocationBarView::kIconInternalPadding),
-      (height() - icon->height()) / 2, icon->width(), icon->height());
+      (height() - icon.height()) / 2, icon.width(), icon.height());
 
   int text_x = edge_item_padding_ + default_icon_size_ + item_padding_;
   int text_height = GetTextHeight();
@@ -605,7 +605,7 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
   if (!match_.associated_keyword.get() ||
       keyword_icon_->x() > icon_bounds_.right()) {
     // Paint the icon.
-    canvas->DrawImageInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
+    canvas->DrawImageInt(GetIcon(), GetMirroredXForRect(icon_bounds_),
                          icon_bounds_.y());
 
     // Paint the text.

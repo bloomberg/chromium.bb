@@ -399,9 +399,9 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
 }
 
 NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match) {
-  const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
-  if (bitmap)
-    return gfx::SkBitmapToNSImage(*bitmap);
+  gfx::Image image = model_->GetIconIfExtensionMatch(match);
+  if (!image.IsEmpty())
+    return image.AsNSImage();
 
   const int resource_id = match.starred ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);

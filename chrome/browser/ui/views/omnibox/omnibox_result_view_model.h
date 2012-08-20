@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_MODEL_H_
 #define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_MODEL_H_
 
-class SkBitmap;
+namespace gfx {
+class Image;
+}
 
 // An interface implemented by an object that provides data to populate
 // individual result views.
@@ -18,8 +20,8 @@ class OmniboxResultViewModel {
   virtual bool IsHoveredIndex(size_t index) const = 0;
 
   // If |index| is a match from an extension, returns the extension icon;
-  // otherwise returns NULL.
-  virtual const SkBitmap* GetIconIfExtensionMatch(size_t index) const = 0;
+  // otherwise returns an empty gfx::Image.
+  virtual gfx::Image GetIconIfExtensionMatch(size_t index) const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_MODEL_H_

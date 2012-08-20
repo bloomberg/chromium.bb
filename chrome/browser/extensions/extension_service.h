@@ -382,11 +382,11 @@ class ExtensionService
   bool ExtensionBindingsAllowed(const GURL& url);
 
   // Returns the icon to display in the omnibox for the given extension.
-  const SkBitmap& GetOmniboxIcon(const std::string& extension_id);
+  gfx::Image GetOmniboxIcon(const std::string& extension_id);
 
   // Returns the icon to display in the omnibox popup window for the given
   // extension.
-  const SkBitmap& GetOmniboxPopupIcon(const std::string& extension_id);
+  gfx::Image GetOmniboxPopupIcon(const std::string& extension_id);
 
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();

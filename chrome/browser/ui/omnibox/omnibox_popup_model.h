@@ -11,7 +11,10 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 
 class OmniboxPopupView;
-class SkBitmap;
+
+namespace gfx {
+class Image;
+}
 
 class OmniboxPopupModel {
  public:
@@ -81,8 +84,8 @@ class OmniboxPopupModel {
   void TryDeletingCurrentItem();
 
   // If |match| is from an extension, returns the extension icon; otherwise
-  // returns NULL.
-  const SkBitmap* GetIconIfExtensionMatch(const AutocompleteMatch& match) const;
+  // returns an empty Image.
+  gfx::Image GetIconIfExtensionMatch(const AutocompleteMatch& match) const;
 
   // The match the user has manually chosen, if any.
   const AutocompleteResult::Selection& manually_selected_match() const {

@@ -350,7 +350,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     gtk_util::DrawFullImage(
         cairo_context,
         window_,
-        delete_icon,
+        *delete_icon,
         x_align_left,
         entry_rect.y() + ((kRowHeight - kDeleteIconHeight) / 2));
     cairo_restore(cairo_context);
@@ -370,7 +370,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     cairo_save(cairo_context);
     gtk_util::DrawFullImage(cairo_context,
                             window_,
-                            theme_service_->GetImageNamed(icon),
+                            *theme_service_->GetImageNamed(icon),
                             x_align_left,
                             icon_y);
     cairo_restore(cairo_context);

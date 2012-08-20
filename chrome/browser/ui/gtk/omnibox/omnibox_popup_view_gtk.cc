@@ -336,9 +336,6 @@ OmniboxPopupViewGtk::~OmniboxPopupViewGtk() {
   model_.reset();
   g_object_unref(layout_);
   gtk_widget_destroy(window_);
-
-  for (ImageMap::iterator it = images_.begin(); it != images_.end(); ++it)
-    delete it->second;
 }
 
 bool OmniboxPopupViewGtk::IsOpen() const {
@@ -483,19 +480,13 @@ void OmniboxPopupViewGtk::AcceptLine(size_t line,
   omnibox_view_->OpenMatch(match, disposition, GURL(), line);
 }
 
-const gfx::Image* OmniboxPopupViewGtk::IconForMatch(
+gfx::Image OmniboxPopupViewGtk::IconForMatch(
     const AutocompleteMatch& match,
     bool selected,
     bool is_selected_keyword) {
-  const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(match);
-  if (bitmap) {
-    if (!ContainsKey(images_, bitmap)) {
-      // gfx::Image wants ownership of bitmaps given to it, and we might as
-      // well make the bitmap copy a format that will be used.
-      images_[bitmap] = new gfx::Image(gfx::GdkPixbufFromSkBitmap(*bitmap));
-    }
-    return images_[bitmap];
-  }
+  const gfx::Image image = model_->GetIconIfExtensionMatch(match);
+  if (!image.IsEmpty())
+    return image;
 
   int icon;
   if (is_selected_keyword)
@@ -528,7 +519,7 @@ const gfx::Image* OmniboxPopupViewGtk::IconForMatch(
     }
   }
 
-  return theme_service_->GetImageNamed(icon);
+  return *theme_service_->GetImageNamed(icon);
 }
 
 void OmniboxPopupViewGtk::GetVisibleMatchForInput(
@@ -727,7 +718,7 @@ gboolean OmniboxPopupViewGtk::HandleExpose(GtkWidget* widget,
           kIconLeftPadding;
       // Draw the icon for this result.
       gtk_util::DrawFullImage(cr, widget,
-                              theme_service_->GetImageNamed(
+                              *theme_service_->GetImageNamed(
                                   is_selected ? IDR_OMNIBOX_TTS_DARK :
                                   IDR_OMNIBOX_TTS),
                               icon_start_x, line_rect.y() + kIconTopPadding);

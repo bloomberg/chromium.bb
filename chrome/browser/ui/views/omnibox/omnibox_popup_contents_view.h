@@ -55,7 +55,7 @@ class OmniboxPopupContentsView : public views::View,
   // Overridden from OmniboxResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const OVERRIDE;
   virtual bool IsHoveredIndex(size_t index) const OVERRIDE;
-  virtual const SkBitmap* GetIconIfExtensionMatch(size_t index) const OVERRIDE;
+  virtual gfx::Image GetIconIfExtensionMatch(size_t index) const OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

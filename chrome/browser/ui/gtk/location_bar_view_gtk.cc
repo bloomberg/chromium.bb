@@ -1322,11 +1322,10 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
     if (is_extension_keyword) {
       const TemplateURL* template_url =
           template_url_service->GetTemplateURLForKeyword(keyword);
-      const SkBitmap& bitmap = profile->GetExtensionService()->
+      gfx::Image image = profile->GetExtensionService()->
           GetOmniboxIcon(template_url->GetExtensionId());
-      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
-      gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_), pixbuf);
-      g_object_unref(pixbuf);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
+                                image.ToGdkPixbuf());
     } else {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
