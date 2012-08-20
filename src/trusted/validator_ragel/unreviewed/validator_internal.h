@@ -195,21 +195,25 @@ static INLINE Bool ProcessInvalidJumpTargets(
     validation_callback_func user_callback,
     void *callback_data) {
   size_t elements = (size + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE;
-  size_t i;
+  size_t i, j;
+  Bool result = TRUE;
 
   for (i = 0; i < elements ; i++) {
     bitmap_word jump_dest_mask = jump_dests[i];
     bitmap_word valid_target_mask = valid_targets[i];
     if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      // TODO(shcherbina): report address precisely, not just 32-byte block
-      // TODO(khim): report all errors found, not just the first one
-      return user_callback(data + i * NACL_HOST_WORDSIZE,
-                           data + i * NACL_HOST_WORDSIZE, BAD_JUMP_TARGET,
-                           callback_data);
+      for (j = i * NACL_HOST_WORDSIZE; j < (i + 1) * NACL_HOST_WORDSIZE; j++)
+        if (BitmapIsBitSet(jump_dests, j) &&
+            !BitmapIsBitSet(valid_targets, j)) {
+          result &= user_callback(data + j,
+                                  data + j,
+                                  BAD_JUMP_TARGET,
+                                  callback_data);
+        }
     }
   }
 
-  return TRUE;
+  return result;
 }
 
 
