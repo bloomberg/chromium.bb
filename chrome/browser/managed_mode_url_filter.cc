@@ -25,6 +25,7 @@ scoped_ptr<URLMatcher> CreateWhitelistOnBlockingPoolThread(
 
   scoped_ptr<URLMatcher> url_matcher(new URLMatcher());
   URLMatcherConditionSet::Vector all_conditions;
+#if defined(ENABLE_CONFIGURATION_POLICY)
   URLMatcherConditionSet::ID id = 0;
   for (std::vector<std::string>::const_iterator it = patterns.begin();
        it != patterns.end(); ++it) {
@@ -45,6 +46,7 @@ scoped_ptr<URLMatcher> CreateWhitelistOnBlockingPoolThread(
             scheme, host, match_subdomains, port, path);
     all_conditions.push_back(condition_set);
   }
+#endif
   url_matcher->AddConditionSets(all_conditions);
   return url_matcher.Pass();
 }
