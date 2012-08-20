@@ -4,10 +4,13 @@
 
 #include "ash/wm/activation_controller.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -33,6 +36,7 @@ const int kWindowContainerIds[] = {
     kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
+    // TODO(sky): defaultcontainer shouldn't be in the list with workspace2.
     kShellWindowId_DefaultContainer,
 
     // Panel, launcher and status are intentionally checked after other
@@ -46,9 +50,18 @@ const int kWindowContainerIds[] = {
 // Returns true if children of |window| can be activated.
 // These are the only containers in which windows can receive focus.
 bool SupportsChildActivation(aura::Window* window) {
+  // TODO(sky): straighten this out when workspace2 is the default.
+  // kShellWindowId_WorkspaceContainer isn't in |kWindowContainerIds| since it
+  // needs to be special cased in GetTopmostWindowToActivate().
+  if (window->id() == kShellWindowId_WorkspaceContainer)
+    return true;
+
   for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
-    if (window->id() == kWindowContainerIds[i])
+    if (window->id() == kWindowContainerIds[i] &&
+        (window->id() != kShellWindowId_DefaultContainer ||
+         !WorkspaceController::IsWorkspace2Enabled())) {
       return true;
+    }
   }
   return false;
 }
@@ -78,7 +91,9 @@ enum ActivateVisibilityType {
 bool VisibilityMatches(aura::Window* window, ActivateVisibilityType type) {
   bool visible = (type == CURRENT_VISIBILITY) ? window->IsVisible() :
       window->TargetVisibility();
-  return visible || wm::IsWindowMinimized(window);
+  return visible || wm::IsWindowMinimized(window) ||
+      (window->TargetVisibility() &&
+       window->parent()->id() == kShellWindowId_WorkspaceContainer);
 }
 
 // Returns true if |window| can be activated or deactivated.
@@ -250,6 +265,19 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
   if (window && !CanActivateWindowWithEvent(window, event, CURRENT_VISIBILITY))
     return;
 
+  // Make sure the workspace manager switches to the workspace for window.
+  // Without this CanReceiveEvents() below returns false and activation never
+  // changes. CanReceiveEvents() returns false if |window| isn't in the active
+  // workspace, in which case its parent is not visible.
+  // TODO(sky): if I instead change the opacity of the parent this isn't an
+  // issue, but will make animations trickier... Consider which one is better.
+  if (window) {
+    internal::RootWindowController* root_window_controller =
+        GetRootWindowController(window->GetRootWindow());
+    root_window_controller->workspace_controller()->
+        SetActiveWorkspaceByWindow(window);
+  }
+
   // Restore minimized window. This needs to be done before CanReceiveEvents()
   // is called as that function checks window visibility.
   if (window && wm::IsWindowMinimized(window))
@@ -321,12 +349,10 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
   aura::Window* window = NULL;
   for (; !window && current_container_index < arraysize(kWindowContainerIds);
        current_container_index++) {
-
     aura::Window::Windows containers =
         Shell::GetAllContainers(kWindowContainerIds[current_container_index]);
     for (aura::Window::Windows::const_iterator iter = containers.begin();
-         iter != containers.end();
-         ++iter) {
+         iter != containers.end() && !window; ++iter) {
       window = GetTopmostWindowToActivateInContainer((*iter), ignore);
     }
   }
@@ -336,6 +362,21 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
 aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
     aura::Window* container,
     aura::Window* ignore) const {
+  // Workspace2 has an extra level of windows that needs to be special cased.
+  if (container->id() == kShellWindowId_DefaultContainer &&
+      WorkspaceController::IsWorkspace2Enabled()) {
+    for (aura::Window::Windows::const_reverse_iterator i =
+             container->children().rbegin();
+         i != container->children().rend(); ++i) {
+      if ((*i)->IsVisible()) {
+        aura::Window* window = GetTopmostWindowToActivateInContainer(
+            *i, ignore);
+        if (window)
+          return window;
+      }
+    }
+    return NULL;
+  }
   for (aura::Window::Windows::const_reverse_iterator i =
            container->children().rbegin();
        i != container->children().rend();

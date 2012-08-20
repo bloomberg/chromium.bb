@@ -7,6 +7,7 @@
 
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_manager.h"
+#include "ash/wm/workspace/workspace_manager2.h"
 
 namespace ash {
 namespace internal {
@@ -23,6 +24,10 @@ class WorkspaceControllerTestHelper {
   MultiWindowResizeController* GetMultiWindowResizeController();
   WorkspaceManager* workspace_manager() {
     return static_cast<WorkspaceManager*>(
+        controller_->workspace_manager_.get());
+  }
+  WorkspaceManager2* workspace_manager2() {
+    return static_cast<WorkspaceManager2*>(
         controller_->workspace_manager_.get());
   }
 

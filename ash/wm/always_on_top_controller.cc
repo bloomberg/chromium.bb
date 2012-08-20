@@ -4,6 +4,9 @@
 
 #include "ash/wm/always_on_top_controller.h"
 
+#include "ash/root_window_controller.h"
+#include "ash/wm/property_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 
@@ -22,31 +25,40 @@ AlwaysOnTopController::~AlwaysOnTopController() {
     always_on_top_container_->RemoveObserver(this);
 }
 
-void AlwaysOnTopController::SetContainers(aura::Window* default_container,
+void AlwaysOnTopController::SetContainers(
+    aura::Window* default_container,
     aura::Window* always_on_top_container) {
+  if (WorkspaceController::IsWorkspace2Enabled())
+    default_container = NULL;
+
   // Both containers should have no children.
-  DCHECK(default_container->children().empty());
   DCHECK(always_on_top_container->children().empty());
 
   // We are not handling any containers yet.
   DCHECK(default_container_ == NULL && always_on_top_container_ == NULL);
 
   default_container_ = default_container;
-  default_container_->AddObserver(this);
+  if (default_container_)
+    default_container_->AddObserver(this);
 
   always_on_top_container_ = always_on_top_container;
   always_on_top_container_->AddObserver(this);
 }
 
 aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
-  DCHECK(default_container_ && always_on_top_container_);
-  return !window->GetProperty(aura::client::kAlwaysOnTopKey) ?
-      default_container_ : always_on_top_container_;
+  DCHECK(always_on_top_container_ &&
+         (default_container_ || WorkspaceController::IsWorkspace2Enabled()));
+  if (window->GetProperty(aura::client::kAlwaysOnTopKey))
+    return always_on_top_container_;
+  if (default_container_)
+    return default_container_;
+  return GetRootWindowController(always_on_top_container_->GetRootWindow())->
+      workspace_controller()->GetParentForNewWindow(window);
 }
 
 void AlwaysOnTopController::OnWindowAdded(aura::Window* child) {
   // Observe direct child of the containers.
-  if (child->parent() == default_container_ ||
+  if ((default_container_ && child->parent() == default_container_) ||
       child->parent() == always_on_top_container_) {
     child->AddObserver(this);
   }

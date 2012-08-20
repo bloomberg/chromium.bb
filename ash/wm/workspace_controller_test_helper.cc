@@ -20,6 +20,9 @@ WorkspaceControllerTestHelper::~WorkspaceControllerTestHelper() {
 }
 
 WorkspaceEventFilter* WorkspaceControllerTestHelper::GetFilter() {
+  if (WorkspaceController::IsWorkspace2Enabled())
+    return static_cast<WorkspaceEventFilter*>(
+        controller_->viewport_->children()[0]->event_filter());
   return controller_->event_filter_;
 }
 

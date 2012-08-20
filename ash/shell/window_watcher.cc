@@ -13,17 +13,45 @@
 namespace ash {
 namespace shell {
 
+class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
+ public:
+  explicit WorkspaceWindowWatcher(WindowWatcher* watcher) : watcher_(watcher) {
+    watcher_->window_->AddObserver(this);
+    for (size_t i = 0; i < watcher_->window_->children().size(); ++i)
+      watcher_->window_->children()[i]->AddObserver(watcher_);
+  }
+
+  virtual ~WorkspaceWindowWatcher() {
+    watcher_->window_->RemoveObserver(this);
+    for (size_t i = 0; i < watcher_->window_->children().size(); ++i)
+      watcher_->window_->children()[i]->RemoveObserver(watcher_);
+  }
+
+  virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
+    new_window->AddObserver(watcher_);
+  }
+
+  virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE {
+    DCHECK(window->children().empty());
+    window->RemoveObserver(watcher_);
+  }
+
+ private:
+  WindowWatcher* watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowWatcher);
+};
+
 WindowWatcher::WindowWatcher()
     : window_(ash::Shell::GetInstance()->launcher()->window_container()),
       panel_container_(ash::Shell::GetContainer(
           Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_PanelContainer)) {
-  window_->AddObserver(this);
+  workspace_window_watcher_.reset(new WorkspaceWindowWatcher(this));
   panel_container_->AddObserver(this);
 }
 
 WindowWatcher::~WindowWatcher() {
-  window_->RemoveObserver(this);
   panel_container_->RemoveObserver(this);
 }
 

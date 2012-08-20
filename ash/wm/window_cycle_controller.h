@@ -100,6 +100,7 @@ class ASH_EXPORT WindowCycleController
                                  aura::Window* old_active) OVERRIDE;
 
   // Overridden from WindowObserver:
+  virtual void OnWindowAdded(aura::Window* window) OVERRIDE;
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 

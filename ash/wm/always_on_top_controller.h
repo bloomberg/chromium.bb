@@ -41,6 +41,8 @@ class AlwaysOnTopController : public aura::WindowObserver {
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
+  // TODO(sky): remove this after workspace2 is the default.
+  // Is NULL if workspace2 is enabled.
   aura::Window* default_container_;
   aura::Window* always_on_top_container_;
 

@@ -33,6 +33,9 @@ class ASH_EXPORT WorkspaceController
   explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
 
+  // Returns true if Workspace2 is enabled.
+  static bool IsWorkspace2Enabled();
+
   // Returns true if in maximized or fullscreen mode.
   bool IsInMaximizedMode() const;
 
@@ -61,6 +64,9 @@ class ASH_EXPORT WorkspaceController
   aura::Window* viewport_;
 
   scoped_ptr<BaseWorkspaceManager> workspace_manager_;
+
+  // TODO(sky): remove |layout_manager_| and |event_filter_| when Workspace2
+  // is the default.
 
   // Owned by the window its attached to.
   WorkspaceLayoutManager* layout_manager_;

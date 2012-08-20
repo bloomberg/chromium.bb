@@ -5,10 +5,12 @@
 #include "ash/display/screen_position_controller.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/stacking_client.h"
@@ -97,8 +99,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
     aura::Window* dst_container = NULL;
     if (dst_root != window->GetRootWindow()) {
       int container_id = window->parent()->id();
-      // All containers that uses screen coordinates must have valid
-      // window ids.
+      // All containers that uses screen coordinates must have valid window ids.
       DCHECK_GE(container_id, 0);
       // Don't move modal screen.
       if (!SystemModalContainerLayoutManager::IsModalScreen(window))
@@ -116,6 +117,12 @@ void ScreenPositionController::SetBounds(aura::Window* window,
         tracker.Add(focused);
       if (active && focused != active)
         tracker.Add(active);
+
+      if (dst_container->id() == kShellWindowId_WorkspaceContainer) {
+        dst_container =
+            GetRootWindowController(dst_root)->workspace_controller()->
+            GetParentForNewWindow(window);
+      }
 
       dst_container->AddChild(window);
 

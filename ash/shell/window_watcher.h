@@ -10,6 +10,7 @@
 #include "ash/launcher/launcher_types.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -18,6 +19,8 @@ class Window;
 
 namespace ash {
 namespace shell {
+
+// TODO(sky): fix this class, its a bit broke with workspace2.
 
 // WindowWatcher is responsible for listening for newly created windows and
 // creating items on the Launcher for them.
@@ -34,6 +37,8 @@ class WindowWatcher : public aura::WindowObserver {
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
 
  private:
+  class WorkspaceWindowWatcher;
+
   typedef std::map<ash::LauncherID, aura::Window*> IDToWindow;
 
   // Window watching for newly created windows to be added to.
@@ -43,6 +48,8 @@ class WindowWatcher : public aura::WindowObserver {
 
   // Maps from window to the id we gave it.
   IDToWindow id_to_window_;
+
+  scoped_ptr<WorkspaceWindowWatcher> workspace_window_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowWatcher);
 };

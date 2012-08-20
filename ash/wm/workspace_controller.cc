@@ -4,10 +4,13 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
+#include "ash/wm/workspace/workspace_manager2.h"
+#include "base/command_line.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -28,12 +31,18 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       layout_manager_(NULL),
       event_filter_(NULL) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
-  event_filter_ = new WorkspaceEventFilter(viewport);
-  viewport->SetEventFilter(event_filter_);
-  WorkspaceManager* workspace_manager = new WorkspaceManager(viewport);
-  workspace_manager_.reset(workspace_manager);
-  layout_manager_ = new WorkspaceLayoutManager(root_window, workspace_manager);
-  viewport->SetLayoutManager(layout_manager_);
+  if (IsWorkspace2Enabled()) {
+    WorkspaceManager2* workspace_manager = new WorkspaceManager2(viewport);
+    workspace_manager_.reset(workspace_manager);
+  } else {
+    WorkspaceManager* workspace_manager = new WorkspaceManager(viewport);
+    workspace_manager_.reset(workspace_manager);
+    layout_manager_ = new WorkspaceLayoutManager(
+        root_window, workspace_manager);
+    viewport->SetLayoutManager(layout_manager_);
+    event_filter_ = new WorkspaceEventFilter(viewport);
+    viewport->SetEventFilter(event_filter_);
+  }
   aura::client::GetActivationClient(root_window)->AddObserver(this);
   SetGridSize(kGridSize);
 }
@@ -42,8 +51,14 @@ WorkspaceController::~WorkspaceController() {
   aura::client::GetActivationClient(viewport_->GetRootWindow())->
       RemoveObserver(this);
   // WorkspaceLayoutManager may attempt to access state from us. Destroy it now.
-  if (viewport_->layout_manager() == layout_manager_)
+  if (layout_manager_ && viewport_->layout_manager() == layout_manager_)
     viewport_->SetLayoutManager(NULL);
+}
+
+// static
+bool WorkspaceController::IsWorkspace2Enabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableWorkspace2);
 }
 
 bool WorkspaceController::IsInMaximizedMode() const {

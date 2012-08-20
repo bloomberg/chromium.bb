@@ -852,6 +852,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableBootAnimation),
   },
+  {
+    "enable-workspace2",
+    IDS_FLAGS_ENABLE_WORKSPACE2,
+    IDS_FLAGS_ENABLE_WORKSPACE2_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableWorkspace2),
+  },
 #endif
   {
     "enable-views-textfield",

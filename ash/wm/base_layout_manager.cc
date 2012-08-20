@@ -11,6 +11,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -143,7 +144,9 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
       SetRestoreBoundsInParent(window, window->bounds());
     }
     // Minimized state handles its own animations.
-    bool animate = (old_state != ui::SHOW_STATE_MINIMIZED);
+    // TODO(sky): get animations to work with Workspace2.
+    bool animate = (old_state != ui::SHOW_STATE_MINIMIZED) &&
+        !WorkspaceController::IsWorkspace2Enabled();
     UpdateBoundsFromShowState(window, animate);
     ShowStateChanged(window, old_state);
   }

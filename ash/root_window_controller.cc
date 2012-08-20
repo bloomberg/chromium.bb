@@ -50,19 +50,62 @@ aura::Window* CreateContainer(int window_id,
   return container;
 }
 
-void MoveAllWindows(aura::RootWindow* src,
-                    aura::RootWindow* dst) {
-  // Windows move only from secondary displays to the primary
-  // display, so no need to move windows in the containers that are
-  // available only in the primary display (launcher, panels etc)
+// Returns all the children of the workspace windows, eg the standard top-level
+// windows.
+std::vector<aura::Window*> GetWorkspaceWindows(aura::RootWindow* root) {
+  using aura::Window;
+
+  std::vector<Window*> windows;
+  Window* container = Shell::GetContainer(
+      root, internal::kShellWindowId_DefaultContainer);
+  for (Window::Windows::const_reverse_iterator i =
+           container->children().rbegin();
+       i != container->children().rend(); ++i) {
+    Window* workspace_window = *i;
+    if (workspace_window->id() == internal::kShellWindowId_WorkspaceContainer) {
+      windows.insert(windows.end(), workspace_window->children().begin(),
+                     workspace_window->children().end());
+    }
+  }
+  return windows;
+}
+
+// Reparents |window| to |new_parent|.
+void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
+  // Update the restore bounds to make it relative to the display.
+  gfx::Rect restore_bounds(GetRestoreBoundsInParent(window));
+  new_parent->AddChild(window);
+  if (!restore_bounds.IsEmpty())
+    SetRestoreBoundsInParent(window, restore_bounds);
+}
+
+// Reparents the appropriate set of windows from |src| to |dst|.
+void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
+  // Set of windows to move.
   const int kContainerIdsToMove[] = {
     internal::kShellWindowId_DefaultContainer,
     internal::kShellWindowId_AlwaysOnTopContainer,
     internal::kShellWindowId_SystemModalContainer,
     internal::kShellWindowId_LockSystemModalContainer,
   };
+  // For Workspace2 we need to manually reparent the windows. This way
+  // Workspace2 can move the windows to the appropriate workspace.
+  if (internal::WorkspaceController::IsWorkspace2Enabled()) {
+    std::vector<aura::Window*> windows(GetWorkspaceWindows(src));
+    internal::WorkspaceController* workspace_controller =
+        GetRootWindowController(dst)->workspace_controller();
+    for (size_t i = 0; i < windows.size(); ++i) {
+      aura::Window* new_parent =
+          workspace_controller->GetParentForNewWindow(windows[i]);
+      ReparentWindow(windows[i], new_parent);
+    }
+  }
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
+    if (id == internal::kShellWindowId_DefaultContainer &&
+        internal::WorkspaceController::IsWorkspace2Enabled())
+      continue;
+
     aura::Window* src_container = Shell::GetContainer(src, id);
     aura::Window* dst_container = Shell::GetContainer(dst, id);
     aura::Window::Windows children = src_container->children();
@@ -73,11 +116,7 @@ void MoveAllWindows(aura::RootWindow* src,
       if (internal::SystemModalContainerLayoutManager::IsModalScreen(window))
         continue;
 
-      // Update the restore bounds to make it relative to the display.
-      gfx::Rect restore_bounds(GetRestoreBoundsInParent(window));
-      dst_container->AddChild(window);
-      if (!restore_bounds.IsEmpty())
-        SetRestoreBoundsInParent(window, restore_bounds);
+      ReparentWindow(window, dst_container);
     }
   }
 }
@@ -319,7 +358,7 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   if (active && focused != active)
     tracker.Add(active);
 
-  MoveAllWindows(root_window_.get(), dst);
+  ReparentAllWindows(root_window_.get(), dst);
 
   // Restore focused or active window if it's still alive.
   if (focused && tracker.Contains(focused) && dst->Contains(focused)) {

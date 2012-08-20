@@ -17,9 +17,6 @@ class Layer;
 }
 
 namespace ash {
-namespace internal {
-class RootWindowController;
-}
 namespace wm {
 
 // Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
