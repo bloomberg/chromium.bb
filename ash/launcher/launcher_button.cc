@@ -5,6 +5,7 @@
 #include "ash/launcher/launcher_button.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "ash/launcher/launcher_button_host.h"
 #include "grit/ui_resources.h"
@@ -15,10 +16,14 @@
 #include "ui/base/events.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {
@@ -93,6 +98,102 @@ class LauncherButton::BarView : public views::ImageView,
 
   DISALLOW_COPY_AND_ASSIGN(BarView);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// LauncherButton::IconPulseAnimation
+
+// IconPulseAnimation plays a pulse animation in a loop for given |icon_view|.
+// It iterates through all animations, wait for one duration then starts again.
+class LauncherButton::IconPulseAnimation {
+ public:
+  explicit IconPulseAnimation(IconView* icon_view)
+      : icon_view_(icon_view) {
+    SchedulePulseAnimations();
+  }
+  virtual ~IconPulseAnimation() {
+    // Restore icon_view_ on destruction.
+    ScheduleRestoreAnimation();
+  }
+
+ private:
+  // Animation duration in millisecond.
+  static const int kAnimationDurationInMs;
+
+  // Number of animations to run and animation parameters.
+  static const float kAnimationOpacity[];
+  static const float kAnimationScale[];
+
+  // Schedules pulse animations.
+  void SchedulePulseAnimations();
+
+  // Schedule an animation to restore the view to normal state.
+  void ScheduleRestoreAnimation();
+
+  IconView* icon_view_;  // Owned by views hierarchy of LauncherButton.
+
+  DISALLOW_COPY_AND_ASSIGN(IconPulseAnimation);
+};
+
+// static
+const int LauncherButton::IconPulseAnimation::kAnimationDurationInMs = 600;
+const float LauncherButton::IconPulseAnimation::kAnimationOpacity[] =
+    { 0.4f, 0.8f };
+const float LauncherButton::IconPulseAnimation::kAnimationScale[] =
+    { 0.8f, 1.0f };
+
+void LauncherButton::IconPulseAnimation::SchedulePulseAnimations() {
+  // The two animation set should have the same size.
+  DCHECK(arraysize(kAnimationOpacity) == arraysize(kAnimationScale));
+
+  scoped_ptr<ui::LayerAnimationSequence> opacity_sequence(
+      new ui::LayerAnimationSequence());
+  scoped_ptr<ui::LayerAnimationSequence> transform_sequence(
+      new ui::LayerAnimationSequence());
+
+  // The animations loop infinitely.
+  opacity_sequence->set_is_cyclic(true);
+  transform_sequence->set_is_cyclic(true);
+
+  for (size_t i = 0; i < arraysize(kAnimationOpacity); ++i) {
+    opacity_sequence->AddElement(
+        ui::LayerAnimationElement::CreateOpacityElement(
+            kAnimationOpacity[i],
+            base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
+    transform_sequence->AddElement(
+        ui::LayerAnimationElement::CreateTransformElement(
+            ui::GetScaleTransform(icon_view_->GetLocalBounds().CenterPoint(),
+                                  kAnimationScale[i]),
+            base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
+  }
+
+  ui::LayerAnimationElement::AnimatableProperties opacity_properties;
+  opacity_properties.insert(ui::LayerAnimationElement::OPACITY);
+  opacity_sequence->AddElement(
+      ui::LayerAnimationElement::CreatePauseElement(
+          opacity_properties,
+          base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
+
+  ui::LayerAnimationElement::AnimatableProperties transform_properties;
+  transform_properties.insert(ui::LayerAnimationElement::TRANSFORM);
+  transform_sequence->AddElement(
+      ui::LayerAnimationElement::CreatePauseElement(
+          transform_properties,
+          base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
+
+  std::vector<ui::LayerAnimationSequence*> animations;
+  // LayerAnimator::ScheduleTogether takes ownership of the sequences.
+  animations.push_back(opacity_sequence.release());
+  animations.push_back(transform_sequence.release());
+  icon_view_->layer()->GetAnimator()->ScheduleTogether(animations);
+}
+
+// Schedule an animation to restore the view to normal state.
+void LauncherButton::IconPulseAnimation::ScheduleRestoreAnimation() {
+  ui::Layer* layer = icon_view_->layer();
+  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+  layer->SetOpacity(1.0f);
+  layer->SetTransform(ui::Transform());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LauncherButton::IconView
@@ -192,6 +293,8 @@ void LauncherButton::AddState(State state) {
     }
     if (state & STATE_ATTENTION)
       bar_->ShowAttention(true);
+    if (state & STATE_PENDING)
+      icon_pulse_animation_.reset(new IconPulseAnimation(icon_view_));
   }
 }
 
@@ -211,6 +314,8 @@ void LauncherButton::ClearState(State state) {
     }
     if (state & STATE_ATTENTION)
       bar_->ShowAttention(false);
+    if (state & STATE_PENDING)
+      icon_pulse_animation_.reset();
   }
 }
 
@@ -356,7 +461,7 @@ bool LauncherButton::IsShelfHorizontal() const {
 }
 
 void LauncherButton::UpdateState() {
-  if (state_ == STATE_NORMAL) {
+  if (state_ == STATE_NORMAL || state_ & STATE_PENDING) {
     bar_->SetVisible(false);
   } else {
     int bar_id;

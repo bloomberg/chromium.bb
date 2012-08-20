@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/pending_extension_manager.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/version.h"
@@ -13,6 +11,8 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+
+#include <algorithm>
 
 using content::BrowserThread;
 
@@ -67,18 +67,6 @@ bool PendingExtensionManager::IsIdPending(const std::string& id) const {
        iter != pending_extension_list_.end();
        ++iter) {
     if (id == iter->id())
-      return true;
-  }
-
-  return false;
-}
-
-bool PendingExtensionManager::HasPendingExtensionFromSync() const {
-  PendingExtensionList::const_iterator iter;
-  for (iter = pending_extension_list_.begin();
-       iter != pending_extension_list_.end();
-       ++iter) {
-    if (iter->is_from_sync())
       return true;
   }
 

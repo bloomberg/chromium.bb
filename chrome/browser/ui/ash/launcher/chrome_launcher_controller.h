@@ -17,11 +17,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -44,7 +42,6 @@ class BrowserLauncherItemController;
 class BrowserLauncherItemControllerTest;
 class PrefService;
 class Profile;
-class ProfileSyncService;
 class TabContents;
 
 // ChromeLauncherController manages the launcher items needed for tabbed
@@ -56,8 +53,7 @@ class ChromeLauncherController
       public content::NotificationObserver,
       public extensions::ShellWindowRegistry::Observer,
       public aura::client::ActivationChangeObserver,
-      public aura::WindowObserver,
-      public ProfileSyncServiceObserver {
+      public aura::WindowObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -230,7 +226,6 @@ class ChromeLauncherController
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
   virtual void LauncherItemChanged(int index,
                                    const ash::LauncherItem& old_item) OVERRIDE;
-  virtual void LauncherStatusChanged() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -241,19 +236,16 @@ class ChromeLauncherController
   virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
-  // Overridden from client::ActivationChangeObserver:
+  // Overriden from client::ActivationChangeObserver:
   virtual void OnWindowActivated(
       aura::Window* active,
       aura::Window* old_active) OVERRIDE;
 
-  // Overridden from aura::WindowObserver:
+  // Overriden from aura::WindowObserver:
   virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
 
-  // Overridden from ash::ShellObserver:
+  // Overriden from ash::ShellObserver:
   virtual void OnShelfAlignmentChanged() OVERRIDE;
-
-  // Overridden from ProfileSyncServiceObserver:
-  virtual void OnStateChanged() OVERRIDE;
 
  private:
   friend class BrowserLauncherItemControllerTest;
@@ -298,6 +290,10 @@ class ChromeLauncherController
   // Returns item status for given |id|.
   ash::LauncherItemStatus GetItemStatus(ash::LauncherID id) const;
 
+  // Finds the launcher item that represents given |app_id| and updates the
+  // pending state.
+  void MarkAppPending(const std::string& app_id);
+
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
   void DoPinAppWithID(const std::string& app_id);
@@ -322,13 +318,6 @@ class ChromeLauncherController
       const std::string& app_id,
       ash::LauncherItemStatus status,
       int index);
-
-  // Checks whether sync is completed and no pending synced extension install
-  // and calls StopLoadingAnimation when both conditions are met.
-  void CheckAppSync();
-
-  void StartLoadingAnimation();
-  void StopLoadingAnimation();
 
   static ChromeLauncherController* instance_;
 
@@ -364,9 +353,6 @@ class ChromeLauncherController
 
   PrefChangeRegistrar pref_change_registrar_;
   aura::client::ActivationClient* activation_client_;
-
-  ProfileSyncService* observed_sync_service_;
-  base::OneShotTimer<ChromeLauncherController> loading_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

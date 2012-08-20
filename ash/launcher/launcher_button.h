@@ -5,6 +5,7 @@
 #ifndef ASH_LAUNCHER_LAUNCHER_BUTTON_H_
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
@@ -31,7 +32,11 @@ class LauncherButton : public views::CustomButton {
     STATE_ACTIVE    = 1 << 2,
     // Underlying LauncherItem needs user's attention.
     STATE_ATTENTION = 1 << 3,
-    STATE_FOCUSED   = 1 << 4,
+    // Underlying LauncherItem has pending operations.
+    //   e.g. A TYPE_APP_SHORTCUT item whose corresponding app is being
+    //        installed.
+    STATE_PENDING   = 1 << 4,
+    STATE_FOCUSED   = 1 << 5,
   };
 
   virtual ~LauncherButton();
@@ -102,6 +107,7 @@ class LauncherButton : public views::CustomButton {
 
  private:
   class BarView;
+  class IconPulseAnimation;
 
   // Returns true if the shelf is horizontal. If this returns false the shelf is
   // vertical.
@@ -118,6 +124,10 @@ class LauncherButton : public views::CustomButton {
   // The current state of the application, multiple values of AppState are or'd
   // together.
   int state_;
+
+  // Runs a pulse animation for |icon_view_|. It is created when button state
+  // has a STATE_PENDING bit and destroyed when that bit is clear.
+  scoped_ptr<IconPulseAnimation> icon_pulse_animation_;
 
   gfx::ShadowValues icon_shadows_;
 

@@ -167,9 +167,6 @@ This file contains the strings for ash.
       <message name="IDS_AURA_APP_LIST_TITLE" desc="The title used for the Aura app list in the launcher">
         Apps
       </message>
-      <message name="IDS_AURA_APP_LIST_SYNCING_TITLE" desc="The title used for the Aura app list in the launcher to indicate loading/syncing apps.">
-        Syncing apps...
-      </message>
       <message name="IDS_AURA_NEW_TAB" desc="The text label of the New Tab menu item">
         New tab
       </message>

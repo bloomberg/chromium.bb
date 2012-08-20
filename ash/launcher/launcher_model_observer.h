@@ -25,12 +25,9 @@ class ASH_EXPORT LauncherModelObserver {
   // of the arguments.
   virtual void LauncherItemMoved(int start_index, int target_index) = 0;
 
-  // Invoked when the state of an item changes. |old_item| is the item
+  // Invoked when the the state of an item changes. |old_item| is the item
   // before the change.
   virtual void LauncherItemChanged(int index, const LauncherItem& old_item) = 0;
-
-  // Invoked when launcher status is changed.
-  virtual void LauncherStatusChanged() = 0;
 
  protected:
   virtual ~LauncherModelObserver() {}

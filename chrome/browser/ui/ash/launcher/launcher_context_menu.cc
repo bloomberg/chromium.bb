@@ -27,21 +27,24 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       AddItem(
           MENU_PIN,
           l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
-      AddSeparator();
-      AddCheckItemWithStringId(
-          LAUNCH_TYPE_REGULAR_TAB,
-          IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
-      AddCheckItemWithStringId(
-          LAUNCH_TYPE_PINNED_TAB,
-          IDS_APP_CONTEXT_MENU_OPEN_PINNED);
-      AddCheckItemWithStringId(
-          LAUNCH_TYPE_WINDOW,
-          IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-      // Even though the launch type is Full Screen it is more accurately
-      // described as Maximized in Ash.
-      AddCheckItemWithStringId(
-          LAUNCH_TYPE_FULLSCREEN,
-          IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+      // No open actions for pending app shortcut.
+      if (item->status != ash::STATUS_IS_PENDING) {
+        AddSeparator();
+        AddCheckItemWithStringId(
+            LAUNCH_TYPE_REGULAR_TAB,
+            IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
+        AddCheckItemWithStringId(
+            LAUNCH_TYPE_PINNED_TAB,
+            IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+        AddCheckItemWithStringId(
+            LAUNCH_TYPE_WINDOW,
+            IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+        // Even though the launch type is Full Screen it is more accurately
+        // described as Maximized in Ash.
+        AddCheckItemWithStringId(
+            LAUNCH_TYPE_FULLSCREEN,
+            IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+      }
     } else if (item_.type == ash::TYPE_BROWSER_SHORTCUT) {
       AddItem(MENU_NEW_WINDOW,
               l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_WINDOW));

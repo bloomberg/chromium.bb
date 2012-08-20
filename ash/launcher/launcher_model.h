@@ -22,12 +22,6 @@ class LauncherModelObserver;
 // Model used by LauncherView.
 class ASH_EXPORT LauncherModel {
  public:
-  enum Status {
-    STATUS_NORMAL,
-    // A status that indicates apps are syncing/loading.
-    STATUS_LOADING,
-  };
-
   LauncherModel();
   ~LauncherModel();
 
@@ -62,9 +56,6 @@ class ASH_EXPORT LauncherModel {
   const LauncherItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }
 
-  void SetStatus(Status status);
-  Status status() const { return status_; }
-
   void AddObserver(LauncherModelObserver* observer);
   void RemoveObserver(LauncherModelObserver* observer);
 
@@ -77,7 +68,6 @@ class ASH_EXPORT LauncherModel {
   // ID assigned to the next item.
   LauncherID next_id_;
   LauncherItems items_;
-  Status status_;
   ObserverList<LauncherModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherModel);

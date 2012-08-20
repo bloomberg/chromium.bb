@@ -18,20 +18,27 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/auto_reset.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/window.h"
+#include "ui/base/animation/animation.h"
+#include "ui/base/animation/throb_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 
 using ui::Animation;
 using views::View;
@@ -40,13 +47,13 @@ namespace ash {
 namespace internal {
 
 // Default amount content is inset on the left edge.
-const int kDefaultLeadingInset = 8;
+static const int kDefaultLeadingInset = 8;
 
 // Minimum distance before drag starts.
-const int kMinimumDragDistance = 8;
+static const int kMinimumDragDistance = 8;
 
 // Size between the buttons.
-const int kButtonSpacing = 4;
+static const int kButtonSpacing = 4;
 
 namespace {
 
@@ -170,21 +177,31 @@ void ReflectItemStatus(const ash::LauncherItem& item,
       button->ClearState(LauncherButton::STATE_ACTIVE);
       button->ClearState(LauncherButton::STATE_RUNNING);
       button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(LauncherButton::STATE_PENDING);
       break;
     case STATUS_RUNNING:
       button->ClearState(LauncherButton::STATE_ACTIVE);
       button->AddState(LauncherButton::STATE_RUNNING);
       button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(LauncherButton::STATE_PENDING);
       break;
     case STATUS_ACTIVE:
       button->AddState(LauncherButton::STATE_ACTIVE);
       button->ClearState(LauncherButton::STATE_RUNNING);
       button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(LauncherButton::STATE_PENDING);
       break;
     case STATUS_ATTENTION:
       button->ClearState(LauncherButton::STATE_ACTIVE);
       button->ClearState(LauncherButton::STATE_RUNNING);
       button->AddState(LauncherButton::STATE_ATTENTION);
+      button->ClearState(LauncherButton::STATE_PENDING);
+      break;
+    case STATUS_IS_PENDING:
+      button->ClearState(LauncherButton::STATE_ACTIVE);
+      button->ClearState(LauncherButton::STATE_RUNNING);
+      button->ClearState(LauncherButton::STATE_ATTENTION);
+      button->AddState(LauncherButton::STATE_PENDING);
       break;
   }
 }
@@ -287,7 +304,6 @@ void LauncherView::Init() {
     AddChildView(child);
   }
   UpdateFirstButtonPadding();
-  LauncherStatusChanged();
 
   overflow_button_ = new OverflowButton(this);
   overflow_button_->set_context_menu_controller(this);
@@ -506,7 +522,21 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
 
     case TYPE_APP_LIST: {
       // TODO(dave): turn this into a LauncherButton too.
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       AppListButton* button = new AppListButton(this, this);
+      button->SetImage(
+          views::CustomButton::BS_NORMAL,
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToImageSkia());
+      button->SetImage(
+          views::CustomButton::BS_HOT,
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).
+              ToImageSkia());
+      button->SetImage(
+          views::CustomButton::BS_PUSHED,
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
+              ToImageSkia());
+      button->SetAccessibleName(
+          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
       view = button;
       break;
     }
@@ -857,15 +887,6 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
   AnimateToIdealBounds();
 }
 
-void LauncherView::LauncherStatusChanged() {
-  AppListButton* app_list_button =
-      static_cast<AppListButton*>(GetAppListButtonView());
-  if (model_->status() == LauncherModel::STATUS_LOADING)
-    app_list_button->StartLoadingAnimation();
-  else
-    app_list_button->StopLoadingAnimation();
-}
-
 void LauncherView::PointerPressedOnButton(views::View* view,
                                           Pointer pointer,
                                           const ui::LocatedEvent& event) {
@@ -958,9 +979,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
       return delegate_->GetTitle(model_->items()[view_index]);
 
     case TYPE_APP_LIST:
-      return model_->status() == LauncherModel::STATUS_LOADING ?
-          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_SYNCING_TITLE) :
-          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
+      return l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
 
     case TYPE_BROWSER_SHORTCUT:
       return l10n_util::GetStringUTF16(IDS_AURA_NEW_TAB);
