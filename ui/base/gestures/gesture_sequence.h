@@ -104,7 +104,7 @@ class UI_EXPORT GestureSequence {
                               Gestures* gestures,
                               float x_velocity,
                               float y_velocity);
-  void AppendScrollGestureUpdate(const GesturePoint& point,
+  void AppendScrollGestureUpdate(GesturePoint& point,
                                  const gfx::Point& location,
                                  Gestures* gestures);
 
@@ -140,7 +140,7 @@ class UI_EXPORT GestureSequence {
                        GesturePoint& point,
                        Gestures* gestures);
   bool ScrollUpdate(const TouchEvent& event,
-                    const GesturePoint& point,
+                    GesturePoint& point,
                     Gestures* gestures);
   bool TouchDown(const TouchEvent& event,
                  const GesturePoint& point,
@@ -161,7 +161,7 @@ class UI_EXPORT GestureSequence {
                   const GesturePoint& point,
                   Gestures* gestures);
   bool PinchUpdate(const TouchEvent& event,
-                   const GesturePoint& point,
+                   GesturePoint& point,
                    Gestures* gestures);
   bool PinchEnd(const TouchEvent& event,
                 const GesturePoint& point,

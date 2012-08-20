@@ -13,13 +13,13 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       touch_points_(1) {
   switch (type_) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      data.scroll.x = delta_x;
-      data.scroll.y = delta_y;
+      data.scroll_update.x = delta_x;
+      data.scroll_update.y = delta_y;
       break;
 
     case ui::ET_SCROLL_FLING_START:
-      data.velocity.x = delta_x;
-      data.velocity.y = delta_y;
+      data.fling_velocity.x = delta_x;
+      data.fling_velocity.y = delta_y;
       break;
 
     case ui::ET_GESTURE_LONG_PRESS:
@@ -45,14 +45,19 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       break;
 
     default:
-      data.generic.delta_x = delta_x;
-      data.generic.delta_y = delta_y;
       if (delta_x != 0.f || delta_y != 0.f) {
         DLOG(WARNING) << "A gesture event (" << type << ") had unknown data: ("
                       << delta_x << "," << delta_y;
       }
       break;
   }
+}
+
+void GestureEventDetails::SetScrollVelocity(float velocity_x,
+                                            float velocity_y) {
+  CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+  data.scroll_update.velocity_x = velocity_x;
+  data.scroll_update.velocity_y = velocity_y;
 }
 
 }  // namespace ui

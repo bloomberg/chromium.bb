@@ -273,6 +273,15 @@ unsigned int ComputeTouchBitmask(const GesturePoint* points) {
   return touch_bitmask;
 }
 
+float CalibrateFlingVelocity(float velocity) {
+  // TODO(sad|rjkroege): fling-curve is currently configured to work well with
+  // touchpad scroll-events. This curve needs to be adjusted to work correctly
+  // with both touchpad and touchscreen. Until then, scale quadratically.
+  // http://crbug.com/120154
+  const float velocity_scaling  = 1.f / 900.f;
+  return velocity_scaling * velocity * fabsf(velocity);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -655,16 +664,11 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
     railed_x_velocity = 0;
 
   if (railed_x_velocity != 0 || railed_y_velocity != 0) {
-    // TODO(sad|rjkroege): fling-curve is currently configured to work well with
-    // touchpad scroll-events. This curve needs to be adjusted to work correctly
-    // with both touchpad and touchscreen. Until then, scale quadratically.
-    // http://crbug.com/120154
-    const float velocity_scaling  = 1.f / 900.f;
 
     gestures->push_back(CreateGestureEvent(
         GestureEventDetails(ui::ET_SCROLL_FLING_START,
-            velocity_scaling * railed_x_velocity * fabsf(railed_x_velocity),
-            velocity_scaling * railed_y_velocity * fabsf(railed_y_velocity)),
+            CalibrateFlingVelocity(railed_x_velocity),
+            CalibrateFlingVelocity(railed_y_velocity)),
         location,
         flags_,
         base::Time::FromDoubleT(point.last_touch_time()),
@@ -679,7 +683,7 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
   }
 }
 
-void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
+void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
                                                 const gfx::Point& location,
                                                 Gestures* gestures) {
   gfx::Point current_center = bounding_box_.CenterPoint();
@@ -692,8 +696,12 @@ void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
   if (dx == 0 && dy == 0)
     return;
 
+  GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE, dx, dy);
+  details.SetScrollVelocity(
+      scroll_type_ == ST_VERTICAL ? 0 : point.XVelocity(),
+      scroll_type_ == ST_HORIZONTAL ? 0 : point.YVelocity());
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, dy),
+      details,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
@@ -761,7 +769,8 @@ void GestureSequence::AppendTwoFingerTapGestureEvent(Gestures* gestures) {
 }
 
 bool GestureSequence::Click(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                            const GesturePoint& point,
+                            Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
   if (point.IsInClickWindow(event)) {
     bool double_tap = point.IsInDoubleClickWindow(event);
@@ -774,7 +783,8 @@ bool GestureSequence::Click(const TouchEvent& event,
 }
 
 bool GestureSequence::ScrollStart(const TouchEvent& event,
-    GesturePoint& point, Gestures* gestures) {
+                                  GesturePoint& point,
+                                  Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
   if (point.IsInClickWindow(event) ||
       !point.IsInScrollWindow(event) ||
@@ -791,7 +801,8 @@ bool GestureSequence::ScrollStart(const TouchEvent& event,
 }
 
 void GestureSequence::BreakRailScroll(const TouchEvent& event,
-    GesturePoint& point, Gestures* gestures) {
+                                      GesturePoint& point,
+                                      Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL);
   if (scroll_type_ == ST_HORIZONTAL &&
       point.BreaksHorizontalRail())
@@ -802,7 +813,8 @@ void GestureSequence::BreakRailScroll(const TouchEvent& event,
 }
 
 bool GestureSequence::ScrollUpdate(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                   GesturePoint& point,
+                                   Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL);
   if (!point.DidScroll(event, 0))
     return false;
@@ -811,7 +823,8 @@ bool GestureSequence::ScrollUpdate(const TouchEvent& event,
 }
 
 bool GestureSequence::TouchDown(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                const GesturePoint& point,
+                                Gestures* gestures) {
   DCHECK(state_ == GS_NO_GESTURE);
   AppendTapDownGestureEvent(point, gestures);
   long_press_timer_->Start(
@@ -824,7 +837,8 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
 }
 
 bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                         const GesturePoint& point,
+                                         Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK || state_ == GS_SCROLL);
   if (state_ == GS_SCROLL) {
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
@@ -835,7 +849,8 @@ bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
 }
 
 bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                         const GesturePoint& point,
+                                         Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
 
   base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
@@ -849,7 +864,8 @@ bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
 }
 
 bool GestureSequence::TwoFingerTouchReleased(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                             const GesturePoint& point,
+                                             Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
   base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
@@ -871,7 +887,8 @@ void GestureSequence::AppendLongPressGestureEvent() {
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,
-    GesturePoint& point, Gestures* gestures) {
+                                GesturePoint& point,
+                                Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL);
   if (point.IsInFlickWindow(event)) {
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
@@ -884,7 +901,8 @@ bool GestureSequence::ScrollEnd(const TouchEvent& event,
 }
 
 bool GestureSequence::PinchStart(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                 const GesturePoint& point,
+                                 Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL ||
          state_ == GS_PENDING_SYNTHETIC_CLICK ||
          state_ == GS_PENDING_TWO_FINGER_TAP);
@@ -909,7 +927,8 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 }
 
 bool GestureSequence::PinchUpdate(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                                  GesturePoint& point,
+                                  Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
 
   // It is possible that the none of the touch-points changed their position,
@@ -944,7 +963,8 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
 }
 
 bool GestureSequence::PinchEnd(const TouchEvent& event,
-    const GesturePoint& point, Gestures* gestures) {
+                               const GesturePoint& point,
+                               Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
 
   GesturePoint* point1 = GetPointByPointId(0);

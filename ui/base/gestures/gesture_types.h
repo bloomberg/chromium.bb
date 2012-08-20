@@ -27,22 +27,30 @@ struct UI_EXPORT GestureEventDetails {
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   void set_bounding_box(const gfx::Rect& box) { bounding_box_ = box; }
 
+  void SetScrollVelocity(float velocity_x, float velocity_y);
+
   float scroll_x() const {
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
-    return data.scroll.x;
+    return data.scroll_update.x;
   }
+
   float scroll_y() const {
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
-    return data.scroll.y;
+    return data.scroll_update.y;
   }
 
   float velocity_x() const {
-    CHECK_EQ(ui::ET_SCROLL_FLING_START, type_);
-    return data.velocity.x;
+    CHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
+          type_ == ui::ET_SCROLL_FLING_START);
+    return type_ == ui::ET_SCROLL_FLING_START ? data.fling_velocity.x :
+                                                data.scroll_update.velocity_x;
   }
+
   float velocity_y() const {
-    CHECK_EQ(ui::ET_SCROLL_FLING_START, type_);
-    return data.velocity.y;
+    CHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
+          type_ == ui::ET_SCROLL_FLING_START);
+    return type_ == ui::ET_SCROLL_FLING_START ? data.fling_velocity.y :
+                                                data.scroll_update.velocity_y;
   }
 
   int touch_id() const {
@@ -59,14 +67,17 @@ struct UI_EXPORT GestureEventDetails {
     CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.left;
   }
+
   bool swipe_right() const {
     CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.right;
   }
+
   bool swipe_up() const {
     CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.up;
   }
+
   bool swipe_down() const {
     CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
     return data.swipe.down;
@@ -83,14 +94,16 @@ struct UI_EXPORT GestureEventDetails {
     struct {  // SCROLL delta.
       float x;
       float y;
-    } scroll;
+      float velocity_x;
+      float velocity_y;
+    } scroll_update;
 
     float scale;  // PINCH scale.
 
     struct {  // FLING velocity.
       float x;
       float y;
-    } velocity;
+    } fling_velocity;
 
     int touch_id;  // LONG_PRESS touch-id.
 
@@ -102,11 +115,6 @@ struct UI_EXPORT GestureEventDetails {
     } swipe;
 
     int tap_count;  // TAP repeat count.
-
-    struct {
-      float delta_x;
-      float delta_y;
-    } generic;
   } data;
 
   int touch_points_;  // Number of active touch points in the gesture.
