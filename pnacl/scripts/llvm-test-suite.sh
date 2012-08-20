@@ -22,7 +22,7 @@ readonly NACL_ROOT="$(pwd)"
 readonly LLVM_TESTSUITE_SRC=${NACL_ROOT}/pnacl/git/llvm-test-suite
 readonly LLVM_TESTSUITE_BUILD=${NACL_ROOT}/pnacl/build/llvm-test-suite
 
-readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/src/upstream/llvm
+readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/git/llvm
 readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/llvm
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-6}
 readonly PNACL_BIN=${NACL_ROOT}/toolchain/pnacl_linux_x86_64/newlib/bin
