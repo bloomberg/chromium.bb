@@ -377,6 +377,9 @@ def Main(argv):
                     action='append', default=[],
                     help='Add DIRECTORY to library search path',
                     metavar='DIRECTORY')
+  parser.add_option('-P', '--path-prefix', dest='path_prefix', default='',
+                    help='A path to prepend to shared libraries in the .nmf',
+                    metavar='DIRECTORY')
   parser.add_option('-s', '--stage-dependencies', dest='stage_dependencies',
                     help='Destination directory for staging libraries',
                     metavar='DIRECTORY')
@@ -415,9 +418,15 @@ def Main(argv):
       raise Error('Expecting --name=<orig_arch.so>,<new_name.so>')
     remap[parts[0]] = parts[1]
 
+  if options.path_prefix:
+    path_prefix = options.path_prefix.split('/')
+  else:
+    path_prefix = []
+
   nmf = NmfUtils(objdump=options.objdump,
                  main_files=args,
                  lib_path=options.lib_path,
+                 lib_prefix=path_prefix,
                  toolchain=options.toolchain,
                  remap=remap)
 

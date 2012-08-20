@@ -122,6 +122,7 @@
                   '>@(_inputs)',
                   '--objdump=>(nacl_objdump)',
                   '--output=>(nmf_glibc)',
+                  '--path-prefix=>(nexe_target)_libs',
                   '--stage-dependencies=<(nacl_glibc_out_dir)',
                   '--toolchain=glibc',
                 ],
