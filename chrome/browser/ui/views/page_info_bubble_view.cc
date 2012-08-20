@@ -121,6 +121,9 @@ PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
       animation_start_height_(0),
       navigator_(navigator),
       web_contents_(web_contents) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
     content::CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
@@ -281,13 +284,6 @@ void PageInfoBubbleView::OnPageInfoModelChanged() {
   LayoutSections();
   resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
   resize_animation_.Show();
-}
-
-gfx::Rect PageInfoBubbleView::GetAnchorRect() {
-  // Compensate for some built-in padding in the icon.
-  gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
-  anchor.Inset(0, anchor_view() ? 5 : 0);
-  return anchor;
 }
 
 void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {

@@ -71,12 +71,9 @@ const int kHeaderPaddingTop = 12;
 // the popup header.
 const int kHeaderRowSpacing = 4;
 
-// In order to make the arrow of the bubble point directly at the location icon
-// in the Omnibox rather then the bottom border of the Omnibox, the position of
-// the bubble must be adjusted. This is the number of pixel the bubble must be
-// moved towards the top of the screen (starting from the bottom border of the
-// Omnibox).
-const int kLocationIconBottomMargin = 5;
+// To make the bubble's arrow point directly at the location icon rather than at
+// the Omnibox's edge, inset the bubble's anchor rect by this amount of pixels.
+const int kLocationIconVerticalMargin = 5;
 
 // The margins between the popup border and the popup content.
 const int kPopupMarginTop = 4;
@@ -143,9 +140,6 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
   virtual ~InternalPageInfoPopupView();
 
  private:
-  // views::BubbleDelegate implementations.
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
-
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);
 };
 
@@ -228,6 +222,10 @@ void PopupHeaderView::SetIdentityStatus(const string16& status,
 
 InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
+                                kLocationIconVerticalMargin, 0));
+
   const int kSpacing = 4;
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
                                         kSpacing, kSpacing));
@@ -249,14 +247,6 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
 }
 
 InternalPageInfoPopupView::~InternalPageInfoPopupView() {
-}
-
-gfx::Rect InternalPageInfoPopupView::GetAnchorRect() {
-  // Compensate for some built-in padding in the icon. This will make the arrow
-  // point to the middle of the icon.
-  gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
-  anchor.Inset(0, anchor_view() ? kLocationIconBottomMargin : 0);
-  return anchor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,52 +286,56 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       cert_id_(0),
       connection_info_content_(NULL),
       page_info_content_(NULL) {
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-    const int content_column = 0;
-    views::ColumnSet* column_set = layout->AddColumnSet(content_column);
-    column_set->AddColumn(views::GridLayout::FILL,
-                          views::GridLayout::FILL,
-                          1,
-                          views::GridLayout::USE_PREF,
-                          0,
-                          0);
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
+                                kLocationIconVerticalMargin, 0));
 
-    header_ = new PopupHeaderView(this);
-    layout->StartRow(1, content_column);
-    layout->AddView(header_);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+  const int content_column = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(content_column);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
 
-    layout->AddPaddingRow(1, kHeaderMarginBottom);
-    tabbed_pane_ = new views::TabbedPane();
-    layout->StartRow(1, content_column);
-    layout->AddView(tabbed_pane_);
-    // Tabs must be added after the tabbed_pane_ was added to the views
-    // hierachy.  Adding the |tabbed_pane_| to the views hierachy triggers the
-    // initialization of the native tab UI element. If the native tab UI
-    // element is not initalized adding a tab will result in a NULL pointer
-    // excetion.
-    tabbed_pane_->AddTab(
-        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
-        CreatePermissionsTab());
-    tabbed_pane_->AddTab(
-        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
-        CreateConnectionTab());
-    tabbed_pane_->SelectTabAt(0);
-    tabbed_pane_->set_listener(this);
+  header_ = new PopupHeaderView(this);
+  layout->StartRow(1, content_column);
+  layout->AddView(header_);
 
-    set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
-                            kPopupMarginBottom, kPopupMarginRight));
+  layout->AddPaddingRow(1, kHeaderMarginBottom);
+  tabbed_pane_ = new views::TabbedPane();
+  layout->StartRow(1, content_column);
+  layout->AddView(tabbed_pane_);
+  // Tabs must be added after the tabbed_pane_ was added to the views
+  // hierachy.  Adding the |tabbed_pane_| to the views hierachy triggers the
+  // initialization of the native tab UI element. If the native tab UI
+  // element is not initalized adding a tab will result in a NULL pointer
+  // excetion.
+  tabbed_pane_->AddTab(
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
+      CreatePermissionsTab());
+  tabbed_pane_->AddTab(
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
+      CreateConnectionTab());
+  tabbed_pane_->SelectTabAt(0);
+  tabbed_pane_->set_listener(this);
 
-    views::BubbleDelegateView::CreateBubble(this);
-    this->Show();
-    SizeToContents();
+  set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
+                          kPopupMarginBottom, kPopupMarginRight));
 
-    presenter_.reset(new WebsiteSettings(this, profile,
-                                         tab_contents->content_settings(),
-                                         tab_contents->infobar_tab_helper(),
-                                         url,
-                                         ssl,
-                                         content::CertStore::GetInstance()));
+  views::BubbleDelegateView::CreateBubble(this);
+  this->Show();
+  SizeToContents();
+
+  presenter_.reset(new WebsiteSettings(this, profile,
+                                       tab_contents->content_settings(),
+                                       tab_contents->infobar_tab_helper(),
+                                       url,
+                                       ssl,
+                                       content::CertStore::GetInstance()));
 }
 
 void WebsiteSettingsPopupView::OnPermissionChanged(
@@ -350,14 +344,6 @@ void WebsiteSettingsPopupView::OnPermissionChanged(
   presenter_->OnSitePermissionChanged(
       permission_selector->GetPermissionType(),
       permission_selector->GetSelectedSetting());
-}
-
-gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
-  // Compensate for some built-in padding in the icon. This will make the arrow
-  // point to the middle of the icon.
-  gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
-  anchor.Inset(0, anchor_view() ? kLocationIconBottomMargin : 0);
-  return anchor;
 }
 
 void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {

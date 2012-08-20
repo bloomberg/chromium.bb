@@ -16,9 +16,6 @@ class FirstRunBubble : public views::BubbleDelegateView,
   // |browser| is the opening browser and is NULL in unittests.
   static FirstRunBubble* ShowBubble(Browser* browser, views::View* anchor_view);
 
-  // views::BubbleDelegateView overrides:
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
-
  protected:
   // views::BubbleDelegateView overrides:
   virtual void Init() OVERRIDE;

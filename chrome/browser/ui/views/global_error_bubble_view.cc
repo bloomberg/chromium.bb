@@ -65,7 +65,10 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     : BubbleDelegateView(anchor_view, location),
       browser_(browser),
       error_(error) {
-  DCHECK(error_);
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(
+      gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
+
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int resource_id = error_->GetBubbleViewIconResourceID();
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
@@ -143,12 +146,6 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {
-}
-
-gfx::Rect GlobalErrorBubbleView::GetAnchorRect() {
-  gfx::Rect rect(views::BubbleDelegateView::GetAnchorRect());
-  rect.Inset(0, anchor_view() ? kAnchorVerticalInset : 0);
-  return rect;
 }
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,

@@ -54,7 +54,6 @@ class ZoomBubbleView : public views::BubbleDelegateView,
 
   // views::BubbleDelegateView method.
   virtual void Init() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
   // Singleton instance of the zoom bubble. The zoom bubble can only be shown on

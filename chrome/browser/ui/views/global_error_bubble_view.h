@@ -23,9 +23,6 @@ class GlobalErrorBubbleView : public views::ButtonListener,
                         const base::WeakPtr<GlobalError>& error);
   virtual ~GlobalErrorBubbleView();
 
-  // views::BubbleDelegateView implementation.
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
-
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;

@@ -121,13 +121,6 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
   return title_tf_;
 }
 
-gfx::Rect BookmarkBubbleView::GetAnchorRect() {
-  // Compensate for some built-in padding in the star image.
-  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Inset(0, anchor_view() ? 5 : 0);
-  return rect;
-}
-
 void BookmarkBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
@@ -262,6 +255,8 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
       parent_combobox_(NULL),
       remove_bookmark_(false),
       apply_edits_(true) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
 }
 
 string16 BookmarkBubbleView::GetTitle() {

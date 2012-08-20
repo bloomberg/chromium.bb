@@ -60,6 +60,9 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
     : BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(
+      gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,13 +108,6 @@ void NetworkProfileBubbleView::Init() {
       this, l10n_util::GetStringUTF16(IDS_OK));
   ok_button->SetIsDefault(true);
   layout->AddView(ok_button);
-}
-
-gfx::Rect NetworkProfileBubbleView::GetAnchorRect() {
-  // Compensate for padding in anchor.
-  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Inset(0, anchor_view() ? kAnchorVerticalInset : 0);
-  return rect;
 }
 
 void NetworkProfileBubbleView::ButtonPressed(views::Button* sender,

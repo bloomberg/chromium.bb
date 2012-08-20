@@ -60,8 +60,7 @@ class WebsiteSettingsPopupView
   virtual void OnPermissionChanged(
       PermissionSelectorView* selector) OVERRIDE;
 
-  // views::BubbleDelegate implementations.
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  // views::BubbleDelegate implementation.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // views::ButtonListener implementation.

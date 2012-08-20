@@ -108,6 +108,9 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       custom_link_(NULL),
       manage_link_(NULL),
       close_button_(NULL) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
+
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(web_contents));
 }
@@ -123,12 +126,6 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
       kMinMultiLineContentsWidth : preferred_size.width();
   preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
   return preferred_size;
-}
-
-gfx::Rect ContentSettingBubbleContents::GetAnchorRect() {
-  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Inset(0, anchor_view() ? 5 : 0);
-  return rect;
 }
 
 void ContentSettingBubbleContents::Init() {

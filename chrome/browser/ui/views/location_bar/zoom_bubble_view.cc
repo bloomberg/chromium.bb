@@ -74,6 +74,8 @@ ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
       label_(NULL),
       tab_contents_(tab_contents),
       auto_close_(auto_close) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(gfx::Insets(5, 0, 5, 0));
   set_use_focusless(auto_close);
   set_notify_enter_exit_on_child(true);
 }
@@ -145,13 +147,6 @@ void ZoomBubbleView::Init() {
   AddChildView(set_default_button);
 
   StartTimerIfNecessary();
-}
-
-gfx::Rect ZoomBubbleView::GetAnchorRect() {
-  // Compensate for some built-in padding in the zoom image.
-  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Inset(0, anchor_view() ? 5 : 0);
-  return rect;
 }
 
 void ZoomBubbleView::WindowClosing() {

@@ -46,7 +46,6 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
 
   // views::BubbleDelegateView methods.
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

@@ -53,9 +53,6 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
-  // views::BubbleDelegateView:
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
-
  protected:
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;

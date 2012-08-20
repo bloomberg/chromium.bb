@@ -39,9 +39,6 @@ class PageInfoBubbleView : public views::BubbleDelegateView,
   // PageInfoModelObserver methods:
   virtual void OnPageInfoModelChanged() OVERRIDE;
 
-  // views::BubbleDelegate methods:
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
-
   // views::LinkListener methods:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 

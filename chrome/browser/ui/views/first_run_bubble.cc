@@ -78,16 +78,12 @@ void FirstRunBubble::Init() {
   layout->AddView(subtext, columns->num_columns(), 1);
 }
 
-gfx::Rect FirstRunBubble::GetAnchorRect() {
-  // Compensate for padding in anchor.
-  gfx::Rect rect(BubbleDelegateView::GetAnchorRect());
-  rect.Inset(0, anchor_view() ? kAnchorVerticalInset : 0);
-  return rect;
-}
-
 FirstRunBubble::FirstRunBubble(Browser* browser, views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       browser_(browser) {
+  // Compensate for built-in vertical padding in the anchor view's image.
+  set_anchor_insets(
+      gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
 }
 
 FirstRunBubble::~FirstRunBubble() {

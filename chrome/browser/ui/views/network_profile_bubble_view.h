@@ -29,7 +29,6 @@ class NetworkProfileBubbleView : public views::BubbleDelegateView,
 
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
