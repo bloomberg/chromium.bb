@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/values.h"
@@ -138,6 +139,20 @@ std::string PrettyPrintValue(const base::Value& value) {
   return out;
 }
 
+// Assigns the value at |path| within |dict| to |out|, returning false if the
+// path wasn't present.  Unicode byte order marks are removed from the string.
+bool GetCleanedString(const DictionaryValue& dict,
+                      const std::string& path,
+                      std::string* out) {
+  if (!dict.GetString(path, out))
+    return false;
+
+  // The Unicode byte order mark, U+FEFF, is useless in UTF-8 strings (which are
+  // interpreted one byte at a time).
+  ReplaceSubstringsAfterOffset(out, 0, "\xEF\xBB\xBF", "");
+  return true;
+}
+
 // Returns whether an address is primary, given a dictionary representing a
 // single address.
 bool IsAddressPrimary(const DictionaryValue& address_dict) {
@@ -164,7 +179,7 @@ void InitAddressType(const DictionaryValue& address_dict,
   else
     type->set_relation(contacts::Contact_AddressType_Relation_OTHER);
 
-  address_dict.GetString(kAddressLabelField, type->mutable_label());
+  GetCleanedString(address_dict, kAddressLabelField, type->mutable_label());
 }
 
 // Maps the protocol from a dictionary representing a contact's IM address to a
@@ -248,12 +263,13 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   if (contact->deleted())
     return true;
 
-  dict.GetString(kFullNameField, contact->mutable_full_name());
-  dict.GetString(kGivenNameField, contact->mutable_given_name());
-  dict.GetString(kAdditionalNameField, contact->mutable_additional_name());
-  dict.GetString(kFamilyNameField, contact->mutable_family_name());
-  dict.GetString(kNamePrefixField, contact->mutable_name_prefix());
-  dict.GetString(kNameSuffixField, contact->mutable_name_suffix());
+  GetCleanedString(dict, kFullNameField, contact->mutable_full_name());
+  GetCleanedString(dict, kGivenNameField, contact->mutable_given_name());
+  GetCleanedString(
+      dict, kAdditionalNameField, contact->mutable_additional_name());
+  GetCleanedString(dict, kFamilyNameField, contact->mutable_family_name());
+  GetCleanedString(dict, kNamePrefixField, contact->mutable_name_prefix());
+  GetCleanedString(dict, kNameSuffixField, contact->mutable_name_suffix());
 
   const ListValue* email_list = NULL;
   if (dict.GetList(kEmailField, &email_list)) {
@@ -263,8 +279,11 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
         return false;
 
       contacts::Contact_EmailAddress* email = contact->add_email_addresses();
-      if (!email_dict->GetString(kEmailAddressField, email->mutable_address()))
+      if (!GetCleanedString(*email_dict,
+                            kEmailAddressField,
+                            email->mutable_address())) {
         return false;
+      }
       email->set_primary(IsAddressPrimary(*email_dict));
       InitAddressType(*email_dict, email->mutable_type());
     }
@@ -278,8 +297,11 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
         return false;
 
       contacts::Contact_PhoneNumber* phone = contact->add_phone_numbers();
-      if (!phone_dict->GetString(kPhoneNumberField, phone->mutable_number()))
+      if (!GetCleanedString(*phone_dict,
+                            kPhoneNumberField,
+                            phone->mutable_number())) {
         return false;
+      }
       phone->set_primary(IsAddressPrimary(*phone_dict));
       InitAddressType(*phone_dict, phone->mutable_type());
     }
@@ -294,8 +316,9 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
 
       contacts::Contact_PostalAddress* address =
           contact->add_postal_addresses();
-      if (!address_dict->GetString(kPostalAddressFormattedField,
-                                   address->mutable_address())) {
+      if (!GetCleanedString(*address_dict,
+                            kPostalAddressFormattedField,
+                            address->mutable_address())) {
         return false;
       }
       address->set_primary(IsAddressPrimary(*address_dict));
@@ -312,8 +335,9 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
 
       contacts::Contact_InstantMessagingAddress* im =
           contact->add_instant_messaging_addresses();
-      if (!im_dict->GetString(kInstantMessagingAddressField,
-                              im->mutable_address())) {
+      if (!GetCleanedString(*im_dict,
+                            kInstantMessagingAddressField,
+                            im->mutable_address())) {
         return false;
       }
       im->set_primary(IsAddressPrimary(*im_dict));

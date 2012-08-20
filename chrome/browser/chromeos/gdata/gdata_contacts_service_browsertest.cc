@@ -169,22 +169,18 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, BrokenFeeds) {
   EXPECT_TRUE(Download("feed_photo_404.json", base::Time(), &contacts));
   ASSERT_EQ(static_cast<size_t>(1), contacts->size());
   EXPECT_FALSE((*contacts)[0]->has_raw_untrusted_photo());
-}
 
-// We should report failure when we're unable to download the contact group
-// feed.
-IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, MissingGroupsFeed) {
-  scoped_ptr<ScopedVector<contacts::Contact> > contacts;
+  // We should report failure when we're unable to download the contact group
+  // feed.
+  service_->clear_cached_my_contacts_group_id_for_testing();
   service_->set_groups_feed_url_for_testing(
       test_server_.GetURL(std::string(kFeedBaseUrl) + "404"));
   EXPECT_FALSE(Download("feed.json", base::Time(), &contacts));
   EXPECT_TRUE(service_->cached_my_contacts_group_id_for_testing().empty());
-}
 
-// We should also fail when the "My Contacts" group isn't listed in the group
-// feed.
-IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, NoMyContactsGroup) {
-  scoped_ptr<ScopedVector<contacts::Contact> > contacts;
+  // We should also fail when the "My Contacts" group isn't listed in the group
+  // feed.
+  service_->clear_cached_my_contacts_group_id_for_testing();
   service_->set_groups_feed_url_for_testing(
       test_server_.GetURL(std::string(kFeedBaseUrl) +
                           "groups_no_my_contacts.json"));
@@ -289,6 +285,25 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, ParallelPhotoDownload) {
     expected_contacts.push_back(contact);
   }
   EXPECT_EQ(contacts::test::ContactsToString(expected_contacts),
+            contacts::test::ContactsToString(*contacts));
+}
+
+IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, UnicodeStrings) {
+  scoped_ptr<ScopedVector<contacts::Contact> > contacts;
+  EXPECT_TRUE(Download("feed_unicode.json", base::Time(), &contacts));
+
+  // All of these expected values are hardcoded in the feed.
+  scoped_ptr<contacts::Contact> contact1(new contacts::Contact);
+  InitContact("http://example.com/1", "2012-06-04T15:53:36.023Z",
+              false, "\xE5\xAE\x89\xE8\x97\xA4\x20\xE5\xBF\xA0\xE9\x9B\x84",
+              "\xE5\xBF\xA0\xE9\x9B\x84", "", "\xE5\xAE\x89\xE8\x97\xA4",
+              "", "", contact1.get());
+  scoped_ptr<contacts::Contact> contact2(new contacts::Contact);
+  InitContact("http://example.com/2", "2012-06-21T16:20:13.208Z",
+              false, "Bob Smith", "Bob", "", "Smith", "", "",
+              contact2.get());
+  EXPECT_EQ(contacts::test::VarContactsToString(
+                2, contact1.get(), contact2.get()),
             contacts::test::ContactsToString(*contacts));
 }
 

@@ -71,6 +71,9 @@ class GDataContactsService : public GDataContactsServiceInterface {
   const std::string& cached_my_contacts_group_id_for_testing() const {
     return cached_my_contacts_group_id_;
   }
+  void clear_cached_my_contacts_group_id_for_testing() {
+    cached_my_contacts_group_id_.clear();
+  }
 
   void set_max_photo_downloads_per_second_for_testing(int max_downloads) {
     max_photo_downloads_per_second_ = max_downloads;

@@ -12,7 +12,7 @@ package contacts;
 
 // A contact, roughly based on the GData Contact kind:
 // https://developers.google.com/gdata/docs/2.0/elements#gdContactKind
-// All strings are UTF-8.
+// All strings are UTF-8 with Unicode byte order marks stripped out.
 message Contact {
   // Next ID to use: 15
 
