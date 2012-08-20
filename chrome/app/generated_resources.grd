@@ -6408,8 +6408,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         JavaScript
       </message>
       <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for JavaScript alert originating from a webpage">
-        The page at <ph name="SITE">$1<ex>http://www.google.com</ex> says:
-        </ph>
+        The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
