@@ -1790,6 +1790,13 @@ bool VaapiH264Decoder::FinishPicture() {
            << " Num available dec surfaces: "
            << num_available_decode_surfaces_;
 
+  // Whatever happens below, curr_pic_ will stop managing the pointer to the
+  // picture after this function returns. The ownership will either be
+  // transferred to DPB, if the image is still needed (for output and/or
+  // reference), or the memory will be released if we manage to output it here
+  // without having to store it for future reference.
+  scoped_ptr<H264Picture> pic(curr_pic_.release());
+
   if (dpb_.IsFull()) {
     // DPB is full, we have to make space for the new picture.
     // Get all pictures that haven't been outputted yet.
@@ -1804,15 +1811,16 @@ bool VaapiH264Decoder::FinishPicture() {
     // is not a reference picture, thus making space for the current one.
     while (dpb_.IsFull()) {
       // Maybe outputted enough to output current picture.
-      if (!curr_pic_->ref && (output_candidate == not_outputted.end() ||
-          curr_pic_->pic_order_cnt < (*output_candidate)->pic_order_cnt)) {
-        // curr_pic_ is not a reference picture and no preceding pictures are
+      if (!pic->ref && (output_candidate == not_outputted.end() ||
+          pic->pic_order_cnt < (*output_candidate)->pic_order_cnt)) {
+        // pic is not a reference picture and no preceding pictures are
         // waiting for output in DPB, so it can be outputted and discarded
         // without storing in DPB.
-        if (!OutputPic(curr_pic_.get()))
+        if (!OutputPic(pic.get()))
           return false;
 
         // Managed to output current picture, return without adding to DPB.
+        // This will release current picture (stored in pic).
         return true;
       }
 
@@ -1832,13 +1840,14 @@ bool VaapiH264Decoder::FinishPicture() {
         DVLOG(1) << "Could not free up space in DPB!";
         return false;
       }
+
+      ++output_candidate;
     }
-    ++output_candidate;
   }
 
   // Store current picture for later output and/or reference (ownership now
   // with the DPB).
-  dpb_.StorePic(curr_pic_.release());
+  dpb_.StorePic(pic.release());
 
   return true;
 }
