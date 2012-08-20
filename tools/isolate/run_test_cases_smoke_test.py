@@ -105,7 +105,13 @@ class TraceTestCases(unittest.TestCase):
 
     self.assertEquals(1, return_code)
 
-    test_fail_output = [
+    expected_out_re = [
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
+      r'\[\d/\d\]   \d\.\d\ds .+',
       re.escape('Note: Google Test filter = Baz.Fail'),
       r'',
     ] + [
@@ -116,20 +122,7 @@ class TraceTestCases(unittest.TestCase):
     ] + [
       re.escape(l) for l in gtest_fake_base.get_footer(1, 1).splitlines()
     ] + [
-      ''
-    ]
-
-    expected_out_re = [
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-      r'\[\d/\d\]   \d\.\d\ds .+',
-    ] + test_fail_output + [
-      re.escape('Retrying failed tests serially.'),
-      r'\[\d/\d\]   \d\.\d\ds .+',
-    ] + test_fail_output + [
+      '',
       re.escape('Summary:'),
       re.escape('Baz.Fail failed'),
       re.escape('Success:    3 75.00%'),
@@ -143,7 +136,7 @@ class TraceTestCases(unittest.TestCase):
         ('Foo.Bar1', 1),
         ('Foo.Bar2', 1),
         ('Foo.Bar3', 1),
-        ('Baz.Fail', 4)
+        ('Baz.Fail', 3)
     ]
     self._check_results_file(expected_result_file_entries)
 

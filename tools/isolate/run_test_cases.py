@@ -587,26 +587,6 @@ def run_test_cases(executable, test_cases, jobs, timeout, result_file):
     else:
       assert False, items
 
-  # Retry all the failures serially to see if they are just flaky when
-  # run at the same time.
-  if fail:
-    print 'Retrying failed tests serially.'
-    progress = Progress(len(fail))
-    function = Runner(
-        executable, os.getcwd(), timeout, progress, retry_count=1).map
-    test_cases_retry = fail[:]
-
-    for test_case in test_cases_retry:
-      output = function(test_case)
-      progress.print_update()
-      results[output[0]['test_case']].append(output)
-      if not output[0]['returncode']:
-        fail.remove(test_case)
-        flaky.append(test_case)
-
-    LogResults(result_file, results)
-    sys.stdout.write('\n')
-
   print 'Summary:'
   for test_case in sorted(flaky):
     items = results[test_case]
