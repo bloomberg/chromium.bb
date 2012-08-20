@@ -12,6 +12,12 @@ def Main(args):
   pwd = os.environ.get('PWD', '')
   is_integration_bot = 'nacl-chrome' in pwd
 
+  # This environment variable check mimics what
+  # buildbot_chrome_nacl_stage.py does.
+  is_win64 = (sys.platform in ('win32', 'cygwin') and
+              ('64' in os.environ.get('PROCESSOR_ARCHITECTURE', '') or
+               '64' in os.environ.get('PROCESSOR_ARCHITEW6432', '')))
+
   # On the main Chrome waterfall, we may need to control where the tests are
   # run.
   # If there is serious skew in the PPAPI interface that causes all of
@@ -60,6 +66,18 @@ def Main(args):
       # See http://crbug.com/132395
       tests_to_disable.append('run_inbrowser_test_runner')
 
+    if sys.platform in ('win32', 'cygwin') and not is_win64:
+      # The Breakpad tests have started failing on 32-bit Windows (but
+      # not 64-bit Windows) because Chromium is producing an excess
+      # crash dump.
+      # See http://code.google.com/p/chromium/issues/detail?id=143413
+      # TODO(mseaborn): Change the tests to ignore the excess crash
+      # dump until we find out what is causing it.
+      tests_to_disable.extends([
+          'run_inbrowser_trusted_crash_in_startup_test',
+          'run_inbrowser_crash_in_syscall_test',
+          'run_inbrowser_untrusted_crash_test',
+          ])
 
   if sys.platform in ('win32', 'cygwin'):
     tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
