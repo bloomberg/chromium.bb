@@ -146,6 +146,7 @@ cr.define('options', function() {
       this.addEventListener('dblclick', this.handleDblClick_.bind(this));
       this.addEventListener('change', this.handleChange_.bind(this));
       this.setAttribute('role', 'listbox');
+      this.autoExpands = true;
     },
 
     /**

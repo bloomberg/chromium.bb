@@ -292,7 +292,7 @@ cr.define('oobe', function() {
      * including URL, title, author and website.
      * @private
      */
-    setDefaultImages_: function(images) {
+    setDefaultImages_: function(imagesData) {
       var imageGrid = $('user-image-grid');
       for (var i = 0, data; data = imagesData[i]; i++) {
         imageGrid.addItem(data.url, data.title);
