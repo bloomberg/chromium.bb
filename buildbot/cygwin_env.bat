@@ -4,7 +4,7 @@
 
 @echo off
 setlocal
-set HERMETIC_CYGWIN=hermetic_cygwin_1_7_15-0_1-with-20120803-cygwin
+set HERMETIC_CYGWIN=hermetic_cygwin_1_7_15-0_1-with-20120816-cygwin
 if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed" goto :skip_cygwin_install
 if exist "%~dp0..\tools\BUILD\.gcc-extras-version" del "%~dp0..\tools\BUILD\.gcc-extras-version"
 if exist "%~dp0..\tools\BACKPORTS\binutils" rmdir /s /q "%~dp0..\tools\BACKPORTS\binutils"
