@@ -52,7 +52,6 @@ def main():
   libgcc = FindLibgcc()
   if libgcc is not None:
     args.append(libgcc)
-  print(sys.argv[0] + ": exec " + ' '.join(args))
   sys.exit(subprocess.call(args))
 
 if __name__ == "__main__":
