@@ -81,17 +81,20 @@ void ChildHistogramMessageFilter::RecordDelta(
   pickled_histograms_.push_back(histogram_info);
 }
 
-void ChildHistogramMessageFilter::InconsistencyDetected(int problem) {
+void ChildHistogramMessageFilter::InconsistencyDetected(
+    base::Histogram::Inconsistencies problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesChildProcess",
                             problem, base::Histogram::NEVER_EXCEEDED_VALUE);
 }
 
-void ChildHistogramMessageFilter::UniqueInconsistencyDetected(int problem) {
+void ChildHistogramMessageFilter::UniqueInconsistencyDetected(
+    base::Histogram::Inconsistencies problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesChildProcessUnique",
                             problem, base::Histogram::NEVER_EXCEEDED_VALUE);
 }
 
-void ChildHistogramMessageFilter::SnapshotProblemResolved(int amount) {
+void ChildHistogramMessageFilter::InconsistencyDetectedInLoggedCount(
+    int amount) {
   UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotChildProcess",
                        std::abs(amount));
 }

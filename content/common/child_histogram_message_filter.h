@@ -33,9 +33,11 @@ class ChildHistogramMessageFilter : public base::HistogramFlattener,
   // HistogramFlattener interface (override) methods.
   virtual void RecordDelta(const base::Histogram& histogram,
                            const base::Histogram::SampleSet& snapshot) OVERRIDE;
-  virtual void InconsistencyDetected(int problem) OVERRIDE;
-  virtual void UniqueInconsistencyDetected(int problem) OVERRIDE;
-  virtual void SnapshotProblemResolved(int amount) OVERRIDE;
+  virtual void InconsistencyDetected(
+      base::Histogram::Inconsistencies problem) OVERRIDE;
+  virtual void UniqueInconsistencyDetected(
+      base::Histogram::Inconsistencies problem) OVERRIDE;
+  virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
 
  private:
   typedef std::vector<std::string> HistogramPickledList;

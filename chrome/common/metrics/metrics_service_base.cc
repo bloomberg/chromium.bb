@@ -41,17 +41,19 @@ void MetricsServiceBase::RecordDelta(
   log_manager_.current_log()->RecordHistogramDelta(histogram, snapshot);
 }
 
-void MetricsServiceBase::InconsistencyDetected(int problem) {
+void MetricsServiceBase::InconsistencyDetected(
+    Histogram::Inconsistencies problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser",
                             problem, Histogram::NEVER_EXCEEDED_VALUE);
 }
 
-void MetricsServiceBase::UniqueInconsistencyDetected(int problem) {
+void MetricsServiceBase::UniqueInconsistencyDetected(
+    Histogram::Inconsistencies problem) {
   UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique",
                             problem, Histogram::NEVER_EXCEEDED_VALUE);
 }
 
-void MetricsServiceBase::SnapshotProblemResolved(int amount) {
+void MetricsServiceBase::InconsistencyDetectedInLoggedCount(int amount) {
   UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotBrowser",
                        std::abs(amount));
 }
