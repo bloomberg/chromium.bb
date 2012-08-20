@@ -53,17 +53,6 @@ const int kGDataUpdateCheckIntervalInSec = 60;
 
 //================================ Helper functions ============================
 
-// Invoked upon completion of TransferRegularFile initiated by Copy.
-//
-// |callback| is run on the thread represented by |relay_proxy|.
-void OnTransferRegularFileCompleteForCopy(
-    const FileOperationCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataFileError error) {
-  if (!callback.is_null())
-    relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
-}
-
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
 void RunGetFileCallbackHelper(const GetFileCallback& callback,
@@ -1024,22 +1013,9 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
     return;
   }
 
-  // This callback is only triggered for a regular file via Copy() and runs
-  // on the same thread as Copy (IO thread). As TransferRegularFile must run
-  // on the UI thread, we thus need to post a task to the UI thread.
-  // Also, upon the completion of TransferRegularFile, we need to run |callback|
-  // on the same thread as Copy (IO thread), and the transition from UI thread
-  // to IO thread is handled by OnTransferRegularFileCompleteForCopy.
+  // This callback is only triggered for a regular file via Copy().
   DCHECK_EQ(REGULAR_FILE, file_type);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::TransferRegularFile,
-                 ui_weak_ptr_,
-                 local_file_path, remote_dest_file_path,
-                 base::Bind(OnTransferRegularFileCompleteForCopy,
-                            callback,
-                            base::MessageLoopProxy::current())));
+  TransferRegularFile(local_file_path, remote_dest_file_path, callback);
 }
 
 void GDataFileSystem::OnGetFileCompleteForTransferFile(
