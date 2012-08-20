@@ -278,7 +278,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   clipboard.WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
 
   chrome::GetActiveWebContents(browser())->GetRenderViewHost()->Copy();
-  ASSERT_NO_FATAL_FAILURE(WaitForResponse());
+  ASSERT_NO_FATAL_FAILURE(WaitForResponse());gcl try x4b0
+
 
   std::string text;
   clipboard.ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &text);
@@ -342,6 +343,36 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, SLOW_Loading) {
       content::WaitForLoadStop(chrome::GetActiveWebContents(browser()));
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(PDFBrowserTest, Action) {
+  ASSERT_NO_FATAL_FAILURE(Load());
+
+  ASSERT_TRUE(content::ExecuteJavaScript(
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      std::wstring(),
+      L"document.getElementsByName('plugin')[0].fitToHeight();"));
+
+  std::string zoom1, zoom2;
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      std::wstring(),
+      L"window.domAutomationController.send("
+      L"document.getElementsByName('plugin')[0].getZoomLevel().toString())",
+      &zoom1));
+
+  ASSERT_TRUE(content::ExecuteJavaScript(
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      std::wstring(),
+      L"document.getElementsByName('plugin')[0].fitToWidth();"));
+
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
+      std::wstring(),
+      L"window.domAutomationController.send("
+      L"document.getElementsByName('plugin')[0].getZoomLevel().toString())",
+      &zoom2));
+  ASSERT_NE(zoom1, zoom2);
 }
 
 // Flaky as per http://crbug.com/74549.
