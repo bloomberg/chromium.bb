@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/gdata/stale_cache_files_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -567,7 +566,6 @@ void GDataFileSystem::Initialize() {
                                              cache_,
                                              blocking_task_runner_));
   feed_loader_->AddObserver(this);
-  stale_cache_files_remover_.reset(new StaleCacheFilesRemover(this, cache_));
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
