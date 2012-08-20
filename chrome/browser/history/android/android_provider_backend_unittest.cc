@@ -1155,10 +1155,13 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   EXPECT_TRUE(thumbnail_db_.GetIconMappingForPageURL(row1.url(), FAVICON,
                                                      &icon_mapping));
   Time last_updated;
-  std::vector<unsigned char> png_icon_data;
+  scoped_refptr<base::RefCountedMemory> png_icon_data;
   EXPECT_TRUE(thumbnail_db_.GetFavicon(icon_mapping.icon_id, &last_updated,
                                        &png_icon_data, NULL, NULL));
-  EXPECT_EQ(data, png_icon_data);
+  std::string png_icon_data_as_string(png_icon_data->front(),
+      png_icon_data->front() + png_icon_data->size());
+  EXPECT_EQ(1u, png_icon_data_as_string.size());
+  EXPECT_EQ('1', png_icon_data_as_string[0]);
 
   // Remove favicon.
   HistoryAndBookmarkRow update_row2;

@@ -22,6 +22,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/size.h"
 
 class PageUsageData;
 
@@ -42,6 +43,7 @@ typedef int64 StarID;  // Unique identifier for star entries.
 typedef int64 UIStarID;  // Identifier for star entries that come from the UI.
 typedef int64 DownloadID;   // Identifier for a download.
 typedef int64 FaviconID;  // For favicons.
+typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
 typedef int64 SegmentID;  // URL segments for the most visited view.
 typedef int64 IconMappingID; // For page url and icon mapping.
 
@@ -741,6 +743,8 @@ base::Time AutocompleteAgeThreshold();
 // AutocompleteAgeThreshold() (or any other desired time in the past).
 bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
 
+// Favicons -------------------------------------------------------------------
+
 // Defines the icon types. They are also stored in icon_type field of favicons
 // table.
 enum IconType {
@@ -790,6 +794,27 @@ struct FaviconData {
 
   // The type of favicon.
   history::IconType icon_type;
+};
+
+// Defines a favicon bitmap stored in the history backend.
+struct FaviconBitmap {
+  FaviconBitmap();
+  ~FaviconBitmap();
+
+  // The unique id of the bitmap.
+  FaviconBitmapID bitmap_id;
+
+  // The id of the favicon to which the bitmap belongs to.
+  FaviconID icon_id;
+
+  // Time at which |bitmap_data| was last updated.
+  base::Time last_updated;
+
+  // The bits of the bitmap.
+  scoped_refptr<base::RefCountedMemory> bitmap_data;
+
+  // The pixel dimensions of bitmap_data.
+  gfx::Size pixel_size;
 };
 
 // Abbreviated information about a visit.

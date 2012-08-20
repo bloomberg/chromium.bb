@@ -45,6 +45,9 @@ namespace {
 static const unsigned char blob1[] =
     "12346102356120394751634516591348710478123649165419234519234512349134";
 
+static const gfx::Size kSmallSize = gfx::Size(16, 16);
+static const gfx::Size kLargeSize = gfx::Size(48, 48);
+
 }  // namepace
 
 namespace history {
@@ -287,10 +290,10 @@ TEST_F(HistoryBackendTest, MAYBE_Loaded) {
 TEST_F(HistoryBackendTest, DeleteAll) {
   ASSERT_TRUE(backend_.get());
 
-  // Add two favicons, use the characters '1' and '2' for the image data. Note
-  // that we do these in the opposite order. This is so the first one gets ID
-  // 2 autoassigned to the database, which will change when the other one is
-  // deleted. This way we can test that updating works properly.
+  // Add two favicons, each with two bitmaps. Note that we add favicon2 before
+  // adding favicon1. This is so that favicon1 one gets ID 2 autoassigned to
+  // the database, which will change when the other one is deleted. This way
+  // we can test that updating works properly.
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
   FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(favicon_url2,
@@ -299,13 +302,19 @@ TEST_F(HistoryBackendTest, DeleteAll) {
                                                            FAVICON);
 
   std::vector<unsigned char> data;
-  data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(favicon1,
-      new base::RefCountedBytes(data), Time::Now()));
+  data.push_back('a');
+  EXPECT_TRUE(backend_->thumbnail_db_->AddFaviconBitmap(favicon1,
+      new base::RefCountedBytes(data), Time::Now(), kSmallSize));
+  data[0] = 'b';
+  EXPECT_TRUE(backend_->thumbnail_db_->AddFaviconBitmap(favicon1,
+     new base::RefCountedBytes(data), Time::Now(), kLargeSize));
 
-  data[0] = '2';
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(
-                  favicon2, new base::RefCountedBytes(data), Time::Now()));
+  data[0] = 'c';
+  EXPECT_TRUE(backend_->thumbnail_db_->AddFaviconBitmap(favicon2,
+      new base::RefCountedBytes(data), Time::Now(), kSmallSize));
+  data[0] = 'd';
+  EXPECT_TRUE(backend_->thumbnail_db_->AddFaviconBitmap(favicon2,
+     new base::RefCountedBytes(data), Time::Now(), kLargeSize));
 
   // First visit two URLs.
   URLRow row1(GURL("http://www.google.com/"));
@@ -401,11 +410,33 @@ TEST_F(HistoryBackendTest, DeleteAll) {
                                                          &out_data));
   EXPECT_FALSE(backend_->thumbnail_db_->GetPageThumbnail(row2_id, &out_data));
 
-  // We should have a favicon for the first URL only. We look them up by favicon
-  // URL since the IDs may hav changed.
+  // We should have a favicon and favicon bitmaps for the first URL only. We
+  // look them up by favicon URL since the IDs may have changed.
   FaviconID out_favicon1 = backend_->thumbnail_db_->
       GetFaviconIDForFaviconURL(favicon_url1, FAVICON, NULL);
   EXPECT_TRUE(out_favicon1);
+
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  EXPECT_TRUE(backend_->thumbnail_db_->GetFaviconBitmaps(
+      out_favicon1, &favicon_bitmaps));
+  ASSERT_EQ(2u, favicon_bitmaps.size());
+
+  FaviconBitmap favicon_bitmap1 = favicon_bitmaps[0];
+  FaviconBitmap favicon_bitmap2 = favicon_bitmaps[1];
+
+  // Bitmaps do not need to be in particular order.
+  if (favicon_bitmap1.pixel_size == kLargeSize) {
+    FaviconBitmap tmp_favicon_bitmap = favicon_bitmap1;
+    favicon_bitmap1 = favicon_bitmap2;
+    favicon_bitmap2 = tmp_favicon_bitmap;
+  }
+
+  EXPECT_EQ('a', *favicon_bitmap1.bitmap_data->front());
+  EXPECT_EQ(kSmallSize, favicon_bitmap1.pixel_size);
+
+  EXPECT_EQ('b', *favicon_bitmap2.bitmap_data->front());
+  EXPECT_EQ(kLargeSize, favicon_bitmap2.pixel_size);
+
   FaviconID out_favicon2 = backend_->thumbnail_db_->
       GetFaviconIDForFaviconURL(favicon_url2, FAVICON, NULL);
   EXPECT_FALSE(out_favicon2) << "Favicon not deleted";
@@ -485,19 +516,25 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
 TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
-  FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(favicon_url2,
-                                                           FAVICON);
-  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
-                                                           FAVICON);
 
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(
-                  favicon1, new base::RefCountedBytes(data), Time::Now()));
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(
+      favicon_url1,
+      FAVICON,
+      "0 0",
+      new base::RefCountedBytes(data),
+      Time::Now(),
+      gfx::Size());
 
   data[0] = '2';
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(
-                  favicon2, new base::RefCountedBytes(data), Time::Now()));
+  FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(
+      favicon_url2,
+      FAVICON,
+      "0 0",
+      new base::RefCountedBytes(data),
+      Time::Now(),
+      gfx::Size());
 
   // First visit two URLs.
   URLRow row1(GURL("http://www.google.com/"));
@@ -662,12 +699,15 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   // Setup test data - two Urls in the history, one with favicon assigned and
   // one without.
   GURL favicon_url1("http://www.google.com/favicon.ico");
-  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
-                                                           FAVICON);
   std::vector<unsigned char> data;
   data.push_back('1');
-  EXPECT_TRUE(backend_->thumbnail_db_->SetFavicon(favicon1,
-      base::RefCountedBytes::TakeVector(&data), Time::Now()));
+  FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(
+      favicon_url1,
+      FAVICON,
+      "0 0",
+      base::RefCountedBytes::TakeVector(&data),
+      Time::Now(),
+      gfx::Size());
   URLRow row1(GURL("http://www.google.com/"));
   row1.set_visit_count(1);
   row1.set_last_visit(Time::Now());

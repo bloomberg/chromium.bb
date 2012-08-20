@@ -1795,7 +1795,7 @@ void HistoryBackend::SetFaviconOutOfDateForPage(const GURL& page_url) {
 
   for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
        m != icon_mappings.end(); ++m) {
-    thumbnail_db_->SetFaviconLastUpdateTime(m->icon_id, Time());
+    thumbnail_db_->SetFaviconOutOfDate(m->icon_id);
   }
   ScheduleCommit();
 }
@@ -1828,12 +1828,14 @@ void HistoryBackend::SetImportedFavicons(
         favicon_usage[i].favicon_url, history::FAVICON, NULL);
     if (!favicon_id) {
       // This favicon doesn't exist yet, so we create it using the given data.
-      favicon_id = thumbnail_db_->AddFavicon(favicon_usage[i].favicon_url,
-                                             history::FAVICON);
-      if (!favicon_id)
-        continue;  // Unable to add the favicon.
-      thumbnail_db_->SetFavicon(favicon_id,
-          new base::RefCountedBytes(favicon_usage[i].png_data), now);
+      // TODO(pkotwicz): Pass in real pixel size.
+      favicon_id = thumbnail_db_->AddFavicon(
+          favicon_usage[i].favicon_url,
+          history::FAVICON,
+          std::string("0 0"),
+          new base::RefCountedBytes(favicon_usage[i].png_data),
+          now,
+          gfx::Size());
     }
 
     // Save the mapping from all the URLs to the favicon.
@@ -1896,10 +1898,10 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
         thumbnail_db_->GetFaviconIDForFaviconURL(
             icon_url, icon_types, &favicon.icon_type);
     if (favicon_id) {
-      scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
+      scoped_refptr<base::RefCountedMemory> data;
       favicon.known_icon = true;
       Time last_updated;
-      if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
+      if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data,
                                     NULL, NULL)) {
         favicon.expired = (Time::Now() - last_updated) >
             TimeDelta::FromDays(kFaviconRefetchDays);
@@ -1951,11 +1953,15 @@ void HistoryBackend::SetFavicon(
 
   FaviconID id = thumbnail_db_->GetFaviconIDForFaviconURL(
       icon_url, icon_type, NULL);
-  if (!id)
-    id = thumbnail_db_->AddFavicon(icon_url, icon_type);
+  if (id)
+    thumbnail_db_->DeleteFaviconBitmapsForFavicon(id);
 
-  // Set the image data.
-  thumbnail_db_->SetFavicon(id, data, Time::Now());
+  id = thumbnail_db_->AddFavicon(icon_url,
+                                 icon_type,
+                                 "0 0",
+                                 data,
+                                 Time::Now(),
+                                 gfx::Size());
 
   SetFaviconMapping(page_url, id, icon_type);
 }
@@ -2334,12 +2340,9 @@ bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
     return true;
   }
 
-  // Create the duplicate favicon table, this is where the favicons we want
-  // to keep will be stored.
-  if (!thumbnail_db_->InitTemporaryFaviconsTable())
-    return false;
-
-  if (!thumbnail_db_->InitTemporaryIconMappingTable())
+  // Create duplicate icon_mapping, favicon, and favicon_bitmaps tables, this
+  // is where the favicons we want to keep will be stored.
+  if (!thumbnail_db_->InitTemporaryTables())
     return false;
 
   // This maps existing favicon IDs to the ones in the temporary table.
@@ -2359,7 +2362,8 @@ bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
       FaviconID new_id;
       FaviconMap::const_iterator found = copied_favicons.find(old_id);
       if (found == copied_favicons.end()) {
-        new_id = thumbnail_db_->CopyToTemporaryFaviconTable(old_id);
+        new_id = thumbnail_db_->CopyFaviconAndFaviconBitmapsToTemporaryTables(
+            old_id);
         copied_favicons[old_id] = new_id;
       } else {
         // We already encountered a URL that used this favicon, use the ID we
@@ -2376,10 +2380,10 @@ bool HistoryBackend::ClearAllThumbnailHistory(URLRows* kept_urls) {
   db_->ClearAndroidURLRows();
 #endif
 
-  // Rename the duplicate favicon and icon_mapping back table and recreate the
-  // other tables. This will make the database consistent again.
-  thumbnail_db_->CommitTemporaryFaviconTable();
-  thumbnail_db_->CommitTemporaryIconMappingTable();
+  // Drop original favicon_bitmaps, favicons, and icon mapping tables and
+  // replace them with the duplicate tables. Recreate the other tables. This
+  // will make the database consistent again.
+  thumbnail_db_->CommitTemporaryTables();
 
   thumbnail_db_->RecreateThumbnailTable();
 
@@ -2466,9 +2470,9 @@ bool HistoryBackend::GetFaviconFromDB(
 bool HistoryBackend::GetFaviconFromDB(FaviconID favicon_id,
                                       FaviconData* favicon) {
   Time last_updated;
-  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
+  scoped_refptr<base::RefCountedMemory> data;
 
-  if (!thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
+  if (!thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data,
                                  &favicon->icon_url, &favicon->icon_type))
     return false;
 

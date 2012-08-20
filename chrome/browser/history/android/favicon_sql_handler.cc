@@ -19,7 +19,7 @@ namespace {
 const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
   HistoryAndBookmarkRow::FAVICON};
 
-} // namespace
+}  // namespace
 
 FaviconSQLHandler::FaviconSQLHandler(ThumbnailDatabase* thumbnail_db)
     : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
@@ -35,12 +35,16 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
   if (row.favicon_valid()) {
     // If the image_data will be updated, it is not reasonable to find if the
     // icon is already in database, just create a new favicon.
-    favicon_id = thumbnail_db_->AddFavicon(GURL(), history::FAVICON);
-    if (!favicon_id)
-      return false;
+    // TODO(pkotwicz): Pass in real pixel size.
+    favicon_id = thumbnail_db_->AddFavicon(
+        GURL(),
+        history::FAVICON,
+        std::string("0 0"),
+        row.favicon(),
+        Time::Now(),
+        gfx::Size());
 
-    scoped_refptr<base::RefCountedMemory> image_data = row.favicon();
-    if (!thumbnail_db_->SetFavicon(favicon_id, image_data, Time::Now()))
+    if (!favicon_id)
       return false;
   }
 
@@ -110,12 +114,15 @@ bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   DCHECK(row->is_value_set_explicitly(HistoryAndBookmarkRow::URL));
 
   // Is it a problem to give a empty URL?
-  FaviconID id = thumbnail_db_->AddFavicon(GURL(), history::FAVICON);
+  // TODO(pkotwicz): Pass in real pixel size.
+  FaviconID id = thumbnail_db_->AddFavicon(
+      GURL(),
+      history::FAVICON,
+      std::string("0 0"),
+      row->favicon(),
+      Time::Now(),
+      gfx::Size());
   if (!id)
-    return false;
-
-  scoped_refptr<base::RefCountedMemory> image_data = row->favicon();
-  if (!thumbnail_db_->SetFavicon(id, image_data, Time::Now()))
     return false;
   return thumbnail_db_->AddIconMapping(row->url(), id);
 }

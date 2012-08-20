@@ -966,11 +966,10 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
-    scoped_refptr<base::RefCountedBytes> favicon = new base::RefCountedBytes();
-    if (!thumbnail_db_->GetFavicon(favicon_id, NULL, &favicon->data(), NULL,
-                                   NULL))
+    scoped_refptr<base::RefCountedMemory> favicon;
+    if (!thumbnail_db_->GetFavicon(favicon_id, NULL, &favicon, NULL, NULL))
       return false;
-    if (favicon->size())
+    if (favicon.get() && favicon->size())
       new_row.set_favicon(favicon);
     favicon_details->urls.insert(old_url_row.url());
     favicon_details->urls.insert(row.url());

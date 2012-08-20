@@ -429,6 +429,7 @@ IconMapping::IconMapping()
 
 IconMapping::~IconMapping() {}
 
+// FaviconData ----------------------------------------------------------------
 
 FaviconData::FaviconData()
   : known_icon(false),
@@ -440,6 +441,16 @@ FaviconData::~FaviconData() {}
 
 bool FaviconData::is_valid() {
   return known_icon && image_data.get() && image_data->size();
+}
+
+// FaviconBitmap --------------------------------------------------------------
+
+FaviconBitmap::FaviconBitmap()
+    : bitmap_id(0),
+      icon_id(0) {
+}
+
+FaviconBitmap::~FaviconBitmap() {
 }
 
 }  // namespace history

@@ -319,11 +319,8 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
 bool ExpireHistoryTest::HasFavicon(FaviconID favicon_id) {
   if (!thumb_db_.get() || favicon_id == 0)
     return false;
-  Time last_updated;
-  std::vector<unsigned char> icon_data_unused;
   GURL icon_url;
-  return thumb_db_->GetFavicon(favicon_id, &last_updated, &icon_data_unused,
-                               &icon_url, NULL);
+  return thumb_db_->GetFaviconHeader(favicon_id, &icon_url, NULL, NULL);
 }
 
 FaviconID ExpireHistoryTest::GetFavicon(const GURL& page_url,
