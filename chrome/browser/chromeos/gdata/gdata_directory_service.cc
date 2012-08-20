@@ -300,9 +300,12 @@ GDataEntry* GDataDirectoryService::FindEntryByPathSync(
   GDataDirectory* current_dir = root_.get();
 
   for (size_t i = 1; i < components.size() && current_dir; ++i) {
-    GDataEntry* entry = current_dir->FindChild(components[i]);
-    if (!entry)
+    std::string resource_id = current_dir->FindChild(components[i]);
+    if (resource_id.empty())
       return NULL;
+
+    GDataEntry* entry = GetEntryByResourceId(resource_id);
+    DCHECK(entry);
 
     if (i == components.size() - 1)  // Last component.
       return entry;
@@ -313,9 +316,9 @@ GDataEntry* GDataDirectoryService::FindEntryByPathSync(
 }
 
 GDataEntry* GDataDirectoryService::GetEntryByResourceId(
-    const std::string& resource) {
-  // GDataFileSystem has already locked.
-  ResourceMap::const_iterator iter = resource_map_.find(resource);
+    const std::string& resource_id) {
+  DCHECK(!resource_id.empty());
+  ResourceMap::const_iterator iter = resource_map_.find(resource_id);
   return iter == resource_map_.end() ? NULL : iter->second;
 }
 

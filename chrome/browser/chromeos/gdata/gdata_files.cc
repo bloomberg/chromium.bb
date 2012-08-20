@@ -217,7 +217,7 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
   FilePath full_file_name(entry->base_name());
   const std::string extension = full_file_name.Extension();
   const std::string file_name = full_file_name.RemoveExtension().value();
-  while (FindChild(full_file_name.value())) {
+  while (!FindChild(full_file_name.value()).empty()) {
     if (!extension.empty()) {
       full_file_name = FilePath(base::StringPrintf("%s (%d)%s",
                                                    file_name.c_str(),
@@ -240,30 +240,36 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
   directory_service_->AddEntryToResourceMap(entry);
 
   // Setup child and parent links.
-  AddChild(entry);
+  if (entry->AsGDataFile())
+    child_files_.insert(std::make_pair(entry->base_name(),
+                                       entry->resource_id()));
+
+  if (entry->AsGDataDirectory())
+    child_directories_.insert(std::make_pair(entry->base_name(),
+                                             entry->resource_id()));
   entry->SetParent(this);
 }
 
-bool GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
-  for (GDataFileCollection::const_iterator iter = dir->child_files_.begin();
+void GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
+  for (GDataChildMap::const_iterator iter = dir->child_files_.begin();
        iter != dir->child_files_.end(); ++iter) {
-    GDataEntry* entry = iter->second;
-    directory_service_->RemoveEntryFromResourceMap(entry->resource_id());
-    entry->SetParent(NULL);
-    AddEntry(entry);
+    TakeOverEntry(iter->second);
   }
   dir->child_files_.clear();
 
-  for (GDataDirectoryCollection::iterator iter =
-      dir->child_directories_.begin();
+  for (GDataChildMap::iterator iter = dir->child_directories_.begin();
        iter != dir->child_directories_.end(); ++iter) {
-    GDataEntry* entry = iter->second;
-    directory_service_->RemoveEntryFromResourceMap(entry->resource_id());
-    entry->SetParent(NULL);
-    AddEntry(entry);
+    TakeOverEntry(iter->second);
   }
   dir->child_directories_.clear();
-  return true;
+}
+
+void GDataDirectory::TakeOverEntry(const std::string& resource_id) {
+  GDataEntry* entry = directory_service_->GetEntryByResourceId(resource_id);
+  DCHECK(entry);
+  directory_service_->RemoveEntryFromResourceMap(resource_id);
+  entry->SetParent(NULL);
+  AddEntry(entry);
 }
 
 void GDataDirectory::RemoveEntry(GDataEntry* entry) {
@@ -273,30 +279,17 @@ void GDataDirectory::RemoveEntry(GDataEntry* entry) {
   delete entry;
 }
 
-GDataEntry* GDataDirectory::FindChild(
+std::string GDataDirectory::FindChild(
     const FilePath::StringType& file_name) const {
-  GDataFileCollection::const_iterator iter = child_files_.find(file_name);
+  GDataChildMap::const_iterator iter = child_files_.find(file_name);
   if (iter != child_files_.end())
     return iter->second;
 
-  GDataDirectoryCollection::const_iterator itd =
-      child_directories_.find(file_name);
-  if (itd != child_directories_.end())
-    return itd->second;
+  iter = child_directories_.find(file_name);
+  if (iter != child_directories_.end())
+    return iter->second;
 
-  return NULL;
-}
-
-void GDataDirectory::AddChild(GDataEntry* entry) {
-  DCHECK(entry);
-
-  if (entry->AsGDataFile())
-    child_files_.insert(std::make_pair(entry->base_name(),
-                                       entry->AsGDataFile()));
-
-  if (entry->AsGDataDirectory())
-    child_directories_.insert(std::make_pair(entry->base_name(),
-                                             entry->AsGDataDirectory()));
+  return std::string();
 }
 
 void GDataDirectory::RemoveChild(GDataEntry* entry) {
@@ -304,7 +297,7 @@ void GDataDirectory::RemoveChild(GDataEntry* entry) {
 
   const std::string& base_name(entry->base_name());
   // entry must be present in this directory.
-  DCHECK_EQ(entry, FindChild(base_name));
+  DCHECK_EQ(entry->resource_id(), FindChild(base_name));
   // Remove entry from resource map first.
   directory_service_->RemoveEntryFromResourceMap(entry->resource_id());
 
@@ -322,32 +315,38 @@ void GDataDirectory::RemoveChildren() {
 
 void GDataDirectory::RemoveChildFiles() {
   DVLOG(1) << "RemoveChildFiles " << resource_id();
-  for (GDataFileCollection::const_iterator iter = child_files_.begin();
+  for (GDataChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    directory_service_->RemoveEntryFromResourceMap(iter->second->resource_id());
+    GDataEntry* child = directory_service_->GetEntryByResourceId(iter->second);
+    DCHECK(child);
+    directory_service_->RemoveEntryFromResourceMap(iter->second);
+    delete child;
   }
-  STLDeleteValues(&child_files_);
   child_files_.clear();
 }
 
 void GDataDirectory::RemoveChildDirectories() {
-  for (GDataDirectoryCollection::iterator iter = child_directories_.begin();
+  for (GDataChildMap::iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    GDataDirectory* dir = iter->second;
+    GDataDirectory* dir = directory_service_->GetEntryByResourceId(
+        iter->second)->AsGDataDirectory();
+    DCHECK(dir);
     // Remove directories recursively.
     dir->RemoveChildren();
-    directory_service_->RemoveEntryFromResourceMap(dir->resource_id());
+    directory_service_->RemoveEntryFromResourceMap(iter->second);
+    delete dir;
   }
-  STLDeleteValues(&child_directories_);
   child_directories_.clear();
 }
 
 void GDataDirectory::GetChildDirectoryPaths(std::set<FilePath>* child_dirs) {
-  for (GDataDirectoryCollection::const_iterator it = child_directories_.begin();
-       it != child_directories_.end(); ++it) {
-    GDataDirectory* child_dir = it->second;
-    child_dirs->insert(child_dir->GetFilePath());
-    child_dir->GetChildDirectoryPaths(child_dirs);
+  for (GDataChildMap::const_iterator iter = child_directories_.begin();
+       iter != child_directories_.end(); ++iter) {
+    GDataDirectory* dir = directory_service_->GetEntryByResourceId(
+        iter->second)->AsGDataDirectory();
+    DCHECK(dir);
+    child_dirs->insert(dir->GetFilePath());
+    dir->GetChildDirectoryPaths(child_dirs);
   }
 }
 
@@ -470,33 +469,35 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
 
-  for (GDataFileCollection::const_iterator iter = child_files_.begin();
+  for (GDataChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    GDataFile* file = iter->second;
+    GDataFile* file = directory_service_->GetEntryByResourceId(
+        iter->second)->AsGDataFile();
+    DCHECK(file);
     file->ToProto(proto->add_child_files());
   }
-  for (GDataDirectoryCollection::const_iterator iter =
-       child_directories_.begin();
+  for (GDataChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    GDataDirectory* dir = iter->second;
+    GDataDirectory* dir = directory_service_->GetEntryByResourceId(
+        iter->second)->AsGDataDirectory();
+    DCHECK(dir);
     dir->ToProto(proto->add_child_directories());
   }
 }
 
 scoped_ptr<GDataEntryProtoVector> GDataDirectory::ToProtoVector() const {
   scoped_ptr<GDataEntryProtoVector> entries(new GDataEntryProtoVector);
-  for (GDataFileCollection::const_iterator iter = child_files_.begin();
+  // Use ToProtoFull, as we don't want to include children in |proto|.
+  for (GDataChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     GDataEntryProto proto;
-    iter->second->ToProto(&proto);
+    directory_service_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
     entries->push_back(proto);
   }
-  for (GDataDirectoryCollection::const_iterator iter =
-           child_directories_.begin();
+  for (GDataChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
     GDataEntryProto proto;
-    // Convert to GDataEntry, as we don't want to include children in |proto|.
-    static_cast<const GDataEntry*>(iter->second)->ToProtoFull(&proto);
+    directory_service_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
     entries->push_back(proto);
   }
 

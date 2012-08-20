@@ -252,14 +252,15 @@ class GDataDirectory : public GDataEntry {
 
   // Takes over all entries from |dir|.
   // TODO(satorux): Remove this. crbug.com/139649
-  bool TakeOverEntries(GDataDirectory* dir);
+  void TakeOverEntries(GDataDirectory* dir);
 
-  // Find a child by its name.
-  // TODO(satorux): Remove this. crbug.com/139649
-  GDataEntry* FindChild(const FilePath::StringType& file_name) const;
+  // Takes over entry represented by |resource_id|. Helper function for
+  // TakeOverEntries. TODO(satorux): Remove this. crbug.com/139649
+  void TakeOverEntry(const std::string& resource_id);
 
-  // Add |entry| to children.
-  void AddChild(GDataEntry* entry);
+  // Find a child's resource_id by its name. Returns the empty string if not
+  // found. TODO(satorux): Remove this. crbug.com/139649
+  std::string FindChild(const FilePath::StringType& file_name) const;
 
   // Removes the entry from its children without destroying the
   // entry instance.
@@ -273,13 +274,11 @@ class GDataDirectory : public GDataEntry {
   // Recursively extracts the paths set of all sub-directories.
   void GetChildDirectoryPaths(std::set<FilePath>* child_dirs);
 
-  // Maps between base_name and resource_id of files and directories.
-  typedef std::map<FilePath::StringType, GDataFile*> GDataFileCollection;
-  typedef std::map<FilePath::StringType, GDataDirectory*>
-      GDataDirectoryCollection;
+  // Map between base_name and resource_id of files and directories.
+  typedef std::map<FilePath::StringType, std::string> GDataChildMap;
   // Collection of children.
-  GDataFileCollection child_files_;
-  GDataDirectoryCollection child_directories_;
+  GDataChildMap child_files_;
+  GDataChildMap child_directories_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
 };
