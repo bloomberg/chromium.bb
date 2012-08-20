@@ -49,7 +49,6 @@
       'downloads',
       'execute_javascript',
       'extensions',
-      'find_in_page',
       'flash',
       'fullscreen_mouselock',
       'history',
@@ -360,8 +359,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
       '-extensions.ExtensionsTest.testDisableEnableExtension',
-      # Need internal data dirs in autotest package. crosbug.com/6855
-      '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/134593
       '-gtalk.test_basic.BasicTest.testCurrentVersion',
       '-gtalk.test_basic.BasicTest.testRCVersion',

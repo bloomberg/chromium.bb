@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -22,12 +26,15 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
+#include "net/base/net_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -67,6 +74,14 @@ const bool kIgnoreCase = false;
 const bool kCaseSensitive = true;
 
 const int kMoveIterations = 30;
+
+namespace {
+
+void HistoryServiceQueried(int) {
+  MessageLoop::current()->Quit();
+}
+
+}  // namespace
 
 class FindInPageControllerTest : public InProcessBrowserTest {
  public:
@@ -174,6 +189,15 @@ class FindInPageControllerTest : public InProcessBrowserTest {
         FilePath().AppendASCII("find_in_page"),
         FilePath().AppendASCII(filename));
   }
+
+  void FlushHistoryService() {
+    CancelableRequestConsumer history_consumer;
+    HistoryServiceFactory::GetForProfile(
+        browser()->profile(), Profile::IMPLICIT_ACCESS)->
+        GetNextDownloadId(&history_consumer,
+                          base::Bind(&HistoryServiceQueried));
+    content::RunMessageLoop();
+  }
 };
 
 // This test loads a page with frames and starts FindInPage requests.
@@ -191,20 +215,20 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
   EXPECT_EQ(11, FindInPageWchar(tab, L"go",
                                 kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
-  EXPECT_EQ(04, FindInPageWchar(tab, L"goo",
-                                kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(4, FindInPageWchar(tab, L"goo",
+                               kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
-  EXPECT_EQ(03, FindInPageWchar(tab, L"goog",
-                                kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(3, FindInPageWchar(tab, L"goog",
+                               kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
-  EXPECT_EQ(02, FindInPageWchar(tab, L"googl",
-                                kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(2, FindInPageWchar(tab, L"googl",
+                               kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
-  EXPECT_EQ(01, FindInPageWchar(tab, L"google",
-                                kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, FindInPageWchar(tab, L"google",
+                               kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
-  EXPECT_EQ(00, FindInPageWchar(tab, L"google!",
-                                kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(0, FindInPageWchar(tab, L"google!",
+                               kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(0, ordinal);
 
   // Negative test (no matches should be found).
@@ -252,6 +276,197 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
   EXPECT_EQ(0, FindInPageWchar(tab, L"hreggvi\u00F0ur",
                                kFwd, kCaseSensitive, &ordinal));
   EXPECT_EQ(0, ordinal);
+}
+
+// Verify search for text within various forms and text areas.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
+  std::vector<GURL> urls;
+  urls.push_back(GetURL("textintextarea.html"));
+  urls.push_back(GetURL("smalltextarea.html"));
+  urls.push_back(GetURL("populatedform.html"));
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+
+  for (size_t i = 0; i < urls.size(); ++i) {
+    ui_test_utils::NavigateToURL(browser(), urls[i]);
+    EXPECT_EQ(1, FindInPageWchar(tab, L"cat", kFwd, kIgnoreCase, NULL));
+    EXPECT_EQ(0, FindInPageWchar(tab, L"bat", kFwd, kIgnoreCase, NULL));
+  }
+}
+
+// Verify search for text within special URLs such as chrome:history,
+// chrome://downloads, data directory
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindNextAndPrevious) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+
+  FilePath data_dir = ui_test_utils::GetTestFilePath(FilePath(), FilePath());
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(data_dir));
+  EXPECT_EQ(1, FindInPageWchar(tab, L"downloads", kFwd, kIgnoreCase, NULL));
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
+
+  // The history page does an async request to the history service and then
+  // updates the renderer. So we make a query as well, and by the time it comes
+  // back we know the data is on its way to the renderer.
+  FlushHistoryService();
+
+  string16 query(data_dir.LossyDisplayName());
+  EXPECT_EQ(1,
+            ui_test_utils::FindInPage(tab, query, kFwd, kIgnoreCase, NULL,
+                                      NULL));
+
+  // Start a download.
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(browser()->profile());
+  scoped_ptr<content::DownloadTestObserver> observer(
+      new content::DownloadTestObserverTerminal(
+          download_manager, 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+
+  GURL download_url = ui_test_utils::GetTestUrl(
+      FilePath().AppendASCII("downloads"),
+      FilePath().AppendASCII("a_zip_file.zip"));
+  ui_test_utils::NavigateToURL(browser(), download_url);
+  observer->WaitForFinished();
+
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
+  FlushHistoryService();
+  EXPECT_EQ(1,
+            FindInPageWchar(tab, L"a_zip_file.zip", kFwd, kIgnoreCase, NULL));
+}
+
+// Verify search selection coordinates. The data file used is set-up such that
+// the text occurs on the same line, and we verify their positions by verifying
+// their relative positions.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageSpecialURLs) {
+  std::wstring search_string(L"\u5728\u897f\u660c\u536b\u661f\u53d1");
+  gfx::Rect first, second, first_reverse;
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
+  ui_test_utils::FindInPage(
+      tab, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, &first);
+  ui_test_utils::FindInPage(
+      tab, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, &second);
+
+  // We have search occurrence in the same row, so top-bottom coordinates should
+  // be the same even for second search.
+  ASSERT_EQ(first.y(), second.y());
+  ASSERT_EQ(first.bottom(), second.bottom());
+  ASSERT_LT(first.x(), second.x());
+  ASSERT_LT(first.right(), second.right());
+
+  ui_test_utils::FindInPage(
+      tab, WideToUTF16(search_string), kBack, kIgnoreCase, NULL,
+      &first_reverse);
+  // We find next and we go back so find coordinates should be the same as
+  // previous ones.
+  ASSERT_EQ(first, first_reverse);
+}
+
+// Verifies that comments and meta data are not searchable.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       CommentsAndMetaDataNotSearchable) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
+
+  std::wstring search_string =
+      L"\u4e2d\u65b0\u793e\u8bb0\u8005\u5b8b\u5409\u6cb3\u6444\u4e2d\u65b0\u7f51";
+  EXPECT_EQ(0, ui_test_utils::FindInPage(
+      tab, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
+}
+
+// Verifies that span and lists are searchable.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanAndListsSearchable) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("FindRandomTests.html"));
+
+  std::wstring search_string = L"has light blue eyes and my father has dark";
+  EXPECT_EQ(1, ui_test_utils::FindInPage(
+      tab, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
+
+  search_string = L"Google\nApple\nandroid";
+  EXPECT_EQ(1, ui_test_utils::FindInPage(
+      tab, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
+}
+
+// Find in a very large page
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, LargePage) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
+
+  std::wstring search_string = L"daughter of Prince";
+  EXPECT_EQ(373,
+            FindInPageWchar(tab, search_string.c_str(), kFwd, kIgnoreCase,
+                            NULL));
+}
+
+// Find a very long string in a large page.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
+
+  FilePath path = ui_test_utils::GetTestFilePath(
+      FilePath().AppendASCII("find_in_page"),
+      FilePath().AppendASCII("LongFind.txt"));
+  std::string query;
+  file_util::ReadFileToString(path, &query);
+  std::wstring search_string = UTF8ToWide(query);
+  EXPECT_EQ(1,
+            FindInPageWchar(tab, search_string.c_str(), kFwd, kIgnoreCase,
+                            NULL));
+}
+
+// Find a big font string in a page.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, BigString) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("BigText.html"));
+  EXPECT_EQ(1,
+            FindInPageWchar(tab, L"SomeLargeString", kFwd, kIgnoreCase, NULL));
+}
+
+// Search Back and Forward on a single occurrence.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SingleOccurrence) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ui_test_utils::NavigateToURL(browser(), GetURL("FindRandomTests.html"));
+
+  gfx::Rect first_rect;
+  EXPECT_EQ(1,
+            ui_test_utils::FindInPage(tab, ASCIIToUTF16("2010 Pro Bowl"), kFwd,
+                                      kIgnoreCase, NULL, &first_rect));
+
+  gfx::Rect second_rect;
+  EXPECT_EQ(1,
+            ui_test_utils::FindInPage(tab, ASCIIToUTF16("2010 Pro Bowl"), kFwd,
+                                      kIgnoreCase, NULL, &second_rect));
+
+  // Doing a fake find so we have no previous search.
+  ui_test_utils::FindInPage(tab, ASCIIToUTF16("ghgfjgfh201232rere"), kFwd,
+                            kIgnoreCase, NULL, NULL);
+
+  ASSERT_EQ(first_rect, second_rect);
+
+  EXPECT_EQ(1,
+            ui_test_utils::FindInPage(tab, ASCIIToUTF16("2010 Pro Bowl"), kFwd,
+                                      kIgnoreCase, NULL, &first_rect));
+  EXPECT_EQ(1,
+            ui_test_utils::FindInPage(tab, ASCIIToUTF16("2010 Pro Bowl"), kBack,
+                                      kIgnoreCase, NULL, &second_rect));
+  ASSERT_EQ(first_rect, second_rect);
+}
+
+// Find the whole text file page and find count should be 1.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+
+  FilePath path = ui_test_utils::GetTestFilePath(
+      FilePath().AppendASCII("find_in_page"),
+      FilePath().AppendASCII("find_test.txt"));
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(path));
+
+  std::string query;
+  file_util::ReadFileToString(path, &query);
+  std::wstring search_string = UTF8ToWide(query);
+  EXPECT_EQ(1,
+            FindInPageWchar(tab, search_string.c_str(), false, false, NULL));
 }
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
