@@ -7,12 +7,6 @@
 
 #include "ui/views/views_export.h"
 
-namespace gfx {
-class Path;
-class Point;
-class Size;
-}
-
 namespace views {
 
 class InputMethod;
@@ -27,13 +21,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // TODO(beng): resolve this more satisfactorily vis-a-vis ShouldUseNativeFrame
   //             to avoid confusion.
   virtual bool IsUsingCustomFrame() const = 0;
-
-  virtual bool CanResize() const = 0;
-  virtual bool CanMaximize() const = 0;
-  virtual bool CanActivate() const = 0;
-
-  virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
-  virtual void GetWindowMask(const gfx::Size& size, gfx::Path* mask) = 0;
 
   virtual InputMethod* GetInputMethod() = 0;
 
@@ -73,12 +60,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   // Called when the window's position changed.
   virtual void HandleMove() = 0;
-
-  // Called when focus shifted to this HWND from |last_focused_window|.
-  virtual void HandleNativeFocus(HWND last_focused_window) = 0;
-
-  // Called when focus shifted from the HWND to a different window.
-  virtual void HandleNativeBlur(HWND focused_window) = 0;
 
   // This is provided for methods that need to call private methods on NWW.
   // TODO(beng): should be removed once HWNDMessageHandler is the WindowImpl.
