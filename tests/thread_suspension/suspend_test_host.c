@@ -270,65 +270,57 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
    * We change the registers so that the thread calls
    * continue_after_suspension(), which checks the registers and
    * indicates success by exiting.
-   *
-   * TODO(mseaborn): Make this work on Mac OS X as well.  Mac OS X
-   * does not allow us to set registers without forcing %cs back to
-   * its trusted-code value.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=2880
-   * For simplicity, on Mac, we do not attempt to resume the thread.
    */
-  if (!NACL_OSX) {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-    regs.eax = 0x12340001;
-    regs.ecx = 0x12340002;
-    regs.edx = 0x12340003;
-    regs.ebx = 0x12340004;
-    /* Leave %esp and %ebp alone for now. */
-    regs.esi = 0x12340005;
-    regs.edi = 0x12340006;
-    regs.prog_ctr = test_shm->continue_after_suspension_func;
+  regs.eax = 0x12340001;
+  regs.ecx = 0x12340002;
+  regs.edx = 0x12340003;
+  regs.ebx = 0x12340004;
+  /* Leave %esp and %ebp alone for now. */
+  regs.esi = 0x12340005;
+  regs.edi = 0x12340006;
+  regs.prog_ctr = test_shm->continue_after_suspension_func;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-    regs.rax = 0x1234567800000001;
-    regs.rcx = 0x1234567800000002;
-    regs.rdx = 0x1234567800000003;
-    regs.rbx = 0x1234567800000004;
-    /* Leave %rsp and %rbp alone for now. */
-    regs.rsi = 0x1234567800000005;
-    regs.rdi = 0x1234567800000006;
-    regs.r8 = 0x1234567800000007;
-    regs.r9 = 0x1234567800000008;
-    regs.r10 = 0x1234567800000009;
-    regs.r11 = 0x123456780000000a;
-    regs.r12 = 0x123456780000000b;
-    regs.r13 = 0x123456780000000c;
-    regs.r14 = 0x123456780000000d;
-    /* The x86-64 sandbox requires %r15 to stay the same. */
-    regs.prog_ctr = regs.r15 + test_shm->continue_after_suspension_func;
+  regs.rax = 0x1234567800000001;
+  regs.rcx = 0x1234567800000002;
+  regs.rdx = 0x1234567800000003;
+  regs.rbx = 0x1234567800000004;
+  /* Leave %rsp and %rbp alone for now. */
+  regs.rsi = 0x1234567800000005;
+  regs.rdi = 0x1234567800000006;
+  regs.r8 = 0x1234567800000007;
+  regs.r9 = 0x1234567800000008;
+  regs.r10 = 0x1234567800000009;
+  regs.r11 = 0x123456780000000a;
+  regs.r12 = 0x123456780000000b;
+  regs.r13 = 0x123456780000000c;
+  regs.r14 = 0x123456780000000d;
+  /* The x86-64 sandbox requires %r15 to stay the same. */
+  regs.prog_ctr = regs.r15 + test_shm->continue_after_suspension_func;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-    regs.r0 = 0x12340001;
-    regs.r1 = 0x12340002;
-    regs.r2 = 0x12340003;
-    regs.r3 = 0x12340004;
-    regs.r4 = 0x12340005;
-    regs.r5 = 0x12340006;
-    regs.r6 = 0x12340007;
-    regs.r7 = 0x12340008;
-    regs.r8 = 0x12340009;
-    /* In the ARM sandbox, r9 is supposed to be read-only. */
-    regs.r10 = 0x1234000a;
-    regs.r11 = 0x1234000b;
-    regs.r12 = 0x1234000c;
-    /* Leave sp (r13) and lr (r14) alone for now. */
-    regs.prog_ctr = test_shm->continue_after_suspension_func;
+  regs.r0 = 0x12340001;
+  regs.r1 = 0x12340002;
+  regs.r2 = 0x12340003;
+  regs.r3 = 0x12340004;
+  regs.r4 = 0x12340005;
+  regs.r5 = 0x12340006;
+  regs.r6 = 0x12340007;
+  regs.r7 = 0x12340008;
+  regs.r8 = 0x12340009;
+  /* In the ARM sandbox, r9 is supposed to be read-only. */
+  regs.r10 = 0x1234000a;
+  regs.r11 = 0x1234000b;
+  regs.r12 = 0x1234000c;
+  /* Leave sp (r13) and lr (r14) alone for now. */
+  regs.prog_ctr = test_shm->continue_after_suspension_func;
 #else
 # error Unsupported architecture
 #endif
 
-    NaClAppThreadSetSuspendedRegisters(natp, &regs);
-    test_shm->expected_regs = regs;
-    NaClUntrustedThreadsResumeAll(nap);
-    CHECK(NaClWaitForMainThreadToExit(nap) == 0);
-  }
+  NaClAppThreadSetSuspendedRegisters(natp, &regs);
+  test_shm->expected_regs = regs;
+  NaClUntrustedThreadsResumeAll(nap);
+  CHECK(NaClWaitForMainThreadToExit(nap) == 0);
 }
 
 static void TestGettingRegisterSnapshotInSyscall(struct NaClApp *nap) {
@@ -397,15 +389,11 @@ int main(int argc, char **argv) {
   printf("Running TrySuspendingSyscallInvokerThread...\n");
   TrySuspendingSyscallInvokerThread(&app);
 
-  printf("Running TestGettingRegisterSnapshotInSyscall...\n");
-  TestGettingRegisterSnapshotInSyscall(&app);
-
-  /*
-   * Currently, on Mac OS X, this must come last, since we don't let
-   * the thread exit.  See the TODO(mseaborn) for Mac above.
-   */
   printf("Running TestGettingRegisterSnapshot...\n");
   TestGettingRegisterSnapshot(&app);
+
+  printf("Running TestGettingRegisterSnapshotInSyscall...\n");
+  TestGettingRegisterSnapshotInSyscall(&app);
 
   /*
    * Avoid calling exit() because it runs process-global destructors

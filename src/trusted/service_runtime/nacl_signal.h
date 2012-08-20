@@ -189,6 +189,8 @@ void NaClSignalHandlerFiniPlatform(void);
 
 void NaClSignalContextFromMacThreadState(struct NaClSignalContext *dest,
                                          const x86_thread_state_t *src);
+void NaClSignalContextToMacThreadState(x86_thread_state_t *dest,
+                                       const struct NaClSignalContext *src);
 
 #endif
 

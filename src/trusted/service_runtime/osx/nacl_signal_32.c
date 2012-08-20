@@ -61,6 +61,11 @@ void NaClSignalContextFromMacThreadState(struct NaClSignalContext *dest,
   SignalContextFromRegs(dest, &src->uts.ts32);
 }
 
+void NaClSignalContextToMacThreadState(x86_thread_state_t *dest,
+                                       const struct NaClSignalContext *src) {
+  SignalContextToRegs(&dest->uts.ts32, src);
+}
+
 /*
  * Fill a signal context structure from the raw platform dependent
  * signal information.

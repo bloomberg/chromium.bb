@@ -24,6 +24,21 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchAllRegsAsm):
         leal 0x30(%ecx), %esp
         popf
 
+#if NACL_OSX
+        /*
+         * This entry point is used on Mac OS X for resuming a
+         * suspended thread with registers modified, because OS X's
+         * thread_set_state() ignores non-trusted-code segment
+         * register values.
+         *
+         * This point will be entered with most registers restored via
+         * thread_set_state(): we want to minimize the number of
+         * instructions executed before reaching untrusted code
+         * because, if the trap flag is set, the exception handler
+         * will have to single-step through them.
+         */
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchRemainingRegsViaECX):
+#endif
         /* Restore segment registers to values for untrusted code. */
         movw 0x16(%ecx), %gs
         movw 0x14(%ecx), %fs

@@ -32,7 +32,7 @@ NORETURN void NaClSwitchAllRegsAsm(struct NaClSwitchAllRegsState *state);
 
 
 void NaClSwitchAllRegs(struct NaClAppThread *natp,
-                       struct NaClSignalContext *regs) {
+                       const struct NaClSignalContext *regs) {
   struct NaClSwitchAllRegsState state;
 
   UNREFERENCED_PARAMETER(natp);
