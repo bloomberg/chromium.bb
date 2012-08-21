@@ -908,7 +908,8 @@ def _GenerateMSVSProject(project, options, version, generator_flags):
 
   # Prepare list of sources and excluded sources.
   gyp_file = os.path.split(project.build_file)[1]
-  sources, excluded_sources = _PrepareListOfSources(spec, gyp_file)
+  sources, excluded_sources = _PrepareListOfSources(spec, generator_flags,
+                                                    gyp_file)
 
   # Add rules.
   actions_to_add = {}
@@ -1277,7 +1278,7 @@ def _AddNormalizedSources(sources_set, sources_array):
   sources_set.update(set(sources))
 
 
-def _PrepareListOfSources(spec, gyp_file):
+def _PrepareListOfSources(spec, generator_flags, gyp_file):
   """Prepare list of sources and excluded sources.
 
   Besides the sources specified directly in the spec, adds the gyp file so
@@ -1296,7 +1297,8 @@ def _PrepareListOfSources(spec, gyp_file):
   _AddNormalizedSources(sources, spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
-  sources.add(gyp_file)
+  if not generator_flags.get('standalone'):
+    sources.add(gyp_file)
 
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
@@ -1614,7 +1616,7 @@ def _GetPathOfProject(qualified_target, spec, options, msvs_version):
                      msvs_version.ProjectExtension())
 
   build_file = gyp.common.BuildFile(qualified_target)
-  proj_path = os.path.join(os.path.split(build_file)[0], proj_filename)
+  proj_path = os.path.join(os.path.dirname(build_file), proj_filename)
   fix_prefix = None
   if options.generator_output:
     project_dir_path = os.path.dirname(os.path.abspath(proj_path))
@@ -1821,9 +1823,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   for build_file in data:
     # Validate build_file extension
-    if build_file[-4:] != '.gyp':
+    if not build_file.endswith('.gyp'):
       continue
-    sln_path = build_file[:-4] + options.suffix + '.sln'
+    sln_path = os.path.splitext(build_file)[0] + options.suffix + '.sln'
     if options.generator_output:
       sln_path = os.path.join(options.generator_output, sln_path)
     # Get projects in the solution, and their dependents.
@@ -2974,7 +2976,8 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, project_dir)
 
   gyp_file = os.path.split(project.build_file)[1]
-  sources, excluded_sources = _PrepareListOfSources(spec, gyp_file)
+  sources, excluded_sources = _PrepareListOfSources(spec, generator_flags,
+                                                    gyp_file)
   # Add rules.
   actions_to_add = {}
   props_files_of_rules = set()

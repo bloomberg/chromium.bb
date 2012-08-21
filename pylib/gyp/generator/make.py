@@ -2136,7 +2136,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     root_makefile.write("endif\n")
   root_makefile.write('\n')
 
-  if generator_flags.get('auto_regeneration', True):
+  if (not generator_flags.get('standalone')
+      and generator_flags.get('auto_regeneration', True)):
     WriteAutoRegenerationRule(params, root_makefile, makefile_name, build_files)
 
   root_makefile.write(SHARED_FOOTER)
