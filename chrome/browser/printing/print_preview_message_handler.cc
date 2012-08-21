@@ -26,7 +26,6 @@
 #include "printing/print_job_constants.h"
 
 using content::BrowserThread;
-using content::NavigationController;
 using content::WebContents;
 
 namespace {
@@ -246,24 +245,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void PrintPreviewMessageHandler::NavigateToPendingEntry(
-    const GURL& url,
-    NavigationController::ReloadType reload_type) {
-  TabContents* tab = tab_contents();
-  TabContents* preview_tab = GetPrintPreviewTab();
-  if (tab == preview_tab) {
-    // Cloud print sign-in reloads the page.
-    DCHECK(PrintPreviewTabController::IsPrintPreviewURL(url));
-    DCHECK_EQ(NavigationController::RELOAD, reload_type);
-    return;
-  }
-  // If |tab| is navigating and it has a print preview tab, notify |tab| to
-  // consider print preview done so it unfreezes the renderer in the case of
-  // window.print().
-  if (preview_tab)
-    tab->print_view_manager()->PrintPreviewDone();
 }
 
 }  // namespace printing

@@ -360,7 +360,7 @@ void PrintPreviewTabController::OnRendererProcessClosed(
   }
 
   for (size_t i = 0; i < closed_initiator_tabs.size(); ++i)
-    RemoveInitiatorTab(closed_initiator_tabs[i], false);
+    RemoveInitiatorTab(closed_initiator_tabs[i]);
 }
 
 void PrintPreviewTabController::OnTabContentsDestroyed(TabContents* tab) {
@@ -373,7 +373,7 @@ void PrintPreviewTabController::OnTabContentsDestroyed(TabContents* tab) {
   if (tab == preview_tab)
     RemovePreviewTab(tab);
   else
-    RemoveInitiatorTab(tab, false);
+    RemoveInitiatorTab(tab);
 }
 
 void PrintPreviewTabController::OnNavEntryCommitted(
@@ -413,8 +413,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
     return;
   }
 
-  // Initiator tab navigated.
-  RemoveInitiatorTab(tab, true);
+  RemoveInitiatorTab(tab);
 }
 
 TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
@@ -511,8 +510,7 @@ void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
   }
 }
 
-void PrintPreviewTabController::RemoveInitiatorTab(TabContents* initiator_tab,
-                                                   bool is_navigation) {
+void PrintPreviewTabController::RemoveInitiatorTab(TabContents* initiator_tab) {
   TabContents* preview_tab = GetPrintPreviewForTab(initiator_tab);
   DCHECK(preview_tab);
   // Update the map entry first, so when the print preview tab gets destroyed
@@ -521,10 +519,7 @@ void PrintPreviewTabController::RemoveInitiatorTab(TabContents* initiator_tab,
   preview_tab_map_[preview_tab] = NULL;
   RemoveObservers(initiator_tab);
 
-  // For the navigation case, PrintPreviewDone() has already been called in
-  // PrintPreviewMessageHandler::NavigateToPendingEntry().
-  if (!is_navigation)
-    initiator_tab->print_view_manager()->PrintPreviewDone();
+  initiator_tab->print_view_manager()->PrintPreviewDone();
 
   // Initiator tab is closed. Close the print preview tab too.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
