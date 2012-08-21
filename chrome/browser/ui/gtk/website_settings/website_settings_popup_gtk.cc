@@ -39,6 +39,9 @@ namespace {
 // The background color of the tabs if a theme other than the native GTK theme
 // is selected.
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+// The text color of the site identity status label for websites with a
+// verified identity.
+const GdkColor kGdkGreen = GDK_COLOR_RGB(0x29, 0x8a, 0x27);
 
 GtkWidget* CreateTextLabel(const std::string& text,
                            int width,
@@ -405,12 +408,17 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
   gtk_box_pack_start(GTK_BOX(header_box_), identity_label, FALSE, FALSE, 0);
 
   std::string identity_status_text;
+  const GdkColor* color =
+      theme_service_->UsingNativeTheme() ? NULL : &ui::kGdkBlack;
+
   switch (identity_info.identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
       identity_status_text =
           l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
+      if (!theme_service_->UsingNativeTheme())
+        color = &kGdkGreen;
       break;
     default:
       identity_status_text =
@@ -419,6 +427,7 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
   }
   GtkWidget* status_label =
       CreateTextLabel(identity_status_text, 400, theme_service_);
+  gtk_widget_modify_fg(status_label, GTK_STATE_NORMAL, color);
   gtk_box_pack_start(
       GTK_BOX(header_box_), status_label, FALSE, FALSE, 0);
   gtk_widget_show_all(header_box_);
