@@ -462,8 +462,15 @@ esac
 
 # Extract GNU configuration name
 case $ARCH in
-  arm) GNU_CONFIG=arm-linux-androideabi;;
-  *) GNU_CONFIG="$ARCH-linux-android";;
+  arm)
+    GNU_CONFIG=arm-linux-androideabi
+    ;;
+  x86)
+    GNU_CONFIG=i686-linux-android
+    ;;
+  *)
+    GNU_CONFIG="$ARCH-linux-android"
+    ;;
 esac
 
 # Generate standalone NDK toolchain installation
@@ -475,10 +482,10 @@ run "$NDK_DIR/build/tools/make-standalone-toolchain.sh" \
       --install-dir="$NDK_STANDALONE"
 fail_panic "Can't generate standalone NDK toolchain installation!"
 
-# Rebuild the client library with the auto-tools base build system.
-# Even though it's not going to be used, this checks that this still
-# works correctly.
-echo "Building client Android library with configure/make"
+# Rebuild the client library, processor and tools with the auto-tools based
+# build system. Even though it's not going to be used, this checks that this
+# still works correctly.
+echo "Building Android binaries with configure/make"
 TMPTARGET="$TMPDIR/target-local"
 (
   PATH="$NDK_STANDALONE/bin:$PATH"
@@ -486,12 +493,10 @@ TMPTARGET="$TMPDIR/target-local"
   run mkdir "$TMPDIR"/build-target &&
   run cd "$TMPDIR"/build-target &&
   run2 "$PROGDIR"/../configure --prefix="$TMPTARGET" \
-                             --host="$GNU_CONFIG" \
-                             --disable-tools \
-                             --disable-processor &&
+                               --host="$GNU_CONFIG" &&
   run2 make -j$NUM_JOBS install
 )
-fail_panic "Could not rebuild Android client library!"
+fail_panic "Could not rebuild Android binaries!"
 
 # Copy sources to temporary directory
 PROJECT_DIR=$TMPDIR/project

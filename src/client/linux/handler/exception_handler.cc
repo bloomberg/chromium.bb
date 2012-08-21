@@ -457,7 +457,7 @@ bool ExceptionHandler::WriteMinidump(const string& dump_path,
 }
 
 bool ExceptionHandler::WriteMinidump() {
-#if !defined(__ARM_EABI__)
+#if !defined(__ARM_EABI__) && !defined(__ANDROID__)
   if (!IsOutOfProcess() && !minidump_descriptor_.IsFD()) {
     // Update the path of the minidump so that this can be called multiple times
     // and new files are created for each minidump.  This is done before the
@@ -485,7 +485,7 @@ bool ExceptionHandler::WriteMinidump() {
   return GenerateDump(&context);
 #else
   return false;
-#endif  // !defined(__ARM_EABI__)
+#endif  // !defined(__ARM_EABI__) && !defined(__ANDROID__)
 }
 
 void ExceptionHandler::AddMappingInfo(const string& name,

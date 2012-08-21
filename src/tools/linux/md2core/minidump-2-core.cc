@@ -68,10 +68,17 @@
   #define ELF_ARCH  EM_X86_64
 #elif defined(__i386__)
   #define ELF_ARCH  EM_386
-#elif defined(__ARM_ARCH_3__)
+#elif defined(__arm__)
   #define ELF_ARCH  EM_ARM
 #elif defined(__mips__)
   #define ELF_ARCH  EM_MIPS
+#endif
+
+#if defined(__arm__)
+// GLibc/ARM and Android/ARM both use 'user_regs' for the structure type
+// containing core registers, while they use 'user_regs_struct' on other
+// architectures. This file-local typedef simplifies the source code.
+typedef user_regs user_regs_struct;
 #endif
 
 using google_breakpad::MemoryMappedFile;
@@ -195,7 +202,9 @@ struct CrashedProcess {
   struct Thread {
     pid_t tid;
     user_regs_struct regs;
+#if defined(__i386__) || defined(__x86_64__)
     user_fpregs_struct fpregs;
+#endif
 #if defined(__i386__)
     user_fpxregs_struct fpxregs;
 #endif
@@ -322,6 +331,32 @@ ParseThreadRegisters(CrashedProcess::Thread* thread,
   memcpy(thread->fpregs.st_space, rawregs->flt_save.float_registers, 8 * 16);
   memcpy(thread->fpregs.xmm_space, rawregs->flt_save.xmm_registers, 16 * 16);
 }
+#elif defined(__arm__)
+static void
+ParseThreadRegisters(CrashedProcess::Thread* thread,
+                     const MinidumpMemoryRange& range) {
+  const MDRawContextARM* rawregs = range.GetData<MDRawContextARM>(0);
+
+  thread->regs.uregs[0] = rawregs->iregs[0];
+  thread->regs.uregs[1] = rawregs->iregs[1];
+  thread->regs.uregs[2] = rawregs->iregs[2];
+  thread->regs.uregs[3] = rawregs->iregs[3];
+  thread->regs.uregs[4] = rawregs->iregs[4];
+  thread->regs.uregs[5] = rawregs->iregs[5];
+  thread->regs.uregs[6] = rawregs->iregs[6];
+  thread->regs.uregs[7] = rawregs->iregs[7];
+  thread->regs.uregs[8] = rawregs->iregs[8];
+  thread->regs.uregs[9] = rawregs->iregs[9];
+  thread->regs.uregs[10] = rawregs->iregs[10];
+  thread->regs.uregs[11] = rawregs->iregs[11];
+  thread->regs.uregs[12] = rawregs->iregs[12];
+  thread->regs.uregs[13] = rawregs->iregs[13];
+  thread->regs.uregs[14] = rawregs->iregs[14];
+  thread->regs.uregs[15] = rawregs->iregs[15];
+
+  thread->regs.uregs[16] = rawregs->cpsr;
+  thread->regs.uregs[17] = 0;  // what is ORIG_r0 exactly?
+}
 #else
 #error "This code has not been ported to your platform yet"
 #endif
@@ -378,6 +413,12 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
             "This version of minidump-2-core only supports x86 (64bit)%s.\n",
             sysinfo->processor_architecture == MD_CPU_ARCHITECTURE_X86 ?
             ",\nbut the minidump file is from a 32bit machine" : "");
+    _exit(1);
+  }
+#elif defined(__arm__)
+  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM) {
+    fprintf(stderr,
+            "This version of minidump-2-core only supports ARM (32bit).\n");
     _exit(1);
   }
 #else
@@ -682,6 +723,7 @@ WriteThread(const CrashedProcess::Thread& thread, int fatal_signal) {
     return false;
   }
 
+#if defined(__i386__) || defined(__x86_64__)
   nhdr.n_descsz = sizeof(user_fpregs_struct);
   nhdr.n_type = NT_FPREGSET;
   if (!writea(1, &nhdr, sizeof(nhdr)) ||
@@ -689,6 +731,7 @@ WriteThread(const CrashedProcess::Thread& thread, int fatal_signal) {
       !writea(1, &thread.fpregs, sizeof(user_fpregs_struct))) {
     return false;
   }
+#endif
 
 #if defined(__i386__)
   nhdr.n_descsz = sizeof(user_fpxregs_struct);
@@ -1018,8 +1061,10 @@ main(int argc, char** argv) {
                   // sizeof(Nhdr) + 8 + sizeof(user) +
                   sizeof(Nhdr) + 8 + crashinfo.auxv_length +
                   crashinfo.threads.size() * (
-                    (sizeof(Nhdr) + 8 + sizeof(prstatus)) +
-                     sizeof(Nhdr) + 8 + sizeof(user_fpregs_struct)
+                    (sizeof(Nhdr) + 8 + sizeof(prstatus))
+#if defined(__i386__) || defined(__x86_64__)
+                   + sizeof(Nhdr) + 8 + sizeof(user_fpregs_struct)
+#endif
 #if defined(__i386__)
                    + sizeof(Nhdr) + 8 + sizeof(user_fpxregs_struct)
 #endif
