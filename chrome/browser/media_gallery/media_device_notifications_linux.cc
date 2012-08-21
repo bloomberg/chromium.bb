@@ -22,6 +22,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
+#include "chrome/browser/media_gallery/media_storage_util.h"
 
 namespace {
 
@@ -82,8 +83,7 @@ class ScopedReleaseUdevDeviceObject {
 
 // Get the device information using udev library.
 // On success, returns true and fill in |id| and |name|.
-bool GetDeviceInfo(const std::string& device_path,
-                   std::string* id,
+bool GetDeviceInfo(const std::string& device_path, std::string* id,
                    string16* name) {
   DCHECK(!device_path.empty());
 
@@ -111,48 +111,55 @@ bool GetDeviceInfo(const std::string& device_path,
 
   // Construct a device name using label or manufacturer(vendor and model)
   // details.
-  std::string device_label;
-  const char* device_name = NULL;
-  if ((device_name = udev_device_get_property_value(device, kLabel)) ||
-      (device_name = udev_device_get_property_value(device, kSerial))) {
-    device_label = device_name;
-  } else {
-    // Format: VendorInfo ModelInfo
-    // E.g.: KnCompany Model2010
-    const char* vendor_name = NULL;
-    if ((vendor_name = udev_device_get_property_value(device, kVendor)))
-      device_label = vendor_name;
+  if (name) {
+    std::string device_label;
+    const char* device_name = NULL;
+    if ((device_name = udev_device_get_property_value(device, kLabel)) ||
+        (device_name = udev_device_get_property_value(device, kSerial))) {
+      device_label = device_name;
+    } else {
+      // Format: VendorInfo ModelInfo
+      // E.g.: KnCompany Model2010
+      const char* vendor_name = NULL;
+      if ((vendor_name = udev_device_get_property_value(device, kVendor)))
+        device_label = vendor_name;
 
-    const char* model_name = NULL;
-    if ((model_name = udev_device_get_property_value(device, kModel))) {
-      if (!device_label.empty())
-        device_label += kSpaceDelim;
-      device_label += model_name;
+      const char* model_name = NULL;
+      if ((model_name = udev_device_get_property_value(device, kModel))) {
+        if (!device_label.empty())
+          device_label += kSpaceDelim;
+        device_label += model_name;
+      }
     }
+
+    if (IsStringUTF8(device_label))
+      *name = UTF8ToUTF16(device_label);
   }
 
-  if (IsStringUTF8(device_label))
-    *name = UTF8ToUTF16(device_label);
+  if (id) {
+    std::string unique_id;
+    const char* uuid  = NULL;
+    if ((uuid = udev_device_get_property_value(device, kFsUUID))) {
+      unique_id = std::string(kFSUniqueIdPrefix) + uuid;
+    } else {
+      // If one of the vendor, model, serial information is missing, its value
+      // in the string is empty.
+      // Format: VendorModelSerial:VendorInfo:ModelInfo:SerialShortInfo
+      // E.g.: VendorModelSerial:Kn:DataTravel_12.10:8000000000006CB02CDB
+      const char* vendor = udev_device_get_property_value(device, kVendorID);
+      const char* model = udev_device_get_property_value(device, kModelID);
+      const char* serial_short = udev_device_get_property_value(device,
+                                                                kSerialShort);
+      if (!vendor && !model && !serial_short)
+        return false;
 
-  const char* uuid  = NULL;
-  if ((uuid = udev_device_get_property_value(device, kFsUUID))) {
-    *id = std::string(kFSUniqueIdPrefix) + uuid;
-  } else {
-    // If one of the vendor, model, serial information is missing, its value in
-    // the string is empty.
-    // Format: VendorModelSerial:VendorInfo:ModelInfo:SerialShortInfo
-    // E.g.: VendorModelSerial:Kn:DataTravel_12.10:8000000000006CB02CDB
-    const char* vendor = udev_device_get_property_value(device, kVendorID);
-    const char* model = udev_device_get_property_value(device, kModelID);
-    const char* serial_short = udev_device_get_property_value(device,
-                                                              kSerialShort);
-    if (!vendor && !model && !serial_short)
-      return false;
-
-    *id = std::string(kVendorModelSerialPrefix) +
-          (vendor ? vendor : "") + kNonSpaceDelim +
-          (model ? model : "") + kNonSpaceDelim +
-          (serial_short ? serial_short : "");
+      unique_id = std::string(kVendorModelSerialPrefix) +
+                  (vendor ? vendor : "") + kNonSpaceDelim +
+                  (model ? model : "") + kNonSpaceDelim +
+                  (serial_short ? serial_short : "");
+    }
+    *id = chrome::MediaStorageUtil::MakeDeviceId(
+        chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
   }
 
   return true;
@@ -339,10 +346,9 @@ void MediaDeviceNotificationsLinux::CheckAndAddMediaDevice(
   if (!IsMediaDevice(mount_point))
     return;
 
-  std::string device_id;
-  string16 device_name;
-  bool result = (*get_device_info_func_)(mount_device, &device_id,
-                                         &device_name);
+  std::string id;
+  string16 name;
+  bool result = (*get_device_info_func_)(mount_device, &id, &name);
 
   // Keep track of GetDeviceInfo result, to see how often we fail to get device
   // details.
@@ -353,23 +359,20 @@ void MediaDeviceNotificationsLinux::CheckAndAddMediaDevice(
 
   // Keep track of device uuid, to see how often we receive empty values.
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
-                        !device_id.empty());
+                        !id.empty());
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_name_available",
-                        !device_name.empty());
+                        !name.empty());
 
-  if (device_id.empty() || device_name.empty())
+  if (id.empty() || name.empty())
     return;
 
   MountDeviceAndId mount_device_and_id;
   mount_device_and_id.mount_device = mount_device;
-  mount_device_and_id.device_id = device_id;
+  mount_device_and_id.device_id = id;
   mount_info_map_[mount_point] = mount_device_and_id;
 
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  system_monitor->ProcessMediaDeviceAttached(device_id,
-                                             device_name,
-                                             SystemMonitor::TYPE_PATH,
-                                             mount_point);
+  system_monitor->ProcessMediaDeviceAttached(id, name, mount_point);
 }
 
 void MediaDeviceNotificationsLinux::RemoveOldDevice(

@@ -14,6 +14,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
+#include "chrome/browser/media_gallery/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -99,10 +100,15 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
           drive[0] = L'A' + i;
           WCHAR volume_name[MAX_PATH + 1];
           if ((*volume_name_func_)(drive.c_str(), volume_name, MAX_PATH + 1)) {
+            // TODO(kmadhusu) We need to look up a real device id as well as
+            // having a fall back for volume name.
+            std::string device_id = MediaStorageUtil::MakeDeviceId(
+                MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM,
+                base::IntToString(i));
             BrowserThread::PostTask(
                 BrowserThread::FILE, FROM_HERE,
                 base::Bind(&MediaDeviceNotificationsWindowWin::
-                    CheckDeviceTypeOnFileThread, this, base::IntToString(i),
+                    CheckDeviceTypeOnFileThread, this, device_id,
                     FilePath::StringType(volume_name), FilePath(drive)));
           }
         }
@@ -113,8 +119,11 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
       DWORD unitmask = GetVolumeBitMaskFromBroadcastHeader(data);
       for (int i = 0; unitmask; ++i, unitmask >>= 1) {
         if (unitmask & 0x01) {
+          std::string device_id = MediaStorageUtil::MakeDeviceId(
+              MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM,
+              base::IntToString(i));
           base::SystemMonitor* monitor = base::SystemMonitor::Get();
-          monitor->ProcessMediaDeviceDetached(base::IntToString(i));
+          monitor->ProcessMediaDeviceDetached(device_id);
         }
       }
       break;
@@ -148,7 +157,6 @@ void MediaDeviceNotificationsWindowWin::ProcessMediaDeviceAttachedOnUIThread(
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   monitor->ProcessMediaDeviceAttached(id,
                                       device_name,
-                                      base::SystemMonitor::TYPE_PATH,
                                       path.value());
 }
 

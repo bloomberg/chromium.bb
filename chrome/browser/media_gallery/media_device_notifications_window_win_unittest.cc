@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
+#include "chrome/browser/media_gallery/media_storage_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +35,8 @@ LRESULT GetVolumeName(LPCWSTR drive,
 }
 
 }  // namespace
+
+namespace chrome {
 
 using chrome::MediaDeviceNotificationsWindowWin;
 using testing::_;
@@ -99,11 +102,9 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
       std::wstring drive(L"_:\\");
       drive[0] = 'A' + *it;
       FilePath::StringType name = L"V" + drive;
-      EXPECT_CALL(observer_,
-                  OnMediaDeviceAttached(base::IntToString(*it),
-                                        name,
-                                        base::SystemMonitor::TYPE_PATH,
-                                        drive))
+      std::string device_id = MediaStorageUtil::MakeDeviceId(
+          MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, base::IntToString(*it));
+      EXPECT_CALL(observer_, OnMediaDeviceAttached(device_id, name, drive))
           .Times(0);
     }
   }
@@ -125,8 +126,9 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
          it != device_indices.end();
          ++it) {
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
-      EXPECT_CALL(observer_, OnMediaDeviceDetached(base::IntToString(*it)))
-          .Times(0);
+      std::string device_id = MediaStorageUtil::MakeDeviceId(
+          MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, base::IntToString(*it));
+      EXPECT_CALL(observer_, OnMediaDeviceDetached(device_id)).Times(0);
     }
   }
   window_->OnDeviceChange(DBT_DEVICEREMOVECOMPLETE,
@@ -204,3 +206,5 @@ TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesDetachedAdjacentBits) {
 
   DoDevicesDetachedTest(device_indices);
 }
+
+}  // namespace chrome

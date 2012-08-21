@@ -33,7 +33,6 @@ class DeviceAttachedIntentSource
   virtual void OnMediaDeviceAttached(
       const std::string& id,
       const string16& name,
-      base::SystemMonitor::MediaDeviceType type,
       const FilePath::StringType& location) OVERRIDE;
   virtual void OnMediaDeviceDetached(const std::string& id) OVERRIDE;
 

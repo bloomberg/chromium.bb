@@ -13,13 +13,14 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
+#include "chrome/browser/media_gallery/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
 namespace {
 
-bool GetDeviceInfo(const std::string& source_path, std::string* device_id,
+bool GetDeviceInfo(const std::string& source_path, std::string* unique_id,
                    string16* device_label) {
   // Get the media device uuid and label if exists.
   const disks::DiskMountManager::Disk* disk =
@@ -27,7 +28,7 @@ bool GetDeviceInfo(const std::string& source_path, std::string* device_id,
   if (!disk)
     return false;
 
-  *device_id = disk->fs_uuid();
+  *unique_id = disk->fs_uuid();
 
   // TODO(kmadhusu): If device label is empty, extract vendor and model details
   // and use them as device_label.
@@ -139,23 +140,23 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
   }
 
   // Get the media device uuid and label if exists.
-  std::string device_id;
+  std::string unique_id;
   string16 device_label;
-  if (!GetDeviceInfo(mount_info.source_path, &device_id, &device_label))
+  if (!GetDeviceInfo(mount_info.source_path, &unique_id, &device_label))
     return;
 
   // Keep track of device uuid, to see how often we receive empty uuid values.
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
-                        !device_id.empty());
-  if (device_id.empty())
+                        !unique_id.empty());
+  if (unique_id.empty())
     return;
 
+  std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
+      chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
   mount_map_.insert(std::make_pair(mount_info.mount_path, device_id));
-  base::SystemMonitor::Get()->ProcessMediaDeviceAttached(
-      device_id,
-      device_label,
-      base::SystemMonitor::TYPE_PATH,
-      mount_info.mount_path);
+  base::SystemMonitor::Get()->ProcessMediaDeviceAttached(device_id,
+                                                         device_label,
+                                                         mount_info.mount_path);
 }
 
 }  // namespace chrome

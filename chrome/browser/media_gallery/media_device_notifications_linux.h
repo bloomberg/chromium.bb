@@ -26,10 +26,10 @@
 class FilePath;
 
 // Gets the media device information given a |device_path|. On success,
-// returns true and fills in |device_name| and |device_id|.
+// returns true and fills in |name| and |id|.
 typedef bool (*GetDeviceInfoFunc)(const std::string& device_path,
-                                  std::string* device_name,
-                                  string16* device_id);
+                                  std::string* id,
+                                  string16* name);
 
 namespace chrome {
 

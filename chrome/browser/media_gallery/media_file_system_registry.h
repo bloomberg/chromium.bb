@@ -88,15 +88,10 @@ class MediaFileSystemRegistry
   void UnregisterForRPHGoneNotifications(const content::RenderProcessHost* rph);
 
   // Registers a path as a media file system and return the filesystem id.
-  std::string RegisterPathAsFileSystem(
-      const base::SystemMonitor::MediaDeviceType& device_type,
-      const FilePath& path);
-
+  std::string RegisterPathAsFileSystem(const FilePath& path);
 
   // Revoke a media file system with a given |path|.
-  void RevokeMediaFileSystem(
-      const base::SystemMonitor::MediaDeviceType& device_type,
-      const FilePath& path);
+  void RevokeMediaFileSystem(const FilePath& path);
 
   // Only accessed on the UI thread.
   ChildIdToMediaFSMap media_fs_map_;

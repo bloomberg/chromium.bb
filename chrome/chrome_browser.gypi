@@ -1463,6 +1463,8 @@
         'browser/media_gallery/media_gallery_database.h',
         'browser/media_gallery/media_gallery_database_types.cc',
         'browser/media_gallery/media_gallery_database_types.h',
+        'browser/media_gallery/media_storage_util.cc',
+        'browser/media_gallery/media_storage_util.h',
         'browser/memory_details.cc',
         'browser/memory_details.h',
         'browser/memory_details_android.cc',
