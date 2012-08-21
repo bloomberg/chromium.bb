@@ -32,12 +32,15 @@ chromeos::ExtensionBluetoothEventRouter* GetEventRouter(Profile* profile) {
   return profile->GetExtensionService()->bluetooth_event_router();
 }
 
-const chromeos::BluetoothAdapter* GetAdapter(Profile* profile) {
+const chromeos::BluetoothAdapter& GetAdapter(Profile* profile) {
   return GetEventRouter(profile)->adapter();
 }
 
 chromeos::BluetoothAdapter* GetMutableAdapter(Profile* profile) {
-  return GetEventRouter(profile)->GetMutableAdapter();
+  chromeos::BluetoothAdapter* adapter =
+      GetEventRouter(profile)->GetMutableAdapter();
+  CHECK(adapter);
+  return adapter;
 }
 
 }  // namespace
@@ -74,22 +77,22 @@ namespace api {
 #if defined(OS_CHROMEOS)
 
 bool BluetoothIsAvailableFunction::RunImpl() {
-  SetResult(Value::CreateBooleanValue(GetAdapter(profile())->IsPresent()));
+  SetResult(Value::CreateBooleanValue(GetAdapter(profile()).IsPresent()));
   return true;
 }
 
 bool BluetoothIsPoweredFunction::RunImpl() {
-  SetResult(Value::CreateBooleanValue(GetAdapter(profile())->IsPowered()));
+  SetResult(Value::CreateBooleanValue(GetAdapter(profile()).IsPowered()));
   return true;
 }
 
 bool BluetoothGetAddressFunction::RunImpl() {
-  SetResult(Value::CreateStringValue(GetAdapter(profile())->address()));
+  SetResult(Value::CreateStringValue(GetAdapter(profile()).address()));
   return true;
 }
 
 bool BluetoothGetNameFunction::RunImpl() {
-  SetResult(Value::CreateStringValue(GetAdapter(profile())->name()));
+  SetResult(Value::CreateStringValue(GetAdapter(profile()).name()));
   return true;
 }
 

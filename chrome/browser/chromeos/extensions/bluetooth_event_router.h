@@ -22,7 +22,9 @@ class ExtensionBluetoothEventRouter
   explicit ExtensionBluetoothEventRouter(Profile* profile);
   virtual ~ExtensionBluetoothEventRouter();
 
-  const chromeos::BluetoothAdapter* adapter() const { return adapter_.get(); }
+  const chromeos::BluetoothAdapter& adapter() const { return *adapter_.get(); }
+
+  // GetMutableAdapter will never return NULL.
   chromeos::BluetoothAdapter* GetMutableAdapter() { return adapter_.get(); }
 
   // Register the BluetoothSocket |socket| for use by the extensions system.
