@@ -35,7 +35,6 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -423,6 +422,10 @@ void SystemTray::AnchorUpdated() {
     bubble_->bubble_view()->UpdateBubble();
 }
 
+string16 SystemTray::GetAccessibleName() {
+  return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+}
+
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
@@ -443,12 +446,6 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }
   return true;
-}
-
-void SystemTray::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
 }
 
 }  // namespace ash

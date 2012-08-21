@@ -12,8 +12,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
@@ -518,7 +516,7 @@ void ShelfLayoutManager::UpdateShelfBackground(
   bool launcher_paints = GetLauncherPaintsBackground();
   if (launcher_)
     launcher_->SetPaintsBackground(launcher_paints, type);
-  // SystemTray normally draws a background, but we don't want it to draw a
+  // The status area normally draws a background, but we don't want it to draw a
   // background when the launcher does.
   StatusAreaWidget* status_area_widget =
       Shell::GetInstance()->status_area_widget();

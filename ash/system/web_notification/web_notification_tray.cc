@@ -5,7 +5,6 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
@@ -717,6 +716,7 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
     init_params.bubble_width = kWebNotificationWidth;
     if (bubble_type == BUBBLE_TYPE_MESAGE_CENTER) {
       init_params.max_height = kWebNotificationBubbleMaxHeight;
+      init_params.can_activate = true;
     } else {
       init_params.arrow_color = kBackgroundColor;
       init_params.close_on_deactivate = false;
@@ -790,6 +790,10 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
     tray_->HideMessageCenterBubble();
   }
 
+  virtual string16 GetAccessibleName() OVERRIDE {
+    return tray_->GetAccessibleName();
+  }
+
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
     CHECK_EQ(bubble_widget_, widget);
@@ -854,6 +858,10 @@ WebNotificationTray::WebNotificationTray(
 }
 
 WebNotificationTray::~WebNotificationTray() {
+  // Release any child views that might have back pointers before ~View().
+  notification_list_.reset();
+  message_center_bubble_.reset();
+  notification_bubble_.reset();
 }
 
 void WebNotificationTray::SetDelegate(Delegate* delegate) {
@@ -995,6 +1003,11 @@ void WebNotificationTray::AnchorUpdated() {
   }
   if (message_center_bubble_.get())
     message_center_bubble_->bubble_view()->UpdateBubble();
+}
+
+string16 WebNotificationTray::GetAccessibleName() {
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME);
 }
 
 // Protected methods (invoked only from Bubble and its child classes)

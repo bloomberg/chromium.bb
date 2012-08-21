@@ -327,8 +327,8 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::CreateTrayViews(ShellDelegate* shell_delegate) {
-  AddWebNotificationTray();
   AddSystemTray(shell_delegate);
+  AddWebNotificationTray();
   // Initialize() must be called after all trays have been created.
   if (system_tray_)
     system_tray_->Initialize();
@@ -342,10 +342,10 @@ void StatusAreaWidget::Shutdown() {
   // hierarchy. Do not used scoped pointers since we don't want to destroy them
   // in the destructor if Shutdown() is not called (e.g. in tests).
   system_tray_delegate_.reset();
-  delete system_tray_;
   system_tray_ = NULL;
-  delete web_notification_tray_;
+  delete system_tray_;
   web_notification_tray_ = NULL;
+  delete web_notification_tray_;
 }
 
 void StatusAreaWidget::AddSystemTray(ShellDelegate* shell_delegate) {
