@@ -32,9 +32,9 @@ class RuleIterator;
 namespace extensions {
 
 // This class is the backend for extension-defined content settings. It is used
-// by the content_settings::ExtensionProvider to integrate its settings into the
-// HostContentSettingsMap and by the content settings extension API to provide
-// extensions with access to content settings.
+// by the content_settings::CustomExtensionProvider to integrate its settings
+// into the HostContentSettingsMap and by the content settings extension API to
+// provide extensions with access to content settings.
 class ContentSettingsStore
     : public base::RefCountedThreadSafe<ContentSettingsStore> {
  public:

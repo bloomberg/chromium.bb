@@ -13,9 +13,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_default_provider.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
-#include "chrome/browser/content_settings/content_settings_extension_provider.h"
+#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
-#include "chrome/browser/content_settings/content_settings_platform_app_provider.h"
+#include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 #include "chrome/browser/content_settings/content_settings_pref_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
@@ -103,20 +103,22 @@ HostContentSettingsMap::HostContentSettingsMap(
 void HostContentSettingsMap::RegisterExtensionService(
     ExtensionService* extension_service) {
   DCHECK(extension_service);
-  DCHECK(!content_settings_providers_[PLATFORM_APP_PROVIDER]);
-  DCHECK(!content_settings_providers_[EXTENSION_PROVIDER]);
+  DCHECK(!content_settings_providers_[INTERNAL_EXTENSION_PROVIDER]);
+  DCHECK(!content_settings_providers_[CUSTOM_EXTENSION_PROVIDER]);
 
-  content_settings::PlatformAppProvider* platform_app_provider =
-      new content_settings::PlatformAppProvider(extension_service);
-  platform_app_provider->AddObserver(this);
-  content_settings_providers_[PLATFORM_APP_PROVIDER] = platform_app_provider;
+  content_settings::InternalExtensionProvider* internal_extension_provider =
+      new content_settings::InternalExtensionProvider(extension_service);
+  internal_extension_provider->AddObserver(this);
+  content_settings_providers_[INTERNAL_EXTENSION_PROVIDER] =
+      internal_extension_provider;
 
-  content_settings::ObservableProvider* extension_provider =
-      new content_settings::ExtensionProvider(
+  content_settings::ObservableProvider* custom_extension_provider =
+      new content_settings::CustomExtensionProvider(
           extension_service->GetContentSettingsStore(),
           is_off_the_record_);
-  extension_provider->AddObserver(this);
-  content_settings_providers_[EXTENSION_PROVIDER] = extension_provider;
+  custom_extension_provider->AddObserver(this);
+  content_settings_providers_[CUSTOM_EXTENSION_PROVIDER] =
+      custom_extension_provider;
 
   OnContentSettingChanged(ContentSettingsPattern(),
                           ContentSettingsPattern(),

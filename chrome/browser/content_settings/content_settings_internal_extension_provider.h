@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PLATFORM_APP_PROVIDER_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PLATFORM_APP_PROVIDER_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_INTERNAL_EXTENSION_PROVIDER_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_INTERNAL_EXTENSION_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -22,12 +22,12 @@ class Extension;
 namespace content_settings {
 
 // A content settings provider which disables certain plugins for platform apps.
-class PlatformAppProvider : public ObservableProvider,
+class InternalExtensionProvider : public ObservableProvider,
                             public content::NotificationObserver {
  public:
-  explicit PlatformAppProvider(ExtensionService* extension_service);
+  explicit InternalExtensionProvider(ExtensionService* extension_service);
 
-  virtual ~PlatformAppProvider();
+  virtual ~InternalExtensionProvider();
 
   // ProviderInterface methods:
   virtual RuleIterator* GetRuleIterator(
@@ -61,9 +61,9 @@ class PlatformAppProvider : public ObservableProvider,
   mutable base::Lock lock_;
   scoped_ptr<content::NotificationRegistrar> registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformAppProvider);
+  DISALLOW_COPY_AND_ASSIGN(InternalExtensionProvider);
 };
 
 }  // namespace content_settings
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_PLATFORM_APP_PROVIDER_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_INTERNAL_EXTENSION_PROVIDER_H_

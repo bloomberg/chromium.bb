@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_extension_provider.h"
+#include "chrome/browser/content_settings/content_settings_custom_extension_provider.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
@@ -11,7 +11,7 @@
 
 namespace content_settings {
 
-ExtensionProvider::ExtensionProvider(
+CustomExtensionProvider::CustomExtensionProvider(
     extensions::ContentSettingsStore* extensions_settings,
     bool incognito)
     : incognito_(incognito),
@@ -19,10 +19,10 @@ ExtensionProvider::ExtensionProvider(
   extensions_settings_->AddObserver(this);
 }
 
-ExtensionProvider::~ExtensionProvider() {
+CustomExtensionProvider::~CustomExtensionProvider() {
 }
 
-RuleIterator* ExtensionProvider::GetRuleIterator(
+RuleIterator* CustomExtensionProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
@@ -31,7 +31,7 @@ RuleIterator* ExtensionProvider::GetRuleIterator(
                                                incognito);
 }
 
-bool ExtensionProvider::SetWebsiteSetting(
+bool CustomExtensionProvider::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
@@ -40,12 +40,12 @@ bool ExtensionProvider::SetWebsiteSetting(
   return false;
 }
 
-void ExtensionProvider::ShutdownOnUIThread() {
+void CustomExtensionProvider::ShutdownOnUIThread() {
   RemoveAllObservers();
   extensions_settings_->RemoveObserver(this);
 }
 
-void ExtensionProvider::OnContentSettingChanged(
+void CustomExtensionProvider::OnContentSettingChanged(
     const std::string& extension_id,
     bool incognito) {
   if (incognito_ != incognito)

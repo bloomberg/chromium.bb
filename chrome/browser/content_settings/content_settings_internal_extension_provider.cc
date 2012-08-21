@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/content_settings_platform_app_provider.h"
+#include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -21,7 +21,8 @@ using extensions::UnloadedExtensionInfo;
 
 namespace content_settings {
 
-PlatformAppProvider::PlatformAppProvider(ExtensionService* extension_service)
+InternalExtensionProvider::InternalExtensionProvider(
+    ExtensionService* extension_service)
     : registrar_(new content::NotificationRegistrar) {
   // Whitelist all extensions loaded so far.
   const ExtensionSet* extensions = extension_service->extensions();
@@ -39,18 +40,18 @@ PlatformAppProvider::PlatformAppProvider(ExtensionService* extension_service)
                   content::Source<Profile>(profile));
 }
 
-PlatformAppProvider::~PlatformAppProvider() {
+InternalExtensionProvider::~InternalExtensionProvider() {
   DCHECK(!registrar_.get());
 }
 
-RuleIterator* PlatformAppProvider::GetRuleIterator(
+RuleIterator* InternalExtensionProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
   return value_map_.GetRuleIterator(content_type, resource_identifier, &lock_);
 }
 
-bool PlatformAppProvider::SetWebsiteSetting(
+bool InternalExtensionProvider::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
@@ -59,10 +60,10 @@ bool PlatformAppProvider::SetWebsiteSetting(
   return false;
 }
 
-void PlatformAppProvider::ClearAllContentSettingsRules(
+void InternalExtensionProvider::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {}
 
-void PlatformAppProvider::Observe(int type,
+void InternalExtensionProvider::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
@@ -92,13 +93,13 @@ void PlatformAppProvider::Observe(int type,
   }
 }
 
-void PlatformAppProvider::ShutdownOnUIThread() {
+void InternalExtensionProvider::ShutdownOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   RemoveAllObservers();
   registrar_.reset();
 }
 
-void PlatformAppProvider::SetContentSettingForExtension(
+void InternalExtensionProvider::SetContentSettingForExtension(
     const extensions::Extension* extension,
     ContentSetting setting) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(

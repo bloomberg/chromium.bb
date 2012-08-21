@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_EXTENSION_PROVIDER_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_EXTENSION_PROVIDER_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_CUSTOM_EXTENSION_PROVIDER_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_CUSTOM_EXTENSION_PROVIDER_H_
 
 #include <string>
 
@@ -14,13 +14,14 @@
 namespace content_settings {
 
 // A content settings provider which manages settings defined by extensions.
-class ExtensionProvider : public ObservableProvider,
+class CustomExtensionProvider : public ObservableProvider,
                           public extensions::ContentSettingsStore::Observer {
  public:
-  ExtensionProvider(extensions::ContentSettingsStore* extensions_settings,
-                    bool incognito);
+  CustomExtensionProvider(
+      extensions::ContentSettingsStore* extensions_settings,
+      bool incognito);
 
-  virtual ~ExtensionProvider();
+  virtual ~CustomExtensionProvider();
 
   // ProviderInterface methods:
   virtual RuleIterator* GetRuleIterator(
@@ -52,9 +53,9 @@ class ExtensionProvider : public ObservableProvider,
   // The backend storing content setting rules defined by extensions.
   scoped_refptr<extensions::ContentSettingsStore> extensions_settings_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionProvider);
+  DISALLOW_COPY_AND_ASSIGN(CustomExtensionProvider);
 };
 
 }  // namespace content_settings
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_EXTENSION_PROVIDER_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_CUSTOM_EXTENSION_PROVIDER_H_
