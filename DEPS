@@ -518,14 +518,14 @@ deps_os = {
   "android": {
     "src/third_party/freetype":
       Var("chromium_git") + "/chromium/src/third_party/freetype.git" +
-      "@1f74e4e7ad3ca4163b4578fc30da26a165dd55e7",
+      "@41c2c4116acca09389cc5fe2ea393eaada546422",
 
     "src/third_party/aosp":
       "/trunk/deps/third_party/aosp@148330",
 
     "src/third_party/android_tools":
       Var("chromium_git") + "/android_tools.git" +
-      "@ebd740fc3d55dda34d9322c8c5f7749302734325",
+      "@470254c5379907d6a71f8885ee2d8c616fa0b191",
   },
 }
 
