@@ -296,7 +296,7 @@ bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
 }
 
 void RecursiveCrossProcessLock::ReleaseLock() {
-  if (file_lock_) {
+  if (file_lock_ != -1) {
     ignore_result(HANDLE_EINTR(flock(file_lock_, LOCK_UN)));
     ignore_result(HANDLE_EINTR(close(file_lock_)));
     file_lock_ = -1;
