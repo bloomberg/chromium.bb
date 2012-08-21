@@ -180,8 +180,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerBrowserTest,
   TestFullscreenMouseLockContentSettings();
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/103912
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+// http://crbug.com/103912 Mac
+// http://crbug.com/143930 Linux
 #define MAYBE_BrowserFullscreenMouseLockContentSettings \
     DISABLED_BrowserFullscreenMouseLockContentSettings
 #else
