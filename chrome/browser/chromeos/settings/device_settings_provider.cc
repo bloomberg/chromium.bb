@@ -693,10 +693,19 @@ DeviceSettingsProvider::TrustedStatus
 void DeviceSettingsProvider::OnStorePolicyCompleted(
     SignedSettings::ReturnCode code) {
   // In any case reload the policy cache to now.
-  if (code != SignedSettings::SUCCESS)
+  if (code != SignedSettings::SUCCESS) {
     Reload();
-  else
+  } else {
     trusted_status_ = TRUSTED;
+    // TODO(pastarmovj): Make those side effects responsibility of the
+    // respective subsystems.
+    ApplySideEffects();
+    // Notify the observers we are done.
+    std::vector<base::Closure> callbacks;
+    callbacks.swap(callbacks_);
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i].Run();
+  }
 
   // Clear the finished task and proceed with any other stores that could be
   // pending by now.
