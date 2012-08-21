@@ -172,6 +172,9 @@ void CheckWindowCreated(HWND hwnd) {
 }
 
 void ShowSystemMenu(HWND window, int screen_x, int screen_y) {
+  // In the Metro process, we never want to show the system menu.
+  if (base::win::IsMetroProcess())
+    return;
   UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
   if (base::i18n::IsRTL())
     flags |= TPM_RIGHTALIGN;
