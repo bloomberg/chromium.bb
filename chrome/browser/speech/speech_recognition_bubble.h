@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
+#include "ui/base/layout.h"
 
 class SkBitmap;
 class SkCanvas;
@@ -170,11 +171,10 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   // Task factory used for animation timer.
   base::WeakPtrFactory<SpeechRecognitionBubbleBase> weak_factory_;
   int animation_step_;  // Current index/step of the animation.
-  std::vector<gfx::ImageSkia> animation_frames_;
-  std::vector<gfx::ImageSkia> warming_up_frames_;
 
   DisplayMode display_mode_;
   string16 message_text_;  // Text displayed in DISPLAY_MODE_MESSAGE
+
   // The current microphone image with volume level indication.
   scoped_ptr<SkBitmap> mic_image_;
   // A temporary buffer image used in creating the above mic image.
@@ -183,6 +183,10 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   content::WebContents* web_contents_;
   // The current image displayed in the bubble's icon widget.
   scoped_ptr<gfx::ImageSkia> icon_image_;
+  // The scale factor used for the web-contents.
+  ui::ScaleFactor scale_factor_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionBubbleBase);
 };
 
 // This typedef is to workaround the issue with certain versions of

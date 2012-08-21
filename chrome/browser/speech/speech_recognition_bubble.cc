@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/speech/speech_recognition_bubble.h"
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "chrome/browser/speech/speech_recognition_bubble.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 using content::WebContents;
@@ -125,17 +128,23 @@ SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
     WebContents* web_contents)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       display_mode_(DISPLAY_MODE_RECORDING),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      scale_factor_(ui::SCALE_FACTOR_NONE) {
+  gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
+      web_contents_ ? web_contents_->GetNativeView() : NULL);
+  scale_factor_ = ui::GetScaleFactorFromScale(
+      display.device_scale_factor());
+
+  const gfx::ImageSkiaRep& rep =
+      g_images.Get().mic_empty()->GetRepresentation(scale_factor_);
   mic_image_.reset(new SkBitmap());
   mic_image_->setConfig(SkBitmap::kARGB_8888_Config,
-                        g_images.Get().mic_empty()->width(),
-                        g_images.Get().mic_empty()->height());
+      rep.pixel_width(), rep.pixel_height());
   mic_image_->allocPixels();
 
   buffer_image_.reset(new SkBitmap());
   buffer_image_->setConfig(SkBitmap::kARGB_8888_Config,
-                           g_images.Get().mic_empty()->width(),
-                           g_images.Get().mic_empty()->height());
+      rep.pixel_width(), rep.pixel_height());
   buffer_image_->allocPixels();
 }
 
@@ -213,12 +222,14 @@ void SpeechRecognitionBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
       (((1.0f - volume) * (width * (kVolumeSteps + 1))) - width) / kVolumeSteps;
   buffer_canvas.clipRect(SkRect::MakeLTRB(0, 0,
       SkIntToScalar(width) - clip_right, SkIntToScalar(height)));
-  buffer_canvas.drawBitmap(image, 0, 0);
+  buffer_canvas.drawBitmap(
+      image.GetRepresentation(scale_factor_).sk_bitmap(), 0, 0);
   buffer_canvas.restore();
   SkPaint multiply_paint;
   multiply_paint.setXfermode(SkXfermode::Create(SkXfermode::kMultiply_Mode));
-  buffer_canvas.drawBitmap(*g_images.Get().mic_mask(), -clip_right, 0,
-                           &multiply_paint);
+  buffer_canvas.drawBitmap(
+      g_images.Get().mic_mask()->GetRepresentation(scale_factor_).sk_bitmap(),
+      -clip_right, 0, &multiply_paint);
 
   canvas->drawBitmap(*buffer_image_.get(), 0, 0);
 }
@@ -230,11 +241,14 @@ void SpeechRecognitionBubbleBase::SetInputVolume(float volume,
 
   // Draw the empty volume image first and the current volume image on top,
   // and then the noise volume image on top of both.
-  canvas.drawBitmap(*g_images.Get().mic_empty(), 0, 0);
+  canvas.drawBitmap(
+      g_images.Get().mic_empty()->GetRepresentation(scale_factor_).sk_bitmap(),
+      0, 0);
   DrawVolumeOverlay(&canvas, *g_images.Get().mic_full(), volume);
   DrawVolumeOverlay(&canvas, *g_images.Get().mic_noise(), noise_volume);
 
-  SetImage(*mic_image_.get());
+  gfx::ImageSkia image(gfx::ImageSkiaRep(*mic_image_.get(), scale_factor_));
+  SetImage(image);
 }
 
 WebContents* SpeechRecognitionBubbleBase::GetWebContents() {
