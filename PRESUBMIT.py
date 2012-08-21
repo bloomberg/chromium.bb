@@ -428,7 +428,13 @@ def _CheckUnwantedDependencies(input_api, output_api):
         'You added one or more #includes that violate checkdeps rules.',
         error_descriptions))
   if warning_descriptions:
-    results.append(output_api.PresubmitPromptWarning(
+    if not input_api.is_committing:
+      warning_factory = output_api.PresubmitPromptWarning
+    else:
+      # We don't want to block use of the CQ when there is a warning
+      # of this kind, so we only show a message when committing.
+      warning_factory = output_api.PresubmitNotifyResult
+    results.append(warning_factory(
         'You added one or more #includes of files that are temporarily\n'
         'allowed but being removed. Can you avoid introducing the\n'
         '#include? See relevant DEPS file(s) for details and contacts.',
