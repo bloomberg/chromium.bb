@@ -113,11 +113,20 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // Creates UploadFileInfo and initializes it using DownloadItem*.
   void CreateUploadFileInfo(content::DownloadItem* download);
 
+  // Callback for checking if the file already exists.  If so, the file is
+  // overwritten, and StartUpload() to actually start the upload.  If not, the
+  // directory is queried to determine where to store the file.
+  void CreateUploadFileInfoAfterCheckExistence(
+    int32 download_id,
+    scoped_ptr<UploadFileInfo> upload_file_info,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto);
+
   // Callback for handling results of GDataFileSystem::GetEntryInfoByPath()
-  // initiated by CreateUploadFileInfo(). This callback reads the directory
-  // entry to determine the upload path, then calls StartUpload() to actually
-  // start the upload.
-  void OnGetEntryInfoByPath(
+  // initiated by CreateUploadFileInfoAfterCheckExistence(). This callback
+  // reads the directory entry to determine the upload path, then calls
+  // StartUpload() to actually start the upload.
+  void CreateUploadFileInfoAfterCheckTargetDir(
       int32 download_id,
       scoped_ptr<UploadFileInfo> upload_file_info,
       GDataFileError error,

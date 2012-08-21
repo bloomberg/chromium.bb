@@ -779,6 +779,7 @@ void GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
   upload_file_info->all_bytes_present = true;
   upload_file_info->content_type = content_type;
   upload_file_info->initial_upload_location = GURL(entry_proto->upload_url());
+  upload_file_info->upload_mode = UPLOAD_NEW_FILE;
 
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
@@ -2938,6 +2939,52 @@ void GDataFileSystem::AddUploadedFileToCache(
     params->callback.Run();
   }
 }
+
+void GDataFileSystem::UpdateEntryData(const std::string& resource_id,
+                                      const std::string& md5,
+                                      scoped_ptr<DocumentEntry> entry,
+                                      const FilePath& file_content_path,
+                                      const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Post a task to the same thread, rather than calling it here, as
+  // UpdateEntryData() is asynchronous.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::UpdateEntryDataOnUIThread,
+                 ui_weak_ptr_,
+                 resource_id,
+                 md5,
+                 base::Passed(&entry),
+                 file_content_path,
+                 callback));
+}
+
+void GDataFileSystem::UpdateEntryDataOnUIThread(
+    const std::string& resource_id,
+    const std::string& md5,
+    scoped_ptr<DocumentEntry> entry,
+    const FilePath& file_content_path,
+    const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<GDataFile> new_entry(
+      directory_service_->FromDocumentEntry(*entry)->AsGDataFile());
+  if (!new_entry.get()) {
+    return;
+  }
+
+  directory_service_->RefreshFile(new_entry.Pass());
+
+  // Add the file to the cache if we have uploaded a new file.
+  cache_->StoreOnUIThread(resource_id,
+                          md5,
+                          file_content_path,
+                          GDataCache::FILE_OPERATION_MOVE,
+                          base::Bind(&OnCacheUpdatedForAddUploadedFile,
+                                     callback));
+}
+
 
 void GDataFileSystem::Observe(int type,
                               const content::NotificationSource& source,

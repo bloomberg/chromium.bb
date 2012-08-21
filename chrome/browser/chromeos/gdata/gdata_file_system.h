@@ -121,6 +121,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const FilePath& file_content_path,
                                GDataCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE;
+  virtual void UpdateEntryData(const std::string& resource_id,
+                               const std::string& md5,
+                               scoped_ptr<DocumentEntry> entry,
+                               const FilePath& file_content_path,
+                               const base::Closure& callback) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -753,6 +758,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  scoped_ptr<DocumentEntry> entry,
                                  const FilePath& file_content_path,
                                  GDataCache::FileOperationType cache_operation,
+                                 const base::Closure& callback);
+  void UpdateEntryDataOnUIThread(const std::string& resource_id,
+                                 const std::string& md5,
+                                 scoped_ptr<DocumentEntry> entry,
+                                 const FilePath& file_content_path,
                                  const base::Closure& callback);
 
   // Part of CopyOnUIThread(). Called after GetEntryInfoPairByPaths() is

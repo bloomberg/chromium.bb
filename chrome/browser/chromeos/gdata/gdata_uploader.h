@@ -37,6 +37,12 @@ class GDataUploaderInterface {
   // technology!" thread on chromium-dev.
   virtual int UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) = 0;
 
+  // Stream data to an existing file from data specified by |upload_file_info|.
+  // Transfers ownership. Returns the upload_id.
+  // TODO(zork): Do not use UploadFileInfo to pass data.  See: crbug.com/134819
+  virtual int StreamExistingFile(
+      scoped_ptr<UploadFileInfo> upload_file_info) = 0;
+
   // Uploads an existing file (a file that already exists on Drive)
   // specified by |local_file_path|. The existing file on Drive will be
   // updated. Returns the upload_id. |callback| is run upon completion or
@@ -64,6 +70,8 @@ class GDataUploader : public GDataUploaderInterface {
 
   // GDataUploaderInterface overrides.
   virtual int UploadNewFile(
+      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE;
+  virtual int StreamExistingFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE;
   virtual int UploadExistingFile(
       const GURL& upload_location,

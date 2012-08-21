@@ -351,6 +351,16 @@ class GDataFileSystemInterface {
                                const FilePath& file_content_path,
                                GDataCache::FileOperationType cache_operation,
                                const base::Closure& callback) = 0;
+
+  // Updates the data associated with the file referenced by |resource_id| and
+  // |md5|.  The data is copied from |file_content_path|.
+  //
+  // |callback| will be called on the UI thread upon completion of operation.
+  virtual void UpdateEntryData(const std::string& resource_id,
+                               const std::string& md5,
+                               scoped_ptr<DocumentEntry> entry,
+                               const FilePath& file_content_path,
+                               const base::Closure& callback) = 0;
 };
 
 }  // namespace gdata

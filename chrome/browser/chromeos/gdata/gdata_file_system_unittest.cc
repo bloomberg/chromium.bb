@@ -172,6 +172,10 @@ class MockGDataUploader : public GDataUploaderInterface {
     return kUploadId;
   }
 
+  // This function is not mockable by gmock.
+  virtual int StreamExistingFile(
+      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE { return 0; }
+
   MOCK_METHOD6(UploadExistingFile,
                int(const GURL& upload_location,
                const FilePath& gdata_file_path,

@@ -61,6 +61,28 @@ int GDataUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
   return StartUploadFile(upload_file_info.Pass());
 }
 
+int GDataUploader::StreamExistingFile(
+    scoped_ptr<UploadFileInfo> upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info.get());
+  DCHECK_EQ(upload_file_info->upload_id, -1);
+  DCHECK(!upload_file_info->file_path.empty());
+  DCHECK(!upload_file_info->gdata_path.empty());
+  DCHECK(upload_file_info->title.empty());
+  DCHECK(!upload_file_info->content_type.empty());
+  DCHECK(!upload_file_info->initial_upload_location.is_empty());
+  DCHECK_EQ(UPLOAD_INVALID, upload_file_info->upload_mode);
+
+  upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
+
+  // When uploading a new file, we should retry file open as the file may
+  // not yet be ready. See comments in OpenCompletionCallback.
+  // TODO(satorux): The retry should be done only when we are uploading
+  // while downloading files from web sites (i.e. saving files to Drive).
+  upload_file_info->should_retry_file_open = true;
+  return StartUploadFile(upload_file_info.Pass());
+}
+
 int GDataUploader::StartUploadFile(
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
