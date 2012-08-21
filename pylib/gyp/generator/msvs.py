@@ -1875,7 +1875,7 @@ def _GenerateMSBuildFiltersFile(filters_path, source_files,
                ['ItemGroup'] + filter_group,
                ['ItemGroup'] + source_group
               ]
-    easy_xml.WriteXmlIfChanged(content, filters_path)
+    easy_xml.WriteXmlIfChanged(content, filters_path, pretty=True, win32=True)
   elif os.path.exists(filters_path):
     # We don't need this filter anymore.  Delete the old filter file.
     os.unlink(filters_path)
@@ -2076,7 +2076,7 @@ def _GenerateMSBuildRulePropsFile(props_path, msbuild_rules):
          ],
         ]
     ])
-  easy_xml.WriteXmlIfChanged(content, props_path)
+  easy_xml.WriteXmlIfChanged(content, props_path, pretty=True, win32=True)
 
 
 def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
@@ -2238,7 +2238,7 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
          ]
         ],
     ])
-  easy_xml.WriteXmlIfChanged(content, targets_path)
+  easy_xml.WriteXmlIfChanged(content, targets_path, pretty=True, win32=True)
 
 
 def _GenerateMSBuildRuleXmlFile(xml_path, msbuild_rules):
@@ -2416,7 +2416,7 @@ def _GenerateMSBuildRuleXmlFile(xml_path, msbuild_rules):
          }
         ]
     ])
-  easy_xml.WriteXmlIfChanged(content, xml_path)
+  easy_xml.WriteXmlIfChanged(content, xml_path, pretty=True, win32=True)
 
 
 def _GetConfigurationAndPlatform(name, settings):
@@ -3051,7 +3051,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   # TODO(jeanluc) File a bug to get rid of runas.  We had in MSVS:
   # has_run_as = _WriteMSVSUserFile(project.path, version, spec)
 
-  easy_xml.WriteXmlIfChanged(content, project.path)
+  easy_xml.WriteXmlIfChanged(content, project.path, pretty=True, win32=True)
 
   return missing_sources
 
