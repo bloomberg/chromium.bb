@@ -120,9 +120,6 @@ void AudioRendererMixer::ProvideInput(AudioBus* audio_bus) {
        VectorFMAC(mixer_input_audio_bus_->channel(i), volume, frames_filled,
                   audio_bus->channel(i));
     }
-
-    // No need to clamp values as InterleaveFloatToInt() will take care of this
-    // for us later when data is transferred to the browser process.
   }
 }
 

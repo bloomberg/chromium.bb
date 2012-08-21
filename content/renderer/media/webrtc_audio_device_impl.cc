@@ -11,8 +11,8 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/audio/audio_util.h"
 #include "media/audio/audio_parameters.h"
+#include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 
 using content::AudioDeviceFactory;
@@ -218,15 +218,8 @@ int WebRtcAudioDeviceImpl::Render(
 
   // Deinterleave each channel and convert to 32-bit floating-point
   // with nominal range -1.0 -> +1.0 to match the callback format.
-  for (int channel_index = 0; channel_index < channels; ++channel_index) {
-    media::DeinterleaveAudioChannel(
-        output_buffer_.get(),
-        audio_bus->channel(channel_index),
-        channels,
-        channel_index,
-        bytes_per_sample_,
-        audio_bus->frames());
-  }
+  audio_bus->FromInterleaved(output_buffer_.get(), audio_bus->frames(),
+                             bytes_per_sample_);
   return audio_bus->frames();
 }
 
@@ -265,10 +258,9 @@ void WebRtcAudioDeviceImpl::Capture(media::AudioBus* audio_bus,
 
   // Interleave, scale, and clip input to int and store result in
   // a local byte buffer.
-  media::InterleaveFloatToInt(audio_bus,
-                              input_buffer_.get(),
-                              audio_bus->frames(),
-                              input_audio_parameters_.bits_per_sample() / 8);
+  audio_bus->ToInterleaved(audio_bus->frames(),
+                           input_audio_parameters_.bits_per_sample() / 8,
+                           input_buffer_.get());
 
   int samples_per_sec = input_sample_rate();
   if (samples_per_sec == 44100) {
