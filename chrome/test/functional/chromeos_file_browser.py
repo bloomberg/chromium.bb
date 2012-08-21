@@ -78,7 +78,8 @@ class ChromeosFileBrowserTest(pyauto.PyUITest):
     #       .mov and .3gp only work in the Media Player. Once these format are
     #        supported on ChromeOS, include them in the test.
     for fname in media_files:
-      test_utils.CopyFileFromDataDirToDownloadDir(self, 'media/' + fname)
+      test_utils.CopyFileFromContentDataDirToDownloadDir(self,
+                                                         'media/' + fname)
     for fname in private_media_files:
       test_utils.CopyFileFromDataDirToDownloadDir(self, 'pyauto_private/media/' +\
                                                   fname)
