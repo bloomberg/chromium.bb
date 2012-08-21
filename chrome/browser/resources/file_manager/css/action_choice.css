@@ -1,0 +1,118 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.action-choice {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-user-select: none;
+  background: white;
+  bottom: 0;
+  color: black;
+  display: -webkit-box;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-size: 84%;
+  left: 0;
+  margin: 0;
+  overflow: hidden;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.title-bar {
+  font-size: 120%;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.previews {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  height: 130px;
+  position: relative;
+  width: 100%;
+}
+
+.spinner {
+  background-image: url('../images/common/spinner.svg');
+  background-size: 100%;
+  display: none;
+  height: 22px;
+  left: 50%;
+  margin-left: -11px;
+  margin-top: -11px;
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  z-index: 1;
+}
+
+.previews[loading] .spinner {
+  display: block;
+}
+
+.img-container {
+  height: 120px;
+  margin: 0 5px;
+  overflow: hidden;
+  position: relative;
+  width: 120px;
+}
+
+.img-container > img {
+  -webkit-user-drag: none;
+  position: absolute;
+}
+
+.counter {
+  color: #808080;
+  margin: 5px 0 15px 0;
+  width: 100%;
+}
+
+.choices {
+  margin: 5px 0;
+}
+
+.choices > div {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin: 20px 0;
+}
+
+.choices > div > * {
+  display: block;
+  margin: 0 3px;
+}
+
+.choices label[for=import-photos-to-drive] {
+  /* TODO(dgozman): change to the right one */
+  background: url(../images/files/file_types/gsheet.png) no-repeat;
+  padding-left: 20px;
+}
+
+.choices label[for=view-files] {
+  /* TODO(dgozman): change to the right one */
+  background: url(../images/files/file_types/gdoc.png) no-repeat;
+  padding-left: 20px;
+}
+
+.footer {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  bottom: 10px;
+  display: -webkit-box;
+  left: 10px;
+  padding-bottom: 5px;
+  position: absolute;
+  right: 10px;
+}
+
+.footer button {
+  height: 24px;
+  margin-left: 10px;
+  min-width: 80px;
+}

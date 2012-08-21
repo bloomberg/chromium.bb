@@ -11286,6 +11286,22 @@ Some features may be unavailable.  Please check that the profile exists and you 
         This file is not available offline.
       </message>
 
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_PHOTOS_DRIVE" desc="In the action choice dialog, label of action to import photos to Drive.">
+        Backup photos to Google Drive
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_VIEW_FILES" desc="In the action choice dialog, label of action to view all files.">
+        View all files
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_OK" desc="In the action choice dialog, label of the ok button.">
+        Next >
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_COUNTER_NO_MEDIA" desc="In the action choice dialog, text with number of files.">
+        <ph name="FILES_COUNT">$1<ex>123</ex></ph> files
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_CHOICE_COUNTER" desc="In the action choice dialog, text with number of files and photos.">
+        <ph name="PHOTOS_COUNT">$2<ex>85</ex></ph> photos out of <ph name="FILES_COUNT">$1<ex>123</ex></ph> files
+      </message>
+
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORT_BUTTON" desc="In the Photo import, label of import button.">
         Import
       </message>

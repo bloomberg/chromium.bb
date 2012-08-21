@@ -47,6 +47,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/screen.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -83,6 +84,7 @@ const char kFileBrowserExtensionUrl[] = FILEBROWSER_URL("");
 const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
 const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
 const char kVideoPlayerUrl[] = FILEBROWSER_URL("video_player.html");
+const char kActionChoiceUrl[] = FILEBROWSER_URL("action_choice.html");
 #undef FILEBROWSER_URL
 #undef FILEBROWSER_EXTENSON_ID
 
@@ -466,7 +468,35 @@ void OpenFileBrowser(const FilePath& path,
 }
 
 void ViewRemovableDrive(const FilePath& path) {
-  OpenFileBrowser(path, REUSE_ANY_FILE_MANAGER, "mountTriggered");
+  const int kDialogWidth = 410;
+  // TODO(dgozman): remove 50, which is a title height once popup window
+  // will have no title.
+  const int kDialogHeight = 332 + 50;
+
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+
+  FilePath virtual_path;
+  if (!ConvertFileToRelativeFileSystemPath(profile, path, &virtual_path))
+    return;
+  std::string url = kActionChoiceUrl;
+  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
+  GURL dialog_url(url);
+
+  const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
+  const gfx::Rect bounds((screen.width() - kDialogWidth) / 2,
+                         (screen.height() - kDialogHeight) / 2,
+                         kDialogWidth,
+                         kDialogHeight);
+
+  Browser* browser = new Browser(
+      Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
+                                          "action_choice",
+                                          bounds,
+                                          profile));
+
+  chrome::AddSelectedTabWithURL(browser, dialog_url,
+                                content::PAGE_TRANSITION_LINK);
+  browser->window()->Show();
 }
 
 void ShowFileInFolder(const FilePath& path) {
