@@ -694,6 +694,73 @@
     [ 'OS=="ios"', {
       'targets': [
         {
+          'target_name': 'breakpad_utilities',
+          'type': 'none',
+          'variables': {
+            'ninja_output_dir': 'ninja-breakpad',
+            # Gyp to rerun
+            're_run_targets': [
+              'breakpad/breakpad.gyp',
+            ],
+          },
+          'includes': ['../build/ios/mac_build.gypi'],
+          'actions': [
+            {
+              'action_name': 'compile breakpad utilities',
+              'inputs': [],
+              'outputs': [],
+              'action': [
+                '<@(ninja_cmd)',
+                'dump_syms',
+                'symupload',
+              ],
+              'message': 'Generating the breakpad executables',
+            },
+            {
+              'action_name': 'copy dump_syms',
+              'inputs': [
+                '<(ninja_product_dir)/dump_syms',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/dump_syms',
+              ],
+              'action': [
+                'cp',
+                '<(ninja_product_dir)/dump_syms',
+                '<(PRODUCT_DIR)/dump_syms',
+              ],
+            },
+            {
+              'action_name': 'copy symupload',
+              'inputs': [
+                '<(ninja_product_dir)/symupload',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/symupload',
+              ],
+              'action': [
+                'cp',
+                '<(ninja_product_dir)/symupload',
+                '<(PRODUCT_DIR)/symupload',
+              ],
+            },
+          ],
+        },
+        {
+          'target_name': 'dump_syms',
+          'type': 'none',
+          'dependencies': [
+            'breakpad_utilities',
+          ],
+        },
+        {
+          'target_name': 'symupload',
+          'type': 'none',
+          'dependencies': [
+            'breakpad_utilities',
+          ],
+        },
+        {
           'target_name': 'breakpad_client',
           'type': '<(library)',
           'sources': [
