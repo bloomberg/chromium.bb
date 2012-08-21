@@ -188,6 +188,7 @@ TEST(ImageSkiaTest, GetBitmapFromEmpty) {
   EXPECT_TRUE(bitmap->empty());
 }
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
 TEST(ImageSkiaTest, OperatorBitmapFromSource) {
   ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
   // ImageSkia should use the source to create the bitmap.
@@ -195,6 +196,7 @@ TEST(ImageSkiaTest, OperatorBitmapFromSource) {
   ASSERT_NE(static_cast<SkBitmap*>(NULL), &bitmap);
   EXPECT_FALSE(bitmap.isNull());
 }
+#endif
 
 TEST(ImageSkiaTest, BackedBySameObjectAs) {
   // Null images should all be backed by the same object (NULL).

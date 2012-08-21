@@ -745,7 +745,7 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
 }
 
 GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
-  SkBitmap icon = model_->GetResourceIcon(row);
+  SkBitmap icon = *model_->GetResourceIcon(row).bitmap();
   if (icon.pixelRef() ==
       ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_DEFAULT_FAVICON)->pixelRef()) {

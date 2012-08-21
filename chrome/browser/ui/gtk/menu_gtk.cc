@@ -490,7 +490,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
       case ui::MenuModel::TYPE_COMMAND: {
         int command_id = model->GetCommandIdAt(i);
         if (model->GetIconAt(i, &icon))
-          menu_item = BuildMenuItemWithImage(label, icon);
+          menu_item = BuildMenuItemWithImage(label, *icon.bitmap());
         else
           menu_item = BuildMenuItemWithLabel(label, command_id);
         if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id) &&
@@ -887,7 +887,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
           gfx::ImageSkia icon;
           if (model->GetIconAt(id, &icon)) {
-            GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
+            GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(*icon.bitmap());
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
                                           gtk_image_new_from_pixbuf(pixbuf));
             g_object_unref(pixbuf);

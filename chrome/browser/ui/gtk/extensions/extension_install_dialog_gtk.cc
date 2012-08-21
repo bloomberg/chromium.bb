@@ -41,7 +41,7 @@ const double kRatingTextSize = 12.1;  // 12.1px = 9pt @ 96dpi
 // Adds a Skia image as an icon control to the given container.
 void AddResourceIcon(const gfx::ImageSkia* icon, void* data) {
   GtkWidget* container = static_cast<GtkWidget*>(data);
-  GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(*icon);
+  GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(*icon->bitmap());
   GtkWidget* icon_widget = gtk_image_new_from_pixbuf(icon_pixbuf);
   g_object_unref(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
