@@ -24,8 +24,8 @@
 #include "ui/base/win/window_impl.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/widget/hwnd_message_handler_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/views/win/hwnd_message_handler_delegate.h"
 
 namespace ui {
 class Compositor;

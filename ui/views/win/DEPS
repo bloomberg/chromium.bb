@@ -1,0 +1,13 @@
+# This code here is intended to be distinct from the rest of views.
+# Use HWNDMessageHandlerDelegate instead of #including views types here.
+include_rules = [
+  "-ui/views",
+
+  "+base",
+  "+ui/base",
+  "+ui/gfx",
+  "+ui/views/ime/input_method_win.h",
+  "+ui/views/views_export.h",
+  "+ui/views/widget/native_widget_win.h",
+  "+ui/views/win",
+]

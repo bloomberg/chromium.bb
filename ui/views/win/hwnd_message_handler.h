@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_HWND_MESSAGE_HANDLER_H_
-#define UI_VIEWS_WIDGET_HWND_MESSAGE_HANDLER_H_
+#ifndef UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_H_
+#define UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_H_
 
 #include <atlbase.h>
 #include <atlapp.h>
@@ -102,4 +102,4 @@ class VIEWS_EXPORT HWNDMessageHandler {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_HWND_MESSAGE_HANDLER_H_
+#endif  // UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_H_

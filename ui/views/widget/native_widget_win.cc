@@ -43,12 +43,12 @@
 #include "ui/views/widget/aero_tooltip_manager.h"
 #include "ui/views/widget/child_window_message_processor.h"
 #include "ui/views/widget/drop_target_win.h"
-#include "ui/views/widget/hwnd_message_handler.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
+#include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/window/native_frame_view.h"
 
 #if !defined(USE_AURA)

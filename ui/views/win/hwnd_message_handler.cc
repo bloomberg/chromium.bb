@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/widget/hwnd_message_handler.h"
+#include "ui/views/win/hwnd_message_handler.h"
 
 #include <dwmapi.h>
 
@@ -10,8 +10,8 @@
 #include "ui/gfx/path.h"
 #include "ui/base/native_theme/native_theme_win.h"
 #include "ui/views/ime/input_method_win.h"
-#include "ui/views/widget/hwnd_message_handler_delegate.h"
 #include "ui/views/widget/native_widget_win.h"
+#include "ui/views/win/hwnd_message_handler_delegate.h"
 
 namespace views {
 
