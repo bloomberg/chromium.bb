@@ -34,5 +34,10 @@
     { "path": "libremoting_host_plugin.ia32.so", "public": false },
     { "path": "libremoting_host_plugin.x64.so", "public": false },
     { "path": "remoting_host_plugin.plugin", "public": false }
-  ]
+  ],
+  "requirements": {
+    "plugins": {
+      "npapi": false
+    }
+  }
 }
