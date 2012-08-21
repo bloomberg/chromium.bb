@@ -29,6 +29,7 @@ class Profile;
 
 namespace autofill_helper {
 void SetProfiles(int, std::vector<AutofillProfile>*);
+void SetCreditCards(int, std::vector<CreditCard>*);
 }
 
 // Handles loading and saving Autofill profile information to the web database.
@@ -148,12 +149,14 @@ class PersonalDataManager
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            AggregateExistingAuxiliaryProfile);
+  friend class AutofillTest;
   friend class PersonalDataManagerFactory;
   friend class PersonalDataManagerTest;
   friend class scoped_ptr<PersonalDataManager>;
   friend class ProfileSyncServiceAutofillTest;
   friend class TestingAutomationProvider;
   friend void autofill_helper::SetProfiles(int, std::vector<AutofillProfile>*);
+  friend void autofill_helper::SetCreditCards(int, std::vector<CreditCard>*);
 
   PersonalDataManager();
   virtual ~PersonalDataManager();

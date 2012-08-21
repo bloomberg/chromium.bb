@@ -83,10 +83,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/102798
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      # crbug.com/99475
-      '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/141443
       '-browsing_data.BrowsingDataTest.testClearAutofillData',
       # crbug.com/123396
@@ -343,9 +339,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crosbug.com/19556
-      '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
-      '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
       # crbug.com/132337
       '-autofill.AutofillTest.testTabOrderForEditAddress',
       # crosbug.com/27405
@@ -390,7 +383,6 @@
       # crbug.com/109035
       '-plugins.PluginsTest.testBlockPluginException',
       # Deal with i18n chars.  crosbug.com/12639
-      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
       # crosbug.com/16977

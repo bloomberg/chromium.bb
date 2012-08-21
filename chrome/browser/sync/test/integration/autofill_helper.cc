@@ -221,6 +221,17 @@ void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles) {
   pdm->RemoveObserver(&observer);
 }
 
+void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
+  MockPersonalDataManagerObserver observer;
+  EXPECT_CALL(observer, OnPersonalDataChanged()).
+      WillOnce(QuitUIMessageLoop());
+  PersonalDataManager* pdm = GetPersonalDataManager(profile);
+  pdm->SetObserver(&observer);
+  pdm->SetCreditCards(credit_cards);
+  MessageLoop::current()->Run();
+  pdm->RemoveObserver(&observer);
+}
+
 void AddProfile(int profile, const AutofillProfile& autofill_profile) {
   const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;

@@ -1,7 +1,7 @@
-This dataset file can be parsed with dataset_converter.py
-
-first_name, middle_name, last_name, email, company_name, address_line_1, address_line_2, city, state, zipcode, country, phone, fax
-
+# This dataset file is used by AutofillTest.MergeAggregatedDuplicatedProfiles
+#
+# first_name, middle_name, last_name, email, company_name, address_line_1, address_line_2, city, state, zipcode, country, phone, fax
+#
 John||Doe|john.doe@gmail.com||1950 Amphitheatre Ave #2||Mountain View|California|14888|US|4195551234|
 John||Doe|john.doe@movitron.com|Movitron|Iceberg @ 10 Pennsylvania|Movitron 5th Floor|Mountain View|CA|14890|US|4195551234|
 John||Doe|john@incarnate.net||||SFO|-08:00 Pacific Time (US & Canada); Tijuana||US||

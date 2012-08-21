@@ -31,7 +31,6 @@
 class PowerManagerClientObserverForTesting;
 #endif  // defined(OS_CHROMEOS)
 
-class AutofillProfile;
 class CreditCard;
 class ImporterList;
 
@@ -634,48 +633,6 @@ class TestingAutomationProvider : public AutomationProvider,
                              base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
-  // Get the profiles that are currently saved to the DB.
-  // Uses the JSON interface for input/output.
-  void GetAutofillProfile(Browser* browser,
-                          base::DictionaryValue* args,
-                          IPC::Message* reply_message);
-
-  // Fill in an AutofillProfile with the given profile information.
-  // Uses the JSON interface for input/output.
-  void FillAutofillProfile(Browser* browser,
-                           base::DictionaryValue* args,
-                           IPC::Message* reply_message);
-
-  // Injects Javascript into a specified frame that is assumed to submit
-  // Autofill data via a webpage form, then waits for Autofill's personal data
-  // manager to finish processing the data.
-  void SubmitAutofillForm(Browser* browser,
-                          base::DictionaryValue* args,
-                          IPC::Message* reply_message);
-
-  // Causes the autofill popup to be displayed in an already-focused webpage
-  // form field.  Waits until the popup is displayed before returning.
-  void AutofillTriggerSuggestions(Browser* browser,
-                                  base::DictionaryValue* args,
-                                  IPC::Message* message);
-
-  // Highlights the previous or next autofill entry in an already-displayed
-  // autofill popup.  This is done by sending either an "up arrow" or
-  // "down arrow" keypress, then waiting for a preview of the filled-in state
-  // to be displayed in the webpage form before returning.  Use
-  // AutofillTriggerSuggestions() to cause the autofill popup to be displayed.
-  void AutofillHighlightSuggestion(Browser* browser,
-                                   base::DictionaryValue* args,
-                                   IPC::Message* message);
-
-  // Causes a webpage form to be filled with autofill information from an
-  // autofill profile that is already highlighted in an autofill popup.  Use
-  // AutofillHighlightSuggestion() as needed to highlight the desired profile
-  // in the autofill popup.
-  void AutofillAcceptSelection(Browser* browser,
-                               base::DictionaryValue* args,
-                               IPC::Message* message);
-
   // Signs in to sync using the given username and password.
   // Uses the JSON interface for input/output.
   void SignInToSync(Browser* browser,
@@ -711,31 +668,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void DisableSyncForDatatypes(Browser* browser,
                                base::DictionaryValue* args,
                                IPC::Message* reply_message);
-
-  // Translate DictionaryValues of autofill profiles and credit cards to the
-  // data structure used in the browser.
-  // Args:
-  //   profiles/cards: the ListValue of profiles/credit cards to translate.
-  //   error_message: a pointer to the return string in case of error.
-  static std::vector<AutofillProfile> GetAutofillProfilesFromList(
-      const base::ListValue& profiles, std::string* error_message);
-  static std::vector<CreditCard> GetCreditCardsFromList(
-      const base::ListValue& cards, std::string* error_message);
-
-  // The opposite of the above: translates from the internal data structure
-  // for profiles and credit cards to a ListValue of DictionaryValues. The
-  // caller owns the returned object.
-  static base::ListValue* GetListFromAutofillProfiles(
-      const std::vector<AutofillProfile*>& autofill_profiles);
-  static base::ListValue* GetListFromCreditCards(
-      const std::vector<CreditCard*>& credit_cards);
-
-  // Return the map from the internal data representation to the string value
-  // of auto fill fields and credit card fields.
-  static std::map<AutofillFieldType, std::string>
-      GetAutofillFieldToStringMap();
-  static std::map<AutofillFieldType, std::string>
-      GetCreditCardFieldToStringMap();
 
   // Get ordered list of all active and queued HTML5 notifications.
   // Uses the JSON interface for input/output.

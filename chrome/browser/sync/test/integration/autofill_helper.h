@@ -18,6 +18,7 @@ class AutofillEntry;
 class AutofillKey;
 class AutofillProfile;
 class AutofillType;
+class CreditCard;
 class PersonalDataManager;
 class WebDataService;
 
@@ -57,6 +58,10 @@ bool KeysMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 // Replaces the Autofill profiles in sync profile |profile| with
 // |autofill_profiles|.
 void SetProfiles(int profile, std::vector<AutofillProfile>* autofill_profiles);
+
+// Replaces the CreditCard profiles in sync profile |profile| with
+// |credit_cards|.
+void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards);
 
 // Adds the autofill profile |autofill_profile| to sync profile |profile|.
 void AddProfile(int profile, const AutofillProfile& autofill_profile);
