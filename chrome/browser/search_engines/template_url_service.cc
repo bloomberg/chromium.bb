@@ -202,6 +202,29 @@ bool IsFromSync(const TemplateURL* turl, const SyncDataMap& sync_data) {
   return !!sync_data.count(turl->sync_guid());
 }
 
+// Log the number of instances of a keyword that exist, with zero or more
+// underscores, which could occur as the result of conflict resolution.
+void LogDuplicatesHistogram(
+    const TemplateURLService::TemplateURLVector& template_urls) {
+  std::map<std::string, int> duplicates;
+  for (TemplateURLService::TemplateURLVector::const_iterator it =
+      template_urls.begin(); it != template_urls.end(); ++it) {
+    std::string keyword = UTF16ToASCII((*it)->keyword());
+    TrimString(keyword, "_", &keyword);
+    duplicates[keyword]++;
+  }
+
+  // Count the keywords with duplicates.
+  int num_dupes = 0;
+  for (std::map<std::string, int>::const_iterator it = duplicates.begin();
+      it != duplicates.end(); ++it) {
+    if (it->second > 1)
+      num_dupes++;
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Search.SearchEngineDuplicateCounts", num_dupes);
+}
+
 }  // namespace
 
 class TemplateURLService::LessWithPrefix {
@@ -1187,6 +1210,8 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
   // Do some post-processing on the change list to ensure that we are sending
   // valid changes to sync_processor_.
   PruneSyncChanges(&sync_data_map, &new_changes);
+
+  LogDuplicatesHistogram(GetTemplateURLs());
 
   syncer::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
