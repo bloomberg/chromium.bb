@@ -37,8 +37,11 @@ IGNORED_FILES = [
 # names of the JSON files do not give enough information on the actual API name.
 CUSTOM_MAPPINGS = {
   'experimental_input_virtual_keyboard': 'experimental_input_virtualKeyboard',
+  'experimental_system_info_cpu': 'experimental_systemInfo_cpu',
+  'experimental_system_info_storage': 'experimental_systemInfo_storage',
   'input_ime': 'input_ime',
-  'app_window': 'app_window'
+  'app_runtime': 'app_runtime',
+  'app_window': 'app_window',
 }
 
 # These are the extension-only APIs that don't have explicit entries in
@@ -87,7 +90,7 @@ def _UnixName(name):
 def _GetDestinations(api_name, api_dir):
   if api_name in EXTENSIONS_ONLY:
     return ['extensions']
-  if api_name.startswith('app'):
+  if api_name.count('app') > 0:
     return ['apps']
   with open(os.path.join(api_dir, '_permission_features.json')) as f:
     permissions = json.loads(json_comment_eater.Nom(f.read()))
@@ -117,15 +120,15 @@ def _ListAllAPIs(dirname):
                                                            'internal']]
 
 def _MakeArticleTemplate(filename, path):
-  return ('{{+partials.standard_%s_article article:intros.%s}}' %
+  return ('{{+partials.standard_%s_article article:intros.%s}}\n' %
           (path, filename))
 
 def _MakeAPITemplate(intro_name, path, api_name, has_intro):
   if has_intro:
-    return ('{{+partials.standard_%s_api api:apis.%s intro:intros.%s}}' %
+    return ('{{+partials.standard_%s_api api:apis.%s intro:intros.%s}}\n' %
             (path, api_name, intro_name))
   else:
-    return ('{{+partials.standard_%s_api api:apis.%s}}' %
+    return ('{{+partials.standard_%s_api api:apis.%s}}\n' %
             (path, api_name))
 
 def _GetAPIPath(name, api_dir):

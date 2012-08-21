@@ -12,7 +12,6 @@
     <script src="{{static}}/js/branch.js" type="text/javascript"></script>
     <script src="{{static}}/js/sidebar.js" type="text/javascript"></script>
     <script src="{{static}}/js/prettify.js" type="text/javascript"></script>
-    <script src="{{static}}/js/filter.js" type="text/javascript"></script>
     <script>
       (function() {
         // Auto syntax highlight all pre tags.
@@ -50,6 +49,7 @@
         customSearchControl.setResultSetSize(
             google.search.Search.FILTERED_CSE_RESULTSET);
         customSearchControl.draw('cse');
+        document.getElementById('cseSampleText').removeAttribute('hidden');
       }, true);
     </script>
     <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>

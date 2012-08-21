@@ -2,100 +2,84 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Adds toggle controls to the sidebar list.
+ *
+ * Controls are inserted as the first children of list items in the sidebar
+ * which contain only text (not a link).  Handlers are set up so that when a
+ * toggle control is clicked, any <ul> elements who are siblings of the
+ * control are hidden/revealed as appropriate given the control's state.
+ *
+ * If a list item possesses the class 'selected' its ancestor <ul> is
+ * revealed by default (it represents the current page).
+ */
 (function() {
-  /**
-   * Toggles the display of nodes given the status of their associated controls.
-   *
-   * For each node passed to this function, check to see if a toggle has been
-   * inserted into the node's parent.  If yes, change the state of the toggle
-   * and hide/reveal the node as needed.
-   *
-   * @param {NodeList|Node|Array.<Node>} Nodes to operate on.
-   */
-  function toggleList(list) {
-    if (typeof list.length != 'number') {
-      list = Array(list);
-    }
+  var sidebar = document.getElementById('gc-sidebar');
+  if (!sidebar)
+    return;
 
-    for (var i = 0; i < list.length; i++) {
-      var toggle = list[i].parentNode &&
-                   list[i].parentNode.firstChild;
-      if (toggle && toggle.className.substring(0, 6) == 'toggle') {
-        var visible = toggle.className == 'toggle';
-        list[i].style.display = visible ? 'block' : 'none';
-        toggle.className = visible ? 'toggle selected' : 'toggle';
-      }
-    }
-  };
-
-  /**
-   * Reveals the hidden ancestor of the passed node, adjusts toggles as needed.
-   *
-   * @param {Node} node The node whose ancestor is a hidden toggleable element.
-   */
-  function revealAncestor(node) {
-    while (node.parentNode) {
-      if (node.style.display == 'none') {
-        toggleList(node);
-        break;
-      }
-      node = node.parentNode;
-    }
-  };
-
-  /**
-   * Adds toggle controls to the sidebar list.
-   *
-   * Controls are inserted as the first children of list items in the sidebar
-   * which contain only text (not a link).  Handlers are set up so that when a
-   * toggle control is clicked, any <ul> elements who are siblings of the
-   * control are hidden/revealed as appropriate given the control's state.
-   *
-   * If a list item possesses the class "leftNavSelected" its ancestor <ul> is
-   * revealed by default (it represents the current page).
-   */
-  function initSidebar() {
-    var toc = document.getElementById('gc-toc');
-    if (!toc)
+  // Figure out which link matches the current page so it can be styled
+  // differently.
+  var pathParts = document.location.pathname.replace(/\/+$/, '').split('/')
+  Array.prototype.forEach.call(sidebar.getElementsByTagName('a'),
+                               function(link) {
+    if (link.getAttribute('href') != pathParts[pathParts.length - 1])
       return;
+    link.className = 'selected';
+    link.removeAttribute('href');
+  });
 
-    // Figure out which link matches the current page so it can be styled
-    // differently.
-    var links = toc.getElementsByTagName('a');
-    var selectedNode = null;
-    var path_parts = document.location.pathname.replace(/\/+$/, '').split('/')
-    for (var i = 0; i < links.length; i++) {
-      if (links[i].getAttribute('href') != path_parts[path_parts.length - 1])
-        continue;
-      links[i].className = 'leftNavSelected';
-      links[i].removeAttribute('href');
-      selectedNode = links[i];
+  // Go through the items on the sidebar and add toggles.
+  Array.prototype.forEach.call(sidebar.querySelectorAll('[toggleable]'),
+                               function(toggleable) {
+    var buttonContent = toggleable.previousElementSibling;
+    if (!buttonContent) {
+      console.warn('Cannot toggle %s, no previous sibling', toggleable);
+      return;
     }
 
-    // Go through the items on the sidebar and add toggles.
-    var items = toc.getElementsByTagName('li');
-    for (var i = 0; i < items.length; i++) {
-      var item = items[i];
-      if (!item.firstChild || item.firstChild.tagName != 'SPAN')
-        continue;
-      // Only assign toggles to text nodes in the sidebar.
-      var a = document.createElement('a');
-      a.className = 'toggle selected';
-      a.appendChild(document.createTextNode(' '));
-      a.onclick = function() {
-        toggleList(this.parentNode.getElementsByTagName('ul'));
-      };
-      item.firstChild.onclick = function() {
-        toggleList(this.parentNode.getElementsByTagName('ul'));
-      };
-      item.insertBefore(a, item.firstChild);
-      toggleList(item.getElementsByTagName('ul'));
+    var button = document.createElement('a');
+    button.className = 'button';
+    var toggleIndicator = document.createElement('div');
+    toggleIndicator.className = 'toggleIndicator';
+
+    var isToggled = false;
+    function toggle() {
+      if (isToggled) {
+        toggleable.classList.add('hidden');
+        toggleIndicator.classList.remove('toggled');
+      } else {
+        toggleable.classList.remove('hidden');
+        toggleIndicator.classList.add('toggled');
+      }
+      isToggled = !isToggled;
     }
 
-    // Reveal the selected link.
-    if (selectedNode)
-      revealAncestor(selectedNode);
-  };
+    // TODO(kalman): needs a button role for accessibility?
+    button.setAttribute('href', 'javascript:void(0)');
+    button.addEventListener('click', toggle);
+    buttonContent.parentElement.insertBefore(button, buttonContent);
+    button.appendChild(buttonContent);
+    button.appendChild(toggleIndicator);
 
-  initSidebar();
+    // Leave the toggle open if the selected link is a child.
+    if (toggleable.querySelector('.selected'))
+      toggle();
+    else
+      toggleable.classList.add('hidden');
+  });
+
+  // Each level of the sidebar is displayed differently. Rather than trying
+  // to nest CSS selectors in a crazy way, programmatically assign levels
+  // to them.
+  function addNestLevels(node, currentLevel) {
+    node.classList.add('level' + currentLevel);
+    if (node.tagName == 'UL')
+      currentLevel++;
+    Array.prototype.forEach.call(node.children, function(child) {
+      addNestLevels(child, currentLevel);
+    });
+  }
+
+  addNestLevels(sidebar, 1);
 })()
