@@ -247,6 +247,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
 
   void MouseLockCompleteInHost(int32_t result, PP_Instance instance);
 
+  // Other helpers.
+  void CancelAnyPendingRequestSurroundingText(PP_Instance instance);
+
   ProxyCompletionCallbackFactory<PPB_Instance_Proxy> callback_factory_;
 };
 

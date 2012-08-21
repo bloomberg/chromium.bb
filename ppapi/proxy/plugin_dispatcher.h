@@ -47,6 +47,13 @@ struct InstanceData {
 
   // When non-NULL, indicates the callback to execute when mouse lock is lost.
   scoped_refptr<TrackedCallback> mouse_lock_callback;
+
+  // Calls to |RequestSurroundingText()| are done by posted tasks. Track whether
+  // a) a task is pending, to avoid redundant calls, and b) whether we should
+  // actually call |RequestSurroundingText()|, to avoid stale calls (i.e.,
+  // calling when we shouldn't).
+  bool is_request_surrounding_text_pending;
+  bool should_do_request_surrounding_text;
 };
 
 class PPAPI_PROXY_EXPORT PluginDispatcher

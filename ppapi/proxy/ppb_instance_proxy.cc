@@ -48,6 +48,12 @@ void RequestSurroundingText(PP_Instance instance) {
   if (!dispatcher)
     return;  // Instance has gone away while message was pending.
 
+  InstanceData* data = dispatcher->GetInstanceData(instance);
+  DCHECK(data);  // Should have it, since we still have a dispatcher.
+  data->is_request_surrounding_text_pending = false;
+  if (!data->should_do_request_surrounding_text)
+    return;
+
   // Just fake out a RequestSurroundingText message to the proxy for the PPP
   // interface.
   InterfaceProxy* proxy = dispatcher->GetInterfaceProxy(API_ID_PPP_TEXT_INPUT);
@@ -589,6 +595,7 @@ PP_Bool PPB_Instance_Proxy::GetDefaultPrintSettings(
 
 void PPB_Instance_Proxy::SetTextInputType(PP_Instance instance,
                                           PP_TextInput_Type type) {
+  CancelAnyPendingRequestSurroundingText(instance);
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SetTextInputType(
       API_ID_PPB_INSTANCE, instance, type));
 }
@@ -601,6 +608,7 @@ void PPB_Instance_Proxy::UpdateCaretPosition(PP_Instance instance,
 }
 
 void PPB_Instance_Proxy::CancelCompositionText(PP_Instance instance) {
+  CancelAnyPendingRequestSurroundingText(instance);
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_CancelCompositionText(
       API_ID_PPB_INSTANCE, instance));
 }
@@ -616,9 +624,19 @@ void PPB_Instance_Proxy::SelectionChanged(PP_Instance instance) {
   // we'll need to reevanuate whether we want to do the round trip instead.
   //
   // Be careful to post a task to avoid reentering the plugin.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&RequestSurroundingText, instance));
+
+  InstanceData* data =
+      static_cast<PluginDispatcher*>(dispatcher())->GetInstanceData(instance);
+  if (!data)
+    return;
+  data->should_do_request_surrounding_text = true;
+
+  if (!data->is_request_surrounding_text_pending) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RequestSurroundingText, instance));
+    data->is_request_surrounding_text_pending = true;
+  }
 }
 
 void PPB_Instance_Proxy::UpdateSurroundingText(PP_Instance instance,
@@ -996,6 +1014,15 @@ void PPB_Instance_Proxy::MouseLockCompleteInHost(int32_t result,
                                                  PP_Instance instance) {
   dispatcher()->Send(new PpapiMsg_PPBInstance_MouseLockComplete(
       API_ID_PPB_INSTANCE, instance, result));
+}
+
+void PPB_Instance_Proxy::CancelAnyPendingRequestSurroundingText(
+    PP_Instance instance) {
+  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
+      GetInstanceData(instance);
+  if (!data)
+    return;  // Instance was probably deleted.
+  data->should_do_request_surrounding_text = false;
 }
 
 }  // namespace proxy
