@@ -37,15 +37,17 @@ void LogSandboxStarted(const std::string& sandbox_name) {
 
 // Implement the command line enabling logic for seccomp-legacy.
 bool IsSeccompLegacyDesired() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kNoSandbox)) {
+    return false;
+  }
 #if defined(SECCOMP_SANDBOX)
 #if defined(NDEBUG)
   // Off by default. Allow turning on with a switch.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSeccompSandbox);
+  return command_line->HasSwitch(switches::kEnableSeccompSandbox);
 #else
   // On by default. Allow turning off with a switch.
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSeccompSandbox);
+  return !command_line->HasSwitch(switches::kDisableSeccompSandbox);
 #endif  // NDEBUG
 #endif  // SECCOMP_SANDBOX
   return false;
