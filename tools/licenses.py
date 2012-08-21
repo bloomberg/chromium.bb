@@ -39,6 +39,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','mingw-w64'),
     os.path.join('third_party','pefile'),
     os.path.join('third_party','python_26'),
+    os.path.join('third_party','pywebsocket'),
 
     # Stuff pulled in from chrome-internal for official builds/tools.
     os.path.join('third_party', 'clear_cache'),
