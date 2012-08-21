@@ -331,25 +331,30 @@ void GDataDirectoryService::GetEntryByResourceIdAsync(
 
 void GDataDirectoryService::GetEntryInfoByResourceId(
       const std::string& resource_id,
-      const GetEntryInfoCallback& callback) {
+      const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scoped_ptr<GDataEntryProto> entry_proto;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  FilePath drive_file_path;
 
   GDataEntry* entry = GetEntryByResourceId(resource_id);
   if (entry) {
     entry_proto.reset(new GDataEntryProto);
     entry->ToProtoFull(entry_proto.get());
     error = GDATA_FILE_OK;
+    drive_file_path = entry->GetFilePath();
   } else {
     error = GDATA_FILE_ERROR_NOT_FOUND;
   }
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, error, base::Passed(&entry_proto)));
+      base::Bind(callback,
+                 error,
+                 drive_file_path,
+                 base::Passed(&entry_proto)));
 }
 
 void GDataDirectoryService::GetEntryInfoByPath(

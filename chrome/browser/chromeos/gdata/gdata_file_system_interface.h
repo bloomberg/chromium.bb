@@ -40,17 +40,6 @@ typedef base::Callback<void(GDataFileError error,
                             const std::string& mime_type,
                             GDataFileType file_type)> GetFileCallback;
 
-// Used to get entry info from the file system, with the gdata file path.
-// If |error| is not GDATA_FILE_OK, |file_info| is set to NULL.
-//
-// |gdata_file_path| parameter is provided as GDataEntryProto does not contain
-// the gdata file path (i.e. only contains the base name without parent
-// directory names).
-typedef base::Callback<void(GDataFileError error,
-                            const FilePath& gdata_file_path,
-                            scoped_ptr<GDataEntryProto> file_proto)>
-    GetEntryInfoWithFilePathCallback;
-
 // Used to read a directory from the file system.
 // Similar to ReadDirectoryCallback but this one provides
 // |hide_hosted_documents|

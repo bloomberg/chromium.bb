@@ -74,8 +74,20 @@ void CopyResultsFromReadDirectoryCallback(
     GDataFileError error,
     scoped_ptr<GDataEntryProtoVector> entries);
 
-// Copies |result| |out_result|. Used to run asynchronous functions that take
-// GetEntryInfoPairCallback from tests.
+// Copies |error|, |drive_file_path|, and |entry_proto| to |out_error|,
+// |out_drive_file_path|, and |out_entry_proto| respectively. Used to run
+// asynchronous functions that take GetEntryInfoWithFilePathCallback from
+// tests.
+void CopyResultsFromGetEntryInfoWithFilePathCallback(
+    GDataFileError* out_error,
+    FilePath* out_drive_file_path,
+    scoped_ptr<GDataEntryProto>* out_entry_proto,
+    GDataFileError error,
+    const FilePath& drive_file_path,
+    scoped_ptr<GDataEntryProto> entry_proto);
+
+// Copies |result| to |out_result|. Used to run asynchronous functions
+// that take GetEntryInfoPairCallback from tests.
 void CopyResultsFromGetEntryInfoPairCallback(
     scoped_ptr<EntryInfoPairResult>* out_result,
     scoped_ptr<EntryInfoPairResult> result);

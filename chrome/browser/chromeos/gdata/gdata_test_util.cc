@@ -105,6 +105,22 @@ void CopyResultsFromReadDirectoryCallback(
   *out_entries = entries.Pass();
 }
 
+void CopyResultsFromGetEntryInfoWithFilePathCallback(
+    GDataFileError* out_error,
+    FilePath* out_drive_file_path,
+    scoped_ptr<GDataEntryProto>* out_entry_proto,
+    GDataFileError error,
+    const FilePath& drive_file_path,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(out_error);
+  DCHECK(out_drive_file_path);
+  DCHECK(out_entry_proto);
+
+  *out_error = error;
+  *out_drive_file_path = drive_file_path;
+  *out_entry_proto = entry_proto.Pass();
+}
+
 void CopyResultsFromGetEntryInfoPairCallback(
     scoped_ptr<EntryInfoPairResult>* out_result,
     scoped_ptr<EntryInfoPairResult> result) {

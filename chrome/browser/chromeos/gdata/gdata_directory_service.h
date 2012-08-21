@@ -89,6 +89,17 @@ typedef base::Callback<void(GDataFileError error,
                             scoped_ptr<GDataEntryProtoVector> entries)>
     ReadDirectoryCallback;
 
+// Used to get entry info from the file system, with the Drive file path.
+// If |error| is not GDATA_FILE_OK, |entry_proto| is set to NULL.
+//
+// |drive_file_path| parameter is provided as GDataEntryProto does not contain
+// the Drive file path (i.e. only contains the base name without parent
+// directory names).
+typedef base::Callback<void(GDataFileError error,
+                            const FilePath& drive_file_path,
+                            scoped_ptr<GDataEntryProto> entry_proto)>
+    GetEntryInfoWithFilePathCallback;
+
 // This is a part of EntryInfoPairResult.
 struct EntryInfoResult {
   EntryInfoResult();
@@ -202,8 +213,9 @@ class GDataDirectoryService {
   //
   // Must be called from UI thread. |callback| is run on UI thread.
   // |callback| must not be null.
-  void GetEntryInfoByResourceId(const std::string& resource_id,
-                                const GetEntryInfoCallback& callback);
+  void GetEntryInfoByResourceId(
+      const std::string& resource_id,
+      const GetEntryInfoWithFilePathCallback& callback);
 
   // Finds an entry (a file or a directory) by |file_path|.
   //
