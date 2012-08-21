@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_H_
-#define WEBKIT_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_H_
+#ifndef WEBKIT_MEDIA_CRYPTO_PPAPI_CONTENT_DECRYPTION_MODULE_H_
+#define WEBKIT_MEDIA_CRYPTO_PPAPI_CONTENT_DECRYPTION_MODULE_H_
 
 #if defined(_MSC_VER)
 typedef unsigned char uint8_t;
@@ -13,17 +13,34 @@ typedef __int64 int64_t;
 #include <stdint.h>
 #endif
 
+#include "webkit/media/crypto/ppapi/cdm_export.h"
+
 namespace cdm {
 class ContentDecryptionModule;
 }
 
 extern "C" {
-cdm::ContentDecryptionModule* CreateCdmInstance();
-void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
-const char* GetCdmVersion();
+CDM_EXPORT cdm::ContentDecryptionModule* CreateCdmInstance();
+CDM_EXPORT void DestroyCdmInstance(cdm::ContentDecryptionModule* instance);
+CDM_EXPORT const char* GetCdmVersion();
 }
 
 namespace cdm {
+
+enum Status {
+  kSuccess = 0,
+  kErrorUnknown,
+  kErrorNoKey
+};
+
+struct KeyMessage {
+  char* session_id;
+  uint32_t session_id_size;
+  uint8_t* message;
+  uint32_t message_size;
+  char* default_url;
+  uint32_t default_url_size;
+};
 
 // An input buffer can be split into several continuous subsamples.
 // A SubsampleEntry specifies the number of clear and cipher bytes in each
@@ -82,31 +99,20 @@ struct OutputBuffer {
 
 class ContentDecryptionModule {
  public:
-  enum Status {
-    kSuccess = 0,
-    kErrorUnknown,
-    kErrorNoKey
-  };
-
-  // Generates a |key_request| as well as a |session_id| given the |init_data|.
-  // The CDM may also extract a |default_url|.
+  // Generates a |key_request| given the |init_data|.
   // Returns kSuccess if the key request was successfully generated,
   // in which case the callee should have allocated memory for the output
-  // parameters (e.g |session_id|) and passed the ownership to the caller.
-  // Returns kErrorUnknown otherwise, in which case the output
-  // parameters should not be used by the caller.
+  // parameters (e.g |session_id| in |key_request|) and passed the ownership
+  // to the caller.
+  // Returns kErrorUnknown otherwise, in which case the output parameters should
+  // not be used by the caller.
   //
   // TODO(xhwang): It's not safe to pass the ownership of the dynamically
   // allocated memory over library boundaries. Fix it after related PPAPI change
   // and sample CDM are landed.
   virtual Status GenerateKeyRequest(const uint8_t* init_data,
                                     int init_data_size,
-                                    char** session_id,
-                                    int* session_id_size,
-                                    uint8_t** key_request,
-                                    int* key_request_size,
-                                    char** default_url,
-                                    int* default_url_size) = 0;
+                                    KeyMessage* key_request) = 0;
 
   // Adds the |key| to the CDM to be associated with |key_id|.
   // Returns kSuccess if the key was successfully added.
@@ -137,14 +143,12 @@ class ContentDecryptionModule {
   // TODO(xhwang): It's not safe to pass the ownership of the dynamically
   // allocated memory over library boundaries. Fix it after related PPAPI change
   // and sample CDM are landed.
-  virtual Status Decrypt(const char* session_id,
-                         int session_id_size,
-                         const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
                          OutputBuffer* decrypted_buffer) = 0;
 
-  virtual ~ContentDecryptionModule() {};
+  virtual ~ContentDecryptionModule() {}
 };
 
 }  // namespace cdm
 
-#endif  // WEBKIT_MEDIA_CRYPTO_CONTENT_DECRYPTION_MODULE_H_
+#endif  // WEBKIT_MEDIA_CRYPTO_PPAPI_CONTENT_DECRYPTION_MODULE_H_
