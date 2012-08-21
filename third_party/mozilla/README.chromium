@@ -23,6 +23,7 @@ Local modifications:
   -[NSPasteboard getURLs:andTitles:] to determine whether or not filenames in
   the drag should be converted to file URLs.
   -[NSPasteboard htmlFromRtf] added to do rtf->html conversion.
+- NSWorkspace+Utils.m was modified to compile on the x86_64 architecture.
 
 -----------------------------------------------------------------
 

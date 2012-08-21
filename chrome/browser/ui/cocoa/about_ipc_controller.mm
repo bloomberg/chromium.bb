@@ -185,7 +185,8 @@ AboutIPCController* gSharedController = nil;
   NSUInteger count = [[dataController_ arrangedObjects] count];
   // Uncomment if you want scroll-to-end behavior... but seems expensive.
   // [tableView_ scrollRowToVisible:count-1];
-  [eventCount_ setStringValue:[NSString stringWithFormat:@"%d", count]];
+  [eventCount_ setStringValue:[NSString stringWithFormat:@"%ld",
+                               static_cast<long>(count)]];
 }
 
 - (void)setDisplayViewMessages:(BOOL)display {

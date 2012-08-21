@@ -112,7 +112,9 @@ const CGFloat kGestureCompleteProgress = 0.3;
   // When tracking the gesture, the height is constant and the alpha value
   // changes from [0.25, 0.65].
   CGFloat height = kShieldHeight;
-  CGFloat shieldAlpha = std::min(0.65f, std::max(gestureAmount, 0.25f));
+  CGFloat shieldAlpha = std::min(static_cast<CGFloat>(0.65),
+                                 std::max(gestureAmount,
+                                          static_cast<CGFloat>(0.25)));
 
   // When the gesture is very likely to be completed (90% in this case), grow
   // the semicircle's height and lock the alpha to 0.75.

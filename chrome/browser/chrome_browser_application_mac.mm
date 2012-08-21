@@ -388,8 +388,11 @@ void SwizzleInit() {
 
   NSString* actionString = NSStringFromSelector(anAction);
   NSString* value =
-        [NSString stringWithFormat:@"%@ tag %d sending %@ to %p",
-                  [sender className], tag, actionString, aTarget];
+        [NSString stringWithFormat:@"%@ tag %ld sending %@ to %p",
+                  [sender className],
+                  static_cast<long>(tag),
+                  actionString,
+                  aTarget];
 
   base::mac::ScopedCrashKey key(kActionKey, value);
 

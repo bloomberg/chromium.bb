@@ -261,7 +261,8 @@ const CGFloat kLabelInset = 49.0;
 
   // Cap the index. We don't wrap around to match the behavior of Mac menus.
   new_index =
-      std::min(std::max(0, new_index), static_cast<NSInteger>(count - 1));
+      std::min(std::max(static_cast<NSInteger>(0), new_index),
+               static_cast<NSInteger>(count - 1));
 
   [self highlightItem:[items_ objectAtIndex:new_index]];
 }

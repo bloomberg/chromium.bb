@@ -232,7 +232,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 @synthesize delegate = delegate_;
 
 - (id)initWithBrowser:(Browser*)browser
-         initialWidth:(float)initialWidth
+         initialWidth:(CGFloat)initialWidth
              delegate:(id<BookmarkBarControllerDelegate>)delegate
        resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"BookmarkBar"

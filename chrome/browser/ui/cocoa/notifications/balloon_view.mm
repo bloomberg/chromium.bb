@@ -19,7 +19,7 @@ const int kRoundedCornerSize = 6;
 
 @implementation BalloonWindow
 - (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(unsigned int)aStyle
+                styleMask:(NSUInteger)aStyle
                   backing:(NSBackingStoreType)bufferingType
                     defer:(BOOL)flag {
   self = [super initWithContentRect:contentRect

@@ -164,10 +164,10 @@
 //
 + (long)systemVersion
 {
-  static long sSystemVersion = 0;
+  static SInt32 sSystemVersion = 0;
   if (!sSystemVersion)
     Gestalt(gestaltSystemVersion, &sSystemVersion);
-  return sSystemVersion;
+  return (long)sSystemVersion;
 }
 
 //

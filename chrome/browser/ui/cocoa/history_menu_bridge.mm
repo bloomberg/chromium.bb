@@ -471,7 +471,7 @@ void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
           profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(item);
   item->icon_requested = false;
-  item->icon_handle = NULL;
+  item->icon_handle = 0;
 
   // Convert the raw data to Skia and then to a NSImage.
   // TODO(rsesek): Is there an easier way to do this?
@@ -495,6 +495,6 @@ void HistoryMenuBridge::CancelFaviconRequest(HistoryItem* item) {
         profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     service->CancelRequest(item->icon_handle);
     item->icon_requested = false;
-    item->icon_handle = NULL;
+    item->icon_handle = 0;
   }
 }
