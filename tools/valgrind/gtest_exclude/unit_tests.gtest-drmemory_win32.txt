@@ -10,6 +10,9 @@ AudioRendererHostTest.*
 # http://code.google.com/p/drmemory/issues/detail?id=548
 DownloadManagerTest.StartDownload
 
+# http://code.google.com/p/drmemory/issues/detail?id=979
+FirefoxProfileImporterTest.Firefox35Importer
+
 ##################################################
 # Chromium bugs:
 

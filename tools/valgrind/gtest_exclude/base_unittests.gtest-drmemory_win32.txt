@@ -21,3 +21,6 @@ ScopedProcessInformationTest.TakeBoth
 ScopedProcessInformationTest.TakeProcess
 ScopedProcessInformationTest.TakeWholeStruct
 SharedMemoryProcessTest.Tasks
+
+# crbug/144018
+ScopedStartupInfoExTest.InheritStdOut
