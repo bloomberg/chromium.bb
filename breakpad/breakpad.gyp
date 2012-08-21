@@ -724,7 +724,6 @@
             'src/common/convert_UTF.h',
             'src/common/mac/file_id.cc',
             'src/common/mac/file_id.h',
-            'src/common/mac/GTMLogger.m',
             'src/common/mac/HTTPMultipartUpload.m',
             'src/common/mac/macho_id.cc',
             'src/common/mac/macho_id.h',
@@ -742,28 +741,28 @@
             'src/common/string_conversion.h',
             'src/google_breakpad/common/minidump_format.h',
           ],
-          'xcode_settings': {
-            # With the Xcode 4.2 toolchain (iOS 5.0 SDK), there is a change to
-            # exception handling when building for arm (but not simulator).
-            # __EXCEPTIONS is still defined if objc exceptions are enabled but
-            # c++ exceptions are not.  With Xcode 3.2.6 (iOS 4.3 SDK) for both
-            # device and simulator turning off c++ exceptions caused gcc to
-            # still honor try/catch in .mm files as if they were @try/@catch
-            # due to the new runtime support for exceptions.  The clang arm
-            # compiler in Xcode 4.2 does not do this and exception_defines.h
-            # does not kick in because __EXCEPTIONS is still defined.  So
-            # the compile fails for trying to use try without compiler support
-            # for c++ exceptions.  The simulator build in that setup still
-            # works.  Turning off objc exceptions is just enough to get
-            # __EXCEPTIONS to not be defined and exception_defines.h kicks in
-            # to let the code compile.
-            'GCC_ENABLE_OBJC_EXCEPTIONS': 'NO',
-          },
           'include_dirs': [
             'src',
             'src/client/mac/Framework',
             'src/common/mac',
+            # For GTMLogger.
+            '<(DEPTH)/third_party/GTM',
+            '<(DEPTH)/third_party/GTM/Foundation',
           ],
+          'link_settings': {
+            # Build the version of GTMLogger.m in third_party rather than the
+            # one in src/common/mac because the former catches all exceptions
+            # whereas the latter lets them propagate, which can cause odd
+            # crashes.
+            'sources': [
+              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.h',
+              '<(DEPTH)/third_party/GTM/Foundation/GTMLogger.m',
+            ],
+            'include_dirs': [
+              '<(DEPTH)/third_party/GTM',
+              '<(DEPTH)/third_party/GTM/Foundation',
+            ],
+          },
         },
       ],
     }],
