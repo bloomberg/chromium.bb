@@ -4,7 +4,7 @@ vars = {
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
   "newlib_rev": "67e351079b71e78eaad782a19ffa9f3ff2c1d78d",
-  "pnacl_llvm_testsuite_rev": "fe59b29a5837b4c83b631624f1cffc1118bbfddb",
+  "pnacl_llvm_testsuite_rev": "a19bc6d81715ce18b34fad47bf4bad0e1bad2155",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
   # clang_rev should be the first clang commit after the llvm commit from
   # which the local llvm is branched. Unfortunately because the llvm and
