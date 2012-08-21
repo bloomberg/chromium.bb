@@ -22,6 +22,11 @@ class AutomationCommandFail(JSONInterfaceError):
   pass
 
 
+class AutomationCommandTimeout(JSONInterfaceError):
+  """Represent an automation command failure due to timeout."""
+  pass
+
+
 class NTPThumbnailNotShownError(RuntimeError):
   """Represent an error while attempting to manipulate a NTP thumbnail.
 

@@ -224,7 +224,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self._DeleteAfterShutdown(downloaded_pkg)
-    self.WaitForAllDownloadsToComplete(timeout=self.large_test_timeout_ms());
+    self.WaitForAllDownloadsToComplete(timeout=10 * 60 * 1000);
     # Verify that the file was correctly downloaded
     self.assertTrue(os.path.exists(downloaded_pkg),
                     'Downloaded file %s missing.' % downloaded_pkg)

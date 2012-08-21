@@ -66,18 +66,17 @@ class OmniboxInfo(object):
                      u'query_in_progress': False,
                      u'text': u'google'}}
   """
-  def __init__(self, json_string):
+  def __init__(self, omnibox_dict):
     """Initialize a OmniboxInfo from a json string.
 
     Args:
-      json_string: a json string, as returned by a json ipc call for the
-                   command 'GetOmniboxInfo'
+      omnibox_dict: returned by an IPC call for the command 'GetOmniboxInfo'.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     # JSON string prepared in GetOmniboxInfo() in automation_provider.cc
-    self.omniboxdict = json.loads(json_string)
+    self.omniboxdict = omnibox_dict
     if self.omniboxdict.has_key('error'):
       raise JSONInterfaceError(self.omniboxdict['error'])
 

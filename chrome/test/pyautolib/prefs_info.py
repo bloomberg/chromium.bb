@@ -29,13 +29,12 @@ class PrefsInfo(object):
   The values could be plain (integer, bool, float) or complex (like
   dictionary, list).
   """
-  def __init__(self, json_string):
+  def __init__(self, prefs_dict):
     """Initialize a PrefsInfo from a json string.
 
     Args:
-      json_string: a json string, as returned by a json ipc call for the
-                   command 'GetPrefsInfo'
-                   A typical string representing prefs snapshot looks like:
+      prefs_dict: a dictionary as returned by the IPC command 'GetPrefsInfo'.
+                   A typical dict representing prefs snapshot looks like:
                    { u'prefs':
                      { u'alternate_error_pages': {u'enabled': True},
                        u'autofill': { u'auxiliary_profiles_enabled': False,
@@ -55,7 +54,7 @@ class PrefsInfo(object):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     # JSON string prepared in PrefsInfo() in automation_provider.cc
-    self.prefsdict = json.loads(json_string)
+    self.prefsdict = prefs_dict
     if self.prefsdict.has_key('error'):
       raise JSONInterfaceError(self.prefsdict['error'])
 
