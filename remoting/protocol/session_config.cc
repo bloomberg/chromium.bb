@@ -179,6 +179,10 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   result->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
+                    ChannelConfig::CODEC_SPEEX));
+  result->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
                     ChannelConfig::CODEC_VERBATIM));
 #endif  // defined(ENABLE_REMOTING_AUDIO)
   result->mutable_audio_configs()->push_back(

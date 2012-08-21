@@ -49,6 +49,7 @@ const NameMapElement<ChannelConfig::Codec> kCodecs[] = {
   { ChannelConfig::CODEC_VP8, "vp8" },
   { ChannelConfig::CODEC_ZIP, "zip" },
   { ChannelConfig::CODEC_VORBIS, "vorbis" },
+  { ChannelConfig::CODEC_SPEEX, "speex" },
 };
 
 // Format a channel configuration tag for chromotocol session description,

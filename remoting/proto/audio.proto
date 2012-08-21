@@ -22,7 +22,8 @@ message AudioPacket {
   enum Encoding {
     ENCODING_INVALID = -1;
     ENCODING_RAW = 0;  // Uncompressed encoding
-    ENCODING_OGG = 1;
+    ENCODING_VORBIS = 1;
+    ENCODING_SPEEX = 2;
   }
 
   optional Encoding encoding = 3 [default = ENCODING_INVALID];

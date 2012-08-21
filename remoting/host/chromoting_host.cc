@@ -14,6 +14,7 @@
 #include "remoting/base/encoder_row_based.h"
 #include "remoting/base/encoder_vp8.h"
 #include "remoting/codec/audio_encoder.h"
+#include "remoting/codec/audio_encoder_speex.h"
 #include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -443,6 +444,8 @@ scoped_ptr<AudioEncoder> ChromotingHost::CreateAudioEncoder(
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
     return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
+  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_SPEEX) {
+    return scoped_ptr<AudioEncoder>(new AudioEncoderSpeex());
   }
 
   NOTIMPLEMENTED();

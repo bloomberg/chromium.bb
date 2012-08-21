@@ -33,6 +33,7 @@ struct ChannelConfig {
     CODEC_ZIP,
     CODEC_VP8,
     CODEC_VORBIS,
+    CODEC_SPEEX,
   };
 
   ChannelConfig();
