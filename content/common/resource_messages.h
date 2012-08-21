@@ -9,7 +9,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
-#include "webkit/glue/resource_request_body.h"
+#include "net/base/upload_data.h"
 
 #define IPC_MESSAGE_START ResourceMsgStart
 #undef IPC_MESSAGE_EXPORT
@@ -94,9 +94,8 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // or kNoHostId.
   IPC_STRUCT_MEMBER(int, appcache_host_id)
 
-  // Optional resource request body (may be null).
-  IPC_STRUCT_MEMBER(scoped_refptr<webkit_glue::ResourceRequestBody>,
-                    request_body)
+  // Optional upload data (may be null).
+  IPC_STRUCT_MEMBER(scoped_refptr<net::UploadData>, upload_data)
 
   IPC_STRUCT_MEMBER(bool, download_to_file)
 

@@ -6,12 +6,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "net/base/upload_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
-#include "webkit/glue/resource_request_body.h"
 
-using webkit_glue::ResourceRequestBody;
+using net::UploadData;
 
 namespace webkit_blob {
 
@@ -76,7 +76,7 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
   EXPECT_TRUE(!blob_data_found);
 }
 
-TEST(BlobStorageControllerTest, ResolveBlobReferencesInRequestBody) {
+TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
   // Setup blob data for testing.
   base::Time time1, time2;
   base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
@@ -102,7 +102,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInRequestBody) {
   blob_storage_controller.CloneBlob(blob_url3, blob_url2);
 
   // Setup upload data elements for comparison.
-  ResourceRequestBody::Element blob_element1, blob_element2;
+  net::UploadElement blob_element1, blob_element2;
   blob_element1.SetToBytes(
       blob_data->items().at(0).data.c_str() +
           static_cast<int>(blob_data->items().at(0).offset),
@@ -113,131 +113,124 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInRequestBody) {
       blob_data->items().at(1).length,
       blob_data->items().at(1).expected_modification_time);
 
-  ResourceRequestBody::Element upload_element1, upload_element2;
+  net::UploadElement upload_element1, upload_element2;
   upload_element1.SetToBytes("Hello", 5);
   upload_element2.SetToFilePathRange(
       FilePath(FILE_PATH_LITERAL("foo1.txt")), 0, 20, time2);
 
   // Test no blob reference.
-  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
-  request_body->AppendBytes(
-      upload_element1.bytes(),
-      upload_element1.bytes_length());
-  request_body->AppendFileRange(
+  scoped_refptr<UploadData> upload_data(new UploadData());
+  upload_data->AppendBytes(
+      &upload_element1.bytes().at(0),
+      upload_element1.bytes().size());
+  upload_data->AppendFileRange(
       upload_element2.file_path(),
       upload_element2.file_range_offset(),
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 2U);
-  EXPECT_TRUE(request_body->elements()->at(0) == upload_element1);
-  EXPECT_TRUE(request_body->elements()->at(1) == upload_element2);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 2U);
+  EXPECT_TRUE(upload_data->elements()->at(0) == upload_element1);
+  EXPECT_TRUE(upload_data->elements()->at(1) == upload_element2);
 
   // Test having only one blob reference that refers to empty blob data.
-  request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_url0);
+  upload_data = new UploadData();
+  upload_data->AppendBlob(blob_url0);
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 0U);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 0U);
 
   // Test having only one blob reference.
-  request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_url1);
+  upload_data = new UploadData();
+  upload_data->AppendBlob(blob_url1);
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 2U);
-  EXPECT_TRUE(request_body->elements()->at(0) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(1) == blob_element2);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 2U);
+  EXPECT_TRUE(upload_data->elements()->at(0) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(1) == blob_element2);
 
   // Test having one blob reference at the beginning.
-  request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_url1);
-  request_body->AppendBytes(
-      upload_element1.bytes(),
-      upload_element1.bytes_length());
-  request_body->AppendFileRange(
+  upload_data = new UploadData();
+  upload_data->AppendBlob(blob_url1);
+  upload_data->AppendBytes(
+      &upload_element1.bytes().at(0),
+      upload_element1.bytes().size());
+  upload_data->AppendFileRange(
       upload_element2.file_path(),
       upload_element2.file_range_offset(),
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 4U);
-  EXPECT_TRUE(request_body->elements()->at(0) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(1) == blob_element2);
-  EXPECT_TRUE(request_body->elements()->at(2) == upload_element1);
-  EXPECT_TRUE(request_body->elements()->at(3) == upload_element2);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 4U);
+  EXPECT_TRUE(upload_data->elements()->at(0) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(1) == blob_element2);
+  EXPECT_TRUE(upload_data->elements()->at(2) == upload_element1);
+  EXPECT_TRUE(upload_data->elements()->at(3) == upload_element2);
 
   // Test having one blob reference at the end.
-  request_body = new ResourceRequestBody();
-  request_body->AppendBytes(
-      upload_element1.bytes(),
-      upload_element1.bytes_length());
-  request_body->AppendFileRange(
+  upload_data = new UploadData();
+  upload_data->AppendBytes(
+      &upload_element1.bytes().at(0),
+      upload_element1.bytes().size());
+  upload_data->AppendFileRange(
       upload_element2.file_path(),
       upload_element2.file_range_offset(),
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
-  request_body->AppendBlob(blob_url1);
+  upload_data->AppendBlob(blob_url1);
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 4U);
-  EXPECT_TRUE(request_body->elements()->at(0) == upload_element1);
-  EXPECT_TRUE(request_body->elements()->at(1) == upload_element2);
-  EXPECT_TRUE(request_body->elements()->at(2) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(3) == blob_element2);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 4U);
+  EXPECT_TRUE(upload_data->elements()->at(0) == upload_element1);
+  EXPECT_TRUE(upload_data->elements()->at(1) == upload_element2);
+  EXPECT_TRUE(upload_data->elements()->at(2) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(3) == blob_element2);
 
   // Test having one blob reference in the middle.
-  request_body = new ResourceRequestBody();
-  request_body->AppendBytes(
-      upload_element1.bytes(),
-      upload_element1.bytes_length());
-  request_body->AppendBlob(blob_url1);
-  request_body->AppendFileRange(
+  upload_data = new UploadData();
+  upload_data->AppendBytes(
+      &upload_element1.bytes().at(0),
+      upload_element1.bytes().size());
+  upload_data->AppendBlob(blob_url1);
+  upload_data->AppendFileRange(
       upload_element2.file_path(),
       upload_element2.file_range_offset(),
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 4U);
-  EXPECT_TRUE(request_body->elements()->at(0) == upload_element1);
-  EXPECT_TRUE(request_body->elements()->at(1) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(2) == blob_element2);
-  EXPECT_TRUE(request_body->elements()->at(3) == upload_element2);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 4U);
+  EXPECT_TRUE(upload_data->elements()->at(0) == upload_element1);
+  EXPECT_TRUE(upload_data->elements()->at(1) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(2) == blob_element2);
+  EXPECT_TRUE(upload_data->elements()->at(3) == upload_element2);
 
   // Test having multiple blob references.
-  request_body = new ResourceRequestBody();
-  request_body->AppendBlob(blob_url1);
-  request_body->AppendBytes(
-      upload_element1.bytes(),
-      upload_element1.bytes_length());
-  request_body->AppendBlob(blob_url2);
-  request_body->AppendBlob(blob_url3);
-  request_body->AppendFileRange(
+  upload_data = new UploadData();
+  upload_data->AppendBlob(blob_url1);
+  upload_data->AppendBytes(
+      &upload_element1.bytes().at(0),
+      upload_element1.bytes().size());
+  upload_data->AppendBlob(blob_url2);
+  upload_data->AppendBlob(blob_url3);
+  upload_data->AppendFileRange(
       upload_element2.file_path(),
       upload_element2.file_range_offset(),
       upload_element2.file_range_length(),
       upload_element2.expected_file_modification_time());
 
-  blob_storage_controller.ResolveBlobReferencesInRequestBody(
-      request_body.get());
-  ASSERT_EQ(request_body->elements()->size(), 8U);
-  EXPECT_TRUE(request_body->elements()->at(0) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(1) == blob_element2);
-  EXPECT_TRUE(request_body->elements()->at(2) == upload_element1);
-  EXPECT_TRUE(request_body->elements()->at(3) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(4) == blob_element2);
-  EXPECT_TRUE(request_body->elements()->at(5) == blob_element1);
-  EXPECT_TRUE(request_body->elements()->at(6) == blob_element2);
-  EXPECT_TRUE(request_body->elements()->at(7) == upload_element2);
+  blob_storage_controller.ResolveBlobReferencesInUploadData(upload_data.get());
+  ASSERT_EQ(upload_data->elements()->size(), 8U);
+  EXPECT_TRUE(upload_data->elements()->at(0) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(1) == blob_element2);
+  EXPECT_TRUE(upload_data->elements()->at(2) == upload_element1);
+  EXPECT_TRUE(upload_data->elements()->at(3) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(4) == blob_element2);
+  EXPECT_TRUE(upload_data->elements()->at(5) == blob_element1);
+  EXPECT_TRUE(upload_data->elements()->at(6) == blob_element2);
+  EXPECT_TRUE(upload_data->elements()->at(7) == upload_element2);
 }
 
 }  // namespace webkit_blob

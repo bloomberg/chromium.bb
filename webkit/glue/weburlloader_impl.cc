@@ -32,7 +32,6 @@
 #include "webkit/glue/ftp_directory_listing_response_delegate.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
-#include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
@@ -445,24 +444,22 @@ void WebURLLoaderImpl::Context::Start(
     const WebHTTPBody& httpBody = request.httpBody();
     size_t i = 0;
     WebHTTPBody::Element element;
-    scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
     while (httpBody.elementAt(i++, element)) {
       switch (element.type) {
         case WebHTTPBody::Element::TypeData:
           if (!element.data.isEmpty()) {
             // WebKit sometimes gives up empty data to append. These aren't
             // necessary so we just optimize those out here.
-            request_body->AppendBytes(
+            bridge_->AppendDataToUpload(
                 element.data.data(), static_cast<int>(element.data.size()));
           }
           break;
         case WebHTTPBody::Element::TypeFile:
           if (element.fileLength == -1) {
-            request_body->AppendFileRange(
-                WebStringToFilePath(element.filePath),
-                0, kuint64max, base::Time());
+            bridge_->AppendFileToUpload(
+                WebStringToFilePath(element.filePath));
           } else {
-            request_body->AppendFileRange(
+            bridge_->AppendFileRangeToUpload(
                 WebStringToFilePath(element.filePath),
                 static_cast<uint64>(element.fileStart),
                 static_cast<uint64>(element.fileLength),
@@ -470,14 +467,13 @@ void WebURLLoaderImpl::Context::Start(
           }
           break;
         case WebHTTPBody::Element::TypeBlob:
-          request_body->AppendBlob(GURL(element.blobURL));
+          bridge_->AppendBlobToUpload(GURL(element.blobURL));
           break;
         default:
           NOTREACHED();
       }
     }
-    request_body->set_identifier(request.httpBody().identifier());
-    bridge_->SetRequestBody(request_body);
+    bridge_->SetUploadIdentifier(request.httpBody().identifier());
   }
 
   if (sync_load_response) {

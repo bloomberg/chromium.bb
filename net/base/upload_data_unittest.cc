@@ -103,6 +103,12 @@ TEST_F(UploadDataTest, IsInMemory_File) {
   ASSERT_FALSE(upload_data_->IsInMemory());
 }
 
+TEST_F(UploadDataTest, IsInMemory_Blob) {
+  upload_data_->AppendBlob(GURL("blog:internal:12345"));
+  // Until it's resolved, we don't know what blob contains.
+  ASSERT_FALSE(upload_data_->IsInMemory());
+}
+
 TEST_F(UploadDataTest, IsInMemory_Chunk) {
   upload_data_->set_is_chunked(true);
   ASSERT_FALSE(upload_data_->IsInMemory());
@@ -141,6 +147,11 @@ TEST_F(UploadDataTest, GetContentLength_File) {
   TestContentLengthCallback callback;
   upload_data_->GetContentLength(callback.callback());
   ASSERT_EQ(kData.size(), callback.WaitForResult());
+}
+
+TEST_F(UploadDataTest, GetContentLength_Blob) {
+  upload_data_->AppendBlob(GURL("blog:internal:12345"));
+  ASSERT_EQ(0U, upload_data_->GetContentLengthSync());
 }
 
 TEST_F(UploadDataTest, GetContentLength_Chunk) {

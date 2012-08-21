@@ -6,10 +6,8 @@
 
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/upload_data.h"
 #include "webkit/blob/blob_data.h"
-#include "webkit/glue/resource_request_body.h"
-
-using webkit_glue::ResourceRequestBody;
 
 namespace webkit_blob {
 
@@ -171,15 +169,15 @@ BlobData* BlobStorageController::GetBlobDataFromUrl(const GURL& url) {
   return (found != blob_map_.end()) ? found->second : NULL;
 }
 
-void BlobStorageController::ResolveBlobReferencesInRequestBody(
-    ResourceRequestBody* request_body) {
-  DCHECK(request_body);
+void BlobStorageController::ResolveBlobReferencesInUploadData(
+    net::UploadData* upload_data) {
+  DCHECK(upload_data);
 
-  std::vector<ResourceRequestBody::Element>* uploads =
-      request_body->elements_mutable();
-  std::vector<ResourceRequestBody::Element>::iterator iter;
+  std::vector<net::UploadElement>* uploads =
+      upload_data->elements_mutable();
+  std::vector<net::UploadElement>::iterator iter;
   for (iter = uploads->begin(); iter != uploads->end();) {
-    if (iter->type() != ResourceRequestBody::TYPE_BLOB) {
+    if (iter->type() != net::UploadElement::TYPE_BLOB) {
       iter++;
       continue;
     }
@@ -204,19 +202,22 @@ void BlobStorageController::ResolveBlobReferencesInRequestBody(
 
     // Ensure the blob and any attached shareable files survive until
     // upload completion.
-    request_body->SetUserData(
-        blob_data, new base::UserDataAdapter<BlobData>(blob_data));
+    upload_data->SetUserData(blob_data,
+                             new base::UserDataAdapter<BlobData>(blob_data));
 
     // Insert the elements in the referred blob data.
     // Note that we traverse from the bottom so that the elements can be
     // inserted in the original order.
     for (size_t i = blob_data->items().size(); i > 0; --i) {
-      iter = uploads->insert(iter, ResourceRequestBody::Element());
+      iter = uploads->insert(iter, net::UploadElement());
 
       const BlobData::Item& item = blob_data->items().at(i - 1);
       switch (item.type) {
         case BlobData::TYPE_DATA:
-          iter->SetToSharedBytes(
+          // TODO(jianli): Figure out how to avoid copying the data.
+          // TODO(michaeln): Now that blob_data surives for the duration,
+          // maybe UploadData could take a raw ptr without having to copy.
+          iter->SetToBytes(
               &item.data.at(0) + static_cast<int>(item.offset),
               static_cast<int>(item.length));
           break;

@@ -20,12 +20,11 @@
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
-using webkit_glue::ResourceRequestBody;
 using webkit_glue::ResourceResponseInfo;
 
 namespace content {
@@ -48,7 +47,14 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   virtual ~IPCResourceLoaderBridge();
 
   // ResourceLoaderBridge
-  virtual void SetRequestBody(ResourceRequestBody* request_body);
+  virtual void AppendDataToUpload(const char* data, int data_len);
+  virtual void AppendFileRangeToUpload(
+      const FilePath& path,
+      uint64 offset,
+      uint64 length,
+      const base::Time& expected_modification_time);
+  virtual void AppendBlobToUpload(const GURL& blob_url);
+  virtual void SetUploadIdentifier(int64 identifier);
   virtual bool Start(Peer* peer);
   virtual void Cancel();
   virtual void SetDefersLoading(bool value);
@@ -136,10 +142,44 @@ IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {
   }
 }
 
-void IPCResourceLoaderBridge::SetRequestBody(
-    ResourceRequestBody* request_body) {
+void IPCResourceLoaderBridge::AppendDataToUpload(const char* data,
+                                                 int data_len) {
   DCHECK(request_id_ == -1) << "request already started";
-  request_.request_body = request_body;
+
+  // don't bother appending empty data segments
+  if (data_len == 0)
+    return;
+
+  if (!request_.upload_data)
+    request_.upload_data = new net::UploadData();
+  request_.upload_data->AppendBytes(data, data_len);
+}
+
+void IPCResourceLoaderBridge::AppendFileRangeToUpload(
+    const FilePath& path, uint64 offset, uint64 length,
+    const base::Time& expected_modification_time) {
+  DCHECK(request_id_ == -1) << "request already started";
+
+  if (!request_.upload_data)
+    request_.upload_data = new net::UploadData();
+  request_.upload_data->AppendFileRange(path, offset, length,
+                                        expected_modification_time);
+}
+
+void IPCResourceLoaderBridge::AppendBlobToUpload(const GURL& blob_url) {
+  DCHECK(request_id_ == -1) << "request already started";
+
+  if (!request_.upload_data)
+    request_.upload_data = new net::UploadData();
+  request_.upload_data->AppendBlob(blob_url);
+}
+
+void IPCResourceLoaderBridge::SetUploadIdentifier(int64 identifier) {
+  DCHECK(request_id_ == -1) << "request already started";
+
+  if (!request_.upload_data)
+    request_.upload_data = new net::UploadData();
+  request_.upload_data->set_identifier(identifier);
 }
 
 // Writes a footer on the message and sends it

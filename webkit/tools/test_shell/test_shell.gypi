@@ -372,7 +372,6 @@
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/regular_expression_unittest.cc',
         '../../glue/resource_fetcher_unittest.cc',
-        '../../glue/resource_request_body_unittest.cc',
         '../../glue/unittest_test_server.h',
         '../../glue/webcursor_unittest.cc',
         '../../glue/webkit_glue_unittest.cc',
