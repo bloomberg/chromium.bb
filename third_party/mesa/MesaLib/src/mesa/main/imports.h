@@ -134,7 +134,13 @@ typedef union { GLfloat f; GLint i; } fi_type;
 #define exp2f(f) ((float) exp2(f))
 #define floorf(f) ((float) floor(f))
 #define logf(f) ((float) log(f))
+
+#if defined(ANDROID)
+#define log2f(f) (logf(f) * (float) (1.0 / M_LN2))
+#else
 #define log2f(f) ((float) log2(f))
+#endif
+
 #define powf(x,y) ((float) pow(x,y))
 #define sinf(f) ((float) sin(f))
 #define sinhf(f) ((float) sinh(f))

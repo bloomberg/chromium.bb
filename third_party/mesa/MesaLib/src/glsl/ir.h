@@ -26,8 +26,8 @@
 #ifndef IR_H
 #define IR_H
 
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 
 extern "C" {
 #include <talloc.h>

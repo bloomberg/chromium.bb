@@ -111,3 +111,5 @@ Later modifications (see chromium.patch):
 - Suppressed the OOB read reported by AddressSanitizer in _mesa_add_parameter
   from prog_parameter.c
   http://code.google.com/p/chromium/issues/detail?id=142316
+
+- Fix the compile errors on Android
