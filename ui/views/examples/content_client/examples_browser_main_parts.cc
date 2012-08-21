@@ -14,7 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/shell_browser_context.h"
 #include "googleurl/src/gurl.h"
-#include "ui/views/examples/examples_window.h"
+#include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/test_views_delegate.h"
 

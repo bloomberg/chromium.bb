@@ -25,7 +25,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/examples/examples_window.h"
+#include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 

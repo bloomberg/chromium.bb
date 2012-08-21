@@ -21,7 +21,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/examples/examples_window.h"
+#include "ui/views/examples/examples_window_with_content.h"
 
 namespace ash {
 namespace shell {
