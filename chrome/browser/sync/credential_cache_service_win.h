@@ -81,7 +81,7 @@ class CredentialCacheService : public ProfileKeyedService,
   // Writes the timestamp at which the last update was made to the credential
   // cache of the local profile. Used to make sure that we only copy credentials
   // from a more recently updated cache to an older cache.
-  void WriteLastUpdatedTime();
+  void WriteLastCacheUpdateTime();
 
   // Updates the value of |pref_name| to |new_value|, unless the user has signed
   // out, in which case we write an empty string value to |pref_name|. This
@@ -98,7 +98,12 @@ class CredentialCacheService : public ProfileKeyedService,
   // Returns the time at which the credential cache represented by |store| was
   // last updated. Used to make sure that we only copy credentials from a more
   // recently updated cache to an older cache.
-  int64 GetLastUpdatedTime(scoped_refptr<JsonPrefStore> store);
+  base::Time GetLastCacheUpdateTime(scoped_refptr<JsonPrefStore> store);
+
+  // Returns true if the alternate credential cache was updated more recently
+  // than the local cache, and false if not. Used to determine whether to apply
+  // config changes detected in the alternate cache to the local cache.
+  bool AlternateCacheIsMoreRecent();
 
   // Returns the string pref value contained in |store| for |pref_name|. Assumes
   // that |store| contains a value for |pref_name|.

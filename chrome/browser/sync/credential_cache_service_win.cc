@@ -44,7 +44,13 @@ const int kCredentialCachePollIntervalSecs = 2 * 60;
 // Keeps track of the last time a credential cache was written to. Used to make
 // sure that we only apply changes from newer credential caches to older ones,
 // and not vice versa.
-const char kLastUpdatedTime[] = "last_updated_time";
+const char kLastCacheUpdateTimeKey[] = "last_cache_update_time";
+
+// Deprecated. We were previously using base::TimeTicks as a timestamp. This was
+// bad because TimeTicks values roll over on machine restart. We now use
+// base::Time as a timestamp. However, we can't simply reuse "last_updated_time"
+// because it may result in a Time value being compared with a TimeTicks value.
+const char kLastUpdatedTimeTicksDeprecated[] = "last_updated_time";
 
 using base::TimeDelta;
 using content::BrowserThread;
@@ -396,13 +402,14 @@ std::string CredentialCacheService::UnpackCredential(
   return unencrypted;
 }
 
-void CredentialCacheService::WriteLastUpdatedTime() {
+void CredentialCacheService::WriteLastCacheUpdateTime() {
   DCHECK(local_store_.get());
-  int64 last_updated_time = base::TimeTicks::Now().ToInternalValue();
-  std::string last_updated_time_string = base::Int64ToString(last_updated_time);
+  int64 last_cache_update_time_int64 = base::Time::Now().ToInternalValue();
+  std::string last_cache_update_time_string =
+      base::Int64ToString(last_cache_update_time_int64);
   local_store_->SetValueSilently(
-      kLastUpdatedTime,
-      base::Value::CreateStringValue(last_updated_time_string));
+      kLastCacheUpdateTimeKey,
+      base::Value::CreateStringValue(last_cache_update_time_string));
 }
 
 void CredentialCacheService::PackAndUpdateStringPref(
@@ -420,7 +427,7 @@ void CredentialCacheService::PackAndUpdateStringPref(
     // sign-ins.
     local_store_->SetValueSilently(pref_name, PackCredential(std::string()));
   }
-  WriteLastUpdatedTime();
+  WriteLastCacheUpdateTime();
 }
 
 void CredentialCacheService::UpdateBooleanPref(const std::string& pref_name,
@@ -439,20 +446,34 @@ void CredentialCacheService::UpdateBooleanPref(const std::string& pref_name,
     local_store_->SetValueSilently(pref_name,
                                    base::Value::CreateBooleanValue(false));
   }
-  WriteLastUpdatedTime();
+  WriteLastCacheUpdateTime();
 }
 
-int64 CredentialCacheService::GetLastUpdatedTime(
+base::Time CredentialCacheService::GetLastCacheUpdateTime(
     scoped_refptr<JsonPrefStore> store) {
-  const base::Value* last_updated_time_value = NULL;
-  store->GetValue(kLastUpdatedTime, &last_updated_time_value);
-  std::string last_updated_time_string;
-  last_updated_time_value->GetAsString(&last_updated_time_string);
-  int64 last_updated_time;
-  bool success = base::StringToInt64(last_updated_time_string,
-                                     &last_updated_time);
+  DCHECK(HasPref(store, kLastCacheUpdateTimeKey));
+  const base::Value* last_cache_update_time_value = NULL;
+  store->GetValue(kLastCacheUpdateTimeKey, &last_cache_update_time_value);
+  DCHECK(last_cache_update_time_value);
+  std::string last_cache_update_time_string;
+  last_cache_update_time_value->GetAsString(&last_cache_update_time_string);
+  int64 last_cache_update_time_int64;
+  bool success = base::StringToInt64(last_cache_update_time_string,
+                                     &last_cache_update_time_int64);
   DCHECK(success);
-  return last_updated_time;
+  return base::Time::FromInternalValue(last_cache_update_time_int64);
+}
+
+bool CredentialCacheService::AlternateCacheIsMoreRecent() {
+  DCHECK(alternate_store_.get());
+  // If the alternate credential cache doesn't have the "last_cache_update_time"
+  // field, it was written by an older version of chrome, and we therefore
+  // consider the local cache to be more recent.
+  if (!HasPref(alternate_store_, kLastCacheUpdateTimeKey))
+    return false;
+  DCHECK(HasPref(local_store_, kLastCacheUpdateTimeKey));
+  return GetLastCacheUpdateTime(alternate_store_) >
+         GetLastCacheUpdateTime(local_store_);
 }
 
 std::string CredentialCacheService::GetAndUnpackStringPref(
@@ -494,14 +515,17 @@ void CredentialCacheService::LocalStoreObserver::OnInitializationCompleted(
   DCHECK(succeeded);
 
   // During startup, we do a precautionary write of the google username,
-  // encryption tokens and sync prefs to the local cache in order to recover
-  // from the following cases:
+  // encryption tokens, sync prefs and last cache update time to the local cache
+  // in order to recover from the following cases:
   // 1) There is no local credential cache, but the user is signed in. This
   //    could happen if a signed-in user restarts chrome after upgrading from
   //    an older version that didn't support credential caching.
   // 2) There is a local credential cache, but we missed writing sync credential
   //    updates to it in the past due to a crash, or due to the user exiting
   //    chrome in the midst of a sign in, sign out or reconfigure.
+  // 3) There is a local credential cache that was written to by an older
+  //    version of Chrome, and it does not contain the "last_cache_update_time"
+  //    field.
   // Note: If the local credential cache was already up-to-date, the operations
   // below will be no-ops, and won't change the cache's last updated time. Also,
   // if the user is not signed in and there is no local credential cache, we
@@ -524,6 +548,10 @@ void CredentialCacheService::LocalStoreObserver::OnInitializationCompleted(
           service_->sync_prefs_.GetKeystoreEncryptionBootstrapToken());
     }
     service_->WriteSyncPrefsToLocalCache();
+    if (!service_->HasPref(local_store_, kLastCacheUpdateTimeKey))
+      service_->WriteLastCacheUpdateTime();
+    if (service_->HasPref(local_store_, kLastUpdatedTimeTicksDeprecated))
+      local_store_->RemoveValue(kLastUpdatedTimeTicksDeprecated);
   }
 
   // Now that the local credential cache is ready, start listening for events
@@ -765,8 +793,7 @@ bool CredentialCacheService::ShouldSignOutOfSync(
          !HasUserSignedOut() &&
          alternate_google_services_username.empty() &&
          !service->setup_in_progress() &&
-         (GetLastUpdatedTime(alternate_store_) >
-          GetLastUpdatedTime(local_store_));
+         AlternateCacheIsMoreRecent();
 }
 
 bool CredentialCacheService::MayReconfigureSync(
@@ -784,8 +811,7 @@ bool CredentialCacheService::MayReconfigureSync(
          (alternate_google_services_username ==
           service->signin()->GetAuthenticatedUsername()) &&
          !service->setup_in_progress() &&
-         (GetLastUpdatedTime(alternate_store_) >
-          GetLastUpdatedTime(local_store_));
+         AlternateCacheIsMoreRecent();
 }
 
 bool CredentialCacheService::ShouldSignInToSync(
