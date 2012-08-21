@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -74,8 +75,12 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
       break;
   }
   if (level) {
-    IOReturn result = IOPMAssertionCreateWithName(level, kIOPMAssertionLevelOn,
-        base::SysUTF8ToCFStringRef(reason_), &assertion_);
+    base::mac::ScopedCFTypeRef<CFStringRef> cf_reason(
+        base::SysUTF8ToCFStringRef(reason_));
+    IOReturn result = IOPMAssertionCreateWithName(level,
+                                                  kIOPMAssertionLevelOn,
+                                                  cf_reason,
+                                                  &assertion_);
     LOG_IF(ERROR, result != kIOReturnSuccess)
         << "IOPMAssertionCreate: " << result;
   }
