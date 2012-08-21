@@ -155,13 +155,16 @@ class AutofillTest : public InProcessBrowserTest {
  protected:
   AutofillTest() {}
 
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Don't want Keychain coming up on Mac.
+    autofill_test::DisableSystemServices(browser()->profile());
+  }
+
   PersonalDataManager* personal_data_manager() {
     return PersonalDataManagerFactory::GetForProfile(browser()->profile());
   }
 
   void CreateTestProfile() {
-    autofill_test::DisableSystemServices(browser()->profile());
-
     AutofillProfile profile;
     autofill_test::SetProfileInfo(
         &profile, "Milton", "C.", "Waddams",
