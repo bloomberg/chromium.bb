@@ -188,12 +188,6 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
   if (validation_error & SPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%spl or %%sp is changed\n",
                                                                         offset);
-  if (validation_error & RSI_UNSANDBOXDED)
-    printf("offset 0x%"NACL_PRIxS": error - improper %%rsi sandboxing\n",
-                                                                        offset);
-  if (validation_error & RDI_UNSANDBOXDED)
-    printf("offset 0x%"NACL_PRIxS": error - improper %%rdi sandboxing\n",
-                                                                        offset);
   if (validation_error & BAD_JUMP_TARGET)
     printf("bad jump to around 0x%"NACL_PRIxS"\n", offset);
   if (validation_error & (VALIDATION_ERRORS | BAD_JUMP_TARGET))

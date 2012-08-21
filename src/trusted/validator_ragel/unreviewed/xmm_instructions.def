@@ -225,7 +225,7 @@ movaps Vps Wps, 0x0f 0x29, CPUFeature_SSE
 vmovaps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x28, CPUFeature_AVX
 vmovaps Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x29, CPUFeature_AVX
 ######## MOVD/VMOVD ############################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “movd/vmovd” as per AMD/Intel manuals looks like this:
 #  movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
 #  movd Vy Ey, 0x66 0x0f 0x7e, CPUFeature_SSE2
 #  vmovd Ey Vo, 0xc4 RXB.00001 W.1111.0.01 0x6e, CPUFeature_AVX
@@ -286,7 +286,7 @@ movlps Vq Mq, 0x0f 0x13, CPUFeature_SSE
 vmovlps Mq Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x12 /m, CPUFeature_AVX
 vmovlps Vps Mq, 0xc4 RXB.00001 x.1111.0.00 0x13, CPUFeature_AVX
 ######## MOVMSKPD/VMOVMSKPD ####################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “movmskpd” as per AMD/Intel manuals looks like this:
 #  movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
 # GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “movmskpd” clears everything except least
@@ -295,7 +295,7 @@ vmovlps Vps Mq, 0xc4 RXB.00001 x.1111.0.00 0x13, CPUFeature_AVX
 movmskpd Upd Gy, 0x66 0x0f 0x50, CPUFeature_SSE2
 vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50, CPUFeature_AVX
 ######## MOVMSKPS/VMOVMSKPS ####################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “movmskps” as per AMD/Intel manuals looks like this:
 #  movmskps Upd Gd, 0x0f 0x50, CPUFeature_SSE2
 # GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “movmskps” clears everything except least
@@ -483,14 +483,15 @@ vpcmpistri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x63, CPUFeature_AVX
 pcmpistrm Ib Wo Vo, 0x66 0x0f 0x3a 0x62, CPUFeature_SSE42
 vpcmpistrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x62, CPUFeature_AVX
 ######## PEXTRB/VPEXTRB ########################################################
-# “pextrb/vpextrb” are not marked as nacl-amd64-zero-extends because you
-# shouldn't use XMM registers to hold addresses.
-# This is description according to AMD/Intel manual.
+# Textbook definition of “vpextrb” as per AMD/Intel manuals looks like this:
 #  vpextrb Ib Vpb Ry, 0xc4 RXB.00011 x.1111.0.01 0x14 /r, CPUFeature_AVX
 # GNU as accepts this description, but objdump decodes last operand as “Rd”.
 # Technically it makes no difference: “vpextrb” clears everything except least
 # significant byte and this operation produces precisely idential output for
 # “Rd” and “Ry” operands.  We'll use objdump's description.
+#
+# “pextrb/vpextrb” are not marked as nacl-amd64-zero-extends because you
+# shouldn't use XMM registers to hold addresses.
 pextrb Ib Vpk Mb, 0x66 0x0f 0x3a 0x14 /m, CPUFeature_SSE41
 pextrb Ib Vpk Ry, 0x66 0x0f 0x3a 0x14 /r, CPUFeature_SSE41
 vpextrb Ib Vpb Mb, 0xc4 RXB.00011 x.1111.0.01 0x14 /m, CPUFeature_AVX
@@ -504,9 +505,8 @@ vpextrd Ib Vpj Ed, 0xc4 RXB.00011 0.1111.0.01 0x16, CPUFeature_AVX
 pextrq Ib Vpq Eq, 0x66 rexw 0x0f 0x3a 0x16, amd64 CPUFeature_SSE41
 vpextrq Ib Vpqw Eq, 0xc4 RXB.00011 1.1111.0.01 0x16, amd64 CPUFeature_AVX
 ######## PEXTRW/VPEXTRW ########################################################
-# “pextrw/vpextrw” are not marked as nacl-amd64-zero-extends because you
-# shouldn't use XMM registers to hold addresses.
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pextrw/vpextrw” as per AMD/Intel manuals looks like
+# this:
 #  pextrw Ib Udq Gy, 0x66 0x0f 0xc5, CPUFeature_SSE2
 #  vpextrw Ib Upw Gy, 0xc4 RXB.00001 x.1111.0.01 0xc5, CPUFeature_AVX
 #  vpextrw Ib Vpw Ry, 0xc4 RXB.00011 x.1111.0.01 0x15 /r, CPUFeature_AVX
@@ -514,6 +514,9 @@ vpextrq Ib Vpqw Eq, 0xc4 RXB.00011 1.1111.0.01 0x16, amd64 CPUFeature_AVX
 # Technically it makes no difference: “pextrw”/“vpextrw” clears everything
 # except least significant byte and this operation produces precisely idential
 # output for “Rd” and “Ry” operands.  We'll use objdump's description.
+#
+# “pextrw/vpextrw” are not marked as nacl-amd64-zero-extends because you
+# shouldn't use XMM registers to hold addresses.
 pextrw Ib Udq Gy, 0x66 0x0f 0xc5, CPUFeature_SSE2
 pextrw Ib Vpw Mw, 0x66 0x0f 0x3a 0x15 /m, CPUFeature_SSE41
 pextrw Ib Vpw Ry, 0x66 0x0f 0x3a 0x15 /r, CPUFeature_SSE41
@@ -542,7 +545,7 @@ vphsubsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x07, CPUFeature_AVX
 phsubw Wpi Vpi, 0x66 0x0f 0x38 0x05, CPUFeature_SSSE3
 vphsubw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x05, CPUFeature_AVX
 ######## PINSRB/VPINSRB ########################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pinsrb” as per AMD/Intel manuals looks like this:
 #  pinsrb Ib Mb Vpk, 0x66 0x0f 0x3a 0x20 /m, CPUFeature_SSE41
 #  pinsrb Ib Rd Vpk, 0x66 0x0f 0x3a 0x20 /r, CPUFeature_SSE41
 # GNU as accepts this description, but objdump decodes last operand as “Ry”.
@@ -560,7 +563,7 @@ vpinsrd Ib Ed Hpdw Vpdw, 0xc4 RXB.00011 0.1111.0.01 0x22, CPUFeature_AVX
 pinsrq Ib Eq Vpq, 0x66 rexw 0x0f 0x3a 0x22, amd64 CPUFeature_SSE41
 vpinsrq Ib Eq Ho Vo, 0xc4 RXB.00011 1.1111.0.01 0x22, amd64 CPUFeature_AVX
 ######## PINSRW/VPINSRW ########################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pinsrw” as per AMD/Intel manuals looks like this:
 #  pinsrw Ib Ew Vdq, 0x66 0x0f 0xc4, CPUFeature_SSE
 #  pinsrw Ib Rd Vdq, 0x66 0x0f 0xc4 /r, CPUFeature_SSE
 # GNU as accepts this description, but objdump decodes last operand as “Rd”.
@@ -614,7 +617,8 @@ vpminud Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3b, CPUFeature_AVX
 pminuw Wpi Vpi, 0x66 0x0f 0x38 0x3a, CPUFeature_SSE41
 vpminuw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x3a, CPUFeature_AVX
 ######## PMOVMSKB/PMOVMSKB #####################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pmovmskb/vpmovmskb” as per AMD/Intel manuals looks
+# like this:
 #  pmovmskb Udq Gd, 0x66 0x0f 0xd7, CPUFeature_SSE2
 #  vpmovmskb Upb Gy, 0xc4 RXB.00001 x.1111.0.01 0xd7, CPUFeature_AVX
 # GNU as accepts this description, but objdump decodes last operand as “Gd”.

@@ -37,9 +37,9 @@ fxsave64 Msx, rexw 0x0f 0xae /0, amd64 CPUFeature_FXSR
 ######## MASKMOVQ ##############################################################
 maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMX nacl-amd64-forbidden
 ######## MOVD ##################################################################
-# This is description according to AMD/Intel manual.
-# movd Ey Py, 0x0f 0x6e, CPUFeature_MMX
-# movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
+# Textbook definition of “movd” as per AMD/Intel manuals looks like this:
+#  movd Ey Py, 0x0f 0x6e, CPUFeature_MMX
+#  movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
 # Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
 # and 64bit separately.
 movd Ed Pq, 0x0f 0x6e, norexw CPUFeature_MMX
@@ -108,14 +108,15 @@ pcmpgtd Qq Pq, 0x0f 0x66, CPUFeature_MMX
 ######## PCMPGTW ###############################################################
 pcmpgtw Qq Pq, 0x0f 0x65, CPUFeature_MMX
 ######## PEXTRW ################################################################
-# “pextrw” is not marked as nacl-amd64-zero-extends because you shouldn't use
-# MMX registers to hold addresses.
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pextrw” as per AMD/Intel manuals looks like this:
 #  pextrw Ib Nq Gd, 0x0f 0xc5, CPUFeature_EMMXSSE
 # GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “pextrw" only sets low 16bit of the third
 # operand thus the whole operation produces precisely idential output for “Gy”
 # and “Gd” operands.  We'll use objdump's description.
+#
+# “pextrw” is not marked as nacl-amd64-zero-extends because you shouldn't use
+# MMX registers to hold addresses.
 pextrw Ib Nq Gy, 0x0f 0xc5, CPUFeature_EMMXSSE
 ######## PF2ID #################################################################
 pf2id Qq Pq, 0x0f 0x0f / 0x1d, CPUFeature_3DNOW
@@ -174,7 +175,7 @@ pi2fw Qq Pq, 0x0f 0x0f / 0x0c, CPUFeature_E3DNOW
 ######## PINSTRW ###############################################################
 pinsrw Ib Mw Pq, 0x0f 0xc4 /m, CPUFeature_EMMXSSE
 pinsrw Ib Mw Pq, rexw 0x0f 0xc4 /m, CPUFeature_EMMXSSE
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pinsrw” as per AMD/Intel manuals looks like this:
 #  pinsrw Ib Rd Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
 # GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “pinsrw" only uses low 16bit of the second
@@ -194,7 +195,7 @@ pminsw Qq Pq, 0x0f 0xea, CPUFeature_EMMXSSE
 ######## PMINUB ################################################################
 pminub Qq Pq, 0x0f 0xda, CPUFeature_EMMXSSE
 ######## PMOVMSKB ##############################################################
-# This is description according to AMD/Intel manual.
+# Textbook definition of “pmovmskb” as per AMD/Intel manuals looks like this:
 #  pmovmskb Nq Gd, 0x0f 0xd7, CPUFeature_EMMXSSE
 # GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “pmovmskb” clears everything except least

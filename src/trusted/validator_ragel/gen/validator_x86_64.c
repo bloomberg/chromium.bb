@@ -11669,9 +11669,9 @@ st192:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof192;
 case 192:
-	if ( 128u <= (*( current_position)) )
-		goto tr462;
-	goto tr226;
+	if ( (*( current_position)) <= 127u )
+		goto tr226;
+	goto tr462;
 st193:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof193;
@@ -11695,9 +11695,9 @@ st194:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof194;
 case 194:
-	if ( (*( current_position)) <= 127u )
-		goto tr52;
-	goto tr464;
+	if ( 128u <= (*( current_position)) )
+		goto tr464;
+	goto tr52;
 tr395:
 	{
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;

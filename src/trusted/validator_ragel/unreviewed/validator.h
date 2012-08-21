@@ -59,10 +59,6 @@ enum validation_callback_info {
   BPL_MODIFIED                  = 0x00800000,
   /* Operations with SPL are forbidden for compatibility with old validator.  */
   SPL_MODIFIED                  = 0x01000000,
-  /* %rsi must be sandboxed in instructions cmpsb, lods, and movs.  */
-  RSI_UNSANDBOXDED              = 0x02000000,
-  /* %rdi must be sandboxed in instructions cmpsb, movs, scas, and stos.  */
-  RDI_UNSANDBOXDED              = 0x04000000,
   /* Special instruction.  Uses different, non-standard validation rules.  */
   SPECIAL_INSTRUCTION           = 0x10000000,
   /* Some 3DNow! instructions use immediate byte as opcode extensions.  */

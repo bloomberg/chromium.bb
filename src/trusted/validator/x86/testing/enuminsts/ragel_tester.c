@@ -111,7 +111,6 @@ Bool RagelValidateError(const uint8_t *begin, const uint8_t *end,
                FORBIDDEN_BASE_REGISTER |
                UNRESTRICTED_INDEX_REGISTER |
                R15_MODIFIED | BPL_MODIFIED | SPL_MODIFIED |
-               RSI_UNSANDBOXDED | RDI_UNSANDBOXDED |
                UNRESTRICTED_RBP_PROCESSED | UNRESTRICTED_RSP_PROCESSED |
                RESTRICTED_RSP_UNPROCESSED | RESTRICTED_RBP_UNPROCESSED)) {
     return FALSE;
