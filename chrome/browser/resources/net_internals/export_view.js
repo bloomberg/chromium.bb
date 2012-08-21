@@ -20,10 +20,9 @@ var ExportView = (function() {
     // Call superclass's constructor.
     superClass.call(this, ExportView.MAIN_BOX_ID);
 
-    var securityStrippingCheckbox =
-        $(ExportView.SECURITY_STRIPPING_CHECKBOX_ID);
-    securityStrippingCheckbox.onclick =
-        this.onSetSecurityStripping_.bind(this, securityStrippingCheckbox);
+    var privacyStrippingCheckbox = $(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID);
+    privacyStrippingCheckbox.onclick =
+        this.onSetPrivacyStripping_.bind(this, privacyStrippingCheckbox);
 
     this.saveFileButton_ = $(ExportView.SAVE_FILE_BUTTON_ID);
     this.saveFileButton_.onclick = this.onSaveFile_.bind(this);
@@ -47,8 +46,8 @@ var ExportView = (function() {
   ExportView.DOWNLOAD_ANCHOR_ID = 'export-view-download-anchor';
   ExportView.SAVE_FILE_BUTTON_ID = 'export-view-save-log-file';
   ExportView.SAVE_STATUS_TEXT_ID = 'export-view-save-status-text';
-  ExportView.SECURITY_STRIPPING_CHECKBOX_ID =
-      'export-view-security-stripping-checkbox';
+  ExportView.PRIVACY_STRIPPING_CHECKBOX_ID =
+      'export-view-privacy-stripping-checkbox';
   ExportView.USER_COMMENTS_TEXT_AREA_ID = 'export-view-user-comments';
   ExportView.PRIVACY_WARNING_ID = 'export-view-privacy-warning';
 
@@ -62,9 +61,9 @@ var ExportView = (function() {
      * Depending on the value of the checkbox, enables or disables stripping
      * cookies and passwords from log dumps and displayed events.
      */
-    onSetSecurityStripping_: function(securityStrippingCheckbox) {
-      SourceTracker.getInstance().setSecurityStripping(
-          securityStrippingCheckbox.checked);
+    onSetPrivacyStripping_: function(privacyStrippingCheckbox) {
+      SourceTracker.getInstance().setPrivacyStripping(
+          privacyStrippingCheckbox.checked);
     },
 
     /**
@@ -95,8 +94,12 @@ var ExportView = (function() {
 
     showPrivacyWarning: function() {
       setNodeDisplay($(ExportView.PRIVACY_WARNING_ID), true);
-      $(ExportView.SECURITY_STRIPPING_CHECKBOX_ID).checked = false;
-      $(ExportView.SECURITY_STRIPPING_CHECKBOX_ID).disabled = true;
+      $(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID).checked = false;
+      $(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID).disabled = true;
+
+      // Updating the checkbox doesn't actually disable privacy stripping, since
+      // the onclick function will not be called.
+      this.onSetPrivacyStripping_($(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID));
     },
 
     /**
@@ -128,14 +131,13 @@ var ExportView = (function() {
 
       this.setSaveFileStatus('Preparing data...', true);
 
-      var securityStripping =
-          SourceTracker.getInstance().getSecurityStripping();
+      var privacyStripping = SourceTracker.getInstance().getPrivacyStripping();
 
       // If we have a cached log dump, update it synchronously.
       if (this.loadedLogDump_) {
         var dumpText = log_util.createUpdatedLogDump(userComments,
                                                      this.loadedLogDump_,
-                                                     securityStripping);
+                                                     privacyStripping);
         callback(dumpText);
         return;
       }
@@ -143,7 +145,7 @@ var ExportView = (function() {
       // Otherwise, poll information from the browser before creating one.
       log_util.createLogDumpAsync(userComments,
                                   callback,
-                                  securityStripping);
+                                  privacyStripping);
     },
 
     /**

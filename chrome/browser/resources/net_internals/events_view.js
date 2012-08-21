@@ -138,9 +138,9 @@ var EventsView = (function() {
     },
 
     /**
-     * Updates text in the details view when security stripping is toggled.
+     * Updates text in the details view when privacy stripping is toggled.
      */
-    onSecurityStrippingChanged: function() {
+    onPrivacyStrippingChanged: function() {
       this.invalidateDetailsView_();
     },
 

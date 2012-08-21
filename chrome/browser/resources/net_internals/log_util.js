@@ -9,7 +9,7 @@ log_util = (function() {
    * Creates a new log dump.  |events| is a list of all events, |polledData| is
    * an object containing the results of each poll, |tabData| is an object
    * containing data for individual tabs, |date| is the time the dump was
-   * created, as a formatted string, and |securityStripping| is whether or not
+   * created, as a formatted string, and |privacyStripping| is whether or not
    * private information should be removed from the generated dump.
    *
    * Returns the new log dump as an object.  Resulting object may have a null
@@ -32,8 +32,8 @@ log_util = (function() {
    * tabs not present on the OS the log is from.
    */
   function createLogDump(userComments, constants, events, polledData, tabData,
-                         numericDate, securityStripping) {
-    if (securityStripping)
+                         numericDate, privacyStripping) {
+    if (privacyStripping)
       events = events.map(stripCookiesAndLoginInfo);
 
     var logDump = {
@@ -57,7 +57,7 @@ log_util = (function() {
    * |oldLogDump|.  The other parts of the log dump come from current
    * net-internals state.
    */
-  function createUpdatedLogDump(userComments, oldLogDump, securityStripping) {
+  function createUpdatedLogDump(userComments, oldLogDump, privacyStripping) {
     var numericDate = null;
     if (oldLogDump.constants.clientInfo &&
         oldLogDump.constants.clientInfo.numericDate) {
@@ -70,7 +70,7 @@ log_util = (function() {
         oldLogDump.polledData,
         getTabData_(),
         numericDate,
-        securityStripping);
+        privacyStripping);
     return JSON.stringify(logDump, null, ' ');
   }
 
@@ -78,7 +78,7 @@ log_util = (function() {
    * Creates a full log dump using |polledData| and the return value of each
    * tab's saveState function and passes it to |callback|.
    */
-  function onUpdateAllCompleted(userComments, callback, securityStripping,
+  function onUpdateAllCompleted(userComments, callback, privacyStripping,
                                 polledData) {
     var logDump = createLogDump(
         userComments,
@@ -87,7 +87,7 @@ log_util = (function() {
         polledData,
         getTabData_(),
         timeutil.getCurrentTime(),
-        securityStripping);
+        privacyStripping);
     callback(JSON.stringify(logDump, null, ' '));
   }
 
@@ -96,10 +96,10 @@ log_util = (function() {
    * loaded.  Once a log dump has been created, |callback| is passed the dumped
    * text as a string.
    */
-  function createLogDumpAsync(userComments, callback, securityStripping) {
+  function createLogDumpAsync(userComments, callback, privacyStripping) {
     g_browser.updateAllInfo(
         onUpdateAllCompleted.bind(null, userComments, callback,
-                                  securityStripping));
+                                  privacyStripping));
   }
 
   /**

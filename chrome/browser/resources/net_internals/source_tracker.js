@@ -21,7 +21,7 @@ var SourceTracker = (function() {
     // True when cookies and authentication information should be removed from
     // displayed events.  When true, such information should be hidden from
     // all pages.
-    this.enableSecurityStripping_ = true;
+    this.privacyStripping_ = true;
 
     this.clearEntries_();
 
@@ -131,14 +131,14 @@ var SourceTracker = (function() {
     },
 
     /**
-     * Sets the value of |enableSecurityStripping_| and informs log observers
+     * Sets the value of |privacyStripping_| and informs log observers
      * of the change.
      */
-    setSecurityStripping: function(enableSecurityStripping) {
-      this.enableSecurityStripping_ = enableSecurityStripping;
+    setPrivacyStripping: function(privacyStripping) {
+      this.privacyStripping_ = privacyStripping;
       for (var i = 0; i < this.sourceEntryObservers_.length; ++i) {
-        if (this.sourceEntryObservers_[i].onSecurityStrippingChanged)
-          this.sourceEntryObservers_[i].onSecurityStrippingChanged();
+        if (this.sourceEntryObservers_[i].onPrivacyStrippingChanged)
+          this.sourceEntryObservers_[i].onPrivacyStrippingChanged();
       }
     },
 
@@ -146,18 +146,18 @@ var SourceTracker = (function() {
      * Returns whether or not cookies and authentication information should be
      * displayed for events that contain them.
      */
-    getSecurityStripping: function() {
-      return this.enableSecurityStripping_;
+    getPrivacyStripping: function() {
+      return this.privacyStripping_;
     },
 
     /**
      * Adds a listener of SourceEntries. |observer| will be called back when
      * SourceEntries are added or modified, source entries are deleted, or
-     * security stripping changes:
+     * privacy stripping changes:
      *
      *   observer.onSourceEntriesUpdated(sourceEntries)
      *   ovserver.onAllSourceEntriesDeleted()
-     *   observer.onSecurityStrippingChanged()
+     *   observer.onPrivacyStrippingChanged()
      */
     addSourceEntryObserver: function(observer) {
       this.sourceEntryObservers_.push(observer);

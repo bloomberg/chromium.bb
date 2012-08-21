@@ -311,7 +311,7 @@ var SourceEntry = (function() {
     printAsText: function(parent) {
       // The date will be undefined if not viewing a loaded log file.
       printLogEntriesAsText(this.entries_, parent,
-                            SourceTracker.getInstance().getSecurityStripping(),
+                            SourceTracker.getInstance().getPrivacyStripping(),
                             Constants.clientInfo.numericDate);
     }
   };

@@ -24,7 +24,7 @@ function canCollapseBeginWithEnd(beginEntry) {
  * Adds a child pre element to the end of |parent|, and writes the
  * formatted contents of |logEntries| to it.
  */
-printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping,
+printLogEntriesAsText = function(logEntries, parent, privacyStripping,
                                  logCreationTime) {
   var entries = LogGroupEntry.createArrayFrom(logEntries);
   var tablePrinter = new TablePrinter();
@@ -68,7 +68,7 @@ printLogEntriesAsText = function(logEntries, parent, enableSecurityStripping,
     if (typeof entry.orig.params == 'object') {
       // Those 5 skipped cells are: two for "t=", and three for "st=".
       tablePrinter.setNewRowCellIndent(5 + entry.getDepth());
-      writeParameters(entry.orig, enableSecurityStripping, parameterOutputter);
+      writeParameters(entry.orig, privacyStripping, parameterOutputter);
 
       tablePrinter.setNewRowCellIndent(0);
     }
@@ -233,9 +233,9 @@ var ParameterOutputter = (function() {
  * Certain event types will have custom pretty printers. Everything else will
  * default to a JSON-like format.
  */
-function writeParameters(entry, enableSecurityStripping, out) {
-  // If security stripping is enabled, remove data as needed.
-  if (enableSecurityStripping)
+function writeParameters(entry, privacyStripping, out) {
+  // If privacy stripping is enabled, remove data as needed.
+  if (privacyStripping)
     entry = stripCookiesAndLoginInfo(entry);
 
   // Use any parameter writer available for this event type.

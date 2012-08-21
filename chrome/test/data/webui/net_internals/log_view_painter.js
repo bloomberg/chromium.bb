@@ -101,7 +101,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
     div.innerHTML = '';
     timeutil.setTimeTickOffset(testCase.tickOffset);
     printLogEntriesAsText(testCase.logEntries, div,
-                          testCase.enableSecurityStripping,
+                          testCase.privacyStripping,
                           testCase.logCreationTime);
 
     // Strip any trailing newlines, since the whitespace when using innerText
@@ -1370,7 +1370,7 @@ function painterTestDontStripCookiesURLRequest() {
  */
 function painterTestStripCookiesURLRequest() {
   var testCase = painterTestDontStripCookiesURLRequest();
-  testCase.enableSecurityStripping = true;
+  testCase.privacyStripping = true;
   testCase.expectedText =
       testCase.expectedText.replace(/MyMagicPony/g, '[value was stripped]');
   return testCase;
@@ -1468,7 +1468,7 @@ function painterTestDontStripCookiesSPDYSession() {
  */
 function painterTestStripCookiesSPDYSession() {
   var testCase = painterTestDontStripCookiesSPDYSession();
-  testCase.enableSecurityStripping = true;
+  testCase.privacyStripping = true;
   testCase.expectedText =
       testCase.expectedText.replace(/MyLittlePony/g, '[value was stripped]');
   return testCase;
