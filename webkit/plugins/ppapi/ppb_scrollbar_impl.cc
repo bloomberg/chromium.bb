@@ -138,7 +138,10 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
   skia::PlatformCanvas* canvas = image->GetPlatformCanvas();
   if (!canvas || !scrollbar_.get())
     return PP_FALSE;
+  canvas->save();
+  canvas->scale(scale(), scale());
   scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+  canvas->restore();
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() == base::win::VERSION_XP)

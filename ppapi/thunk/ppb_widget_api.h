@@ -18,6 +18,7 @@ class PPB_Widget_API {
   virtual PP_Bool HandleEvent(PP_Resource pp_input_event) = 0;
   virtual PP_Bool GetLocation(PP_Rect* location) = 0;
   virtual void SetLocation(const PP_Rect* location) = 0;
+  virtual void SetScale(float scale) = 0;
 };
 
 }  // namespace thunk

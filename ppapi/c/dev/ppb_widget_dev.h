@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_widget_dev.idl modified Wed Oct  5 14:06:02 2011. */
+/* From dev/ppb_widget_dev.idl modified Mon Aug 20 10:21:06 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_WIDGET_DEV_H_
 #define PPAPI_C_DEV_PPB_WIDGET_DEV_H_
@@ -17,7 +17,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_WIDGET_DEV_INTERFACE_0_3 "PPB_Widget(Dev);0.3"
-#define PPB_WIDGET_DEV_INTERFACE PPB_WIDGET_DEV_INTERFACE_0_3
+#define PPB_WIDGET_DEV_INTERFACE_0_4 "PPB_Widget(Dev);0.4"
+#define PPB_WIDGET_DEV_INTERFACE PPB_WIDGET_DEV_INTERFACE_0_4
 
 /**
  * @file
@@ -32,7 +33,7 @@
 /**
  * The interface for reusing browser widgets.
  */
-struct PPB_Widget_Dev_0_3 {
+struct PPB_Widget_Dev_0_4 {
   /**
    * Returns PP_TRUE if the given resource is a Widget. Returns PP_FALSE if the
    * resource is invalid or some type other than an Widget.
@@ -58,9 +59,23 @@ struct PPB_Widget_Dev_0_3 {
    * Set the location of the widget.
    */
   void (*SetLocation)(PP_Resource widget, const struct PP_Rect* location);
+  /**
+   * Set scale used during paint operations.
+   */
+  void (*SetScale)(PP_Resource widget, float scale);
 };
 
-typedef struct PPB_Widget_Dev_0_3 PPB_Widget_Dev;
+typedef struct PPB_Widget_Dev_0_4 PPB_Widget_Dev;
+
+struct PPB_Widget_Dev_0_3 {
+  PP_Bool (*IsWidget)(PP_Resource resource);
+  PP_Bool (*Paint)(PP_Resource widget,
+                   const struct PP_Rect* rect,
+                   PP_Resource image);
+  PP_Bool (*HandleEvent)(PP_Resource widget, PP_Resource input_event);
+  PP_Bool (*GetLocation)(PP_Resource widget, struct PP_Rect* location);
+  void (*SetLocation)(PP_Resource widget, const struct PP_Rect* location);
+};
 /**
  * @}
  */
