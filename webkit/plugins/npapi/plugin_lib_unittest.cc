@@ -165,15 +165,10 @@ TEST(PluginDescriptionParse, ExtractVersion) {
   // It's actually much more likely for a modern Linux distribution to have
   // IcedTea.
   PluginLib::ExtractVersionString(
-      "IcedTea NPR Web Browser Plugin "
-      "(using IcedTea6 1.9.2 (6b20-1.9.2-0ubuntu1~10.04.1))",
+      "IcedTea-Web Plugin "
+      "(using IcedTea-Web 1.2 (1.2-2ubuntu0.10.04.2))",
       &info);
-  EXPECT_EQ(ASCIIToUTF16("1.9.2"), info.version);
-  PluginLib::ExtractVersionString(
-      "IcedTea NPR Web Browser Plugin "
-      "(using IcedTea6 1.9.3 (fedora-49.1.9.3.fc14-i386))`",
-      &info);
-  EXPECT_EQ(ASCIIToUTF16("1.9.3"), info.version);
+  EXPECT_EQ(ASCIIToUTF16("1.2"), info.version);
 }
 
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)

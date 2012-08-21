@@ -273,7 +273,7 @@ void PluginLib::ExtractVersionString(const std::string& desc,
   } kPrePostFixes[] = {
     { "Shockwave Flash ", 0 },
     { "Java(TM) Plug-in ", 0 },
-    { "(using IcedTea6 ", " " },
+    { "(using IcedTea-Web ", " " },
     { 0, 0 }
   };
   std::string version;
