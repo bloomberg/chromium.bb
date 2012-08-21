@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -21,6 +22,10 @@ typedef BrowserWithTestWindowTest SearchDelegateTest;
 TEST_F(SearchDelegateTest, SearchModel) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kEnableInstantExtendedAPI);
+
+  // Avoid these tests on branded Chrome where channel is set to CHANNEL_STABLE.
+  if (!chrome::search::IsInstantExtendedAPIEnabled(profile()))
+    return;
 
   // Initial state.
   EXPECT_TRUE(browser()->search_model()->mode().is_default());
