@@ -15,10 +15,10 @@
 #include "ash/system/network/network_observer.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
-#include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "ash/volume_control_delegate.h"
@@ -36,9 +36,9 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -52,14 +52,14 @@
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
-#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -76,9 +76,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using gdata::GDataOperationRegistry;
 using gdata::GDataSystemService;
 using gdata::GDataSystemServiceFactory;
+using gdata::OperationRegistry;
 
 namespace chromeos {
 
@@ -108,9 +108,9 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
 }
 
 ash::DriveOperationStatusList GetDriveStatusList(
-    const std::vector<GDataOperationRegistry::ProgressStatus>& list) {
+    const std::vector<OperationRegistry::ProgressStatus>& list) {
   ash::DriveOperationStatusList results;
-  for (GDataOperationRegistry::ProgressStatusList::const_iterator it =
+  for (OperationRegistry::ProgressStatusList::const_iterator it =
           list.begin();
        it != list.end(); ++it) {
     ash::DriveOperationStatus status;
@@ -152,7 +152,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
-                           public gdata::GDataOperationRegistry::Observer,
+                           public gdata::OperationRegistry::Observer,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
@@ -1088,9 +1088,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NotifyRefreshIME(false);
   }
 
-  // gdata::GDataOperationRegistry::Observer overrides.
+  // gdata::OperationRegistry::Observer overrides.
   virtual void OnProgressUpdate(
-      const GDataOperationRegistry::ProgressStatusList& list) {
+      const OperationRegistry::ProgressStatusList& list) {
     std::vector<ash::DriveOperationStatus> ui_list = GetDriveStatusList(list);
     NotifyRefreshDrive(ui_list);
 
@@ -1099,15 +1099,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // raise events that will let us properly clear the uber tray state.
     if (list.size() > 0) {
       bool has_in_progress_items = false;
-      for (GDataOperationRegistry::ProgressStatusList::const_iterator it =
+      for (OperationRegistry::ProgressStatusList::const_iterator it =
                list.begin();
           it != list.end(); ++it) {
         if (it->transfer_state ==
-                GDataOperationRegistry::OPERATION_STARTED ||
+                OperationRegistry::OPERATION_STARTED ||
             it->transfer_state ==
-                GDataOperationRegistry::OPERATION_IN_PROGRESS ||
+                OperationRegistry::OPERATION_IN_PROGRESS ||
             it->transfer_state ==
-                GDataOperationRegistry::OPERATION_SUSPENDED) {
+                OperationRegistry::OPERATION_SUSPENDED) {
           has_in_progress_items = true;
           break;
         }

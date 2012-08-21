@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 
 #include "base/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,7 +18,7 @@ const int64 kNotificationFrequencyInMilliseconds = 1000;
 namespace gdata {
 
 // static
-std::string GDataOperationRegistry::OperationTypeToString(OperationType type) {
+std::string OperationRegistry::OperationTypeToString(OperationType type) {
   switch (type) {
     case OPERATION_UPLOAD: return "upload";
     case OPERATION_DOWNLOAD: return "download";
@@ -29,7 +29,7 @@ std::string GDataOperationRegistry::OperationTypeToString(OperationType type) {
 }
 
 // static
-std::string GDataOperationRegistry::OperationTransferStateToString(
+std::string OperationRegistry::OperationTransferStateToString(
     OperationTransferState state) {
   switch (state) {
     case OPERATION_NOT_STARTED: return "not_started";
@@ -44,7 +44,7 @@ std::string GDataOperationRegistry::OperationTransferStateToString(
   return "unknown_transfer_state";
 }
 
-GDataOperationRegistry::ProgressStatus::ProgressStatus(OperationType type,
+OperationRegistry::ProgressStatus::ProgressStatus(OperationType type,
                                                        const FilePath& path)
     : operation_id(-1),
       operation_type(type),
@@ -54,7 +54,7 @@ GDataOperationRegistry::ProgressStatus::ProgressStatus(OperationType type,
       progress_total(-1) {
 }
 
-std::string GDataOperationRegistry::ProgressStatus::DebugString() const {
+std::string OperationRegistry::ProgressStatus::DebugString() const {
   std::string str;
   str += "id=";
   str += base::IntToString(operation_id);
@@ -71,30 +71,30 @@ std::string GDataOperationRegistry::ProgressStatus::DebugString() const {
   return str;
 }
 
-GDataOperationRegistry::Operation::Operation(GDataOperationRegistry* registry)
+OperationRegistry::Operation::Operation(OperationRegistry* registry)
     : registry_(registry),
-      progress_status_(GDataOperationRegistry::OPERATION_OTHER, FilePath()) {
+      progress_status_(OperationRegistry::OPERATION_OTHER, FilePath()) {
 }
 
-GDataOperationRegistry::Operation::Operation(GDataOperationRegistry* registry,
+OperationRegistry::Operation::Operation(OperationRegistry* registry,
                                              OperationType type,
                                              const FilePath& path)
     : registry_(registry),
       progress_status_(type, path) {
 }
 
-GDataOperationRegistry::Operation::~Operation() {
+OperationRegistry::Operation::~Operation() {
   DCHECK(progress_status_.transfer_state == OPERATION_COMPLETED ||
          progress_status_.transfer_state == OPERATION_SUSPENDED ||
          progress_status_.transfer_state == OPERATION_FAILED);
 }
 
-void GDataOperationRegistry::Operation::Cancel() {
+void OperationRegistry::Operation::Cancel() {
   DoCancel();
   NotifyFinish(OPERATION_FAILED);
 }
 
-void GDataOperationRegistry::Operation::NotifyStart() {
+void OperationRegistry::Operation::NotifyStart() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Some operations may be restarted. Report only the first "start".
   if (progress_status_.transfer_state == OPERATION_NOT_STARTED) {
@@ -104,7 +104,7 @@ void GDataOperationRegistry::Operation::NotifyStart() {
   }
 }
 
-void GDataOperationRegistry::Operation::NotifyProgress(
+void OperationRegistry::Operation::NotifyProgress(
     int64 current, int64 total) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(progress_status_.transfer_state >= OPERATION_STARTED);
@@ -114,7 +114,7 @@ void GDataOperationRegistry::Operation::NotifyProgress(
   registry_->OnOperationProgress(progress_status().operation_id);
 }
 
-void GDataOperationRegistry::Operation::NotifyFinish(
+void OperationRegistry::Operation::NotifyFinish(
     OperationTransferState status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(progress_status_.transfer_state >= OPERATION_STARTED);
@@ -123,14 +123,14 @@ void GDataOperationRegistry::Operation::NotifyFinish(
   registry_->OnOperationFinish(progress_status().operation_id);
 }
 
-void GDataOperationRegistry::Operation::NotifySuspend() {
+void OperationRegistry::Operation::NotifySuspend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(progress_status_.transfer_state >= OPERATION_STARTED);
   progress_status_.transfer_state = OPERATION_SUSPENDED;
   registry_->OnOperationSuspend(progress_status().operation_id);
 }
 
-void GDataOperationRegistry::Operation::NotifyResume() {
+void OperationRegistry::Operation::NotifyResume() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (progress_status_.transfer_state == OPERATION_NOT_STARTED) {
     progress_status_.transfer_state = OPERATION_IN_PROGRESS;
@@ -138,33 +138,33 @@ void GDataOperationRegistry::Operation::NotifyResume() {
   }
 }
 
-void GDataOperationRegistry::Operation::NotifyAuthFailed() {
+void OperationRegistry::Operation::NotifyAuthFailed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registry_->OnOperationAuthFailed();
 }
 
-GDataOperationRegistry::GDataOperationRegistry()
+OperationRegistry::OperationRegistry()
     : do_notification_frequency_control_(true) {
   in_flight_operations_.set_check_on_null_data(true);
 }
 
-GDataOperationRegistry::~GDataOperationRegistry() {
+OperationRegistry::~OperationRegistry() {
   DCHECK(in_flight_operations_.IsEmpty());
 }
 
-void GDataOperationRegistry::AddObserver(Observer* observer) {
+void OperationRegistry::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void GDataOperationRegistry::RemoveObserver(Observer* observer) {
+void OperationRegistry::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void GDataOperationRegistry::DisableNotificationFrequencyControlForTest() {
+void OperationRegistry::DisableNotificationFrequencyControlForTest() {
   do_notification_frequency_control_ = false;
 }
 
-void GDataOperationRegistry::CancelAll() {
+void OperationRegistry::CancelAll() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (OperationIDMap::iterator iter(&in_flight_operations_);
@@ -178,7 +178,7 @@ void GDataOperationRegistry::CancelAll() {
   }
 }
 
-bool GDataOperationRegistry::CancelForFilePath(const FilePath& file_path) {
+bool OperationRegistry::CancelForFilePath(const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (OperationIDMap::iterator iter(&in_flight_operations_);
@@ -193,8 +193,8 @@ bool GDataOperationRegistry::CancelForFilePath(const FilePath& file_path) {
   return false;
 }
 
-void GDataOperationRegistry::OnOperationStart(
-    GDataOperationRegistry::Operation* operation,
+void OperationRegistry::OnOperationStart(
+    OperationRegistry::Operation* operation,
     OperationID* id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -204,7 +204,7 @@ void GDataOperationRegistry::OnOperationStart(
     NotifyStatusToObservers();
 }
 
-void GDataOperationRegistry::OnOperationProgress(OperationID id) {
+void OperationRegistry::OnOperationProgress(OperationID id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Operation* operation = in_flight_operations_.Lookup(id);
@@ -216,7 +216,7 @@ void GDataOperationRegistry::OnOperationProgress(OperationID id) {
     NotifyStatusToObservers();
 }
 
-void GDataOperationRegistry::OnOperationFinish(OperationID id) {
+void OperationRegistry::OnOperationFinish(OperationID id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Operation* operation = in_flight_operations_.Lookup(id);
@@ -228,9 +228,9 @@ void GDataOperationRegistry::OnOperationFinish(OperationID id) {
   in_flight_operations_.Remove(id);
 }
 
-void GDataOperationRegistry::OnOperationResume(
-    GDataOperationRegistry::Operation* operation,
-    GDataOperationRegistry::ProgressStatus* new_status) {
+void OperationRegistry::OnOperationResume(
+    OperationRegistry::Operation* operation,
+    OperationRegistry::ProgressStatus* new_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Find the corresponding suspended task.
@@ -265,7 +265,7 @@ void GDataOperationRegistry::OnOperationResume(
     NotifyStatusToObservers();
 }
 
-void GDataOperationRegistry::OnOperationSuspend(OperationID id) {
+void OperationRegistry::OnOperationSuspend(OperationID id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Operation* operation = in_flight_operations_.Lookup(id);
@@ -276,21 +276,21 @@ void GDataOperationRegistry::OnOperationSuspend(OperationID id) {
     NotifyStatusToObservers();
 }
 
-void GDataOperationRegistry::OnOperationAuthFailed() {
+void OperationRegistry::OnOperationAuthFailed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "GDataOperation authentication failed.";
   FOR_EACH_OBSERVER(Observer, observer_list_, OnAuthenticationFailed());
 }
 
-bool GDataOperationRegistry::IsFileTransferOperation(
+bool OperationRegistry::IsFileTransferOperation(
     const Operation* operation) const {
   OperationType type = operation->progress_status().operation_type;
   return type == OPERATION_UPLOAD || type == OPERATION_DOWNLOAD;
 }
 
-GDataOperationRegistry::ProgressStatusList
-GDataOperationRegistry::GetProgressStatusList() {
+OperationRegistry::ProgressStatusList
+OperationRegistry::GetProgressStatusList() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProgressStatusList status_list;
@@ -304,7 +304,7 @@ GDataOperationRegistry::GetProgressStatusList() {
   return status_list;
 }
 
-bool GDataOperationRegistry::ShouldNotifyStatusNow(
+bool OperationRegistry::ShouldNotifyStatusNow(
     const ProgressStatusList& list) {
   if (!do_notification_frequency_control_)
     return true;
@@ -339,7 +339,7 @@ bool GDataOperationRegistry::ShouldNotifyStatusNow(
   return false;
 }
 
-void GDataOperationRegistry::NotifyStatusToObservers() {
+void OperationRegistry::NotifyStatusToObservers() {
   ProgressStatusList list(GetProgressStatusList());
   if (ShouldNotifyStatusNow(list))
     FOR_EACH_OBSERVER(Observer, observer_list_, OnProgressUpdate(list));

@@ -214,7 +214,7 @@ ResumeUploadParams::~ResumeUploadParams() {
 //============================ GetDocumentsOperation ===========================
 
 GetDocumentsOperation::GetDocumentsOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GURL& url,
     int start_changestamp,
     const std::string& search_string,
@@ -255,7 +255,7 @@ GURL GetDocumentsOperation::GetURL() const {
 //============================ GetDocumentEntryOperation =======================
 
 GetDocumentEntryOperation::GetDocumentEntryOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const std::string& resource_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
@@ -273,7 +273,7 @@ GURL GetDocumentEntryOperation::GetURL() const {
 //========================= GetAccountMetadataOperation ========================
 
 GetAccountMetadataOperation::GetAccountMetadataOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback) {
 }
@@ -287,14 +287,14 @@ GURL GetAccountMetadataOperation::GetURL() const {
 //============================ DownloadFileOperation ===========================
 
 DownloadFileOperation::DownloadFileOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
     const GURL& document_url,
     const FilePath& virtual_path,
     const FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
-                            GDataOperationRegistry::OPERATION_DOWNLOAD,
+                            OperationRegistry::OPERATION_DOWNLOAD,
                             virtual_path),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
@@ -354,7 +354,7 @@ void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 //=========================== DeleteDocumentOperation ==========================
 
 DeleteDocumentOperation::DeleteDocumentOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const EntryActionCallback& callback,
     const GURL& document_url)
     : EntryActionOperation(registry, callback, document_url) {
@@ -380,7 +380,7 @@ DeleteDocumentOperation::GetExtraRequestHeaders() const {
 //========================== CreateDirectoryOperation ==========================
 
 CreateDirectoryOperation::CreateDirectoryOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GetDataCallback& callback,
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name)
@@ -431,7 +431,7 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
 //============================ CopyDocumentOperation ===========================
 
 CopyDocumentOperation::CopyDocumentOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GetDataCallback& callback,
     const std::string& resource_id,
     const FilePath::StringType& new_name)
@@ -472,7 +472,7 @@ bool CopyDocumentOperation::GetContentData(std::string* upload_content_type,
 //=========================== RenameResourceOperation ==========================
 
 RenameResourceOperation::RenameResourceOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const EntryActionCallback& callback,
     const GURL& document_url,
     const FilePath::StringType& new_name)
@@ -518,7 +518,7 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
 //=========================== AuthorizeAppOperation ==========================
 
 AuthorizeAppsOperation::AuthorizeAppsOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GetDataCallback& callback,
     const GURL& document_url,
     const std::string& app_id)
@@ -607,7 +607,7 @@ GURL AuthorizeAppsOperation::GetURL() const {
 //======================= AddResourceToDirectoryOperation ======================
 
 AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
     const GURL& document_url)
@@ -650,7 +650,7 @@ bool AddResourceToDirectoryOperation::GetContentData(
 //==================== RemoveResourceFromDirectoryOperation ====================
 
 RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const EntryActionCallback& callback,
     const GURL& parent_content_url,
     const GURL& document_url,
@@ -686,11 +686,11 @@ RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
 //=========================== InitiateUploadOperation ==========================
 
 InitiateUploadOperation::InitiateUploadOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const InitiateUploadCallback& callback,
     const InitiateUploadParams& params)
     : UrlFetchOperationBase(registry,
-                            GDataOperationRegistry::OPERATION_UPLOAD,
+                            OperationRegistry::OPERATION_UPLOAD,
                             params.virtual_path),
       callback_(callback),
       params_(params),
@@ -791,11 +791,11 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
 //============================ ResumeUploadOperation ===========================
 
 ResumeUploadOperation::ResumeUploadOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const ResumeUploadCallback& callback,
     const ResumeUploadParams& params)
   : UrlFetchOperationBase(registry,
-                          GDataOperationRegistry::OPERATION_UPLOAD,
+                          OperationRegistry::OPERATION_UPLOAD,
                           params.virtual_path),
       callback_(callback),
       params_(params),
@@ -879,7 +879,7 @@ void ResumeUploadOperation::NotifyStartToOperationRegistry() {
 
 void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
   if (last_chunk_completed_)
-    NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+    NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   else
     NotifySuspend();
 }
@@ -938,7 +938,7 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
 //========================== GetContactGroupsOperation =========================
 
 GetContactGroupsOperation::GetContactGroupsOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback) {
 }
@@ -953,7 +953,7 @@ GURL GetContactGroupsOperation::GetURL() const {
 
 //============================ GetContactsOperation ============================
 
-GetContactsOperation::GetContactsOperation(GDataOperationRegistry* registry,
+GetContactsOperation::GetContactsOperation(OperationRegistry* registry,
                                            const std::string& group_id,
                                            const base::Time& min_update_time,
                                            const GetDataCallback& callback)
@@ -985,7 +985,7 @@ GURL GetContactsOperation::GetURL() const {
 //========================== GetContactPhotoOperation ==========================
 
 GetContactPhotoOperation::GetContactPhotoOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GURL& photo_url,
     const GetContentCallback& callback)
     : UrlFetchOperationBase(registry),

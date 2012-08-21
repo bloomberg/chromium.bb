@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -59,7 +59,7 @@ using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
 using file_handler_util::FileTaskExecutor;
-using gdata::GDataOperationRegistry;
+using gdata::OperationRegistry;
 
 #define FILEBROWSER_EXTENSON_ID "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_EXTENSON_ID;
@@ -181,7 +181,7 @@ std::string GetDialogTypeAsString(
 DictionaryValue* ProgessStatusToDictionaryValue(
     Profile* profile,
     const GURL& origin_url,
-    const GDataOperationRegistry::ProgressStatus& status) {
+    const OperationRegistry::ProgressStatus& status) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
@@ -193,10 +193,10 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   }
 
   result->SetString("transferState",
-      GDataOperationRegistry::OperationTransferStateToString(
+      OperationRegistry::OperationTransferStateToString(
           status.transfer_state));
   result->SetString("transferType",
-      GDataOperationRegistry::OperationTypeToString(status.operation_type));
+      OperationRegistry::OperationTypeToString(status.operation_type));
   result->SetInteger("processed", static_cast<int>(status.progress_current));
   result->SetInteger("total", static_cast<int>(status.progress_total));
   return result.release();
@@ -713,10 +713,10 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension) {
 
 ListValue* ProgressStatusVectorToListValue(
     Profile* profile, const GURL& origin_url,
-    const std::vector<GDataOperationRegistry::ProgressStatus>& list) {
+    const std::vector<OperationRegistry::ProgressStatus>& list) {
   scoped_ptr<ListValue> result_list(new ListValue());
   for (std::vector<
-          GDataOperationRegistry::ProgressStatus>::const_iterator iter =
+          OperationRegistry::ProgressStatus>::const_iterator iter =
               list.begin();
        iter != list.end(); ++iter) {
     result_list->Append(

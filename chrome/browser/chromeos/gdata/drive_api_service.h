@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/gdata/auth_service.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
 class FilePath;
@@ -20,7 +20,7 @@ class Profile;
 
 namespace gdata {
 
-class GDataOperationRunner;
+class OperationRunner;
 
 // This class provides documents feed service calls for Drive V2 API.
 // Details of API call are abstracted in each operation class and this class
@@ -34,7 +34,7 @@ class DriveAPIService : public DriveServiceInterface {
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
-  virtual GDataOperationRegistry* operation_registry() const OVERRIDE;
+  virtual OperationRegistry* operation_registry() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
@@ -110,7 +110,7 @@ class DriveAPIService : public DriveServiceInterface {
                            const GetDataCallback& callback);
 
   Profile* profile_;
-  scoped_ptr<GDataOperationRunner> runner_;
+  scoped_ptr<OperationRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_AUTH_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_AUTH_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_AUTH_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_AUTH_SERVICE_H_
 
 #include <string>
 
@@ -21,13 +21,13 @@ class Profile;
 
 namespace gdata {
 
-class GDataOperationRegistry;
+class OperationRegistry;
 
-// This class provides authentication for GData based services.
+// This class provides authentication for Google services.
 // It integrates specific service integration with OAuth2 stack
 // (TokenService) and provides OAuth2 token refresh infrastructure.
 // All public functions must be called on UI thread.
-class GDataAuthService : public content::NotificationObserver {
+class AuthService : public content::NotificationObserver {
  public:
   class Observer {
    public:
@@ -38,8 +38,8 @@ class GDataAuthService : public content::NotificationObserver {
     virtual ~Observer() {}
   };
 
-  GDataAuthService();
-  virtual ~GDataAuthService();
+  AuthService();
+  virtual ~AuthService();
 
   // Adds and removes the observer. AddObserver() should be called before
   // Initialize() as it can change the refresh token.
@@ -51,7 +51,7 @@ class GDataAuthService : public content::NotificationObserver {
   void Initialize(Profile* profile);
 
   // Starts fetching OAuth2 auth token from the refresh token.
-  void StartAuthentication(GDataOperationRegistry* registry,
+  void StartAuthentication(OperationRegistry* registry,
                            const AuthStatusCallback& callback);
 
   // True if an OAuth2 access token is retrieved and believed to be fresh.
@@ -88,7 +88,7 @@ class GDataAuthService : public content::NotificationObserver {
  private:
   // Helper function for StartAuthentication() call.
   void StartAuthenticationOnUIThread(
-      GDataOperationRegistry* registry,
+      OperationRegistry* registry,
       scoped_refptr<base::MessageLoopProxy> relay_proxy,
       const AuthStatusCallback& callback);
 
@@ -101,11 +101,11 @@ class GDataAuthService : public content::NotificationObserver {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataAuthService> weak_ptr_factory_;
+  base::WeakPtrFactory<AuthService> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataAuthService);
+  DISALLOW_COPY_AND_ASSIGN(AuthService);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_AUTH_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_AUTH_SERVICE_H_

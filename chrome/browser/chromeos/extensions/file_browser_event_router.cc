@@ -413,7 +413,7 @@ void FileBrowserEventRouter::Observe(
 }
 
 void FileBrowserEventRouter::OnProgressUpdate(
-    const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list) {
+    const std::vector<gdata::OperationRegistry::ProgressStatus>& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<ListValue> event_list(

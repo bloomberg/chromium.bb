@@ -23,10 +23,10 @@
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -68,8 +68,8 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
-using gdata::GDataOperationRegistry;
 using gdata::InstalledApp;
+using gdata::OperationRegistry;
 
 namespace {
 
@@ -2106,7 +2106,7 @@ ListValue* GetFileTransfersFunction::GetFileTransfersList() {
   if (!system_service)
     return NULL;
 
-  std::vector<gdata::GDataOperationRegistry::ProgressStatus>
+  std::vector<gdata::OperationRegistry::ProgressStatus>
       list = system_service->drive_service()->operation_registry()->
       GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
@@ -2163,7 +2163,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  gdata::GDataOperationRegistry* operation_registry =
+  gdata::OperationRegistry* operation_registry =
       system_service->drive_service()->operation_registry();
 
   scoped_ptr<ListValue> responses(new ListValue());

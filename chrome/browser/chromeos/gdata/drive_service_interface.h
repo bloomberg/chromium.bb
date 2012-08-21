@@ -17,7 +17,7 @@ class Profile;
 
 namespace gdata {
 
-class GDataOperationRegistry;
+class OperationRegistry;
 
 // Document export format.
 enum DocumentExportFormat {
@@ -59,7 +59,7 @@ class DriveServiceInterface {
   virtual void Initialize(Profile* profile) = 0;
 
   // Retrieves the operation registry.
-  virtual GDataOperationRegistry* operation_registry() const = 0;
+  virtual OperationRegistry* operation_registry() const = 0;
 
   // Cancels all in-flight operations.
   virtual void CancelAll() = 0;

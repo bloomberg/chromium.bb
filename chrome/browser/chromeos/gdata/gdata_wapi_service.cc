@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/gdata/drive_api_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/operation_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,18 +69,18 @@ GDataWapiService::~GDataWapiService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-GDataAuthService* GDataWapiService::auth_service_for_testing() {
+AuthService* GDataWapiService::auth_service_for_testing() {
   return runner_->auth_service();
 }
 
 void GDataWapiService::Initialize(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
-  runner_.reset(new GDataOperationRunner(profile));
+  runner_.reset(new OperationRunner(profile));
   runner_->Initialize();
 }
 
-GDataOperationRegistry* GDataWapiService::operation_registry() const {
+OperationRegistry* GDataWapiService::operation_registry() const {
   return runner_->operation_registry();
 }
 

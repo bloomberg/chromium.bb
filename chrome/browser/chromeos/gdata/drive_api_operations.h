@@ -18,7 +18,7 @@ namespace gdata {
 // This class performs the operation for fetching About data.
 class GetAboutOperation : public GetDataOperation {
  public:
-  GetAboutOperation(GDataOperationRegistry* registry,
+  GetAboutOperation(OperationRegistry* registry,
                     const GetDataCallback& callback);
   virtual ~GetAboutOperation();
 
@@ -35,7 +35,7 @@ class GetAboutOperation : public GetDataOperation {
 // This class performs the operation for fetching Applist.
 class GetApplistOperation : public GetDataOperation {
  public:
-  GetApplistOperation(GDataOperationRegistry* registry,
+  GetApplistOperation(OperationRegistry* registry,
                       const GetDataCallback& callback);
   virtual ~GetApplistOperation();
 
@@ -57,7 +57,7 @@ class GetChangelistOperation : public GetDataOperation {
   // |url| specifies URL for document feed fetching operation. If empty URL is
   // passed, the default URL is used and returns the first page of the result.
   // When non-first page result is requested, |url| should be specified.
-  GetChangelistOperation(GDataOperationRegistry* registry,
+  GetChangelistOperation(OperationRegistry* registry,
                          const GURL& url,
                          int64 start_changestamp,
                          const GetDataCallback& callback);
@@ -79,7 +79,7 @@ class GetChangelistOperation : public GetDataOperation {
 // This class performs the operation for fetching Filelist.
 class GetFilelistOperation : public GetDataOperation {
  public:
-  GetFilelistOperation(GDataOperationRegistry* registry,
+  GetFilelistOperation(OperationRegistry* registry,
                        const GURL& url,
                        const std::string& search_string,
                        const GetDataCallback& callback);
@@ -101,7 +101,7 @@ class GetFilelistOperation : public GetDataOperation {
 // This class performs the operation for fetching a file.
 class GetFileOperation : public GetDataOperation {
  public:
-  GetFileOperation(GDataOperationRegistry* registry,
+  GetFileOperation(OperationRegistry* registry,
                    const std::string& file_id,
                    const GetDataCallback& callback);
   virtual ~GetFileOperation();

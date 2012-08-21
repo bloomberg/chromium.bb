@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -17,72 +17,72 @@ namespace gdata {
 
 namespace {
 
-class MockOperation : public GDataOperationRegistry::Operation,
+class MockOperation : public OperationRegistry::Operation,
                       public base::SupportsWeakPtr<MockOperation> {
  public:
-  MockOperation(GDataOperationRegistry* registry,
-                GDataOperationRegistry::OperationType type,
+  MockOperation(OperationRegistry* registry,
+                OperationRegistry::OperationType type,
                 const FilePath& path)
-      : GDataOperationRegistry::Operation(registry, type, path) {}
+      : OperationRegistry::Operation(registry, type, path) {}
 
   MOCK_METHOD0(DoCancel, void());
 
   // Make them public so that they can be called from test cases.
-  using GDataOperationRegistry::Operation::NotifyStart;
-  using GDataOperationRegistry::Operation::NotifyProgress;
-  using GDataOperationRegistry::Operation::NotifyFinish;
+  using OperationRegistry::Operation::NotifyStart;
+  using OperationRegistry::Operation::NotifyProgress;
+  using OperationRegistry::Operation::NotifyFinish;
 };
 
 class MockUploadOperation : public MockOperation {
  public:
-  explicit MockUploadOperation(GDataOperationRegistry* registry)
+  explicit MockUploadOperation(OperationRegistry* registry)
       : MockOperation(registry,
-                      GDataOperationRegistry::OPERATION_UPLOAD,
+                      OperationRegistry::OPERATION_UPLOAD,
                       FilePath("/dummy/upload")) {}
 };
 
 class MockDownloadOperation : public MockOperation {
  public:
-  explicit MockDownloadOperation(GDataOperationRegistry* registry)
+  explicit MockDownloadOperation(OperationRegistry* registry)
       : MockOperation(registry,
-                      GDataOperationRegistry::OPERATION_DOWNLOAD,
+                      OperationRegistry::OPERATION_DOWNLOAD,
                       FilePath("/dummy/download")) {}
 };
 
 class MockOtherOperation : public MockOperation {
  public:
-  explicit MockOtherOperation(GDataOperationRegistry* registry)
+  explicit MockOtherOperation(OperationRegistry* registry)
       : MockOperation(registry,
-                      GDataOperationRegistry::OPERATION_OTHER,
+                      OperationRegistry::OPERATION_OTHER,
                       FilePath("/dummy/other")) {}
 };
 
-class TestObserver : public GDataOperationRegistry::Observer {
+class TestObserver : public OperationRegistry::Observer {
  public:
   virtual void OnProgressUpdate(
-      const std::vector<GDataOperationRegistry::ProgressStatus>& list)
+      const std::vector<OperationRegistry::ProgressStatus>& list)
       OVERRIDE {
     status_ = list;
   }
 
-  const std::vector<GDataOperationRegistry::ProgressStatus>& status() const {
+  const std::vector<OperationRegistry::ProgressStatus>& status() const {
     return status_;
   }
 
  private:
-  std::vector<GDataOperationRegistry::ProgressStatus> status_;
+  std::vector<OperationRegistry::ProgressStatus> status_;
 };
 
 class ProgressMatcher
     : public ::testing::MatcherInterface<
-        const GDataOperationRegistry::ProgressStatus&> {
+        const OperationRegistry::ProgressStatus&> {
  public:
   ProgressMatcher(int64 expected_current, int64 expected_total)
       : expected_current_(expected_current),
         expected_total_(expected_total) {}
 
   virtual bool MatchAndExplain(
-      const GDataOperationRegistry::ProgressStatus& status,
+      const OperationRegistry::ProgressStatus& status,
       testing::MatchResultListener* /* listener */) const OVERRIDE {
     return status.progress_current == expected_current_ &&
         status.progress_total == expected_total_;
@@ -103,7 +103,7 @@ class ProgressMatcher
   const int64 expected_total_;
 };
 
-testing::Matcher<const GDataOperationRegistry::ProgressStatus&> Progress(
+testing::Matcher<const OperationRegistry::ProgressStatus&> Progress(
     int64 current, int64 total) {
   return testing::MakeMatcher(new ProgressMatcher(current, total));
 }
@@ -112,22 +112,22 @@ testing::Matcher<const GDataOperationRegistry::ProgressStatus&> Progress(
 
 // Pretty-prints ProgressStatus for testing purpose.
 std::ostream& operator<<(std::ostream& os,
-                         const GDataOperationRegistry::ProgressStatus& status) {
+                         const OperationRegistry::ProgressStatus& status) {
   return os << status.DebugString();
 }
 
-class GDataOperationRegistryTest : public testing::Test {
+class OperationRegistryTest : public testing::Test {
  protected:
-  GDataOperationRegistryTest()
+  OperationRegistryTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 
-TEST_F(GDataOperationRegistryTest, OneSuccess) {
+TEST_F(OperationRegistryTest, OneSuccess) {
   TestObserver observer;
-  GDataOperationRegistry registry;
+  OperationRegistry registry;
   registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
@@ -142,7 +142,7 @@ TEST_F(GDataOperationRegistryTest, OneSuccess) {
   EXPECT_THAT(observer.status(), ElementsAre(Progress(0, 100)));
   op1->NotifyProgress(100, 100);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(100, 100)));
-  op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  op1->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   // Contains one "COMPLETED" notification.
   EXPECT_THAT(observer.status(), ElementsAre(Progress(100, 100)));
   // Then it is removed.
@@ -150,9 +150,9 @@ TEST_F(GDataOperationRegistryTest, OneSuccess) {
   EXPECT_EQ(NULL, op1.get());  // deleted
 }
 
-TEST_F(GDataOperationRegistryTest, OneCancel) {
+TEST_F(OperationRegistryTest, OneCancel) {
   TestObserver observer;
-  GDataOperationRegistry registry;
+  OperationRegistry registry;
   registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
@@ -171,9 +171,9 @@ TEST_F(GDataOperationRegistryTest, OneCancel) {
   EXPECT_EQ(NULL, op1.get());  // deleted
 }
 
-TEST_F(GDataOperationRegistryTest, TwoSuccess) {
+TEST_F(OperationRegistryTest, TwoSuccess) {
   TestObserver observer;
-  GDataOperationRegistry registry;
+  OperationRegistry registry;
   registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
@@ -193,20 +193,20 @@ TEST_F(GDataOperationRegistryTest, TwoSuccess) {
   op1->NotifyProgress(50, 100);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(50, 100),
                                              Progress(0, 200)));
-  op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  op1->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(50, 100),
                                              Progress(0, 200)));
   EXPECT_EQ(1U, registry.GetProgressStatusList().size());
-  op2->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  op2->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(0, 200)));
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get());  // deleted
   EXPECT_EQ(NULL, op2.get());  // deleted
 }
 
-TEST_F(GDataOperationRegistryTest, ThreeCancel) {
+TEST_F(OperationRegistryTest, ThreeCancel) {
   TestObserver observer;
-  GDataOperationRegistry registry;
+  OperationRegistry registry;
   registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
@@ -235,9 +235,9 @@ TEST_F(GDataOperationRegistryTest, ThreeCancel) {
   EXPECT_EQ(NULL, op3.get());  // deleted. CancelAll cares all operations.
 }
 
-TEST_F(GDataOperationRegistryTest, RestartOperation) {
+TEST_F(OperationRegistryTest, RestartOperation) {
   TestObserver observer;
-  GDataOperationRegistry registry;
+  OperationRegistry registry;
   registry.DisableNotificationFrequencyControlForTest();
   registry.AddObserver(&observer);
 
@@ -250,7 +250,7 @@ TEST_F(GDataOperationRegistryTest, RestartOperation) {
   op1->NotifyStart();  // restart
   EXPECT_EQ(1U, registry.GetProgressStatusList().size());
   op1->NotifyProgress(0, 200);
-  op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  op1->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get());  // deleted
 }

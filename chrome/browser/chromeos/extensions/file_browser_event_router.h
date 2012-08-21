@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "content/public/browser/notification_details.h"
@@ -35,7 +35,7 @@ class FileBrowserEventRouter
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver,
-      public gdata::GDataOperationRegistry::Observer,
+      public gdata::OperationRegistry::Observer,
       public gdata::GDataFileSystemInterface::Observer {
  public:
   // RefcountedProfileKeyedService overrides.
@@ -77,9 +77,9 @@ class FileBrowserEventRouter
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // GDataOperationRegistry::Observer overrides.
+  // OperationRegistry::Observer overrides.
   virtual void OnProgressUpdate(
-      const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list)
+      const std::vector<gdata::OperationRegistry::ProgressStatus>& list)
           OVERRIDE;
   virtual void OnAuthenticationFailed() OVERRIDE;
 

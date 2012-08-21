@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATION_REGISTRY_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATION_REGISTRY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_OPERATION_REGISTRY_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_OPERATION_REGISTRY_H_
 
 #include <string>
 #include <vector>
@@ -18,10 +18,10 @@ namespace gdata {
 
 // This class tracks all the in-flight GData operation objects and manage their
 // lifetime.
-class GDataOperationRegistry {
+class OperationRegistry {
  public:
-  GDataOperationRegistry();
-  ~GDataOperationRegistry();
+  OperationRegistry();
+  ~OperationRegistry();
 
   // Unique ID to identify each operation.
   typedef int32 OperationID;
@@ -90,8 +90,8 @@ class GDataOperationRegistry {
   // Operation object itself.
   class Operation {
    public:
-    explicit Operation(GDataOperationRegistry* registry);
-    Operation(GDataOperationRegistry* registry,
+    explicit Operation(OperationRegistry* registry);
+    Operation(OperationRegistry* registry,
               OperationType type,
               const FilePath& file_path);
     virtual ~Operation();
@@ -124,7 +124,7 @@ class GDataOperationRegistry {
     // Does the cancellation.
     virtual void DoCancel() = 0;
 
-    GDataOperationRegistry* const registry_;
+    OperationRegistry* const registry_;
     ProgressStatus progress_status_;
   };
 
@@ -173,9 +173,9 @@ class GDataOperationRegistry {
   base::Time last_notification_;
   bool do_notification_frequency_control_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataOperationRegistry);
+  DISALLOW_COPY_AND_ASSIGN(OperationRegistry);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_OPERATION_REGISTRY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_OPERATION_REGISTRY_H_

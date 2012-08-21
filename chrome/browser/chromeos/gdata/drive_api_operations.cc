@@ -26,7 +26,7 @@ namespace gdata {
 
 //============================== GetAboutOperation =============================
 
-GetAboutOperation::GetAboutOperation(GDataOperationRegistry* registry,
+GetAboutOperation::GetAboutOperation(OperationRegistry* registry,
                                      const GetDataCallback& callback)
     : GetDataOperation(registry, callback) {}
 
@@ -38,7 +38,7 @@ GURL GetAboutOperation::GetURL() const {
 
 //============================== GetApplistOperation ===========================
 
-GetApplistOperation::GetApplistOperation(GDataOperationRegistry* registry,
+GetApplistOperation::GetApplistOperation(OperationRegistry* registry,
                                          const GetDataCallback& callback)
     : GetDataOperation(registry, callback) {}
 
@@ -51,7 +51,7 @@ GURL GetApplistOperation::GetURL() const {
 //============================ GetChangelistOperation ==========================
 
 GetChangelistOperation::GetChangelistOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GURL& url,
     int64 start_changestamp,
     const GetDataCallback& callback)
@@ -74,7 +74,7 @@ GURL GetChangelistOperation::GetURL() const {
 //============================= GetFlielistOperation ===========================
 
 GetFilelistOperation::GetFilelistOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const GURL& url,
     const std::string& search_string,
     const GetDataCallback& callback)
@@ -98,7 +98,7 @@ GURL GetFilelistOperation::GetURL() const {
 //=============================== GetFlieOperation =============================
 
 GetFileOperation::GetFileOperation(
-    GDataOperationRegistry* registry,
+    OperationRegistry* registry,
     const std::string& file_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),

@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
@@ -28,10 +28,10 @@ typedef base::Callback<void(GDataErrorCode error,
                             const std::string& token)> AuthStatusCallback;
 
 // OAuth2 authorization token retrieval operation.
-class AuthOperation : public GDataOperationRegistry::Operation,
+class AuthOperation : public OperationRegistry::Operation,
                       public OAuth2AccessTokenConsumer {
  public:
-  AuthOperation(GDataOperationRegistry* registry,
+  AuthOperation(OperationRegistry* registry,
                 const AuthStatusCallback& callback,
                 const std::string& refresh_token);
   virtual ~AuthOperation();
@@ -42,7 +42,7 @@ class AuthOperation : public GDataOperationRegistry::Operation,
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // Overridden from GDataOpertionRegistry::Operation
+  // Overridden from OperationRegistry::Operation
   virtual void DoCancel() OVERRIDE;
 
  private:
@@ -86,7 +86,7 @@ typedef base::Callback<void(
 
 // Base class for operations that are fetching URLs.
 class UrlFetchOperationBase : public GDataOperationInterface,
-                              public GDataOperationRegistry::Operation,
+                              public OperationRegistry::Operation,
                               public net::URLFetcherDelegate {
  public:
   // Overridden from GDataOperationInterface.
@@ -97,9 +97,9 @@ class UrlFetchOperationBase : public GDataOperationInterface,
       const ReAuthenticateCallback& callback) OVERRIDE;
 
  protected:
-  explicit UrlFetchOperationBase(GDataOperationRegistry* registry);
-  UrlFetchOperationBase(GDataOperationRegistry* registry,
-                        GDataOperationRegistry::OperationType type,
+  UrlFetchOperationBase(OperationRegistry* registry);
+  UrlFetchOperationBase(OperationRegistry* registry,
+                        OperationRegistry::OperationType type,
                         const FilePath& path);
   virtual ~UrlFetchOperationBase();
 
@@ -131,7 +131,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   // an user operation. Must be implemented by a derived class.
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) = 0;
 
-  // Implement GDataOperationRegistry::Operation
+  // Implement OperationRegistry::Operation
   virtual void DoCancel() OVERRIDE;
 
   // Overridden from URLFetcherDelegate.
@@ -168,7 +168,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // It is meant to be used for operations that return no JSON blobs.
 class EntryActionOperation : public UrlFetchOperationBase {
  public:
-  EntryActionOperation(GDataOperationRegistry* registry,
+  EntryActionOperation(OperationRegistry* registry,
                        const EntryActionCallback& callback,
                        const GURL& document_url);
   virtual ~EntryActionOperation();
@@ -198,7 +198,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // This class performs the operation for fetching and parsing JSON data content.
 class GetDataOperation : public UrlFetchOperationBase {
  public:
-  GetDataOperation(GDataOperationRegistry* registry,
+  GetDataOperation(OperationRegistry* registry,
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
 

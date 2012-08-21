@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
+#include "chrome/browser/chromeos/gdata/auth_service.h"
 
 #include <string>
 
@@ -23,7 +23,7 @@ using content::BrowserThread;
 
 namespace gdata {
 
-void GDataAuthService::Initialize(Profile* profile) {
+void AuthService::Initialize(Profile* profile) {
   profile_ = profile;
   // Get OAuth2 refresh token (if we have any) and register for its updates.
   TokenService* service = TokenServiceFactory::GetForProfile(profile_);
@@ -39,17 +39,17 @@ void GDataAuthService::Initialize(Profile* profile) {
     FOR_EACH_OBSERVER(Observer, observers_, OnOAuth2RefreshTokenChanged());
 }
 
-GDataAuthService::GDataAuthService()
+AuthService::AuthService()
     : profile_(NULL),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-GDataAuthService::~GDataAuthService() {
+AuthService::~AuthService() {
 }
 
-void GDataAuthService::StartAuthentication(
-    GDataOperationRegistry* registry,
+void AuthService::StartAuthentication(
+    OperationRegistry* registry,
     const AuthStatusCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> relay_proxy(
       base::MessageLoopProxy::current());
@@ -61,11 +61,11 @@ void GDataAuthService::StartAuthentication(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&GDataAuthService::StartAuthenticationOnUIThread,
+        base::Bind(&AuthService::StartAuthenticationOnUIThread,
                    weak_ptr_factory_.GetWeakPtr(),
                    registry,
                    relay_proxy,
-                   base::Bind(&GDataAuthService::OnAuthCompleted,
+                   base::Bind(&AuthService::OnAuthCompleted,
                               weak_ptr_factory_.GetWeakPtr(),
                               relay_proxy,
                               callback)));
@@ -75,8 +75,8 @@ void GDataAuthService::StartAuthentication(
   }
 }
 
-void GDataAuthService::StartAuthenticationOnUIThread(
-    GDataOperationRegistry* registry,
+void AuthService::StartAuthenticationOnUIThread(
+    OperationRegistry* registry,
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -84,7 +84,7 @@ void GDataAuthService::StartAuthenticationOnUIThread(
   (new AuthOperation(registry, callback, refresh_token_))->Start();
 }
 
-void GDataAuthService::OnAuthCompleted(
+void AuthService::OnAuthCompleted(
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const AuthStatusCallback& callback,
     GDataErrorCode error,
@@ -99,17 +99,17 @@ void GDataAuthService::OnAuthCompleted(
     relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, access_token));
 }
 
-void GDataAuthService::AddObserver(Observer* observer) {
+void AuthService::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void GDataAuthService::RemoveObserver(Observer* observer) {
+void AuthService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void GDataAuthService::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
+void AuthService::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE ||
          type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED);
 

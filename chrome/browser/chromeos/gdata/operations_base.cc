@@ -83,10 +83,10 @@ namespace gdata {
 
 //================================ AuthOperation ===============================
 
-AuthOperation::AuthOperation(GDataOperationRegistry* registry,
+AuthOperation::AuthOperation(OperationRegistry* registry,
                              const AuthStatusCallback& callback,
                              const std::string& refresh_token)
-    : GDataOperationRegistry::Operation(registry),
+    : OperationRegistry::Operation(registry),
       refresh_token_(refresh_token), callback_(callback) {
 }
 
@@ -133,7 +133,7 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
                             kSuccessRatioHistogramMaxValue);
 
   callback_.Run(HTTP_SUCCESS, access_token);
-  NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
@@ -157,23 +157,23 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
                               kSuccessRatioHistogramMaxValue);
     callback_.Run(HTTP_UNAUTHORIZED, std::string());
   }
-  NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+  NotifyFinish(OperationRegistry::OPERATION_FAILED);
 }
 
 //============================ UrlFetchOperationBase ===========================
 
-UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry)
-    : GDataOperationRegistry::Operation(registry),
+UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry)
+    : OperationRegistry::Operation(registry),
       re_authenticate_count_(0),
       save_temp_file_(false),
       started_(false) {
 }
 
 UrlFetchOperationBase::UrlFetchOperationBase(
-    GDataOperationRegistry* registry,
-    GDataOperationRegistry::OperationType type,
+    OperationRegistry* registry,
+    OperationRegistry::OperationType type,
     const FilePath& path)
-    : GDataOperationRegistry::Operation(registry, type, path),
+    : OperationRegistry::Operation(registry, type, path),
       re_authenticate_count_(0),
       save_temp_file_(false) {
 }
@@ -269,7 +269,7 @@ void UrlFetchOperationBase::OnProcessURLFetchResultsComplete(bool result) {
   if (result)
     NotifySuccessToOperationRegistry();
   else
-    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+    NotifyFinish(OperationRegistry::OPERATION_FAILED);
 }
 
 void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
@@ -292,7 +292,7 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void UrlFetchOperationBase::NotifySuccessToOperationRegistry() {
-  NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
+  NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
 }
 
 void UrlFetchOperationBase::NotifyStartToOperationRegistry() {
@@ -312,9 +312,9 @@ void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
 
   // Note: NotifyFinish() must be invoked at the end, after all other callbacks
   // and notifications. Once NotifyFinish() is called, the current instance of
-  // gdata operation will be deleted from the GDataOperationRegistry and become
+  // gdata operation will be deleted from the OperationRegistry and become
   // invalid.
-  NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+  NotifyFinish(OperationRegistry::OPERATION_FAILED);
 }
 
 std::string UrlFetchOperationBase::GetResponseHeadersAsString(
@@ -337,7 +337,7 @@ std::string UrlFetchOperationBase::GetResponseHeadersAsString(
 
 //============================ EntryActionOperation ============================
 
-EntryActionOperation::EntryActionOperation(GDataOperationRegistry* registry,
+EntryActionOperation::EntryActionOperation(OperationRegistry* registry,
                                            const EntryActionCallback& callback,
                                            const GURL& document_url)
     : UrlFetchOperationBase(registry),
@@ -363,7 +363,7 @@ void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 
 //============================== GetDataOperation ==============================
 
-GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
+GetDataOperation::GetDataOperation(OperationRegistry* registry,
                                    const GetDataCallback& callback)
     : UrlFetchOperationBase(registry),
       callback_(callback),

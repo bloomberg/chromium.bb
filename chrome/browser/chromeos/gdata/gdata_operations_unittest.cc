@@ -6,8 +6,8 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
+#include "chrome/browser/chromeos/gdata/operation_runner.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -19,7 +19,7 @@ namespace {
 
 class JsonParseTestGetDataOperation : public GetDataOperation {
  public:
-  JsonParseTestGetDataOperation(GDataOperationRegistry* registry,
+  JsonParseTestGetDataOperation(OperationRegistry* registry,
                                 const GetDataCallback& callback)
       : GetDataOperation(registry, callback) {
   }
@@ -36,7 +36,7 @@ class JsonParseTestGetDataOperation : public GetDataOperation {
   }
 
   void NotifyFailure() {
-    NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+    NotifyFinish(OperationRegistry::OPERATION_FAILED);
   }
 
  protected:
@@ -67,7 +67,7 @@ class GDataOperationsTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
-    runner_.reset(new GDataOperationRunner(profile_.get()));
+    runner_.reset(new OperationRunner(profile_.get()));
     runner_->Initialize();
   }
 
@@ -75,7 +75,7 @@ class GDataOperationsTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<GDataOperationRunner> runner_;
+  scoped_ptr<OperationRunner> runner_;
 };
 
 TEST_F(GDataOperationsTest, GetDataOperationParseJson) {

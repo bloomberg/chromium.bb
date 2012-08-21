@@ -26,7 +26,7 @@ class GetDocumentsOperation : public GetDataOperation {
   // |url| specifies URL for documents feed fetching operation. If empty URL is
   // passed, the default URL is used and returns the first page of the result.
   // When non-first page result is requested, |url| should be specified.
-  GetDocumentsOperation(GDataOperationRegistry* registry,
+  GetDocumentsOperation(OperationRegistry* registry,
                         const GURL& url,
                         int start_changestamp,
                         const std::string& search_string,
@@ -52,7 +52,7 @@ class GetDocumentsOperation : public GetDataOperation {
 // This class performs the operation for fetching a single document entry.
 class GetDocumentEntryOperation : public GetDataOperation {
  public:
-  GetDocumentEntryOperation(GDataOperationRegistry* registry,
+  GetDocumentEntryOperation(OperationRegistry* registry,
                             const std::string& resource_id,
                             const GetDataCallback& callback);
   virtual ~GetDocumentEntryOperation();
@@ -73,7 +73,7 @@ class GetDocumentEntryOperation : public GetDataOperation {
 // This class performs the operation for fetching account metadata.
 class GetAccountMetadataOperation : public GetDataOperation {
  public:
-  GetAccountMetadataOperation(GDataOperationRegistry* registry,
+  GetAccountMetadataOperation(OperationRegistry* registry,
                               const GetDataCallback& callback);
   virtual ~GetAccountMetadataOperation();
 
@@ -97,7 +97,7 @@ typedef base::Callback<void(GDataErrorCode error,
 class DownloadFileOperation : public UrlFetchOperationBase {
  public:
   DownloadFileOperation(
-      GDataOperationRegistry* registry,
+      OperationRegistry* registry,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback,
       const GURL& document_url,
@@ -132,7 +132,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
 // This class performs the operation for deleting a document.
 class DeleteDocumentOperation : public EntryActionOperation {
  public:
-  DeleteDocumentOperation(GDataOperationRegistry* registry,
+  DeleteDocumentOperation(OperationRegistry* registry,
                           const EntryActionCallback& callback,
                           const GURL& document_url);
   virtual ~DeleteDocumentOperation();
@@ -155,7 +155,7 @@ class DeleteDocumentOperation : public EntryActionOperation {
 class CreateDirectoryOperation : public GetDataOperation {
  public:
   // Empty |parent_content_url| will create the directory in the root folder.
-  CreateDirectoryOperation(GDataOperationRegistry* registry,
+  CreateDirectoryOperation(OperationRegistry* registry,
                            const GetDataCallback& callback,
                            const GURL& parent_content_url,
                            const FilePath::StringType& directory_name);
@@ -182,7 +182,7 @@ class CreateDirectoryOperation : public GetDataOperation {
 // This class performs the operation for making a copy of a document.
 class CopyDocumentOperation : public GetDataOperation {
  public:
-  CopyDocumentOperation(GDataOperationRegistry* registry,
+  CopyDocumentOperation(OperationRegistry* registry,
                         const GetDataCallback& callback,
                         const std::string& resource_id,
                         const FilePath::StringType& new_name);
@@ -209,7 +209,7 @@ class CopyDocumentOperation : public GetDataOperation {
 // This class performs the operation for renaming a document/file/directory.
 class RenameResourceOperation : public EntryActionOperation {
  public:
-  RenameResourceOperation(GDataOperationRegistry* registry,
+  RenameResourceOperation(OperationRegistry* registry,
                           const EntryActionCallback& callback,
                           const GURL& document_url,
                           const FilePath::StringType& new_name);
@@ -236,10 +236,10 @@ class RenameResourceOperation : public EntryActionOperation {
 // This class performs the operation for renaming a document/file/directory.
 class AuthorizeAppsOperation : public GetDataOperation {
  public:
-  AuthorizeAppsOperation(GDataOperationRegistry* registry,
-                          const GetDataCallback& callback,
-                          const GURL& document_url,
-                          const std::string& app_ids);
+  AuthorizeAppsOperation(OperationRegistry* registry,
+                         const GetDataCallback& callback,
+                         const GURL& document_url,
+                         const std::string& app_ids);
   virtual ~AuthorizeAppsOperation();
 
  protected:
@@ -273,7 +273,7 @@ class AuthorizeAppsOperation : public GetDataOperation {
 // to a directory.
 class AddResourceToDirectoryOperation : public EntryActionOperation {
  public:
-  AddResourceToDirectoryOperation(GDataOperationRegistry* registry,
+  AddResourceToDirectoryOperation(OperationRegistry* registry,
                                   const EntryActionCallback& callback,
                                   const GURL& parent_content_url,
                                   const GURL& document_url);
@@ -298,7 +298,7 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 // from a directory.
 class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  public:
-  RemoveResourceFromDirectoryOperation(GDataOperationRegistry* registry,
+  RemoveResourceFromDirectoryOperation(OperationRegistry* registry,
                                        const EntryActionCallback& callback,
                                        const GURL& parent_content_url,
                                        const GURL& document_url,
@@ -354,7 +354,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // This class performs the operation for initiating the upload of a file.
 class InitiateUploadOperation : public UrlFetchOperationBase {
  public:
-  InitiateUploadOperation(GDataOperationRegistry* registry,
+  InitiateUploadOperation(OperationRegistry* registry,
                           const InitiateUploadCallback& callback,
                           const InitiateUploadParams& params);
   virtual ~InitiateUploadOperation();
@@ -416,8 +416,7 @@ struct ResumeUploadParams {
   scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
   GURL upload_location;   // Url of where to upload the file to.
   // Virtual GData path of the file seen in the UI. Not necessary for
-  // resuming an upload, but used for adding an entry to
-  // GDataOperationRegistry.
+  // resuming an upload, but used for adding an entry to OperationRegistry.
   FilePath virtual_path;
 };
 
@@ -429,7 +428,7 @@ typedef base::Callback<void(
 // This class performs the operation for resuming the upload of a file.
 class ResumeUploadOperation : public UrlFetchOperationBase {
  public:
-  ResumeUploadOperation(GDataOperationRegistry* registry,
+  ResumeUploadOperation(OperationRegistry* registry,
                         const ResumeUploadCallback& callback,
                         const ResumeUploadParams& params);
   virtual ~ResumeUploadOperation();
@@ -465,7 +464,7 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
 // This class fetches a JSON feed containing a user's contact groups.
 class GetContactGroupsOperation : public GetDataOperation {
  public:
-  GetContactGroupsOperation(GDataOperationRegistry* registry,
+  GetContactGroupsOperation(OperationRegistry* registry,
                             const GetDataCallback& callback);
   virtual ~GetContactGroupsOperation();
 
@@ -489,7 +488,7 @@ class GetContactGroupsOperation : public GetDataOperation {
 // This class fetches a JSON feed containing a user's contacts.
 class GetContactsOperation : public GetDataOperation {
  public:
-  GetContactsOperation(GDataOperationRegistry* registry,
+  GetContactsOperation(OperationRegistry* registry,
                        const std::string& group_id,
                        const base::Time& min_update_time,
                        const GetDataCallback& callback);
@@ -524,7 +523,7 @@ class GetContactsOperation : public GetDataOperation {
 // This class fetches a contact's photo.
 class GetContactPhotoOperation : public UrlFetchOperationBase {
  public:
-  GetContactPhotoOperation(GDataOperationRegistry* registry,
+  GetContactPhotoOperation(OperationRegistry* registry,
                            const GURL& photo_url,
                            const GetContentCallback& callback);
   virtual ~GetContactPhotoOperation();

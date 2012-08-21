@@ -19,10 +19,10 @@
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
+#include "chrome/browser/chromeos/gdata/operation_runner.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -418,7 +418,7 @@ struct ContactGroups {
 class GDataContactsService::DownloadContactsRequest {
  public:
   DownloadContactsRequest(GDataContactsService* service,
-                          GDataOperationRunner* runner,
+                          OperationRunner* runner,
                           SuccessCallback success_callback,
                           FailureCallback failure_callback,
                           const base::Time& min_update_time)
@@ -722,7 +722,7 @@ class GDataContactsService::DownloadContactsRequest {
   typedef std::map<contacts::Contact*, std::string> ContactPhotoUrls;
 
   GDataContactsService* service_;  // not owned
-  GDataOperationRunner* runner_;  // not owned
+  OperationRunner* runner_;  // not owned
 
   SuccessCallback success_callback_;
   FailureCallback failure_callback_;
@@ -765,7 +765,7 @@ class GDataContactsService::DownloadContactsRequest {
 };
 
 GDataContactsService::GDataContactsService(Profile* profile)
-    : runner_(new GDataOperationRunner(profile)),
+    : runner_(new OperationRunner(profile)),
       max_photo_downloads_per_second_(kMaxPhotoDownloadsPerSecond),
       photo_download_timer_interval_(base::TimeDelta::FromSeconds(1)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -778,7 +778,7 @@ GDataContactsService::~GDataContactsService() {
   requests_.clear();
 }
 
-GDataAuthService* GDataContactsService::auth_service_for_testing() {
+AuthService* GDataContactsService::auth_service_for_testing() {
   return runner_->auth_service();
 }
 
