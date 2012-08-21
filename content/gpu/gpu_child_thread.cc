@@ -21,6 +21,10 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 const int kGpuTimeout = 10000;
 
 namespace {
@@ -119,6 +123,12 @@ void GpuChildThread::OnInitialize() {
     MessageLoop::current()->Quit();
     return;
   }
+
+#if defined(OS_WIN)
+  // This is to find out if the GPU process ever exits normally.
+  // TODO(apatrick): Delete me.
+  base::win::SetShouldCrashOnProcessDetach(true);
+#endif
 
   // We don't need to pipe log messages if we are running the GPU thread in
   // the browser process.
