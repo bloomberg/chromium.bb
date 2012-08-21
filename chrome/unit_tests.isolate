@@ -166,7 +166,6 @@
       'test/data/extensions/manifest_tests/background_page.json',
       'test/data/extensions/manifest_tests/background_page_legacy.json',
       'test/data/extensions/manifest_tests/background_permission.json',
-      'test/data/extensions/manifest_tests/background_permission_alias.json',
       'test/data/extensions/manifest_tests/background_scripts.json',
       'test/data/extensions/manifest_tests/command_allow_numbers.json',
       'test/data/extensions/manifest_tests/command_reject_just_shift.json',
