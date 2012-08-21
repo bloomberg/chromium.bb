@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "net/base/completion_callback.h"
+#include "base/task_runner_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "webkit/database/database_tracker.h"
@@ -21,189 +21,78 @@ using quota::QuotaClient;
 
 namespace webkit_database {
 
-// Helper tasks ---------------------------------------------------------------
+namespace {
 
-class DatabaseQuotaClient::HelperTask : public quota::QuotaThreadTask {
- protected:
-  HelperTask(
-      DatabaseQuotaClient* client,
-      base::MessageLoopProxy* db_tracker_thread)
-      : QuotaThreadTask(client, db_tracker_thread),
-        client_(client), db_tracker_(client->db_tracker_) {
-  }
+int64 GetOriginUsageOnDBThread(
+    DatabaseTracker* db_tracker,
+    const GURL& origin_url) {
+  OriginInfo info;
+  if (db_tracker->GetOriginInfo(
+          DatabaseUtil::GetOriginIdentifier(origin_url), &info))
+    return info.TotalSize();
+  return 0;
+}
 
-  virtual ~HelperTask() {}
-
-  DatabaseQuotaClient* client_;
-  scoped_refptr<DatabaseTracker> db_tracker_;
-};
-
-class DatabaseQuotaClient::GetOriginUsageTask : public HelperTask {
- public:
-  GetOriginUsageTask(
-      DatabaseQuotaClient* client,
-      base::MessageLoopProxy* db_tracker_thread,
-      const GURL& origin_url)
-      : HelperTask(client, db_tracker_thread),
-        origin_url_(origin_url), usage_(0) {
-  }
-
- protected:
-  virtual ~GetOriginUsageTask() {}
-
-  virtual void RunOnTargetThread() OVERRIDE {
-    OriginInfo info;
-    if (db_tracker_->GetOriginInfo(
-            DatabaseUtil::GetOriginIdentifier(origin_url_),
-            &info)) {
-      usage_ = info.TotalSize();
+void GetOriginsOnDBThread(
+    DatabaseTracker* db_tracker,
+    std::set<GURL>* origins_ptr) {
+  std::vector<string16> origin_identifiers;
+  if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
+    for (std::vector<string16>::const_iterator iter =
+         origin_identifiers.begin();
+         iter != origin_identifiers.end(); ++iter) {
+      GURL origin = DatabaseUtil::GetOriginFromIdentifier(*iter);
+      origins_ptr->insert(origin);
     }
   }
+}
 
-  virtual void Completed() OVERRIDE {
-    client_->DidGetOriginUsage(origin_url_, usage_);
-  }
-
- private:
-  GURL origin_url_;
-  int64 usage_;
-};
-
-class DatabaseQuotaClient::GetOriginsTaskBase : public HelperTask {
- protected:
-  GetOriginsTaskBase(
-      DatabaseQuotaClient* client,
-      base::MessageLoopProxy* db_tracker_thread)
-      : HelperTask(client, db_tracker_thread) {
-  }
-
-  virtual ~GetOriginsTaskBase() {}
-
-  virtual bool ShouldAddOrigin(const GURL& origin) = 0;
-
-  virtual void RunOnTargetThread() OVERRIDE {
-    std::vector<string16> origin_identifiers;
-    if (db_tracker_->GetAllOriginIdentifiers(&origin_identifiers)) {
-      for (std::vector<string16>::const_iterator iter =
-               origin_identifiers.begin();
-           iter != origin_identifiers.end(); ++iter) {
-        GURL origin = DatabaseUtil::GetOriginFromIdentifier(*iter);
-        if (ShouldAddOrigin(origin))
-          origins_.insert(origin);
-      }
+void GetOriginsForHostOnDBThread(
+    DatabaseTracker* db_tracker,
+    std::set<GURL>* origins_ptr,
+    const std::string& host) {
+  std::vector<string16> origin_identifiers;
+  if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
+    for (std::vector<string16>::const_iterator iter =
+         origin_identifiers.begin();
+         iter != origin_identifiers.end(); ++iter) {
+      GURL origin = DatabaseUtil::GetOriginFromIdentifier(*iter);
+      if (host == net::GetHostOrSpecFromURL(origin))
+        origins_ptr->insert(origin);
     }
   }
+}
 
-  std::set<GURL> origins_;
-};
+void DidGetOrigins(
+    const QuotaClient::GetOriginsCallback& callback,
+    std::set<GURL>* origins_ptr,
+    quota::StorageType type) {
+  callback.Run(*origins_ptr, type);
+}
 
-class DatabaseQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
- public:
-  GetAllOriginsTask(
-      DatabaseQuotaClient* client,
-      base::MessageLoopProxy* db_tracker_thread,
-      quota::StorageType type)
-      : GetOriginsTaskBase(client, db_tracker_thread),
-        type_(type) {
+void DidDeleteOriginData(
+    base::SingleThreadTaskRunner* original_task_runner,
+    const QuotaClient::DeletionCallback& callback,
+    int result) {
+  if (result == net::ERR_IO_PENDING) {
+    // The callback will be invoked via
+    // DatabaseTracker::ScheduleDatabasesForDeletion.
+    return;
   }
 
- protected:
-  virtual ~GetAllOriginsTask() {}
+  quota::QuotaStatusCode status;
+  if (result == net::OK)
+    status = quota::kQuotaStatusOk;
+  else
+    status = quota::kQuotaStatusUnknown;
 
-  virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
-    return true;
-  }
-  virtual void Completed() OVERRIDE {
-    client_->DidGetAllOrigins(origins_, type_);
-  }
+  if (original_task_runner->BelongsToCurrentThread())
+    callback.Run(status);
+  else
+    original_task_runner->PostTask(FROM_HERE, base::Bind(callback, status));
+}
 
- private:
-  quota::StorageType type_;
-};
-
-class DatabaseQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
- public:
-  GetOriginsForHostTask(
-      DatabaseQuotaClient* client,
-      base::MessageLoopProxy* db_tracker_thread,
-      const std::string& host,
-      quota::StorageType type)
-      : GetOriginsTaskBase(client, db_tracker_thread),
-        host_(host),
-        type_(type) {
-  }
-
- protected:
-  virtual ~GetOriginsForHostTask() {}
-
-  virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
-    return host_ == net::GetHostOrSpecFromURL(origin);
-  }
-
-  virtual void Completed() OVERRIDE {
-    client_->DidGetOriginsForHost(host_, origins_, type_);
-  }
-
- private:
-  std::string host_;
-  quota::StorageType type_;
-};
-
-class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
- public:
-  DeleteOriginTask(
-      DatabaseQuotaClient* client,
-      base::MessageLoopProxy* db_tracker_thread,
-      const GURL& origin_url,
-      const DeletionCallback& caller_callback)
-      : HelperTask(client, db_tracker_thread),
-        origin_url_(origin_url),
-        result_(quota::kQuotaStatusUnknown),
-        caller_callback_(caller_callback) {
-  }
-
- protected:
-  virtual ~DeleteOriginTask() {}
-
-  virtual void Completed() OVERRIDE {
-    if (caller_callback_.is_null())
-      return;
-    caller_callback_.Run(result_);
-    caller_callback_.Reset();
-  }
-
-  virtual void Aborted() OVERRIDE {
-    caller_callback_.Reset();
-  }
-
-  virtual bool RunOnTargetThreadAsync() OVERRIDE {
-    AddRef();  // balanced in OnCompletionCallback
-    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url_);
-    int rv = db_tracker_->DeleteDataForOrigin(
-        origin_id, base::Bind(&DeleteOriginTask::OnCompletionCallback,
-                              base::Unretained(this)));
-    if (rv == net::ERR_IO_PENDING)
-      return false;  // we wait for the callback
-    OnCompletionCallback(rv);
-    return false;
-  }
-
- private:
-  void OnCompletionCallback(int rv) {
-    if (rv == net::OK)
-      result_ = quota::kQuotaStatusOk;
-    original_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&DeleteOriginTask::CallCompleted, this));
-    Release();  // balanced in RunOnTargetThreadAsync
-  }
-
-  const GURL origin_url_;
-  quota::QuotaStatusCode result_;
-  DeletionCallback caller_callback_;
-  net::CompletionCallback completion_callback_;
-};
-
-// DatabaseQuotaClient --------------------------------------------------------
+}  // namespace
 
 DatabaseQuotaClient::DatabaseQuotaClient(
     base::MessageLoopProxy* db_tracker_thread,
@@ -235,11 +124,13 @@ void DatabaseQuotaClient::GetOriginUsage(
     return;
   }
 
-  if (usage_for_origin_callbacks_.Add(origin_url, callback)) {
-    scoped_refptr<GetOriginUsageTask> task(
-        new GetOriginUsageTask(this, db_tracker_thread_, origin_url));
-    task->Start();
-  }
+  base::PostTaskAndReplyWithResult(
+      db_tracker_thread_,
+      FROM_HERE,
+      base::Bind(&GetOriginUsageOnDBThread,
+                 db_tracker_,
+                 origin_url),
+      callback);
 }
 
 void DatabaseQuotaClient::GetOriginsForType(
@@ -254,11 +145,16 @@ void DatabaseQuotaClient::GetOriginsForType(
     return;
   }
 
-  if (origins_for_type_callbacks_.Add(callback)) {
-    scoped_refptr<GetAllOriginsTask> task(
-        new GetAllOriginsTask(this, db_tracker_thread_, type));
-    task->Start();
-  }
+  std::set<GURL>* origins_ptr = new std::set<GURL>();
+  db_tracker_thread_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetOriginsOnDBThread,
+                 db_tracker_,
+                 base::Unretained(origins_ptr)),
+      base::Bind(&DidGetOrigins,
+                 callback,
+                 base::Owned(origins_ptr),
+                 type));
 }
 
 void DatabaseQuotaClient::GetOriginsForHost(
@@ -274,16 +170,23 @@ void DatabaseQuotaClient::GetOriginsForHost(
     return;
   }
 
-  if (origins_for_host_callbacks_.Add(host, callback)) {
-    scoped_refptr<GetOriginsForHostTask> task(
-        new GetOriginsForHostTask(this, db_tracker_thread_, host, type));
-    task->Start();
-  }
+  std::set<GURL>* origins_ptr = new std::set<GURL>();
+  db_tracker_thread_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetOriginsForHostOnDBThread,
+                 db_tracker_,
+                 base::Unretained(origins_ptr),
+                 host),
+      base::Bind(&DidGetOrigins,
+                 callback,
+                 base::Owned(origins_ptr),
+                 type));
 }
 
-void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
-                                           quota::StorageType type,
-                                           const DeletionCallback& callback) {
+void DatabaseQuotaClient::DeleteOriginData(
+    const GURL& origin,
+    quota::StorageType type,
+    const DeletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
@@ -293,29 +196,19 @@ void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
     return;
   }
 
-  scoped_refptr<DeleteOriginTask> task(
-      new DeleteOriginTask(this, db_tracker_thread_,
-                           origin, callback));
-  task->Start();
-}
+  base::Callback<void(int)> delete_callback =
+      base::Bind(&DidDeleteOriginData,
+                 base::MessageLoopProxy::current(),
+                 callback);
 
-void DatabaseQuotaClient::DidGetOriginUsage(
-    const GURL& origin_url, int64 usage) {
-  DCHECK(usage_for_origin_callbacks_.HasCallbacks(origin_url));
-  usage_for_origin_callbacks_.Run(origin_url, usage);
-}
-
-void DatabaseQuotaClient::DidGetAllOrigins(const std::set<GURL>& origins,
-    quota::StorageType type) {
-  DCHECK(origins_for_type_callbacks_.HasCallbacks());
-  origins_for_type_callbacks_.Run(origins, type);
-}
-
-void DatabaseQuotaClient::DidGetOriginsForHost(
-    const std::string& host, const std::set<GURL>& origins,
-    quota::StorageType type) {
-  DCHECK(origins_for_host_callbacks_.HasCallbacks(host));
-  origins_for_host_callbacks_.Run(host, origins, type);
+  PostTaskAndReplyWithResult(
+      db_tracker_thread_,
+      FROM_HERE,
+      base::Bind(&DatabaseTracker::DeleteDataForOrigin,
+                 db_tracker_,
+                 DatabaseUtil::GetOriginIdentifier(origin),
+                 delete_callback),
+      delete_callback);
 }
 
 }  // namespace webkit_database
