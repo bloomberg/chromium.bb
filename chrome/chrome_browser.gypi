@@ -116,6 +116,10 @@
         'browser/android/chrome_jni_registrar.h',
         'browser/android/chrome_startup_flags.cc',
         'browser/android/chrome_startup_flags.h',
+        'browser/android/chrome_web_contents_delegate_android.cc',
+        'browser/android/chrome_web_contents_delegate_android.h',
+        'browser/android/content_view_util.cc',
+        'browser/android/content_view_util.h',
         'browser/android/devtools_server.cc',
         'browser/android/devtools_server.h',
         'browser/android/intent_helper.cc',
@@ -4980,6 +4984,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            'browser/component/components.gyp:web_contents_delegate_android',
             'chrome_browser_jni_headers',
           ],
           'sources': [
@@ -5605,6 +5610,7 @@
           'sources': [
             'android/java/src/org/chromium/chrome/browser/AndroidProtocolAdapter.java',
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
+            'android/java/src/org/chromium/chrome/browser/ContentViewUtil.java',
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
             'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
           ],

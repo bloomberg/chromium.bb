@@ -34,6 +34,7 @@ import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 
 /**
+ * Provides a Java-side 'wrapper' around a WebContent (native) instance.
  * Contains all the major functionality necessary to manage the lifecycle of a ContentView without
  * being tied to the view system.
  */
@@ -336,6 +337,14 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
+     * This is only useful for passing over JNI to native code that requires ContentViewCore*.
+     * @return native ContentViewCore pointer.
+     */
+    public int getNativeContentViewCore() {
+        return mNativeContentViewCore;
+    }
+
+    /**
      * For internal use. Throws IllegalStateException if mNativeContentView is 0.
      * Use this to ensure we get a useful Java stack trace, rather than a native
      * crash dump, from use-after-destroy bugs in Java code.
@@ -418,16 +427,6 @@ public class ContentViewCore implements MotionEventDelegate {
     public String getTitle() {
         if (mNativeContentViewCore != 0) return nativeGetTitle(mNativeContentViewCore);
         return null;
-    }
-
-    /**
-     * @return The load progress of current web contents (range is 0 - 100).
-     */
-    public int getProgress() {
-        if (mNativeContentViewCore != 0) {
-            return (int) (100.0 * nativeGetLoadProgress(mNativeContentViewCore));
-        }
-        return 100;
     }
 
     public int getWidth() {
@@ -1147,8 +1146,6 @@ public class ContentViewCore implements MotionEventDelegate {
     private native String nativeGetURL(int nativeContentViewCoreImpl);
 
     private native String nativeGetTitle(int nativeContentViewCoreImpl);
-
-    private native double nativeGetLoadProgress(int nativeContentViewCoreImpl);
 
     private native boolean nativeIsIncognito(int nativeContentViewCoreImpl);
 

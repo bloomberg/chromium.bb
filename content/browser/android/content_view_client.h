@@ -8,7 +8,6 @@
 #include "base/android/jni_helper.h"
 #include "base/compiler_specific.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
@@ -17,17 +16,14 @@
 class FindHelper;
 
 namespace content {
+
 class DownloadItem;
-struct FindMatchRect;
 class JavaScriptDialogCreator;
-class NativeWebKeyboardEvent;
+struct NativeWebKeyboardEvent;
 class RenderViewHost;
 class WebContents;
-}
 
-namespace content {
-
-// This enum must be kept in sync with ContentViewClient.java
+// These enums must be kept in sync with ContentViewClient.java
 enum ContentViewClientError {
   // Success
   CONTENT_VIEW_CLIENT_ERROR_OK = 0,
@@ -63,11 +59,16 @@ enum ContentViewClientError {
   CONTENT_VIEW_CLIENT_ERROR_TOO_MANY_REQUESTS = -15,
 };
 
-// Native mirror of ContentViewClient.java.  Uses as a client of
+// Native mirror of ContentViewClient.java.  Used as a client of
 // ContentView, the main FrameLayout on Android.
-class ContentViewClient : public WebContentsDelegate {
+// TODO(joth): Delete this C++ class, to make it Java-only. All the callbacks
+// defined here originate in WebContentsObserver; we should have a dedicated
+// bridge class for that rather than overloading ContentViewClient with this.
+// See http://crbug.com/137967
+class ContentViewClient {
  public:
   ContentViewClient(JNIEnv* env, jobject obj);
+  ~ContentViewClient();
 
   static ContentViewClient* CreateNativeContentViewClient(JNIEnv* env,
                                                           jobject obj);
@@ -87,7 +88,6 @@ class ContentViewClient : public WebContentsDelegate {
   void OnInterstitialShown();
   void OnInterstitialHidden();
 
-  void SetFindHelper(FindHelper* find_helper);
   void SetJavaScriptDialogCreator(
       JavaScriptDialogCreator* javascript_dialog_creator);
 
@@ -97,91 +97,15 @@ class ContentViewClient : public WebContentsDelegate {
                        const string16& message,
                        const string16& default_value);
 
-  // Returns the actual load progress, a value between 0 (nothing loaded) and
-  // 1 (page fully loaded).
-  virtual double GetLoadProgress() const;
-
-  // Overridden from WebContentsDelegate:
-  virtual WebContents* OpenURLFromTab(
-      WebContents* source,
-      const OpenURLParams& params) OVERRIDE;
-  virtual bool ShouldIgnoreNavigation(
-      WebContents* source,
-      const GURL& url,
-      const Referrer& referrer,
-      WindowOpenDisposition disposition,
-      PageTransition transition_type) OVERRIDE;
-  virtual void NavigationStateChanged(const WebContents* source,
-                                      unsigned changed_flags) OVERRIDE;
-  virtual void AddNewContents(WebContents* source,
-                              WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
-  virtual void ActivateContents(WebContents* contents) OVERRIDE;
-  virtual void DeactivateContents(WebContents* contents) OVERRIDE;
-  virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
-  virtual void LoadProgressChanged(double load_progress) OVERRIDE;
-  virtual void CloseContents(WebContents* source) OVERRIDE;
-  virtual void MoveContents(WebContents* source,
-                            const gfx::Rect& pos) OVERRIDE;
-  // TODO(merge): WARNING! method no longer available on the base class.
-  // See http://b/issue?id=5862108
-  virtual void URLStarredChanged(WebContents* source, bool starred);
-  virtual void UpdateTargetURL(WebContents* source,
-                               int32 page_id,
-                               const GURL& url) OVERRIDE;
-  virtual bool CanDownload(RenderViewHost* source,
-                           int request_id,
-                           const std::string& request_method) OVERRIDE;
-  virtual void OnStartDownload(WebContents* source,
-                               DownloadItem* download) OVERRIDE;
-  virtual void FindReply(WebContents* tab,
-                         int request_id,
-                         int number_of_matches,
-                         const gfx::Rect& selection_rect,
-                         int active_match_ordinal,
-                         bool final_update) OVERRIDE;
-  virtual void OnReceiveFindMatchRects(int version,
-      const std::vector<FindMatchRect>& rects,
-      const FindMatchRect& active_rect) OVERRIDE;
-  virtual bool ShouldOverrideLoading(const GURL& url) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator() OVERRIDE;
-  virtual void RunFileChooser(
-      WebContents* tab,
-      const FileChooserParams& params) OVERRIDE;
-  virtual bool TakeFocus(bool reverse) OVERRIDE;
-
-  virtual ~ContentViewClient();
-
  private:
   // Get the closest ContentViewClient match to the given Chrome error code.
   static ContentViewClientError ToContentViewClientError(int net_error);
-
-  // We use this to keep track of whether the navigation we get in
-  // ShouldIgnoreNavigation has been initiated by the ContentView or not.  We
-  // need the GURL, because the active navigation entry doesn't change on
-  // redirects.
-  GURL last_requested_navigation_url_;
 
   // We depend on ContentView.java to hold a ref to the client object. If we
   // were to hold a hard ref from native we could end up with a cyclic
   // ownership leak (the GC can't collect cycles if part of the cycle is caused
   // by native).
   JavaObjectWeakGlobalRef weak_java_client_;
-
-  // Used to process find replies. Owned by the ContentView.  The ContentView
-  // NULLs this pointer when the FindHelper goes away.
-  FindHelper* find_helper_;
-
-  // The object responsible for creating JavaScript dialogs.
-  JavaScriptDialogCreator* javascript_dialog_creator_;
-
-  // Indicates the load state of the page. 0.0 means nothing loaded, 1 means
-  // fully loaded.
-  double load_progress_;
 };
 
 bool RegisterContentViewClient(JNIEnv* env);

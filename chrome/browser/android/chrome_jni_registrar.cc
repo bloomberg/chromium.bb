@@ -6,18 +6,22 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/process_utils.h"
+#include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
 
 namespace chrome {
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+  { "ContentViewUtil", RegisterContentViewUtil },
   { "IntentHelper", RegisterIntentHelper },
   { "ProcessUtils", RegisterProcessUtils },
 };
 
 bool RegisterJni(JNIEnv* env) {
+  web_contents_delegate_android::RegisterJni(env);
   return RegisterNativeMethods(env, kChromeRegisteredMethods,
                                arraysize(kChromeRegisteredMethods));
 }

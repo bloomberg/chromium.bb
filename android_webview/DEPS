@@ -6,5 +6,7 @@
 # chrome/ should go into android_webview/lib/ or be refactored.
 
 include_rules = [
+  "+chrome/android/java/src/org/chromium/chrome/browser/component",
+  "+chrome/browser/component",
   "+content/public",
 ]

@@ -307,6 +307,12 @@ class CONTENT_EXPORT WebContentsDelegate {
   // changed.
   virtual void ContentRestrictionsChanged(WebContents* source) {}
 
+#if defined(OS_ANDROID)
+  // Returns true if the delegate wants to handle the url instead. Default
+  // returns false.
+  virtual bool ShouldOverrideLoading(const GURL& url);
+#endif
+
   // Notification that the tab is hung.
   virtual void RendererUnresponsive(WebContents* source) {}
 

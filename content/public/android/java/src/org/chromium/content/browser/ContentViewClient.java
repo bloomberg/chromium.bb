@@ -33,7 +33,6 @@ import java.net.URISyntaxException;
  *  over to WebView.
  */
 public class ContentViewClient {
-
     // Tag used for logging.
     private static final String TAG = "ContentViewClient";
 
@@ -74,37 +73,11 @@ public class ContentViewClient {
     public static final int ERROR_TOO_MANY_REQUESTS = -15;
 
     @CalledByNative
-    public void openNewTab(String url, boolean incognito) {
-    }
-
-    @CalledByNative
-    public boolean addNewContents(int nativeSourceWebContents, int nativeWebContents,
-                                  int disposition, Rect initialPosition, boolean userGesture) {
-        return false;
-    }
-
-    @CalledByNative
-    public void closeContents() {
-    }
-
-    @CalledByNative
-    public void onUrlStarredChanged(boolean starred) {
-    }
-
-    @CalledByNative
     public void onPageStarted(String url) {
     }
 
     @CalledByNative
     public void onPageFinished(String url) {
-    }
-
-    @CalledByNative
-    public void onLoadStarted() {
-    }
-
-    @CalledByNative
-    public void onLoadStopped() {
     }
 
     @CalledByNative
@@ -115,24 +88,7 @@ public class ContentViewClient {
     public void onMainFrameCommitted(String url, String baseUrl) {
     }
 
-    @CalledByNative
-    public void onTabHeaderStateChanged() {
-    }
-
-    @CalledByNative
-    public void onLoadProgressChanged(double progress) {
-    }
-
     public void onUpdateTitle(String title) {
-    }
-
-    @CalledByNative
-    public void onUpdateUrl(String url) {
-    }
-
-    @CalledByNative
-    public void onReceiveFindMatchRects(int version, float[] rect_data,
-                                        RectF activeRect) {
     }
 
     @CalledByNative
@@ -143,17 +99,7 @@ public class ContentViewClient {
     public void onInterstitialHidden() {
     }
 
-    @CalledByNative
-    public boolean takeFocus(boolean reverse) {
-        return false;
-    }
-
     public void onTabCrash(int pid) {
-    }
-
-    @CalledByNative
-    public boolean shouldOverrideUrlLoading(String url) {
-        return false;
     }
 
     public boolean shouldOverrideKeyEvent(KeyEvent event) {
@@ -194,20 +140,6 @@ public class ContentViewClient {
     // Called when an ImeEvent is sent to the page. Can be used to know when some text is entered
     // in a page.
     public void onImeEvent() {
-    }
-
-    public void onUnhandledKeyEvent(KeyEvent event) {
-        // TODO(bulach): we probably want to re-inject the KeyEvent back into
-        // the system. Investigate if this is at all possible.
-    }
-
-    @CalledByNative
-    void handleKeyboardEvent(KeyEvent event) {
-        onUnhandledKeyEvent(event);
-    }
-
-    @CalledByNative
-    public void runFileChooser(FileChooserParams params) {
     }
 
     // Return true if the client will handle the JS alert.

@@ -135,6 +135,12 @@ bool WebContentsDelegate::ShouldCreateWebContents(
   return true;
 }
 
+#if defined(OS_ANDROID)
+bool WebContentsDelegate::ShouldOverrideLoading(const GURL& url) {
+  return false;
+}
+#endif
+
 JavaScriptDialogCreator* WebContentsDelegate::GetJavaScriptDialogCreator() {
   return NULL;
 }

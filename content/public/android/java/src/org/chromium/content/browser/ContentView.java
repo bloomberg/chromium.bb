@@ -248,13 +248,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     /**
-     * @return The load progress of current web contents (range is 0 - 100).
-     */
-    public int getProgress() {
-        return mContentViewCore.getProgress();
-    }
-
-    /**
      * @return Whether the current WebContents has a previous navigation entry.
      */
     public boolean canGoBack() {

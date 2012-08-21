@@ -237,14 +237,6 @@ ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetTitle(
   return ConvertUTF16ToJavaString(env, web_contents()->GetTitle());
 }
 
-jdouble ContentViewCoreImpl::GetLoadProgress(JNIEnv* env, jobject obj) const {
-  // An empty page never loads anything and always has a progress of 0.
-  // We report 1 in that case so the UI does not assume the page is loading.
-  if (web_contents()->GetURL().is_empty() || !content_view_client_.get())
-    return static_cast<jdouble>(1.0);
-  return static_cast<jdouble>(content_view_client_->GetLoadProgress());
-}
-
 jboolean ContentViewCoreImpl::IsIncognito(JNIEnv* env, jobject obj) {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
@@ -395,8 +387,6 @@ jboolean ContentViewCoreImpl::NeedsReload(JNIEnv* env, jobject obj) {
 void ContentViewCoreImpl::SetClient(JNIEnv* env, jobject obj, jobject jclient) {
   scoped_ptr<ContentViewClient> client(
       ContentViewClient::CreateNativeContentViewClient(env, jclient));
-
-  web_contents_->SetDelegate(client.get());
 
   content_view_client_.swap(client);
 }

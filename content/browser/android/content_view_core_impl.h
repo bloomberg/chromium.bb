@@ -106,7 +106,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void GoBack(JNIEnv* env, jobject obj);
   void GoForward(JNIEnv* env, jobject obj);
   void GoToOffset(JNIEnv* env, jobject obj, jint offset);
-  jdouble GetLoadProgress(JNIEnv* env, jobject obj) const;
   void StopLoading(JNIEnv* env, jobject obj);
   void Reload(JNIEnv* env, jobject obj);
   jboolean NeedsReload(JNIEnv* env, jobject obj);
