@@ -601,7 +601,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 // Verifies that the "proceed anyway" link isn't available when it is disabled
 // by the corresponding policy. Also verifies that sending the "proceed"
 // command anyway doesn't advance to the malware site.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
+// Disabled due to flakiness on all platforms: http://crbug.com/144043
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, DISABLED_ProceedDisabled) {
   // Simulate a policy disabling the "proceed anyway" link.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingProceedAnywayDisabled, true);
