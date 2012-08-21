@@ -119,9 +119,9 @@
     ],
     "versions": [
       {
-        "version": "11.6.4.634",
+        "version": "11.6.6.636",
         "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-02.html"
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-17.html"
       }
     ],
     "lang": "en-US",
