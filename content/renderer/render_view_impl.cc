@@ -5455,7 +5455,7 @@ void RenderViewImpl::OnImeConfirmComposition(
         WebRange webrange = WebRange::fromDocumentRange(
             frame, replacement_range.start(), replacement_range.length());
         if (!webrange.isNull())
-          frame->setSelectionToRange(webrange);
+          frame->selectRange(webrange);
       }
     }
     RenderWidget::OnImeConfirmComposition(text, replacement_range);
