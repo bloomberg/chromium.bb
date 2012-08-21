@@ -78,11 +78,6 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   NetworkMenuIcon(Delegate* delegate, Mode mode);
   virtual ~NetworkMenuIcon();
 
-  // Setter for |last_network_type_|
-  void set_last_network_type(ConnectionType last_network_type) {
-    last_network_type_ = last_network_type;
-  }
-
   // Sets the resource color theme (e.g. light or dark icons).
   void SetResourceColorTheme(ResourceColorTheme color);
 
@@ -163,8 +158,6 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   ResourceColorTheme resource_color_theme_;
   // Animation throbber for animating the icon while conencting.
   ui::ThrobAnimation animation_connecting_;
-  // Cached type of previous displayed network.
-  ConnectionType last_network_type_;
   // The generated icon image.
   scoped_ptr<NetworkIcon> icon_;
   // A weak pointer to the currently connecting network. Used only for

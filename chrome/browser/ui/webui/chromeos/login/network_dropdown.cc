@@ -126,7 +126,7 @@ NetworkDropdown::~NetworkDropdown() {
 }
 
 void NetworkDropdown::SetLastNetworkType(ConnectionType last_network_type) {
-  network_icon_->set_last_network_type(last_network_type);
+  // No longer implemented. TODO(stevenjb): Purge from JS.
 }
 
 void NetworkDropdown::OnItemChosen(int id) {

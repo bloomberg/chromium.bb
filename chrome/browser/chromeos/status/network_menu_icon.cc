@@ -516,13 +516,8 @@ void NetworkIcon::SetBadges(const Network* network) {
 
   bool use_dark_icons = resource_color_theme_ == NetworkMenuIcon::COLOR_DARK;
   switch (network->type()) {
-    case TYPE_ETHERNET: {
-      if (network->disconnected()) {
-        bottom_right_badge_ =
-            rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-      }
+    case TYPE_ETHERNET:
       break;
-    }
     case TYPE_WIFI: {
       const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
       if (wifi->encrypted() && use_dark_icons) {
@@ -630,7 +625,6 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
       delegate_(delegate),
       resource_color_theme_(COLOR_DARK),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
-      last_network_type_(TYPE_WIFI),
       connecting_network_(NULL) {
   // Set up the connection animation throbber.
   animation_connecting_.SetThrobDuration(kThrobDurationMs);
@@ -781,7 +775,6 @@ void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool animating = false;
-  last_network_type_ = network->type();
 
   // Set icon and badges. Call SetDirty() since network may have changed.
   icon_->SetDirty();
@@ -826,22 +819,7 @@ void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
 }
 
 void NetworkMenuIcon::SetDisconnectedIconAndText() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  switch (last_network_type_) {
-    case TYPE_ETHERNET:
-      icon_->set_icon(*rb.GetImageSkiaNamed(IDR_STATUSBAR_WIRED));
-      break;
-    case TYPE_WIFI:
-      icon_->set_icon(GetDisconnectedImage(ARCS, resource_color_theme_));
-      break;
-    case TYPE_WIMAX:
-    case TYPE_CELLULAR:
-    default:
-      icon_->set_icon(GetDisconnectedImage(BARS, resource_color_theme_));
-      break;
-  }
-  icon_->set_bottom_right_badge(
-      rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+  icon_->set_icon(GetDisconnectedImage(ARCS, resource_color_theme_));
   if (mode_ == MENU_MODE)
     text_ = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
   else

@@ -666,7 +666,6 @@
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS" file="statusbar_network_bars.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="statusbar_network_bars_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="statusbar_network_bars_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_EDGE_DARK" file="statusbar_network_edge_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_EDGE_LIGHT" file="statusbar_network_edge_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_GPRS" file="statusbar_network_gprs.png" />
