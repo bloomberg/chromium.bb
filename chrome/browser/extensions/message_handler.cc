@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/message_handler.h"
 
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/message_service.h"
+#include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
