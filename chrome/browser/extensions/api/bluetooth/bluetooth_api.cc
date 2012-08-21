@@ -88,6 +88,11 @@ bool BluetoothGetAddressFunction::RunImpl() {
   return true;
 }
 
+bool BluetoothGetNameFunction::RunImpl() {
+  SetResult(Value::CreateStringValue(GetAdapter(profile())->name()));
+  return true;
+}
+
 BluetoothGetDevicesFunction::BluetoothGetDevicesFunction()
     : callbacks_pending_(0) {}
 
@@ -517,6 +522,11 @@ bool BluetoothIsPoweredFunction::RunImpl() {
 }
 
 bool BluetoothGetAddressFunction::RunImpl() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothGetNameFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }

@@ -30,7 +30,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
     MOCK_METHOD2(DeviceRemoved, void(BluetoothAdapter *, BluetoothDevice *));
   };
 
-  MockBluetoothAdapter();
+  MockBluetoothAdapter(const std::string& address, const std::string& name);
 
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());

@@ -59,6 +59,17 @@ class BluetoothGetAddressFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class BluetoothGetNameFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getName")
+
+ protected:
+  virtual ~BluetoothGetNameFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getDevices")

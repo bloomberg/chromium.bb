@@ -216,6 +216,7 @@ void BluetoothAdapter::ChangeAdapter(const dbus::ObjectPath& adapter_path) {
       GetProperties(object_path_);
 
   address_ = properties->address.value();
+  name_ = properties->name.value();
 
   PoweredChanged(properties->powered.value());
   DiscoveringChanged(properties->discovering.value());
@@ -236,6 +237,7 @@ void BluetoothAdapter::RemoveAdapter() {
 
   object_path_ = dbus::ObjectPath("");
   address_.clear();
+  name_.clear();
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterPresentChanged(this, false));
@@ -334,6 +336,9 @@ void BluetoothAdapter::AdapterPropertyChanged(
 
   } else if (property_name == properties->address.name()) {
     address_ = properties->address.value();
+
+  } else if (property_name == properties->name.name()) {
+    name_ = properties->name.value();
 
   }
 }

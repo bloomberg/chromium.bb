@@ -100,6 +100,9 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
   // where each XX is a hexadecimal number.
   const std::string& address() const { return address_; }
 
+  // The name of the adapter.
+  const std::string& name() const { return name_; }
+
   // Indicates whether the adapter is actually present on the system, for
   // the default adapter this indicates whether any adapter is present.
   virtual bool IsPresent() const;
@@ -315,6 +318,9 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
 
   // Address of the adapter.
   std::string address_;
+
+  // Name of the adapter.
+  std::string name_;
 
   // Tracked adapter state, cached locally so we only send change notifications
   // to observers on a genuine change.

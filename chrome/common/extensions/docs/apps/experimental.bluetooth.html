@@ -180,6 +180,8 @@
               </li><li>
                 <a href="#method-getLocalOutOfBandPairingData">getLocalOutOfBandPairingData</a>
               </li><li>
+                <a href="#method-getName">getName</a>
+              </li><li>
                 <a href="#method-getServices">getServices</a>
               </li><li>
                 <a href="#method-isAvailable">isAvailable</a>
@@ -397,7 +399,7 @@
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>ResultCallback</span></var></span>)</div>
               <div class="description">
-                <p>Close a bluetooth connection.</p>
+                <p>Close a Bluetooth connection.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -468,7 +470,7 @@
                   <span>chrome.experimental.bluetooth.getAddress</span>(<span class="null"><span>function</span>
                       <var><span>AddressCallback</span></var></span>)</div>
               <div class="description">
-                <p>Get the bluetooth address of the system's bluetooth module.</p>
+                <p>Get the Bluetooth address of the system's Bluetooth module.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -547,7 +549,7 @@
                       <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>DevicesCallback</span></var></span>)</div>
               <div class="description">
-                <p>Get a list of bluetooth devices. NOTE: This API is likely to change.  Please see crbug.com/134545</p>
+                <p>Get a list of Bluetooth devices. NOTE: This API is likely to change.  Please see crbug.com/134545</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -725,6 +727,84 @@
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
+              <a name="method-getName"></a> <!-- method-anchor -->
+              <h4>getName</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.bluetooth.getName</span>(<span class="null"><span>function</span>
+                      <var><span>NameCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Get the name of the Bluetooth adapter.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>NameCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
               <a name="method-getServices"></a> <!-- method-anchor -->
               <h4>getServices</h4>
               <div class="summary">
@@ -842,7 +922,7 @@
                   <span>chrome.experimental.bluetooth.isAvailable</span>(<span class="null"><span>function</span>
                       <var><span>BooleanCallback</span></var></span>)</div>
               <div class="description">
-                <p>Checks if the system has bluetooth support.</p>
+                <p>Checks if the system has Bluetooth support.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -920,7 +1000,7 @@
                   <span>chrome.experimental.bluetooth.isPowered</span>(<span class="null"><span>function</span>
                       <var><span>BooleanCallback</span></var></span>)</div>
               <div class="description">
-                <p>Checks if the system's bluetooth module has power.</p>
+                <p>Checks if the system's Bluetooth module has power.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -999,7 +1079,7 @@
                       <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>DataCallback</span></var></span>)</div>
               <div class="description">
-                <p>Read data from a bluetooth connection.</p>
+                <p>Read data from a Bluetooth connection.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1293,7 +1373,7 @@
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>SizeCallback</span></var></span>)</div>
               <div class="description">
-                <p>Write data to a bluetooth connection.</p>
+                <p>Write data to a Bluetooth connection.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1402,7 +1482,7 @@
                 <span class="subdued">chrome.experimental.bluetooth.</span><span>onAvailabilityChanged</span><span class="subdued">.addListener</span>(function(<span>boolean available</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
-                <p>Fired when the availability of bluetooth on the system changes.</p>
+                <p>Fired when the availability of Bluetooth on the system changes.</p>
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -1424,7 +1504,7 @@
                 </div>
               </em>
           </dt>
-          <dd>True if bluetooth is available, false otherwise.</dd>
+          <dd>True if Bluetooth is available, false otherwise.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1492,7 +1572,7 @@
                 <span class="subdued">chrome.experimental.bluetooth.</span><span>onPowerChanged</span><span class="subdued">.addListener</span>(function(<span>boolean has_power</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
-                <p>Fired when the power state of bluetooth on the system changes.</p>
+                <p>Fired when the power state of Bluetooth on the system changes.</p>
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>

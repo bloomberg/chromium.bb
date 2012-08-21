@@ -54,6 +54,7 @@ namespace experimental.bluetooth {
   callback DataCallback = void (ArrayBuffer result);
   callback DeviceCallback = void (Device device);
   callback DevicesCallback = void (Device[] result);
+  callback NameCallback = void (DOMString result);
   callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
   callback ResultCallback = void ();
   callback ServicesCallback = void(ServiceRecord[] result);
@@ -129,19 +130,25 @@ namespace experimental.bluetooth {
 
   // These functions all report failures via chrome.extension.lastError.
   interface Functions {
-    // Checks if the system has bluetooth support.
+    // Checks if the system has Bluetooth support.
     // |callback| : Called with the boolean result.
     static void isAvailable(BooleanCallback callback);
 
-    // Checks if the system's bluetooth module has power.
+    // Checks if the system's Bluetooth module has power.
     // |callback| : Called with the boolean result.
     static void isPowered(BooleanCallback callback);
 
-    // Get the bluetooth address of the system's bluetooth module.
-    // |callback| : Called with the address, or null if there was an error.
+    // Get the Bluetooth address of the system's Bluetooth module.
+    // |callback| : Called with the address of the Bluetooth adapter, or "" if
+    //              there is no adapater available.
     static void getAddress(AddressCallback callback);
 
-    // Get a list of bluetooth devices.
+    // Get the name of the Bluetooth adapter.
+    // |callback| : Called with the name of the Bluetooth adapter, or "" if
+    //              there is no adapater available.
+    static void getName(NameCallback callback);
+
+    // Get a list of Bluetooth devices.
     // NOTE: This API is likely to change.  Please see crbug.com/134545
     // |options|  : Controls which devices are returned.
     // |callback| : Called with an array of Device objects.
@@ -159,19 +166,19 @@ namespace experimental.bluetooth {
     static void connect(ConnectOptions options,
                         SocketCallback callback);
 
-    // Close a bluetooth connection.
+    // Close a Bluetooth connection.
     // |options|  : The options for this function.
     // |callback| : Called to indicate success or failure.
     static void disconnect(DisconnectOptions options,
                            optional ResultCallback callback);
 
-    // Read data from a bluetooth connection.
+    // Read data from a Bluetooth connection.
     // |options|  : The options for this function.
     // |callback| : Called with the data when it is available.
     static void read(ReadOptions options,
                      DataCallback callback);
 
-    // Write data to a bluetooth connection.
+    // Write data to a Bluetooth connection.
     // |options|  : The options for this function.
     // |callback| : Called with the number of bytes written.
     static void write(WriteOptions options,
@@ -206,12 +213,12 @@ namespace experimental.bluetooth {
   };
 
   interface Events {
-    // Fired when the availability of bluetooth on the system changes.
-    // |available| : True if bluetooth is available, false otherwise.
+    // Fired when the availability of Bluetooth on the system changes.
+    // |available| : True if Bluetooth is available, false otherwise.
     static void onAvailabilityChanged(boolean available);
 
-    // Fired when the power state of bluetooth on the system changes.
-    // |powered| : True if bluetooth is powered, false otherwise.
+    // Fired when the power state of Bluetooth on the system changes.
+    // |powered| : True if Bluetooth is powered, false otherwise.
     static void onPowerChanged(boolean has_power);
 
     // Fired when the discovering state of the system changes.

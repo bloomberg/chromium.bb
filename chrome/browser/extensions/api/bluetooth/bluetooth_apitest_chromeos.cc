@@ -25,13 +25,17 @@ namespace api = extensions::api;
 
 namespace {
 
+static const char* kAdapterAddress = "A1:A2:A3:A4:A5:A6";
+static const char* kName = "whatsinaname";
+
 class BluetoothApiTest : public PlatformAppApiTest {
  public:
   BluetoothApiTest() : empty_extension_(utils::CreateEmptyExtension()) {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // The browser will clean this up when it is torn down
-    mock_adapter_ = new testing::StrictMock<chromeos::MockBluetoothAdapter>;
+    mock_adapter_ = new testing::StrictMock<chromeos::MockBluetoothAdapter>(
+        kAdapterAddress, kName);
     event_router()->SetAdapterForTest(mock_adapter_);
 
     device1_.reset(new testing::NiceMock<chromeos::MockBluetoothDevice>(
@@ -43,15 +47,25 @@ class BluetoothApiTest : public PlatformAppApiTest {
   }
 
   void expectBooleanResult(bool expected,
-                           UIThreadExtensionFunction* function,
-                           const std::string& args) {
+                           UIThreadExtensionFunction* function) {
     scoped_ptr<base::Value> result(
-        utils::RunFunctionAndReturnSingleResult(function, args, browser()));
+        utils::RunFunctionAndReturnSingleResult(function, "[]", browser()));
     ASSERT_TRUE(result.get() != NULL);
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool boolean_value;
     result->GetAsBoolean(&boolean_value);
     EXPECT_EQ(expected, boolean_value);
+  }
+
+  void expectStringResult(const std::string& expected,
+                         UIThreadExtensionFunction* function) {
+    scoped_ptr<base::Value> result(
+        utils::RunFunctionAndReturnSingleResult(function, "[]", browser()));
+    ASSERT_TRUE(result.get() != NULL);
+    ASSERT_EQ(base::Value::TYPE_STRING, result->GetType());
+    std::string string_value;
+    result->GetAsString(&string_value);
+    EXPECT_EQ(expected, string_value);
   }
 
   template <class T>
@@ -110,14 +124,14 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsAvailable) {
   scoped_refptr<api::BluetoothIsAvailableFunction> is_available;
 
   is_available = setupFunction(new api::BluetoothIsAvailableFunction);
-  expectBooleanResult(false, is_available, "[]");
+  expectBooleanResult(false, is_available);
 
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillOnce(testing::Return(true));
 
   is_available = setupFunction(new api::BluetoothIsAvailableFunction);
-  expectBooleanResult(true, is_available, "[]");
+  expectBooleanResult(true, is_available);
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsPowered) {
@@ -127,14 +141,26 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsPowered) {
   scoped_refptr<api::BluetoothIsPoweredFunction> is_powered;
 
   is_powered = setupFunction(new api::BluetoothIsPoweredFunction);
-  expectBooleanResult(false, is_powered, "[]");
+  expectBooleanResult(false, is_powered);
 
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
   EXPECT_CALL(*mock_adapter_, IsPowered())
       .WillOnce(testing::Return(true));
 
   is_powered = setupFunction(new api::BluetoothIsPoweredFunction);
-  expectBooleanResult(true, is_powered, "[]");
+  expectBooleanResult(true, is_powered);
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetAddress) {
+  scoped_refptr<api::BluetoothGetAddressFunction> get_address;
+  get_address = setupFunction(new api::BluetoothGetAddressFunction);
+  expectStringResult(kAdapterAddress, get_address);
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetName) {
+  scoped_refptr<api::BluetoothGetNameFunction> get_name;
+  get_name = setupFunction(new api::BluetoothGetNameFunction);
+  expectStringResult(kName, get_name);
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
