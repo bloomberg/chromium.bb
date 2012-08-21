@@ -409,8 +409,12 @@ void Layer::SetExternalTexture(Texture* texture) {
     // Switch to a different type of layer.
 #if defined(WEBLAYER_IS_PURE_VIRTUAL)
     web_layer_->removeAllChildren();
-    content_layer_.reset();
-    solid_color_layer_.reset();
+    scoped_ptr<WebKit::WebContentLayer> old_content_layer(
+        content_layer_.release());
+    scoped_ptr<WebKit::WebSolidColorLayer> old_solid_layer(
+        solid_color_layer_.release());
+    scoped_ptr<WebKit::WebExternalTextureLayer> old_texture_layer(
+        texture_layer_.release());
     WebKit::WebLayer* new_layer = NULL;
 #else
     web_layer_.removeAllChildren();
@@ -429,8 +433,6 @@ void Layer::SetExternalTexture(Texture* texture) {
 #endif
     } else {
 #if defined(WEBLAYER_IS_PURE_VIRTUAL)
-      texture_layer_.reset();
-      solid_color_layer_.reset();
       content_layer_.reset(WebKit::WebContentLayer::create(this));
       new_layer = content_layer_->layer();
 #else
