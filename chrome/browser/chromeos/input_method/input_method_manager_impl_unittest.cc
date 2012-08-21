@@ -452,8 +452,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsThenLock) {
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(ids[1], manager_->GetCurrentInputMethod().id());
-  // TODO(yusukes): Re-enable this once crbug.com/141456 is fixed.
-  // EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
+  EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
 
   manager_->RemoveObserver(&observer);
 }
@@ -497,8 +496,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   EXPECT_EQ(3U, manager_->GetNumActiveInputMethods());  // Dvorak and 2 IMEs.
   EXPECT_EQ(ids[1], manager_->GetCurrentInputMethod().id());
-  // TODO(yusukes): Re-enable this once crbug.com/141456 is fixed.
-  // EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
+  EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
 
   manager_->RemoveObserver(&observer);
 }
@@ -964,8 +962,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(std::string(kExtensionImePrefix) + "deadbeef",
             manager_->GetCurrentInputMethod().id());
-  // TODO(yusukes): Re-enable this once crbug.com/141456 is fixed.
-  // EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
+  EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
   {
     // This is for crosbug.com/27052.
     scoped_ptr<InputMethodDescriptors> methods(

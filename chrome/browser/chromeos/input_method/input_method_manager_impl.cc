@@ -268,13 +268,13 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
     previous_input_method_ = current_input_method_;
     current_input_method_ = *descriptor;
+  }
 
-    // Change the keyboard layout to a preferred layout for the input method.
-    if (!xkeyboard_->SetCurrentKeyboardLayoutByName(
-            current_input_method_.keyboard_layout())) {
-      LOG(ERROR) << "Failed to change keyboard layout to "
-                 << current_input_method_.keyboard_layout();
-    }
+  // Change the keyboard layout to a preferred layout for the input method.
+  if (!xkeyboard_->SetCurrentKeyboardLayoutByName(
+          current_input_method_.keyboard_layout())) {
+    LOG(ERROR) << "Failed to change keyboard layout to "
+               << current_input_method_.keyboard_layout();
   }
 
   // Update input method indicators (e.g. "US", "DV") in Chrome windows.
