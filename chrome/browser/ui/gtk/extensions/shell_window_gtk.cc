@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/gtk/extensions/shell_window_gtk.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_window_util.h"
+#include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -18,7 +20,8 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
     : shell_window_(shell_window),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
-      content_thinks_its_fullscreen_(false) {
+      content_thinks_its_fullscreen_(false),
+      frameless_(params.frame == ShellWindow::CreateParams::FRAME_NONE) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
   gfx::NativeView native_view =
@@ -29,7 +32,7 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
       window_, params.bounds.width(), params.bounds.height());
 
   // Hide titlebar when {frame: 'none'} specified on ShellWindow.
-  if (params.frame == ShellWindow::CreateParams::FRAME_NONE)
+  if (frameless_)
     gtk_window_set_decorated(window_, false);
 
   int min_width = params.minimum_size.width();
@@ -56,6 +59,13 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
         static_cast<GdkWindowHints>(hints_mask));
   }
 
+  // In some (older) versions of compiz, raising top-level windows when they
+  // are partially off-screen causes them to get snapped back on screen, not
+  // always even on the current virtual desktop.  If we are running under
+  // compiz, suppress such raises, as they are not necessary in compiz anyway.
+  if (ui::GuessWindowManager() == ui::WM_COMPIZ)
+    suppress_window_raise_ = true;
+
   // TODO(mihaip): Mirror contents of <title> tag in window title
   gtk_window_set_title(window_, extension()->name().c_str());
 
@@ -65,6 +75,10 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
                    G_CALLBACK(OnConfigureThunk), this);
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateThunk), this);
+  if (frameless_) {
+    g_signal_connect(window_, "button-press-event",
+                     G_CALLBACK(OnButtonPressThunk), this);
+  }
 
   ui::ActiveWindowWatcherX::AddObserver(this);
 }
@@ -206,6 +220,37 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
   return FALSE;
 }
 
+gboolean ShellWindowGtk::OnButtonPress(GtkWidget* widget,
+                                       GdkEventButton* event) {
+  if (!draggable_region_.isEmpty() &&
+      draggable_region_.contains(event->x, event->y)) {
+    if (event->button == 1) {
+      if (GDK_BUTTON_PRESS == event->type) {
+        if (!suppress_window_raise_)
+          gdk_window_raise(GTK_WIDGET(widget)->window);
+
+        return gtk_window_util::HandleTitleBarLeftMousePress(
+            GTK_WINDOW(widget), bounds_, event);
+      } else if (GDK_2BUTTON_PRESS == event->type) {
+        bool is_maximized = gdk_window_get_state(GTK_WIDGET(widget)->window) &
+                            GDK_WINDOW_STATE_MAXIMIZED;
+        if (is_maximized) {
+          gtk_window_util::UnMaximize(GTK_WINDOW(widget),
+              bounds_, restored_bounds_);
+        } else {
+          gtk_window_maximize(GTK_WINDOW(widget));
+        }
+        return TRUE;
+      }
+    } else if (event->button == 2) {
+      gdk_window_lower(GTK_WIDGET(widget)->window);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 void ShellWindowGtk::SetFullscreen(bool fullscreen) {
   content_thinks_its_fullscreen_ = fullscreen;
   if (fullscreen)
@@ -225,6 +270,34 @@ void ShellWindowGtk::UpdateWindowTitle() {
 void ShellWindowGtk::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   // No-op.
+}
+
+void ShellWindowGtk::UpdateDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions) {
+  // Draggable region is not supported for non-frameless window.
+  if (!frameless_)
+    return;
+
+  SkRegion draggable_region;
+
+  // By default, the whole window is draggable.
+  gfx::Rect bounds = GetBounds();
+  draggable_region.op(0, 0, bounds.right(), bounds.bottom(),
+                      SkRegion::kUnion_Op);
+
+  // Exclude those designated as non-draggable.
+  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
+           regions.begin();
+       iter != regions.end(); ++iter) {
+    const extensions::DraggableRegion& region = *iter;
+    draggable_region.op(region.bounds.x(),
+                        region.bounds.y(),
+                        region.bounds.right(),
+                        region.bounds.bottom(),
+                        SkRegion::kDifference_Op);
+  }
+
+  draggable_region_ = draggable_region;
 }
 
 // static

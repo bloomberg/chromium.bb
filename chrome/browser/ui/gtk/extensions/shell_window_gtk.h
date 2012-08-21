@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/gfx/rect.h"
@@ -18,6 +19,7 @@ class Profile;
 
 namespace extensions {
 class Extension;
+struct DraggableRegion;
 }
 
 class ShellWindowGtk : public NativeShellWindow,
@@ -64,6 +66,8 @@ class ShellWindowGtk : public NativeShellWindow,
   const extensions::Extension* extension() const {
     return shell_window_->extension();
   }
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
   virtual ~ShellWindowGtk();
 
@@ -73,6 +77,8 @@ class ShellWindowGtk : public NativeShellWindow,
                        GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnWindowState,
                        GdkEventWindowState*);
+  CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnButtonPress,
+                       GdkEventButton*);
 
   ShellWindow* shell_window_;  // weak - ShellWindow owns NativeShellWindow.
 
@@ -93,6 +99,17 @@ class ShellWindowGtk : public NativeShellWindow,
   // True if the RVH is in fullscreen mode. The window may not actually be in
   // fullscreen, however: some WMs don't support fullscreen.
   bool content_thinks_its_fullscreen_;
+
+  // The region is treated as title bar, can be dragged to move
+  // and double clicked to maximize.
+  SkRegion draggable_region_;
+
+  // If true, don't call gdk_window_raise() when we get a click in the title
+  // bar or window border.  This is to work around a compiz bug.
+  bool suppress_window_raise_;
+
+  // True if the window shows without frame.
+  bool frameless_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowGtk);
 };

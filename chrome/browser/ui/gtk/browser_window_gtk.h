@@ -204,8 +204,7 @@ class BrowserWindowGtk : public BrowserWindow,
 
   void OnDebouncedBoundsChanged();
 
-  // Request the underlying window to unmaximize.  Also tries to work around
-  // a window manager "feature" that can prevent this in some edge cases.
+  // Request the underlying window to unmaximize.
   void UnMaximize();
 
   // Returns false if we're not ready to close yet.  E.g., a tab may have an
@@ -279,9 +278,7 @@ class BrowserWindowGtk : public BrowserWindow,
   // Draws the frame, including background, border and drop shadow.
   virtual void DrawFrame(GtkWidget* widget, GdkEventExpose* event);
 
-  virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event,
-                                            guint32 last_click_time,
-                                            gfx::Point last_click_position);
+  virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event);
 
   // Returns true if handled.
   virtual bool HandleWindowEdgeLeftMousePress(GtkWindow* window,
@@ -462,9 +459,6 @@ class BrowserWindowGtk : public BrowserWindow,
   bool IsToolbarSupported() const;
   bool IsBookmarkBarSupported() const;
 
-  // Returns |true| if the window bounds match the monitor size.
-  bool BoundsMatchMonitorSize();
-
   // Put the bookmark bar where it belongs.
   void PlaceBookmarkBar(bool is_floating);
 
@@ -551,11 +545,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // managers keep track of this state (_NET_ACTIVE_WINDOW), in which case
   // this will always be true.
   bool is_active_;
-
-  // Keep track of the last click time and the last click position so we can
-  // filter out extra GDK_BUTTON_PRESS events when a double click happens.
-  guint32 last_click_time_;
-  gfx::Point last_click_position_;
 
   // Optionally maximize or minimize the window after we call
   // BrowserWindow::Show for the first time.  This is to work around a compiz

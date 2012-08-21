@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_GTK_WINDOW_UTIL_H_
 
 #include <gtk/gtk.h>
+#include "ui/gfx/rect.h"
 
 namespace content {
 class WebContents;
@@ -25,6 +26,19 @@ void DisableResizeGrip(GtkWindow* window);
 
 // Returns the resize cursor corresponding to the window |edge|.
 GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge);
+
+// Returns |true| if the window bounds match the monitor size.
+bool BoundsMatchMonitorSize(GtkWindow* window, gfx::Rect bounds);
+
+bool HandleTitleBarLeftMousePress(GtkWindow* window,
+                                  const gfx::Rect& bounds,
+                                  GdkEventButton* event);
+
+// Request the underlying window to unmaximize.  Also tries to work around
+// a window manager "feature" that can prevent this in some edge cases.
+void UnMaximize(GtkWindow* window,
+                const gfx::Rect& bounds,
+                const gfx::Rect& restored_bounds);
 
 }  // namespace gtk_window_util
 

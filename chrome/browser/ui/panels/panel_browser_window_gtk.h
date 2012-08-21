@@ -58,9 +58,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge) OVERRIDE;
   virtual GdkRegion* GetWindowShape(int width, int height) const OVERRIDE;
   virtual bool HandleTitleBarLeftMousePress(
-      GdkEventButton* event,
-      guint32 last_click_time,
-      gfx::Point last_click_position) OVERRIDE;
+      GdkEventButton* event) OVERRIDE;
   virtual bool HandleWindowEdgeLeftMousePress(
       GtkWindow* window,
       GdkWindowEdge edge,

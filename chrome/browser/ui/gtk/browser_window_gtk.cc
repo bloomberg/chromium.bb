@@ -298,7 +298,6 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        contents_vsplit_(NULL),
        frame_cursor_(NULL),
        is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
-       last_click_time_(0),
        show_state_after_show_(ui::SHOW_STATE_DEFAULT),
        suppress_window_raise_(false),
        accel_group_(NULL),
@@ -1605,14 +1604,7 @@ void BrowserWindowGtk::OnMainWindowDestroy(GtkWidget* widget) {
 }
 
 void BrowserWindowGtk::UnMaximize() {
-  gtk_window_unmaximize(window_);
-
-  // It can happen that you end up with a window whose restore size is the same
-  // as the size of the screen, so unmaximizing it merely remaximizes it due to
-  // the same WM feature that SetWindowSize() works around.  We try to detect
-  // this and resize the window to work around the issue.
-  if (bounds_.size() == restored_bounds_.size())
-    gtk_window_resize(window_, bounds_.width(), bounds_.height() - 1);
+  gtk_window_util::UnMaximize(window_, bounds_, restored_bounds_);
 }
 
 bool BrowserWindowGtk::CanClose() const {
@@ -2274,12 +2266,6 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
                           && !has_hit_edge;
   if (event->button == 1) {
     if (GDK_BUTTON_PRESS == event->type) {
-      guint32 last_click_time = last_click_time_;
-      gfx::Point last_click_position = last_click_position_;
-      last_click_time_ = event->time;
-      last_click_position_ = gfx::Point(static_cast<int>(event->x),
-                                        static_cast<int>(event->y));
-
       // Raise the window after a click on either the titlebar or the border to
       // match the behavior of most window managers, unless that behavior has
       // been suppressed.
@@ -2287,8 +2273,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         gdk_window_raise(gdk_window);
 
       if (has_hit_titlebar) {
-        return HandleTitleBarLeftMousePress(
-            event, last_click_time, last_click_position);
+        return HandleTitleBarLeftMousePress(event);
       } else if (has_hit_edge) {
         return HandleWindowEdgeLeftMousePress(window_, edge, event);
       }
@@ -2319,45 +2304,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 }
 
 bool BrowserWindowGtk::HandleTitleBarLeftMousePress(
-    GdkEventButton* event,
-    guint32 last_click_time,
-    gfx::Point last_click_position) {
-  // We want to start a move when the user single clicks, but not start a
-  // move when the user double clicks.  However, a double click sends the
-  // following GDK events: GDK_BUTTON_PRESS, GDK_BUTTON_RELEASE,
-  // GDK_BUTTON_PRESS, GDK_2BUTTON_PRESS, GDK_BUTTON_RELEASE.  If we
-  // start a gtk_window_begin_move_drag on the second GDK_BUTTON_PRESS,
-  // the call to gtk_window_maximize fails.  To work around this, we
-  // keep track of the last click and if it's going to be a double click,
-  // we don't call gtk_window_begin_move_drag.
-  static GtkSettings* settings = gtk_settings_get_default();
-  gint double_click_time = 250;
-  gint double_click_distance = 5;
-  g_object_get(G_OBJECT(settings),
-               "gtk-double-click-time", &double_click_time,
-               "gtk-double-click-distance", &double_click_distance,
-               NULL);
-
-  guint32 click_time = event->time - last_click_time;
-  int click_move_x = abs(event->x - last_click_position.x());
-  int click_move_y = abs(event->y - last_click_position.y());
-
-  if (click_time > static_cast<guint32>(double_click_time) ||
-      click_move_x > double_click_distance ||
-      click_move_y > double_click_distance) {
-    // Ignore drag requests if the window is the size of the screen.
-    // We do this to avoid triggering fullscreen mode in metacity
-    // (without the --no-force-fullscreen flag) and in compiz (with
-    // Legacy Fullscreen Mode enabled).
-    if (!BoundsMatchMonitorSize()) {
-      gtk_window_begin_move_drag(window_, event->button,
-                                 static_cast<gint>(event->x_root),
-                                 static_cast<gint>(event->y_root),
-                                 event->time);
-    }
-    return TRUE;
-  }
-  return FALSE;
+    GdkEventButton* event) {
+  return gtk_window_util::HandleTitleBarLeftMousePress(window_, bounds_, event);
 }
 
 bool BrowserWindowGtk::HandleWindowEdgeLeftMousePress(
@@ -2494,17 +2442,6 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
 bool BrowserWindowGtk::UseCustomFrame() const {
   // We don't use the custom frame for app mode windows or app window popups.
   return use_custom_frame_pref_.GetValue() && !browser_->is_app();
-}
-
-bool BrowserWindowGtk::BoundsMatchMonitorSize() {
-  // A screen can be composed of multiple monitors.
-  GdkScreen* screen = gtk_window_get_screen(window_);
-  gint monitor_num = gdk_screen_get_monitor_at_window(screen,
-      gtk_widget_get_window(GTK_WIDGET(window_)));
-
-  GdkRectangle monitor_size;
-  gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor_size);
-  return bounds_.size() == gfx::Size(monitor_size.width, monitor_size.height);
 }
 
 void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {

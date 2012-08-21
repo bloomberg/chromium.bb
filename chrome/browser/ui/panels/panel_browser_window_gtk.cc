@@ -260,9 +260,7 @@ void PanelBrowserWindowGtk::EnsureDragHelperCreated() {
 }
 
 bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
-    GdkEventButton* event,
-    guint32 last_click_time,
-    gfx::Point last_click_position) {
+    GdkEventButton* event) {
   DCHECK_EQ(1U, event->button);
   DCHECK_EQ(GDK_BUTTON_PRESS, event->type);
 
@@ -673,8 +671,7 @@ void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
   if (modifier == panel::APPLY_TO_ALL)
     event->button.state |= GDK_CONTROL_MASK;
   panel_browser_window_gtk_->HandleTitleBarLeftMousePress(
-      reinterpret_cast<GdkEventButton*>(event),
-      GDK_CURRENT_TIME, gfx::Point());
+      reinterpret_cast<GdkEventButton*>(event));
   gdk_event_free(event);
   MessageLoopForUI::current()->RunAllPending();
 }
