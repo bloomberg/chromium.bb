@@ -115,7 +115,18 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
 void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                  const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
+  const VideoDecoderConfig& config = stream->video_decoder_config();
   if (!gvd_loop_proxy_) {
+    // FFmpegDemuxer's destructor frees/clears the AVStream underpinnings of
+    // FFmpegDemuxerStream without notifying the stream, creating a race between
+    // initialization and teardown.  As a HACK until this is fixed, enable
+    // the bitstream converter before posting the Initialize() call to the video
+    // decoder thread since we know the DemuxerStream is valid at this point.
+    // See http://crbug.com/143460 for more detail.
+    // TODO(fischman): drop this hack!
+    if (config.IsValidConfig() && config.codec() == kCodecH264)
+      stream->EnableBitstreamConverter();
+
     gvd_loop_proxy_ = base::ResetAndReturn(&message_loop_factory_cb_).Run();
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize,
@@ -133,7 +144,6 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
     return;
   }
 
-  const VideoDecoderConfig& config = stream->video_decoder_config();
   // TODO(scherkus): this check should go in Pipeline prior to creating
   // decoder objects.
   if (!config.IsValidConfig()) {
@@ -151,9 +161,6 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
 
   demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
-
-  if (config.codec() == kCodecH264)
-    demuxer_stream_->EnableBitstreamConverter();
 
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
   vda_loop_proxy_->PostTaskAndReply(
