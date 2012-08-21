@@ -292,6 +292,7 @@ span.displayModeWarning {
   color: #767676;
   display: block;
   position: relative;
+  font-weight: normal;
 }
 #gc-sidebar a:visited {
   color: #767676;

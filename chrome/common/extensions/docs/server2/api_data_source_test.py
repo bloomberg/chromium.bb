@@ -25,7 +25,7 @@ class APIDataSourceTest(unittest.TestCase):
     with open(os.path.join(self._base_path, filename), 'r') as f:
       return f.read()
 
-  def testSimple(self):
+  def DISABLED_testSimple(self):
     cache_builder = FileSystemCache.Builder(LocalFileSystem(self._base_path),
                                             InMemoryObjectStore('fake_branch'))
     data_source_factory = APIDataSource.Factory(cache_builder,
