@@ -70,12 +70,6 @@ cr.define('options.internet', function() {
     __proto__: OptionsPage.prototype,
 
     /**
-     * Indicates if the list of proxy exceptions has been initialized.
-     * @type {boolean}
-     */
-    proxyListInitialized_: false,
-
-    /**
      * Initializes DetailsInternetPage page.
      * Calls base class implementation to starts preference initialization.
      */
@@ -387,10 +381,6 @@ cr.define('options.internet', function() {
         this.enableManualProxy_();
       else
         this.disableManualProxy_();
-      if (!this.proxyListInitialized_ && this.visible) {
-        this.proxyListInitialized_ = true;
-        $('ignored-host-list').redraw();
-      }
     },
 
     /**

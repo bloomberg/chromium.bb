@@ -23,6 +23,7 @@ cr.define('options.proxyexceptions', function() {
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
+      this.autoExpands = true;
 
       // HACK(arv): http://crbug.com/40902
       window.addEventListener('resize', this.redraw.bind(this));

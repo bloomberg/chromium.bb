@@ -45,7 +45,6 @@
 #ignored-host-list {
   -webkit-margin-start: 0;
   border: solid 1px #999;
-  max-height: 128px;
   min-height: 64px;
   width: 400px;
 }
