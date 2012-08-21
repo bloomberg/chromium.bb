@@ -158,6 +158,24 @@
     return result;
   };
 
+  chromeHidden.parseEventOptions = function(opt_eventOptions) {
+    function merge(dest, src) {
+      for (var k in src) {
+        if (!dest.hasOwnProperty(k)) {
+          dest[k] = src[k];
+        }
+      }
+    }
+
+    var options = opt_eventOptions || {};
+    merge(options,
+        {supportsFilters: false,
+         supportsListeners: true,
+         supportsRules: false,
+        });
+    return options;
+  };
+
   // Event object.  If opt_eventName is provided, this object represents
   // the unique instance of that named event, and dispatching an event
   // with that name will route through this object's listeners. Note that
@@ -174,11 +192,7 @@
   chrome.Event = function(opt_eventName, opt_argSchemas, opt_eventOptions) {
     this.eventName_ = opt_eventName;
     this.listeners_ = [];
-    this.eventOptions_ = opt_eventOptions ||
-        {supportsFilters: false,
-         supportsListeners: true,
-         supportsRules: false,
-        };
+    this.eventOptions_ = chromeHidden.parseEventOptions(opt_eventOptions);
 
     if (this.eventOptions_.supportsRules && !opt_eventName)
       throw new Error("Events that support rules require an event name.");
@@ -206,6 +220,7 @@
       this.validateEventArgs_ = function() {}
     }
   };
+
 
   chromeHidden.Event = {};
 

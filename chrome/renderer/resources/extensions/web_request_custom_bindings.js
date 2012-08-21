@@ -30,9 +30,7 @@ function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas,
   this.argSchemas_ = opt_argSchemas;
   this.extraArgSchemas_ = opt_extraArgSchemas;
   this.subEvents_ = [];
-  this.eventOptions_ = opt_eventOptions ||
-      {'supportsListeners': true, 'supportsRules': false};
-
+  this.eventOptions_ = chromeHidden.parseEventOptions(opt_eventOptions);
   if (this.eventOptions_.supportsRules) {
     this.eventForRules_ =
         new chrome.Event(eventName, opt_argSchemas, opt_eventOptions);
