@@ -70,11 +70,6 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // Layouts the different sections retrieved from the model.
   void InitContents();
 
-  // Creates a popup section and returns a virtual box that contains the
-  // section content.
-  GtkWidget* CreateSection(std::string section_title,
-                           GtkWidget* section_content);
-
   // Callbacks for the link buttons.
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCookiesLinkClicked);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnViewCertLinkClicked);

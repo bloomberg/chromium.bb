@@ -83,6 +83,31 @@ void  SetConnectionSection(GtkWidget* section_box,
   gtk_widget_show_all(section_box);
 }
 
+GtkWidget* CreatePermissionTabSection(std::string section_title,
+                                      GtkWidget* section_content,
+                                      GtkThemeService* theme_service) {
+  GtkWidget* section_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
+
+  // Add Section title
+  GtkWidget* title_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
+
+  GtkWidget* label = theme_service->BuildLabel(section_title, ui::kGdkBlack);
+  gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+  PangoAttrList* attributes = pango_attr_list_new();
+  pango_attr_list_insert(attributes,
+                         pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+  gtk_label_set_attributes(GTK_LABEL(label), attributes);
+  pango_attr_list_unref(attributes);
+  gtk_box_pack_start(GTK_BOX(section_box), title_hbox, FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(title_hbox), label, FALSE, FALSE, 0);
+
+  // Add section content
+  gtk_box_pack_start(GTK_BOX(section_box), section_content, FALSE, FALSE, 0);
+  return section_box;
+}
+
+
 class InternalPageInfoPopupGtk : public BubbleDelegateGtk {
  public:
   explicit InternalPageInfoPopupGtk(gfx::NativeWindow parent,
@@ -249,8 +274,9 @@ void WebsiteSettingsPopupGtk::InitContents() {
   std::string title = l10n_util::GetStringUTF8(
       IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA);
   gtk_box_pack_start(GTK_BOX(permission_tab_contents),
-                     CreateSection(title,
-                                   cookies_section_contents_),
+                     CreatePermissionTabSection(title,
+                                                cookies_section_contents_,
+                                                theme_service_),
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(permission_tab_contents),
                      gtk_hseparator_new(),
@@ -258,8 +284,9 @@ void WebsiteSettingsPopupGtk::InitContents() {
   permissions_section_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
   title = l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
   gtk_box_pack_start(GTK_BOX(permission_tab_contents),
-                     CreateSection(title,
-                                   permissions_section_contents_),
+                     CreatePermissionTabSection(title,
+                                                permissions_section_contents_,
+                                                theme_service_),
                      FALSE, FALSE, 0);
 
   // Create the container for the contents of the identity tab.
@@ -301,31 +328,6 @@ void WebsiteSettingsPopupGtk::InitContents() {
   gtk_box_pack_start(GTK_BOX(contents_), notebook, FALSE, FALSE, 0);
   gtk_widget_show_all(contents_);
 }
-
-GtkWidget* WebsiteSettingsPopupGtk::CreateSection(std::string section_title,
-                                                  GtkWidget* section_content) {
-  GtkWidget* section_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
-
-  // Add Section title
-  GtkWidget* title_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
-
-  GtkWidget* label = theme_service_->BuildLabel(section_title,
-                                                ui::kGdkBlack);
-  gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-  PangoAttrList* attributes = pango_attr_list_new();
-  pango_attr_list_insert(attributes,
-                         pango_attr_weight_new(PANGO_WEIGHT_BOLD));
-  gtk_label_set_attributes(GTK_LABEL(label), attributes);
-  pango_attr_list_unref(attributes);
-  gtk_box_pack_start(GTK_BOX(section_box), title_hbox, FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(title_hbox), label, FALSE, FALSE, 0);
-
-  // Add section content
-  gtk_box_pack_start(GTK_BOX(section_box), section_content, FALSE, FALSE, 0);
-  return section_box;
-}
-
 
 void WebsiteSettingsPopupGtk::OnPermissionChanged(
     PermissionSelector* selector) {
