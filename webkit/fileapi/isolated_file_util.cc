@@ -83,7 +83,6 @@ class RecursiveSetFileEnumerator
  private:
   std::vector<FileInfo> files_;
   std::vector<FileInfo>::iterator file_iter_;
-  base::PlatformFileInfo file_info_;
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
 };
 
