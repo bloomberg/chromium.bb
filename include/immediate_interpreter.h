@@ -262,6 +262,17 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
       const HardwareState& hwstate,
       const set<short, kMaxGesturingFingers>& gs_fingers);
 
+  // Looks for finger that were present in the previous HardwareState, but
+  // have gone now, and adds them to liftoff_points_. It also removes expired
+  // entries from liftoff_points_.
+  // If should_add_points is false, doesn't add any new points.
+  void UpdateLiftoffPoints(const HardwareState& hwstate,
+                           bool should_add_points);
+
+  // Returns true if this finger is the possible-brush zone specified by
+  // the liftoff_brush_* properties.
+  bool PointInLiftoffBrush(const FingerState& fs) const;
+
   // Updates the internal button state based on the passed in |hwstate|.
   void UpdateButtons(const HardwareState& hwstate);
 
@@ -350,6 +361,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Time when the last motion (scroll, movement) occurred
   stime_t last_movement_timestamp_;
+
+  // Up to kMaxFingers points where fingers left the pad.
+  map<stime_t, Point, kMaxFingers> liftoff_points_;
 
   // Time when the last swipe gesture was generated
   stime_t last_swipe_timestamp_;
@@ -469,6 +483,18 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Motion (pointer movement, scroll) must halt for this length of time [s]
   // before a tap can generate a click.
   DoubleProperty motion_tap_prevent_timeout_;
+  // liftoff point =>  .       -,                -,
+  //                 /   \      | <= min radius   | <= max radius
+  //               /`-___-'\   _|                 |
+  //             /`-._____,-'\                   _|
+  //
+  // For liftoff_brush_timeout_ seconds after a contact lifts off, we disallow
+  // a tap to start in a special zone. This zone is centered beneath the
+  // contact that lifted off. It encompasses distances from the liftoff point
+  // that are between the min and max radius lengths.
+  DoubleProperty liftoff_brush_min_radius_;
+  DoubleProperty liftoff_brush_max_radius_;
+  DoubleProperty liftoff_brush_timeout_;
   // A finger must be at least this far from other fingers when it taps [mm].
   DoubleProperty tapping_finger_min_separation_;
 
