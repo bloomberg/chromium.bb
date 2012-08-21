@@ -29,8 +29,8 @@ ClientSession::ClientSession(
       host_input_stub_(host_input_stub),
       input_tracker_(host_input_stub_),
       remote_input_filter_(&input_tracker_),
-      mouse_input_filter_(&remote_input_filter_),
-      disable_input_filter_(&mouse_input_filter_),
+      mouse_clamping_filter_(capturer, &remote_input_filter_),
+      disable_input_filter_(&mouse_clamping_filter_),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       auth_input_filter_(&disable_input_filter_),
       auth_clipboard_filter_(&disable_clipboard_filter_),
@@ -44,7 +44,7 @@ ClientSession::ClientSession(
   // later and set them only when connection is authenticated.
   connection_->set_clipboard_stub(&auth_clipboard_filter_);
   connection_->set_host_stub(this);
-  connection_->set_input_stub(this);
+  connection_->set_input_stub(&auth_input_filter_);
   clipboard_echo_filter_.set_host_stub(host_clipboard_stub_);
 
   // |auth_*_filter_|'s states reflect whether the session is authenticated.
@@ -53,21 +53,6 @@ ClientSession::ClientSession(
 }
 
 ClientSession::~ClientSession() {
-}
-
-void ClientSession::InjectKeyEvent(const protocol::KeyEvent& event) {
-  DCHECK(CalledOnValidThread());
-  auth_input_filter_.InjectKeyEvent(event);
-}
-
-void ClientSession::InjectMouseEvent(const protocol::MouseEvent& event) {
-  DCHECK(CalledOnValidThread());
-
-  // Ensure that the MouseInputFilter is clamping to the current dimensions.
-  mouse_input_filter_.set_output_size(capturer_->size_most_recent());
-  mouse_input_filter_.set_input_size(capturer_->size_most_recent());
-
-  auth_input_filter_.InjectMouseEvent(event);
 }
 
 void ClientSession::NotifyClientDimensions(

@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/threading/non_thread_safe.h"
+#include "remoting/host/mouse_clamping_filter.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
 #include "remoting/protocol/clipboard_filter.h"
@@ -19,7 +20,6 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/mouse_input_filter.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
@@ -29,7 +29,6 @@ class VideoFrameCapturer;
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
 class ClientSession : public protocol::HostStub,
-                      public protocol::InputStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public base::NonThreadSafe {
  public:
@@ -73,10 +72,6 @@ class ClientSession : public protocol::HostStub,
                 VideoFrameCapturer* capturer,
                 const base::TimeDelta& max_duration);
   virtual ~ClientSession();
-
-  // protocol::InputStub interface.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
   // protocol::HostStub interface.
   virtual void NotifyClientDimensions(
@@ -145,7 +140,7 @@ class ClientSession : public protocol::HostStub,
   RemoteInputFilter remote_input_filter_;
 
   // Filter used to clamp mouse events to the current display dimensions.
-  protocol::MouseInputFilter mouse_input_filter_;
+  MouseClampingFilter mouse_clamping_filter_;
 
   // Filter to used to stop clipboard items sent from the client being echoed
   // back to it.
