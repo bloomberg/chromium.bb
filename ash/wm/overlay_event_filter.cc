@@ -50,8 +50,9 @@ bool OverlayEventFilter::PreHandleKeyEvent(
 
 bool OverlayEventFilter::PreHandleMouseEvent(
     aura::Window* target, ui::MouseEvent* event) {
-  if (delegate_) {
-    DCHECK_EQ(target, delegate_->GetWindow());
+  // Handle mouse events only when they are sent to a child of the delegate's
+  // window.
+  if (delegate_ && delegate_->GetWindow()->Contains(target)) {
     target->delegate()->OnMouseEvent(event);
     return true;
   }
