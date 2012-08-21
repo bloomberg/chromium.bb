@@ -65,7 +65,12 @@ def run_all(result):
     print >> sys.stderr, 'Failed to find %s' % result_file
     return None
   with open(result_file) as f:
-    data = json.load(f)
+    try:
+      data = json.load(f)
+    except ValueError as e:
+      print >> sys.stderr, ('Unable to load json file, %s: %s' %
+                            (result_file, str(e)))
+      return None
   os.remove(result_file)
   return [
     test for test, runs in data.iteritems()

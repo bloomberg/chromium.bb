@@ -291,6 +291,51 @@ class MergeGyp(unittest.TestCase):
     self.assertEquals(expected_values, actual_values)
     self.assertEquals(oses, actual_oses)
 
+  def test_reduce_inputs_take_strongest_dependency(self):
+    values = {
+      'command': {
+        ('echo', 'Hello World'): set(['atari']),
+        ('echo', 'You should get an Atari'): set(['amiga', 'coleco', 'dendy']),
+      },
+      KEY_TRACKED: {
+        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'b': set(['amiga', 'atari', 'coleco']),
+      },
+      KEY_UNTRACKED: {
+        'c': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'd': set(['amiga', 'coleco', 'dendy']),
+      },
+      KEY_TOUCHED: {
+        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'b': set(['atari', 'coleco', 'dendy']),
+        'c': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'd': set(['atari', 'coleco', 'dendy']),
+      },
+    }
+    oses = set(['amiga', 'atari', 'coleco', 'dendy'])
+    expected_values = {
+      'command': {
+        ('echo', 'Hello World'): set(['atari']),
+        ('echo', 'You should get an Atari'): set(['!atari']),
+      },
+      KEY_TRACKED: {
+        'a': set([None]),
+        'b': set(['!dendy']),
+      },
+      KEY_UNTRACKED: {
+        'c': set([None]),
+        'd': set(['!atari']),
+      },
+      KEY_TOUCHED: {
+        'b': set(['dendy']),
+        'd': set(['atari']),
+      },
+      'read_only': {},
+    }
+    actual_values, actual_oses = merge_isolate.reduce_inputs(values, oses)
+    self.assertEquals(expected_values, actual_values)
+    self.assertEquals(oses, actual_oses)
+
   def test_convert_map_to_gyp(self):
     values = {
       'command': {

@@ -218,6 +218,17 @@ def invert_map(variables):
   return out, set(variables)
 
 
+def remove_weak_dependencies(values, key, item, item_oses):
+  """Remove any oses from this key if the item is already under a strong key."""
+  if key == KEY_TOUCHED:
+    for stronger_key in (KEY_TRACKED, KEY_UNTRACKED):
+      oses = values.get(stronger_key, {}).get(item, None)
+      if oses:
+        item_oses -= oses
+
+  return item_oses
+
+
 def reduce_inputs(values, oses):
   """Reduces the invert_map() output to the strictest minimum list.
 
@@ -242,6 +253,10 @@ def reduce_inputs(values, oses):
   if len(oses) > 2:
     for key in KEYS:
       for item, item_oses in values.get(key, {}).iteritems():
+        item_oses = remove_weak_dependencies(values, key, item, item_oses)
+        if not item_oses:
+          continue
+
         # Converts all oses.difference('foo') to '!foo'.
         assert all(item_oses), item_oses
         missing = oses.difference(item_oses)
@@ -255,6 +270,10 @@ def reduce_inputs(values, oses):
   else:
     for key in KEYS:
       for item, item_oses in values.get(key, {}).iteritems():
+        item_oses = remove_weak_dependencies(values, key, item, item_oses)
+        if not item_oses:
+          continue
+
         # Converts all oses.difference('foo') to '!foo'.
         assert None not in item_oses, item_oses
         out[key][item] = set(item_oses)

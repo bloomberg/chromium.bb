@@ -381,7 +381,7 @@ def gtest_list_tests(executable):
     raise Failure('Failed to run %s\n%s' % (executable, err), p.returncode)
   # pylint: disable=E1103
   if err and not err.startswith('Xlib:  extension "RANDR" missing on display '):
-    raise Failure('Unexpected spew:\n%s' % err, 1)
+    logging.error('Unexpected spew in gtest_list_tests:\n%s\n%s', err, cmd)
   return out
 
 
