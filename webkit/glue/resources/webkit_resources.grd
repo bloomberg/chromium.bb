@@ -76,6 +76,10 @@
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER" file="mediaplayer_volume_slider_thumb_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN" file="mediaplayer_volume_slider_thumb_down.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DISABLED" file="mediaplayer_volume_slider_thumb_disabled.png" />
+      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON" file="mediaplayer_closedcaption.png" />
+      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_HOVER" file="mediaplayer_closedcaption_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_DOWN" file="mediaplayer_closedcaption_down.png" />
+      <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_CLOSEDCAPTION_BUTTON_DISABLED" file="mediaplayer_closedcaption_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON" file="mediaplayer_fullscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER" file="mediaplayer_fullscreen_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN" file="mediaplayer_fullscreen_down.png" />
