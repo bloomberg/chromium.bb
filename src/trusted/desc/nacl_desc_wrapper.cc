@@ -4,8 +4,6 @@
 
 #include <limits>
 #include <new>
-#include "base/shared_memory.h"
-#include "base/sync_socket.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
