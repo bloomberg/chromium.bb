@@ -3150,15 +3150,6 @@
    fun:_ZN7history20ExpireHistoryBackend25DoExpireHistoryIndexFilesEv
 }
 {
-   bug_87222
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10URLFetcher6CreateEiRK4GURLNS_11RequestTypeEPNS_8DelegateE
-   fun:_ZN16TranslateManager36FetchLanguageListFromTranslateServerEP11PrefService
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
-}
-{
    bug_87423
    Memcheck:Uninitialized
    fun:_ZNK3net15HttpBasicStream23LogNumRttVsBytesMetricsEv
