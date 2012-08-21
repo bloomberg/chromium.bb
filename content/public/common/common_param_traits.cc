@@ -127,16 +127,16 @@ void ParamTraits<net::URLRequestStatus>::Log(const param_type& p,
 // keep this in the implementation file so we can forward declare UploadData in
 // the header.
 template <>
-struct ParamTraits<net::UploadData::Element> {
-  typedef net::UploadData::Element param_type;
+struct ParamTraits<net::UploadElement> {
+  typedef net::UploadElement param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.type()));
     switch (p.type()) {
-      case net::UploadData::TYPE_BYTES: {
+      case net::UploadElement::TYPE_BYTES: {
         m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
         break;
       }
-      case net::UploadData::TYPE_CHUNK: {
+      case net::UploadElement::TYPE_CHUNK: {
         std::string chunk_length = StringPrintf(
             "%X\r\n", static_cast<unsigned int>(p.bytes().size()));
         std::vector<char> bytes;
@@ -157,7 +157,7 @@ struct ParamTraits<net::UploadData::Element> {
         WriteParam(m, p.is_last_chunk());
         break;
       }
-      case net::UploadData::TYPE_FILE: {
+      case net::UploadElement::TYPE_FILE: {
         WriteParam(m, p.file_path());
         WriteParam(m, p.file_range_offset());
         WriteParam(m, p.file_range_length());
@@ -175,7 +175,7 @@ struct ParamTraits<net::UploadData::Element> {
     if (!ReadParam(m, iter, &type))
       return false;
     switch (type) {
-      case net::UploadData::TYPE_BYTES: {
+      case net::UploadElement::TYPE_BYTES: {
         const char* data;
         int len;
         if (!m->ReadData(iter, &data, &len))
@@ -183,7 +183,7 @@ struct ParamTraits<net::UploadData::Element> {
         r->SetToBytes(data, len);
         break;
       }
-      case net::UploadData::TYPE_CHUNK: {
+      case net::UploadElement::TYPE_CHUNK: {
         const char* data;
         int len;
         if (!m->ReadData(iter, &data, &len))
@@ -194,11 +194,11 @@ struct ParamTraits<net::UploadData::Element> {
         bool is_last_chunk = false;
         if (!ReadParam(m, iter, &is_last_chunk))
           return false;
-        r->set_type(net::UploadData::TYPE_CHUNK);
+        r->set_type(net::UploadElement::TYPE_CHUNK);
         r->set_is_last_chunk(is_last_chunk);
         break;
       }
-      case net::UploadData::TYPE_FILE: {
+      case net::UploadElement::TYPE_FILE: {
         FilePath file_path;
         uint64 offset, length;
         base::Time expected_modification_time;
@@ -215,7 +215,7 @@ struct ParamTraits<net::UploadData::Element> {
         break;
       }
       default: {
-        DCHECK(type == net::UploadData::TYPE_BLOB);
+        DCHECK(type == net::UploadElement::TYPE_BLOB);
         GURL blob_url;
         if (!ReadParam(m, iter, &blob_url))
           return false;
@@ -226,7 +226,7 @@ struct ParamTraits<net::UploadData::Element> {
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
-    l->append("<net::UploadData::Element>");
+    l->append("<net::UploadElement>");
   }
 };
 
@@ -248,7 +248,7 @@ bool ParamTraits<scoped_refptr<net::UploadData> >::Read(const Message* m,
     return false;
   if (!has_object)
     return true;
-  std::vector<net::UploadData::Element> elements;
+  std::vector<net::UploadElement> elements;
   if (!ReadParam(m, iter, &elements))
     return false;
   int64 identifier;

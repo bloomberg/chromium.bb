@@ -102,7 +102,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
   blob_storage_controller.CloneBlob(blob_url3, blob_url2);
 
   // Setup upload data elements for comparison.
-  UploadData::Element blob_element1, blob_element2;
+  net::UploadElement blob_element1, blob_element2;
   blob_element1.SetToBytes(
       blob_data->items().at(0).data.c_str() +
           static_cast<int>(blob_data->items().at(0).offset),
@@ -113,7 +113,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       blob_data->items().at(1).length,
       blob_data->items().at(1).expected_modification_time);
 
-  UploadData::Element upload_element1, upload_element2;
+  net::UploadElement upload_element1, upload_element2;
   upload_element1.SetToBytes("Hello", 5);
   upload_element2.SetToFilePathRange(
       FilePath(FILE_PATH_LITERAL("foo1.txt")), 0, 20, time2);

@@ -172,11 +172,11 @@ bool ShouldServiceRequest(ProcessType process_type,
 
   // Check if the renderer is permitted to upload the requested files.
   if (request_data.upload_data) {
-    const std::vector<net::UploadData::Element>* uploads =
+    const std::vector<net::UploadElement>* uploads =
         request_data.upload_data->elements();
-    std::vector<net::UploadData::Element>::const_iterator iter;
+    std::vector<net::UploadElement>::const_iterator iter;
     for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-      if (iter->type() == net::UploadData::TYPE_FILE &&
+      if (iter->type() == net::UploadElement::TYPE_FILE &&
           !policy->CanReadFile(child_id, iter->file_path())) {
         NOTREACHED() << "Denied unauthorized upload of "
                      << iter->file_path().value();
