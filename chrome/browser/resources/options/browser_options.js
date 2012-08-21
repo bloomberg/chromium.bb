@@ -764,10 +764,14 @@ cr.define('options', function() {
     onDefaultDownloadDirectoryChanged_: function(event) {
       $('downloadLocationPath').value = event.value.value;
       if (cr.isChromeOS) {
-        // On ChromeOS, strip out /special for drive paths, and
-        // /home/chronos/user for local files.
-        $('downloadLocationPath').value = $('downloadLocationPath').value.
-            replace(/^\/(special|home\/chronos\/user)/, '');
+        // On ChromeOS, replace /special/drive with Drive for drive paths, and
+        // /home/chronos/user/Downloads with Downloads for local files.
+        // Also replace '/' with ' > ' everywhere.
+        var path = $('downloadLocationPath').value;
+        path = path.replace(/^\/special\/drive/, 'Google Drive');
+        path = path.replace(/^\/home\/chronos\/user\//, '');
+        path = path.replace(/\//g, ' > ');
+        $('downloadLocationPath').value = path;
       }
     },
 
