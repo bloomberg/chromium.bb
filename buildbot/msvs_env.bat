@@ -7,7 +7,7 @@ echo on
 set GYP_MSVS_VERSION=2008
 
 :: Blow away path for now if on the bots (to be more hermetic).
-if %BUILDBOT_SLAVENAME% equ "" goto SkipPathReset
+if "%BUILDBOT_SLAVENAME%" equ "" goto SkipPathReset
 set PATH=
 set PATH=%PATH%;c:\b\depot_tools;c:\b\depot_tools\python_bin
 set PATH=%PATH%;c:\b\build_internal\tools
