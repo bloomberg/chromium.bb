@@ -8,13 +8,14 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
+#import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
 @interface NSWindow (NSPrivateApis)
 - (void)setBottomCornerRounded:(BOOL)rounded;
@@ -72,9 +73,13 @@
   return YES;
 }
 
+- (void)executeCommand:(int)command {
+  // No-op, swallow the event.
+}
+
 @end
 
-@interface ShellNSWindow : UnderlayOpenGLHostingWindow
+@interface ShellNSWindow : ChromeEventProcessingWindow
 
 - (void)drawCustomFrameRect:(NSRect)rect forView:(NSView*)view;
 
@@ -365,6 +370,15 @@ void ShellWindowCocoa::UpdateDraggableRegions(
   InstallDraggableRegionViews();
 }
 
+void ShellWindowCocoa::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser ||
+      event.type == content::NativeWebKeyboardEvent::Char) {
+    return;
+  }
+  [window() redispatchKeyEvent:event.os_event];
+}
+
 void ShellWindowCocoa::InstallDraggableRegionViews() {
   DCHECK(!has_frame_);
 
@@ -441,8 +455,10 @@ void ShellWindowCocoa::WindowDidResignKey() {
 ShellWindowCocoa::~ShellWindowCocoa() {
 }
 
-NSWindow* ShellWindowCocoa::window() const {
-  return [window_controller_ window];
+ShellNSWindow* ShellWindowCocoa::window() const {
+  NSWindow* window = [window_controller_ window];
+  CHECK(!window || [window isKindOfClass:[ShellNSWindow class]]);
+  return static_cast<ShellNSWindow*>(window);
 }
 
 // static

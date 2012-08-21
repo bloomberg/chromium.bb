@@ -55,6 +55,8 @@ class ShellWindowGtk : public NativeShellWindow,
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();

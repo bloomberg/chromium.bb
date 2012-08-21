@@ -27,6 +27,11 @@ class NativeShellWindow : public BaseWindow {
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreenOrPending() const = 0;
 
+  // Allows the window to handle unhandled keyboard messages coming back from
+  // the renderer.
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) = 0;
+
   virtual ~NativeShellWindow() {}
 };
 

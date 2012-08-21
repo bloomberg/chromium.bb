@@ -222,6 +222,11 @@ void ShellWindowGtk::UpdateWindowTitle() {
   // TODO(jeremya): implement.
 }
 
+void ShellWindowGtk::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  // No-op.
+}
+
 // static
 NativeShellWindow* NativeShellWindow::Create(
     ShellWindow* shell_window, const ShellWindow::CreateParams& params) {

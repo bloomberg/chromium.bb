@@ -232,6 +232,13 @@ void ShellWindow::AddNewContents(WebContents* source,
                          user_gesture);
 }
 
+void ShellWindow::HandleKeyboardEvent(
+    WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  DCHECK_EQ(source, web_contents_);
+  native_window_->HandleKeyboardEvent(event);
+}
+
 void ShellWindow::OnNativeClose() {
   extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
   delete this;

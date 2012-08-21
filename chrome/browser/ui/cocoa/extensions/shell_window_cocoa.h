@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -18,13 +19,15 @@
 
 class Profile;
 class ShellWindowCocoa;
+@class ShellNSWindow;
 
 // A window controller for a minimal window to host a web app view. Passes
 // Objective-C notifications to the C++ bridge.
 @interface ShellWindowController : NSWindowController
                                   <NSWindowDelegate,
                                    GTMWindowSheetControllerDelegate,
-                                   ConstrainedWindowSupport> {
+                                   ConstrainedWindowSupport,
+                                   BrowserCommandExecutor> {
  @private
   ShellWindowCocoa* shellWindow_;  // Weak; owns self.
   // Manages per-window sheets.
@@ -77,11 +80,13 @@ class ShellWindowCocoa : public NativeShellWindow {
   virtual void UpdateWindowTitle() OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
  private:
   virtual ~ShellWindowCocoa();
 
-  NSWindow* window() const;
+  ShellNSWindow* window() const;
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();

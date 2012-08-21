@@ -579,6 +579,11 @@ void ShellWindowViews::UpdateDraggableRegions(
   OnViewWasResized();
 }
 
+void ShellWindowViews::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  // No-op.
+}
+
 // static
 NativeShellWindow* NativeShellWindow::Create(
     ShellWindow* shell_window, const ShellWindow::CreateParams& params) {

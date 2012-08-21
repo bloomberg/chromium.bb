@@ -127,6 +127,9 @@ class ShellWindow : public content::NotificationObserver,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
