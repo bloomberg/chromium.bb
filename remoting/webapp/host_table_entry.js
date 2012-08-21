@@ -80,22 +80,29 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
   hostNameCell.classList.add('box-spacer');
   tableRow.appendChild(hostNameCell);
   // Create the host rename cell.
-  var editButton = /** @type {HTMLElement} */ document.createElement('img');
-  editButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_RENAME');
-  editButton.src = 'icon_pencil.png';
+  var editButton = /** @type {HTMLElement} */ document.createElement('span');
+  var editButtonImg = /** @type {HTMLElement} */ document.createElement('img');
+  editButtonImg.title = chrome.i18n.getMessage(
+      /*i18n-content*/'TOOLTIP_RENAME');
+  editButtonImg.src = 'icon_pencil.png';
   editButton.tabIndex = 0;
   editButton.classList.add('clickable');
   editButton.classList.add('host-list-edit');
-  editButton.classList.add('host-list-rename-icon');
+  editButtonImg.classList.add('host-list-rename-icon');
+  editButton.appendChild(editButtonImg);
   tableRow.appendChild(editButton);
   // Create the host delete cell.
-  var deleteButton = /** @type {HTMLElement} */ document.createElement('img');
-  deleteButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
-  deleteButton.src = 'icon_cross.png';
+  var deleteButton = /** @type {HTMLElement} */ document.createElement('span');
+  var deleteButtonImg =
+      /** @type {HTMLElement} */ document.createElement('img');
+  deleteButtonImg.title =
+      chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
+  deleteButtonImg.src = 'icon_cross.png';
   deleteButton.tabIndex = 0;
   deleteButton.classList.add('clickable');
   deleteButton.classList.add('host-list-edit');
-  deleteButton.classList.add('host-list-remove-icon');
+  deleteButtonImg.classList.add('host-list-remove-icon');
+  deleteButton.appendChild(deleteButtonImg);
   tableRow.appendChild(deleteButton);
 
   this.init(host, tableRow, hostNameCell, editButton, onRename,
