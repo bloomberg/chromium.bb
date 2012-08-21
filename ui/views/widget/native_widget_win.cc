@@ -1729,34 +1729,7 @@ LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 }
 
 LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
-  if (!GetWidget()->non_client_view()) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-
-  // If the DWM is rendering the window controls, we need to give the DWM's
-  // default window procedure first chance to handle hit testing.
-  if (!message_handler_->remove_standard_frame() &&
-      GetWidget()->ShouldUseNativeFrame()) {
-    LRESULT result;
-    if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
-                         MAKELPARAM(point.x, point.y), &result)) {
-      return result;
-    }
-  }
-
-  // First, give the NonClientView a chance to test the point to see if it
-  // provides any of the non-client area.
-  POINT temp = point;
-  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
-  int component = delegate_->GetNonClientComponent(gfx::Point(temp));
-  if (component != HTNOWHERE)
-    return component;
-
-  // Otherwise, we let Windows do all the native frame non-client handling for
-  // us.
-  SetMsgHandled(FALSE);
-  return 0;
+  return message_handler_->OnNCHitTest(point);
 }
 
 void NativeWidgetWin::OnNCPaint(HRGN rgn) {
@@ -2216,7 +2189,7 @@ bool NativeWidgetWin::IsWidgetWindow() const {
 }
 
 bool NativeWidgetWin::IsUsingCustomFrame() const {
-  return GetWidget()->ShouldUseNativeFrame();
+  return !GetWidget()->ShouldUseNativeFrame();
 }
 
 bool NativeWidgetWin::CanResize() const {
