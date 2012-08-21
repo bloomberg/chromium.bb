@@ -73,7 +73,6 @@ extern const FilePath::CharType kManagedModePolicyFilename[];
 extern const FilePath::CharType kMediaCacheDirname[];
 extern const FilePath::CharType kNewTabThumbnailsFilename[];
 extern const FilePath::CharType kOBCertFilename[];
-extern const FilePath::CharType kOffTheRecordMediaCacheDirname[];
 extern const FilePath::CharType kPreferencesFilename[];
 extern const FilePath::CharType kReadmeFilename[];
 extern const FilePath::CharType kSafeBrowsingBaseFilename[];

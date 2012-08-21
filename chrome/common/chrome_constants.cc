@@ -148,8 +148,6 @@ const FilePath::CharType kManagedModePolicyFilename[] =
 const FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const FilePath::CharType kNewTabThumbnailsFilename[] = FPL("Top Thumbnails");
 const FilePath::CharType kOBCertFilename[] = FPL("Origin Bound Certs");
-const FilePath::CharType kOffTheRecordMediaCacheDirname[] =
-    FPL("Incognito Media Cache");
 const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const FilePath::CharType kReadmeFilename[] = FPL("README");
 const FilePath::CharType kSafeBrowsingBaseFilename[] = FPL("Safe Browsing");
