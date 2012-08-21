@@ -79,7 +79,6 @@ class BLOB_EXPORT BlobData : public base::RefCounted<BlobData> {
   };
 
   BlobData();
-  explicit BlobData(const WebKit::WebBlobData& data);
 
   void AppendData(const std::string& data) {
     AppendData(data.c_str(), data.size());
