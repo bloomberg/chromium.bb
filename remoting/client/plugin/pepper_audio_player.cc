@@ -75,12 +75,12 @@ void PepperAudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
   // TODO(kxing): Limit the size of the queue so that latency doesn't grow
   // too large.
 
-  // Drop null packets.
-  if (!packet.get())
-    return;
-
   CHECK_EQ(1, packet->data_size());
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
+  DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
+  DCHECK_EQ(kSampleSizeBytes, packet->bytes_per_sample());
+  DCHECK_EQ(static_cast<int>(kChannels), packet->channels());
+
   if (packet->data(0).size() % (kChannels * kSampleSizeBytes) != 0) {
     LOG(WARNING) << "Received corrupted packet.";
     return;

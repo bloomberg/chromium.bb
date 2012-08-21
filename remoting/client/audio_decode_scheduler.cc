@@ -51,7 +51,9 @@ void AudioDecodeScheduler::DecodePacket(scoped_ptr<AudioPacket> packet,
 void AudioDecodeScheduler::ProcessDecodedPacket(scoped_ptr<AudioPacket> packet,
                                                 const base::Closure& done) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  audio_player_->ProcessAudioPacket(packet.Pass());
+  // Only process |packet| if it is non-NULL.
+  if (packet.get())
+    audio_player_->ProcessAudioPacket(packet.Pass());
   done.Run();
 }
 

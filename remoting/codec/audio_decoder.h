@@ -22,6 +22,8 @@ class AudioDecoder {
 
   virtual ~AudioDecoder() {}
 
+  // Returns the decoded packet. If the packet is invalid, then a NULL
+  // scoped_ptr is returned.
   virtual scoped_ptr<AudioPacket> Decode(scoped_ptr<AudioPacket> packet) = 0;
 };
 

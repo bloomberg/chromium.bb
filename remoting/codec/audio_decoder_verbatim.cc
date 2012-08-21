@@ -21,7 +21,9 @@ scoped_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
   if ((packet->encoding() != AudioPacket::ENCODING_RAW) ||
       (packet->data_size() != 1) ||
       (packet->sampling_rate() == AudioPacket::SAMPLING_RATE_INVALID) ||
-      (packet->bytes_per_sample() == AudioPacket::BYTES_PER_SAMPLE_INVALID)) {
+      (packet->bytes_per_sample() != AudioPacket::BYTES_PER_SAMPLE_2) ||
+      (packet->channels() != AudioPacket::CHANNELS_STEREO)) {
+    LOG(WARNING) << "Verbatim decoder received an invalid packet.";
     return scoped_ptr<AudioPacket>();
   }
   return packet.Pass();

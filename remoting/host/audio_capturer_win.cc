@@ -294,10 +294,10 @@ void AudioCapturerWin::DoCapture() {
       scoped_ptr<AudioPacket> packet =
           scoped_ptr<AudioPacket>(new AudioPacket());
       packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
-      packet->set_sampling_rate(sampling_rate_);
-      packet->set_bytes_per_sample(
-          static_cast<AudioPacket::BytesPerSample>(sizeof(int16)));
       packet->set_encoding(AudioPacket::ENCODING_RAW);
+      packet->set_sampling_rate(sampling_rate_);
+      packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+      packet->set_channels(AudioPacket::CHANNELS_STEREO);
 
       callback_.Run(packet.Pass());
     }
