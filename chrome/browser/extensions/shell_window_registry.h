@@ -67,6 +67,10 @@ class ShellWindowRegistry : public ProfileKeyedService {
   ShellWindow* GetShellWindowForRenderViewHost(
       content::RenderViewHost* render_view_host) const;
   ShellWindow* GetShellWindowForNativeWindow(gfx::NativeWindow window) const;
+  // Returns an app window for the given app, or NULL if no shell windows are
+  // open. If there is a window for the given app that is active, that one will
+  // be returned, otherwise an arbitrary window will be returned.
+  ShellWindow* GetCurrentShellWindowForApp(const std::string& app_id) const;
 
  private:
   class Factory : public ProfileKeyedServiceFactory {

@@ -64,11 +64,25 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindow(
     gfx::NativeWindow window) const {
   for (ShellWindowSet::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
-    if ((*i)->GetBaseWindow()->GetNativeWindow() == window)
+    if ((*i)->GetNativeWindow() == window)
       return *i;
   }
 
   return NULL;
+}
+
+ShellWindow* ShellWindowRegistry::GetCurrentShellWindowForApp(
+    const std::string& app_id) const {
+  ShellWindow* result = NULL;
+  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+       i != shell_windows_.end(); ++i) {
+    if ((*i)->extension()->id() == app_id)
+      result = *i;
+    if (result->GetBaseWindow()->IsActive())
+      return result;
+  }
+
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

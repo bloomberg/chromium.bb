@@ -11,8 +11,10 @@
 
 #include "base/platform_file.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -103,10 +105,15 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   TabContents* tab_contents =
       contents ? TabContents::FromWebContents(contents) : NULL;
   if (!tab_contents) {
-    // TODO(estade): for now it just gives up, but it might be nice to first
-    // attempt to find the active window for this extension.
-    ReturnGalleries();
-    return;
+    ShellWindow* window = ShellWindowRegistry::Get(profile())->
+        GetCurrentShellWindowForApp(GetExtension()->id());
+    if (window) {
+      tab_contents = window->tab_contents();
+    } else {
+      // Abort showing the dialog.
+      ReturnGalleries();
+      return;
+    }
   }
 
   // Controller will delete itself.
