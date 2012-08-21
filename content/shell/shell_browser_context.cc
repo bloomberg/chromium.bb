@@ -104,7 +104,13 @@ net::URLRequestContextGetter*
 }
 
 net::URLRequestContextGetter*
-    ShellBrowserContext::GetRequestContextForMedia()  {
+    ShellBrowserContext::GetMediaRequestContext()  {
+  return GetRequestContext();
+}
+
+net::URLRequestContextGetter*
+    ShellBrowserContext::GetMediaRequestContextForRenderProcess(
+        int renderer_child_id)  {
   return GetRequestContext();
 }
 

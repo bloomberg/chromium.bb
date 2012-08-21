@@ -277,6 +277,8 @@ void InitializeResourceContext(BrowserContext* browser_context) {
 
   // Add content's URLRequestContext's hooks.
   // Check first to avoid memory leak in unittests.
+  // TODO(creis): Do equivalent initializations for isolated app and isolated
+  // media request contexts.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -288,7 +290,7 @@ void InitializeResourceContext(BrowserContext* browser_context) {
         base::Bind(&InitializeRequestContext,
                    resource_context,
                    make_scoped_refptr(
-                       browser_context->GetRequestContextForMedia())));
+                       browser_context->GetMediaRequestContext())));
   }
 }
 

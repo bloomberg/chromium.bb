@@ -82,6 +82,9 @@ class ProfileIOData {
   ChromeURLRequestContext* GetIsolatedAppRequestContext(
       ChromeURLRequestContext* main_context,
       const std::string& app_id) const;
+  ChromeURLRequestContext* GetIsolatedMediaRequestContext(
+      ChromeURLRequestContext* media_context,
+      const std::string& app_id) const;
 
   // These are useful when the Chrome layer is called from the content layer
   // with a content::ResourceContext, and they want access to Chrome data for
@@ -135,6 +138,23 @@ class ProfileIOData {
   bool GetMetricsEnabledStateOnIOThread() const;
 
  protected:
+  // A URLRequestContext for media that owns its HTTP factory, to ensure
+  // it is deleted.
+  class MediaRequestContext : public ChromeURLRequestContext {
+   public:
+    explicit MediaRequestContext(
+        chrome_browser_net::LoadTimeStats* load_time_stats);
+
+    void SetHttpTransactionFactory(net::HttpTransactionFactory* http_factory);
+
+   private:
+    virtual ~MediaRequestContext();
+
+    scoped_ptr<net::HttpTransactionFactory> http_factory_;
+  };
+
+  // A URLRequestContext for apps that owns its cookie store and HTTP factory,
+  // to ensure they are deleted.
   class AppRequestContext : public ChromeURLRequestContext {
    public:
     explicit AppRequestContext(
@@ -272,7 +292,7 @@ class ProfileIOData {
   };
 
   typedef base::hash_map<std::string, ChromeURLRequestContext*>
-      AppRequestContextMap;
+      URLRequestContextMap;
 
   // --------------------------------------------
   // Virtual interface for subtypes to implement:
@@ -288,6 +308,12 @@ class ProfileIOData {
       ChromeURLRequestContext* main_context,
       const std::string& app_id) const = 0;
 
+  // Does an on-demand initialization of a media RequestContext for the given
+  // isolated app.
+  virtual ChromeURLRequestContext* InitializeMediaRequestContext(
+      ChromeURLRequestContext* original_context,
+      const std::string& app_id) const = 0;
+
   // These functions are used to transfer ownership of the lazily initialized
   // context from ProfileIOData to the URLRequestContextGetter.
   virtual ChromeURLRequestContext*
@@ -295,6 +321,10 @@ class ProfileIOData {
   virtual ChromeURLRequestContext*
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
+          const std::string& app_id) const = 0;
+  virtual ChromeURLRequestContext*
+      AcquireIsolatedMediaRequestContext(
+          ChromeURLRequestContext* app_context,
           const std::string& app_id) const = 0;
 
   // Returns the LoadTimeStats object to be used for this profile.
@@ -363,8 +393,9 @@ class ProfileIOData {
   // called.
   mutable scoped_ptr<ChromeURLRequestContext> main_request_context_;
   mutable scoped_ptr<ChromeURLRequestContext> extensions_request_context_;
-  // One AppRequestContext per isolated app.
-  mutable AppRequestContextMap app_request_context_map_;
+  // One URLRequestContext per isolated app for main and media requests.
+  mutable URLRequestContextMap app_request_context_map_;
+  mutable URLRequestContextMap isolated_media_request_context_map_;
 
   mutable scoped_ptr<ResourceContext> resource_context_;
 

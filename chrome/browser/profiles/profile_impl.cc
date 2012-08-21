@@ -684,9 +684,8 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
   if (extension_service) {
     const extensions::Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);
-    if (installed_app != NULL && installed_app->is_storage_isolated()) {
+    if (installed_app && installed_app->is_storage_isolated())
       return GetRequestContextForIsolatedApp(installed_app->id());
-    }
   }
 
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
@@ -704,7 +703,35 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
   return GetRequestContext();
 }
 
-net::URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
+net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
+  // Return the default media context.
+  return io_data_.GetMediaRequestContextGetter();
+}
+
+net::URLRequestContextGetter*
+ProfileImpl::GetMediaRequestContextForRenderProcess(
+    int renderer_child_id) {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(this)->extension_service();
+  if (extension_service) {
+    const extensions::Extension* installed_app = extension_service->
+        GetInstalledAppForRenderer(renderer_child_id);
+    if (installed_app && installed_app->is_storage_isolated())
+      return io_data_.GetIsolatedMediaRequestContextGetter(installed_app->id());
+  }
+
+  content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
+      renderer_child_id);
+  if (rph && rph->IsGuest()) {
+    // For guest processes (used by the browser tag), we need to isolate the
+    // storage.
+    // TODO(nasko): Until we have proper storage partitions, create a
+    // non-persistent context using the RPH's id.
+    std::string id("guest-");
+    id.append(base::IntToString(renderer_child_id));
+    return io_data_.GetIsolatedMediaRequestContextGetter(id);
+  }
+
   return io_data_.GetMediaRequestContextGetter();
 }
 

@@ -281,9 +281,16 @@ net::URLRequestContextGetter*
 }
 
 net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::GetRequestContextForMedia() {
+    OffTheRecordProfileImpl::GetMediaRequestContext() {
   // In OTR mode, media request context is the same as the original one.
-  return io_data_.GetMainRequestContextGetter();
+  return GetRequestContext();
+}
+
+net::URLRequestContextGetter*
+    OffTheRecordProfileImpl::GetMediaRequestContextForRenderProcess(
+        int renderer_child_id) {
+  // In OTR mode, media request context is the same as the original one.
+  return GetRequestContextForRenderProcess(renderer_child_id);
 }
 
 net::URLRequestContextGetter*

@@ -83,8 +83,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL(
-      "files/extensions/isolated_apps/");
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -182,8 +181,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL(
-      "files/extensions/isolated_apps/");
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -242,6 +240,71 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
   EXPECT_EQ("ls_normal", result);
 }
 
+// Tests that subresource and media requests use the app's cookie store.
+// See http://crbug.com/141172.
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, SubresourceCookieIsolation) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL root_url = test_server()->GetURL("");
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  root_url = root_url.ReplaceComponents(replace_host);
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  // First set cookies inside and outside the app.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), root_url.Resolve("set-cookie?nonApp=1"),
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WebContents* tab0 = chrome::GetWebContentsAt(browser(), 0);
+  ASSERT_FALSE(GetInstalledApp(tab0));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("app1/main.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WebContents* tab1 = chrome::GetWebContentsAt(browser(), 1);
+  ASSERT_TRUE(GetInstalledApp(tab1));
+
+  // Check that each tab sees its own cookie.
+  EXPECT_TRUE(HasCookie(tab0, "nonApp=1"));
+  EXPECT_FALSE(HasCookie(tab0, "app1=3"));
+  EXPECT_FALSE(HasCookie(tab1, "nonApp=1"));
+  EXPECT_TRUE(HasCookie(tab1, "app1=3"));
+
+  // Now visit an app page that loads subresources located outside the app.
+  // For both images and video tags, it loads two URLs:
+  //  - One will set nonApp{Media,Image}=1 cookies if nonApp=1 is set.
+  //  - One will set app1{Media,Image}=1 cookies if app1=3 is set.
+  // We expect only the app's cookies to be present.
+  // We must wait for the onload event, to allow the subresources to finish.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::Source<WebContents>(chrome::GetActiveWebContents(browser())));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("app1/app_subresources.html"),
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  observer.Wait();
+  EXPECT_FALSE(HasCookie(tab1, "nonAppMedia=1"));
+  EXPECT_TRUE(HasCookie(tab1, "app1Media=1"));
+  EXPECT_FALSE(HasCookie(tab1, "nonAppImage=1"));
+  EXPECT_TRUE(HasCookie(tab1, "app1Image=1"));
+
+  // Also create a non-app tab to ensure no new cookies were set in that jar.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), root_url,
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WebContents* tab2 = chrome::GetWebContentsAt(browser(), 2);
+  EXPECT_FALSE(HasCookie(tab2, "nonAppMedia=1"));
+  EXPECT_FALSE(HasCookie(tab2, "app1Media=1"));
+  EXPECT_FALSE(HasCookie(tab2, "nonAppImage=1"));
+  EXPECT_FALSE(HasCookie(tab2, "app1Image=1"));
+}
+
 // Tests that isolated apps processes do not render top-level non-app pages.
 // This is true even in the case of the OAuth workaround for hosted apps,
 // where non-app popups may be kept in the hosted app process.
@@ -253,8 +316,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, IsolatedAppProcessModel) {
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL(
-      "files/extensions/isolated_apps/");
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);
@@ -306,8 +368,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, SessionStorage) {
 
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
-  GURL base_url = test_server()->GetURL(
-      "files/extensions/isolated_apps/");
+  GURL base_url = test_server()->GetURL("files/extensions/isolated_apps/");
   GURL::Replacements replace_host;
   std::string host_str("localhost");  // Must stay in scope with replace_host.
   replace_host.SetHostStr(host_str);

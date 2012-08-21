@@ -374,7 +374,10 @@ class MockBrowserContext : public content::BrowserContext {
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD1(GetRequestContextForRenderProcess,
                net::URLRequestContextGetter*(int renderer_child_id));
-  MOCK_METHOD0(GetRequestContextForMedia, net::URLRequestContextGetter*());
+  MOCK_METHOD0(GetMediaRequestContext,
+               net::URLRequestContextGetter*());
+  MOCK_METHOD1(GetMediaRequestContextForRenderProcess,
+               net::URLRequestContextGetter*(int renderer_child_id));
   MOCK_METHOD0(GetResourceContext, content::ResourceContext*());
   MOCK_METHOD0(GetDownloadManagerDelegate, content::DownloadManagerDelegate*());
   MOCK_METHOD0(GetGeolocationPermissionContext,

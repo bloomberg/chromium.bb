@@ -73,6 +73,14 @@ ProfileImplIOData::Handle::~Handle() {
     iter->second->CleanupOnUIThread();
   }
 
+  // Clean up all isolated media request contexts.
+  for (ChromeURLRequestContextGetterMap::iterator iter =
+           isolated_media_request_context_getter_map_.begin();
+       iter != isolated_media_request_context_getter_map_.end();
+       ++iter) {
+    iter->second->CleanupOnUIThread();
+  }
+
   if (io_data_->http_server_properties_manager())
     io_data_->http_server_properties_manager()->ShutdownOnUIThread();
   io_data_->ShutdownOnUIThread();
@@ -110,8 +118,11 @@ void ProfileImplIOData::Handle::Init(
 
   io_data_->lazy_params_.reset(lazy_params);
 
-  // Keep track of isolated app path separately so we can use it on demand.
+  // Keep track of isolated app path and cache sizes separately so we can use
+  // them on demand.
   io_data_->app_path_ = app_path;
+  io_data_->app_cache_max_size_ = cache_max_size;
+  io_data_->app_media_cache_max_size_ = media_cache_max_size;
 
   io_data_->predictor_.reset(predictor);
 
@@ -197,7 +208,7 @@ scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetIsolatedAppRequestContextGetter(
     const std::string& app_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!app_id.empty());
+  CHECK(!app_id.empty());
   LazyInitialize();
 
   // Keep a map of request context getters, one per requested app ID.
@@ -210,6 +221,28 @@ ProfileImplIOData::Handle::GetIsolatedAppRequestContextGetter(
       ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
           profile_, io_data_, app_id);
   app_request_context_getter_map_[app_id] = context;
+
+  return context;
+}
+
+scoped_refptr<ChromeURLRequestContextGetter>
+ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
+    const std::string& app_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // We must have an app ID, or this will act like the default media context.
+  CHECK(!app_id.empty());
+  LazyInitialize();
+
+  // Keep a map of request context getters, one per requested app ID.
+  ChromeURLRequestContextGetterMap::iterator iter =
+      isolated_media_request_context_getter_map_.find(app_id);
+  if (iter != isolated_media_request_context_getter_map_.end())
+    return iter->second;
+
+  ChromeURLRequestContextGetter* context =
+      ChromeURLRequestContextGetter::CreateOriginalForIsolatedMedia(
+          profile_, io_data_, app_id);
+  isolated_media_request_context_getter_map_[app_id] = context;
 
   return context;
 }
@@ -270,8 +303,6 @@ void ProfileImplIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {
   ChromeURLRequestContext* main_context = main_request_context();
   ChromeURLRequestContext* extensions_context = extensions_request_context();
-  media_request_context_.reset(new ChromeURLRequestContext(
-      ChromeURLRequestContext::CONTEXT_TYPE_MEDIA, load_time_stats()));
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
@@ -286,55 +317,37 @@ void ProfileImplIOData::LazyInitializeInternal(
   // Initialize context members.
 
   ApplyProfileParamsToContext(main_context);
-  ApplyProfileParamsToContext(media_request_context_.get());
   ApplyProfileParamsToContext(extensions_context);
 
   if (http_server_properties_manager())
     http_server_properties_manager()->InitializeOnIOThread();
 
   main_context->set_transport_security_state(transport_security_state());
-  media_request_context_->set_transport_security_state(
-      transport_security_state());
   extensions_context->set_transport_security_state(transport_security_state());
 
   main_context->set_net_log(io_thread->net_log());
-  media_request_context_->set_net_log(io_thread->net_log());
   extensions_context->set_net_log(io_thread->net_log());
 
   main_context->set_network_delegate(network_delegate());
-  media_request_context_->set_network_delegate(network_delegate());
 
   main_context->set_http_server_properties(http_server_properties_manager());
-  media_request_context_->set_http_server_properties(
-      http_server_properties_manager());
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
-  media_request_context_->set_host_resolver(
-      io_thread_globals->host_resolver.get());
   main_context->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
-  media_request_context_->set_cert_verifier(
-      io_thread_globals->cert_verifier.get());
   main_context->set_http_auth_handler_factory(
-      io_thread_globals->http_auth_handler_factory.get());
-  media_request_context_->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 
   main_context->set_fraudulent_certificate_reporter(
       fraudulent_certificate_reporter());
-  media_request_context_->set_fraudulent_certificate_reporter(
-      fraudulent_certificate_reporter());
 
   main_context->set_throttler_manager(
-      io_thread_globals->throttler_manager.get());
-  media_request_context_->set_throttler_manager(
       io_thread_globals->throttler_manager.get());
   extensions_context->set_throttler_manager(
       io_thread_globals->throttler_manager.get());
 
   main_context->set_proxy_service(proxy_service());
-  media_request_context_->set_proxy_service(proxy_service());
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   net::ServerBoundCertService* server_bound_cert_service = NULL;
@@ -374,7 +387,6 @@ void ProfileImplIOData::LazyInitializeInternal(
   extensions_cookie_store->SetCookieableSchemes(schemes, 2);
 
   main_context->set_cookie_store(cookie_store);
-  media_request_context_->set_cookie_store(cookie_store);
   extensions_context->set_cookie_store(extensions_cookie_store);
 
   // Setup server bound cert service.
@@ -392,8 +404,6 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   set_server_bound_cert_service(server_bound_cert_service);
   main_context->set_server_bound_cert_service(server_bound_cert_service);
-  media_request_context_->set_server_bound_cert_service(
-      server_bound_cert_service);
 
   std::string trusted_spdy_proxy;
   if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
@@ -421,32 +431,24 @@ void ProfileImplIOData::LazyInitializeInternal(
       main_backend,
       trusted_spdy_proxy);
 
-  net::HttpCache::DefaultBackend* media_backend =
-      new net::HttpCache::DefaultBackend(
-          net::MEDIA_CACHE, lazy_params_->media_cache_path,
-          lazy_params_->media_cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
-  net::HttpNetworkSession* main_network_session = main_cache->GetSession();
-  net::HttpCache* media_cache =
-      new net::HttpCache(main_network_session, media_backend);
-
   if (record_mode || playback_mode) {
     main_cache->set_mode(
         record_mode ? net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
   }
 
   main_http_factory_.reset(main_cache);
-  media_http_factory_.reset(media_cache);
   main_context->set_http_transaction_factory(main_cache);
-  media_request_context_->set_http_transaction_factory(media_cache);
 
   ftp_factory_.reset(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
   main_context->set_ftp_transaction_factory(ftp_factory_.get());
-  media_request_context_->set_ftp_transaction_factory(ftp_factory_.get());
 
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
+
+  // Create a media request context based on the main context, but using a
+  // media cache.
+  media_request_context_.reset(InitializeMediaRequestContext(main_context, ""));
 
   main_job_factory_.reset(new net::URLRequestJobFactory);
   media_request_job_factory_.reset(new net::URLRequestJobFactory);
@@ -509,20 +511,17 @@ ChromeURLRequestContext*
 ProfileImplIOData::InitializeAppRequestContext(
     ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
-  AppRequestContext* context = new AppRequestContext(load_time_stats());
-
   // If this is for a guest process, we should not persist cookies and http
   // cache.
-  bool guest_process = (app_id.find("guest-") != std::string::npos);
+  bool is_guest_process = (app_id.find("guest-") != std::string::npos);
 
   // Copy most state from the main context.
+  AppRequestContext* context = new AppRequestContext(load_time_stats());
   context->CopyFrom(main_context);
 
   FilePath app_path = app_path_.AppendASCII(app_id);
   FilePath cookie_path = app_path.Append(chrome::kCookieFilename);
   FilePath cache_path = app_path.Append(chrome::kCacheDirname);
-  // TODO(creis): Determine correct cache size.
-  int cache_max_size = 0;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   // Only allow Record Mode if we are in a Debug build or where we are running
@@ -534,13 +533,13 @@ ProfileImplIOData::InitializeAppRequestContext(
 
   // Use a separate HTTP disk cache for isolated apps.
   net::HttpCache::BackendFactory* app_backend = NULL;
-  if (guest_process) {
+  if (is_guest_process) {
     app_backend = net::HttpCache::DefaultBackend::InMemory(0);
   } else {
     app_backend = new net::HttpCache::DefaultBackend(
         net::DISK_CACHE,
         cache_path,
-        cache_max_size,
+        app_cache_max_size_,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   }
   net::HttpNetworkSession* main_network_session =
@@ -549,7 +548,7 @@ ProfileImplIOData::InitializeAppRequestContext(
       new net::HttpCache(main_network_session, app_backend);
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
-  if (guest_process) {
+  if (is_guest_process) {
     cookie_store = new net::CookieMonster(NULL, NULL);
   } else if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
@@ -573,8 +572,51 @@ ProfileImplIOData::InitializeAppRequestContext(
     cookie_store = new net::CookieMonster(cookie_db.get(), NULL);
   }
 
+  // Transfer ownership of the cookies and cache to AppRequestContext.
   context->SetCookieStore(cookie_store);
   context->SetHttpTransactionFactory(app_http_cache);
+
+  return context;
+}
+
+ChromeURLRequestContext*
+ProfileImplIOData::InitializeMediaRequestContext(
+    ChromeURLRequestContext* original_context,
+    const std::string& app_id) const {
+  // If this is for a guest process, we do not persist storage, so we can
+  // simply use the app's in-memory cache (like off-the-record mode).
+  if (app_id.find("guest-") != std::string::npos)
+    return original_context;
+
+  // Copy most state from the original context.
+  MediaRequestContext* context = new MediaRequestContext(load_time_stats());
+  context->CopyFrom(original_context);
+
+  FilePath app_path = app_path_.AppendASCII(app_id);
+  FilePath cache_path;
+  int cache_max_size = app_media_cache_max_size_;
+  if (app_id.empty()) {
+    // lazy_params_ is only valid for the default media context creation.
+    cache_path = lazy_params_->media_cache_path;
+    cache_max_size = lazy_params_->media_cache_max_size;
+  } else {
+    cache_path = app_path.Append(chrome::kMediaCacheDirname);
+  }
+
+  // Use a separate HTTP disk cache for isolated apps.
+  net::HttpCache::BackendFactory* media_backend =
+      new net::HttpCache::DefaultBackend(
+          net::MEDIA_CACHE,
+          cache_path,
+          cache_max_size,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  net::HttpNetworkSession* main_network_session =
+      main_http_factory_->GetSession();
+  net::HttpCache* media_http_cache =
+      new net::HttpCache(main_network_session, media_backend);
+
+  // Transfer ownership of the cache to MediaRequestContext.
+  context->SetHttpTransactionFactory(media_http_cache);
 
   return context;
 }
@@ -594,6 +636,17 @@ ProfileImplIOData::AcquireIsolatedAppRequestContext(
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;
+}
+
+ChromeURLRequestContext*
+ProfileImplIOData::AcquireIsolatedMediaRequestContext(
+    ChromeURLRequestContext* app_context,
+    const std::string& app_id) const {
+  // We create per-app media contexts on demand, unlike the others above.
+  ChromeURLRequestContext* media_request_context =
+      InitializeMediaRequestContext(app_context, app_id);
+  DCHECK(media_request_context);
+  return media_request_context;
 }
 
 chrome_browser_net::LoadTimeStats* ProfileImplIOData::GetLoadTimeStats(

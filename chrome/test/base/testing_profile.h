@@ -238,7 +238,9 @@ class TestingProfile : public Profile {
   // down the IO thread to avoid leaks).
   void ResetRequestContext();
 
-  virtual net::URLRequestContextGetter* GetRequestContextForMedia() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
+      int renderer_child_id) OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetRequestContextForExtensions() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForIsolatedApp(

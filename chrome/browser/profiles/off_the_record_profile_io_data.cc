@@ -319,6 +319,14 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
 }
 
 ChromeURLRequestContext*
+OffTheRecordProfileIOData::InitializeMediaRequestContext(
+    ChromeURLRequestContext* original_context,
+    const std::string& app_id) const {
+  NOTREACHED();
+  return NULL;
+}
+
+ChromeURLRequestContext*
 OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
   NOTREACHED();
   return NULL;
@@ -333,6 +341,14 @@ OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;
+}
+
+ChromeURLRequestContext*
+OffTheRecordProfileIOData::AcquireIsolatedMediaRequestContext(
+    ChromeURLRequestContext* app_context,
+    const std::string& app_id) const {
+  NOTREACHED();
+  return NULL;
 }
 
 void OffTheRecordProfileIOData::CreateFtpProtocolHandler(

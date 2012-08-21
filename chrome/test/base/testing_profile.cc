@@ -631,7 +631,13 @@ void TestingProfile::ResetRequestContext() {
   request_context_ = NULL;
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContextForMedia() {
+net::URLRequestContextGetter* TestingProfile::GetMediaRequestContext() {
+  return NULL;
+}
+
+net::URLRequestContextGetter*
+TestingProfile::GetMediaRequestContextForRenderProcess(
+    int renderer_child_id) {
   return NULL;
 }
 

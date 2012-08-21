@@ -49,7 +49,13 @@ TestBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
   return NULL;
 }
 
-net::URLRequestContextGetter* TestBrowserContext::GetRequestContextForMedia() {
+net::URLRequestContextGetter* TestBrowserContext::GetMediaRequestContext() {
+  return NULL;
+}
+
+net::URLRequestContextGetter*
+TestBrowserContext::GetMediaRequestContextForRenderProcess(
+    int renderer_child_id) {
   return NULL;
 }
 

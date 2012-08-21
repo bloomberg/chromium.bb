@@ -94,6 +94,33 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
       main_request_context_getter_;
 };
 
+// Factory that creates the media ChromeURLRequestContext for a given isolated
+// app.  The media context is based on the corresponding isolated app's context.
+// Takes the |main_context| for the profile so that it can find or create the
+// isolated app's context if necessary.
+class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
+ public:
+  FactoryForIsolatedMedia(const ProfileIOData* profile_io_data,
+                          const std::string& app_id,
+                          ChromeURLRequestContextGetter* main_context)
+      : profile_io_data_(profile_io_data),
+        app_id_(app_id),
+        main_request_context_getter_(main_context) {}
+
+  virtual ChromeURLRequestContext* Create() OVERRIDE {
+    // We will copy most of the state from the corresopnding app's
+    // request context, which we obtain using the main context.
+    return profile_io_data_->GetIsolatedMediaRequestContext(
+        main_request_context_getter_->GetIOContext(), app_id_);
+  }
+
+ private:
+  const ProfileIOData* const profile_io_data_;
+  const std::string app_id_;
+  scoped_refptr<ChromeURLRequestContextGetter>
+      main_request_context_getter_;
+};
+
 // Factory that creates the ChromeURLRequestContext for media.
 class FactoryForMedia : public ChromeURLRequestContextFactory {
  public:
@@ -194,6 +221,20 @@ ChromeURLRequestContextGetter::CreateOriginalForIsolatedApp(
   return new ChromeURLRequestContextGetter(
       profile,
       new FactoryForIsolatedApp(profile_io_data, app_id, main_context));
+}
+
+// static
+ChromeURLRequestContextGetter*
+ChromeURLRequestContextGetter::CreateOriginalForIsolatedMedia(
+    Profile* profile,
+    const ProfileIOData* profile_io_data,
+    const std::string& app_id) {
+  DCHECK(!profile->IsOffTheRecord());
+  ChromeURLRequestContextGetter* main_context =
+      static_cast<ChromeURLRequestContextGetter*>(profile->GetRequestContext());
+  return new ChromeURLRequestContextGetter(
+      profile,
+      new FactoryForIsolatedMedia(profile_io_data, app_id, main_context));
 }
 
 // static
