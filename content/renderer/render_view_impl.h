@@ -53,6 +53,11 @@
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
+#if defined(OS_ANDROID)
+#include "content/renderer/android/content_detector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebContentDetectionResult.h"
+#endif
+
 #if defined(COMPILER_MSVC)
 // RenderViewImpl is a diamond-shaped hierarchy, with WebWidgetClient at the
 // root. VS warns when we inherit the WebWidgetClient method implementations
@@ -143,6 +148,9 @@ class WebDOMMessageEvent;
 class WebDataSource;
 class WebDragData;
 class WebGeolocationClient;
+#if defined(OS_ANDROID)
+class WebHitTestResult;
+#endif
 class WebIconURL;
 class WebImage;
 class WebPeerConnection00Handler;
@@ -504,6 +512,13 @@ class RenderViewImpl : public RenderWidget,
   virtual WebKit::WebPageVisibilityState visibilityState() const;
   virtual WebKit::WebUserMediaClient* userMediaClient();
   virtual void draggableRegionsChanged();
+
+#if defined(OS_ANDROID)
+  virtual void scheduleContentIntent(const WebKit::WebURL& intent);
+  virtual void cancelScheduledContentIntents();
+  virtual WebKit::WebContentDetectionResult detectContentAround(
+      const WebKit::WebHitTestResult& touch_hit);
+#endif
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -1082,6 +1097,11 @@ class RenderViewImpl : public RenderWidget,
   bool IsBackForwardToStaleEntry(const ViewMsg_Navigate_Params& params,
                                  bool is_reload);
 
+#if defined(OS_ANDROID)
+  // Launch an Android content intent with the given URL.
+  void LaunchAndroidContentIntent(const GURL& intent_url, size_t request_id);
+#endif
+
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
                                    bool replace);
@@ -1342,6 +1362,19 @@ class RenderViewImpl : public RenderWidget,
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;
+
+#if defined(OS_ANDROID)
+  // Android Specific ---------------------------------------------------------
+
+  // Expected id of the next content intent launched. Used to prevent scheduled
+  // intents to be launched if aborted.
+  size_t expected_content_intent_id_;
+
+  // List of click-based content detectors.
+  typedef std::vector< linked_ptr<content::ContentDetector> >
+      ContentDetectorList;
+  ContentDetectorList content_detectors_;
+#endif
 
   // Misc ----------------------------------------------------------------------
 

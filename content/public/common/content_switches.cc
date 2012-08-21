@@ -665,6 +665,9 @@ const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 const char kGraphicsMode[]                  = "graphics-mode";
 const char kGraphicsModeValueBasic[]        = "basic";
 const char kGraphicsModeValueCompositor[]   = "compositor";
+
+// The telephony region (ISO country code) to use in phone number detection.
+const char kNetworkCountryIso[] = "network-country-iso";
 #endif
 
 #if defined(OS_POSIX)

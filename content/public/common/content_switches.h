@@ -209,6 +209,7 @@ CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
 extern const char kEnableVisualWordMovement[];
 
 #if defined(OS_ANDROID)
+extern const char kNetworkCountryIso[];
 extern const char kUseMobileUserAgent[];
 extern const char kGraphicsMode[];
 // Not actual flags, just values: for example, --graphics-mode=compositor

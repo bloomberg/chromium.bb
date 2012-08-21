@@ -196,7 +196,13 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 #if defined(OS_ANDROID)
+#include "content/common/android/device_info.h"
+#include "content/renderer/android/address_detector.h"
+#include "content/renderer/android/content_detector.h"
+#include "content/renderer/android/email_detector.h"
+#include "content/renderer/android/phone_number_detector.h"
 #include "content/renderer/media/stream_texture_factory_impl_android.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
@@ -315,6 +321,15 @@ using webkit_glue::ResourceFetcher;
 using webkit_glue::WebPreferences;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
+#if defined(OS_ANDROID)
+using content::AddressDetector;
+using content::ContentDetector;
+using content::EmailDetector;
+using content::PhoneNumberDetector;
+using WebKit::WebContentDetectionResult;
+using WebKit::WebHitTestResult;
+#endif
+
 //-----------------------------------------------------------------------------
 
 typedef std::map<WebKit::WebView*, RenderViewImpl*> ViewMap;
@@ -339,6 +354,12 @@ static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 static const float kScalingIncrement = 0.1f;
 
 static const float kScalingIncrementForGesture = 0.01f;
+
+#if defined(OS_ANDROID)
+// Delay between tapping in content and launching the associated android intent.
+// Used to allow users see what has been recognized as content.
+static const size_t kContentIntentDelayMilliseconds = 700;
+#endif
 
 static RenderViewImpl* FromRoutingID(int32 routing_id) {
   return static_cast<RenderViewImpl*>(
@@ -550,6 +571,9 @@ RenderViewImpl::RenderViewImpl(
       renderer_accessibility_(NULL),
       java_bridge_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
+#if defined(OS_ANDROID)
+      expected_content_intent_id_(0),
+#endif
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
 #if defined(OS_WIN)
@@ -576,6 +600,23 @@ RenderViewImpl::RenderViewImpl(
 
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+#if defined(OS_ANDROID)
+  scoped_ptr<content::DeviceInfo> device_info(new content::DeviceInfo());
+
+  const std::string region_code =
+      command_line.HasSwitch(switches::kNetworkCountryIso)
+          ? command_line.GetSwitchValueASCII(switches::kNetworkCountryIso)
+          : device_info->GetNetworkCountryIso();
+  content_detectors_.push_back(linked_ptr<ContentDetector>(
+      new AddressDetector()));
+  content_detectors_.push_back(linked_ptr<ContentDetector>(
+      new PhoneNumberDetector(region_code)));
+  content_detectors_.push_back(linked_ptr<ContentDetector>(
+      new EmailDetector()));
+#endif
 
   if (counter) {
     shared_popup_counter_ = counter;
@@ -642,7 +683,6 @@ RenderViewImpl::RenderViewImpl(
 
   new IdleUserDetector(this);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController))
     enabled_bindings_ |= content::BINDINGS_POLICY_DOM_AUTOMATION;
 
@@ -5729,6 +5769,52 @@ void RenderViewImpl::draggableRegionsChanged() {
       observers_,
       DraggableRegionsChanged(webview()->mainFrame()));
 }
+
+#if defined(OS_ANDROID)
+WebContentDetectionResult RenderViewImpl::detectContentAround(
+    const WebHitTestResult& touch_hit) {
+  DCHECK(!touch_hit.isNull());
+  DCHECK(!touch_hit.node().isNull());
+  DCHECK(touch_hit.node().isTextNode());
+
+  // Process the position with all the registered content detectors until
+  // a match is found. Priority is provided by their relative order.
+  for (ContentDetectorList::const_iterator it = content_detectors_.begin();
+      it != content_detectors_.end(); ++it) {
+    ContentDetector::Result content = (*it)->FindTappedContent(touch_hit);
+    if (content.valid) {
+      return WebContentDetectionResult(content.content_boundaries,
+          UTF8ToUTF16(content.text), content.intent_url);
+    }
+  }
+  return WebContentDetectionResult();
+}
+
+void RenderViewImpl::scheduleContentIntent(const WebURL& intent) {
+  // Introduce a short delay so that the user can notice the content.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderViewImpl::LaunchAndroidContentIntent, AsWeakPtr(),
+          intent, expected_content_intent_id_),
+      base::TimeDelta::FromMilliseconds(kContentIntentDelayMilliseconds));
+}
+
+void RenderViewImpl::cancelScheduledContentIntents() {
+  ++expected_content_intent_id_;
+}
+
+void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
+                                                size_t request_id) {
+  if (request_id != expected_content_intent_id_)
+      return;
+
+  // Remove the content highlighting if any.
+  scheduleComposite();
+
+  if (!intent.is_empty())
+    Send(new ViewHostMsg_StartContentIntent(routing_id_, intent));
+}
+#endif
 
 void RenderViewImpl::OnAsyncFileOpened(
     base::PlatformFileError error_code,

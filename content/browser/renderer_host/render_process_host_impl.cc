@@ -804,6 +804,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
     switches::kOldCheckboxStyle,
+#if defined(OS_ANDROID)
+    switches::kNetworkCountryIso,
+#endif
     switches::kNoReferrers,
     switches::kNoSandbox,
     switches::kPpapiOutOfProcess,
