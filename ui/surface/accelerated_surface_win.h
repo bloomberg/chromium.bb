@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_comptr.h"
@@ -121,9 +122,12 @@ class SURFACE_EXPORT AcceleratedPresenter
 
   // The swap chain is presented to the child window. Copy semantics
   // are used so it is possible to represent it to quickly validate the window.
-  base::win::ScopedComPtr<IDirect3DSwapChain9> swap_chain_;
+  base::win::ScopedComPtr<IDirect3DSwapChain9Ex> swap_chain_;
 
   bool hidden_;
+
+  // Message loop for the main thread.
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenter);
 };
