@@ -50,17 +50,13 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#if !defined(__ANDROID__)
 #include <link.h>
-#endif
 #include <stdio.h>
 #if defined(__ANDROID__)
 #include <sys/system_properties.h>
 #endif
-#if !defined(__ANDROID__)
 #include <sys/ucontext.h>
 #include <sys/user.h>
-#endif
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -69,10 +65,6 @@
 #include "client/minidump_file_writer.h"
 #include "google_breakpad/common/minidump_format.h"
 
-#if defined(__ANDROID__)
-#include "client/linux/android_link.h"
-#include "client/linux/android_ucontext.h"
-#endif
 #include "client/linux/handler/exception_handler.h"
 #include "client/linux/minidump_writer/line_reader.h"
 #include "client/linux/minidump_writer/linux_dumper.h"

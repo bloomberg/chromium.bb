@@ -77,12 +77,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#if !defined(__ANDROID__)
 #include <sys/signal.h>
 #include <sys/ucontext.h>
 #include <sys/user.h>
 #include <ucontext.h>
-#endif
 
 #include <algorithm>
 #include <utility>

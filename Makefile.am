@@ -32,6 +32,10 @@
 
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
+if ANDROID_HOST
+# This allows using fixed NDK headers when building for Android.
+AM_CPPFLAGS += -I$(top_srcdir)/src/common/android/include
+endif
 
 if GCC
 # These are good warnings to be treated as errors

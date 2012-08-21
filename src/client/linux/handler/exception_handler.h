@@ -37,10 +37,8 @@
 #include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/ucontext.h>
 
-#if defined(__ANDROID__)
-#include "client/linux/android_ucontext.h"
-#endif
 #include "client/linux/crash_generation/crash_generation_client.h"
 #include "client/linux/handler/minidump_descriptor.h"
 #include "client/linux/minidump_writer/minidump_writer.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2012, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,22 +27,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Only recent versions of Android's C library correctly define the
-// required types for ucontext_t handling. This header provides a
-// custom declarations that will work when Google Breakpad is built
-// against any version of the NDK or platform headers, and work on
-// any version of the system.
-//
-// See http://code.google.com/p/android/issues/detail?id=34784
-//
-#ifndef GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
-#define GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
+#ifndef GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_SYS_UCONTEXT_H
+#define GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_SYS_UCONTEXT_H
 
+#include <sys/cdefs.h>
 #include <signal.h>
-#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 
 #ifndef __BIONIC_HAVE_UCONTEXT_T
 
+// Ensure that 'stack_t' is defined.
+#include <asm/signal.h>
+
+// This version of the Android C library headers do not provide ucontext_t.
+// Provide custom definitions for Google Breakpad.
 #if defined(__arm__)
 
 // Ensure that 'struct sigcontext' is defined.
@@ -78,6 +79,8 @@ struct _libc_fpstate {
   unsigned long status;
 };
 
+typedef uint32_t  greg_t;
+
 typedef struct {
   uint32_t gregs[19];
   struct _libc_fpstate* fpregs;
@@ -105,10 +108,6 @@ enum {
   REG_EFL,
   REG_UESP,
   REG_SS,
-  REG_ES,
-  REG_ES,
-  REG_ES,
-  REG_ES,
 };
 
 typedef struct ucontext {
@@ -155,6 +154,10 @@ typedef struct ucontext {
 #  error "Unsupported Android CPU ABI!"
 #endif
 
-#endif  // !__BIONIC_HAVE_UCONTEXT_T
+#endif  // __BIONIC_HAVE_UCONTEXT_T
 
-#endif  // GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_SYS_UCONTEXT_H

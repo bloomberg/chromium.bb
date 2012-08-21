@@ -92,7 +92,9 @@ LOCAL_SRC_FILES := \
     src/common/linux/memory_mapped_file.cc \
     src/common/linux/safe_readlink.cc
 
-LOCAL_C_INCLUDES        := $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES        := $(LOCAL_PATH)/src/common/android/include \
+                           $(LOCAL_PATH)/src
+
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_EXPORT_LDLIBS     := -llog
 

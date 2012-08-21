@@ -186,11 +186,9 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
     return false;
   }
 
-#if !defined(__ANDROID__)
   if (sys_ptrace(PTRACE_GETFPREGS, tid, NULL, &info->fpregs) == -1) {
     return false;
   }
-#endif
 
 #if defined(__i386)
   if (sys_ptrace(PTRACE_GETFPXREGS, tid, NULL, &info->fpxregs) == -1)
