@@ -9,9 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
-#include "content/shell/shell.h"
-#include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_runner_host.h"
 #include "webkit/support/webkit_support.h"
@@ -59,11 +56,9 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
 
   if (layout_test_mode) {
-    char test_string[2048];
-    content::ShellBrowserContext* browser_context =
-        static_cast<content::ShellContentBrowserClient*>(
-            content::GetContentClient()->browser())->browser_context();
+    content::WebKitTestController test_controller;
 
+    char test_string[2048];
 #if defined(OS_ANDROID)
     puts("#READY");
     fflush(stdout);
@@ -80,22 +75,19 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       printf("Content-Type: text/plain\n");
 
       std::string pixel_hash;
-      content::Shell::CreateNewWindow(
-          browser_context,
-          GetURLForLayoutTest(test_string, &pixel_hash),
-          NULL,
-          MSG_ROUTING_NONE,
-          NULL);
-      content::WebKitTestRunnerHost::Init(pixel_hash);
+      GURL test_url = GetURLForLayoutTest(test_string, &pixel_hash);
+      content::WebKitTestController::Get()->PrepareForLayoutTest(
+          test_url, pixel_hash);
 
       main_runner_->Run();
-
-      content::Shell::CloseAllWindows();
 
       // Test footer.
       printf("#EOF\n");
       fflush(stdout);
       fflush(stderr);
+
+      if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
+        break;
     }
     exit_code = 0;
   } else {

@@ -5,38 +5,93 @@
 #ifndef CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
 #define CONTENT_SHELL_WEBKIT_TEST_RUNNER_HOST_H_
 
-#include <map>
 #include <string>
 
 #include "base/cancelable_callback.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
 
 namespace content {
 
-class WebKitTestRunnerHost : public RenderViewHostObserver {
+class Shell;
+
+class WebKitTestController : public base::NonThreadSafe,
+                             public WebContentsObserver {
  public:
-  static WebKitTestRunnerHost* FromRenderViewHost(
-      RenderViewHost* render_view_host);
+  static WebKitTestController* Get();
 
-  // Initialize the WebKitTestRunnerHost for a given test.
-  static void Init(const std::string& expected_pixel_hash);
+  WebKitTestController();
+  virtual ~WebKitTestController();
 
-  explicit WebKitTestRunnerHost(RenderViewHost* render_view_host);
-  virtual ~WebKitTestRunnerHost();
+  void PrepareForLayoutTest(const GURL& test_url,
+                            const std::string& expected_pixel_hash);
+  // True if the controller was reset successfully.
+  bool ResetAfterLayoutTest();
 
+  const std::string& expected_pixel_hash() const {
+    return expected_pixel_hash_;
+  }
   bool should_stay_on_page_after_handling_before_unload() const {
     return should_stay_on_page_after_handling_before_unload_;
   }
+  void set_should_stay_on_page_after_handling_before_unload(
+      bool should_stay_on_page_after_handling_before_unload) {
+    should_stay_on_page_after_handling_before_unload_ =
+        should_stay_on_page_after_handling_before_unload;
+  }
+  bool dump_as_text() const { return dump_as_text_; }
+  void set_dump_as_text(bool dump_as_text) { dump_as_text_ = dump_as_text; }
+  bool dump_child_frames() const { return dump_child_frames_; }
+  void set_dump_child_frames(bool dump_child_frames) {
+    dump_child_frames_ = dump_child_frames;
+  }
+  bool is_printing() const { return is_printing_; }
+  void set_is_printing(bool is_printing) { is_printing_ = is_printing; }
+
+  void LoadFinished(Shell* window);
+  void NotifyDone();
+  void WaitUntilDone();
+  void NotImplemented(const std::string& object_name,
+                      const std::string& method_name);
+
+ private:
+  static WebKitTestController* instance_;
+
+  // WebContentsObserver implementation.
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+
+  void CaptureDump();
+  void TimeoutHandler();
+
+  Shell* main_window_;
+
+  std::string expected_pixel_hash_;
+
+  bool captured_dump_;
+
+  bool dump_as_text_;
+  bool dump_child_frames_;
+  bool is_printing_;
+  bool should_stay_on_page_after_handling_before_unload_;
+  bool wait_until_done_;
+
+  base::CancelableClosure watchdog_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebKitTestController);
+};
+
+class WebKitTestRunnerHost : public RenderViewHostObserver {
+ public:
+  explicit WebKitTestRunnerHost(RenderViewHost* render_view_host);
+  virtual ~WebKitTestRunnerHost();
 
   // RenderViewHostObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  void CaptureDump();
-  void TimeoutHandler();
-
   // Message handlers.
   void OnDidFinishLoad();
   void OnTextDump(const std::string& dump);
@@ -52,19 +107,6 @@ class WebKitTestRunnerHost : public RenderViewHostObserver {
 
   void OnNotImplemented(const std::string& object_name,
                         const std::string& method_name);
-
-  static std::map<RenderViewHost*, WebKitTestRunnerHost*> controllers_;
-  static std::string expected_pixel_hash_;
-
-  bool captured_dump_;
-
-  bool dump_as_text_;
-  bool dump_child_frames_;
-  bool is_printing_;
-  bool should_stay_on_page_after_handling_before_unload_;
-  bool wait_until_done_;
-
-  base::CancelableClosure watchdog_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunnerHost);
 };

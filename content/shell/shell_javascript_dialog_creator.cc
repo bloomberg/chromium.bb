@@ -87,9 +87,7 @@ void ShellJavaScriptDialogCreator::RunBeforeUnloadDialog(
     const DialogClosedCallback& callback) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     printf("CONFIRM NAVIGATION: %s\n", UTF16ToUTF8(message_text).c_str());
-    WebKitTestRunnerHost* controller =
-        WebKitTestRunnerHost::FromRenderViewHost(
-            web_contents->GetRenderViewHost());
+    WebKitTestController* controller = WebKitTestController::Get();
     callback.Run(
         !controller->should_stay_on_page_after_handling_before_unload(),
         string16());
