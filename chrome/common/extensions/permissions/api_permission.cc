@@ -22,6 +22,8 @@ class SimpleAPIPermission : public APIPermission {
   explicit SimpleAPIPermission(const APIPermissionInfo* permission)
     : APIPermission(permission) { }
 
+  virtual ~SimpleAPIPermission() { }
+
   virtual bool FromValue(const base::Value* value) OVERRIDE {
     if (value)
       return false;
@@ -75,10 +77,6 @@ class SimpleAPIPermission : public APIPermission {
   }
 
   virtual void Log(std::string* log) const OVERRIDE { }
-
- protected:
-  friend class extensions::APIPermission;
-  virtual ~SimpleAPIPermission() { }
 };
 
 template<typename T>
@@ -89,6 +87,11 @@ APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
 }  // namespace
 
 namespace extensions {
+
+APIPermission::APIPermission(const APIPermissionInfo* info)
+  : info_(info) {
+  DCHECK(info_);
+}
 
 APIPermission::~APIPermission() { }
 
@@ -122,7 +125,7 @@ APIPermissionInfo::APIPermissionInfo(
 
 APIPermissionInfo::~APIPermissionInfo() { }
 
-scoped_refptr<APIPermission> APIPermissionInfo::CreateAPIPermission() const {
+APIPermission* APIPermissionInfo::CreateAPIPermission() const {
   return api_permission_constructor_ ?
     api_permission_constructor_(this) : new SimpleAPIPermission(this);
 }

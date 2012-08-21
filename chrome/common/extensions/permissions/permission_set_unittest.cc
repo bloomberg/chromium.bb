@@ -261,7 +261,7 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
 }
 
 TEST(PermissionsTest, CreateUnion) {
-  scoped_refptr<APIPermission> permission;
+  APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -297,7 +297,7 @@ TEST(PermissionsTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  apis1.insert(permission);
+  apis1.insert(permission->Clone());
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kBackground);
   expected_apis.insert(permission);
@@ -385,7 +385,7 @@ TEST(PermissionsTest, CreateUnion) {
 }
 
 TEST(PermissionsTest, CreateIntersection) {
-  scoped_refptr<APIPermission> permission;
+  APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -499,7 +499,7 @@ TEST(PermissionsTest, CreateIntersection) {
 }
 
 TEST(PermissionsTest, CreateDifference) {
-  scoped_refptr<APIPermission> permission;
+  APIPermission* permission = NULL;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;

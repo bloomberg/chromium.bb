@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 
@@ -30,7 +29,7 @@ class PermissionsInfo;
 // APIPermission is for handling some complex permissions. Please refer to
 // extensions::SocketPermission as an example.
 // There is one instance per permission per loaded extension.
-class APIPermission : public base::RefCounted<APIPermission> {
+class APIPermission {
  public:
   enum ID {
     // Error codes.
@@ -110,10 +109,9 @@ class APIPermission : public base::RefCounted<APIPermission> {
   struct CheckParam {
   };
 
-  explicit APIPermission(const APIPermissionInfo* info)
-    : info_(info) {
-    DCHECK(info_);
-  }
+  explicit APIPermission(const APIPermissionInfo* info);
+
+  virtual ~APIPermission();
 
   // Returns the id of this permission.
   ID id() const;
@@ -135,7 +133,7 @@ class APIPermission : public base::RefCounted<APIPermission> {
   // Returns true if |rhs| is equal to this.
   virtual bool Equal(const APIPermission* rhs) const = 0;
 
-  // Parses the rhs from |value|. Returns false if error happens.
+  // Parses the APIPermission from |value|. Returns false if error happens.
   virtual bool FromValue(const base::Value* value) = 0;
 
   // Stores this into a new created |value|.
@@ -144,15 +142,13 @@ class APIPermission : public base::RefCounted<APIPermission> {
   // Clones this.
   virtual APIPermission* Clone() const = 0;
 
-  // Returns a new API permission rhs which equals this - |rhs|.
+  // Returns a new API permission which equals this - |rhs|.
   virtual APIPermission* Diff(const APIPermission* rhs) const = 0;
 
-  // Returns a new API permission rhs which equals the union of this and
-  // |rhs|.
+  // Returns a new API permission which equals the union of this and |rhs|.
   virtual APIPermission* Union(const APIPermission* rhs) const = 0;
 
-  // Returns a new API permission rhs which equals the intersect of this and
-  // |rhs|.
+  // Returns a new API permission which equals the intersect of this and |rhs|.
   virtual APIPermission* Intersect(const APIPermission* rhs) const = 0;
 
   // IPC functions
@@ -164,10 +160,6 @@ class APIPermission : public base::RefCounted<APIPermission> {
 
   // Logs this permission.
   virtual void Log(std::string* log) const = 0;
-
- protected:
-  friend class base::RefCounted<APIPermission>;
-  virtual ~APIPermission();
 
  private:
   const APIPermissionInfo* const info_;
@@ -199,7 +191,7 @@ class APIPermissionInfo {
   ~APIPermissionInfo();
 
   // Creates a APIPermission instance.
-  scoped_refptr<APIPermission> CreateAPIPermission() const;
+  APIPermission* CreateAPIPermission() const;
 
   // Returns the localized permission message associated with this api.
   // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.

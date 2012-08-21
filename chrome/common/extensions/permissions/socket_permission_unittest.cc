@@ -195,31 +195,32 @@ TEST(SocketPermissionTest, Match) {
 }
 
 TEST(SocketPermissionTest, IPC) {
-  scoped_refptr<APIPermission> permission1;
-  scoped_refptr<APIPermission> permission2;
-
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   {
     IPC::Message m;
 
-    permission1 = permission_info->CreateAPIPermission();
-    permission2 = permission_info->CreateAPIPermission();
+    scoped_ptr<APIPermission> permission1(
+        permission_info->CreateAPIPermission());
+    scoped_ptr<APIPermission> permission2(
+        permission_info->CreateAPIPermission());
 
     permission1->Write(&m);
     PickleIterator iter(m);
     permission2->Read(&m, &iter);
 
-    EXPECT_TRUE(permission1->Equal(permission2));
+    EXPECT_TRUE(permission1->Equal(permission2.get()));
   }
 
 
   {
     IPC::Message m;
 
-    permission1 = permission_info->CreateAPIPermission();
-    permission2 = permission_info->CreateAPIPermission();
+    scoped_ptr<APIPermission> permission1(
+        permission_info->CreateAPIPermission());
+    scoped_ptr<APIPermission> permission2(
+        permission_info->CreateAPIPermission());
 
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
@@ -227,24 +228,23 @@ TEST(SocketPermissionTest, IPC) {
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
     CHECK(permission1->FromValue(value.get()));
 
-    EXPECT_FALSE(permission1->Equal(permission2));
+    EXPECT_FALSE(permission1->Equal(permission2.get()));
 
     permission1->Write(&m);
     PickleIterator iter(m);
     permission2->Read(&m, &iter);
-    EXPECT_TRUE(permission1->Equal(permission2));
+    EXPECT_TRUE(permission1->Equal(permission2.get()));
   }
 }
 
 TEST(SocketPermissionTest, Value) {
-  scoped_refptr<APIPermission> permission1;
-  scoped_refptr<APIPermission> permission2;
-
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
-  permission1 = permission_info->CreateAPIPermission();
-  permission2 = permission_info->CreateAPIPermission();
+  scoped_ptr<APIPermission> permission1(
+      permission_info->CreateAPIPermission());
+  scoped_ptr<APIPermission> permission2(
+      permission_info->CreateAPIPermission());
 
   scoped_ptr<ListValue> value(new ListValue());
   value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
@@ -252,13 +252,13 @@ TEST(SocketPermissionTest, Value) {
   value->Append(Value::CreateStringValue("udp-send-to::8888"));
   CHECK(permission1->FromValue(value.get()));
 
-  EXPECT_FALSE(permission1->Equal(permission2));
+  EXPECT_FALSE(permission1->Equal(permission2.get()));
 
   base::Value* vtmp = NULL;
   permission1->ToValue(&vtmp);
   CHECK(vtmp);
   CHECK(permission2->FromValue(vtmp));
-  EXPECT_TRUE(permission1->Equal(permission2));
+  EXPECT_TRUE(permission1->Equal(permission2.get()));
 
   delete vtmp;
 }

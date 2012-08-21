@@ -8,19 +8,18 @@
 #include <iterator>
 #include <map>
 
+#include "base/memory/linked_ptr.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 
 namespace extensions {
 
 typedef std::map<APIPermission::ID,
-  scoped_refptr<APIPermission> > APIPermissionMap;
+  linked_ptr<APIPermission> > APIPermissionMap;
 
 class APIPermissionSet {
  public:
   class const_iterator :
-    public std::iterator<
-      std::input_iterator_tag,
-      scoped_refptr<APIPermission> > {
+    public std::iterator<std::input_iterator_tag, const APIPermission*> {
    public:
     const_iterator(const APIPermissionMap::const_iterator& it);
     const_iterator(const const_iterator& ids_it);
@@ -43,12 +42,12 @@ class APIPermissionSet {
       return it_ != rhs.it_;
     }
 
-    const scoped_refptr<APIPermission>& operator*() const {
-      return it_->second;
+    const APIPermission* operator*() const {
+      return it_->second.get();
     }
 
-    const scoped_refptr<APIPermission>& operator->() const {
-      return it_->second;
+    const APIPermission* operator->() const {
+      return it_->second.get();
     }
 
    private:
@@ -110,7 +109,10 @@ class APIPermissionSet {
   }
 
   void insert(APIPermission::ID id);
-  void insert(const scoped_refptr<APIPermission>& permission);
+
+  // Insert |permission| into the APIPermissionSet. The APIPermissionSet will
+  // take the ownership of |permission|,
+  void insert(APIPermission* permission);
 
   bool Contains(const APIPermissionSet& rhs) const;
 

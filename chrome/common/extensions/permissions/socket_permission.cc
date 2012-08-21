@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -89,46 +90,34 @@ APIPermission* SocketPermission::Clone() const {
 APIPermission* SocketPermission::Diff(const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(info());
+  scoped_ptr<SocketPermission> result(new SocketPermission(info()));
   std::set_difference(data_set_.begin(), data_set_.end(),
                       perm->data_set_.begin(), perm->data_set_.end(),
                       std::inserter<std::set<SocketPermissionData> >(
                           result->data_set_, result->data_set_.begin()));
-  if (result->data_set_.empty()) {
-    scoped_refptr<SocketPermission> p(result);
-    result = NULL;
-  }
-  return result;
+  return result->data_set_.empty() ? NULL : result.release();
 }
 
 APIPermission* SocketPermission::Union(const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(info());
+  scoped_ptr<SocketPermission> result(new SocketPermission(info()));
   std::set_union(data_set_.begin(), data_set_.end(),
                  perm->data_set_.begin(), perm->data_set_.end(),
                  std::inserter<std::set<SocketPermissionData> >(
                      result->data_set_, result->data_set_.begin()));
-  if (result->data_set_.empty()) {
-    scoped_refptr<SocketPermission> p(result);
-    result = NULL;
-  }
-  return result;
+  return result->data_set_.empty() ? NULL : result.release();
 }
 
 APIPermission* SocketPermission::Intersect(const APIPermission* rhs) const {
   CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(info());
+  scoped_ptr<SocketPermission> result(new SocketPermission(info()));
   std::set_intersection(data_set_.begin(), data_set_.end(),
                         perm->data_set_.begin(), perm->data_set_.end(),
                         std::inserter<std::set<SocketPermissionData> >(
                             result->data_set_, result->data_set_.begin()));
-  if (result->data_set_.empty()) {
-    scoped_refptr<SocketPermission> p(result);
-    result = NULL;
-  }
-  return result;
+  return result->data_set_.empty() ? NULL : result.release();
 }
 
 void SocketPermission::Write(IPC::Message* m) const {

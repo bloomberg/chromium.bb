@@ -32,8 +32,10 @@ APIPermissionSet::const_iterator::const_iterator(
 APIPermissionSet& APIPermissionSet::operator=(const APIPermissionSet& rhs) {
   const_iterator it = rhs.begin();
   const const_iterator end = rhs.end();
-  while (it != end)
-    insert(*it++);
+  while (it != end) {
+    insert(it->Clone());
+    ++it;
+  }
   return *this;
 }
 
@@ -59,8 +61,8 @@ void APIPermissionSet::insert(APIPermission::ID id) {
 }
 
 void APIPermissionSet::insert(
-    const scoped_refptr<APIPermission>& permission) {
-  map_[permission->id()] = permission->Clone();
+    APIPermission* permission) {
+  map_[permission->id()].reset(permission);
 }
 
 bool APIPermissionSet::Contains(const APIPermissionSet& rhs) const {
@@ -99,20 +101,23 @@ void APIPermissionSet::Difference(
 
   while (it1 != end1 && it2 != end2) {
     if (it1->id() < it2->id()) {
-      set3->insert(*it1++);
+      set3->insert(it1->Clone());
+      ++it1;
     } else if (it1->id() > it2->id()) {
       ++it2;
     } else {
-      scoped_refptr<APIPermission> p = it1->Diff(*it2);
-      if (p.get())
+      APIPermission* p = it1->Diff(*it2);
+      if (p)
         set3->insert(p);
       ++it1;
       ++it2;
     }
   }
 
-  while (it1 != end1)
-    set3->insert(*it1++);
+  while (it1 != end1) {
+    set3->insert(it1->Clone());
+    ++it1;
+  }
 }
 
 void APIPermissionSet::Intersection(
@@ -133,8 +138,8 @@ void APIPermissionSet::Intersection(
     } else if (it1->id() > it2->id()) {
       ++it2;
     } else {
-      scoped_refptr<APIPermission> p = it1->Intersect(*it2);
-      if (p.get())
+      APIPermission* p = it1->Intersect(*it2);
+      if (p)
         set3->insert(p);
       ++it1;
       ++it2;
@@ -157,20 +162,24 @@ void APIPermissionSet::Union(
   while (true) {
     if (it1 == end1) {
       while (it2 != end2) {
-        set3->insert(*it2++);
+        set3->insert(it2->Clone());
+        ++it2;
       }
       break;
     }
     if (it2 == end2) {
       while (it1 != end1) {
-        set3->insert(*it1++);
+        set3->insert(it1->Clone());
+        ++it1;
       }
       break;
     }
     if (it1->id() < it2->id()) {
-      set3->insert(*it1++);
+      set3->insert(it1->Clone());
+      ++it1;
     } else if (it1->id() > it2->id()) {
-      set3->insert(*it2++);
+      set3->insert(it2->Clone());
+      ++it2;
     } else {
       set3->insert(it1->Union(*it2));
       ++it1;

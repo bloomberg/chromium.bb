@@ -145,30 +145,7 @@ void ParamTraits<APIPermission::ID>::Log(
   LogParam(static_cast<int>(p), l);
 }
 
-void ParamTraits<scoped_refptr<APIPermission> >::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p->id());
-  p->Write(m);
-}
-
-bool ParamTraits<scoped_refptr<APIPermission> >::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  APIPermission::ID id;
-  if (!ReadParam(m, iter, &id))
-    return false;
-  const APIPermissionInfo* permission_info =
-    extensions::PermissionsInfo::GetInstance()->GetByID(id);
-  if (!permission_info)
-    return false;
-  *r = permission_info->CreateAPIPermission();
-  if (!(*r)->Read(m, iter)) {
-    *r = NULL;
-    return false;
-  }
-  return true;
-}
-
-void ParamTraits<scoped_refptr<APIPermission> >::Log(
+void ParamTraits<APIPermission*>::Log(
     const param_type& p, std::string* l) {
   p->Log(l);
 }
@@ -176,10 +153,11 @@ void ParamTraits<scoped_refptr<APIPermission> >::Log(
 void ParamTraits<APIPermissionSet>::Write(
     Message* m, const param_type& p) {
   APIPermissionSet::const_iterator it = p.begin();
-  APIPermissionSet::const_iterator end = p.end();
+  const APIPermissionSet::const_iterator end = p.end();
   WriteParam(m, p.size());
   for (; it != end; ++it) {
-    WriteParam(m, *it);
+    WriteParam(m, it->id());
+    it->Write(m);
   }
 }
 
@@ -189,10 +167,17 @@ bool ParamTraits<APIPermissionSet>::Read(
   if (!ReadParam(m, iter, &size))
     return false;
   for (size_t i = 0; i < size; ++i) {
-    scoped_refptr<APIPermission> p;
-    if (!ReadParam(m, iter, &p))
+    APIPermission::ID id;
+    if (!ReadParam(m, iter, &id))
       return false;
-    r->insert(p);
+    const APIPermissionInfo* permission_info =
+      extensions::PermissionsInfo::GetInstance()->GetByID(id);
+    if (!permission_info)
+      return false;
+    scoped_ptr<APIPermission> p(permission_info->CreateAPIPermission());
+    if (!p->Read(m, iter))
+      return false;
+    r->insert(p.release());
   }
   return true;
 }

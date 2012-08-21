@@ -37,6 +37,8 @@ class SocketPermission : public APIPermission {
 
   explicit SocketPermission(const APIPermissionInfo* info);
 
+  virtual ~SocketPermission();
+
   // Returns true if the given permission in param is allowed.
   virtual bool Check(
       const APIPermission::CheckParam* param) const OVERRIDE;
@@ -76,11 +78,6 @@ class SocketPermission : public APIPermission {
 
   // Logs this rhs.
   virtual void Log(std::string* log) const OVERRIDE;
-
- protected:
-  friend class base::RefCounted<APIPermission>;
-
-  virtual ~SocketPermission();
 
  private:
   std::set<SocketPermissionData> data_set_;

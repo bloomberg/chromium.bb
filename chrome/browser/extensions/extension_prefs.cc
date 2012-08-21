@@ -512,13 +512,13 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
         continue;
       }
 
-      scoped_refptr<APIPermission> permission =
-        permission_info->CreateAPIPermission();
+      scoped_ptr<APIPermission> permission(
+          permission_info->CreateAPIPermission());
       if (!permission->FromValue(permission_detail)) {
         NOTREACHED() << "Parse permission failed.";
         continue;
       }
-      apis.insert(permission);
+      apis.insert(permission.release());
     }
   }
 

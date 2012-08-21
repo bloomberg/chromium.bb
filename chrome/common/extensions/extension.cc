@@ -3390,15 +3390,15 @@ bool Extension::ParsePermissions(const char* key,
           }
         }
 
-        scoped_refptr<APIPermission> permission =
-          permission_info->CreateAPIPermission();
+        scoped_ptr<APIPermission> permission(
+            permission_info->CreateAPIPermission());
         if (!permission->FromValue(permission_value)) {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidPermission, base::IntToString(i));
           return false;
         }
 
-        api_permissions->insert(permission);
+        api_permissions->insert(permission.release());
         continue;
       }
 

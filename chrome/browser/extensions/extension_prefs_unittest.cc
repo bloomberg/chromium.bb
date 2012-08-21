@@ -263,7 +263,6 @@ TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    scoped_refptr<APIPermission> permission;
     const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
@@ -271,7 +270,8 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
 
     api_perm_set1_.insert(APIPermission::kTab);
     api_perm_set1_.insert(APIPermission::kBookmark);
-    permission = permission_info->CreateAPIPermission();
+    scoped_ptr<APIPermission> permission(
+        permission_info->CreateAPIPermission());
     {
       scoped_ptr<ListValue> value(new ListValue());
       value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
@@ -280,7 +280,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       if (!permission->FromValue(value.get()))
         NOTREACHED();
     }
-    api_perm_set1_.insert(permission);
+    api_perm_set1_.insert(permission.release());
 
     api_perm_set2_.insert(APIPermission::kHistory);
 
