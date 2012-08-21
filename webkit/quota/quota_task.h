@@ -59,6 +59,7 @@ class QuotaTask {
   void Abort();
   QuotaTaskObserver* observer_;
   scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
+  bool delete_scheduled_;
 };
 
 // For tasks that post tasks to the other thread.

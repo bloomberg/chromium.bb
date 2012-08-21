@@ -30,7 +30,8 @@ void QuotaTask::Start() {
 
 QuotaTask::QuotaTask(QuotaTaskObserver* observer)
     : observer_(observer),
-      original_task_runner_(base::MessageLoopProxy::current()) {
+      original_task_runner_(base::MessageLoopProxy::current()),
+      delete_scheduled_(false) {
 }
 
 void QuotaTask::CallCompleted() {
@@ -48,6 +49,10 @@ void QuotaTask::Abort() {
 }
 
 void QuotaTask::DeleteSoon() {
+  DCHECK(original_task_runner_->BelongsToCurrentThread());
+  if (delete_scheduled_)
+    return;
+  delete_scheduled_ = true;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
