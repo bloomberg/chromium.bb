@@ -867,7 +867,6 @@ DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
   // entry->categories_
   entry->updated_time_ = file.modified_by_me_date();
 
-  // TODO: Do we need this?
   entry->FillRemainingFields();
   return entry.release();
 }

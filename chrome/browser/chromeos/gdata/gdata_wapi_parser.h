@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_WAPI_PARSER_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -253,10 +254,10 @@ class Content {
 class AppIcon {
  public:
   enum IconCategory {
-    UNKNOWN,         // Uninitialized state
-    DOCUMENT,        // Document icon for various MIME types
-    APPLICATION,     // Application icon for various MIME types
-    SHARED_DOCUMENT, // Icon for documents that are shared from other users.
+    UNKNOWN,          // Uninitialized state
+    DOCUMENT,         // Document icon for various MIME types
+    APPLICATION,      // Application icon for various MIME types
+    SHARED_DOCUMENT,  // Icon for documents that are shared from other users.
   };
 
   AppIcon();

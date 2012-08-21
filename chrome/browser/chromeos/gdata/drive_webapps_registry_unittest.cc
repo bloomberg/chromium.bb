@@ -26,7 +26,7 @@ namespace gdata {
 class DriveWebAppsRegistryTest : public testing::Test {
  protected:
   DriveWebAppsRegistryTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_){
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   static Value* LoadJSONFile(const std::string& prefix,

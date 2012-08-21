@@ -30,7 +30,7 @@ void FileWriteHelper::PrepareWritableFileAndRun(
 
   file_system_->CreateFile(
       file_path,
-      false, // it is not an error, even if the path already exists.
+      false,  // it is not an error, even if the path already exists.
       base::Bind(&FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,

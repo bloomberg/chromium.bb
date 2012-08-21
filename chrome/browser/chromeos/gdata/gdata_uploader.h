@@ -27,7 +27,7 @@ class DriveServiceInterface;
 
 class GDataUploaderInterface {
  public:
-  ~GDataUploaderInterface() {}
+  virtual ~GDataUploaderInterface() {}
 
   // Uploads a new file specified by |upload_file_info|. Transfers ownership.
   // Returns the upload_id.

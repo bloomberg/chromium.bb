@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
 
+#include <set>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
@@ -723,7 +725,6 @@ void GDataWapiFeedLoader::OnGetChangelist(
 
   // Check if we need to collect more data to complete the directory list.
   if (has_next_feed) {
-
     // Post an UI update event to make the UI smoother.
     GetDocumentsUiState* ui_state = params->ui_state.get();
     if (ui_state == NULL) {

@@ -147,7 +147,7 @@ TEST_F(GDataOperationRegistryTest, OneSuccess) {
   EXPECT_THAT(observer.status(), ElementsAre(Progress(100, 100)));
   // Then it is removed.
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
-  EXPECT_EQ(NULL, op1.get()); // deleted
+  EXPECT_EQ(NULL, op1.get());  // deleted
 }
 
 TEST_F(GDataOperationRegistryTest, OneCancel) {
@@ -168,7 +168,7 @@ TEST_F(GDataOperationRegistryTest, OneCancel) {
   registry.CancelAll();
   EXPECT_THAT(observer.status(), ElementsAre(Progress(0, 100)));
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
-  EXPECT_EQ(NULL, op1.get()); // deleted
+  EXPECT_EQ(NULL, op1.get());  // deleted
 }
 
 TEST_F(GDataOperationRegistryTest, TwoSuccess) {
@@ -200,8 +200,8 @@ TEST_F(GDataOperationRegistryTest, TwoSuccess) {
   op2->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(0, 200)));
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
-  EXPECT_EQ(NULL, op1.get()); // deleted
-  EXPECT_EQ(NULL, op2.get()); // deleted
+  EXPECT_EQ(NULL, op1.get());  // deleted
+  EXPECT_EQ(NULL, op2.get());  // deleted
 }
 
 TEST_F(GDataOperationRegistryTest, ThreeCancel) {
@@ -226,13 +226,13 @@ TEST_F(GDataOperationRegistryTest, ThreeCancel) {
   op2->NotifyStart();
   EXPECT_EQ(2U, observer.status().size());
   op3->NotifyStart();
-  EXPECT_EQ(2U, observer.status().size()); // only upload/download is reported.
+  EXPECT_EQ(2U, observer.status().size());  // only upload/download is reported.
   registry.CancelAll();
-  EXPECT_EQ(1U, observer.status().size()); // holds the last one "COMPLETED"
+  EXPECT_EQ(1U, observer.status().size());  // holds the last one "COMPLETED"
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
-  EXPECT_EQ(NULL, op1.get()); // deleted
-  EXPECT_EQ(NULL, op2.get()); // deleted
-  EXPECT_EQ(NULL, op3.get()); // deleted. CancelAll cares all operations.
+  EXPECT_EQ(NULL, op1.get());  // deleted
+  EXPECT_EQ(NULL, op2.get());  // deleted
+  EXPECT_EQ(NULL, op3.get());  // deleted. CancelAll cares all operations.
 }
 
 TEST_F(GDataOperationRegistryTest, RestartOperation) {
@@ -247,12 +247,12 @@ TEST_F(GDataOperationRegistryTest, RestartOperation) {
 
   op1->NotifyStart();
   EXPECT_EQ(1U, registry.GetProgressStatusList().size());
-  op1->NotifyStart(); // restart
+  op1->NotifyStart();  // restart
   EXPECT_EQ(1U, registry.GetProgressStatusList().size());
   op1->NotifyProgress(0, 200);
   op1->NotifyFinish(GDataOperationRegistry::OPERATION_COMPLETED);
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
-  EXPECT_EQ(NULL, op1.get()); // deleted
+  EXPECT_EQ(NULL, op1.get());  // deleted
 }
 
 }  // namespace gdata

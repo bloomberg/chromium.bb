@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SERVICE_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SERVICE_INTERFACE_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/gdata/operations_base.h"
 // TODO(kochi): Further split gdata_operations.h and include only necessary
 // headers. http://crbug.com/141469

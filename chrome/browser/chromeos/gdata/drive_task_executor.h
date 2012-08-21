@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_TASK_EXECUTOR_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_TASK_EXECUTOR_H_
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 

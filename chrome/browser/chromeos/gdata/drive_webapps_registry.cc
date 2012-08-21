@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"

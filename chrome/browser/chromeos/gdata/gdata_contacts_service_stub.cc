@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_contacts_service_stub.h"
 
+#include <vector>
+
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"

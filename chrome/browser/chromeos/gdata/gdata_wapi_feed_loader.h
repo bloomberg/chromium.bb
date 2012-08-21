@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_WAPI_FEED_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_WAPI_FEED_LOADER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/observer_list.h"

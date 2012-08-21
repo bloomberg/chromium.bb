@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CONTACTS_SERVICE_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"

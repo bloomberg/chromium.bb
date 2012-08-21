@@ -78,10 +78,10 @@ class AboutResource {
 class DriveAppIcon {
  public:
   enum IconCategory {
-    UNKNOWN,         // Uninitialized state
-    DOCUMENT,        // Document icon for various MIME types
-    APPLICATION,     // Application icon for various MIME types
-    SHARED_DOCUMENT, // Icon for documents that are shared from other users.
+    UNKNOWN,          // Uninitialized state
+    DOCUMENT,         // Document icon for various MIME types
+    APPLICATION,      // Application icon for various MIME types
+    SHARED_DOCUMENT,  // Icon for documents that are shared from other users.
   };
 
   ~DriveAppIcon();
@@ -303,7 +303,6 @@ class ParentReference {
 // https://developers.google.com/drive/v2/reference/files
 class FileLabels {
  public:
-
   ~FileLabels();
 
   // Registers the mapping between JSON field names and the members in this

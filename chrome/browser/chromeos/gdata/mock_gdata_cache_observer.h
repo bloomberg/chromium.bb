@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_CACHE_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_CACHE_OBSERVER_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

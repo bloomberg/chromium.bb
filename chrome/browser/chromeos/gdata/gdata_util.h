@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UTIL_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"

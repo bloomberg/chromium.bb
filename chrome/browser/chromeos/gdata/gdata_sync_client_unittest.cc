@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"

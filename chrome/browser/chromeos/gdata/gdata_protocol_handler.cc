@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -70,7 +71,7 @@ struct MimeTypeReplacement {
 };
 
 const MimeTypeReplacement kMimeTypeReplacements[] = {
-    {"message/rfc822","multipart/related"} // Fixes MHTML
+  {"message/rfc822", "multipart/related"}  // Fixes MHTML
 };
 
 std::string FixupMimeType(const std::string& type) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/supports_user_data.h"

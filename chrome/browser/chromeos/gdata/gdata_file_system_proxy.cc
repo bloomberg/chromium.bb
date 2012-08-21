@@ -90,7 +90,6 @@ void OnGetFileByPathForOpen(
                  peer_handle,
                  base::Owned(platform_file),
                  base::Owned(open_error)));
-
 }
 
 // Helper function to run SnapshotFileCallback from

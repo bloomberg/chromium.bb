@@ -177,4 +177,4 @@ TEST_F(GDataOperationsTest, GetDataOperationParseInvalidJson) {
   }
 }
 
-} // namespace gdata
+}  // namespace gdata

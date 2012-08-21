@@ -241,6 +241,7 @@ class AuthorizeAppsOperation : public GetDataOperation {
                           const GURL& document_url,
                           const std::string& app_ids);
   virtual ~AuthorizeAppsOperation();
+
  protected:
   // Overridden from EntryActionOperation.
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
@@ -258,6 +259,7 @@ class AuthorizeAppsOperation : public GetDataOperation {
   // not JSON.
   virtual void ParseResponse(GDataErrorCode fetch_error_code,
                              const std::string& data) OVERRIDE;
+
  private:
   std::string app_id_;
   GURL document_url_;
