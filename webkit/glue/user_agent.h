@@ -21,13 +21,6 @@ std::string GetWebKitVersion();
 int GetWebKitMajorVersion();
 int GetWebKitMinorVersion();
 
-#if defined(OS_ANDROID)
-// Sets the OS component of the user agent (e.g. "4.0.4; Galaxy Nexus
-// BUILD/IMM76K")
-// TODO(yfriedman): Remove this ASAP (http://crbug.com/131312)
-void SetUserAgentOSInfo(const std::string& os_info);
-#endif
-
 // Helper function to generate a full user agent string from a short
 // product name.
 std::string BuildUserAgentFromProduct(const std::string& product);

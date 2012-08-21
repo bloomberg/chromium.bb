@@ -8,14 +8,12 @@
 #include "base/android/jni_registrar.h"
 #include "content/app/android/content_main.h"
 #include "content/app/android/sandboxed_process_service.h"
-#include "content/app/android/user_agent.h"
 
 namespace {
 
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "ContentMain", content::RegisterContentMain },
   { "SandboxedProcessService", content::RegisterSandboxedProcessService },
-  { "UserAgent", content::RegisterUserAgent },
 };
 
 }  // namespace

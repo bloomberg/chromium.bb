@@ -8,7 +8,6 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "content/app/android/user_agent.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -46,8 +45,6 @@ static jint Start(JNIEnv* env, jclass clazz) {
                << switches::kWaitForDebugger << " was supplied.";
     base::debug::WaitForDebugger(24*60*60, false);
   }
-
-  webkit_glue::SetUserAgentOSInfo(content::GetUserAgentOSInfo());
 
   DCHECK(!g_content_runner.Get().get());
   g_content_runner.Get().reset(ContentMainRunner::Create());

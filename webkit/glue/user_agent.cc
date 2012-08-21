@@ -20,14 +20,6 @@
 // Generated
 #include "webkit_version.h"  // NOLINT
 
-#if defined(OS_ANDROID)
-namespace {
-
-base::LazyInstance<std::string>::Leaky g_os_info = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-#endif
-
 namespace webkit_glue {
 
 std::string GetWebKitVersion() {
@@ -44,7 +36,8 @@ std::string GetWebKitRevision() {
 std::string BuildOSCpuInfo() {
   std::string os_cpu;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS) ||\
+    defined(OS_ANDROID)
   int32 os_major_version = 0;
   int32 os_minor_version = 0;
   int32 os_bugfix_version = 0;
@@ -52,6 +45,7 @@ std::string BuildOSCpuInfo() {
                                                &os_minor_version,
                                                &os_bugfix_version);
 #endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Should work on any Posix system.
   struct utsname unixinfo;
@@ -82,6 +76,28 @@ std::string BuildOSCpuInfo() {
   }
 #endif
 
+#if defined(OS_ANDROID)
+  std::string android_info_str;
+
+  // Send information about the device.
+  bool semicolon_inserted = false;
+  std::string android_build_codename = base::SysInfo::GetAndroidBuildCodename();
+  std::string android_device_name = base::SysInfo::GetDeviceName();
+  if ("REL" == android_build_codename && android_device_name.size() > 0) {
+    android_info_str += "; " + android_device_name;
+    semicolon_inserted = true;
+  }
+
+  // Append the build ID.
+  std::string android_build_id = base::SysInfo::GetAndroidBuildID();
+  if (android_build_id.size() > 0) {
+    if (!semicolon_inserted) {
+      android_info_str += ";";
+    }
+    android_info_str += " Build/" + android_build_id;
+  }
+#endif
+
   base::StringAppendF(
       &os_cpu,
 #if defined(OS_WIN)
@@ -102,8 +118,11 @@ std::string BuildOSCpuInfo() {
       os_minor_version,
       os_bugfix_version
 #elif defined(OS_ANDROID)
-      "Android %s",
-      g_os_info.Get().c_str()
+      "Android %d.%d.%d%s",
+      os_major_version,
+      os_minor_version,
+      os_bugfix_version,
+      android_info_str.c_str()
 #else
       "%s %s",
       unixinfo.sysname,  // e.g. Linux
@@ -155,11 +174,5 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
       WEBKIT_VERSION_MINOR);
   return user_agent;
 }
-
-#if defined(OS_ANDROID)
-void SetUserAgentOSInfo(const std::string& os_info) {
-  g_os_info.Get() = os_info;
-}
-#endif
 
 }  // namespace webkit_glue

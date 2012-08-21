@@ -11,7 +11,6 @@
     'public/android/java/src/org/chromium/content/app/ContentMain.java',
     'public/android/java/src/org/chromium/content/app/LibraryLoader.java',
     'public/android/java/src/org/chromium/content/app/SandboxedProcessService.java',
-    'public/android/java/src/org/chromium/content/app/UserAgent.java',
     'public/android/java/src/org/chromium/content/browser/AndroidBrowserProcess.java',
     'public/android/java/src/org/chromium/content/browser/ContentSettings.java',
     'public/android/java/src/org/chromium/content/browser/ContentVideoView.java',
