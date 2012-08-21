@@ -25,7 +25,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/base/win/shell.h"
+#include "ui/views/widget/native_widget_win.h"
 #endif
 
 #if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
@@ -320,7 +320,7 @@ bool ThemeService::ShouldUseNativeFrame() const {
   if (HasCustomImage(IDR_THEME_FRAME))
     return false;
 #if defined(OS_WIN) && !defined(USE_AURA)
-  return ui::win::IsAeroGlassEnabled();
+  return views::NativeWidgetWin::IsAeroGlassEnabled();
 #else
   return false;
 #endif

@@ -11,7 +11,6 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/native_widget_private.h"
 
@@ -29,7 +28,6 @@ class NativeWidgetHelperAura;
 class TooltipManagerAura;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
-                                      public internal::InputMethodDelegate,
                                       public aura::WindowDelegate,
                                       public aura::client::ActivationDelegate,
                                       public aura::client::DragDropDelegate {
@@ -68,7 +66,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void ReleaseCapture() OVERRIDE;
   virtual bool HasCapture() const OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
-  virtual internal::InputMethodDelegate* GetInputMethodDelegate() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowPlacement(
       gfx::Rect* bounds,

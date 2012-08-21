@@ -4,7 +4,6 @@
 
 #include "ui/base/win/shell.h"
 
-#include <dwmapi.h>
 #include <shellapi.h>
 #include <shlobj.h>  // Must be before propkey.
 #include <propkey.h>
@@ -87,14 +86,6 @@ void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
 
 void SetAppIconForWindow(const string16& app_icon, HWND hwnd) {
   SetAppIdAndIconForWindow(string16(), app_icon, hwnd);
-}
-
-bool IsAeroGlassEnabled() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-  // If composition is not enabled, we behave like on XP.
-  BOOL enabled = FALSE;
-  return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;
 }
 
 }  // namespace win

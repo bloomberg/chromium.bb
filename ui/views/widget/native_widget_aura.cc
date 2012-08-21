@@ -339,11 +339,9 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
   aura::RootWindow* root_window = window_->GetRootWindow();
   ui::InputMethod* host =
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
-  return new InputMethodBridge(this, host);
-}
-
-internal::InputMethodDelegate* NativeWidgetAura::GetInputMethodDelegate() {
-  return this;
+  InputMethod* input_method = new InputMethodBridge(this, host);
+  input_method->Init(GetWidget());
+  return input_method;
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {

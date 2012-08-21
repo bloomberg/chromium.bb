@@ -46,10 +46,6 @@ UI_EXPORT void SetAppIdForWindow(const string16& app_id, HWND hwnd);
 // Sets the application icon for the window specified.
 UI_EXPORT void SetAppIconForWindow(const string16& app_icon, HWND hwnd);
 
-// Returns true if composition is available and turned on on the current
-// platform.
-UI_EXPORT bool IsAeroGlassEnabled();
-
 }  // namespace win
 }  // namespace ui
 

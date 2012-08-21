@@ -25,7 +25,6 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
-#include "ui/base/win/shell.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_paint.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -319,12 +318,75 @@ BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
 // static
 bool NativeWidgetWin::screen_reader_active_ = false;
 
+// A scoping class that prevents a window from being able to redraw in response
+// to invalidations that may occur within it for the lifetime of the object.
+//
+// Why would we want such a thing? Well, it turns out Windows has some
+// "unorthodox" behavior when it comes to painting its non-client areas.
+// Occasionally, Windows will paint portions of the default non-client area
+// right over the top of the custom frame. This is not simply fixed by handling
+// WM_NCPAINT/WM_PAINT, with some investigation it turns out that this
+// rendering is being done *inside* the default implementation of some message
+// handlers and functions:
+//  . WM_SETTEXT
+//  . WM_SETICON
+//  . WM_NCLBUTTONDOWN
+//  . EnableMenuItem, called from our WM_INITMENU handler
+// The solution is to handle these messages and call DefWindowProc ourselves,
+// but prevent the window from being able to update itself for the duration of
+// the call. We do this with this class, which automatically calls its
+// associated Window's lock and unlock functions as it is created and destroyed.
+// See documentation in those methods for the technique used.
+//
+// The lock only has an effect if the window was visible upon lock creation, as
+// it doesn't guard against direct visiblility changes, and multiple locks may
+// exist simultaneously to handle certain nested Windows messages.
+//
+// IMPORTANT: Do not use this scoping object for large scopes or periods of
+//            time! IT WILL PREVENT THE WINDOW FROM BEING REDRAWN! (duh).
+//
+// I would love to hear Raymond Chen's explanation for all this. And maybe a
+// list of other messages that this applies to ;-)
+class NativeWidgetWin::ScopedRedrawLock {
+ public:
+  explicit ScopedRedrawLock(NativeWidgetWin* widget)
+    : widget_(widget),
+      native_view_(widget_->GetNativeView()),
+      was_visible_(widget_->IsVisible()),
+      cancel_unlock_(false),
+      force_(!(widget_->GetWindowLong(GWL_STYLE) & WS_CAPTION)) {
+    if (was_visible_ && ::IsWindow(native_view_))
+      widget_->LockUpdates(force_);
+  }
+
+  ~ScopedRedrawLock() {
+    if (!cancel_unlock_ && was_visible_ && ::IsWindow(native_view_))
+      widget_->UnlockUpdates(force_);
+  }
+
+  // Cancel the unlock operation, call this if the Widget is being destroyed.
+  void CancelUnlockOperation() { cancel_unlock_ = true; }
+
+ private:
+  // The widget having its style changed.
+  NativeWidgetWin* widget_;
+  // The widget's native view, cached to avoid action after window destruction.
+  gfx::NativeView native_view_;
+  // Records the widget visibility at the time of creation.
+  bool was_visible_;
+  // A flag indicating that the unlock operation was canceled.
+  bool cancel_unlock_;
+  // If true, perform the redraw lock regardless of Aero state.
+  bool force_;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, public:
 
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      active_mouse_tracking_flags_(0),
       use_layered_buffer_(false),
       layered_alpha_(255),
       ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
@@ -337,20 +399,35 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       fullscreen_(false),
       metro_snap_(false),
       force_hidden_count_(0),
+      lock_updates_count_(0),
       ignore_window_pos_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ignore_pos_changes_factory_(this)),
       last_monitor_(NULL),
+      is_right_mouse_pressed_on_caption_(false),
       restored_enabled_(false),
+      destroyed_(NULL),
       has_non_client_view_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
         message_handler_(new HWNDMessageHandler(this))) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
+  if (destroyed_ != NULL)
+    *destroyed_ = true;
+
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
   else
     CloseNow();
+}
+
+// static
+bool NativeWidgetWin::IsAeroGlassEnabled() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
+  // If composition is not enabled, we behave like on XP.
+  BOOL enabled = FALSE;
+  return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;
 }
 
 // static
@@ -449,7 +526,7 @@ void NativeWidgetWin::UpdateFrameAfterFrameChange() {
 }
 
 bool NativeWidgetWin::ShouldUseNativeFrame() const {
-  return ui::win::IsAeroGlassEnabled();
+  return IsAeroGlassEnabled();
 }
 
 void NativeWidgetWin::FrameTypeChanged() {
@@ -561,23 +638,27 @@ void NativeWidgetWin::SendNativeAccessibilityEvent(
 }
 
 void NativeWidgetWin::SetCapture() {
-  message_handler_->SetCapture();
+  DCHECK(!HasCapture());
+  ::SetCapture(hwnd());
 }
 
 void NativeWidgetWin::ReleaseCapture() {
-  message_handler_->ReleaseCapture();
+  ::ReleaseCapture();
 }
 
 bool NativeWidgetWin::HasCapture() const {
-  return message_handler_->HasCapture();
+  return ::GetCapture() == hwnd();
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-  return message_handler_->CreateInputMethod();
-}
-
-internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
-  return message_handler_.get();
+#if !defined(USE_AURA)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
+    return NULL;
+#endif
+  InputMethod* input_method = new InputMethodWin(this);
+  input_method->Init(GetWidget());
+  return input_method;
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
@@ -874,11 +955,11 @@ void NativeWidgetWin::Minimize() {
 }
 
 bool NativeWidgetWin::IsMaximized() const {
-  return message_handler_->IsMaximized();
+  return !!::IsZoomed(GetNativeView());
 }
 
 bool NativeWidgetWin::IsMinimized() const {
-  return message_handler_->IsMinimized();
+  return !!::IsIconic(GetNativeView());
 }
 
 void NativeWidgetWin::Restore() {
@@ -1189,9 +1270,6 @@ void NativeWidgetWin::OnCommand(UINT notification_code,
 }
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  // TODO(beng): move to message_handler_. Needed before
-  // ClientAreaSizeChanged().
-  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
   return message_handler_->OnCreate(create_struct);
 }
 
@@ -1285,7 +1363,92 @@ LRESULT NativeWidgetWin::OnMouseActivate(UINT message,
 LRESULT NativeWidgetWin::OnMouseRange(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) {
-  return message_handler_->OnMouseRange(message, w_param, l_param);
+  if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
+    is_right_mouse_pressed_on_caption_ = false;
+    ReleaseCapture();
+    // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
+    // expect screen coordinates.
+    CPoint screen_point(l_param);
+    MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_point, 1);
+    w_param = SendMessage(GetNativeView(), WM_NCHITTEST, 0,
+                          MAKELPARAM(screen_point.x, screen_point.y));
+    if (w_param == HTCAPTION || w_param == HTSYSMENU) {
+      ui::ShowSystemMenu(GetNativeView(), screen_point.x, screen_point.y);
+      return 0;
+    }
+  } else if (message == WM_NCLBUTTONDOWN &&
+             !GetWidget()->ShouldUseNativeFrame()) {
+    switch (w_param) {
+      case HTCLOSE:
+      case HTMINBUTTON:
+      case HTMAXBUTTON: {
+        // When the mouse is pressed down in these specific non-client areas,
+        // we need to tell the RootView to send the mouse pressed event (which
+        // sets capture, allowing subsequent WM_LBUTTONUP (note, _not_
+        // WM_NCLBUTTONUP) to fire so that the appropriate WM_SYSCOMMAND can be
+        // sent by the applicable button's ButtonListener. We _have_ to do this
+        // way rather than letting Windows just send the syscommand itself (as
+        // would happen if we never did this dance) because for some insane
+        // reason DefWindowProc for WM_NCLBUTTONDOWN also renders the pressed
+        // window control button appearance, in the Windows classic style, over
+        // our view! Ick! By handling this message we prevent Windows from
+        // doing this undesirable thing, but that means we need to roll the
+        // sys-command handling ourselves.
+        // Combine |w_param| with common key state message flags.
+        w_param |= base::win::IsCtrlPressed() ? MK_CONTROL : 0;
+        w_param |= base::win::IsShiftPressed() ? MK_SHIFT : 0;
+      }
+    }
+  } else if (message == WM_NCRBUTTONDOWN &&
+      (w_param == HTCAPTION || w_param == HTSYSMENU)) {
+    is_right_mouse_pressed_on_caption_ = true;
+    // We SetCapture() to ensure we only show the menu when the button
+    // down and up are both on the caption. Note: this causes the button up to
+    // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
+    SetCapture();
+  }
+
+  MSG msg = { hwnd(), message, w_param, l_param, 0,
+              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
+  ui::MouseEvent event(msg);
+  if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
+    event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
+
+  if (!(event.flags() & ui::EF_IS_NON_CLIENT))
+    if (tooltip_manager_.get())
+      tooltip_manager_->OnMouse(message, w_param, l_param);
+
+  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture()) {
+    // Windows only fires WM_MOUSELEAVE events if the application begins
+    // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
+    // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
+    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
+        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
+  } else if (event.type() == ui::ET_MOUSE_EXITED) {
+    // Reset our tracking flags so future mouse movement over this
+    // NativeWidgetWin results in a new tracking session. Fall through for
+    // OnMouseEvent.
+    active_mouse_tracking_flags_ = 0;
+  } else if (event.type() == ui::ET_MOUSEWHEEL) {
+    // Reroute the mouse wheel to the window under the pointer if applicable.
+    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+            delegate_->OnMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
+  }
+
+  bool handled = delegate_->OnMouseEvent(event);
+
+  if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
+      !GetWidget()->ShouldUseNativeFrame()) {
+    // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
+    // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
+    // need to call it inside a ScopedRedrawLock. This may cause other negative
+    // side-effects (ex/ stifling non-client mouse releases).
+    DefWindowProcWithRedrawLock(message, w_param, l_param);
+    handled = true;
+  }
+
+  SetMsgHandled(handled);
+  return 0;
 }
 
 void NativeWidgetWin::OnMove(const CPoint& point) {
@@ -1600,7 +1763,20 @@ void NativeWidgetWin::OnThemeChanged() {
 LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) {
-  return message_handler_->OnTouchEvent(message, w_param, l_param);
+  int num_points = LOWORD(w_param);
+  scoped_array<TOUCHINPUT> input(new TOUCHINPUT[num_points]);
+  if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(l_param),
+                        num_points, input.get(), sizeof(TOUCHINPUT))) {
+    for (int i = 0; i < num_points; ++i) {
+      if (input[i].dwFlags & TOUCHEVENTF_DOWN)
+        touch_ids_.insert(input[i].dwID);
+      if (input[i].dwFlags & TOUCHEVENTF_UP)
+        touch_ids_.erase(input[i].dwID);
+    }
+  }
+  CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeWidgetWin::OnVScroll(int scroll_type,
@@ -1695,7 +1871,18 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 }
 
 void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  message_handler_->OnWindowPosChanged(window_pos);
+  if (DidClientAreaSizeChange(window_pos))
+    ClientAreaSizeChanged();
+  if (message_handler_->remove_standard_frame() &&
+      window_pos->flags & SWP_FRAMECHANGED &&
+      IsAeroGlassEnabled()) {
+    UpdateDWMFrame();
+  }
+  if (window_pos->flags & SWP_SHOWWINDOW)
+    delegate_->OnNativeWidgetVisibilityChanged(true);
+  else if (window_pos->flags & SWP_HIDEWINDOW)
+    delegate_->OnNativeWidgetVisibilityChanged(false);
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnFinalMessage(HWND window) {
@@ -1746,6 +1933,30 @@ gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
   return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
+}
+
+void NativeWidgetWin::TrackMouseEvents(DWORD mouse_tracking_flags) {
+  // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
+  // when the user moves the mouse outside this HWND's bounds.
+  if (active_mouse_tracking_flags_ == 0 || mouse_tracking_flags & TME_CANCEL) {
+    if (mouse_tracking_flags & TME_CANCEL) {
+      // We're about to cancel active mouse tracking, so empty out the stored
+      // state.
+      active_mouse_tracking_flags_ = 0;
+    } else {
+      active_mouse_tracking_flags_ = mouse_tracking_flags;
+    }
+
+    TRACKMOUSEEVENT tme;
+    tme.cbSize = sizeof(tme);
+    tme.dwFlags = mouse_tracking_flags;
+    tme.hwndTrack = hwnd();
+    tme.dwHoverTime = 0;
+    TrackMouseEvent(&tme);
+  } else if (mouse_tracking_flags != active_mouse_tracking_flags_) {
+    TrackMouseEvents(active_mouse_tracking_flags_ | TME_CANCEL);
+    TrackMouseEvents(mouse_tracking_flags);
+  }
 }
 
 void NativeWidgetWin::OnScreenReaderDetected() {
@@ -1862,6 +2073,8 @@ void NativeWidgetWin::HandleCreate() {
   SetNativeWindowProperty(kNativeWidgetKey, this);
   CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
 
+  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
+
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(hwnd()));
 
   drop_target_ = new DropTargetWin(
@@ -1888,6 +2101,11 @@ void NativeWidgetWin::HandleCreate() {
     LOG_GETLASTERROR(WARNING) << "tooltip creation failed, disabling tooltips";
     tooltip_manager_.reset();
   }
+
+  // We need to allow the delegate to size its contents since the window may not
+  // receive a size notification when its initial bounds are specified at window
+  // creation time.
+  ClientAreaSizeChanged();
 
   delegate_->OnNativeWidgetCreated();
 }
@@ -1930,32 +2148,12 @@ void NativeWidgetWin::HandleWorkAreaChanged() {
   GetWidget()->widget_delegate()->OnWorkAreaChanged();
 }
 
-void NativeWidgetWin::HandleVisibilityChanged(bool visible) {
-  delegate_->OnNativeWidgetVisibilityChanged(visible);
-}
-
-void NativeWidgetWin::HandleClientSizeChanged(const gfx::Size& new_size) {
-  delegate_->OnNativeWidgetSizeChanged(new_size);
-  if (use_layered_buffer_) {
-    layered_window_contents_.reset(
-        new gfx::Canvas(new_size, ui::SCALE_FACTOR_100P, false));
-  }
-}
-
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
   delegate_->OnNativeFocus(last_focused_window);
 }
 
 void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
-}
-
-bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  return delegate_->OnMouseEvent(event);
-}
-
-bool NativeWidgetWin::HandleKeyEvent(const ui::KeyEvent& event) {
-  return delegate_->OnKeyEvent(event);
 }
 
 void NativeWidgetWin::HandleScreenReaderDetected() {
@@ -1975,13 +2173,6 @@ bool NativeWidgetWin::HandleTooltipNotify(int w_param,
     return handled;
   }
   return false;
-}
-
-void NativeWidgetWin::HandleTooltipMouseMove(UINT message,
-                                             WPARAM w_param,
-                                             LPARAM l_param) {
-  if (tooltip_manager_.get())
-    tooltip_manager_->OnMouse(message, w_param, l_param);
 }
 
 NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {
@@ -2153,9 +2344,65 @@ void NativeWidgetWin::RedrawLayeredWindowContents() {
   skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
 }
 
+void NativeWidgetWin::LockUpdates(bool force) {
+  // We skip locked updates when Aero is on for two reasons:
+  // 1. Because it isn't necessary
+  // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
+  //    attempting to present a child window's backbuffer onscreen. When these
+  //    two actions race with one another, the child window will either flicker
+  //    or will simply stop updating entirely.
+  if ((force || !IsAeroGlassEnabled()) && ++lock_updates_count_ == 1)
+    SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_VISIBLE);
+}
+
+void NativeWidgetWin::UnlockUpdates(bool force) {
+  if ((force || !IsAeroGlassEnabled()) && --lock_updates_count_ <= 0) {
+    SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) | WS_VISIBLE);
+    lock_updates_count_ = 0;
+  }
+}
+
 bool NativeWidgetWin::WidgetSizeIsClientSize() const {
   const Widget* widget = GetWidget()->GetTopLevelWidget();
   return IsZoomed() || (widget && widget->ShouldUseNativeFrame());
+}
+
+void NativeWidgetWin::ClientAreaSizeChanged() {
+  RECT r = {0, 0, 0, 0};
+  if (WidgetSizeIsClientSize()) {
+    // TODO(beng): investigate whether this could be done
+    // from other branch of if-else.
+    if (!IsMinimized())
+      GetClientRect(&r);
+  } else
+    GetWindowRect(&r);
+  gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
+              std::max(0, static_cast<int>(r.bottom - r.top)));
+  delegate_->OnNativeWidgetSizeChanged(s);
+  if (use_layered_buffer_)
+    layered_window_contents_.reset(
+        new gfx::Canvas(s, ui::SCALE_FACTOR_100P, false));
+}
+
+void NativeWidgetWin::UpdateDWMFrame() {
+  MARGINS m = {10, 10, 10, 10};
+  DwmExtendFrameIntoClientArea(GetNativeView(), &m);
+}
+
+LRESULT NativeWidgetWin::DefWindowProcWithRedrawLock(UINT message,
+                                                     WPARAM w_param,
+                                                     LPARAM l_param) {
+  ScopedRedrawLock lock(this);
+  // The Widget and HWND can be destroyed in the call to DefWindowProc, so use
+  // the |destroyed_| flag to avoid unlocking (and crashing) after destruction.
+  bool destroyed = false;
+  destroyed_ = &destroyed;
+  LRESULT result = DefWindowProc(GetNativeView(), message, w_param, l_param);
+  if (destroyed)
+    lock.CancelUnlockOperation();
+  else
+    destroyed_ = NULL;
+  return result;
 }
 
 void NativeWidgetWin::RestoreEnabledIfNecessary() {
@@ -2178,6 +2425,10 @@ void NativeWidgetWin::NotifyOwnedWindowsParentClosing() {
                     reinterpret_cast<LPARAM>(&data));
   for (size_t i = 0; i < data.owned_widgets.size(); ++i)
     data.owned_widgets[i]->OnOwnerClosing();
+}
+
+void NativeWidgetWin::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
+  SetMsgHandled(delegate_->OnKeyEvent(key));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

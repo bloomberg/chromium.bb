@@ -658,10 +658,8 @@ const FocusManager* Widget::GetFocusManager() const {
 
 InputMethod* Widget::GetInputMethod() {
   if (is_top_level()) {
-    if (!input_method_.get()) {
+    if (!input_method_.get())
       input_method_.reset(native_widget_->CreateInputMethod());
-      input_method_->Init(this);
-    }
     return input_method_.get();
   } else {
     Widget* toplevel = GetTopLevelWidget();
@@ -1322,7 +1320,7 @@ bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
 
 void Widget::ReplaceInputMethod(InputMethod* input_method) {
   input_method_.reset(input_method);
-  input_method->set_delegate(native_widget_->GetInputMethodDelegate());
+  input_method->set_delegate(native_widget_);
   input_method->Init(this);
 }
 

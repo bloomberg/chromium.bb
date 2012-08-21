@@ -8,7 +8,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/base/win/shell.h"
+#include "ui/views/widget/native_widget_win.h"
 #endif
 
 namespace views {
@@ -36,7 +36,7 @@ bool DefaultThemeProvider::GetDisplayProperty(int id, int* result) const {
 
 bool DefaultThemeProvider::ShouldUseNativeFrame() const {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  return ui::win::IsAeroGlassEnabled();
+  return NativeWidgetWin::IsAeroGlassEnabled();
 #else
   return false;
 #endif

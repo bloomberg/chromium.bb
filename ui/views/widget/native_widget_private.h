@@ -39,7 +39,8 @@ namespace internal {
 //             NativeWidget implementations. This file should not be included
 //             in code that does not fall into one of these use cases.
 //
-class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
+class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
+                                         public internal::InputMethodDelegate {
  public:
   virtual ~NativeWidgetPrivate() {}
 
@@ -135,9 +136,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // TODO(suzhe): rename to GetInputMethod() when NativeWidget implementation
   // class doesn't inherit Widget anymore.
   virtual InputMethod* CreateInputMethod() = 0;
-
-  // Returns the InputMethodDelegate for this native widget.
-  virtual InputMethodDelegate* GetInputMethodDelegate() = 0;
 
 
   // Centers the window and sizes it to the specified size.
