@@ -1355,15 +1355,20 @@ int VaapiH264Decoder::LongTermPicNumF(H264Picture *pic) {
 
 // Shift elements on the |v| starting from |from| to |to|, inclusive,
 // one position to the right and insert pic at |from|.
-static void ShiftRightAndInsert(H264Picture::PtrVector& v,
+static void ShiftRightAndInsert(H264Picture::PtrVector *v,
                                 int from,
                                 int to,
                                 H264Picture* pic) {
   DCHECK(pic);
-  for (int i = to + 1; i > from; --i)
-    v[i] = v[i - 1];
+  DCHECK((to + 1 == static_cast<int>(v->size())) ||
+         (to + 2 == static_cast<int>(v->size())));
 
-  v[from] = pic;
+  v->resize(to + 2);
+
+  for (int i = to + 1; i > from; --i)
+    (*v)[i] = (*v)[i - 1];
+
+  (*v)[from] = pic;
 }
 
 bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
@@ -1439,7 +1444,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
           DVLOG(1) << "Malformed stream, no pic num " << pic_num_lx;
           return false;
         }
-        ShiftRightAndInsert(*ref_pic_listx, ref_idx_lx,
+        ShiftRightAndInsert(ref_pic_listx, ref_idx_lx,
                             num_ref_idx_lX_active_minus1, pic);
         ref_idx_lx++;
 
@@ -1459,7 +1464,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
           DVLOG(1) << "Malformed stream, no pic num " << pic_num_lx;
           return false;
         }
-        ShiftRightAndInsert(*ref_pic_listx, ref_idx_lx,
+        ShiftRightAndInsert(ref_pic_listx, ref_idx_lx,
                             num_ref_idx_lX_active_minus1, pic);
         ref_idx_lx++;
 
