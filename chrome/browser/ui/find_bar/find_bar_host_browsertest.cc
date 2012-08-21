@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindNextAndPrevious) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
   TabContents* tab = chrome::GetActiveTabContents(browser());
 
   FilePath data_dir = ui_test_utils::GetTestFilePath(FilePath(), FilePath());
@@ -331,7 +331,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindNextAndPrevious) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   FlushHistoryService();
   EXPECT_EQ(1,
-            FindInPageWchar(tab, L"a_zip_file.zip", kFwd, kIgnoreCase, NULL));
+            FindInPageWchar(tab, ASCIIToWide(download_url.spec()).c_str(), kFwd,
+                            kIgnoreCase, NULL));
 }
 
 // Verify search selection coordinates. The data file used is set-up such that
