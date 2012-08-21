@@ -225,7 +225,12 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests that scopes are only granted if |record_oauth2_grant_| on the prompt is
 // true.
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, GrantScopes) {
+#if defined(OS_WIN)
+#define MAYBE_GrantScopes FLAKY_GrantScopes
+#else
+#define MAYBE_GrantScopes GrantScopes
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_GrantScopes) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall("browsertest/scopes",
                                                           true));
 }
