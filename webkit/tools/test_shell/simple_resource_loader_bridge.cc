@@ -68,6 +68,7 @@
 #include "webkit/fileapi/file_system_dir_url_request_job.h"
 #include "webkit/fileapi/file_system_url_request_job.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
@@ -81,6 +82,7 @@
 #endif
 
 using webkit_glue::ResourceLoaderBridge;
+using webkit_glue::ResourceRequestBody;
 using webkit_glue::ResourceResponseInfo;
 using net::StaticCookiePolicy;
 using net::HttpResponseHeaders;
@@ -279,7 +281,7 @@ struct RequestParams {
   ResourceType::Type request_type;
   int appcache_host_id;
   bool download_to_file;
-  scoped_refptr<net::UploadData> upload;
+  scoped_refptr<ResourceRequestBody> request_body;
 };
 
 // The interval for calls to RequestProxy::MaybeUpdateUploadProgress
@@ -415,10 +417,10 @@ class RequestProxy
 
   void AsyncStart(RequestParams* params) {
     // Might need to resolve the blob references in the upload data.
-    if (params->upload) {
+    if (params->request_body) {
       static_cast<TestShellRequestContext*>(g_request_context)->
-          blob_storage_controller()->ResolveBlobReferencesInUploadData(
-              params->upload.get());
+          blob_storage_controller()->ResolveBlobReferencesInRequestBody(
+              params->request_body.get());
     }
 
     request_.reset(new net::URLRequest(params->url, this, g_request_context));
@@ -431,7 +433,8 @@ class RequestProxy
     headers.AddHeadersFromString(params->headers);
     request_->SetExtraRequestHeaders(headers);
     request_->set_load_flags(params->load_flags);
-    request_->set_upload(params->upload.get());
+    if (params->request_body)
+      request_->set_upload(params->request_body->CreateUploadData());
     SimpleAppCacheSystem::SetExtraRequestInfo(
         request_.get(), params->appcache_host_id, params->request_type);
 
@@ -874,37 +877,10 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
   // --------------------------------------------------------------------------
   // ResourceLoaderBridge implementation:
 
-  virtual void AppendDataToUpload(const char* data, int data_len) {
+  virtual void SetRequestBody(ResourceRequestBody* request_body) {
     DCHECK(params_.get());
-    if (!params_->upload)
-      params_->upload = new net::UploadData();
-    params_->upload->AppendBytes(data, data_len);
-  }
-
-  virtual void AppendFileRangeToUpload(
-      const FilePath& file_path,
-      uint64 offset,
-      uint64 length,
-      const base::Time& expected_modification_time) {
-    DCHECK(params_.get());
-    if (!params_->upload)
-      params_->upload = new net::UploadData();
-    params_->upload->AppendFileRange(file_path, offset, length,
-                                     expected_modification_time);
-  }
-
-  virtual void AppendBlobToUpload(const GURL& blob_url) {
-    DCHECK(params_.get());
-    if (!params_->upload)
-      params_->upload = new net::UploadData();
-    params_->upload->AppendBlob(blob_url);
-  }
-
-  virtual void SetUploadIdentifier(int64 identifier) {
-    DCHECK(params_.get());
-    if (!params_->upload)
-      params_->upload = new net::UploadData();
-    params_->upload->set_identifier(identifier);
+    DCHECK(!params_->request_body);
+    params_->request_body = request_body;
   }
 
   virtual bool Start(Peer* peer) {

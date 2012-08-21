@@ -40,10 +40,10 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/browser/renderer_host/transfer_navigation_resource_throttle.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/renderer_host/throttling_resource_handler.h"
+#include "content/browser/renderer_host/transfer_navigation_resource_throttle.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/resource_messages.h"
@@ -82,12 +82,14 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/glue/resource_request_body.h"
 #include "webkit/glue/webkit_glue.h"
 
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using webkit_blob::ShareableFileReference;
+using webkit_glue::ResourceRequestBody;
 
 // ----------------------------------------------------------------------------
 
@@ -171,12 +173,12 @@ bool ShouldServiceRequest(ProcessType process_type,
   }
 
   // Check if the renderer is permitted to upload the requested files.
-  if (request_data.upload_data) {
-    const std::vector<net::UploadElement>* uploads =
-        request_data.upload_data->elements();
-    std::vector<net::UploadElement>::const_iterator iter;
+  if (request_data.request_body) {
+    const std::vector<ResourceRequestBody::Element>* uploads =
+        request_data.request_body->elements();
+    std::vector<ResourceRequestBody::Element>::const_iterator iter;
     for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-      if (iter->type() == net::UploadElement::TYPE_FILE &&
+      if (iter->type() == ResourceRequestBody::TYPE_FILE &&
           !policy->CanReadFile(child_id, iter->file_path())) {
         NOTREACHED() << "Denied unauthorized upload of "
                      << iter->file_path().value();
@@ -899,9 +901,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
   CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
   // Might need to resolve the blob references in the upload data.
-  if (request_data.upload_data) {
+  if (request_data.request_body) {
     GetBlobStorageControllerForResourceContext(resource_context)->
-        ResolveBlobReferencesInUploadData(request_data.upload_data.get());
+        ResolveBlobReferencesInRequestBody(request_data.request_body.get());
   }
 
   if (is_shutdown_ ||
@@ -963,11 +965,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Set upload data.
   uint64 upload_size = 0;
-  if (request_data.upload_data) {
-    request->set_upload(request_data.upload_data);
+  if (request_data.request_body) {
+    request->set_upload(request_data.request_body->CreateUploadData());
     // This results in performing file IO. crbug.com/112607.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    upload_size = request_data.upload_data->GetContentLengthSync();
+    upload_size = request->get_upload_mutable()->GetContentLengthSync();
   }
 
   bool allow_download = request_data.allow_download &&

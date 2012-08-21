@@ -13,6 +13,7 @@
 #include "base/process.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_export.h"
+#include "webkit/glue/resource_request_body.h"
 
 class GURL;
 class FilePath;
@@ -20,8 +21,9 @@ class FilePath;
 namespace base {
 class Time;
 }
-namespace net {
-class UploadData;
+
+namespace webkit_glue {
+class ResourceRequestBody;
 }
 
 namespace webkit_blob {
@@ -40,9 +42,10 @@ class BLOB_EXPORT BlobStorageController {
   void RemoveBlob(const GURL& url);
   BlobData* GetBlobDataFromUrl(const GURL& url);
 
-  // If there is any blob reference in the upload data, it will get resolved
-  // and updated in place.
-  void ResolveBlobReferencesInUploadData(net::UploadData* upload_data);
+  // If there is any blob reference in the resource request body, it will get
+  // resolved and updated in place.
+  void ResolveBlobReferencesInRequestBody(
+      webkit_glue::ResourceRequestBody* request_body);
 
  private:
   friend class ViewBlobInternalsJob;
