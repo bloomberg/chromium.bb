@@ -19,10 +19,9 @@ class MockChromeToMobileService : public ChromeToMobileService {
   // ChromeToMobileService overrides:
   virtual const base::ListValue* GetMobiles() const OVERRIDE;
 
-  MOCK_METHOD0(RequestMobileListUpdate, void());
   MOCK_METHOD2(GenerateSnapshot, void(Browser* browser,
                                       base::WeakPtr<Observer> observer));
-  MOCK_METHOD4(SendToMobile, void(const base::DictionaryValue& mobile,
+  MOCK_METHOD4(SendToMobile, void(const base::DictionaryValue* mobile,
                                   const FilePath& snapshot,
                                   Browser* browser,
                                   base::WeakPtr<Observer> observer));
@@ -36,7 +35,9 @@ class MockChromeToMobileService : public ChromeToMobileService {
 void MockChromeToMobileService::AddDevices(size_t count) {
   for(size_t i = 0; i < count; i++) {
     base::DictionaryValue* device = new base::DictionaryValue();
+    device->SetString("type", "Device Type");
     device->SetString("name", "Device Name");
+    device->SetString("id", "Device ID");
     mobiles_.Append(device);
   }
 }
@@ -115,8 +116,9 @@ class ChromeToMobileBubbleControllerTest : public CocoaTest {
 };
 
 TEST_F(ChromeToMobileBubbleControllerTest, OneDevice) {
-  EXPECT_CALL(service_, RequestMobileListUpdate());
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
+  EXPECT_CALL(service_, SendToMobile(testing::_, testing::_,
+                                     testing::_, testing::_)).Times(0);
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
   EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
@@ -126,8 +128,9 @@ TEST_F(ChromeToMobileBubbleControllerTest, OneDevice) {
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, TwoDevices) {
-  EXPECT_CALL(service_, RequestMobileListUpdate());
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
+  EXPECT_CALL(service_, SendToMobile(testing::_, testing::_,
+                                     testing::_, testing::_)).Times(0);
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
   EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
@@ -137,8 +140,9 @@ TEST_F(ChromeToMobileBubbleControllerTest, TwoDevices) {
 }
 
 TEST_F(ChromeToMobileBubbleControllerTest, ThreeDevices) {
-  EXPECT_CALL(service_, RequestMobileListUpdate());
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
+  EXPECT_CALL(service_, SendToMobile(testing::_, testing::_,
+                                     testing::_, testing::_)).Times(0);
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
   EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
@@ -149,7 +153,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, ThreeDevices) {
 
 TEST_F(ChromeToMobileBubbleControllerTest, SendWithoutSnapshot) {
   FilePath path;
-  EXPECT_CALL(service_, RequestMobileListUpdate());
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
   EXPECT_CALL(service_, SendToMobile(testing::_, path, NULL, testing::_));
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
@@ -162,7 +165,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, SendWithoutSnapshot) {
 
 TEST_F(ChromeToMobileBubbleControllerTest, SendWithSnapshot) {
   FilePath path("path.mht");
-  EXPECT_CALL(service_, RequestMobileListUpdate());
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
   EXPECT_CALL(service_, SendToMobile(testing::_, path, NULL, testing::_));
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
