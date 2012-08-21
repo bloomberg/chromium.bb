@@ -4,14 +4,14 @@
 
 // This file contains mocks for classes in gdata_documents_service.h
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_DOCUMENTS_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_DOCUMENTS_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DOCUMENTS_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DOCUMENTS_SERVICE_H_
 
 #include <string>
 
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
+#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FilePath;
@@ -30,23 +30,14 @@ class MockDocumentsService : public DocumentsServiceInterface {
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
   MOCK_METHOD5(GetDocuments, void(const GURL& feed_url,
-                                  int start_changestamp,
+                                  int64 start_changestamp,
                                   const std::string& search_string,
                                   const std::string& directory_resource_id,
                                   const GetDataCallback& callback));
-  MOCK_METHOD3(GetFilelist, void(const GURL& feed_url,
-                                 const std::string& search_string,
-                                 const GetDataCallback& callback));
-  MOCK_METHOD3(GetChangelist, void(const GURL& feed_url,
-                                   int64 start_changestamp,
-                                   const GetDataCallback& callback));
   MOCK_METHOD2(GetDocumentEntry, void(const std::string& resource_id,
                                       const GetDataCallback& callback));
-  MOCK_METHOD2(GetFile, void(const std::string& file_id,
-                             const GetDataCallback& callback));
   MOCK_METHOD1(GetAccountMetadata, void(const GetDataCallback& callback));
-  MOCK_METHOD1(GetAboutResource, void(const GetDataCallback& callback));
-  MOCK_METHOD1(GetApplicationList, void(const GetDataCallback& callback));
+  MOCK_METHOD1(GetApplicationInfo, void(const GetDataCallback& callback));
   MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
                                     const EntryActionCallback& callback));
   MOCK_METHOD5(DownloadDocument, void(const FilePath& virtual_path,
@@ -119,7 +110,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
   // value of |feed_data_|.
   void GetDocumentsStub(const GURL& feed_url,
-                        int start_changestamp,
+                        int64 start_changestamp,
                         const std::string& search_string,
                         const std::string& directory_resource_id,
                         const GetDataCallback& callback);
@@ -201,4 +192,4 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_DOCUMENTS_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DOCUMENTS_SERVICE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
+#include "chrome/browser/chromeos/gdata/mock_documents_service.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -90,7 +90,7 @@ void MockDocumentsService::AuthenticateStub(
 
 void MockDocumentsService::GetDocumentsStub(
     const GURL& feed_url,
-    int start_changestamp,
+    int64 start_changestamp,
     const std::string& search_string,
     const std::string& directory_resource_id,
     const GetDataCallback& callback) {

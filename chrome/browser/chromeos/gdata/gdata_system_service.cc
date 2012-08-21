@@ -7,16 +7,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/gdata/drive_api_service.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
 #include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_service.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -209,10 +210,14 @@ ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   GDataSystemService* service = new GDataSystemService(profile);
 
-  DocumentsServiceInterface* documents_service =
-      g_test_documents_service ? g_test_documents_service :
-                                 new DocumentsService();
+  DocumentsServiceInterface* documents_service = g_test_documents_service;
   g_test_documents_service = NULL;
+  if (!documents_service) {
+    if (util::IsDriveV2ApiEnabled())
+      documents_service = new DriveAPIService();
+    else
+      documents_service = new GDataWapiService();
+  }
 
   FilePath cache_root =
       g_test_cache_root ? FilePath(*g_test_cache_root) :

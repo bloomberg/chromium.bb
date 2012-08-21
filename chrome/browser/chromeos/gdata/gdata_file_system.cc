@@ -16,10 +16,10 @@
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
@@ -2106,15 +2106,11 @@ void GDataFileSystem::GetAvailableSpaceOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (gdata::util::IsDriveV2ApiEnabled()) {
-    documents_service_->GetAboutResource(
+  documents_service_->GetAccountMetadata(
+      gdata::util::IsDriveV2ApiEnabled() ?
       base::Bind(&GDataFileSystem::OnGetAboutResource,
                  ui_weak_ptr_,
-                 callback));
-    return;
-  }
-
-  documents_service_->GetAccountMetadata(
+                 callback) :
       base::Bind(&GDataFileSystem::OnGetAvailableSpace,
                  ui_weak_ptr_,
                  callback));

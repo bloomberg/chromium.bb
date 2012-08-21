@@ -2,26 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOCUMENTS_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOCUMENTS_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DOCUMENTS_SERVICE_INTERFACE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DOCUMENTS_SERVICE_INTERFACE_H_
 
-#include <string>
-
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/gdata/operations_base.h"
+// TODO(kochi): Further split gdata_operations.h and include only necessary
+// headers. http://crbug.com/141469
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
-class FilePath;
-class GURL;
 class Profile;
 
 namespace gdata {
 
-class GDataOperationInterface;
 class GDataOperationRegistry;
-class GDataOperationRunner;
 
 // Document export format.
 enum DocumentExportFormat {
@@ -53,9 +46,12 @@ enum DocumentExportFormat {
 //
 // TODO(zel,benchan): Make the terminology/naming convention (e.g. file vs
 // document vs resource, directory vs collection) more consistent and precise.
+// TODO(kochi): Rename this to DriveServiceInterface. http://crbug.com/143661.
 class DocumentsServiceInterface {
  public:
   virtual ~DocumentsServiceInterface() {}
+
+  // Common service:
 
   // Initializes the documents service tied with |profile|.
   virtual void Initialize(Profile* profile) = 0;
@@ -66,10 +62,20 @@ class DocumentsServiceInterface {
   // Cancels all in-flight operations.
   virtual void CancelAll() = 0;
 
+  // Authentication service:
+
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
   virtual void Authenticate(const AuthStatusCallback& callback) = 0;
+
+  // True if OAuth2 access token is retrieved and believed to be fresh.
+  virtual bool HasAccessToken() const = 0;
+
+  // True if OAuth2 refresh token is present.
+  virtual bool HasRefreshToken() const = 0;
+
+  // Document access:
 
   // Fetches the document feed from |feed_url| with |start_changestamp|. If this
   // URL is empty, the call will fetch the default root or change document feed.
@@ -87,29 +93,10 @@ class DocumentsServiceInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   // TODO(satorux): Refactor this function: crbug.com/128746
   virtual void GetDocuments(const GURL& feed_url,
-                            int start_changestamp,
+                            int64 start_changestamp,
                             const std::string& search_query,
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) = 0;
-
-  // Fetches a changelist from |url| with |start_changestamp|, using Drive V2
-  // API. If this URL is empty the call will use the default URL. Specify |url|
-  // when pagenated request should be issued.
-  // |start_changestamp| specifies the starting point of change list or 0 if
-  // all changes are necessary.
-  // Upon completion, invokes |callback| with results on calling thread.
-  virtual void GetChangelist(const GURL& url,
-                             int64 start_changestamp,
-                             const GetDataCallback& callback) = 0;
-
-  // Fetches a filelist from |url| with |search_query|, using Drive V2 API. If
-  // this URL is empty the call will use the default URL. Specify |url| when
-  // pagenated request should be issued.
-  // |search_query| specifies query string, whose syntax is described at
-  // https://developers.google.com/drive/search-parameters
-  virtual void GetFilelist(const GURL& url,
-                           const std::string& search_query,
-                           const GetDataCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
@@ -117,25 +104,14 @@ class DocumentsServiceInterface {
   virtual void GetDocumentEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) = 0;
 
-  // Fetches single entry metadata from server. The entry's file id equals
-  // |file_id|.
-  // Upon completion, invokes |callback| with results on the calling thread.
-  // https://developers.google.com/drive/v2/reference/files/get
-  virtual void GetFile(const std::string& file_id,
-                       const GetDataCallback& callback) = 0;
-
   // Gets the account metadata from the server using the default account
   // metadata URL. Upon completion, invokes |callback| with results on the
   // calling thread.
   virtual void GetAccountMetadata(const GetDataCallback& callback) = 0;
 
-  // Gets the About resource from the server for the current account.
+  // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
-  // (For Drive V2 API only)
-  virtual void GetAboutResource(const GetDataCallback& callback) = 0;
-
-  // Gets the application list (For Drive V2 API only).
-  virtual void GetApplicationList(const GetDataCallback& callback) = 0;
+  virtual void GetApplicationInfo(const GetDataCallback& callback) = 0;
 
   // Deletes a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -218,97 +194,8 @@ class DocumentsServiceInterface {
   virtual void AuthorizeApp(const GURL& resource_url,
                             const std::string& app_id,
                             const GetDataCallback& callback) = 0;
-
-  // True if OAuth2 access token is retrieved and believed to be fresh.
-  virtual bool HasAccessToken() const = 0;
-
-  // True if OAuth2 refresh token is present.
-  virtual bool HasRefreshToken() const = 0;
-};
-
-// This class provides documents feed service calls.
-class DocumentsService : public DocumentsServiceInterface {
- public:
-  // DocumentsService is usually owned and created by GDataFileSystem.
-  DocumentsService();
-  virtual ~DocumentsService();
-
-  GDataAuthService* auth_service_for_testing();
-
-  // DocumentsServiceInterface Overrides
-  virtual void Initialize(Profile* profile) OVERRIDE;
-  virtual GDataOperationRegistry* operation_registry() const OVERRIDE;
-  virtual void CancelAll() OVERRIDE;
-  virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
-  virtual void GetDocuments(const GURL& feed_url,
-                            int start_changestamp,
-                            const std::string& search_query,
-                            const std::string& directory_resource_id,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual void GetFilelist(const GURL& url,
-                           const std::string& search_query,
-                           const GetDataCallback& callback) OVERRIDE;
-  virtual void GetChangelist(const GURL& url,
-                             int64 start_changestamp,
-                             const GetDataCallback& callback) OVERRIDE;
-  virtual void GetDocumentEntry(const std::string& resource_id,
-                                const GetDataCallback& callback) OVERRIDE;
-  virtual void GetFile(const std::string& file_id,
-                       const GetDataCallback& callback) OVERRIDE;
-
-  virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
-  virtual void GetAboutResource(const GetDataCallback& callback) OVERRIDE;
-  virtual void GetApplicationList(const GetDataCallback& callback) OVERRIDE;
-  virtual void DeleteDocument(const GURL& document_url,
-                              const EntryActionCallback& callback) OVERRIDE;
-  virtual void DownloadDocument(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      DocumentExportFormat format,
-      const DownloadActionCallback& callback) OVERRIDE;
-  virtual void DownloadFile(
-      const FilePath& virtual_path,
-      const FilePath& local_cache_path,
-      const GURL& content_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback) OVERRIDE;
-  virtual void CopyDocument(const std::string& resource_id,
-                            const FilePath::StringType& new_name,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual void RenameResource(const GURL& document_url,
-                              const FilePath::StringType& new_name,
-                              const EntryActionCallback& callback) OVERRIDE;
-  virtual void AddResourceToDirectory(
-      const GURL& parent_content_url,
-      const GURL& resource_url,
-      const EntryActionCallback& callback) OVERRIDE;
-  virtual void RemoveResourceFromDirectory(
-      const GURL& parent_content_url,
-      const GURL& resource_url,
-      const std::string& resource_id,
-      const EntryActionCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) OVERRIDE;
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE;
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE;
-  virtual void AuthorizeApp(const GURL& resource_url,
-                            const std::string& app_id,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual bool HasAccessToken() const OVERRIDE;
-  virtual bool HasRefreshToken() const OVERRIDE;
-
- private:
-  Profile* profile_;
-
-  scoped_ptr<GDataOperationRunner> runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentsService);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOCUMENTS_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DOCUMENTS_SERVICE_INTERFACE_H_

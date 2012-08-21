@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
+#include "chrome/browser/chromeos/gdata/mock_documents_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"

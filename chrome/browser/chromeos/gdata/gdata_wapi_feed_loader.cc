@@ -14,10 +14,10 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
-#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/common/chrome_switches.h"
@@ -273,7 +273,7 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   if (gdata::util::IsDriveV2ApiEnabled()) {
-    documents_service_->GetAboutResource(
+    documents_service_->GetAccountMetadata(
         base::Bind(&GDataWapiFeedLoader::OnGetAboutResource,
                    weak_ptr_factory_.GetWeakPtr(),
                    initial_origin,
@@ -282,7 +282,7 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
     // Drive v2 needs a separate application list fetch operation.
     // TODO(kochi): Application list rarely changes and do not necessarily
     // refresed as often as files.
-    documents_service_->GetApplicationList(
+    documents_service_->GetApplicationInfo(
         base::Bind(&GDataWapiFeedLoader::OnGetApplicationList,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -456,9 +456,11 @@ void GDataWapiFeedLoader::LoadFromServer(const LoadFeedParams& params) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
   if (gdata::util::IsDriveV2ApiEnabled()) {
-    documents_service_->GetChangelist(
+    documents_service_->GetDocuments(
         params.feed_to_load,
         params.start_changestamp,
+        std::string(),  // No search query.
+        std::string(),  // No directory resource ID.
         base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
                    weak_ptr_factory_.GetWeakPtr(),
                    params.initial_origin,
@@ -743,9 +745,11 @@ void GDataWapiFeedLoader::OnGetChangelist(
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
     // Kick off the remaining part of the feeds.
-    documents_service_->GetChangelist(
+    documents_service_->GetDocuments(
         current_feed->next_link(),
         params->start_changestamp,
+        std::string(),  // No search query.
+        std::string(),  // No directory resource ID.
         base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
                    weak_ptr_factory_.GetWeakPtr(),
                    initial_origin,

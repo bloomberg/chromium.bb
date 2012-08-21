@@ -7,7 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
-#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -30,7 +30,7 @@ class GDataTest : public InProcessBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(gdata_test_server_.Start());
-    service_.reset(new gdata::DocumentsService);
+    service_.reset(new gdata::GDataWapiService);
     service_->Initialize(browser()->profile());
     service_->auth_service_for_testing()->set_access_token_for_testing(
         net::TestServer::kGDataAuthToken);
@@ -46,10 +46,10 @@ class GDataTest : public InProcessBrowserTest {
   }
 
   net::TestServer gdata_test_server_;
-  scoped_ptr<gdata::DocumentsService> service_;
+  scoped_ptr<gdata::GDataWapiService> service_;
 };
 
-// The test callback for DocumentsService::DownloadFile().
+// The test callback for GDataWapiService::DownloadFile().
 void TestDownloadCallback(gdata::GDataErrorCode* result,
                           std::string* contents,
                           gdata::GDataErrorCode error,
@@ -61,7 +61,7 @@ void TestDownloadCallback(gdata::GDataErrorCode* result,
   MessageLoop::current()->Quit();
 }
 
-// The test callback for DocumentsService::GetDocuments().
+// The test callback for GDataWapiService::GetDocuments().
 void TestGetDocumentsCallback(gdata::GDataErrorCode* result_code,
                               base::Value** result_data,
                               gdata::GDataErrorCode error,
