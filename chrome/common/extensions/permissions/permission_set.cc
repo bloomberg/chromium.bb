@@ -333,12 +333,12 @@ bool PermissionSet::HasAPIPermission(
 }
 
 bool PermissionSet::CheckAPIPermission(APIPermission::ID permission) const {
-  return CheckAPIPermissionWithDetail(permission, NULL);
+  return CheckAPIPermissionWithParam(permission, NULL);
 }
 
-bool PermissionSet::CheckAPIPermissionWithDetail(
+bool PermissionSet::CheckAPIPermissionWithParam(
     APIPermission::ID permission,
-    const APIPermissionDetail::CheckParam* param) const {
+    const APIPermission::CheckParam* param) const {
   APIPermissionSet::const_iterator iter = apis().find(permission);
   if (iter == apis().end())
     return false;
@@ -357,9 +357,9 @@ bool PermissionSet::HasAccessToFunction(
   }
 
   std::string permission_name = GetPermissionName(function_name);
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByName(permission_name);
-  if (permission && apis_.count(permission->id()))
+  if (permission_info && apis_.count(permission_info->id()))
     return true;
 
   for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
@@ -397,7 +397,7 @@ bool PermissionSet::HasEffectiveAccessToAllHosts() const {
 
   for (APIPermissionSet::const_iterator i = apis().begin();
        i != apis().end(); ++i) {
-    if (i->permission()->implies_full_url_access())
+    if (i->info()->implies_full_url_access())
       return true;
   }
   return false;
@@ -411,7 +411,7 @@ bool PermissionSet::HasEffectiveAccessToURL(
 bool PermissionSet::HasEffectiveFullAccess() const {
   for (APIPermissionSet::const_iterator i = apis().begin();
        i != apis().end(); ++i) {
-    if (i->permission()->implies_full_access())
+    if (i->info()->implies_full_access())
       return true;
   }
   return false;
@@ -541,9 +541,10 @@ std::set<PermissionMessage>
        i != apis_.end(); ++i) {
     DCHECK_GT(PermissionMessage::kNone,
               PermissionMessage::kUnknown);
-    APIPermission* perm = info->GetByID(i->id());
-    if (perm && perm->message_id() > PermissionMessage::kNone)
-      messages.insert(perm->GetMessage_());
+    const APIPermissionInfo* permission_info = info->GetByID(i->id());
+    if (permission_info &&
+        permission_info->message_id() > PermissionMessage::kNone)
+      messages.insert(permission_info->GetMessage_());
   }
   return messages;
 }

@@ -450,8 +450,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool HasAPIPermission(const std::string& function_name) const;
   bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
 
-  bool CheckAPIPermissionWithDetail(APIPermission::ID permission,
-      const APIPermissionDetail::CheckParam* param) const;
+  bool CheckAPIPermissionWithParam(APIPermission::ID permission,
+      const APIPermission::CheckParam* param) const;
 
   const URLPatternSet& GetEffectiveHostPermissions() const;
 

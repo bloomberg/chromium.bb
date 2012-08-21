@@ -98,9 +98,9 @@ class PermissionSet
   // permission detal.
   bool CheckAPIPermission(APIPermission::ID permission) const;
 
-  // Returns true if the set allows the given permission and permission detail.
-  bool CheckAPIPermissionWithDetail(APIPermission::ID permission,
-      const APIPermissionDetail::CheckParam* detail) const;
+  // Returns true if the set allows the given permission and permission param.
+  bool CheckAPIPermissionWithParam(APIPermission::ID permission,
+      const APIPermission::CheckParam* param) const;
 
   // Returns true if the permissions in this set grant access to the specified
   // |function_name|.

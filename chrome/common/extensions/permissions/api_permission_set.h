@@ -13,14 +13,14 @@
 namespace extensions {
 
 typedef std::map<APIPermission::ID,
-  scoped_refptr<APIPermissionDetail> > APIPermissionMap;
+  scoped_refptr<APIPermission> > APIPermissionMap;
 
 class APIPermissionSet {
  public:
   class const_iterator :
     public std::iterator<
       std::input_iterator_tag,
-      scoped_refptr<APIPermissionDetail> > {
+      scoped_refptr<APIPermission> > {
    public:
     const_iterator(const APIPermissionMap::const_iterator& it);
     const_iterator(const const_iterator& ids_it);
@@ -43,11 +43,11 @@ class APIPermissionSet {
       return it_ != rhs.it_;
     }
 
-    const scoped_refptr<APIPermissionDetail>& operator*() const {
+    const scoped_refptr<APIPermission>& operator*() const {
       return it_->second;
     }
 
-    const scoped_refptr<APIPermissionDetail>& operator->() const {
+    const scoped_refptr<APIPermission>& operator->() const {
       return it_->second;
     }
 
@@ -110,7 +110,7 @@ class APIPermissionSet {
   }
 
   void insert(APIPermission::ID id);
-  void insert(const scoped_refptr<APIPermissionDetail>& detail);
+  void insert(const scoped_refptr<APIPermission>& permission);
 
   bool Contains(const APIPermissionSet& rhs) const;
 

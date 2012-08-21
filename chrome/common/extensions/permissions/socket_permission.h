@@ -21,9 +21,9 @@ class Message;
 
 namespace extensions {
 
-class SocketPermission : public APIPermissionDetail {
+class SocketPermission : public APIPermission {
  public:
-  struct CheckParam : APIPermissionDetail::CheckParam {
+  struct CheckParam : APIPermission::CheckParam {
     CheckParam(SocketPermissionData::OperationType type,
         const std::string& host,
         int port)
@@ -35,40 +35,37 @@ class SocketPermission : public APIPermissionDetail {
     int port;
   };
 
-  explicit SocketPermission(const APIPermission* permission);
+  explicit SocketPermission(const APIPermissionInfo* info);
 
   // Returns true if the given permission in param is allowed.
   virtual bool Check(
-      const APIPermissionDetail::CheckParam* param) const OVERRIDE;
+      const APIPermission::CheckParam* param) const OVERRIDE;
 
-  // Returns true if |detail| is a subset of this.
-  virtual bool Contains(const APIPermissionDetail* rhs) const OVERRIDE;
+  // Returns true if |rhs| is a subset of this.
+  virtual bool Contains(const APIPermission* rhs) const OVERRIDE;
 
-  // Returns true if |detail| is equal to this.
-  virtual bool Equal(const APIPermissionDetail* rhs) const OVERRIDE;
+  // Returns true if |rhs| is equal to this.
+  virtual bool Equal(const APIPermission* rhs) const OVERRIDE;
 
-  // Parses the detail from |value|. Returns false if error happens.
+  // Parses the rhs from |value|. Returns false if error happens.
   virtual bool FromValue(const base::Value* value) OVERRIDE;
 
   // Stores this into a new created |value|.
   virtual void ToValue(base::Value** value) const OVERRIDE;
 
   // Clones this.
-  virtual APIPermissionDetail* Clone() const OVERRIDE;
+  virtual APIPermission* Clone() const OVERRIDE;
 
-  // Returns a new API permission detail which equals this - |detail|.
-  virtual APIPermissionDetail* Diff(
-      const APIPermissionDetail* rhs) const OVERRIDE;
+  // Returns a new API permission rhs which equals this - |rhs|.
+  virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE;
 
-  // Returns a new API permission detail which equals the union of this and
-  // |detail|.
-  virtual APIPermissionDetail* Union(
-      const APIPermissionDetail* rhs) const OVERRIDE;
+  // Returns a new API permission rhs which equals the union of this and
+  // |rhs|.
+  virtual APIPermission* Union(const APIPermission* rhs) const OVERRIDE;
 
-  // Returns a new API permission detail which equals the intersect of this and
-  // |detail|.
-  virtual APIPermissionDetail* Intersect(
-      const APIPermissionDetail* rhs) const OVERRIDE;
+  // Returns a new API permission rhs which equals the intersect of this and
+  // |rhs|.
+  virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE;
 
   // IPC functions
   // Writes this into the given IPC message |m|.
@@ -77,11 +74,11 @@ class SocketPermission : public APIPermissionDetail {
   // Reads from the given IPC message |m|.
   virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE;
 
-  // Logs this detail.
+  // Logs this rhs.
   virtual void Log(std::string* log) const OVERRIDE;
 
  protected:
-  friend class base::RefCounted<APIPermissionDetail>;
+  friend class base::RefCounted<APIPermission>;
 
   virtual ~SocketPermission();
 

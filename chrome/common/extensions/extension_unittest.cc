@@ -455,7 +455,7 @@ static bool CheckSocketPermission(scoped_refptr<Extension> extension,
     const char* host,
     int port) {
   SocketPermission::CheckParam param(type, host, port);
-  return extension->CheckAPIPermissionWithDetail(
+  return extension->CheckAPIPermissionWithParam(
       APIPermission::kSocket, &param);
 }
 

@@ -25,24 +25,24 @@ class PermissionsInfo {
   static PermissionsInfo* GetInstance();
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
-  APIPermission* GetByID(APIPermission::ID id);
+  const APIPermissionInfo* GetByID(APIPermission::ID id) const;
 
   // Returns the permission with the given |name|, and NULL if none
   // exists.
-  APIPermission* GetByName(const std::string& name);
+  const APIPermissionInfo* GetByName(const std::string& name) const;
 
   // Returns a set containing all valid api permission ids.
-  APIPermissionSet GetAll();
+  APIPermissionSet GetAll() const;
 
   // Converts all the permission names in |permission_names| to permission ids.
   APIPermissionSet GetAllByName(
-      const std::set<std::string>& permission_names);
+      const std::set<std::string>& permission_names) const;
 
   // Gets the total number of API permissions.
-  size_t get_permission_count() { return permission_count_; }
+  size_t get_permission_count() const { return permission_count_; }
 
  private:
-  friend class APIPermission;
+  friend class APIPermissionInfo;
 
   ~PermissionsInfo();
   PermissionsInfo();
@@ -51,19 +51,19 @@ class PermissionsInfo {
   void RegisterAlias(const char* name, const char* alias);
 
   // Registers a permission with the specified attributes and flags.
-  APIPermission* RegisterPermission(
+  const APIPermissionInfo* RegisterPermission(
       APIPermission::ID id,
       const char* name,
       int l10n_message_id,
       PermissionMessage::ID message_id,
       int flags,
-      const APIPermission::DetailConstructor detail_constructor);
+      const APIPermissionInfo::APIPermissionConstructor constructor);
 
   // Maps permission ids to permissions.
-  typedef std::map<APIPermission::ID, APIPermission*> IDMap;
+  typedef std::map<APIPermission::ID, APIPermissionInfo*> IDMap;
 
   // Maps names and aliases to permissions.
-  typedef std::map<std::string, APIPermission*> NameMap;
+  typedef std::map<std::string, APIPermissionInfo*> NameMap;
 
   IDMap id_map_;
   NameMap name_map_;

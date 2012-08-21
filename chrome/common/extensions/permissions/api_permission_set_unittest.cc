@@ -36,22 +36,22 @@ TEST(APIPermissionSetTest, General) {
 }
 
 TEST(APIPermissionSetTest, CreateUnion) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
   APIPermissionSet expected_apis;
   APIPermissionSet result;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
@@ -59,10 +59,10 @@ TEST(APIPermissionSetTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  apis1.insert(detail);
+  apis1.insert(permission);
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kBackground);
-  expected_apis.insert(detail);
+  expected_apis.insert(permission);
 
   APIPermissionSet::Union(apis1, apis2, &result);
 
@@ -81,35 +81,35 @@ TEST(APIPermissionSetTest, CreateUnion) {
   apis2.insert(APIPermission::kClipboardWrite);
   apis2.insert(APIPermission::kPlugin);
 
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis2.insert(detail);
+  apis2.insert(permission);
 
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kProxy);
   expected_apis.insert(APIPermission::kClipboardWrite);
   expected_apis.insert(APIPermission::kPlugin);
 
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  // Insert a new detail socket permission which will replace the old one.
-  expected_apis.insert(detail);
+  // Insert a new socket permission which will replace the old one.
+  expected_apis.insert(permission);
 
   APIPermissionSet::Union(apis1, apis2, &result);
 
@@ -124,30 +124,30 @@ TEST(APIPermissionSetTest, CreateUnion) {
 }
 
 TEST(APIPermissionSetTest, CreateIntersection) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
   APIPermissionSet expected_apis;
   APIPermissionSet result;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   // Intersection with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis1.insert(detail);
+  apis1.insert(permission);
 
   APIPermissionSet::Intersection(apis1, apis2, &result);
   EXPECT_TRUE(apis1.Contains(result));
@@ -165,29 +165,29 @@ TEST(APIPermissionSetTest, CreateIntersection) {
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
   apis2.insert(APIPermission::kPlugin);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis2.insert(detail);
+  apis2.insert(permission);
 
   expected_apis.insert(APIPermission::kTab);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  expected_apis.insert(detail);
+  expected_apis.insert(permission);
 
   APIPermissionSet::Intersection(apis1, apis2, &result);
 
@@ -202,30 +202,30 @@ TEST(APIPermissionSetTest, CreateIntersection) {
 }
 
 TEST(APIPermissionSetTest, CreateDifference) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
   APIPermissionSet expected_apis;
   APIPermissionSet result;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   // Difference with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis1.insert(detail);
+  apis1.insert(permission);
 
   APIPermissionSet::Difference(apis1, apis2, &result);
 
@@ -236,28 +236,28 @@ TEST(APIPermissionSetTest, CreateDifference) {
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
   apis2.insert(APIPermission::kPlugin);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis2.insert(detail);
+  apis2.insert(permission);
 
   expected_apis.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  expected_apis.insert(detail);
+  expected_apis.insert(permission);
 
   APIPermissionSet::Difference(apis1, apis2, &result);
 
@@ -273,27 +273,27 @@ TEST(APIPermissionSetTest, CreateDifference) {
 }
 
 TEST(APIPermissionSetTest, IPC) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis;
   APIPermissionSet expected_apis;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   apis.insert(APIPermission::kTab);
   apis.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis.insert(detail);
+  apis.insert(permission);
 
   EXPECT_NE(apis, expected_apis);
 

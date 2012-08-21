@@ -505,18 +505,20 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
         permission_detail = &it.value();
       }
 
-      APIPermission *permission = info->GetByName(permission_name);
-      if (!permission) {
+      const APIPermissionInfo *permission_info =
+        info->GetByName(permission_name);
+      if (!permission_info) {
         NOTREACHED() << "Unknown permission[" << permission_name << "].";
         continue;
       }
 
-      scoped_refptr<APIPermissionDetail> detail = permission->CreateDetail();
-      if (!detail->FromValue(permission_detail)) {
-        NOTREACHED() << "Parse permission detail failed.";
+      scoped_refptr<APIPermission> permission =
+        permission_info->CreateAPIPermission();
+      if (!permission->FromValue(permission_detail)) {
+        NOTREACHED() << "Parse permission failed.";
         continue;
       }
-      apis.insert(detail);
+      apis.insert(permission);
     }
   }
 

@@ -53,14 +53,14 @@ bool APIPermissionSet::operator==(const APIPermissionSet& rhs) const {
 }
 
 void APIPermissionSet::insert(APIPermission::ID id) {
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(id);
-  insert(permission->CreateDetail());
+  insert(permission_info->CreateAPIPermission());
 }
 
 void APIPermissionSet::insert(
-    const scoped_refptr<APIPermissionDetail>& detail) {
-  map_[detail->id()] = detail->Clone();
+    const scoped_refptr<APIPermission>& permission) {
+  map_[permission->id()] = permission->Clone();
 }
 
 bool APIPermissionSet::Contains(const APIPermissionSet& rhs) const {
@@ -103,7 +103,7 @@ void APIPermissionSet::Difference(
     } else if (it1->id() > it2->id()) {
       ++it2;
     } else {
-      scoped_refptr<APIPermissionDetail> p = it1->Diff(*it2);
+      scoped_refptr<APIPermission> p = it1->Diff(*it2);
       if (p.get())
         set3->insert(p);
       ++it1;
@@ -133,7 +133,7 @@ void APIPermissionSet::Intersection(
     } else if (it1->id() > it2->id()) {
       ++it2;
     } else {
-      scoped_refptr<APIPermissionDetail> p = it1->Intersect(*it2);
+      scoped_refptr<APIPermission> p = it1->Intersect(*it2);
       if (p.get())
         set3->insert(p);
       ++it1;

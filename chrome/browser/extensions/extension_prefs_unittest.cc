@@ -263,24 +263,24 @@ TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    scoped_refptr<APIPermissionDetail> detail;
-    APIPermission* permission =
+    scoped_refptr<APIPermission> permission;
+    const APIPermissionInfo* permission_info =
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
     extension_id_ = prefs_.AddExtensionAndReturnId("test");
 
     api_perm_set1_.insert(APIPermission::kTab);
     api_perm_set1_.insert(APIPermission::kBookmark);
-    detail = permission->CreateDetail();
+    permission = permission_info->CreateAPIPermission();
     {
       scoped_ptr<ListValue> value(new ListValue());
       value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
       value->Append(Value::CreateStringValue("udp-bind::8080"));
       value->Append(Value::CreateStringValue("udp-send-to::8888"));
-      if (!detail->FromValue(value.get()))
+      if (!permission->FromValue(value.get()))
         NOTREACHED();
     }
-    api_perm_set1_.insert(detail);
+    api_perm_set1_.insert(permission);
 
     api_perm_set2_.insert(APIPermission::kHistory);
 

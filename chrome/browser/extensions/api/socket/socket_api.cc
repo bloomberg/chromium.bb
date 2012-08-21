@@ -189,7 +189,7 @@ void SocketConnectFunction::AsyncWorkStart() {
   }
 
   SocketPermission::CheckParam param(operation_type, hostname_, port_);
-  if (!GetExtension()->CheckAPIPermissionWithDetail(APIPermission::kSocket,
+  if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
         &param)) {
     error_ = kPermissionError;
     SetResult(Value::CreateIntegerValue(-1));
@@ -253,7 +253,7 @@ void SocketBindFunction::Work() {
   if (socket->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(
         SocketPermissionData::UDP_BIND, address_, port_);
-    if (!GetExtension()->CheckAPIPermissionWithDetail(APIPermission::kSocket,
+    if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
           &param)) {
       error_ = kPermissionError;
       SetResult(Value::CreateIntegerValue(result));
@@ -425,7 +425,7 @@ void SocketSendToFunction::AsyncWorkStart() {
   if (socket_->GetSocketType() == Socket::TYPE_UDP) {
     SocketPermission::CheckParam param(SocketPermissionData::UDP_SEND_TO,
         hostname_, port_);
-    if (!GetExtension()->CheckAPIPermissionWithDetail(APIPermission::kSocket,
+    if (!GetExtension()->CheckAPIPermissionWithParam(APIPermission::kSocket,
           &param)) {
       error_ = kPermissionError;
       SetResult(Value::CreateIntegerValue(-1));

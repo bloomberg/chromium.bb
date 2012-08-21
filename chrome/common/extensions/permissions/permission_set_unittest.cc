@@ -95,7 +95,7 @@ TEST(PermissionsTest, GetByID) {
   APIPermissionSet apis = info->GetAll();
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    EXPECT_EQ(i->id(), i->permission()->id());
+    EXPECT_EQ(i->id(), i->info()->id());
   }
 }
 
@@ -261,7 +261,7 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
 }
 
 TEST(PermissionsTest, CreateUnion) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -281,15 +281,15 @@ TEST(PermissionsTest, CreateUnion) {
   scoped_refptr<PermissionSet> set2;
   scoped_refptr<PermissionSet> union_set;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
@@ -297,10 +297,10 @@ TEST(PermissionsTest, CreateUnion) {
   // Union with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  apis1.insert(detail);
+  apis1.insert(permission);
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kBackground);
-  expected_apis.insert(detail);
+  expected_apis.insert(permission);
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&expected_explicit_hosts, "http://*.google.com/*");
@@ -328,35 +328,35 @@ TEST(PermissionsTest, CreateUnion) {
   apis2.insert(APIPermission::kClipboardWrite);
   apis2.insert(APIPermission::kPlugin);
 
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis2.insert(detail);
+  apis2.insert(permission);
 
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kProxy);
   expected_apis.insert(APIPermission::kClipboardWrite);
   expected_apis.insert(APIPermission::kPlugin);
 
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  // Insert a new detail socket permisssion which will replace the old one.
-  expected_apis.insert(detail);
+  // Insert a new permission socket permisssion which will replace the old one.
+  expected_apis.insert(permission);
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&scriptable_hosts2, "http://*.google.com/*");
@@ -385,7 +385,7 @@ TEST(PermissionsTest, CreateUnion) {
 }
 
 TEST(PermissionsTest, CreateIntersection) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -405,23 +405,23 @@ TEST(PermissionsTest, CreateIntersection) {
   scoped_refptr<PermissionSet> set2;
   scoped_refptr<PermissionSet> new_set;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   // Intersection with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis1.insert(detail);
+  apis1.insert(permission);
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
@@ -448,29 +448,29 @@ TEST(PermissionsTest, CreateIntersection) {
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
   apis2.insert(APIPermission::kPlugin);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis2.insert(detail);
+  apis2.insert(permission);
 
   expected_apis.insert(APIPermission::kTab);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  expected_apis.insert(detail);
+  expected_apis.insert(permission);
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&explicit_hosts2, "http://*.google.com/*");
@@ -499,7 +499,7 @@ TEST(PermissionsTest, CreateIntersection) {
 }
 
 TEST(PermissionsTest, CreateDifference) {
-  scoped_refptr<APIPermissionDetail> detail;
+  scoped_refptr<APIPermission> permission;
 
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -519,23 +519,23 @@ TEST(PermissionsTest, CreateDifference) {
   scoped_refptr<PermissionSet> set2;
   scoped_refptr<PermissionSet> new_set;
 
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
 
   // Difference with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis1.insert(detail);
+  apis1.insert(permission);
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
@@ -550,28 +550,28 @@ TEST(PermissionsTest, CreateDifference) {
   apis2.insert(APIPermission::kProxy);
   apis2.insert(APIPermission::kClipboardWrite);
   apis2.insert(APIPermission::kPlugin);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
     value->Append(Value::CreateStringValue("udp-send-to::8899"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  apis2.insert(detail);
+  apis2.insert(permission);
 
   expected_apis.insert(APIPermission::kBackground);
-  detail = permission->CreateDetail();
+  permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<ListValue> value(new ListValue());
     value->Append(Value::CreateStringValue("udp-bind::8080"));
     value->Append(Value::CreateStringValue("udp-send-to::8888"));
-    if (!detail->FromValue(value.get())) {
+    if (!permission->FromValue(value.get())) {
       NOTREACHED();
     }
   }
-  expected_apis.insert(detail);
+  expected_apis.insert(permission);
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&explicit_hosts2, "http://*.google.com/*");
@@ -734,14 +734,14 @@ TEST(PermissionsTest, PermissionMessages) {
   APIPermissionSet permissions = info->GetAll();
   for (APIPermissionSet::const_iterator i = permissions.begin();
        i != permissions.end(); ++i) {
-    const APIPermission* permission = i->permission();
-    EXPECT_TRUE(permission);
+    const APIPermissionInfo* permission_info = i->info();
+    EXPECT_TRUE(permission_info != NULL);
     if (skip.count(i->id())) {
-      EXPECT_EQ(PermissionMessage::kNone, permission->message_id())
-          << "unexpected message_id for " << permission->name();
+      EXPECT_EQ(PermissionMessage::kNone, permission_info->message_id())
+          << "unexpected message_id for " << permission_info->name();
     } else {
-      EXPECT_NE(PermissionMessage::kNone, permission->message_id())
-          << "missing message_id for " << permission->name();
+      EXPECT_NE(PermissionMessage::kNone, permission_info->message_id())
+          << "missing message_id for " << permission_info->name();
     }
   }
 }

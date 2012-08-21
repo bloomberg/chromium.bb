@@ -15,15 +15,15 @@
 
 namespace extensions {
 
-SocketPermission::SocketPermission(const APIPermission* permission)
-  : APIPermissionDetail(permission) {
+SocketPermission::SocketPermission(const APIPermissionInfo* info)
+  : APIPermission(info) {
 }
 
 SocketPermission::~SocketPermission() {
 }
 
 bool SocketPermission::Check(
-    const APIPermissionDetail::CheckParam* param) const {
+    const APIPermission::CheckParam* param) const {
   const CheckParam* socket_param = static_cast<const CheckParam*>(param);
   std::set<SocketPermissionData>::const_iterator it = data_set_.begin();
   std::set<SocketPermissionData>::const_iterator end = data_set_.end();
@@ -35,15 +35,15 @@ bool SocketPermission::Check(
   return false;
 }
 
-bool SocketPermission::Contains(const APIPermissionDetail* rhs) const {
-  CHECK(rhs->permission() == permission());
+bool SocketPermission::Contains(const APIPermission* rhs) const {
+  CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
   return std::includes(data_set_.begin(), data_set_.end(),
                        perm->data_set_.begin(), perm->data_set_.end());
 }
 
-bool SocketPermission::Equal(const APIPermissionDetail* rhs) const {
-  CHECK(rhs->permission() == permission());
+bool SocketPermission::Equal(const APIPermission* rhs) const {
+  CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
   return data_set_ == perm->data_set_;
 }
@@ -80,17 +80,16 @@ void SocketPermission::ToValue(base::Value** value) const {
   *value = list;
 }
 
-APIPermissionDetail* SocketPermission::Clone() const {
-  SocketPermission* result = new SocketPermission(permission());
+APIPermission* SocketPermission::Clone() const {
+  SocketPermission* result = new SocketPermission(info());
   result->data_set_ = data_set_;
   return result;
 }
 
-APIPermissionDetail* SocketPermission::Diff(
-    const APIPermissionDetail* rhs) const {
-  CHECK(rhs->permission() == permission());
+APIPermission* SocketPermission::Diff(const APIPermission* rhs) const {
+  CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(permission());
+  SocketPermission* result = new SocketPermission(info());
   std::set_difference(data_set_.begin(), data_set_.end(),
                       perm->data_set_.begin(), perm->data_set_.end(),
                       std::inserter<std::set<SocketPermissionData> >(
@@ -102,11 +101,10 @@ APIPermissionDetail* SocketPermission::Diff(
   return result;
 }
 
-APIPermissionDetail* SocketPermission::Union(
-    const APIPermissionDetail* rhs) const {
-  CHECK(rhs->permission() == permission());
+APIPermission* SocketPermission::Union(const APIPermission* rhs) const {
+  CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(permission());
+  SocketPermission* result = new SocketPermission(info());
   std::set_union(data_set_.begin(), data_set_.end(),
                  perm->data_set_.begin(), perm->data_set_.end(),
                  std::inserter<std::set<SocketPermissionData> >(
@@ -118,11 +116,10 @@ APIPermissionDetail* SocketPermission::Union(
   return result;
 }
 
-APIPermissionDetail* SocketPermission::Intersect(
-    const APIPermissionDetail* rhs) const {
-  CHECK(rhs->permission() == permission());
+APIPermission* SocketPermission::Intersect(const APIPermission* rhs) const {
+  CHECK(rhs->info() == info());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(permission());
+  SocketPermission* result = new SocketPermission(info());
   std::set_intersection(data_set_.begin(), data_set_.end(),
                         perm->data_set_.begin(), perm->data_set_.end(),
                         std::inserter<std::set<SocketPermissionData> >(

@@ -12,15 +12,15 @@
 namespace {
 
 using extensions::APIPermission;
-using extensions::APIPermissionDetail;
+using extensions::APIPermissionInfo;
 
 const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
 
-class SimpleDetail : public APIPermissionDetail {
+class SimpleAPIPermission : public APIPermission {
  public:
-  explicit SimpleDetail(const APIPermission* permission)
-    : APIPermissionDetail(permission) { }
+  explicit SimpleAPIPermission(const APIPermissionInfo* permission)
+    : APIPermission(permission) { }
 
   virtual bool FromValue(const base::Value* value) OVERRIDE {
     if (value)
@@ -33,41 +33,38 @@ class SimpleDetail : public APIPermissionDetail {
   }
 
   virtual bool Check(
-      const APIPermissionDetail::CheckParam* param) const OVERRIDE {
+      const APIPermission::CheckParam* param) const OVERRIDE {
     return !param;
   }
 
-  virtual bool Equal(const APIPermissionDetail* detail) const OVERRIDE {
-    if (this == detail)
+  virtual bool Equal(const APIPermission* rhs) const OVERRIDE {
+    if (this == rhs)
       return true;
-    CHECK(permission() == detail->permission());
+    CHECK(info() == rhs->info());
     return true;
   }
 
-  virtual APIPermissionDetail* Clone() const OVERRIDE {
-    return new SimpleDetail(permission());
+  virtual APIPermission* Clone() const OVERRIDE {
+    return new SimpleAPIPermission(info());
   }
 
-  virtual APIPermissionDetail* Diff(
-      const APIPermissionDetail* detail) const OVERRIDE {
-    CHECK(permission() == detail->permission());
+  virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE {
+    CHECK(info() == rhs->info());
     return NULL;
   }
 
-  virtual APIPermissionDetail* Union(
-      const APIPermissionDetail* detail) const OVERRIDE {
-    CHECK(permission() == detail->permission());
-    return new SimpleDetail(permission());
+  virtual APIPermission* Union(const APIPermission* rhs) const OVERRIDE {
+    CHECK(info() == rhs->info());
+    return new SimpleAPIPermission(info());
   }
 
-  virtual APIPermissionDetail* Intersect(
-      const APIPermissionDetail* detail) const OVERRIDE {
-    CHECK(permission() == detail->permission());
-    return new SimpleDetail(permission());
+  virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE {
+    CHECK(info() == rhs->info());
+    return new SimpleAPIPermission(info());
   }
 
-  virtual bool Contains(const APIPermissionDetail* detail) const OVERRIDE {
-    CHECK(permission() == detail->permission());
+  virtual bool Contains(const APIPermission* rhs) const OVERRIDE {
+    CHECK(info() == rhs->info());
     return true;
   }
 
@@ -80,12 +77,12 @@ class SimpleDetail : public APIPermissionDetail {
   virtual void Log(std::string* log) const OVERRIDE { }
 
  protected:
-  friend class extensions::APIPermissionDetail;
-  virtual ~SimpleDetail() { }
+  friend class extensions::APIPermission;
+  virtual ~SimpleAPIPermission() { }
 };
 
 template<typename T>
-APIPermissionDetail* CreatePermissionDetail(const APIPermission* permission) {
+APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
   return new T(permission);
 }
 
@@ -93,42 +90,50 @@ APIPermissionDetail* CreatePermissionDetail(const APIPermission* permission) {
 
 namespace extensions {
 
-//
-// APIPermission
-//
+APIPermission::~APIPermission() { }
 
-APIPermission::~APIPermission() {}
-
-scoped_refptr<APIPermissionDetail> APIPermission::CreateDetail() const {
-  scoped_refptr<APIPermissionDetail> p;
-  if (detail_constructor_)
-    p = detail_constructor_(this);
-  if (!p.get())
-    p = new SimpleDetail(this);
-  return p;
+APIPermission::ID APIPermission::id() const {
+  return info()->id();
 }
 
-PermissionMessage APIPermission::GetMessage_() const {
-  return PermissionMessage(
-      message_id_, l10n_util::GetStringUTF16(l10n_message_id_));
+const char* APIPermission::name() const {
+  return info()->name();
 }
 
-APIPermission::APIPermission(
-    ID id,
+
+//
+// APIPermissionInfo
+//
+
+APIPermissionInfo::APIPermissionInfo(
+    APIPermission::ID id,
     const char* name,
     int l10n_message_id,
     PermissionMessage::ID message_id,
     int flags,
-    DetailConstructor detail_constructor)
+    APIPermissionConstructor api_permission_constructor)
     : id_(id),
       name_(name),
       flags_(flags),
       l10n_message_id_(l10n_message_id),
       message_id_(message_id),
-      detail_constructor_(detail_constructor) { }
+      api_permission_constructor_(api_permission_constructor) { }
+
+
+APIPermissionInfo::~APIPermissionInfo() { }
+
+scoped_refptr<APIPermission> APIPermissionInfo::CreateAPIPermission() const {
+  return api_permission_constructor_ ?
+    api_permission_constructor_(this) : new SimpleAPIPermission(this);
+}
+
+PermissionMessage APIPermissionInfo::GetMessage_() const {
+  return PermissionMessage(
+      message_id_, l10n_util::GetStringUTF16(l10n_message_id_));
+}
 
 // static
-void APIPermission::RegisterAllPermissions(
+void APIPermissionInfo::RegisterAllPermissions(
     PermissionsInfo* info) {
 
   struct PermissionRegistration {
@@ -137,129 +142,145 @@ void APIPermission::RegisterAllPermissions(
     int flags;
     int l10n_message_id;
     PermissionMessage::ID message_id;
-    DetailConstructor detail_constructor;
+    APIPermissionConstructor constructor;
   } PermissionsToRegister[] = {
     // Register permissions for all extension types.
-    { kBackground, "background" },
-    { kClipboardRead, "clipboardRead", kFlagNone,
+    { APIPermission::kBackground, "background" },
+    { APIPermission::kClipboardRead, "clipboardRead", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
       PermissionMessage::kClipboard },
-    { kClipboardWrite, "clipboardWrite" },
-    { kDeclarativeWebRequest, "declarativeWebRequest" },
-    { kDownloads, "downloads", kFlagNone,
+    { APIPermission::kClipboardWrite, "clipboardWrite" },
+    { APIPermission::kDeclarativeWebRequest, "declarativeWebRequest" },
+    { APIPermission::kDownloads, "downloads", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS,
       PermissionMessage::kDownloads },
-    { kExperimental, "experimental", kFlagCannotBeOptional },
-    { kGeolocation, "geolocation", kFlagCannotBeOptional,
+    { APIPermission::kExperimental, "experimental", kFlagCannotBeOptional },
+    { APIPermission::kGeolocation, "geolocation", kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
       PermissionMessage::kGeolocation },
-    { kNotification, "notifications" },
-    { kUnlimitedStorage, "unlimitedStorage", kFlagCannotBeOptional },
+    { APIPermission::kNotification, "notifications" },
+    { APIPermission::kUnlimitedStorage, "unlimitedStorage",
+      kFlagCannotBeOptional },
 
     // Register hosted and packaged app permissions.
-    { kAppNotifications, "appNotifications" },
+    { APIPermission::kAppNotifications, "appNotifications" },
 
     // Register extension permissions.
-    { kActiveTab, "activeTab" },
-    { kAlarms, "alarms" },
-    { kBookmark, "bookmarks", kFlagNone,
+    { APIPermission::kActiveTab, "activeTab" },
+    { APIPermission::kAlarms, "alarms" },
+    { APIPermission::kBookmark, "bookmarks", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       PermissionMessage::kBookmarks },
-    { kBrowserTag, "browserTag", kFlagCannotBeOptional },
-    { kBrowsingData, "browsingData" },
-    { kCommands, "commands" },
-    { kContentSettings, "contentSettings", kFlagNone,
+    { APIPermission::kBrowserTag, "browserTag", kFlagCannotBeOptional },
+    { APIPermission::kBrowsingData, "browsingData" },
+    { APIPermission::kCommands, "commands" },
+    { APIPermission::kContentSettings, "contentSettings", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
       PermissionMessage::kContentSettings },
-    { kContextMenus, "contextMenus" },
-    { kCookie, "cookies" },
-    { kFileBrowserHandler, "fileBrowserHandler", kFlagCannotBeOptional },
-    { kFontSettings, "fontSettings", kFlagCannotBeOptional },
-    { kHistory, "history", kFlagNone,
+    { APIPermission::kContextMenus, "contextMenus" },
+    { APIPermission::kCookie, "cookies" },
+    { APIPermission::kFileBrowserHandler, "fileBrowserHandler",
+      kFlagCannotBeOptional },
+    { APIPermission::kFontSettings, "fontSettings", kFlagCannotBeOptional },
+    { APIPermission::kHistory, "history", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
       PermissionMessage::kBrowsingHistory },
-    { kIdle, "idle" },
-    { kInput, "input", kFlagNone,
+    { APIPermission::kIdle, "idle" },
+    { APIPermission::kInput, "input", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_INPUT,
       PermissionMessage::kInput },
-    { kManagement, "management", kFlagNone,
+    { APIPermission::kManagement, "management", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       PermissionMessage::kManagement },
-    { kMediaGalleries, "mediaGalleries" },
-    { kMediaGalleriesRead, "mediaGalleriesRead" },
-    { kPageCapture, "pageCapture", kFlagNone,
+    { APIPermission::kMediaGalleries, "mediaGalleries" },
+    { APIPermission::kMediaGalleriesRead, "mediaGalleriesRead" },
+    { APIPermission::kPageCapture, "pageCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
       PermissionMessage::kAllPageContent },
-    { kPrivacy, "privacy", kFlagNone,
+    { APIPermission::kPrivacy, "privacy", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
       PermissionMessage::kPrivacy },
-    { kStorage, "storage" },
-    { kTab, "tabs", kFlagNone,
+    { APIPermission::kStorage, "storage" },
+    { APIPermission::kTab, "tabs", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_TABS,
       PermissionMessage::kTabs },
-    { kTopSites, "topSites", kFlagNone,
+    { APIPermission::kTopSites, "topSites", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
       PermissionMessage::kBrowsingHistory },
-    { kTts, "tts", 0, kFlagCannotBeOptional },
-    { kTtsEngine, "ttsEngine", kFlagCannotBeOptional,
+    { APIPermission::kTts, "tts", 0, kFlagCannotBeOptional },
+    { APIPermission::kTtsEngine, "ttsEngine", kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
       PermissionMessage::kTtsEngine },
-    { kWebNavigation, "webNavigation", kFlagNone,
+    { APIPermission::kWebNavigation, "webNavigation", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_TABS, PermissionMessage::kTabs },
-    { kWebRequest, "webRequest" },
-    { kWebRequestBlocking, "webRequestBlocking" },
+    { APIPermission::kWebRequest, "webRequest" },
+    { APIPermission::kWebRequestBlocking, "webRequestBlocking" },
 
     // Register private permissions.
-    { kChromeosInfoPrivate, "chromeosInfoPrivate", kFlagCannotBeOptional },
-    { kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
+    { APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",
       kFlagCannotBeOptional },
-    { kFileBrowserPrivate, "fileBrowserPrivate", kFlagCannotBeOptional },
-    { kManagedModePrivate, "managedModePrivate", kFlagCannotBeOptional },
-    { kMediaPlayerPrivate, "mediaPlayerPrivate", kFlagCannotBeOptional },
-    { kMetricsPrivate, "metricsPrivate", kFlagCannotBeOptional },
-    { kSystemPrivate, "systemPrivate", kFlagCannotBeOptional },
-    { kCloudPrintPrivate, "cloudPrintPrivate", kFlagCannotBeOptional },
-    { kInputMethodPrivate, "inputMethodPrivate", kFlagCannotBeOptional },
-    { kEchoPrivate, "echoPrivate", kFlagCannotBeOptional },
-    { kTerminalPrivate, "terminalPrivate", kFlagCannotBeOptional },
-    { kWallpaperPrivate, "wallpaperPrivate", kFlagCannotBeOptional },
-    { kWebRequestInternal, "webRequestInternal" },
-    { kWebSocketProxyPrivate, "webSocketProxyPrivate", kFlagCannotBeOptional },
-    { kWebstorePrivate, "webstorePrivate", kFlagCannotBeOptional },
+    { APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
+      kFlagCannotBeOptional },
+    { APIPermission::kFileBrowserPrivate, "fileBrowserPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kManagedModePrivate, "managedModePrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kMetricsPrivate, "metricsPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kSystemPrivate, "systemPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kCloudPrintPrivate, "cloudPrintPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kInputMethodPrivate, "inputMethodPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kEchoPrivate, "echoPrivate", kFlagCannotBeOptional },
+    { APIPermission::kTerminalPrivate, "terminalPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kWallpaperPrivate, "wallpaperPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kWebRequestInternal, "webRequestInternal" },
+    { APIPermission::kWebSocketProxyPrivate, "webSocketProxyPrivate",
+      kFlagCannotBeOptional },
+    { APIPermission::kWebstorePrivate, "webstorePrivate",
+      kFlagCannotBeOptional },
 
     // Full url access permissions.
-    { kProxy, "proxy", kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
-    { kDebugger, "debugger", kFlagImpliesFullURLAccess | kFlagCannotBeOptional,
+    { APIPermission::kProxy, "proxy",
+      kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
+    { APIPermission::kDebugger, "debugger",
+      kFlagImpliesFullURLAccess | kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
       PermissionMessage::kDebugger },
-    { kDevtools, "devtools",
+    { APIPermission::kDevtools, "devtools",
       kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
-    { kPlugin, "plugin",
+    { APIPermission::kPlugin, "plugin",
       kFlagImpliesFullURLAccess | kFlagImpliesFullAccess |
           kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
       PermissionMessage::kFullAccess },
 
     // Platform-app permissions.
-    { kSerial, "serial", kFlagCannotBeOptional },
-    { kSocket, "socket", kFlagCannotBeOptional, 0, PermissionMessage::kNone,
-      &CreatePermissionDetail<SocketPermission> },
-    { kAppRuntime, "app.runtime" },
-    { kAppWindow, "app.window" },
-    { kAudioCapture, "audioCapture", kFlagNone,
+    { APIPermission::kSerial, "serial", kFlagCannotBeOptional },
+    { APIPermission::kSocket, "socket", kFlagCannotBeOptional, 0,
+      PermissionMessage::kNone, &::CreateAPIPermission<SocketPermission> },
+    { APIPermission::kAppRuntime, "app.runtime" },
+    { APIPermission::kAppWindow, "app.window" },
+    { APIPermission::kAudioCapture, "audioCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
       PermissionMessage::kAudioCapture },
-    { kVideoCapture, "videoCapture", kFlagNone,
+    { APIPermission::kVideoCapture, "videoCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
       PermissionMessage::kVideoCapture },
     // "fileSystem" has no permission string because read-only access is only
     // granted after the user has been shown a file chooser dialog and selected
     // a file. Selecting the file is considered consent to read it.
-    { kFileSystem, "fileSystem" },
-    { kFileSystemWrite, "fileSystemWrite", kFlagNone,
+    { APIPermission::kFileSystem, "fileSystem" },
+    { APIPermission::kFileSystemWrite, "fileSystemWrite", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
       PermissionMessage::kFileSystemWrite },
-    { kMediaGalleriesAllGalleries, "mediaGalleriesAllGalleries",
+    { APIPermission::kMediaGalleriesAllGalleries, "mediaGalleriesAllGalleries",
       kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES,
       PermissionMessage::kMediaGalleriesAllGalleries },
@@ -271,15 +292,12 @@ void APIPermission::RegisterAllPermissions(
         pr.id, pr.name, pr.l10n_message_id,
         pr.message_id ? pr.message_id : PermissionMessage::kNone,
         pr.flags,
-        pr.detail_constructor);
+        pr.constructor);
   }
 
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
   info->RegisterAlias("tabs", kWindowsPermission);
-}
-
-APIPermissionDetail::~APIPermissionDetail() {
 }
 
 }  // namespace extensions

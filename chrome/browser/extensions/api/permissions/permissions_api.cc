@@ -86,7 +86,7 @@ bool RemovePermissionsFunction::RunImpl() {
   APIPermissionSet apis = permissions->apis();
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    if (!i->permission()->supports_optional()) {
+    if (!i->info()->supports_optional()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
           kNotWhitelistedError, i->name());
       return false;
@@ -161,7 +161,7 @@ bool RequestPermissionsFunction::RunImpl() {
   APIPermissionSet apis = requested_permissions_->apis();
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    if (!i->permission()->supports_optional()) {
+    if (!i->info()->supports_optional()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
           kNotWhitelistedError, i->name());
       return false;

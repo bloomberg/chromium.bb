@@ -24,12 +24,13 @@ class Message;
 
 namespace extensions {
 
-class APIPermissionDetail;
+class APIPermissionInfo;
 class PermissionsInfo;
 
-// The APIPermission is an immutable class that describes a single
-// named permission (API permission).
-class APIPermission {
+// APIPermission is for handling some complex permissions. Please refer to
+// extensions::SocketPermission as an example.
+// There is one instance per permission per loaded extension.
+class APIPermission : public base::RefCounted<APIPermission> {
  public:
   enum ID {
     // Error codes.
@@ -106,6 +107,78 @@ class APIPermission {
     kEnumBoundary
   };
 
+  struct CheckParam {
+  };
+
+  explicit APIPermission(const APIPermissionInfo* info)
+    : info_(info) {
+    DCHECK(info_);
+  }
+
+  // Returns the id of this permission.
+  ID id() const;
+
+  // Returns the name of this permission.
+  const char* name() const;
+
+  // Returns the APIPermission of this permission.
+  const APIPermissionInfo* info() const {
+    return info_;
+  }
+
+  // Returns true if the given permission is allowed.
+  virtual bool Check(const CheckParam* param) const = 0;
+
+  // Returns true if |rhs| is a subset of this.
+  virtual bool Contains(const APIPermission* rhs) const = 0;
+
+  // Returns true if |rhs| is equal to this.
+  virtual bool Equal(const APIPermission* rhs) const = 0;
+
+  // Parses the rhs from |value|. Returns false if error happens.
+  virtual bool FromValue(const base::Value* value) = 0;
+
+  // Stores this into a new created |value|.
+  virtual void ToValue(base::Value** value) const = 0;
+
+  // Clones this.
+  virtual APIPermission* Clone() const = 0;
+
+  // Returns a new API permission rhs which equals this - |rhs|.
+  virtual APIPermission* Diff(const APIPermission* rhs) const = 0;
+
+  // Returns a new API permission rhs which equals the union of this and
+  // |rhs|.
+  virtual APIPermission* Union(const APIPermission* rhs) const = 0;
+
+  // Returns a new API permission rhs which equals the intersect of this and
+  // |rhs|.
+  virtual APIPermission* Intersect(const APIPermission* rhs) const = 0;
+
+  // IPC functions
+  // Writes this into the given IPC message |m|.
+  virtual void Write(IPC::Message* m) const = 0;
+
+  // Reads from the given IPC message |m|.
+  virtual bool Read(const IPC::Message* m, PickleIterator* iter) = 0;
+
+  // Logs this permission.
+  virtual void Log(std::string* log) const = 0;
+
+ protected:
+  friend class base::RefCounted<APIPermission>;
+  virtual ~APIPermission();
+
+ private:
+  const APIPermissionInfo* const info_;
+};
+
+
+// The APIPermissionInfo is an immutable class that describes a single
+// named permission (API permission).
+// There is one instance per permission.
+class APIPermissionInfo {
+ public:
   enum Flag {
     kFlagNone = 0,
 
@@ -119,14 +192,14 @@ class APIPermission {
     kFlagCannotBeOptional = 1 << 3
   };
 
-  typedef APIPermissionDetail* (*DetailConstructor)(const APIPermission*);
+  typedef APIPermission* (*APIPermissionConstructor)(const APIPermissionInfo*);
 
-  typedef std::set<ID> IDSet;
+  typedef std::set<APIPermission::ID> IDSet;
 
-  ~APIPermission();
+  ~APIPermissionInfo();
 
-  // Creates a permission detail instance.
-  scoped_refptr<APIPermissionDetail> CreateDetail() const;
+  // Creates a APIPermission instance.
+  scoped_refptr<APIPermission> CreateAPIPermission() const;
 
   // Returns the localized permission message associated with this api.
   // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.
@@ -134,7 +207,7 @@ class APIPermission {
 
   int flags() const { return flags_; }
 
-  ID id() const { return id_; }
+  APIPermission::ID id() const { return id_; }
 
   // Returns the message id associated with this permission.
   PermissionMessage::ID message_id() const {
@@ -164,100 +237,23 @@ class APIPermission {
   // Instances should only be constructed from within PermissionsInfo.
   friend class PermissionsInfo;
 
-  explicit APIPermission(
-      ID id,
+  explicit APIPermissionInfo(
+      APIPermission::ID id,
       const char* name,
       int l10n_message_id,
       PermissionMessage::ID message_id,
       int flags,
-      DetailConstructor detail_constructor);
+      APIPermissionConstructor api_permission_constructor);
 
   // Register ALL the permissions!
   static void RegisterAllPermissions(PermissionsInfo* info);
 
-  const ID id_;
+  const APIPermission::ID id_;
   const char* const name_;
   const int flags_;
   const int l10n_message_id_;
   const PermissionMessage::ID message_id_;
-  const DetailConstructor detail_constructor_;
-};
-
-// TODO(penghuang): Rename APIPermissionDetail to APIPermission,
-// and APIPermssion to APIPermissionInfo.
-class APIPermissionDetail : public base::RefCounted<APIPermissionDetail> {
- public:
-  struct CheckParam {
-  };
-
-  explicit APIPermissionDetail(const APIPermission* permission)
-    : permission_(permission) {
-    DCHECK(permission);
-  }
-
-  // Returns the id of this permission.
-  APIPermission::ID id() const {
-    return permission()->id();
-  }
-
-  // Returns the name of this permission.
-  const char* name() const {
-    return permission()->name();
-  }
-
-  // Returns the APIPermission of this permission.
-  const APIPermission* permission() const {
-    return permission_;
-  }
-
-  // Returns true if the given permission detail is allowed.
-  virtual bool Check(const CheckParam* param) const = 0;
-
-  // Returns true if |detail| is a subset of this.
-  virtual bool Contains(const APIPermissionDetail* detail) const = 0;
-
-  // Returns true if |detail| is equal to this.
-  virtual bool Equal(const APIPermissionDetail* detail) const = 0;
-
-  // Parses the detail from |value|. Returns false if error happens.
-  virtual bool FromValue(const base::Value* value) = 0;
-
-  // Stores this into a new created |value|.
-  virtual void ToValue(base::Value** value) const = 0;
-
-  // Clones this.
-  virtual APIPermissionDetail* Clone() const = 0;
-
-  // Returns a new API permission detail which equals this - |detail|.
-  virtual APIPermissionDetail* Diff(
-      const APIPermissionDetail* detail) const = 0;
-
-  // Returns a new API permission detail which equals the union of this and
-  // |detail|.
-  virtual APIPermissionDetail* Union(
-      const APIPermissionDetail* detail) const = 0;
-
-  // Returns a new API permission detail which equals the intersect of this and
-  // |detail|.
-  virtual APIPermissionDetail* Intersect(
-      const APIPermissionDetail* detail) const = 0;
-
-  // IPC functions
-  // Writes this into the given IPC message |m|.
-  virtual void Write(IPC::Message* m) const = 0;
-
-  // Reads from the given IPC message |m|.
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) = 0;
-
-  // Logs this detail.
-  virtual void Log(std::string* log) const = 0;
-
- protected:
-  friend class base::RefCounted<APIPermissionDetail>;
-  virtual ~APIPermissionDetail();
-
- private:
-  const APIPermission* const permission_;
+  const APIPermissionConstructor api_permission_constructor_;
 };
 
 }  // namespace extensions

@@ -11,7 +11,7 @@
 #include "content/public/common/common_param_traits.h"
 
 using extensions::APIPermission;
-using extensions::APIPermissionDetail;
+using extensions::APIPermissionInfo;
 using extensions::APIPermissionMap;
 using extensions::APIPermissionSet;
 using extensions::Extension;
@@ -145,22 +145,22 @@ void ParamTraits<APIPermission::ID>::Log(
   LogParam(static_cast<int>(p), l);
 }
 
-void ParamTraits<scoped_refptr<APIPermissionDetail> >::Write(
+void ParamTraits<scoped_refptr<APIPermission> >::Write(
     Message* m, const param_type& p) {
   WriteParam(m, p->id());
   p->Write(m);
 }
 
-bool ParamTraits<scoped_refptr<APIPermissionDetail> >::Read(
+bool ParamTraits<scoped_refptr<APIPermission> >::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   APIPermission::ID id;
   if (!ReadParam(m, iter, &id))
     return false;
-  APIPermission* permission =
+  const APIPermissionInfo* permission_info =
     extensions::PermissionsInfo::GetInstance()->GetByID(id);
-  if (!permission)
+  if (!permission_info)
     return false;
-  *r = permission->CreateDetail();
+  *r = permission_info->CreateAPIPermission();
   if (!(*r)->Read(m, iter)) {
     *r = NULL;
     return false;
@@ -168,7 +168,7 @@ bool ParamTraits<scoped_refptr<APIPermissionDetail> >::Read(
   return true;
 }
 
-void ParamTraits<scoped_refptr<APIPermissionDetail> >::Log(
+void ParamTraits<scoped_refptr<APIPermission> >::Log(
     const param_type& p, std::string* l) {
   p->Log(l);
 }
@@ -189,7 +189,7 @@ bool ParamTraits<APIPermissionSet>::Read(
   if (!ReadParam(m, iter, &size))
     return false;
   for (size_t i = 0; i < size; ++i) {
-    scoped_refptr<APIPermissionDetail> p;
+    scoped_refptr<APIPermission> p;
     if (!ReadParam(m, iter, &p))
       return false;
     r->insert(p);

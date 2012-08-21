@@ -170,8 +170,8 @@ struct ParamTraits<extensions::APIPermission::ID> {
 };
 
 template <>
-struct ParamTraits<scoped_refptr<extensions::APIPermissionDetail> > {
-  typedef scoped_refptr<extensions::APIPermissionDetail> param_type;
+struct ParamTraits<scoped_refptr<extensions::APIPermission> > {
+  typedef scoped_refptr<extensions::APIPermission> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

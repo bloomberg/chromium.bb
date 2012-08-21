@@ -3338,7 +3338,7 @@ bool Extension::ParsePermissions(const char* key,
 
     for (size_t i = 0; i < permissions->GetSize(); ++i) {
       std::string permission_str;
-      const base::Value* permission_detail = NULL;
+      const base::Value* permission_value = NULL;
       if (!permissions->GetString(i, &permission_str)) {
         const base::DictionaryValue *dict = NULL;
         // permission should be a string or a single key dict.
@@ -3349,18 +3349,18 @@ bool Extension::ParsePermissions(const char* key,
         }
         base::DictionaryValue::Iterator it(*dict);
         permission_str = it.key();
-        permission_detail = &it.value();
+        permission_value = &it.value();
       }
 
       // NOTE: We need to get the APIPermission before the Feature
       // object because the feature system does not know about aliases.
-      APIPermission* permission =
+      const APIPermissionInfo* permission_info =
           PermissionsInfo::GetInstance()->GetByName(permission_str);
-      if (permission) {
+      if (permission_info) {
         extensions::SimpleFeatureProvider* permission_features =
             extensions::SimpleFeatureProvider::GetPermissionFeatures();
         extensions::Feature* feature =
-            permission_features->GetFeature(permission->name());
+            permission_features->GetFeature(permission_info->name());
 
         // The feature should exist since we just got an APIPermission
         // for it. The two systems should be updated together whenever a
@@ -3383,21 +3383,22 @@ bool Extension::ParsePermissions(const char* key,
           continue;
         }
 
-        if (permission->id() == APIPermission::kExperimental) {
+        if (permission_info->id() == APIPermission::kExperimental) {
           if (!CanSpecifyExperimentalPermission()) {
             *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
             return false;
           }
         }
 
-        scoped_refptr<APIPermissionDetail> detail = permission->CreateDetail();
-        if (!detail->FromValue(permission_detail)) {
+        scoped_refptr<APIPermission> permission =
+          permission_info->CreateAPIPermission();
+        if (!permission->FromValue(permission_value)) {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidPermission, base::IntToString(i));
           return false;
         }
 
-        api_permissions->insert(detail);
+        api_permissions->insert(permission);
         continue;
       }
 
@@ -3494,11 +3495,11 @@ bool Extension::HasAPIPermissionForTab(int tab_id,
          tab_specific_permissions->HasAPIPermission(permission);
 }
 
-bool Extension::CheckAPIPermissionWithDetail(APIPermission::ID permission,
-    const APIPermissionDetail::CheckParam* param) const {
+bool Extension::CheckAPIPermissionWithParam(APIPermission::ID permission,
+    const APIPermission::CheckParam* param) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   return runtime_data_.GetActivePermissions()->
-      CheckAPIPermissionWithDetail(permission, param);
+      CheckAPIPermissionWithParam(permission, param);
 }
 
 const URLPatternSet& Extension::GetEffectiveHostPermissions() const {
