@@ -32,13 +32,7 @@
 
 #if defined(SECCOMP_BPF_SANDBOX)
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-
-#if defined(__i386__) || defined(__x86_64__)
-#include "sandbox/linux/services/x86_linux_syscalls.h"
-#elif defined(__arm__)
-// This file doesn't yet list all syscalls.
-#include "sandbox/linux/services/arm_linux_syscalls.h"
-#endif
+#include "sandbox/linux/services/linux_syscalls.h"
 
 namespace {
 
