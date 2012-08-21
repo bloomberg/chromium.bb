@@ -64,7 +64,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
     Directory::KernelLoadInfo* kernel_load_info) {
   DirOpenResult result = TryLoad(entry_bucket, kernel_load_info);
   if (result == OPENED) {
-    HISTOGRAM_ENUMERATION(
+    UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", FIRST_TRY_SUCCESS, RESULT_COUNT);
     return OPENED;
   }
@@ -79,10 +79,10 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
 
   result = TryLoad(entry_bucket, kernel_load_info);
   if (result == OPENED) {
-    HISTOGRAM_ENUMERATION(
+    UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", SECOND_TRY_SUCCESS, RESULT_COUNT);
   } else {
-    HISTOGRAM_ENUMERATION(
+    UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", SECOND_TRY_FAILURE, RESULT_COUNT);
   }
 
