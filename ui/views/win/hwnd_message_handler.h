@@ -10,12 +10,19 @@
 #include <atlmisc.h>
 #include <windows.h>
 
+#include <set>
+
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 
 class HWNDMessageHandlerDelegate;
+class InputMethod;
+
+VIEWS_EXPORT bool IsAeroGlassEnabled();
 
 // An object that handles messages for a HWND that implements the views
 // "Custom Frame" look. The purpose of this class is to isolate the windows-
@@ -23,16 +30,24 @@ class HWNDMessageHandlerDelegate;
 // used by both a views::NativeWidget and an aura::RootWindowHost
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
-class VIEWS_EXPORT HWNDMessageHandler {
+class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler();
 
-  bool IsActive() const;
   bool IsVisible() const;
+  bool IsActive() const;
+  bool IsMinimized() const;
+  bool IsMaximized() const;
 
   // Tells the HWND its client area has changed.
   void SendFrameChanged();
+
+  void SetCapture();
+  void ReleaseCapture();
+  bool HasCapture() const;
+
+  InputMethod* CreateInputMethod();
 
   // Message Handlers.
   void OnActivate(UINT action, BOOL minimized, HWND window);
@@ -65,6 +80,7 @@ class VIEWS_EXPORT HWNDMessageHandler {
   LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnKillFocus(HWND focused_window);
   LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   void OnMove(const CPoint& point);
   void OnMoving(UINT param, const RECT* new_bounds);
   LRESULT OnNCActivate(BOOL active);
@@ -81,7 +97,9 @@ class VIEWS_EXPORT HWNDMessageHandler {
   void OnSettingChange(UINT flags, const wchar_t* section);
   void OnSize(UINT param, const CSize& size);
   void OnThemeChanged();
+  LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnVScroll(int scroll_type, short position, HWND scrollbar);
+  void OnWindowPosChanged(WINDOWPOS* window_pos);
 
   // TODO(beng): Can be removed once this object becomes the WindowImpl.
   bool remove_standard_frame() const { return remove_standard_frame_; }
@@ -95,15 +113,39 @@ class VIEWS_EXPORT HWNDMessageHandler {
   void ResetWindowRegion(bool force);
 
  private:
+  typedef std::set<DWORD> TouchIDs;
+
+  // TODO(beng): remove once this is the WindowImpl.
+  friend class NativeWidgetWin;
+
+  // Overridden from internal::InputMethodDelegate
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
+
+  // Start tracking all mouse events so that this window gets sent mouse leave
+  // messages too.
+  void TrackMouseEvents(DWORD mouse_tracking_flags);
+
+  // Responds to the client area changing size, either at window creation time
+  // or subsequently.
+  void ClientAreaSizeChanged();
+
+  // Calls DefWindowProc, safely wrapping the call in a ScopedRedrawLock to
+  // prevent frame flicker. DefWindowProc handling can otherwise render the
+  // classic-look window title bar directly.
+  LRESULT DefWindowProcWithRedrawLock(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param);
+
+  // Lock or unlock the window from being able to redraw itself in response to
+  // updates to its invalid region.
+  class ScopedRedrawLock;
+  void LockUpdates(bool force);
+  void UnlockUpdates(bool force);
+
   // TODO(beng): This won't be a style violation once this object becomes the
   //             WindowImpl.
   HWND hwnd();
   HWND hwnd() const;
-
-  // TODO(beng): Remove once this class becomes the WindowImpl.
-  LRESULT DefWindowProcWithRedrawLock(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param);
 
   // TODO(beng): Remove once this class becomes the WindowImpl.
   void SetMsgHandled(BOOL handled);
@@ -111,6 +153,27 @@ class VIEWS_EXPORT HWNDMessageHandler {
   HWNDMessageHandlerDelegate* delegate_;
 
   bool remove_standard_frame_;
+
+  // The flags currently being used with TrackMouseEvent to track mouse
+  // messages. 0 if there is no active tracking. The value of this member is
+  // used when tracking is canceled.
+  DWORD active_mouse_tracking_flags_;
+
+  // Set to true when the user presses the right mouse button on the caption
+  // area. We need this so we can correctly show the context menu on mouse-up.
+  bool is_right_mouse_pressed_on_caption_;
+
+  // The set of touch devices currently down.
+  TouchIDs touch_ids_;
+
+  // Represents the number of ScopedRedrawLocks active against this widget.
+  // If this is greater than zero, the widget should be locked against updates.
+  int lock_updates_count_;
+
+  // This flag can be initialized and checked after certain operations (such as
+  // DefWindowProc) to avoid stack-controlled functions (such as unlocking the
+  // Window with a ScopedRedrawLock) after destruction.
+  bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

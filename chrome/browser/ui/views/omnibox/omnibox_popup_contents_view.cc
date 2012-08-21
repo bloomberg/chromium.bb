@@ -20,7 +20,7 @@
 
 #include "base/win/scoped_gdi_object.h"
 #if !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
+#include "ui/base/win/shell.h"
 #endif
 #endif
 #if defined(USE_ASH)
@@ -459,7 +459,7 @@ void OmniboxPopupContentsView::MakeContentsPath(
 void OmniboxPopupContentsView::UpdateBlurRegion() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // We only support background blurring on Vista with Aero-Glass enabled.
-  if (!views::NativeWidgetWin::IsAeroGlassEnabled() || !GetWidget())
+  if (!ui::win::IsAeroGlassEnabled() || !GetWidget())
     return;
 
   // Provide a blurred background effect within the contents region of the
