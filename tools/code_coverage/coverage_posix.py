@@ -137,8 +137,20 @@ gChildPIDs = []
      StartupBrowserCreatorTest.OpenAppShortcutPanel: Fails on coverage bot.
      FilePathWatcherTest.Callback: Fails with error 'Unable to terminate
      process group' in process_util_posix.cc.
+     SUIDSandboxUITest.testSUIDSandboxEnabled: crbug.com/143250
+     PPAPINaClNewlibTest.Fullscreen: crbug.com/143251
+     PPAPINaClGLibcTest.Fullscreen: ditto.
+     UnloadTest.BrowserCloseInfiniteBeforeUnload: crbug.com/143253
+     PrerenderBrowserTest.PrerenderDelayLoadPlugin: crbug.com/143257
+     PrerenderBrowserTest.PrerenderIframeDelayLoadPlugin: ditto.
+     WindowOpenPanelTest.WindowOpenPanel: crbug.com/143258
+     WindowOpenPanelTest.CloseNonExtensionPanelsOnUninstall: ditto
+     ExtensionManagementApiTest.LaunchPanelApp: crbug.com/143416
+     ClickToPlayPluginTest.Basic: crbug.com/143417
+     ClickToPlayPluginTest.LoadAllBlockedPlugins: ditto.
+     ClickToPlayPluginTest.NoCallbackAtLoad: ditto.
      WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib: Fails
-     with timeout (45000 ms) exceeded error.
+     with timeout (45000 ms) exceeded error. crbug.com/143248
      WebGLConformanceTests.conformance_attribs_gl_disabled_vertex_attrib:
      ditto.
      WebGLConformanceTests.conformance_attribs_gl_vertex_attrib_zero_issues:
@@ -159,6 +171,13 @@ gChildPIDs = []
      conformance_buffers_index_validation_verifies_too_many_indices: ditto.
      WebGLConformanceTests.
      conformance_buffers_index_validation_with_resized_buffer: ditto.
+     WebGLConformanceTests.conformance_canvas_buffer_offscreen_test: ditto.
+     WebGLConformanceTests.conformance_canvas_buffer_preserve_test: ditto.
+     WebGLConformanceTests.conformance_canvas_canvas_test: ditto.
+     WebGLConformanceTests.conformance_canvas_canvas_zero_size: ditto.
+     WebGLConformanceTests.
+     conformance_canvas_drawingbuffer_static_canvas_test: ditto.
+     WebGLConformanceTests.conformance_canvas_drawingbuffer_test: ditto.
      PageCycler*.*: Fails on coverage bot with "Missing test directory
      /....../slave/coverage-dbg-linux/build/src/data/page_cycler/moz" error.
      *FrameRateCompositingTest.*: Fails with
@@ -166,12 +185,26 @@ gChildPIDs = []
      command_line->HasSwitch(switches::kEnableStatsTable)."
      *FrameRateNoVsyncCanvasInternalTest.*: ditto.
      *FrameRateGpuCanvasInternalTest.*: ditto.
+     IndexedDBTest.Perf: Fails with 'Timeout reached in WaitUntilCookieValue'
+     error.
      TwoClientPasswordsSyncTest.DeleteAll: Fails on coverage bot.
      MigrationTwoClientTest.MigrationHellWithoutNigori: Fails with timeout
      (45000 ms) exceeded error.
      TwoClientSessionsSyncTest.DeleteActiveSession: ditto.
      MultipleClientSessionsSyncTest.EncryptedAndChanged: ditto.
      MigrationSingleClientTest.AllTypesIndividuallyTriggerNotification: ditto.
+     *OldPanelResizeBrowserTest.*: crbug.com/143247
+     *OldPanelDragBrowserTest.*: ditto.
+     *OldPanelBrowserTest.*: ditto.
+     *OldPanelAndDesktopNotificationTest.*: ditto.
+     *OldDockedPanelBrowserTest.*: ditto.
+     *OldDetachedPanelBrowserTest.*: ditto.
+     PanelDragBrowserTest.AttachWithSqueeze: ditto.
+     *PanelBrowserTest.*: ditto.
+     *DockedPanelBrowserTest.*: ditto.
+     *DetachedPanelBrowserTest.*: ditto.
+     AutomatedUITest.TheOneAndOnlyTest: crbug.com/143419
+     AutomatedUITestBase.DragOut: ditto
 
 """
 gTestExclusions = {
@@ -187,7 +220,19 @@ gTestExclusions = {
          'IndexedDBLayoutTest.RegressionTests',
          'PanelBrowserNavigatorTest.NavigateFromCrashedPanel',
          'StartupBrowserCreatorTest.OpenAppShortcutPanel',
-         'FilePathWatcherTest.Callback',),
+         'FilePathWatcherTest.Callback',
+         'SUIDSandboxUITest.testSUIDSandboxEnabled',
+         'PPAPINaClNewlibTest.Fullscreen',
+         'PPAPINaClGLibcTest.Fullscreen',
+         'UnloadTest.BrowserCloseInfiniteBeforeUnload',
+         'PrerenderBrowserTest.PrerenderDelayLoadPlugin',
+         'PrerenderBrowserTest.PrerenderIframeDelayLoadPlugin',
+         'WindowOpenPanelTest.WindowOpenPanel',
+         'WindowOpenPanelTest.CloseNonExtensionPanelsOnUninstall',
+         'ExtensionManagementApiTest.LaunchPanelApp',
+         'ClickToPlayPluginTest.Basic',
+         'ClickToPlayPluginTest.LoadAllBlockedPlugins',
+         'ClickToPlayPluginTest.NoCallbackAtLoad',),
     'gpu_tests':
         ('WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib',
          'WebGLConformanceTests.'
@@ -208,19 +253,41 @@ gTestExclusions = {
          'WebGLConformanceTests.'
              'conformance_buffers_index_validation_verifies_too_many_indices',
          'WebGLConformanceTests.'
-             'conformance_buffers_index_validation_with_resized_buffer',),
+             'conformance_buffers_index_validation_with_resized_buffer',
+         'WebGLConformanceTests.conformance_canvas_buffer_offscreen_test',
+         'WebGLConformanceTests.conformance_canvas_buffer_preserve_test',
+         'WebGLConformanceTests.conformance_canvas_canvas_test',
+         'WebGLConformanceTests.conformance_canvas_canvas_zero_size',
+         'WebGLConformanceTests.'
+             'conformance_canvas_drawingbuffer_static_canvas_test',
+         'WebGLConformanceTests.conformance_canvas_drawingbuffer_test',),
     'performance_ui_tests':
         ('*PageCycler*.*',
          '*FrameRateCompositingTest.*',
          '*FrameRateNoVsyncCanvasInternalTest.*',
-         '*FrameRateGpuCanvasInternalTest.*',),
+         '*FrameRateGpuCanvasInternalTest.*',
+         'IndexedDBTest.Perf',),
     'sync_integration_tests':
         ('TwoClientPasswordsSyncTest.DeleteAll',
          'MigrationTwoClientTest.MigrationHellWithoutNigori',
          'TwoClientSessionsSyncTest.DeleteActiveSession',
          'MultipleClientSessionsSyncTest.EncryptedAndChanged',
          'MigrationSingleClientTest.'
-         'AllTypesIndividuallyTriggerNotification',), },
+         'AllTypesIndividuallyTriggerNotification',),
+    'interactive_ui_tests':
+        ('*OldPanelResizeBrowserTest.*',
+         '*OldPanelDragBrowserTest.*',
+         '*OldPanelBrowserTest.*',
+         '*OldPanelAndDesktopNotificationTest.*',
+         '*OldDockedPanelBrowserTest.*',
+         '*OldDetachedPanelBrowserTest.*',
+         'PanelDragBrowserTest.AttachWithSqueeze',
+         '*PanelBrowserTest.*',
+         '*DockedPanelBrowserTest.*',
+         '*DetachedPanelBrowserTest.*',),
+    'automated_ui_tests':
+        ('AutomatedUITest.TheOneAndOnlyTest',
+         'AutomatedUITestBase.DragOut',), },
 }
 
 
