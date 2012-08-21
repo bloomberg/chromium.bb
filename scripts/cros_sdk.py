@@ -267,7 +267,6 @@ it can download, build or enter a chroot.
 Action taken is the following:
 --enter  (default)  .. Installs and enters a chroot
 --download          .. Just download a chroot (enter if combined with --enter)
---bootstrap         .. Builds a chroot from source (enter if --enter)
 --delete            .. Removes a chroot
 """
   sdk_latest_version = GetLatestVersion()
@@ -275,7 +274,7 @@ Action taken is the following:
   # Actions:
   parser.add_option('--bootstrap',
                     action='store_true', dest='bootstrap', default=False,
-                    help=('Build a new SDK chroot from source'))
+                    help=optparse.SUPPRESS_HELP)
   parser.add_option('--delete',
                     action='store_true', dest='delete', default=False,
                     help=('Delete the current SDK chroot'))
