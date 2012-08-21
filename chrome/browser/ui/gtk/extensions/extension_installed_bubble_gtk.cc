@@ -11,6 +11,8 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
@@ -236,16 +238,22 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Browser action label.
   if (type_ == BROWSER_ACTION) {
-    const extensions::Command* browser_action_command =
-        extension_->browser_action_command();
+    extensions::CommandService* command_service =
+        extensions::CommandServiceFactory::GetForProfile(
+            browser_->profile());
+    extensions::Command browser_action_command;
     GtkWidget* info_label;
-    if (!browser_action_command) {
+    if (!command_service->GetBrowserActionCommand(
+            extension_->id(),
+            extensions::CommandService::ACTIVE_ONLY,
+            &browser_action_command,
+            NULL)) {
       info_label = gtk_label_new(l10n_util::GetStringUTF8(
           IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO).c_str());
     } else {
       info_label = gtk_label_new(l10n_util::GetStringFUTF8(
           IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
-          browser_action_command->accelerator().GetShortcutText()).c_str());
+          browser_action_command.accelerator().GetShortcutText()).c_str());
       has_keybinding = true;
     }
     gtk_util::SetLabelWidth(info_label, kTextColumnWidth);
@@ -254,16 +262,22 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Page action label.
   if (type_ == PAGE_ACTION) {
-    const extensions::Command* page_action_command =
-        extension_->page_action_command();
+    extensions::CommandService* command_service =
+        extensions::CommandServiceFactory::GetForProfile(
+            browser_->profile());
+    extensions::Command page_action_command;
     GtkWidget* info_label;
-    if (!page_action_command) {
+    if (!command_service->GetPageActionCommand(
+            extension_->id(),
+            extensions::CommandService::ACTIVE_ONLY,
+            &page_action_command,
+            NULL)) {
       info_label = gtk_label_new(l10n_util::GetStringUTF8(
           IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO).c_str());
     } else {
       info_label = gtk_label_new(l10n_util::GetStringFUTF8(
           IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
-          page_action_command->accelerator().GetShortcutText()).c_str());
+          page_action_command.accelerator().GetShortcutText()).c_str());
       has_keybinding = true;
     }
     gtk_util::SetLabelWidth(info_label, kTextColumnWidth);
