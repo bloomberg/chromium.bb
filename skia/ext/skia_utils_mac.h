@@ -86,6 +86,10 @@ SK_API SkBitmap NSImageRepToSkBitmap(
 // color space.
 SK_API NSBitmapImageRep* SkBitmapToNSBitmapImageRep(const SkBitmap& image);
 
+SK_API NSBitmapImageRep* SkBitmapToNSBitmapImageRepWithColorSpace(
+    const SkBitmap& skiaBitmap,
+    CGColorSpaceRef colorSpace);
+
 // Given an SkBitmap and a color space, return an autoreleased NSImage.
 SK_API NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& icon,
                                                 CGColorSpaceRef colorSpace);

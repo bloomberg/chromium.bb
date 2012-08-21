@@ -102,4 +102,24 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
   return [image.release() autorelease];
 }
 
+NSImage* NSImageFromImageSkiaWithColorSpace(const gfx::ImageSkia& image_skia,
+                                            CGColorSpaceRef color_space) {
+  if (image_skia.empty())
+    return nil;
+
+  scoped_nsobject<NSImage> image([[NSImage alloc] init]);
+
+  const std::vector<gfx::ImageSkiaRep>& image_reps =
+      image_skia.GetRepresentations();
+  for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
+       it != image_reps.end(); ++it) {
+    [image addRepresentation:
+        gfx::SkBitmapToNSBitmapImageRepWithColorSpace(it->sk_bitmap(),
+                                                      color_space)];
+  }
+
+  [image setSize:NSMakeSize(image_skia.width(), image_skia.height())];
+  return [image.release() autorelease];
+}
+
 }  // namespace gfx

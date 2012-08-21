@@ -60,7 +60,7 @@ class UI_EXPORT ImageSkia {
   // done.
   ImageSkia& operator=(const SkBitmap& other);
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
   // Converts to gfx::ImageSkiaRep and SkBitmap.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
   // done.

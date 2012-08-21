@@ -16,6 +16,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace {
 
@@ -55,7 +56,7 @@ void ExtensionUninstallDialogCocoa::Show() {
        IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
        UTF8ToUTF16(extension_->name()))];
   [alert setAlertStyle:NSWarningAlertStyle];
-  [alert setIcon:gfx::SkBitmapToNSImage(icon_)];
+  [alert setIcon:gfx::NSImageFromImageSkia(icon_)];
 
   if ([alert runModal] == NSAlertFirstButtonReturn)
     delegate_->ExtensionUninstallAccepted();

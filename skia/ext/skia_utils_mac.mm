@@ -214,10 +214,15 @@ SkBitmap NSImageRepToSkBitmap(
 NSBitmapImageRep* SkBitmapToNSBitmapImageRep(const SkBitmap& skiaBitmap) {
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
+  return SkBitmapToNSBitmapImageRepWithColorSpace(skiaBitmap, color_space);
+}
 
+NSBitmapImageRep* SkBitmapToNSBitmapImageRepWithColorSpace(
+    const SkBitmap& skiaBitmap,
+    CGColorSpaceRef colorSpace) {
   // First convert SkBitmap to CGImageRef.
   base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
-      SkCreateCGImageRefWithColorspace(skiaBitmap, color_space));
+      SkCreateCGImageRefWithColorspace(skiaBitmap, colorSpace));
 
   // Now convert to NSBitmapImageRep.
   scoped_nsobject<NSBitmapImageRep> bitmap(

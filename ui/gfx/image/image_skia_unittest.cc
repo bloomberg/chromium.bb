@@ -188,7 +188,7 @@ TEST(ImageSkiaTest, GetBitmapFromEmpty) {
   EXPECT_TRUE(bitmap->empty());
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
 TEST(ImageSkiaTest, OperatorBitmapFromSource) {
   ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
   // ImageSkia should use the source to create the bitmap.

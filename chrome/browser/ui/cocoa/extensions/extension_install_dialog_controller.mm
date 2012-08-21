@@ -21,6 +21,7 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -322,7 +323,7 @@ void DrawBulletInFrame(NSRect frame) {
 }
 
 - (void)appendRatingStar:(const gfx::ImageSkia*)skiaImage {
-  NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
+  NSImage* image = gfx::NSImageFromImageSkiaWithColorSpace(
       *skiaImage, base::mac::GetSystemColorSpace());
   NSRect frame = NSMakeRect(0, 0, skiaImage->width(), skiaImage->height());
   scoped_nsobject<NSImageView> view([[NSImageView alloc] initWithFrame:frame]);

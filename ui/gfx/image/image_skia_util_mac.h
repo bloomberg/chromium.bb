@@ -5,10 +5,11 @@
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_UTIL_MAC_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_UTIL_MAC_H_
 
+#include <ApplicationServices/ApplicationServices.h>
+
 #include "ui/base/ui_export.h"
 
 #ifdef __LP64__
-#include <ApplicationServices/ApplicationServices.h>
 typedef CGSize NSSize;
 #else
 typedef struct _NSSize NSSize;
@@ -36,6 +37,11 @@ UI_EXPORT gfx::ImageSkia ApplicationIconAtSize(int size);
 
 // Converts to NSImage from ImageSkia.
 UI_EXPORT NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia);
+
+// Converts to NSImage from given ImageSkia and a color space.
+UI_EXPORT NSImage* NSImageFromImageSkiaWithColorSpace(
+    const gfx::ImageSkia& image_skia,
+    CGColorSpaceRef color_space);
 
 }  // namespace gfx
 
