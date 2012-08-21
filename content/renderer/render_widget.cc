@@ -1631,17 +1631,29 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
 void RenderWidget::UpdateTextInputState() {
   if (!input_method_is_active_)
     return;
-
   ui::TextInputType new_type = GetTextInputType();
+  WebKit::WebTextInputInfo new_info;
+  if (webwidget_)
+    new_info = webwidget_->textInputInfo();
+
   bool new_can_compose_inline = CanComposeInline();
-  // Only sends text input type and compose inline to the browser process if
-  // they are changed.
-  if (text_input_type_ != new_type ||
-      can_compose_inline_ != new_can_compose_inline) {
+
+  // Only sends text input params if they are changed.
+  if (text_input_type_ != new_type || text_input_info_ != new_info
+      || can_compose_inline_ != new_can_compose_inline) {
+    ViewHostMsg_TextInputState_Params p;
+    p.type = new_type;
+    p.value = new_info.value.utf8();
+    p.selection_start = new_info.selectionStart;
+    p.selection_end = new_info.selectionEnd;
+    p.composition_start = new_info.compositionStart;
+    p.composition_end = new_info.compositionEnd;
+    p.can_compose_inline = new_can_compose_inline;
+    Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
+
+    text_input_info_ = new_info;
     text_input_type_ = new_type;
     can_compose_inline_ = new_can_compose_inline;
-    Send(new ViewHostMsg_TextInputStateChanged(
-        routing_id(), new_type, new_can_compose_inline));
   }
 }
 
@@ -1719,13 +1731,18 @@ COMPILE_ASSERT(int(WebKit::WebTextInputTypeTime) == \
 COMPILE_ASSERT(int(WebKit::WebTextInputTypeWeek) == \
                int(ui::TEXT_INPUT_TYPE_WEEK), mismatching_enum);
 
+ui::TextInputType RenderWidget::WebKitToUiTextInputType(
+    WebKit::WebTextInputType type) {
+  // Check the type is in the range representable by ui::TextInputType.
+  DCHECK_LE(type, static_cast<int>(ui::TEXT_INPUT_TYPE_MAX)) <<
+    "WebKit::WebTextInputType and ui::TextInputType not synchronized";
+  return static_cast<ui::TextInputType>(type);
+}
+
 ui::TextInputType RenderWidget::GetTextInputType() {
   if (webwidget_) {
-    int type = webwidget_->textInputType();
-    // Check the type is in the range representable by ui::TextInputType.
-    DCHECK_LE(type, ui::TEXT_INPUT_TYPE_MAX) <<
-      "WebKit::WebTextInputType and ui::TextInputType not synchronized";
-    return static_cast<ui::TextInputType>(type);
+    WebKit::WebTextInputType type = webwidget_->textInputType();
+    return WebKitToUiTextInputType(type);
   }
   return ui::TEXT_INPUT_TYPE_NONE;
 }

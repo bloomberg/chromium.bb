@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextInputInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidgetClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -360,6 +361,8 @@ class CONTENT_EXPORT RenderWidget
   // position.
   virtual ui::TextInputType GetTextInputType();
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
+  virtual ui::TextInputType WebKitToUiTextInputType(
+      WebKit::WebTextInputType type);
 
   // Override point to obtain that the current composition character bounds.
   // In the case of surrogate pairs, the character is treated as two characters:
@@ -514,6 +517,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates if an input method is active in the browser process.
   bool input_method_is_active_;
+
+  // Stores information about the current text input.
+  WebKit::WebTextInputInfo text_input_info_;
 
   // Stores the current text input type of |webwidget_|.
   ui::TextInputType text_input_type_;

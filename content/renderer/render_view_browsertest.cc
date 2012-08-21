@@ -747,7 +747,7 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
            "<head>"
            "</head>"
            "<body>"
-           "<input id=\"test1\" type=\"text\"></input>"
+           "<input id=\"test1\" type=\"text\" value=\"some text\"></input>"
            "<input id=\"test2\" type=\"password\"></input>"
            "</body>"
            "</html>");
@@ -769,8 +769,13 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
     EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
     ViewHostMsg_TextInputStateChanged::Param params;
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-    EXPECT_EQ(params.a, ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_EQ(params.b, true);
+    EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, params.a.type);
+    EXPECT_EQ(true, params.a.can_compose_inline);
+    EXPECT_EQ("some text", params.a.value);
+    EXPECT_EQ(0, params.a.selection_start);
+    EXPECT_EQ(9, params.a.selection_end);
+    EXPECT_EQ(-1, params.a.composition_start);
+    EXPECT_EQ(-1, params.a.composition_end);
 
     // Move the input focus to the second <input> element, where we should
     // de-activate IMEs.
@@ -785,7 +790,7 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-    EXPECT_EQ(params.a, ui::TEXT_INPUT_TYPE_PASSWORD);
+    EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, params.a.type);
   }
 }
 

@@ -28,6 +28,7 @@ class MockRenderWidgetHost;
 class WebCursor;
 struct EditCommand;
 struct ViewHostMsg_UpdateRect_Params;
+struct ViewHostMsg_TextInputState_Params;
 
 namespace base {
 class TimeTicks;
@@ -518,8 +519,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgHasTouchEventHandlers(bool has_handlers);
 
   void OnMsgSetCursor(const WebCursor& cursor);
-  void OnMsgTextInputStateChanged(ui::TextInputType type,
-                                  bool can_compose_inline);
+  void OnMsgTextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params);
   void OnMsgImeCompositionRangeChanged(
       const ui::Range& range,
       const std::vector<gfx::Rect>& character_bounds);

@@ -21,6 +21,7 @@ class WebCursor;
 struct AccessibilityHostMsg_NotificationParams;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
+struct ViewHostMsg_TextInputState_Params;
 
 namespace webkit {
 namespace npapi {
@@ -85,8 +86,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void SetIsLoading(bool is_loading) = 0;
 
   // Updates the state of the input method attached to the view.
-  virtual void TextInputStateChanged(ui::TextInputType type,
-                                     bool can_compose_inline) = 0;
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;

@@ -837,9 +837,8 @@ void RenderWidgetHostViewGtk::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewGtk::TextInputStateChanged(
-    ui::TextInputType type,
-    bool can_compose_inline) {
-  im_context_->UpdateInputMethodState(type, can_compose_inline);
+    const ViewHostMsg_TextInputState_Params& params) {
+  im_context_->UpdateInputMethodState(params.type, params.can_compose_inline);
 }
 
 void RenderWidgetHostViewGtk::ImeCancelComposition() {

@@ -176,13 +176,8 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
   // is TabContentsDelegate.
 }
 
-void RenderWidgetHostViewAndroid::ImeUpdateTextInputState(
-    const ViewHostMsg_TextInputState_Params& params) {
-  NOTIMPLEMENTED();
-}
-
 void RenderWidgetHostViewAndroid::TextInputStateChanged(
-    ui::TextInputType type, bool can_compose_inline) {
+    const ViewHostMsg_TextInputState_Params& params) {
   NOTIMPLEMENTED();
 }
 

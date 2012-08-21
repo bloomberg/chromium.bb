@@ -585,11 +585,11 @@ void RenderWidgetHostViewMac::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewMac::TextInputStateChanged(
-    ui::TextInputType type,
-    bool can_compose_inline) {
-  if (text_input_type_ != type || can_compose_inline_ != can_compose_inline) {
-    text_input_type_ = type;
-    can_compose_inline_ = can_compose_inline;
+    const ViewHostMsg_TextInputState_Params& params) {
+  if (text_input_type_ != params.type
+      || can_compose_inline_ != params.can_compose_inline) {
+    text_input_type_ = params.type;
+    can_compose_inline_ = params.can_compose_inline;
     if (HasFocus()) {
       SetTextInputActive(true);
 

@@ -413,6 +413,31 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   IPC_STRUCT_MEMBER(GURL, target_url)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
+  // The type of input field
+  IPC_STRUCT_MEMBER(ui::TextInputType, type)
+
+  // The value of the input field
+  IPC_STRUCT_MEMBER(std::string, value)
+
+  // The cursor position of the current selection start, or the caret position
+  // if nothing is selected
+  IPC_STRUCT_MEMBER(int, selection_start)
+
+  // The cursor position of the current selection end, or the caret position
+  // if nothing is selected
+  IPC_STRUCT_MEMBER(int, selection_end)
+
+  // The start position of the current composition, or -1 if there is none
+  IPC_STRUCT_MEMBER(int, composition_start)
+
+  // The end position of the current composition, or -1 if there is none
+  IPC_STRUCT_MEMBER(int, composition_end)
+
+  // Whether or not inline composition can be performed for the current input.
+  IPC_STRUCT_MEMBER(bool, can_compose_inline)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // URL for the worker script.
   IPC_STRUCT_MEMBER(GURL, url)
@@ -1908,9 +1933,8 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowRect,
                            gfx::Rect /* Out: Window location */)
 
 // Required for updating text input state.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_TextInputStateChanged,
-                    ui::TextInputType, /* text_input_type */
-                    bool /* can_compose_inline */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
+                    ViewHostMsg_TextInputState_Params /* input state params */)
 
 // Message sent when the IME text composition range changes.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,

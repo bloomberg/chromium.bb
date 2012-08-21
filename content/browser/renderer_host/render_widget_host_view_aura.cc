@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -381,11 +382,11 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewAura::TextInputStateChanged(
-    ui::TextInputType type,
-    bool can_compose_inline) {
-  if (text_input_type_ != type || can_compose_inline_ != can_compose_inline) {
-    text_input_type_ = type;
-    can_compose_inline_ = can_compose_inline;
+    const ViewHostMsg_TextInputState_Params& params) {
+  if (text_input_type_ != params.type
+      || can_compose_inline_ != params.can_compose_inline) {
+    text_input_type_ = params.type;
+    can_compose_inline_ = params.can_compose_inline;
     GetInputMethod()->OnTextInputTypeChanged(this);
   }
 }

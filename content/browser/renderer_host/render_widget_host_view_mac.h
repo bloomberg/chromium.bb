@@ -232,8 +232,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void TextInputStateChanged(ui::TextInputType state,
-                                     bool can_compose_inline) OVERRIDE;
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const gfx::Rect& start_rect,
       WebKit::WebTextDirection start_direction,

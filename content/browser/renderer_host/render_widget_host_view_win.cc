@@ -952,16 +952,15 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHostViewWin::TextInputStateChanged(
-    ui::TextInputType type,
-    bool can_compose_inline) {
+    const ViewHostMsg_TextInputState_Params& params) {
   // TODO(kinaba): currently, can_compose_inline is ignored and always treated
   // as true. We need to support "can_compose_inline=false" for PPAPI plugins
   // that may want to avoid drawing composition-text by themselves and pass
   // the responsibility to the browser.
-  bool is_enabled = (type != ui::TEXT_INPUT_TYPE_NONE &&
-      type != ui::TEXT_INPUT_TYPE_PASSWORD);
-  if (text_input_type_ != type) {
-    text_input_type_ = type;
+  bool is_enabled = (params.type != ui::TEXT_INPUT_TYPE_NONE &&
+      params.type != ui::TEXT_INPUT_TYPE_PASSWORD);
+  if (text_input_type_ != params.type) {
+    text_input_type_ = params.type;
     if (is_enabled)
       ime_input_.EnableIME(m_hWnd);
     else

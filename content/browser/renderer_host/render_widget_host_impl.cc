@@ -1679,10 +1679,9 @@ void RenderWidgetHostImpl::OnMsgSetCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostImpl::OnMsgTextInputStateChanged(
-    ui::TextInputType type,
-    bool can_compose_inline) {
+    const ViewHostMsg_TextInputState_Params& params) {
   if (view_)
-    view_->TextInputStateChanged(type, can_compose_inline);
+    view_->TextInputStateChanged(params);
 }
 
 void RenderWidgetHostImpl::OnMsgImeCompositionRangeChanged(

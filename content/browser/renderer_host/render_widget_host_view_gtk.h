@@ -79,8 +79,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void TextInputStateChanged(ui::TextInputType type,
-                                     bool can_compose_inline) OVERRIDE;
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
