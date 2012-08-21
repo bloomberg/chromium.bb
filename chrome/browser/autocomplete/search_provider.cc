@@ -34,6 +34,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -385,7 +386,8 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   // non-keyword mode.
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (!is_keyword && default_url &&
-      (default_url->prepopulate_id() == SEARCH_ENGINE_GOOGLE)) {
+      (TemplateURLPrepopulateData::GetEngineType(default_url->url()) ==
+       SEARCH_ENGINE_GOOGLE)) {
     const TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;
     if (request_succeeded) {
