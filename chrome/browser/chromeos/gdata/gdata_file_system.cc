@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/task_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -226,17 +227,6 @@ void CopyLocalFileOnBlockingPool(
       GDATA_FILE_OK : GDATA_FILE_ERROR_FAILED;
 }
 
-// Runs task on the thread to which |relay_proxy| belongs.
-void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                     const base::Closure& task) {
-  if (relay_proxy->BelongsToCurrentThread()) {
-    task.Run();
-  } else {
-    const bool posted = relay_proxy->PostTask(FROM_HERE, task);
-    DCHECK(posted);
-  }
-}
-
 // Callback for GetEntryByResourceIdAsync.
 // Adds |entry| to |results|. Runs |callback| with |results| when
 // |run_callback| is true. When |entry| is not present in our local file system
@@ -267,107 +257,6 @@ void AddEntryToSearchResults(
     if (!callback.is_null())
       callback.Run(error, next_feed, result_vec.Pass());
   }
-}
-
-// Runs task on UI thread.
-void RunTaskOnUIThread(const base::Closure& task) {
-  RunTaskOnThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), task);
-}
-
-// RelayCallback relays arguments for callback running on the given thread.
-template<typename CallbackType>
-struct RelayCallback;
-
-// RelayCallback for callback with one argument.
-template<typename T1>
-struct RelayCallback<base::Callback<void(T1)> > {
-  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                  const base::Callback<void(T1)>& callback,
-                  T1 arg1) {
-    if (callback.is_null())
-      return;
-    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1));
-  }
-};
-
-// RelayCallback for callback with two arguments.
-template<typename T1, typename T2>
-struct RelayCallback<base::Callback<void(T1, T2)> > {
-  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                  const base::Callback<void(T1, T2)>& callback,
-                  T1 arg1,
-                  T2 arg2) {
-    if (callback.is_null())
-      return;
-    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1, arg2));
-  }
-};
-
-// RelayCallback for callback with two arguments, the last one is scoped_ptr.
-template<typename T1, typename T2>
-struct RelayCallback<base::Callback<void(T1, scoped_ptr<T2>)> > {
-  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                  const base::Callback<void(T1, scoped_ptr<T2>)>& callback,
-                  T1 arg1,
-                  scoped_ptr<T2> arg2) {
-    if (callback.is_null())
-      return;
-    RunTaskOnThread(relay_proxy,
-                    base::Bind(callback, arg1, base::Passed(&arg2)));
-  }
-};
-
-// RelayCallback for callback with three arguments.
-template<typename T1, typename T2, typename T3>
-struct RelayCallback<base::Callback<void(T1, T2, T3)> > {
-  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                  const base::Callback<void(T1, T2, T3)>& callback,
-                  T1 arg1,
-                  T2 arg2,
-                  T3 arg3) {
-    if (callback.is_null())
-      return;
-    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1, arg2, arg3));
-  }
-};
-
-// RelayCallback for callback with three arguments, the last one is scoped_ptr.
-template<typename T1, typename T2, typename T3>
-struct RelayCallback<base::Callback<void(T1, T2, scoped_ptr<T3>)> > {
-  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                  const base::Callback<void(T1, T2, scoped_ptr<T3>)>& callback,
-                  T1 arg1,
-                  T2 arg2,
-                  scoped_ptr<T3> arg3) {
-    if (callback.is_null())
-      return;
-    RunTaskOnThread(relay_proxy,
-                    base::Bind(callback, arg1, arg2, base::Passed(&arg3)));
-  }
-};
-
-// RelayCallback for callback with four arguments.
-template<typename T1, typename T2, typename T3, typename T4>
-struct RelayCallback<base::Callback<void(T1, T2, T3, T4)> > {
-  static void Run(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                  const base::Callback<void(T1, T2, T3, T4)>& callback,
-                  T1 arg1,
-                  T2 arg2,
-                  T3 arg3,
-                  T4 arg4) {
-    if (callback.is_null())
-      return;
-    RunTaskOnThread(relay_proxy, base::Bind(callback, arg1, arg2, arg3, arg4));
-  }
-};
-
-// Returns callback which runs the given |callback| on the current thread.
-template<typename CallbackType>
-CallbackType CreateRelayCallback(const CallbackType& callback) {
-  return base::Bind(&RelayCallback<CallbackType>::Run,
-                    base::MessageLoopProxy::current(),
-                    callback);
 }
 
 // Helper function for binding |path| to GetEntryInfoWithFilePathCallback and
