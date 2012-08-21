@@ -412,45 +412,25 @@
         <structure type="chrome_scaled_image" name="IDR_RESTORE" file="restore.png" />
         <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="restore_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="restore_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="common/textbutton_hover_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="common/textbutton_hover_bottom_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT" file="common/textbutton_hover_bottom_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_CENTER" file="common/textbutton_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_LEFT" file="common/textbutton_hover_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_RIGHT" file="common/textbutton_hover_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP" file="common/textbutton_hover_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP_LEFT" file="common/textbutton_hover_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP_RIGHT" file="common/textbutton_hover_top_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM" file="common/textbutton_pressed_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT" file="common/textbutton_pressed_bottom_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT" file="common/textbutton_pressed_bottom_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_CENTER" file="common/textbutton_pressed_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_LEFT" file="common/textbutton_pressed_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_RIGHT" file="common/textbutton_pressed_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP" file="common/textbutton_pressed_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="common/textbutton_pressed_top_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="textbutton_b_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="textbutton_bl_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT" file="textbutton_br_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_CENTER" file="textbutton_c_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_LEFT" file="textbutton_l_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_RIGHT" file="textbutton_r_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP" file="textbutton_t_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP_LEFT" file="textbutton_tl_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP_RIGHT" file="textbutton_tr_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM" file="textbutton_b_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT" file="textbutton_bl_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT" file="textbutton_br_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_CENTER" file="textbutton_c_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_LEFT" file="textbutton_l_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_RIGHT" file="textbutton_r_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP" file="textbutton_t_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="textbutton_tl_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="textbutton_tr_pressed.png" />
-      </if>
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="common/textbutton_hover_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="common/textbutton_hover_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_RIGHT" file="common/textbutton_hover_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_CENTER" file="common/textbutton_hover_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_LEFT" file="common/textbutton_hover_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_RIGHT" file="common/textbutton_hover_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP" file="common/textbutton_hover_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP_LEFT" file="common/textbutton_hover_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_TOP_RIGHT" file="common/textbutton_hover_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM" file="common/textbutton_pressed_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM_LEFT" file="common/textbutton_pressed_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_BOTTOM_RIGHT" file="common/textbutton_pressed_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_CENTER" file="common/textbutton_pressed_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_LEFT" file="common/textbutton_pressed_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_RIGHT" file="common/textbutton_pressed_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP" file="common/textbutton_pressed_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="common/textbutton_pressed_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner.png" />
