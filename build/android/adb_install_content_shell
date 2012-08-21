@@ -5,19 +5,27 @@
 # found in the LICENSE file.
 
 from multiprocessing import Process
+import optparse
 import os
+import sys
 
 from pylib import android_commands
+from pylib import test_options_parser
 
 
-def InstallContentShell(device):
+def InstallContentShell(device, build_type):
   apk_path = os.path.join(os.environ['CHROME_SRC'],
-                          'out/Release/content_shell/ContentShell-debug.apk')
+                          'out', build_type,
+                          'content_shell', 'ContentShell-debug.apk')
   result = android_commands.AndroidCommands(device=device).ManagedInstall(
       apk_path, False, 'org.chromium.content_shell')
   print '-----  Installed on %s  -----' % device
   print result
 
+
+parser = optparse.OptionParser()
+test_options_parser.AddBuildTypeOption(parser)
+options, args = parser.parse_args(sys.argv)
 
 devices = android_commands.GetAttachedDevices()
 if not devices:
@@ -25,7 +33,7 @@ if not devices:
 
 procs = []
 for device in devices:
-  p = Process(target=InstallContentShell, args=(device,))
+  p = Process(target=InstallContentShell, args=(device, options.build_type))
   p.start()
   procs += [p]
 
