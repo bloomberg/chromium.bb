@@ -7,10 +7,6 @@
 #include <stdio.h>
 #include <sys/nacl_syscalls.h>
 
-#if defined(IN_BROWSER)
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
-#endif
 
 int main() {
   /*
@@ -34,14 +30,8 @@ int main() {
    * and the call fails to fault, the test runner will catch that.)
    * We don't use NULL because the syscall checks for NULL.
    */
-  fprintf(stderr, "Entered main\n"); fflush(stderr);
-#if defined(IN_BROWSER)
-  if (!NaClSrpcModuleInit())
-    return -1;
-  NaClPluginLowLevelInitializationComplete();
-#endif
-
-  fprintf(stderr, "About to crash\n"); fflush(stderr);
+  fprintf(stderr, "About to crash\n");
+  fflush(stderr);
   int rc = imc_recvmsg(0, (struct NaClImcMsgHdr *) 0x1000, 0);
   if (rc < 0) {
     perror("imc_recvmsg");

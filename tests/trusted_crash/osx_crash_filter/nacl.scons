@@ -24,8 +24,12 @@ runner = trusted_env.ComponentProgram(
     'crash_filter_test', ['crash_filter_test.c'],
     EXTRA_LIBS=['sel', 'sel_debug_dummy'])
 
-untrusted_crash_nexe = env.File('${STAGING_DIR}/crash_test${PROGSUFFIX}')
-trusted_crash_nexe = env.File('${STAGING_DIR}/crash_in_syscall${PROGSUFFIX}')
+def GetNexeByName(name):
+  return env.File('${STAGING_DIR}/%s${PROGSUFFIX}' %
+                  env.ProgramNameForNmf(name))
+
+untrusted_crash_nexe = GetNexeByName('crash_test')
+trusted_crash_nexe = GetNexeByName('crash_in_syscall')
 is_broken = not env.Bit('nacl_static_link')
 
 test_suites = ['small_tests', 'exception_tests', 'nonpexe_tests']

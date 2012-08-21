@@ -19,7 +19,7 @@ tester.addAsyncTest('trusted_crash_during_startup', function(status) {
   // We trigger a crash in trusted code via the NACL_CRASH_TEST env var.
   // Since the crash occurs during startup, untrusted code does not run,
   // so the choice of NaCl executable is arbitrary.
-  embed.src = 'inbrowser_crash_test.nmf';
+  embed.src = 'crash_test.nmf';
   embed.type = 'application/x-nacl';
   embed.name = 'foo';
 

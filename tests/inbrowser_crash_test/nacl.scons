@@ -19,20 +19,11 @@ platform_args = []
 if env.Bit('host_windows') and env.Bit('build_x86_64'):
   platform_args.append('--win64')
 
-def make_crash_test_nexe(name, libs=[]):
-  obj = env.ComponentObject('inbrowser_%s' % name,
-                            '${MAIN_DIR}/tests/signal_handler/%s.c' % name)
-  nexe = env.ComponentProgram(
-      env.ProgramNameForNmf('inbrowser_' + name), obj,
-      EXTRA_LIBS=libs + [
-          'srpc', 'platform', 'gio', 'imc', 'imc_syscalls', '${PTHREAD_LIBS}',
-          '${NON_PPAPI_BROWSER_LIBS}'])
-  return nexe
-
-env.Append(CPPDEFINES = ['IN_BROWSER'])
+def GetNexeByName(name):
+  return env.File('${STAGING_DIR}/%s${PROGSUFFIX}' %
+                  env.ProgramNameForNmf(name))
 
 # This crash in trusted code should produce a crash dump.
-crash_test_nexe = make_crash_test_nexe('crash_test')
 crash_test_url = 'trusted_crash_in_startup.html'
 if env.Bit('pnacl_generate_pexe'):
   crash_test_url += '?is_pnacl=true'
@@ -40,8 +31,8 @@ node = env.PPAPIBrowserTester(
     'inbrowser_trusted_crash_in_startup_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
     url=crash_test_url,
-    nmf_names=['inbrowser_crash_test'],
-    files=[crash_test_nexe,
+    nmf_names=['crash_test'],
+    files=[GetNexeByName('crash_test'),
            env.File('trusted_crash_in_startup.html')],
     osenv='NACL_CRASH_TEST=1',
     args=platform_args + ['--expected_crash_dumps=%i' % expected_crash_dumps])
@@ -56,14 +47,12 @@ env.AddNodeToTestSuite(
 # This tests a crash that occurs inside a syscall handler.
 # Ultimately this should be recognised as a crash caused by untrusted code.
 # See http://code.google.com/p/nativeclient/issues/detail?id=579
-crash_in_syscall_nexe = make_crash_test_nexe('crash_in_syscall',
-                                             ['imc_syscalls'])
 node = env.PPAPIBrowserTester(
     'inbrowser_crash_in_syscall_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
     url='crash_in_syscall.html',
-    nmf_names=['inbrowser_crash_in_syscall'],
-    files=[crash_in_syscall_nexe,
+    nmf_names=['crash_in_syscall'],
+    files=[GetNexeByName('crash_in_syscall'),
            env.File('crash_in_syscall.html')],
     args=platform_args + ['--expected_crash_dumps=%i' % expected_crash_dumps])
 env.AddNodeToTestSuite(
@@ -76,8 +65,8 @@ node = env.PPAPIBrowserTester(
     'inbrowser_untrusted_crash_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
     url='untrusted_crash.html',
-    nmf_names=['inbrowser_crash_test'],
-    files=[crash_test_nexe,
+    nmf_names=['crash_test'],
+    files=[GetNexeByName('crash_test'),
            env.File('untrusted_crash.html')],
     args=platform_args + ['--expected_crash_dumps=0'])
 env.AddNodeToTestSuite(

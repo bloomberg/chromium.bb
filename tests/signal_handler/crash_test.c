@@ -6,18 +6,8 @@
 
 #include <stdio.h>
 
-#if defined(IN_BROWSER)
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
-#endif
 
 int main() {
-#if defined(IN_BROWSER)
-  if (!NaClSrpcModuleInit())
-    return -1;
-  NaClPluginLowLevelInitializationComplete();
-#endif
-
   fprintf(stderr, "[CRASH_TEST] Causing crash in untrusted code...\n");
   /* We use "volatile" because otherwise LLVM gets too clever (at
      least on ARM) and generates an illegal instruction, which
