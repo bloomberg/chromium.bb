@@ -36,7 +36,6 @@
       'about_plugins_ui.AboutPluginsUITest',
       'apptest',
       'autofill',
-      'bookmark_bar',
       'bookmarks',
       'browser',
       'browsing_data',

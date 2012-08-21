@@ -1670,38 +1670,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return self.GetBookmarkBarStatus(windex)['visible']
 
-  def IsBookmarkBarDetached(self, windex=0):
-    """Returns whether the bookmark bar is detached.
-
-    Args:
-      windex: Integer index of the browser window to use; defaults to the first
-          window.
-
-    Returns:
-      True if the bookmark bar is detached, false otherwise.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    return self.GetBookmarkBarStatus(windex)['detached']
-
-  def WaitForBookmarkBarVisibilityChange(self, wait_for_open, windex=0):
-    """Waits until the bookmark bar is either visible or not visible.
-
-    Args:
-      wait_for_open: If True, wait until bookmark bar is visible; otherwise wait
-          until bookmark bar is not visible.
-      windex: Integer index of the browser window to use; defaults to the first
-          window.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    def IsChanged(wait_for_open, windex):
-      status = self.GetBookmarkBarStatus(windex)
-      return status['visible'] == wait_for_open and not status['animating']
-    return self.WaitUntil(lambda: IsChanged(wait_for_open, windex))
-
   def AddBookmarkGroup(self, parent_id, index, title, windex=0):
     """Adds a bookmark folder.
 
