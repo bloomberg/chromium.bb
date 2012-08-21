@@ -44,37 +44,18 @@ void SetLocation(PP_Resource widget, const PP_Rect* location) {
     enter.object()->SetLocation(location);
 }
 
-void SetScale(PP_Resource widget, float scale) {
-  EnterResource<PPB_Widget_API> enter(widget, false);
-  if (enter.succeeded())
-    enter.object()->SetScale(scale);
-}
-
-const PPB_Widget_Dev_0_3 g_ppb_widget_thunk_0_3 = {
+const PPB_Widget_Dev g_ppb_widget_thunk = {
   &IsWidget,
   &Paint,
   &HandleEvent,
   &GetLocation,
   &SetLocation,
-};
-
-const PPB_Widget_Dev_0_4 g_ppb_widget_thunk_0_4 = {
-  &IsWidget,
-  &Paint,
-  &HandleEvent,
-  &GetLocation,
-  &SetLocation,
-  &SetScale
 };
 
 }  // namespace
 
 const PPB_Widget_Dev_0_3* GetPPB_Widget_Dev_0_3_Thunk() {
-  return &g_ppb_widget_thunk_0_3;
-}
-
-const PPB_Widget_Dev_0_4* GetPPB_Widget_Dev_0_4_Thunk() {
-  return &g_ppb_widget_thunk_0_4;
+  return &g_ppb_widget_thunk;
 }
 
 }  // namespace thunk

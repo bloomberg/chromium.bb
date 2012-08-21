@@ -8,8 +8,7 @@
  */
 
 label Chrome {
-  M14 = 0.3,
-  M23 = 0.4
+  M14 = 0.3
 };
 
 /**
@@ -47,11 +46,4 @@ interface PPB_Widget_Dev {
    */
   void SetLocation([in] PP_Resource widget,
                    [in] PP_Rect location);
-
-  /**
-   * Set scale used during paint operations.
-   */
-  [version=0.4]
-  void SetScale([in] PP_Resource widget,
-                [in] float_t scale);
 };

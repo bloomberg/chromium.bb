@@ -29,7 +29,6 @@ class Widget_Dev : public Resource {
   bool HandleEvent(const InputEvent& event);
   bool GetLocation(Rect* location);
   void SetLocation(const Rect& location);
-  void SetScale(float scale);
 };
 
 }  // namespace pp

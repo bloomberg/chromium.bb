@@ -16,12 +16,8 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_Widget_Dev_0_3>() {
-  return PPB_WIDGET_DEV_INTERFACE_0_3;
-}
-
-template <> const char* interface_name<PPB_Widget_Dev_0_4>() {
-  return PPB_WIDGET_DEV_INTERFACE_0_4;
+template <> const char* interface_name<PPB_Widget_Dev>() {
+  return PPB_WIDGET_DEV_INTERFACE;
 }
 
 }  // namespace
@@ -33,51 +29,30 @@ Widget_Dev::Widget_Dev(const Widget_Dev& other) : Resource(other) {
 }
 
 bool Widget_Dev::Paint(const Rect& rect, ImageData* image) {
-  if (has_interface<PPB_Widget_Dev_0_4>()) {
-    return PP_ToBool(get_interface<PPB_Widget_Dev_0_4>()->Paint(
-        pp_resource(), &rect.pp_rect(), image->pp_resource()));
-  } else if (has_interface<PPB_Widget_Dev_0_3>()) {
-    return PP_ToBool(get_interface<PPB_Widget_Dev_0_3>()->Paint(
-        pp_resource(), &rect.pp_rect(), image->pp_resource()));
-  }
-  return false;
+  if (!has_interface<PPB_Widget_Dev>())
+    return false;
+  return PP_ToBool(get_interface<PPB_Widget_Dev>()->Paint(
+      pp_resource(), &rect.pp_rect(), image->pp_resource()));
 }
 
 bool Widget_Dev::HandleEvent(const InputEvent& event) {
-  if (has_interface<PPB_Widget_Dev_0_4>()) {
-    return PP_ToBool(get_interface<PPB_Widget_Dev_0_4>()->HandleEvent(
-        pp_resource(), event.pp_resource()));
-  } else if (has_interface<PPB_Widget_Dev_0_3>()) {
-    return PP_ToBool(get_interface<PPB_Widget_Dev_0_3>()->HandleEvent(
-        pp_resource(), event.pp_resource()));
-  }
-  return false;
+  if (!has_interface<PPB_Widget_Dev>())
+    return false;
+  return PP_ToBool(get_interface<PPB_Widget_Dev>()->HandleEvent(
+      pp_resource(), event.pp_resource()));
 }
 
 bool Widget_Dev::GetLocation(Rect* location) {
-  if (has_interface<PPB_Widget_Dev_0_4>()) {
-    return PP_ToBool(get_interface<PPB_Widget_Dev_0_4>()->GetLocation(
-        pp_resource(), &location->pp_rect()));
-  } else if (has_interface<PPB_Widget_Dev_0_3>()) {
-    return PP_ToBool(get_interface<PPB_Widget_Dev_0_3>()->GetLocation(
-        pp_resource(), &location->pp_rect()));
-  }
-  return false;
+  if (!has_interface<PPB_Widget_Dev>())
+    return false;
+  return PP_ToBool(get_interface<PPB_Widget_Dev>()->GetLocation(
+      pp_resource(), &location->pp_rect()));
 }
 
 void Widget_Dev::SetLocation(const Rect& location) {
-  if (has_interface<PPB_Widget_Dev_0_4>()) {
-    get_interface<PPB_Widget_Dev_0_4>()->SetLocation(pp_resource(),
-                                                     &location.pp_rect());
-  } else if (has_interface<PPB_Widget_Dev_0_3>()) {
-    get_interface<PPB_Widget_Dev_0_3>()->SetLocation(pp_resource(),
-                                                     &location.pp_rect());
-  }
-}
-
-void Widget_Dev::SetScale(float scale) {
-  if (has_interface<PPB_Widget_Dev_0_4>())
-    get_interface<PPB_Widget_Dev_0_4>()->SetScale(pp_resource(), scale);
+  if (has_interface<PPB_Widget_Dev>())
+    get_interface<PPB_Widget_Dev>()->SetLocation(pp_resource(),
+                                                 &location.pp_rect());
 }
 
 }  // namespace pp
