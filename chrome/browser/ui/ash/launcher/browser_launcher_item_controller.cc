@@ -23,48 +23,49 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/widget/widget.h"
 
 using extensions::Extension;
 
 BrowserLauncherItemController::BrowserLauncherItemController(
+    Type type,
     aura::Window* window,
     TabStripModel* tab_model,
     ChromeLauncherController* launcher_controller,
-    Type type,
     const std::string& app_id)
-    : window_(window),
+    : LauncherItemController(type, launcher_controller),
+      window_(window),
       tab_model_(tab_model),
-      launcher_controller_(launcher_controller),
-      type_(type),
       app_id_(app_id),
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
-                    tab_model->profile() && !Profile::IsGuestSession()),
-      item_id_(-1) {
+                    tab_model->profile() && !Profile::IsGuestSession()) {
   window_->AddObserver(this);
 }
 
 BrowserLauncherItemController::~BrowserLauncherItemController() {
   tab_model_->RemoveObserver(this);
   window_->RemoveObserver(this);
-  if (item_id_ != -1)
-    launcher_controller_->LauncherItemClosed(item_id_);
+  if (launcher_id() > 0)
+    launcher_controller()->LauncherItemClosed(launcher_id());
 }
 
 void BrowserLauncherItemController::Init() {
   tab_model_->AddObserver(this);
   ash::LauncherItemStatus app_status =
       ash::wm::IsActiveWindow(window_) ?
-          ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
-  if (type_ != TYPE_TABBED) {
-    item_id_ = launcher_controller_->CreateAppLauncherItem(
+      ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
+  ash::LauncherID launcher_id;
+  if (type() != TYPE_TABBED) {
+    launcher_id = launcher_controller()->CreateAppLauncherItem(
         this, app_id_, app_status);
   } else {
-    item_id_ = launcher_controller_->CreateTabbedLauncherItem(
+    launcher_id = launcher_controller()->CreateTabbedLauncherItem(
         this,
         is_incognito_ ? ChromeLauncherController::STATE_INCOGNITO :
                         ChromeLauncherController::STATE_NOT_INCOGNITO,
         app_status);
   }
+  set_launcher_id(launcher_id);
   // In testing scenarios we can get tab strips with no active contents.
   if (tab_model_->GetActiveTabContents())
     UpdateLauncher(tab_model_->GetActiveTabContents());
@@ -95,18 +96,54 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
   } else {
     return NULL;
   }
-  BrowserLauncherItemController* icon_updater =
-      new BrowserLauncherItemController(
-          browser->window()->GetNativeWindow(), browser->tab_strip_model(),
-          ChromeLauncherController::instance(), type, app_id);
-  icon_updater->Init();
-  return icon_updater;
+  BrowserLauncherItemController* controller =
+      new BrowserLauncherItemController(type,
+                                        browser->window()->GetNativeWindow(),
+                                        browser->tab_strip_model(),
+                                        ChromeLauncherController::instance(),
+                                        app_id);
+  controller->Init();
+  return controller;
 }
 
 void BrowserLauncherItemController::BrowserActivationStateChanged() {
   if (tab_model_->GetActiveTabContents())
     UpdateAppState(tab_model_->GetActiveTabContents());
   UpdateItemStatus();
+}
+
+string16 BrowserLauncherItemController::GetTitle() const {
+  if (type() == TYPE_TABBED) {
+    const content::WebContents* contents =
+        tab_model_->GetActiveTabContents()->web_contents();
+    if (contents)
+      return contents->GetTitle();
+  }
+  return string16();
+}
+
+bool BrowserLauncherItemController::HasWindow(aura::Window* window) const {
+  return window_ == window;
+}
+
+void BrowserLauncherItemController::Open() {
+  window_->Show();
+  ash::wm::ActivateWindow(window_);
+}
+
+void BrowserLauncherItemController::Close() {
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window_);
+  if (widget)
+    widget->Close();
+}
+
+void BrowserLauncherItemController::Clicked() {
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeView(window_);
+  if (widget && widget->IsActive())
+    widget->Minimize();
+  else
+    Open();
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(
@@ -129,7 +166,7 @@ void BrowserLauncherItemController::TabInsertedAt(TabContents* contents,
 
 void BrowserLauncherItemController::TabDetachedAt(TabContents* contents,
                                                   int index) {
-  launcher_controller_->UpdateAppState(
+  launcher_controller()->UpdateAppState(
       contents, ChromeLauncherController::APP_STATE_REMOVED);
 }
 
@@ -149,7 +186,7 @@ void BrowserLauncherItemController::TabChangedAt(
     // We have the favicon, update immediately.
     UpdateLauncher(tab);
   } else {
-    int item_index = launcher_model()->ItemIndexByID(item_id_);
+    int item_index = launcher_model()->ItemIndexByID(launcher_id());
     if (item_index == -1)
       return;
     ash::LauncherItem item = launcher_model()->items()[item_index];
@@ -163,7 +200,7 @@ void BrowserLauncherItemController::TabReplacedAt(
     TabContents* old_contents,
     TabContents* new_contents,
     int index) {
-  launcher_controller_->UpdateAppState(
+  launcher_controller()->UpdateAppState(
       old_contents, ChromeLauncherController::APP_STATE_REMOVED);
   UpdateAppState(new_contents);
 }
@@ -192,22 +229,22 @@ void BrowserLauncherItemController::UpdateItemStatus() {
   } else {
     status = ash::STATUS_RUNNING;
   }
-  launcher_controller_->SetItemStatus(item_id_, status);
+  launcher_controller()->SetItemStatus(launcher_id(), status);
 }
 
 void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
-  if (type_ == TYPE_APP_PANEL)
+  if (type() == TYPE_APP_PANEL)
     return;  // Maintained entirely by ChromeLauncherController.
 
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
 
-  int item_index = launcher_model()->ItemIndexByID(item_id_);
+  int item_index = launcher_model()->ItemIndexByID(launcher_id());
   if (item_index == -1)
     return;
 
   ash::LauncherItem item = launcher_model()->items()[item_index];
-  if (type_ == TYPE_EXTENSION_PANEL) {
+  if (type() == TYPE_EXTENSION_PANEL) {
     if (!favicon_loader_.get() ||
         favicon_loader_->web_contents() != tab->web_contents()) {
       favicon_loader_.reset(
@@ -224,7 +261,7 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     else if (item.image.empty())
       item.image = extensions::Extension::GetDefaultIcon(true);
   } else {
-    DCHECK_EQ(TYPE_TABBED, type_);
+    DCHECK_EQ(TYPE_TABBED, type());
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
       item.image = tab->favicon_tab_helper()->GetFavicon().AsBitmap();
@@ -251,9 +288,9 @@ void BrowserLauncherItemController::UpdateAppState(TabContents* tab) {
   } else {
     app_state = ChromeLauncherController::APP_STATE_INACTIVE;
   }
-  launcher_controller_->UpdateAppState(tab, app_state);
+  launcher_controller()->UpdateAppState(tab, app_state);
 }
 
 ash::LauncherModel* BrowserLauncherItemController::launcher_model() {
-  return launcher_controller_->model();
+  return launcher_controller()->model();
 }

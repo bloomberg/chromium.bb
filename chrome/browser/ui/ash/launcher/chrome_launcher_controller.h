@@ -38,14 +38,15 @@ class ActivationClient;
 
 }
 
-class BrowserLauncherItemController;
 class BrowserLauncherItemControllerTest;
+class LauncherItemController;
 class PrefService;
 class Profile;
 class TabContents;
 
-// ChromeLauncherController manages the launcher items needed for tabbed
-// browsers (BrowserLauncherItemController) and browser shortcuts.
+// ChromeLauncherController manages the launcher items needed for content
+// windows: tabbed browsers (BrowserLauncherItemController), browser shortcuts,
+// and App windows.
 class ChromeLauncherController
     : public ash::LauncherDelegate,
       public ash::LauncherModelObserver,
@@ -105,13 +106,13 @@ class ChromeLauncherController
 
   // Creates a new tabbed item on the launcher for |controller|.
   ash::LauncherID CreateTabbedLauncherItem(
-      BrowserLauncherItemController* controller,
+      LauncherItemController* controller,
       IncognitoState is_incognito,
       ash::LauncherItemStatus status);
 
   // Creates a new app item on the launcher for |controller|.
   ash::LauncherID CreateAppLauncherItem(
-      BrowserLauncherItemController* controller,
+      LauncherItemController* controller,
       const std::string& app_id,
       ash::LauncherItemStatus status);
 
@@ -267,9 +268,8 @@ class ChromeLauncherController
     // ID of the app.
     std::string app_id;
 
-    // The BrowserLauncherItemController this item came from. NULL if a
-    // shortcut.
-    BrowserLauncherItemController* controller;
+    // The LauncherItemController this item came from. NULL if a shortcut.
+    LauncherItemController* controller;
   };
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
@@ -314,7 +314,7 @@ class ChromeLauncherController
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
   ash::LauncherID InsertAppLauncherItem(
-      BrowserLauncherItemController* controller,
+      LauncherItemController* controller,
       const std::string& app_id,
       ash::LauncherItemStatus status,
       int index);

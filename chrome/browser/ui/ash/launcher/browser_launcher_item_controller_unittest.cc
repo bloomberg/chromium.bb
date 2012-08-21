@@ -133,10 +133,10 @@ class BrowserLauncherItemControllerTest :
         : launcher_test(test),
           window(NULL),
           tab_strip(&tab_strip_delegate, test->profile()),
-          updater(&window,
+          updater(launcher_type,
+                  &window,
                   &tab_strip,
                   test->launcher_delegate_.get(),
-                  launcher_type,
                   app_id) {
       window.Init(ui::LAYER_NOT_DRAWN);
       launcher_test->root_window()->AddChild(&window);
@@ -239,8 +239,9 @@ TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
     window.Init(ui::LAYER_NOT_DRAWN);
     root_window()->AddChild(&window);
     BrowserLauncherItemController updater(
+        LauncherItemController::TYPE_TABBED,
         &window, &tab_strip, launcher_delegate_.get(),
-        BrowserLauncherItemController::TYPE_TABBED, std::string());
+        std::string());
     updater.Init();
 
     // There should be one more item.
@@ -263,8 +264,9 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     app_tab_helper_->SetAppID(&panel_tab, "1");  // Panels are apps.
     tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
+        LauncherItemController::TYPE_APP_PANEL,
         &window, &tab_strip, launcher_delegate_.get(),
-        BrowserLauncherItemController::TYPE_APP_PANEL, std::string());
+        std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
@@ -280,8 +282,9 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     app_tab_helper_->SetAppID(&panel_tab, "1");  // Panels are apps.
     tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
+        LauncherItemController::TYPE_EXTENSION_PANEL,
         &window, &tab_strip, launcher_delegate_.get(),
-        BrowserLauncherItemController::TYPE_EXTENSION_PANEL, std::string());
+        std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
