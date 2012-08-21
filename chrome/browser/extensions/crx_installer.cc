@@ -395,16 +395,6 @@ void CrxInstaller::ConfirmInstall() {
   if (!frontend_weak_.get())
     return;
 
-  if (frontend_weak_->extension_prefs()
-      ->IsExtensionBlacklisted(extension_->id())) {
-    VLOG(1) << "This extension: " << extension_->id()
-            << " is blacklisted. Install failed.";
-    ReportFailureFromUIThread(
-        CrxInstallerError(
-            l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_INSTALL_BLACKLISTED)));
-    return;
-  }
-
   string16 error;
   if (!ExtensionSystem::Get(profile_)->management_policy()->
       UserMayLoad(extension_, &error)) {

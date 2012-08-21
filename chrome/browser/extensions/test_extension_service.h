@@ -48,7 +48,7 @@ class TestExtensionService : public ExtensionServiceInterface {
 
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) OVERRIDE;
-  virtual void CheckAdminBlacklist() OVERRIDE;
+  virtual void CheckManagementPolicy() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;
 
   virtual syncer::SyncError MergeDataAndStartSyncing(

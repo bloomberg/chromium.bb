@@ -85,6 +85,11 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
                  ExtensionPrefValueMap* extension_pref_value_map);
   virtual ~ExtensionPrefs();
 
+  // Returns all installed extensions from extension preferences provided by
+  // |pref_service|. This is exposed for ProtectedPrefsWatcher because it needs
+  // access to the extension ID list before the ExtensionService is initialized.
+  static ExtensionIds GetExtensionsFrom(const PrefService* pref_service);
+
   // If |extensions_disabled| is true, extension controlled preferences and
   // content settings do not become effective.
   void Init(bool extensions_disabled);
@@ -130,12 +135,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Returns all installed extensions
   void GetExtensions(ExtensionIds* out);
 
-  // Returns all installed extensions from |extension_prefs|. This is exposed
-  // for ProtectedPrefsWatcher because it needs access to the extension ID list
-  // before the ExtensionService is initialized.
-  static ExtensionIds GetExtensionsFrom(
-      const base::DictionaryValue* extension_prefs);
-
   // Getter and setter for browser action visibility.
   bool GetBrowserActionVisibility(const Extension* extension);
   void SetBrowserActionVisibility(const Extension* extension,
@@ -174,9 +173,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Updates the prefs based on the blacklist.
   void UpdateBlacklist(const std::set<std::string>& blacklist_set);
-
-  // Based on extension id, checks prefs to see if it is blacklisted.
-  bool IsExtensionBlacklisted(const std::string& id);
 
   // Based on extension id, checks prefs to see if it is orphaned.
   bool IsExtensionOrphaned(const std::string& id);
@@ -340,11 +336,12 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // version directory and the location. Blacklisted extensions won't be saved
   // and neither will external extensions the user has explicitly uninstalled.
   // Caller takes ownership of returned structure.
-  ExtensionsInfo* GetInstalledExtensionsInfo();
+  ExtensionsInfo* GetInstalledExtensionsInfo() const;
 
   // Returns the ExtensionInfo from the prefs for the given extension. If the
   // extension is not present, NULL is returned.
-  ExtensionInfo* GetInstalledExtensionInfo(const std::string& extension_id);
+  ExtensionInfo* GetInstalledExtensionInfo(
+      const std::string& extension_id) const;
 
   // We've downloaded an updated .crx file for the extension, but are waiting
   // for idle time to install it.
@@ -494,17 +491,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // consumers who expect full paths.
   void MakePathsAbsolute(base::DictionaryValue* dict);
 
-  // Reads a boolean pref from |ext| with key |pref_key|.
-  // Return false if the value is false or |pref_key| does not exist.
-  static bool ReadBooleanFromPref(const base::DictionaryValue* ext,
-                                  const std::string& pref_key);
-
-  // Reads an integer pref from |ext| with key |pref_key|.
-  // Return false if the value does not exist.
-  static bool ReadIntegerFromPref(const base::DictionaryValue* ext,
-                                  const std::string& pref_key,
-                                  int* out_value);
-
   // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
   // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
   bool ReadExtensionPrefURLPatternSet(const std::string& extension_id,
@@ -537,11 +523,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // dictionary and sets them in the |pref_value_map_|.
   void LoadExtensionControlledPrefs(const std::string& id,
                                     ExtensionPrefsScope scope);
-
-  // Checks if kPrefBlacklist is set to true in the DictionaryValue.
-  // Return false if the value is false or kPrefBlacklist does not exist.
-  // This is used to decide if an extension is blacklisted.
-  static bool IsBlacklistBitSet(const base::DictionaryValue* ext);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.

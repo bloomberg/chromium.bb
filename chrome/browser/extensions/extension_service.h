@@ -118,7 +118,7 @@ class ExtensionServiceInterface : public syncer::SyncableService {
 
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
-  virtual void CheckAdminBlacklist() = 0;
+  virtual void CheckManagementPolicy() = 0;
 
   // Safe to call multiple times in a row.
   //
@@ -407,10 +407,10 @@ class ExtensionService
   virtual void UpdateExtensionBlacklist(
       const std::vector<std::string>& blacklist) OVERRIDE;
 
-  // Go through each extension and unload those that the network admin has
-  // put on the blacklist (not to be confused with the Google-managed blacklist)
-  // set of extensions.
-  virtual void CheckAdminBlacklist() OVERRIDE;
+  // Go through each extension and unload those that are not allowed to run by
+  // management policy providers (ie. network admin and Google-managed
+  // blacklist).
+  virtual void CheckManagementPolicy() OVERRIDE;
 
   virtual void CheckForUpdatesSoon() OVERRIDE;
 

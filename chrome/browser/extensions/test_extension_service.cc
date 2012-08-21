@@ -66,7 +66,7 @@ void TestExtensionService::UpdateExtensionBlacklist(
   ADD_FAILURE();
 }
 
-void TestExtensionService::CheckAdminBlacklist() {
+void TestExtensionService::CheckManagementPolicy() {
   ADD_FAILURE();
 }
 

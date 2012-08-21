@@ -1125,26 +1125,11 @@ void ExtensionService::UpdateExtensionBlacklist(
   // Use this set to indicate if an extension in the blacklist has been used.
   std::set<std::string> blacklist_set;
   for (unsigned int i = 0; i < blacklist.size(); ++i) {
-    if (Extension::IdIsValid(blacklist[i])) {
+    if (Extension::IdIsValid(blacklist[i]))
       blacklist_set.insert(blacklist[i]);
-    }
   }
   extension_prefs_->UpdateBlacklist(blacklist_set);
-  std::vector<std::string> to_be_removed;
-  // Loop current extensions, unload installed extensions.
-  for (ExtensionSet::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    const Extension* extension = (*iter);
-    if (blacklist_set.find(extension->id()) != blacklist_set.end()) {
-      to_be_removed.push_back(extension->id());
-    }
-  }
-
-  // UnloadExtension will change the extensions_ list. So, we should
-  // call it outside the iterator loop.
-  for (unsigned int i = 0; i < to_be_removed.size(); ++i) {
-    UnloadExtension(to_be_removed[i], extension_misc::UNLOAD_REASON_DISABLE);
-  }
+  CheckManagementPolicy();
 }
 
 Profile* ExtensionService::profile() {
@@ -1171,15 +1156,14 @@ extensions::ExtensionUpdater* ExtensionService::updater() {
   return updater_.get();
 }
 
-void ExtensionService::CheckAdminBlacklist() {
+void ExtensionService::CheckManagementPolicy() {
   std::vector<std::string> to_be_removed;
   // Loop through extensions list, unload installed extensions.
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* extension = (*iter);
-    if (!system_->management_policy()->UserMayLoad(extension, NULL)) {
+    if (!system_->management_policy()->UserMayLoad(extension, NULL))
       to_be_removed.push_back(extension->id());
-    }
   }
 
   // UnloadExtension will change the extensions_ list. So, we should
@@ -1747,7 +1731,7 @@ bool ExtensionService::PopulateExtensionErrorUI(
         }
       }
     }
-    if (extension_prefs_->IsExtensionBlacklisted(e->id())) {
+    if (!extension_prefs_->UserMayLoad(e, NULL)) {
       if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
         extension_error_ui->AddBlacklistedExtension(e->id());
         needs_alert = true;
@@ -2429,7 +2413,8 @@ void ExtensionService::Observe(int type,
       std::string* pref_name = content::Details<std::string>(details).ptr();
       if (*pref_name == prefs::kExtensionInstallAllowList ||
           *pref_name == prefs::kExtensionInstallDenyList) {
-        CheckAdminBlacklist();
+        IdentifyAlertableExtensions();
+        CheckManagementPolicy();
       } else {
         NOTREACHED() << "Unexpected preference name.";
       }

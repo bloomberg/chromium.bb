@@ -200,17 +200,10 @@ void ProtectedPrefsWatcher::EnsurePrefsMigration() {
 }
 
 bool ProtectedPrefsWatcher::UpdateCachedPrefs() {
-  // Direct access to the extensions prefs is required becase ExtensionService
-  // may not yet have been initialized.
-  const base::DictionaryValue* extension_prefs;
-  const base::Value* extension_prefs_value =
-      profile_->GetPrefs()->GetUserPrefValue(ExtensionPrefs::kExtensionsPref);
-  if (!extension_prefs_value ||
-      !extension_prefs_value->GetAsDictionary(&extension_prefs)) {
-    return false;
-  }
+  // ExtensionService may not yet have been initialized, so using static method
+  // exposed for this purpose.
   ExtensionPrefs::ExtensionIds extension_ids =
-      ExtensionPrefs::GetExtensionsFrom(extension_prefs);
+      ExtensionPrefs::GetExtensionsFrom(profile_->GetPrefs());
   if (extension_ids == cached_extension_ids_)
     return false;
   cached_extension_ids_.swap(extension_ids);

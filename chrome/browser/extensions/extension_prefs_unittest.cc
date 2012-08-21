@@ -492,7 +492,7 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
 
     ExtensionList::const_iterator iter;
     for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
-      EXPECT_FALSE(prefs()->IsExtensionBlacklisted((*iter)->id()));
+      EXPECT_TRUE(prefs()->UserMayLoad(*iter, NULL));
     }
     // Blacklist one installed and one not-installed extension id.
     std::set<std::string> blacklisted_ids;
@@ -502,15 +502,13 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
   }
 
   virtual void Verify() {
-    // Make sure the two id's we expect to be blacklisted are.
-    EXPECT_TRUE(prefs()->IsExtensionBlacklisted(extensions_[0]->id()));
-    EXPECT_TRUE(prefs()->IsExtensionBlacklisted(not_installed_id_));
+    // Make sure the id we expect to be blacklisted is.
+    EXPECT_FALSE(prefs()->UserMayLoad(extensions_[0], NULL));
 
     // Make sure the other id's are not blacklisted.
     ExtensionList::const_iterator iter;
-    for (iter = extensions_.begin() + 1; iter != extensions_.end(); ++iter) {
-      EXPECT_FALSE(prefs()->IsExtensionBlacklisted((*iter)->id()));
-    }
+    for (iter = extensions_.begin() + 1; iter != extensions_.end(); ++iter)
+      EXPECT_TRUE(prefs()->UserMayLoad(*iter, NULL));
 
     // Make sure GetInstalledExtensionsInfo returns only the non-blacklisted
     // extensions data.
