@@ -319,6 +319,9 @@ be available for now. -->
       <message name="IDS_IMPORT_PROGRESS_INFO" desc="Explanatory text for the importing progress dialog">
         Chromium is now importing the following items from <ph name="BROWSER_COMPONENT">$1<ex>History</ex></ph>:
       </message>
+      <message name="IDS_IMPORT_FIND_YOUR_BOOKMARKS" desc="Helpful reminder for where to find imported bookmarks">
+        Find your bookmarks in the Chromium menu or on the bookmarks bar.
+      </message>
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
         Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.
       </message>
@@ -702,7 +705,7 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
         Remove from Chromium
       </message>
 
-      <!-- Wrench menu -->
+      <!-- Main Chrome menu -->
       <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Chromium
@@ -792,6 +795,89 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
       <message name="IDS_INTENT_PICKER_INSTALL_EXTENSION" desc="Text on the button in the web intent picker that installs an extension then uses the extension as an intent service.">
         Add to Chromium
       </message>
+
+      <!-- Network Error Pages -->
+      <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION" desc="When a page fails to load, sometimes we suggest disabling network prediction.">
+        Try disabling network prediction by following these steps:
+        Go to
+        <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+        the Chromium menu &gt;
+        <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+        &gt;
+        <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
+        <ph name="END_BOLD">&lt;/strong&gt;</ph>
+        and deselect &quot;<ph name="NO_PREFETCH_DESCRIPTION">&lt;span jscontent="noNetworkPredictionTitle"&gt;&lt;/span&gt;<ex>Predict network actions to improve page load performance</ex></ph>.&quot;
+        If this does not resolve the issue, we recommend selecting this option
+        again for improved performance.
+      </message>
+      <if expr="is_macosx">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and deselect any proxies that have been selected.
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="ChromeOS instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          the Chromium menu &gt;
+          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+          &gt;
+          <ph name="INTERNET_TITLE">&lt;span jscontent="internetTitle"&gt;&lt;/span&gt;<ex>Internet</ex></ph>
+          &gt;
+          &quot;<ph name="OPTIONS_BUTTON">&lt;span jscontent="optionsButton"&gt;&lt;/span&gt;<ex>Options...</ex></ph>&quot;
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          (for the current Network). If the
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          &quot;<ph name="PROXY_BUTTON">&lt;span jscontent="proxyButton"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>&quot;
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>button (in the
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          <ph name="NETWORK_TAB">&lt;span jscontent="networkTab"&gt;&lt;/span&gt;<ex>Network</ex></ph>
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          tab) is present, click on that and make sure your configuration
+          is set to &quot;Direct&quot;.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          the Chromium menu &gt;
+          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+          &gt;
+          <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
+          &gt;
+          <ph name="PROXIES_TITLE">&lt;span jscontent="proxyTitle"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
+        </message>
+      </if>
+      <if expr="is_win">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Windows instructions for disabling use of a proxy server.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          the Chromium menu &gt;
+          <ph name="SETTINGS_TITLE">&lt;span jscontent="settingsTitle"&gt;&lt;/span&gt;<ex>Settings</ex></ph>
+          &gt;
+          <ph name="ADVANCED_TITLE">&lt;span jscontent="advancedTitle"&gt;&lt;/span&gt;<ex>Under the Hood</ex></ph>
+          &gt;
+          <ph name="PROXIES_TITLE">&lt;span jscontent="proxyTitle"&gt;&lt;/span&gt;<ex>Change proxy settings...</ex></ph>
+          &gt;
+          LAN Settings
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and deselect the &quot;Use a proxy server for your LAN&quot; checkbox.
+        </message>
+      </if>
+
+      <!-- Chrome OS keyboard overlay-->
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut that opens the main Chrome menu.">
+          Show the Chromium menu
+        </message>
+      </if>
     </messages>
   </release>
 </grit>
