@@ -156,47 +156,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertFalse(self._IsBlocked('http://dev.chromium.org/'))
     self.assertFalse(self._IsBlocked('http://chromium.org/chromium-os/testing'))
 
-  def testBookmarkBarPolicy(self):
-    """Tests the BookmarkBarEnabled policy."""
-    self.NavigateToURL('about:blank')
-    self.assertFalse(self.GetBookmarkBarVisibility())
-    self.assertFalse(self.IsBookmarkBarDetached())
-
-    # It should be visible in detached state, in the NTP.
-    self.NavigateToURL('chrome://newtab')
-    self.assertFalse(self.GetBookmarkBarVisibility())
-    self.assertTrue(self.IsBookmarkBarDetached())
-
-    policy = {
-      'BookmarkBarEnabled': True
-    }
-    self.SetUserPolicy(policy)
-
-    self.assertTrue(self.WaitForBookmarkBarVisibilityChange(True))
-    self.assertTrue(self.GetBookmarkBarVisibility())
-    self.assertFalse(self.IsBookmarkBarDetached())
-    # The accelerator should be disabled by the policy.
-    self.assertRaises(
-        pyauto_errors.JSONInterfaceError,
-        lambda: self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR))
-    self.assertTrue(self.WaitForBookmarkBarVisibilityChange(True))
-    self.assertTrue(self.GetBookmarkBarVisibility())
-    self.assertFalse(self.IsBookmarkBarDetached())
-
-    policy['BookmarkBarEnabled'] = False
-    self.SetUserPolicy(policy)
-
-    self.assertTrue(self.WaitForBookmarkBarVisibilityChange(False))
-    self.assertFalse(self.GetBookmarkBarVisibility())
-    self.assertRaises(
-        pyauto_errors.JSONInterfaceError,
-        lambda: self.ApplyAccelerator(pyauto.IDC_SHOW_BOOKMARK_BAR))
-    self.assertTrue(self.WaitForBookmarkBarVisibilityChange(False))
-    self.assertFalse(self.GetBookmarkBarVisibility())
-    # When disabled by policy, it should never be displayed at all,
-    # not even on the NTP.
-    self.assertFalse(self.IsBookmarkBarDetached())
-
   def testJavascriptPolicies(self):
     """Tests the Javascript policies."""
     # The navigation to about:blank after each policy reset is to reset the
