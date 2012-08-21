@@ -70,7 +70,7 @@ TEST(event_test)
 	struct test_client *client;
 	struct weston_layer *layer;
 
-	client = test_client_launch(compositor);
+	client = test_client_launch(compositor, "test-client");
 	client->terminate = 1;
 
 	test_client_send(client, "create-surface\n");

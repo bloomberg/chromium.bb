@@ -71,7 +71,7 @@ test_client_data(int fd, uint32_t mask, void *data)
 }
 
 struct test_client *
-test_client_launch(struct weston_compositor *compositor)
+test_client_launch(struct weston_compositor *compositor, const char *file_name)
 {
 	struct test_client *client;
 	struct wl_event_loop *loop;
@@ -87,7 +87,7 @@ test_client_launch(struct weston_compositor *compositor)
 	assert(client_fd >= 0);
 	snprintf(buf, sizeof buf, "%d", client_fd);
 	setenv("TEST_SOCKET", buf, 1);
-	snprintf(buf, sizeof buf, "%s/test-client", getenv("abs_builddir"));
+	snprintf(buf, sizeof buf, "%s/%s", getenv("abs_builddir"), file_name);
 	fprintf(stderr, "launching %s\n", buf);
 
 	client->terminate = 0;

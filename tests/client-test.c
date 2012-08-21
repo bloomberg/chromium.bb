@@ -60,7 +60,7 @@ TEST(client_test)
 	assert(context);
 	context->compositor = compositor;
 	context->done = 0;
-	context->client = test_client_launch(compositor);
+	context->client = test_client_launch(compositor, "test-client");
 	context->client->terminate = 1;
 
 	context->compositor_destroy_listener.notify = compositor_destroy;

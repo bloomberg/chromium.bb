@@ -36,7 +36,7 @@ struct test_client {
 	void *data;
 };
 
-struct test_client *test_client_launch(struct weston_compositor *compositor);
+struct test_client *test_client_launch(struct weston_compositor *compositor, const char *file_name);
 void test_client_send(struct test_client *client, const char *fmt, ...);
 
 #endif
