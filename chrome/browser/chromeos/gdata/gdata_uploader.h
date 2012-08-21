@@ -23,7 +23,7 @@ class DownloadItem;
 
 namespace gdata {
 
-class DocumentsServiceInterface;
+class DriveServiceInterface;
 
 class GDataUploaderInterface {
  public:
@@ -59,7 +59,7 @@ class GDataUploaderInterface {
 
 class GDataUploader : public GDataUploaderInterface {
  public:
-  explicit GDataUploader(DocumentsServiceInterface* documents_service);
+  explicit GDataUploader(DriveServiceInterface* drive_service);
   virtual ~GDataUploader();
 
   // GDataUploaderInterface overrides.
@@ -87,7 +87,7 @@ class GDataUploader : public GDataUploaderInterface {
   // open operation is passed as |result|.
   void OpenCompletionCallback(int upload_id, int result);
 
-  // DocumentsService callback for InitiateUpload.
+  // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(int upload_id,
                                 GDataErrorCode code,
                                 const GURL& upload_location);
@@ -100,10 +100,10 @@ class GDataUploader : public GDataUploaderInterface {
       int bytes_to_read,
       int bytes_read);
 
-  // Calls DocumentsService's ResumeUpload with the current upload info.
+  // Calls DriveService's ResumeUpload with the current upload info.
   void ResumeUpload(int upload_id);
 
-  // DocumentsService callback for ResumeUpload.
+  // DriveService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(int upload_id,
                                       const ResumeUploadResponse& response,
                                       scoped_ptr<DocumentEntry> entry);
@@ -124,10 +124,10 @@ class GDataUploader : public GDataUploaderInterface {
   // ID assigned to |upload_file_info|.
   int StartUploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Pointers to DocumentsServiceInterface object owned by GDataSystemService.
+  // Pointers to DriveServiceInterface object owned by GDataSystemService.
   // The lifetime of this object is guaranteed to exceed that of the
   // GDataUploader instance.
-  DocumentsServiceInterface* documents_service_;
+  DriveServiceInterface* drive_service_;
 
   int next_upload_id_;  // id counter.
 

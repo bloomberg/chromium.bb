@@ -14,8 +14,8 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -236,12 +236,12 @@ struct GetDocumentsUiState {
 
 GDataWapiFeedLoader::GDataWapiFeedLoader(
     GDataDirectoryService* directory_service,
-    DocumentsServiceInterface* documents_service,
+    DriveServiceInterface* drive_service,
     DriveWebAppsRegistryInterface* webapps_registry,
     GDataCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : directory_service_(directory_service),
-      documents_service_(documents_service),
+      drive_service_(drive_service),
       webapps_registry_(webapps_registry),
       cache_(cache),
       blocking_task_runner_(blocking_task_runner),
@@ -273,7 +273,7 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   if (gdata::util::IsDriveV2ApiEnabled()) {
-    documents_service_->GetAccountMetadata(
+    drive_service_->GetAccountMetadata(
         base::Bind(&GDataWapiFeedLoader::OnGetAboutResource,
                    weak_ptr_factory_.GetWeakPtr(),
                    initial_origin,
@@ -282,13 +282,13 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
     // Drive v2 needs a separate application list fetch operation.
     // TODO(kochi): Application list rarely changes and do not necessarily
     // refresed as often as files.
-    documents_service_->GetApplicationInfo(
+    drive_service_->GetApplicationInfo(
         base::Bind(&GDataWapiFeedLoader::OnGetApplicationList,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  documents_service_->GetAccountMetadata(
+  drive_service_->GetAccountMetadata(
       base::Bind(&GDataWapiFeedLoader::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
                  initial_origin,
@@ -450,13 +450,13 @@ void GDataWapiFeedLoader::LoadFromServer(const LoadFeedParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // |feed_list| will contain the list of all collected feed updates that
-  // we will receive through calls of DocumentsService::GetDocuments().
+  // we will receive through calls of GDataWapiService::GetDocuments().
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
   if (gdata::util::IsDriveV2ApiEnabled()) {
-    documents_service_->GetDocuments(
+    drive_service_->GetDocuments(
         params.feed_to_load,
         params.start_changestamp,
         std::string(),  // No search query.
@@ -477,7 +477,7 @@ void GDataWapiFeedLoader::LoadFromServer(const LoadFeedParams& params) {
     return;
   }
 
-  documents_service_->GetDocuments(
+  drive_service_->GetDocuments(
       params.feed_to_load,
       params.start_changestamp,
       params.search_query,
@@ -629,7 +629,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
     // Kick off the remaining part of the feeds.
-    documents_service_->GetDocuments(
+    drive_service_->GetDocuments(
         next_feed_url,
         params->start_changestamp,
         params->search_query,
@@ -745,7 +745,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
     // Kick off the remaining part of the feeds.
-    documents_service_->GetDocuments(
+    drive_service_->GetDocuments(
         current_feed->next_link(),
         params->start_changestamp,
         std::string(),  // No search query.

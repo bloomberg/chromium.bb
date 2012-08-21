@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
@@ -25,14 +25,14 @@ class GDataOperationRunner;
 // This class provides documents feed service calls for Drive V2 API.
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
-class DriveAPIService : public DocumentsServiceInterface {
+class DriveAPIService : public DriveServiceInterface {
  public:
   // Instance is usually created by GDataSystemServiceFactory and owned by
   // GDataFileSystem.
   DriveAPIService();
   virtual ~DriveAPIService();
 
-  // DocumentsServiceInterface Overrides
+  // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual GDataOperationRegistry* operation_registry() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;

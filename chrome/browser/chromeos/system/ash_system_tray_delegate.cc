@@ -35,7 +35,7 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -242,7 +242,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       GDataSystemService* system_service =
           GDataSystemServiceFactory::FindForProfile(profile);
       if (system_service) {
-        system_service->docs_service()->operation_registry()->
+        system_service->drive_service()->operation_registry()->
             RemoveObserver(this);
       }
     }
@@ -462,7 +462,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!system_service)
       return;
 
-    system_service->docs_service()->operation_registry()->CancelForFilePath(
+    system_service->drive_service()->operation_registry()->CancelForFilePath(
         file_path);
   }
 
@@ -478,7 +478,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return;
 
     *list = GetDriveStatusList(
-        system_service->docs_service()->operation_registry()->
+        system_service->drive_service()->operation_registry()->
             GetProgressStatusList());
   }
 
@@ -743,7 +743,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       if (!system_service)
         return;
 
-      system_service->docs_service()->operation_registry()->AddObserver(this);
+      system_service->drive_service()->operation_registry()->AddObserver(this);
     }
   }
 
@@ -1139,7 +1139,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!system_service)
       return;
 
-    OnProgressUpdate(system_service->docs_service()->operation_registry()->
+    OnProgressUpdate(system_service->drive_service()->operation_registry()->
         GetProgressStatusList());
   }
 

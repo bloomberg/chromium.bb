@@ -23,7 +23,7 @@ namespace gdata {
 
 //================================ AuthOperation ===============================
 
-// Callback type for authentication related DocumentService calls.
+// Callback type for authentication related DriveServiceInterface calls.
 typedef base::Callback<void(GDataErrorCode error,
                             const std::string& token)> AuthStatusCallback;
 
@@ -55,10 +55,10 @@ class AuthOperation : public GDataOperationRegistry::Operation,
 
 //=========================== GDataOperationInterface ==========================
 
-// An interface for implementing an operation used by DocumentsService.
+// An interface for implementing an operation used by DriveServiceInterface.
 class GDataOperationInterface {
  public:
-  // Callback to DocumentsService upon for re-authentication.
+  // Callback to DriveServiceInterface upon for re-authentication.
   typedef base::Callback<void(GDataOperationInterface* operation)>
       ReAuthenticateCallback;
 
@@ -71,8 +71,8 @@ class GDataOperationInterface {
   // Invoked when the authentication failed with an error code |code|.
   virtual void OnAuthFailed(GDataErrorCode code) = 0;
 
-  // Sets the callback to DocumentsService when the operation restarts due to
-  // an authentication failure.
+  // Sets the callback to DriveServiceInterface when the operation restarts due
+  // to an authentication failure.
   virtual void SetReAuthenticateCallback(
       const ReAuthenticateCallback& callback) = 0;
 };

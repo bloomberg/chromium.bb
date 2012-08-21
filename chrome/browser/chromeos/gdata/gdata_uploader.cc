@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
@@ -31,8 +31,8 @@ const int kMaxFileOpenTries = 5;
 
 namespace gdata {
 
-GDataUploader::GDataUploader(DocumentsServiceInterface* documents_service)
-  : documents_service_(documents_service),
+GDataUploader::GDataUploader(DriveServiceInterface* drive_service)
+  : drive_service_(drive_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -240,7 +240,7 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
                  GDATA_FILE_ERROR_ABORT);
     return;
   }
-  documents_service_->InitiateUpload(
+  drive_service_->InitiateUpload(
       InitiateUploadParams(upload_file_info->upload_mode,
                            upload_file_info->title,
                            upload_file_info->content_type,
@@ -366,7 +366,7 @@ void GDataUploader::ResumeUpload(int upload_id) {
   if (!upload_file_info)
     return;
 
-  documents_service_->ResumeUpload(
+  drive_service_->ResumeUpload(
       ResumeUploadParams(upload_file_info->upload_mode,
                          upload_file_info->start_range,
                          upload_file_info->end_range,

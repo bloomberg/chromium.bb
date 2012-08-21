@@ -34,7 +34,7 @@ namespace gdata {
 namespace {
 
 // Used in test to setup system service.
-DocumentsServiceInterface* g_test_documents_service = NULL;
+DriveServiceInterface* g_test_drive_service = NULL;
 const std::string* g_test_cache_root = NULL;
 
 }  // namespace
@@ -55,19 +55,19 @@ GDataSystemService::~GDataSystemService() {
 }
 
 void GDataSystemService::Initialize(
-    DocumentsServiceInterface* documents_service,
+    DriveServiceInterface* drive_service,
     const FilePath& cache_root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  documents_service_.reset(documents_service);
+  drive_service_.reset(drive_service);
   cache_ = GDataCache::CreateGDataCacheOnUIThread(
       cache_root,
       blocking_task_runner_);
-  uploader_.reset(new GDataUploader(docs_service()));
+  uploader_.reset(new GDataUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
   file_system_.reset(new GDataFileSystem(profile_,
                                          cache(),
-                                         docs_service(),
+                                         drive_service_.get(),
                                          uploader(),
                                          webapps_registry(),
                                          blocking_task_runner_));
@@ -105,7 +105,7 @@ void GDataSystemService::Shutdown() {
   file_system_.reset();
   webapps_registry_.reset();
   uploader_.reset();
-  documents_service_.reset();
+  drive_service_.reset();
 }
 
 void GDataSystemService::ClearCacheAndRemountFileSystem(
@@ -113,7 +113,7 @@ void GDataSystemService::ClearCacheAndRemountFileSystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RemoveDriveMountPoint();
-  docs_service()->CancelAll();
+  drive_service()->CancelAll();
   cache_->ClearAllOnUIThread(
       base::Bind(&GDataSystemService::AddBackDriveMountPoint,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -191,11 +191,11 @@ GDataSystemServiceFactory::~GDataSystemServiceFactory() {
 }
 
 // static
-void GDataSystemServiceFactory::set_documents_service_for_test(
-    DocumentsServiceInterface* documents_service) {
-  if (g_test_documents_service)
-    delete g_test_documents_service;
-  g_test_documents_service = documents_service;
+void GDataSystemServiceFactory::set_drive_service_for_test(
+    DriveServiceInterface* drive_service) {
+  if (g_test_drive_service)
+    delete g_test_drive_service;
+  g_test_drive_service = drive_service;
 }
 
 // static
@@ -210,13 +210,13 @@ ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   GDataSystemService* service = new GDataSystemService(profile);
 
-  DocumentsServiceInterface* documents_service = g_test_documents_service;
-  g_test_documents_service = NULL;
-  if (!documents_service) {
+  DriveServiceInterface* drive_service = g_test_drive_service;
+  g_test_drive_service = NULL;
+  if (!drive_service) {
     if (util::IsDriveV2ApiEnabled())
-      documents_service = new DriveAPIService();
+      drive_service = new DriveAPIService();
     else
-      documents_service = new GDataWapiService();
+      drive_service = new GDataWapiService();
   }
 
   FilePath cache_root =
@@ -225,7 +225,7 @@ ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
   delete g_test_cache_root;
   g_test_cache_root = NULL;
 
-  service->Initialize(documents_service, cache_root);
+  service->Initialize(drive_service, cache_root);
   return service;
 }
 

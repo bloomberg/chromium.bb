@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
-#include "chrome/browser/chromeos/gdata/mock_documents_service.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,7 +76,7 @@ void DriveSearchCallback(
 }
 
 // Action used to set mock expectations for
-// DocumentsService::GetDocumentEntry().
+// DriveServiceInterface::GetDocumentEntry().
 ACTION_P2(MockGetDocumentEntry, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg1, status, base::Passed(value)));
@@ -205,7 +205,7 @@ class GDataFileSystemTest : public testing::Test {
         io_thread_(content::BrowserThread::IO),
         cache_(NULL),
         file_system_(NULL),
-        mock_doc_service_(NULL),
+        mock_drive_service_(NULL),
         mock_webapps_registry_(NULL),
         num_callback_invocations_(0),
         expected_error_(GDATA_FILE_OK),
@@ -226,9 +226,9 @@ class GDataFileSystemTest : public testing::Test {
 
     // Allocate and keep a pointer to the mock, and inject it into the
     // GDataFileSystem object, which will own the mock object.
-    mock_doc_service_ = new StrictMock<MockDocumentsService>;
+    mock_drive_service_ = new StrictMock<MockDriveService>;
 
-    EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
+    EXPECT_CALL(*mock_drive_service_, Initialize(profile_.get())).Times(1);
 
     // Likewise, this will be owned by GDataFileSystem.
     mock_free_disk_space_checker_ = new StrictMock<MockFreeDiskSpaceGetter>;
@@ -248,7 +248,7 @@ class GDataFileSystemTest : public testing::Test {
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
                                        cache_,
-                                       mock_doc_service_,
+                                       mock_drive_service_,
                                        mock_uploader_.get(),
                                        mock_webapps_registry_.get(),
                                        blocking_task_runner_);
@@ -266,11 +266,11 @@ class GDataFileSystemTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     ASSERT_TRUE(file_system_);
-    EXPECT_CALL(*mock_doc_service_, CancelAll()).Times(1);
+    EXPECT_CALL(*mock_drive_service_, CancelAll()).Times(1);
     delete file_system_;
     file_system_ = NULL;
-    delete mock_doc_service_;
-    mock_doc_service_ = NULL;
+    delete mock_drive_service_;
+    mock_drive_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->DestroyOnUIThread();
     // The cache destruction requires to post a task to the blocking pool.
@@ -643,7 +643,7 @@ class GDataFileSystemTest : public testing::Test {
 
   void SetExpectationsForGetDocumentEntry(scoped_ptr<base::Value>* document,
                                           const std::string& resource_id) {
-    EXPECT_CALL(*mock_doc_service_, GetDocumentEntry(resource_id, _))
+    EXPECT_CALL(*mock_drive_service_, GetDocumentEntry(resource_id, _))
         .WillOnce(MockGetDocumentEntry(gdata::HTTP_SUCCESS, document));
   }
 
@@ -845,7 +845,7 @@ class GDataFileSystemTest : public testing::Test {
   GDataCache* cache_;
   scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
   GDataFileSystem* file_system_;
-  StrictMock<MockDocumentsService>* mock_doc_service_;
+  StrictMock<MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
   StrictMock<MockFreeDiskSpaceGetter>* mock_free_disk_space_checker_;
   scoped_ptr<StrictMock<MockGDataCacheObserver> > mock_cache_observer_;
@@ -890,8 +890,8 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
       FilePath(FILE_PATH_LITERAL("drive")),
       &message_loop_);
 
-  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_drive_service_,
               GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
 
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
@@ -1228,11 +1228,11 @@ TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetDocuments) should happen.
-  mock_doc_service_->set_account_metadata(
+  mock_drive_service_->set_account_metadata(
       LoadJSONFile("account_metadata.json"));
-  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(0);
 
   // Kicks loading of cached file system and query for server update.
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File1"))));
@@ -1240,9 +1240,9 @@ TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   // Since the file system has verified that it holds the latest snapshot,
   // it should change its state to FROM_SERVER, which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
-  mock_doc_service_->set_account_metadata(
+  mock_drive_service_->set_account_metadata(
       LoadJSONFile("account_metadata.json"));
-  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   file_system_->CheckForUpdates();
@@ -1313,13 +1313,13 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   // We'll copy a hosted document using CopyDocument.
   // ".gdoc" suffix should be stripped when copying.
   scoped_ptr<base::Value> document(LoadJSONFile("uploaded_document.json"));
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               CopyDocument(kResourceId,
                            FILE_PATH_LITERAL("Document 1"),
                            _))
       .WillOnce(MockCopyDocument(gdata::HTTP_SUCCESS, &document));
   // We'll then add the hosted document to the destination directory.
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               AddResourceToDirectory(_, _, _)).Times(1);
 
   FileOperationCallback callback =
@@ -1361,15 +1361,15 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
       .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
 
   const std::string remote_src_file_data = "Test file data";
-  mock_doc_service_->set_file_data(new std::string(remote_src_file_data));
+  mock_drive_service_->set_file_data(new std::string(remote_src_file_data));
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is obtained with the mock DocumentsService.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is obtained with the mock DriveService.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(remote_src_file_path,
                            cache_file,
                            GURL("https://file_content_url_changed/"),
@@ -1520,7 +1520,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
   std::string src_file_resource_id =
       src_entry_proto->resource_id();
 
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               RenameResource(GURL(src_entry_proto->edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
 
@@ -1562,10 +1562,10 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
   EXPECT_FALSE(dest_parent_proto->content_url().empty());
 
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               RenameResource(GURL(src_entry_proto->edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               AddResourceToDirectory(
                   GURL(dest_parent_proto->content_url()),
                   GURL(src_entry_proto->edit_url()), _));
@@ -1612,10 +1612,10 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
   EXPECT_FALSE(src_parent_proto->content_url().empty());
 
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               RenameResource(GURL(src_entry_proto->edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               RemoveResourceFromDirectory(
                   GURL(src_parent_proto->content_url()),
                   GURL(src_entry_proto->edit_url()),
@@ -1679,15 +1679,15 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
 
   EXPECT_FALSE(EntryExists(interim_file_path));
 
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               RenameResource(GURL(src_entry_proto->edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               RemoveResourceFromDirectory(
                   GURL(src_parent_proto->content_url()),
                   GURL(src_entry_proto->edit_url()),
                   src_file_resource_id, _));
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               AddResourceToDirectory(
                   GURL(dest_parent_proto->content_url()),
                   GURL(src_entry_proto->edit_url()),
@@ -1940,7 +1940,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
 // Create a directory through the document service
 TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               CreateDirectory(_, "Sample Directory Title", _)).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
@@ -1982,8 +1982,8 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is obtained with the mock DocumentsService.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is obtained with the mock DriveService.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
@@ -2022,9 +2022,8 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is not obtained with the mock DocumentsService, because of no
-  // space.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is not obtained with the mock DriveService, because of no space.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
@@ -2077,9 +2076,9 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is obtained with the mock DocumentsService, because of we freed
-  // up the space.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is obtained with the mock DriveService, because of we freed up the
+  // space.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
@@ -2129,8 +2128,8 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is obtained with the mock DocumentsService.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is obtained with the mock DriveService.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
@@ -2170,10 +2169,10 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
                    GDataCache::CACHE_TYPE_TMP);
 
   // Make sure we don't fetch metadata for downloading file.
-  EXPECT_CALL(*mock_doc_service_, GetDocumentEntry(_, _)).Times(0);
+  EXPECT_CALL(*mock_drive_service_, GetDocumentEntry(_, _)).Times(0);
 
   // Make sure we don't call downloads at all.
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
@@ -2234,9 +2233,9 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is obtained with the mock DocumentsService, because it's not
-  // stored in the cache.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is obtained with the mock DriveService, because it's not stored in
+  // the cache.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
@@ -2279,7 +2278,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
 
   // The file is obtained from the cache.
   // Make sure we don't call downloads at all.
-  EXPECT_CALL(*mock_doc_service_, DownloadFile(_, _, _, _, _))
+  EXPECT_CALL(*mock_drive_service_, DownloadFile(_, _, _, _, _))
       .Times(0);
 
   file_system_->GetFileByResourceId(entry_proto->resource_id(),
@@ -2458,9 +2457,9 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
 TEST_F(GDataFileSystemTest, ContentSearch) {
   LoadRootFeedDocument("root_feed.json");
 
-  mock_doc_service_->set_search_result("search_result_feed.json");
+  mock_drive_service_->set_search_result("search_result_feed.json");
 
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
   const SearchResultPair kExpectedResults[] = {
@@ -2481,10 +2480,10 @@ TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
   // Search result returning two entries "Directory 1/" and
   // "Directory 1/SubDirectory Newly Added File.txt". The latter is not
   // contained in the root feed.
-  mock_doc_service_->set_search_result(
+  mock_drive_service_->set_search_result(
       "search_result_with_new_entry_feed.json");
 
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
   // As the result of the first Search(), only entries in the current file
@@ -2496,8 +2495,8 @@ TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
   // At the same time, unknown entry should trigger delta feed request.
   // This will cause notification to observers (e.g., File Browser) so that
   // they can request search again.
-  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "", _, _))
       .Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
@@ -2511,9 +2510,9 @@ TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
 TEST_F(GDataFileSystemTest, ContentSearchEmptyResult) {
   LoadRootFeedDocument("root_feed.json");
 
-  mock_doc_service_->set_search_result("empty_feed.json");
+  mock_drive_service_->set_search_result("empty_feed.json");
 
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
+  EXPECT_CALL(*mock_drive_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
   const SearchResultPair* expected_results = NULL;
@@ -2530,7 +2529,7 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
       base::Bind(&CallbackHelper::GetAvailableSpaceCallback,
                  callback_helper_.get());
 
-  EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_));
+  EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_));
 
   file_system_->GetAvailableSpace(callback);
   test_util::RunBlockingPoolTask();
@@ -2542,7 +2541,7 @@ TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
   LoadRootFeedDocument("root_feed.json");
 
   // We'll fetch documents in the root directory with its resource ID.
-  EXPECT_CALL(*mock_doc_service_,
+  EXPECT_CALL(*mock_drive_service_,
               GetDocuments(Eq(GURL()), _, _, kGDataRootDirectoryResourceId, _))
       .Times(1);
   // We'll notify the directory change to the observer.
@@ -2582,15 +2581,15 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
       .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
 
   const std::string kExpectedFileData = "test file data";
-  mock_doc_service_->set_file_data(new std::string(kExpectedFileData));
+  mock_drive_service_->set_file_data(new std::string(kExpectedFileData));
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
   scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
-  // The file is obtained with the mock DocumentsService.
-  EXPECT_CALL(*mock_doc_service_,
+  // The file is obtained with the mock DriveService.
+  EXPECT_CALL(*mock_drive_service_,
               DownloadFile(kFileInRoot,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),

@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
@@ -222,16 +222,15 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   if (!system_service)
     return;
 
-  gdata::DocumentsServiceInterface* documents_service =
-      system_service->docs_service();
-  DCHECK(documents_service);
+  gdata::DriveServiceInterface* drive_service = system_service->drive_service();
+  DCHECK(drive_service);
 
   // Update the auth status section.
   base::DictionaryValue auth_status;
   auth_status.SetBoolean("has-refresh-token",
-                         documents_service->HasRefreshToken());
+                         drive_service->HasRefreshToken());
   auth_status.SetBoolean("has-access-token",
-                         documents_service->HasAccessToken());
+                         drive_service->HasAccessToken());
   web_ui()->CallJavascriptFunction("updateAuthStatus", auth_status);
 
   // Start updating the GCache contents section.
@@ -277,7 +276,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 
   // Start updating the file system tree section, if we have access token.
   gdata::GDataSystemService* system_service = GetSystemService();
-  if (!system_service->docs_service()->HasAccessToken())
+  if (!system_service->drive_service()->HasAccessToken())
     return;
 
   // Start rendering the file system tree as text.

@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
@@ -26,7 +26,7 @@ class GDataOperationRunner;
 // DocumentsList API).
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
-class GDataWapiService : public DocumentsServiceInterface {
+class GDataWapiService : public DriveServiceInterface {
  public:
   // Instance is usually created by GDataSystemServiceFactory and owned by
   // GDataFileSystem.
@@ -35,7 +35,7 @@ class GDataWapiService : public DocumentsServiceInterface {
 
   GDataAuthService* auth_service_for_testing();
 
-  // DocumentsServiceInterface Overrides
+  // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual GDataOperationRegistry* operation_registry() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;

@@ -20,7 +20,7 @@ namespace gdata {
 
 class DriveWebAppsRegistryInterface;
 class DocumentFeed;
-class DocumentsServiceInterface;
+class DriveServiceInterface;
 class GDataCache;
 struct GetDocumentsUiState;
 
@@ -95,7 +95,7 @@ class GDataWapiFeedLoader {
 
   GDataWapiFeedLoader(
       GDataDirectoryService* directory_service,
-      DocumentsServiceInterface* documents_service,
+      DriveServiceInterface* drive_service,
       DriveWebAppsRegistryInterface* webapps_registry,
       GDataCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_);
@@ -189,8 +189,7 @@ class GDataWapiFeedLoader {
       GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
 
-  // Callback for handling response from
-  // |GDataDocumentsService::GetApplicationList|.
+  // Callback for handling response from |DriveAPIService::GetApplicationInfo|.
   // If the application list is successfully parsed, passes the list to
   // Drive webapps registry.
   void OnGetApplicationList(GDataErrorCode status,
@@ -204,7 +203,7 @@ class GDataWapiFeedLoader {
   void OnFeedFromServerLoaded(GetDocumentsParams* params,
                               GDataFileError error);
 
-  // Callback for handling response from |GDataDocumentsService::GetDocuments|.
+  // Callback for handling response from |GDataWapiService::GetDocuments|.
   // Invokes |callback| when done.
   // |callback| must not be null.
   void OnGetDocuments(
@@ -215,7 +214,7 @@ class GDataWapiFeedLoader {
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
 
-  // Callback for handling response from |GDataDocumentsService::GetChanglist|.
+  // Callback for handling response from |DriveAPIService::GetChanglist|.
   // Invokes |callback| when done.
   // |callback| must not be null.
   void OnGetChangelist(ContentOrigin initial_origin,
@@ -233,7 +232,7 @@ class GDataWapiFeedLoader {
       base::WeakPtr<GetDocumentsUiState> ui_state);
 
   GDataDirectoryService* directory_service_;  // Not owned.
-  DocumentsServiceInterface* documents_service_;  // Not owned.
+  DriveServiceInterface* drive_service_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   GDataCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

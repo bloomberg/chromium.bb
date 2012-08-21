@@ -19,7 +19,7 @@ class FilePath;
 
 namespace gdata {
 
-class DocumentsServiceInterface;
+class DriveServiceInterface;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
 class GDataCache;
@@ -37,7 +37,7 @@ class GDataUploader;
 // created per-profile.
 class GDataSystemService : public ProfileKeyedService  {
  public:
-  DocumentsServiceInterface* docs_service() { return documents_service_.get(); }
+  DriveServiceInterface* drive_service() { return drive_service_.get(); }
   GDataCache* cache() { return cache_; }
   GDataFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
@@ -59,7 +59,7 @@ class GDataSystemService : public ProfileKeyedService  {
 
   // Initializes the object. This function should be called before any
   // other functions.
-  void Initialize(DocumentsServiceInterface* documents_service,
+  void Initialize(DriveServiceInterface* drive_service,
                   const FilePath& cache_root);
 
   // Registers remote file system proxy for drive mount point.
@@ -77,7 +77,7 @@ class GDataSystemService : public ProfileKeyedService  {
   Profile* profile_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   GDataCache* cache_;
-  scoped_ptr<DocumentsServiceInterface> documents_service_;
+  scoped_ptr<DriveServiceInterface> drive_service_;
   scoped_ptr<GDataUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<GDataFileSystemInterface> file_system_;
@@ -104,12 +104,11 @@ class GDataSystemServiceFactory : public ProfileKeyedServiceFactory {
   // Returns the GDataSystemServiceFactory instance.
   static GDataSystemServiceFactory* GetInstance();
 
-  // Sets documents service that should be used to initialize file system in
-  // test. Should be called before the service is created.
-  // Please, make sure |documents_service| gets deleted if no system service is
+  // Sets drive service that should be used to initialize file system in test.
+  // Should be called before the service is created.
+  // Please, make sure |drive_service| gets deleted if no system service is
   // created (e.g. by calling this method with NULL).
-  static void set_documents_service_for_test(
-      DocumentsServiceInterface* documents_service);
+  static void set_drive_service_for_test(DriveServiceInterface* drive_service);
 
   // Sets root path for the cache used in test. Should be called before the
   // service is created.

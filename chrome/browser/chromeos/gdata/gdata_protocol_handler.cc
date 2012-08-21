@@ -16,7 +16,7 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
@@ -122,7 +122,7 @@ void GetFileSystemOnUIThread(GDataFileSystemInterface** file_system) {
 void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
   GDataSystemService* system_service = GetSystemService();
   if (system_service)
-    system_service->docs_service()->operation_registry()->CancelForFilePath(
+    system_service->drive_service()->operation_registry()->CancelForFilePath(
         gdata_file_path);
 }
 

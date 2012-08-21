@@ -33,7 +33,7 @@ enum UploadMode {
 };
 
 // Structure containing current upload information of file, passed between
-// DocumentsService methods and callbacks.
+// DriveServiceInterface methods and callbacks.
 struct UploadFileInfo {
   UploadFileInfo();
   ~UploadFileInfo();

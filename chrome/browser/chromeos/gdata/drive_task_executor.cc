@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/profiles/profile.h"
@@ -99,13 +99,13 @@ void DriveTaskExecutor::OnFileEntryFetched(
     return;
   }
 
-  DocumentsServiceInterface* docs_service =
-      system_service->docs_service();
+  DriveServiceInterface* drive_service =
+      system_service->drive_service();
 
-  // Send off a request for the document service to authorize the apps for the
+  // Send off a request for the drive service to authorize the apps for the
   // current document entry for this document so we can get the
   // open-with-<app_id> urls from the document entry.
-  docs_service->AuthorizeApp(
+  drive_service->AuthorizeApp(
       GURL(entry_proto->edit_url()),
       app_id_,
       base::Bind(&DriveTaskExecutor::OnAppAuthorized,

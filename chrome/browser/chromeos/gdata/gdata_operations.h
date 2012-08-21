@@ -318,7 +318,7 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 
 //=========================== InitiateUploadOperation ==========================
 
-// Struct for passing params needed for DocumentsService::InitiateUpload()
+// Struct for passing params needed for DriveServiceInterface::InitiateUpload()
 // calls.
 //
 // When uploading a new file (UPLOAD_NEW_FILE):
@@ -393,7 +393,8 @@ struct ResumeUploadResponse {
   FilePath virtual_path;
 };
 
-// Struct for passing params needed for DocumentsService::ResumeUpload() calls.
+// Struct for passing params needed for DriveServiceInterface::ResumeUpload()
+// calls.
 struct ResumeUploadParams {
   ResumeUploadParams(UploadMode upload_mode,
                      int64 start_range,

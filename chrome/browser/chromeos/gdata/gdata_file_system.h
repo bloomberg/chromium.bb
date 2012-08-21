@@ -30,7 +30,7 @@ class SequencedTaskRunner;
 
 namespace gdata {
 
-class DocumentsServiceInterface;
+class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
 class GDataUploaderInterface;
 class GDataWapiFeedLoader;
@@ -43,7 +43,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
  public:
   GDataFileSystem(Profile* profile,
                   GDataCache* cache,
-                  DocumentsServiceInterface* documents_service,
+                  DriveServiceInterface* drive_service,
                   GDataUploaderInterface* uploader,
                   DriveWebAppsRegistryInterface* webapps_registry,
                   base::SequencedTaskRunner* blocking_task_runner);
@@ -595,7 +595,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           const std::string& md5,
                           const FilePath& cache_file_path);
 
-  // Callback for |documents_service_->GetDocumentEntry|.
+  // Callback for |drive_service_->GetDocumentEntry|.
   // It is called before file download. If GetDocumentEntry was successful,
   // file download procedure is started for the file. The file is downloaded
   // from the content url extracted from the fetched metadata to
@@ -823,7 +823,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   GDataUploaderInterface* uploader_;
 
   // The document service owned by GDataSystemService.
-  DocumentsServiceInterface* documents_service_;
+  DriveServiceInterface* drive_service_;
 
   // The webapps registry owned by GDataSystemService.
   DriveWebAppsRegistryInterface* webapps_registry_;

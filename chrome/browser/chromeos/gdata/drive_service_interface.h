@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DOCUMENTS_SERVICE_INTERFACE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_DOCUMENTS_SERVICE_INTERFACE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SERVICE_INTERFACE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SERVICE_INTERFACE_H_
 
 #include "chrome/browser/chromeos/gdata/operations_base.h"
 // TODO(kochi): Further split gdata_operations.h and include only necessary
 // headers. http://crbug.com/141469
+// DownloadActionCallback/InitiateUploadParams/ResulmeUploadParams
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 
 class Profile;
@@ -46,10 +47,9 @@ enum DocumentExportFormat {
 //
 // TODO(zel,benchan): Make the terminology/naming convention (e.g. file vs
 // document vs resource, directory vs collection) more consistent and precise.
-// TODO(kochi): Rename this to DriveServiceInterface. http://crbug.com/143661.
-class DocumentsServiceInterface {
+class DriveServiceInterface {
  public:
-  virtual ~DocumentsServiceInterface() {}
+  virtual ~DriveServiceInterface() {}
 
   // Common service:
 
@@ -198,4 +198,4 @@ class DocumentsServiceInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DOCUMENTS_SERVICE_INTERFACE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SERVICE_INTERFACE_H_

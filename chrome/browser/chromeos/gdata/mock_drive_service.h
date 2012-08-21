@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains mocks for classes in gdata_documents_service.h
+// This file contains mocks for classes in drive_service_interface.h
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DOCUMENTS_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DOCUMENTS_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_SERVICE_H_
 
 #include <string>
 
 #include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FilePath;
 
 namespace gdata {
 
-class MockDocumentsService : public DocumentsServiceInterface {
+class MockDriveService : public DriveServiceInterface {
  public:
-  // DocumentsService is usually owned and created by GDataFileSystem.
-  MockDocumentsService();
-  virtual ~MockDocumentsService();
+  // DriveService is usually owned and created by GDataFileSystem.
+  MockDriveService();
+  virtual ~MockDriveService();
 
-  // DocumentServiceInterface overrides.
+  // DriveServiceInterface overrides.
   MOCK_METHOD1(Initialize, void(Profile* profile));
   MOCK_CONST_METHOD0(operation_registry, GDataOperationRegistry*());
   MOCK_METHOD0(CancelAll, void(void));
@@ -192,4 +192,4 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DOCUMENTS_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_SERVICE_H_

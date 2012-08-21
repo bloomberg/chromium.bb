@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
@@ -114,7 +114,7 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
       GDataSystemServiceFactory::FindForProfile(profile_);
   if (system_service) {
     system_service->file_system()->RemoveObserver(this);
-    system_service->docs_service()->operation_registry()->RemoveObserver(this);
+    system_service->drive_service()->operation_registry()->RemoveObserver(this);
   }
 
   chromeos::NetworkLibrary* network_library =
@@ -144,7 +144,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     NOTREACHED();
     return;
   }
-  system_service->docs_service()->operation_registry()->AddObserver(this);
+  system_service->drive_service()->operation_registry()->AddObserver(this);
   system_service->file_system()->AddObserver(this);
 
   chromeos::NetworkLibrary* network_library =
@@ -233,7 +233,7 @@ void FileBrowserEventRouter::MountDrive(
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
   if (system_service) {
-    system_service->docs_service()->Authenticate(
+    system_service->drive_service()->Authenticate(
         base::Bind(&FileBrowserEventRouter::OnAuthenticated,
                    this,
                    callback));

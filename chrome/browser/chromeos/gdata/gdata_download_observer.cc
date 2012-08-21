@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -151,7 +151,7 @@ void OnEntryFound(Profile* profile,
   }
 }
 
-// Callback for DocumentsServiceInterface::Authenticate.
+// Callback for DriveServiceInterface::Authenticate.
 void OnAuthenticate(Profile* profile,
                     const FilePath& gdata_path,
                     const base::Closure& substitute_callback,
@@ -216,11 +216,11 @@ void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
   if (util::IsUnderGDataMountPoint(gdata_path)) {
     // Can't access drive if we're not authenticated.
     // We set off a chain of callbacks as follows:
-    // DocumentsServiceInterface::Authenticate
+    // DriveServiceInterface::Authenticate
     //   OnAuthenticate calls GDataFileSystem::GetEntryInfoByPath
     //     OnEntryFound calls GDataFileSystem::CreateDirectory (if necessary)
     //       OnCreateDirectory calls SubstituteGDataDownloadPathInternal
-    GetSystemService(profile)->docs_service()->Authenticate(
+    GetSystemService(profile)->drive_service()->Authenticate(
         base::Bind(&OnAuthenticate, profile, gdata_path,
                    base::Bind(&SubstituteGDataDownloadPathInternal,
                               profile, callback)));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/mock_documents_service.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_service.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -41,32 +41,32 @@ static Value* LoadJSONFile(const std::string& filename) {
 
 }  // namespace
 
-MockDocumentsService::MockDocumentsService() {
+MockDriveService::MockDriveService() {
   ON_CALL(*this, Authenticate(_))
-      .WillByDefault(Invoke(this, &MockDocumentsService::AuthenticateStub));
+      .WillByDefault(Invoke(this, &MockDriveService::AuthenticateStub));
   ON_CALL(*this, GetDocuments(_, _, _, _, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::GetDocumentsStub));
+      .WillByDefault(Invoke(this, &MockDriveService::GetDocumentsStub));
   ON_CALL(*this, GetAccountMetadata(_))
       .WillByDefault(Invoke(this,
-                            &MockDocumentsService::GetAccountMetadataStub));
+                            &MockDriveService::GetAccountMetadataStub));
   ON_CALL(*this, DeleteDocument(_, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::DeleteDocumentStub));
+      .WillByDefault(Invoke(this, &MockDriveService::DeleteDocumentStub));
   ON_CALL(*this, DownloadDocument(_, _, _, _, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::DownloadDocumentStub));
+      .WillByDefault(Invoke(this, &MockDriveService::DownloadDocumentStub));
   ON_CALL(*this, CopyDocument(_, _, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::CopyDocumentStub));
+      .WillByDefault(Invoke(this, &MockDriveService::CopyDocumentStub));
   ON_CALL(*this, RenameResource(_, _, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::RenameResourceStub));
+      .WillByDefault(Invoke(this, &MockDriveService::RenameResourceStub));
   ON_CALL(*this, AddResourceToDirectory(_, _, _))
       .WillByDefault(
-          Invoke(this, &MockDocumentsService::AddResourceToDirectoryStub));
+          Invoke(this, &MockDriveService::AddResourceToDirectoryStub));
   ON_CALL(*this, RemoveResourceFromDirectory(_, _, _, _))
       .WillByDefault(
-          Invoke(this, &MockDocumentsService::RemoveResourceFromDirectoryStub));
+          Invoke(this, &MockDriveService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, CreateDirectory(_, _, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::CreateDirectoryStub));
+      .WillByDefault(Invoke(this, &MockDriveService::CreateDirectoryStub));
   ON_CALL(*this, DownloadFile(_, _, _, _, _))
-      .WillByDefault(Invoke(this, &MockDocumentsService::DownloadFileStub));
+      .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
   account_metadata_.reset(LoadJSONFile("account_metadata.json"));
@@ -74,21 +74,21 @@ MockDocumentsService::MockDocumentsService() {
   directory_data_.reset(LoadJSONFile("new_folder_entry.json"));
 }
 
-MockDocumentsService::~MockDocumentsService() {}
+MockDriveService::~MockDriveService() {}
 
-void MockDocumentsService::set_search_result(
+void MockDriveService::set_search_result(
     const std::string& search_result_feed) {
   search_result_.reset(LoadJSONFile(search_result_feed));
 }
 
-void MockDocumentsService::AuthenticateStub(
+void MockDriveService::AuthenticateStub(
     const AuthStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS, "my_auth_token"));
 }
 
-void MockDocumentsService::GetDocumentsStub(
+void MockDriveService::GetDocumentsStub(
     const GURL& feed_url,
     int64 start_changestamp,
     const std::string& search_string,
@@ -105,14 +105,14 @@ void MockDocumentsService::GetDocumentsStub(
   }
 }
 
-void MockDocumentsService::GetAccountMetadataStub(
+void MockDriveService::GetAccountMetadataStub(
     const GetDataCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS, base::Passed(&account_metadata_)));
 }
 
-void MockDocumentsService::DeleteDocumentStub(
+void MockDriveService::DeleteDocumentStub(
     const GURL& document_url,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
@@ -120,7 +120,7 @@ void MockDocumentsService::DeleteDocumentStub(
       base::Bind(callback, HTTP_SUCCESS, document_url));
 }
 
-void MockDocumentsService::DownloadDocumentStub(
+void MockDriveService::DownloadDocumentStub(
     const FilePath& virtual_path,
     const FilePath& local_tmp_path,
     const GURL& content_url,
@@ -131,7 +131,7 @@ void MockDocumentsService::DownloadDocumentStub(
       base::Bind(callback, HTTP_SUCCESS, content_url, local_tmp_path));
 }
 
-void MockDocumentsService::CopyDocumentStub(
+void MockDriveService::CopyDocumentStub(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
     const GetDataCallback& callback) {
@@ -140,7 +140,7 @@ void MockDocumentsService::CopyDocumentStub(
       base::Bind(callback, HTTP_SUCCESS, base::Passed(&document_data_)));
 }
 
-void MockDocumentsService::RenameResourceStub(
+void MockDriveService::RenameResourceStub(
     const GURL& resource_url,
     const FilePath::StringType& new_name,
     const EntryActionCallback& callback) {
@@ -149,7 +149,7 @@ void MockDocumentsService::RenameResourceStub(
       base::Bind(callback, HTTP_SUCCESS, resource_url));
 }
 
-void MockDocumentsService::AddResourceToDirectoryStub(
+void MockDriveService::AddResourceToDirectoryStub(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const EntryActionCallback& callback) {
@@ -158,7 +158,7 @@ void MockDocumentsService::AddResourceToDirectoryStub(
       base::Bind(callback, HTTP_SUCCESS, resource_url));
 }
 
-void MockDocumentsService::RemoveResourceFromDirectoryStub(
+void MockDriveService::RemoveResourceFromDirectoryStub(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const std::string& resource_id,
@@ -168,7 +168,7 @@ void MockDocumentsService::RemoveResourceFromDirectoryStub(
       base::Bind(callback, HTTP_SUCCESS, resource_url));
 }
 
-void MockDocumentsService::CreateDirectoryStub(
+void MockDriveService::CreateDirectoryStub(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const GetDataCallback& callback) {
@@ -177,7 +177,7 @@ void MockDocumentsService::CreateDirectoryStub(
       base::Bind(callback, HTTP_SUCCESS, base::Passed(&directory_data_)));
 }
 
-void MockDocumentsService::DownloadFileStub(
+void MockDriveService::DownloadFileStub(
     const FilePath& virtual_path,
     const FilePath& local_tmp_path,
     const GURL& content_url,

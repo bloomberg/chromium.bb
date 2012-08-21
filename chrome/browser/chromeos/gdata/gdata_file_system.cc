@@ -16,8 +16,8 @@
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/documents_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
@@ -414,14 +414,14 @@ struct GDataFileSystem::AddUploadedFileParams {
 GDataFileSystem::GDataFileSystem(
     Profile* profile,
     GDataCache* cache,
-    DocumentsServiceInterface* documents_service,
+    DriveServiceInterface* drive_service,
     GDataUploaderInterface* uploader,
     DriveWebAppsRegistryInterface* webapps_registry,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
       cache_(cache),
       uploader_(uploader),
-      documents_service_(documents_service),
+      drive_service_(drive_service),
       webapps_registry_(webapps_registry),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
@@ -435,11 +435,11 @@ GDataFileSystem::GDataFileSystem(
 void GDataFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  documents_service_->Initialize(profile_);
+  drive_service_->Initialize(profile_);
 
   directory_service_.reset(new GDataDirectoryService);
   feed_loader_.reset(new GDataWapiFeedLoader(directory_service_.get(),
-                                             documents_service_,
+                                             drive_service_,
                                              webapps_registry_,
                                              cache_,
                                              blocking_task_runner_));
@@ -481,7 +481,7 @@ GDataFileSystem::~GDataFileSystem() {
 
   // Cancel all the in-flight operations.
   // This asynchronously cancels the URL fetch operations.
-  documents_service_->CancelAll();
+  drive_service_->CancelAll();
 }
 
 void GDataFileSystem::AddObserver(
@@ -947,7 +947,7 @@ void GDataFileSystem::CopyDocumentToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  documents_service_->CopyDocument(resource_id, new_name,
+  drive_service_->CopyDocument(resource_id, new_name,
       base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
                  ui_weak_ptr_,
                  dir_path,
@@ -1005,7 +1005,7 @@ void GDataFileSystem::RenameAfterGetEntryInfo(
     }
   }
 
-  documents_service_->RenameResource(
+  drive_service_->RenameResource(
       GURL(entry_proto->edit_url()),
       file_name,
       base::Bind(&GDataFileSystem::RenameEntryLocally,
@@ -1153,7 +1153,7 @@ void GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
 
   const FilePath& file_path = result->first.path;
   const FilePath& dir_path = result->second.path;
-  documents_service_->AddResourceToDirectory(
+  drive_service_->AddResourceToDirectory(
       GURL(dir_proto->content_url()),
       GURL(src_proto->edit_url()),
       base::Bind(&GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted,
@@ -1211,7 +1211,7 @@ void GDataFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
     return;
   }
 
-  documents_service_->RemoveResourceFromDirectory(
+  drive_service_->RemoveResourceFromDirectory(
       GURL(dir_proto->content_url()),
       GURL(entry_proto->edit_url()),
       entry_proto->resource_id(),
@@ -1268,7 +1268,7 @@ void GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
   }
 
   DCHECK(entry_proto.get());
-  documents_service_->DeleteDocument(
+  drive_service_->DeleteDocument(
       GURL(entry_proto->edit_url()),
       base::Bind(&GDataFileSystem::OnRemovedDocument,
                  ui_weak_ptr_,
@@ -1345,7 +1345,7 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
     return;
   }
 
-  documents_service_->CreateDirectory(
+  drive_service_->CreateDirectory(
       last_parent_dir_url,
       first_missing_path.BaseName().value(),
       base::Bind(&GDataFileSystem::OnCreateDirectoryCompleted,
@@ -1640,7 +1640,7 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
   // - if we don't have enough space, try to free up the disk space
   // - if we still don't have enough space, return "no space" error
   // - if we have enough space, start downloading the file from the server
-  documents_service_->GetDocumentEntry(
+  drive_service_->GetDocumentEntry(
       resource_id,
       base::Bind(&GDataFileSystem::OnGetDocumentEntry,
                  ui_weak_ptr_,
@@ -1727,7 +1727,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
   }
 
   // We have enough disk space. Start downloading the file.
-  documents_service_->DownloadFile(
+  drive_service_->DownloadFile(
       params.virtual_file_path,
       params.local_tmp_path,
       content_url,
@@ -2106,7 +2106,7 @@ void GDataFileSystem::GetAvailableSpaceOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  documents_service_->GetAccountMetadata(
+  drive_service_->GetAccountMetadata(
       gdata::util::IsDriveV2ApiEnabled() ?
       base::Bind(&GDataFileSystem::OnGetAboutResource,
                  ui_weak_ptr_,
