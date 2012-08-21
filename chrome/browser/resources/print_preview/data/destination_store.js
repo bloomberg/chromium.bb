@@ -117,7 +117,7 @@ cr.define('print_preview', function() {
    * @const
    * @private
    */
-  DestinationStore.AUTO_SELECT_TIMEOUT_ = 2000;
+  DestinationStore.AUTO_SELECT_TIMEOUT_ = 15000;
 
   /**
    * Creates a local PDF print destination.
