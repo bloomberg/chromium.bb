@@ -111,7 +111,13 @@ class HandlebarDictGenerator(object):
     event_dict = {
       'name': self._StripPrefix(event.name),
       'description': self._FormatDescription(event.description),
-      'parameters': map(self._GenerateProperty, event.params)
+      'parameters': map(self._GenerateProperty, event.params),
+      'conditions': [GetLinkToRefType(self._namespace.name, c)
+                     for c in event.conditions],
+      'actions': [GetLinkToRefType(self._namespace.name, a)
+                     for a in event.actions],
+      'filters': map(self._GenerateProperty, event.filters),
+      'supportsRules': event.supports_rules
     }
     if len(event_dict['parameters']) > 0:
       event_dict['parameters'][-1]['last'] = True

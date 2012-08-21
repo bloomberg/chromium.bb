@@ -101,8 +101,8 @@
       "description": "Gets stuff."
     }
   ],
-  "name": "tester",
   "properties": [],
+  "name": "tester",
   "types": [
     {
       "functions": [],
@@ -157,6 +157,10 @@
           "description": null
         }
       ],
+      "supportsRules": false,
+      "actions": [],
+      "filters": [],
+      "conditions": [],
       "description": "A cool event."
     }
   ]

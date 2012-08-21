@@ -43,6 +43,7 @@ p.warning {
 a, a:link {
   text-decoration: none;
   color: black;
+  font-weight: 600;
 }
 
 a:visited {

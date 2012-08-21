@@ -129,14 +129,21 @@ class Function(object):
     self.optional = json.get('optional', False)
     self.parent = parent
     self.nocompile = json.get('nocompile')
+    options = json.get('options', {})
+    self.conditions = options.get('conditions', [])
+    self.actions = options.get('actions', [])
+    self.supports_listeners = options.get('supportsListeners', True)
+    self.supports_rules = options.get('supportsRules', False)
+    def GeneratePropertyFromParam(p):
+      return Property(self,
+                      p['name'], p,
+                      from_json=from_json,
+                      from_client=from_client)
 
+    self.filters = [GeneratePropertyFromParam(filter)
+                    for filter in json.get('filters', [])]
     callback_param = None
     for param in json.get('parameters', []):
-      def GeneratePropertyFromParam(p):
-        return Property(self,
-                        p['name'], p,
-                        from_json=from_json,
-                        from_client=from_client)
 
       if param.get('type') == 'function':
         if callback_param:

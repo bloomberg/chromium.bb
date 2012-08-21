@@ -6,11 +6,32 @@
   </div>
   <div class="description">
     <p>{{{description}}}</p>
+    {{?supportsRules}}
+      <p>See <a href="events.html#method-Event-addRules"><code>chrome.events.Event.addRules()</code></a>.</p>
+    {{/supportsRules}}
+    {{?conditions}}
+      <h4>Supported conditions</h4>
+      <dl>
+        {{#conditions}}<div><dt>{{+partials.ref_link}}</dt></div>{{/}}
+      </dl>
+    {{/conditions}}
+    {{?actions}}
+      <h4>Supported actions</h4>
+      <dl>
+        {{#actions}}<div><dt>{{+partials.ref_link}}</dt></div>{{/}}
+      </dl>
+    {{/actions}}
     {{?parameters}}
-    <h4>Listener Parameters</h4>
-    <dl>
-      {{#parameters}}{{+partials.parameter_full}}{{/}}
-    </dl>
+      <h4>Listener Parameters</h4>
+      <dl>
+        {{#parameters}}{{+partials.parameter_full}}{{/}}
+      </dl>
     {{/parameters}}
+    {{?filters}}
+      <h4>Filters</h4>
+      <dl>
+        {{#filters}}{{+partials.parameter_full}}{{/}}
+      </dl>
+    {{/filters}}
   </div>
 </div>
