@@ -34,6 +34,7 @@ SearchTabHelper::SearchTabHelper(
     bool is_search_enabled)
     : WebContentsObserver(contents->web_contents()),
       is_search_enabled_(is_search_enabled),
+      is_initial_navigation_commit_(true),
       model_(contents) {
   if (!is_search_enabled)
     return;
@@ -69,11 +70,8 @@ void SearchTabHelper::NavigateToPendingEntry(
   // NTP mode changes are initiated at "pending", all others are initiated
   // when "committed".  This is because NTP is rendered natively so is faster
   // to render than the web contents and we need to coordinate the animations.
-  if (IsNTP(url)) {
-    UpdateModelBasedOnURL(
-        url,
-        !web_contents()->GetController().IsInitialNavigation());
-  }
+  if (IsNTP(url))
+    UpdateModelBasedOnURL(url, !is_initial_navigation_commit_);
 }
 
 void SearchTabHelper::Observe(
@@ -83,15 +81,12 @@ void SearchTabHelper::Observe(
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   content::LoadCommittedDetails* committed_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-
-  // TODO(dhollowa): Fix |NavigationController::IsInitialNavigation()| so that
-  // it spans the |NOTIFICATION_NAV_ENTRY_COMMITTED| notification.
   // See comment in |NavigateToPendingEntry()| about why |!IsNTP()| is used.
   if (!IsNTP(committed_details->entry->GetURL())) {
-    UpdateModelBasedOnURL(
-        committed_details->entry->GetURL(),
-        !web_contents()->GetController().IsInitialNavigation());
+    UpdateModelBasedOnURL(committed_details->entry->GetURL(),
+                          !is_initial_navigation_commit_);
   }
+  is_initial_navigation_commit_ = false;
 }
 
 void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url, bool animate) {

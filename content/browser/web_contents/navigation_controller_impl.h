@@ -327,8 +327,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Whether we need to be reloaded when made active.
   bool needs_reload_;
 
-  // The time ticks at which the last document was loaded.
-  base::TimeTicks last_document_loaded_;
+  // Whether this is the initial navigation.
+  // Becomes false when initial navigation is loaded.
+  bool is_initial_navigation_;
 
   // Used to find the appropriate SessionStorageNamespace for the storage
   // partition of a NavigationEntry.

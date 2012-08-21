@@ -193,6 +193,7 @@ NavigationControllerImpl::NavigationControllerImpl(
       max_restored_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
       needs_reload_(false),
+      is_initial_navigation_(true),
       pending_reload_(NO_RELOAD) {
   DCHECK(browser_context_);
 }
@@ -333,7 +334,7 @@ void NavigationControllerImpl::ContinuePendingReload() {
 }
 
 bool NavigationControllerImpl::IsInitialNavigation() {
-  return last_document_loaded_.is_null();
+  return is_initial_navigation_;
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
@@ -654,7 +655,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
 }
 
 void NavigationControllerImpl::DocumentLoadedInFrame() {
-  last_document_loaded_ = base::TimeTicks::Now();
+  is_initial_navigation_ = false;
 }
 
 bool NavigationControllerImpl::RendererDidNavigate(

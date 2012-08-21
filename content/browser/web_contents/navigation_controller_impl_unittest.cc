@@ -2648,6 +2648,27 @@ TEST_F(NavigationControllerTest, StopOnHistoryNavigationToCurrentPage) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
 }
 
+TEST_F(NavigationControllerTest, IsInitialNavigation) {
+  NavigationControllerImpl& controller = controller_impl();
+  TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  // Initial state.
+  EXPECT_TRUE(controller.IsInitialNavigation());
+
+  // After load, it is false.
+  controller.DocumentLoadedInFrame();
+  EXPECT_FALSE(controller.IsInitialNavigation());
+
+  const GURL url1("http://foo1");
+  test_rvh()->SendNavigate(0, url1);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // After commit, it stays false.
+  EXPECT_FALSE(controller.IsInitialNavigation());
+}
+
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot
    (but not Vista) cleaning up the directory after they run.
    This should be fixed.

@@ -56,6 +56,8 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   const bool is_search_enabled_;
 
+  bool is_initial_navigation_commit_;
+
   // Model object for UI that cares about search state.
   SearchModel model_;
 
