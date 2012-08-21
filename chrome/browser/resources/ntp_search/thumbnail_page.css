@@ -1,0 +1,68 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* -----------------------------------------------------------------------------
+  Thumbnail Cell and Tile
+----------------------------------------------------------------------------- */
+
+.thumbnail-page .tile-cell {
+  -webkit-margin-start: 18px;
+  height: 80px;
+  margin-bottom: 22px;
+  width: 132px;
+}
+
+.thumbnail-page .tile-cell .tile {
+  background: #fff;
+  border: 1px solid rgb(192, 192, 192);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .7);
+  display: block;
+  height: 78px;
+  position: relative;
+  width: 130px;
+}
+
+.thumbnail-page .tile-cell .tile:hover {
+  /* TODO(pedrosimonetti): Confirm value with Marcin. */
+  border-color: rgb(127, 127, 127);
+}
+
+.thumbnail-page .tile-cell.filler .tile  {
+  background: -webkit-linear-gradient(rgb(242, 242, 242), rgb(232, 232, 232));
+  border-color: rgb(224, 224, 224);
+  border-radius: 3px;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .09);
+  display: inline-block;
+  position: absolute;
+}
+
+/* -----------------------------------------------------------------------------
+  Thumbnail
+----------------------------------------------------------------------------- */
+
+.thumbnail .thumbnail-image {
+  background-size: 100%;
+  display: block;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+
+.thumbnail .title {
+  color: #777;
+  display: none;
+  font-size: 0.9167em;
+  overflow: hidden;
+  position: absolute;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.thumbnail:hover .title {
+  bottom: -18px;
+  display: block;
+}

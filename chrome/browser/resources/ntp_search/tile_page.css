@@ -1,0 +1,92 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* -----------------------------------------------------------------------------
+  Tile Page
+----------------------------------------------------------------------------- */
+
+#page-list {
+  /* TODO(pedrosimonetti): Confirm the easing function with Marcin. */
+  -webkit-transition: height 200ms ease-in-out;
+  padding-bottom: 10px;
+}
+
+.tile-page {
+  overflow: hidden;
+  position: relative;
+}
+
+.tile-page-content {
+  margin: 0 auto;
+  overflow: hidden;
+  width: 748px;
+}
+
+.tile-grid {
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition: width 200ms ease-in-out;
+  display: block;
+  margin: 0 auto;
+  width: 732px;
+}
+
+.tile-grid-content {
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition: -webkit-transform 200ms ease-in-out;
+}
+
+.tile-row {
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition: opacity 200ms ease-in-out;
+  height: 105px;
+  text-align: start;
+  white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------------------
+  Tile Cell
+----------------------------------------------------------------------------- */
+
+.tile-cell {
+  -webkit-transform: translate3d(0, 0, 0);
+  display: inline-block;
+  position: relative;
+}
+
+.tile-cell:first-child {
+  -webkit-margin-start: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   Tile Cell Animation
+----------------------------------------------------------------------------- */
+
+.animate-tile .tile-cell {
+  -webkit-transition: margin 200ms ease-out;
+  -webkit-transition-property: margin, opacity, width;
+}
+
+/* Animates entire columns of Tiles at once.*/
+.hide-col-0 .tile-cell:nth-child(1),
+.hide-col-1 .tile-cell:nth-child(2),
+.hide-col-2 .tile-cell:nth-child(3),
+.hide-col-3 .tile-cell:nth-child(4),
+.hide-col-4 .tile-cell:nth-child(5),
+.hide-col-5 .tile-cell:nth-child(6),
+.hide-col-6 .tile-cell:nth-child(7),
+.hide-col-7 .tile-cell:nth-child(8),
+.hide-col-8 .tile-cell:nth-child(9),
+.hide-col-9 .tile-cell:nth-child(10) {
+  -webkit-margin-end: -10px;
+  opacity: 0;
+  width: 10px !important;
+}
+
+.hide-row {
+  opacity: 0;
+}
+
+.hide-row .tile-cell {
+  opacity: 1;
+}

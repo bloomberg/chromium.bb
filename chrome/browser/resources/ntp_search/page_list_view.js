@@ -499,45 +499,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Called whenever tiles should be re-arranging themselves out of the way
-     * of a moving or insert tile.
-     */
-    enterRearrangeMode: function() {
-      if (loadTimeData.getBoolean('showApps')) {
-        var tempPage = new ntp.AppsPage();
-        tempPage.classList.add('temporary');
-        var pageName = loadTimeData.getString('appDefaultPageName');
-        this.appendTilePage(tempPage, pageName, true);
-      }
-
-      if (ntp.getCurrentlyDraggingTile().firstChild.canBeRemoved())
-        $('footer').classList.add('showing-trash-mode');
-
-      document.documentElement.classList.add('dragging-mode');
-    },
-
-    /**
-     * Invoked whenever some app is released
-     */
-    leaveRearrangeMode: function() {
-      var tempPage = document.querySelector('.tile-page.temporary');
-      if (tempPage) {
-        var dot = tempPage.navigationDot;
-        if (!tempPage.tileCount &&
-            tempPage != this.cardSlider.currentCardValue) {
-          this.removeTilePageAndDot_(tempPage, true);
-        } else {
-          tempPage.classList.remove('temporary');
-          this.saveAppPageName(tempPage,
-                               loadTimeData.getString('appDefaultPageName'));
-        }
-      }
-
-      $('footer').classList.remove('showing-trash-mode');
-      document.documentElement.classList.remove('dragging-mode');
-    },
-
-    /**
      * Callback for the 'pagelayout' event.
      * @param {Event} e The event.
      */
@@ -552,39 +513,9 @@ cr.define('ntp', function() {
 
     /**
      * Adjusts the size and position of the page switchers according to the
-     * layout of the current card.
+     * layout of the current card. TODO(pedrosimonetti): Delete.
      */
     updatePageSwitchers: function() {
-      if (!this.pageSwitcherStart || !this.pageSwitcherEnd)
-        return;
-
-      var page = this.cardSlider.currentCardValue;
-
-      this.pageSwitcherStart.hidden = !page ||
-          (this.cardSlider.currentCard == 0);
-      this.pageSwitcherEnd.hidden = !page ||
-          (this.cardSlider.currentCard == this.cardSlider.cardCount - 1);
-
-      if (!page)
-        return;
-
-      var pageSwitcherLeft = isRTL() ? this.pageSwitcherEnd :
-                                       this.pageSwitcherStart;
-      var pageSwitcherRight = isRTL() ? this.pageSwitcherStart :
-                                        this.pageSwitcherEnd;
-      var scrollbarWidth = page.scrollbarWidth;
-      pageSwitcherLeft.style.width =
-          (page.sideMargin + 13) + 'px';
-      pageSwitcherLeft.style.left = '0';
-      pageSwitcherRight.style.width =
-          (page.sideMargin - scrollbarWidth + 13) + 'px';
-      pageSwitcherRight.style.right = scrollbarWidth + 'px';
-
-      var offsetTop = page.querySelector('.tile-page-content').offsetTop + 'px';
-      pageSwitcherLeft.style.top = offsetTop;
-      pageSwitcherRight.style.top = offsetTop;
-      pageSwitcherLeft.style.paddingBottom = offsetTop;
-      pageSwitcherRight.style.paddingBottom = offsetTop;
     },
 
     /**
@@ -758,7 +689,7 @@ cr.define('ntp', function() {
       if (page.navigationDot)
         page.navigationDot.remove(opt_animate);
       this.cardSlider.removeCard(page);
-    },
+    }
   };
 
   return {

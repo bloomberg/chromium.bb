@@ -87,7 +87,9 @@ cr.define('ntp', function() {
     this.initialize(getRequiredElement('page-list'),
                     getRequiredElement('dot-list'),
                     getRequiredElement('card-slider-frame'),
+                    // TODO(pedrosimonetti): Remove the Trash component.
                     getRequiredElement('trash'),
+                    // TODO(pedrosimonetti): Remove page switchers.
                     pageSwitcherStart, pageSwitcherEnd);
   }
 
@@ -445,17 +447,8 @@ cr.define('ntp', function() {
     newTabView.suggestionsPage.data = data;
   }
 
-  /**
-   * Set the dominant color for a node. This will be called in response to
-   * getFaviconDominantColor. The node represented by |id| better have a setter
-   * for stripeColor.
-   * @param {string} id The ID of a node.
-   * @param {string} color The color represented as a CSS string.
-   */
-  function setStripeColor(id, color) {
-    var node = $(id);
-    if (node)
-      node.stripeColor = color;
+  function getThumbnailUrl(url) {
+    return 'chrome://thumb/' + url;
   }
 
   /**
@@ -530,10 +523,6 @@ cr.define('ntp', function() {
     return newTabView.appsReordered.apply(newTabView, arguments);
   }
 
-  function enterRearrangeMode() {
-    return newTabView.enterRearrangeMode.apply(newTabView, arguments);
-  }
-
   function setForeignSessions(sessionList, isTabSyncEnabled) {
     if (otherSessionsButton)
       otherSessionsButton.setForeignSessions(sessionList, isTabSyncEnabled);
@@ -551,10 +540,6 @@ cr.define('ntp', function() {
     return newTabView.cardSlider;
   }
 
-  function leaveRearrangeMode() {
-    return newTabView.leaveRearrangeMode.apply(newTabView, arguments);
-  }
-
   function saveAppPageName() {
     return newTabView.saveAppPageName.apply(newTabView, arguments);
   }
@@ -569,12 +554,11 @@ cr.define('ntp', function() {
     appMoved: appMoved,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
-    enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
+    getThumbnailUrl: getThumbnailUrl,
     onLoad: onLoad,
-    leaveRearrangeMode: leaveRearrangeMode,
     NtpFollowAction: NtpFollowAction,
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
@@ -583,7 +567,6 @@ cr.define('ntp', function() {
     setMostVisitedPages: setMostVisitedPages,
     setSuggestionsPages: setSuggestionsPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
-    setStripeColor: setStripeColor,
     showNotification: showNotification,
     themeChanged: themeChanged,
     updateLogin: updateLogin
