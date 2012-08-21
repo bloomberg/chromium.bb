@@ -107,6 +107,9 @@ class ScopedRlzValueStoreLock {
 namespace testing {
 // Prefix |directory| to the path where the RLZ data file lives, for tests.
 void SetRlzStoreDirectory(const FilePath& directory);
+
+// Returns the path of the plist file used as data store.
+std::string RlzPlistFilenameStr();
 }  // namespace testing
 #endif  // defined(OS_MACOSX)
 

@@ -270,7 +270,9 @@ bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
     const int kSleepPerTryMS = 200;
 
     CHECK(file_lock_ == -1);
-    file_lock_ = open([lock_filename fileSystemRepresentation], O_CREAT, 0666);
+    file_lock_ = open([lock_filename fileSystemRepresentation],
+                      O_RDWR | O_CREAT,
+                      0666);
     if (file_lock_ == -1)
       return false;
 
@@ -354,8 +356,8 @@ NSString* RlzPlistFilename() {
 // Returns the path of the rlz lock file, also creates the parent directory
 // path if it doesn't exist.
 NSString* RlzLockFilename() {
-  NSString* const kRlzFile = @"flockfile";
-  return [CreateRlzDirectory() stringByAppendingPathComponent:kRlzFile];
+  NSString* const kRlzLockfile = @"flockfile";
+  return [CreateRlzDirectory() stringByAppendingPathComponent:kRlzLockfile];
 }
 
 }  // namespace
@@ -377,8 +379,8 @@ ScopedRlzValueStoreLock::ScopedRlzValueStoreLock() {
   }
 
   if (g_lock_depth > 1) {
-    // Reuse the already existing store object.
-    CHECK(g_store_object);
+    // Reuse the already existing store object. Note that it can be NULL when
+    // lock acquisition succeeded but the rlz data file couldn't be read.
     store_.reset(g_store_object);
     return;
   }
@@ -446,6 +448,12 @@ void SetRlzStoreDirectory(const FilePath& directory) {
     // Not Unsafe on OS X.
     g_test_folder =
       [[NSString alloc] initWithUTF8String:directory.AsUTF8Unsafe().c_str()];
+  }
+}
+
+std::string RlzPlistFilenameStr() {
+  @autoreleasepool {
+    return std::string([RlzPlistFilename() fileSystemRepresentation]);
   }
 }
 

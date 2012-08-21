@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "rlz/lib/rlz_lib.h"
+#include "rlz/lib/rlz_value_store.h"
 #include "rlz/test/rlz_test_helpers.h"
 
 #if defined(OS_WIN)
@@ -871,4 +872,22 @@ TEST_F(RlzLibTest, ConcurrentStoreAccessWithProcessExitsWhileLockHeld) {
   EXPECT_TRUE(rlz_lib::RecordProductEvent(rlz_lib::TOOLBAR_NOTIFIER,
       rlz_lib::IE_DEFAULT_SEARCH, rlz_lib::INSTALL));
 }
+
+TEST_F(RlzLibTest, LockAcquistionSucceedsButPlistCannotBeCreated) {
+  // See the comment at the top of WriteFails.
+  if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
+    return;
+
+  // Create a directory where the rlz file is supposed to appear. This way,
+  // the lock file can be created successfully, but creation of the rlz file
+  // itself will fail.
+  int mkdir_result = mkdir(rlz_lib::testing::RlzPlistFilenameStr().c_str(),
+                           0500);
+  ASSERT_EQ(0, mkdir_result);
+
+  rlz_lib::SupplementaryBranding branding("TEST");
+  EXPECT_FALSE(rlz_lib::RecordProductEvent(rlz_lib::TOOLBAR_NOTIFIER,
+      rlz_lib::IE_DEFAULT_SEARCH, rlz_lib::INSTALL));
+}
+
 #endif
