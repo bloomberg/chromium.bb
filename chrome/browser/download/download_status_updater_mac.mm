@@ -160,7 +160,9 @@ class CrNSProgressUserData : public base::SupportsUserData::Data {
       : target_(target) {
     progress_.reset(progress);
   }
-  virtual ~CrNSProgressUserData() {}
+  virtual ~CrNSProgressUserData() {
+    [progress_.get() unpublish];
+  }
 
   NSProgress* progress() const { return progress_.get(); }
   FilePath target() const { return target_; }
@@ -247,9 +249,6 @@ void UpdateNSProgress(content::DownloadItem* download,
 
 void DestroyNSProgress(content::DownloadItem* download,
                        CrNSProgressUserData* progress_data) {
-  NSProgress* progress = progress_data->progress();
-  [progress unpublish];
-
   download->RemoveUserData(&kCrNSProgressUserDataKey);
 }
 
@@ -272,11 +271,10 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
         download->GetUserData(&kCrNSProgressUserDataKey));
     if (!progress_data)
       CreateNSProgress(download);
+    else if (download->GetState() != content::DownloadItem::IN_PROGRESS)
+      DestroyNSProgress(download, progress_data);
     else
       UpdateNSProgress(download, progress_data);
-
-    if (download->GetState() != content::DownloadItem::IN_PROGRESS)
-      DestroyNSProgress(download, progress_data);
   }
 
   // Handle downloads that ended.
