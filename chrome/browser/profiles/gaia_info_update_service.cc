@@ -76,11 +76,11 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
 }
 
 // static
-void GAIAInfoUpdateService::RegisterUserPrefs(PrefService* prefs) {
+void GAIAInfoUpdateService::RegisterUserPrefs(PrefServiceBase* prefs) {
   prefs->RegisterInt64Pref(
-      prefs::kProfileGAIAInfoUpdateTime, 0, PrefService::UNSYNCABLE_PREF);
+      prefs::kProfileGAIAInfoUpdateTime, 0, PrefServiceBase::UNSYNCABLE_PREF);
   prefs->RegisterStringPref(
-      prefs::kProfileGAIAInfoPictureURL, "", PrefService::UNSYNCABLE_PREF);
+      prefs::kProfileGAIAInfoPictureURL, "", PrefServiceBase::UNSYNCABLE_PREF);
 }
 
 bool GAIAInfoUpdateService::NeedsProfilePicture() const {

@@ -37,7 +37,7 @@
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -197,7 +197,7 @@ AutofillManager::AutofillManager(TabContents* tab_contents)
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
   RegisterWithSyncService();
-  registrar_.Init(tab_contents->profile()->GetPrefs());
+  registrar_.Init(PrefServiceBase::ForProfile(tab_contents->profile()));
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
@@ -208,28 +208,28 @@ AutofillManager::~AutofillManager() {
 }
 
 // static
-void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
+void AutofillManager::RegisterUserPrefs(PrefServiceBase* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutofillEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceBase::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceBase::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
   prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
                              true,
-                             PrefService::SYNCABLE_PREF);
+                             PrefServiceBase::SYNCABLE_PREF);
 #else
   prefs->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefServiceBase::UNSYNCABLE_PREF);
 #endif
   prefs->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
                             kAutofillPositiveUploadRateDefaultValue,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceBase::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
                             kAutofillNegativeUploadRateDefaultValue,
-                            PrefService::UNSYNCABLE_PREF);
+                            PrefServiceBase::UNSYNCABLE_PREF);
 }
 
 void AutofillManager::RegisterWithSyncService() {
@@ -267,8 +267,8 @@ void AutofillManager::UpdatePasswordGenerationState(
 
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
-  bool preference_checked =
-      profile->GetPrefs()->GetBoolean(prefs::kPasswordGenerationEnabled);
+  bool preference_checked = PrefServiceBase::ForProfile(profile)->GetBoolean(
+      prefs::kPasswordGenerationEnabled);
 
   bool new_password_generation_enabled =
       password_sync_enabled &&
@@ -815,7 +815,8 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 bool AutofillManager::IsAutofillEnabled() const {
   Profile* profile = Profile::FromBrowserContext(
       const_cast<AutofillManager*>(this)->web_contents()->GetBrowserContext());
-  return profile->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  return PrefServiceBase::ForProfile(profile)->GetBoolean(
+      prefs::kAutofillEnabled);
 }
 
 void AutofillManager::SendAutofillTypePredictions(

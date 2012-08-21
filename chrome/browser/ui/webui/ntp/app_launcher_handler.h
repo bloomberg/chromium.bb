@@ -102,7 +102,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   void HandleSetNotificationsDisabled(const base::ListValue* args);
 
   // Register app launcher preferences.
-  static void RegisterUserPrefs(PrefService* pref_service);
+  static void RegisterUserPrefs(PrefServiceBase* pref_service);
 
   // Records the given type of app launch for UMA.
   static void RecordAppLaunchType(extension_misc::AppLaunchBucket bucket);

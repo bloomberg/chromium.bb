@@ -35,6 +35,7 @@ class FullscreenExitBubbleGtk;
 class GlobalMenuBar;
 class InfoBarContainerGtk;
 class LocationBar;
+class PrefService;
 class StatusBubbleGtk;
 class TabContentsContainerGtk;
 class TabStripGtk;

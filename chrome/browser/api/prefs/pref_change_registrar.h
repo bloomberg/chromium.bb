@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 
-class PrefService;
+class PrefServiceBase;
 
 namespace content {
 class NotificationObserver;
@@ -27,7 +27,7 @@ class PrefChangeRegistrar {
 
   // Must be called before adding or removing observers. Can be called more
   // than once as long as the value of |service| doesn't change.
-  void Init(PrefService* service);
+  void Init(PrefServiceBase* service);
 
   // Adds an pref observer for the specified pref |path| and |obs| observer
   // object. All registered observers will be automatically unregistered
@@ -52,7 +52,7 @@ class PrefChangeRegistrar {
       ObserverRegistration;
 
   std::set<ObserverRegistration> observers_;
-  PrefService* service_;
+  PrefServiceBase* service_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefChangeRegistrar);
 };

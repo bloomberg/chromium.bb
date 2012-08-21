@@ -5,7 +5,7 @@
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 
 #include "base/logging.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(NULL) {}
 
@@ -17,7 +17,7 @@ PrefChangeRegistrar::~PrefChangeRegistrar() {
   RemoveAll();
 }
 
-void PrefChangeRegistrar::Init(PrefService* service) {
+void PrefChangeRegistrar::Init(PrefServiceBase* service) {
   DCHECK(IsEmpty() || service_ == service);
   service_ = service;
 }

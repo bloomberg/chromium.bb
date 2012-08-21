@@ -27,6 +27,7 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/json_pref_store.h"
@@ -112,6 +113,10 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 };
 
 }  // namespace
+
+PrefServiceBase* PrefServiceBase::ForProfile(Profile* profile) {
+  return profile->GetPrefs();
+}
 
 // static
 PrefService* PrefService::CreatePrefService(
@@ -974,6 +979,10 @@ PrefService::Preference::Preference(const PrefService* service,
         pref_service_(service) {
   DCHECK(name);
   DCHECK(service);
+}
+
+const std::string PrefService::Preference::name() const {
+  return name_;
 }
 
 base::Value::Type PrefService::Preference::GetType() const {

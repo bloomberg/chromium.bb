@@ -19,7 +19,7 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -170,7 +170,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
     if (sync_service && (!sync_service->HasSyncSetupCompleted() ||
-        !profile_->GetPrefs()->GetBoolean(prefs::kSyncAutofill))) {
+                         !PrefServiceBase::ForProfile(profile_)->GetBoolean(
+                             prefs::kSyncAutofill))) {
       scoped_refptr<WebDataService> web_data_service =
           WebDataServiceFactory::GetForProfile(profile_,
                                                Profile::EXPLICIT_ACCESS);
@@ -533,8 +534,10 @@ bool PersonalDataManager::IsDataLoaded() const {
 
 const std::vector<AutofillProfile*>& PersonalDataManager::profiles() const {
   // |profile_| is NULL in AutofillManagerTest.
-  bool auxiliary_profiles_enabled = profile_ ? profile_->GetPrefs()->GetBoolean(
-      prefs::kAutofillAuxiliaryProfilesEnabled) : false;
+  bool auxiliary_profiles_enabled = profile_ ?
+      PrefServiceBase::ForProfile(profile_)->GetBoolean(
+          prefs::kAutofillAuxiliaryProfilesEnabled) :
+      false;
   if (!auxiliary_profiles_enabled)
     return web_profiles();
 
@@ -595,7 +598,8 @@ void PersonalDataManager::Init(Profile* profile) {
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
+  return PrefServiceBase::ForProfile(profile_)->GetBoolean(
+      prefs::kAutofillEnabled);
 }
 
 // static

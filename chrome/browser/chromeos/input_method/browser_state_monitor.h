@@ -13,6 +13,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 
+class PrefService;
+
 namespace chromeos {
 namespace input_method {
 

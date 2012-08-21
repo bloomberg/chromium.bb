@@ -15,7 +15,7 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -56,7 +56,7 @@ AutofillDownloadManager::AutofillDownloadManager(Profile* profile,
       negative_upload_rate_(0),
       fetcher_id_for_unittest_(0) {
   DCHECK(observer_);
-  PrefService* preferences = profile_->GetPrefs();
+  PrefServiceBase* preferences = PrefServiceBase::ForProfile(profile_);
   positive_upload_rate_ =
       preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
   negative_upload_rate_ =
@@ -143,7 +143,7 @@ void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
   positive_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefService* preferences = profile_->GetPrefs();
+  PrefServiceBase* preferences = PrefServiceBase::ForProfile(profile_);
   preferences->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
 }
 
@@ -153,7 +153,7 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
   negative_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefService* preferences = profile_->GetPrefs();
+  PrefServiceBase* preferences = PrefServiceBase::ForProfile(profile_);
   preferences->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }
 

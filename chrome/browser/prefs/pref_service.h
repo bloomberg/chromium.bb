@@ -17,21 +17,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/values.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 
 class CommandLine;
 class DefaultPrefStore;
-class FilePath;
 class PersistentPrefStore;
 class PrefModelAssociator;
 class PrefNotifier;
 class PrefNotifierImpl;
 class PrefStore;
 class PrefValueStore;
-
-namespace content {
-class NotificationObserver;
-}
 
 namespace syncer {
 class SyncableService;
@@ -42,20 +37,11 @@ class PolicyService;
 }
 
 namespace subtle {
-class PrefMemberBase;
 class ScopedUserPrefUpdateBase;
 };
 
-class PrefService : public base::NonThreadSafe {
+class PrefService : public PrefServiceBase, public base::NonThreadSafe {
  public:
-  // Enum used when registering preferences to determine if it should be synced
-  // or not. This is only used for profile prefs, not local state prefs.
-  // See the Register*Pref methods for profile prefs below.
-  enum PrefSyncStatus {
-    UNSYNCABLE_PREF,
-    SYNCABLE_PREF
-  };
-
   enum PrefInitializationStatus {
     INITIALIZATION_STATUS_WAITING,
     INITIALIZATION_STATUS_SUCCESS,
@@ -64,7 +50,7 @@ class PrefService : public base::NonThreadSafe {
   };
 
   // A helper class to store all the information associated with a preference.
-  class Preference {
+  class Preference : public PrefServiceBase::Preference {
    public:
     // The type of the preference is determined by the type with which it is
     // registered. This type needs to be a boolean, integer, double, string,
@@ -73,61 +59,22 @@ class PrefService : public base::NonThreadSafe {
     Preference(const PrefService* service,
                const char* name,
                base::Value::Type type);
-    ~Preference() {}
+    virtual ~Preference() {}
 
-    // Returns the name of the Preference (i.e., the key, e.g.,
-    // browser.window_placement).
-    const std::string name() const { return name_; }
-
-    // Returns the registered type of the preference.
-    base::Value::Type GetType() const;
-
-    // Returns the value of the Preference, falling back to the registered
-    // default value if no other has been set.
-    const base::Value* GetValue() const;
-
-    // Returns the value recommended by the admin, if any.
-    const base::Value* GetRecommendedValue() const;
-
-    // Returns true if the Preference is managed, i.e. set by an admin policy.
-    // Since managed prefs have the highest priority, this also indicates
-    // whether the pref is actually being controlled by the policy setting.
-    bool IsManaged() const;
-
-    // Returns true if the Preference is recommended, i.e. set by an admin
-    // policy but the user is allowed to change it.
-    bool IsRecommended() const;
-
-    // Returns true if the Preference has a value set by an extension, even if
-    // that value is being overridden by a higher-priority source.
-    bool HasExtensionSetting() const;
-
-    // Returns true if the Preference has a user setting, even if that value is
-    // being overridden by a higher-priority source.
-    bool HasUserSetting() const;
-
-    // Returns true if the Preference value is currently being controlled by an
-    // extension, and not by any higher-priority source.
-    bool IsExtensionControlled() const;
-
-    // Returns true if the Preference value is currently being controlled by a
-    // user setting, and not by any higher-priority source.
-    bool IsUserControlled() const;
-
-    // Returns true if the Preference is currently using its default value,
-    // and has not been set by any higher-priority source (even with the same
-    // value).
-    bool IsDefaultValue() const;
-
-    // Returns true if the user can change the Preference value, which is the
-    // case if no higher-priority source than the user store controls the
-    // Preference.
-    bool IsUserModifiable() const;
-
-    // Returns true if an extension can change the Preference value, which is
-    // the case if no higher-priority source than the extension store controls
-    // the Preference.
-    bool IsExtensionModifiable() const;
+    // PrefServiceBase::Preference implementation.
+    virtual const std::string name() const OVERRIDE;
+    virtual base::Value::Type GetType() const OVERRIDE;
+    virtual const base::Value* GetValue() const OVERRIDE;
+    virtual const base::Value* GetRecommendedValue() const OVERRIDE;
+    virtual bool IsManaged() const OVERRIDE;
+    virtual bool IsRecommended() const OVERRIDE;
+    virtual bool HasExtensionSetting() const OVERRIDE;
+    virtual bool HasUserSetting() const OVERRIDE;
+    virtual bool IsExtensionControlled() const OVERRIDE;
+    virtual bool IsUserControlled() const OVERRIDE;
+    virtual bool IsDefaultValue() const OVERRIDE;
+    virtual bool IsUserModifiable() const OVERRIDE;
+    virtual bool IsExtensionModifiable() const OVERRIDE;
 
    private:
     friend class PrefService;
@@ -177,107 +124,108 @@ class PrefService : public base::NonThreadSafe {
   // values while the importer process is running. Returns true on success.
   bool ReloadPersistentPrefs();
 
-  // Returns true if the preference for the given preference name is available
-  // and is managed.
-  bool IsManagedPreference(const char* pref_name) const;
-
-  // Returns |true| if a preference with the given name is available and its
-  // value can be changed by the user.
-  bool IsUserModifiablePreference(const char* pref_name) const;
-
   // Lands pending writes to disk. This should only be used if we need to save
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
 
-  // Make the PrefService aware of a pref.
-  // TODO(zea): split local state and profile prefs into their own subclasses.
-  // ---------- Local state prefs  ----------
-  void RegisterBooleanPref(const char* path, bool default_value);
-  void RegisterIntegerPref(const char* path, int default_value);
-  void RegisterDoublePref(const char* path, double default_value);
-  void RegisterStringPref(const char* path, const std::string& default_value);
-  void RegisterFilePathPref(const char* path, const FilePath& default_value);
-  void RegisterListPref(const char* path);
-  void RegisterDictionaryPref(const char* path);
-  // These take ownership of the default_value:
-  void RegisterListPref(const char* path,
-                        base::ListValue* default_value);
-  void RegisterDictionaryPref(const char* path,
-                              base::DictionaryValue* default_value);
-  // These variants use a default value from the locale dll instead.
-  void RegisterLocalizedBooleanPref(const char* path,
-                                    int locale_default_message_id);
-  void RegisterLocalizedIntegerPref(const char* path,
-                                    int locale_default_message_id);
-  void RegisterLocalizedDoublePref(const char* path,
-                                   int locale_default_message_id);
-  void RegisterLocalizedStringPref(const char* path,
-                                   int locale_default_message_id);
-  void RegisterInt64Pref(const char* path, int64 default_value);
-
-  //  ---------- Profile prefs  ----------
-  // Profile prefs must specify whether the pref should be synchronized across
-  // machines or not (see PrefSyncStatus enum above).
-  void RegisterBooleanPref(const char* path,
-                           bool default_value,
-                           PrefSyncStatus sync_status);
-  void RegisterIntegerPref(const char* path,
-                           int default_value,
-                           PrefSyncStatus sync_status);
-  void RegisterDoublePref(const char* path,
-                          double default_value,
-                          PrefSyncStatus sync_status);
-  void RegisterStringPref(const char* path,
-                          const std::string& default_value,
-                          PrefSyncStatus sync_status);
-  void RegisterFilePathPref(const char* path,
-                            const FilePath& default_value,
-                            PrefSyncStatus sync_status);
-  void RegisterListPref(const char* path, PrefSyncStatus sync_status);
-  void RegisterDictionaryPref(const char* path, PrefSyncStatus sync_status);
-  // These take ownership of the default_value:
-  void RegisterListPref(const char* path,
-                        base::ListValue* default_value,
-                        PrefSyncStatus sync_status);
-  void RegisterDictionaryPref(const char* path,
-                              base::DictionaryValue* default_value,
-                              PrefSyncStatus sync_status);
-  // These variants use a default value from the locale dll instead.
-  void RegisterLocalizedBooleanPref(const char* path,
-                                    int locale_default_message_id,
-                                    PrefSyncStatus sync_status);
-  void RegisterLocalizedIntegerPref(const char* path,
-                                    int locale_default_message_id,
-                                    PrefSyncStatus sync_status);
-  void RegisterLocalizedDoublePref(const char* path,
-                                   int locale_default_message_id,
-                                   PrefSyncStatus sync_status);
-  void RegisterLocalizedStringPref(const char* path,
-                                   int locale_default_message_id,
-                                   PrefSyncStatus sync_status);
-  void RegisterInt64Pref(const char* path,
-                         int64 default_value,
-                         PrefSyncStatus sync_status);
-  void RegisterUint64Pref(const char* path,
-                          uint64 default_value,
-                          PrefSyncStatus sync_status);
-  // Unregisters a preference.
-  void UnregisterPreference(const char* path);
-
-  // If the path is valid and the value at the end of the path matches the type
-  // specified, it will return the specified value.  Otherwise, the default
-  // value (set when the pref was registered) will be returned.
-  bool GetBoolean(const char* path) const;
-  int GetInteger(const char* path) const;
-  double GetDouble(const char* path) const;
-  std::string GetString(const char* path) const;
-  FilePath GetFilePath(const char* path) const;
-
-  // Returns the branch if it exists, or the registered default value otherwise.
-  // Note that |path| must point to a registered preference. In that case, these
-  // functions will never return NULL.
-  const base::DictionaryValue* GetDictionary(const char* path) const;
-  const base::ListValue* GetList(const char* path) const;
+  // PrefServiceBase implementation.
+  virtual bool IsManagedPreference(const char* pref_name) const OVERRIDE;
+  virtual bool IsUserModifiablePreference(const char* pref_name) const OVERRIDE;
+  virtual void RegisterBooleanPref(const char* path,
+                                   bool default_value) OVERRIDE;
+  virtual void RegisterIntegerPref(const char* path,
+                                   int default_value) OVERRIDE;
+  virtual void RegisterDoublePref(const char* path,
+                                  double default_value) OVERRIDE;
+  virtual void RegisterStringPref(const char* path,
+                                  const std::string& default_value) OVERRIDE;
+  virtual void RegisterFilePathPref(const char* path,
+                                    const FilePath& default_value) OVERRIDE;
+  virtual void RegisterListPref(const char* path) OVERRIDE;
+  virtual void RegisterDictionaryPref(const char* path) OVERRIDE;
+  virtual void RegisterListPref(const char* path,
+                                base::ListValue* default_value) OVERRIDE;
+  virtual void RegisterDictionaryPref(
+      const char* path, base::DictionaryValue* default_value) OVERRIDE;
+  virtual void RegisterLocalizedBooleanPref(
+      const char* path, int locale_default_message_id) OVERRIDE;
+  virtual void RegisterLocalizedIntegerPref(
+      const char* path, int locale_default_message_id) OVERRIDE;
+  virtual void RegisterLocalizedDoublePref(
+      const char* path, int locale_default_message_id) OVERRIDE;
+  virtual void RegisterLocalizedStringPref(
+      const char* path, int locale_default_message_id) OVERRIDE;
+  virtual void RegisterInt64Pref(const char* path,
+                                 int64 default_value) OVERRIDE;
+  virtual void RegisterBooleanPref(const char* path,
+                                   bool default_value,
+                                   PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterIntegerPref(const char* path,
+                                   int default_value,
+                                   PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterDoublePref(const char* path,
+                                  double default_value,
+                                  PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterStringPref(const char* path,
+                                  const std::string& default_value,
+                                  PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterFilePathPref(const char* path,
+                                    const FilePath& default_value,
+                                    PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterListPref(const char* path,
+                                PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterDictionaryPref(const char* path,
+                                      PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterListPref(const char* path,
+                                base::ListValue* default_value,
+                                PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterDictionaryPref(const char* path,
+                                      base::DictionaryValue* default_value,
+                                      PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterLocalizedBooleanPref(
+      const char* path,
+      int locale_default_message_id,
+      PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterLocalizedIntegerPref(
+      const char* path,
+      int locale_default_message_id,
+      PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterLocalizedDoublePref(
+      const char* path,
+      int locale_default_message_id,
+      PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterLocalizedStringPref(
+      const char* path,
+      int locale_default_message_id,
+      PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterInt64Pref(const char* path,
+                                 int64 default_value,
+                                 PrefSyncStatus sync_status) OVERRIDE;
+  virtual void RegisterUint64Pref(const char* path,
+                                  uint64 default_value,
+                                  PrefSyncStatus sync_status) OVERRIDE;
+  virtual void UnregisterPreference(const char* path) OVERRIDE;
+  virtual const PrefService::Preference* FindPreference(
+      const char* path) const OVERRIDE;
+  virtual bool GetBoolean(const char* path) const OVERRIDE;
+  virtual int GetInteger(const char* path) const OVERRIDE;
+  virtual double GetDouble(const char* path) const OVERRIDE;
+  virtual std::string GetString(const char* path) const OVERRIDE;
+  virtual FilePath GetFilePath(const char* path) const OVERRIDE;
+  virtual const base::DictionaryValue* GetDictionary(
+      const char* path) const OVERRIDE;
+  virtual const base::ListValue* GetList(const char* path) const OVERRIDE;
+  virtual void ClearPref(const char* path) OVERRIDE;
+  virtual void Set(const char* path, const base::Value& value) OVERRIDE;
+  virtual void SetBoolean(const char* path, bool value) OVERRIDE;
+  virtual void SetInteger(const char* path, int value) OVERRIDE;
+  virtual void SetDouble(const char* path, double value) OVERRIDE;
+  virtual void SetString(const char* path, const std::string& value) OVERRIDE;
+  virtual void SetFilePath(const char* path, const FilePath& value) OVERRIDE;
+  virtual void SetInt64(const char* path, int64 value) OVERRIDE;
+  virtual int64 GetInt64(const char* path) const OVERRIDE;
+  virtual void SetUint64(const char* path, uint64 value) OVERRIDE;
+  virtual uint64 GetUint64(const char* path) const OVERRIDE;
 
   // Returns the value of the given preference, from the user pref store. If
   // the preference is not set in the user pref store, returns NULL.
@@ -286,31 +234,6 @@ class PrefService : public base::NonThreadSafe {
   // Returns the default value of the given preference. |path| must point to a
   // registered preference. In that case, will never return NULL.
   const base::Value* GetDefaultPrefValue(const char* path) const;
-
-  // Removes a user pref and restores the pref to its default value.
-  void ClearPref(const char* path);
-
-  // If the path is valid (i.e., registered), update the pref value in the user
-  // prefs.
-  // To set the value of dictionary or list values in the pref tree use
-  // Set(), but to modify the value of a dictionary or list use either
-  // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
-  void Set(const char* path, const base::Value& value);
-  void SetBoolean(const char* path, bool value);
-  void SetInteger(const char* path, int value);
-  void SetDouble(const char* path, double value);
-  void SetString(const char* path, const std::string& value);
-  void SetFilePath(const char* path, const FilePath& value);
-
-  // Int64 helper methods that actually store the given value as a string.
-  // Note that if obtaining the named value via GetDictionary or GetList, the
-  // Value type will be TYPE_STRING.
-  void SetInt64(const char* path, int64 value);
-  int64 GetInt64(const char* path) const;
-
-  // As above, but for unsigned values.
-  void SetUint64(const char* path, uint64 value);
-  uint64 GetUint64(const char* path) const;
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
@@ -321,10 +244,6 @@ class PrefService : public base::NonThreadSafe {
   // Returns a dictionary with effective preference values. The ownership
   // is passed to the caller.
   base::DictionaryValue* GetPreferenceValues() const;
-
-  // A helper method to quickly look up a preference.  Returns NULL if the
-  // preference is not registered.
-  const Preference* FindPreference(const char* pref_name) const;
 
   bool ReadOnly() const;
 
@@ -364,30 +283,18 @@ class PrefService : public base::NonThreadSafe {
 
   friend class PrefServiceMockBuilder;
 
-  // Registration of pref change observers must be done using the
-  // PrefChangeRegistrar, which is declared as a friend here to grant it
-  // access to the otherwise protected members Add/RemovePrefObserver.
-  // PrefMember registers for preferences changes notification directly to
-  // avoid the storage overhead of the registrar, so its base class must be
-  // declared as a friend, too.
-  friend class PrefChangeRegistrar;
-  friend class subtle::PrefMemberBase;
-
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
+
+  // PrefServiceBase implementation (protected in base, private here).
+  virtual void AddPrefObserver(const char* path,
+                               content::NotificationObserver* obs) OVERRIDE;
+  virtual void RemovePrefObserver(const char* path,
+                                  content::NotificationObserver* obs) OVERRIDE;
 
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
   void ReportUserPrefChanged(const std::string& key);
-
-  // If the pref at the given path changes, we call the observer's Observe
-  // method with PREF_CHANGED. Note that observers should not call these methods
-  // directly but rather use a PrefChangeRegistrar to make sure the observer
-  // gets cleaned up properly.
-  virtual void AddPrefObserver(const char* path,
-                               content::NotificationObserver* obs);
-  virtual void RemovePrefObserver(const char* path,
-                                  content::NotificationObserver* obs);
 
   // Registers a new preference at |path|. The |default_value| must not be
   // NULL as it determines the preference value's type.

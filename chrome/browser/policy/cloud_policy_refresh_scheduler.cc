@@ -8,6 +8,7 @@
 
 #include "base/task_runner.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 

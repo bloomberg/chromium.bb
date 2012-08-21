@@ -792,7 +792,7 @@ void AppLauncherHandler::SetAppToBeHighlighted() {
 }
 
 // static
-void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
+void AppLauncherHandler::RegisterUserPrefs(PrefServiceBase* pref_service) {
   pref_service->RegisterListPref(prefs::kNtpAppPageNames,
                                  PrefService::SYNCABLE_PREF);
 }

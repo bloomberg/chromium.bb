@@ -76,7 +76,7 @@ class AutofillManager : public content::NotificationObserver,
   explicit AutofillManager(TabContents* tab_contents);
 
   // Registers our Enable/Disable Autofill pref.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceBase* prefs);
 
   // Set our external delegate.
   // TODO(jrg): consider passing delegate into the ctor.  That won't

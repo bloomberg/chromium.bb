@@ -15,7 +15,6 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   "!chrome/browser/password_manager/password_manager.h",
-  "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service.h",

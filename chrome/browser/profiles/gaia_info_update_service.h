@@ -32,7 +32,7 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
   static bool ShouldUseGAIAProfileInfo(Profile* profile);
 
   // Register prefs for a profile.
-  static void RegisterUserPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefServiceBase* prefs);
 
   // ProfileDownloaderDelegate:
   virtual bool NeedsProfilePicture() const OVERRIDE;

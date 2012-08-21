@@ -34,7 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 
-class PrefService;
+class PrefServiceBase;
 
 namespace subtle {
 
@@ -81,7 +81,7 @@ class PrefMemberBase : public content::NotificationObserver {
   virtual ~PrefMemberBase();
 
   // See PrefMember<> for description.
-  void Init(const char* pref_name, PrefService* prefs,
+  void Init(const char* pref_name, PrefServiceBase* prefs,
             content::NotificationObserver* observer);
 
   virtual void CreateInternal() const = 0;
@@ -110,8 +110,8 @@ class PrefMemberBase : public content::NotificationObserver {
   void VerifyPref() const;
 
   const std::string& pref_name() const { return pref_name_; }
-  PrefService* prefs() { return prefs_; }
-  const PrefService* prefs() const { return prefs_; }
+  PrefServiceBase* prefs() { return prefs_; }
+  const PrefServiceBase* prefs() const { return prefs_; }
 
   virtual Internal* internal() const = 0;
 
@@ -119,7 +119,7 @@ class PrefMemberBase : public content::NotificationObserver {
   // Ordered the members to compact the class instance.
   std::string pref_name_;
   content::NotificationObserver* observer_;
-  PrefService* prefs_;
+  PrefServiceBase* prefs_;
 
  protected:
   bool setting_value_;
@@ -138,7 +138,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // Do the actual initialization of the class.  |observer| may be null if you
   // don't want any notifications of changes.
   // This method should only be called on the UI thread.
-  void Init(const char* pref_name, PrefService* prefs,
+  void Init(const char* pref_name, PrefServiceBase* prefs,
             content::NotificationObserver* observer) {
     subtle::PrefMemberBase::Init(pref_name, prefs, observer);
   }

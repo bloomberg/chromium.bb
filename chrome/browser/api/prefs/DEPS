@@ -1,6 +1,6 @@
 # TODO(joi): Bring back to zero.
 specific_include_rules = {
-  ".*\.cc": [
+  ".*[a-z]+test\.cc": [
     "!chrome/browser/prefs",
   ],
 }

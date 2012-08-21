@@ -19,6 +19,8 @@ namespace prerender {
 class PrerenderManager;
 }
 
+class PrefService;
+
 // Monitors network-related preferences for changes and applies them.
 // The supplied PrefService must outlive this NetPrefObserver.
 // Must be used only on the UI thread.

@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"

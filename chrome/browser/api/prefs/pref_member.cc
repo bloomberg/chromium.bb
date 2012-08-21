@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/value_conversions.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/common/chrome_notification_types.h"
 
 using content::BrowserThread;
@@ -26,7 +26,7 @@ PrefMemberBase::~PrefMemberBase() {
 
 
 void PrefMemberBase::Init(const char* pref_name,
-                          PrefService* prefs,
+                          PrefServiceBase* prefs,
                           content::NotificationObserver* observer) {
   DCHECK(pref_name);
   DCHECK(prefs);
@@ -69,7 +69,7 @@ void PrefMemberBase::Observe(int type,
 
 void PrefMemberBase::UpdateValueFromPref() const {
   VerifyValuePrefName();
-  const PrefService::Preference* pref =
+  const PrefServiceBase::Preference* pref =
       prefs_->FindPreference(pref_name_.c_str());
   DCHECK(pref);
   if (!internal())

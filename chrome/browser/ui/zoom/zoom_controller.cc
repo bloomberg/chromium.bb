@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"

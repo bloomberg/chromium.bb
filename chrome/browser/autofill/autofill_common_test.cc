@@ -5,10 +5,10 @@
 #include "chrome/browser/autofill/autofill_common_test.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/password_manager/encryptor.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "webkit/forms/form_field.h"
@@ -83,8 +83,8 @@ void DisableSystemServices(Profile* profile) {
   // Disable auxiliary profiles for unit testing.  These reach out to system
   // services on the Mac.
   if (profile) {
-    profile->GetPrefs()->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled,
-                                    false);
+    PrefServiceBase::ForProfile(profile)->SetBoolean(
+        prefs::kAutofillAuxiliaryProfilesEnabled, false);
   }
 }
 
