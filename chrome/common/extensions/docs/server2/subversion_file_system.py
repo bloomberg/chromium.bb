@@ -9,6 +9,36 @@ from xml.parsers.expat import ExpatError
 import file_system
 from future import Future
 
+class _AsyncFetchFuture(object):
+  def __init__(self, paths, fetcher, binary):
+    # A list of tuples of the form (path, Future).
+    self._fetches = [(path, fetcher.FetchAsync(path)) for path in paths]
+    self._value = {}
+    self._error = None
+    self._binary = binary
+
+  def _ListDir(self, directory):
+    dom = xml.parseString(directory)
+    files = [elem.childNodes[0].data for elem in dom.getElementsByTagName('a')]
+    if '..' in files:
+      files.remove('..')
+    return files
+
+  def Get(self):
+    for path, future in self._fetches:
+      result = future.Get()
+      if result.status_code == 404:
+        raise file_system.FileNotFoundError(path)
+      elif path.endswith('/'):
+        self._value[path] = self._ListDir(result.content)
+      elif not self._binary:
+        self._value[path] = file_system._ProcessFileData(result.content, path)
+      else:
+        self._value[path] = result.content
+    if self._error is not None:
+      raise self._error
+    return self._value
+
 class SubversionFileSystem(file_system.FileSystem):
   """Class to fetch resources from src.chromium.org.
   """
@@ -58,7 +88,7 @@ class SubversionFileSystem(file_system.FileSystem):
           child_revisions[name] = rev.firstChild.nodeValue
         else:
           child_revisions[name + '/'] = rev.firstChild.nodeValue
-    return self.StatInfo(dir_revision, child_revisions)
+    return file_system.StatInfo(dir_revision, child_revisions)
 
   def Stat(self, path):
     directory = path.rsplit('/', 1)[0]
@@ -72,35 +102,3 @@ class SubversionFileSystem(file_system.FileSystem):
         raise file_system.FileNotFoundError(path)
       stat_info.version = stat_info.child_versions[filename]
     return stat_info
-
-class _AsyncFetchFuture(object):
-  def __init__(self, paths, fetcher, binary):
-    # A list of tuples of the form (path, Future).
-    self._fetches = []
-    self._value = {}
-    self._error = None
-    self._fetches = [(path, fetcher.FetchAsync(path)) for path in paths]
-    self._binary = binary
-
-  def _ListDir(self, directory):
-    dom = xml.parseString(directory)
-    files = [elem.childNodes[0].data for elem in dom.getElementsByTagName('a')]
-    if '..' in files:
-      files.remove('..')
-    return files
-
-  def Get(self):
-    for path, future in self._fetches:
-      result = future.Get()
-      if result.status_code == 404:
-        raise file_system.FileNotFoundError(path)
-      elif path.endswith('/'):
-        self._value[path] = self._ListDir(result.content)
-      elif not self._binary:
-        self._value[path] = file_system._ProcessFileData(result.content, path)
-      else:
-        self._value[path] = result.content
-    if self._error is not None:
-      raise self._error
-    return self._value
-

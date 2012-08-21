@@ -7,6 +7,7 @@ import json
 import os
 import unittest
 
+from in_memory_object_store import InMemoryObjectStore
 from file_system_cache import FileSystemCache
 from local_file_system import LocalFileSystem
 from template_data_source import TemplateDataSource
@@ -15,24 +16,24 @@ from third_party.handlebar import Handlebar
 class _FakeRequest(object):
     pass
 
-class _FakeApiDataSourceFactory(object):
-  def __init__(self, input_dict):
-    self._input_dict = input_dict
+class _FakeFactory(object):
+  def __init__(self, input_dict=None):
+    if input_dict is None:
+      self._input_dict = {}
+    else:
+      self._input_dict = input_dict
 
-  def Create(self, samples):
+  def Create(self, *args):
     return self._input_dict
-
-class _FakeSamplesDataSource(object):
-  def Create(self, request):
-    return {}
 
 class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join('test_data', 'template_data_source')
-    self._fake_api_data_source_factory = _FakeApiDataSourceFactory({})
-    self._fake_api_list_data_source = {}
-    self._fake_intro_data_source = {}
-    self._fake_samples_data_source = _FakeSamplesDataSource()
+    self._fake_api_data_source_factory = _FakeFactory()
+    self._fake_api_list_data_source_factory = _FakeFactory()
+    self._fake_intro_data_source_factory = _FakeFactory()
+    self._fake_samples_data_source_factory = _FakeFactory()
+    self._object_store = InMemoryObjectStore('fake_branch')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -47,10 +48,10 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def _CreateTemplateDataSource(self, input_dict, cache_builder):
     return (TemplateDataSource.Factory('fake_branch',
-                                       _FakeApiDataSourceFactory(input_dict),
-                                       self._fake_api_list_data_source,
-                                       self._fake_intro_data_source,
-                                       self._fake_samples_data_source,
+                                       _FakeFactory(input_dict),
+                                       self._fake_api_list_data_source_factory,
+                                       self._fake_intro_data_source_factory,
+                                       self._fake_samples_data_source_factory,
                                        cache_builder,
                                        '.',
                                        '.')
@@ -59,7 +60,7 @@ class TemplateDataSourceTest(unittest.TestCase):
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
     fetcher = LocalFileSystem(self._base_path)
-    cache_builder = FileSystemCache.Builder(fetcher)
+    cache_builder = FileSystemCache.Builder(fetcher, self._object_store)
     t_data_source = self._CreateTemplateDataSource(
         self._fake_api_data_source_factory, cache_builder)
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
@@ -75,7 +76,7 @@ class TemplateDataSourceTest(unittest.TestCase):
   def testPartials(self):
     self._base_path = os.path.join(self._base_path, 'partials')
     fetcher = LocalFileSystem(self._base_path)
-    cache_builder = FileSystemCache.Builder(fetcher)
+    cache_builder = FileSystemCache.Builder(fetcher, self._object_store)
     t_data_source = self._CreateTemplateDataSource(
         self._fake_api_data_source_factory, cache_builder)
     self.assertEqual(
@@ -87,7 +88,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'render')
     fetcher = LocalFileSystem(self._base_path)
     context = json.loads(self._ReadLocalFile('test1.json'))
-    cache_builder = FileSystemCache.Builder(fetcher)
+    cache_builder = FileSystemCache.Builder(fetcher, self._object_store)
     self._RenderTest(
         'test1',
         self._CreateTemplateDataSource(

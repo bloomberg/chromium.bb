@@ -4,15 +4,15 @@
 
 import json
 
-import appengine_memcache as memcache
+import object_store
 import operator
 
 class BranchUtility(object):
-  def __init__(self, base_path, default_branch, fetcher, memcache):
+  def __init__(self, base_path, default_branch, fetcher, object_store):
     self._base_path = base_path
     self._default_branch = default_branch
     self._fetcher = fetcher
-    self._memcache = memcache
+    self._object_store = object_store
 
   def GetAllBranchNumbers(self):
     return [self.GetBranchNumberForChannelName(branch)
@@ -39,8 +39,9 @@ class BranchUtility(object):
     if channel_name in ['trunk', 'local']:
       return channel_name
 
-    branch_number = self._memcache.Get(channel_name + '.' + self._base_path,
-                                       memcache.MEMCACHE_BRANCH_UTILITY)
+    branch_number = self._object_store.Get(channel_name + '.' + self._base_path,
+                                           object_store.BRANCH_UTILITY,
+                                           time=86400).Get()
     if branch_number is not None:
       return branch_number
 
@@ -63,9 +64,9 @@ class BranchUtility(object):
                              operator.itemgetter(1),
                              True)
     # Cache for 24 hours.
-    self._memcache.Set(channel_name + '.' + self._base_path,
-                       sorted_branches[0][0],
-                       memcache.MEMCACHE_BRANCH_UTILITY,
-                       time=86400)
+    self._object_store.Set(channel_name + '.' + self._base_path,
+                           sorted_branches[0][0],
+                           object_store.BRANCH_UTILITY,
+                           time=86400)
 
     return sorted_branches[0][0]

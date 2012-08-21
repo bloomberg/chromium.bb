@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 import json
-import logging
 import os
 
 from file_system import FileNotFoundError
+import file_system_cache as fs_cache
 from handlebar_dict_generator import HandlebarDictGenerator
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
@@ -30,9 +30,12 @@ class APIDataSource(object):
   """
   class Factory(object):
     def __init__(self, cache_builder, base_path, samples_factory):
-      self._permissions_cache = cache_builder.build(self._LoadPermissions)
-      self._json_cache = cache_builder.build(self._LoadJsonAPI)
-      self._idl_cache = cache_builder.build(self._LoadIdlAPI)
+      self._permissions_cache = cache_builder.build(self._LoadPermissions,
+                                                    fs_cache.PERMS)
+      self._json_cache = cache_builder.build(self._LoadJsonAPI,
+                                             fs_cache.JSON)
+      self._idl_cache = cache_builder.build(self._LoadIdlAPI,
+                                            fs_cache.IDL)
       self._samples_factory = samples_factory
       self._base_path = base_path
 

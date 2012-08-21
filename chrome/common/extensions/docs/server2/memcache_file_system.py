@@ -2,35 +2,66 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from file_system import FileSystem
+from file_system import FileSystem, StatInfo, FileNotFoundError
 from future import Future
-import appengine_memcache as memcache
+import object_store
+
+class _AsyncUncachedFuture(object):
+  def __init__(self, uncached, current_result, file_system, object_store):
+    self._uncached = uncached
+    self._current_result = current_result
+    self._file_system = file_system
+    self._object_store = object_store
+
+  def Get(self):
+    mapping = {}
+    new_items = self._uncached.Get()
+    for item in new_items:
+      version = self._file_system.Stat(item).version
+      mapping[item] = (new_items[item], version)
+      self._current_result[item] = new_items[item]
+    self._object_store.SetMulti(mapping, object_store.FILE_SYSTEM_READ, time=0)
+    return self._current_result
 
 class MemcacheFileSystem(FileSystem):
   """FileSystem implementation which memcaches the results of Read.
   """
-  def __init__(self, file_system, memcache):
+  def __init__(self, file_system, object_store):
     self._file_system = file_system
-    self._memcache = memcache
+    self._object_store = object_store
 
-  def Stat(self, path):
+  def Stat(self, path, stats=None):
     """Stats the directory given, or if a file is given, stats the files parent
     directory to get info about the file.
     """
-    version = self._memcache.Get(path, memcache.MEMCACHE_FILE_SYSTEM_STAT)
-    if version is None:
-      stat_info = self._file_system.Stat(path)
-      self._memcache.Set(path,
-                         stat_info.version,
-                         memcache.MEMCACHE_FILE_SYSTEM_STAT)
-      if stat_info.child_versions is not None:
-        for child_path, child_version in stat_info.child_versions.iteritems():
-          self._memcache.Set(path.rsplit('/', 1)[0] + '/' + child_path,
-                             child_version,
-                             memcache.MEMCACHE_FILE_SYSTEM_STAT)
+    # TODO(kalman): store the whole stat info, not just the version.
+    version = self._object_store.Get(path, object_store.FILE_SYSTEM_STAT).Get()
+    if version is not None:
+      return StatInfo(version)
+
+    # Always stat the parent directory, since it will have the stat of the child
+    # anyway, and this gives us an entire directory's stat info at once.
+    if path.endswith('/'):
+      dir_path = path
     else:
-      stat_info = self.StatInfo(version)
-    return stat_info
+      dir_path = path.rsplit('/', 1)[0] + '/'
+
+    dir_stat = self._file_system.Stat(dir_path)
+    if path == dir_path:
+      version = dir_stat.version
+    else:
+      version = dir_stat.child_versions.get(path.split('/')[-1], None)
+      # TODO(cduvall): IDL APIs are restatting every load because this exception
+      # is thrown so they never get cached.
+      if version is None:
+        raise FileNotFoundError(path)
+    mapping = { path: version }
+
+    for child_path, child_version in dir_stat.child_versions.iteritems():
+      child_path = dir_path + child_path
+      mapping[child_path] = child_version
+    self._object_store.SetMulti(mapping, object_store.FILE_SYSTEM_STAT)
+    return StatInfo(version)
 
   def Read(self, paths, binary=False):
     """Reads a list of files. If a file is in memcache and it is not out of
@@ -38,29 +69,33 @@ class MemcacheFileSystem(FileSystem):
     """
     result = {}
     uncached = []
-    for path in paths:
-      cached_result = self._memcache.Get(path,
-                                         memcache.MEMCACHE_FILE_SYSTEM_READ)
+    results = self._object_store.GetMulti(paths,
+                                          object_store.FILE_SYSTEM_READ,
+                                          time=0).Get()
+    result_values = [x[1] for x in sorted(results.iteritems())]
+    stats = self._object_store.GetMulti(paths,
+                                        object_store.FILE_SYSTEM_STAT).Get()
+    stat_values = [x[1] for x in sorted(stats.iteritems())]
+    for path, cached_result, stat in zip(sorted(paths),
+                                         result_values,
+                                         stat_values):
       if cached_result is None:
         uncached.append(path)
         continue
       data, version = cached_result
-      if self.Stat(path).version != version:
-        self._memcache.Delete(path, memcache.MEMCACHE_FILE_SYSTEM_READ)
+      # TODO(cduvall): Make this use a multi stat.
+      if stat is None:
+        stat = self.Stat(path).version
+      if stat != version:
+        self._object_store.Delete(path, object_store.FILE_SYSTEM_READ)
         uncached.append(path)
         continue
       result[path] = data
-    if uncached:
-      # TODO(cduvall): if there are uncached items we should return an
-      # asynchronous future. http://crbug.com/142013
-      new_items = self._file_system.Read(uncached, binary=binary).Get()
-      for item in new_items:
-        version = self.Stat(item).version
-        value = new_items[item]
-        # Cache this file forever.
-        self._memcache.Set(item,
-                           (value, version),
-                           memcache.MEMCACHE_FILE_SYSTEM_READ,
-                           time=0)
-        result[item] = value
-    return Future(value=result)
+
+    if not uncached:
+      return Future(value=result)
+    return Future(delegate=_AsyncUncachedFuture(
+        self._file_system.Read(uncached, binary=binary),
+        result,
+        self,
+        self._object_store))

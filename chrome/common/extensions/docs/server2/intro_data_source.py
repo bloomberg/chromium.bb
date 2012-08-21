@@ -3,12 +3,14 @@
 # found in the LICENSE file.
 
 from HTMLParser import HTMLParser
-import logging
 import re
 
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
+import file_system_cache as fs_cache
 from third_party.handlebar import Handlebar
+
+_H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
 class _IntroParser(HTMLParser):
   """ An HTML parser which will parse table of contents and page title info out
@@ -53,23 +55,32 @@ class _IntroParser(HTMLParser):
       self._current_heading['title'] += data
 
 class IntroDataSource(object):
+
+  class Factory(object):
+    def __init__(self, cache_builder, base_paths):
+      self._cache = cache_builder.build(self._MakeIntroDict,
+                                        fs_cache.INTRO)
+      self._base_paths = base_paths
+
+    def _MakeIntroDict(self, intro):
+      parser = _IntroParser()
+      parser.feed(intro)
+      intro = re.sub(_H1_REGEX, '', intro, count=1)
+      return {
+        'intro': Handlebar(intro),
+        'toc': parser.toc,
+        'title': parser.page_title
+      }
+
+    def Create(self):
+      return IntroDataSource(self._cache, self._base_paths)
+
   """This class fetches the intros for a given API. From this intro, a table
   of contents dictionary is created, which contains the headings in the intro.
   """
-  def __init__(self, cache_builder, base_paths):
-    self._cache = cache_builder.build(self._MakeIntroDict)
+  def __init__(self, cache, base_paths):
+    self._cache = cache
     self._base_paths = base_paths
-    self._intro_regex = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
-
-  def _MakeIntroDict(self, intro):
-    parser = _IntroParser()
-    parser.feed(intro)
-    intro = re.sub(self._intro_regex, '', intro, count=1)
-    return {
-      'intro': Handlebar(intro),
-      'toc': parser.toc,
-      'title': parser.page_title
-    }
 
   def __getitem__(self, key):
     return self.get(key)

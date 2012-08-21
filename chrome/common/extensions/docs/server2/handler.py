@@ -4,6 +4,7 @@
 
 import logging
 import os
+from StringIO import StringIO
 import sys
 
 from appengine_wrappers import webapp
@@ -13,11 +14,12 @@ from appengine_wrappers import urlfetch
 from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from appengine_blobstore import AppEngineBlobstore
-from appengine_memcache import AppEngineMemcache
+from in_memory_object_store import InMemoryObjectStore
 from appengine_url_fetcher import AppEngineUrlFetcher
 from branch_utility import BranchUtility
 from example_zipper import ExampleZipper
 from file_system_cache import FileSystemCache
+import file_system_cache as fs_cache
 from github_file_system import GithubFileSystem
 from intro_data_source import IntroDataSource
 from local_file_system import LocalFileSystem
@@ -33,54 +35,60 @@ import url_constants
 # handler.
 DEFAULT_BRANCH = 'local'
 
-BRANCH_UTILITY_MEMCACHE = AppEngineMemcache('branch_utility')
+BRANCH_UTILITY_MEMCACHE = InMemoryObjectStore('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
                                DEFAULT_BRANCH,
                                AppEngineUrlFetcher(None),
                                BRANCH_UTILITY_MEMCACHE)
 
+GITHUB_MEMCACHE = InMemoryObjectStore('github')
 GITHUB_FILE_SYSTEM = GithubFileSystem(
     AppEngineUrlFetcher(url_constants.GITHUB_URL),
-    AppEngineMemcache('github'),
+    GITHUB_MEMCACHE,
     AppEngineBlobstore())
-GITHUB_CACHE_BUILDER = FileSystemCache.Builder(GITHUB_FILE_SYSTEM)
+GITHUB_CACHE_BUILDER = FileSystemCache.Builder(GITHUB_FILE_SYSTEM,
+                                               GITHUB_MEMCACHE)
 
 STATIC_DIR_PREFIX = 'docs/server2'
 EXTENSIONS_PATH = 'chrome/common/extensions'
 DOCS_PATH = 'docs'
 API_PATH = 'api'
-INTRO_PATH = DOCS_PATH + '/server2/templates/intros'
-ARTICLE_PATH = DOCS_PATH + '/server2/templates/articles'
-PUBLIC_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/public'
-PRIVATE_TEMPLATE_PATH = DOCS_PATH + '/server2/templates/private'
+TEMPLATE_PATH = DOCS_PATH + '/server2/templates'
+INTRO_PATH = TEMPLATE_PATH + '/intros'
+ARTICLE_PATH = TEMPLATE_PATH + '/articles'
+PUBLIC_TEMPLATE_PATH = TEMPLATE_PATH + '/public'
+PRIVATE_TEMPLATE_PATH = TEMPLATE_PATH + '/private'
 EXAMPLES_PATH = DOCS_PATH + '/examples'
-FULL_EXAMPLES_PATH = DOCS_PATH + '/' + EXAMPLES_PATH
 
 # Global cache of instances because Handler is recreated for every request.
 SERVER_INSTANCES = {}
+
+def _CreateMemcacheFileSystem(branch, branch_memcache):
+  svn_url = _GetURLFromBranch(branch) + '/' + EXTENSIONS_PATH
+  stat_fetcher = AppEngineUrlFetcher(
+      svn_url.replace(url_constants.SVN_URL, url_constants.VIEWVC_URL))
+  fetcher = AppEngineUrlFetcher(svn_url)
+  return MemcacheFileSystem(SubversionFileSystem(fetcher, stat_fetcher),
+                            branch_memcache)
 
 def _GetInstanceForBranch(channel_name, local_path):
   branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
   if branch in SERVER_INSTANCES:
     return SERVER_INSTANCES[branch]
+  branch_memcache = InMemoryObjectStore(branch)
   if branch == 'local':
     file_system = LocalFileSystem(local_path)
   else:
-    svn_url = _GetURLFromBranch(branch) + '/' + EXTENSIONS_PATH
-    stat_fetcher = AppEngineUrlFetcher(
-        svn_url.replace(url_constants.SVN_URL, url_constants.VIEWVC_URL))
-    fetcher = AppEngineUrlFetcher(svn_url)
-    file_system = MemcacheFileSystem(
-        SubversionFileSystem(fetcher, stat_fetcher),
-        AppEngineMemcache(branch))
+    file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
 
-  cache_builder = FileSystemCache.Builder(file_system)
-  api_list_data_source = APIListDataSource(cache_builder,
-                                           file_system,
-                                           API_PATH,
-                                           PUBLIC_TEMPLATE_PATH)
-  intro_data_source = IntroDataSource(cache_builder,
-                                      [INTRO_PATH, ARTICLE_PATH])
+  cache_builder = FileSystemCache.Builder(file_system, branch_memcache)
+  api_list_data_source_factory = APIListDataSource.Factory(cache_builder,
+                                                           file_system,
+                                                           API_PATH,
+                                                           PUBLIC_TEMPLATE_PATH)
+  intro_data_source_factory = IntroDataSource.Factory(
+      cache_builder,
+      [INTRO_PATH, ARTICLE_PATH])
   samples_data_source_factory = SamplesDataSource.Factory(branch,
                                                           file_system,
                                                           GITHUB_FILE_SYSTEM,
@@ -93,8 +101,8 @@ def _GetInstanceForBranch(channel_name, local_path):
   template_data_source_factory = TemplateDataSource.Factory(
       channel_name,
       api_data_source_factory,
-      api_list_data_source,
-      intro_data_source,
+      api_list_data_source_factory,
+      intro_data_source_factory,
       samples_data_source_factory,
       cache_builder,
       PUBLIC_TEMPLATE_PATH,
@@ -120,12 +128,25 @@ def _CleanBranches():
     if key not in numbers:
       SERVER_INSTANCES.pop(key)
 
+class _MockResponse(object):
+  def __init__(self):
+    self.status = 200
+    self.out = StringIO()
+
+  def set_status(self, status):
+    self.status = status
+
+class _MockRequest(object):
+  def __init__(self, path):
+    self.headers = {}
+    self.path = path
+
 class Handler(webapp.RequestHandler):
   def __init__(self, request, response, local_path=EXTENSIONS_PATH):
     self._local_path = local_path
     super(Handler, self).__init__(request, response)
 
-  def _NavigateToPath(self, path):
+  def _HandleGet(self, path):
     channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
     # TODO: Detect that these are directories and serve index.html out of them.
     if real_path.strip('/') == 'apps':
@@ -137,24 +158,32 @@ class Handler(webapp.RequestHandler):
                                                               self.request,
                                                               self.response)
 
+  def _Render(self, files, branch):
+    for f in files:
+      path = branch + f.split(PUBLIC_TEMPLATE_PATH)[-1]
+      self.request = _MockRequest(path)
+      self.response = _MockResponse()
+      self._HandleGet(path)
+
+  def _HandleCron(self, path):
+    branch = path.split('/')[-1]
+    logging.info('Running cron job for %s.' % branch)
+    branch_memcache = InMemoryObjectStore(branch)
+    file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
+    builder = FileSystemCache.Builder(file_system, branch_memcache)
+    render_cache = builder.build(lambda x: self._Render(x, branch),
+                                 fs_cache.RENDER)
+    render_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH)
+
   def get(self):
     path = self.request.path
-    if '_ah/warmup' in path:
-      logging.info('Warmup request.')
-      self._NavigateToPath('trunk/extensions/samples.html')
-      self._NavigateToPath('dev/extensions/samples.html')
-      self._NavigateToPath('beta/extensions/samples.html')
-      self._NavigateToPath('stable/extensions/samples.html')
-      # Only do this request if we are on the deployed server.
-      # Bug: http://crbug.com/141910
-      if DEFAULT_BRANCH != 'local':
-        self._NavigateToPath('apps/samples.html')
-      return
-
-    # Redirect paths like "directory" to "directory/". This is so relative file
-    # paths will know to treat this as a directory.
-    if os.path.splitext(path)[1] == '' and path[-1] != '/':
-      self.redirect(path + '/')
-    path = path.replace('/chrome/', '')
-    path = path.strip('/')
-    self._NavigateToPath(path)
+    if path.startswith('/cron'):
+      self._HandleCron(path)
+    else:
+      # Redirect paths like "directory" to "directory/". This is so relative
+      # file paths will know to treat this as a directory.
+      if os.path.splitext(path)[1] == '' and path[-1] != '/':
+        self.redirect(path + '/')
+      path = path.replace('/chrome/', '')
+      path = path.strip('/')
+      self._HandleGet(path)

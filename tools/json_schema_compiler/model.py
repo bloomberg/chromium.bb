@@ -299,31 +299,33 @@ class Property(object):
 
   unix_name = property(GetUnixName, SetUnixName)
 
+class _PropertyTypeInfo(object):
+  """This class is not an inner class of |PropertyType| so it can be pickled.
+  """
+  def __init__(self, is_fundamental, name):
+    self.is_fundamental = is_fundamental
+    self.name = name
+
+  def __repr__(self):
+    return self.name
+
 class PropertyType(object):
   """Enum of different types of properties/parameters.
   """
-  class _Info(object):
-    def __init__(self, is_fundamental, name):
-      self.is_fundamental = is_fundamental
-      self.name = name
-
-    def __repr__(self):
-      return self.name
-
-  INTEGER = _Info(True, "INTEGER")
-  INT64 = _Info(True, "INT64")
-  DOUBLE = _Info(True, "DOUBLE")
-  BOOLEAN = _Info(True, "BOOLEAN")
-  STRING = _Info(True, "STRING")
-  ENUM = _Info(False, "ENUM")
-  ARRAY = _Info(False, "ARRAY")
-  REF = _Info(False, "REF")
-  CHOICES = _Info(False, "CHOICES")
-  OBJECT = _Info(False, "OBJECT")
-  FUNCTION = _Info(False, "FUNCTION")
-  BINARY = _Info(False, "BINARY")
-  ANY = _Info(False, "ANY")
-  ADDITIONAL_PROPERTIES = _Info(False, "ADDITIONAL_PROPERTIES")
+  INTEGER = _PropertyTypeInfo(True, "INTEGER")
+  INT64 = _PropertyTypeInfo(True, "INT64")
+  DOUBLE = _PropertyTypeInfo(True, "DOUBLE")
+  BOOLEAN = _PropertyTypeInfo(True, "BOOLEAN")
+  STRING = _PropertyTypeInfo(True, "STRING")
+  ENUM = _PropertyTypeInfo(False, "ENUM")
+  ARRAY = _PropertyTypeInfo(False, "ARRAY")
+  REF = _PropertyTypeInfo(False, "REF")
+  CHOICES = _PropertyTypeInfo(False, "CHOICES")
+  OBJECT = _PropertyTypeInfo(False, "OBJECT")
+  FUNCTION = _PropertyTypeInfo(False, "FUNCTION")
+  BINARY = _PropertyTypeInfo(False, "BINARY")
+  ANY = _PropertyTypeInfo(False, "ANY")
+  ADDITIONAL_PROPERTIES = _PropertyTypeInfo(False, "ADDITIONAL_PROPERTIES")
 
 def UnixName(name):
   """Returns the unix_style name for a given lowerCamelCase string.

@@ -36,6 +36,13 @@ except ImportError:
         return v
     return None
 
+  class _RPC(object):
+    def __init__(self, result=None):
+      self.result = result
+
+    def get_result(self):
+      return self.result
+
   class FakeUrlFetch(object):
     """A fake urlfetch module that uses the current
     |FAKE_URL_FETCHER_CONFIGURATION| to map urls to fake fetchers.
@@ -46,21 +53,11 @@ except ImportError:
         self.headers = { 'content-type': 'none' }
         self.status_code = 200
 
-    class _RPC(object):
-      def __init__(self):
-        self.result = None
-
-      def wait(self):
-        pass
-
-      def get_result(self):
-        return self.result
-
     def fetch(self, url):
       return self._Response(_GetConfiguration(url).fetch(url))
 
     def create_rpc(self):
-      return self._RPC()
+      return _RPC()
 
     def make_fetch_call(self, rpc, url):
       rpc.result = self.fetch(url)
@@ -74,30 +71,29 @@ except ImportError:
   files = NotImplemented()
 
   class InMemoryMemcache(object):
-    """A memcache that stores items in memory instead of using the memcache
-    module.
+    """A fake memcache that does nothing.
     """
-    def __init__(self):
-      self._cache = {}
+    class Client(object):
+      def set_multi_async(self, mapping, namespace='', time=0):
+        return
 
-    def set(self, key, value, namespace, time=60):
-      if namespace not in self._cache:
-        self._cache[namespace] = {}
-      self._cache[namespace][key] = value
+      def get_multi_async(self, keys, namespace='', time=0):
+        return _RPC(result=dict((k, None) for k in keys))
 
-    def get(self, key, namespace):
-      if namespace not in self._cache:
-        return None
-      return self._cache[namespace].get(key, None)
+    def set(self, key, value, namespace='', time=0):
+      return
+
+    def get(self, key, namespace='', time=0):
+      return None
 
     def delete(self, key, namespace):
-      if namespace in self._cache:
-        self._cache[namespace].pop(key)
+      return
   memcache = InMemoryMemcache()
 
-  # A fake webapp.RequestHandler class for Handler to extend.
   class webapp(object):
     class RequestHandler(object):
+      """A fake webapp.RequestHandler class for Handler to extend.
+      """
       def __init__(self, request, response):
         self.request = request
         self.response = response

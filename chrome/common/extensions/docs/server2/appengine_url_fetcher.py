@@ -10,7 +10,6 @@ class _AsyncFetchDelegate(object):
     self._rpc = rpc
 
   def Get(self):
-    self._rpc.wait()
     return self._rpc.get_result()
 
 class AppEngineUrlFetcher(object):

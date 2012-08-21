@@ -6,6 +6,7 @@ import json
 import logging
 import re
 
+import file_system_cache as fs_cache
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
 import url_constants
@@ -31,9 +32,11 @@ class SamplesDataSource(object):
       self._github_file_system = github_file_system
       self._static_path = ((('/' + branch) if branch != 'local' else '') +
                            '/static')
-      self._extensions_cache = cache_builder.build(self._MakeSamplesList)
+      self._extensions_cache = cache_builder.build(self._MakeSamplesList,
+                                                   fs_cache.EXTENSIONS)
       self._apps_cache = github_cache_builder.build(
-          lambda x: self._MakeSamplesList(x, is_apps=True))
+          lambda x: self._MakeSamplesList(x, is_apps=True),
+          fs_cache.APPS)
       self._samples_path = samples_path
 
     def Create(self, request):

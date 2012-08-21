@@ -6,8 +6,8 @@ import json
 import os
 
 import appengine_blobstore as blobstore
-import appengine_memcache as memcache
-import file_system
+import object_store
+from file_system import FileSystem, StatInfo
 from io import BytesIO
 from future import Future
 from zipfile import ZipFile
@@ -33,12 +33,12 @@ class _AsyncFetchFutureZip(object):
                            blobstore.BLOBSTORE_GITHUB)
     return ZipFile(BytesIO(blob))
 
-class GithubFileSystem(file_system.FileSystem):
+class GithubFileSystem(FileSystem):
   """FileSystem implementation which fetches resources from github.
   """
-  def __init__(self, fetcher, memcache, blobstore):
+  def __init__(self, fetcher, object_store, blobstore):
     self._fetcher = fetcher
-    self._memcache = memcache
+    self._object_store = object_store
     self._blobstore = blobstore
     self._version = self.Stat(ZIP_KEY).version
     self._GetZip(self._version)
@@ -82,10 +82,10 @@ class GithubFileSystem(file_system.FileSystem):
     return Future(value=result)
 
   def Stat(self, path):
-    version = self._memcache.Get(path, memcache.MEMCACHE_GITHUB_STAT)
+    version = self._object_store.Get(path, object_store.GITHUB_STAT)
     if version is not None:
-      return self.StatInfo(version)
+      return StatInfo(version)
     version = json.loads(
         self._fetcher.Fetch('commits/HEAD').content)['commit']['tree']['sha']
-    self._memcache.Set(path, version, memcache.MEMCACHE_GITHUB_STAT)
-    return self.StatInfo(version)
+    self._object_store.Set(path, version, object_store.GITHUB_STAT)
+    return StatInfo(version)

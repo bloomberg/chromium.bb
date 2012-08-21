@@ -7,12 +7,15 @@ from io import BytesIO
 import re
 from zipfile import ZipFile
 
+import file_system_cache as fs_cache
+
 class ExampleZipper(object):
   """This class creates a zip file given a samples directory.
   """
   def __init__(self, file_system, cache_builder, base_path, match_path):
     self._base_path = base_path
-    self._zip_cache = cache_builder.build(self._MakeZipFile)
+    self._zip_cache = cache_builder.build(self._MakeZipFile,
+                                          fs_cache.ZIP)
     self._file_system = file_system
     self._match_path = match_path
 

@@ -58,7 +58,7 @@ class LocalFileSystem(file_system.FileSystem):
                       for filename in os.listdir(path))
     else:
       versions = None
-    return self.StatInfo(os.stat(path).st_mtime, versions)
+    return file_system.StatInfo(os.stat(path).st_mtime, versions)
 
   def Stat(self, path):
     try:

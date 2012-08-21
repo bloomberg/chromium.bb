@@ -8,6 +8,13 @@ class FileNotFoundError(Exception):
   def __init__(self, filename):
     Exception.__init__(self, filename)
 
+class StatInfo(object):
+  """The result of calling Stat on a FileSystem.
+  """
+  def __init__(self, version, child_versions=None):
+    self.version = version
+    self.child_versions = child_versions
+
 def _ProcessFileData(data, path):
   if os.path.splitext(path)[-1] not in ['.js', '.html', '.json']:
     return data
@@ -19,12 +26,6 @@ def _ProcessFileData(data, path):
 class FileSystem(object):
   """A FileSystem interface that can read files and directories.
   """
-  class StatInfo(object):
-    """The result of calling Stat on a FileSystem.
-    """
-    def __init__(self, version, child_versions=None):
-      self.version = version
-      self.child_versions = child_versions
 
   def Read(self, paths, binary=False):
     """Reads each file in paths and returns a dictionary mapping the path to the
@@ -42,6 +43,7 @@ class FileSystem(object):
     """
     return self.Read([path]).Get()[path]
 
+  # TODO(cduvall): Allow Stat to take a list of paths like Read.
   def Stat(self, path):
     """Returns a |StatInfo| object containing the version of |path|. If |path|
     is a directory, |StatInfo| will have the versions of all the children of

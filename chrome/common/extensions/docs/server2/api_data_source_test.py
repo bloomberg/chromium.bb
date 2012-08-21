@@ -7,10 +7,11 @@ import json
 import os
 import unittest
 
+from api_data_source import APIDataSource
+from in_memory_object_store import InMemoryObjectStore
 from file_system import FileNotFoundError
 from file_system_cache import FileSystemCache
 from local_file_system import LocalFileSystem
-from api_data_source import APIDataSource
 
 class FakeSamplesDataSource:
   def Create(self, request):
@@ -25,7 +26,8 @@ class APIDataSourceTest(unittest.TestCase):
       return f.read()
 
   def testSimple(self):
-    cache_builder = FileSystemCache.Builder(LocalFileSystem(self._base_path))
+    cache_builder = FileSystemCache.Builder(LocalFileSystem(self._base_path),
+                                            InMemoryObjectStore('fake_branch'))
     data_source_factory = APIDataSource.Factory(cache_builder,
                                                 '.',
                                                 FakeSamplesDataSource())

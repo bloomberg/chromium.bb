@@ -6,9 +6,9 @@
 import os
 import unittest
 
-from appengine_memcache import AppEngineMemcache
 from fake_url_fetcher import FakeUrlFetcher
 from github_file_system import GithubFileSystem
+from in_memory_object_store import InMemoryObjectStore
 
 class FakeBlobstore(object):
   def Set(self, blob, key, version):
@@ -33,7 +33,7 @@ class FakeGithubFetcher(FakeUrlFetcher):
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):
     self._file_system = GithubFileSystem(FakeGithubFetcher('test_data'),
-                                         AppEngineMemcache('test'),
+                                         InMemoryObjectStore('test'),
                                          FakeBlobstore())
 
   def testReadFiles(self):

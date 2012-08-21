@@ -8,7 +8,6 @@ import os
 from StringIO import StringIO
 import unittest
 
-import appengine_memcache as memcache
 from fake_fetchers import ConfigureFakeFetchers
 
 KNOWN_FAILURES = [
@@ -69,17 +68,6 @@ class IntegrationTest(unittest.TestCase):
       Handler(request, response, local_path='../..').get()
       self.assertEqual(200, response.status)
       self.assertTrue(response.out.getvalue())
-
-  def testWarmupRequest(self):
-    request = _MockRequest('_ah/warmup')
-    response = _MockResponse()
-    Handler(request, response, local_path='../..').get()
-    self.assertEqual(200, response.status)
-    # Test that the pages were rendered by checking the size of the output.
-    # In python 2.6 there is no 'assertGreater' method.
-    value = response.out.getvalue()
-    self.assertTrue(len(value) > 100000,
-                    msg='Response is too small, probably empty: %s' % value)
 
 if __name__ == '__main__':
   unittest.main()

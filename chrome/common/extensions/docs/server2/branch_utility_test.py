@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_memcache import AppEngineMemcache
+from in_memory_object_store import InMemoryObjectStore
 from branch_utility import BranchUtility
 from fake_url_fetcher import FakeUrlFetcher
 import unittest
@@ -13,7 +13,7 @@ class BranchUtilityTest(unittest.TestCase):
     self._branch_util = BranchUtility('branch_utility/first.json',
                                       'stable',
                                       FakeUrlFetcher('test_data'),
-                                      AppEngineMemcache(''))
+                                      InMemoryObjectStore(''))
 
   def testSplitChannelNameFromPath(self):
     self.assertEquals(('dev', 'hello/stuff.html'),

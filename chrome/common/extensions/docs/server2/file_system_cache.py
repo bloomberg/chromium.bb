@@ -4,27 +4,50 @@
 
 import os
 
+import object_store
+
+APPS        = 'Apps'
+CRON        = 'Cron'
+EXTENSIONS  = 'Extensions'
+HANDLEBAR   = 'Handlebar'
+IDL         = 'IDL'
+INTRO       = 'Intro'
+JSON        = 'JSON'
+LIST        = 'List'
+PERMS       = 'Perms'
+RENDER      = 'Render'
+STATIC      = 'Static'
+ZIP         = 'Zip'
+
+class _CacheEntry(object):
+  def __init__(self, cache_data, version):
+    self._cache_data = cache_data
+    self.version = version
+
 class FileSystemCache(object):
   """This class caches FileSystem data that has been processed.
   """
   class Builder(object):
     """A class to build a FileSystemCache.
     """
-    def __init__(self, file_system):
+    def __init__(self, file_system, object_store):
       self._file_system = file_system
+      self._object_store = object_store
 
-    def build(self, populate_function):
-      return FileSystemCache(self._file_system, populate_function)
+    def build(self, populate_function, namespace):
+      return FileSystemCache(self._file_system,
+                             populate_function,
+                             self._object_store,
+                             namespace)
 
-  class _CacheEntry(object):
-    def __init__(self, cache_data, version):
-      self._cache_data = cache_data
-      self.version = version
-
-  def __init__(self, file_system, populate_function):
+  def __init__(self, file_system, populate_function, object_store, namespace):
     self._file_system = file_system
     self._populate_function = populate_function
-    self._cache = {}
+    self._object_store = object_store
+    self._namespace = 'FileSystemCache.' + namespace
+
+  def _MakeKey(self, key):
+    return self._namespace + '.' + key
 
   def _RecursiveList(self, files):
     all_files = files[:]
@@ -41,15 +64,18 @@ class FileSystemCache(object):
     """Calls |populate_function| on the contents of the file at |path|.
     """
     version = self._file_system.Stat(path).version
-    if path in self._cache:
-      if version > self._cache[path].version:
-        self._cache.pop(path)
-      else:
-        return self._cache[path]._cache_data
-    cache_data = self._file_system.ReadSingle(path)
-    self._cache[path] = self._CacheEntry(self._populate_function(cache_data),
-                                         version)
-    return self._cache[path]._cache_data
+    cache_entry = self._object_store.Get(self._MakeKey(path),
+                                         object_store.FILE_SYSTEM_CACHE,
+                                         time=0).Get()
+
+    if (cache_entry is not None) and (version == cache_entry.version):
+      return cache_entry._cache_data
+    cache_data = self._populate_function(self._file_system.ReadSingle(path))
+    self._object_store.Set(self._MakeKey(path),
+                           _CacheEntry(cache_data, version),
+                           object_store.FILE_SYSTEM_CACHE,
+                           time=0)
+    return cache_data
 
   def GetFromFileListing(self, path):
     """Calls |populate_function| on the listing of the files at |path|.
@@ -58,13 +84,16 @@ class FileSystemCache(object):
     if not path.endswith('/'):
       path += '/'
     version = self._file_system.Stat(path).version
-    if path in self._cache:
-      if version > self._cache[path].version:
-        self._cache.pop(path)
-      else:
-        return self._cache[path]._cache_data
-    cache_data = self._RecursiveList(
-        [path + f for f in self._file_system.ReadSingle(path)])
-    self._cache[path] = self._CacheEntry(self._populate_function(cache_data),
-                                         version)
-    return self._cache[path]._cache_data
+    cache_entry = self._object_store.Get(
+        self._MakeKey(path),
+        object_store.FILE_SYSTEM_CACHE_LISTING,
+        time=0).Get()
+    if (cache_entry is not None) and (version == cache_entry.version):
+        return cache_entry._cache_data
+    cache_data = self._populate_function(self._RecursiveList(
+        [path + f for f in self._file_system.ReadSingle(path)]))
+    self._object_store.Set(self._MakeKey(path),
+                           _CacheEntry(cache_data, version),
+                           object_store.FILE_SYSTEM_CACHE_LISTING,
+                           time=0)
+    return cache_data
