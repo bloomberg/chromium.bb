@@ -67,8 +67,8 @@
   position: relative;
 }
 
-#searchPage.page {
-  /* The search page needs no padding as it's provided by showing the results
-   * from each page. */
-  padding: 0;
+/* #mainview is here to win specificity. :( */
+#mainview #searchPage.page,
+#mainview #searchBox.page {
+  padding-bottom: 0;
 }
