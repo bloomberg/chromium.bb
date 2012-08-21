@@ -86,7 +86,6 @@ bool PalmClassifyingFilterInterpreter::FingerInPalmEnvelope(
       (palm_edge_width_.val_ - palm_edge_min_width_.val_);
   return fs.position_x < limit ||
       fs.position_x > (hw_props_.right - limit) ||
-      fs.position_y < limit ||
       fs.position_y > (hw_props_.bottom - limit);
 }
 
