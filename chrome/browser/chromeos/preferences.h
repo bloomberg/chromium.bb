@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefService;

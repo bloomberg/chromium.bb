@@ -9,9 +9,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_downloader.h"
+#include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "content/public/browser/notification_observer.h"
 
 class Profile;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 
 #include "base/bind.h"
 #include "base/logging.h"

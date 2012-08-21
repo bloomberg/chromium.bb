@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 

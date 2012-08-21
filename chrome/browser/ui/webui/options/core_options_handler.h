@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/plugin_status_pref_setter.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 

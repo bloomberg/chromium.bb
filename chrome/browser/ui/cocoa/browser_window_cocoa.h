@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"

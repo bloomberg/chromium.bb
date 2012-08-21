@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"

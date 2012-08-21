@@ -11,9 +11,9 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "net/base/network_change_notifier.h"
 

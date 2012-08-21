@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace webkit {

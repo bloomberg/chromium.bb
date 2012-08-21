@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"

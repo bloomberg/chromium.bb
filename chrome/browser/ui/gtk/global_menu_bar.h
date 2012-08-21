@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/gtk/global_history_menu.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/gtk/gtk_signal.h"

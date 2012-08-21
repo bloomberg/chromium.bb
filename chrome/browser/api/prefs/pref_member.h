@@ -21,8 +21,8 @@
 // notify MyClass of changes. Note that if you use SetValue(), the observer
 // will not be notified.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_MEMBER_H_
-#define CHROME_BROWSER_PREFS_PREF_MEMBER_H_
+#ifndef CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_
+#define CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_
 
 #include <string>
 
@@ -245,4 +245,4 @@ typedef PrefMember<double> DoublePrefMember;
 typedef PrefMember<std::string> StringPrefMember;
 typedef PrefMember<FilePath> FilePathPrefMember;
 
-#endif  // CHROME_BROWSER_PREFS_PREF_MEMBER_H_
+#endif  // CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_

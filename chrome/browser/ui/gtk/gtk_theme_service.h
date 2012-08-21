@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/glib/glib_integers.h"

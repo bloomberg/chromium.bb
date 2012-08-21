@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -15,9 +15,9 @@
 #include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

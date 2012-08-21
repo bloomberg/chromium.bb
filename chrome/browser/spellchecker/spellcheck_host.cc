@@ -6,7 +6,7 @@
 
 #include "base/string_split.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host_impl.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"

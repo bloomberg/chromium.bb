@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 

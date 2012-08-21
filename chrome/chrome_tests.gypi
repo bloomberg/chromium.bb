@@ -1007,6 +1007,8 @@
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
+        'browser/api/prefs/pref_change_registrar_unittest.cc',
+        'browser/api/prefs/pref_member_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_input_unittest.cc',
         'browser/autocomplete/autocomplete_match_unittest.cc',
@@ -1476,8 +1478,6 @@
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
         'browser/prefs/overlay_user_pref_store_unittest.cc',
-        'browser/prefs/pref_change_registrar_unittest.cc',
-        'browser/prefs/pref_member_unittest.cc',
         'browser/prefs/pref_model_associator_unittest.cc',
         'browser/prefs/pref_notifier_impl_unittest.cc',
         'browser/prefs/pref_service_unittest.cc',

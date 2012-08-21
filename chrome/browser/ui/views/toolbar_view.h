@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"

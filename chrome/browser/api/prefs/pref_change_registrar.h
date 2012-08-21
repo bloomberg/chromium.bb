@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PREF_CHANGE_REGISTRAR_H_
-#define CHROME_BROWSER_PREFS_PREF_CHANGE_REGISTRAR_H_
+#ifndef CHROME_BROWSER_API_PREFS_PREF_CHANGE_REGISTRAR_H_
+#define CHROME_BROWSER_API_PREFS_PREF_CHANGE_REGISTRAR_H_
 
 #include <set>
 #include <string>
@@ -57,4 +57,4 @@ class PrefChangeRegistrar {
   DISALLOW_COPY_AND_ASSIGN(PrefChangeRegistrar);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PREF_CHANGE_REGISTRAR_H_
+#endif  // CHROME_BROWSER_API_PREFS_PREF_CHANGE_REGISTRAR_H_

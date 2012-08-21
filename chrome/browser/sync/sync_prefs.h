@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
-#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_state_tracker.h"

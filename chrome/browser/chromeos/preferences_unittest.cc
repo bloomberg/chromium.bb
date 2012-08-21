@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

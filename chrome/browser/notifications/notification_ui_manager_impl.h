@@ -12,11 +12,11 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification_prefs_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

@@ -12,8 +12,8 @@
 #include <string>
 #include <utility>
 
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 
 namespace extensions {
 

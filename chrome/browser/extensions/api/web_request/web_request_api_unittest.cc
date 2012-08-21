@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <queue>
 #include <map>
+#include <queue>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -14,13 +14,13 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"

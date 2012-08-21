@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"

@@ -27,3 +27,9 @@ include_rules = [
   "-chrome/browser",
   "+chrome/browser/api",
 ]
+
+specific_include_rules = {
+  ".*_[a-z]+test\.cc": [
+    "+chrome/test",
+  ],
+}

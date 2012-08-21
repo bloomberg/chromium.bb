@@ -7,8 +7,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

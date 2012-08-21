@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/content_settings.h"

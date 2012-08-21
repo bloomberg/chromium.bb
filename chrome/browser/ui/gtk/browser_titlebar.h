@@ -14,7 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/ui/gtk/browser_titlebar_base.h"
 #include "chrome/browser/ui/gtk/titlebar_throb_animation.h"
 #include "content/public/browser/notification_observer.h"

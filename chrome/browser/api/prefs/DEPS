@@ -1,0 +1,6 @@
+# TODO(joi): Bring back to zero.
+specific_include_rules = {
+  ".*\.cc": [
+    "!chrome/browser/prefs",
+  ],
+}

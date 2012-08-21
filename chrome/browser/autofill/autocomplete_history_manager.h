@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/web_contents_observer.h"
 

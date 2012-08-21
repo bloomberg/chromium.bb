@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/values.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
-#include "chrome/browser/prefs/pref_member.h"
 
 namespace chromeos {
 

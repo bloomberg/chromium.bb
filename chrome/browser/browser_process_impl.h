@@ -18,9 +18,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 
 class ChromeNetLog;

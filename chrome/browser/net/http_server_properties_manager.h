@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_pipelined_host_capability.h"
