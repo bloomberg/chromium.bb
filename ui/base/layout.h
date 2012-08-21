@@ -54,7 +54,7 @@ UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
 UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
 
 // Returns a vector with the scale factors which are supported by this
-// platform.
+// platform, in ascending order.
 UI_EXPORT std::vector<ScaleFactor> GetSupportedScaleFactors();
 
 // Returns true if |scale_factor| is supported by this platform.

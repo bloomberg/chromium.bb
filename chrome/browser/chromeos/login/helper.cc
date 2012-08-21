@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
@@ -111,10 +112,9 @@ int GetCurrentUserImageSize() {
   float scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
   if (scale_factor > 1.0f)
     return static_cast<int>(scale_factor * kBaseUserImageSize);
-  // TODO(flackr): ChromeOS currently supports up to 2x, however this should use
-  // the largest supported scale factor once
-  // http://codereview.chromium.org/10828052/ lands.
-  return 2 * kBaseUserImageSize;
+  // Use maximum supported scale factor.
+  return kBaseUserImageSize *
+      ui::GetScaleFactorScale(ui::GetSupportedScaleFactors().back());
 }
 
 }  // namespace chromeos
