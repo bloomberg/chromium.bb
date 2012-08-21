@@ -1461,28 +1461,13 @@ LRESULT NativeWidgetWin::OnImeMessages(UINT message,
 }
 
 void NativeWidgetWin::OnInitMenu(HMENU menu) {
-  bool is_fullscreen = IsFullscreen();
-  bool is_minimized = IsMinimized();
-  bool is_maximized = IsMaximized();
-  bool is_restored = !is_fullscreen && !is_minimized && !is_maximized;
-
-  ScopedRedrawLock lock(this);
-  EnableMenuItem(menu, SC_RESTORE, is_minimized || is_maximized);
-  EnableMenuItem(menu, SC_MOVE, is_restored);
-  EnableMenuItem(menu, SC_SIZE,
-                 GetWidget()->widget_delegate()->CanResize() && is_restored);
-  EnableMenuItem(menu, SC_MAXIMIZE,
-                 GetWidget()->widget_delegate()->CanMaximize() &&
-                     !is_fullscreen && !is_maximized);
-  EnableMenuItem(menu, SC_MINIMIZE,
-                 GetWidget()->widget_delegate()->CanMaximize() &&
-                     !is_minimized);
+  message_handler_->OnInitMenu(menu);
 }
 
 void NativeWidgetWin::OnInitMenuPopup(HMENU menu,
                                       UINT position,
                                       BOOL is_system_menu) {
-  SetMsgHandled(FALSE);
+  message_handler_->OnInitMenuPopup();
 }
 
 void NativeWidgetWin::OnInputLangChange(DWORD character_set,
@@ -1493,22 +1478,11 @@ void NativeWidgetWin::OnInputLangChange(DWORD character_set,
 LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
                                     WPARAM w_param,
                                     LPARAM l_param) {
-  MSG msg = { hwnd(), message, w_param, l_param };
-  ui::KeyEvent key(msg, message == WM_CHAR);
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
-  if (input_method)
-    input_method->DispatchKeyEvent(key);
-  else
-    DispatchKeyEventPostIME(key);
-  return 0;
+  return message_handler_->OnKeyEvent(message, w_param, l_param);
 }
 
 void NativeWidgetWin::OnKillFocus(HWND focused_window) {
-  delegate_->OnNativeBlur(focused_window);
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
-  if (input_method)
-    input_method->OnBlur();
-  SetMsgHandled(FALSE);
+  message_handler_->OnKillFocus(focused_window);
 }
 
 LRESULT NativeWidgetWin::OnMouseActivate(UINT message,
@@ -1936,11 +1910,7 @@ LRESULT NativeWidgetWin::OnSetCursor(UINT message,
 }
 
 void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
-  delegate_->OnNativeFocus(old_focused_window);
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
-  if (input_method)
-    input_method->OnFocus();
-  SetMsgHandled(FALSE);
+  message_handler_->OnSetFocus(old_focused_window);
 }
 
 LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
