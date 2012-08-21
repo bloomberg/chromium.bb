@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROME_TO_MOBILE_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_CHROME_TO_MOBILE_SERVICE_FACTORY_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 

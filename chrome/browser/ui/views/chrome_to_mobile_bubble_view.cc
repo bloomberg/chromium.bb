@@ -329,6 +329,9 @@ ChromeToMobileBubbleView::ChromeToMobileBubbleView(views::View* anchor_view,
 
   // Generate the MHTML snapshot now to report its size in the bubble.
   service_->GenerateSnapshot(browser_, weak_ptr_factory_.GetWeakPtr());
+
+  // Request a mobile device list update.
+  service_->RequestMobileListUpdate();
 }
 
 void ChromeToMobileBubbleView::LinkClicked(views::Link* source,
@@ -361,7 +364,7 @@ void ChromeToMobileBubbleView::Send() {
   const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
     FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
-    service_->SendToMobile(mobile, snapshot, browser_,
+    service_->SendToMobile(*mobile, snapshot, browser_,
                            weak_ptr_factory_.GetWeakPtr());
   } else {
     NOTREACHED();

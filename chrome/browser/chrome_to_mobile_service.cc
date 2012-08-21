@@ -11,15 +11,15 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -38,13 +38,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/types.pb.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/notifier/invalidation_util.h"
 
 namespace {
 
@@ -62,15 +59,18 @@ const size_t kAuthRetryDelayHours = 6;
 // Note that this limitation does not hold across application restarts.
 const int kSearchRequestDelayHours = 24;
 
-// The sync invalidation object ID for Chrome to Mobile's mobile device list.
-// This corresponds with cloud print's server-side invalidation object ID.
-// Meaning: "U" == "User", "CM" == "Chrome to Mobile", "MLST" == "Mobile LiST".
-const char kSyncInvalidationObjectIdChromeToMobileDeviceList[] = "UCMMLST";
-
 // The cloud print OAuth2 scope and 'printer' type of compatible mobile devices.
 const char kCloudPrintAuth[] = "https://www.googleapis.com/auth/cloudprint";
 const char kTypeAndroid[] = "ANDROID_CHROME_SNAPSHOT";
 const char kTypeIOS[] = "IOS_CHROME_SNAPSHOT";
+
+// The account info URL pattern and strings to check for cloud print access.
+// The 'key=' query parameter is used for caching; supply a random number.
+// The 'rv=2' query parameter requests a JSON response; use 'rv=1' for XML.
+const char kAccountInfoURL[] =
+    "https://clients1.google.com/tbproxy/getaccountinfo?key=%s&rv=2&%s";
+const char kAccountServicesKey[] = "services";
+const char kCloudPrintSerivceValue[] = "cprt";
 
 // The Chrome To Mobile requestor type; used by services for filtering.
 const char kChromeToMobileRequestor[] = "requestor=chrome-to-mobile";
@@ -125,8 +125,8 @@ void AddValue(const std::string& value_name,
 }
 
 // Get the URL for cloud print device search; appends a requestor query param.
-GURL GetSearchURL(const GURL& cloud_print_url) {
-  GURL search_url = cloud_print::GetUrlForSearch(cloud_print_url);
+GURL GetSearchURL(const GURL& service_url) {
+  GURL search_url = cloud_print::GetUrlForSearch(service_url);
   GURL::Replacements replacements;
   std::string query(kChromeToMobileRequestor);
   replacements.SetQueryStr(query);
@@ -180,48 +180,44 @@ bool ChromeToMobileService::IsChromeToMobileEnabled() {
 void ChromeToMobileService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kChromeToMobileDeviceList,
                           PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kChromeToMobileTimestamp, 0,
+                           PrefService::UNSYNCABLE_PREF);
 }
 
 ChromeToMobileService::ChromeToMobileService(Profile* profile)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       profile_(profile),
-      sync_invalidation_enabled_(false) {
-  // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183
-  ProfileSyncService* profile_sync_service =
-      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
-  if (profile_sync_service) {
-    CloudPrintURL cloud_print_url(profile_);
-    cloud_print_url_ = cloud_print_url.GetCloudPrintServiceURL();
-    // Register for cloud print device list invalidation notifications.
-    // TODO(msw|akalin): Initialize |sync_invalidation_enabled_| properly.
-    profile_sync_service->RegisterInvalidationHandler(this);
-    syncer::ObjectIdSet ids;
-    ids.insert(invalidation::ObjectId(
-        ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
-        kSyncInvalidationObjectIdChromeToMobileDeviceList));
-    profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
+      cloud_print_url_(new CloudPrintURL(profile)),
+      cloud_print_accessible_(false) {
+  // TODO(msw): Fix GMock tests, which lack profiles (http://crbug.com/122183).
+  if (profile_) {
+    // Get an access token as soon as the Gaia login refresh token is available.
+    TokenService* service = TokenServiceFactory::GetForProfile(profile_);
+    registrar_.Add(this, chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                   content::Source<TokenService>(service));
+    if (service->HasOAuthLoginToken())
+      RequestAccessToken();
   }
 }
 
 ChromeToMobileService::~ChromeToMobileService() {
   while (!snapshots_.empty())
     DeleteSnapshot(*snapshots_.begin());
-  // TODO(msw): Unit tests do not provide profiles; see http://crbug.com/122183
-  // Unregister for cloud print device list invalidation notifications.
-  ProfileSyncService* profile_sync_service =
-      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
-  if (profile_sync_service)
-    profile_sync_service->UnregisterInvalidationHandler(this);
 }
 
 bool ChromeToMobileService::HasMobiles() const {
-  const base::ListValue* mobiles = GetMobiles();
-  return mobiles && !mobiles->empty();
+  return !GetMobiles()->empty();
 }
 
 const base::ListValue* ChromeToMobileService::GetMobiles() const {
-  return sync_invalidation_enabled_ ?
-      profile_->GetPrefs()->GetList(prefs::kChromeToMobileDeviceList) : NULL;
+  return profile_->GetPrefs()->GetList(prefs::kChromeToMobileDeviceList);
+}
+
+void ChromeToMobileService::RequestMobileListUpdate() {
+  if (access_token_.empty())
+    RequestAccessToken();
+  else if (cloud_print_accessible_)
+    RequestDeviceSearch();
 }
 
 void ChromeToMobileService::GenerateSnapshot(Browser* browser,
@@ -238,28 +234,19 @@ void ChromeToMobileService::GenerateSnapshot(Browser* browser,
   }
 }
 
-void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
+void ChromeToMobileService::SendToMobile(const base::DictionaryValue& mobile,
                                          const FilePath& snapshot,
                                          Browser* browser,
                                          base::WeakPtr<Observer> observer) {
-  if (access_token_.empty()) {
-    // Enqueue this task to perform after obtaining an access token.
-    task_queue_.push(base::Bind(&ChromeToMobileService::SendToMobile,
-        weak_ptr_factory_.GetWeakPtr(), base::Owned(mobile->DeepCopy()),
-        snapshot, browser, observer));
-    RequestAccessToken();
-    return;
-  }
-
   LogMetric(SENDING_URL);
 
   JobData data;
   std::string mobile_os;
-  if (!mobile->GetString("type", &mobile_os))
+  if (!mobile.GetString("type", &mobile_os))
     NOTREACHED();
   data.mobile_os = (mobile_os.compare(kTypeAndroid) == 0) ?
       ChromeToMobileService::ANDROID : ChromeToMobileService::IOS;
-  if (!mobile->GetString("id", &data.mobile_id))
+  if (!mobile.GetString("id", &data.mobile_id))
     NOTREACHED();
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
   data.url = web_contents->GetURL();
@@ -314,9 +301,12 @@ void ChromeToMobileService::LearnMore(Browser* browser) const {
   chrome::Navigate(&params);
 }
 
-void ChromeToMobileService::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetURL() == GetSearchURL(cloud_print_url_))
-    HandleSearchResponse(source);
+void ChromeToMobileService::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  if (source == account_info_request_.get())
+    HandleAccountInfoResponse();
+  else if (source == search_request_.get())
+    HandleSearchResponse();
   else
     HandleSubmitResponse(source);
 }
@@ -328,9 +318,8 @@ void ChromeToMobileService::Observe(
   DCHECK_EQ(type, chrome::NOTIFICATION_TOKEN_AVAILABLE);
   TokenService::TokenAvailableDetails* token_details =
       content::Details<TokenService::TokenAvailableDetails>(details).ptr();
-  // Invalidate the cloud print access token on Gaia login token updates.
   if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
-    access_token_.clear();
+    RequestAccessToken();
 }
 
 void ChromeToMobileService::OnGetTokenSuccess(
@@ -340,55 +329,16 @@ void ChromeToMobileService::OnGetTokenSuccess(
   access_token_fetcher_.reset();
   auth_retry_timer_.Stop();
   access_token_ = access_token;
-
-  while (!task_queue_.empty()) {
-    // Post all tasks that were queued and waiting on a valid access token.
-    if (!content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                          task_queue_.front())) {
-      NOTREACHED();
-    }
-    task_queue_.pop();
-  }
+  RequestAccountInfo();
 }
 
 void ChromeToMobileService::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   access_token_fetcher_.reset();
   auth_retry_timer_.Stop();
-
   auth_retry_timer_.Start(
       FROM_HERE, base::TimeDelta::FromHours(kAuthRetryDelayHours),
       this, &ChromeToMobileService::RequestAccessToken);
-}
-
-void ChromeToMobileService::OnNotificationsEnabled() {
-  sync_invalidation_enabled_ = true;
-  UpdateCommandState();
-}
-
-void ChromeToMobileService::OnNotificationsDisabled(
-    syncer::NotificationsDisabledReason reason) {
-  sync_invalidation_enabled_ = false;
-  UpdateCommandState();
-}
-
-void ChromeToMobileService::OnIncomingNotification(
-    const syncer::ObjectIdPayloadMap& id_payloads,
-    syncer::IncomingNotificationSource source) {
-  DCHECK_EQ(id_payloads.size(), 1U);
-  DCHECK_EQ(id_payloads.count(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
-      kSyncInvalidationObjectIdChromeToMobileDeviceList)), 1U);
-  RequestDeviceSearch();
-}
-
-const std::string& ChromeToMobileService::GetAccessTokenForTest() const {
-  return access_token_;
-}
-
-void ChromeToMobileService::SetAccessTokenForTest(
-    const std::string& access_token) {
-  access_token_ = access_token;
 }
 
 void ChromeToMobileService::UpdateCommandState() const {
@@ -424,9 +374,9 @@ void ChromeToMobileService::SnapshotFileCreated(
 }
 
 net::URLFetcher* ChromeToMobileService::CreateRequest(const JobData& data) {
+  const GURL service_url(cloud_print_url_->GetCloudPrintServiceURL());
   net::URLFetcher* request = net::URLFetcher::Create(
-      cloud_print::GetUrlForSubmit(cloud_print_url_),
-      net::URLFetcher::POST, this);
+      cloud_print::GetUrlForSubmit(service_url), net::URLFetcher::POST, this);
   InitRequest(request);
   return request;
 }
@@ -485,13 +435,8 @@ void ChromeToMobileService::SendRequest(net::URLFetcher* request,
 }
 
 void ChromeToMobileService::RequestAccessToken() {
-  // Register to observe Gaia login refresh token updates.
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  if (registrar_.IsEmpty())
-    registrar_.Add(this, chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   content::Source<TokenService>(token_service));
-
   // Deny concurrent requests and bail without a valid Gaia login refresh token.
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (access_token_fetcher_.get() || !token_service->HasOAuthLoginToken())
     return;
 
@@ -505,33 +450,86 @@ void ChromeToMobileService::RequestAccessToken() {
                                std::vector<std::string>(1, kCloudPrintAuth));
 }
 
-void ChromeToMobileService::RequestDeviceSearch() {
-  DCHECK(sync_invalidation_enabled_);
-  if (access_token_.empty()) {
-    // Enqueue this task to perform after obtaining an access token.
-    task_queue_.push(base::Bind(&ChromeToMobileService::RequestDeviceSearch,
-                                weak_ptr_factory_.GetWeakPtr()));
-    RequestAccessToken();
+void ChromeToMobileService::RequestAccountInfo() {
+  // Deny concurrent requests.
+  if (account_info_request_.get())
+    return;
+
+  std::string url_string = StringPrintf(kAccountInfoURL,
+      base::GenerateGUID().c_str(), kChromeToMobileRequestor);
+  GURL url(url_string);
+
+  // Account information is read from the profile's cookie. If cookies are
+  // blocked, access cloud print directly to list any potential devices.
+  scoped_refptr<CookieSettings> cookie_settings =
+      CookieSettings::Factory::GetForProfile(profile_);
+  if (cookie_settings && !cookie_settings->IsReadingCookieAllowed(url, url)) {
+    cloud_print_accessible_ = true;
+    RequestMobileListUpdate();
     return;
   }
 
-  LogMetric(DEVICES_REQUESTED);
-
-  net::URLFetcher* search_request = net::URLFetcher::Create(
-      GetSearchURL(cloud_print_url_), net::URLFetcher::GET, this);
-  InitRequest(search_request);
-  search_request->Start();
+  account_info_request_.reset(
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this));
+  account_info_request_->SetRequestContext(profile_->GetRequestContext());
+  account_info_request_->SetMaxRetries(kMaxRetries);
+  // This request sends the user's cookie to check the cloud print service flag.
+  account_info_request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  account_info_request_->Start();
 }
 
-void ChromeToMobileService::HandleSearchResponse(
-    const net::URLFetcher* source) {
+void ChromeToMobileService::RequestDeviceSearch() {
+  // Deny requests if cloud print is inaccessible, and deny concurrent requests.
+  if (!cloud_print_accessible_ || search_request_.get())
+    return;
+
+  PrefService* prefs = profile_->GetPrefs();
+  base::TimeTicks previous_search_time = base::TimeTicks::FromInternalValue(
+      prefs->GetInt64(prefs::kChromeToMobileTimestamp));
+
+  // Deny requests before the delay period has passed since the last request.
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - previous_search_time;
+  if (!previous_search_time.is_null() &&
+      elapsed_time.InHours() < kSearchRequestDelayHours)
+    return;
+
+  LogMetric(DEVICES_REQUESTED);
+
+  const GURL service_url(cloud_print_url_->GetCloudPrintServiceURL());
+  search_request_.reset(net::URLFetcher::Create(GetSearchURL(service_url),
+                                                net::URLFetcher::GET, this));
+  InitRequest(search_request_.get());
+  search_request_->Start();
+}
+
+void ChromeToMobileService::HandleAccountInfoResponse() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK_EQ(source->GetURL(), GetSearchURL(cloud_print_url_));
 
   std::string data;
+  account_info_request_->GetResponseAsString(&data);
+  account_info_request_.reset();
+
+  ListValue* services = NULL;
+  DictionaryValue* dictionary = NULL;
+  scoped_ptr<Value> json(base::JSONReader::Read(data));
+  StringValue cloud_print_service(kCloudPrintSerivceValue);
+  if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
+      dictionary->GetList(kAccountServicesKey, &services) && services &&
+      services->Find(cloud_print_service) != services->end()) {
+    cloud_print_accessible_ = true;
+    RequestMobileListUpdate();
+  }
+}
+
+void ChromeToMobileService::HandleSearchResponse() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  std::string data;
+  search_request_->GetResponseAsString(&data);
+  search_request_.reset();
+
   ListValue* list = NULL;
   DictionaryValue* dictionary = NULL;
-  source->GetResponseAsString(&data);
   scoped_ptr<Value> json(base::JSONReader::Read(data));
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
       dictionary->GetList(cloud_print::kPrinterListValue, &list)) {
@@ -557,8 +555,11 @@ void ChromeToMobileService::HandleSearchResponse(
       }
     }
 
-    // Update the cached mobile device list in profile prefs.
-    profile_->GetPrefs()->Set(prefs::kChromeToMobileDeviceList, mobiles);
+    // Update the mobile list and timestamp in prefs.
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->Set(prefs::kChromeToMobileDeviceList, mobiles);
+    prefs->SetInt64(prefs::kChromeToMobileTimestamp,
+                    base::TimeTicks::Now().ToInternalValue());
 
     if (HasMobiles())
       LogMetric(DEVICES_AVAILABLE);
