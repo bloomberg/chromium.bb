@@ -92,7 +92,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, enum NAME, SIZE)
    Foo::Foo(MyInstance* instance)
        : PP_ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {}
  */
-#if defined(COMPILER_MSVC)
+#if defined(_MSC_VER)
 # define PP_ALLOW_THIS_IN_INITIALIZER_LIST(code) \
     __pragma(warning(push)) \
     __pragma(warning(disable:4355)) \
