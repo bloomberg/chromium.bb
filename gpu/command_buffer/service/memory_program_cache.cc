@@ -13,14 +13,14 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace {
-size_t GetCacheSize() {
+size_t GetCacheSizeBytes() {
   size_t size;
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kGpuProgramCacheSizeKb) &&
       base::StringToSizeT(command_line->GetSwitchValueNative(
           switches::kGpuProgramCacheSizeKb),
           &size)) {
-      return size;
+      return size * 1024;
   }
   return gpu::gles2::MemoryProgramCache::kDefaultMaxProgramCacheMemoryBytes;
 }
@@ -30,7 +30,7 @@ namespace gpu {
 namespace gles2 {
 
 MemoryProgramCache::MemoryProgramCache()
-    : max_size_bytes_(GetCacheSize()),
+    : max_size_bytes_(GetCacheSizeBytes()),
       curr_size_bytes_(0) { }
 
 MemoryProgramCache::MemoryProgramCache(const size_t max_cache_size_bytes)
