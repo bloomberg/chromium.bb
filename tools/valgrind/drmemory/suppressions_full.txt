@@ -761,22 +761,6 @@ name=http://crbug.com/109278 audio device COM leaks
 ...
 *!media::GetInputDeviceNamesWin
 
-# Looks like an unhandled syscall.
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=744 a
-...
-*!cricket::UDPPort::OnReadPacket
-
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=744 b
-...
-*!cricket::PseudoTcp::NotifyPacket
-
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=744 c
-...
-*!cricket::PseudoTcp::GetNextClock
-
 # False pos uninit in shell32 when resolving links.
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=745
