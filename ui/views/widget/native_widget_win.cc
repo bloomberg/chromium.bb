@@ -1901,12 +1901,7 @@ LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
 LRESULT NativeWidgetWin::OnSetCursor(UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
-  // Using ScopedRedrawLock here frequently allows content behind this window to
-  // paint in front of this window, causing glaring rendering artifacts.
-  // If omitting ScopedRedrawLock here triggers caption rendering artifacts via
-  // DefWindowProc message handling, we'll need to find a better solution.
-  SetMsgHandled(FALSE);
-  return 0;
+  return message_handler_->OnSetCursor(message, w_param, l_param);
 }
 
 void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
@@ -1914,15 +1909,11 @@ void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
 }
 
 LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
-  // Use a ScopedRedrawLock to avoid weird non-client painting.
-  return DefWindowProcWithRedrawLock(WM_SETICON, size_type,
-                                     reinterpret_cast<LPARAM>(new_icon));
+  return message_handler_->OnSetIcon(size_type, new_icon);
 }
 
 LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
-  // Use a ScopedRedrawLock to avoid weird non-client painting.
-  return DefWindowProcWithRedrawLock(WM_SETTEXT, NULL,
-                                     reinterpret_cast<LPARAM>(text));
+  return message_handler_->OnSetText(text);
 }
 
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
