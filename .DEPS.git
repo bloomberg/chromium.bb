@@ -90,7 +90,7 @@ deps = {
     'src/third_party/pymox/src':
         Var('git_url') + '/external/pymox.git@df220ffcc57380c3823aae52cdea0d7bb6f2b145',
     'src/third_party/pywebsocket/src':
-        Var('git_url') + '/external/pywebsocket/src.git@33854da8beb44c5fdf41eddaf6804e90150c48de',
+        Var('git_url') + '/external/pywebsocket/src.git@d93672052bc006efd3cd44d857a114dc4d49b2f8',
     'src/third_party/safe_browsing/testing':
         Var('git_url') + '/external/google-safe-browsing/testing.git@5e9b7f16d2d2c52a64a1dc681cbafcc8b4e6eb54',
     'src/third_party/scons-2.0.1':
