@@ -84,6 +84,9 @@ class AURA_EXPORT DisplayManager {
   virtual const gfx::Display& GetDisplayMatching(
       const gfx::Rect& match_rect) const = 0;
 
+  // Returns the human-readable name for the display specified by |index|.
+  virtual std::string GetDisplayNameAt(size_t index) = 0;
+
  protected:
   // Calls observers' OnDisplayBoundsChanged methods.
   void NotifyBoundsChanged(const gfx::Display& display);

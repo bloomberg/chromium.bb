@@ -18,20 +18,24 @@ namespace gfx {
 // system, not in backing pixels.
 class UI_EXPORT Display {
  public:
+  // Creates a display with kInvalidDisplayID as default.
+  Display();
+  explicit Display(int64 id);
+  Display(int64 id, const Rect& bounds);
+  ~Display();
+
   // Returns the forced device scale factor, which is given by
   // "--force-device-scale-factor".
   static float GetForcedDeviceScaleFactor();
 
-  // Creates a display with invalid id(-1) as default.
-  Display();
-  explicit Display(int id);
-  Display(int id, const Rect& bounds);
-  ~Display();
+  // Returns 64-bit persistent ID for the specified manufacturer's ID and
+  // serial#.
+  static int64 GetID(uint16 manufacturer_id, uint32 serial_number);
 
   // Sets/Gets unique identifier associated with the display.
   // -1 means invalid display and it doesn't not exit.
-  int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
+  int64 id() const { return id_; }
+  void set_id(int64 id) { id_ = id; }
 
   // Gets/Sets the display's bounds in gfx::Screen's coordinates.
   const Rect& bounds() const { return bounds_; }
@@ -83,8 +87,10 @@ class UI_EXPORT Display {
   // Returns a string representation of the display;
   std::string ToString() const;
 
+  static const int64 kInvalidDisplayID;
+
  private:
-  int id_;
+  int64 id_;
   Rect bounds_;
   Rect work_area_;
 #if defined(USE_AURA)

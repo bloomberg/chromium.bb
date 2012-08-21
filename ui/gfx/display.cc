@@ -32,6 +32,8 @@ float GetForcedDeviceScaleFactorImpl() {
 
 } // namespace
 
+const int64 Display::kInvalidDisplayID = -1;
+
 // static
 float Display::GetForcedDeviceScaleFactor() {
   static const float kForcedDeviceScaleFactor =
@@ -39,17 +41,24 @@ float Display::GetForcedDeviceScaleFactor() {
   return kForcedDeviceScaleFactor;
 }
 
+// static
+int64 Display::GetID(uint16 manufacturer_id, uint32 serial_number) {
+  int64 new_id = ((static_cast<int64>(manufacturer_id) << 32) | serial_number);
+  DCHECK_NE(kInvalidDisplayID, new_id);
+  return new_id;
+}
+
 Display::Display()
-    : id_(-1),
+    : id_(kInvalidDisplayID),
       device_scale_factor_(GetForcedDeviceScaleFactor()) {
 }
 
-Display::Display(int id)
+Display::Display(int64 id)
     : id_(id),
       device_scale_factor_(GetForcedDeviceScaleFactor()) {
 }
 
-Display::Display(int id, const gfx::Rect& bounds)
+Display::Display(int64 id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
@@ -103,8 +112,8 @@ gfx::Size Display::GetSizeInPixel() const {
 }
 
 std::string Display::ToString() const {
-  return base::StringPrintf("Display[%d] bounds=%s, workarea=%s, scale=%f",
-                            id_,
+  return base::StringPrintf("Display[%lld] bounds=%s, workarea=%s, scale=%f",
+                            static_cast<long long int>(id_),
                             bounds_.ToString().c_str(),
                             work_area_.ToString().c_str(),
                             device_scale_factor_);

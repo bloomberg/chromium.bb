@@ -8,12 +8,16 @@
 
 #include "ui/base/x/x11_util.h"
 
+#include <ctype.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
 #include <list>
 #include <map>
 #include <vector>
+
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/randr.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -24,6 +28,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -301,6 +306,20 @@ class XButtonMap {
 
   DISALLOW_COPY_AND_ASSIGN(XButtonMap);
 };
+
+bool IsRandRAvailable() {
+  static bool is_randr_available = false;
+  static bool is_randr_availability_cached = false;
+  if (is_randr_availability_cached)
+    return is_randr_available;
+
+  int randr_version_major = 0;
+  int randr_version_minor = 0;
+  is_randr_available = XRRQueryVersion(
+      GetXDisplay(), &randr_version_major, &randr_version_minor);
+  is_randr_availability_cached = true;
+  return is_randr_available;
+}
 
 }  // namespace
 
@@ -986,6 +1005,167 @@ void FreePicture(Display* display, XID picture) {
 void FreePixmap(Display* display, XID pixmap) {
   XFreePixmap(display, pixmap);
 }
+
+bool GetOutputDeviceHandles(std::vector<XID>* outputs) {
+  DCHECK(outputs);
+  outputs->clear();
+
+  if (!IsRandRAvailable())
+    return false;
+
+  Display* display = GetXDisplay();
+
+  Window root_window = DefaultRootWindow(display);
+  XRRScreenResources* screen_resources =
+      XRRGetScreenResources(display, root_window);
+  for (int i = 0; i < screen_resources->noutput; ++i)
+    outputs->push_back(screen_resources->outputs[i]);
+  XRRFreeScreenResources(screen_resources);
+  return true;
+}
+
+bool GetOutputDeviceData(XID output,
+                         uint16* manufacturer_id,
+                         uint32* serial_number,
+                         std::string* human_readable_name) {
+  if (!IsRandRAvailable())
+    return false;
+
+  static Atom edid_property = GetAtom(RR_PROPERTY_RANDR_EDID);
+
+  Display* display = GetXDisplay();
+
+  bool has_edid_property = false;
+  int num_properties = 0;
+  Atom* properties = XRRListOutputProperties(display, output, &num_properties);
+  for (int i = 0; i < num_properties; ++i) {
+    if (properties[i] == edid_property) {
+      has_edid_property = true;
+      break;
+    }
+  }
+  XFree(properties);
+  if (!has_edid_property)
+    return false;
+
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems;
+  unsigned long bytes_after;
+  unsigned char *prop;
+  XRRGetOutputProperty(display,
+                       output,
+                       edid_property,
+                       0,                // offset
+                       128,              // length
+                       false,            // _delete
+                       false,            // pending
+                       AnyPropertyType,  // req_type
+                       &actual_type,
+                       &actual_format,
+                       &nitems,
+                       &bytes_after,
+                       &prop);
+  DCHECK_EQ(XA_INTEGER, actual_type);
+  DCHECK_EQ(8, actual_format);
+
+  // See http://en.wikipedia.org/wiki/Extended_display_identification_data
+  // for the details of EDID data format.  We use the following data:
+  //   bytes 8-9: manufacturer EISA ID, in big-endian
+  //   bytes 12-15: represents serial number, in little-endian
+  //   bytes 54-125: four descriptors (18-bytes each) which may contain
+  //     the display name.
+  const unsigned int kManufacturerOffset = 8;
+  const unsigned int kManufacturerLength = 2;
+  const unsigned int kSerialNumberOffset = 12;
+  const unsigned int kSerialNumberLength = 4;
+  const unsigned int kDescriptorOffset = 54;
+  const unsigned int kNumDescriptors = 4;
+  const unsigned int kDescriptorLength = 18;
+  // The specifier types.
+  const unsigned char kMonitorNameDescriptor = 0xfc;
+  const unsigned char kUnspecifiedTextDescriptor = 0xfe;
+
+  if (manufacturer_id) {
+    if (nitems < kManufacturerOffset + kManufacturerLength) {
+      XFree(prop);
+      return false;
+    }
+    *manufacturer_id = *reinterpret_cast<uint16*>(prop + kManufacturerOffset);
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+    *manufacturer_id = base::ByteSwap(*manufacturer_id);
+#endif
+  }
+
+  if (serial_number) {
+    if (nitems < kSerialNumberOffset + kSerialNumberLength) {
+      XFree(prop);
+      return false;
+    }
+    *serial_number = base::ByteSwapToLE32(
+        *reinterpret_cast<uint32*>(prop + kSerialNumberOffset));
+  }
+
+  if (!human_readable_name) {
+    XFree(prop);
+    return true;
+  }
+
+  std::string name_candidate;
+  human_readable_name->clear();
+  for (unsigned int i = 0; i < kNumDescriptors; ++i) {
+    if (nitems < kDescriptorOffset + (i + 1) * kDescriptorLength) {
+      break;
+    }
+
+    unsigned char* desc_buf = prop + kDescriptorOffset + i * kDescriptorLength;
+    // If the descriptor contains the display name, it has the following
+    // structure:
+    //   bytes 0-2, 4: \0
+    //   byte 3: descriptor type, defined above.
+    //   bytes 5-17: text data, ending with \r, padding with spaces
+    // we should check bytes 0-2 and 4, since it may have other values in
+    // case that the descriptor contains other type of data.
+    if (desc_buf[0] == 0 && desc_buf[1] == 0 && desc_buf[2] == 0 &&
+        desc_buf[4] == 0) {
+      if (desc_buf[3] == kMonitorNameDescriptor) {
+        std::string found_name(
+            reinterpret_cast<char*>(desc_buf + 5), kDescriptorLength - 5);
+        TrimWhitespaceASCII(found_name, TRIM_TRAILING, human_readable_name);
+        break;
+      } else if (desc_buf[3] == kUnspecifiedTextDescriptor &&
+                 name_candidate.empty()) {
+        // Sometimes the default display of a laptop device doesn't have "FC"
+        // ("Monitor name") descriptor, but has some human readable text with
+        // "FE" ("Unspecified text"). Thus here use this value as the fallback
+        // if "FC" is missing. Note that multiple descriptors may have "FE",
+        // and the first one is the monitor name.
+        std::string found_name(
+            reinterpret_cast<char*>(desc_buf + 5), kDescriptorLength - 5);
+        TrimWhitespaceASCII(found_name, TRIM_TRAILING, &name_candidate);
+      }
+    }
+  }
+  if (human_readable_name->empty() && !name_candidate.empty())
+    *human_readable_name = name_candidate;
+
+  XFree(prop);
+
+  if (human_readable_name->empty())
+    return false;
+
+  // Verify if the |human_readable_name| consists of printable characters only.
+  for (size_t i = 0; i < human_readable_name->size(); ++i) {
+    char c = (*human_readable_name)[i];
+    if (!isascii(c) || !isprint(c)) {
+      human_readable_name->clear();
+      return false;
+    }
+  }
+
+  return true;
+}
+
 
 bool GetWindowManagerName(std::string* wm_name) {
   DCHECK(wm_name);

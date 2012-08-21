@@ -15,6 +15,7 @@
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/display_manager.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 
@@ -117,6 +118,7 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
 
   std::vector<gfx::Display> displays;
   std::set<int> y_coords;
+  std::set<int64> ids;
   for (int o = 0; o < screen_resources->noutput; o++) {
     XRROutputInfo *output_info =
         XRRGetOutputInfo(xdisplay_,
@@ -150,6 +152,20 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
         kHighDensityDIPThreshold) {
       device_scale_factor = 2.0f;
     }
+
+    uint16 manufacturer_id = 0;
+    uint32 serial_number = 0;
+    if (ui::GetOutputDeviceData(screen_resources->outputs[o], &manufacturer_id,
+                                &serial_number, NULL) && manufacturer_id != 0) {
+      // An ID based on display's index will be assigned later if this call
+      // fails.
+      int64 new_id = gfx::Display::GetID(manufacturer_id, serial_number);
+      if (ids.find(new_id) == ids.end()) {
+        displays.back().set_id(new_id);
+        ids.insert(new_id);
+      }
+    }
+
     displays.back().set_device_scale_factor(device_scale_factor);
     y_coords.insert(crtc_info->y);
     XRRFreeOutputInfo(output_info);
@@ -165,11 +181,14 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
   // PowerManager lays out the outputs vertically. Sort them by Y
   // coordinates.
   std::sort(displays.begin(), displays.end(), CompareDisplayY);
-  // TODO(oshima): Assisgn index as ID for now. Use unique ID.
   int id = 0;
   for (std::vector<gfx::Display>::iterator iter = displays.begin();
-       iter != displays.end(); ++iter, ++id)
-    (*iter).set_id(id);
+       iter != displays.end(); ++iter) {
+    if (iter->id() == gfx::Display::kInvalidDisplayID) {
+      iter->set_id(id);
+      ++id;
+    }
+  }
 
   Env::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
 }

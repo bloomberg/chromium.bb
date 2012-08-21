@@ -77,6 +77,10 @@ const gfx::Display& SingleDisplayManager::GetDisplayMatching(
   return display_;
 }
 
+std::string SingleDisplayManager::GetDisplayNameAt(size_t index) {
+  return "Display";
+}
+
 void SingleDisplayManager::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
   if (!use_fullscreen_host_window()) {

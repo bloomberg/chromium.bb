@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -18,6 +19,10 @@
 #include "ui/aura/window_property.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
+
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"
+#endif
 
 DECLARE_WINDOW_PROPERTY_TYPE(int);
 
@@ -37,7 +42,7 @@ using aura::Window;
 using std::string;
 using std::vector;
 
-DEFINE_WINDOW_PROPERTY_KEY(int, kDisplayIdKey, -1);
+DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey, -1);
 
 MultiDisplayManager::MultiDisplayManager() {
   Init();
@@ -105,9 +110,6 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
       const gfx::Display& new_display = new_displays[i];
       displays_.push_back(gfx::Display(new_display.id()));
       gfx::Display& display = displays_.back();
-      // Force the primary display's ID to be 0.
-      if (i == 0)
-        display.set_id(0);
       display.SetScaleAndBounds(new_display.device_scale_factor(),
                                 new_display.bounds_in_pixel());
       NotifyDisplayAdded(display);
@@ -190,6 +192,29 @@ const gfx::Display& MultiDisplayManager::GetDisplayMatching(
   return matching ? *matching : displays_[0];
 }
 
+std::string MultiDisplayManager::GetDisplayNameAt(size_t index) {
+#if defined(USE_X11)
+  gfx::Display* display = GetDisplayAt(index);
+  std::vector<XID> outputs;
+  if (display && display->id() != -1 &&
+      ui::GetOutputDeviceHandles(&outputs)) {
+    for (size_t i = 0; i < outputs.size(); ++i) {
+      uint16 manufacturer_id = 0;
+      uint32 serial_number = 0;
+      std::string name;
+      if (ui::GetOutputDeviceData(
+              outputs[i], &manufacturer_id, &serial_number, &name) &&
+          display->id() ==
+          gfx::Display::GetID(manufacturer_id, serial_number)) {
+        return name;
+      }
+    }
+  }
+#endif
+
+  return base::StringPrintf("Display %d", static_cast<int>(index + 1));
+}
+
 void MultiDisplayManager::OnRootWindowResized(const aura::RootWindow* root,
                                               const gfx::Size& old_size) {
   if (!use_fullscreen_host_window()) {
@@ -211,8 +236,6 @@ void MultiDisplayManager::Init() {
   }
   if (displays_.empty())
     AddDisplayFromSpec(std::string() /* default */);
-  // Force the 1st display to be the primary display (id == 0).
-  displays_[0].set_id(0);
 }
 
 void MultiDisplayManager::AddRemoveDisplayImpl() {

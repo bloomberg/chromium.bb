@@ -59,6 +59,7 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
       const aura::Window* window) const OVERRIDE;
   virtual const gfx::Display& GetDisplayMatching(
       const gfx::Rect& match_rect)const OVERRIDE;
+  virtual std::string GetDisplayNameAt(size_t index) OVERRIDE;
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
@@ -83,7 +84,7 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   DISALLOW_COPY_AND_ASSIGN(MultiDisplayManager);
 };
 
-extern const aura::WindowProperty<int>* const kDisplayIdKey;
+extern const aura::WindowProperty<int64>* const kDisplayIdKey;
 
 }  // namespace internal
 }  // namespace ash
