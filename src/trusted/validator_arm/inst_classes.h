@@ -650,18 +650,19 @@ class ClassDecoder {
 
 class UnsafeClassDecoder : public ClassDecoder {
  public:
-  explicit UnsafeClassDecoder(SafetyLevel safety)
-      : safety_(safety) {}
-
   // Return the safety associated with this class.
   virtual SafetyLevel safety(Instruction i) const;
 
   // Switch off the def warnings -- it's already forbidden!
   virtual RegisterList defs(Instruction i) const;
 
+ protected:
+  explicit UnsafeClassDecoder(SafetyLevel safety)
+      : safety_(safety) {}
+
  private:
   SafetyLevel safety_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeClassDecoder);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(UnsafeClassDecoder);
 };
 
 class Forbidden : public UnsafeClassDecoder {
@@ -734,6 +735,6 @@ class CoprocessorOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(CoprocessorOp);
 };
 
-}  // namespace
+}  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_H_

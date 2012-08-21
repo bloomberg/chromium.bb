@@ -261,12 +261,27 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 
 #ifdef __cplusplus
 /*
- * A macro to disallow the copy constructor and operator= functions
+ * A macro to disallow the default constructor.
+ * This should be used in the private: declarations for a class
+ */
+#define NACL_DISALLOW_DEFAULT(TypeName) \
+    TypeName();
+
+/*
+ * A macro to disallow the copy constructor and operator= functions.
  * This should be used in the private: declarations for a class
  */
 #define NACL_DISALLOW_COPY_AND_ASSIGN(TypeName) \
     TypeName(const TypeName&);                  \
     void operator=(const TypeName&)
+
+/*
+ * A macro to disallow the default, copy constructor and operator= functions.
+ * This should be used in the private: declarations for a class
+ */
+#define NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(TypeName) \
+    NACL_DISALLOW_DEFAULT(TypeName)                     \
+    NACL_DISALLOW_COPY_AND_ASSIGN(TypeName)
 
 /* A macro to use in place of unimplemented sections of code. */
 #define NACL_UNIMPLEMENTED()                                       \
