@@ -311,7 +311,7 @@ deps = {
     (Var("googlecode_url") % "web-page-replay") + "/trunk@489",
 
   "src/third_party/pywebsocket/src":
-    (Var("googlecode_url") % "pywebsocket") + "/trunk/src@656",
+    (Var("googlecode_url") % "pywebsocket") + "/trunk/src@658",
 }
 
 
