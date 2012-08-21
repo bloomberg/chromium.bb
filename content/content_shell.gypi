@@ -419,6 +419,14 @@
         }],  # OS=="mac"
       ],
     },
+    {
+      'target_name': 'content_shell_builder',
+      'type': 'none',
+      'dependencies': [
+        'content_shell',
+        '<(webkit_src_dir)/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="mac"', {
