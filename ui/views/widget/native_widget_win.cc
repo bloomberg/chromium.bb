@@ -238,28 +238,10 @@ BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
   return TRUE;
 }
 
-// Tells the window its frame (non-client area) has changed.
-void SendFrameChanged(HWND window) {
-  SetWindowPos(window, NULL, 0, 0, 0, 0,
-      SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS |
-      SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREPOSITION |
-      SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
-}
-
 // Enables or disables the menu item for the specified command and menu.
 void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
   UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
   EnableMenuItem(menu, command, flags);
-}
-
-BOOL CALLBACK EnumChildWindowsForRedraw(HWND hwnd, LPARAM lparam) {
-  DWORD process_id;
-  GetWindowThreadProcessId(hwnd, &process_id);
-  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
-  if (process_id == GetCurrentProcessId())
-    flags |= RDW_UPDATENOW;
-  RedrawWindow(hwnd, NULL, NULL, flags);
-  return TRUE;
 }
 
 // See comments in OnNCPaint() for details of this struct.
@@ -313,10 +295,6 @@ bool GetMonitorAndRects(const RECT& rect,
 
 // Links the HWND to its NativeWidget.
 const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
-
-// A custom MSAA object id used to determine if a screen reader is actively
-// listening for MSAA events.
-const int kCustomObjectID = 1;
 
 const int kDragFrameWindowAlpha = 200;
 
@@ -568,7 +546,7 @@ void NativeWidgetWin::FrameTypeChanged() {
 
   // Send a frame change notification, since the non-client metrics have
   // changed.
-  SendFrameChanged(GetNativeView());
+  message_handler_->SendFrameChanged();
 
   // Update the non-client view with the correct frame view for the active frame
   // type.
@@ -940,7 +918,7 @@ void NativeWidgetWin::ShowWithWindowState(ui::WindowShowState show_state) {
 }
 
 bool NativeWidgetWin::IsVisible() const {
-  return !!::IsWindowVisible(hwnd());
+  return message_handler_->IsVisible();
 }
 
 void NativeWidgetWin::Activate() {
@@ -958,7 +936,7 @@ void NativeWidgetWin::Deactivate() {
 }
 
 bool NativeWidgetWin::IsActive() const {
-  return GetActiveWindow() == hwnd();
+  return message_handler_->IsActive();
 }
 
 void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
@@ -1292,70 +1270,7 @@ void NativeWidgetWin::OnCommand(UINT notification_code,
 }
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  SetNativeWindowProperty(kNativeWidgetKey, this);
-  CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
-
-  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
-
-  // Attempt to detect screen readers by sending an event with our custom id.
-  if (!IsAccessibleWidget())
-    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
-
-  props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(hwnd()));
-
-  drop_target_ = new DropTargetWin(
-      static_cast<internal::RootView*>(GetWidget()->GetRootView()));
-
-  // We need to add ourselves as a message loop observer so that we can repaint
-  // aggressively if the contents of our window become invalid. Unfortunately
-  // WM_PAINT messages are starved and we get flickery redrawing when resizing
-  // if we do not do this.
-  MessageLoopForUI::current()->AddObserver(this);
-
-  // Windows special DWM window frame requires a special tooltip manager so
-  // that window controls in Chrome windows don't flicker when you move your
-  // mouse over them. See comment in aero_tooltip_manager.h.
-  Widget* widget = GetWidget()->GetTopLevelWidget();
-  if (widget && widget->ShouldUseNativeFrame()) {
-    tooltip_manager_.reset(new AeroTooltipManager(GetWidget()));
-  } else {
-    tooltip_manager_.reset(new TooltipManagerWin(GetWidget()));
-  }
-  if (!tooltip_manager_->Init()) {
-    // There was a problem creating the TooltipManager. Common error is 127.
-    // See 82193 for details.
-    LOG_GETLASTERROR(WARNING) << "tooltip creation failed, disabling tooltips";
-    tooltip_manager_.reset();
-  }
-
-  // This message initializes the window so that focus border are shown for
-  // windows.
-  SendMessage(
-      hwnd(), WM_CHANGEUISTATE, MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS), 0);
-
-  // Bug 964884: detach the IME attached to this window.
-  // We should attach IMEs only when we need to input CJK strings.
-  ImmAssociateContextEx(hwnd(), NULL, 0);
-
-  if (message_handler_->remove_standard_frame()) {
-    SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_CAPTION);
-    SendFrameChanged(GetNativeView());
-  }
-
-  // We need to allow the delegate to size its contents since the window may not
-  // receive a size notification when its initial bounds are specified at window
-  // creation time.
-  ClientAreaSizeChanged();
-
-  delegate_->OnNativeWidgetCreated();
-
-  // Get access to a modifiable copy of the system menu.
-  GetSystemMenu(hwnd(), false);
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-    RegisterTouchWindow(hwnd(), 0);
-
-  return 0;
+  return message_handler_->OnCreate(create_struct);
 }
 
 void NativeWidgetWin::OnDestroy() {
@@ -1369,8 +1284,7 @@ void NativeWidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
 LRESULT NativeWidgetWin::OnDwmCompositionChanged(UINT msg,
                                                  WPARAM w_param,
                                                  LPARAM l_param) {
-  message_handler_->OnDwmCompositionChanged(msg, w_param, l_param);
-  return 0;
+  return message_handler_->OnDwmCompositionChanged(msg, w_param, l_param);
 }
 
 void NativeWidgetWin::OnEndSession(BOOL ending, UINT logoff) {
@@ -1393,65 +1307,20 @@ void NativeWidgetWin::OnExitSizeMove() {
   message_handler_->OnExitSizeMove();
 }
 
-LRESULT NativeWidgetWin::OnGetObject(UINT uMsg,
+LRESULT NativeWidgetWin::OnGetObject(UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
-  LRESULT reference_result = static_cast<LRESULT>(0L);
-
-  // Accessibility readers will send an OBJID_CLIENT message
-  if (OBJID_CLIENT == l_param) {
-    // Retrieve MSAA dispatch object for the root view.
-    base::win::ScopedComPtr<IAccessible> root(
-        GetWidget()->GetRootView()->GetNativeViewAccessible());
-
-    // Create a reference that MSAA will marshall to the client.
-    reference_result = LresultFromObject(IID_IAccessible, w_param,
-        static_cast<IAccessible*>(root.Detach()));
-  }
-
-  if (kCustomObjectID == l_param) {
-    // An MSAA client requestes our custom id. Assume that we have detected an
-    // active windows screen reader.
-    OnScreenReaderDetected();
-
-    // Return with failure.
-    return static_cast<LRESULT>(0L);
-  }
-
-  return reference_result;
+  return message_handler_->OnGetObject(message, w_param, l_param);
 }
 
 void NativeWidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
-  gfx::Size min_window_size(delegate_->GetMinimumSize());
-  gfx::Size max_window_size(delegate_->GetMaximumSize());
-  // Add the native frame border size to the minimum and maximum size if the
-  // view reports its size as the client size.
-  if (WidgetSizeIsClientSize()) {
-    CRect client_rect, window_rect;
-    GetClientRect(&client_rect);
-    GetWindowRect(&window_rect);
-    window_rect -= client_rect;
-    min_window_size.Enlarge(window_rect.Width(), window_rect.Height());
-    if (!max_window_size.IsEmpty())
-      max_window_size.Enlarge(window_rect.Width(), window_rect.Height());
-  }
-  minmax_info->ptMinTrackSize.x = min_window_size.width();
-  minmax_info->ptMinTrackSize.y = min_window_size.height();
-  if (max_window_size.width() || max_window_size.height()) {
-    if (!max_window_size.width())
-      max_window_size.set_width(GetSystemMetrics(SM_CXMAXTRACK));
-    if (!max_window_size.height())
-      max_window_size.set_height(GetSystemMetrics(SM_CYMAXTRACK));
-    minmax_info->ptMaxTrackSize.x = max_window_size.width();
-    minmax_info->ptMaxTrackSize.y = max_window_size.height();
-  }
-  SetMsgHandled(FALSE);
+  message_handler_->OnGetMinMaxInfo(minmax_info);
 }
 
 void NativeWidgetWin::OnHScroll(int scroll_type,
                                 short position,
                                 HWND scrollbar) {
-  SetMsgHandled(FALSE);
+  message_handler_->OnHScroll(scroll_type, position, scrollbar);
 }
 
 LRESULT NativeWidgetWin::OnImeMessages(UINT message,
@@ -1488,14 +1357,7 @@ void NativeWidgetWin::OnKillFocus(HWND focused_window) {
 LRESULT NativeWidgetWin::OnMouseActivate(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
-  // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
-  //             line.
-  if (GetWidget()->non_client_view())
-    return delegate_->CanActivate() ? MA_ACTIVATE : MA_NOACTIVATEANDEAT;
-  if (GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)
-    return MA_NOACTIVATE;
-  SetMsgHandled(FALSE);
-  return MA_ACTIVATE;
+  return message_handler_->OnMouseActivate(message, w_param, l_param);
 }
 
 LRESULT NativeWidgetWin::OnMouseRange(UINT message,
@@ -1598,50 +1460,7 @@ void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
 }
 
 LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
-  if (delegate_->CanActivate())
-    delegate_->OnNativeWidgetActivationChanged(!!active);
-
-  if (!GetWidget()->non_client_view()) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-
-  if (!delegate_->CanActivate())
-    return TRUE;
-
-  // The frame may need to redraw as a result of the activation change.
-  // We can get WM_NCACTIVATE before we're actually visible. If we're not
-  // visible, no need to paint.
-  if (IsVisible())
-    GetWidget()->non_client_view()->SchedulePaint();
-
-  if (!GetWidget()->ShouldUseNativeFrame()) {
-    // TODO(beng, et al): Hack to redraw this window and child windows
-    //     synchronously upon activation. Not all child windows are redrawing
-    //     themselves leading to issues like http://crbug.com/74604
-    //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
-    //     whole app if a child HWND belonging to a hung plugin is encountered.
-    RedrawWindow(GetNativeView(), NULL, NULL,
-                 RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
-    EnumChildWindows(GetNativeView(), EnumChildWindowsForRedraw, NULL);
-  }
-
-  // If we're active again, we should be allowed to render as inactive, so
-  // tell the non-client view.
-  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
-  if (IsActive())
-    delegate_->EnableInactiveRendering();
-
-  // Avoid DefWindowProc non-client rendering over our custom frame on newer
-  // Windows versions only (breaks taskbar activation indication on XP/Vista).
-  if (!GetWidget()->ShouldUseNativeFrame() &&
-      base::win::GetVersion() > base::win::VERSION_VISTA) {
-    SetMsgHandled(TRUE);
-    return TRUE;
-  }
-
-  return DefWindowProcWithRedrawLock(
-      WM_NCACTIVATE, inactive_rendering_disabled || active, 0);
+  return message_handler_->OnNCActivate(active);
 }
 
 LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
@@ -1827,17 +1646,7 @@ LRESULT NativeWidgetWin::OnNCUAHDrawFrame(UINT msg,
 }
 
 LRESULT NativeWidgetWin::OnNotify(int w_param, NMHDR* l_param) {
-  // We can be sent this message before the tooltip manager is created, if a
-  // subclass overrides OnCreate and creates some kind of Windows control there
-  // that sends WM_NOTIFY messages.
-  if (tooltip_manager_.get()) {
-    bool handled;
-    LRESULT result = tooltip_manager_->OnNotify(w_param, l_param, &handled);
-    SetMsgHandled(handled);
-    return result;
-  }
-  SetMsgHandled(FALSE);
-  return 0;
+  return message_handler_->OnNotify(w_param, l_param);
 }
 
 void NativeWidgetWin::OnPaint(HDC dc) {
@@ -1867,8 +1676,7 @@ LRESULT NativeWidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
 LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  SetMsgHandled(FALSE);
-  return 0;
+  return message_handler_->OnReflectedMessage(msg, w_param, l_param);
 }
 
 LRESULT NativeWidgetWin::OnSetCursor(UINT message,
@@ -1890,19 +1698,7 @@ LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
 }
 
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
-  if (!GetParent() && (flags == SPI_SETWORKAREA) &&
-      !GetWidget()->widget_delegate()->WillProcessWorkAreaChange()) {
-    // Fire a dummy SetWindowPos() call, so we'll trip the code in
-    // OnWindowPosChanging() below that notices work area changes.
-    ::SetWindowPos(GetNativeView(), 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE |
-        SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-    SetMsgHandled(TRUE);
-  } else {
-    // TODO(beng): move to Widget.
-    if (flags == SPI_SETWORKAREA)
-      GetWidget()->widget_delegate()->OnWorkAreaChanged();
-    SetMsgHandled(FALSE);
-  }
+  message_handler_->OnSettingChange(flags, section);
 }
 
 void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
@@ -2192,6 +1988,18 @@ bool NativeWidgetWin::IsUsingCustomFrame() const {
   return !GetWidget()->ShouldUseNativeFrame();
 }
 
+void NativeWidgetWin::SchedulePaint() {
+  GetWidget()->GetRootView()->SchedulePaint();
+}
+
+void NativeWidgetWin::EnableInactiveRendering() {
+  delegate_->EnableInactiveRendering();
+}
+
+bool NativeWidgetWin::IsInactiveRenderingDisabled() {
+  return delegate_->IsInactiveRenderingDisabled();
+}
+
 bool NativeWidgetWin::CanResize() const {
   return GetWidget()->widget_delegate()->CanResize();
 }
@@ -2204,6 +2012,10 @@ bool NativeWidgetWin::CanActivate() const {
   return delegate_->CanActivate();
 }
 
+bool NativeWidgetWin::WillProcessWorkAreaChange() const {
+  return GetWidget()->widget_delegate()->WillProcessWorkAreaChange();
+}
+
 int NativeWidgetWin::GetNonClientComponent(const gfx::Point& point) const {
   return delegate_->GetNonClientComponent(point);
 }
@@ -2212,14 +2024,28 @@ void NativeWidgetWin::GetWindowMask(const gfx::Size& size, gfx::Path* path) {
   GetWidget()->non_client_view()->GetWindowMask(size, path);
 }
 
+void NativeWidgetWin::GetMinMaxSize(gfx::Size* min_size,
+                                    gfx::Size* max_size) const {
+  *min_size = delegate_->GetMinimumSize();
+  *max_size = delegate_->GetMaximumSize();
+}
+
 InputMethod* NativeWidgetWin::GetInputMethod() {
   return GetWidget()->GetInputMethodDirect();
+}
+
+gfx::NativeViewAccessible NativeWidgetWin::GetNativeViewAccessible() {
+  return GetWidget()->GetRootView()->GetNativeViewAccessible();
 }
 
 void NativeWidgetWin::HandleAppDeactivated() {
   // Another application was activated, we should reset any state that
   // disables inactive rendering now.
   delegate_->EnableInactiveRendering();
+}
+
+void NativeWidgetWin::HandleActivationChanged(bool active) {
+  delegate_->OnNativeWidgetActivationChanged(active);
 }
 
 bool NativeWidgetWin::HandleAppCommand(short command) {
@@ -2239,6 +2065,49 @@ void NativeWidgetWin::HandleClose() {
 
 bool NativeWidgetWin::HandleCommand(int command) {
   return GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
+}
+
+void NativeWidgetWin::HandleCreate() {
+  // TODO(beng): much of this could/should maybe move to HWNDMessageHandler.
+
+  SetNativeWindowProperty(kNativeWidgetKey, this);
+  CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
+
+  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
+
+  props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(hwnd()));
+
+  drop_target_ = new DropTargetWin(
+      static_cast<internal::RootView*>(GetWidget()->GetRootView()));
+
+  // We need to add ourselves as a message loop observer so that we can repaint
+  // aggressively if the contents of our window become invalid. Unfortunately
+  // WM_PAINT messages are starved and we get flickery redrawing when resizing
+  // if we do not do this.
+  MessageLoopForUI::current()->AddObserver(this);
+
+  // Windows special DWM window frame requires a special tooltip manager so
+  // that window controls in Chrome windows don't flicker when you move your
+  // mouse over them. See comment in aero_tooltip_manager.h.
+  Widget* widget = GetWidget()->GetTopLevelWidget();
+  if (widget && widget->ShouldUseNativeFrame()) {
+    tooltip_manager_.reset(new AeroTooltipManager(GetWidget()));
+  } else {
+    tooltip_manager_.reset(new TooltipManagerWin(GetWidget()));
+  }
+  if (!tooltip_manager_->Init()) {
+    // There was a problem creating the TooltipManager. Common error is 127.
+    // See 82193 for details.
+    LOG_GETLASTERROR(WARNING) << "tooltip creation failed, disabling tooltips";
+    tooltip_manager_.reset();
+  }
+
+  // We need to allow the delegate to size its contents since the window may not
+  // receive a size notification when its initial bounds are specified at window
+  // creation time.
+  ClientAreaSizeChanged();
+
+  delegate_->OnNativeWidgetCreated();
 }
 
 void NativeWidgetWin::HandleDestroy() {
@@ -2275,12 +2144,35 @@ void NativeWidgetWin::HandleMove() {
   delegate_->OnNativeWidgetMove();
 }
 
+void NativeWidgetWin::HandleWorkAreaChanged() {
+  GetWidget()->widget_delegate()->OnWorkAreaChanged();
+}
+
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
   delegate_->OnNativeFocus(last_focused_window);
 }
 
 void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
+}
+
+void NativeWidgetWin::HandleScreenReaderDetected() {
+  // TODO(beng): just consolidate this with OnScreenReaderDetected.
+  OnScreenReaderDetected();
+}
+
+bool NativeWidgetWin::HandleTooltipNotify(int w_param,
+                                          NMHDR* l_param,
+                                          LRESULT* l_result) {
+  // We can be sent this message before the tooltip manager is created, if a
+  // subclass overrides OnCreate and creates some kind of Windows control there
+  // that sends WM_NOTIFY messages.
+  if (tooltip_manager_.get()) {
+    bool handled;
+    *l_result = tooltip_manager_->OnNotify(w_param, l_param, &handled);
+    return handled;
+  }
+  return false;
 }
 
 NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {

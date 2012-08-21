@@ -7,6 +7,7 @@
 #include <dwmapi.h>
 
 #include "base/system_monitor/system_monitor.h"
+#include "base/win/windows_version.h"
 #include "ui/gfx/path.h"
 #include "ui/base/native_theme/native_theme_win.h"
 #include "ui/views/ime/input_method_win.h"
@@ -14,6 +15,24 @@
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 
 namespace views {
+namespace {
+
+// Called from OnNCActivate.
+BOOL CALLBACK EnumChildWindowsForRedraw(HWND hwnd, LPARAM lparam) {
+  DWORD process_id;
+  GetWindowThreadProcessId(hwnd, &process_id);
+  int flags = RDW_INVALIDATE | RDW_NOCHILDREN | RDW_FRAME;
+  if (process_id == GetCurrentProcessId())
+    flags |= RDW_UPDATENOW;
+  RedrawWindow(hwnd, NULL, NULL, flags);
+  return TRUE;
+}
+
+// A custom MSAA object id used to determine if a screen reader is actively
+// listening for MSAA events.
+const int kCustomObjectID = 1;
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, public:
@@ -26,6 +45,21 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
 HWNDMessageHandler::~HWNDMessageHandler() {
 }
 
+bool HWNDMessageHandler::IsActive() const {
+  return GetActiveWindow() == hwnd();
+}
+
+bool HWNDMessageHandler::IsVisible() const {
+  return !!::IsWindowVisible(hwnd());
+}
+
+void HWNDMessageHandler::SendFrameChanged() {
+  SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
+      SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS |
+      SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREPOSITION |
+      SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
+}
+
 void HWNDMessageHandler::OnActivate(UINT action, BOOL minimized, HWND window) {
   SetMsgHandled(FALSE);
 }
@@ -35,12 +69,8 @@ void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
       thread_id != GetCurrentThreadId()) {
     delegate_->HandleAppDeactivated();
     // Also update the native frame if it is rendering the non-client area.
-    if (!remove_standard_frame_ &&
-        !delegate_->IsUsingCustomFrame() &&
-        delegate_->AsNativeWidgetWin()) {
-      delegate_->AsNativeWidgetWin()->DefWindowProcWithRedrawLock(
-          WM_NCACTIVATE, FALSE, 0);
-    }
+    if (!remove_standard_frame_ && !delegate_->IsUsingCustomFrame())
+      DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
   }
 }
 
@@ -77,6 +107,39 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
     SetMsgHandled(FALSE);
 }
 
+LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
+  // Attempt to detect screen readers by sending an event with our custom id.
+  NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
+
+  // This message initializes the window so that focus border are shown for
+  // windows.
+  SendMessage(hwnd(),
+              WM_CHANGEUISTATE,
+              MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
+              0);
+
+  // Bug 964884: detach the IME attached to this window.
+  // We should attach IMEs only when we need to input CJK strings.
+  ImmAssociateContextEx(hwnd(), NULL, 0);
+
+  if (remove_standard_frame_) {
+    SetWindowLong(hwnd(), GWL_STYLE,
+                  GetWindowLong(hwnd(), GWL_STYLE) & ~WS_CAPTION);
+    SendFrameChanged();
+  }
+
+  // Get access to a modifiable copy of the system menu.
+  GetSystemMenu(hwnd(), false);
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    RegisterTouchWindow(hwnd(), 0);
+
+  delegate_->HandleCreate();
+
+  // TODO(beng): move more of NWW::OnCreate here.
+  return 0;
+}
+
 void HWNDMessageHandler::OnDestroy() {
   delegate_->HandleDestroy();
 }
@@ -86,14 +149,15 @@ void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
   delegate_->HandleDisplayChange();
 }
 
-void HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
-                                                 WPARAM w_param,
-                                                 LPARAM l_param) {
+LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
+                                                    WPARAM w_param,
+                                                    LPARAM l_param) {
   if (!delegate_->IsWidgetWindow()) {
     SetMsgHandled(FALSE);
-    return;
+    return 0;
   }
   delegate_->HandleGlassModeChange();
+  return 0;
 }
 
 void HWNDMessageHandler::OnEndSession(BOOL ending, UINT logoff) {
@@ -116,6 +180,69 @@ void HWNDMessageHandler::OnExitMenuLoop(BOOL is_track_popup_menu) {
 
 void HWNDMessageHandler::OnExitSizeMove() {
   delegate_->HandleEndWMSizeMove();
+  SetMsgHandled(FALSE);
+}
+
+void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
+  gfx::Size min_window_size;
+  gfx::Size max_window_size;
+  delegate_->GetMinMaxSize(&min_window_size, &max_window_size);
+
+  // Add the native frame border size to the minimum and maximum size if the
+  // view reports its size as the client size.
+  if (delegate_->AsNativeWidgetWin()->WidgetSizeIsClientSize()) {
+    CRect client_rect, window_rect;
+    GetClientRect(hwnd(), &client_rect);
+    GetWindowRect(hwnd(), &window_rect);
+    window_rect -= client_rect;
+    min_window_size.Enlarge(window_rect.Width(), window_rect.Height());
+    if (!max_window_size.IsEmpty())
+      max_window_size.Enlarge(window_rect.Width(), window_rect.Height());
+  }
+  minmax_info->ptMinTrackSize.x = min_window_size.width();
+  minmax_info->ptMinTrackSize.y = min_window_size.height();
+  if (max_window_size.width() || max_window_size.height()) {
+    if (!max_window_size.width())
+      max_window_size.set_width(GetSystemMetrics(SM_CXMAXTRACK));
+    if (!max_window_size.height())
+      max_window_size.set_height(GetSystemMetrics(SM_CYMAXTRACK));
+    minmax_info->ptMaxTrackSize.x = max_window_size.width();
+    minmax_info->ptMaxTrackSize.y = max_window_size.height();
+  }
+  SetMsgHandled(FALSE);
+}
+
+LRESULT HWNDMessageHandler::OnGetObject(UINT message,
+                                        WPARAM w_param,
+                                        LPARAM l_param) {
+  LRESULT reference_result = static_cast<LRESULT>(0L);
+
+  // Accessibility readers will send an OBJID_CLIENT message
+  if (OBJID_CLIENT == l_param) {
+    // Retrieve MSAA dispatch object for the root view.
+    base::win::ScopedComPtr<IAccessible> root(
+        delegate_->GetNativeViewAccessible());
+
+    // Create a reference that MSAA will marshall to the client.
+    reference_result = LresultFromObject(IID_IAccessible, w_param,
+        static_cast<IAccessible*>(root.Detach()));
+  }
+
+  if (kCustomObjectID == l_param) {
+    // An MSAA client requested our custom id. Assume that we have detected an
+    // active windows screen reader.
+    delegate_->HandleScreenReaderDetected();
+
+    // Return with failure.
+    return static_cast<LRESULT>(0L);
+  }
+
+  return reference_result;
+}
+
+void HWNDMessageHandler::OnHScroll(int scroll_type,
+                                   short position,
+                                   HWND scrollbar) {
   SetMsgHandled(FALSE);
 }
 
@@ -184,6 +311,19 @@ void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
   SetMsgHandled(FALSE);
 }
 
+LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
+                                            WPARAM w_param,
+                                            LPARAM l_param) {
+  // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
+  //             line.
+  if (delegate_->IsWidgetWindow())
+    return delegate_->CanActivate() ? MA_ACTIVATE : MA_NOACTIVATEANDEAT;
+  if (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)
+    return MA_NOACTIVATE;
+  SetMsgHandled(FALSE);
+  return MA_ACTIVATE;
+}
+
 void HWNDMessageHandler::OnMove(const CPoint& point) {
   delegate_->HandleMove();
   SetMsgHandled(FALSE);
@@ -191,6 +331,53 @@ void HWNDMessageHandler::OnMove(const CPoint& point) {
 
 void HWNDMessageHandler::OnMoving(UINT param, const RECT* new_bounds) {
   delegate_->HandleMove();
+}
+
+LRESULT HWNDMessageHandler::OnNCActivate(BOOL active) {
+  if (delegate_->CanActivate())
+    delegate_->HandleActivationChanged(!!active);
+
+  if (!delegate_->IsWidgetWindow()) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  if (!delegate_->CanActivate())
+    return TRUE;
+
+  // The frame may need to redraw as a result of the activation change.
+  // We can get WM_NCACTIVATE before we're actually visible. If we're not
+  // visible, no need to paint.
+  if (IsVisible())
+    delegate_->SchedulePaint();
+
+  if (delegate_->IsUsingCustomFrame()) {
+    // TODO(beng, et al): Hack to redraw this window and child windows
+    //     synchronously upon activation. Not all child windows are redrawing
+    //     themselves leading to issues like http://crbug.com/74604
+    //     We redraw out-of-process HWNDs asynchronously to avoid hanging the
+    //     whole app if a child HWND belonging to a hung plugin is encountered.
+    RedrawWindow(hwnd(), NULL, NULL,
+                 RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+    EnumChildWindows(hwnd(), EnumChildWindowsForRedraw, NULL);
+  }
+
+  // If we're active again, we should be allowed to render as inactive, so
+  // tell the non-client view.
+  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
+  if (IsActive())
+    delegate_->EnableInactiveRendering();
+
+  // Avoid DefWindowProc non-client rendering over our custom frame on newer
+  // Windows versions only (breaks taskbar activation indication on XP/Vista).
+  if (delegate_->IsUsingCustomFrame() &&
+      base::win::GetVersion() > base::win::VERSION_VISTA) {
+    SetMsgHandled(TRUE);
+    return TRUE;
+  }
+
+  return DefWindowProcWithRedrawLock(
+      WM_NCACTIVATE, inactive_rendering_disabled || active, 0);
 }
 
 LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
@@ -241,10 +428,23 @@ LRESULT HWNDMessageHandler::OnNCUAHDrawFrame(UINT message,
   return 0;
 }
 
+LRESULT HWNDMessageHandler::OnNotify(int w_param, NMHDR* l_param) {
+  LRESULT l_result = 0;
+  SetMsgHandled(delegate_->HandleTooltipNotify(w_param, l_param, &l_result));
+  return l_result;
+}
+
 LRESULT HWNDMessageHandler::OnPowerBroadcast(DWORD power_event, DWORD data) {
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   if (monitor)
     monitor->ProcessWmPowerBroadcastMessage(power_event);
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
+                                               WPARAM w_param,
+                                               LPARAM l_param) {
   SetMsgHandled(FALSE);
   return 0;
 }
@@ -278,6 +478,21 @@ LRESULT HWNDMessageHandler::OnSetText(const wchar_t* text) {
   // Use a ScopedRedrawLock to avoid weird non-client painting.
   return DefWindowProcWithRedrawLock(WM_SETTEXT, NULL,
                                      reinterpret_cast<LPARAM>(text));
+}
+
+void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
+  if (!GetParent(hwnd()) && (flags == SPI_SETWORKAREA) &&
+      !delegate_->WillProcessWorkAreaChange()) {
+    // Fire a dummy SetWindowPos() call, so we'll trip the code in
+    // OnWindowPosChanging() below that notices work area changes.
+    ::SetWindowPos(hwnd(), 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE |
+        SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    SetMsgHandled(TRUE);
+  } else {
+    if (flags == SPI_SETWORKAREA)
+      delegate_->HandleWorkAreaChanged();
+    SetMsgHandled(FALSE);
+  }
 }
 
 void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
@@ -343,6 +558,10 @@ void HWNDMessageHandler::ResetWindowRegion(bool force) {
 // HWNDMessageHandler, private:
 
 HWND HWNDMessageHandler::hwnd() {
+  return delegate_->AsNativeWidgetWin()->hwnd();
+}
+
+HWND HWNDMessageHandler::hwnd() const {
   return delegate_->AsNativeWidgetWin()->hwnd();
 }
 

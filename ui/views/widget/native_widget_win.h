@@ -494,25 +494,39 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;
   virtual bool IsUsingCustomFrame() const OVERRIDE;
+  virtual void SchedulePaint() OVERRIDE;
+  virtual void EnableInactiveRendering() OVERRIDE;
+  virtual bool IsInactiveRenderingDisabled() OVERRIDE;
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
+  virtual bool WillProcessWorkAreaChange() const OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* path) OVERRIDE;
+  virtual void GetMinMaxSize(gfx::Size* min_size,
+                             gfx::Size* max_size) const OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual InputMethod* GetInputMethod() OVERRIDE;
   virtual void HandleAppDeactivated() OVERRIDE;
+  virtual void HandleActivationChanged(bool active) OVERRIDE;
   virtual bool HandleAppCommand(short command) OVERRIDE;
   virtual void HandleCaptureLost() OVERRIDE;
   virtual void HandleClose() OVERRIDE;
   virtual bool HandleCommand(int command) OVERRIDE;
+  virtual void HandleCreate() OVERRIDE;
   virtual void HandleDestroy() OVERRIDE;
   virtual void HandleDisplayChange() OVERRIDE;
   virtual void HandleGlassModeChange() OVERRIDE;
   virtual void HandleBeginWMSizeMove() OVERRIDE;
   virtual void HandleEndWMSizeMove() OVERRIDE;
   virtual void HandleMove() OVERRIDE;
+  virtual void HandleWorkAreaChanged() OVERRIDE;
   virtual void HandleNativeFocus(HWND last_focused_window) OVERRIDE;
   virtual void HandleNativeBlur(HWND focused_window) OVERRIDE;
+  virtual void HandleScreenReaderDetected() OVERRIDE;
+  virtual bool HandleTooltipNotify(int w_param,
+                                   NMHDR* l_param,
+                                   LRESULT* l_result) OVERRIDE;
   virtual NativeWidgetWin* AsNativeWidgetWin() OVERRIDE;
 
   // Called after the WM_ACTIVATE message has been processed by the default
