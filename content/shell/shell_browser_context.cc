@@ -83,7 +83,11 @@ bool ShellBrowserContext::IsOffTheRecord() const {
 }
 
 DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
+  DownloadManager* manager = BrowserContext::GetDownloadManager(this);
+
   download_manager_delegate_ = new ShellDownloadManagerDelegate();
+  download_manager_delegate_->SetDownloadManager(manager);
+
   return download_manager_delegate_.get();
 }
 
