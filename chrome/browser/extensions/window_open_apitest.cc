@@ -220,13 +220,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        CloseNonExtensionPanelsOnUninstall) {
   if (!PanelManager::UseBrowserlessPanels())
     return;
-#if defined(USE_ASH)
-  int num_popups = 4;
-  int num_panels = 0;
-#else
   int num_popups = 2;
   int num_panels = 2;
-#endif
   ASSERT_TRUE(StartTestServer());
 
   // Setup listeners to wait on strings we expect the extension pages to send.
@@ -260,12 +255,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
 
   // Wait for one tab and one popup in non-extension domain to stay open.
   // Expect everything else, including panels, to close.
-#if defined(USE_ASH)
-  // In Ash and additional popup remains for the "panel" non-extension domain.
-  num_popups = 2;
-#else
   num_popups = 1;
-#endif
   WaitForTabsAndPopups(browser(), 1, num_popups, 0);
 }
 

@@ -557,7 +557,7 @@ bool CreateWindowFunction::RunImpl() {
       } else if (type_str == keys::kWindowTypeValuePanel) {
         extension_id = GetExtension()->id();
         bool use_panels = false;
-#if !defined(OS_ANDROID) && !defined(USE_ASH)
+#if !defined(OS_ANDROID)
         use_panels = PanelManager::ShouldUsePanels(extension_id);
 #endif
         if (use_panels)

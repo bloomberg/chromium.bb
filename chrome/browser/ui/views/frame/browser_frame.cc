@@ -65,15 +65,6 @@ void BrowserFrame::InitBrowserFrame() {
   // Aura frames are translucent.
   params.transparent = true;
 #endif
-#if defined(USE_ASH)
-  // Note: browser_view_->IsPanel() always returns false on Ash because the
-  // BrowserView is not a panel. For Browser child panels and popups, we want
-  // to set them to be always on top.
-  if (browser_view_->browser()->is_type_panel() &&
-      browser_view_->browser()->app_type() == Browser::APP_TYPE_CHILD) {
-    params.keep_on_top = true;
-  }
-#endif
   Init(params);
 
   native_browser_frame_->InitSystemContextMenu();
