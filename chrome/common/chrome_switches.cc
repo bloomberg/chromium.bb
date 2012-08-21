@@ -158,6 +158,9 @@ const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 // expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
 
+// Supplies custom client login to OAuth2 URL for testing purposes.
+const char kClientLoginToOAuth2Url[]        = "client-login-to-oauth2-url";
+
 // Used with kCloudPrintFile. Tells Chrome to delete the file when finished
 // displaying the print dialog.
 const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
@@ -954,6 +957,15 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
+
+// Specifies custom OAuth1 login scope for testing purposes.
+const char kOAuth1LoginScope[]              = "oauth1-login-scope";
+
+// Specifies custom OAuth2 issue token URL for testing purposes.
+const char kOAuth2IssueTokenUrl[]           = "oauth2-issue-token-url";
+
+// Specifies custom OAuth2 token URL for testing purposes.
+const char kOAuth2TokenUrl[]                = "oauth2-token-url";
 
 // Refactored (browserless) Panels are on by default in dev/canary/trunk.
 // Use this flag to revert to using the old-style (pre-refactor) Panels.
