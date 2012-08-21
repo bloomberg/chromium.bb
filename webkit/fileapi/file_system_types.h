@@ -34,8 +34,16 @@ enum FileSystemType {
   // Should be used only for testing.
   kFileSystemTypeTest = 100,
 
-  // Internal filesystem types, which are not exposed to WebKit but are
-  // accessible via Isolated file system.
+  // Following file system types are internal and they are not exposed to
+  // WebKit, but are accessible via IsolatedContext.
+
+  // Indicates a transient, isolated file system for a native local path.
+  // TODO(kinuko): Rename all kFileSystemTypeIsolated used as internal type
+  // with this one.
+  kFileSystemTypeNativeLocal,
+
+  // Indicates a transient, isolated file system for dragged files (which could
+  // contain multiple dragged paths in the virtual root).
   kFileSystemTypeDragged,
 
   // Indicates media filesystem which we can access with same manner to
@@ -45,6 +53,21 @@ enum FileSystemType {
   // Indicates media filesystem to which we need special protocol to access,
   // such as MTP or PTP.
   kFileSystemTypeDeviceMedia,
+
+  // Indicates a Drive filesystem which provides access to Google Drive.
+  kFileSystemTypeDrive,
+};
+
+enum FileSystemMountType {
+  kFileSystemMountTypeUnknown = -1,
+
+  // For kFileSystemTypeIsolated file systems. URLs for this type of
+  // file system is cracked via IsolatedContext.
+  kFileSystemMountTypeIsolated = kFileSystemTypeIsolated,
+
+  // For kFileSystemTypeIsolated file systems. URLs for this type of
+  // file system is cracked via IsolatedContext.
+  kFileSystemMountTypeExternal = kFileSystemTypeExternal,
 };
 
 }  // namespace fileapi

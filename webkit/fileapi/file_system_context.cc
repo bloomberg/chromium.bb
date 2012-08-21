@@ -113,12 +113,19 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
     case kFileSystemTypePersistent:
       return sandbox_provider_.get();
     case kFileSystemTypeExternal:
+    case kFileSystemTypeDrive:
       return external_provider_.get();
     case kFileSystemTypeIsolated:
     case kFileSystemTypeDragged:
     case kFileSystemTypeNativeMedia:
     case kFileSystemTypeDeviceMedia:
       return isolated_provider_.get();
+    case kFileSystemTypeNativeLocal:
+#if defined(OS_CHROMEOS)
+      return external_provider_.get();
+#else
+      return isolated_provider_.get();
+#endif
     default:
       if (provider_map_.find(type) != provider_map_.end())
         return provider_map_.find(type)->second;

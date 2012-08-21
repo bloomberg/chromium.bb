@@ -17,6 +17,31 @@ namespace fileapi {
 
 // A class representing a filesystem URL which consists of origin URL,
 // type and an internal path used inside the filesystem.
+//
+// When a FileSystemURL instance is created for regular sandbox file systems
+// each accessor method would return following values:
+//
+// Example: For a URL 'filesystem:http://foo.com/temporary/foo/bar':
+//   origin() returns 'http://foo.com',
+//   type() returns kFileSystemTypeTemporary,
+//   path() and virtual_path() return 'foo/bar', and
+//   filesystem_id() returns an empty string.
+//
+// path() and virtual_path() usually return the same value, but they
+// have different values if an instance is created for Isolated or External
+// FileSystem URL, for which we may mount different paths from its exposed
+// virtual paths.
+//
+// Example: Assume a path '/media/removable' is mounted at mount name
+// 'mount_name' with type kFileSystemTypeFoo as an external file system.
+// For a URL 'filesystem:http://bar.com/external/mount_name/foo/bar':
+//   origin() returns 'http://bar.com',
+//   type() returns the kFileSystemTypeFoo,
+//   path() returns '/media/removable/foo/bar',
+//   virtual_path() returns 'mount_name/foo/bar',
+//   filesystem_id() returns 'mount_name', and
+//   mount_type() returns kFileSystemMountTypeExternal.
+//
 class FILEAPI_EXPORT FileSystemURL {
  public:
   FileSystemURL();
@@ -26,15 +51,30 @@ class FILEAPI_EXPORT FileSystemURL {
                 const FilePath& internal_path);
   ~FileSystemURL();
 
+  // Returns true if this instance represents a valid FileSystem URL.
   bool is_valid() const { return is_valid_; }
+
+  // Returns the origin part of this URL. See the class comment for details.
   const GURL& origin() const { return origin_; }
+
+  // Returns the type part of this URL. See the class comment for details.
   FileSystemType type() const { return type_; }
 
-  // TODO(kinuko): this must be std::string.
+  // Returns the path part of this URL. See the class comment for details.
+  // TODO(kinuko): this must return std::string.
   const FilePath& path() const { return path_; }
 
-  // For isolated filesystem.
+  // Returns the original path part of this URL.
+  // See the class comment for details.
+  // TODO(kinuko): this must return std::string.
+  const FilePath& virtual_path() const { return virtual_path_; }
+
+  // Returns the filesystem ID/name for isolated/external file system URLs.
+  // See the class comment for details.
   const std::string& filesystem_id() const { return filesystem_id_; }
+
+  // Returns the mount type of this URL for isolated/external file system URLs.
+  FileSystemMountType mount_type() const { return mount_type_; }
 
   std::string spec() const;
 
@@ -50,7 +90,11 @@ class FILEAPI_EXPORT FileSystemURL {
   GURL origin_;
   FileSystemType type_;
   FilePath path_;
-  std::string filesystem_id_;  // For isolated filesystem.
+
+  // For isolated filesystem.
+  std::string filesystem_id_;
+  FilePath virtual_path_;
+  FileSystemMountType mount_type_;
 
   bool is_valid_;
 };

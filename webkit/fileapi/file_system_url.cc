@@ -11,11 +11,14 @@
 namespace fileapi {
 
 FileSystemURL::FileSystemURL()
-    : type_(kFileSystemTypeUnknown), is_valid_(false) {}
+    : type_(kFileSystemTypeUnknown),
+      mount_type_(kFileSystemMountTypeUnknown),
+      is_valid_(false) {}
 
 FileSystemURL::FileSystemURL(const GURL& url)
-    : type_(kFileSystemTypeUnknown) {
-  is_valid_ = CrackFileSystemURL(url, &origin_, &type_, &path_);
+    : type_(kFileSystemTypeUnknown),
+      mount_type_(kFileSystemMountTypeUnknown) {
+  is_valid_ = CrackFileSystemURL(url, &origin_, &type_, &virtual_path_);
   MayCrackIsolatedPath();
 }
 
@@ -25,7 +28,7 @@ FileSystemURL::FileSystemURL(
     const FilePath& path)
     : origin_(origin),
       type_(type),
-      path_(path),
+      virtual_path_(path),
       is_valid_(true) {
   MayCrackIsolatedPath();
 }
@@ -47,16 +50,19 @@ bool FileSystemURL::operator==(const FileSystemURL& that) const {
   return origin_ == that.origin_ &&
       type_ == that.type_ &&
       path_ == that.path_ &&
+      virtual_path_ == that.virtual_path_ &&
       filesystem_id_ == that.filesystem_id_ &&
       is_valid_ == that.is_valid_;
 }
 
 void FileSystemURL::MayCrackIsolatedPath() {
-  if (is_valid_ && type_ == kFileSystemTypeIsolated) {
+  path_ = virtual_path_;
+  if (is_valid_ && IsolatedContext::IsIsolatedType(type_)) {
+    mount_type_ = static_cast<FileSystemMountType>(type_);
     // If the type is isolated, crack the path further to get the 'real'
     // filesystem type and path.
     is_valid_ = IsolatedContext::GetInstance()->CrackIsolatedPath(
-        path_, &filesystem_id_, &type_, &path_);
+        virtual_path_, &filesystem_id_, &type_, &path_);
   }
 }
 

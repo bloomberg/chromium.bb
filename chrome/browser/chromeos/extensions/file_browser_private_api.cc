@@ -53,11 +53,12 @@
 #include "net/base/escape.h"
 #include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
 using chromeos::disks::DiskMountManager;
@@ -229,15 +230,12 @@ void AddGDataMountPoint(
 
 // Given a file url, find the virtual FilePath associated with it.
 FilePath GetVirtualPathFromURL(const GURL& file_url) {
-  FilePath virtual_path;
-  fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
-  GURL file_origin_url;
-  if (!CrackFileSystemURL(file_url, &file_origin_url, &type, &virtual_path) ||
-      type != fileapi::kFileSystemTypeExternal) {
+  fileapi::FileSystemURL url(file_url);
+  if (!chromeos::CrosMountPointProvider::CanHandleURL(url)) {
     NOTREACHED();
     return FilePath();
   }
-  return virtual_path;
+  return url.virtual_path();
 }
 
 // Look up apps in the registry, and collect applications that match the file
@@ -430,11 +428,10 @@ class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
     // Grant R/W file permissions to the renderer hosting component
     // extension for all paths exposed by our local file system provider.
     std::vector<FilePath> root_dirs = provider->GetRootDirectories();
-    for (std::vector<FilePath>::iterator iter = root_dirs.begin();
-         iter != root_dirs.end();
-         ++iter) {
+    for (size_t i = 0; i < root_dirs.size(); ++i) {
       ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-          child_id_, *iter, file_handler_util::GetReadWritePermissions());
+          child_id_, root_dirs[i],
+          file_handler_util::GetReadWritePermissions());
     }
     return true;
   }
@@ -504,27 +501,12 @@ void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
 }
 
 bool FileWatchBrowserFunctionBase::GetLocalFilePath(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& file_url, FilePath* local_path, FilePath* virtual_path) {
-  GURL file_origin_url;
-  fileapi::FileSystemType type;
-  if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
-                          virtual_path)) {
+  fileapi::FileSystemURL url(file_url);
+  if (!chromeos::CrosMountPointProvider::CanHandleURL(url))
     return false;
-  }
-  if (type != fileapi::kFileSystemTypeExternal)
-    return false;
-
-  FilePath root_path = file_system_context->
-      external_provider()->GetFileSystemRootPathOnFileThread(
-          file_origin_url,
-          fileapi::kFileSystemTypeExternal,
-          *virtual_path,
-          false);
-  if (root_path == FilePath())
-    return false;
-
-  *local_path = root_path.Append(*virtual_path);
+  *local_path = url.path();
+  *virtual_path = url.virtual_path();
   return true;
 }
 
@@ -564,8 +546,7 @@ void FileWatchBrowserFunctionBase::RunFileWatchOperationOnFileThread(
     const GURL& file_url, const std::string& extension_id) {
   FilePath local_path;
   FilePath virtual_path;
-  if (!GetLocalFilePath(
-          file_system_context, file_url, &local_path, &virtual_path) ||
+  if (!GetLocalFilePath(file_url, &local_path, &virtual_path) ||
       local_path == FilePath()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -620,12 +601,9 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   std::vector<FilePath> file_paths;
   for (std::vector<GURL>::const_iterator iter = file_urls.begin();
        iter != file_urls.end(); ++iter) {
-    FilePath raw_path;
-    fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
-    if (fileapi::CrackFileSystemURL(*iter, NULL, &type, &raw_path) &&
-        type == fileapi::kFileSystemTypeExternal) {
-      file_paths.push_back(raw_path);
-    }
+    fileapi::FileSystemURL url(*iter);
+    if (chromeos::CrosMountPointProvider::CanHandleURL(url))
+      file_paths.push_back(url.virtual_path());
   }
 
   gdata::GDataSystemService* system_service =
@@ -836,22 +814,14 @@ void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
 // so here we are. This function takes a vector of virtual paths, converts
 // them to local paths and calls |callback| with the result vector, on the UI
 // thread.
+// TODO(kinuko): We no longer call GetFileSystemRootPathOnFileThread and
+// we can likely remove this cross-thread helper method.
 void FileBrowserFunction::GetLocalPathsOnFileThread(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<ui::SelectedFileInfo> selected_files;
-
-  // FilePath(virtual_path) doesn't work on win, so limit this to ChromeOS.
-  fileapi::ExternalFileSystemMountPointProvider* provider =
-      file_system_context->external_provider();
-  if (!provider) {
-    LOG(WARNING) << "External provider is not available";
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, selected_files));
-    return;
-  }
 
   GURL origin_url = source_url().GetOrigin();
   size_t len = file_urls.size();
@@ -887,37 +857,15 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
     }
 
     // Extract the path from |file_url|.
-    GURL file_origin_url;
-    FilePath virtual_path;
-    fileapi::FileSystemType type;
-
-    if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
-                            &virtual_path)) {
+    fileapi::FileSystemURL url(file_url);
+    if (!chromeos::CrosMountPointProvider::CanHandleURL(url))
       continue;
-    }
-    if (type != fileapi::kFileSystemTypeExternal) {
-      NOTREACHED();
-      continue;
-    }
 
-    FilePath root = provider->GetFileSystemRootPathOnFileThread(
-        origin_url,
-        fileapi::kFileSystemTypeExternal,
-        FilePath(virtual_path),
-        false);
-    FilePath file_path;
-    if (!root.empty()) {
-      file_path = root.Append(virtual_path);
-    } else {
-      LOG(WARNING) << "GetLocalPathsOnFileThread failed "
-                   << file_url.spec();
-    }
-
-    if (!file_path.empty()) {
-      DVLOG(1) << "Selected: file path: " << file_path.value()
+    if (!url.path().empty()) {
+      DVLOG(1) << "Selected: file path: " << url.path().value()
                << " local path: " << local_path.value();
       selected_files.push_back(
-          ui::SelectedFileInfo(file_path, local_path));
+          ui::SelectedFileInfo(url.path(), local_path));
     }
   }
 

@@ -639,10 +639,10 @@ GDataFileSystemProxy::~GDataFileSystemProxy() {
 bool GDataFileSystemProxy::ValidateUrl(
     const FileSystemURL& url, FilePath* file_path) {
   // what platform you're on.
-  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeExternal) {
+  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive) {
     return false;
   }
-  *file_path = url.path();
+  *file_path = url.virtual_path();
   return true;
 }
 

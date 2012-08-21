@@ -34,8 +34,9 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "webkit/chromeos/fileapi/cros_mount_point_provider.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_mount_point_provider.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
 using content::BrowserContext;
@@ -566,15 +567,8 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     if (handler_pid_ == 0)
       return false;
 
-    GURL file_origin_url;
-    FilePath virtual_path;
-    fileapi::FileSystemType type;
-    if (!CrackFileSystemURL(origin_file_url, &file_origin_url, &type,
-                            &virtual_path)) {
-      return false;
-    }
-
-    if (type != fileapi::kFileSystemTypeExternal)
+    fileapi::FileSystemURL url(origin_file_url);
+    if (!chromeos::CrosMountPointProvider::CanHandleURL(url))
       return false;
 
     fileapi::ExternalFileSystemMountPointProvider* external_provider =
@@ -582,37 +576,33 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     if (!external_provider)
       return false;
 
-    if (!external_provider->IsAccessAllowed(file_origin_url,
-                                            type,
-                                            virtual_path)) {
+    if (!external_provider->IsAccessAllowed(url.origin(),
+                                            url.type(),
+                                            url.virtual_path())) {
       return false;
     }
 
     // Make sure this url really being used by the right caller extension.
-    if (source_url_.GetOrigin() != file_origin_url) {
+    if (source_url_.GetOrigin() != url.origin()) {
       DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
       return false;
     }
 
-    FilePath root_path =
-        external_provider->GetFileSystemRootPathOnFileThread(
-          file_origin_url,
-          fileapi::kFileSystemTypeExternal,
-          virtual_path,
-          false);     // create
-    FilePath final_file_path = root_path.Append(virtual_path);
-
     // Check if this file system entry exists first.
     base::PlatformFileInfo file_info;
 
-    bool is_gdata_file = gdata::util::IsUnderGDataMountPoint(final_file_path);
+    FilePath local_path = url.path();
+    FilePath virtual_path = url.virtual_path();
+
+    bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
+    DCHECK(!is_drive_file || gdata::util::IsUnderGDataMountPoint(local_path));
 
     // If the file is under gdata mount point, there is no actual file to be
-    // found on the final_file_path.
-    if (!is_gdata_file) {
-      if (!file_util::PathExists(final_file_path) ||
-          file_util::IsLink(final_file_path) ||
-          !file_util::GetFileInfo(final_file_path, &file_info)) {
+    // found on the url.path().
+    if (!is_drive_file) {
+      if (!file_util::PathExists(local_path) ||
+          file_util::IsLink(local_path) ||
+          !file_util::GetFileInfo(local_path, &file_info)) {
         return false;
       }
     }
@@ -631,7 +621,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     file->target_file_url = GURL(base_url.spec() + virtual_path.value());
     file->virtual_path = virtual_path;
     file->is_directory = file_info.is_directory;
-    file->absolute_path = final_file_path;
+    file->absolute_path = local_path;
     return true;
   }
 

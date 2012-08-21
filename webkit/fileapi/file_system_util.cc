@@ -155,10 +155,13 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
   case kFileSystemTypeTest:
     url += (kTestDir + 1);  // We don't want the leading slash.
     return GURL(url + "/");
-  case kFileSystemTypeUnknown:
-  case kFileSystemTypeDragged:
-  case kFileSystemTypeNativeMedia:
+  // Internal types are always pointed via isolated or external URLs.
   case kFileSystemTypeDeviceMedia:
+  case kFileSystemTypeDragged:
+  case kFileSystemTypeDrive:
+  case kFileSystemTypeNativeLocal:
+  case kFileSystemTypeNativeMedia:
+  case kFileSystemTypeUnknown:
     NOTREACHED();
   }
   NOTREACHED();

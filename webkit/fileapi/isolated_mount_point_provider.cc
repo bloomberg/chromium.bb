@@ -103,6 +103,7 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
     FileSystemType type) {
   switch (type) {
     case kFileSystemTypeIsolated:
+    case kFileSystemTypeNativeLocal:
       return isolated_file_util_.get();
     case kFileSystemTypeDragged:
       return dragged_file_util_.get();
@@ -113,11 +114,7 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
       return device_media_file_util_.get();
 #endif
 
-    case kFileSystemTypeTemporary:
-    case kFileSystemTypePersistent:
-    case kFileSystemTypeExternal:
-    case kFileSystemTypeTest:
-    case kFileSystemTypeUnknown:
+    default:
       NOTREACHED();
   }
   return NULL;
@@ -126,8 +123,7 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
 FilePath IsolatedMountPointProvider::GetPathForPermissionsCheck(
     const FilePath& virtual_path) const {
   // For isolated filesystems we only check per-filesystem permissions.
-  NOTREACHED();
-  return virtual_path;
+  return FilePath();
 }
 
 FileSystemOperationInterface*

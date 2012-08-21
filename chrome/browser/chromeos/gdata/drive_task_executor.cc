@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
 namespace gdata {
@@ -52,13 +53,10 @@ bool DriveTaskExecutor::ExecuteAndNotify(
   std::vector<FilePath> raw_paths;
   for (std::vector<GURL>::const_iterator iter = file_urls.begin();
       iter != file_urls.end(); ++iter) {
-    FilePath raw_path;
-    fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
-    if (!fileapi::CrackFileSystemURL(*iter, NULL, &type, &raw_path) ||
-        type != fileapi::kFileSystemTypeExternal) {
+    fileapi::FileSystemURL url(*iter);
+    if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive)
       return false;
-    }
-    raw_paths.push_back(raw_path);
+    raw_paths.push_back(url.virtual_path());
   }
 
   GDataSystemService* system_service =

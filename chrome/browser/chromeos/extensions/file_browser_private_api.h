@@ -72,7 +72,6 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
 
  private:
   bool GetLocalFilePath(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
       const GURL& file_url, FilePath* local_path, FilePath* virtual_path);
   void RespondOnUIThread(bool success);
   void RunFileWatchOperationOnFileThread(

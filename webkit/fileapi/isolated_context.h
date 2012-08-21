@@ -20,11 +20,38 @@
 
 namespace fileapi {
 
-// Manages isolated filename namespaces.  A namespace is simply defined as a
-// set of file paths and corresponding filesystem ID.  This context class is
-// a singleton and access to the context is thread-safe (protected with a
-// lock).
+// Manages isolated filesystem namespaces.
+// This context class is a singleton and access to the context is
+// thread-safe (protected with a lock).
+//
+// There are two types of filesystems managed by this context:
+// isolated and external.
+// The former is transient while the latter is persistent.
+//
+// * Transient isolated file systems have no name and are identified by
+//   string 'filesystem ID', which usually just looks like random value.
+//   This type of filesystem can be created on the fly and may go away
+//   when it has no references from renderers.
+//   Files in an isolated filesystem are registered with corresponding names
+//   and identified by a filesystem URL like:
+//
+//   filesystem:<origin>/isolated/<filesystem_id>/<name>/relative/path
+//
+// * Persistent external file systems are identified by 'mount name'
+//   and are persisted until RevokeFileSystem is called.
+//   Files in an external filesystem are identified by a filesystem URL like:
+//
+//   filesystem:<origin>/external/<mount_name>/relative/path
+//
+// A filesystem instance is represented by IsolatedContext::Instance, and
+// managed as a map instance_map_ which maps from filesystem ID (or name)
+// to the instance.
+//
 // Some methods of this class are virtual just for mocking.
+//
+// TODO(kinuko): This should have a better name since this handles both
+// isolated and external file systems.
+//
 class FILEAPI_EXPORT IsolatedContext {
  public:
   struct FILEAPI_EXPORT FileInfo {
@@ -68,6 +95,11 @@ class FILEAPI_EXPORT IsolatedContext {
   // The instance is lazily created per browser process.
   static IsolatedContext* GetInstance();
 
+  // Returns true if the given filesystem type is managed by IsolatedContext
+  // (i.e. if the given |type| is Isolated or External).
+  // TODO(kinuko): needs a better function name.
+  static bool IsIsolatedType(FileSystemType type);
+
   // Registers a new isolated filesystem with the given FileInfoSet |files|
   // and returns the new filesystem_id.  The files are registered with their
   // register_name as their keys so that later we can resolve the full paths
@@ -101,7 +133,30 @@ class FILEAPI_EXPORT IsolatedContext {
                                         const FilePath& path,
                                         std::string* register_name);
 
-  // Revokes the filesystem |filesystem_id|
+#if defined(OS_CHROMEOS)
+  // Registers a new named external filesystem.
+  // The |path| is registered as the root path of the mount point which
+  // is identified by a URL "filesystem:.../external/mount_name".
+  //
+  // For example, if the path "/media/removable" is registered with
+  // the mount_name "removable", a filesystem URL like
+  // "filesystem:.../external/removable/a/b" will be resolved as
+  // "/media/removable/a/b".
+  //
+  // The |mount_name| should NOT contain a path separator '/'.
+  // Returns false if the given name is already registered.
+  //
+  // An external file system registered by this method can be revoked
+  // by calling RevokeFileSystem with |mount_name|.
+  bool RegisterExternalFileSystem(const std::string& mount_name,
+                                  FileSystemType type,
+                                  const FilePath& path);
+
+  // Returns a set of FilePath (of <mount_name, path>) registered as external.
+  std::vector<FileInfo> GetExternalMountPoints() const;
+#endif
+
+  // Revokes the filesystem |filesystem_id|.
   // Returns false if the |filesystem_id| is not (no longer) registered.
   bool RevokeFileSystem(const std::string& filesystem_id);
 
@@ -124,19 +179,21 @@ class FILEAPI_EXPORT IsolatedContext {
   // (e.g. by RevokeFileSystemByPath).
   void RemoveReference(const std::string& filesystem_id);
 
-  // Cracks the given |virtual_path| (which should look like
-  // "/<filesystem_id>/<registered_name>/<relative_path>") and populates
-  // the |filesystem_id| and |path| if the embedded <filesystem_id>
-  // is registered to this context.  |root_path| is also populated to have
-  // the registered root (toplevel) file info for the |virtual_path|.
+  // Cracks the given |virtual_path| (which is the path part of a filesystem URL
+  // without '/isolated' or '/external' prefix) and populates the
+  // |id_or_name|, |type|, and |path| if the <id_or_name> part embedded in
+  // the |virtual_path| (i.e. the first component of the |virtual_path|) is a
+  // valid registered filesystem ID or mount name for an isolated or external
+  // filesystem.
   //
-  // Returns false if the given virtual_path or the cracked filesystem_id
+  // Returns false if the given virtual_path or the cracked id_or_name
   // is not valid.
   //
-  // Note that |path| is set to empty paths if |virtual_path| has no
-  // <relative_path> part (i.e. pointing to the virtual root).
+  // Note that |path| is set to empty paths if the filesystem type is isolated
+  // and |virtual_path| has no <relative_path> part (i.e. pointing to the
+  // virtual root).
   bool CrackIsolatedPath(const FilePath& virtual_path,
-                         std::string* filesystem_id,
+                         std::string* id_or_name,
                          FileSystemType* type,
                          FilePath* path) const;
 
@@ -160,49 +217,8 @@ class FILEAPI_EXPORT IsolatedContext {
  private:
   friend struct base::DefaultLazyInstanceTraits<IsolatedContext>;
 
-  // Represents each isolated file system instance.
-  class Instance {
-   public:
-    // For a single-path file system, which could be registered by
-    // IsolatedContext::RegisterFileSystemForPath().
-    // Most of isolated file system contexts should be of this type.
-    Instance(FileSystemType type, const FileInfo& file_info);
-
-    // For a multi-paths file system.  As of writing only file system
-    // type which could have multi-paths is Dragged file system, and
-    // could be registered by IsolatedContext::RegisterDraggedFileSystem().
-    Instance(FileSystemType type, const std::set<FileInfo>& files);
-
-    ~Instance();
-
-    FileSystemType type() const { return type_; }
-    const FileInfo& file_info() const { return file_info_; }
-    const std::set<FileInfo>& files() const { return files_; }
-    int ref_counts() const { return ref_counts_; }
-
-    void AddRef() { ++ref_counts_; }
-    void RemoveRef() { --ref_counts_; }
-
-    bool ResolvePathForName(const std::string& name, FilePath* path) const;
-
-    // Returns true if the instance is a single-path instance.
-    bool IsSinglePathInstance() const;
-
-   private:
-    const FileSystemType type_;
-
-    // For single-path instance.
-    const FileInfo file_info_;
-
-    // For multiple-path instance (e.g. dragged file system).
-    const std::set<FileInfo> files_;
-
-    // Reference counts. Note that an isolated filesystem is created with ref==0
-    // and will get deleted when the ref count reaches <=0.
-    int ref_counts_;
-
-    DISALLOW_COPY_AND_ASSIGN(Instance);
-  };
+  // Represents each file system instance (defined in the .cc).
+  class Instance;
 
   typedef std::map<std::string, Instance*> IDToInstance;
 

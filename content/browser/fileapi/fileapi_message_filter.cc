@@ -755,10 +755,10 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  // Special handling for filesystems which have isolated filesystem_id.
+  // Special handling for filesystems whose mount type is isolated.
   // (See ChildProcessSecurityPolicy::GrantReadFileSystem for more
   // details about access permission for isolated filesystem.)
-  if (!url.filesystem_id().empty()) {
+  if (url.mount_type() == fileapi::kFileSystemMountTypeIsolated) {
     // The root directory of the dragged filesystem is read-only.
     if (url.type() == fileapi::kFileSystemTypeDragged && url.path().empty()) {
       if (permissions != kReadFilePermissions) {

@@ -126,14 +126,14 @@ class ExternalFileSystemMountPointProvider
   // provider. This list is used to set appropriate child process file access
   // permissions.
   virtual std::vector<FilePath> GetRootDirectories() const = 0;
-  // Grant access to all external file system from extension identified with
+  // Grants access to all external file system from extension identified with
   // |extension_id|.
   virtual void GrantFullAccessToExtension(const std::string& extension_id) = 0;
   // Grants access to |virtual_path| from |origin_url|.
   virtual void GrantFileAccessToExtension(
       const std::string& extension_id,
       const FilePath& virtual_path) = 0;
-  // Revoke file access from extension identified with |extension_id|.
+  // Revokes file access from extension identified with |extension_id|.
   virtual void RevokeAccessForExtension(
         const std::string& extension_id) = 0;
   // Checks if a given |mount_point| already exists.
@@ -144,7 +144,7 @@ class ExternalFileSystemMountPointProvider
   virtual void AddRemoteMountPoint(
       const FilePath& mount_point,
       RemoteFileSystemProxyInterface* remote_proxy) = 0;
-  // Remove a mount point.
+  // Removes a mount point.
   virtual void RemoveMountPoint(const FilePath& mount_point) = 0;
   // Gets virtual path by known filesystem path. Returns false when filesystem
   // path is not exposed by this provider.
