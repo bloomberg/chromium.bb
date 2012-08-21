@@ -18,11 +18,8 @@
 namespace {
 
 GtkWidget* CreateTextLabel(const std::string& text,
-                           int width,
                            GtkThemeService* theme_service) {
   GtkWidget* label = theme_service->BuildLabel(text, ui::kGdkBlack);
-  if (width > 0)
-    gtk_util::SetLabelWidth(label, width);
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
   gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
   return label;
@@ -61,7 +58,6 @@ GtkWidget* PermissionSelector::CreateUI() {
       l10n_util::GetStringFUTF8(
           IDS_WEBSITE_SETTINGS_PERMISSION_TYPE,
           WebsiteSettingsUI::PermissionTypeToUIString(type_)),
-      0,
       theme_service_);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 
