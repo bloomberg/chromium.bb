@@ -114,48 +114,6 @@ void CheckXEventForConsistency(XEvent* xevent) {
 // Returns X font cursor shape from an Aura cursor.
 int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
   switch (native_cursor.native_type()) {
-    case ui::kCursorNull:
-      return XC_left_ptr;
-    case ui::kCursorPointer:
-      return XC_left_ptr;
-    case ui::kCursorCross:
-      return XC_crosshair;
-    case ui::kCursorHand:
-      return XC_hand2;
-    case ui::kCursorIBeam:
-      return XC_xterm;
-    case ui::kCursorWait:
-      return XC_watch;
-    case ui::kCursorHelp:
-      return XC_question_arrow;
-    case ui::kCursorEastResize:
-      return XC_right_side;
-    case ui::kCursorNorthResize:
-      return XC_top_side;
-    case ui::kCursorNorthEastResize:
-      return XC_top_right_corner;
-    case ui::kCursorNorthWestResize:
-      return XC_top_left_corner;
-    case ui::kCursorSouthResize:
-      return XC_bottom_side;
-    case ui::kCursorSouthEastResize:
-      return XC_bottom_right_corner;
-    case ui::kCursorSouthWestResize:
-      return XC_bottom_left_corner;
-    case ui::kCursorWestResize:
-      return XC_left_side;
-    case ui::kCursorNorthSouthResize:
-      return XC_sb_v_double_arrow;
-    case ui::kCursorEastWestResize:
-      return XC_sb_h_double_arrow;
-    case ui::kCursorNorthEastSouthWestResize:
-    case ui::kCursorNorthWestSouthEastResize:
-      // There isn't really a useful cursor available for these.
-      return XC_left_ptr;
-    case ui::kCursorColumnResize:
-      return XC_sb_h_double_arrow;
-    case ui::kCursorRowResize:
-      return XC_sb_v_double_arrow;
     case ui::kCursorMiddlePanning:
       return XC_fleur;
     case ui::kCursorEastPanning:
@@ -174,22 +132,45 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
       return XC_bottom_left_corner;
     case ui::kCursorWestPanning:
       return XC_sb_left_arrow;
-    case ui::kCursorMove:
-      return XC_fleur;
-    case ui::kCursorVerticalText:
-    case ui::kCursorCell:
-    case ui::kCursorContextMenu:
-    case ui::kCursorAlias:
-    case ui::kCursorProgress:
-    case ui::kCursorNoDrop:
-    case ui::kCursorCopy:
     case ui::kCursorNone:
-    case ui::kCursorNotAllowed:
-    case ui::kCursorZoomIn:
-    case ui::kCursorZoomOut:
     case ui::kCursorGrab:
     case ui::kCursorGrabbing:
       // TODO(jamescook): Need cursors for these.  crbug.com/111650
+      return XC_left_ptr;
+
+    case ui::kCursorNull:
+    case ui::kCursorPointer:
+    case ui::kCursorNoDrop:
+    case ui::kCursorNotAllowed:
+    case ui::kCursorCopy:
+    case ui::kCursorMove:
+    case ui::kCursorEastResize:
+    case ui::kCursorNorthResize:
+    case ui::kCursorSouthResize:
+    case ui::kCursorWestResize:
+    case ui::kCursorNorthEastResize:
+    case ui::kCursorNorthWestResize:
+    case ui::kCursorSouthWestResize:
+    case ui::kCursorSouthEastResize:
+    case ui::kCursorIBeam:
+    case ui::kCursorAlias:
+    case ui::kCursorCell:
+    case ui::kCursorContextMenu:
+    case ui::kCursorCross:
+    case ui::kCursorHelp:
+    case ui::kCursorWait:
+    case ui::kCursorNorthSouthResize:
+    case ui::kCursorEastWestResize:
+    case ui::kCursorNorthEastSouthWestResize:
+    case ui::kCursorNorthWestSouthEastResize:
+    case ui::kCursorProgress:
+    case ui::kCursorColumnResize:
+    case ui::kCursorRowResize:
+    case ui::kCursorVerticalText:
+    case ui::kCursorZoomIn:
+    case ui::kCursorZoomOut:
+      NOTREACHED() << "Cursor (" << native_cursor.native_type() << ") should "
+                   << "have an image asset.";
       return XC_left_ptr;
     case ui::kCursorCustom:
       NOTREACHED();
