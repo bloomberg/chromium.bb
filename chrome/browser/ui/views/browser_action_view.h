@@ -75,9 +75,6 @@ class BrowserActionView : public views::View {
  protected:
   // Overridden from views::View to paint the badge on top of children.
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE;
 
  private:
   // The Browser object this view is associated with.
@@ -209,6 +206,10 @@ class BrowserActionButton : public views::MenuButton,
 
   // The context menu.  This member is non-NULL only when the menu is shown.
   views::MenuItemView* context_menu_;
+
+  // Used to make sure MaybeRegisterExtensionCommand() is called only once
+  // from ViewHierarchyChanged().
+  bool called_registered_extension_command_;
 
   content::NotificationRegistrar registrar_;
 

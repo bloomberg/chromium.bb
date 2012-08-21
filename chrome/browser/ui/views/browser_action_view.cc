@@ -46,6 +46,11 @@ BrowserActionView::BrowserActionView(const Extension* extension,
       delegate_(delegate),
       button_(NULL),
       extension_(extension) {
+  button_ = new BrowserActionButton(extension_, browser_, delegate_);
+  button_->set_drag_controller(delegate_);
+  button_->set_owned_by_client();
+  AddChildView(button_);
+  button_->UpdateState();
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -64,10 +69,6 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
 }
 
 void BrowserActionView::Layout() {
-  // |button_| is NULL if Layout() is invoked before we have a valid widget.
-  if (!button_)
-    return;
-
   // We can't rely on button_->GetPreferredSize() here because that's not set
   // correctly until the first call to
   // BrowserActionsContainer::RefreshBrowserActionViews(), whereas this can be
@@ -78,18 +79,6 @@ void BrowserActionView::Layout() {
   gfx::Point offset = delegate_->GetViewContentOffset();
   button_->SetBounds(offset.x(), offset.y(), width() - offset.x(),
                      BrowserActionsContainer::IconHeight());
-}
-
-void BrowserActionView::ViewHierarchyChanged(bool is_add,
-                                             View* parent,
-                                             View* child) {
-  if (is_add && (child == this) && (GetWidget() != NULL) && (button_ == NULL)) {
-    button_ = new BrowserActionButton(extension_, browser_, delegate_);
-    button_->set_drag_controller(delegate_);
-    button_->set_owned_by_client();
-    AddChildView(button_);
-    button_->UpdateState();
-  }
 }
 
 void BrowserActionView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -124,7 +113,8 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       delegate_(delegate),
-      context_menu_(NULL) {
+      context_menu_(NULL),
+      called_registered_extension_command_(false) {
   set_border(NULL);
   set_alignment(TextButton::ALIGN_CENTER);
   set_context_menu_controller(this);
@@ -169,8 +159,11 @@ void BrowserActionButton::ViewHierarchyChanged(
                                    Extension::kBrowserActionIconMaxSize),
                          ImageLoadingTracker::DONT_CACHE);
     }
+  }
 
+  if (is_add && !called_registered_extension_command_ && GetFocusManager()) {
     MaybeRegisterExtensionCommand();
+    called_registered_extension_command_ = true;
   }
 
   MenuButton::ViewHierarchyChanged(is_add, parent, child);
