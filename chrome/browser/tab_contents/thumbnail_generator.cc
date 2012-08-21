@@ -31,6 +31,7 @@
 #include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/skbitmap_operations.h"
 
@@ -65,32 +66,70 @@ using content::WebContents;
 
 namespace {
 
+// The thumbnail size in DIP.
 static const int kThumbnailWidth = 212;
 static const int kThumbnailHeight = 132;
 
-// This factor determines the number of pixels to be copied by
-// RenderWidgetHost::CopyFromBackingStore for generating thumbnail.
-// Smaller scale is good for performance, but too small scale causes aliasing
-// because the resampling method is not good enough to retain the image quality.
-// TODO(mazda): the Improve resampling method and use a smaller scale
-// (http://crbug.com/118571).
-static const double kThumbnailCopyScale = 2.0;
-
 static const char kThumbnailHistogramName[] = "Thumbnail.ComputeMS";
 
-// Calculates the size used by RenderWidgetHost::CopyFromBackingStore.
-// The result is computed as the minimum size that satisfies the following
-// conditions.
-//   result.width : result.height == view_size.width : view_size.height
-//   result.width >= kThumbnailCopyScale * desired_size.width
-//   result.height >= kThumbnailCopyScale * desired_size.height
-gfx::Size GetCopySizeForThumbnail(const gfx::Size& view_size,
-                                  const gfx::Size& desired_size) {
-  const double scale = kThumbnailCopyScale *
-      std::max(static_cast<double>(desired_size.width()) / view_size.width(),
-               static_cast<double>(desired_size.height()) / view_size.height());
-  return gfx::Size(static_cast<int>(scale * view_size.width()),
-                   static_cast<int>(scale * view_size.height()));
+// Returns the size used by RenderWidgetHost::CopyFromBackingStore.
+//
+// The size is calculated in such a way that the copied size in pixel becomes
+// equal to (f * kThumbnailWidth, f * kThumbnailHeight), where f is the scale
+// of ui::SCALE_FACTOR_200P. Since RenderWidgetHost::CopyFromBackingStore takes
+// the size in DIP, we need to adjust the size based on |view|'s device scale
+// factor in order to copy the pixels with the size above.
+//
+// The copied size was chosen for the following reasons.
+//
+// 1. When the scale factor of the primary monitor is ui::SCALE_FACTOR_200P, the
+// generated thumbnail size is (f * kThumbnailWidth, f * kThumbnailHeight).
+// In order to avoid degrading the image quality by magnification, the size
+// of the copied pixels should be equal to or larger than this thumbnail size.
+//
+// 2. RenderWidgetHost::CopyFromBackingStore can be costly especially when
+// it is necessary to read back the web contents image data from GPU. As the
+// cost is roughly propotional to the number of the copied pixels, the size of
+// the copied pixels should be as small as possible.
+//
+// When the scale factor of the primary monitor is ui::SCALE_FACTOR_100P,
+// we still copy the pixels with the same size as ui::SCALE_FACTOR_200P because
+// the resampling method used in RenderWidgetHost::CopyFromBackingStore is not
+// good enough for the resampled image to be used directly for the thumbnail
+// (http://crbug.com/141235). We assume this is not an issue in case of
+// ui::SCALE_FACTOR_200P because the high resolution thumbnail on high density
+// display alleviates the aliasing.
+// TODO(mazda): Copy the pixels with the smaller size in the case of
+// ui::SCALE_FACTOR_100P once the resampling method has been improved.
+gfx::Size GetCopySizeForThumbnail(content::RenderWidgetHostView* view) {
+  gfx::Size copy_size(kThumbnailWidth, kThumbnailHeight);
+  ui::ScaleFactor scale_factor =
+      ui::GetScaleFactorForNativeView(view->GetNativeView());
+  switch (scale_factor) {
+    case ui::SCALE_FACTOR_100P:
+      copy_size =
+          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P));
+      break;
+    case ui::SCALE_FACTOR_200P:
+      // Use the size as-is.
+      break;
+    default:
+      DLOG(WARNING) << "Unsupported scale factor. Use the same copy size as "
+                    << "ui::SCALE_FACTOR_100P";
+      copy_size =
+          copy_size.Scale(ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P));
+      break;
+  }
+  return copy_size;
+}
+
+// Returns the size of the thumbnail stored in the database in pixel.
+gfx::Size GetThumbnailSizeInPixel() {
+  gfx::Size thumbnail_size(kThumbnailWidth, kThumbnailHeight);
+  // Determine the resolution of the thumbnail based on the primary monitor.
+  // TODO(oshima): Use device's default scale factor.
+  gfx::Display primary_display = gfx::Screen::GetPrimaryDisplay();
+  return thumbnail_size.Scale(primary_display.device_scale_factor());
 }
 
 // Returns the clipping rectangle that is used for creating a thumbnail with
@@ -142,8 +181,7 @@ gfx::Rect GetClippingRect(const gfx::Size& source_size,
 // store. The returned bitmap will be isNull if there was an error creating it.
 SkBitmap CreateThumbnail(
     const SkBitmap& bitmap,
-    int desired_width,
-    int desired_height,
+    const gfx::Size& desired_size,
     ThumbnailGenerator::ClipResult* clip_result) {
   base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
 
@@ -160,7 +198,7 @@ SkBitmap CreateThumbnail(
     bitmap.extractSubset(&bmp, scrollbarless_rect);
 
     clipped_bitmap = ThumbnailGenerator::GetClippedBitmap(
-        bmp, desired_width, desired_height, clip_result);
+        bmp, desired_size.width(), desired_size.height(), clip_result);
   } else {
     clipped_bitmap = bitmap;
   }
@@ -168,7 +206,7 @@ SkBitmap CreateThumbnail(
   // Need to resize it to the size we want, so downsample until it's
   // close, and let the caller make it the exact size if desired.
   SkBitmap result = SkBitmapOperations::DownsampleByTwoUntilSize(
-      clipped_bitmap, desired_width, desired_height);
+      clipped_bitmap, desired_size.width(), desired_size.height());
 #if !defined(USE_AURA)
   // This is a bit subtle. SkBitmaps are refcounted, but the magic
   // ones in PlatformCanvas can't be assigned to SkBitmap with proper
@@ -523,8 +561,7 @@ void ThumbnailGenerator::AsyncUpdateThumbnail(
   copy_rect = GetClippingRect(copy_rect.size(),
                               gfx::Size(kThumbnailWidth, kThumbnailHeight),
                               &clip_result);
-  gfx::Size copy_size =
-      gfx::Size(kThumbnailWidth, kThumbnailHeight).Scale(kThumbnailCopyScale);
+  gfx::Size copy_size = GetCopySizeForThumbnail(view);
   skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
   render_widget_host->CopyFromBackingStore(
       copy_rect,
@@ -546,8 +583,7 @@ void ThumbnailGenerator::UpdateThumbnailWithBitmap(
     return;
 
   SkBitmap thumbnail = CreateThumbnail(bitmap,
-                                       kThumbnailWidth,
-                                       kThumbnailHeight,
+                                       GetThumbnailSizeInPixel(),
                                        &clip_result);
   UpdateThumbnail(web_contents, thumbnail, clip_result);
 }
