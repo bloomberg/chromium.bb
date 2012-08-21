@@ -629,20 +629,102 @@ display_create_surface(struct display *display,
 	return display_create_shm_surface(display, rectangle, flags, NULL);
 }
 
-static const char *cursors[] = {
+/*
+ * The following correspondences between file names and cursors was copied
+ * from: https://bugs.kde.org/attachment.cgi?id=67313
+ */
+
+static const char *bottom_left_corners[] = {
 	"bottom_left_corner",
+	"sw-resize"
+};
+
+static const char *bottom_right_corners[] = {
 	"bottom_right_corner",
+	"se-resize"
+};
+
+static const char *bottom_sides[] = {
 	"bottom_side",
+	"s-resize"
+};
+
+static const char *grabbings[] = {
 	"grabbing",
+	"closedhand",
+	"208530c400c041818281048008011002"
+};
+
+static const char *left_ptrs[] = {
 	"left_ptr",
+	"default",
+	"top_left_arrow",
+	"left-arrow"
+};
+
+static const char *left_sides[] = {
 	"left_side",
+	"w-resize"
+};
+
+static const char *right_sides[] = {
 	"right_side",
+	"e-resize"
+};
+
+static const char *top_left_corners[] = {
 	"top_left_corner",
+	"nw-resize"
+};
+
+static const char *top_right_corners[] = {
 	"top_right_corner",
+	"ne-resize"
+};
+
+static const char *top_sides[] = {
 	"top_side",
+	"n-resize"
+};
+
+static const char *xterms[] = {
 	"xterm",
+	"ibeam",
+	"text"
+};
+
+static const char *hand1s[] = {
 	"hand1",
+	"pointer",
+	"pointing_hand",
+	"e29285e634086352946a0e7090d73106"
+};
+
+static const char *watches[] = {
 	"watch",
+	"wait",
+	"0426c94ea35c87780ff01dc239897213"
+};
+
+struct cursor_alternatives {
+	const char **names;
+	size_t count;
+};
+
+static const struct cursor_alternatives cursors[] = {
+	{bottom_left_corners, ARRAY_LENGTH(bottom_left_corners)},
+	{bottom_right_corners, ARRAY_LENGTH(bottom_right_corners)},
+	{bottom_sides, ARRAY_LENGTH(bottom_sides)},
+	{grabbings, ARRAY_LENGTH(grabbings)},
+	{left_ptrs, ARRAY_LENGTH(left_ptrs)},
+	{left_sides, ARRAY_LENGTH(left_sides)},
+	{right_sides, ARRAY_LENGTH(right_sides)},
+	{top_left_corners, ARRAY_LENGTH(top_left_corners)},
+	{top_right_corners, ARRAY_LENGTH(top_right_corners)},
+	{top_sides, ARRAY_LENGTH(top_sides)},
+	{xterms, ARRAY_LENGTH(xterms)},
+	{hand1s, ARRAY_LENGTH(hand1s)},
+	{watches, ARRAY_LENGTH(watches)},
 };
 
 static void
@@ -650,7 +732,8 @@ create_cursors(struct display *display)
 {
 	char *config_file;
 	char *theme = NULL;
-	unsigned int i;
+	unsigned int i, j;
+	struct wl_cursor *cursor;
 	struct config_key shell_keys[] = {
 		{ "cursor-theme", CONFIG_KEY_STRING, &theme },
 	};
@@ -667,12 +750,16 @@ create_cursors(struct display *display)
 		malloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
 
 	for (i = 0; i < ARRAY_LENGTH(cursors); i++) {
-		display->cursors[i] =
-			wl_cursor_theme_get_cursor(display->cursor_theme,
-						   cursors[i]);
-		if (!display->cursors[i])
+		cursor = NULL;
+		for (j = 0; !cursor && j < cursors[i].count; ++j)
+			cursor = wl_cursor_theme_get_cursor(
+			    display->cursor_theme, cursors[i].names[j]);
+
+		if (!cursor)
 			fprintf(stderr, "could not load cursor '%s'\n",
-				cursors[i]);
+				cursors[i].names[0]);
+
+		display->cursors[i] = cursor;
 	}
 }
 
@@ -686,9 +773,7 @@ destroy_cursors(struct display *display)
 struct wl_cursor_image *
 display_get_pointer_image(struct display *display, int pointer)
 {
-	struct wl_cursor *cursor =
-		wl_cursor_theme_get_cursor(display->cursor_theme,
-					   cursors[pointer]);
+	struct wl_cursor *cursor = display->cursors[pointer];
 
 	return cursor ? cursor->images[0] : NULL;
 }
