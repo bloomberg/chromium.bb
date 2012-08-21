@@ -7,7 +7,7 @@
  *
  * @param {string} messagePrefix text to prepend to the exception message.
  */
-function generateStub(messagePrefix, opt_messageSuffix) {
+function generateDisabledMethodStub(messagePrefix, opt_messageSuffix) {
   return function() {
     var message = messagePrefix + ' is not available in packaged apps.';
     if (opt_messageSuffix) message = message + ' ' + opt_messageSuffix;
@@ -19,78 +19,100 @@ function generateStub(messagePrefix, opt_messageSuffix) {
  * Replaces the given methods of the passed in object with stubs that throw
  * 'not available' exceptions when called.
  *
- * @param {Object} object The object whose methods to stub out. The prototype
- *     is preferred.
+ * @param {Object} object The object with methods to disable. The prototype is
+ *     preferred.
  * @param {string} objectName The display name to use in the error message
  *     thrown by the stub (this is the name that the object is commonly referred
  *     to by web developers, e.g. "document" instead of "HTMLDocument").
- * @param {Array.<string>} methodNames method names
+ * @param {Array.<string>} methodNames names of methods to disable.
  */
-function stubOutMethods(object, objectName, methodNames) {
+function disableMethods(object, objectName, methodNames) {
   methodNames.forEach(function(methodName) {
-    object[methodName] = generateStub(objectName + '.' + methodName + '()');
+    object[methodName] =
+        generateDisabledMethodStub(objectName + '.' + methodName + '()');
   });
 }
 
 /**
  * Replaces the given properties of the passed in object with stubs that throw
- * 'not available' exceptions when gotten.
+ * 'not available' exceptions when gotten.  If a property's setter is later
+ * invoked, the getter and setter are restored to default behaviors.
  *
- * @param {Object} object The object whose properties to stub out. The prototype
+ * @param {Object} object The object with properties to disable. The prototype
  *     is preferred.
  * @param {string} objectName The display name to use in the error message
- *     thrown by the stub (this is the name that the object is commonly referred
- *     to by web developers, e.g. "document" instead of "HTMLDocument").
- * @param {Array.<string>} propertyNames property names
+ *     thrown by the getter stub (this is the name that the object is commonly
+ *     referred to by web developers, e.g. "document" instead of
+ *     "HTMLDocument").
+ * @param {Array.<string>} propertyNames names of properties to disable.
  */
-function stubOutGetters(object, objectName, propertyNames, opt_messageSuffix) {
+function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
   propertyNames.forEach(function(propertyName) {
-    object.__defineGetter__(
-        propertyName, generateStub(
-            objectName + '.' + propertyName, opt_messageSuffix));
+    var stub = generateDisabledMethodStub(objectName + '.' + propertyName,
+                                          opt_messageSuffix);
+    stub._is_platform_app_disabled_getter = true;
+    object.__defineGetter__(propertyName, stub);
+
+    object.__defineSetter__(propertyName, function(value) {
+      var getter = this.__lookupGetter__(propertyName);
+      if (!getter || getter._is_platform_app_disabled_getter) {
+        // The stub getter is still defined.  Blow-away the property to restore
+        // default getter/setter behaviors and re-create it with the given
+        // value.
+        delete this[propertyName];
+        this[propertyName] = value;
+      } else {
+        // Do nothing.  If some custom getter (not ours) has been defined, there
+        // would be no way to read back the value stored by a default setter.
+        // Also, the only way to clear a custom getter is to first delete the
+        // property.  Therefore, the value we have here should just go into a
+        // black hole.
+      }
+    });
   });
 }
 
 // Disable document.open|close|write|etc.
-stubOutMethods(HTMLDocument.prototype, 'document',
+disableMethods(HTMLDocument.prototype, 'document',
     ['open', 'clear', 'close', 'write', 'writeln']);
 
 // Deprecated document properties from
 // https://developer.mozilla.org/en/DOM/document.
-stubOutGetters(document, 'document',
+disableGetters(document, 'document',
     ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor', 'vlinkColor']);
 
 // Disable history.
 window.history = {};
-stubOutMethods(window.history, 'history',
+disableMethods(window.history, 'history',
     ['back', 'forward', 'go', 'pushState', 'replaceState']);
-stubOutGetters(window.history, 'history', ['length', 'state']);
+disableGetters(window.history, 'history', ['length', 'state']);
 
 // Disable find.
-stubOutMethods(Window.prototype, 'window', ['find']);
+disableMethods(Window.prototype, 'window', ['find']);
 
 // Disable modal dialogs. Shell windows disable these anyway, but it's nice to
 // warn.
-stubOutMethods(Window.prototype, 'window', ['alert', 'confirm', 'prompt']);
+disableMethods(Window.prototype, 'window', ['alert', 'confirm', 'prompt']);
 
 // Disable window.*bar.
-stubOutGetters(window, 'window',
+disableGetters(window, 'window',
     ['locationbar', 'menubar', 'personalbar', 'scrollbars', 'statusbar',
-    'toolbar']);
+     'toolbar']);
 
 // Disable window.localStorage.
-stubOutGetters(window, 'window',
+disableGetters(window, 'window',
     ['localStorage'],
     'Use chrome.storage.local instead.');
 
 // Disable onunload, onbeforeunload.
 Window.prototype.__defineSetter__(
-    'onbeforeunload', generateStub('onbeforeunload'));
-Window.prototype.__defineSetter__('onunload', generateStub('onunload'));
+    'onbeforeunload', generateDisabledMethodStub('onbeforeunload'));
+Window.prototype.__defineSetter__(
+    'onunload', generateDisabledMethodStub('onunload'));
 var windowAddEventListener = Window.prototype.addEventListener;
 Window.prototype.addEventListener = function(type) {
   if (type === 'unload' || type === 'beforeunload')
-    generateStub(type)();
+    generateDisabledMethodStub(type)();
   else
     return windowAddEventListener.apply(window, arguments);
 };

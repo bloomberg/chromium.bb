@@ -59,6 +59,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;
 }
 
+// Tests that platform apps cannot use certain disabled window properties, but
+// can override them and then use them.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisabledWindowProperties) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/disabled_window_properties"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("minimal");
