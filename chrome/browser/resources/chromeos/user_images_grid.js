@@ -213,67 +213,81 @@ cr.define('options', function() {
     get cameraOnline() {
       return this.previewElement.classList.contains('online');
     },
+    set cameraOnline(value) {
+      this.previewElement.classList[value ? 'add' : 'remove']('online');
+      if (value) {
+        this.cameraLiveCheckTimer_ = setInterval(
+            this.checkCameraLive_.bind(this), CAMERA_LIVENESS_CHECK_MS);
+      } else if (this.cameraLiveCheckTimer_) {
+        clearInterval(this.cameraLiveCheckTimer_);
+        this.cameraLiveCheckTimer_ = null;
+      }
+    },
 
     /**
      * Start camera presence check.
-     * @param {boolean} autoplay Whether to start capture immediately.
-     * @param {boolean} preselect Whether to select camera automatically.
+     * @param {function(): boolean} onAvailable Callback that is called if
+     *     camera is available. If it returns |true|, capture is started
+     *     immediately.
+     * @param {function(): boolean} onAbsent Callback that is called if camera
+     *     is absent. If it returns |true|, camera is checked again after some
+     *     delay.
      */
-    checkCameraPresence: function(autoplay, preselect) {
-      this.previewElement.classList.remove('online');
+    checkCameraPresence: function(onAvailable, onAbsent) {
+      this.cameraOnline = false;
+      if (this.cameraPresentCheckTimer_) {
+        clearTimeout(this.cameraPresentCheckTimer_);
+        this.cameraPresentCheckTimer_ = null;
+      }
       if (!this.cameraVideo_)
         return;
       navigator.webkitGetUserMedia(
           {video: true},
-          this.handleCameraAvailable_.bind(this, autoplay, preselect),
-          // When ready to capture camera, poll regularly for camera presence.
-          this.handleCameraAbsent_.bind(this, /* recheck= */ autoplay));
+          this.handleCameraAvailable_.bind(this, onAvailable),
+          // Needs both arguments since it may call checkCameraPresence again.
+          this.handleCameraAbsent_.bind(this, onAvailable, onAbsent));
     },
 
     /**
      * Stops camera capture, if it's currently active.
      */
     stopCamera: function() {
-      if (this.cameraLiveCheckTimer_) {
-        clearInterval(this.cameraLiveCheckTimer_);
-        this.cameraLiveCheckTimer_ = null;
-      }
+      this.cameraOnline = false;
       if (this.cameraVideo_)
         this.cameraVideo_.src = '';
     },
 
     /**
      * Handles successful camera check.
-     * @param {boolean} autoplay Whether to start capture immediately.
-     * @param {boolean} preselect Whether to select camera automatically.
+     * @param {function(): boolean} onAvailable Callback to call. If it returns
+     *     |true|, capture is started immediately.
      * @param {MediaStream} stream Stream object as returned by getUserMedia.
      * @private
      */
-    handleCameraAvailable_: function(autoplay, preselect, stream) {
-      if (autoplay)
-        this.cameraVideo_.src = window.webkitURL.createObjectURL(stream);
+    handleCameraAvailable_: function(onAvailable, stream) {
       this.cameraPresent = true;
-      if (preselect)
-        this.selectedItem = this.cameraImage;
+      if (onAvailable())
+        this.cameraVideo_.src = window.webkitURL.createObjectURL(stream);
     },
 
     /**
      * Handles camera check failure.
-     * @param {boolean} recheck Whether to check for camera again.
+     * @param {function(): boolean} onAvailable Callback that is called if
+     *     camera is available in future re-checks. If it returns |true|,
+     *     capture is started immediately.
+     * @param {function(): boolean} onAbsent Callback to call. If it returns
+     *     |true|, camera is checked again after some delay.
      * @param {NavigatorUserMediaError=} err Error object.
      * @private
      */
-    handleCameraAbsent_: function(recheck, err) {
+    handleCameraAbsent_: function(onAvailable, onAbsent, err) {
       this.cameraPresent = false;
-      this.previewElement.classList.remove('online');
-      // |preselect| is |false| in this case to not override user's selection.
-      if (recheck) {
-        setTimeout(this.checkCameraPresence.bind(this, true, false),
-                   CAMERA_CHECK_INTERVAL_MS);
-      }
-      if (this.cameraLiveCheckTimer_) {
-        clearInterval(this.cameraLiveCheckTimer_);
-        this.cameraLiveCheckTimer_ = null;
+      this.cameraOnline = false;
+      if (onAbsent()) {
+        // Repeat the check.
+        this.cameraPresentCheckTimer_ = setTimeout(
+            this.checkCameraPresence.bind(this, onAvailable, onAbsent),
+            CAMERA_CHECK_INTERVAL_MS);
       }
     },
 
@@ -282,9 +296,7 @@ cr.define('options', function() {
      * @private
      */
     handleVideoStarted_: function() {
-      this.previewElement.classList.add('online');
-      this.cameraLiveCheckTimer_ = setInterval(this.checkCameraLive_.bind(this),
-                                               CAMERA_LIVENESS_CHECK_MS);
+      this.cameraOnline = true;
       this.handleVideoUpdate_();
     },
 
@@ -303,8 +315,12 @@ cr.define('options', function() {
      * @private
      */
     checkCameraLive_: function() {
-      if (new Date().getTime() - this.lastFrameTime_ > CAMERA_LIVENESS_CHECK_MS)
-        this.handleCameraAbsent_(true, null);
+      if (new Date().getTime() - this.lastFrameTime_ >
+          CAMERA_LIVENESS_CHECK_MS) {
+        // Continue checking for camera presence but don't start capture.
+        this.handleCameraAbsent_(function() { return false; },
+                                 function() { return true; });
+      }
     },
 
     /**

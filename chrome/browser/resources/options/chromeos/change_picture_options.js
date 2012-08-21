@@ -323,8 +323,9 @@ cr.define('options', function() {
       imageGrid.updateAndFocus();
       // Reset camera element.
       imageGrid.cameraImage = null;
-      // Autoplay but do not preselect.
-      imageGrid.checkCameraPresence(true, false);
+      // Check continuously for camera presence but don't select it.
+      imageGrid.checkCameraPresence(function() { return false; },
+                                    function() { return true; });
       chrome.send('onChangePicturePageShown');
     },
 
@@ -389,6 +390,21 @@ cr.define('options', function() {
       if (!imageGrid.inProgramSelection &&
           url != ButtonImages.TAKE_PHOTO && url != ButtonImages.CHOOSE_FILE) {
         chrome.send('selectImage', [url]);
+      }
+      // Start/stop camera on (de)selection.
+      if (imageGrid.selectionType == 'camera' && !imageGrid.cameraOnline &&
+          !imageGrid.inProgramSelection) {
+        imageGrid.checkCameraPresence(
+            function() {  // When present.
+              // Start capture if camera is still the selected item.
+              return imageGrid.selectedItem == imageGrid.cameraImage;
+            },
+            function() {  // When absent.
+              return true;  // Check again after some time.
+            });
+      } else if (imageGrid.selectionType != 'camera' &&
+                 imageGrid.cameraOnline) {
+        imageGrid.stopCamera();
       }
       // Update image attribution text.
       var image = imageGrid.selectedItem;

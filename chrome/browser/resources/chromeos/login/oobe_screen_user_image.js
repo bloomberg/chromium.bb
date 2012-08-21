@@ -380,9 +380,6 @@ cr.define('oobe', function() {
       // Add camera stream element.
       imageGrid.cameraImage = null;
 
-      // Perform an early check if camera is present, without starting capture.
-      imageGrid.checkCameraPresence(false, false);
-
       $('take-photo').addEventListener(
           'click', this.handleTakePhoto_.bind(this));
       $('discard-photo').addEventListener(
@@ -476,6 +473,23 @@ cr.define('oobe', function() {
         $('ok-button').disabled = false;
         chrome.send('selectImage', [imageGrid.selectedItemUrl]);
       }
+      // Start/stop camera on (de)selection.
+      if (imageGrid.selectionType == 'camera' && !imageGrid.cameraOnline &&
+          !imageGrid.inProgramSelection) {
+        // Programmatic selection of camera item is done in checkCameraPresence
+        // callback where streaming is started by itself.
+        imageGrid.checkCameraPresence(
+            function() {  // When present.
+              // Start capture if camera is still the selected item.
+              return imageGrid.selectedItem == imageGrid.cameraImage;
+            },
+            function() {  // When absent.
+              return true;  // Check again after some time.
+            });
+      } else if (imageGrid.selectionType != 'camera' &&
+                 imageGrid.cameraOnline) {
+        imageGrid.stopCamera();
+      }
       this.updateCaption_();
       // Update image attribution text.
       var image = imageGrid.selectedItem;
@@ -503,8 +517,15 @@ cr.define('oobe', function() {
       Oobe.getInstance().headerHidden = true;
       var imageGrid = $('user-image-grid');
       imageGrid.updateAndFocus();
-      // Now check again for camera presence and start capture.
-      imageGrid.checkCameraPresence(true, true);
+      // Check for camera presence and select it, if present.
+      imageGrid.checkCameraPresence(
+          function() {  // When present.
+            imageGrid.selectedItem = imageGrid.cameraImage;
+            return true;  // Start capture if ready.
+          },
+          function() {  // When absent.
+            return true;  // Check again after some time.
+          });
       chrome.send('onUserImageScreenShown');
     },
 
