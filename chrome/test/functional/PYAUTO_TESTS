@@ -109,6 +109,8 @@
       '-notifications',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
+      # crbug.com/143308
+      '-omnibox.OmniboxLiveTest.testGoogleSearch',
       # crbug.com/71715
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/123019
