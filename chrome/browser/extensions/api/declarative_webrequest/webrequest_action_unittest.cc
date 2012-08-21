@@ -154,7 +154,7 @@ TEST(WebRequestActionTest, TestPermissions) {
           false, base::Time());
   EXPECT_EQ(1u, deltas.size());
 
-  TestURLRequest protected_request(GURL(extension_urls::kGalleryBrowsePrefix),
+  TestURLRequest protected_request(GURL("http://clients1.google.com"),
                                    NULL, &context);
   deltas = action_set->CreateDeltas(
       NULL, "ext1",

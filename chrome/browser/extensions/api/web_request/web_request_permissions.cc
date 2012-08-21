@@ -8,9 +8,13 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+
+using content::ResourceRequestInfo;
 
 namespace {
 
@@ -18,27 +22,37 @@ namespace {
 // modified/canceled by extensions, e.g. because it is targeted to the webstore
 // to check for updates, extension blacklisting, etc.
 bool IsSensitiveURL(const GURL& url) {
-  // TODO(battre) Merge this, CanExtensionAccessURL of web_request_api.cc and
+  // TODO(battre) Merge this, CanExtensionAccessURL and
   // Extension::CanExecuteScriptOnPage into one function.
-  bool is_webstore_gallery_url =
-      StartsWithASCII(url.spec(), extension_urls::kGalleryBrowsePrefix, true);
   bool sensitive_chrome_url = false;
-  if (EndsWith(url.host(), "google.com", true)) {
-    sensitive_chrome_url |= (url.host() == "www.google.com") &&
-                            StartsWithASCII(url.path(), "/chrome", true);
-    sensitive_chrome_url |= (url.host() == "chrome.google.com");
-    if (StartsWithASCII(url.host(), "client", true)) {
-      for (int i = 0; i < 10; ++i) {
-        sensitive_chrome_url |=
-            (StringPrintf("client%d.google.com", i) == url.host());
+  const std::string host = url.host();
+  const char kGoogleCom[] = ".google.com";
+  const char kClient[] = "clients";
+  if (EndsWith(host, kGoogleCom, true)) {
+    // Check for "clients[0-9]*.google.com" hosts.
+    // This protects requests to several internal services such as sync,
+    // extension update pings, captive portal detection, fraudulent certificate
+    // reporting, autofill and others.
+    if (StartsWithASCII(host, kClient, true)) {
+      bool match = true;
+      for (std::string::const_iterator i = host.begin() + strlen(kClient),
+               end = host.end() - strlen(kGoogleCom); i != end; ++i) {
+        if (!isdigit(*i))
+          match = false;
       }
+      sensitive_chrome_url = sensitive_chrome_url || match;
     }
+    // This protects requests to safe browsing, link doctor, and possibly
+    // others.
+    sensitive_chrome_url = sensitive_chrome_url ||
+        EndsWith(url.host(), ".clients.google.com", true) ||
+        url.host() == "sb-ssl.google.com";
   }
   GURL::Replacements replacements;
   replacements.ClearQuery();
   replacements.ClearRef();
   GURL url_without_query = url.ReplaceComponents(replacements);
-  return is_webstore_gallery_url || sensitive_chrome_url ||
+  return sensitive_chrome_url ||
       extension_urls::IsWebstoreUpdateUrl(url_without_query) ||
       extension_urls::IsBlacklistUpdateUrl(url);
 }
@@ -59,17 +73,21 @@ bool HasWebRequestScheme(const GURL& url) {
 }  // namespace
 
 // static
-bool WebRequestPermissions::HideRequest(const net::URLRequest* request) {
-  const GURL& url = request->url();
-  const GURL& first_party_url = request->first_party_for_cookies();
-  bool hide = false;
-  if (first_party_url.is_valid()) {
-    hide = IsSensitiveURL(first_party_url) ||
-           !HasWebRequestScheme(first_party_url);
+bool WebRequestPermissions::HideRequest(
+    const ExtensionInfoMap* extension_info_map,
+    const net::URLRequest* request) {
+  // Hide requests from the Chrome WebStore App.
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (info && extension_info_map) {
+    int process_id = info->GetChildID();
+    const extensions::ProcessMap& process_map =
+        extension_info_map->process_map();
+    if (process_map.Contains(extension_misc::kWebStoreAppId, process_id))
+      return true;
   }
-  if (!hide)
-    hide = IsSensitiveURL(url) || !HasWebRequestScheme(url);
-  return hide;
+
+  const GURL& url = request->url();
+  return IsSensitiveURL(url) || !HasWebRequestScheme(url);
 }
 
 // static

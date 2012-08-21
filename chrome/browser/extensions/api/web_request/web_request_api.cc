@@ -470,7 +470,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     const net::CompletionCallback& callback,
     GURL* new_url) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return net::OK;
 
   if (IsPageLoad(request))
@@ -529,7 +530,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return net::OK;
 
   bool initialize_blocked_requests = false;
@@ -581,7 +583,8 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return;
 
   if (GetAndSetSignaled(request->identifier(), kOnSendHeaders))
@@ -614,7 +617,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return net::OK;
 
   bool initialize_blocked_requests = false;
@@ -679,7 +683,8 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
     net::AuthCredentials* credentials) {
   // No profile means that this is for authentication challenges in the
   // system context. Skip in that case. Also skip sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
   int extra_info_spec = 0;
@@ -724,7 +729,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     net::URLRequest* request,
     const GURL& new_location) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return;
 
   if (GetAndSetSignaled(request->identifier(), kOnBeforeRedirect))
@@ -769,7 +775,8 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  if (!profile ||
+      WebRequestPermissions::HideRequest(extension_info_map, request))
     return;
 
   // OnResponseStarted is even triggered, when the request was cancelled.
@@ -816,7 +823,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   // already signaled it and thus we have to signal the end of it. This is
   // risk-free because the handler cannot modify the request now.
   if (!profile ||
-      (WebRequestPermissions::HideRequest(request) && !WasSignaled(*request)))
+      (WebRequestPermissions::HideRequest(extension_info_map, request) &&
+       !WasSignaled(*request)))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
@@ -869,7 +877,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   // already signaled it and thus we have to signal the end of it. This is
   // risk-free because the handler cannot modify the request now.
   if (!profile ||
-      (WebRequestPermissions::HideRequest(request) && !WasSignaled(*request)))
+      (WebRequestPermissions::HideRequest(extension_info_map, request) &&
+       !WasSignaled(*request)))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),

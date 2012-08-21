@@ -21,7 +21,8 @@ class URLRequest;
 class WebRequestPermissions {
  public:
   // Returns true if the request shall not be reported to extensions.
-  static bool HideRequest(const net::URLRequest* request);
+  static bool HideRequest(const ExtensionInfoMap* extension_info_map,
+                          const net::URLRequest* request);
 
   static bool CanExtensionAccessURL(const ExtensionInfoMap* extension_info_map,
                                     const std::string& extension_id,

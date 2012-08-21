@@ -341,7 +341,7 @@ bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
                                      const std::string& extension_id,
                                      const net::URLRequest* request,
                                      bool crosses_incognito) const {
-  if (WebRequestPermissions::HideRequest(request))
+  if (WebRequestPermissions::HideRequest(extension_info_map, request))
     return false;
 
   // In unit tests we don't have an extension_info_map object here and skip host
