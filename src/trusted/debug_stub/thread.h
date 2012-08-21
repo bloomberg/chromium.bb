@@ -26,8 +26,6 @@ namespace port {
 
 class IThread {
  public:
-  typedef void (*CatchFunc_t)(uint32_t id, int8_t sig, void *cookie);
-
   virtual uint32_t GetId() = 0;
 
   virtual bool SetStep(bool on) = 0;
