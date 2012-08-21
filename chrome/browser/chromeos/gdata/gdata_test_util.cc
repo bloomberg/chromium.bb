@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace gdata {
@@ -45,8 +45,8 @@ void RunBlockingPoolTask() {
   }
 }
 
-GDataCacheEntry ToCacheEntry(int cache_state) {
-  GDataCacheEntry cache_entry;
+DriveCacheEntry ToCacheEntry(int cache_state) {
+  DriveCacheEntry cache_entry;
   cache_entry.set_is_present(cache_state & TEST_CACHE_STATE_PRESENT);
   cache_entry.set_is_pinned(cache_state & TEST_CACHE_STATE_PINNED);
   cache_entry.set_is_dirty(cache_state & TEST_CACHE_STATE_DIRTY);
@@ -55,7 +55,7 @@ GDataCacheEntry ToCacheEntry(int cache_state) {
   return cache_entry;
 }
 
-bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b) {
+bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
   return (a.is_present() == b.is_present() &&
           a.is_pinned() == b.is_pinned() &&
           a.is_dirty() == b.is_dirty() &&
@@ -83,9 +83,9 @@ void CopyResultsFromFileMoveCallback(
 
 void CopyResultsFromGetEntryInfoCallback(
     GDataFileError* out_error,
-    scoped_ptr<GDataEntryProto>* out_entry_proto,
+    scoped_ptr<DriveEntryProto>* out_entry_proto,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(out_error);
   DCHECK(out_entry_proto);
 
@@ -95,9 +95,9 @@ void CopyResultsFromGetEntryInfoCallback(
 
 void CopyResultsFromReadDirectoryCallback(
     GDataFileError* out_error,
-    scoped_ptr<GDataEntryProtoVector>* out_entries,
+    scoped_ptr<DriveEntryProtoVector>* out_entries,
     GDataFileError error,
-    scoped_ptr<GDataEntryProtoVector> entries) {
+    scoped_ptr<DriveEntryProtoVector> entries) {
   DCHECK(out_error);
   DCHECK(out_entries);
 
@@ -108,10 +108,10 @@ void CopyResultsFromReadDirectoryCallback(
 void CopyResultsFromGetEntryInfoWithFilePathCallback(
     GDataFileError* out_error,
     FilePath* out_drive_file_path,
-    scoped_ptr<GDataEntryProto>* out_entry_proto,
+    scoped_ptr<DriveEntryProto>* out_entry_proto,
     GDataFileError error,
     const FilePath& drive_file_path,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(out_error);
   DCHECK(out_drive_file_path);
   DCHECK(out_entry_proto);

@@ -27,7 +27,7 @@ class SequencedTaskRunner;
 
 namespace gdata {
 
-class GDataCacheEntry;
+class DriveCacheEntry;
 class GDataCacheMetadata;
 
 // Callback for SetMountedStateOnUIThread and ClearAllOnUIThread.
@@ -62,7 +62,7 @@ typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
 // |success| indicates if the operation was successful.
 // |cache_entry| is the obtained cache entry. On failure, |cache_state| is
 // set to TEST_CACHE_STATE_NONE.
-typedef base::Callback<void(bool success, const GDataCacheEntry& cache_entry)>
+typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
 // GDataCache is used to maintain cache states of GDataFileSystem.
@@ -285,7 +285,7 @@ class GDataCache {
   // extension and hence no md5.
   bool GetCacheEntry(const std::string& resource_id,
                      const std::string& md5,
-                     GDataCacheEntry* entry);
+                     DriveCacheEntry* entry);
 
   // Factory methods for GDataCache.
   // |pool| and |sequence_token| are used to assert that the functions are
@@ -318,7 +318,7 @@ class GDataCache {
 
   // Returns the type of the sub directory where the cache file is stored.
   static CacheSubDirectoryType GetSubDirectoryType(
-      const GDataCacheEntry& cache_entry);
+      const DriveCacheEntry& cache_entry);
 
  private:
   GDataCache(const FilePath& cache_root_path,
@@ -434,7 +434,7 @@ class GDataCache {
   void GetCacheEntryHelper(const std::string& resource_id,
                            const std::string& md5,
                            bool* success,
-                           GDataCacheEntry* cache_entry);
+                           DriveCacheEntry* cache_entry);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;

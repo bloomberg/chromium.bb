@@ -17,9 +17,9 @@
 namespace gdata {
 
 class DocumentEntry;
-class GDataDirectoryProto;
-class GDataEntryProto;
-class GDataFileProto;
+class DriveEntryProto;
+
+typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // Information about search result returned by Search Async callback.
 // This is data needed to create a file system entry that will be used by file
@@ -47,7 +47,7 @@ typedef base::Callback<void(GDataFileError error,
 // |entries| are contents, both files and directories, of the directory.
 typedef base::Callback<void(GDataFileError error,
                             bool hide_hosted_documents,
-                            scoped_ptr<GDataEntryProtoVector> entries)>
+                            scoped_ptr<DriveEntryProtoVector> entries)>
     ReadDirectoryWithSettingCallback;
 
 // Used to get drive content search results.

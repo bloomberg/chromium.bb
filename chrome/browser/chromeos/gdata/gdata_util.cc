@@ -22,8 +22,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -116,7 +116,7 @@ void OnGetEntryInfoByResourceId(Profile* profile,
                                const std::string& resource_id,
                                GDataFileError error,
                                const FilePath& /* gdata_file_path */,
-                               scoped_ptr<GDataEntryProto> entry_proto) {
+                               scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != GDATA_FILE_OK)
@@ -136,7 +136,7 @@ void OnGetEntryInfoForInsertGDataCachePathsPermissions(
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(profile);
   DCHECK(cache_paths);
   DCHECK(!callback.is_null());

@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
@@ -150,7 +150,7 @@ void OnEntryFound(Profile* profile,
     const FilePath& gdata_dir_path,
     const base::Closure& substitute_callback,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   if (error == GDATA_FILE_ERROR_NOT_FOUND) {
     // Destination gdata directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;
@@ -506,7 +506,7 @@ void GDataDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 
@@ -560,7 +560,7 @@ void GDataDownloadObserver::CreateUploadFileInfoAfterCheckTargetDir(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 

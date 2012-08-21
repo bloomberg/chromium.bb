@@ -17,16 +17,16 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
+#include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,7 +132,7 @@ base::Value* LoadJSONFile(const std::string& base_name) {
 }
 
 // Counts the number of files (not directories) in |entries|.
-int CountFiles(const GDataEntryProtoVector& entries) {
+int CountFiles(const DriveEntryProtoVector& entries) {
   int num_files = 0;
   for (size_t i = 0; i < entries.size(); ++i) {
     if (!entries[i].file_info().is_directory())
@@ -356,7 +356,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Gets entry info by path synchronously.
-  scoped_ptr<GDataEntryProto> GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
       const FilePath& file_path) {
     file_system_->GetEntryInfoByPath(
         file_path,
@@ -368,7 +368,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Gets directory info by path synchronously.
-  scoped_ptr<GDataEntryProtoVector> ReadDirectoryByPathSync(
+  scoped_ptr<DriveEntryProtoVector> ReadDirectoryByPathSync(
       const FilePath& file_path) {
     file_system_->ReadDirectoryByPath(
         file_path,
@@ -387,7 +387,7 @@ class GDataFileSystemTest : public testing::Test {
 
   // Gets the resource ID of |file_path|. Returns an empty string if not found.
   std::string GetResourceIdByPath(const FilePath& file_path) {
-    scoped_ptr<GDataEntryProto> entry_proto =
+    scoped_ptr<DriveEntryProto> entry_proto =
         GetEntryInfoByPathSync(file_path);
     if (entry_proto.get())
       return entry_proto->resource_id();
@@ -398,7 +398,7 @@ class GDataFileSystemTest : public testing::Test {
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
                                      const std::string& md5,
-                                     GDataCacheEntry* cache_entry) {
+                                     DriveCacheEntry* cache_entry) {
     bool result = false;
     blocking_task_runner_->PostTask(
         FROM_HERE,
@@ -416,7 +416,7 @@ class GDataFileSystemTest : public testing::Test {
   void GetCacheEntryFromOriginThreadInternal(
       const std::string& resource_id,
       const std::string& md5,
-      GDataCacheEntry* cache_entry,
+      DriveCacheEntry* cache_entry,
       bool* result) {
     *result = cache_->GetCacheEntry(resource_id, md5, cache_entry);
   }
@@ -424,7 +424,7 @@ class GDataFileSystemTest : public testing::Test {
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 
@@ -572,7 +572,7 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     const bool cache_entry_found =
         GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
     if (test_util::ToCacheEntry(expected_cache_state_).is_present() ||
@@ -665,11 +665,11 @@ class GDataFileSystemTest : public testing::Test {
   // Sets the changestamp to 654321, equal to that of "account_metadata.json"
   // test data, indicating the cache is holding the latest file system info.
   void SaveTestFileSystem() {
-    GDataRootDirectoryProto root;
+    DriveRootDirectoryProto root;
     root.set_version(kProtoVersion);
     root.set_largest_changestamp(654321);
-    GDataDirectoryProto* root_dir = root.mutable_gdata_directory();
-    GDataEntryProto* dir_base = root_dir->mutable_gdata_entry();
+    DriveDirectoryProto* root_dir = root.mutable_gdata_directory();
+    DriveEntryProto* dir_base = root_dir->mutable_gdata_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
     dir_base->set_title("drive");
     dir_base->set_resource_id(kGDataRootDirectoryResourceId);
@@ -677,7 +677,7 @@ class GDataFileSystemTest : public testing::Test {
     platform_info->set_is_directory(true);
 
     // drive/File1
-    GDataEntryProto* file = root_dir->add_child_files();
+    DriveEntryProto* file = root_dir->add_child_files();
     file->set_title("File1");
     file->set_resource_id("resource_id:File1");
     file->set_upload_url("http://resumable-edit-media/1");
@@ -687,7 +687,7 @@ class GDataFileSystemTest : public testing::Test {
     platform_info->set_size(1048576);
 
     // drive/Dir1
-    GDataDirectoryProto* dir1 = root_dir->add_child_directories();
+    DriveDirectoryProto* dir1 = root_dir->add_child_directories();
     dir_base = dir1->mutable_gdata_entry();
     dir_base->set_title("Dir1");
     dir_base->set_resource_id("resource_id:Dir1");
@@ -706,7 +706,7 @@ class GDataFileSystemTest : public testing::Test {
     platform_info->set_size(555);
 
     // drive/Dir1/SubDir2
-    GDataDirectoryProto* dir2 = dir1->add_child_directories();
+    DriveDirectoryProto* dir2 = dir1->add_child_directories();
     dir_base = dir2->mutable_gdata_entry();
     dir_base->set_title("SubDir2");
     dir_base->set_resource_id("resource_id:SubDir2");
@@ -739,7 +739,7 @@ class GDataFileSystemTest : public testing::Test {
 
   // Verifies that |file_path| is a valid JSON file for the hosted document
   // associated with |entry| (i.e. |url| and |resource_id| match).
-  void VerifyHostedDocumentJSONFile(const GDataEntryProto& entry_proto,
+  void VerifyHostedDocumentJSONFile(const DriveEntryProto& entry_proto,
                                     const FilePath& file_path) {
     std::string error;
     JSONFileValueSerializer serializer(file_path);
@@ -808,7 +808,7 @@ class GDataFileSystemTest : public testing::Test {
 
     virtual void GetEntryInfoCallback(
         GDataFileError error,
-        scoped_ptr<GDataEntryProto> entry_proto) {
+        scoped_ptr<DriveEntryProto> entry_proto) {
       last_error_ = error;
       entry_proto_ = entry_proto.Pass();
     }
@@ -816,7 +816,7 @@ class GDataFileSystemTest : public testing::Test {
     virtual void ReadDirectoryCallback(
         GDataFileError error,
         bool /* hide_hosted_documents */,
-        scoped_ptr<GDataEntryProtoVector> entries) {
+        scoped_ptr<DriveEntryProtoVector> entries) {
       last_error_ = error;
       directory_entries_ = entries.Pass();
     }
@@ -828,8 +828,8 @@ class GDataFileSystemTest : public testing::Test {
     GDataFileType file_type_;
     int64 quota_bytes_total_;
     int64 quota_bytes_used_;
-    scoped_ptr<GDataEntryProto> entry_proto_;
-    scoped_ptr<GDataEntryProtoVector> directory_entries_;
+    scoped_ptr<DriveEntryProto> entry_proto_;
+    scoped_ptr<DriveEntryProtoVector> directory_entries_;
 
    protected:
     virtual ~CallbackHelper() {}
@@ -874,7 +874,7 @@ void AsyncInitializationCallback(
     const FilePath& expected_file_path,
     MessageLoop* message_loop,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   ASSERT_EQ(GDATA_FILE_OK, error);
   ASSERT_TRUE(entry_proto.get());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
@@ -912,7 +912,7 @@ TEST_F(GDataFileSystemTest, SearchRootDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("drive"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
       FilePath(FILE_PATH_LITERAL(kFilePath)));
   ASSERT_TRUE(entry.get());
   EXPECT_EQ(kGDataRootDirectoryResourceId, entry->resource_id());
@@ -923,7 +923,7 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:2_file_resource_id", entry->resource_id());
 }
@@ -933,7 +933,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Document 1.gdoc"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
 }
@@ -943,7 +943,7 @@ TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/nonexisting.file"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_FALSE(entry.get());
 }
 
@@ -952,7 +952,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
 
   const FilePath kFilePath1 = FilePath(
       FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_FALSE(entry.get());
 
   const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
@@ -973,7 +973,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
 
   const FilePath kFilePath1 = FilePath(
       FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_FALSE(entry.get());
 
   const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
@@ -994,7 +994,7 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
 
   const FilePath kFilePath1 = FilePath(
       FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath1);
   ASSERT_TRUE(entry.get());
   EXPECT_EQ("file:3_file_resource_id", entry->resource_id());
 
@@ -1010,7 +1010,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Directory 1"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
 }
@@ -1020,7 +1020,7 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
 
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   ASSERT_EQ("file:subdirectory_file_1_id", entry->resource_id());
 }
@@ -1032,7 +1032,7 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("drive/Directory 1/Sub Directory Folder/"
                         "Sub Sub Directory Folder"));
-  scoped_ptr<GDataEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
+  scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(kFilePath);
   ASSERT_TRUE(entry.get());
   ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
@@ -1353,7 +1353,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
 
   FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> file = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> file = GetEntryInfoByPathSync(
       remote_src_file_path);
   FilePath cache_file = GetCachePathForFile(
       file->resource_id(),
@@ -1413,7 +1413,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
 
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
 
-  scoped_ptr<GDataEntryProto> entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> entry_proto = GetEntryInfoByPathSync(
       remote_src_file_path);
   ASSERT_TRUE(entry_proto.get());
   VerifyHostedDocumentJSONFile(*entry_proto, local_dest_file_path);
@@ -1447,7 +1447,7 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_path_resource_id =
@@ -1480,7 +1480,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1488,7 +1488,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
   EXPECT_FALSE(src_entry_proto->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<GDataEntryProto> dest_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> dest_entry_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_entry_proto.get());
 
@@ -1518,7 +1518,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1552,7 +1552,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1560,7 +1560,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   EXPECT_FALSE(src_entry_proto->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<GDataEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
@@ -1602,7 +1602,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1610,7 +1610,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_FALSE(src_entry_proto->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(src_parent_path));
-  scoped_ptr<GDataEntryProto> src_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto.get());
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
@@ -1660,7 +1660,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   AddDirectoryFromFile(dest_parent_path, "directory_entry_atom.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1668,14 +1668,14 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_FALSE(src_entry_proto->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(src_parent_path));
-  scoped_ptr<GDataEntryProto> src_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_parent_proto = GetEntryInfoByPathSync(
       src_parent_path);
   ASSERT_TRUE(src_parent_proto.get());
   ASSERT_TRUE(src_parent_proto->file_info().is_directory());
   EXPECT_FALSE(src_parent_proto->content_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<GDataEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
   ASSERT_TRUE(dest_parent_proto->file_info().is_directory());
@@ -1750,7 +1750,7 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1783,7 +1783,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   LoadRootFeedDocument("root_feed.json");
 
   ASSERT_TRUE(EntryExists(src_file_path));
-  scoped_ptr<GDataEntryProto> src_entry_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
       src_file_path);
   ASSERT_TRUE(src_entry_proto.get());
   std::string src_file_resource_id =
@@ -1791,7 +1791,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   EXPECT_FALSE(src_entry_proto->edit_url().empty());
 
   ASSERT_TRUE(EntryExists(dest_parent_path));
-  scoped_ptr<GDataEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> dest_parent_proto = GetEntryInfoByPathSync(
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
 
@@ -1819,18 +1819,18 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
       FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
 
   ASSERT_TRUE(EntryExists(file_in_root));
-  scoped_ptr<GDataEntryProto> file_in_root_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> file_in_root_proto = GetEntryInfoByPathSync(
       file_in_root);
   ASSERT_TRUE(file_in_root_proto.get());
 
   ASSERT_TRUE(EntryExists(dir_in_root));
-  scoped_ptr<GDataEntryProto> dir_in_root_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> dir_in_root_proto = GetEntryInfoByPathSync(
       dir_in_root);
   ASSERT_TRUE(dir_in_root_proto.get());
   ASSERT_TRUE(dir_in_root_proto->file_info().is_directory());
 
   ASSERT_TRUE(EntryExists(file_in_subdir));
-  scoped_ptr<GDataEntryProto> file_in_subdir_proto = GetEntryInfoByPathSync(
+  scoped_ptr<DriveEntryProto> file_in_subdir_proto = GetEntryInfoByPathSync(
       file_in_subdir);
   ASSERT_TRUE(file_in_subdir_proto.get());
 
@@ -1971,7 +1971,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2012,7 +2012,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2050,7 +2050,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2112,7 +2112,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2159,7 +2159,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2200,7 +2200,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
-  scoped_ptr<GDataEntryProto> src_entry_proto =
+  scoped_ptr<DriveEntryProto> src_entry_proto =
       GetEntryInfoByPathSync(file_in_root);
   ASSERT_TRUE(src_entry_proto.get());
 
@@ -2227,7 +2227,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2267,7 +2267,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
                  callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
@@ -2421,7 +2421,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
 
   // Check the number of files in the root directory. We'll compare the
   // number after updating a file.
-  scoped_ptr<GDataEntryProtoVector> root_directory_entries(
+  scoped_ptr<DriveEntryProtoVector> root_directory_entries(
       ReadDirectoryByPathSync(FilePath::FromUTF8Unsafe("drive")));
   ASSERT_TRUE(root_directory_entries.get());
   const int num_files_in_root = CountFiles(*root_directory_entries);
@@ -2567,7 +2567,7 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
                  callback_helper_.get());
 
   const FilePath kFileInRoot(FILE_PATH_LITERAL("drive/File 1.txt"));
-  scoped_ptr<GDataEntryProto> entry_proto(GetEntryInfoByPathSync(kFileInRoot));
+  scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(kFileInRoot));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());

@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
@@ -335,13 +335,13 @@ void GDataDirectoryService::GetEntryInfoByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<GDataEntryProto> entry_proto;
+  scoped_ptr<DriveEntryProto> entry_proto;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
   FilePath drive_file_path;
 
   GDataEntry* entry = GetEntryByResourceId(resource_id);
   if (entry) {
-    entry_proto.reset(new GDataEntryProto);
+    entry_proto.reset(new DriveEntryProto);
     entry->ToProtoFull(entry_proto.get());
     error = GDATA_FILE_OK;
     drive_file_path = entry->GetFilePath();
@@ -363,12 +363,12 @@ void GDataDirectoryService::GetEntryInfoByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<GDataEntryProto> entry_proto;
+  scoped_ptr<DriveEntryProto> entry_proto;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
 
   GDataEntry* entry = FindEntryByPathSync(path);
   if (entry) {
-    entry_proto.reset(new GDataEntryProto);
+    entry_proto.reset(new DriveEntryProto);
     entry->ToProtoFull(entry_proto.get());
     error = GDATA_FILE_OK;
   } else {
@@ -386,7 +386,7 @@ void GDataDirectoryService::ReadDirectoryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<GDataEntryProtoVector> entries;
+  scoped_ptr<DriveEntryProtoVector> entries;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
 
   GDataEntry* entry = FindEntryByPathSync(path);
@@ -631,7 +631,7 @@ void GDataDirectoryService::SaveToDB() {
   SerializedMap serialized_resources;
   for (ResourceMap::const_iterator iter = resource_map_.begin();
       iter != resource_map_.end(); ++iter) {
-    GDataEntryProto proto;
+    DriveEntryProto proto;
     iter->second->ToProtoFull(&proto);
     std::string serialized_string;
     const bool ok = proto.SerializeToString(&serialized_string);
@@ -660,7 +660,7 @@ void GDataDirectoryService::SaveToDB() {
 
 void GDataDirectoryService::SerializeToString(
     std::string* serialized_proto) const {
-  GDataRootDirectoryProto proto;
+  DriveRootDirectoryProto proto;
   root_->ToProto(proto.mutable_gdata_directory());
   proto.set_largest_changestamp(largest_changestamp_);
   proto.set_version(kProtoVersion);
@@ -671,7 +671,7 @@ void GDataDirectoryService::SerializeToString(
 
 bool GDataDirectoryService::ParseFromString(
     const std::string& serialized_proto) {
-  GDataRootDirectoryProto proto;
+  DriveRootDirectoryProto proto;
   if (!proto.ParseFromString(serialized_proto))
     return false;
 
@@ -691,7 +691,7 @@ bool GDataDirectoryService::ParseFromString(
 
 scoped_ptr<GDataEntry> GDataDirectoryService::FromProtoString(
     const std::string& serialized_proto) {
-  GDataEntryProto entry_proto;
+  DriveEntryProto entry_proto;
   if (!entry_proto.ParseFromString(serialized_proto))
     return scoped_ptr<GDataEntry>();
 
@@ -715,7 +715,7 @@ void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetFirst(
     const FilePath& second_path,
     const GetEntryInfoPairCallback& callback,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -745,7 +745,7 @@ void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetSecond(
     const GetEntryInfoPairCallback& callback,
     scoped_ptr<EntryInfoPairResult> result,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(result.get());

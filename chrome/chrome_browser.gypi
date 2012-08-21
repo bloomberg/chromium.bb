@@ -29,7 +29,7 @@
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'feedback_proto',
-        'gdata_proto',
+        'drive_proto',
         'contacts_proto',
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -5548,10 +5548,10 @@
       'includes': [ '../build/protoc.gypi' ]
     },
     {
-      # Protobuf compiler / generator for the GData protocol buffer.
-      'target_name': 'gdata_proto',
+      # Protobuf compiler / generator for the Drive protocol buffer.
+      'target_name': 'drive_proto',
       'type': 'static_library',
-      'sources': [ 'browser/chromeos/gdata/gdata.proto' ],
+      'sources': [ 'browser/chromeos/gdata/drive.proto' ],
       'variables': {
         'proto_in_dir': 'browser/chromeos/gdata',
         'proto_out_dir': 'chrome/browser/chromeos/gdata',

@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,7 +115,7 @@ class GDataCacheMetadataTest : public testing::Test {
   // |md5| and |cache_state| are used to create the value CacheEntry.
   void InsertIntoMap(GDataCacheMetadata::CacheMap* cache_map,
                      const std::string& resource_id,
-                     const GDataCacheEntry& cache_entry) {
+                     const DriveCacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
         resource_id, cache_entry));
   }
@@ -146,7 +146,7 @@ TEST_F(GDataCacheMetadataTest, CacheTest) {
   std::string test_resource_id("test_resource_id");
   std::string test_file_md5("test_file_md5");
   {
-    GDataCacheEntry new_cache_entry;
+    DriveCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_present(true);
     new_cache_entry.set_is_persistent(true);
@@ -154,7 +154,7 @@ TEST_F(GDataCacheMetadataTest, CacheTest) {
   }
 
   // Test that the entry can be retrieved.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry(
       test_resource_id, test_file_md5, &cache_entry));
   EXPECT_EQ(test_file_md5, cache_entry.md5());
@@ -177,7 +177,7 @@ TEST_F(GDataCacheMetadataTest, CacheTest) {
   // Update all attributes.
   test_file_md5 = "test_file_md5_2";
   {
-    GDataCacheEntry updated_cache_entry;
+    DriveCacheEntry updated_cache_entry;
     updated_cache_entry.set_md5(test_file_md5);
     updated_cache_entry.set_is_pinned(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, updated_cache_entry);
@@ -197,7 +197,7 @@ TEST_F(GDataCacheMetadataTest, CacheTest) {
   // Test dirty cache.
   test_file_md5 = "test_file_md5_3";
   {
-    GDataCacheEntry new_cache_entry;
+    DriveCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_dirty(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
@@ -228,7 +228,7 @@ TEST_F(GDataCacheMetadataTest, CacheTest) {
   test_resource_id = "test_resource_id_2";
   test_file_md5 = "test_file_md5_4";
   {
-    GDataCacheEntry new_cache_entry;
+    DriveCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_file_md5);
     new_cache_entry.set_is_present(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
@@ -263,7 +263,7 @@ TEST_F(GDataCacheMetadataTest, Initialization) {
   // Check contents in "persistent" directory.
   //
   // "id_foo" is present and pinned.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
   EXPECT_EQ("md5foo", cache_entry.md5());
   EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
@@ -352,27 +352,27 @@ TEST_F(GDataCacheMetadataTest, RemoveTemporaryFilesTest) {
 
   GDataCacheMetadata::CacheMap cache_map;
   {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_1>", cache_entry);
   }
   {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_2>", cache_entry);
   }
   {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(true);
     InsertIntoMap(&cache_map, "<resource_id_3>", cache_entry);
   }
   {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
     cache_entry.set_is_present(true);
     InsertIntoMap(&cache_map, "<resource_id_4>", cache_entry);
@@ -381,7 +381,7 @@ TEST_F(GDataCacheMetadataTest, RemoveTemporaryFilesTest) {
   AddAllMapEntries(cache_map);
   metadata_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are temporary.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   EXPECT_FALSE(metadata_->GetCacheEntry("<resource_id_1>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_2>", "", &cache_entry));
   EXPECT_TRUE(metadata_->GetCacheEntry("<resource_id_3>", "", &cache_entry));

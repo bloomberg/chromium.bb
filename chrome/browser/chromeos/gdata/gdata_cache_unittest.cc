@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
@@ -257,7 +257,7 @@ class GDataCacheTest : public testing::Test {
       std::string md5;
       if (test_util::ToCacheEntry(resource.cache_state).is_present())
          md5 = resource.md5;
-      GDataCacheEntry cache_entry;
+      DriveCacheEntry cache_entry;
       ASSERT_TRUE(GetCacheEntryFromOriginThread(
           resource.resource_id, md5, &cache_entry));
       EXPECT_TRUE(test_util::CacheStatesEqual(
@@ -346,7 +346,7 @@ class GDataCacheTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     const bool cache_entry_found =
         GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
     if (cache_entry_found)
@@ -587,7 +587,7 @@ class GDataCacheTest : public testing::Test {
     EXPECT_EQ(expected_error_, error);
 
     // Verify cache map.
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     const bool cache_entry_found =
         GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
     if (test_util::ToCacheEntry(expected_cache_state_).is_present() ||
@@ -671,7 +671,7 @@ class GDataCacheTest : public testing::Test {
   // Helper function to call GetCacheEntry from origin thread.
   bool GetCacheEntryFromOriginThread(const std::string& resource_id,
                                      const std::string& md5,
-                                     GDataCacheEntry* cache_entry) {
+                                     DriveCacheEntry* cache_entry) {
     bool result = false;
     blocking_task_runner_->PostTask(
         FROM_HERE,
@@ -689,7 +689,7 @@ class GDataCacheTest : public testing::Test {
   void GetCacheEntryFromOriginThreadInternal(
       const std::string& resource_id,
       const std::string& md5,
-      GDataCacheEntry* cache_entry,
+      DriveCacheEntry* cache_entry,
       bool* result) {
     *result = cache_->GetCacheEntry(resource_id, md5, cache_entry);
   }
@@ -697,7 +697,7 @@ class GDataCacheTest : public testing::Test {
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     return GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
   }
 

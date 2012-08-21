@@ -13,7 +13,7 @@
 
 namespace gdata {
 
-class GDataEntryProto;
+class DriveEntryProto;
 
 // This class implements an "executor" class that will execute tasks for
 // third party Drive apps that store data in Drive itself.  To do that, it
@@ -37,7 +37,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   virtual ~DriveTaskExecutor();
 
   void OnFileEntryFetched(GDataFileError error,
-                          scoped_ptr<GDataEntryProto> entry_proto);
+                          scoped_ptr<DriveEntryProto> entry_proto);
   void OnAppAuthorized(const std::string& resource_id,
                        GDataErrorCode error,
                        scoped_ptr<base::Value> feed_data);

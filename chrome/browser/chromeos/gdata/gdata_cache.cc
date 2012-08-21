@@ -13,7 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -195,7 +195,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 void CollectBacklog(std::vector<std::string>* to_fetch,
                     std::vector<std::string>* to_upload,
                     const std::string& resource_id,
-                    const GDataCacheEntry& cache_entry) {
+                    const DriveCacheEntry& cache_entry) {
   DCHECK(to_fetch);
   DCHECK(to_upload);
 
@@ -210,7 +210,7 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 // present (cached locally).
 void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
                                const std::string& resource_id,
-                               const GDataCacheEntry& cache_entry) {
+                               const DriveCacheEntry& cache_entry) {
   DCHECK(resource_ids);
 
   if (cache_entry.is_pinned() && cache_entry.is_present())
@@ -220,7 +220,7 @@ void CollectExistingPinnedFile(std::vector<std::string>* resource_ids,
 // Appends |resource_id| ID to |resource_ids| unconditionally.
 void CollectAnyFile(std::vector<std::string>* resource_ids,
                     const std::string& resource_id,
-                    const GDataCacheEntry& /* cache_entry */) {
+                    const DriveCacheEntry& /* cache_entry */) {
   DCHECK(resource_ids);
 
   resource_ids->push_back(resource_id);
@@ -298,7 +298,7 @@ void RunGetResourceIdsCallback(
 void RunGetCacheEntryCallback(
     const GetCacheEntryCallback& callback,
     bool* success,
-    GDataCacheEntry* cache_entry) {
+    DriveCacheEntry* cache_entry) {
   DCHECK(success);
   DCHECK(cache_entry);
 
@@ -382,7 +382,7 @@ void GDataCache::GetCacheEntryOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool* success = new bool(false);
-  GDataCacheEntry* cache_entry = new GDataCacheEntry;
+  DriveCacheEntry* cache_entry = new DriveCacheEntry;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GDataCache::GetCacheEntryHelper,
@@ -713,7 +713,7 @@ void GDataCache::ForceRescanOnUIThreadForTesting() {
 
 bool GDataCache::GetCacheEntry(const std::string& resource_id,
                                const std::string& md5,
-                               GDataCacheEntry* entry) {
+                               DriveCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
   return metadata_->GetCacheEntry(resource_id, md5, entry);
@@ -802,7 +802,7 @@ void GDataCache::GetFile(const std::string& resource_id,
   DCHECK(error);
   DCHECK(cache_file_path);
 
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (GetCacheEntry(resource_id, md5, &cache_entry) &&
       cache_entry.is_present()) {
     CachedFileOrigin file_origin;
@@ -854,7 +854,7 @@ void GDataCache::Store(const std::string& resource_id,
 
   // If file was previously pinned, store it in persistent dir and create
   // symlink in pinned dir.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (GetCacheEntry(resource_id, md5, &cache_entry)) {  // File exists in cache.
     // If file is dirty or mounted, return error.
     if (cache_entry.is_dirty() || cache_entry.is_mounted()) {
@@ -934,7 +934,7 @@ void GDataCache::Pin(const std::string& resource_id,
   bool create_symlink = true;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
 
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
     // Entry does not exist in cache.
     // Set both |dest_path| and |source_path| to /dev/null, so that:
@@ -1016,7 +1016,7 @@ void GDataCache::Unpin(const std::string& resource_id,
   DCHECK(error);
 
   // Unpinning a file means its entry must exist in cache.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
     LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
                  << resource_id
@@ -1110,7 +1110,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   DCHECK(!to_mount == (extra_extension == util::kMountedArchiveFileExtension));
 
   // Get cache entry associated with the resource_id and md5
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
     *error = GDATA_FILE_ERROR_NOT_FOUND;
     return;
@@ -1173,7 +1173,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
 
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
@@ -1276,7 +1276,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
 
   // Committing a file dirty means its entry and actual file blob must exist in
   // cache.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't commit dirty a file that wasn't cached: res_id="
@@ -1330,7 +1330,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
 
   // |md5| is the new .<md5> extension to rename the file to.
   // So, search for entry in cache without comparing md5.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
@@ -1418,7 +1418,7 @@ void GDataCache::Remove(const std::string& resource_id,
   // MD5 is not passed into RemoveCacheEntry because we would delete all
   // cache files corresponding to <resource_id> regardless of the md5.
   // So, search for entry in cache without taking md5 into account.
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
 
   // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
   const bool entry_found =
@@ -1538,7 +1538,7 @@ void GDataCache::OnCommitDirty(GDataFileError* error,
 void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
                                      const std::string& md5,
                                      bool* success,
-                                     GDataCacheEntry* cache_entry) {
+                                     DriveCacheEntry* cache_entry) {
   AssertOnSequencedWorkerPool();
   DCHECK(success);
   DCHECK(cache_entry);
@@ -1592,7 +1592,7 @@ bool GDataCache::CreateCacheDirectories(
 
 // static
 GDataCache::CacheSubDirectoryType GDataCache::GetSubDirectoryType(
-    const GDataCacheEntry& cache_entry) {
+    const DriveCacheEntry& cache_entry) {
   return cache_entry.is_persistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
 }
 

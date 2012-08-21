@@ -15,8 +15,10 @@ class FileSystemURL;
 
 namespace gdata {
 
-class GDataEntryProto;
+class DriveEntryProto;
 class GDataFileSystemInterface;
+
+typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // Implementation of File API's remote file system proxy for GData file system.
 class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
@@ -100,7 +102,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper callback for relaying reply for GetEntryInfoByPath() to the
   // calling thread.
@@ -109,7 +111,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
           callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
   // thread.
@@ -118,7 +120,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       GDataFileError error,
       bool hide_hosted_documents,
-      scoped_ptr<GDataEntryProtoVector> proto_entries);
+      scoped_ptr<DriveEntryProtoVector> proto_entries);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.

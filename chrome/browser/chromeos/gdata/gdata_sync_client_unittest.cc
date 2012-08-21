@@ -18,7 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_file_system.h"
@@ -50,7 +50,7 @@ ACTION_P(MockUpdateFileByResourceId, error) {
 
 // Action used to set mock expectations for GetFileInfoByResourceId().
 ACTION_P2(MockUpdateFileByResourceId, error, md5) {
-  scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
+  scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto);
   entry_proto->mutable_file_specific_info()->set_file_md5(md5);
   arg1.Run(error, FilePath(), entry_proto.Pass());
 }
@@ -243,7 +243,7 @@ class GDataSyncClientTest : public testing::Test {
   // ID.
   //
   // This is used for testing StartCheckingExistingPinnedFiles(), hence we
-  // are only interested in the MD5 value in GDataEntryProto.
+  // are only interested in the MD5 value in DriveEntryProto.
   void SetExpectationForGetFileInfoByResourceId(
       const std::string& resource_id,
       const std::string& new_md5) {

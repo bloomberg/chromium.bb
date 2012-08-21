@@ -17,8 +17,8 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
@@ -177,7 +177,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
                                   GDataFileError error,
                                   const FilePath& gdata_file_path,
-                                  scoped_ptr<GDataEntryProto> entry_proto);
+                                  scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding
   // stream in a streaming fashion.
@@ -511,7 +511,7 @@ void GDataURLRequestJob::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     GDataFileError error,
     const FilePath& gdata_file_path,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 

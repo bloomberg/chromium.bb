@@ -59,8 +59,8 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -114,8 +114,8 @@ std::string GetUserEmail() {
     return manager->GetLoggedInUser().display_email();
 }
 
-bool ScreenshotGDataTimestampComp(const gdata::GDataEntryProto& entry1,
-                                  const gdata::GDataEntryProto& entry2) {
+bool ScreenshotGDataTimestampComp(const gdata::DriveEntryProto& entry1,
+                                  const gdata::DriveEntryProto& entry2) {
   return entry1.file_info().last_modified() >
       entry2.file_info().last_modified();
 }
@@ -125,16 +125,16 @@ void ReadDirectoryCallback(size_t max_saved,
                            base::Closure callback,
                            gdata::GDataFileError error,
                            bool hide_hosted_documents,
-                           scoped_ptr<gdata::GDataEntryProtoVector> entries) {
+                           scoped_ptr<gdata::DriveEntryProtoVector> entries) {
   if (error != gdata::GDATA_FILE_OK) {
     callback.Run();
     return;
   }
 
   size_t max_scan = std::min(kMaxNumScanFiles, entries->size());
-  std::vector<gdata::GDataEntryProto> screenshot_entries;
+  std::vector<gdata::DriveEntryProto> screenshot_entries;
   for (size_t i = 0; i < max_scan; ++i) {
-    const gdata::GDataEntryProto& entry = (*entries)[i];
+    const gdata::DriveEntryProto& entry = (*entries)[i];
     if (StartsWithASCII(entry.base_name(), kScreenshotPrefix, true) &&
         EndsWith(entry.base_name(), kScreenshotSuffix, true)) {
       screenshot_entries.push_back(entry);
@@ -147,7 +147,7 @@ void ReadDirectoryCallback(size_t max_saved,
                     screenshot_entries.end(),
                     ScreenshotGDataTimestampComp);
   for (size_t i = 0; i < sort_size; ++i) {
-    const gdata::GDataEntryProto& entry = screenshot_entries[i];
+    const gdata::DriveEntryProto& entry = screenshot_entries[i];
     saved_screenshots->push_back(
         std::string(kSavedScreenshotsUrl) + entry.resource_id());
   }

@@ -11,7 +11,7 @@
 #include "base/platform_file.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -163,8 +163,8 @@ void DidCloseFileForTruncate(
 
 }  // namespace
 
-base::FileUtilProxy::Entry GDataEntryProtoToFileUtilProxyEntry(
-    const GDataEntryProto& proto) {
+base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
+    const DriveEntryProto& proto) {
   base::PlatformFileInfo file_info;
   GDataEntry::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
 
@@ -582,7 +582,7 @@ void GDataFileSystemProxy::OnGetEntryInfoByPath(
     const FilePath& entry_path,
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != GDATA_FILE_OK || !entry_proto.get()) {
@@ -656,7 +656,7 @@ void GDataFileSystemProxy::OnGetMetadata(
     const FilePath& file_path,
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != GDATA_FILE_OK) {
@@ -680,7 +680,7 @@ void GDataFileSystemProxy::OnReadDirectory(
     callback,
     GDataFileError error,
     bool hide_hosted_documents,
-    scoped_ptr<GDataEntryProtoVector> proto_entries) {
+    scoped_ptr<DriveEntryProtoVector> proto_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != GDATA_FILE_OK) {
@@ -694,13 +694,13 @@ void GDataFileSystemProxy::OnReadDirectory(
   std::vector<base::FileUtilProxy::Entry> entries;
   // Convert gdata files to something File API stack can understand.
   for (size_t i = 0; i < proto_entries->size(); ++i) {
-    const GDataEntryProto& proto = (*proto_entries)[i];
+    const DriveEntryProto& proto = (*proto_entries)[i];
     if (proto.has_file_specific_info() &&
         proto.file_specific_info().is_hosted_document() &&
         hide_hosted_documents) {
       continue;
     }
-    entries.push_back(GDataEntryProtoToFileUtilProxyEntry(proto));
+    entries.push_back(DriveEntryProtoToFileUtilProxyEntry(proto));
   }
 
   callback.Run(base::PLATFORM_FILE_OK, entries, false);

@@ -19,7 +19,7 @@ class Profile;
 namespace gdata {
 
 class DocumentEntry;
-class GDataEntryProto;
+class DriveEntryProto;
 class GDataFileSystemInterface;
 class GDataUploader;
 struct UploadFileInfo;
@@ -120,7 +120,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto);
+    scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for handling results of GDataFileSystem::GetEntryInfoByPath()
   // initiated by CreateUploadFileInfoAfterCheckExistence(). This callback
@@ -130,7 +130,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
       int32 download_id,
       scoped_ptr<UploadFileInfo> upload_file_info,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Starts the upload.
   void StartUpload(int32 download_id,

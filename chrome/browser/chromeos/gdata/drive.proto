@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Protocol buffer definitions for serializing GData files and directories.
+// Protocol buffer definitions for serializing Drive files and directories.
 
 syntax = "proto2";
 
@@ -20,8 +20,8 @@ message PlatformFileInfoProto {
   optional int64 creation_time = 6;
 }
 
-// File specific info, which is a part of GDataEntryProto.
-message GDataFileSpecificInfo {
+// File specific info, which is a part of DriveEntryProto.
+message DriveFileSpecificInfo {
   // This URL points to a thumbnail image. The thumbnail URL is not permanent
   // as it's not protected by authentication. See crbug.com/127697 for how
   // stale thumbnail URLs are handled.
@@ -45,8 +45,8 @@ message GDataFileSpecificInfo {
   optional bool is_hosted_document = 6;
 }
 
-// Represents GDataEntry, GDataFile, and GDataDirectory without children.
-message GDataEntryProto {
+// Represents DriveEntry, DriveFile, and DriveDirectory without children.
+message DriveEntryProto {
   optional PlatformFileInfoProto file_info = 1;
   optional string base_name = 2;
   optional string title = 3;
@@ -61,27 +61,27 @@ message GDataEntryProto {
   optional string upload_url = 8;
 
   // File specific information, such as MD5.
-  optional GDataFileSpecificInfo file_specific_info = 9;
+  optional DriveFileSpecificInfo file_specific_info = 9;
 }
 
-// Represents GDataDirectory. This message type is defined to keep children
-// separate from GDataEntryProto. This design allows us to get the metadata
-// of a directory efficiently as GDataEntryProto, without carrying the
+// Represents DriveDirectory. This message type is defined to keep children
+// separate from DriveEntryProto. This design allows us to get the metadata
+// of a directory efficiently as DriveEntryProto, without carrying the
 // metadata of children.
 //
 // TODO(satorux): With the new metadata storage system, we plan to store
 // children as pairs of base name and resource ID. We should remove this
 // message type once we get there.
-message GDataDirectoryProto {
-  optional GDataEntryProto gdata_entry = 1;
-  repeated GDataDirectoryProto child_directories = 7;
-  repeated GDataEntryProto child_files = 9;
+message DriveDirectoryProto {
+  optional DriveEntryProto gdata_entry = 1;
+  repeated DriveDirectoryProto child_directories = 7;
+  repeated DriveEntryProto child_files = 9;
 }
 
 // Container for the root directory and the largest changestamp.
 // TODO(satorux): Remove this: crbug.com/137862
-message GDataRootDirectoryProto {
-  optional GDataDirectoryProto gdata_directory = 1;
+message DriveRootDirectoryProto {
+  optional DriveDirectoryProto gdata_directory = 1;
   optional int64 largest_changestamp = 4;
   // Monotonically increasing version number, which is changed when
   // incompatible change is made in the proto file.
@@ -91,8 +91,8 @@ message GDataRootDirectoryProto {
 
 // Message to store information of an existing cache file.
 // Cache files are stored in 'tmp' or 'persistent' directory under the
-// root cache directory. See GDataCache::GetCacheRootPath().
-message GDataCacheEntry {
+// root cache directory. See DriveCache::GetCacheRootPath().
+message DriveCacheEntry {
   // MD5 of the cache file. "local" if the file is locally modified.
   optional string md5 = 1;
 
@@ -111,6 +111,6 @@ message GDataCacheEntry {
   // True if the file is in the persistent directory.
   optional bool is_persistent = 6;
 
-  // When adding a new state, be sure to update TestGDataCacheState and test
+  // When adding a new state, be sure to update TestDriveCacheState and test
   // functions defined in gdata_test_util.cc.
 }

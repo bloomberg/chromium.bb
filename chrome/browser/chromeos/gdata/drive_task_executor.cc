@@ -10,9 +10,9 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -82,7 +82,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 
 void DriveTaskExecutor::OnFileEntryFetched(
     GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto) {
+    scoped_ptr<DriveEntryProto> entry_proto) {
   // If we aborted, then this will be zero.
   if (!current_index_)
     return;

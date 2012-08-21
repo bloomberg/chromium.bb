@@ -23,11 +23,11 @@ class GDataCacheMetadata {
  public:
   // Callback for Iterate().
   typedef base::Callback<void(const std::string& resource_id,
-                              const GDataCacheEntry& cache_entry)>
+                              const DriveCacheEntry& cache_entry)>
       IterateCallback;
 
   // A map table of cache file's resource id to its CacheEntry* entry.
-  typedef std::map<std::string, GDataCacheEntry> CacheMap;
+  typedef std::map<std::string, DriveCacheEntry> CacheMap;
 
   virtual ~GDataCacheMetadata();
 
@@ -45,7 +45,7 @@ class GDataCacheMetadata {
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
   virtual void AddOrUpdateCacheEntry(const std::string& resource_id,
-                                     const GDataCacheEntry& cache_entry) = 0;
+                                     const DriveCacheEntry& cache_entry) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
   virtual void RemoveCacheEntry(const std::string& resource_id) = 0;
@@ -57,7 +57,7 @@ class GDataCacheMetadata {
   // extension and hence no md5.
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             GDataCacheEntry* entry) = 0;
+                             DriveCacheEntry* entry) = 0;
 
   // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   virtual void RemoveTemporaryFiles() = 0;

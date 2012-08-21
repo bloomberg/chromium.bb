@@ -24,13 +24,13 @@ namespace gdata {
 
 struct CreateDBParams;
 class DocumentEntry;
-class GDataEntry;
-class GDataEntryProto;
-class GDataFile;
+class DriveEntryProto;
 class GDataDirectory;
+class GDataEntry;
+class GDataFile;
 class ResourceMetadataDB;
 
-typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
+typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // File type on the gdata file system can be either a regular file or
 // a hosted document.
@@ -61,7 +61,7 @@ const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("drive");
 const char kGDataRootDirectoryResourceId[] = "folder:root";
 
 // This should be incremented when incompatibility change is made in
-// gdata.proto.
+// drive.proto.
 const int32 kProtoVersion = 2;
 
 // Callback type used to get result of file search.
@@ -82,22 +82,22 @@ typedef base::Callback<void(GDataFileError error,
 // Used to get entry info from the file system.
 // If |error| is not GDATA_FILE_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(GDataFileError error,
-                            scoped_ptr<GDataEntryProto> entry_proto)>
+                            scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoCallback;
 
 typedef base::Callback<void(GDataFileError error,
-                            scoped_ptr<GDataEntryProtoVector> entries)>
+                            scoped_ptr<DriveEntryProtoVector> entries)>
     ReadDirectoryCallback;
 
 // Used to get entry info from the file system, with the Drive file path.
 // If |error| is not GDATA_FILE_OK, |entry_proto| is set to NULL.
 //
-// |drive_file_path| parameter is provided as GDataEntryProto does not contain
+// |drive_file_path| parameter is provided as DriveEntryProto does not contain
 // the Drive file path (i.e. only contains the base name without parent
 // directory names).
 typedef base::Callback<void(GDataFileError error,
                             const FilePath& drive_file_path,
-                            scoped_ptr<GDataEntryProto> entry_proto)>
+                            scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoWithFilePathCallback;
 
 // This is a part of EntryInfoPairResult.
@@ -107,7 +107,7 @@ struct EntryInfoResult {
 
   FilePath path;
   GDataFileError error;
-  scoped_ptr<GDataEntryProto> proto;
+  scoped_ptr<DriveEntryProto> proto;
 };
 
 // The result of GetEntryInfoPairCallback(). Used to get a pair of entries
@@ -170,7 +170,7 @@ class GDataDirectoryService {
 
   // Add |new entry| to |directory| and invoke the callback asynchronously.
   // |callback| may not be null.
-  // TODO(achuith,satorux): Use GDataEntryProto instead for new_entry.
+  // TODO(achuith,satorux): Use DriveEntryProto instead for new_entry.
   // crbug.com/142048
   void AddEntryToDirectory(GDataDirectory* directory,
                            GDataEntry* new_entry,
@@ -284,7 +284,7 @@ class GDataDirectoryService {
       const FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Continues with GetIntroInfoPairByPaths after the second GDataEntry has been
   // asynchronously fetched.
@@ -293,7 +293,7 @@ class GDataDirectoryService {
       const GetEntryInfoPairCallback& callback,
       scoped_ptr<EntryInfoPairResult> result,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // These internal functions need friend access to private GDataDirectory
   // methods.

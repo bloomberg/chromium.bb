@@ -20,9 +20,9 @@
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
@@ -1746,7 +1746,7 @@ GetGDataFilePropertiesFunction::~GetGDataFilePropertiesFunction() {
 void GetGDataFilePropertiesFunction::DoOperation(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+    scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   DCHECK(property_dict);
 
   // Nothing to do here so simply call OnOperationComplete().
@@ -1815,7 +1815,7 @@ void GetGDataFilePropertiesFunction::OnGetFileInfo(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
     gdata::GDataFileError error,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+    scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   DCHECK(property_dict);
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
@@ -1831,7 +1831,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
     const FilePath& file_path,
     base::DictionaryValue* property_dict,
     gdata::GDataFileError error,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+    scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
 
@@ -1842,7 +1842,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
   }
   DCHECK(entry_proto.get());
 
-  const gdata::GDataFileSpecificInfo& file_specific_info =
+  const gdata::DriveFileSpecificInfo& file_specific_info =
       entry_proto->file_specific_info();
   property_dict->SetString("thumbnailUrl", file_specific_info.thumbnail_url());
   if (!file_specific_info.alternate_url().empty())
@@ -1897,7 +1897,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
 void GetGDataFilePropertiesFunction::CacheStateReceived(
     base::DictionaryValue* property_dict,
     bool /* success */,
-    const gdata::GDataCacheEntry& cache_entry) {
+    const gdata::DriveCacheEntry& cache_entry) {
   // In case of an error (i.e. success is false), cache_entry.is_*() all
   // returns false.
   property_dict->SetBoolean("isPinned", cache_entry.is_pinned());
@@ -1926,7 +1926,7 @@ bool PinGDataFileFunction::RunImpl() {
 void PinGDataFileFunction::DoOperation(
     const FilePath& file_path,
     base::DictionaryValue* properties,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+    scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gdata::GDataSystemService* system_service =
@@ -1952,7 +1952,7 @@ void PinGDataFileFunction::DoOperation(
 void PinGDataFileFunction::OnPinStateSet(
     const FilePath& path,
     base::DictionaryValue* properties,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto,
+    scoped_ptr<gdata::DriveEntryProto> entry_proto,
     gdata::GDataFileError error,
     const std::string& /* resource_id */,
     const std::string& /* md5 */) {

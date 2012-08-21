@@ -8,7 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 
 namespace gdata {
@@ -77,7 +77,7 @@ void RemoveInvalidFilesFromPersistentDirectory(
     GDataCacheMetadata::CacheMap::iterator cache_map_iter =
         cache_map->find(resource_id);
     if (cache_map_iter != cache_map->end()) {
-      const GDataCacheEntry& cache_entry = cache_map_iter->second;
+      const DriveCacheEntry& cache_entry = cache_map_iter->second;
       // If the file is dirty but not committed, remove it.
       if (cache_entry.is_dirty() &&
           outgoing_file_map.count(resource_id) == 0) {
@@ -124,7 +124,7 @@ void ScanCacheDirectory(
     util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
 
     // Determine cache state.
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     cache_entry.set_md5(md5);
     // If we're scanning pinned directory and if entry already exists, just
     // update its pinned state.
@@ -262,7 +262,7 @@ void ScanCachePaths(const std::vector<FilePath>& cache_paths,
 // exceptions. See the function definition for details.
 bool CheckIfMd5Matches(
     const std::string& md5,
-    const GDataCacheEntry& cache_entry) {
+    const DriveCacheEntry& cache_entry) {
   if (cache_entry.is_dirty()) {
     // If the entry is dirty, its MD5 may have been replaced by "local"
     // during cache initialization, so we don't compare MD5.
@@ -299,11 +299,11 @@ class FakeGDataCacheMetadata : public GDataCacheMetadata {
   virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
-      const GDataCacheEntry& cache_entry) OVERRIDE;
+      const DriveCacheEntry& cache_entry) OVERRIDE;
   virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             GDataCacheEntry* cache_entry) OVERRIDE;
+                             DriveCacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const IterateCallback& callback) OVERRIDE;
   virtual void ForceRescanForTesting(
@@ -333,7 +333,7 @@ void FakeGDataCacheMetadata::Initialize(
 
 void FakeGDataCacheMetadata::AddOrUpdateCacheEntry(
     const std::string& resource_id,
-    const GDataCacheEntry& cache_entry) {
+    const DriveCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
@@ -356,7 +356,7 @@ void FakeGDataCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
 
 bool FakeGDataCacheMetadata::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
-                                          GDataCacheEntry* entry) {
+                                          DriveCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
 
@@ -366,7 +366,7 @@ bool FakeGDataCacheMetadata::GetCacheEntry(const std::string& resource_id,
     return false;
   }
 
-  const GDataCacheEntry& cache_entry = iter->second;
+  const DriveCacheEntry& cache_entry = iter->second;
 
   if (!CheckIfMd5Matches(md5, cache_entry)) {
     return false;
@@ -421,11 +421,11 @@ class GDataCacheMetadataDB : public GDataCacheMetadata {
   virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
-      const GDataCacheEntry& cache_entry) OVERRIDE;
+      const DriveCacheEntry& cache_entry) OVERRIDE;
   virtual void RemoveCacheEntry(const std::string& resource_id) OVERRIDE;
   virtual bool GetCacheEntry(const std::string& resource_id,
                              const std::string& md5,
-                             GDataCacheEntry* cache_entry) OVERRIDE;
+                             DriveCacheEntry* cache_entry) OVERRIDE;
   virtual void RemoveTemporaryFiles() OVERRIDE;
   virtual void Iterate(const IterateCallback& callback) OVERRIDE;
   virtual void ForceRescanForTesting(
@@ -493,7 +493,7 @@ void GDataCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
 
 void GDataCacheMetadataDB::AddOrUpdateCacheEntry(
     const std::string& resource_id,
-    const GDataCacheEntry& cache_entry) {
+    const DriveCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
 
   DVLOG(1) << "AddOrUpdateCacheEntry, resource_id=" << resource_id;
@@ -514,7 +514,7 @@ void GDataCacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
 
 bool GDataCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
-                                          GDataCacheEntry* entry) {
+                                          DriveCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
 
@@ -526,7 +526,7 @@ bool GDataCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
     return false;
   }
 
-  GDataCacheEntry cache_entry;
+  DriveCacheEntry cache_entry;
   const bool ok = cache_entry.ParseFromString(serialized);
   if (!ok) {
     LOG(ERROR) << "Failed to parse " << serialized;
@@ -547,7 +547,7 @@ void GDataCacheMetadataDB::RemoveTemporaryFiles() {
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
         leveldb::ReadOptions()));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     const bool ok = cache_entry.ParseFromString(iter->value().ToString());
     if (ok && !cache_entry.is_persistent())
       level_db_->Delete(leveldb::WriteOptions(), iter->key());
@@ -560,7 +560,7 @@ void GDataCacheMetadataDB::Iterate(const IterateCallback& callback) {
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
         leveldb::ReadOptions()));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
-    GDataCacheEntry cache_entry;
+    DriveCacheEntry cache_entry;
     const bool ok = cache_entry.ParseFromString(iter->value().ToString());
     if (ok)
       callback.Run(iter->key().ToString(), cache_entry);

@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "net/base/escape.h"
@@ -379,7 +379,7 @@ void GDataEntry::ConvertPlatformFileInfoToProto(
   proto->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
-void GDataEntry::FromProto(const GDataEntryProto& proto) {
+void GDataEntry::FromProto(const DriveEntryProto& proto) {
   ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info_);
 
   // Don't copy from proto.base_name() as base_name_ is computed in
@@ -393,7 +393,7 @@ void GDataEntry::FromProto(const GDataEntryProto& proto) {
   SetBaseNameFromTitle();
 }
 
-void GDataEntry::ToProto(GDataEntryProto* proto) const {
+void GDataEntry::ToProto(DriveEntryProto* proto) const {
   ConvertPlatformFileInfoToProto(file_info_, proto->mutable_file_info());
 
   // The base_name field is used in GetFileInfoByPathAsync(). As shown in
@@ -407,7 +407,7 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
   proto->set_upload_url(upload_url_.spec());
 }
 
-void GDataEntry::ToProtoFull(GDataEntryProto* proto) const {
+void GDataEntry::ToProtoFull(DriveEntryProto* proto) const {
   if (AsGDataFileConst()) {
     AsGDataFileConst()->ToProto(proto);
   } else if (AsGDataDirectoryConst()) {
@@ -419,7 +419,7 @@ void GDataEntry::ToProtoFull(GDataEntryProto* proto) const {
   }
 }
 
-void GDataFile::FromProto(const GDataEntryProto& proto) {
+void GDataFile::FromProto(const DriveEntryProto& proto) {
   DCHECK(!proto.file_info().is_directory());
 
   GDataEntry::FromProto(proto);
@@ -432,10 +432,10 @@ void GDataFile::FromProto(const GDataEntryProto& proto) {
   is_hosted_document_ = proto.file_specific_info().is_hosted_document();
 }
 
-void GDataFile::ToProto(GDataEntryProto* proto) const {
+void GDataFile::ToProto(DriveEntryProto* proto) const {
   GDataEntry::ToProto(proto);
   DCHECK(!proto->file_info().is_directory());
-  GDataFileSpecificInfo* file_specific_info =
+  DriveFileSpecificInfo* file_specific_info =
       proto->mutable_file_specific_info();
   file_specific_info->set_thumbnail_url(thumbnail_url_.spec());
   file_specific_info->set_alternate_url(alternate_url_.spec());
@@ -445,7 +445,7 @@ void GDataFile::ToProto(GDataEntryProto* proto) const {
   file_specific_info->set_is_hosted_document(is_hosted_document_);
 }
 
-void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
+void GDataDirectory::FromProto(const DriveDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
   DCHECK(!proto.gdata_entry().has_file_specific_info());
 
@@ -465,7 +465,7 @@ void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   GDataEntry::FromProto(proto.gdata_entry());
 }
 
-void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
+void GDataDirectory::ToProto(DriveDirectoryProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
 
@@ -485,18 +485,18 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   }
 }
 
-scoped_ptr<GDataEntryProtoVector> GDataDirectory::ToProtoVector() const {
-  scoped_ptr<GDataEntryProtoVector> entries(new GDataEntryProtoVector);
+scoped_ptr<DriveEntryProtoVector> GDataDirectory::ToProtoVector() const {
+  scoped_ptr<DriveEntryProtoVector> entries(new DriveEntryProtoVector);
   // Use ToProtoFull, as we don't want to include children in |proto|.
   for (GDataChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    GDataEntryProto proto;
+    DriveEntryProto proto;
     directory_service_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
     entries->push_back(proto);
   }
   for (GDataChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    GDataEntryProto proto;
+    DriveEntryProto proto;
     directory_service_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
     entries->push_back(proto);
   }
@@ -509,12 +509,12 @@ void GDataEntry::SerializeToString(std::string* serialized_proto) const {
   const GDataDirectory* dir = AsGDataDirectoryConst();
 
   if (file) {
-    GDataEntryProto entry_proto;
+    DriveEntryProto entry_proto;
     file->ToProto(&entry_proto);
     const bool ok = entry_proto.SerializeToString(serialized_proto);
     DCHECK(ok);
   } else if (dir) {
-    GDataDirectoryProto dir_proto;
+    DriveDirectoryProto dir_proto;
     dir->ToProto(&dir_proto);
     const bool ok = dir_proto.SerializeToString(serialized_proto);
     DCHECK(ok);

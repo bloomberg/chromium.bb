@@ -13,7 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
@@ -24,7 +24,7 @@
 namespace gdata {
 namespace {
 
-// See gdata.proto for the difference between the two URLs.
+// See drive.proto for the difference between the two URLs.
 const char kResumableEditMediaUrl[] = "http://resumable-edit-media/";
 const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 
@@ -192,9 +192,9 @@ void InitFromDBCallback(GDataFileError expected_error,
 
 // Callback for GDataDirectoryService::ReadDirectoryByPath.
 void ReadDirectoryByPathCallback(
-    scoped_ptr<GDataEntryProtoVector>* result,
+    scoped_ptr<DriveEntryProtoVector>* result,
     GDataFileError error,
-    scoped_ptr<GDataEntryProtoVector> entries) {
+    scoped_ptr<DriveEntryProtoVector> entries) {
   EXPECT_EQ(GDATA_FILE_OK, error);
   *result = entries.Pass();
 }
@@ -203,8 +203,8 @@ void ReadDirectoryByPathCallback(
 
 TEST(GDataDirectoryServiceTest, VersionCheck) {
   // Set up the root directory.
-  GDataRootDirectoryProto proto;
-  GDataEntryProto* mutable_entry =
+  DriveRootDirectoryProto proto;
+  DriveEntryProto* mutable_entry =
       proto.mutable_gdata_directory()->mutable_gdata_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
   mutable_entry->set_resource_id(kGDataRootDirectoryResourceId);
@@ -325,7 +325,7 @@ TEST(GDataDirectoryServiceTest, GetEntryInfoByResourceId) {
   // Confirm that an existing file is found.
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
   FilePath drive_file_path;
-  scoped_ptr<GDataEntryProto> entry_proto;
+  scoped_ptr<DriveEntryProto> entry_proto;
   directory_service.GetEntryInfoByResourceId(
       "file_resource_id:file4",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
@@ -357,7 +357,7 @@ TEST(GDataDirectoryServiceTest, GetEntryInfoByPath) {
 
   // Confirm that an existing file is found.
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
-  scoped_ptr<GDataEntryProto> entry_proto;
+  scoped_ptr<DriveEntryProto> entry_proto;
   directory_service.GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
@@ -388,7 +388,7 @@ TEST(GDataDirectoryServiceTest, ReadDirectoryByPath) {
 
   // Confirm that an existing directory is found.
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
-  scoped_ptr<GDataEntryProtoVector> entries;
+  scoped_ptr<DriveEntryProtoVector> entries;
   directory_service.ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,

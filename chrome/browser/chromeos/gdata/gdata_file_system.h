@@ -197,7 +197,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
@@ -234,7 +234,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                    bool is_exclusive,
                                    const FileOperationCallback& callback,
                                    GDataFileError result,
-                                   scoped_ptr<GDataEntryProto> entry_proto);
+                                   scoped_ptr<DriveEntryProto> entry_proto);
   void DoUploadForCreateBrandNewFile(const FilePath& remote_path,
                                      FilePath* local_path,
                                      const FileOperationCallback& callback);
@@ -249,7 +249,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> file_info);
+      scoped_ptr<DriveEntryProto> file_info);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by OpenFile.
   // It then continues to invoke GetResolvedFileByPath and proceeds to
@@ -258,7 +258,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       const OpenFileCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> file_info);
+      scoped_ptr<DriveEntryProto> file_info);
 
   // Invoked at the last step of OpenFile. It removes |file_path| from the
   // current set of opened files if |result| is an error, and then invokes the
@@ -278,7 +278,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       const FileOperationCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
   void CloseFileOnUIThreadAfterCommitDirtyInCache(
       const FileOperationCallback& callback,
       GDataFileError error,
@@ -355,7 +355,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const FilePath::StringType& new_name,
                                const FileMoveCallback& callback,
                                GDataFileError error,
-                               scoped_ptr<GDataEntryProto> entry_proto);
+                               scoped_ptr<DriveEntryProto> entry_proto);
 
   // Moves a file or directory at |file_path| in the root directory to
   // another directory at |dir_path|. This function does nothing if
@@ -465,7 +465,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void UnpinIfPinned(const std::string& resource_id,
                      const std::string& md5,
                      bool success,
-                     const GDataCacheEntry& cache_entry);
+                     const DriveCacheEntry& cache_entry);
 
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.
@@ -586,7 +586,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       int64 file_size,
       std::string content_type,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.
@@ -635,7 +635,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetEntryInfoByPathOnUIThreadAfterGetEntry(
       const GetEntryInfoCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of ReadDirectoryByPathOnUIThread()
   // 1) Called when the feed is loaded.
@@ -648,7 +648,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void ReadDirectoryByPathOnUIThreadAfterRead(
       const ReadDirectoryWithSettingCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProtoVector> entries);
+      scoped_ptr<DriveEntryProtoVector> entries);
 
   // Loads the feed from the cache or the server if not yet loaded. Runs
   // |callback| upon the completion with the error code.
@@ -664,7 +664,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback,
       GDataFileError error,
-      const GDataEntryProto* entry_proto);
+      const DriveEntryProto* entry_proto);
 
   // Called when GDataCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
@@ -786,35 +786,35 @@ class GDataFileSystem : public GDataFileSystemInterface,
       bool is_recursive,
       const FileOperationCallback& callback,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of RequestDirectoryRefreshOnUIThread(). Called after
   // GetEntryInfoByPath() is complete.
   void RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
       const FilePath& file_path,
       GDataFileError error,
-      scoped_ptr<GDataEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the
   // PlatformFileInfo part of the |entry_proto| with the locally modified info.
   // |callback| must not be null.
-  void CheckLocalModificationAndRun(scoped_ptr<GDataEntryProto> entry_proto,
+  void CheckLocalModificationAndRun(scoped_ptr<DriveEntryProto> entry_proto,
                                     const GetEntryInfoCallback& callback);
   void CheckLocalModificationAndRunAfterGetCacheEntry(
-      scoped_ptr<GDataEntryProto> entry_proto,
+      scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       bool success,
-      const GDataCacheEntry& cache_entry);
+      const DriveCacheEntry& cache_entry);
   void CheckLocalModificationAndRunAfterGetCacheFile(
-      scoped_ptr<GDataEntryProto> entry_proto,
+      scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       GDataFileError error,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& local_cache_path);
   void CheckLocalModificationAndRunAfterGetFileInfo(
-      scoped_ptr<GDataEntryProto> entry_proto,
+      scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       base::PlatformFileInfo* file_info,
       bool* get_file_info_result);

@@ -143,13 +143,13 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
                                  GDataFileError error,
                                  const FilePath& file_path,
-                                 scoped_ptr<GDataEntryProto> entry_proto);
+                                 scoped_ptr<DriveEntryProto> entry_proto);
 
   // Called when a cache entry is obtained.
   void OnGetCacheEntry(const std::string& resource_id,
                        const std::string& latest_md5,
                        bool success,
-                       const GDataCacheEntry& cache_entry);
+                       const DriveCacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
   void OnRemove(GDataFileError error,

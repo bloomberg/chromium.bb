@@ -18,19 +18,17 @@
 
 namespace gdata {
 
-class GDataFile;
+class DriveDirectoryProto;
+class DriveEntryProto;
 class GDataDirectory;
 class GDataDirectoryService;
-
-class GDataEntryProto;
-class GDataDirectoryProto;
-class GDataRootDirectoryProto;
+class GDataFile;
 class PlatformFileInfoProto;
 
 // Used to read a directory from the file system.
 // If |error| is not GDATA_FILE_OK, |entries| is set to NULL.
 // |entries| are contents, both files and directories, of the directory.
-typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
+typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // Base class for representing files and directories in gdata virtual file
 // system.
@@ -63,15 +61,15 @@ class GDataEntry {
 
   // Converts to/from proto. Only handles the common part (i.e. does not
   // touch |file_specific_info|).
-  void FromProto(const GDataEntryProto& proto);
+  void FromProto(const DriveEntryProto& proto);
   // TODO(achuith,satorux): Should this be virtual?
-  void ToProto(GDataEntryProto* proto) const;
+  void ToProto(DriveEntryProto* proto) const;
 
   // Similar to ToProto() but this fills in |file_specific_info| and
   // |directory_specific_info| based on the actual type of the entry.
   // Used to obtain full metadata of a file or a directory as
-  // GDataEntryProto.
-  void ToProtoFull(GDataEntryProto* proto) const;
+  // DriveEntryProto.
+  void ToProtoFull(DriveEntryProto* proto) const;
 
   // Escapes forward slashes from file names with magic unicode character
   // \u2215 pretty much looks the same in UI.
@@ -102,7 +100,7 @@ class GDataEntry {
   const GURL& content_url() const { return content_url_; }
   void set_content_url(const GURL& url) { content_url_ = url; }
 
-  // Upload URL is used for uploading files. See gdata.proto for details.
+  // Upload URL is used for uploading files. See drive.proto for details.
   const GURL& upload_url() const { return upload_url_; }
   void set_upload_url(const GURL& url) { upload_url_ = url; }
 
@@ -176,8 +174,8 @@ class GDataFile : public GDataEntry {
   virtual ~GDataFile();
 
   // Converts to/from proto.
-  void FromProto(const GDataEntryProto& proto);
-  void ToProto(GDataEntryProto* proto) const;
+  void FromProto(const DriveEntryProto& proto);
+  void ToProto(DriveEntryProto* proto) const;
 
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
@@ -221,11 +219,11 @@ class GDataDirectory : public GDataEntry {
   virtual ~GDataDirectory();
 
   // Converts to/from proto.
-  void FromProto(const GDataDirectoryProto& proto);
-  void ToProto(GDataDirectoryProto* proto) const;
+  void FromProto(const DriveDirectoryProto& proto);
+  void ToProto(DriveDirectoryProto* proto) const;
 
-  // Converts the children as a vector of GDataEntryProto.
-  scoped_ptr<GDataEntryProtoVector> ToProtoVector() const;
+  // Converts the children as a vector of DriveEntryProto.
+  scoped_ptr<DriveEntryProtoVector> ToProtoVector() const;
 
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
