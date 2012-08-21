@@ -44,6 +44,8 @@ XSESSION_COMMAND = None
 
 REMOTING_COMMAND = "remoting_me2me_host"
 
+REMOTING_LOG_FILE = "REMOTING_ME2ME_LOG_FILE"
+
 # Needs to be an absolute path, since the current working directory is changed
 # when this process self-daemonizes.
 SCRIPT_PATH = os.path.dirname(sys.argv[0])
@@ -359,7 +361,8 @@ class Desktop:
         "PATH",
         "SHELL",
         "USER",
-        "USERNAME"]:
+        "USERNAME",
+        REMOTING_LOG_FILE]:
       if os.environ.has_key(key):
         self.child_env[key] = os.environ[key]
 
@@ -593,7 +596,7 @@ def daemonize(log_filename):
   # which would result in the new file having permissions of 0777 & ~umask,
   # possibly leaving the executable bits set.
   devnull_fd = os.open(os.devnull, os.O_RDONLY)
-  log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0600)
+  log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0600)
 
   pid = os.fork()
 
@@ -864,8 +867,10 @@ def main():
   # process will become detached from the controlling terminal.
 
   if not options.foreground:
-    log_file = tempfile.NamedTemporaryFile(prefix="me2me_host_", delete=False)
-    daemonize(log_file.name)
+    if not os.environ.has_key(REMOTING_LOG_FILE):
+      log_file = tempfile.NamedTemporaryFile(prefix="me2me_host_", delete=False)
+      os.environ[REMOTING_LOG_FILE] = log_file.name
+    daemonize(os.environ[REMOTING_LOG_FILE])
 
   g_pidfile.write_pid()
 
