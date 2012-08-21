@@ -4,7 +4,9 @@
 
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 
+#include "base/command_line.h"
 #include "content/shell/shell_login_dialog.h"
+#include "content/shell/shell_switches.h"
 
 namespace content {
 
@@ -17,8 +19,9 @@ ShellResourceDispatcherHostDelegate::~ShellResourceDispatcherHostDelegate() {
 bool ShellResourceDispatcherHostDelegate::AcceptAuthRequest(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
-  // Why not give it a try?
-  return true;
+  bool accept_auth_request =
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
+  return accept_auth_request;
 }
 
 ResourceDispatcherHostLoginDelegate*
