@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -408,11 +409,17 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString("themegravity",
       (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
 
-  // Set the promo string for display if there is a valid outstanding promo.
-  NotificationPromo notification_promo(profile_);
-  notification_promo.InitFromPrefs(NotificationPromo::NTP_NOTIFICATION_PROMO);
-  if (notification_promo.CanShow())
-    load_time_data.SetString("serverpromo", notification_promo.promo_text());
+  // Disable the promo if this is the first run, otherwise set the promo string
+  // for display if there is a valid outstanding promo.
+  if (first_run::IsChromeFirstRun()) {
+    NotificationPromo::HandleClosed(profile_,
+                                    NotificationPromo::NTP_NOTIFICATION_PROMO);
+  } else {
+    NotificationPromo notification_promo(profile_);
+    notification_promo.InitFromPrefs(NotificationPromo::NTP_NOTIFICATION_PROMO);
+    if (notification_promo.CanShow())
+      load_time_data.SetString("serverpromo", notification_promo.promo_text());
+  }
 
   // Determine whether to show the menu for accessing tabs on other devices.
   bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(
