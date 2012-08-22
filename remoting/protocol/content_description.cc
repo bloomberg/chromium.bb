@@ -63,12 +63,14 @@ XmlElement* FormatChannelConfig(const ChannelConfig& config,
   result->AddAttr(QName(kDefaultNs, kTransportAttr),
                   ValueToName(kTransports, config.transport));
 
-  result->AddAttr(QName(kDefaultNs, kVersionAttr),
-                  base::IntToString(config.version));
+  if (config.transport != ChannelConfig::TRANSPORT_NONE) {
+    result->AddAttr(QName(kDefaultNs, kVersionAttr),
+                    base::IntToString(config.version));
 
-  if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
-    result->AddAttr(QName(kDefaultNs, kCodecAttr),
-                    ValueToName(kCodecs, config.codec));
+    if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
+      result->AddAttr(QName(kDefaultNs, kCodecAttr),
+                      ValueToName(kCodecs, config.codec));
+    }
   }
 
   return result;
@@ -79,18 +81,28 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
                         ChannelConfig* config) {
   if (!NameToValue(
           kTransports, element->Attr(QName(kDefaultNs, kTransportAttr)),
-          &config->transport) ||
-      !base::StringToInt(element->Attr(QName(kDefaultNs, kVersionAttr)),
-                         &config->version)) {
+          &config->transport)) {
     return false;
   }
 
-  if (codec_required) {
-    if (!NameToValue(kCodecs, element->Attr(QName(kDefaultNs, kCodecAttr)),
-                     &config->codec)) {
+  // Version is not required when transport="none".
+  if (config->transport != ChannelConfig::TRANSPORT_NONE) {
+    if (!base::StringToInt(element->Attr(QName(kDefaultNs, kVersionAttr)),
+                           &config->version)) {
       return false;
     }
+
+    // Codec is not required when transport="none".
+    if (codec_required) {
+      if (!NameToValue(kCodecs, element->Attr(QName(kDefaultNs, kCodecAttr)),
+                       &config->codec)) {
+        return false;
+      }
+    } else {
+      config->codec = ChannelConfig::CODEC_UNDEFINED;
+    }
   } else {
+    config->version = 0;
     config->codec = ChannelConfig::CODEC_UNDEFINED;
   }
 
@@ -191,9 +203,7 @@ bool ContentDescription::ParseChannelConfigs(
   if (optional && configs->empty()) {
       // If there's no mention of the tag, implicitly assume
       // TRANSPORT_NONE for the channel.
-      configs->push_back(ChannelConfig(ChannelConfig::TRANSPORT_NONE,
-                                       kDefaultStreamVersion,
-                                       ChannelConfig::CODEC_VERBATIM));
+      configs->push_back(ChannelConfig());
   }
   return true;
 }

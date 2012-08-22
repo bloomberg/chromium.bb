@@ -88,9 +88,7 @@ ChromotingHost::ChromotingHost(
     // with the NONE config.
     protocol_config_->mutable_audio_configs()->clear();
     protocol_config_->mutable_audio_configs()->push_back(
-        protocol::ChannelConfig(protocol::ChannelConfig::TRANSPORT_NONE,
-                                protocol::kDefaultStreamVersion,
-                                protocol::ChannelConfig::CODEC_VERBATIM));
+        protocol::ChannelConfig());
   }
 }
 

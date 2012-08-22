@@ -37,7 +37,7 @@ TEST(ContentDescriptionTest, FormatAndParse) {
 
 // Verify that we can still parse configs with transports that we don't
 // recognize.
-TEST(ContentDescription, ParseUnknown) {
+TEST(ContentDescriptionTest, ParseUnknown) {
   std::string kTestDescription =
       "<description xmlns=\"google:remoting\">"
       "  <control transport=\"stream\" version=\"2\"/>"
@@ -55,6 +55,46 @@ TEST(ContentDescription, ParseUnknown) {
               ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                             kDefaultStreamVersion,
                             ChannelConfig::CODEC_UNDEFINED));
+}
+
+// Verify that we can parse configs with none transport without version and
+// codec.
+TEST(ContentDescriptionTest, NoneTransport) {
+  std::string kTestDescription =
+      "<description xmlns=\"google:remoting\">"
+      "  <control transport=\"stream\" version=\"2\"/>"
+      "  <event transport=\"stream\" version=\"2\"/>"
+      "  <event transport=\"stream\" version=\"2\"/>"
+      "  <video transport=\"stream\" version=\"2\" codec=\"vp8\"/>"
+      "  <audio transport=\"none\"/>"
+      "  <authentication/>"
+      "</description>";
+  scoped_ptr<buzz::XmlElement> xml(buzz::XmlElement::ForStr(kTestDescription));
+  scoped_ptr<ContentDescription> parsed(
+      ContentDescription::ParseXml(xml.get()));
+  ASSERT_TRUE(parsed.get());
+  EXPECT_EQ(1U, parsed->config()->audio_configs().size());
+  EXPECT_TRUE(parsed->config()->audio_configs()[0] == ChannelConfig());
+}
+
+// Verify that we can parse configs with none transport with version and
+// codec.
+TEST(ContentDescriptionTest, NoneTransportWithCodec) {
+  std::string kTestDescription =
+      "<description xmlns=\"google:remoting\">"
+      "  <control transport=\"stream\" version=\"2\"/>"
+      "  <event transport=\"stream\" version=\"2\"/>"
+      "  <event transport=\"stream\" version=\"2\"/>"
+      "  <video transport=\"stream\" version=\"2\" codec=\"vp8\"/>"
+      "  <audio transport=\"none\" version=\"2\" codec=\"verbatim\"/>"
+      "  <authentication/>"
+      "</description>";
+  scoped_ptr<buzz::XmlElement> xml(buzz::XmlElement::ForStr(kTestDescription));
+  scoped_ptr<ContentDescription> parsed(
+      ContentDescription::ParseXml(xml.get()));
+  ASSERT_TRUE(parsed.get());
+  EXPECT_EQ(1U, parsed->config()->audio_configs().size());
+  EXPECT_TRUE(parsed->config()->audio_configs()[0] == ChannelConfig());
 }
 
 }  // namespace protocol

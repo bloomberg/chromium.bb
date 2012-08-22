@@ -36,14 +36,16 @@ struct ChannelConfig {
     CODEC_SPEEX,
   };
 
+  // The constructor that creates a config with transport field set to
+  // TRANSPORT_NONE which indicates that corresponding channel is disabled.
   ChannelConfig();
+
+  // Creates a channel config with the specified parameters.
   ChannelConfig(TransportType transport, int version, Codec codec);
 
   // operator== is overloaded so that std::find() works with
   // std::vector<ChannelConfig>.
   bool operator==(const ChannelConfig& b) const;
-
-  void Reset();
 
   TransportType transport;
   int version;
