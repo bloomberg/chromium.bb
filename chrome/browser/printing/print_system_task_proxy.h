@@ -64,8 +64,7 @@ class PrintSystemTaskProxy
   FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS);
 #endif
 
-#if defined(USE_CUPS)
-  static bool GetPrinterCapabilitiesCUPS(
+  bool ParsePrinterCapabilities(
       const printing::PrinterCapsAndDefaults& printer_info,
       const std::string& printer_name,
       bool* set_color_as_default,
@@ -73,20 +72,12 @@ class PrintSystemTaskProxy
       int* printer_color_space_for_black,
       bool* set_duplex_as_default,
       int* default_duplex_setting_value);
-#elif defined(OS_WIN)
-  void GetPrinterCapabilitiesWin(
-      const printing::PrinterCapsAndDefaults& printer_info,
-      bool* set_color_as_default,
-      int* printer_color_space_for_color,
-      int* printer_color_space_for_black,
-      bool* set_duplex_as_default,
-      int* default_duplex_setting_value);
-#endif
 
-  void SendDefaultPrinter(const std::string* default_printer,
-                          const std::string* cloud_print_data);
+  void SendDefaultPrinter(const std::string& default_printer,
+                          const std::string& cloud_print_data);
   void SetupPrinterList(base::ListValue* printers);
   void SendPrinterCapabilities(base::DictionaryValue* settings_info);
+  void SendFailedToGetPrinterCapabilities(const std::string& printer_name);
 
   ~PrintSystemTaskProxy();
 

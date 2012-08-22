@@ -161,6 +161,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // printer capabilities information.
   void SendPrinterCapabilities(const base::DictionaryValue& settings_info);
 
+  // Sends error notification to the Web UI when unable to return the printer
+  // capabilities.
+  void SendFailedToGetPrinterCapabilities(const std::string& printer_name);
+
   // Send the list of printers to the Web UI.
   void SetupPrinterList(const base::ListValue& printers);
 

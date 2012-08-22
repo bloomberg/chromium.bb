@@ -19,6 +19,8 @@ cr.define('print_preview', function() {
     global['setPrinters'] = this.onSetPrinters_.bind(this);
     global['updateWithPrinterCapabilities'] =
         this.onUpdateWithPrinterCapabilities_.bind(this);
+    global['failedToGetPrinterCapabilities'] =
+        this.onFailedToGetPrinterCapabilities_.bind(this);
     global['reloadPrintersList'] = this.onReloadPrintersList_.bind(this);
     global['printToCloud'] = this.onPrintToCloud_.bind(this);
     global['fileSelectionCancelled'] =
@@ -406,6 +408,17 @@ cr.define('print_preview', function() {
       var capsSetEvent = new cr.Event(NativeLayer.EventType.CAPABILITIES_SET);
       capsSetEvent.settingsInfo = settingsInfo;
       this.dispatchEvent(capsSetEvent);
+    },
+
+    /**
+     * Called when native layer gets settings information for a requested local
+     * destination.
+     * @param {Object} printer_name printer affected by error.
+     * @private
+     */
+    onFailedToGetPrinterCapabilities_: function(printer_name) {
+      // TODO(rltoscano): Switch to the next printer.
+      console.log('onFailedToGetPrinterCapabilities: ' + printer_name);
     },
 
     /** Reloads the printer list. */

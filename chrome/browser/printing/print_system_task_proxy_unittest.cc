@@ -250,15 +250,18 @@ TEST(PrintSystemTaskProxyTest, DetectDuplexModeCUPS) {
   int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
   int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
 
-  bool res = PrintSystemTaskProxy::GetPrinterCapabilitiesCUPS(
+  scoped_refptr<PrintSystemTaskProxy> proxy(
+      new PrintSystemTaskProxy(base::WeakPtr<PrintPreviewHandler>(), NULL,
+                               false));
+
+  ASSERT_TRUE(proxy->ParsePrinterCapabilities(
       printer_info,
       "InvalidPrinter",
       &set_color_as_default,
       &printer_color_space_for_color,
       &printer_color_space_for_black,
       &set_duplex_as_default,
-      &default_duplex_setting_value);
-  ASSERT_TRUE(res);
+      &default_duplex_setting_value));
   EXPECT_FALSE(set_duplex_as_default);
   EXPECT_EQ(printing::SIMPLEX, default_duplex_setting_value);
 }
@@ -277,15 +280,18 @@ TEST(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS) {
   int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
   int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
 
-  bool res = PrintSystemTaskProxy::GetPrinterCapabilitiesCUPS(
+  scoped_refptr<PrintSystemTaskProxy> proxy(
+      new PrintSystemTaskProxy(base::WeakPtr<PrintPreviewHandler>(), NULL,
+                               false));
+
+  ASSERT_TRUE(proxy->ParsePrinterCapabilities(
       printer_info,
       "InvalidPrinter",
       &set_color_as_default,
       &printer_color_space_for_color,
       &printer_color_space_for_black,
       &set_duplex_as_default,
-      &default_duplex_setting_value);
-  ASSERT_TRUE(res);
+      &default_duplex_setting_value));
   EXPECT_FALSE(set_duplex_as_default);
   EXPECT_EQ(printing::UNKNOWN_DUPLEX_MODE, default_duplex_setting_value);
 }
