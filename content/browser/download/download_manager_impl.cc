@@ -559,9 +559,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
   new SavePageData(download);
   DCHECK(SavePageData::Get(download));
 
-  // TODO(benjhayden): Fire OnDownloadCreated for SavePackage downloads when
-  // we're comfortable with the user interacting with them.
-  // FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
 
   // Will notify the observer in the callback.
   if (delegate_)

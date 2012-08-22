@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,6 +65,64 @@ static const char* kAppendedExtension =
 #endif
 
 }  // namespace
+
+// Loosely based on logic in DownloadTestObserver.
+class DownloadItemCreatedObserver : public DownloadManager::Observer {
+ public:
+  explicit DownloadItemCreatedObserver(DownloadManager* manager)
+      : waiting_(false), manager_(manager), created_item_(NULL) {
+    manager->AddObserver(this);
+  }
+
+  ~DownloadItemCreatedObserver() {
+    if (manager_)
+      manager_->RemoveObserver(this);
+  }
+
+  // Wait for the first download item created after object creation.
+  // Note that this class provides no protection against the download
+  // being destroyed between creation and return of WaitForNewDownloadItem();
+  // the caller must guarantee that in some other fashion.
+  DownloadItem* WaitForNewDownloadItem() {
+    if (!manager_) {
+      // The manager went away before we were asked to wait; return
+      // what we have, even if it's null.
+      return created_item_;
+    }
+
+    if (!created_item_) {
+      waiting_ = true;
+      content::RunMessageLoop();
+      waiting_ = false;
+    }
+    return created_item_;
+  }
+
+ private:
+
+  // DownloadManager::Observer
+  void OnDownloadCreated(DownloadManager* manager, DownloadItem* item) {
+    DCHECK_EQ(manager, manager_);
+    if (!created_item_)
+      created_item_ = item;
+
+    if (waiting_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+  void ManagerGoingDownload(DownloadManager* manager) {
+    manager_->RemoveObserver(this);
+    manager_ = NULL;
+    if (waiting_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+  bool waiting_;
+  DownloadManager* manager_;
+  DownloadItem* created_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadItemCreatedObserver);
+};
 
 class SavePageBrowserTest : public InProcessBrowserTest {
  public:
@@ -230,6 +289,57 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   EXPECT_TRUE(file_util::ContentsEqual(
       test_dir_.Append(FilePath(kTestDir)).Append(FILE_PATH_LITERAL("a.htm")),
       full_file_name));
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
+  GURL url = NavigateToMockURL("a");
+  DownloadManager* manager(GetDownloadManager());
+  std::vector<DownloadItem*> downloads;
+  manager->SearchDownloads(string16(), &downloads);
+  ASSERT_EQ(0u, downloads.size());
+
+  FilePath full_file_name, dir;
+  GetDestinationPaths("a", &full_file_name, &dir);
+  DownloadItemCreatedObserver creation_observer(manager);
+  ASSERT_TRUE(GetCurrentTab()->SavePage(full_file_name, dir,
+                                        content::SAVE_PAGE_TYPE_AS_ONLY_HTML));
+  DownloadItem* item = creation_observer.WaitForNewDownloadItem();
+  item->Cancel(true);
+
+  // TODO(rdsmith): Fix DII::Cancel() to actually cancel the save package.
+  // Currently it's ignored.
+  EXPECT_EQ(url, WaitForSavePackageToFinish());
+
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
+
+  EXPECT_TRUE(file_util::PathExists(full_file_name));
+  EXPECT_FALSE(file_util::PathExists(dir));
+  EXPECT_TRUE(file_util::ContentsEqual(
+      test_dir_.Append(FilePath(kTestDir)).Append(FILE_PATH_LITERAL("a.htm")),
+      full_file_name));
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyTabDestroy) {
+  GURL url = NavigateToMockURL("a");
+  DownloadManager* manager(GetDownloadManager());
+  std::vector<DownloadItem*> downloads;
+  manager->SearchDownloads(string16(), &downloads);
+  ASSERT_EQ(0u, downloads.size());
+
+  FilePath full_file_name, dir;
+  GetDestinationPaths("a", &full_file_name, &dir);
+  DownloadItemCreatedObserver creation_observer(manager);
+  ASSERT_TRUE(GetCurrentTab()->SavePage(full_file_name, dir,
+                                        content::SAVE_PAGE_TYPE_AS_ONLY_HTML));
+  DownloadItem* item = creation_observer.WaitForNewDownloadItem();
+
+  // Close the tab; does this cancel the download?
+  GetCurrentTab()->Close();
+  EXPECT_TRUE(item->IsCancelled());
+
+  EXPECT_FALSE(file_util::PathExists(full_file_name));
+  EXPECT_FALSE(file_util::PathExists(dir));
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
