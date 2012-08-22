@@ -5,6 +5,7 @@
 #include "ipc/ipc_sync_channel.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -12,6 +13,8 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
+#include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
 
 using base::TimeDelta;
@@ -428,6 +431,17 @@ bool SyncChannel::Send(Message* message) {
 }
 
 bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  Logging* logger = Logging::GetInstance();
+  std::string name;
+  logger->GetMessageText(message->type(), &name, message, NULL);
+  TRACE_EVENT1("task", "SyncChannel::SendWithTimeout",
+               "name", name);
+#else
+  TRACE_EVENT2("task", "SyncChannel::SendWithTimeout",
+               "class", IPC_MESSAGE_ID_CLASS(message->type()),
+               "line", IPC_MESSAGE_ID_LINE(message->type()));
+#endif
   if (!message->is_sync()) {
     ChannelProxy::Send(message);
     return true;
