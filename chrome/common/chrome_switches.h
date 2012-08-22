@@ -437,6 +437,7 @@ extern const char kUseMockKeychain[];
 extern const char kDisableDesktopShortcuts[];
 extern const char kEnableSyncCredentialCaching[];
 extern const char kForceImmersive[];
+extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
 extern const char kWaitForHandle[];
 #endif

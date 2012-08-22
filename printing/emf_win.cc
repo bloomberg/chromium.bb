@@ -7,6 +7,9 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -16,6 +19,7 @@
 #include "ui/gfx/size.h"
 
 namespace {
+
 const int kCustomGdiCommentSignature = 0xdeadbabe;
 struct PageBreakRecord {
   int signature;
@@ -31,7 +35,26 @@ struct PageBreakRecord {
            (type >= START_PAGE) && (type <= END_PAGE);
   }
 };
+
+int CALLBACK IsAlphaBlendUsedEnumProc(HDC,
+                                      HANDLETABLE*,
+                                      const ENHMETARECORD *record,
+                                      int,
+                                      LPARAM data) {
+  bool* result = reinterpret_cast<bool*>(data);
+  if (!result)
+    return 0;
+  switch (record->iType) {
+    case EMR_ALPHABLEND: {
+      *result = true;
+      return 0;
+      break;
+    }
+  }
+  return 1;
 }
+
+}  // namespace
 
 namespace printing {
 
@@ -126,19 +149,12 @@ gfx::Rect Emf::GetPageBounds(unsigned int page_number) const {
     NOTREACHED();
     return gfx::Rect();
   }
-  if (header.rclBounds.left == 0 &&
-      header.rclBounds.top == 0 &&
-      header.rclBounds.right == -1 &&
-      header.rclBounds.bottom == -1) {
-    // A freshly created EMF buffer that has no drawing operation has invalid
-    // bounds. Instead of having an (0,0) size, it has a (-1,-1) size. Detect
-    // this special case and returns an empty Rect instead of an invalid one.
-    return gfx::Rect();
-  }
+  // Add 1 to right and bottom because it's inclusive rectangle.
+  // See ENHMETAHEADER.
   return gfx::Rect(header.rclBounds.left,
                    header.rclBounds.top,
-                   header.rclBounds.right - header.rclBounds.left,
-                   header.rclBounds.bottom - header.rclBounds.top);
+                   header.rclBounds.right - header.rclBounds.left + 1,
+                   header.rclBounds.bottom - header.rclBounds.top + 1);
 }
 
 uint32 Emf::GetDataSize() const {
@@ -476,6 +492,77 @@ int CALLBACK Emf::Enumerator::EnhMetaFileProc(HDC hdc,
   }
   emf.items_.push_back(Record(record));
   return 1;
+}
+
+bool Emf::IsAlphaBlendUsed() const {
+  bool result = false;
+  ::EnumEnhMetaFile(NULL,
+                    emf(),
+                    &IsAlphaBlendUsedEnumProc,
+                    &result,
+                    NULL);
+  return result;
+}
+
+Emf* Emf::RasterizeMetafile(int raster_area_in_pixels) const {
+  gfx::Rect page_bounds = GetPageBounds(1);
+  gfx::Size page_size(page_bounds.size());
+  if (page_size.GetArea() <= 0) {
+    NOTREACHED() << "Metafile is empty";
+    page_bounds = gfx::Rect(1, 1);
+  }
+
+  float scale = sqrt(float(raster_area_in_pixels) / page_size.GetArea());
+  page_size.set_width(std::max<int>(1, page_size.width() * scale));
+  page_size.set_height(std::max<int>(1, page_size.height() * scale));
+
+  base::win::ScopedCreateDC bitmap_dc(::CreateCompatibleDC(NULL));
+  if (!bitmap_dc) {
+    NOTREACHED() << "Bitmap DC creation failed";
+    return NULL;
+  }
+  ::SetGraphicsMode(bitmap_dc, GM_ADVANCED);
+  void* bits = NULL;
+  BITMAPINFO hdr;
+  gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
+                          &hdr.bmiHeader);
+  base::win::ScopedBitmap hbitmap(CreateDIBSection(
+      bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
+  if (!hbitmap)
+    NOTREACHED() << "Raster bitmap creation for printing failed";
+
+  base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
+  RECT rect = { 0, 0, page_size.width(), page_size.height() };
+  HBRUSH white_brush = static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
+  FillRect(bitmap_dc, &rect, white_brush);
+
+  gfx::Rect bitmap_rect(page_size);
+  Playback(bitmap_dc, &bitmap_rect.ToRECT());
+
+  scoped_ptr<Emf> result(new Emf);
+  result->Init();
+  HDC hdc = result->context();
+  DCHECK(hdc);
+  skia::InitializeDC(hdc);
+
+  // Params are ignored.
+  result->StartPage(page_bounds.size(), page_bounds, 1);
+
+  ::ModifyWorldTransform(hdc, NULL, MWT_IDENTITY);
+  XFORM xform = {
+    float(page_bounds.width()) / bitmap_rect.width(), 0,
+    0, float(page_bounds.height()) / bitmap_rect.height(),
+    page_bounds.x(),
+    page_bounds.y(),
+  };
+  ::SetWorldTransform(hdc, &xform);
+  ::BitBlt(hdc, 0, 0, bitmap_rect.width(), bitmap_rect.height(),
+           bitmap_dc, bitmap_rect.x(), bitmap_rect.y(), SRCCOPY);
+
+  result->FinishPage();
+  result->FinishDocument();
+
+  return result.release();
 }
 
 }  // namespace printing

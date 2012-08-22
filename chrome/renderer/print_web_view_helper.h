@@ -269,18 +269,14 @@ class PrintWebViewHelper
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
-  // Because of mixed support for alpha channels on printers, this method may
-  // need to create a new metafile.  The result may be either the passed
-  // |metafile| or a new one.  In either case, the caller owns both |metafile|
-  // and the result.
-  printing::Metafile* RenderPage(const PrintMsg_Print_Params& params,
-                                 int page_number,
-                                 WebKit::WebFrame* frame,
-                                 bool is_preview,
-                                 printing::Metafile* metafile,
-                                 double* scale_factor,
-                                 gfx::Size* page_size_in_dpi,
-                                 gfx::Rect* content_area_in_dpi);
+  void RenderPage(const PrintMsg_Print_Params& params,
+                  int page_number,
+                  WebKit::WebFrame* frame,
+                  bool is_preview,
+                  printing::Metafile* metafile,
+                  double* scale_factor,
+                  gfx::Size* page_size_in_dpi,
+                  gfx::Rect* content_area_in_dpi);
 #elif defined(OS_MACOSX)
   void RenderPage(const PrintMsg_Print_Params& params, int page_number,
                   WebKit::WebFrame* frame, bool is_preview,

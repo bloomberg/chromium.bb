@@ -124,11 +124,6 @@ class SK_API PlatformDevice {
   // Returns if GDI is allowed to render text to this device.
   virtual bool IsNativeFontRenderingAllowed();
 
-  // True if AlphaBlend() was called during a
-  // BeginPlatformPaint()/EndPlatformPaint() pair.
-  // Used by the printing subclasses.  See |VectorPlatformDeviceEmf|.
-  virtual bool AlphaBlendUsed() const;
-
 #if defined(OS_WIN)
   // Loads a SkPath into the GDI context. The path can there after be used for
   // clipping or as a stroke. Returns false if the path failed to be loaded.

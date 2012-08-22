@@ -100,8 +100,7 @@ VectorPlatformDeviceEmf::VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap)
     : SkDevice(bitmap),
       hdc_(dc),
       previous_brush_(NULL),
-      previous_pen_(NULL),
-      alpha_blend_used_(false) {
+      previous_pen_(NULL) {
   transform_.reset();
   SetPlatformDevice(this, this);
 }
@@ -853,8 +852,6 @@ void VectorPlatformDeviceEmf::InternalDrawBitmap(const SkBitmap& bitmap,
     SkASSERT(result);
     result = SetStretchBltMode(dc, previous_mode);
     SkASSERT(result);
-
-    alpha_blend_used_ = true;
 
     ::SelectObject(bitmap_dc, static_cast<HBITMAP>(old_bitmap));
     DeleteObject(hbitmap);

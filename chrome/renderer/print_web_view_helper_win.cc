@@ -32,117 +32,6 @@ using printing::kPointsPerInch;
 using printing::Metafile;
 using WebKit::WebFrame;
 
-namespace {
-
-int CALLBACK EnhMetaFileProc(HDC dc,
-                             HANDLETABLE* handle_table,
-                             const ENHMETARECORD *record,
-                             int num_objects,
-                             LPARAM data) {
-  HDC* bitmap_dc = reinterpret_cast<HDC*>(data);
-  // Play this command to the bitmap DC.
-  PlayEnhMetaFileRecord(*bitmap_dc, handle_table, record, num_objects);
-  switch (record->iType) {
-    case EMR_ALPHABLEND: {
-      const EMRALPHABLEND* emr_alpha_blend =
-          reinterpret_cast<const EMRALPHABLEND*>(record);
-      XFORM bitmap_dc_transform, metafile_dc_transform;
-      XFORM identity = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
-      // Temporarily set the world transforms of both DC's to identity.
-      GetWorldTransform(dc, &metafile_dc_transform);
-      SetWorldTransform(dc, &identity);
-      GetWorldTransform(*bitmap_dc, &bitmap_dc_transform);
-      SetWorldTransform(*bitmap_dc, &identity);
-      const RECTL& rect = emr_alpha_blend->rclBounds;
-      // Since the printer does not support alpha blend, copy the alpha
-      // blended region from our (software-rendered) bitmap DC to the
-      // metafile DC.
-      BitBlt(dc,
-             rect.left,
-             rect.top,
-             rect.right - rect.left + 1,
-             rect.bottom - rect.top + 1,
-             *bitmap_dc,
-             rect.left,
-             rect.top,
-             SRCCOPY);
-      // Restore the world transforms of both DC's.
-      SetWorldTransform(dc, &metafile_dc_transform);
-      SetWorldTransform(*bitmap_dc, &bitmap_dc_transform);
-      break;
-    }
-
-    case EMR_CREATEBRUSHINDIRECT:
-    case EMR_CREATECOLORSPACE:
-    case EMR_CREATECOLORSPACEW:
-    case EMR_CREATEDIBPATTERNBRUSHPT:
-    case EMR_CREATEMONOBRUSH:
-    case EMR_CREATEPALETTE:
-    case EMR_CREATEPEN:
-    case EMR_DELETECOLORSPACE:
-    case EMR_DELETEOBJECT:
-    case EMR_EXTCREATEFONTINDIRECTW:
-      // Play object creation command only once.
-      break;
-
-    default:
-      // Play this command to the metafile DC.
-      PlayEnhMetaFileRecord(dc, handle_table, record, num_objects);
-      break;
-  }
-  return 1;  // Continue enumeration
-}
-
-Metafile* FlattenTransparency(Metafile* metafile, const gfx::Size& page_size) {
-  // Currently, we handle alpha blend transparency for a single page.
-  // Therefore, expecting a metafile with page count 1.
-  DCHECK_EQ(1U, metafile->GetPageCount());
-
-  // Close the device context to retrieve the compiled metafile.
-  if (!metafile->FinishDocument())
-    NOTREACHED();
-
-  // Page used alpha blend, but printer doesn't support it.  Rewrite the
-  // metafile and flatten out the transparency.
-  base::win::ScopedGetDC screen_dc(NULL);
-  base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(screen_dc));
-  if (!bitmap_dc)
-    NOTREACHED() << "Bitmap DC creation failed";
-  SetGraphicsMode(bitmap_dc, GM_ADVANCED);
-  void* bits = NULL;
-  BITMAPINFO hdr;
-  gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
-                          &hdr.bmiHeader);
-  base::win::ScopedBitmap hbitmap(CreateDIBSection(
-      bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
-  if (!hbitmap)
-    NOTREACHED() << "Raster bitmap creation for printing failed";
-
-  base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
-  RECT rect = { 0, 0, page_size.width(), page_size.height() };
-  HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-  FillRect(bitmap_dc, &rect, whiteBrush);
-
-  Metafile* metafile2(new printing::NativeMetafile);
-  metafile2->Init();
-  HDC hdc = metafile2->context();
-  DCHECK(hdc);
-  skia::InitializeDC(hdc);
-
-  RECT metafile_bounds = metafile->GetPageBounds(1).ToRECT();
-  // Process the old metafile, placing all non-AlphaBlend calls into the
-  // new metafile, and copying the results of all the AlphaBlend calls
-  // from the bitmap DC.
-  EnumEnhMetaFile(hdc,
-                  metafile->emf(),
-                  EnhMetaFileProc,
-                  &bitmap_dc,
-                  &metafile_bounds);
-  return metafile2;
-}
-
-}  // namespace
-
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
@@ -166,9 +55,8 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Rect content_area_in_dpi;
 
   // Render page for printing.
-  metafile.reset(RenderPage(params.params, page_number, frame, false,
-                            metafile.get(), &actual_shrink, &page_size_in_dpi,
-                            &content_area_in_dpi));
+  RenderPage(params.params, page_number, frame, false, metafile.get(),
+             &actual_shrink, &page_size_in_dpi, &content_area_in_dpi);
 
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
@@ -210,11 +98,8 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-  printing::Metafile* render_page_result =
-      RenderPage(print_params, page_number, print_preview_context_.frame(),
-                 true, initial_render_metafile, &actual_shrink, NULL, NULL);
-  // In the preview flow, RenderPage will never return a new metafile.
-  DCHECK_EQ(render_page_result, initial_render_metafile);
+  RenderPage(print_params, page_number, print_preview_context_.frame(), true,
+             initial_render_metafile, &actual_shrink, NULL, NULL);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
@@ -229,7 +114,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
 
-Metafile* PrintWebViewHelper::RenderPage(
+void PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, int page_number, WebFrame* frame,
     bool is_preview, Metafile* metafile, double* actual_shrink,
     gfx::Size* page_size_in_dpi, gfx::Rect* content_area_in_dpi) {
@@ -319,27 +204,13 @@ Metafile* PrintWebViewHelper::RenderPage(
 
   bool result = metafile->FinishPage();
   DCHECK(result);
-
-  if (!params.supports_alpha_blend) {
-    // PreviewMetafile (PDF) supports alpha blend, so we only hit this case
-    // for NativeMetafile.
-    DCHECK(!is_preview);
-    skia::PlatformDevice* platform_device = skia::GetPlatformDevice(device);
-    if (platform_device && platform_device->AlphaBlendUsed()) {
-      return FlattenTransparency(metafile, page_size);
-    }
-  }
-  return metafile;
 }
 
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     Metafile* metafile, base::SharedMemoryHandle* shared_mem_handle) {
   uint32 buf_size = metafile->GetDataSize();
   base::SharedMemory shared_buf;
-  // http://msdn2.microsoft.com/en-us/library/ms535522.aspx
-  // Windows 2000/XP: When a page in a spooled file exceeds approximately 350
-  // MB, it can fail to print and not send an error message.
-  if (buf_size >= 350*1024*1024) {
+  if (buf_size >= printing::kMetafileMaxSize) {
     NOTREACHED() << "Buffer too large: " << buf_size;
     return false;
   }

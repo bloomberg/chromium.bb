@@ -202,4 +202,29 @@ TEST(EmfTest, FileBackedEmf) {
   EXPECT_TRUE(DeleteDC(hdc));
 }
 
+TEST(EmfTest, RasterizeMetafile) {
+  Emf emf;
+  EXPECT_TRUE(emf.Init());
+  EXPECT_TRUE(emf.context() != NULL);
+  HBRUSH brush = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
+  for (int i = 0; i < 4; ++i) {
+    RECT rect = { 5 + i, 5 + i, 5 + i + 1, 5 + i + 2};
+    FillRect(emf.context(), &rect, brush);
+  }
+  EXPECT_TRUE(emf.FinishDocument());
+
+  scoped_ptr<Emf> raster(emf.RasterizeMetafile(1));
+  // Just 1px bitmap but should be stretched to the same bounds.
+  EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
+
+  raster.reset(emf.RasterizeMetafile(20));
+  EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
+
+  raster.reset(emf.RasterizeMetafile(16*1024*1024));
+  // Expected size about 64MB.
+  EXPECT_LE(abs(int(raster->GetDataSize()) - 64*1024*1024), 1024*1024);
+  // Bounds should still be the same.
+  EXPECT_EQ(emf.GetPageBounds(1), raster->GetPageBounds(1));
+}
+
 }  // namespace printing

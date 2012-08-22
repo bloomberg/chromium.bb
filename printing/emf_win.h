@@ -23,6 +23,11 @@ class Size;
 
 namespace printing {
 
+// http://msdn2.microsoft.com/en-us/library/ms535522.aspx
+// Windows 2000/XP: When a page in a spooled file exceeds approximately 350
+// MB, it can fail to print and not send an error message.
+const size_t kMetafileMaxSize = 350*1024*1024;
+
 // Simple wrapper class that manage an EMF data stream and its virtual HDC.
 class PRINTING_EXPORT Emf : public Metafile {
  public:
@@ -85,6 +90,13 @@ class PRINTING_EXPORT Emf : public Metafile {
   virtual HENHMETAFILE emf() const OVERRIDE {
     return emf_;
   }
+
+  // Returns true if metafile contains alpha blend.
+  bool IsAlphaBlendUsed() const;
+
+  // Returns new metafile with only bitmap created by playback of the current
+  // metafile. Returns NULL if fails.
+  Emf* RasterizeMetafile(int raster_area_in_pixels) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EmfTest, DC);

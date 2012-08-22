@@ -223,6 +223,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kPrintSettingsReset)
   },
+#if defined(OS_WIN)
+  {
+    "print-raster",
+    IDS_FLAGS_PRINT_RASTER_NAME,
+    IDS_FLAGS_PRINT_RASTER_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kPrintRaster)
+  },
+#endif  // OS_WIN
   {
     "crxless-web-apps",
     IDS_FLAGS_CRXLESS_WEB_APPS_NAME,

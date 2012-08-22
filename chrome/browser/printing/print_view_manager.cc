@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,6 +53,9 @@ typedef std::map<content::RenderProcessHost*, base::Closure>
     ScriptedPrintPreviewClosureMap;
 static base::LazyInstance<ScriptedPrintPreviewClosureMap>
     g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
+
+// Limits memory usage by raster to 64 MiB.
+const int kMaxRasterSizeInPixels = 16*1024*1024;
 
 }  // namespace
 
@@ -221,18 +226,6 @@ void PrintViewManager::OnDidPrintPage(
     return;
   }
 
-#if defined(OS_WIN)
-  // http://msdn2.microsoft.com/en-us/library/ms535522.aspx
-  // Windows 2000/XP: When a page in a spooled file exceeds approximately 350
-  // MB, it can fail to print and not send an error message.
-  if (params.data_size && params.data_size >= 350*1024*1024) {
-    NOTREACHED() << "size:" << params.data_size;
-    TerminatePrintJob(true);
-    web_contents()->Stop();
-    return;
-  }
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
   const bool metafile_must_be_valid = true;
 #elif defined(OS_POSIX)
@@ -249,7 +242,7 @@ void PrintViewManager::OnDidPrintPage(
     }
   }
 
-  scoped_ptr<Metafile> metafile(new NativeMetafile);
+  scoped_ptr<NativeMetafile> metafile(new NativeMetafile);
   if (metafile_must_be_valid) {
     if (!metafile->InitFromData(shared_buf.memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";
@@ -257,6 +250,30 @@ void PrintViewManager::OnDidPrintPage(
       return;
     }
   }
+
+#if defined(OS_WIN)
+  bool big_emf = (params.data_size && params.data_size >= kMetafileMaxSize);
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (big_emf ||
+      (cmdline && cmdline->HasSwitch(switches::kPrintRaster)) ||
+      (!print_job_->settings().supports_alpha_blend() &&
+       metafile->IsAlphaBlendUsed())) {
+    int raster_size = std::min(params.page_size.GetArea(),
+                               kMaxRasterSizeInPixels);
+    scoped_ptr<NativeMetafile> raster_metafile(
+        metafile->RasterizeMetafile(raster_size));
+    if (raster_metafile.get()) {
+      metafile.swap(raster_metafile);
+    } else if (big_emf) {
+      // Don't fall back to emf here.
+      NOTREACHED() << "size:" << params.data_size;
+      TerminatePrintJob(true);
+      web_contents()->Stop();
+      return;
+    }
+  }
+
+#endif
 
   // Update the rendered document. It will send notifications to the listener.
   document->SetPage(params.page_number,
