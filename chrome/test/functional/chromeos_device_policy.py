@@ -194,12 +194,17 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.SetDevicePolicy(refresh=False)
 
     for timezone in self._timezones:
-      self.Login(user_index=1, expect_success=True)
+      self._Login(user_index=1, expect_success=True)
       self.SetTimezone(timezone)
       self.assertEqual(timezone, self.GetTimeInfo()['timezone'])
 
       self.Logout()
       self.assertEqual(timezone, self.GetTimeInfo()['timezone'])
+      # Work around until crosbug.com/139166 is fixed
+      self.ExecuteJavascriptInOOBEWebUI(
+          'Oobe.showSigninUI();'
+          'window.domAutomationController.send("ok");')
+
 
   def testTimezoneSettingWithPolicy(self):
     """With timezone policy, timezone changes by user are reset on logout."""
@@ -207,12 +212,16 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
     # Timezones are set on startup, i.e. everytime when loading the login
     # screen. Something like a browser restart may work, too.
-    self.Login(user_index=1, expect_success=True)
+    self._Login(user_index=1, expect_success=True)
     self.Logout()
+    # Work around until crosbug.com/139166 is fixed
+    self.ExecuteJavascriptInOOBEWebUI(
+        'Oobe.showSigninUI();'
+        'window.domAutomationController.send("ok");')
 
     self.assertEqual(self._timezones[0], self.GetTimeInfo()['timezone'])
 
-    self.Login(user_index=1, expect_success=True)
+    self._Login(user_index=1, expect_success=True)
     self.SetTimezone(self._timezones[1])
     self.assertEqual(self._timezones[1], self.GetTimeInfo()['timezone'])
 
