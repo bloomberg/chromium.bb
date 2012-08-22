@@ -190,7 +190,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMobileYoutubePlugin(
     const WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_YOUTUBE_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_MOBILE_YOUTUBE_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
 
   DictionaryValue values;
   values.SetString("video_id", GetYoutubeVideoId(params));

@@ -147,7 +147,8 @@ class PluginPlaceholder : public content::RenderViewObserver,
   static bool IsValidYouTubeVideo(const std::string& path);
 
   // Opens a youtube app in the current tab.
-  void OpenYoutubeUrlCallback(const CppArgumentList& args, CppVariant* result);
+  void OpenYoutubeUrlCallback(const webkit_glue::CppArgumentList& args,
+                              webkit_glue::CppVariant* result);
 #endif
 
   void SetMessage(const string16& message);

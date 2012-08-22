@@ -305,6 +305,11 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
+        ['OS=="android"', {
+          'defines': [
+            'ENABLE_MOBILE_YOUTUBE_PLUGIN',
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
