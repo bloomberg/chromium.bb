@@ -4,6 +4,8 @@
 
 #include "chrome/browser/process_singleton.h"
 
+#include <shellapi.h>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
