@@ -255,6 +255,9 @@
       <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON" file="geolocation_allowed_locationbar_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="geolocation_denied_locationbar_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation.png" />
+      <if expr="pp_ifdef('_google_chrome')">
+         <structure type="chrome_scaled_image" name="IDR_GOOGLE_LOGO_LG" file="google_chrome/google_logo_lg.png" />
+      </if>
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_GUEST_ICON" file="guest_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="help_16.png" />

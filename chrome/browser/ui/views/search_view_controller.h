@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 
@@ -26,6 +27,8 @@ class WebContents;
 }
 
 namespace views {
+class ImageView;
+class Label;
 class View;
 class WebView;
 }
@@ -38,7 +41,8 @@ class SearchViewController
     : public chrome::search::SearchModelObserver,
       public ui::ImplicitAnimationObserver {
  public:
-  explicit SearchViewController(ContentsContainer* contents_container);
+  SearchViewController(content::BrowserContext* browser_context,
+                       ContentsContainer* contents_container);
   virtual ~SearchViewController();
 
   views::View* omnibox_popup_view_parent();
@@ -96,6 +100,9 @@ class SearchViewController
   // |contents_container_|.
   void CreateViews();
 
+  // Returns the logo image view, or a name label if an image is not available.
+  views::View* GetLogoView() const;
+
   // Destroys the various views.
   void DestroyViews();
 
@@ -107,6 +114,9 @@ class SearchViewController
 
   // Access active web contents.
   content::WebContents* web_contents();
+
+  // The profile.  Weak.
+  content::BrowserContext* browser_context_;
 
   // Where the overlay is placed.  Weak.
   ContentsContainer* contents_container_;
@@ -125,7 +135,7 @@ class SearchViewController
   // |---SearchContainerView------------------------------|
   // ||-----NTPView & OmniboxPopupViewParent-------------||
   // ||                                                  ||
-  // ||     |--LogoView----------------------------|     ||
+  // ||     |--Logo or Name------------------------|     ||
   // ||     |                                      |     ||
   // ||     |                                      |     ||
   // ||     |--------------------------------------|     ||
@@ -150,8 +160,10 @@ class SearchViewController
   //
   views::View* search_container_;
   views::View* ntp_view_;
-  views::View* logo_view_;
-
+  // The default provider's logo, may be NULL.
+  scoped_ptr<views::ImageView> default_provider_logo_;
+  // The default provider's name. Used as a fallback if the logo is NULL.
+  scoped_ptr<views::Label> default_provider_name_;
   // An alias to |contents_container_->active()|, but reparented within
   // |ntp_view_| when in the NTP state.
   views::WebView* content_view_;

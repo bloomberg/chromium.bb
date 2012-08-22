@@ -4,6 +4,12 @@
 
 #include "chrome/browser/ui/views/search_view_controller.h"
 
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/search/search_types.h"
@@ -18,6 +24,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -94,29 +102,6 @@ class SearchContainerView : public views::View {
   views::View* omnibox_popup_view_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchContainerView);
-};
-
-// FixedSizeLayoutManager ------------------------------------------------------
-
-// LayoutManager that returns a specific preferred size.
-
-class FixedSizeLayoutManager : public views::LayoutManager {
- public:
-  explicit FixedSizeLayoutManager(const gfx::Size& size)
-      : preferred_size_(size) {
-  }
-  virtual ~FixedSizeLayoutManager() {}
-
-  // views::LayoutManager overrides:
-  virtual void Layout(views::View* host) OVERRIDE {}
-  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE {
-    return preferred_size_;
-  }
-
- private:
-  const gfx::Size preferred_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(FixedSizeLayoutManager);
 };
 
 // NTPViewBackground -----------------------------------------------------------
@@ -236,14 +221,15 @@ void SearchViewController::OmniboxPopupViewParent::ChildPreferredSizeChanged(
 // SearchViewController --------------------------------------------------------
 
 SearchViewController::SearchViewController(
+    content::BrowserContext* browser_context,
     ContentsContainer* contents_container)
-    : contents_container_(contents_container),
+    : browser_context_(browser_context),
+      contents_container_(contents_container),
       location_bar_container_(NULL),
       state_(STATE_NOT_VISIBLE),
       tab_contents_(NULL),
       search_container_(NULL),
       ntp_view_(NULL),
-      logo_view_(NULL),
       content_view_(NULL),
       omnibox_popup_view_parent_(NULL) {
   omnibox_popup_view_parent_ = new OmniboxPopupViewParent(this);
@@ -281,7 +267,7 @@ void SearchViewController::StackAtTop() {
   if (search_container_) {
     StackViewsLayerAtTop(search_container_);
     StackViewsLayerAtTop(ntp_view_);
-    StackViewsLayerAtTop(logo_view_);
+    StackViewsLayerAtTop(GetLogoView());
     StackWebViewLayerAtTop(content_view_);
   }
 #else
@@ -385,7 +371,7 @@ void SearchViewController::StartAnimation() {
   }
 
   {
-    ui::Layer* logo_layer = logo_view_->layer();
+    ui::Layer* logo_layer = GetLogoView()->layer();
     ui::ScopedLayerAnimationSettings settings(logo_layer->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(135 * factor));
@@ -418,13 +404,39 @@ void SearchViewController::CreateViews() {
   ntp_view_->SetPaintToLayer(true);
   ntp_view_->layer()->SetMasksToBounds(true);
 
-  logo_view_ = new views::View;
-  logo_view_->SetLayoutManager(
-      new FixedSizeLayoutManager(gfx::Size(300, 200)));
-  logo_view_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorRED));
-  logo_view_->SetPaintToLayer(true);
-  logo_view_->SetFillsBoundsOpaquely(false);
+  const TemplateURL* default_provider =
+      TemplateURLServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_))->
+              GetDefaultSearchProvider();
+
+#if defined(GOOGLE_CHROME_BUILD)
+  if (default_provider &&
+      (TemplateURLPrepopulateData::GetEngineType(default_provider->url()) ==
+       SEARCH_ENGINE_GOOGLE)) {
+    default_provider_logo_.reset(new views::ImageView());
+    default_provider_logo_->set_owned_by_client();
+    default_provider_logo_->SetImage(ui::ResourceBundle::GetSharedInstance().
+                                         GetImageSkiaNamed(IDR_GOOGLE_LOGO_LG));
+    default_provider_logo_->SetPaintToLayer(true);
+    default_provider_logo_->SetFillsBoundsOpaquely(false);
+  }
+#endif
+
+  if (!default_provider_logo_.get()) {
+    default_provider_name_.reset(new views::Label(
+        default_provider ? default_provider->short_name() : string16()));
+    default_provider_name_->set_owned_by_client();
+    // TODO(msw): Use a transparent background color as a workaround to support
+    // using Labels' view layers via gfx::Canvas::NO_SUBPIXEL_RENDERING.
+    default_provider_name_->SetBackgroundColor(0x00000000);
+    default_provider_name_->set_background(
+        views::Background::CreateSolidBackground(SK_ColorRED));
+    default_provider_name_->SetEnabledColor(SK_ColorRED);
+    default_provider_name_->SetFont(
+        default_provider_name_->font().DeriveFont(75, gfx::Font::BOLD));
+    default_provider_name_->SetPaintToLayer(true);
+    default_provider_name_->SetFillsBoundsOpaquely(false);
+  }
 
   // Reparent the main web contents view out of |contents_container_| and
   // in to |ntp_view_| below.  Reparent back in destructor.
@@ -432,9 +444,11 @@ void SearchViewController::CreateViews() {
   DCHECK(content_view_);
   contents_container_->SetActive(NULL);
 
+  views::View* logo_view = GetLogoView();
+  DCHECK(logo_view);
   ntp_view_->SetLayoutManager(
-      new NTPViewLayoutManager(logo_view_, content_view_));
-  ntp_view_->AddChildView(logo_view_);
+      new NTPViewLayoutManager(logo_view, content_view_));
+  ntp_view_->AddChildView(logo_view);
   ntp_view_->AddChildView(content_view_);
 
   search_container_ =
@@ -444,6 +458,12 @@ void SearchViewController::CreateViews() {
   search_container_->layer()->SetMasksToBounds(true);
 
   contents_container_->SetOverlay(search_container_);
+}
+
+views::View* SearchViewController::GetLogoView() const {
+  if (default_provider_logo_.get())
+    return default_provider_logo_.get();
+  return default_provider_name_.get();
 }
 
 void SearchViewController::DestroyViews() {
@@ -467,7 +487,8 @@ void SearchViewController::DestroyViews() {
   delete search_container_;
   search_container_ = NULL;
   ntp_view_ = NULL;
-  logo_view_ = NULL;
+  default_provider_logo_.reset();
+  default_provider_name_.reset();
   content_view_ = NULL;
 
   state_ = STATE_NOT_VISIBLE;
