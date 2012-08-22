@@ -148,6 +148,9 @@ UNFILED MAC AMD : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC AMD : conformance_reading_read_pixels_test = TIMEOUT
 122651 MAC AMD : conformance_misc_object_deletion_behaviour = TIMEOUT
 
+// Retina Macbook bots
+144312 MAC NVIDIA 0x0fd5 : conformance_textures_gl_teximage = FLAKY
+
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
 
