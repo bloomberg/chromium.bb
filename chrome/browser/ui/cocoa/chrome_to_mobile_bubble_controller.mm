@@ -165,9 +165,6 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   // Generate the MHTML snapshot now to report its size in the bubble.
   service_->GenerateSnapshot(browser_, bridge_->AsWeakPtr());
 
-  // Request a mobile device list update.
-  service_->RequestMobileListUpdate();
-
   [super showWindow:sender];
 }
 
@@ -187,7 +184,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 
   const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
-    service_->SendToMobile(*mobile,
+    service_->SendToMobile(mobile,
         ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath(),
         browser_, bridge_->AsWeakPtr());
   } else {

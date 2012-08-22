@@ -560,7 +560,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
 
-    // Also disable Chrome To Mobile for off-the-record and non-synced profiles,
+    // Disable Chrome To Mobile for off-the-record and non-synced profiles,
     // or if the feature is disabled by a command line flag or chrome://flags.
     if (!profile->IsOffTheRecord() && profile->IsSyncAccessible() &&
         ChromeToMobileService::IsChromeToMobileEnabled()) {
@@ -568,8 +568,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
       gtk_box_pack_end(GTK_BOX(hbox_.get()), chrome_to_mobile_view_.get(),
                        FALSE, FALSE, 0);
       command_updater_->AddCommandObserver(IDC_CHROME_TO_MOBILE_PAGE, this);
-      ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
-          RequestMobileListUpdate();
+      UpdateChromeToMobileIcon();
     }
   }
 
