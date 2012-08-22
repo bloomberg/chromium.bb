@@ -119,14 +119,18 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
     case Session::AUTHENTICATED:
       // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());
-      control_dispatcher_->Init(session_.get(), base::Bind(
-          &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+      control_dispatcher_->Init(
+          session_.get(), session_->config().control_config(),
+          base::Bind(&ConnectionToClient::OnChannelInitialized,
+                     base::Unretained(this)));
       control_dispatcher_->set_clipboard_stub(clipboard_stub_);
       control_dispatcher_->set_host_stub(host_stub_);
 
       event_dispatcher_.reset(new HostEventDispatcher());
-      event_dispatcher_->Init(session_.get(), base::Bind(
-          &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+      event_dispatcher_->Init(
+          session_.get(), session_->config().event_config(),
+          base::Bind(&ConnectionToClient::OnChannelInitialized,
+                     base::Unretained(this)));
       event_dispatcher_->set_input_stub(input_stub_);
       event_dispatcher_->set_sequence_number_callback(base::Bind(
           &ConnectionToClient::UpdateSequenceNumber, base::Unretained(this)));
@@ -137,8 +141,10 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
 
       audio_writer_ = AudioWriter::Create(session_->config());
       if (audio_writer_.get()) {
-        audio_writer_->Init(session_.get(), base::Bind(
-            &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+        audio_writer_->Init(
+            session_.get(), session_->config().audio_config(),
+            base::Bind(&ConnectionToClient::OnChannelInitialized,
+                       base::Unretained(this)));
       }
 
       // Notify the handler after initializing the channels, so that

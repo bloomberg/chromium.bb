@@ -165,26 +165,32 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::AUTHENTICATED:
+      control_dispatcher_.reset(new ClientControlDispatcher());
+      control_dispatcher_->Init(
+          session_.get(), session_->config().control_config(),
+          base::Bind(&ConnectionToHost::OnChannelInitialized,
+                     base::Unretained(this)));
+      control_dispatcher_->set_client_stub(client_stub_);
+      control_dispatcher_->set_clipboard_stub(clipboard_stub_);
+
+      event_dispatcher_.reset(new ClientEventDispatcher());
+      event_dispatcher_->Init(
+          session_.get(), session_->config().event_config(),
+          base::Bind(&ConnectionToHost::OnChannelInitialized,
+                     base::Unretained(this)));
+
       video_reader_ = VideoReader::Create(session_->config());
       video_reader_->Init(session_.get(), video_stub_, base::Bind(
           &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
 
       audio_reader_ = AudioReader::Create(session_->config());
       if (audio_reader_.get()) {
-        audio_reader_->Init(session_.get(), base::Bind(
-            &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
+        audio_reader_->Init(
+            session_.get(), session_->config().audio_config(),
+            base::Bind(&ConnectionToHost::OnChannelInitialized,
+                       base::Unretained(this)));
         audio_reader_->set_audio_stub(audio_stub_);
       }
-
-      control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(session_.get(), base::Bind(
-          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
-      control_dispatcher_->set_client_stub(client_stub_);
-      control_dispatcher_->set_clipboard_stub(clipboard_stub_);
-
-      event_dispatcher_.reset(new ClientEventDispatcher());
-      event_dispatcher_->Init(session_.get(), base::Bind(
-          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
       break;
 
     case Session::CLOSED:

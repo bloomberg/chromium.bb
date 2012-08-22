@@ -18,6 +18,7 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
+struct ChannelConfig;
 class ChannelFactory;
 class Session;
 
@@ -35,7 +36,9 @@ class ChannelDispatcherBase {
 
   // Creates and connects the channel in the specified
   // |session|. Caller retains ownership of the Session.
-  void Init(Session* session, const InitializedCallback& callback);
+  void Init(Session* session,
+            const ChannelConfig& config,
+            const InitializedCallback& callback);
 
   // Returns true if the channel is currently connected.
   bool is_connected() { return channel() != NULL; }

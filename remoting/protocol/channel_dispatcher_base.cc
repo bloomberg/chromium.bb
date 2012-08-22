@@ -8,6 +8,7 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/session_config.h"
 
 namespace remoting {
 namespace protocol {
@@ -23,9 +24,24 @@ ChannelDispatcherBase::~ChannelDispatcherBase() {
 }
 
 void ChannelDispatcherBase::Init(Session* session,
+                                 const ChannelConfig& config,
                                  const InitializedCallback& callback) {
   DCHECK(session);
-  channel_factory_ = session->GetTransportChannelFactory();
+  switch (config.transport) {
+    case ChannelConfig::TRANSPORT_MUX_STREAM:
+      channel_factory_ = session->GetMultiplexedChannelFactory();
+      break;
+
+    case ChannelConfig::TRANSPORT_STREAM:
+      channel_factory_ = session->GetTransportChannelFactory();
+      break;
+
+    default:
+      NOTREACHED();
+      callback.Run(false);
+      return;
+  }
+
   initialized_callback_ = callback;
 
   channel_factory_->CreateStreamChannel(channel_name_, base::Bind(
