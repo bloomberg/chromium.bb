@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -37,7 +36,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
-#include "googleurl/src/url_util.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -68,8 +66,6 @@ const char kJsPortalFrameLoadFailedCallback[] =
     "mobile.MobileSetup.portalFrameLoadError";
 const char kJsPortalFrameLoadCompletedCallback[] =
     "mobile.MobileSetup.portalFrameLoadCompleted";
-
-const char kEmailParam[] = "&email=";
 
 }  // namespace
 
@@ -318,22 +314,8 @@ void MobileSetupHandler::GetDeviceInfo(CellularNetwork* network,
     return;
   value->SetString("carrier", network->name());
   value->SetString("payment_url", network->payment_url());
-  if (network->using_post() && network->post_data().length()) {
-    std::string post_data = network->post_data();
-    // Append the current e-mail address to the post data to allow Verizon
-    // to pre-populate it on their form.
-    chromeos::UserManager* manager = chromeos::UserManager::Get();
-    if (manager->IsUserLoggedIn()) {
-      url_canon::RawCanonOutputT<char> output;
-      std::string email = manager->GetLoggedInUser().display_email();
-      url_util::EncodeURIComponent(email.c_str(), email.length(), &output);
-      std::string escaped_email(output.data(), output.length());
-
-      post_data.append(kEmailParam).append(escaped_email);
-    }
-
-    value->SetString("post_data", post_data);
-  }
+  if (network->using_post() && network->post_data().length())
+    value->SetString("post_data", network->post_data());
 
   const chromeos::NetworkDevice* device =
       cros->FindNetworkDeviceByPath(network->device_path());
