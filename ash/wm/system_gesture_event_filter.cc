@@ -92,7 +92,7 @@ const double kAllowableScreenOverlapForDeviceCommand = 0.0005;
 const int kIgnoreFirstBezelDeviceEvents = 10;
 // Within these 'n' huge coordinate changes are not allowed. The threshold is
 // given in fraction of screen resolution changes.
-const double kBezelNoiseDeltaFilter = 0.1;
+const int kBezelNoiseDeltaFilter = 0.1;
 // To avoid the most frequent noise (extreme locations) the bezel percent
 // sliders will not cover the entire screen. We scale therefore the percent
 // value by this many percent for minima and maxima extension.
