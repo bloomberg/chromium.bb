@@ -280,7 +280,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
     return;
 
   // Start rendering the file system tree as text.
-  const FilePath root_path = FilePath(gdata::kGDataRootDirectory);
+  const FilePath root_path = FilePath(gdata::kDriveRootDirectory);
   ++num_pending_reads_;
   system_service->file_system()->ReadDirectoryByPath(
       root_path,

@@ -16,8 +16,8 @@
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
-#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
@@ -424,7 +424,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Callback for handling an attempt to move a file or directory from the
   // root directory to another directory on the server side. This function
   // moves |entry| to the root directory on the client side with
-  // GDataDirectoryService::MoveEntryToDirectory().
+  // DriveResourceMetadata::MoveEntryToDirectory().
   //
   // |callback| must not be null.
   void OnMoveEntryFromRootDirectoryCompleted(
@@ -667,7 +667,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const DriveEntryProto* entry_proto);
 
   // Part of UpdateFileByResourceId(). Called when
-  // GDataDirectory::GetEntryInfoByResourceId() is complete.
+  // DriveDirectory::GetEntryInfoByResourceId() is complete.
   // |callback| must not be null.
   void UpdateFileByEntryInfo(
       const FileOperationCallback& callback,
@@ -836,7 +836,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).
-  scoped_ptr<GDataDirectoryService> directory_service_;
+  scoped_ptr<DriveResourceMetadata> resource_metadata_;
 
   // The profile hosts the GDataFileSystem via GDataSystemService.
   Profile* profile_;

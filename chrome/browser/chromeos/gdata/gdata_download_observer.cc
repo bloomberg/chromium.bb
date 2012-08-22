@@ -543,7 +543,7 @@ void GDataDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
   } else {
     // No file exists at the target path, so upload as a new file.
 
-    // Get the GDataDirectory proto for the upload directory, then extract the
+    // Get the DriveDirectory proto for the upload directory, then extract the
     // initial upload URL in OnReadDirectoryByPath().
     const FilePath upload_dir = upload_file_info->gdata_path.DirName();
     file_system_->GetEntryInfoByPath(

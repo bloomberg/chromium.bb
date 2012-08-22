@@ -9,7 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 
@@ -29,11 +29,11 @@ std::string ExtractResourceId(const GURL& url) {
 
 // DriveEntry class.
 
-DriveEntry::DriveEntry(GDataDirectoryService* directory_service)
+DriveEntry::DriveEntry(DriveResourceMetadata* resource_metadata)
     : parent_(NULL),
-      directory_service_(directory_service),
+      resource_metadata_(resource_metadata),
       deleted_(false) {
-  DCHECK(directory_service);
+  DCHECK(resource_metadata);
 }
 
 DriveEntry::~DriveEntry() {
@@ -118,8 +118,8 @@ std::string DriveEntry::UnescapeUtf8FileName(const std::string& input) {
 
 // DriveFile class implementation.
 
-DriveFile::DriveFile(GDataDirectoryService* directory_service)
-    : DriveEntry(directory_service),
+DriveFile::DriveFile(DriveResourceMetadata* resource_metadata)
+    : DriveEntry(resource_metadata),
       kind_(DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
@@ -182,8 +182,8 @@ void DriveFile::InitFromDocumentEntry(const DocumentEntry& doc) {
 
 // DriveDirectory class implementation.
 
-DriveDirectory::DriveDirectory(GDataDirectoryService* directory_service)
-    : DriveEntry(directory_service) {
+DriveDirectory::DriveDirectory(DriveResourceMetadata* resource_metadata)
+    : DriveEntry(resource_metadata) {
   file_info_.is_directory = true;
 }
 
@@ -237,7 +237,7 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
            << ", resource = " + entry->resource_id();
 
   // Add entry to resource map.
-  directory_service_->AddEntryToResourceMap(entry);
+  resource_metadata_->AddEntryToResourceMap(entry);
 
   // Setup child and parent links.
   if (entry->AsDriveFile())
@@ -251,13 +251,13 @@ void DriveDirectory::AddEntry(DriveEntry* entry) {
 }
 
 void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
-  for (GDataChildMap::const_iterator iter = dir->child_files_.begin();
+  for (ChildMap::const_iterator iter = dir->child_files_.begin();
        iter != dir->child_files_.end(); ++iter) {
     TakeOverEntry(iter->second);
   }
   dir->child_files_.clear();
 
-  for (GDataChildMap::iterator iter = dir->child_directories_.begin();
+  for (ChildMap::iterator iter = dir->child_directories_.begin();
        iter != dir->child_directories_.end(); ++iter) {
     TakeOverEntry(iter->second);
   }
@@ -265,9 +265,9 @@ void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
 }
 
 void DriveDirectory::TakeOverEntry(const std::string& resource_id) {
-  DriveEntry* entry = directory_service_->GetEntryByResourceId(resource_id);
+  DriveEntry* entry = resource_metadata_->GetEntryByResourceId(resource_id);
   DCHECK(entry);
-  directory_service_->RemoveEntryFromResourceMap(resource_id);
+  resource_metadata_->RemoveEntryFromResourceMap(resource_id);
   entry->SetParent(NULL);
   AddEntry(entry);
 }
@@ -281,7 +281,7 @@ void DriveDirectory::RemoveEntry(DriveEntry* entry) {
 
 std::string DriveDirectory::FindChild(
     const FilePath::StringType& file_name) const {
-  GDataChildMap::const_iterator iter = child_files_.find(file_name);
+  ChildMap::const_iterator iter = child_files_.find(file_name);
   if (iter != child_files_.end())
     return iter->second;
 
@@ -299,7 +299,7 @@ void DriveDirectory::RemoveChild(DriveEntry* entry) {
   // entry must be present in this directory.
   DCHECK_EQ(entry->resource_id(), FindChild(base_name));
   // Remove entry from resource map first.
-  directory_service_->RemoveEntryFromResourceMap(entry->resource_id());
+  resource_metadata_->RemoveEntryFromResourceMap(entry->resource_id());
 
   // Then delete it from tree.
   child_files_.erase(base_name);
@@ -315,34 +315,34 @@ void DriveDirectory::RemoveChildren() {
 
 void DriveDirectory::RemoveChildFiles() {
   DVLOG(1) << "RemoveChildFiles " << resource_id();
-  for (GDataChildMap::const_iterator iter = child_files_.begin();
+  for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    DriveEntry* child = directory_service_->GetEntryByResourceId(iter->second);
+    DriveEntry* child = resource_metadata_->GetEntryByResourceId(iter->second);
     DCHECK(child);
-    directory_service_->RemoveEntryFromResourceMap(iter->second);
+    resource_metadata_->RemoveEntryFromResourceMap(iter->second);
     delete child;
   }
   child_files_.clear();
 }
 
 void DriveDirectory::RemoveChildDirectories() {
-  for (GDataChildMap::iterator iter = child_directories_.begin();
+  for (ChildMap::iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    DriveDirectory* dir = directory_service_->GetEntryByResourceId(
+    DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
         iter->second)->AsDriveDirectory();
     DCHECK(dir);
     // Remove directories recursively.
     dir->RemoveChildren();
-    directory_service_->RemoveEntryFromResourceMap(iter->second);
+    resource_metadata_->RemoveEntryFromResourceMap(iter->second);
     delete dir;
   }
   child_directories_.clear();
 }
 
 void DriveDirectory::GetChildDirectoryPaths(std::set<FilePath>* child_dirs) {
-  for (GDataChildMap::const_iterator iter = child_directories_.begin();
+  for (ChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    DriveDirectory* dir = directory_service_->GetEntryByResourceId(
+    DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
         iter->second)->AsDriveDirectory();
     DCHECK(dir);
     child_dirs->insert(dir->GetFilePath());
@@ -450,12 +450,12 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   DCHECK(!proto.gdata_entry().has_file_specific_info());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
-    scoped_ptr<DriveFile> file(directory_service_->CreateDriveFile());
+    scoped_ptr<DriveFile> file(resource_metadata_->CreateDriveFile());
     file->FromProto(proto.child_files(i));
     AddEntry(file.release());
   }
   for (int i = 0; i < proto.child_directories_size(); ++i) {
-    scoped_ptr<DriveDirectory> dir(directory_service_->CreateDriveDirectory());
+    scoped_ptr<DriveDirectory> dir(resource_metadata_->CreateDriveDirectory());
     dir->FromProto(proto.child_directories(i));
     AddEntry(dir.release());
   }
@@ -469,16 +469,16 @@ void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
   DriveEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
 
-  for (GDataChildMap::const_iterator iter = child_files_.begin();
+  for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    DriveFile* file = directory_service_->GetEntryByResourceId(
+    DriveFile* file = resource_metadata_->GetEntryByResourceId(
         iter->second)->AsDriveFile();
     DCHECK(file);
     file->ToProto(proto->add_child_files());
   }
-  for (GDataChildMap::const_iterator iter = child_directories_.begin();
+  for (ChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    DriveDirectory* dir = directory_service_->GetEntryByResourceId(
+    DriveDirectory* dir = resource_metadata_->GetEntryByResourceId(
         iter->second)->AsDriveDirectory();
     DCHECK(dir);
     dir->ToProto(proto->add_child_directories());
@@ -488,16 +488,16 @@ void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
 scoped_ptr<DriveEntryProtoVector> DriveDirectory::ToProtoVector() const {
   scoped_ptr<DriveEntryProtoVector> entries(new DriveEntryProtoVector);
   // Use ToProtoFull, as we don't want to include children in |proto|.
-  for (GDataChildMap::const_iterator iter = child_files_.begin();
+  for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     DriveEntryProto proto;
-    directory_service_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
+    resource_metadata_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
     entries->push_back(proto);
   }
-  for (GDataChildMap::const_iterator iter = child_directories_.begin();
+  for (ChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
     DriveEntryProto proto;
-    directory_service_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
+    resource_metadata_->GetEntryByResourceId(iter->second)->ToProtoFull(&proto);
     entries->push_back(proto);
   }
 

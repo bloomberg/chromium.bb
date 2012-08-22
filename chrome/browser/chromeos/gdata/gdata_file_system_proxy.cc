@@ -33,7 +33,7 @@ namespace gdata {
 
 namespace {
 
-const char kGDataRootDirectory[] = "drive";
+const char kDriveRootDirectory[] = "drive";
 const char kFeedField[] = "feed";
 
 // Helper function that creates platform file on blocking IO thread pool.

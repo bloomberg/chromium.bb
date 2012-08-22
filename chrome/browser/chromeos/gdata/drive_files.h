@@ -22,7 +22,7 @@ class DriveDirectory;
 class DriveDirectoryProto;
 class DriveEntryProto;
 class DriveFile;
-class GDataDirectoryService;
+class DriveResourceMetadata;
 class PlatformFileInfoProto;
 
 // Used to read a directory from the file system.
@@ -109,7 +109,7 @@ class DriveEntry {
 
   // The resource id of the parent folder. This piece of information is needed
   // to pair files from change feeds with their directory parents withing the
-  // existing file system snapshot (GDataDirectoryService::resource_map_).
+  // existing file system snapshot (DriveResourceMetadata::resource_map_).
   const std::string& parent_resource_id() const { return parent_resource_id_; }
 
   // True if file was deleted. Used only for instances that are generated from
@@ -129,7 +129,7 @@ class DriveEntry {
   // For access to SetParent from AddEntry.
   friend class DriveDirectory;
 
-  explicit DriveEntry(GDataDirectoryService* directory_service);
+  explicit DriveEntry(DriveResourceMetadata* resource_metadata);
 
   // Sets the parent directory of this file system entry.
   // It is intended to be used by DriveDirectory::AddEntry() only.
@@ -140,7 +140,7 @@ class DriveEntry {
   // file, hosted document, or collection). The title is used to derive
   // |base_name_| but may be different from |base_name_|. For example,
   // |base_name_| has an added .g<something> extension for hosted documents or
-  // may have an extra suffix for name de-duplication on the gdata file system.
+  // may have an extra suffix for name de-duplication on the drive file system.
   FilePath::StringType title_;
   std::string resource_id_;
   std::string parent_resource_id_;
@@ -154,20 +154,20 @@ class DriveEntry {
 
   // Remaining fields are not serialized.
 
-  // Name of this file in the gdata virtual file system. This can change
+  // Name of this file in the drive virtual file system. This can change
   // due to de-duplication (See AddEntry).
   FilePath::StringType base_name_;
 
   DriveDirectory* parent_;
-  // Weak pointer to GDataDirectoryService.
-  GDataDirectoryService* directory_service_;
+  // Weak pointer to DriveResourceMetadata.
+  DriveResourceMetadata* resource_metadata_;
   bool deleted_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveEntry);
 };
 
-// Represents "file" in in a GData virtual file system. On gdata feed side,
+// Represents "file" in in a drive virtual file system. On gdata feed side,
 // this could be either a regular file or a server side document.
 class DriveFile : public DriveEntry {
  public:
@@ -193,9 +193,9 @@ class DriveFile : public DriveEntry {
   virtual void SetBaseNameFromTitle() OVERRIDE;
 
  private:
-  friend class GDataDirectoryService;  // For access to ctor.
+  friend class DriveResourceMetadata;  // For access to ctor.
 
-  explicit DriveFile(GDataDirectoryService* directory_service);
+  explicit DriveFile(DriveResourceMetadata* resource_metadata);
   // Initializes from DocumentEntry.
   virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
 
@@ -212,7 +212,7 @@ class DriveFile : public DriveEntry {
   DISALLOW_COPY_AND_ASSIGN(DriveFile);
 };
 
-// Represents "directory" in a GData virtual file system. Maps to gdata
+// Represents "directory" in a drive virtual file system. Maps to drive
 // collection element.
 class DriveDirectory : public DriveEntry {
  public:
@@ -227,10 +227,10 @@ class DriveDirectory : public DriveEntry {
 
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
-  friend class GDataDirectoryService;
+  friend class DriveResourceMetadata;
   friend class GDataWapiFeedProcessor;
 
-  explicit DriveDirectory(GDataDirectoryService* directory_service);
+  explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
 
   // Initializes from DocumentEntry.
   virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
@@ -273,10 +273,10 @@ class DriveDirectory : public DriveEntry {
   void GetChildDirectoryPaths(std::set<FilePath>* child_dirs);
 
   // Map between base_name and resource_id of files and directories.
-  typedef std::map<FilePath::StringType, std::string> GDataChildMap;
+  typedef std::map<FilePath::StringType, std::string> ChildMap;
   // Collection of children.
-  GDataChildMap child_files_;
-  GDataChildMap child_directories_;
+  ChildMap child_files_;
+  ChildMap child_directories_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };

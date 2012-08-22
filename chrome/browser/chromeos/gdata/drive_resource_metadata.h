@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DIRECTORY_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DIRECTORY_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_RESOURCE_METADATA_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_RESOURCE_METADATA_H_
 
 #include <map>
 #include <string>
@@ -32,7 +32,7 @@ class ResourceMetadataDB;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
-// File type on the gdata file system can be either a regular file or
+// File type on the drive file system can be either a regular file or
 // a hosted document.
 enum DriveFileType {
   REGULAR_FILE,
@@ -54,11 +54,11 @@ enum ContentOrigin {
 
 // The root directory name used for the Google Drive file system tree. The
 // name is used in URLs for the file manager, hence user-visible.
-const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("drive");
+const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
 
 // The resource ID for the root directory is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/
-const char kGDataRootDirectoryResourceId[] = "folder:root";
+const char kDriveRootDirectoryResourceId[] = "folder:root";
 
 // This should be incremented when incompatibility change is made in
 // drive.proto.
@@ -125,7 +125,7 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
     GetEntryInfoPairCallback;
 
 // Class to handle DriveEntry* lookups, add/remove DriveEntry*.
-class GDataDirectoryService {
+class DriveResourceMetadata {
  public:
   // Callback for GetEntryByResourceIdAsync.
   typedef base::Callback<void(DriveEntry* entry)> GetEntryByResourceIdCallback;
@@ -135,8 +135,8 @@ class GDataDirectoryService {
   // Map of resource id strings to DriveEntry*.
   typedef std::map<std::string, DriveEntry*> ResourceMap;
 
-  GDataDirectoryService();
-  ~GDataDirectoryService();
+  DriveResourceMetadata();
+  ~DriveResourceMetadata();
 
   DriveDirectory* root() { return root_.get(); }
 
@@ -309,7 +309,7 @@ class GDataDirectoryService {
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<ResourceMetadataDB> directory_service_db_;
+  scoped_ptr<ResourceMetadataDB> resource_metadata_db_;
 
   ResourceMap resource_map_;
 
@@ -322,11 +322,11 @@ class GDataDirectoryService {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<GDataDirectoryService> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveResourceMetadata> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataDirectoryService);
+  DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadata);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DIRECTORY_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_RESOURCE_METADATA_H_

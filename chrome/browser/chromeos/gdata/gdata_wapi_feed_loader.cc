@@ -237,12 +237,12 @@ struct GetDocumentsUiState {
 };
 
 GDataWapiFeedLoader::GDataWapiFeedLoader(
-    GDataDirectoryService* directory_service,
+    DriveResourceMetadata* resource_metadata,
     DriveServiceInterface* drive_service,
     DriveWebAppsRegistryInterface* webapps_registry,
     GDataCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : directory_service_(directory_service),
+    : resource_metadata_(resource_metadata),
       drive_service_(drive_service),
       webapps_registry_(webapps_registry),
       cache_(cache),
@@ -352,7 +352,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
     }
     // If our cache holds the latest state from the server, change the
     // state to FROM_SERVER.
-    directory_service_->set_origin(
+    resource_metadata_->set_origin(
         initial_origin == FROM_CACHE ? FROM_SERVER : initial_origin);
     changes_detected = false;
   }
@@ -401,7 +401,7 @@ void GDataWapiFeedLoader::OnGetAboutResource(
 
   bool changes_detected = true;
   int64 largest_changestamp = about_resource->largest_change_id();
-  directory_service_->InitializeRootEntry(about_resource->root_folder_id());
+  resource_metadata_->InitializeRootEntry(about_resource->root_folder_id());
 
   if (local_changestamp >= largest_changestamp) {
     if (local_changestamp > largest_changestamp) {
@@ -412,7 +412,7 @@ void GDataWapiFeedLoader::OnGetAboutResource(
     }
     // If our cache holds the latest state from the server, change the
     // state to FROM_SERVER.
-    directory_service_->set_origin(
+    resource_metadata_->set_origin(
         initial_origin == FROM_CACHE ? FROM_SERVER : initial_origin);
     changes_detected = false;
   }
@@ -573,7 +573,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
   }
 
   if (error != GDATA_FILE_OK) {
-    directory_service_->set_origin(initial_origin);
+    resource_metadata_->set_origin(initial_origin);
     callback.Run(params, error);
     return;
   }
@@ -686,7 +686,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
   }
 
   if (error != GDATA_FILE_OK) {
-    directory_service_->set_origin(initial_origin);
+    resource_metadata_->set_origin(initial_origin);
     callback.Run(params, error);
     return;
   }
@@ -826,7 +826,7 @@ void GDataWapiFeedLoader::LoadFromCache(
   FilePath path = cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META);
   if (UseLevelDB()) {
     path = path.Append(kResourceMetadataDBFile);
-    directory_service_->InitFromDB(path, blocking_task_runner_,
+    resource_metadata_->InitFromDB(path, blocking_task_runner_,
         base::Bind(
             &GDataWapiFeedLoader::ContinueWithInitializedDirectoryService,
             weak_ptr_factory_.GetWeakPtr(),
@@ -845,16 +845,16 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If we have already received updates from the server, bail out.
-  if (directory_service_->origin() == FROM_SERVER)
+  if (resource_metadata_->origin() == FROM_SERVER)
     return;
 
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
   if (params->load_error == GDATA_FILE_OK) {
     DVLOG(1) << "ParseFromString";
-    if (directory_service_->ParseFromString(params->proto)) {
-      directory_service_->set_last_serialized(params->last_modified);
-      directory_service_->set_serialized_size(params->proto.size());
+    if (resource_metadata_->ParseFromString(params->proto)) {
+      resource_metadata_->set_last_serialized(params->last_modified);
+      resource_metadata_->set_serialized_size(params->proto.size());
     } else {
       params->load_error = GDATA_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
@@ -893,39 +893,39 @@ void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
   // By default, if directory content is not yet initialized, restore content
   // origin to UNINITIALIZED in case of failure.
   ContentOrigin initial_origin = UNINITIALIZED;
-  if (directory_service_->origin() != INITIALIZING) {
+  if (resource_metadata_->origin() != INITIALIZING) {
     // If directory content is already initialized, restore content origin
     // to FROM_CACHE in case of failure.
     initial_origin = FROM_CACHE;
-    directory_service_->set_origin(REFRESHING);
+    resource_metadata_->set_origin(REFRESHING);
   }
 
   // Kick off the retrieval of the feed from server. If we have previously
   // |reported| to the original callback, then we just need to refresh the
   // content without continuing search upon operation completion.
   ReloadFromServerIfNeeded(initial_origin,
-                           directory_service_->largest_changestamp(),
+                           resource_metadata_->largest_changestamp(),
                            callback);
 }
 
 void GDataWapiFeedLoader::SaveFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!ShouldSerializeFileSystemNow(directory_service_->serialized_size(),
-                                    directory_service_->last_serialized())) {
+  if (!ShouldSerializeFileSystemNow(resource_metadata_->serialized_size(),
+                                    resource_metadata_->last_serialized())) {
     return;
   }
 
   if (UseLevelDB()) {
-    directory_service_->SaveToDB();
+    resource_metadata_->SaveToDB();
   } else {
     const FilePath path =
         cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
             kFilesystemProtoFile);
     scoped_ptr<std::string> serialized_proto(new std::string());
-    directory_service_->SerializeToString(serialized_proto.get());
-    directory_service_->set_last_serialized(base::Time::Now());
-    directory_service_->set_serialized_size(serialized_proto->size());
+    resource_metadata_->SerializeToString(serialized_proto.get());
+    resource_metadata_->set_last_serialized(base::Time::Now());
+    resource_metadata_->set_serialized_size(serialized_proto->size());
     util::PostBlockingPoolSequencedTask(
         FROM_HERE,
         blocking_task_runner_,
@@ -943,7 +943,7 @@ GDataFileError GDataWapiFeedLoader::UpdateFromFeed(
 
   std::set<FilePath> changed_dirs;
 
-  GDataWapiFeedProcessor feed_processor(directory_service_);
+  GDataWapiFeedProcessor feed_processor(resource_metadata_);
   const GDataFileError error = feed_processor.ApplyFeeds(
       feed_list,
       start_changestamp,

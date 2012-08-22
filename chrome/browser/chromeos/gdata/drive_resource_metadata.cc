@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 
 #include <leveldb/db.h>
 #include <utility>
@@ -44,7 +44,7 @@ EntryInfoPairResult::~EntryInfoPairResult() {
 
 // ResourceMetadataDB implementation.
 
-// Params for GDatadirectoryServiceDB::Create.
+// Params for ResourceMetadataDB::Create.
 struct CreateDBParams {
   CreateDBParams(const FilePath& db_path,
                  base::SequencedTaskRunner* blocking_task_runner)
@@ -55,7 +55,7 @@ struct CreateDBParams {
   FilePath db_path;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
   scoped_ptr<ResourceMetadataDB> db;
-  GDataDirectoryService::SerializedMap serialized_resources;
+  DriveResourceMetadata::SerializedMap serialized_resources;
 };
 
 // Wrapper for level db. All methods must be called on blocking thread.
@@ -68,10 +68,10 @@ class ResourceMetadataDB {
   void Init();
 
   // Reads the database into |serialized_resources|.
-  void Read(GDataDirectoryService::SerializedMap* serialized_resources);
+  void Read(DriveResourceMetadata::SerializedMap* serialized_resources);
 
   // Saves |serialized_resources| to the database.
-  void Save(const GDataDirectoryService::SerializedMap& serialized_resources);
+  void Save(const DriveResourceMetadata::SerializedMap& serialized_resources);
 
  private:
   // Clears the database.
@@ -119,7 +119,7 @@ void ResourceMetadataDB::Init() {
 }
 
 void ResourceMetadataDB::Read(
-  GDataDirectoryService::SerializedMap* serialized_resources) {
+  DriveResourceMetadata::SerializedMap* serialized_resources) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(serialized_resources);
   DVLOG(1) << "Read " << db_path_.value();
@@ -134,11 +134,11 @@ void ResourceMetadataDB::Read(
 }
 
 void ResourceMetadataDB::Save(
-    const GDataDirectoryService::SerializedMap& serialized_resources) {
+    const DriveResourceMetadata::SerializedMap& serialized_resources) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   Clear();
-  for (GDataDirectoryService::SerializedMap::const_iterator iter =
+  for (DriveResourceMetadata::SerializedMap::const_iterator iter =
       serialized_resources.begin();
       iter != serialized_resources.end(); ++iter) {
     DVLOG(1) << "Saving resource " << iter->first << " to db";
@@ -159,9 +159,9 @@ void ResourceMetadataDB::Clear() {
   Init();
 }
 
-// GDataDirectoryService class implementation.
+// DriveResourceMetadata class implementation.
 
-GDataDirectoryService::GDataDirectoryService()
+DriveResourceMetadata::DriveResourceMetadata()
     : blocking_task_runner_(NULL),
       serialized_size_(0),
       largest_changestamp_(0),
@@ -169,19 +169,19 @@ GDataDirectoryService::GDataDirectoryService()
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   root_.reset(CreateDriveDirectory());
   if (!util::IsDriveV2ApiEnabled())
-    InitializeRootEntry(kGDataRootDirectoryResourceId);
+    InitializeRootEntry(kDriveRootDirectoryResourceId);
 }
 
-GDataDirectoryService::~GDataDirectoryService() {
+DriveResourceMetadata::~DriveResourceMetadata() {
   ClearRoot();
 
   // Ensure db is closed on the blocking pool.
-  if (blocking_task_runner_ && directory_service_db_.get())
+  if (blocking_task_runner_ && resource_metadata_db_.get())
     blocking_task_runner_->DeleteSoon(FROM_HERE,
-                                      directory_service_db_.release());
+                                      resource_metadata_db_.release());
 }
 
-DriveEntry* GDataDirectoryService::FromDocumentEntry(const DocumentEntry& doc) {
+DriveEntry* DriveResourceMetadata::FromDocumentEntry(const DocumentEntry& doc) {
   DriveEntry* entry = NULL;
   if (doc.is_folder())
     entry = CreateDriveDirectory();
@@ -193,23 +193,23 @@ DriveEntry* GDataDirectoryService::FromDocumentEntry(const DocumentEntry& doc) {
   return entry;
 }
 
-DriveFile* GDataDirectoryService::CreateDriveFile() {
+DriveFile* DriveResourceMetadata::CreateDriveFile() {
   return new DriveFile(this);
 }
 
-DriveDirectory* GDataDirectoryService::CreateDriveDirectory() {
+DriveDirectory* DriveResourceMetadata::CreateDriveDirectory() {
   return new DriveDirectory(this);
 }
 
-void GDataDirectoryService::InitializeRootEntry(const std::string& root_id) {
+void DriveResourceMetadata::InitializeRootEntry(const std::string& root_id) {
   root_.reset(CreateDriveDirectory());
-  root_->set_title(kGDataRootDirectory);
+  root_->set_title(kDriveRootDirectory);
   root_->SetBaseNameFromTitle();
   root_->set_resource_id(root_id);
   AddEntryToResourceMap(root_.get());
 }
 
-void GDataDirectoryService::ClearRoot() {
+void DriveResourceMetadata::ClearRoot() {
   // Note that children have a reference to root_,
   // so we need to delete them here.
   root_->RemoveChildren();
@@ -219,7 +219,7 @@ void GDataDirectoryService::ClearRoot() {
   root_.reset();
 }
 
-void GDataDirectoryService::AddEntryToDirectory(
+void DriveResourceMetadata::AddEntryToDirectory(
     DriveDirectory* directory,
     DriveEntry* new_entry,
     const FileMoveCallback& callback) {
@@ -233,7 +233,7 @@ void GDataDirectoryService::AddEntryToDirectory(
       base::Bind(callback, GDATA_FILE_OK, new_entry->GetFilePath()));
 }
 
-void GDataDirectoryService::MoveEntryToDirectory(
+void DriveResourceMetadata::MoveEntryToDirectory(
     const FilePath& directory_path,
     DriveEntry* entry,
     const FileMoveCallback& callback) {
@@ -261,7 +261,7 @@ void GDataDirectoryService::MoveEntryToDirectory(
       FROM_HERE, base::Bind(callback, error, moved_file_path));
 }
 
-void GDataDirectoryService::RemoveEntryFromParent(
+void DriveResourceMetadata::RemoveEntryFromParent(
     DriveEntry* entry,
     const FileMoveCallback& callback) {
   DriveDirectory* parent = entry->parent();
@@ -274,7 +274,7 @@ void GDataDirectoryService::RemoveEntryFromParent(
       base::Bind(callback, GDATA_FILE_OK, parent->GetFilePath()));
 }
 
-void GDataDirectoryService::AddEntryToResourceMap(DriveEntry* entry) {
+void DriveResourceMetadata::AddEntryToResourceMap(DriveEntry* entry) {
   DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
   DCHECK(!entry->resource_id().empty());
   std::pair<ResourceMap::iterator, bool> ret =
@@ -282,7 +282,7 @@ void GDataDirectoryService::AddEntryToResourceMap(DriveEntry* entry) {
   DCHECK(ret.second);  // resource_id did not previously exist in the map.
 }
 
-void GDataDirectoryService::RemoveEntryFromResourceMap(
+void DriveResourceMetadata::RemoveEntryFromResourceMap(
     const std::string& resource_id) {
   DVLOG(1) << "RemoveEntryFromResourceMap " << resource_id;
   DCHECK(!resource_id.empty());
@@ -290,7 +290,7 @@ void GDataDirectoryService::RemoveEntryFromResourceMap(
   DCHECK_EQ(1u, ret);  // resource_id was found in the map.
 }
 
-DriveEntry* GDataDirectoryService::FindEntryByPathSync(
+DriveEntry* DriveResourceMetadata::FindEntryByPathSync(
     const FilePath& file_path) {
   if (file_path == root_->GetFilePath())
     return root_.get();
@@ -315,21 +315,21 @@ DriveEntry* GDataDirectoryService::FindEntryByPathSync(
   return NULL;
 }
 
-DriveEntry* GDataDirectoryService::GetEntryByResourceId(
+DriveEntry* DriveResourceMetadata::GetEntryByResourceId(
     const std::string& resource_id) {
   DCHECK(!resource_id.empty());
   ResourceMap::const_iterator iter = resource_map_.find(resource_id);
   return iter == resource_map_.end() ? NULL : iter->second;
 }
 
-void GDataDirectoryService::GetEntryByResourceIdAsync(
+void DriveResourceMetadata::GetEntryByResourceIdAsync(
     const std::string& resource_id,
     const GetEntryByResourceIdCallback& callback) {
   DriveEntry* entry = GetEntryByResourceId(resource_id);
   callback.Run(entry);
 }
 
-void GDataDirectoryService::GetEntryInfoByResourceId(
+void DriveResourceMetadata::GetEntryInfoByResourceId(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -357,7 +357,7 @@ void GDataDirectoryService::GetEntryInfoByResourceId(
                  base::Passed(&entry_proto)));
 }
 
-void GDataDirectoryService::GetEntryInfoByPath(
+void DriveResourceMetadata::GetEntryInfoByPath(
     const FilePath& path,
     const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -380,7 +380,7 @@ void GDataDirectoryService::GetEntryInfoByPath(
       base::Bind(callback, error, base::Passed(&entry_proto)));
 }
 
-void GDataDirectoryService::ReadDirectoryByPath(
+void DriveResourceMetadata::ReadDirectoryByPath(
     const FilePath& path,
     const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -404,7 +404,7 @@ void GDataDirectoryService::ReadDirectoryByPath(
       base::Bind(callback, error, base::Passed(&entries)));
 }
 
-void GDataDirectoryService::GetEntryInfoPairByPaths(
+void DriveResourceMetadata::GetEntryInfoPairByPaths(
     const FilePath& first_path,
     const FilePath& second_path,
     const GetEntryInfoPairCallback& callback) {
@@ -414,26 +414,26 @@ void GDataDirectoryService::GetEntryInfoPairByPaths(
   // Get the first entry.
   GetEntryInfoByPath(
       first_path,
-      base::Bind(&GDataDirectoryService::GetEntryInfoPairByPathsAfterGetFirst,
+      base::Bind(&DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst,
                  weak_ptr_factory_.GetWeakPtr(),
                  first_path,
                  second_path,
                  callback));
 }
 
-void GDataDirectoryService::RefreshFile(scoped_ptr<DriveFile> fresh_file) {
+void DriveResourceMetadata::RefreshFile(scoped_ptr<DriveFile> fresh_file) {
   DCHECK(fresh_file.get());
 
   // Need to get a reference here because Passed() could get evaluated first.
   const std::string& resource_id = fresh_file->resource_id();
   GetEntryByResourceIdAsync(
       resource_id,
-      base::Bind(&GDataDirectoryService::RefreshFileInternal,
+      base::Bind(&DriveResourceMetadata::RefreshFileInternal,
                  base::Passed(&fresh_file)));
 }
 
 // static
-void GDataDirectoryService::RefreshFileInternal(
+void DriveResourceMetadata::RefreshFileInternal(
     scoped_ptr<DriveFile> fresh_file,
     DriveEntry* old_entry) {
   DriveDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
@@ -446,20 +446,20 @@ void GDataDirectoryService::RefreshFileInternal(
   }
 }
 
-void GDataDirectoryService::RefreshDirectory(
+void DriveResourceMetadata::RefreshDirectory(
     const std::string& directory_resource_id,
     const ResourceMap& file_map,
     const FileMoveCallback& callback) {
   DCHECK(!callback.is_null());
   GetEntryByResourceIdAsync(
       directory_resource_id,
-      base::Bind(&GDataDirectoryService::RefreshDirectoryInternal,
+      base::Bind(&DriveResourceMetadata::RefreshDirectoryInternal,
                  file_map,
                  callback));
 }
 
 // static
-void GDataDirectoryService::RefreshDirectoryInternal(
+void DriveResourceMetadata::RefreshDirectoryInternal(
     const ResourceMap& file_map,
     const FileMoveCallback& callback,
     DriveEntry* directory_entry) {
@@ -491,7 +491,7 @@ void GDataDirectoryService::RefreshDirectoryInternal(
   callback.Run(GDATA_FILE_OK, directory->GetFilePath());
 }
 
-void GDataDirectoryService::InitFromDB(
+void DriveResourceMetadata::InitFromDB(
     const FilePath& db_path,
     base::SequencedTaskRunner* blocking_task_runner,
     const FileOperationCallback& callback) {
@@ -499,7 +499,7 @@ void GDataDirectoryService::InitFromDB(
   DCHECK(!db_path.empty());
   DCHECK(blocking_task_runner);
 
-  if (directory_service_db_.get()) {
+  if (resource_metadata_db_.get()) {
     if (!callback.is_null())
       callback.Run(GDATA_FILE_ERROR_FAILED);
     return;
@@ -515,21 +515,21 @@ void GDataDirectoryService::InitFromDB(
       FROM_HERE,
       base::Bind(&CreateResourceMetadataDBOnBlockingPool,
                  create_params),
-      base::Bind(&GDataDirectoryService::InitResourceMap,
+      base::Bind(&DriveResourceMetadata::InitResourceMap,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(create_params),
                  callback));
 }
 
-void GDataDirectoryService::InitResourceMap(
+void DriveResourceMetadata::InitResourceMap(
     CreateDBParams* create_params,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(create_params);
-  DCHECK(!directory_service_db_.get());
+  DCHECK(!resource_metadata_db_.get());
 
   SerializedMap* serialized_resources = &create_params->serialized_resources;
-  directory_service_db_ = create_params->db.Pass();
+  resource_metadata_db_ = create_params->db.Pass();
   if (serialized_resources->empty()) {
     origin_ = INITIALIZING;
     if (!callback.is_null())
@@ -599,7 +599,7 @@ void GDataDirectoryService::InitResourceMap(
       } else {
         NOTREACHED() << "Parent is not a directory " << parent->resource_id();
       }
-    } else if (entry->resource_id() == kGDataRootDirectoryResourceId) {
+    } else if (entry->resource_id() == kDriveRootDirectoryResourceId) {
       root_.reset(entry->AsDriveDirectory());
       DCHECK(root_.get());
       AddEntryToResourceMap(root_.get());
@@ -619,10 +619,10 @@ void GDataDirectoryService::InitResourceMap(
     callback.Run(GDATA_FILE_OK);
 }
 
-void GDataDirectoryService::SaveToDB() {
+void DriveResourceMetadata::SaveToDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!blocking_task_runner_ || !directory_service_db_.get()) {
+  if (!blocking_task_runner_ || !resource_metadata_db_.get()) {
     NOTREACHED();
     return;
   }
@@ -654,11 +654,11 @@ void GDataDirectoryService::SaveToDB() {
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ResourceMetadataDB::Save,
-                 base::Unretained(directory_service_db_.get()),
+                 base::Unretained(resource_metadata_db_.get()),
                  serialized_resources));
 }
 
-void GDataDirectoryService::SerializeToString(
+void DriveResourceMetadata::SerializeToString(
     std::string* serialized_proto) const {
   DriveRootDirectoryProto proto;
   root_->ToProto(proto.mutable_gdata_directory());
@@ -669,7 +669,7 @@ void GDataDirectoryService::SerializeToString(
   DCHECK(ok);
 }
 
-bool GDataDirectoryService::ParseFromString(
+bool DriveResourceMetadata::ParseFromString(
     const std::string& serialized_proto) {
   DriveRootDirectoryProto proto;
   if (!proto.ParseFromString(serialized_proto))
@@ -689,7 +689,7 @@ bool GDataDirectoryService::ParseFromString(
   return true;
 }
 
-scoped_ptr<DriveEntry> GDataDirectoryService::FromProtoString(
+scoped_ptr<DriveEntry> DriveResourceMetadata::FromProtoString(
     const std::string& serialized_proto) {
   DriveEntryProto entry_proto;
   if (!entry_proto.ParseFromString(serialized_proto))
@@ -710,7 +710,7 @@ scoped_ptr<DriveEntry> GDataDirectoryService::FromProtoString(
   return entry.Pass();
 }
 
-void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetFirst(
+void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(
     const FilePath& first_path,
     const FilePath& second_path,
     const GetEntryInfoPairCallback& callback,
@@ -733,14 +733,14 @@ void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetFirst(
   // Get the second entry.
   GetEntryInfoByPath(
       second_path,
-      base::Bind(&GDataDirectoryService::GetEntryInfoPairByPathsAfterGetSecond,
+      base::Bind(&DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetSecond,
                  weak_ptr_factory_.GetWeakPtr(),
                  second_path,
                  callback,
                  base::Passed(&result)));
 }
 
-void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetSecond(
+void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetSecond(
     const FilePath& second_path,
     const GetEntryInfoPairCallback& callback,
     scoped_ptr<EntryInfoPairResult> result,

@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
@@ -21,9 +21,9 @@ class Value;
 
 namespace gdata {
 
-class DriveWebAppsRegistryInterface;
 class DocumentFeed;
 class DriveServiceInterface;
+class DriveWebAppsRegistryInterface;
 class GDataCache;
 struct GetDocumentsUiState;
 
@@ -97,7 +97,7 @@ class GDataWapiFeedLoader {
   };
 
   GDataWapiFeedLoader(
-      GDataDirectoryService* directory_service,
+      DriveResourceMetadata* resource_metadata,
       DriveServiceInterface* drive_service,
       DriveWebAppsRegistryInterface* webapps_registry,
       GDataCache* cache,
@@ -234,7 +234,7 @@ class GDataWapiFeedLoader {
   void OnNotifyDocumentFeedFetched(
       base::WeakPtr<GetDocumentsUiState> ui_state);
 
-  GDataDirectoryService* directory_service_;  // Not owned.
+  DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveServiceInterface* drive_service_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   GDataCache* cache_;  // Not owned.

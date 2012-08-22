@@ -672,7 +672,7 @@ class GDataFileSystemTest : public testing::Test {
     DriveEntryProto* dir_base = root_dir->mutable_gdata_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
     dir_base->set_title("drive");
-    dir_base->set_resource_id(kGDataRootDirectoryResourceId);
+    dir_base->set_resource_id(kDriveRootDirectoryResourceId);
     dir_base->set_upload_url("http://resumable-create-media/1");
     platform_info->set_is_directory(true);
 
@@ -915,7 +915,7 @@ TEST_F(GDataFileSystemTest, SearchRootDirectory) {
   scoped_ptr<DriveEntryProto> entry = GetEntryInfoByPathSync(
       FilePath(FILE_PATH_LITERAL(kFilePath)));
   ASSERT_TRUE(entry.get());
-  EXPECT_EQ(kGDataRootDirectoryResourceId, entry->resource_id());
+  EXPECT_EQ(kDriveRootDirectoryResourceId, entry->resource_id());
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingFile) {
@@ -2411,7 +2411,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
 
   // We'll notify the directory change to the observer upon completion.
   EXPECT_CALL(*mock_directory_observer_,
-              OnDirectoryChanged(Eq(FilePath(kGDataRootDirectory)))).Times(1);
+              OnDirectoryChanged(Eq(FilePath(kDriveRootDirectory)))).Times(1);
 
   // The callback will be called upon completion of
   // UpdateFileByResourceId().
@@ -2546,13 +2546,13 @@ TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
 
   // We'll fetch documents in the root directory with its resource ID.
   EXPECT_CALL(*mock_drive_service_,
-              GetDocuments(Eq(GURL()), _, _, kGDataRootDirectoryResourceId, _))
+              GetDocuments(Eq(GURL()), _, _, kDriveRootDirectoryResourceId, _))
       .Times(1);
   // We'll notify the directory change to the observer.
   EXPECT_CALL(*mock_directory_observer_,
-              OnDirectoryChanged(Eq(FilePath(kGDataRootDirectory)))).Times(1);
+              OnDirectoryChanged(Eq(FilePath(kDriveRootDirectory)))).Times(1);
 
-  file_system_->RequestDirectoryRefresh(FilePath(kGDataRootDirectory));
+  file_system_->RequestDirectoryRefresh(FilePath(kDriveRootDirectory));
   test_util::RunBlockingPoolTask();
 }
 
