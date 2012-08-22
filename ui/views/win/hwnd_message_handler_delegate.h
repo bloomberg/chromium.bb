@@ -97,11 +97,26 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the system's work area has changed.
   virtual void HandleWorkAreaChanged() = 0;
 
+  // Called when the window's visibility changed. |visible| holds the new state.
+  virtual void HandleVisibilityChanged(bool visible) = 0;
+
+  // Called when the window's client size changed. |new_size| holds the new
+  // size.
+  virtual void HandleClientSizeChanged(const gfx::Size& new_size) = 0;
+
   // Called when focus shifted to this HWND from |last_focused_window|.
   virtual void HandleNativeFocus(HWND last_focused_window) = 0;
 
   // Called when focus shifted from the HWND to a different window.
   virtual void HandleNativeBlur(HWND focused_window) = 0;
+
+  // Called when a mouse event is received. Returns true if the event was
+  // handled by the delegate.
+  virtual bool HandleMouseEvent(const ui::MouseEvent& event) = 0;
+
+  // Called when a key event is received. Returns true if the event was handled
+  // by the delegate.
+  virtual bool HandleKeyEvent(const ui::KeyEvent& event) = 0;
 
   // Called when we have detected a screen reader.
   virtual void HandleScreenReaderDetected() = 0;
@@ -110,6 +125,11 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual bool HandleTooltipNotify(int w_param,
                                    NMHDR* l_param,
                                    LRESULT* l_result) = 0;
+
+  // Called to forward mouse events to the tooltip manager.
+  virtual void HandleTooltipMouseMove(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param) = 0;
 
   // This is provided for methods that need to call private methods on NWW.
   // TODO(beng): should be removed once HWNDMessageHandler is the WindowImpl.
