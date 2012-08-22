@@ -373,6 +373,15 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
       &rect,
       &actual_range));
 
+  // If the firstRectForCharacterRange is failed in renderer, empty rect vector
+  // is sent. Make sure this does not crash.
+  rwhv_mac_->ImeCompositionRangeChanged(ui::Range(10, 12),
+                                        std::vector<gfx::Rect>());
+  EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
+      ui::Range(10, 11).ToNSRange(),
+      &rect,
+      NULL));
+
   const int kCompositionLength = 10;
   std::vector<gfx::Rect> composition_bounds;
   const int kCompositionStart = 3;

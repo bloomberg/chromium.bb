@@ -1159,6 +1159,12 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   if (request_range_in_composition == ui::Range::InvalidRange())
     return false;
 
+  // If firstRectForCharacterRange in WebFrame is failed in renderer,
+  // ImeCompositionRangeChanged will be sent with empty vector.
+  if (composition_bounds_.empty())
+    return false;
+  DCHECK_EQ(composition_bounds_.size(), composition_range_.length());
+
   ui::Range ui_actual_range;
   *rect = NSRectFromCGRect(GetFirstRectForCompositionRange(
                                request_range_in_composition,
