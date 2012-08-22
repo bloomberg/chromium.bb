@@ -1479,7 +1479,8 @@ FileManager.prototype = {
         if (foundLeaf) {
           // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
           // self.selection.
-          var tasks = new FileTasks(self, [self.selection.urls[0]]);
+          var tasks = new FileTasks(self,
+                                    [self.selection.urls[0]]);
           // There are 3 ways we can get here:
           // 1. Invoked from file_manager_util::ViewFile. This can only
           //    happen for 'gallery' and 'mount-archive' actions.
@@ -1687,8 +1688,7 @@ FileManager.prototype = {
     return box;
   };
 
-  FileManager.prototype.decorateThumbnail_ =
-      function(li, showCheckbox, entry) {
+  FileManager.prototype.decorateThumbnail_ = function(li, showCheckbox, entry) {
     li.className = 'thumbnail-item';
 
     var frame = this.document_.createElement('div');
@@ -2218,26 +2218,27 @@ FileManager.prototype = {
 
     this.setDefaultActionMenuItem(null);
 
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
-        selection.directoryCount == 0 && selection.fileCount > 0) {
-      selection.tasks = new FileTasks(this, selection.urls).
-          display(this.taskItems_).
-          updateMenuItem();
-    } else {
-      this.taskItems_.hidden = true;
-    }
-
-    this.metadataCache_.get(selection.entries, 'filesystem', function(props) {
-      for (var index = 0; index < selection.entries.length; index++) {
-        var filesystem = props[index];
-
-        if (entry.isFile) {
-          selection.bytes += filesystem.size;
-        }
+    function getTasksAndFinish() {
+      if (self.dialogType_ == FileManager.DialogType.FULL_PAGE &&
+          selection.directoryCount == 0 && selection.fileCount > 0) {
+        selection.tasks = new FileTasks(self, selection.urls,
+            selection.mimeTypes).display(self.taskItems_).updateMenuItem();
+      } else {
+        self.taskItems_.hidden = true;
       }
 
-      this.dispatchEvent(new cr.Event('selection-summarized'));
-    }.bind(this));
+      self.metadataCache_.get(selection.entries, 'filesystem', function(props) {
+        for (var index = 0; index < selection.entries.length; index++) {
+          var filesystem = props[index];
+
+          if (entry.isFile) {
+            selection.bytes += filesystem.size;
+          }
+        }
+
+        self.dispatchEvent(new cr.Event('selection-summarized'));
+      });
+    }
 
     if (this.isOnGData()) {
       function predicate(p) {
@@ -2247,7 +2248,16 @@ FileManager.prototype = {
         selection.allGDataFilesPresent =
             props.filter(predicate).length == 0;
         this.updateOkButton_();
+
+        // Collect all of the mime types and push that info into the selection.
+        selection.mimeTypes = props.map(function(value) {
+          return (value && value.contentMimeType) || '';
+        });
+
+        getTasksAndFinish();
       }.bind(this));
+    } else {
+      getTasksAndFinish();
     }
   };
 
@@ -2446,13 +2456,14 @@ FileManager.prototype = {
 
 
   /**
-   * Set's given task as default, when this task is applicable.
+   * Sets the given task as default, when this task is applicable.
    * @param {Object} task Task to set as default.
    */
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
     chrome.fileBrowserPrivate.setDefaultTask(task.taskId);
-    this.selection.tasks = new FileTasks(this, this.selection.urls).
-        display(this.taskItems_);
+    this.selection.tasks = new FileTasks(
+        this, this.selection.urls, this.selection.mimeTypes).
+            display(this.taskItems_);
   };
 
   FileManager.prototype.updateNetworkStateAndGDataPreferences_ = function(
@@ -2580,10 +2591,6 @@ FileManager.prototype = {
       urls.push(fileList.item(i).toURL());
     }
     return urls;
-  };
-
-  FileManager.prototype.getShareActions_ = function(urls, callback) {
-    new FileTasks(urls).getExternals(callback);
   };
 
   FileManager.prototype.isRenamingInProgress = function() {
