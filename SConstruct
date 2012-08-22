@@ -1192,12 +1192,15 @@ def AddBootstrap(env, executable, args):
 pre_base_env.AddMethod(AddBootstrap)
 
 
-def GetIrtNexe(env, irt_name='irt'):
+def GetIrtNexe(env, chrome_irt=False):
   image = ARGUMENTS.get('force_irt')
   if image:
     return env.SConstructAbsPath(image)
 
-  return nacl_irt_env.File('${STAGING_DIR}/irt.nexe')
+  if chrome_irt:
+    return nacl_irt_env.File('${STAGING_DIR}/irt.nexe')
+  else:
+    return nacl_irt_env.File('${STAGING_DIR}/irt_core.nexe')
 
 pre_base_env.AddMethod(GetIrtNexe)
 
@@ -1505,7 +1508,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     sel_ldr_flags += ['-a']
 
   if env.Bit('tests_use_irt') or uses_ppapi:
-    sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
+    sel_ldr_flags += ['-B', nacl_env.GetIrtNexe(chrome_irt=uses_ppapi)]
 
   if skip_bootstrap:
     loader_cmd = [loader]

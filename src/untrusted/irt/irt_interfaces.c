@@ -32,8 +32,8 @@ static const struct nacl_interface_table irt_interfaces[] = {
       sizeof(nacl_irt_resource_open) },
 #ifdef IRT_PPAPI
   { NACL_IRT_PPAPIHOOK_v0_1, &nacl_irt_ppapihook, sizeof(nacl_irt_ppapihook) },
-  { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random) },
 #endif
+  { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random) },
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock) },
   { NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1, &nacl_irt_dev_exception_handling,
     sizeof(nacl_irt_dev_exception_handling) },

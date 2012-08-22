@@ -512,7 +512,7 @@ def PPAPIBrowserTester(env,
       command.extend(['--sel_ldr_bootstrap', bootstrap])
   if (not env.Bit('disable_dynamic_plugin_loading') or
       env.Bit('override_chrome_irt')):
-    command.extend(['--irt_library', env.GetIrtNexe()])
+    command.extend(['--irt_library', env.GetIrtNexe(chrome_irt=True)])
   for dep_file in files:
     command.extend(['--file', dep_file])
   for extension in extensions:
@@ -701,8 +701,8 @@ def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
       extra_deps.append(bootstrap)
   if (not env.Bit('disable_dynamic_plugin_loading') or
       env.Bit('override_chrome_irt')):
-    osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
-    extra_deps.append(env.GetIrtNexe())
+    osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe(chrome_irt=True))
+    extra_deps.append(env.GetIrtNexe(chrome_irt=True))
 
   # On Posix, make sure that nexe logs do not pollute the console output.
   # Note: If a test fails, the contents of the page are explicitly logged to

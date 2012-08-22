@@ -27,6 +27,8 @@
       'irt_blockhook.c',
       'irt_clock.c',
       'irt_dev_exception_handling.c',
+      'irt_nameservice.c',
+      'irt_random.c',
 # support_srcs
       # We also get nc_init_private.c, nc_thread.c and nc_tsd.c via
       # #includes of .c files.
@@ -38,6 +40,7 @@
     ],
     'irt_nonbrowser': [
       'irt_interfaces.c',
+      'irt_core_entry.c',
       'irt_core_resource.c',
     ],
     'irt_browser': [
@@ -45,8 +48,6 @@
       'irt_entry_ppapi.c',
       'irt_ppapi.c',
       'irt_manifest.c',
-      'irt_nameservice.c',
-      'irt_random.c',
     ],
   },
   'targets': [
@@ -59,6 +60,13 @@
         'build_newlib': 1,
       },
       'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
+      'link_flags': [
+        '-lsrpc',
+        '-limc_syscalls',
+        '-lplatform',
+        '-lgio',
+        '-lm',
+      ],
       'conditions': [
         # See comment in native_client/src/untrusted/irt/nacl.scons
         # regarding -Ttext-segment. Also see
@@ -88,8 +96,12 @@
        ],
       ],
       'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:srpc_lib',
+        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:imc_syscalls_lib',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
     },
     {
