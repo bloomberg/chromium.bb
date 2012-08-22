@@ -13,6 +13,9 @@ DownloadManagerTest.StartDownload
 # http://code.google.com/p/drmemory/issues/detail?id=979
 FirefoxProfileImporterTest.Firefox35Importer
 
+# http://code.google.com/p/drmemory/issues/detail?id=980
+MetricsLogManagerTest.StoreStagedLogTypes
+
 ##################################################
 # Chromium bugs:
 
@@ -36,3 +39,9 @@ WebsiteSettingsModelTest.*
 # fails with gmock errors
 # http://crbug.com/117796
 SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
+
+# fails to create thread
+# http://crbug.com/144087
+DesktopNotificationServiceTest.SettingsForSchemes
+TemplateURLFetcherTest.*
+
