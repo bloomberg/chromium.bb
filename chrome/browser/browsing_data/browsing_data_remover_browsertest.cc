@@ -4,10 +4,12 @@
 
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -42,9 +44,14 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     signal.Wait();
   }
 };
-#if !defined(OS_LINUX)
+
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
+  ScopedTempDir downloads_directory;
+  ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
+  browser()->profile()->GetPrefs()->SetFilePath(
+      prefs::kDownloadDefaultDirectory, downloads_directory.path());
+
   // Start a download.
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser()->profile());
@@ -69,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   download_manager->GetAllDownloads(FilePath(), &downloads);
   EXPECT_TRUE(downloads.empty());
 }
-#endif
+
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   ASSERT_TRUE(test_server()->Start());

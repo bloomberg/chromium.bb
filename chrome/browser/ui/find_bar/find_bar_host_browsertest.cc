@@ -10,6 +10,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -293,11 +295,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
   }
 }
 
-#if !defined(OS_LINUX)
-
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
+  ScopedTempDir downloads_directory;
+  ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
+  browser()->profile()->GetPrefs()->SetFilePath(
+      prefs::kDownloadDefaultDirectory, downloads_directory.path());
+
   TabContents* tab = chrome::GetActiveTabContents(browser());
 
   FilePath data_dir = ui_test_utils::GetTestFilePath(FilePath(), FilePath());
@@ -336,7 +341,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
             FindInPageWchar(tab, ASCIIToWide(download_url.spec()).c_str(), kFwd,
                             kIgnoreCase, NULL));
 }
-#endif
 
 // Verify search selection coordinates. The data file used is set-up such that
 // the text occurs on the same line, and we verify their positions by verifying
