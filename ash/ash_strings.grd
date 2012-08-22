@@ -349,16 +349,22 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
         Search
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SHIFT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
-        Shift+Search
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT" desc="The shortcut text used for the caps lock tray item.">
+        Search or Shift
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS" desc="The tooltip for the caps lock indicator button.">
-CAPS LOCK is on.
-Press Shift + Search key to cancel.
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
+        Alt+Search
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SEARCH" desc="The tooltip for the caps lock indicator button.">
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH_OR_SHIFT" desc="The shortcut text used for the caps lock tray item.">
+        Alt+Search or Shift
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
 CAPS LOCK is on.
-Press Search key to cancel.
+Press Alt+Search or Shift to cancel.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH" desc="The message shown on a bubble when caps lock is turned on.">
+CAPS LOCK is on.
+Press Search or Shift to cancel.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_TURNED_ON_BUBBLE" desc="The message shown on a bubble when an IME is enabled">
         Your input method has changed to <ph name="INPUT_METHOD_ID">$1<ex>EN</ex></ph>.

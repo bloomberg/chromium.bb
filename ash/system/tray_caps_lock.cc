@@ -55,9 +55,16 @@ class CapsLockDefaultView : public ActionableView {
         IDS_ASH_STATUS_TRAY_CAPS_LOCK_DISABLED;
     text_label_->SetText(bundle.GetLocalizedString(text_string_id));
 
-    const int shortcut_string_id = search_mapped_to_caps_lock ?
-        IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH :
-        IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SHIFT_SEARCH;
+    int shortcut_string_id = 0;
+    if (caps_lock_enabled) {
+      shortcut_string_id = search_mapped_to_caps_lock ?
+          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT :
+          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH_OR_SHIFT;
+    } else {
+      shortcut_string_id = search_mapped_to_caps_lock ?
+          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH :
+          IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_ALT_SEARCH;
+    }
     shortcut_label_->SetText(bundle.GetLocalizedString(shortcut_string_id));
 
     Layout();
@@ -137,8 +144,8 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
   detailed_->AddChildView(image);
 
   const int string_id = search_mapped_to_caps_lock_ ?
-      IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SEARCH :
-      IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
+      IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH :
+      IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   views::Label* label = new views::Label(bundle.GetLocalizedString(string_id));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
