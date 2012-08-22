@@ -151,19 +151,9 @@ const PPP_Printing_Dev* PPPPrintingInterface() {
   return static_cast<const PPP_Printing_Dev*>(ppp);
 }
 
-const PPP_Scrollbar_Dev* PPPScrollbarInterface() {
-  static const void* ppp = GetPluginInterfaceSafe(PPP_SCROLLBAR_DEV_INTERFACE);
-  return static_cast<const PPP_Scrollbar_Dev*>(ppp);
-}
-
 const PPP_Selection_Dev* PPPSelectionInterface() {
   static const void* ppp = GetPluginInterfaceSafe(PPP_SELECTION_DEV_INTERFACE);
   return static_cast<const PPP_Selection_Dev*>(ppp);
-}
-
-const PPP_Widget_Dev* PPPWidgetInterface() {
-  static const void* ppp = GetPluginInterfaceSafe(PPP_WIDGET_DEV_INTERFACE);
-  return static_cast<const PPP_Widget_Dev*>(ppp);
 }
 
 const PPP_Zoom_Dev* PPPZoomInterface() {

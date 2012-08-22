@@ -16,9 +16,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_mouse_lock.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_messaging.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_printing.h"
-#include "native_client/src/shared/ppapi_proxy/browser_ppp_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_selection.h"
-#include "native_client/src/shared/ppapi_proxy/browser_ppp_widget.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/browser_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppb_rpc.h"
@@ -28,9 +26,7 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
-#include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
-#include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/c/dev/ppp_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
@@ -194,15 +190,9 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
   } else if (strcmp(interface_name, PPP_PRINTING_DEV_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserPrinting::GetInterface());
-  } else if (strcmp(interface_name, PPP_SCROLLBAR_DEV_INTERFACE) == 0) {
-    ppp_interface =
-       reinterpret_cast<const void*>(BrowserScrollbar::GetInterface());
   } else if (strcmp(interface_name, PPP_SELECTION_DEV_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserSelection::GetInterface());
-  } else if (strcmp(interface_name, PPP_WIDGET_DEV_INTERFACE) == 0) {
-    ppp_interface =
-       reinterpret_cast<const void*>(BrowserWidget::GetInterface());
   } else if (strcmp(interface_name, PPP_ZOOM_DEV_INTERFACE) == 0) {
     ppp_interface =
        reinterpret_cast<const void*>(BrowserZoom::GetInterface());

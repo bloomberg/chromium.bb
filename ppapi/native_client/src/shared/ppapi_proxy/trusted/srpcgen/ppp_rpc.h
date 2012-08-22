@@ -209,25 +209,6 @@ class PppPrintingRpcClient {
   void operator=(const PppPrintingRpcClient);
 };  // class PppPrintingRpcClient
 
-class PppScrollbarRpcClient {
- public:
-  static NaClSrpcError PPP_Scrollbar_ValueChanged(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      PP_Resource scrollbar,
-      int32_t value);
-  static NaClSrpcError PPP_Scrollbar_OverlayChanged(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      PP_Resource scrollbar,
-      int32_t overlay);
-
- private:
-  PppScrollbarRpcClient();
-  PppScrollbarRpcClient(const PppScrollbarRpcClient&);
-  void operator=(const PppScrollbarRpcClient);
-};  // class PppScrollbarRpcClient
-
 class PppSelectionRpcClient {
  public:
   static NaClSrpcError PPP_Selection_GetSelectedText(
@@ -241,20 +222,6 @@ class PppSelectionRpcClient {
   PppSelectionRpcClient(const PppSelectionRpcClient&);
   void operator=(const PppSelectionRpcClient);
 };  // class PppSelectionRpcClient
-
-class PppWidgetRpcClient {
- public:
-  static NaClSrpcError PPP_Widget_Invalidate(
-      NaClSrpcChannel* channel,
-      PP_Instance instance,
-      PP_Resource widget,
-      nacl_abi_size_t dirty_rect_bytes, char* dirty_rect);
-
- private:
-  PppWidgetRpcClient();
-  PppWidgetRpcClient(const PppWidgetRpcClient&);
-  void operator=(const PppWidgetRpcClient);
-};  // class PppWidgetRpcClient
 
 class PppZoomRpcClient {
  public:

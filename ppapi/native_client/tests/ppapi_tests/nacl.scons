@@ -52,7 +52,6 @@ ppapi_tests_sources = [
     # available for untrusted tests.
     # Does not compile under nacl (uses private interface ExecuteScript).
     #'test_post_message.cc',
-    'test_scrollbar.cc',
     # Not yet proxied.
     #'test_transport.cc',
     # Not yet proxied.

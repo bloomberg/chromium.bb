@@ -30,9 +30,7 @@
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_widget_dev.h"
 
 // Looks up the interface and returns its pointer or NULL.
 const void* GetBrowserInterface(const char* interface_name);
@@ -75,8 +73,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 
 const PPB_Font_Dev* PPBFontDev();
 const PPB_Memory_Dev* PPBMemoryDev();
-const PPB_Scrollbar_Dev* PPBScrollbarDev();
 const PPB_Testing_Dev* PPBTestingDev();
-const PPB_Widget_Dev* PPBWidgetDev();
 
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_GET_BROWSER_INTERFACE_H

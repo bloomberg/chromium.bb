@@ -48,7 +48,6 @@ class Printing_Dev;
 class Selection_Dev;
 class URLLoader;
 class URLUtil_Dev;
-class WidgetClient_Dev;
 class Zoom_Dev;
 }
 
@@ -503,7 +502,6 @@ class Plugin : public pp::InstancePrivate {
   nacl::scoped_ptr<pp::MouseLock> mouse_lock_adapter_;
   nacl::scoped_ptr<pp::Printing_Dev> printing_adapter_;
   nacl::scoped_ptr<pp::Selection_Dev> selection_adapter_;
-  nacl::scoped_ptr<pp::WidgetClient_Dev> widget_client_adapter_;
   nacl::scoped_ptr<pp::Zoom_Dev> zoom_adapter_;
 
   // Used for NexeFileDidOpenContinuation

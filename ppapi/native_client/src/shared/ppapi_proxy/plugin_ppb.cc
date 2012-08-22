@@ -31,8 +31,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_net_address_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_network_list_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_network_monitor_private.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_tcp_server_socket_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_tcp_socket_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
@@ -43,7 +41,6 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_var.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_view.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_websocket.h"
-#include "native_client/src/shared/ppapi_proxy/plugin_ppb_widget.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_zoom.h"
 #include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
@@ -122,8 +119,6 @@ InterfaceMapElement interface_map[] = {
   { PPB_OPENGLES2_QUERY_INTERFACE_1_0,
     PluginGraphics3D::GetOpenGLESQueryInterface(),
     true },
-  { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
-  { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },
   { PPB_TCPSERVERSOCKET_PRIVATE_INTERFACE,
     PluginTCPServerSocketPrivate::GetInterface(),
     true },
@@ -150,7 +145,6 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_WHEEL_INPUT_EVENT_INTERFACE, PluginInputEvent::GetWheelInterface(),
     true },
-  { PPB_WIDGET_DEV_INTERFACE, PluginWidget::GetInterface(), true },
   { PPB_ZOOM_DEV_INTERFACE, PluginZoom::GetInterface(), true },
 };
 

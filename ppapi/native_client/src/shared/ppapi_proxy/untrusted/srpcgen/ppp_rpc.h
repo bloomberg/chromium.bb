@@ -231,27 +231,6 @@ class PppPrintingRpcServer {
   void operator=(const PppPrintingRpcServer);
 };  // class PppPrintingRpcServer
 
-class PppScrollbarRpcServer {
- public:
-  static void PPP_Scrollbar_ValueChanged(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      PP_Resource scrollbar,
-      int32_t value);
-  static void PPP_Scrollbar_OverlayChanged(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      PP_Resource scrollbar,
-      int32_t overlay);
-
- private:
-  PppScrollbarRpcServer();
-  PppScrollbarRpcServer(const PppScrollbarRpcServer&);
-  void operator=(const PppScrollbarRpcServer);
-};  // class PppScrollbarRpcServer
-
 class PppSelectionRpcServer {
  public:
   static void PPP_Selection_GetSelectedText(
@@ -266,21 +245,6 @@ class PppSelectionRpcServer {
   PppSelectionRpcServer(const PppSelectionRpcServer&);
   void operator=(const PppSelectionRpcServer);
 };  // class PppSelectionRpcServer
-
-class PppWidgetRpcServer {
- public:
-  static void PPP_Widget_Invalidate(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Instance instance,
-      PP_Resource widget,
-      nacl_abi_size_t dirty_rect_bytes, char* dirty_rect);
-
- private:
-  PppWidgetRpcServer();
-  PppWidgetRpcServer(const PppWidgetRpcServer&);
-  void operator=(const PppWidgetRpcServer);
-};  // class PppWidgetRpcServer
 
 class PppZoomRpcServer {
  public:

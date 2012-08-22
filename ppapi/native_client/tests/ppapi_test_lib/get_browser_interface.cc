@@ -6,10 +6,8 @@
 
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
@@ -173,12 +171,6 @@ const PPB_Memory_Dev* PPBMemoryDev() {
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
 }
 
-const PPB_Scrollbar_Dev* PPBScrollbarDev() {
-  return  reinterpret_cast<const PPB_Scrollbar_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_SCROLLBAR_DEV_INTERFACE));
-}
-
 const PPB_Testing_Dev* PPBTestingDev() {
   return  reinterpret_cast<const PPB_Testing_Dev*>(
       // Change to GetBrowserInterfaceSafe when moving out of dev.
@@ -188,10 +180,4 @@ const PPB_Testing_Dev* PPBTestingDev() {
 const PPB_View* PPBView() {
   return reinterpret_cast<const PPB_View*>(
       GetBrowserInterface(PPB_VIEW_INTERFACE));
-}
-
-const PPB_Widget_Dev* PPBWidgetDev() {
-  return  reinterpret_cast<const PPB_Widget_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_WIDGET_DEV_INTERFACE));
 }
