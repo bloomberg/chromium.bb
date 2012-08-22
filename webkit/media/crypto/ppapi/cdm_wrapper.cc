@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"  // For OVERRIDE.
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/instance.h"
@@ -33,13 +34,26 @@ struct DecryptorMessage {
 };
 
 struct DecryptedBlock {
-  DecryptedBlock() : request_id(0) {}
-  int32_t request_id;
-  std::string data;
+  DecryptedBlock() {
+    std::memset(reinterpret_cast<void*>(&decrypted_block_info),
+                0,
+                sizeof(decrypted_block_info));
+  }
+  std::string decrypted_data;
+  PP_DecryptedBlockInfo decrypted_block_info;
 };
 
+bool IsMainThread() {
+  return pp::Module::Get()->core()->IsMainThread();
+}
+
 void CallOnMain(pp::CompletionCallback cb) {
-  pp::Module::Get()->core()->CallOnMainThread(0, cb, PP_OK);
+  // TODO(tomfinegan): This is only necessary because PPAPI doesn't allow calls
+  // off the main thread yet. Remove this once the change lands.
+  if (IsMainThread())
+    cb.Run(PP_OK);
+  else
+    pp::Module::Get()->core()->CallOnMainThread(0, cb, PP_OK);
 }
 
 }  // namespace
@@ -57,13 +71,16 @@ class CDMWrapper : public pp::Instance,
   virtual bool GenerateKeyRequest(const std::string& key_system,
                                   pp::VarArrayBuffer init_data) OVERRIDE;
   virtual bool AddKey(const std::string& session_id,
-                      pp::VarArrayBuffer key) OVERRIDE;
+                      pp::VarArrayBuffer key,
+                      pp::VarArrayBuffer init_data) OVERRIDE;
   virtual bool CancelKeyRequest(const std::string& session_id) OVERRIDE;
-  virtual bool Decrypt(pp::Buffer_Dev encrypted_buffer,
-                       int32_t request_id) OVERRIDE;
+  virtual bool Decrypt(
+      pp::Buffer_Dev encrypted_buffer,
+      const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
-  virtual bool DecryptAndDecode(pp::Buffer_Dev encrypted_buffer,
-                                int32_t request_id) OVERRIDE {
+  virtual bool DecryptAndDecode(
+      pp::Buffer_Dev encrypted_buffer,
+      const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE {
     return false;
   }
 
@@ -109,9 +126,12 @@ bool CDMWrapper::GenerateKeyRequest(const std::string& key_system,
 }
 
 bool CDMWrapper::AddKey(const std::string& session_id,
-                        pp::VarArrayBuffer key) {
+                        pp::VarArrayBuffer key,
+                        pp::VarArrayBuffer init_data) {
   const std::string key_string(reinterpret_cast<char*>(key.Map()),
                                key.ByteLength());
+  const std::string init_data_string(reinterpret_cast<char*>(init_data.Map()),
+                                     init_data.ByteLength());
 
   PP_DCHECK(!session_id.empty() && !key_string.empty());
 
@@ -135,18 +155,27 @@ bool CDMWrapper::CancelKeyRequest(const std::string& session_id) {
   decryptor_message.session_id = "0";
   decryptor_message.default_url = "http://www.google.com";
   decryptor_message.message_data = "CancelKeyRequest";
+
   CallOnMain(callback_factory_.NewCallback(&CDMWrapper::KeyMessage,
                                            decryptor_message));
   return true;
 }
 
 bool CDMWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
-                         int32_t request_id) {
+                         const PP_EncryptedBlockInfo& encrypted_block_info) {
   PP_DCHECK(!encrypted_buffer.is_null());
 
   DecryptedBlock decrypted_block;
-  decrypted_block.request_id = request_id;
-  decrypted_block.data = "Pretend I'm decrypted data!";
+  decrypted_block.decrypted_data = "Pretend I'm decrypted data!";
+  decrypted_block.decrypted_block_info.result = PP_DECRYPTRESULT_SUCCESS;
+  decrypted_block.decrypted_block_info.tracking_info =
+      encrypted_block_info.tracking_info;
+
+  // TODO(tomfinegan): This would end up copying a lot of data in the real
+  // implementation if we continue passing std::strings around. It *might* not
+  // be such a big deal w/a real CDM. We may be able to simply pass a pointer
+  // into the CDM. Otherwise we could look into using std::tr1::shared_ptr
+  // instead of passing a giant std::string filled with encrypted data.
   CallOnMain(callback_factory_.NewCallback(&CDMWrapper::DeliverBlock,
                                            decrypted_block));
   return true;
@@ -201,9 +230,10 @@ void CDMWrapper::KeyError(int32_t result,
 void CDMWrapper::DeliverBlock(int32_t result,
                               const DecryptedBlock& decrypted_block) {
   pp::Buffer_Dev decrypted_buffer(
-      StringToBufferResource(decrypted_block.data));
-  pp::ContentDecryptor_Private::DeliverBlock(decrypted_buffer,
-                                             decrypted_block.request_id);
+      StringToBufferResource(decrypted_block.decrypted_data));
+  pp::ContentDecryptor_Private::DeliverBlock(
+      decrypted_buffer,
+      decrypted_block.decrypted_block_info);
 }
 
 // This object is the global object representing this plugin library as long

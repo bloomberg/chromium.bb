@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Tue Aug 14 11:06:05 2012.
+ *   modified Fri Aug 17 09:07:21 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -16,6 +16,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
 
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1 \
     "PPP_ContentDecryptor_Private;0.1"
@@ -79,10 +80,15 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * @param[in] key A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the decryption key, license,
    * or other message for the given session ID.
+   *
+   * @param[in] init_data A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
+   * initialization data.
    */
   PP_Bool (*AddKey)(PP_Instance instance,
                     struct PP_Var session_id,
-                    struct PP_Var key);
+                    struct PP_Var key,
+                    struct PP_Var init_data);
   /**
    * Cancels a pending key request for the specified session ID.
    *
@@ -100,13 +106,14 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * <code>PPB_Buffer_Dev</code> resource that contains an encrypted data
    * block.
    *
-   * @param[in] request_id A value used by the browser to associate data
-   * returned via the <code>PPB_ContentDecryptor_Private</code> interface with
-   * decryption method calls.
+   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
+   * contains all auxiliary information needed for decryption of the
+   * <code>encrypted_block</code>.
    */
-  PP_Bool (*Decrypt)(PP_Instance instance,
-                     PP_Resource encrypted_block,
-                     int32_t request_id);
+  PP_Bool (*Decrypt)(
+      PP_Instance instance,
+      PP_Resource encrypted_block,
+      const struct PP_EncryptedBlockInfo* encrypted_block_info);
   /**
    * Decrypts the block, decodes it, and returns the unencrypted uncompressed
    * (decoded) media to the browser via the
@@ -120,13 +127,14 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * <code>PPB_Buffer_Dev</code> resource that contains an encrypted data
    * block.
    *
-   * @param[in] request_id A value used by the browser to associate data
-   * returned via the <code>PPB_ContentDecryptor_Private</code> interface with
-   * decryption method calls.
+   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
+   * contains all auxiliary information needed for decryption of the
+   * <code>encrypted_block</code>.
    */
-  PP_Bool (*DecryptAndDecode)(PP_Instance instance,
-                              PP_Resource encrypted_block,
-                              int32_t request_id);
+  PP_Bool (*DecryptAndDecode)(
+      PP_Instance instance,
+      PP_Resource encrypted_block,
+      const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
 typedef struct PPP_ContentDecryptor_Private_0_1 PPP_ContentDecryptor_Private;

@@ -589,21 +589,22 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */,
                     ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_AddKey,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_AddKey,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* session_id, String */,
-                    ppapi::proxy::SerializedVar /* key, ArrayBuffer */)
+                    ppapi::proxy::SerializedVar /* key, ArrayBuffer */,
+                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_CancelKeyRequest,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* session_id, String */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
-                    int32_t /* request_id */)
+                    std::string /* serialized_block_info */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
                     PP_Instance /* instance */,
-                    ppapi::HostResource /* encrypted_block, PPB_Buffer_Dev */,
-                    int32_t /* request_id */)
+                    ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
+                    std::string /* serialized_block_info */)
 
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBNetworkMonitor_NetworkList,
@@ -1191,15 +1192,15 @@ IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_KeyError,
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_block, PPB_Buffer_Dev */,
-                    int32_t /* request_id */)
+                    std::string /* serialized_block_info */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverFrame,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_frame, PPB_Buffer_Dev */,
-                    int32_t /* request_id */)
+                    std::string /* serialized_block_info */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverSamples,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_samples, PPB_Buffer_Dev */,
-                    int32_t /* request_id */)
+                    std::string /* serialized_block_info */)
 
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,

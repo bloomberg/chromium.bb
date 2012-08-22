@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PPB_INSTANCE_PROXY_H_
 #define PPAPI_PROXY_PPB_INSTANCE_PROXY_H_
 
+#include <string>
+
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_time.h"
@@ -20,6 +22,8 @@
 #ifdef PostMessage
 #undef PostMessage
 #endif
+
+struct PP_DecryptedBlockInfo;
 
 namespace ppapi {
 namespace proxy {
@@ -134,13 +138,13 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                         int32_t system_code) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
-                            int32_t request_id) OVERRIDE;
+                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            int32_t request_id) OVERRIDE;
+                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource decrypted_samples,
-                              int32_t request_id) OVERRIDE;
+                              const PP_DecryptedBlockInfo* block_info) OVERRIDE;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
@@ -233,13 +237,14 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                  int32_t system_code);
   virtual void OnHostMsgDeliverBlock(PP_Instance instance,
                                      PP_Resource decrypted_block,
-                                     int32_t request_id);
+                                     const std::string& serialized_block_info);
   virtual void OnHostMsgDeliverFrame(PP_Instance instance,
                                      PP_Resource decrypted_frame,
-                                     int32_t request_id);
-  virtual void OnHostMsgDeliverSamples(PP_Instance instance,
-                                       PP_Resource decrypted_samples,
-                                       int32_t request_id);
+                                     const std::string& serialized_block_info);
+  virtual void OnHostMsgDeliverSamples(
+      PP_Instance instance,
+      PP_Resource decrypted_samples,
+      const std::string& serialized_block_info);
 #endif  // !defined(OS_NACL)
 
   // Host -> Plugin message handlers.

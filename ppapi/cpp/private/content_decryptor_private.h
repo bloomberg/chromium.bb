@@ -5,6 +5,7 @@
 #ifndef PPAPI_CPP_PRIVATE_CONTENT_DECRYPTOR_PRIVATE_H_
 #define PPAPI_CPP_PRIVATE_CONTENT_DECRYPTOR_PRIVATE_H_
 
+#include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 
@@ -30,12 +31,14 @@ class ContentDecryptor_Private {
   virtual bool GenerateKeyRequest(const std::string& key_system,
                                   pp::VarArrayBuffer init_data) = 0;
   virtual bool AddKey(const std::string& session_id,
-                      pp::VarArrayBuffer key) = 0;
+                      pp::VarArrayBuffer key,
+                      pp::VarArrayBuffer init_data) = 0;
   virtual bool CancelKeyRequest(const std::string& session_id) = 0;
   virtual bool Decrypt(pp::Buffer_Dev encrypted_buffer,
-                       int32_t request_id) = 0;
-  virtual bool DecryptAndDecode(pp::Buffer_Dev encrypted_buffer,
-                                int32_t request_id) = 0;
+                       const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
+  virtual bool DecryptAndDecode(
+      pp::Buffer_Dev encrypted_buffer,
+      const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
 
   // PPB_ContentDecryptor_Private methods for passing data from the decryptor
   // to the browser.
@@ -53,11 +56,11 @@ class ContentDecryptor_Private {
                 int32_t media_error,
                 int32_t system_code);
   void DeliverBlock(pp::Buffer_Dev decrypted_block,
-                    int32_t request_id);
+                    const PP_DecryptedBlockInfo& decrypted_block_info);
   void DeliverFrame(pp::Buffer_Dev decrypted_frame,
-                    int32_t request_id);
+                    const PP_DecryptedBlockInfo& decrypted_block_info);
   void DeliverSamples(pp::Buffer_Dev decrypted_samples,
-                      int32_t request_id);
+                      const PP_DecryptedBlockInfo& decrypted_block_info);
 
  private:
   InstanceHandle associated_instance_;

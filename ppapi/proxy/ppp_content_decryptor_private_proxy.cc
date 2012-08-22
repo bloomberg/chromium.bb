@@ -7,6 +7,7 @@
 #include "base/platform_file.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -93,7 +94,8 @@ PP_Bool GenerateKeyRequest(PP_Instance instance,
 
 PP_Bool AddKey(PP_Instance instance,
                PP_Var session_id,
-               PP_Var key) {
+               PP_Var key,
+               PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -105,7 +107,8 @@ PP_Bool AddKey(PP_Instance instance,
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           SerializedVarSendInput(dispatcher, session_id),
-          SerializedVarSendInput(dispatcher, key))));
+          SerializedVarSendInput(dispatcher, key),
+          SerializedVarSendInput(dispatcher, init_data))));
 }
 
 PP_Bool CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
@@ -124,7 +127,7 @@ PP_Bool CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
 
 PP_Bool Decrypt(PP_Instance instance,
                 PP_Resource encrypted_block,
-                int32_t request_id) {
+                const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -160,17 +163,21 @@ PP_Bool Decrypt(PP_Instance instance,
   buffer.handle = handle;
   buffer.size = size;
 
+  std::string serialized_block_info;
+  if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info))
+    return PP_FALSE;
+
   return PP_FromBool(dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_Decrypt(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           buffer,
-          request_id)));
+          serialized_block_info)));
 }
 
 PP_Bool DecryptAndDecode(PP_Instance instance,
                          PP_Resource encrypted_block,
-                         int32_t request_id) {
+                         const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -180,12 +187,31 @@ PP_Bool DecryptAndDecode(PP_Instance instance,
   HostResource host_resource;
   host_resource.SetHostResource(instance, encrypted_block);
 
+  uint32_t size = 0;
+  if (DescribeHostBufferResource(encrypted_block, &size) == PP_FALSE)
+    return PP_FALSE;
+
+  base::SharedMemoryHandle handle;
+  if (ShareHostBufferResourceToPlugin(dispatcher,
+                                      encrypted_block,
+                                      &handle) == PP_FALSE)
+    return PP_FALSE;
+
+  PPPDecryptor_Buffer buffer;
+  buffer.resource = host_resource;
+  buffer.handle = handle;
+  buffer.size = size;
+
+  std::string serialized_block_info;
+  if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info))
+    return PP_FALSE;
+
   return PP_FromBool(dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_DecryptAndDecode(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
-          host_resource,
-          request_id)));
+          buffer,
+          serialized_block_info)));
 }
 
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
@@ -257,12 +283,14 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
 void PPP_ContentDecryptor_Private_Proxy::OnMsgAddKey(
     PP_Instance instance,
     SerializedVarReceiveInput session_id,
-    SerializedVarReceiveInput key) {
+    SerializedVarReceiveInput key,
+    SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->AddKey,
                       instance,
                       ExtractReceivedVarAndAddRef(dispatcher(), &session_id),
-                      ExtractReceivedVarAndAddRef(dispatcher(), &key));
+                      ExtractReceivedVarAndAddRef(dispatcher(), &key),
+                      ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
 }
 
@@ -279,31 +307,38 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgCancelKeyRequest(
 void PPP_ContentDecryptor_Private_Proxy::OnMsgDecrypt(
     PP_Instance instance,
     const PPPDecryptor_Buffer& encrypted_buffer,
-    int32_t request_id) {
+    const std::string& serialized_block_info) {
   if (ppp_decryptor_impl_) {
     PP_Resource plugin_resource =
         PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
                                            encrypted_buffer.handle,
                                            encrypted_buffer.size);
+    PP_EncryptedBlockInfo block_info;
+    if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+      return;
     CallWhileUnlocked(ppp_decryptor_impl_->Decrypt,
                       instance,
                       plugin_resource,
-                      request_id);
+                      const_cast<const PP_EncryptedBlockInfo*>(&block_info));
   }
 }
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgDecryptAndDecode(
     PP_Instance instance,
-    const HostResource& encrypted_block,
-    int32_t request_id) {
+    const PPPDecryptor_Buffer& encrypted_buffer,
+    const std::string& serialized_block_info) {
   if (ppp_decryptor_impl_) {
     PP_Resource plugin_resource =
-        PluginGlobals::Get()->plugin_resource_tracker()->
-            PluginResourceForHostResource(encrypted_block);
+        PPB_Buffer_Proxy::AddProxyResource(encrypted_buffer.resource,
+                                           encrypted_buffer.handle,
+                                           encrypted_buffer.size);
+    PP_EncryptedBlockInfo block_info;
+    if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+      return;
     CallWhileUnlocked(ppp_decryptor_impl_->DecryptAndDecode,
                       instance,
                       plugin_resource,
-                      request_id);
+                      const_cast<const PP_EncryptedBlockInfo*>(&block_info));
   }
 }
 

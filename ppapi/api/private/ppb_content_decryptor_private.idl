@@ -136,13 +136,14 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted data
    * block.
    *
-   * @param[in] request_id A unique value the browser can use to associate
-   * decrypted_block with a decrypt call.
+   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
+   * contains the tracking info and result code associated with the
+   * <code>decrypted_block</code>.
    */
   void DeliverBlock(
       [in] PP_Instance instance,
       [in] PP_Resource decrypted_block,
-      [in] int32_t request_id);
+      [in] PP_DecryptedBlockInfo decrypted_block_info);
 
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
@@ -152,13 +153,14 @@ interface PPB_ContentDecryptor_Private {
    * @param[in] decrypted_frame A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a video frame.
    *
-   * @param[in] request_id A unique value the browser can use to associate
-   * decrypted_frame with a decrypt call.
+   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
+   * contains the tracking info and result code associated with the
+   * <code>decrypted_block</code>.
    */
   void DeliverFrame(
       [in] PP_Instance instance,
       [in] PP_Resource decrypted_frame,
-      [in] int32_t request_id);
+      [in] PP_DecryptedBlockInfo decrypted_block_info);
 
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
@@ -170,11 +172,12 @@ interface PPB_ContentDecryptor_Private {
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted buffer
    * of decoded audio samples.
    *
-   * @param[in] request_id A unique value the browser can use to associate
-   * decrypted_samples with a decrypt call.
+   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
+   * contains the tracking info and result code associated with the
+   * <code>decrypted_block</code>.
    */
   void DeliverSamples(
       [in] PP_Instance instance,
       [in] PP_Resource decrypted_samples,
-      [in] int32_t request_id);
+      [in] PP_DecryptedBlockInfo decrypted_block_info);
 };

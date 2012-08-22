@@ -27,6 +27,8 @@
 #undef PostMessage
 #endif
 
+struct PP_DecryptedBlockInfo;
+
 namespace ppapi {
 
 class TrackedCallback;
@@ -159,13 +161,13 @@ class PPB_Instance_API {
                         int32_t system_error) = 0;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
-                            int32_t request_id) = 0;
+                            const PP_DecryptedBlockInfo* block_info) = 0;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            int32_t request_id) = 0;
+                            const PP_DecryptedBlockInfo* block_info) = 0;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource decrypted_samples,
-                              int32_t request_id) = 0;
+                              const PP_DecryptedBlockInfo* block_info) = 0;
 
   // URLUtil.
   virtual PP_Var ResolveRelativeToDocument(

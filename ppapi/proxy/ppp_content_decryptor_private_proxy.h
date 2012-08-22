@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_PPP_CONTENT_DECRYPTOR_PRIVATE_PROXY_H_
 #define PPAPI_PROXY_PPP_CONTENT_DECRYPTOR_PRIVATE_PROXY_H_
 
+#include <string>
+
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -33,15 +35,17 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
                                SerializedVarReceiveInput init_data);
   void OnMsgAddKey(PP_Instance instance,
                    SerializedVarReceiveInput session_id,
-                   SerializedVarReceiveInput key);
+                   SerializedVarReceiveInput key,
+                   SerializedVarReceiveInput init_data);
   void OnMsgCancelKeyRequest(PP_Instance instance,
                              SerializedVarReceiveInput session_id);
   void OnMsgDecrypt(PP_Instance instance,
                     const PPPDecryptor_Buffer& encrypted_buffer,
-                    int32_t request_id);
-  void OnMsgDecryptAndDecode(PP_Instance instance,
-                             const HostResource& encrypted_block,
-                             int32_t request_id);
+                    const std::string& serialized_encrypted_block_info);
+  void OnMsgDecryptAndDecode(
+      PP_Instance instance,
+      const PPPDecryptor_Buffer& encrypted_buffer,
+      const std::string& serialized_encrypted_block_info);
 
   const PPP_ContentDecryptor_Private* ppp_decryptor_impl_;
 

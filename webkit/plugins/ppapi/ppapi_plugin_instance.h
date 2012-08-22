@@ -53,6 +53,7 @@
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
+struct PP_DecryptedBlockInfo;
 struct PP_Point;
 
 class SkBitmap;
@@ -245,7 +246,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool GenerateKeyRequest(const std::string& key_system,
                           const std::string& init_data);
   bool AddKey(const std::string& session_id,
-              const std::string& key);
+              const std::string& key,
+              const std::string& init_data);
   bool CancelKeyRequest(const std::string& session_id);
   bool Decrypt(const base::StringPiece& encypted_block,
                const DecryptedDataCB& callback);
@@ -445,13 +447,13 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                         int32_t system_code) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
-                            int32_t request_id) OVERRIDE;
+                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
   virtual void DeliverFrame(PP_Instance instance,
                             PP_Resource decrypted_frame,
-                            int32_t request_id) OVERRIDE;
+                            const PP_DecryptedBlockInfo* block_info) OVERRIDE;
   virtual void DeliverSamples(PP_Instance instance,
                               PP_Resource decrypted_samples,
-                              int32_t request_id) OVERRIDE;
+                              const PP_DecryptedBlockInfo* block_info) OVERRIDE;
 
   // Reset this instance as proxied. Resets cached interfaces to point to the
   // proxy and re-sends DidCreate, DidChangeView, and HandleDocumentLoad (if

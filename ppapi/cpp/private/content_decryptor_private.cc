@@ -11,6 +11,7 @@
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/instance_handle.h"
+#include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/var.h"
@@ -47,7 +48,8 @@ PP_Bool GenerateKeyRequest(PP_Instance instance,
 
 PP_Bool AddKey(PP_Instance instance,
                PP_Var session_id_arg,
-               PP_Var key_arg) {
+               PP_Var key_arg,
+               PP_Var init_data_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
@@ -62,10 +64,16 @@ PP_Bool AddKey(PP_Instance instance,
     return PP_FALSE;
   pp::VarArrayBuffer key(key_var);
 
+  pp::Var init_data_var(pp::PASS_REF, init_data_arg);
+  if (init_data_var.is_array_buffer() == false)
+    return PP_FALSE;
+  pp::VarArrayBuffer init_data(init_data_var);
+
   return PP_FromBool(
       static_cast<ContentDecryptor_Private*>(object)->AddKey(
           session_id_var.AsString(),
-          key));
+          key,
+          init_data));
 }
 
 PP_Bool CancelKeyRequest(PP_Instance instance,
@@ -87,7 +95,7 @@ PP_Bool CancelKeyRequest(PP_Instance instance,
 
 PP_Bool Decrypt(PP_Instance instance,
                 PP_Resource encrypted_resource,
-                int32_t request_id) {
+                const PP_EncryptedBlockInfo* encrypted_block_info) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
@@ -96,13 +104,14 @@ PP_Bool Decrypt(PP_Instance instance,
   pp::Buffer_Dev encrypted_block(encrypted_resource);
 
   return PP_FromBool(
-      static_cast<ContentDecryptor_Private*>(object)->Decrypt(encrypted_block,
-                                                              request_id));
+      static_cast<ContentDecryptor_Private*>(object)->Decrypt(
+          encrypted_block,
+          *encrypted_block_info));
 }
 
 PP_Bool DecryptAndDecode(PP_Instance instance,
                          PP_Resource encrypted_resource,
-                         int32_t request_id) {
+                         const PP_EncryptedBlockInfo* encrypted_block_info) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
@@ -113,7 +122,7 @@ PP_Bool DecryptAndDecode(PP_Instance instance,
   return PP_FromBool(
       static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecode(
           encrypted_block,
-          request_id));
+          *encrypted_block_info));
 }
 
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {
@@ -150,8 +159,6 @@ void ContentDecryptor_Private::NeedKey(const std::string& key_system,
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var key_system_var(key_system);
     pp::Var session_id_var(session_id);
-
-    // TODO(tomfinegan): Host to plugin stuff needed for init_data?
 
     get_interface<PPB_ContentDecryptor_Private>()->NeedKey(
         associated_instance_.pp_instance(),
@@ -206,33 +213,36 @@ void ContentDecryptor_Private::KeyError(const std::string& key_system,
   }
 }
 
-void ContentDecryptor_Private::DeliverBlock(pp::Buffer_Dev decrypted_block,
-                                            int32_t request_id) {
+void ContentDecryptor_Private::DeliverBlock(
+    pp::Buffer_Dev decrypted_block,
+    const PP_DecryptedBlockInfo& decrypted_block_info) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->DeliverBlock(
         associated_instance_.pp_instance(),
         decrypted_block.pp_resource(),
-        request_id);
+        &decrypted_block_info);
   }
 }
 
-void ContentDecryptor_Private::DeliverFrame(pp::Buffer_Dev decrypted_frame,
-                                            int32_t request_id) {
+void ContentDecryptor_Private::DeliverFrame(
+    pp::Buffer_Dev decrypted_frame,
+    const PP_DecryptedBlockInfo& decrypted_block_info) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->DeliverFrame(
         associated_instance_.pp_instance(),
         decrypted_frame.pp_resource(),
-        request_id);
+        &decrypted_block_info);
   }
 }
 
-void ContentDecryptor_Private::DeliverSamples(pp::Buffer_Dev decrypted_samples,
-                                              int32_t request_id) {
+void ContentDecryptor_Private::DeliverSamples(
+    pp::Buffer_Dev decrypted_samples,
+    const PP_DecryptedBlockInfo& decrypted_block_info) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->DeliverSamples(
         associated_instance_.pp_instance(),
         decrypted_samples.pp_resource(),
-        request_id);
+        &decrypted_block_info);
   }
 }
 

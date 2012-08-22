@@ -59,11 +59,16 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] key A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the decryption key, license,
    * or other message for the given session ID.
+   *
+   * @param[in] init_data A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
+   * initialization data.
    */
   PP_Bool AddKey(
       [in] PP_Instance instance,
       [in] PP_Var session_id,
-      [in] PP_Var key);
+      [in] PP_Var key,
+      [in] PP_Var init_data);
 
   /**
    * Cancels a pending key request for the specified session ID.
@@ -85,14 +90,14 @@ interface PPP_ContentDecryptor_Private {
    * <code>PPB_Buffer_Dev</code> resource that contains an encrypted data
    * block.
    *
-   * @param[in] request_id A value used by the browser to associate data
-   * returned via the <code>PPB_ContentDecryptor_Private</code> interface with
-   * decryption method calls.
+   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
+   * contains all auxiliary information needed for decryption of the
+   * <code>encrypted_block</code>.
    */
   PP_Bool Decrypt(
       [in] PP_Instance instance,
       [in] PP_Resource encrypted_block,
-      [in] int32_t request_id);
+      [in] PP_EncryptedBlockInfo encrypted_block_info);
 
   /**
    * Decrypts the block, decodes it, and returns the unencrypted uncompressed
@@ -107,12 +112,12 @@ interface PPP_ContentDecryptor_Private {
    * <code>PPB_Buffer_Dev</code> resource that contains an encrypted data
    * block.
    *
-   * @param[in] request_id A value used by the browser to associate data
-   * returned via the <code>PPB_ContentDecryptor_Private</code> interface with
-   * decryption method calls.
+   * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
+   * contains all auxiliary information needed for decryption of the
+   * <code>encrypted_block</code>.
    */
   PP_Bool DecryptAndDecode(
       [in] PP_Instance instance,
       [in] PP_Resource encrypted_block,
-      [in] int32_t request_id);
+      [in] PP_EncryptedBlockInfo encrypted_block_info);
 };

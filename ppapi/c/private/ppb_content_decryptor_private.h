@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Tue Aug 14 11:53:03 2012.
+ *   modified Thu Aug 16 20:19:22 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -16,6 +16,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
 
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_1 \
     "PPB_ContentDecryptor_Private;0.1"
@@ -150,12 +151,14 @@ struct PPB_ContentDecryptor_Private_0_1 {
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted data
    * block.
    *
-   * @param[in] request_id A unique value the browser can use to associate
-   * decrypted_block with a decrypt call.
+   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
+   * contains the tracking info and result code associated with the
+   * <code>decrypted_block</code>.
    */
-  void (*DeliverBlock)(PP_Instance instance,
-                       PP_Resource decrypted_block,
-                       int32_t request_id);
+  void (*DeliverBlock)(
+      PP_Instance instance,
+      PP_Resource decrypted_block,
+      const struct PP_DecryptedBlockInfo* decrypted_block_info);
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to deliver
@@ -164,12 +167,14 @@ struct PPB_ContentDecryptor_Private_0_1 {
    * @param[in] decrypted_frame A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a video frame.
    *
-   * @param[in] request_id A unique value the browser can use to associate
-   * decrypted_frame with a decrypt call.
+   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
+   * contains the tracking info and result code associated with the
+   * <code>decrypted_block</code>.
    */
-  void (*DeliverFrame)(PP_Instance instance,
-                       PP_Resource decrypted_frame,
-                       int32_t request_id);
+  void (*DeliverFrame)(
+      PP_Instance instance,
+      PP_Resource decrypted_frame,
+      const struct PP_DecryptedBlockInfo* decrypted_block_info);
   /**
    * Called after the <code>DecryptAndDecode()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to
@@ -180,12 +185,14 @@ struct PPB_ContentDecryptor_Private_0_1 {
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted buffer
    * of decoded audio samples.
    *
-   * @param[in] request_id A unique value the browser can use to associate
-   * decrypted_samples with a decrypt call.
+   * @param[in] decrypted_block_info A <code>PP_DecryptedBlockInfo</code> that
+   * contains the tracking info and result code associated with the
+   * <code>decrypted_block</code>.
    */
-  void (*DeliverSamples)(PP_Instance instance,
-                         PP_Resource decrypted_samples,
-                         int32_t request_id);
+  void (*DeliverSamples)(
+      PP_Instance instance,
+      PP_Resource decrypted_samples,
+      const struct PP_DecryptedBlockInfo* decrypted_block_info);
 };
 
 typedef struct PPB_ContentDecryptor_Private_0_1 PPB_ContentDecryptor_Private;

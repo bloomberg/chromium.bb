@@ -55,26 +55,26 @@ void KeyError(PP_Instance instance,
 
 void DeliverBlock(PP_Instance instance,
                   PP_Resource decrypted_block,
-                  int32_t request_id) {
+                  const PP_DecryptedBlockInfo* block_info) {
   EnterInstance enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverBlock(instance, decrypted_block, request_id);
+    enter.functions()->DeliverBlock(instance, decrypted_block, block_info);
 }
 
 void DeliverFrame(PP_Instance instance,
                   PP_Resource decrypted_frame,
-                  int32_t request_id) {
+                  const PP_DecryptedBlockInfo* block_info) {
   EnterInstance enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverFrame(instance, decrypted_frame, request_id);
+    enter.functions()->DeliverFrame(instance, decrypted_frame, block_info);
 }
 
 void DeliverSamples(PP_Instance instance,
                     PP_Resource decrypted_samples,
-                    int32_t request_id) {
+                    const PP_DecryptedBlockInfo* block_info) {
   EnterInstance enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverSamples(instance, decrypted_samples, request_id);
+    enter.functions()->DeliverSamples(instance, decrypted_samples, block_info);
 }
 
 const PPB_ContentDecryptor_Private g_ppb_decryption_thunk = {

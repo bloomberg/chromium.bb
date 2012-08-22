@@ -27,6 +27,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
@@ -1334,17 +1335,23 @@ bool PluginInstance::GenerateKeyRequest(const std::string& key_system,
 }
 
 bool PluginInstance::AddKey(const std::string& session_id,
-                            const std::string& key) {
+                            const std::string& key,
+                            const std::string& init_data) {
   if (!LoadContentDecryptorInterface())
     return false;
   PP_Var key_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(key.size(),
                                                                  key.data());
+  PP_Var init_data_array =
+      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+          init_data.size(),
+          init_data.data());
 
   return PP_ToBool(plugin_decryption_interface_->AddKey(
       pp_instance(),
       StringVar::StringToPPVar(session_id),
-      key_array));
+      key_array,
+      init_data_array));
 }
 
 bool PluginInstance::CancelKeyRequest(const std::string& session_id) {
@@ -1365,10 +1372,12 @@ bool PluginInstance::Decrypt(const base::StringPiece& encrypted_block,
   if (!encrypted_resource.get())
     return false;
 
+  PP_EncryptedBlockInfo block_info;
+
   // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
   return PP_ToBool(plugin_decryption_interface_->Decrypt(pp_instance(),
                                                          encrypted_resource,
-                                                         0));
+                                                         &block_info));
 }
 
 bool PluginInstance::DecryptAndDecode(const base::StringPiece& encrypted_block,
@@ -1379,11 +1388,14 @@ bool PluginInstance::DecryptAndDecode(const base::StringPiece& encrypted_block,
                                                          encrypted_block));
   if (!encrypted_resource.get())
     return false;
+
+  PP_EncryptedBlockInfo block_info;
+
   // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
   return PP_ToBool(plugin_decryption_interface_->DecryptAndDecode(
       pp_instance(),
       encrypted_resource,
-      0));
+      &block_info));
 }
 
 bool PluginInstance::FlashIsFullscreenOrPending() {
@@ -2025,20 +2037,20 @@ void PluginInstance::KeyError(PP_Instance instance,
 
 void PluginInstance::DeliverBlock(PP_Instance instance,
                                   PP_Resource decrypted_block,
-                                  int32_t request_id) {
+                                  const PP_DecryptedBlockInfo* block_info) {
   // TODO(xhwang): Pass the decrypted block back to media stack.
 }
 
 void PluginInstance::DeliverFrame(PP_Instance instance,
                                   PP_Resource decrypted_frame,
-                                  int32_t request_id) {
+                                  const PP_DecryptedBlockInfo* block_info) {
   // TODO(tomfinegan): To be implemented after completion of v0.1 of the
   // EME/CDM work.
 }
 
 void PluginInstance::DeliverSamples(PP_Instance instance,
                                     PP_Resource decrypted_samples,
-                                    int32_t request_id) {
+                                    const PP_DecryptedBlockInfo* block_info) {
   // TODO(tomfinegan): To be implemented after completion of v0.1 of the
   // EME/CDM work.
 }

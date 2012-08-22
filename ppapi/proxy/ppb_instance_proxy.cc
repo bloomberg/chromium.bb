@@ -11,6 +11,8 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_lock.h"
+#include "ppapi/c/private/pp_content_decryptor.h"
+#include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -479,45 +481,61 @@ void PPB_Instance_Proxy::KeyError(PP_Instance instance,
 
 void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
                                       PP_Resource decrypted_block,
-                                      int32_t request_id) {
+                                      const PP_DecryptedBlockInfo* block_info) {
   Resource* object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_block);
   if (!object || object->pp_instance() != instance)
     return;
+
+  std::string serialized_block_info;
+  if (!SerializeBlockInfo(*block_info, &serialized_block_info))
+    return;
+
   dispatcher()->Send(
       new PpapiHostMsg_PPBInstance_DeliverBlock(API_ID_PPB_INSTANCE,
           instance,
           object->host_resource().host_resource(),
-          request_id));
+          serialized_block_info));
 }
 
 void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
                                       PP_Resource decrypted_frame,
-                                      int32_t request_id) {
+                                      const PP_DecryptedBlockInfo* block_info) {
   Resource* object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_frame);
   if (!object || object->pp_instance() != instance)
     return;
+
+  std::string serialized_block_info;
+  if (!SerializeBlockInfo(*block_info, &serialized_block_info))
+    return;
+
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_DeliverFrame(
           API_ID_PPB_INSTANCE,
           instance,
           object->host_resource().host_resource(),
-          request_id));
+          serialized_block_info));
 }
 
-void PPB_Instance_Proxy::DeliverSamples(PP_Instance instance,
-                                        PP_Resource decrypted_samples,
-                                        int32_t request_id) {
+void PPB_Instance_Proxy::DeliverSamples(
+    PP_Instance instance,
+    PP_Resource decrypted_samples,
+    const PP_DecryptedBlockInfo* block_info) {
   Resource* object =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_samples);
   if (!object || object->pp_instance() != instance)
     return;
+
+  std::string serialized_block_info;
+  if (!SerializeBlockInfo(*block_info, &serialized_block_info))
+      return;
+
   dispatcher()->Send(
       new PpapiHostMsg_PPBInstance_DeliverSamples(
           API_ID_PPB_INSTANCE,
           instance,
           object->host_resource().host_resource(),
-          request_id));
+          serialized_block_info));
 }
 
 #endif  // !defined(OS_NACL)
@@ -923,28 +941,43 @@ void PPB_Instance_Proxy::OnHostMsgKeyError(
   }
 }
 
-void PPB_Instance_Proxy::OnHostMsgDeliverBlock(PP_Instance instance,
-                                               PP_Resource decrypted_block,
-                                               int32_t request_id) {
+void PPB_Instance_Proxy::OnHostMsgDeliverBlock(
+    PP_Instance instance,
+    PP_Resource decrypted_block,
+    const std::string& serialized_block_info) {
+  PP_DecryptedBlockInfo block_info;
+  if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+    return;
+
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverBlock(instance, decrypted_block, request_id);
+    enter.functions()->DeliverBlock(instance, decrypted_block, &block_info);
 }
 
-void PPB_Instance_Proxy::OnHostMsgDeliverFrame(PP_Instance instance,
-                                               PP_Resource decrypted_frame,
-                                               int32_t request_id) {
+void PPB_Instance_Proxy::OnHostMsgDeliverFrame(
+    PP_Instance instance,
+    PP_Resource decrypted_frame,
+    const std::string& serialized_block_info) {
+  PP_DecryptedBlockInfo block_info;
+  if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+    return;
+
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverFrame(instance, decrypted_frame, request_id);
+    enter.functions()->DeliverFrame(instance, decrypted_frame, &block_info);
 }
 
-void PPB_Instance_Proxy::OnHostMsgDeliverSamples(PP_Instance instance,
-                                                 PP_Resource decrypted_samples,
-                                                 int32_t request_id) {
+void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
+    PP_Instance instance,
+    PP_Resource decrypted_samples,
+    const std::string& serialized_block_info) {
+  PP_DecryptedBlockInfo block_info;
+  if (!DeserializeBlockInfo(serialized_block_info, &block_info))
+    return;
+
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverSamples(instance, decrypted_samples, request_id);
+    enter.functions()->DeliverSamples(instance, decrypted_samples, &block_info);
 }
 
 #endif  // !defined(OS_NACL)
