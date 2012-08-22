@@ -82,6 +82,9 @@ class AppModalDialog {
 
   content::WebContents* web_contents_;
 
+  // True if CompleteDialog was called.
+  bool completed_;
+
   DISALLOW_COPY_AND_ASSIGN(AppModalDialog);
 };
 

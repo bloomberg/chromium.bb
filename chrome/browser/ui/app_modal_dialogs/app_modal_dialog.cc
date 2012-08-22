@@ -18,10 +18,12 @@ AppModalDialog::AppModalDialog(WebContents* web_contents, const string16& title)
     : valid_(true),
       native_dialog_(NULL),
       title_(title),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      completed_(false) {
 }
 
 AppModalDialog::~AppModalDialog() {
+  CompleteDialog();
 }
 
 void AppModalDialog::ShowModalDialog() {
@@ -62,5 +64,8 @@ void AppModalDialog::CloseModalDialog() {
 }
 
 void AppModalDialog::CompleteDialog() {
-  AppModalDialogQueue::GetInstance()->ShowNextDialog();
+  if (!completed_) {
+    completed_ = true;
+    AppModalDialogQueue::GetInstance()->ShowNextDialog();
+  }
 }
