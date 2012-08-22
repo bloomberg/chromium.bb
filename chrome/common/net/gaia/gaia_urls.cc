@@ -136,9 +136,12 @@ GaiaUrls::GaiaUrls() {
       "https://www.googleapis.com/auth/userinfo.email";
   client_oauth_url_ = "https://accounts.google.com/ClientOAuth";
 
-  oauth2_chrome_client_id_ = kOAuth2ChromeClientId;
-  oauth2_chrome_client_secret_ = kOAuth2ChromeClientSecret;
-
+  GetSwitchValueWithDefault(switches::kOAuth2ClientId,
+                            kOAuth2ChromeClientId,
+                            &oauth2_chrome_client_id_);
+  GetSwitchValueWithDefault(switches::kOAuth2ClientSecret,
+                            kOAuth2ChromeClientSecret,
+                            &oauth2_chrome_client_secret_);
   GetSwitchValueWithDefault(switches::kClientLoginToOAuth2Url,
                             kClientLoginToOAuth2Url,
                             &client_login_to_oauth2_url_);

@@ -256,6 +256,8 @@ extern const char kNotifyCloudPrintTokenExpired[];
 extern const char kNtpAppInstallHint[];
 extern const char kNumPacThreads[];
 extern const char kOAuth1LoginScope[];
+extern const char kOAuth2ClientId[];
+extern const char kOAuth2ClientSecret[];
 extern const char kOAuth2IssueTokenUrl[];
 extern const char kOAuth2TokenUrl[];
 extern const char kOldPanels[];
