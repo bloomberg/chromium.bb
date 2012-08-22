@@ -100,8 +100,7 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       base::PlatformFileError rv,
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
-  void DidWrite(const WriteCallback& callback,
-                base::PlatformFileError result,
+  void DidWrite(base::PlatformFileError result,
                 int64 bytes,
                 bool complete);
   void DidFinishFileOperation(const StatusCallback& callback,
@@ -123,6 +122,9 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
   scoped_ptr<fileapi::FileWriterDelegate> file_writer_delegate_;
+
+  WriteCallback write_callback_;
+  StatusCallback cancel_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSystemOperation);
 };

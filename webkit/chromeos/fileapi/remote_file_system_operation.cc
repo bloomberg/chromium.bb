@@ -113,13 +113,14 @@ void RemoteFileSystemOperation::Write(
     int64 offset,
     const WriteCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationWrite));
+  DCHECK(write_callback_.is_null());
 
+  write_callback_ = callback;
   file_writer_delegate_.reset(
       new fileapi::FileWriterDelegate(
           base::Bind(&RemoteFileSystemOperation::DidWrite,
                      // FileWriterDelegate is owned by |this|. So Unretained.
-                     base::Unretained(this),
-                     callback),
+                     base::Unretained(this)),
           scoped_ptr<fileapi::FileStreamWriter>(
               new fileapi::RemoteFileStreamWriter(remote_proxy_,
                                                   url,
@@ -142,8 +143,34 @@ void RemoteFileSystemOperation::Truncate(const FileSystemURL& url,
 }
 
 void RemoteFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
-  // TODO(kinaba): crbug.com/132403. implement.
-  NOTIMPLEMENTED();
+  if (file_writer_delegate_.get()) {
+    DCHECK_EQ(kOperationWrite, pending_operation_);
+
+    // Writes are done without proxying through FileUtilProxy after the initial
+    // opening of the PlatformFile.  All state changes are done on this thread,
+    // so we're guaranteed to be able to shut down atomically.
+    const bool delete_now = file_writer_delegate_->Cancel();
+
+    if (!write_callback_.is_null()) {
+      // Notify the failure status to the ongoing operation's callback.
+      write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0, false);
+    }
+    cancel_callback.Run(base::PLATFORM_FILE_OK);
+    write_callback_.Reset();
+
+    if (delete_now) {
+      delete this;
+      return;
+    }
+  } else {
+    DCHECK_EQ(kOperationTruncate, pending_operation_);
+    // We're cancelling a truncate operation, but we can't actually stop it
+    // since it's been proxied to another thread.  We need to save the
+    // cancel_callback so that when the truncate returns, it can see that it's
+    // been cancelled, report it, and report that the cancel has succeeded.
+    DCHECK(cancel_callback_.is_null());
+    cancel_callback_ = cancel_callback;
+  }
 }
 
 void RemoteFileSystemOperation::TouchFile(const FileSystemURL& url,
@@ -235,11 +262,16 @@ void RemoteFileSystemOperation::DidReadDirectory(
 }
 
 void RemoteFileSystemOperation::DidWrite(
-    const WriteCallback& callback,
     base::PlatformFileError rv,
     int64 bytes,
     bool complete) {
-  callback.Run(rv, bytes, complete);
+  if (write_callback_.is_null()) {
+    // If cancelled, callback is already invoked and set to null in Cancel().
+    // We must not call it twice. Just shut down this operation object.
+    delete this;
+    return;
+  }
+  write_callback_.Run(rv, bytes, complete);
   if (rv != base::PLATFORM_FILE_OK || complete) {
     // Other Did*'s doesn't have "delete this", because it is automatic since
     // they are base::Owned by the caller of the callback. For DidWrite, the
@@ -254,7 +286,15 @@ void RemoteFileSystemOperation::DidWrite(
 void RemoteFileSystemOperation::DidFinishFileOperation(
     const StatusCallback& callback,
     base::PlatformFileError rv) {
-  callback.Run(rv);
+  if (!cancel_callback_.is_null()) {
+    DCHECK_EQ(kOperationTruncate, pending_operation_);
+
+    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    cancel_callback_.Run(base::PLATFORM_FILE_OK);
+    cancel_callback_.Reset();
+  } else {
+    callback.Run(rv);
+  }
 }
 
 void RemoteFileSystemOperation::DidCreateSnapshotFile(
