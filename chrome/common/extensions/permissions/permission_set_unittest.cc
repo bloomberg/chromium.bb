@@ -668,6 +668,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kNotification);
+  skip.insert(APIPermission::kPushMessaging);
   skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kTts);

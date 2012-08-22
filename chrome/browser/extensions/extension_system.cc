@@ -191,6 +191,11 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   }
 }
 
+void ExtensionSystemImpl::Shared::Shutdown() {
+  if (extension_service_.get())
+    extension_service_->Shutdown();
+}
+
 StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
 }

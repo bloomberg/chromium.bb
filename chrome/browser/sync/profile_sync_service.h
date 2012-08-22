@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/invalidation_frontend.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -153,7 +154,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
-                           public ProfileKeyedService {
+                           public ProfileKeyedService,
+                           public InvalidationFrontend {
  public:
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
@@ -594,22 +596,25 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // and it must already be registered.
   //
   // Handler registrations are persisted across restarts of sync.
-  void RegisterInvalidationHandler(syncer::SyncNotifierObserver* handler);
+  virtual void RegisterInvalidationHandler(
+      syncer::SyncNotifierObserver* handler) OVERRIDE;
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  An ID must be registered for
   // at most one handler.
   //
   // Registered IDs are persisted across restarts of sync.
-  void UpdateRegisteredInvalidationIds(syncer::SyncNotifierObserver* handler,
-                                       const syncer::ObjectIdSet& ids);
+  virtual void UpdateRegisteredInvalidationIds(
+      syncer::SyncNotifierObserver* handler,
+      const syncer::ObjectIdSet& ids) OVERRIDE;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs
   // associated with |handler|.
   //
   // Handler registrations are persisted across restarts of sync.
-  void UnregisterInvalidationHandler(syncer::SyncNotifierObserver* handler);
+  virtual void UnregisterInvalidationHandler(
+      syncer::SyncNotifierObserver* handler) OVERRIDE;
 
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;

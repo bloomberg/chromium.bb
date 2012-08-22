@@ -2370,6 +2370,7 @@
         'browser/sync/glue/ui_model_worker.h',
         'browser/sync/invalidations/invalidator_storage.cc',
         'browser/sync/invalidations/invalidator_storage.h',
+        'browser/sync/invalidation_frontend.h',
         'browser/sync/profile_sync_components_factory.h',
         'browser/sync/profile_sync_components_factory_impl.cc',
         'browser/sync/profile_sync_components_factory_impl.h',

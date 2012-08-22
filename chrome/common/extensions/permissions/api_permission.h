@@ -85,6 +85,7 @@ class APIPermission {
     kPlugin,
     kPrivacy,
     kProxy,
+    kPushMessaging,
     kSerial,
     kSocket,
     kStorage,

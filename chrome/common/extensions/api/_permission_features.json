@@ -232,6 +232,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "pushMessaging": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   // Note: runtime is not actually a permission, but some systems check these
   // values to verify restrictions.
   "runtime": {

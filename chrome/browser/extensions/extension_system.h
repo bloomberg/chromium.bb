@@ -187,6 +187,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
     void RegisterManagementPolicyProviders();
     void Init(bool extensions_enabled);
 
+    // ProfileKeyedService implementation.
+    virtual void Shutdown() OVERRIDE;
+
     StateStore* state_store();
     ExtensionService* extension_service();
     ManagementPolicy* management_policy();

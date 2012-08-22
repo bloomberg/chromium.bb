@@ -517,6 +517,10 @@ void ExtensionService::InitEventRouters() {
   event_routers_initialized_ = true;
 }
 
+void ExtensionService::Shutdown() {
+  push_messaging_event_router_->Shutdown();
+}
+
 const Extension* ExtensionService::GetExtensionById(
     const std::string& id, bool include_disabled) const {
   int include_mask = INCLUDE_ENABLED;
