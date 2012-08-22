@@ -118,10 +118,10 @@ bool NPChannelBase::Init(base::MessageLoopProxy* ipc_message_loop,
                          bool create_pipe_now,
                          base::WaitableEvent* shutdown_event) {
 #if defined(OS_POSIX)
-  // Check the validity of fd for bug investigation.  Remove after fixed.
-  // See crbug.com/97285 for details.
-  if (mode_ == IPC::Channel::MODE_CLIENT)
-    CHECK_NE(-1, channel_handle_.socket.fd);
+  // Attempting to initialize with an invalid channel handle.
+  // See http://crbug.com/97285 for details.
+  if (mode_ == IPC::Channel::MODE_CLIENT && -1 == channel_handle_.socket.fd)
+    return false;
 #endif
 
   channel_.reset(new IPC::SyncChannel(
