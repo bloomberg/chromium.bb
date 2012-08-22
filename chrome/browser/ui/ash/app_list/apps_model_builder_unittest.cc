@@ -61,7 +61,7 @@ TEST_F(AppsModelBuilderTest, GetExtensionApps) {
   const ExtensionSet* extensions = service_->extensions();
   ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
 
-  AppsModelBuilder builder(profile_.get(), NULL);
+  AppsModelBuilder builder(profile_.get(), NULL, NULL);
 
   AppsModelBuilder::Apps apps;
   builder.GetExtensionApps(&apps);
@@ -88,7 +88,7 @@ TEST_F(AppsModelBuilderTest, SortAndPopulateModel) {
   for (size_t i = 0; i < arraysize(kInput); ++i)
     apps.push_back(new TestAppListItemModel(kInput[i]));
 
-  AppsModelBuilder builder(profile_.get(), model.get());
+  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
   builder.SortAndPopulateModel(apps);
 
   EXPECT_EQ(kExpected, GetModelContent(model.get()));
@@ -97,7 +97,7 @@ TEST_F(AppsModelBuilderTest, SortAndPopulateModel) {
 TEST_F(AppsModelBuilderTest, InsertItemByTitle) {
   scoped_ptr<app_list::AppListModel::Apps> model(
       new app_list::AppListModel::Apps);
-  AppsModelBuilder builder(profile_.get(), model.get());
+  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
 
   const char* kInput[] = {
     "CB", "Ca", "B", "a", "z", "D"

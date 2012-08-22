@@ -55,8 +55,10 @@ bool IsSpecialApp(const std::string& extension_id) {
 }  // namespace
 
 AppsModelBuilder::AppsModelBuilder(Profile* profile,
-                                   app_list::AppListModel::Apps* model)
+                                   app_list::AppListModel::Apps* model,
+                                   AppListController* controller)
     : profile_(profile),
+      controller_(controller),
       model_(model),
       special_apps_count_(0) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -135,7 +137,7 @@ void AppsModelBuilder::GetExtensionApps(Apps* apps) {
        app != extensions->end(); ++app) {
     if ((*app)->ShouldDisplayInLauncher() &&
         !IsSpecialApp((*app)->id())) {
-      apps->push_back(new ExtensionAppItem(profile_, *app));
+      apps->push_back(new ExtensionAppItem(profile_, *app, controller_));
     }
   }
 }
@@ -154,7 +156,7 @@ void AppsModelBuilder::CreateSpecialApps() {
     const Extension* extension = service->GetInstalledExtension(extension_id);
     DCHECK(extension);
 
-    model_->Add(new ExtensionAppItem(profile_, extension));
+    model_->Add(new ExtensionAppItem(profile_, extension, controller_));
   }
 
   special_apps_count_ = model_->item_count();
@@ -202,7 +204,7 @@ void AppsModelBuilder::Observe(int type,
       if (FindApp(extension->id()) != -1)
         return;
 
-      InsertItemByTitle(new ExtensionAppItem(profile_, extension));
+      InsertItemByTitle(new ExtensionAppItem(profile_, extension, controller_));
       HighlightApp();
       break;
     }

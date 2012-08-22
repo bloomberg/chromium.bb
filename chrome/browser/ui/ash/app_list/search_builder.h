@@ -16,6 +16,7 @@ class SearchBoxModel;
 class SearchResult;
 }
 
+class AppListController;
 class AutocompleteController;
 class AutocompleteResult;
 class ExtensionAppProvider;
@@ -26,7 +27,8 @@ class SearchBuilder : public AutocompleteControllerDelegate {
  public:
   SearchBuilder(Profile* profile,
                 app_list::SearchBoxModel* search_box,
-                app_list::AppListModel::SearchResults* results);
+                app_list::AppListModel::SearchResults* results,
+                AppListController* list_controller);
   virtual ~SearchBuilder();
 
   void StartSearch();
@@ -50,6 +52,9 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
   scoped_ptr<AutocompleteController> controller_;
+
+  // The controller of the app list. Owned by the app list delegate.
+  AppListController* list_controller_;
 
   // ExtensionAppProvider used for apps only mode. If apps only mode becomes the
   // only mode, remove the AutocompleteController above. Otherwise, remove this.

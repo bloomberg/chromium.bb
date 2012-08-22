@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/user_action_handler.h"
@@ -289,8 +290,10 @@ bool ChromeShellDelegate::IsSpokenFeedbackEnabled() const {
 
 app_list::AppListViewDelegate*
     ChromeShellDelegate::CreateAppListViewDelegate() {
-  // Shell will own the created delegate.
-  return new AppListViewDelegate;
+  DCHECK(ash::Shell::HasInstance());
+  // Shell will own the created delegate, and the delegate will own
+  // the controller.
+  return new AppListViewDelegate(new AppListControllerAsh());
 }
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(

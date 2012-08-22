@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ash/app_list/chrome_app_list_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class AppListController;
 class ExtensionResource;
 class Profile;
 class SkBitmap;
@@ -25,7 +26,9 @@ class ExtensionAppItem : public ChromeAppListItem,
                          public ImageLoadingTracker::Observer,
                          public ui::SimpleMenuModel::Delegate {
  public:
-  ExtensionAppItem(Profile* profile, const extensions::Extension* extension);
+  ExtensionAppItem(Profile* profile,
+                   const extensions::Extension* extension,
+                   AppListController* controller);
   virtual ~ExtensionAppItem();
 
   // Gets extension associated with this model. Returns NULL if extension
@@ -64,6 +67,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   Profile* profile_;
   const std::string extension_id_;
+  AppListController* controller_;
 
   scoped_ptr<ImageLoadingTracker> tracker_;
   scoped_ptr<ui::SimpleMenuModel> context_menu_model_;

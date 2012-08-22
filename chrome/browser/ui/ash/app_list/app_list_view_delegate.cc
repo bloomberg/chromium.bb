@@ -4,28 +4,29 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_view_delegate.h"
 
-#include "ash/shell.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/apps_model_builder.h"
 #include "chrome/browser/ui/ash/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/ash/app_list/search_builder.h"
 #include "content/public/browser/user_metrics.h"
 
-AppListViewDelegate::AppListViewDelegate() {
-}
+AppListViewDelegate::AppListViewDelegate(AppListController* controller)
+    : controller_(controller) {}
 
-AppListViewDelegate::~AppListViewDelegate() {
-}
+AppListViewDelegate::~AppListViewDelegate() {}
 
 void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
   if (model) {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-    apps_builder_.reset(new AppsModelBuilder(profile, model->apps()));
+    apps_builder_.reset(new AppsModelBuilder(profile,
+                                             model->apps(),
+                                             controller_.get()));
     apps_builder_->Build();
 
     search_builder_.reset(new SearchBuilder(profile,
                                             model->search_box(),
-                                            model->results()));
+                                            model->results(),
+                                            controller_.get()));
   } else {
     apps_builder_.reset();
     search_builder_.reset();
@@ -57,7 +58,5 @@ void AppListViewDelegate::OpenSearchResult(
 }
 
 void AppListViewDelegate::Close()  {
-  DCHECK(ash::Shell::HasInstance());
-  if (ash::Shell::GetInstance()->GetAppListTargetVisibility())
-    ash::Shell::GetInstance()->ToggleAppList();
+  controller_->CloseView();
 }

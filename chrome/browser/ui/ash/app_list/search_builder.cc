@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/extension_utils.h"
+#include "chrome/browser/ui/ash/app_list/app_list_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -177,10 +177,12 @@ class SearchBuilderResult : public app_list::SearchResult,
 SearchBuilder::SearchBuilder(
     Profile* profile,
     app_list::SearchBoxModel* search_box,
-    app_list::AppListModel::SearchResults* results)
+    app_list::AppListModel::SearchResults* results,
+    AppListController* list_controller)
     : profile_(profile),
       search_box_(search_box),
-      results_(results) {
+      results_(results),
+      list_controller_(list_controller) {
   search_box_->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
@@ -244,7 +246,7 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     if (extension) {
       content::RecordAction(
           content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
-      extension_utils::OpenExtension(profile_, extension, event_flags);
+      list_controller_->OpenApp(profile_, extension->id(), event_flags);
     }
   } else {
     // TODO(xiyuan): What should we do for alternate url case?

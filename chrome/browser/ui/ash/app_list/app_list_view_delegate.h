@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/ash/app_list/app_list_controller.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
 class AppsModelBuilder;
@@ -17,7 +18,8 @@ class SearchBuilder;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
-  AppListViewDelegate();
+  // The delegate will take ownership of the controller.
+  explicit AppListViewDelegate(AppListController* controller);
   virtual ~AppListViewDelegate();
 
  private:
@@ -33,6 +35,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
 
   scoped_ptr<AppsModelBuilder> apps_builder_;
   scoped_ptr<SearchBuilder> search_builder_;
+  scoped_ptr<AppListController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewDelegate);
 };

@@ -11,8 +11,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/extension_utils.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/app_list/app_list_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -116,29 +115,15 @@ bool IsExtensionEnabled(Profile* profile, const std::string& extension_id) {
       !service->GetTerminatedExtension(extension_id);
 }
 
-bool IsAppPinned(const std::string& extension_id) {
-  return ChromeLauncherController::instance()->IsAppPinned(extension_id);
-}
-
-void PinApp(const std::string& extension_id) {
-  ChromeLauncherController::instance()->PinAppWithID(extension_id);
-}
-
-void UnpinApp(const std::string& extension_id) {
-  return ChromeLauncherController::instance()->UnpinAppsWithID(extension_id);
-}
-
-bool CanPin() {
-  return ChromeLauncherController::instance()->CanPin();
-}
-
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
-                                   const Extension* extension)
+                                   const Extension* extension,
+                                   AppListController* controller)
     : ChromeAppListItem(TYPE_APP),
       profile_(profile),
-      extension_id_(extension->id()) {
+      extension_id_(extension->id()),
+      controller_(controller) {
   SetTitle(extension->name());
   LoadImage(extension);
 }
@@ -196,7 +181,7 @@ bool ExtensionAppItem::IsItemForCommandIdDynamic(int command_id) const {
 
 string16 ExtensionAppItem::GetLabelForCommandId(int command_id) const {
   if (command_id == TOGGLE_PIN) {
-    return IsAppPinned(extension_id_) ?
+    return controller_->IsAppPinned(extension_id_) ?
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN) :
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_PIN);
   } else {
@@ -215,7 +200,7 @@ bool ExtensionAppItem::IsCommandIdChecked(int command_id) const {
 
 bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
   if (command_id == TOGGLE_PIN) {
-    return CanPin();
+    return controller_->CanPin();
   } else if (command_id == OPTIONS) {
     const Extension* extension = GetExtension();
     return IsExtensionEnabled(profile_, extension_id_) && extension &&
@@ -239,11 +224,11 @@ bool ExtensionAppItem::GetAcceleratorForCommandId(
 void ExtensionAppItem::ExecuteCommand(int command_id) {
   if (command_id == LAUNCH) {
     Activate(0);
-  } else if (command_id == TOGGLE_PIN && CanPin()) {
-    if (IsAppPinned(extension_id_))
-      UnpinApp(extension_id_);
+  } else if (command_id == TOGGLE_PIN && controller_->CanPin()) {
+    if (controller_->IsAppPinned(extension_id_))
+      controller_->UnpinApp(extension_id_);
     else
-      PinApp(extension_id_);
+      controller_->PinApp(extension_id_);
   } else if (command_id >= LAUNCH_TYPE_START &&
              command_id < LAUNCH_TYPE_LAST) {
     SetExtensionLaunchType(profile_,
@@ -262,7 +247,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (!extension)
     return;
 
-  ChromeLauncherController::instance()->OpenAppID(extension->id(), event_flags);
+  controller_->ActivateApp(profile_, extension->id(), event_flags);
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
@@ -276,8 +261,9 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     context_menu_model_->AddSeparator();
     context_menu_model_->AddItemWithStringId(
         TOGGLE_PIN,
-        IsAppPinned(extension_id_) ? IDS_APP_LIST_CONTEXT_MENU_UNPIN :
-                                     IDS_APP_LIST_CONTEXT_MENU_PIN);
+        controller_->IsAppPinned(extension_id_) ?
+            IDS_APP_LIST_CONTEXT_MENU_UNPIN :
+            IDS_APP_LIST_CONTEXT_MENU_PIN);
     context_menu_model_->AddSeparator();
     context_menu_model_->AddCheckItemWithStringId(
         LAUNCH_TYPE_REGULAR_TAB,

@@ -13,11 +13,14 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_model.h"
 
+class AppListController;
 class Profile;
 
 class AppsModelBuilder : public content::NotificationObserver {
  public:
-  AppsModelBuilder(Profile* profile, app_list::AppListModel::Apps* model);
+  AppsModelBuilder(Profile* profile,
+                   app_list::AppListModel::Apps* model,
+                   AppListController* controller);
   virtual ~AppsModelBuilder();
 
   // Populates the model.
@@ -51,6 +54,7 @@ class AppsModelBuilder : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
+  AppListController* controller_;
 
   // Sub apps model of AppListModel that represents apps grid view.
   app_list::AppListModel::Apps* model_;
