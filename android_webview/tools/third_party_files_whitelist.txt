@@ -31,10 +31,6 @@ base/file_version_info_win.h
 base/i18n/icu_string_conversions.cc
 # Copyright Ron Rivest, public domain.
 base/md5.cc
-# Copyright The Chromium Authors and The Free Software Foundation; GPL v3
-# license. Not used on Android. TODO(steveblock): Exclude this from the WebView
-# snapshot (https://chromiumcodereview.appspot.com/10695024).
-build/gdb-add-index
 # String 'copyright' used in resources.
 chrome/app/chrome_version.rc.version
 # String 'copyright' used in resources.
@@ -86,7 +82,9 @@ chrome/browser/resources/about_version.html
 # Credits notice for ChromeOS.
 chrome/browser/resources/chromeos/about_os_credits.html
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/js/image_editor/gallery_scripts.js
+chrome/browser/resources/file_manager/js/action_choice_scripts.js
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/photo/gallery_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/file_manager/js/main_scripts.js
 # String 'copyright' used in code.
@@ -211,9 +209,9 @@ net/proxy/proxy_resolver_script.h
 # and (MPL, GPL v2 or LGPL v2) licenses. Not used on Android.
 net/socket/ssl_client_socket_nss.cc
 # String 'copyright' used in resources.
-remoting/chromium_branding
+remoting/branding_Chrome
 # String 'copyright' used in resources.
-remoting/google_chrome_branding
+remoting/branding_Chromium
 # String 'copyright' used in project file.
 remoting/host/installer/mac/ChromotingHost.packproj
 # String 'copyright' used in project file.
