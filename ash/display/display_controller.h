@@ -51,7 +51,7 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   aura::RootWindow* GetPrimaryRootWindow();
 
   // Returns the root window for |display_id|.
-  aura::RootWindow* GetRootWindowForDisplayId(int id);
+  aura::RootWindow* GetRootWindowForDisplayId(int64 id);
 
   // Closes all child windows in the all root windows.
   void CloseChildWindows();

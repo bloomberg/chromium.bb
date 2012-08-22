@@ -82,7 +82,7 @@ aura::RootWindow* DisplayController::GetPrimaryRootWindow() {
   return root_windows_[display_manager->GetDisplayAt(0)->id()];
 }
 
-aura::RootWindow* DisplayController::GetRootWindowForDisplayId(int id) {
+aura::RootWindow* DisplayController::GetRootWindowForDisplayId(int64 id) {
   return root_windows_[id];
 }
 
