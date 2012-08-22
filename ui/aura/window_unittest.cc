@@ -236,6 +236,20 @@ base::TimeDelta getTime() {
   return base::Time::NowFromSystemTime() - base::Time();
 }
 
+class SelfEventHandlingWindowDelegate : public TestWindowDelegate {
+ public:
+  SelfEventHandlingWindowDelegate() {}
+
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      Window* child,
+      const gfx::Point& location) OVERRIDE {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SelfEventHandlingWindowDelegate);
+};
+
 }  // namespace
 
 TEST_F(WindowTest, GetChildById) {
@@ -512,6 +526,21 @@ TEST_F(WindowTest, GetEventHandlerForPointWithOverride) {
   parent->set_hit_test_bounds_override_inner(gfx::Insets(1, 1, 1, 1));
   EXPECT_EQ(parent.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
   EXPECT_EQ(child.get(),  parent->GetEventHandlerForPoint(gfx::Point(1, 1)));
+}
+
+TEST_F(WindowTest, GetEventHandlerForPointWithOverrideDescendingOrder) {
+  scoped_ptr<SelfEventHandlingWindowDelegate> parent_delegate(
+      new SelfEventHandlingWindowDelegate);
+  scoped_ptr<Window> parent(CreateTestWindowWithDelegate(
+      parent_delegate.get(), 1, gfx::Rect(10, 20, 400, 500), NULL));
+  scoped_ptr<Window> child(
+      CreateTestWindow(SK_ColorRED, 2, gfx::Rect(0, 0, 390, 480),
+                       parent.get()));
+
+  // We can override ShouldDescendIntoChildForEventHandling to make the parent
+  // grab all events.
+  EXPECT_EQ(parent.get(), parent->GetEventHandlerForPoint(gfx::Point(0, 0)));
+  EXPECT_EQ(parent.get(), parent->GetEventHandlerForPoint(gfx::Point(50, 50)));
 }
 
 TEST_F(WindowTest, GetTopWindowContainingPoint) {

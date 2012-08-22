@@ -761,6 +761,11 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) {
+  views::WidgetDelegate* widget_delegate = GetWidget()->widget_delegate();
+  if (widget_delegate &&
+      !widget_delegate->ShouldDescendIntoChildForEventHandling(child, location))
+    return false;
+
   // Don't descend into |child| if there is a view with a Layer that contains
   // the point and is stacked above |child|s layer.
   typedef std::vector<ui::Layer*> Layers;

@@ -147,6 +147,12 @@ class VIEWS_EXPORT WidgetDelegate {
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetHitTestMask(gfx::Path* mask) const;
 
+  // Returns true if event handling should descend into |child|.
+  // |location| is in terms of the Window.
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      gfx::NativeView child,
+      const gfx::Point& location);
+
  protected:
   virtual ~WidgetDelegate() {}
 

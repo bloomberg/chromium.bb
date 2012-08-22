@@ -67,6 +67,9 @@ class ShellWindowViews : public NativeShellWindow,
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      gfx::NativeView child,
+      const gfx::Point& location) OVERRIDE;
 
  protected:
   // views::View implementation.

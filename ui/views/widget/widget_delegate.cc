@@ -150,6 +150,12 @@ void WidgetDelegate::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
 }
 
+bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
+    gfx::NativeView child,
+    const gfx::Point& location) {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegateView:
 
