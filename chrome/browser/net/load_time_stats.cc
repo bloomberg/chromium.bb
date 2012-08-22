@@ -179,6 +179,7 @@ class LoadTimeStats::TabLoadStats {
   bool spinner_started() { return spinner_started_; }
   void set_spinner_started(bool value) { spinner_started_ = value; }
   base::TimeTicks load_start_time() { return load_start_time_; }
+  void set_load_start_time(base::TimeTicks time) { load_start_time_ = time; }
   int next_timer_index() { return next_timer_index_; }
   void set_next_timer_index(int index) { next_timer_index_ = index; }
   base::Timer& timer() { return timer_; }
@@ -352,6 +353,7 @@ void LoadTimeStats::OnTabEvent(std::pair<int, int> render_view_id,
   TabLoadStats* stats = GetTabLoadStats(render_view_id);
   if (event == SPINNER_START) {
     stats->set_spinner_started(true);
+    stats->set_load_start_time(base::TimeTicks::Now());
     for (int status = REQUEST_STATUS_CACHE_WAIT;
          status <= REQUEST_STATUS_ACTIVE; status++) {
       stats->per_status_stats()[status].ResetTimes();
