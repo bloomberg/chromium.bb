@@ -137,25 +137,6 @@ class PyUITestBase {
            "Closes all windows and destroys the browser.") TearDown;
   virtual void TearDown();
 
-  %feature("docstring", "Timeout (in milli secs) for an action. "
-           "This value is also used as default for the WaitUntil() method.")
-      action_max_timeout_ms;
-  int action_max_timeout_ms() const;
-
-  %feature("docstring", "Get the timeout (in milli secs) for an automation "
-           "call") action_timeout_ms;
-  int action_timeout_ms();
-
-  %feature("docstring", "Set the timeout (in milli secs) for an automation "
-           "call.  This is an internal method.  Do not use this directly.  "
-           "Use ActionTimeoutChanger instead")
-      set_action_timeout_ms;
-  void set_action_timeout_ms(int timeout);
-
-  %feature("docstring", "Timeout (in milli secs) for large tests.")
-      large_test_timeout_ms;
-  int large_test_timeout_ms() const;
-
   %feature("docstring", "Launches the browser and IPC testing server.")
       LaunchBrowserAndServer;
   void LaunchBrowserAndServer();

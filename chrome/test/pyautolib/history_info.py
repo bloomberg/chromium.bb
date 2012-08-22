@@ -29,13 +29,12 @@ class HistoryInfo(object):
   The info is represented as a list of history items containing url, title,
   time, etc.
   """
-  def __init__(self, json_string):
+  def __init__(self, history_dict):
     """Initialize a HistoryInfo from a string of json.
 
     Args:
-      json_string: a string of JSON, as returned by a json ipc call for the
-                   command 'GetHistoryInfo'
-                   A typical json string representing history info looks like:
+      json_string: a dictionary as returned by the IPC command 'GetHistoryInfo'.
+                   A typical dict representing history info looks like:
                    {'history': [
                       {'url': 'http://www.google.com/',
                        'title': 'Google',
@@ -47,9 +46,7 @@ class HistoryInfo(object):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     # JSON string prepared in GetHistoryInfo() in automation_provider.cc
-    self.historydict = json.loads(json_string)
-    if self.historydict.has_key('error'):
-      raise JSONInterfaceError(self.historydict['error'])
+    self.historydict = history_dict
 
   def History(self):
     """Get history list.
