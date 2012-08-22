@@ -1090,6 +1090,8 @@
         'browser/chromeos/bluetooth/bluetooth_service_record_unittest.cc',
         'browser/chromeos/bluetooth/bluetooth_utils_unittest.cc',
         'browser/chromeos/contacts/contact_database_unittest.cc',
+        'browser/chromeos/contacts/contact_manager_stub.cc',
+        'browser/chromeos/contacts/contact_manager_stub.h',
         'browser/chromeos/contacts/contact_manager_unittest.cc',
         'browser/chromeos/contacts/contact_test_util.cc',
         'browser/chromeos/contacts/contact_test_util.h',

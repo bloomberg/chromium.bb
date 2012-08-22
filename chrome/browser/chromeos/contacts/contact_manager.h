@@ -28,8 +28,35 @@ class ContactManagerObserver;
 class ContactStore;
 class ContactStoreFactory;
 
-// Singleton class that exposes contacts to rest of the browser.
-class ContactManager : public ContactStoreObserver,
+// Class that exposes contacts to rest of the browser.
+class ContactManagerInterface {
+ public:
+  ContactManagerInterface() {}
+  virtual ~ContactManagerInterface() {}
+
+  // Adds or removes an observer for changes to |profile|'s contacts.
+  virtual void AddObserver(ContactManagerObserver* observer,
+                           Profile* profile) = 0;
+  virtual void RemoveObserver(ContactManagerObserver* observer,
+                              Profile* profile) = 0;
+
+  // Returns pointers to all currently-loaded contacts for |profile|.  The
+  // returned Contact objects may not persist indefinitely; the caller must not
+  // refer to them again after unblocking the UI thread.
+  virtual scoped_ptr<ContactPointers> GetAllContacts(Profile* profile) = 0;
+
+  // Returns the contact identified by |contact_id|.
+  // NULL is returned if the contact doesn't exist.
+  virtual const Contact* GetContactById(Profile* profile,
+                                        const std::string& contact_id) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContactManagerInterface);
+};
+
+// Real, singleton implementation of ContactManagerInterface.
+class ContactManager : public ContactManagerInterface,
+                       public ContactStoreObserver,
                        public content::NotificationObserver {
  public:
   static ContactManager* GetInstance();
@@ -43,19 +70,13 @@ class ContactManager : public ContactStoreObserver,
 
   void Init();
 
-  // Adds or removes an observer for changes to |profile|'s contacts.
-  void AddObserver(ContactManagerObserver* observer, Profile* profile);
-  void RemoveObserver(ContactManagerObserver* observer, Profile* profile);
-
-  // Returns pointers to all currently-loaded contacts for |profile|.  The
-  // returned Contact objects may not persist indefinitely; the caller must not
-  // refer to them again after unblocking the UI thread.
-  scoped_ptr<ContactPointers> GetAllContacts(Profile* profile);
-
-  // Returns the contact identified by |contact_id|.
-  // NULL is returned if the contact doesn't exist.
-  const Contact* GetContactById(Profile* profile,
-                                const std::string& contact_id);
+  // ContactManagerInterface overrides:
+  virtual void AddObserver(ContactManagerObserver* observer, Profile* profile);
+  virtual void RemoveObserver(ContactManagerObserver* observer,
+                              Profile* profile);
+  virtual scoped_ptr<ContactPointers> GetAllContacts(Profile* profile);
+  virtual const Contact* GetContactById(Profile* profile,
+                                        const std::string& contact_id);
 
   // ContactStoreObserver overrides:
   virtual void OnContactsUpdated(ContactStore* store) OVERRIDE;
