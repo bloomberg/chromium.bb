@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
+#include "base/timer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/object_watcher.h"
 #include "ipc/ipc_channel.h"
@@ -121,6 +122,10 @@ class WorkerProcessLauncher
 
   // The IPC channel connecting to the launched process.
   scoped_ptr<IPC::ChannelProxy> ipc_channel_;
+
+  // The timer used to delay termination of the process in the case of an IPC
+  // error.
+  base::OneShotTimer<WorkerProcessLauncher> ipc_error_timer_;
 
   // The server end of the pipe.
   base::win::ScopedHandle pipe_;

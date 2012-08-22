@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -126,7 +127,13 @@ void WorkerProcessLauncher::OnChannelError() {
   DCHECK(pipe_.IsValid());
   DCHECK(process_exit_event_.IsValid());
 
-  Stop();
+  // Schedule a delayed termination of the worker process. Usually, the pipe is
+  // disconnected when the worker process is about to exit. Waiting a little bit
+  // here allows the worker to exit completely and so, notify
+  // |process_watcher_|. As the result DoKillProcess() will not be called and
+  // the original exit code reported by the worker process will be retrieved.
+  ipc_error_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(5),
+                         this, &WorkerProcessLauncher::Stop);
 }
 
 void WorkerProcessLauncher::DoStop() {
@@ -140,6 +147,8 @@ void WorkerProcessLauncher::DoStop() {
     delegate_->DoKillProcess(CONTROL_C_EXIT);
     return;
   }
+
+  ipc_error_timer_.Stop();
 
   DCHECK(ipc_channel_.get() == NULL);
   DCHECK(!pipe_.IsValid());
