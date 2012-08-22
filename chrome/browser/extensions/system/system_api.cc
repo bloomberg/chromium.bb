@@ -59,7 +59,9 @@ void DispatchEvent(const std::string& event_name, base::Value* argument) {
     return;
 
   scoped_ptr<base::ListValue> list_args(new base::ListValue());
-  list_args->Append(argument);
+  if (argument) {
+    list_args->Append(argument);
+  }
   extension_event_router->DispatchEventToRenderers(
       event_name, list_args.Pass(), NULL, GURL(),
       extensions::EventFilteringInfo());
