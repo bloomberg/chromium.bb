@@ -12,6 +12,7 @@
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
@@ -495,6 +496,8 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   for (int i = 0; i < 3; i++) {
     SetUpJobFactoryDefaults(job_factories[i]);
+    job_factories[i]->SetProtocolHandler(chrome::kAboutScheme,
+                                         new net::AboutProtocolHandler());
     CreateFtpProtocolHandler(job_factories[i], ftp_auth_caches[i]);
     job_factories[i]->AddInterceptor(
         new chrome_browser_net::ConnectInterceptor(predictor_.get()));

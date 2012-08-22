@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -285,6 +286,8 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   for (int i = 0; i < 2; i++) {
     SetUpJobFactoryDefaults(job_factories[i]);
+    job_factories[i]->SetProtocolHandler(chrome::kAboutScheme,
+                                         new net::AboutProtocolHandler());
     CreateFtpProtocolHandler(job_factories[i], ftp_auth_caches[i]);
   }
 
