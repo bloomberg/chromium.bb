@@ -8,7 +8,7 @@ import os
 import appengine_blobstore as blobstore
 import object_store
 from file_system import FileSystem, StatInfo
-from io import BytesIO
+from StringIO import StringIO
 from future import Future
 from zipfile import ZipFile
 
@@ -31,7 +31,7 @@ class _AsyncFetchFutureZip(object):
                         blobstore.BLOBSTORE_GITHUB)
     self._blobstore.Delete(_MakeKey(self._old_version),
                            blobstore.BLOBSTORE_GITHUB)
-    return ZipFile(BytesIO(blob))
+    return ZipFile(StringIO(blob))
 
 class GithubFileSystem(FileSystem):
   """FileSystem implementation which fetches resources from github.

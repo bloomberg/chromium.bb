@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -75,7 +75,7 @@ def _ReadFile(filename):
     return f.read()
 
 def _WriteFile(filename, data):
-  with open(filename, 'w+') as f:
+  with open(filename, 'wb+') as f:
     f.write(data)
 
 def _UnixName(name):
@@ -114,7 +114,7 @@ def _ListAllAPIs(dirname):
     else:
       all_files.extend([os.path.join(path, f) for f in files
                         if f.endswith('.json') or f.endswith('.idl')])
-  dirname = dirname.rstrip('/') + '/'
+  dirname = dirname.rstrip(os.sep) + os.sep
   return [f[len(dirname):] for f in all_files
           if os.path.splitext(f)[0].split('_')[-1] not in ['private',
                                                            'internal']]
@@ -135,7 +135,7 @@ def _GetAPIPath(name, api_dir):
   api_files = _ListAllAPIs(api_dir)
   for filename in api_files:
     if name == _UnixName(SanitizeAPIName(filename)):
-      return _UnixName(filename)
+      return _UnixName(filename).replace(os.sep, '/')
 
 def _CleanAPIs(source_dir, api_dir, intros_dest, template_dest, exclude):
   source_files = os.listdir(source_dir)
@@ -354,6 +354,7 @@ if __name__ == '__main__':
                     default=False,
                     help='replace existing files')
   (opts, args) = parser.parse_args()
+  args = [os.path.normpath(p) for p in args]
   if (not opts.file and len(args) != 6) or (opts.file and len(args) != 7):
     parser.error('incorrect number of arguments.')
 

@@ -16,7 +16,7 @@ def FormatKey(key):
 def SanitizeAPIName(name, api_path=''):
   """Sanitizes API filenames that are in subdirectories.
   """
-  filename = os.path.splitext(name)[0][len(api_path):].replace('/', '_')
+  filename = os.path.splitext(name)[0][len(api_path):].replace(os.sep, '_')
   if 'experimental' in filename:
     filename = 'experimental_' + filename.replace('experimental_', '')
   return filename

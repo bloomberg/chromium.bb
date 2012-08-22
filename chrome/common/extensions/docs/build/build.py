@@ -191,7 +191,8 @@ def main():
   # This is a script that converts the documentation from the old style (using
   # build.py, etc.) to the new style. The new docs and docs server can be found
   # in the ../server2 directory.
-  Popen([os.path.join(_base_dir, 'server2', 'converter.py'),
+  Popen(['python',
+         os.path.join(_base_dir, 'server2', 'converter.py'),
          os.path.join(_base_dir, 'static'),
          os.path.join(_base_dir, os.pardir, 'api'),
          os.path.join(_base_dir, 'server2', 'templates', 'articles'),

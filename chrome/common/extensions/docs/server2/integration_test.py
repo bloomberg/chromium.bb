@@ -13,7 +13,7 @@ from fake_fetchers import ConfigureFakeFetchers
 KNOWN_FAILURES = [
   # Apps samples fails because it requires fetching data from github.com.
   # This should be tested though: http://crbug.com/141910.
-  'apps/samples.html',
+  os.path.join('apps', 'samples.html'),
 ]
 
 ConfigureFakeFetchers()
@@ -42,11 +42,11 @@ class IntegrationTest(unittest.TestCase):
     for path, dirs, files in os.walk(base_path):
       for name in files:
         filename = os.path.join(path, name)
-        if (filename.split('/', 2)[-1] in KNOWN_FAILURES or
+        if (filename.split(os.sep, 2)[-1] in KNOWN_FAILURES or
             '.' in path or
             name.startswith('.')):
           continue
-        request = _MockRequest(filename.split('/', 2)[-1])
+        request = _MockRequest(filename.split(os.sep, 2)[-1])
         response = _MockResponse()
         Handler(request, response, local_path='../..').get()
         self.assertEqual(200, response.status)
