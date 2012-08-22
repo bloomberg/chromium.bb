@@ -124,6 +124,7 @@
 #include "chrome/browser/jumplist_win.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #include "ui/views/widget/native_widget_win.h"
+#include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
 
 #if defined(USE_AURA)
@@ -2238,8 +2239,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 #endif
   }
 #if defined(OS_WIN) && !defined(USE_AURA)
-  static_cast<views::NativeWidgetWin*>(frame_->native_widget())->
-      PushForceHidden();
+  views::ScopedFullscreenVisibility visibility(frame_->GetNativeView());
 #endif
 
   if (type == FOR_METRO) {
@@ -2276,10 +2276,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // it's in its final position.
   ignore_layout_ = false;
   Layout();
-#if defined(OS_WIN) && !defined(USE_AURA)
-  static_cast<views::NativeWidgetWin*>(frame_->native_widget())->
-      PopForceHidden();
-#endif
 }
 
 void BrowserView::LoadAccelerators() {

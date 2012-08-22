@@ -49,7 +49,9 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
+#include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
+#include "ui/views/win/scoped_fullscreen_visibility.h"
 #include "ui/views/window/native_frame_view.h"
 
 #if !defined(USE_AURA)
@@ -334,16 +336,15 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       previous_cursor_(NULL),
-      fullscreen_(false),
-      metro_snap_(false),
-      force_hidden_count_(0),
       ignore_window_pos_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ignore_pos_changes_factory_(this)),
       last_monitor_(NULL),
       restored_enabled_(false),
       has_non_client_view_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-        message_handler_(new HWNDMessageHandler(this))) {
+          message_handler_(new HWNDMessageHandler(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          fullscreen_handler_(new FullscreenHandler(GetWidget()))) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
@@ -407,18 +408,6 @@ void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
       ++it) {
     if (*it == view)
       *it = NULL;
-  }
-}
-
-void NativeWidgetWin::PushForceHidden() {
-  if (force_hidden_count_++ == 0)
-    Hide();
-}
-
-void NativeWidgetWin::PopForceHidden() {
-  if (--force_hidden_count_ <= 0) {
-    force_hidden_count_ = 0;
-    ShowWindow(SW_SHOW);
   }
 }
 
@@ -715,7 +704,7 @@ gfx::Rect NativeWidgetWin::GetRestoredBounds() const {
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
   // rect, so return the saved bounds instead.
   if (IsFullscreen())
-    return gfx::Rect(saved_window_info_.window_rect);
+    return fullscreen_handler_->GetRestoreBounds();
 
   gfx::Rect bounds;
   GetWindowPlacement(&bounds, NULL);
@@ -886,92 +875,19 @@ void NativeWidgetWin::Restore() {
 }
 
 void NativeWidgetWin::SetFullscreen(bool fullscreen) {
-  if (fullscreen_ == fullscreen)
-    return;
-
-  SetFullscreenInternal(fullscreen, false);
+  fullscreen_handler_->SetFullscreen(fullscreen);
 }
 
 void NativeWidgetWin::SetMetroSnapFullscreen(bool metro_snap) {
-  if (metro_snap_ == metro_snap)
-    return;
-
-  SetFullscreenInternal(metro_snap, true);
-
-  metro_snap_ = metro_snap;
-}
-
-void NativeWidgetWin::SetFullscreenInternal(bool fullscreen,
-                                            bool for_metro) {
-
-  // Reduce jankiness during the following position changes by hiding the window
-  // until it's in the final position.
-  PushForceHidden();
-
-  // Save current window state if not already fullscreen.
-  if (!fullscreen_) {
-    // Save current window information.  We force the window into restored mode
-    // before going fullscreen because Windows doesn't seem to hide the
-    // taskbar if the window is in the maximized state.
-    saved_window_info_.maximized = IsMaximized();
-    if (saved_window_info_.maximized)
-      Restore();
-    saved_window_info_.style = GetWindowLong(GWL_STYLE);
-    saved_window_info_.ex_style = GetWindowLong(GWL_EXSTYLE);
-    GetWindowRect(&saved_window_info_.window_rect);
-  }
-
-  fullscreen_ = fullscreen;
-
-  if (fullscreen_) {
-    // Set new window style and size.
-    SetWindowLong(GWL_STYLE,
-                  saved_window_info_.style & ~(WS_CAPTION | WS_THICKFRAME));
-    SetWindowLong(GWL_EXSTYLE,
-                  saved_window_info_.ex_style & ~(WS_EX_DLGMODALFRAME |
-                  WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
-
-    // On expand, if we're given a window_rect, grow to it, otherwise do
-    // not resize.
-    if (!for_metro) {
-      MONITORINFO monitor_info;
-      monitor_info.cbSize = sizeof(monitor_info);
-      GetMonitorInfo(MonitorFromWindow(GetNativeView(),
-                                       MONITOR_DEFAULTTONEAREST),
-                     &monitor_info);
-      gfx::Rect window_rect(monitor_info.rcMonitor);
-      SetWindowPos(NULL, window_rect.x(), window_rect.y(),
-                   window_rect.width(), window_rect.height(),
-                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-    }
-  } else {
-    // Reset original window style and size.  The multiple window size/moves
-    // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
-    // repainted.  Better-looking methods welcome.
-    SetWindowLong(GWL_STYLE, saved_window_info_.style);
-    SetWindowLong(GWL_EXSTYLE, saved_window_info_.ex_style);
-
-    if (!for_metro) {
-      // On restore, resize to the previous saved rect size.
-      gfx::Rect new_rect(saved_window_info_.window_rect);
-      SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
-                   new_rect.height(),
-                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-    }
-    if (saved_window_info_.maximized)
-      Maximize();
-  }
-
-  // Undo our anti-jankiness hacks.
-  PopForceHidden();
+  fullscreen_handler_->SetMetroSnap(metro_snap);
 }
 
 bool NativeWidgetWin::IsFullscreen() const {
-  return fullscreen_;
+  return fullscreen_handler_->fullscreen();
 }
 
 bool NativeWidgetWin::IsInMetroSnapMode() const {
-  return metro_snap_;
+  return fullscreen_handler_->metro_snap();
 }
 
 void NativeWidgetWin::SetOpacity(unsigned char opacity) {
@@ -1629,7 +1545,8 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
       bool work_area_changed = (monitor_rect == last_monitor_rect_) &&
                                (work_area != last_work_area_);
       if (monitor && (monitor == last_monitor_) &&
-          ((IsFullscreen() && !metro_snap_) || work_area_changed)) {
+          ((IsFullscreen() && !fullscreen_handler_->metro_snap()) ||
+            work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
         // call in OnSettingChange() above), but with some software (e.g.
@@ -1673,7 +1590,7 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
     }
   }
 
-  if (force_hidden_count_) {
+  if (ScopedFullscreenVisibility::IsHiddenForFullscreen(GetNativeView())) {
     // Prevent the window from being made visible if we've been asked to do so.
     // See comment in header as to why we might want this.
     window_pos->flags &= ~SWP_SHOWWINDOW;

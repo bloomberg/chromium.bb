@@ -41,6 +41,7 @@ class Rect;
 namespace views {
 
 class DropTargetWin;
+class FullscreenHandler;
 class HWNDMessageHandler;
 class InputMethodDelegate;
 class RootView;
@@ -104,15 +105,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // Clear a view that has recently been removed on a hierarchy change.
   void ClearAccessibilityViewEvent(View* view);
-
-  // Hides the window if it hasn't already been force-hidden. The force hidden
-  // count is tracked, so calling multiple times is allowed, you just have to
-  // be sure to call PopForceHidden the same number of times.
-  void PushForceHidden();
-
-  // Decrements the force hidden count, showing the window if we have reached
-  // the top of the stack. See PushForceHidden.
-  void PopForceHidden();
 
   // Places the window in a pseudo-fullscreen mode where it looks and acts as
   // like a fullscreen window except that it remains within the boundaries
@@ -265,15 +257,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
 
  protected:
-  // Information saved before going into fullscreen mode, used to restore the
-  // window afterwards.
-  struct SavedWindowInfo {
-    bool maximized;
-    LONG style;
-    LONG ex_style;
-    RECT window_rect;
-  };
-
   // Overridden from MessageLoop::Observer:
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
@@ -473,10 +456,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }
 
-  // Saved window information from before entering fullscreen mode.
-  // TODO(beng): move to private once GetRestoredBounds() moves onto Widget.
-  SavedWindowInfo saved_window_info_;
-
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
 
@@ -556,14 +535,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Notifies any owned windows that we're closing.
   void NotifyOwnedWindowsParentClosing();
 
-  // Common implementation of fullscreen-related code. This method handles
-  // changing from windowed mode to a display mode (dubbed fullscreen mode)
-  // where the window occupies a fixed portion (possibly 100%) of the screen.
-  // |fullscreen| specifies whether we are entering or leaving fullscreen mode.
-  // |for_metro| specifies whether we are doing this at the behest of a metro
-  //             snap transition.
-  void SetFullscreenInternal(bool fullscreen, bool for_metro);
-
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.
   internal::NativeWidgetDelegate* delegate_;
@@ -637,18 +608,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   ViewProps props_;
 
-  // True if we're in fullscreen mode.
-  bool fullscreen_;
-
-  // True if we're in metro snap mode.
-  bool metro_snap_;
-
-  // If this is greater than zero, we should prevent attempts to make the window
-  // visible when we handle WM_WINDOWPOSCHANGING. Some calls like
-  // ShowWindow(SW_RESTORE) make the window visible in addition to restoring it,
-  // when all we want to do is restore it.
-  int force_hidden_count_;
-
   // The window styles before we modified them for the drag frame appearance.
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
@@ -677,6 +636,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   bool has_non_client_view_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
+  scoped_ptr<FullscreenHandler> fullscreen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };
