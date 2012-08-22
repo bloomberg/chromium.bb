@@ -2,26 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/audio_capturer_win.h"
+
 #include <windows.h>
-#include <audioclient.h>
 #include <avrt.h>
-#include <mmdeviceapi.h>
 #include <mmreg.h>
 #include <mmsystem.h>
 
 #include <algorithm>
 #include <stdlib.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/timer.h"
-#include "base/win/scoped_co_mem.h"
-#include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
-#include "remoting/host/audio_capturer.h"
-#include "remoting/proto/audio.pb.h"
 
 namespace {
 const int kChannels = 2;
@@ -45,41 +36,6 @@ const int kMaxExpectedTimerLag = 30;
 }  // namespace
 
 namespace remoting {
-
-class AudioCapturerWin : public AudioCapturer {
- public:
-  AudioCapturerWin();
-  virtual ~AudioCapturerWin();
-
-  // AudioCapturer interface.
-  virtual bool Start(const PacketCapturedCallback& callback) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual bool IsRunning() OVERRIDE;
-
- private:
-  // Receives all packets from the audio capture endpoint buffer and pushes them
-  // to the network.
-  void DoCapture();
-
-  static bool IsPacketOfSilence(const int16* samples, int number_of_samples);
-
-  PacketCapturedCallback callback_;
-
-  AudioPacket::SamplingRate sampling_rate_;
-
-  scoped_ptr<base::RepeatingTimer<AudioCapturerWin> > capture_timer_;
-  base::TimeDelta audio_device_period_;
-
-  base::win::ScopedCoMem<WAVEFORMATEX> wave_format_ex_;
-  base::win::ScopedComPtr<IAudioCaptureClient> audio_capture_client_;
-  base::win::ScopedComPtr<IAudioClient> audio_client_;
-  base::win::ScopedComPtr<IMMDevice> mm_device_;
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-
-  base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioCapturerWin);
-};
 
 AudioCapturerWin::AudioCapturerWin()
     : sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID) {
@@ -313,6 +269,7 @@ void AudioCapturerWin::DoCapture() {
 // Detects whether there is audio playing in a packet of samples.
 // Windows can give nonzero samples, even when there is no audio playing, so
 // extremely low amplitude samples are counted as silence.
+// static
 bool AudioCapturerWin::IsPacketOfSilence(
     const int16* samples, int number_of_samples) {
   for (int i = 0; i < number_of_samples; i++) {

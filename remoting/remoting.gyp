@@ -1737,6 +1737,7 @@
         'base/util_unittest.cc',
         'client/key_event_mapper_unittest.cc',
         'client/plugin/mac_key_event_processor_unittest.cc',
+        'host/audio_capturer_win_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
         'host/chromoting_host_unittest.cc',
         'host/client_session_unittest.cc',
