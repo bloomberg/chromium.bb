@@ -680,7 +680,7 @@ _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
 
 _toolchain_minor = \
     full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/gcc-4_7',
+                gcc_githash='gcc.gnu.org/branches/google/gcc-4_7-mobile',
                 trybot_list=False,
                 use_sdk=False,
                 description='Toolchain',)
