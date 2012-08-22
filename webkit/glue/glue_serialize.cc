@@ -548,15 +548,9 @@ std::vector<FilePath> FilePathsFromHistoryState(
     // Couldn't parse the string.
     return to_return;
   }
-  const WebHTTPBody& http_body = item.httpBody();
-  if (!http_body.isNull()) {
-    WebHTTPBody::Element element;
-    for (size_t i = 0; i < http_body.elementCount(); ++i) {
-      http_body.elementAt(i, element);
-      if (element.type == WebHTTPBody::Element::TypeFile)
-        to_return.push_back(WebStringToFilePath(element.filePath));
-    }
-  }
+  const WebVector<WebString> file_paths = item.getReferencedFilePaths();
+  for (size_t i = 0; i < file_paths.size(); ++i)
+    to_return.push_back(WebStringToFilePath(file_paths[i]));
   return to_return;
 }
 

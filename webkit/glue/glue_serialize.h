@@ -24,7 +24,8 @@ WEBKIT_GLUE_EXPORT std::string HistoryItemToString(
 WEBKIT_GLUE_EXPORT WebKit::WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item);
 
-// Reads file paths from the HTTP body of a serialized WebHistoryItem.
+// Reads file paths from the HTTP body and the file input elements of a
+// serialized WebHistoryItem.
 WEBKIT_GLUE_EXPORT std::vector<FilePath> FilePathsFromHistoryState(
     const std::string& content_state);
 
