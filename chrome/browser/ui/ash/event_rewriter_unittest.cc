@@ -354,7 +354,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
 
   // XK_Super_L (left Windows key), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       Mod1Mask,
@@ -368,7 +368,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
 
   // XK_Super_R (right Windows key), Alt modifier.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_r_,
                                       Mod1Mask,
@@ -397,7 +397,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
 
   // XK_Control_L (left Control key) should be remapped to Alt.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      0,
+                                      ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_alt_l_,
                                       0U,
@@ -416,7 +416,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   // XK_Super_L (left Command key) with  Alt modifier. The remapped Command key
   // should never be re-remapped to Alt.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       Mod1Mask,
@@ -431,7 +431,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   // XK_Super_R (right Command key) with  Alt modifier. The remapped Command key
   // should never be re-remapped to Alt.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      ui::EF_ALT_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_r_,
                                       Mod1Mask,
@@ -832,7 +832,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
 
   // Press left Control. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       0U,
@@ -846,7 +846,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
 
   // Press right Control. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_r_,
                                       0U,
@@ -860,7 +860,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
 
   // Press left Alt. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      0,
+                                      ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_alt_l_,
                                       0,
@@ -874,7 +874,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemap) {
 
   // Press right Alt. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      0,
+                                      ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_alt_r_,
                                       0,
@@ -909,7 +909,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
 
   // Press left Alt with Shift. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN,
+                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_meta_l_,
                                       ShiftMask,
@@ -923,7 +923,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
 
   // Press right Alt with Shift. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN,
+                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_meta_r_,
                                       ShiftMask,
@@ -999,7 +999,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   // Press left Alt with Shift. This key press shouldn't be affected by the
   // pref. Confirm the event is not rewritten.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN,
+                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_meta_l_,
                                       ShiftMask,
@@ -1092,7 +1092,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L
   // even though the Control key itself is disabled.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       0U,
@@ -1133,7 +1133,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
 
   // Press Search. Confirm the event is now VKEY_CONTROL + XK_Control_L.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       0U,
@@ -1152,7 +1152,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
 
   // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       0U,
@@ -1166,7 +1166,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
 
   // Press right Alt. Confirm the event is now VKEY_CONTROL + XK_Control_R.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_r_,
                                       0U,
@@ -1253,7 +1253,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   // Press Search. Confirm the event is now VKEY_MENU + XK_Alt_L.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      0,
+                                      ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_alt_l_,
                                       0U,
@@ -1272,7 +1272,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   // Press left Alt. Confirm the event is now VKEY_CONTROL + XK_Control_L.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       0U,
@@ -1305,7 +1305,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   // Then, press all of the three, Control+Alt+Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_CONTROL_DOWN,
+                                      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_alt_l_,
                                       ControlMask | Mod4Mask,
@@ -1319,7 +1319,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   // Press Shift+Control+Alt+Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_MENU,
-                                      ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+                                      (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                                       ui::EF_ALT_DOWN),
                                       ui::ET_KEY_PRESSED,
                                       keycode_alt_l_,
                                       ShiftMask | ControlMask | Mod4Mask,
@@ -1367,7 +1368,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      0,
+                                      ui::EF_CAPS_LOCK_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_caps_lock_,
                                       0U,
@@ -1383,7 +1384,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Release Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::EF_NONE,
                                       ui::ET_KEY_RELEASED,
                                       keycode_caps_lock_,
                                       LockMask,
@@ -1415,7 +1416,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Release Search.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::EF_NONE,
                                       ui::ET_KEY_RELEASED,
                                       keycode_caps_lock_,
                                       LockMask,
@@ -1431,14 +1432,14 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Press Caps Lock (on an external keyboard).
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      0,
+                                      ui::EF_CAPS_LOCK_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_caps_lock_,
                                       0U,
                                       KeyPress),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CAPITAL,
-                                      0,
+                                      ui::EF_NONE,
                                       ui::ET_KEY_PRESSED,
                                       keycode_caps_lock_,
                                       0U));
@@ -1450,7 +1451,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Press Caps Lock (on an external keyboard).
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::EF_NONE,
                                       ui::ET_KEY_RELEASED,
                                       keycode_caps_lock_,
                                       LockMask,
@@ -1639,7 +1640,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   // XK_Control_L (left Control key) should NOT be remapped to Alt if send_event
   // flag in the event is True.
   EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CONTROL,
-                                      0,
+                                      ui::EF_CONTROL_DOWN,
                                       ui::ET_KEY_PRESSED,
                                       keycode_control_l_,
                                       0U,

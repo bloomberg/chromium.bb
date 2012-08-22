@@ -682,6 +682,7 @@ void EventRewriter::OverwriteEvent(ui::KeyEvent* event,
   event->set_character(ui::GetCharacterFromKeyCode(event->key_code(),
                                                    new_flags));
   event->set_flags(new_flags);
+  event->NormalizeFlags();
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.
 #endif

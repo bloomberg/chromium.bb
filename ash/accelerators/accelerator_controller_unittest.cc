@@ -931,11 +931,9 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   // Test IME shortcuts again with unnormalized accelerators (Chrome OS only).
   {
     const ui::Accelerator shift_alt_press(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
-    const ReleaseAccelerator shift_alt(ui::VKEY_MENU,
-                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator shift_alt(ui::VKEY_MENU, ui::EF_SHIFT_DOWN);
     const ui::Accelerator alt_shift_press(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
-    const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT,
-                                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+    const ReleaseAccelerator alt_shift(ui::VKEY_SHIFT, ui::EF_ALT_DOWN);
 
     DummyImeControlDelegate* delegate = new DummyImeControlDelegate(true);
     GetController()->SetImeControlDelegate(

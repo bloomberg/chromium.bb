@@ -338,6 +338,9 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
       is_char_(is_char),
       character_(0),
       unmodified_character_(0) {
+#if defined(USE_X11)
+  NormalizeFlags();
+#endif
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -410,6 +413,30 @@ KeyEvent* KeyEvent::Copy() {
   copy->set_delete_native_event(true);
 #endif
   return copy;
+}
+
+void KeyEvent::NormalizeFlags() {
+  int mask = 0;
+  switch (key_code()) {
+    case ui::VKEY_CONTROL:
+      mask = ui::EF_CONTROL_DOWN;
+      break;
+    case ui::VKEY_SHIFT:
+      mask = ui::EF_SHIFT_DOWN;
+      break;
+    case ui::VKEY_MENU:
+      mask = ui::EF_ALT_DOWN;
+      break;
+    case ui::VKEY_CAPITAL:
+      mask = ui::EF_CAPS_LOCK_DOWN;
+      break;
+    default:
+      return;
+  }
+  if (type() == ui::ET_KEY_PRESSED)
+    set_flags(flags() | mask);
+  else
+    set_flags(flags() & ~mask);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

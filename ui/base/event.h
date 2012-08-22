@@ -424,6 +424,11 @@ class UI_EXPORT KeyEvent : public Event {
   // called.
   void set_key_code(KeyboardCode key_code) { key_code_ = key_code; }
 
+  // Normalizes flags_ to make it Windows/Mac compatible. Since the way
+  // of setting modifier mask on X is very different than Windows/Mac as shown
+  // in http://crbug.com/127142#c8, the normalization is necessary.
+  void NormalizeFlags();
+
  private:
   KeyboardCode key_code_;
   // True if this is a translated character event (vs. a raw key down). Both

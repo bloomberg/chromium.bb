@@ -206,4 +206,85 @@ TEST(EventTest, MAYBE_KeyEventDirectUnicode) {
   EXPECT_EQ(0x1234U, key2.GetUnmodifiedCharacter());
 }
 
+TEST(EventTest, NormalizeKeyEventFlags) {
+#if defined(USE_X11)
+  // Normalize flags when KeyEvent is created from XEvent.
+  {
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
+    EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
+  }
+  {
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
+    EXPECT_EQ(EF_NONE, keyev.flags());
+  }
+  {
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
+    EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
+  }
+  {
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
+    EXPECT_EQ(EF_NONE, keyev.flags());
+  }
+  {
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
+    EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
+  }
+  {
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
+    EXPECT_EQ(EF_NONE, keyev.flags());
+  }
+#endif
+
+  // Do not normalize flags for synthesized events without
+  // KeyEvent::NormalizeFlags called explicitly.
+  {
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
+    EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
+  }
+  {
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
+    EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
+    keyev.NormalizeFlags();
+    EXPECT_EQ(EF_NONE, keyev.flags());
+  }
+  {
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
+    EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
+  }
+  {
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
+    EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
+    keyev.NormalizeFlags();
+    EXPECT_EQ(EF_NONE, keyev.flags());
+  }
+  {
+    KeyEvent keyev(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN);
+    EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
+  }
+  {
+    KeyEvent keyev(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
+    EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
+    keyev.NormalizeFlags();
+    EXPECT_EQ(EF_NONE, keyev.flags());
+  }
+}
+
 }  // namespace ui

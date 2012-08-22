@@ -59,32 +59,6 @@ namespace {
 // This matches Firefox behavior.
 const int kPixelsPerTick = 53;
 
-// Normalizes event.flags() to make it Windows/Mac compatible. Since the way
-// of setting modifier mask on X is very different than Windows/Mac as shown
-// in http://crbug.com/127142#c8, the normalization is necessary.
-int NormalizeEventFlags(const ui::KeyEvent& event) {
-  int mask = 0;
-  switch (event.key_code()) {
-    case ui::VKEY_CONTROL:
-      mask = ui::EF_CONTROL_DOWN;
-      break;
-    case ui::VKEY_SHIFT:
-      mask = ui::EF_SHIFT_DOWN;
-      break;
-    case ui::VKEY_MENU:
-      mask = ui::EF_ALT_DOWN;
-      break;
-    case ui::VKEY_CAPITAL:
-      mask = ui::EF_CAPS_LOCK_DOWN;
-      break;
-    default:
-      return event.flags();
-  }
-  if (event.type() == ui::ET_KEY_PRESSED)
-    return event.flags() | mask;
-  return event.flags() & ~mask;
-}
-
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
   if (flags & ui::EF_SHIFT_DOWN)
@@ -315,8 +289,7 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   XKeyEvent* native_key_event = &native_event->xkey;
 
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
-  webkit_event.modifiers =
-      EventFlagsToWebEventModifiers(NormalizeEventFlags(*event));
+  webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
 
   switch (native_event->type) {
     case KeyPress:
