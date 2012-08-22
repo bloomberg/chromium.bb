@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_CHROME_TO_MOBILE_SERVICE_H_
 
 #include <map>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
@@ -24,7 +22,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "sync/notifier/sync_notifier_observer.h"
 
 class OAuth2AccessTokenFetcher;
 class Browser;
@@ -42,8 +39,7 @@ class URLFetcher;
 class ChromeToMobileService : public ProfileKeyedService,
                               public net::URLFetcherDelegate,
                               public content::NotificationObserver,
-                              public OAuth2AccessTokenConsumer,
-                              public syncer::SyncNotifierObserver {
+                              public OAuth2AccessTokenConsumer {
  public:
   class Observer {
    public:
@@ -116,6 +112,10 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Virtual for unit test mocking.
   virtual const base::ListValue* GetMobiles() const;
 
+  // Request an updated mobile device list, request auth first if needed.
+  // Virtual for unit test mocking.
+  virtual void RequestMobileListUpdate();
+
   // Callback with an MHTML snapshot of the browser's selected WebContents.
   // Virtual for unit test mocking.
   virtual void GenerateSnapshot(Browser* browser,
@@ -123,7 +123,7 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   // Send the browser's selected WebContents to the specified mobile device.
   // Virtual for unit test mocking.
-  virtual void SendToMobile(const base::DictionaryValue* mobile,
+  virtual void SendToMobile(const base::DictionaryValue& mobile,
                             const FilePath& snapshot,
                             Browser* browser,
                             base::WeakPtr<Observer> observer);
@@ -139,9 +139,6 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Opens the "Learn More" help article link in the supplied |browser|.
   void LearnMore(Browser* browser) const;
 
-  // ProfileKeyedService method.
-  virtual void Shutdown() OVERRIDE;
-
   // net::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
@@ -154,18 +151,6 @@ class ChromeToMobileService : public ProfileKeyedService,
   virtual void OnGetTokenSuccess(const std::string& access_token,
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
-  // syncer::SyncNotifierObserver implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
-      const syncer::ObjectIdPayloadMap& id_payloads,
-      syncer::IncomingNotificationSource source) OVERRIDE;
-
-  // Expose access token accessors for test purposes.
-  const std::string& GetAccessTokenForTest() const;
-  void SetAccessTokenForTest(const std::string& access_token);
 
  private:
   friend class MockChromeToMobileService;
@@ -194,26 +179,25 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Virtual for unit test mocking.
   virtual void RequestAccessToken();
 
-  // Send the cloud print URLFetcher device search request.
-  // Virtual for unit test mocking.
-  virtual void RequestDeviceSearch();
+  // Request account information to limit cloud print access to existing users.
+  void RequestAccountInfo();
 
-  void HandleSearchResponse(const net::URLFetcher* source);
+  // Send the cloud print URLFetcher device search request.
+  void RequestDeviceSearch();
+
+  void HandleAccountInfoResponse();
+  void HandleSearchResponse();
   void HandleSubmitResponse(const net::URLFetcher* source);
 
   base::WeakPtrFactory<ChromeToMobileService> weak_ptr_factory_;
 
   Profile* profile_;
 
-  // Sync invalidation service state. Chrome To Mobile requires this service to
-  // to keep the mobile device list up to date and prevent page send failures.
-  bool sync_invalidation_enabled_;
-
   // Used to recieve TokenService notifications for GaiaOAuth2LoginRefreshToken.
   content::NotificationRegistrar registrar_;
 
-  // The cloud print service URL and auth access token.
-  GURL cloud_print_url_;
+  // Cloud print helper class and auth token.
+  scoped_ptr<CloudPrintURL> cloud_print_url_;
   std::string access_token_;
 
   // The set of snapshots currently available.
@@ -228,8 +212,12 @@ class ChromeToMobileService : public ProfileKeyedService,
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
   base::OneShotTimer<ChromeToMobileService> auth_retry_timer_;
 
-  // A queue of tasks to perform after an access token is lazily initialized.
-  std::queue<base::Closure> task_queue_;
+  // The pending account information request and the cloud print access flag.
+  scoped_ptr<net::URLFetcher> account_info_request_;
+  bool cloud_print_accessible_;
+
+  // The pending mobile device search request.
+  scoped_ptr<net::URLFetcher> search_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeToMobileService);
 };

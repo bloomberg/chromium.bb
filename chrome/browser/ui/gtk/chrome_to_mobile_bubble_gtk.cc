@@ -160,12 +160,16 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   // Generate the MHTML snapshot now to report its size in the bubble.
   service_->GenerateSnapshot(browser_, weak_ptr_factory_.GetWeakPtr());
 
+  // Request a mobile device list update.
+  service_->RequestMobileListUpdate();
+
+  const ListValue* mobiles = service_->GetMobiles();
+
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
   gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
 
   // Create and pack the title label; init the selected mobile device.
   GtkWidget* title = NULL;
-  const ListValue* mobiles = service_->GetMobiles();
   if (mobiles->GetSize() == 1) {
     string16 name;
     const DictionaryValue* mobile = NULL;
@@ -320,7 +324,7 @@ void ChromeToMobileBubbleGtk::OnSendClicked(GtkWidget* widget) {
   const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
     bool snapshot = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(send_copy_));
-    service_->SendToMobile(mobile, snapshot ? snapshot_path_ : FilePath(),
+    service_->SendToMobile(*mobile, snapshot ? snapshot_path_ : FilePath(),
                            browser_, weak_ptr_factory_.GetWeakPtr());
   } else {
     NOTREACHED();

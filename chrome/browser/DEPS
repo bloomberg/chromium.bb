@@ -5,7 +5,6 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",
   "+content/public/browser",
-  "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_update",
   "+grit",  # For generated headers
   "+installer_util_strings",  # For generated headers
@@ -21,7 +20,6 @@ include_rules = [
   "+skia/ext",
   "+skia/include",
   "+sync/api",  # Sync API files.
-  "+sync/notifier",  # Sync invalidation API files.
   "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros_system_api",
   "+webkit/database",

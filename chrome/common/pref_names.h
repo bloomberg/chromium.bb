@@ -636,6 +636,7 @@ extern const char kCloudPrintSubmitEnabled[];
 
 #if !defined(OS_ANDROID)
 extern const char kChromeToMobileDeviceList[];
+extern const char kChromeToMobileTimestamp[];
 #endif
 
 extern const char kProxy[];
