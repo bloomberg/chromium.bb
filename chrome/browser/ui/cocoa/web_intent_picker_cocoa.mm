@@ -225,8 +225,6 @@ void WebIntentPickerCocoa::OnInlineDispositionAutoResize(
 }
 
 void WebIntentPickerCocoa::OnPendingAsyncCompleted() {
-  DCHECK(sheet_controller_);
-  [sheet_controller_ pendingAsyncCompleted];
 }
 
 void WebIntentPickerCocoa::OnExtensionLinkClicked(const std::string& id) {

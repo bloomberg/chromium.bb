@@ -156,8 +156,8 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
 
 TEST_F(WebIntentPickerSheetControllerTest, EmptyView) {
   WebIntentPickerModel model;
+  model.SetWaitingForSuggestions(false);
   [controller_ performLayoutWithModel:&model];
-  [controller_ pendingAsyncCompleted];
 
   ASSERT_TRUE(window_);
 

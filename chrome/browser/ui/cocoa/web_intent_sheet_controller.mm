@@ -803,7 +803,6 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   [subviews addObject:body];
 
   NSView* view = [[NSView alloc] initWithFrame:viewFrame];
-  [view setAutoresizingMask:NSViewMinYMargin ];
   [view setSubviews:subviews];
 
   return view;
@@ -818,7 +817,14 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
 
-  if (isEmpty_) {
+  // Indicator that we have neither suggested nor installed services,
+  // and we're not in the wait stage any more either.
+  BOOL isEmpty = model_ &&
+      !model_->IsWaitingForSuggestions() &&
+      !model_->GetInstalledServiceCount() &&
+      !model_->GetSuggestedExtensionCount();
+
+  if (isEmpty) {
     scoped_nsobject<NSView> emptyView([self createEmptyView]);
     [subviews addObject:emptyView];
     offset += NSHeight([emptyView frame]);
@@ -906,16 +912,6 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
 - (void)closeSheet {
   [NSApp endSheet:[self window]];
-}
-
-- (void)pendingAsyncCompleted {
-  // Requests to both the WebIntentService and the Chrome Web Store have
-  // completed. If there are any services, installed or suggested, there's
-  // nothing to do.
-  DCHECK(model_);
-  isEmpty_ = !model_->GetInstalledServiceCount() &&
-      !model_->GetSuggestedExtensionCount();
-  [self performLayoutWithModel:model_];
 }
 
 @end  // WebIntentPickerSheetController
