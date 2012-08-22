@@ -643,6 +643,9 @@ void RenderWidgetHostViewWin::WasHidden() {
 
   if (accelerated_surface_.get())
     accelerated_surface_->WasHidden();
+
+  if (GetBrowserAccessibilityManager())
+    GetBrowserAccessibilityManager()->WasHidden();
 }
 
 void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
@@ -1839,6 +1842,9 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
     }
   }
 
+  if (message == WM_LBUTTONDOWN && GetBrowserAccessibilityManager())
+    GetBrowserAccessibilityManager()->GotMouseDown();
+
   ForwardMouseEventToRenderer(message, wparam, lparam);
   return 0;
 }
@@ -2623,8 +2629,8 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     // An MSAA client requestes our custom id. Assume that we have detected an
     // active windows screen reader.
     BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser())
-      render_widget_host_->SetAccessibilityMode(AccessibilityModeComplete);
+    render_widget_host_->SetAccessibilityMode(
+        BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode());
 
     // Return with failure.
     return static_cast<LRESULT>(0L);

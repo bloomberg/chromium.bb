@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -257,20 +257,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.embedder_channel_name = embedder_channel_name;
   params.embedder_container_id = embedder_container_id;
   params.accessibility_mode =
-      BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser() ?
-          AccessibilityModeComplete :
-          AccessibilityModeOff;
-
-#if defined(OS_WIN)
-  // On Windows 8, always enable accessibility for editable text controls
-  // so we can show the virtual keyboard when one is enabled.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      params.accessibility_mode == AccessibilityModeOff &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRendererAccessibility)) {
-    params.accessibility_mode = AccessibilityModeEditableTextOnly;
-  }
-#endif
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
 
   Send(new ViewMsg_New(params));
 

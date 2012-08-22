@@ -255,6 +255,11 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left, LONG* y_top,
   if (!target)
     return E_INVALIDARG;
 
+  // If we're not supposed to restrict the on-screen keyboard to the control
+  // bounds, get the bounds of this control from the root element's bounds.
+  while (target->parent() && !manager_->ShouldRestrictOSKToControlBounds())
+    target = target->parent()->ToBrowserAccessibilityWin();
+
   gfx::Rect bounds = target->GetGlobalBoundsRect();
   *x_left = bounds.x();
   *y_top  = bounds.y();
@@ -2571,6 +2576,11 @@ STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(
            << id;
   if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
     if (IsEditableText()) {
+      // The BrowserAccessibilityManager keeps track of instances when
+      // we don't want to show the on-screen keyboard.
+      if (!manager_->IsOSKAllowed())
+        return E_NOTIMPL;
+
       DVLOG(1) << "Returning UIA text provider";
       base::win::UIATextProvider::CreateTextProvider(true, provider);
       return S_OK;

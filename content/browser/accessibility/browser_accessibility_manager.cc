@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 
 using content::AccessibilityNodeData;
@@ -60,7 +61,8 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
     : parent_view_(parent_view),
       delegate_(delegate),
       factory_(factory),
-      focus_(NULL) {
+      focus_(NULL),
+      osk_state_(OSK_ALLOWED) {
   root_ = CreateAccessibilityTree(NULL, src, 0, false);
   if (!focus_)
     SetFocus(root_, false);
@@ -115,10 +117,34 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
 }
 
 void BrowserAccessibilityManager::GotFocus() {
+  osk_state_ = OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED;
   if (!focus_)
     return;
 
   NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
+}
+
+void BrowserAccessibilityManager::WasHidden() {
+  osk_state_ = OSK_DISALLOWED_BECAUSE_TAB_HIDDEN;
+}
+
+void BrowserAccessibilityManager::GotMouseDown() {
+  osk_state_ = OSK_ALLOWED_WITHIN_FOCUSED_OBJECT;
+  NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
+}
+
+bool BrowserAccessibilityManager::IsOSKAllowed() {
+  return osk_state_ == OSK_ALLOWED_WITHIN_FOCUSED_OBJECT ||
+         osk_state_ == OSK_ALLOWED;
+}
+
+bool BrowserAccessibilityManager::ShouldRestrictOSKToControlBounds() {
+  AccessibilityMode mode =
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+  if (mode == AccessibilityModeEditableTextOnly)
+    return osk_state_ == OSK_ALLOWED_WITHIN_FOCUSED_OBJECT;
+  else
+    return true;
 }
 
 void BrowserAccessibilityManager::Remove(int32 child_id, int32 renderer_id) {
@@ -158,6 +184,9 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
     if (notification_type == AccessibilityNotificationFocusChanged ||
         notification_type == AccessibilityNotificationBlur) {
       SetFocus(node, false);
+
+      if (osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_HIDDEN)
+        osk_state_ = OSK_ALLOWED;
 
       // Don't send a native focus event if the window itself doesn't
       // have focus.

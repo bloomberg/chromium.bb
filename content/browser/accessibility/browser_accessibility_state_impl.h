@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer.h"
+#include "content/common/view_message_enums.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
 // The BrowserAccessibilityState class is used to determine if Chrome should be
@@ -45,9 +46,11 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   // state to be determined. Updates a histogram with the current state.
   void UpdateHistogram();
 
+  AccessibilityMode GetAccessibilityMode();
+  void SetAccessibilityMode(AccessibilityMode mode);
+
  protected:
-  // Set to true when full accessibility features should be enabled.
-  bool accessibility_enabled_;
+  AccessibilityMode accessibility_mode_;
 
   // Timer to update the histogram a short while after startup.
   base::OneShotTimer<BrowserAccessibilityStateImpl> update_histogram_timer_;

@@ -7,11 +7,13 @@
 #include "content/common/accessibility_node_data.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebNode;
 using WebKit::WebView;
@@ -112,7 +114,14 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   AccessibilityNodeData& child = notification.acc_tree.children[0];
   child.id = next_id_;
   child.role = AccessibilityNodeData::ROLE_GROUP;
-  child.location = gfx::Rect(render_view_->size());
+
+  if (!node.isNull() && node.isElementNode()) {
+    child.location = gfx::Rect(
+        const_cast<WebNode&>(node).to<WebElement>().boundsInViewportSpace());
+  } else {
+    child.location = gfx::Rect();
+  }
+
   if (node_has_focus) {
     child.state =
         (1 << AccessibilityNodeData::STATE_FOCUSABLE) |

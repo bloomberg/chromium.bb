@@ -11,6 +11,10 @@
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 // Update the accessibility histogram 45 seconds after initialization.
 static const int kAccessibilityHistogramDelaySecs = 45;
 
@@ -27,11 +31,22 @@ BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     : BrowserAccessibilityState(),
-      accessibility_enabled_(false) {
+      accessibility_mode_(AccessibilityModeOff) {
+#if defined(OS_WIN)
+  // On Windows 8, always enable accessibility for editable text controls
+  // so we can show the virtual keyboard when one is enabled.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
+    accessibility_mode_ = AccessibilityModeEditableTextOnly;
+  }
+#endif  // defined(OS_WIN)
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
-    OnAccessibilityEnabledManually();
+    accessibility_mode_ = AccessibilityModeComplete;
   }
+
   update_histogram_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs),
@@ -47,23 +62,32 @@ void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
           switches::kDisableRendererAccessibility)) {
     return;
   }
-  accessibility_enabled_ = true;
+  SetAccessibilityMode(AccessibilityModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::OnAccessibilityEnabledManually() {
   // We may want to do something different with this later.
-  accessibility_enabled_ = true;
+  SetAccessibilityMode(AccessibilityModeComplete);
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
-  return accessibility_enabled_;
+  return (accessibility_mode_ == AccessibilityModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogram() {
   UMA_HISTOGRAM_ENUMERATION("Accessibility.State",
-                            accessibility_enabled_ ? 1 : 0,
+                            IsAccessibleBrowser() ? 1 : 0,
                             2);
   UMA_HISTOGRAM_ENUMERATION("Accessibility.InvertedColors",
                             gfx::IsInvertedColorScheme() ? 1 : 0,
                             2);
+}
+
+AccessibilityMode BrowserAccessibilityStateImpl::GetAccessibilityMode() {
+  return accessibility_mode_;
+}
+
+void BrowserAccessibilityStateImpl::SetAccessibilityMode(
+    AccessibilityMode mode) {
+  accessibility_mode_ = mode;
 }
