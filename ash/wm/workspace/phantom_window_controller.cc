@@ -207,10 +207,12 @@ void PhantomWindowController::SetBoundsInternal(const gfx::Rect& bounds) {
   aura::Window* window = phantom_widget_->GetNativeWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window->GetRootWindow());
-  if (screen_position_client && dst_display_.id() != -1)
+  if (screen_position_client &&
+      dst_display_.id() != gfx::Display::kInvalidDisplayID) {
     screen_position_client->SetBounds(window, bounds, dst_display_);
-  else
+  } else {
     phantom_widget_->SetBounds(bounds);
+  }
 }
 
 }  // namespace internal

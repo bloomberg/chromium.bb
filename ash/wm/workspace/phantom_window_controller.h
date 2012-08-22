@@ -94,9 +94,9 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // Window the phantom is placed beneath.
   aura::Window* window_;
 
-  // The display where the phantom is placed. When dst_display_.id() is -1 (i.e.
-  // the default), a display nearest to the current |bounds_| is automatically
-  // used.
+  // The display where the phantom is placed. When dst_display_.id() is
+  // kInvalidDisplayID (i.e. the default), a display nearest to the current
+  // |bounds_| is automatically used.
   gfx::Display dst_display_;
 
   // If set, the phantom window should get stacked below this window.
