@@ -133,16 +133,16 @@ int BackForwardMenuModel::GetGroupIdAt(int index) const {
   return false;
 }
 
-bool BackForwardMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
+bool BackForwardMenuModel::GetIconAt(int index, gfx::Image* icon) {
   if (!ItemHasIcon(index))
     return false;
 
   if (index == GetItemCount() - 1) {
-    *icon = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+    *icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
         IDR_HISTORY_FAVICON);
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);
-    *icon = *entry->GetFavicon().image.ToImageSkia();
+    *icon = entry->GetFavicon().image;
     if (!entry->GetFavicon().valid && menu_model_delegate()) {
       FetchFavicon(entry);
     }
@@ -277,17 +277,13 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
 
     // Now that we have a valid NavigationEntry, decode the favicon and assign
     // it to the NavigationEntry.
-    SkBitmap fav_icon;
-    if (gfx::PNGCodec::Decode(favicon.image_data->front(),
-                              favicon.image_data->size(),
-                              &fav_icon)) {
+    gfx::Image icon(favicon.image_data->front(), favicon.image_data->size());
+    if (!icon.IsEmpty()) {
       entry->GetFavicon().valid = true;
       entry->GetFavicon().url = favicon.icon_url;
-      if (fav_icon.empty())
-        return;
       // TODO: Once the history service returns more representations,
       // use them all instead of having just the lodpi favicon.
-      entry->GetFavicon().image = gfx::Image(fav_icon);
+      entry->GetFavicon().image = icon;
       if (menu_model_delegate()) {
         menu_model_delegate()->OnIconChanged(model_index);
       }

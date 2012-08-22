@@ -12,7 +12,7 @@
 #include "ui/base/models/menu_model.h"
 
 namespace gfx {
-class ImageSkia;
+class Image;
 }
 
 namespace ui {
@@ -44,7 +44,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
     // Gets the icon for the item with the specified id, returning true if there
     // is an icon, false otherwise.
     virtual bool GetIconForCommandId(int command_id,
-                                     gfx::ImageSkia* icon) const;
+                                     gfx::Image* icon) const;
 
     // Notifies the delegate that the item with the specified command id was
     // visually highlighted within the menu.
@@ -102,7 +102,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
       int index, int command_id, int string_id, MenuModel* model);
 
   // Sets the icon for the item at |index|.
-  void SetIcon(int index, const gfx::ImageSkia& icon);
+  void SetIcon(int index, const gfx::Image& icon);
 
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
@@ -122,7 +122,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
                                 ui::Accelerator* accelerator) const OVERRIDE;
   virtual bool IsItemCheckedAt(int index) const OVERRIDE;
   virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) OVERRIDE;
+  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
       int index) const OVERRIDE;
   virtual bool IsEnabledAt(int index) const OVERRIDE;

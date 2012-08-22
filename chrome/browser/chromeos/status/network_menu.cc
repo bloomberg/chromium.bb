@@ -153,7 +153,7 @@ class NetworkMenuModel : public ui::MenuModel {
                                 ui::Accelerator* accelerator) const OVERRIDE;
   virtual bool IsItemCheckedAt(int index) const OVERRIDE;
   virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) OVERRIDE;
+  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
       int index) const OVERRIDE;
   virtual bool IsEnabledAt(int index) const OVERRIDE;
@@ -376,9 +376,9 @@ int NetworkMenuModel::GetGroupIdAt(int index) const {
   return 0;
 }
 
-bool NetworkMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
+bool NetworkMenuModel::GetIconAt(int index, gfx::Image* icon) {
   if (!menu_items_[index].icon.isNull()) {
-    *icon = menu_items_[index].icon;
+    *icon = gfx::Image(menu_items_[index].icon);
     return true;
   }
   return false;

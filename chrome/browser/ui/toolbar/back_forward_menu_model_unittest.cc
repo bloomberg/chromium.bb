@@ -534,7 +534,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
 
   // Will return the current icon (default) but start an anync call
   // to retrieve the favicon from the favicon service.
-  gfx::ImageSkia default_icon;
+  gfx::Image default_icon;
   back_model.GetIconAt(0, &default_icon);
 
   // Make the favicon service run GetFavIconForURL,
@@ -545,12 +545,12 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   EXPECT_TRUE(favicon_delegate.was_called());
 
   // Verify the bitmaps match.
-  gfx::ImageSkia valid_icon;
+  gfx::Image valid_icon;
   // This time we will get the new favicon returned.
   back_model.GetIconAt(0, &valid_icon);
 
-  SkBitmap default_icon_bitmap = *default_icon.bitmap();
-  SkBitmap valid_icon_bitmap = *valid_icon.bitmap();
+  SkBitmap default_icon_bitmap = *default_icon.ToSkBitmap();
+  SkBitmap valid_icon_bitmap = *valid_icon.ToSkBitmap();
 
   SkAutoLockPixels a(new_icon_bitmap);
   SkAutoLockPixels b(valid_icon_bitmap);

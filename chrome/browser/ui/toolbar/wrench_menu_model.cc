@@ -299,14 +299,14 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 }
 
 bool WrenchMenuModel::GetIconForCommandId(int command_id,
-                                          gfx::ImageSkia* icon) const {
+                                          gfx::Image* icon) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (command_id) {
     case IDC_UPGRADE_DIALOG: {
       if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-        *icon = *rb.GetNativeImageNamed(
+        *icon = rb.GetNativeImageNamed(
             UpgradeDetector::GetInstance()->GetIconResourceID(
-                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON)).ToImageSkia();
+                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON));
         return true;
       }
       return false;
@@ -319,7 +319,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       if (error && error->HasCustomizedSyncMenuItem()) {
         int icon_id = error->MenuItemIconResourceID();
         if (icon_id) {
-          *icon = *rb.GetNativeImageNamed(icon_id).ToImageSkia();
+          *icon = rb.GetNativeImageNamed(icon_id);
           return true;
         }
       }
@@ -523,8 +523,8 @@ void WrenchMenuModel::Build() {
 
 #if defined(OS_WIN)
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
-          *ui::ResourceBundle::GetSharedInstance().
-          GetImageSkiaNamed(IDR_CONFLICT_MENU));
+          ui::ResourceBundle::GetSharedInstance().
+              GetNativeImageNamed(IDR_CONFLICT_MENU));
 #endif
 
   if (!is_touch_menu) {
@@ -533,7 +533,7 @@ void WrenchMenuModel::Build() {
     if (browser_defaults::kShowHelpMenuItemIcon) {
       ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
-              *rb.GetImageSkiaNamed(IDR_HELP_MENU));
+              rb.GetNativeImageNamed(IDR_HELP_MENU));
     }
   }
 
@@ -573,9 +573,9 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
       AddItem(error->MenuItemCommandID(), error->MenuItemLabel());
       int icon_id = error->MenuItemIconResourceID();
       if (icon_id) {
-        gfx::Image& image = rb.GetImageNamed(icon_id);
+        const gfx::Image& image = rb.GetNativeImageNamed(icon_id);
         SetIcon(GetIndexOfCommandId(error->MenuItemCommandID()),
-                *image.ToImageSkia());
+                image);
       }
     }
   }

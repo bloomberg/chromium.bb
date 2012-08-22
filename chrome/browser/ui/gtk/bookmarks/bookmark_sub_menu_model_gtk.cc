@@ -82,7 +82,7 @@ void BookmarkNodeMenuModel::PopulateMenu() {
       AddItem(kBookmarkItemCommandId, label);
       const gfx::Image& node_icon = model_->GetFavicon(child);
       if (!node_icon.IsEmpty())
-        SetIcon(GetItemCount() - 1, *node_icon.ToSkBitmap());
+        SetIcon(GetItemCount() - 1, node_icon);
       // TODO(mdm): set up an observer to watch for icon load events and set
       // the icons in response.
     }

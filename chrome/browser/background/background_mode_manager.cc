@@ -121,7 +121,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       const std::string& name = (*cursor)->name();
       menu->AddItem(position, UTF8ToUTF16(name));
       if (icon)
-        menu->SetIcon(menu->GetItemCount() - 1, *icon);
+        menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
     }
   }
   if (containing_menu)

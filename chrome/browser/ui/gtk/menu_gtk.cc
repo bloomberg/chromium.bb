@@ -23,6 +23,7 @@
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
 
 bool MenuGtk::block_activation_ = false;
@@ -326,7 +327,7 @@ GtkWidget* MenuGtk::AppendMenuItemWithLabel(int command_id,
 
 GtkWidget* MenuGtk::AppendMenuItemWithIcon(int command_id,
                                            const std::string& label,
-                                           const SkBitmap& icon) {
+                                           const gfx::Image& icon) {
   std::string converted_label = ui::ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item = BuildMenuItemWithImage(converted_label, icon);
   return AppendMenuItem(command_id, menu_item);
@@ -426,11 +427,9 @@ GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
 }
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
-                                           const SkBitmap& icon) {
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
+                                           const gfx::Image& icon) {
   GtkWidget* menu_item = BuildMenuItemWithImage(label,
-      gtk_image_new_from_pixbuf(pixbuf));
-  g_object_unref(pixbuf);
+      gtk_image_new_from_pixbuf(icon.ToGdkPixbuf()));
   return menu_item;
 }
 
@@ -451,7 +450,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
   std::map<int, GtkWidget*> radio_groups;
   GtkWidget* menu_item = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
-    gfx::ImageSkia icon;
+    gfx::Image icon;
     std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
         UTF16ToUTF8(model->GetLabelAt(i)));
     bool connect_to_activate = true;
@@ -490,7 +489,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
       case ui::MenuModel::TYPE_COMMAND: {
         int command_id = model->GetCommandIdAt(i);
         if (model->GetIconAt(i, &icon))
-          menu_item = BuildMenuItemWithImage(label, *icon.bitmap());
+          menu_item = BuildMenuItemWithImage(label, icon);
         else
           menu_item = BuildMenuItemWithLabel(label, command_id);
         if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id) &&
@@ -885,12 +884,11 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
         gtk_menu_item_set_label(GTK_MENU_ITEM(widget), label.c_str());
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
-          gfx::ImageSkia icon;
+          gfx::Image icon;
           if (model->GetIconAt(id, &icon)) {
-            GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(*icon.bitmap());
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
-                                          gtk_image_new_from_pixbuf(pixbuf));
-            g_object_unref(pixbuf);
+                                          gtk_image_new_from_pixbuf(
+                                              icon.ToGdkPixbuf()));
           } else {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget), NULL);
           }

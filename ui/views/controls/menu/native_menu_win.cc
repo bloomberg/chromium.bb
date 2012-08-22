@@ -21,6 +21,7 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/menu/menu_2.h"
@@ -252,17 +253,19 @@ class NativeMenuWin::MenuHostWindow {
 
       // Draw the icon after the label, otherwise it would be covered
       // by the label.
-      gfx::ImageSkia icon;
+      gfx::Image icon;
       if (data->native_menu_win->model_->GetIconAt(data->model_index, &icon)) {
         // We currently don't support items with both icons and checkboxes.
+        const gfx::ImageSkia* skia_icon = icon.ToImageSkia();
         DCHECK(type != ui::MenuModel::TYPE_CHECK);
-        gfx::Canvas canvas(icon.GetRepresentation(ui::SCALE_FACTOR_100P),
-                           false);
+        gfx::Canvas canvas(
+            skia_icon->GetRepresentation(ui::SCALE_FACTOR_100P),
+            false);
         skia::DrawToNativeContext(
             canvas.sk_canvas(), dc,
             draw_item_struct->rcItem.left + kItemLeftMargin,
             draw_item_struct->rcItem.top + (draw_item_struct->rcItem.bottom -
-                draw_item_struct->rcItem.top - icon.height()) / 2, NULL);
+                draw_item_struct->rcItem.top - skia_icon->height()) / 2, NULL);
       } else if (type == ui::MenuModel::TYPE_CHECK &&
                  data->native_menu_win->model_->IsItemCheckedAt(
                      data->model_index)) {

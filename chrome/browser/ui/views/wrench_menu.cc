@@ -38,6 +38,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -1081,9 +1082,9 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
     menu_item->SetVisible(model->IsVisibleAt(index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
-      gfx::ImageSkia icon;
+      gfx::Image icon;
       if (model->GetIconAt(index, &icon))
-        menu_item->SetIcon(icon);
+        menu_item->SetIcon(*icon.ToImageSkia());
     }
   }
 

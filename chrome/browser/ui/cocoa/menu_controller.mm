@@ -10,8 +10,7 @@
 #include "ui/base/accelerators/accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/image/image.h"
 
 @interface MenuController (Private)
 - (void)addSeparatorToMenu:(NSMenu*)menu
@@ -106,13 +105,9 @@
                           keyEquivalent:@""]);
 
   // If the menu item has an icon, set it.
-  gfx::ImageSkia skiaIcon;
-  if (model->GetIconAt(modelIndex, &skiaIcon) && !skiaIcon.isNull()) {
-    NSImage* icon = gfx::NSImageFromImageSkia(skiaIcon);
-    if (icon) {
-      [item setImage:icon];
-    }
-  }
+  gfx::Image icon;
+  if (model->GetIconAt(modelIndex, &icon) && !icon.IsEmpty())
+    [item setImage:icon.ToNSImage()];
 
   ui::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
   if (type == ui::MenuModel::TYPE_SUBMENU) {
@@ -165,11 +160,10 @@
       NSString* label =
           l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
       [(id)item setTitle:label];
-      gfx::ImageSkia skiaIcon;
-      NSImage* icon = nil;
-      if (model->GetIconAt(modelIndex, &skiaIcon) && !skiaIcon.isNull())
-        icon = gfx::NSImageFromImageSkia(skiaIcon);
-      [(id)item setImage:icon];
+
+      gfx::Image icon;
+      model->GetIconAt(modelIndex, &icon);
+      [(id)item setImage:icon.IsEmpty() ? nil : icon.ToNSImage()];
     }
     return model->IsEnabledAt(modelIndex);
   }

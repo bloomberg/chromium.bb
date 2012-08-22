@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -286,7 +287,7 @@ MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
 MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
-  gfx::ImageSkia icon;
+  gfx::Image icon;
   string16 label;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
@@ -318,7 +319,10 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
       break;
   }
 
-  return AppendMenuItemImpl(id, label, icon, type);
+  return AppendMenuItemImpl(id,
+      label,
+      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
+      type);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,

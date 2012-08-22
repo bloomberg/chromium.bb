@@ -23,7 +23,7 @@ class WebContents;
 }
 
 namespace gfx {
-class ImageSkia;
+class Image;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ class BackForwardMenuModel : public ui::MenuModel {
                                 ui::Accelerator* accelerator) const OVERRIDE;
   virtual bool IsItemCheckedAt(int index) const OVERRIDE;
   virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) OVERRIDE;
+  virtual bool GetIconAt(int index, gfx::Image* icon) OVERRIDE;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
       int index) const OVERRIDE;
   virtual bool IsEnabledAt(int index) const OVERRIDE;

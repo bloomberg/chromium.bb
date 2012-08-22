@@ -33,10 +33,10 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   InsertItemWithStringIdAt(0, IDC_CHROME_TO_MOBILE_PAGE,
                            IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
-  SetIcon(0, *rb.GetImageSkiaNamed(IDR_MOBILE));
+  SetIcon(0, rb.GetNativeImageNamed(IDR_MOBILE));
   InsertItemWithStringIdAt(1, IDC_BOOKMARK_PAGE,
                            starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
-  SetIcon(1, *rb.GetImageSkiaNamed(starred ? IDR_STAR_LIT : IDR_STAR));
+  SetIcon(1, rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 
   // Adds extensions to the model.
   int command_id = kFirstExtensionCommandId;
