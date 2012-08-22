@@ -11,17 +11,20 @@ namespace pp {
 
 // Graphics2DDev is a version of Graphics2D that exposes under-development  APIs
 // for HiDPI
-class Graphics2DDev : public Graphics2D {
+class Graphics2D_Dev : public Graphics2D {
  public:
   /// Default constructor for creating an is_null()
-  /// <code>Graphics2DDev</code> object.
-  Graphics2DDev() : Graphics2D() {}
+  /// <code>Graphics2D_Dev</code> object.
+  Graphics2D_Dev() : Graphics2D() {}
 
   // Constructor for creating a <code>Graphics2DDev</code> object from an
   // existing <code>Graphics2D</code> object.
-  Graphics2DDev(const Graphics2D& other) : Graphics2D(other) {}
+  Graphics2D_Dev(const Graphics2D& other) : Graphics2D(other) {}
 
-  virtual ~Graphics2DDev() {}
+  virtual ~Graphics2D_Dev() {}
+
+  /// Returns true if SetScale and GetScale are supported. False if not.
+  static bool SupportsScale();
 
   /// SetScale() sets the scale factor that will be applied when painting the
   /// graphics context onto the output device. Typically, if rendering at device

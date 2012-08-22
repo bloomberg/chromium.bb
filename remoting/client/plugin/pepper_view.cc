@@ -90,7 +90,7 @@ void PepperView::SetView(const pp::View& view) {
 
     // Ideally we would always let Graphics2D scale us, but the output quality
     // is lousy, so we don't.
-    pp::Graphics2DDev graphics2d_dev(graphics2d_);
+    pp::Graphics2D_Dev graphics2d_dev(graphics2d_);
     graphics2d_dev.SetScale(1.0f / view_scale_);
 
     bool result = instance_->BindGraphics(graphics2d_);

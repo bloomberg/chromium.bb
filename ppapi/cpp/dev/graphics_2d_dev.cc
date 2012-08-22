@@ -17,14 +17,19 @@ template <> const char* interface_name<PPB_Graphics2D_Dev>() {
 
 }  // namespace
 
-bool Graphics2DDev::SetScale(float scale) {
+// static
+bool Graphics2D_Dev::SupportsScale() {
+  return has_interface<PPB_Graphics2D_Dev>();
+}
+
+bool Graphics2D_Dev::SetScale(float scale) {
   if (!has_interface<PPB_Graphics2D_Dev>())
     return false;
   return PP_ToBool(get_interface<PPB_Graphics2D_Dev>()->SetScale(pp_resource(),
                                                                  scale));
 }
 
-float Graphics2DDev::GetScale() {
+float Graphics2D_Dev::GetScale() {
   if (!has_interface<PPB_Graphics2D_Dev>())
     return 1.0f;
   return get_interface<PPB_Graphics2D_Dev>()->GetScale(pp_resource());
