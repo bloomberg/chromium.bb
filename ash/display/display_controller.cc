@@ -19,6 +19,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -143,6 +144,7 @@ bool DisplayController::WarpMouseCursorIfNecessary(
     const gfx::Point& point_in_root) {
   if (root_windows_.size() < 2 || dont_warp_mouse_)
     return false;
+  const float scale = ui::GetDeviceScaleFactor(current_root->layer());
 
   // The pointer might be outside the |current_root|. Get the root window where
   // the pointer is currently on.
@@ -157,13 +159,13 @@ bool DisplayController::WarpMouseCursorIfNecessary(
   int offset_y = 0;
   if (actual_location.second.x() <= root_bounds.x()) {
     // Use -2, not -1, to avoid infinite loop of pointer warp.
-    offset_x = -2;
+    offset_x = -2 * scale;
   } else if (actual_location.second.x() >= root_bounds.right() - 1) {
-    offset_x = 2;
+    offset_x = 2 * scale;
   } else if (actual_location.second.y() <= root_bounds.y()) {
-    offset_y = -2;
+    offset_y = -2 * scale;
   } else if (actual_location.second.y() >= root_bounds.bottom() - 1) {
-    offset_y = 2;
+    offset_y = 2 * scale;
   } else {
     return false;
   }

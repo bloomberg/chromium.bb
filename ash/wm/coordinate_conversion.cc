@@ -57,14 +57,12 @@ std::pair<aura::RootWindow*, gfx::Point> GetRootWindowRelativeToWindow(
 
     Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
     for (size_t i = 0; i < root_windows.size(); ++i) {
-      gfx::Point native_origin = root_windows[i]->bounds().origin();
-      root_windows[i]->ConvertPointToNativeScreen(&native_origin);
-      gfx::Rect native_bounds = root_windows[i]->bounds();
-      native_bounds.set_origin(native_origin);
+      const gfx::Rect native_bounds(root_windows[i]->GetHostOrigin(),
+                                    root_windows[i]->GetHostSize());  // in px.
       if (native_bounds.Contains(location_in_native)) {
         root_window = root_windows[i];
         location_in_root = location_in_native;
-        location_in_root.Offset(-native_bounds.x(), -native_bounds.y());
+        root_window->ConvertPointFromNativeScreen(&location_in_root);
         break;
       }
     }

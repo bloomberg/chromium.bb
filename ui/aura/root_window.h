@@ -186,6 +186,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // screen's.
   void ConvertPointToNativeScreen(gfx::Point* point) const;
 
+  // Converts |point| from native screen coordinate system to the root window's.
+  void ConvertPointFromNativeScreen(gfx::Point* point) const;
+
   // Gesture Recognition -------------------------------------------------------
 
   // When a touch event is dispatched to a Window, it can notify the RootWindow
