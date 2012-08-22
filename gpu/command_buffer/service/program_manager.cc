@@ -543,24 +543,27 @@ bool ProgramManager::ProgramInfo::Link(ShaderManager* manager,
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
   if (success == GL_TRUE) {
     Update();
-    if (cache && link) {
-      cache->SaveLinkedProgram(service_id(),
-                               attached_shaders_[0],
-                               attached_shaders_[1],
-                               &bind_attrib_location_map_);
+    if (link) {
+      if (cache) {
+        cache->SaveLinkedProgram(service_id(),
+                                 attached_shaders_[0],
+                                 attached_shaders_[1],
+                                 &bind_attrib_location_map_);
+      }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "GPU.ProgramCache.BinaryCacheMissTime",
           (TimeTicks::HighResNow() - before_time).InMicroseconds(),
           0,
           TimeDelta::FromSeconds(10).InMicroseconds(),
           50);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "GPU.ProgramCache.BinaryCacheHitTime",
+          (TimeTicks::HighResNow() - before_time).InMicroseconds(),
+          0,
+          TimeDelta::FromSeconds(1).InMicroseconds(),
+          50);
     }
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "GPU.ProgramCache.BinaryCacheHitTime",
-        (TimeTicks::HighResNow() - before_time).InMicroseconds(),
-        0,
-        TimeDelta::FromSeconds(1).InMicroseconds(),
-        50);
   } else {
     UpdateLogInfo();
   }
