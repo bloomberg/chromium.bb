@@ -61,17 +61,17 @@ def write_json(filepath, data):
 
 class RunTestFromArchive(unittest.TestCase):
   def setUp(self):
-    self.tempdir = tempfile.mkdtemp()
+    self.tempdir = tempfile.mkdtemp(prefix='run_test_from_archive_smoke_test')
+    logging.debug(self.tempdir)
+    # The "source" hash table.
     self.table = os.path.join(self.tempdir, 'table')
     os.mkdir(self.table)
+    # The slave-side cache.
     self.cache = os.path.join(self.tempdir, 'cache')
 
-    self.test = os.path.join(
-        ROOT_DIR, 'data', 'run_test_from_archive', 'gtest_fake.py')
-    self.test_sha1 = calc_sha1(self.test)
+    self.data_dir = os.path.join(ROOT_DIR, 'data', 'run_test_from_archive')
 
   def tearDown(self):
-    logging.debug(self.tempdir)
     shutil.rmtree(self.tempdir)
 
   def _result_tree(self):
@@ -84,23 +84,26 @@ class RunTestFromArchive(unittest.TestCase):
     write_content(os.path.join(self.table, result_sha1), result_text)
     return result_sha1
 
-  def test_result(self):
-    # Store the executable in the hash table.
-    shutil.copyfile(self.test, os.path.join(self.table, self.test_sha1))
-    result_data = {
-      'files': {
-        'gtest_fake.py': {
-          'sha-1': self.test_sha1,
-        },
-      },
-      'command': ['python', 'gtest_fake.py'],
-    }
-    result_file = os.path.join(self.tempdir, 'foo.results')
-    write_json(result_file, result_data)
+  def _store(self, filename):
+    """Stores a test data file in the table.
 
+    Returns its sha-1 hash.
+    """
+    filepath = os.path.join(self.data_dir, filename)
+    h = calc_sha1(filepath)
+    shutil.copyfile(filepath, os.path.join(self.table, h))
+    return h
+
+  def test_result(self):
+    # Loads an arbitrary manifest on the file system.
+    manifest = os.path.join(self.data_dir, 'gtest_fake.results')
+    expected = [
+      'state.json',
+      self._store('gtest_fake.py'),
+    ]
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py'),
-      '--manifest', result_file,
+      '--manifest', manifest,
       '--cache', self.cache,
       '--remote', self.table,
     ]
@@ -109,26 +112,19 @@ class RunTestFromArchive(unittest.TestCase):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         universal_newlines=True)
     out, err = proc.communicate()
-    self.assertEquals(1070, len(out))
     self.assertEquals('', err)
+    self.assertEquals(1070, len(out), out)
     self.assertEquals(6, proc.returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEquals(sorted(expected), actual)
 
   def test_hash(self):
-    # Loads the manifest from the store as a hash, then run the child.
-    # Store the executable in the hash table.
-    shutil.copyfile(self.test, os.path.join(self.table, self.test_sha1))
-    # Store a .results file in the hash table. The file name is the content's
-    # sha1, so first generate the content.
-    result_data = {
-      'files': {
-        'gtest_fake.py': {
-          'sha-1': self.test_sha1,
-        },
-      },
-      'command': ['python', 'gtest_fake.py'],
-    }
-    result_sha1 = self._store_result(result_data)
-
+    # Loads the manifest from the store as a hash.
+    result_sha1 = self._store('gtest_fake.results')
+    expected = [
+      'state.json',
+      self._store('gtest_fake.py'),
+    ]
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py'),
       '--hash', result_sha1,
@@ -140,12 +136,17 @@ class RunTestFromArchive(unittest.TestCase):
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         universal_newlines=True)
     out, err = proc.communicate()
-    self.assertEquals(1070, len(out))
     self.assertEquals('', err)
+    self.assertEquals(1070, len(out), out)
     self.assertEquals(6, proc.returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEquals(sorted(expected), actual)
 
   def test_fail_empty_manifest(self):
     result_sha1 = self._store_result({})
+    expected = [
+      'state.json',
+    ]
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py'),
       '--hash', result_sha1,
@@ -160,6 +161,8 @@ class RunTestFromArchive(unittest.TestCase):
     self.assertEquals('', out)
     self.assertEquals('No file to map\n', err)
     self.assertEquals(1, proc.returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEquals(sorted(expected), actual)
 
 
 if __name__ == '__main__':
