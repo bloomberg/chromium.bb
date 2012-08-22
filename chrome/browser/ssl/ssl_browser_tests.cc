@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -21,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -31,6 +33,7 @@
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
@@ -635,9 +638,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   ASSERT_TRUE(tab2->web_contents()->GetInterstitialPage());
 }
 
-// Disabled due to crash in downloads code that this triggers.
-// http://crbug.com/95331
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
   GURL url_non_dangerous = test_server()->GetURL("");
@@ -657,6 +658,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
     chrome::Navigate(&navigate_params);
     observer.Wait();
   }
+
+  // To exit the browser cleanly (and this test) we need to complete the
+  // download after completing this test.
+  content::DownloadTestObserverTerminal dangerous_download_observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
 
   // Proceed through the SSL interstitial. This doesn't use
   // |ProceedThroughInterstitial| since no page load will commit.
@@ -678,6 +686,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   ASSERT_TRUE(tab->GetInterstitialPage() != NULL);
   EXPECT_TRUE(chrome::CanGoBack(browser()));
   chrome::GoBack(browser(), CURRENT_TAB);
+
+  dangerous_download_observer.WaitForFinished();
 }
 
 //
