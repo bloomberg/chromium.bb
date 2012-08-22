@@ -2456,7 +2456,7 @@ class LogmanTrace(ApiBase):
 
     def handle_Process_End(self, line):
       pid = line[self.PID]
-      if pid in self._process_lookup:
+      if self._process_lookup.get(pid):
         logging.info('Terminated: %d' % pid)
         self._process_lookup[pid] = None
       else:
@@ -2491,7 +2491,7 @@ class LogmanTrace(ApiBase):
         proc = self.Process(self.blacklist, pid, None)
         self.root_process = proc
         ppid = None
-      elif ppid in self._process_lookup:
+      elif self._process_lookup.get(ppid):
         proc = self.Process(self.blacklist, pid, None)
         self._process_lookup[ppid].children.append(proc)
       else:
