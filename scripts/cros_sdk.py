@@ -273,7 +273,12 @@ Action taken is the following:
   # Actions:
   parser.add_option('--bootstrap',
                     action='store_true', dest='bootstrap', default=False,
-                    help=optparse.SUPPRESS_HELP)
+                    help=('Build everything from scratch, including the sdk.  '
+                          'Use this only if you need to validate a change '
+                          'that affects SDK creation itself (toolchain and '
+                          'build are typically the only folk who need this).  '
+                          'Note this will quite heavily slow down the build.  '
+                          'Finally, this option implies --enter.'))
   parser.add_option('--delete',
                     action='store_true', dest='delete', default=False,
                     help=('Delete the current SDK chroot'))
