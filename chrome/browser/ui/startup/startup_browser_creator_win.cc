@@ -12,40 +12,15 @@
 
 namespace chrome {
 
-// Metro driver exports for getting the launch type, initial url, initial
-// search term, etc.
-extern "C" {
-typedef const wchar_t* (*GetInitialUrl)();
-typedef const wchar_t* (*GetInitialSearchString)();
-typedef base::win::MetroLaunchType (*GetLaunchType)(
-    base::win::MetroPreviousExecutionState* previous_state);
-}
-
 GURL GetURLToOpen(Profile* profile) {
-  HMODULE metro = base::win::GetMetroModule();
-  if (!metro)
-    return GURL();
+  string16 params;
+  base::win::MetroLaunchType launch_type =
+      base::win::GetMetroLaunchParams(&params);
 
-  GetLaunchType get_launch_type = reinterpret_cast<GetLaunchType>(
-      ::GetProcAddress(metro, "GetLaunchType"));
-  DCHECK(get_launch_type);
-
-  base::win::MetroLaunchType launch_type = get_launch_type(NULL);
-
-  if (launch_type == base::win::PROTOCOL || launch_type == base::win::LAUNCH) {
-    GetInitialUrl initial_metro_url = reinterpret_cast<GetInitialUrl>(
-        ::GetProcAddress(metro, "GetInitialUrl"));
-    DCHECK(initial_metro_url);
-    const wchar_t* initial_url = initial_metro_url();
-    if (initial_url)
-      return GURL(initial_url);
-  } else if (launch_type == base::win::SEARCH) {
-    GetInitialSearchString initial_search_string =
-        reinterpret_cast<GetInitialSearchString>(
-            ::GetProcAddress(metro, "GetInitialSearchString"));
-    DCHECK(initial_search_string);
-    string16 search_string = initial_search_string();
-
+  if ((launch_type == base::win::METRO_PROTOCOL) ||
+      (launch_type == base::win::METRO_LAUNCH)) {
+    return GURL(params);
+  } else if (launch_type == base::win::METRO_SEARCH) {
     const TemplateURL* default_provider =
         TemplateURLServiceFactory::GetForProfile(profile)->
         GetDefaultSearchProvider();
@@ -53,7 +28,7 @@ GURL GetURLToOpen(Profile* profile) {
       const TemplateURLRef& search_url = default_provider->url_ref();
       DCHECK(search_url.SupportsReplacement());
       return GURL(search_url.ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(search_string)));
+          TemplateURLRef::SearchTermsArgs(params)));
     }
   }
   return GURL();

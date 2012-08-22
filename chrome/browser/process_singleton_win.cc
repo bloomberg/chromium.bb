@@ -9,7 +9,9 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -18,12 +20,16 @@
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/hwnd_util.h"
 
 namespace {
 
 const char kLockfile[] = "lockfile";
+
+const char kSearchUrl[] =
+  "http://www.google.com/search?q=%s&sourceid=chrome&ie=UTF-8";
 
 // Checks the visibility of the enumerated window and signals once a visible
 // window has been found.
@@ -239,7 +245,38 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   else if (!remote_window_)
     return PROCESS_NONE;
 
-  // Found another window, send our command line to it
+  DWORD process_id = 0;
+  DWORD thread_id = GetWindowThreadProcessId(remote_window_, &process_id);
+  // It is possible that the process owning this window may have died by now.
+  if (!thread_id || !process_id) {
+    remote_window_ = NULL;
+    return PROCESS_NONE;
+  }
+
+  if (base::win::IsMetroProcess()) {
+    // Interesting corner case. We are launched as a metro process but we
+    // found another chrome running. Since metro enforces single instance then
+    // the other chrome must be desktop chrome and this must be a search charm
+    // activation. This scenario is unique; other cases should be properly
+    // handled by the delegate_execute which will not activate a second chrome.
+    string16 terms;
+    base::win::MetroLaunchType launch = base::win::GetMetroLaunchParams(&terms);
+    if (launch != base::win::METRO_SEARCH) {
+      LOG(WARNING) << "In metro mode, but and launch is " << launch;
+    } else {
+      std::string query = net::EscapeQueryParamValue(UTF16ToUTF8(terms), true);
+      std::string url = base::StringPrintf(kSearchUrl, query.c_str());
+      SHELLEXECUTEINFOA sei = { sizeof(sei) };
+      sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+      sei.nShow = SW_SHOWNORMAL;
+      sei.lpFile = url.c_str();
+      OutputDebugStringA(sei.lpFile);
+      sei.lpDirectory = "";
+      ::ShellExecuteExA(&sei);
+    }
+    return PROCESS_NOTIFIED;
+  }
+  // Non-metro mode, send our command line to the other chrome message window.
   // format is "START\0<<<current directory>>>\0<<<commandline>>>".
   std::wstring to_send(L"START\0", 6);  // want the NULL in the string.
   FilePath cur_dir;
@@ -252,14 +289,6 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 
   // Allow the current running browser window making itself the foreground
   // window (otherwise it will just flash in the taskbar).
-  DWORD process_id = 0;
-  DWORD thread_id = GetWindowThreadProcessId(remote_window_, &process_id);
-  // It is possible that the process owning this window may have died by now.
-  if (!thread_id || !process_id) {
-    remote_window_ = NULL;
-    return PROCESS_NONE;
-  }
-
   AllowSetForegroundWindow(process_id);
 
   COPYDATASTRUCT cds;
