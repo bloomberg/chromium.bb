@@ -586,8 +586,16 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStripAndAvatarArea(
     views::View* tabstrip) const {
-  const int available_width =
-      minimize_button_ ? minimize_button_->x() : width();
+  int available_width = width();
+  if (minimize_button_) {
+    available_width = minimize_button_->x();
+  } else if (browser_view()->window_switcher_button()) {
+    // We don't have the sysmenu buttons in Windows 8 metro mode. However there
+    // are buttons like the window switcher which are drawn in the non client
+    // are in the BrowserView. We need to ensure that the tab strip does not
+    // draw on the window switcher button.
+    available_width -= browser_view()->window_switcher_button()->width();
+  }
   const int caption_spacing = frame()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing;
   const int tabstrip_x = NonClientBorderThickness();

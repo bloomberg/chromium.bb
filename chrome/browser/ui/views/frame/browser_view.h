@@ -211,6 +211,10 @@ class BrowserView : public BrowserWindow,
 
   void SetWindowSwitcherButton(views::Button* button);
 
+  views::Button* window_switcher_button() {
+    return window_switcher_button_;
+  }
+
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
   void ToolbarSizeChanged(bool is_animating);
