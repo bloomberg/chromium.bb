@@ -27,7 +27,6 @@
     {
       'target_name': 'rlz_lib',
       'type': 'static_library',
-      'include_dirs': [],
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -99,7 +98,6 @@
     {
       'target_name': 'rlz_unittests',
       'type': 'executable',
-      'include_dirs': [],
       'dependencies': [
         ':rlz_lib',
         '../base/base.gyp:base',
@@ -128,6 +126,16 @@
         }]
       ],
     },
+    {
+      'target_name': 'rlz_id',
+      'type': 'executable',
+      'dependencies': [
+        ':rlz_lib',
+      ],
+      'sources': [
+        'examples/rlz_id.cc',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="win"', {
@@ -135,7 +143,6 @@
         {
           'target_name': 'rlz',
           'type': 'shared_library',
-          'include_dirs': [],
           'sources': [
             'win/dll/dll_main.cc',
             'win/dll/exports.cc',
