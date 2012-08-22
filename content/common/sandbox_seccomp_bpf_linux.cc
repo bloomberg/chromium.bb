@@ -1265,24 +1265,17 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   }
 }
 
-playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
+playground2::Sandbox::ErrorCode BlacklistDebugAndNumaPolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
     // TODO(jln) we should not have to do that in a trivial policy.
     return ENOSYS;
   }
-  switch (sysno) {
-#if defined(__i386__) || defined(__x86_64__)
-    case __NR_migrate_pages:
-#endif
-    case __NR_move_pages:
-    case __NR_process_vm_readv:
-    case __NR_process_vm_writev:
-    case __NR_ptrace:
-      return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
-    default:
-      return playground2::Sandbox::SB_ALLOWED;
-  }
+
+  if (IsDebug(sysno) || IsNuma(sysno))
+    return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+
+  return playground2::Sandbox::SB_ALLOWED;
 }
 
 // Allow all syscalls.
@@ -1322,7 +1315,7 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   if (process_type == switches::kGpuProcess) {
     // On Chrome OS, --enable-gpu-sandbox enables the more restrictive policy.
     if (IsChromeOS() && !command_line.HasSwitch(switches::kEnableGpuSandbox))
-      return BlacklistPtracePolicy;
+      return BlacklistDebugAndNumaPolicy;
     else
       return GpuProcessPolicy_x86_64;
   }
@@ -1335,7 +1328,7 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
 
   if (process_type == switches::kRendererProcess ||
       process_type == switches::kWorkerProcess) {
-    return BlacklistPtracePolicy;
+    return BlacklistDebugAndNumaPolicy;
   }
   NOTREACHED();
   // This will be our default if we need one.
@@ -1344,7 +1337,7 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   // On other architectures (currently IA32 or ARM),
   // we only have a small blacklist at the moment.
   (void) process_type;
-  return BlacklistPtracePolicy;
+  return BlacklistDebugAndNumaPolicy;
 #endif  // __x86_64__
 }
 
