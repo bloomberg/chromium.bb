@@ -85,7 +85,6 @@ import omnibox_info
 import plugins_info
 import prefs_info
 from pyauto_errors import AutomationCommandFail
-from pyauto_errors import AutomationCommandTimeout
 from pyauto_errors import JavascriptRuntimeError
 from pyauto_errors import JSONInterfaceError
 from pyauto_errors import NTPThumbnailNotShownError
@@ -93,7 +92,6 @@ import pyauto_utils
 import simplejson as json  # found in third_party
 
 _CHROME_DRIVER_FACTORY = None
-_DEFAULT_AUTOMATION_TIMEOUT = 45
 _HTTP_SERVER = None
 _REMOTE_PROXY = None
 _OPTIONS = None
@@ -137,7 +135,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # Fetch provided keyword args, or fill in defaults.
     clear_profile = kwargs.get('clear_profile', True)
     homepage = kwargs.get('homepage', 'about:blank')
-    self._automation_timeout = _DEFAULT_AUTOMATION_TIMEOUT * 1000
 
     pyautolib.PyUITestBase.__init__(self, clear_profile, homepage)
     self.Initialize(pyautolib.FilePath(self.BrowserPath()))
@@ -832,7 +829,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       False, when returning due to timeout
     """
     if timeout == -1:  # Default
-      timeout = self._automation_timeout / 1000.0
+      timeout = self.action_max_timeout_ms() / 1000.0
     assert callable(function), "function should be a callable"
     begin = time.time()
     debug_begin = begin
@@ -949,11 +946,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     logging.debug('Stopped HTTPS server.')
 
   class ActionTimeoutChanger(object):
-    """Facilitate temporary changes to PyAuto command timeout.
+    """Facilitate temporary changes to action_timeout_ms.
 
     Automatically resets to original timeout when object is destroyed.
     """
-    _saved_timeout = -1  # Saved timeout value
+    _saved_timeout = -1  # Saved value for action_timeout_ms
 
     def __init__(self, ui_test, new_timeout):
       """Initialize.
@@ -962,13 +959,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         ui_test: a PyUITest object
         new_timeout: new timeout to use (in milli secs)
       """
-      self._saved_timeout = ui_test._automation_timeout
-      ui_test._automation_timeout = new_timeout
+      self._saved_timeout = ui_test.action_timeout_ms()
+      if new_timeout != self._saved_timeout:
+        ui_test.set_action_timeout_ms(new_timeout)
       self._ui_test = ui_test
 
     def __del__(self):
       """Reset command_execution_timeout_ms to original value."""
-      self._ui_test._automation_timeout = self._saved_timeout
+      if self._ui_test.action_timeout_ms() != self._saved_timeout:
+        self._ui_test.set_action_timeout_ms(self._saved_timeout)
 
   class JavascriptExecutor(object):
     """Abstract base class for JavaScript injection.
@@ -1033,7 +1032,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     result = self._SendJSONRequest(-1,
              json.dumps({'command': 'GetBrowserInfo',}),
-             self._automation_timeout)
+             self.action_max_timeout_ms())
     if not result:
       # The diagnostic command did not complete, Chrome is probably in a bad
       # state
@@ -1067,7 +1066,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     if timeout == -1:  # Default
-      timeout = self._automation_timeout
+      timeout = self.action_timeout_ms()
     if windex is None:  # Do not target any window
       windex = -1
     result = self._SendJSONRequest(windex, json.dumps(cmd_dict), timeout)
@@ -1111,9 +1110,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                                additional_info))
     ret_dict = json.loads(result)
     if ret_dict.has_key('error'):
-      if ret_dict.get('is_interface_timeout'):
-        raise AutomationCommandTimeout(ret_dict['error'])
-      elif ret_dict.get('is_interface_error'):
+      if ret_dict.get('is_interface_error'):
         raise JSONInterfaceError(ret_dict['error'])
       else:
         raise AutomationCommandFail(ret_dict['error'])
@@ -1833,8 +1830,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of downloads_info.DownloadInfo
     """
     return download_info.DownloadInfo(
-        self._GetResultFromJSONRequest({'command': 'GetDownloadsInfo'},
-                                       windex=windex))
+        self._SendJSONRequest(
+            windex, json.dumps({'command': 'GetDownloadsInfo'}),
+            self.action_max_timeout_ms()))
 
   def GetOmniboxInfo(self, windex=0):
     """Return info about Omnibox.
@@ -1860,8 +1858,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of omnibox_info.OmniboxInfo
     """
     return omnibox_info.OmniboxInfo(
-        self._GetResultFromJSONRequest({'command': 'GetOmniboxInfo'},
-                                       windex=windex))
+        self._SendJSONRequest(windex,
+                              json.dumps({'command': 'GetOmniboxInfo'}),
+                              self.action_max_timeout_ms()))
 
   def SetOmniboxText(self, text, windex=0):
     """Enter text into the omnibox. This shifts focus to the omnibox.
@@ -2185,8 +2184,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._GetResultFromJSONRequest({'command': 'GetLocalStatePrefsInfo'},
-                                       windex=None))
+        self._SendJSONRequest(-1,
+                              json.dumps({'command': 'GetLocalStatePrefsInfo'}),
+                              self.action_max_timeout_ms()))
 
   def SetLocalStatePrefs(self, path, value):
     """Set local state preference for the given path.
@@ -2235,7 +2235,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'windex': windex,
     }
     return prefs_info.PrefsInfo(
-        self._GetResultFromJSONRequest(cmd_dict, windex=None))
+        self._SendJSONRequest(-1, json.dumps(cmd_dict),
+                              self.action_max_timeout_ms()))
 
   def SetPrefs(self, path, value, windex=0):
     """Set preference for the given path.
@@ -2757,7 +2758,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
-  def GetHistoryInfo(self, search_text='', windex=0):
+  def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.
 
     Args:
@@ -2768,7 +2769,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                    When non-empty, the history items returned will contain a
                    "snippet" field corresponding to the snippet visible in
                    the chrome://history/ UI.
-      windex: index of the browser window, defaults to 0.
 
     Returns:
       an instance of history_info.HistoryInfo
@@ -2778,7 +2778,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'search_text': search_text,
     }
     return history_info.HistoryInfo(
-        self._GetResultFromJSONRequest(cmd_dict, windex=windex))
+        self._SendJSONRequest(0, json.dumps(cmd_dict),
+                              self.action_max_timeout_ms()))
 
   def GetTranslateInfo(self, tab_index=0, window_index=0):
     """Returns info about translate for the given page.
@@ -3209,7 +3210,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       raise JSONInterfaceError('must specify url')
     self._GetResultFromJSONRequest(cmd_dict)
 
-  def GetPluginsInfo(self, windex=0):
+  def GetPluginsInfo(self):
     """Return info about plugins.
 
     This is the info available from about:plugins
@@ -3218,8 +3219,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of plugins_info.PluginsInfo
     """
     return plugins_info.PluginsInfo(
-        self._GetResultFromJSONRequest({'command': 'GetPluginsInfo'},
-                                       windex=windex))
+        self._SendJSONRequest(0, json.dumps({'command': 'GetPluginsInfo'}),
+                              self.action_max_timeout_ms()))
 
   def EnablePlugin(self, path):
     """Enable the plugin at the given path.

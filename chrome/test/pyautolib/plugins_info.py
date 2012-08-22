@@ -26,18 +26,18 @@ class PluginsInfo(object):
 
   The info is represented as a list of dictionaries, one for each plugin.
   """
-  def __init__(self, plugins_dict):
+  def __init__(self, json_string):
     """Initialize a PluginsInfo from a json string.
 
     Args:
-      plugins_dict: a dictionary returned by the automation command
-          'GetPluginsInfo'.
+      json_string: a json string, as returned by a json ipc call for the
+                   command 'GetPluginsInfo'
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     # JSON string prepared in GetPluginsInfo() in automation_provider.cc
-    self.pluginsdict = plugins_dict
+    self.pluginsdict = json.loads(json_string)
     if self.pluginsdict.has_key('error'):
       raise JSONInterfaceError(self.pluginsdict['error'])
 

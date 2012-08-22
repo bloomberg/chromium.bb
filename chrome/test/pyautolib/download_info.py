@@ -31,12 +31,13 @@ class DownloadInfo(object):
   dictionary with various attributes about a download, like id, file_name,
   path, state, and so on.
   """
-  def __init__(self, downloads_dict):
+  def __init__(self, json_string):
     """Initialize a DownloadInfo from a string of json.
 
     Args:
-      downloads_dict: a dict returned by the IPC command 'GetDownloadsInfo'.
-                   A typical dict representing one download looks like:
+      json_string: a string of JSON, as returned by a json ipc call for the
+                   command 'GetDownloadsInfo'
+                   A typical json string representing one download looks like:
                    {'downloads': [{'url': 'http://blah/a_file.zip',
                                    'file_name': 'a_file.zip',
                                    'state': 'COMPLETED',
@@ -47,7 +48,7 @@ class DownloadInfo(object):
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     # JSON string prepared in GetDownloadsInfo() in automation_provider.cc
-    self.downloadsdict = downloads_dict
+    self.downloadsdict = json.loads(json_string)
     if self.downloadsdict.has_key('error'):
       raise JSONInterfaceError(self.downloadsdict['error'])
 

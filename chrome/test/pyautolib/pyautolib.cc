@@ -113,10 +113,10 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
   base::TimeTicks time = base::TimeTicks::Now();
 
   if (!automation_sender) {
-    ErrorResponse("Automation proxy does not exist", request, false, &response);
+    ErrorResponse("Automation proxy does not exist", request, &response);
   } else if (!automation_sender->channel()) {
     ErrorResponse("Chrome automation IPC channel was found already broken",
-                  request, false, &response);
+                  request, &response);
   } else if (!automation_sender->Send(
       new AutomationMsg_SendJSONRequest(window_index, request, &response,
                                         &success),
@@ -131,7 +131,6 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
 void PyUITestBase::ErrorResponse(
     const std::string& error_string,
     const std::string& request,
-    bool is_timeout,
     std::string* response) {
   base::DictionaryValue error_dict;
   std::string error_msg = StringPrintf("%s for %s", error_string.c_str(),
@@ -139,7 +138,6 @@ void PyUITestBase::ErrorResponse(
   LOG(ERROR) << "Error during automation: " << error_msg;
   error_dict.SetString("error", error_msg);
   error_dict.SetBoolean("is_interface_error", true);
-  error_dict.SetBoolean("is_interface_timeout", is_timeout);
   base::JSONWriter::Write(&error_dict, response);
 }
 
@@ -153,11 +151,11 @@ void PyUITestBase::RequestFailureResponse(
     ErrorResponse(
         StringPrintf("Chrome automation timed out after %d seconds",
                      static_cast<int>(duration.InSeconds())),
-        request, true, response);
+        request, response);
   } else {
     // TODO(craigdh): Determine specific cause.
     ErrorResponse(
         "Chrome automation failed prior to timing out, did chrome crash?",
-        request, false, response);
+        request, response);
   }
 }
