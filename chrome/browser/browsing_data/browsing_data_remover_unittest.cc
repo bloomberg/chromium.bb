@@ -14,6 +14,12 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
@@ -312,6 +318,57 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
 };
 
+class RemoveAutofillTester : public BrowsingDataRemoverTester,
+                             public PersonalDataManagerObserver {
+ public:
+  explicit RemoveAutofillTester(TestingProfile* profile)
+      : personal_data_manager_(
+            PersonalDataManagerFactory::GetForProfile(profile)) {
+    autofill_test::DisableSystemServices(profile);
+    personal_data_manager_->SetObserver(this);
+  }
+
+  virtual ~RemoveAutofillTester() {
+    personal_data_manager_->RemoveObserver(this);
+  }
+
+  // Returns true if there are autofill profiles.
+  bool HasProfile() {
+    return !personal_data_manager_->profiles().empty() &&
+           !personal_data_manager_->credit_cards().empty();
+  }
+
+  void AddProfile() {
+    AutofillProfile profile;
+    profile.SetInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
+    profile.SetInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+    profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("94043"));
+    profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("sue@example.com"));
+    profile.SetInfo(COMPANY_NAME, ASCIIToUTF16("Company X"));
+
+    std::vector<AutofillProfile> profiles;
+    profiles.push_back(profile);
+    personal_data_manager_->SetProfiles(&profiles);
+    MessageLoop::current()->Run();
+
+    CreditCard card;
+    card.SetInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1234-5678-9012-3456"));
+
+    std::vector<CreditCard> cards;
+    cards.push_back(card);
+    personal_data_manager_->SetCreditCards(&cards);
+    MessageLoop::current()->Run();
+  }
+
+ private:
+  virtual void OnPersonalDataChanged() OVERRIDE {
+    MessageLoop::current()->Quit();
+  }
+
+  PersonalDataManager* personal_data_manager_;
+  DISALLOW_COPY_AND_ASSIGN(RemoveAutofillTester);
+};
+
 class RemoveLocalStorageTester : public BrowsingDataRemoverTester {
  public:
   explicit RemoveLocalStorageTester(TestingProfile* profile)
@@ -459,7 +516,9 @@ class BrowsingDataRemoverTest : public testing::Test,
                                      BrowsingDataRemoverTester* tester) {
     BrowsingDataRemover* remover = new BrowsingDataRemover(
         profile_.get(), period,
-        base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
+        // Pick a time that's a bit into the future, since there could be
+        // pending writes.
+        base::Time::Now() + base::TimeDelta::FromSeconds(10));
     remover->OverrideQuotaManagerForTesting(GetMockManager());
     remover->AddObserver(tester);
 
@@ -1155,4 +1214,23 @@ TEST_F(BrowsingDataRemoverTest, OriginAndTimeBasedHistoryRemoval) {
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin1));
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
+}
+
+// Verify that clearing autofill form data works.
+TEST_F(BrowsingDataRemoverTest, AutofillRemoval) {
+  GetProfile()->CreateWebDataService();
+  scoped_ptr<RemoveAutofillTester> tester(
+      new RemoveAutofillTester(GetProfile()));
+
+  ASSERT_FALSE(tester->HasProfile());
+  tester->AddProfile();
+  ASSERT_TRUE(tester->HasProfile());
+
+  BlockUntilBrowsingDataRemoved(
+      BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_FORM_DATA, false, tester.get());
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_FORM_DATA, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+  ASSERT_FALSE(tester->HasProfile());
 }

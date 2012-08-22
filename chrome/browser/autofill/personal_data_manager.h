@@ -154,6 +154,7 @@ class PersonalDataManager
   friend class PersonalDataManagerTest;
   friend class scoped_ptr<PersonalDataManager>;
   friend class ProfileSyncServiceAutofillTest;
+  friend class RemoveAutofillTester;
   friend class TestingAutomationProvider;
   friend void autofill_helper::SetProfiles(int, std::vector<AutofillProfile>*);
   friend void autofill_helper::SetCreditCards(int, std::vector<CreditCard>*);

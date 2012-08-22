@@ -1802,22 +1802,6 @@ void PasswordStoreLoginsChangedObserver::IndicateError(
   Release();
 }
 
-AutomationProviderBrowsingDataObserver::AutomationProviderBrowsingDataObserver(
-    AutomationProvider* provider,
-    IPC::Message* reply_message)
-    : provider_(provider->AsWeakPtr()),
-      reply_message_(reply_message) {
-}
-
-AutomationProviderBrowsingDataObserver::
-    ~AutomationProviderBrowsingDataObserver() {}
-
-void AutomationProviderBrowsingDataObserver::OnBrowsingDataRemoverDone() {
-  if (provider_)
-    AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
-  delete this;
-}
-
 OmniboxAcceptNotificationObserver::OmniboxAcceptNotificationObserver(
     NavigationController* controller,
     AutomationProvider* automation,

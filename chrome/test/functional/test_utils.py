@@ -135,11 +135,6 @@ def VerifyGoogleAccountCredsFilled(test, username, password, tab_index=0,
   test.assertTrue(passwd_value == password)
 
 
-def ClearPasswords(test):
-  """Clear saved passwords."""
-  test.ClearBrowsingData(['PASSWORDS'], 'EVERYTHING')
-
-
 def Shell2(cmd_string, bg=False):
   """Run a shell command.
 

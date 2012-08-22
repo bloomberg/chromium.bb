@@ -301,18 +301,5 @@ class DatabasesTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     self.assertEquals(['text'], self._GetRecords())
 
-  def testDeleteAndUpdateDatabase(self):
-    """Verify can modify database after deleting it."""
-    self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateTable()
-    self._InsertRecord('text')
-    # ClearBrowsingData doesn't return and times out
-    self.ClearBrowsingData(['COOKIES'], 'EVERYTHING')
-    self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateTable()
-    self._InsertRecord('text2')
-    self.assertEquals(['text2'], self._GetRecords())
-
-
 if __name__ == '__main__':
   pyauto_functional.Main()

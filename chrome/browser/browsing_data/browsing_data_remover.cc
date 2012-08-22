@@ -125,6 +125,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_quota_managed_data_(false),
       waiting_for_clear_content_licenses_(false),
+      waiting_for_clear_form_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0) {
@@ -161,6 +162,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_quota_managed_data_(false),
       waiting_for_clear_content_licenses_(false),
+      waiting_for_clear_form_(false),
       remove_mask_(0),
       remove_origin_(GURL()),
       origin_set_mask_(0) {
@@ -426,10 +428,18 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
                                              Profile::EXPLICIT_ACCESS);
 
     if (web_data_service.get()) {
+      waiting_for_clear_form_ = true;
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
           delete_end_);
       web_data_service->RemoveAutofillProfilesAndCreditCardsModifiedBetween(
           delete_begin_, delete_end_);
+      // The above calls are done on the UI thread but do their work on the DB
+      // thread. So wait for it.
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(&BrowsingDataRemover::FormDataDBThreadHop,
+                     base::Unretained(this)));
+
       PersonalDataManager* data_manager =
           PersonalDataManagerFactory::GetForProfile(profile_);
       if (data_manager) {
@@ -546,7 +556,8 @@ bool BrowsingDataRemover::AllDone() {
       !waiting_for_clear_server_bound_certs_ &&
       !waiting_for_clear_plugin_data_ &&
       !waiting_for_clear_quota_managed_data_ &&
-      !waiting_for_clear_content_licenses_;
+      !waiting_for_clear_content_licenses_ &&
+      !waiting_for_clear_form_;
 }
 
 void BrowsingDataRemover::Observe(int type,
@@ -906,5 +917,19 @@ void BrowsingDataRemover::ClearServerBoundCertsOnIOThread(
 void BrowsingDataRemover::OnClearedServerBoundCerts() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   waiting_for_clear_server_bound_certs_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::FormDataDBThreadHop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataRemover::OnClearedFormData,
+                 base::Unretained(this)));
+}
+
+void BrowsingDataRemover::OnClearedFormData() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_form_ = false;
   NotifyAndDeleteIfDone();
 }

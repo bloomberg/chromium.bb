@@ -23,7 +23,6 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
@@ -1287,22 +1286,6 @@ class PasswordStoreLoginsChangedObserver
   base::WaitableEvent done_event_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreLoginsChangedObserver);
-};
-
-// Allows the automation provider to wait for clearing browser data to finish.
-class AutomationProviderBrowsingDataObserver
-    : public BrowsingDataRemover::Observer {
- public:
-  AutomationProviderBrowsingDataObserver(
-      AutomationProvider* provider,
-      IPC::Message* reply_message);
-  virtual ~AutomationProviderBrowsingDataObserver();
-
-  virtual void OnBrowsingDataRemoverDone();
-
- private:
-  base::WeakPtr<AutomationProvider> provider_;
-  scoped_ptr<IPC::Message> reply_message_;
 };
 
 // Allows automation provider to wait until page load after selecting an item

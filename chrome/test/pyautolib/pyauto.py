@@ -3315,28 +3315,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def ClearBrowsingData(self, to_remove, time_period):
-    """Clear the specified browsing data. Implements the features available in
-       the "ClearBrowsingData" UI.
-
-    Args:
-      to_remove: a list of strings indicating which types of browsing data
-                 should be removed. Strings that can be in the list are:
-                 HISTORY, DOWNLOADS, COOKIES, PASSWORDS, FORM_DATA, CACHE
-      time_period: a string indicating the time period for the removal.
-                   Possible strings are:
-                   LAST_HOUR, LAST_DAY, LAST_WEEK, FOUR_WEEKS, EVERYTHING
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {  # Prepare command for the json interface
-      'command': 'ClearBrowsingData',
-      'to_remove': to_remove,
-      'time_period': time_period
-    }
-    return self._GetResultFromJSONRequest(cmd_dict)
-
   def AddSavedPassword(self, password_dict, windex=0):
     """Adds the given username-password combination to the saved passwords.
 

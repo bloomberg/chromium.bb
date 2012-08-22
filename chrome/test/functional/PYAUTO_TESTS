@@ -38,7 +38,6 @@
       'autofill',
       'bookmarks',
       'browser',
-      'browsing_data',
       'chromoting.it2me_basic',
       'codesign',
       'content',
@@ -82,8 +81,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/141443
-      '-browsing_data.BrowsingDataTest.testClearAutofillData',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/132665
@@ -197,10 +194,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # Keychain popups make autofill/password tests difficult: crbug.com/49378
-      '-autofill',
-      # Autofill on Mac. crbug.com/95165
-      '-browsing_data.BrowsingDataTest.testClearAutofillData',
       # codesign tests should run *after* signing. crbug.com/50481
       '-codesign',
       # crbug.com/124922
@@ -581,9 +574,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/100365
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
-      # crbug.com/123419
-      '-browsing_data.BrowsingDataTest.testClearCookies',
-      '-databases.DatabasesTest.testDeleteAndUpdateDatabase',
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       '-youtube.YoutubeTest.testPlayerResolution',

@@ -522,13 +522,6 @@ class TestingAutomationProvider : public AutomationProvider,
                          base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
-  // Clear the specified browsing data. This call provides similar
-  // functionality to RemoveBrowsingData but is synchronous.
-  // Uses the JSON interface for input/output.
-  void ClearBrowsingData(Browser* browser,
-                         base::DictionaryValue* args,
-                         IPC::Message* reply_message);
-
   // Get info about blocked popups in a tab.
   // Uses the JSON interface for input/output.
   void GetBlockedPopupsInfo(Browser* browser,
