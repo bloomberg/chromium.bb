@@ -16,11 +16,14 @@
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/extension_utils.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_icon_loader.h"
@@ -49,6 +52,13 @@
 
 using extensions::Extension;
 
+namespace {
+
+// Max loading animation time in milliseconds.
+const int kMaxLoadingTimeMs = 60 * 1000;
+
+}  // namespace
+
 // ChromeLauncherController::Item ----------------------------------------------
 
 ChromeLauncherController::Item::Item()
@@ -68,12 +78,22 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::LauncherModel* model)
     : model_(model),
       profile_(profile),
-      activation_client_(NULL) {
+      activation_client_(NULL),
+      observed_sync_service_(NULL) {
   if (!profile_) {
     // Use the original profile as on chromeos we may get a temporary off the
     // record profile.
     profile_ = ProfileManager::GetDefaultProfile()->GetOriginalProfile();
+
+    // Monitor app sync on chromeos.
+    if (!IsLoggedInAsGuest()) {
+      observed_sync_service_ =
+          ProfileSyncServiceFactory::GetForProfile(profile_);
+      if (observed_sync_service_)
+        observed_sync_service_->AddObserver(this);
+    }
   }
+
   instance_ = this;
   model_->AddObserver(this);
   extensions::ShellWindowRegistry::Get(profile_)->AddObserver(this);
@@ -111,6 +131,9 @@ ChromeLauncherController::~ChromeLauncherController() {
 
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->RemoveShellObserver(this);
+
+  if (observed_sync_service_)
+    observed_sync_service_->RemoveObserver(this);
 }
 
 void ChromeLauncherController::Init() {
@@ -262,11 +285,6 @@ void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
     controller->Open();
   } else {
     DCHECK_EQ(TYPE_APP, id_to_item_map_[id].item_type);
-
-    // Do nothing for pending app shortcut.
-    if (GetItemStatus(id) == ash::STATUS_IS_PENDING)
-      return;
-
     OpenAppID(id_to_item_map_[id].app_id, event_flags);
   }
 }
@@ -594,6 +612,9 @@ void ChromeLauncherController::LauncherItemChanged(
   }
 }
 
+void ChromeLauncherController::LauncherStatusChanged() {
+}
+
 void ChromeLauncherController::Observe(
     int type,
     const content::NotificationSource& source,
@@ -601,18 +622,15 @@ void ChromeLauncherController::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       UpdateAppLaunchersFromPref();
+      CheckAppSync();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const content::Details<extensions::UnloadedExtensionInfo> unload_info(
           details);
       const Extension* extension = unload_info->extension;
-      if (IsAppPinned(extension->id())) {
-        if (unload_info->reason == extension_misc::UNLOAD_REASON_UPDATE)
-          MarkAppPending(extension->id());
-        else
-          DoUnpinAppsWithID(extension->id());
-      }
+      if (IsAppPinned(extension->id()))
+        DoUnpinAppsWithID(extension->id());
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {
@@ -725,6 +743,11 @@ void ChromeLauncherController::OnShelfAlignmentChanged() {
   profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
 }
 
+void ChromeLauncherController::OnStateChanged() {
+  DCHECK(observed_sync_service_);
+  CheckAppSync();
+}
+
 void ChromeLauncherController::PersistPinnedState() {
   // It is a coding error to call PersistPinnedState() if the pinned apps are
   // not user-editable. The code should check earlier and not perform any
@@ -779,18 +802,6 @@ ash::LauncherItemStatus ChromeLauncherController::GetItemStatus(
   DCHECK_GE(index, 0);
   const ash::LauncherItem& item = model_->items()[index];
   return item.status;
-}
-
-void ChromeLauncherController::MarkAppPending(const std::string& app_id) {
-  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end(); ++i) {
-    if (i->second.item_type == TYPE_APP && i->second.app_id == app_id) {
-      if (GetItemStatus(i->first) == ash::STATUS_CLOSED)
-        SetItemStatus(i->first, ash::STATUS_IS_PENDING);
-
-      break;
-    }
-  }
 }
 
 void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
@@ -850,13 +861,6 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
         IDToItemMap::const_iterator entry(id_to_item_map_.find(item.id));
         if (entry != id_to_item_map_.end() &&
             entry->second.app_id == *pref_app_id) {
-          // Current item will be kept. Reset its pending state and ensure
-          // its icon is loaded since it has to be valid to be in |pinned_apps|.
-          if (item.status == ash::STATUS_IS_PENDING) {
-            SetItemStatus(item.id, ash::STATUS_CLOSED);
-            app_icon_loader_->FetchImage(*pref_app_id);
-          }
-
           ++pref_app_id;
           break;
         } else {
@@ -952,28 +956,61 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
   }
   item.is_incognito = false;
   item.image = Extension::GetDefaultIcon(true);
-  if (item.type == ash::TYPE_APP_SHORTCUT &&
-      !app_tab_helper_->IsValidID(app_id)) {
-    item.status = ash::STATUS_IS_PENDING;
-  } else {
-    TabContents* active_tab = GetLastActiveTabContents(app_id);
-    if (active_tab) {
-      Browser* browser = browser::FindBrowserWithWebContents(
-          active_tab->web_contents());
-      DCHECK(browser);
-      if (browser->window()->IsActive())
-        status = ash::STATUS_ACTIVE;
-      else
-        status = ash::STATUS_RUNNING;
-    }
-    item.status = status;
+
+  TabContents* active_tab = GetLastActiveTabContents(app_id);
+  if (active_tab) {
+    Browser* browser = browser::FindBrowserWithWebContents(
+        active_tab->web_contents());
+    DCHECK(browser);
+    if (browser->window()->IsActive())
+      status = ash::STATUS_ACTIVE;
+    else
+      status = ash::STATUS_RUNNING;
   }
+  item.status = status;
+
   model_->AddAt(index, item);
 
   if (!controller ||
       controller->type() != LauncherItemController::TYPE_EXTENSION_PANEL) {
-    if (item.status != ash::STATUS_IS_PENDING)
-      app_icon_loader_->FetchImage(app_id);
+    app_icon_loader_->FetchImage(app_id);
   }
   return id;
+}
+
+void ChromeLauncherController::CheckAppSync() {
+  if (!observed_sync_service_ ||
+      !observed_sync_service_->HasSyncSetupCompleted()) {
+    return;
+  }
+
+  const bool synced = observed_sync_service_->ShouldPushChanges();
+  const bool has_pending_extension = profile_->GetExtensionService()->
+      pending_extension_manager()->HasPendingExtensionFromSync();
+
+  if (synced && !has_pending_extension)
+    StopLoadingAnimation();
+  else
+    StartLoadingAnimation();
+}
+
+void ChromeLauncherController::StartLoadingAnimation() {
+  DCHECK(observed_sync_service_);
+  if (model_->status() == ash::LauncherModel::STATUS_LOADING)
+    return;
+
+  loading_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kMaxLoadingTimeMs),
+      this, &ChromeLauncherController::StopLoadingAnimation);
+  model_->SetStatus(ash::LauncherModel::STATUS_LOADING);
+}
+
+void ChromeLauncherController::StopLoadingAnimation() {
+  DCHECK(observed_sync_service_);
+
+  model_->SetStatus(ash::LauncherModel::STATUS_NORMAL);
+  loading_timer_.Stop();
+  observed_sync_service_->RemoveObserver(this);
+  observed_sync_service_ = NULL;
 }

@@ -4,6 +4,9 @@
 
 #include "ash/launcher/launcher_model.h"
 
+#include <set>
+#include <string>
+
 #include "ash/launcher/launcher_model_observer.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,6 +50,8 @@ class TestLauncherModelObserver : public LauncherModelObserver {
   }
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE {
     moved_count_++;
+  }
+  virtual void LauncherStatusChanged() OVERRIDE {
   }
 
  private:
