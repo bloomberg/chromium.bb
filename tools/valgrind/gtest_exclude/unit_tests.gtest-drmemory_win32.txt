@@ -14,7 +14,7 @@ DownloadManagerTest.StartDownload
 FirefoxProfileImporterTest.Firefox35Importer
 
 # http://code.google.com/p/drmemory/issues/detail?id=980
-MetricsLogManagerTest.StoreStagedLogTypes
+MetricsLogManagerTest.*
 
 ##################################################
 # Chromium bugs:
