@@ -695,6 +695,7 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        'views',
         'views_examples_with_content_lib',
       ],
       'include_dirs': [
