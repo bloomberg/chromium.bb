@@ -67,7 +67,14 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
 // ID of the RenderProcessHost was stale, so the NavigationEntry in the new tab
 // was not committed.  This prevents regression of that bug.
 // http://crbug.com/57158 - Times out sometimes on all platforms.
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
+#if defined(OS_LINUX)
+// http://crbug.com/144278 - failing on linux
+#define MAYBE_LoadInNewTab DISABLED_LoadInNewTab
+#else
+#define MAYBE_LoadInNewTab LoadInNewTab
+#endif
+
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_LoadInNewTab) {
   const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
   ui_test_utils::NavigateToURL(browser(),
