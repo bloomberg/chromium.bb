@@ -290,14 +290,15 @@ class BootstrapStage(PatchChangesStage):
                             reference=reference_repo)
     cros_build_lib.RunGitCommand(chromite_dir, ['checkout', filter_branch])
 
-    class FilteringSeries(validation_pool.RawPatchSeries):
+    class FilteringSeries(validation_pool.PatchSeries):
       def _LookupUncommittedChanges(self, *args, **kwargs):
-        changes = validation_pool.RawPatchSeries._LookupUncommittedChanges(
+        changes = validation_pool.PatchSeries._LookupUncommittedChanges(
             self, *args, **kwargs)
         return [x for x in changes if x.project == constants.CHROMITE_PROJECT
                 and x.tracking_branch == filter_branch]
 
-    self._ApplyPatchSeries(FilteringSeries(chromite_dir))
+    self._ApplyPatchSeries(FilteringSeries.WorkOnSingleRepo(
+        chromite_dir, self._target_manifest_branch))
 
     extra_params = ['--sourceroot=%s' % self._options.sourceroot]
     extra_params.extend(self._options.bootstrap_args)

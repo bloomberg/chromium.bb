@@ -188,10 +188,15 @@ def _PatchWrapException(functor):
   return f
 
 
-class RawPatchSeries(object):
+class PatchSeries(object):
   """Class representing a set of patches applied to a single git repository."""
 
-  def __init__(self, path, helper_pool=None):
+  def __init__(self, path, helper_pool=None, force_content_merging=False,
+               forced_manifest=None):
+
+    self.manifest = forced_manifest
+    self._content_merging_projects = {}
+    self.force_content_merging = force_content_merging
 
     if helper_pool is None:
       helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
@@ -215,17 +220,47 @@ class RawPatchSeries(object):
     Args:
       gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
     """
-    branch = change.tracking_branch
-    return cros_build_lib.StripLeadingRefs(branch) if gerrit else branch
+    ref = self.manifest.GetProjectsLocalRevision(change.project)
+    return cros_build_lib.StripLeadingRefs(ref) if gerrit else ref
 
-  def GetGitRepoForChange(self, _change):
-    return self._path
+  def GetGitRepoForChange(self, change):
+    return self.manifest.GetProjectPath(change.project, True)
+
+  def _IsContentMerging(self, change):
+    """Discern if the given change has Content Merging enabled in gerrit.
+
+    Note if the instance was created w/ force_content_merging=True,
+    then this function will lie and always return True to avoid the
+    admin-level access required of <=gerrit-2.1.
+
+    Raises:
+      AssertionError: If the gerrit helper requested is disallowed.
+      GerritException: If there is a failure in querying gerrit.
+    Returns:
+      True if the change's project has content merging enabled, False if not.
+    """
+    if self.force_content_merging:
+      return True
+    helper = self._helper_pool.ForChange(change)
+
+    if not helper.version.startswith('2.1'):
+      return self.manifest.ProjectIsContentMerging(change.project)
+
+    # Fallback to doing gsql trickery to get it; note this requires admin
+    # access.  This isn't required for CrOS anymore, but is left in place
+    # should a thirdparty not yet be on >=2.2
+    projects = self._content_merging_projects.get(helper)
+    if projects is None:
+      projects = helper.FindContentMergingProjects()
+      self._content_merging_projects[helper] = projects
+
+    return change.project in projects
 
   def ApplyChange(self, change, dryrun=False):
-    # Always allow 3way for any patch application against a standalone
-    # repository.
-    # pylint: disable=W0613
-    return change.Apply(self._path, change.tracking_branch, trivial=False)
+    # If we're in dryrun mode, then 3way is always allowed.
+    # Otherwise, allow 3way only if the gerrit project allows it.
+    trivial = False if dryrun else not self._IsContentMerging(change)
+    return change.ApplyAgainstManifest(self.manifest, trivial=trivial)
 
   def _GetGerritPatch(self, change, query, parent_lookup=False):
     """Query the configured helpers looking for a given change.
@@ -423,8 +458,41 @@ class RawPatchSeries(object):
     for change in changes:
       change.Fetch(self.GetGitRepoForChange(change))
 
-  def Apply(self, changes, dryrun=False, frozen=True, honor_ordering=False,
-            changes_filter=None):
+  def _ApplyDecorator(functor):
+    """Decorator for Apply that does appropriate self.manifest manipulation.
+
+    Note this is implemented in this fashion so that we can be sure the
+    instances manifest attribute is properly maintained, and so that we
+    don't have to tell people "go look at docstring blah".
+    """
+    # pylint: disable=E0213,W0212,E1101,E1102
+    def f(self, changes, **kwargs):
+      manifest = kwargs.pop('manifest', None)
+      # Wipe is used to track if we need to reset manifest to None, and
+      # to identify if we already had a forced_manifest via __init__.
+      wipe = self.manifest is None
+      if manifest:
+        if not wipe:
+          raise ValueError("manifest can't be specified when one is forced "
+                           "via __init__")
+      elif wipe:
+        manifest = cros_build_lib.ManifestCheckout.Cached(self._path)
+      else:
+        manifest = self.manifest
+
+      try:
+        self.manifest = manifest
+        return functor(self, changes, **kwargs)
+      finally:
+        if wipe:
+          self.manifest = None
+    f.__name__ = functor.__name__
+    f.__doc__ = functor.__doc__
+    return f
+
+  @_ApplyDecorator
+  def Apply(self, changes, dryrun=False, frozen=True,
+            honor_ordering=False, changes_filter=None):
     """Applies changes from pool into the build root specified by the manifest.
 
     This method resolves each given change down into a set of transactions-
@@ -632,80 +700,53 @@ class RawPatchSeries(object):
     logging.debug('Done investigating changes.  Applied %s',
                   ' '.join([c.id for c in applied]))
 
+  @classmethod
+  def WorkOnSingleRepo(cls, git_repo, tracking_branch, **kwargs):
+    """Classmethod to generate a PatchSeries that targets a single git repo.
 
-class PatchSeries(RawPatchSeries):
-  """Class representing a set of patches applied to a manifest checkout."""
-
-  def __init__(self, path, helper_pool=None, force_content_merging=False):
-    RawPatchSeries.__init__(self, path, helper_pool=helper_pool)
-
-    self.manifest = None
-    self._content_merging_projects = {}
-    self.force_content_merging = force_content_merging
-
-  def GetTrackingBranchForChange(self, change, gerrit=False):
-    """Identify the branch to work against for this change.
+    It does this via forcing a fake manifest, which in turn points
+    tracking branch/paths/content-merging at what is passed through here.
 
     Args:
-      gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
-    """
-    ref = self.manifest.GetProjectsLocalRevision(change.project)
-    return cros_build_lib.StripLeadingRefs(ref) if gerrit else ref
-
-  #pylint: disable=W0221
-  def Apply(self, changes, **kwargs):
-    """Apply the given changes against a manifest checkout.
-
-    See RawPatchSeries.Apply for the argument details; this adds a single
-    optional argument:
-    Args:
-      manifest: If given, the manifest object to use.  Else one is created
-        for the configured buildroot.
-    """
-    manifest = kwargs.pop('manifest', None)
-    if manifest is None:
-      manifest = cros_build_lib.ManifestCheckout(self._path)
-    self.manifest = manifest
-    return RawPatchSeries.Apply(self, changes, **kwargs)
-
-  def _IsContentMerging(self, change, dryrun=False):
-    """Discern if the given change has Content Merging enabled in gerrit.
-
-    Note if the instance was created w/ force_content_merging=True,
-    then this function will lie and always return True to avoid the
-    admin-level access required of <=gerrit-2.1.
-
-    Raises:
-      AssertionError: If the gerrit helper requested is disallowed.
-      GerritException: If there is a failure in querying gerrit.
+      git_repo: Absolute path to the git repository to operate upon.
+      tracking_branch: Which tracking branch patches should apply against.
+      kwargs: See PatchSeries.__init__ for the various optional args;
+        not forced_manifest cannot be used here, and force_content_merging
+        defaults to True in this usage.
     Returns:
-      True if the change's project has content merging enabled, False if not.
-    """
-    if self.force_content_merging or dryrun:
-      return True
-    helper = self._helper_pool.ForChange(change)
+      A PatchSeries instance w/ a forced manifest."""
 
-    if not helper.version.startswith('2.1'):
-      return self.manifest.ProjectIsContentMerging(change.project)
+    if 'forced_manifest' in kwargs:
+      raise ValueError("RawPatchSeries doesn't allow a forced_manifest "
+                       "argument.")
+    merging = kwargs.setdefault('force_content_merging', True)
+    kwargs['forced_manifest'] = _ManifestShim(
+        git_repo, tracking_branch, content_merging=merging)
 
-    # Fallback to doing gsql trickery to get it; note this requires admin
-    # access.
-    projects = self._content_merging_projects.get(helper)
-    if projects is None:
-      projects = helper.FindContentMergingProjects()
-      self._content_merging_projects[helper] = projects
+    return cls(git_repo, **kwargs)
 
-    return change.project in projects
 
-  def GetGitRepoForChange(self, change):
-    return self.manifest.GetProjectPath(change.project, True)
+class _ManifestShim(object):
+  """Class used in conjunction with PatchSeries to support standalone git repos.
 
-  def ApplyChange(self, change, dryrun=False):
-    # If we're in dryrun mode, then 3way is always allowed.
-    # Otherwise, allow 3way only if the gerrit project allows it.
-    trivial = False if dryrun else not self._IsContentMerging(change)
+  This works via duck typing; we match the 3 necessary methods that PatchSeries
+  uses."""
 
-    return change.ApplyAgainstManifest(self.manifest, trivial=trivial)
+  def __init__(self, path, tracking_branch, remote='origin',
+               content_merging=True):
+
+    self.path = path
+    self.tracking_branch = 'refs/remotes/%s/%s' % (remote, tracking_branch)
+    self.content_merging = content_merging
+
+  def GetProjectsLocalRevision(self, _project):
+    return self.tracking_branch
+
+  def GetProjectPath(self, _project, _absolute=False):
+    return self.path
+
+  def ProjectIsContentMerging(self, _project):
+    return self.content_merging
 
 
 class ValidationFailedMessage(object):
@@ -1114,6 +1155,7 @@ class ValidationPool(object):
     True if we managed to apply any changes.
     """
     try:
+      # pylint: disable=E1123
       applied, failed_tot, failed_inflight = self._patch_series.Apply(
           self.changes, dryrun=self.dryrun, manifest=manifest)
     except (KeyboardInterrupt, RuntimeError, SystemExit):
