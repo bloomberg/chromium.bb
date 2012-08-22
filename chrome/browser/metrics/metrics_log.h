@@ -126,6 +126,9 @@ class MetricsLog : public MetricsLogBase {
   // Returns the screen size for the primary monitor.
   virtual gfx::Size GetScreenSize() const;
 
+  // Returns the device scale factor for the primary monitor.
+  virtual float GetScreenDeviceScaleFactor() const;
+
   // Returns the number of monitors the user is using.
   virtual int GetScreenCount() const;
 

@@ -343,6 +343,10 @@ gfx::Size MetricsLog::GetScreenSize() const {
   return gfx::Screen::GetPrimaryDisplay().GetSizeInPixel();
 }
 
+float MetricsLog::GetScreenDeviceScaleFactor() const {
+  return gfx::Screen::GetPrimaryDisplay().device_scale_factor();
+}
+
 int MetricsLog::GetScreenCount() const {
   return gfx::Screen::GetNumDisplays();
 }
@@ -787,6 +791,7 @@ void MetricsLog::RecordEnvironmentProto(
   const gfx::Size display_size = GetScreenSize();
   hardware->set_primary_screen_width(display_size.width());
   hardware->set_primary_screen_height(display_size.height());
+  hardware->set_primary_screen_scale_factor(GetScreenDeviceScaleFactor());
   hardware->set_screen_count(GetScreenCount());
 
   WriteGoogleUpdateProto(google_update_metrics);

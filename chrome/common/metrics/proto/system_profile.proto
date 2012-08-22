@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 12
+// Next tag: 13
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -97,6 +97,9 @@ message SystemProfileProto {
     // The screen dimensions of the primary screen, in pixels.
     optional int32 primary_screen_width = 6;
     optional int32 primary_screen_height = 7;
+
+    // The device scale factor of the primary screen.
+    optional float primary_screen_scale_factor = 12;
 
     // Information on the GPU
     message Graphics {

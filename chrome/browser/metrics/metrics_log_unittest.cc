@@ -36,6 +36,7 @@ const int kSessionId = 127;
 const int kScreenWidth = 1024;
 const int kScreenHeight = 768;
 const int kScreenCount = 3;
+const float kScreenScaleFactor = 2;
 const chrome_variations::SelectedGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
@@ -88,6 +89,10 @@ class TestMetricsLog : public MetricsLog {
     return gfx::Size(kScreenWidth, kScreenHeight);
   }
 
+  virtual float GetScreenDeviceScaleFactor() const OVERRIDE {
+    return kScreenScaleFactor;
+  }
+
   virtual int GetScreenCount() const OVERRIDE {
     return kScreenCount;
   }
@@ -120,6 +125,13 @@ class MetricsLogTest : public testing::Test {
       EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
       EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
     }
+
+    const metrics::SystemProfileProto::Hardware& hardware =
+        system_profile.hardware();
+    EXPECT_EQ(kScreenWidth, hardware.primary_screen_width());
+    EXPECT_EQ(kScreenHeight, hardware.primary_screen_height());
+    EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
+    EXPECT_EQ(kScreenCount, hardware.screen_count());
 
     // TODO(isherman): Verify other data written into the protobuf as a result
     // of this call.
