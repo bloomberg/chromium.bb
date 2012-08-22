@@ -33,7 +33,7 @@ namespace {
 const int kUpdateDelayMS = 400;
 
 // The delay of the bubble appearance.
-const int kBubbleAppearanceDelayMS = 200;
+const int kBubbleAppearanceDelayMS = 500;
 
 }
 
