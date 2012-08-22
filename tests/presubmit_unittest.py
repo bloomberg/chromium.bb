@@ -1592,7 +1592,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results2[0].__class__, error_type)
 
   def ReadFileTest(self, check, content1, content2, error_type):
-    self.mox.StubOutWithMock(presubmit.InputApi, 'ReadFile')
     change1 = presubmit.Change(
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
     input_api1 = self.MockInputApi(change1, False)

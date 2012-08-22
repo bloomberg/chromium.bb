@@ -98,7 +98,8 @@ class StdoutCheck(object):
     try:
       # If sys.stdout was used, self.checkstdout() must be called.
       # pylint: disable=E1101
-      self.assertEquals('', sys.stdout.getvalue())
+      if not sys.stdout.closed:
+        self.assertEquals('', sys.stdout.getvalue())
     except AttributeError:
       pass
     sys.stdout = self._old_stdout
