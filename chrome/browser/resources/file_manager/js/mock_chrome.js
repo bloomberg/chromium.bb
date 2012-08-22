@@ -123,7 +123,7 @@ chrome.fileBrowserPrivate = {
    * Returns common tasks for a given list of files.
    * @return {Array.<Object>} Array of task descriptors.
    */
-  getFileTasks: function(urlList, mimeTypes, callback) {
+  getFileTasks: function(urlList, callback) {
     if (urlList.length == 0)
       return callback([]);
 

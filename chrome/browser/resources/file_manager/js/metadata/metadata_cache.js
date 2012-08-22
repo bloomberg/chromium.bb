@@ -84,7 +84,7 @@ function MetadataCache() {
 }
 
 /**
- * Observer type: it will be notified if the url changed is exactly the same
+ * Observer type: it will be notified if the url changed is exactlt the same
  * as the url passed.
  */
 MetadataCache.EXACT = 0;
@@ -733,8 +733,7 @@ GDataProvider.prototype.convert_ = function(data) {
     availableWhenMetered: GDataProvider.isAvailableWhenMetered(data),
     contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
     editUrl: data.editUrl || '',
-    driveApps: data.driveApps || [],
-    contentMimeType: data.contentMimeType || ''
+    driveApps: data.driveApps || []
   };
 
   if (!data.isPresent) {

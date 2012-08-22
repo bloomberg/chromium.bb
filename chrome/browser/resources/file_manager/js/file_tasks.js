@@ -6,10 +6,8 @@
  * This object encapsulates everything related to tasks execution.
  * @param {FileManager} fileManager FileManager instance.
  * @param {Array.<string>} urls List of file urls.
- * @param {Array.<string>=} opt_mimeTypes List of MIME types for each
- *     of the files.
  */
-function FileTasks(fileManager, urls, opt_mimeTypes) {
+function FileTasks(fileManager, urls) {
   this.fileManager_ = fileManager;
   this.urls_ = urls;
   this.tasks_ = null;
@@ -21,8 +19,7 @@ function FileTasks(fileManager, urls, opt_mimeTypes) {
   this.pendingInvocations_ = [];
 
   if (urls.length > 0)
-    chrome.fileBrowserPrivate.getFileTasks(urls, opt_mimeTypes || [],
-      this.onTasks_.bind(this));
+    chrome.fileBrowserPrivate.getFileTasks(urls, this.onTasks_.bind(this));
 }
 
 /**
@@ -70,7 +67,7 @@ FileTasks.prototype.processTasks_ = function(tasks) {
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
 
-    // Skip Drive App if the file is not on Drive.
+    // Skip Drive App if the file is on Drive.
     if (!is_on_drive && task.driveApp)
       continue;
 
