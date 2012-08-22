@@ -190,22 +190,35 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
                     ChannelConfig::CODEC_VP8));
 
   // Audio channel.
+  result->mutable_audio_configs()->push_back(ChannelConfig());
 #if defined(ENABLE_REMOTING_AUDIO)
-  result->mutable_audio_configs()->push_back(
+  EnableAudioChannel(result.get());
+#endif  // defined(ENABLE_REMOTING_AUDIO)
+
+  return result.Pass();
+}
+
+// static
+void CandidateSessionConfig::EnableAudioChannel(
+  CandidateSessionConfig* config) {
+  config->mutable_audio_configs()->clear();
+  config->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                     kDefaultStreamVersion,
-                    ChannelConfig::CODEC_VERBATIM));
-  result->mutable_audio_configs()->push_back(
+                    ChannelConfig::CODEC_SPEEX));
+  config->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_SPEEX));
-  result->mutable_audio_configs()->push_back(
+  config->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VERBATIM));
+  config->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_VERBATIM));
-#endif  // defined(ENABLE_REMOTING_AUDIO)
-  result->mutable_audio_configs()->push_back(ChannelConfig());
-  return result.Pass();
+  config->mutable_audio_configs()->push_back(ChannelConfig());
 }
 
 }  // namespace protocol

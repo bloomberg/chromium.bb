@@ -150,6 +150,9 @@ class CandidateSessionConfig {
       const SessionConfig& config);
   static scoped_ptr<CandidateSessionConfig> CreateDefault();
 
+  // Helper method that modifies |config| to enable audio support.
+  static void EnableAudioChannel(CandidateSessionConfig* config);
+
  private:
   CandidateSessionConfig();
   explicit CandidateSessionConfig(const CandidateSessionConfig& config);
