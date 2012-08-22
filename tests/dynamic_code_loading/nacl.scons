@@ -53,7 +53,7 @@ def GetTemplate(env):
     return 'templates_x86.S'
 
 if env.Bit('tests_use_irt'):
-  testrunner_libs = ['testrunner_browser', '${PPAPI_LIBS}']
+  testrunner_libs = ['testrunner_browser']
 else:
   testrunner_libs = ['testrunner']
 

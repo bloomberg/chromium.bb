@@ -35,8 +35,18 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'debug_stub': [
         'sel',
         ],
+    'testrunner_browser': [
+        'ppapi',
+        ],
     }
 
+# Untrusted only library dependencies.
+# Include names here that otherwise clash with trusted names.
+UNTRUSTED_LIBRARY_DEPENDENCIES = {
+    'ppapi_cpp': [
+        'ppapi',
+        ],
+    }
 
 # Platform specific library dependencies. Mapping from a platform,
 # to a map from a library, to the corresponding list of dependendent
@@ -197,6 +207,8 @@ def AddLibDeps(env, platform, libraries):
   def GetLibraryDeps(library):
     ret = (LIBRARY_DEPENDENCIES_DEFAULT.get(library, []) +
         PLATFORM_LIBRARY_DEPENDENCIES.get(platform, {}).get(library, []))
+    if env['NACL_BUILD_FAMILY'] != 'TRUSTED':
+      ret.extend(UNTRUSTED_LIBRARY_DEPENDENCIES.get(library, []))
     if library == 'validators' and not env.Bit('target_arm'):
       if env.Bit('validator_ragel'):
         ret.append(env.NaClTargetArchSuffix('dfa_validate_caller'))

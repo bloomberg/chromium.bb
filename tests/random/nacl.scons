@@ -7,7 +7,7 @@ Import('env')
 
 nexe = env.ComponentProgram(
     env.ProgramNameForNmf('random_test'), 'random_test.c',
-    EXTRA_LIBS=['testrunner_browser', '${PPAPI_LIBS}'])
+    EXTRA_LIBS=['testrunner_browser'])
 
 node = env.CommandSelLdrTestNacl('random_test.out', nexe,
                                  sel_ldr_flags=['-E', 'OUTSIDE_BROWSER=1'])

@@ -31,8 +31,7 @@ srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
                                         'gio',
                                         'imc',
                                         'imc_syscalls',
-                                        '${PTHREAD_LIBS}',
-                                        '${NON_PPAPI_BROWSER_LIBS}'])
+                                        '${PTHREAD_LIBS}'])
 env.Publish(srpc_ns_nexe_name, 'run',
             ['srpc_nameservice_test.html'])
 
@@ -61,7 +60,6 @@ pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
                                   pm_ns_obj,
                                   EXTRA_LIBS=['nacl_ppapi_util',
                                               'ppapi_cpp',
-                                              '${PPAPI_LIBS}',
                                               'pthread',
                                               'srpc',
                                               'platform',

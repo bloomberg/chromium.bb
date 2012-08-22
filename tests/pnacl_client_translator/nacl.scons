@@ -34,7 +34,7 @@ pexe_name = env.ProgramNameForNmf('pnacl_test_example')
 test_example_pexe = env.ComponentProgram(
     pexe_name,
     [test_example_obj],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
+    EXTRA_LIBS=['ppapi',
                 'ppapi_test_lib',
                 'platform', # for CHECK
                 'pthread',

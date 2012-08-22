@@ -13,7 +13,7 @@ if env.Bit('target_arm') and env.UsingEmulator():
 
 
 if env.Bit('tests_use_irt'):
-  testrunner_libs = ['testrunner_browser', '${PPAPI_LIBS}']
+  testrunner_libs = ['testrunner_browser']
 else:
   testrunner_libs = ['testrunner']
 

@@ -25,7 +25,7 @@ browser_dlopen_nexe_name = env.ProgramNameForNmf('browser_dlopen_test')
 browser_dlopen_nexe = env.ComponentProgram(browser_dlopen_nexe_name,
                                            'browser_dlopen_test.cc',
                                            EXTRA_LIBS=[
-                                               '${PPAPI_LIBS}',
+                                               'ppapi',
                                                'ppapi_test_lib',
                                                'platform',
                                                'dl',

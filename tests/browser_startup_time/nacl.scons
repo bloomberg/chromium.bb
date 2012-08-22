@@ -13,7 +13,7 @@ stripped_nexe = env.ProgramNameForNmf('browser_startup_time_stripped')
 browser_startup_nexe = env.ComponentProgram(
     nexe_name,
     ['hello_world.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])
+    EXTRA_LIBS=['ppapi_cpp'])
 
 env.Publish(nexe_name, 'run',
             ['browser_startup_time.html',

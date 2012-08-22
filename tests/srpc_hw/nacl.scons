@@ -12,8 +12,7 @@ srpc_hw_nexe_name = 'srpc_hw_%s' % env.get('TARGET_FULLARCH')
 srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
                                     srpc_hw_obj,
                                     EXTRA_LIBS=srpc_hw_libs + [
-                                        '${PTHREAD_LIBS}',
-                                        '${NON_PPAPI_BROWSER_LIBS}'])
+                                        '${PTHREAD_LIBS}'])
 
 env.Publish(srpc_hw_nexe_name, 'run',
             ['srpc_hw.html',

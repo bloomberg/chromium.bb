@@ -2614,9 +2614,7 @@ for variant_bit, variant_suffix in target_variant_map:
 if nacl_env.Bit('bitcode'):
   nacl_env['TARGET_VARIANT'] += '-clang'
 
-# TODO(mseaborn): Inline these now that chrome_browser_tests is only
-# supported when using the IRT.
-nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
+# TODO(mseaborn): Drop this once chrome side has inlined this.
 nacl_env.Replace(PPAPI_LIBS=['ppapi'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just

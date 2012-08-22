@@ -60,7 +60,7 @@ if not env.Bit('tests_use_irt'):
      EXTRA_LIBS=['untrusted_crash_dump_lib',
                   'untrusted_crash_dump',
                   'platform', 'gio', 'imc', 'imc_syscalls',
-                  '${PTHREAD_LIBS}', '${NON_PPAPI_BROWSER_LIBS}'])
+                  '${PTHREAD_LIBS}'])
 
   crash_dump = ('${TARGET_ROOT}/test_results/'
                 'inbrowser_untrusted_crash_dump_test.stdout')

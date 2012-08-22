@@ -19,7 +19,6 @@ srpc_test_nexe_name = env.ProgramNameForNmf('srpc_test')
 srpc_test_nexe = env.ComponentProgram(
     srpc_test_nexe_name, srpc_test_objs,
     EXTRA_LIBS=srpc_test_libs + [
-        '${NON_PPAPI_BROWSER_LIBS}',
         '${PTHREAD_LIBS}'])
 env.Publish(srpc_test_nexe_name, 'run',
     ['srpc_basic.html',
@@ -34,7 +33,6 @@ srpc_nrd_server_nexe_name = env.ProgramNameForNmf('srpc_nrd_server')
 srpc_nrd_server_nexe = env.ComponentProgram(
     srpc_nrd_server_nexe_name, 'srpc_nrd_server.c',
     EXTRA_LIBS=[
-        '${NON_PPAPI_BROWSER_LIBS}',
         'srpc',
         'imc_syscalls',
         'platform',
@@ -46,7 +44,6 @@ srpc_nrd_client_nexe_name = env.ProgramNameForNmf('srpc_nrd_client')
 srpc_nrd_client_nexe = env.ComponentProgram(
     srpc_nrd_client_nexe_name, 'srpc_nrd_client.c',
     EXTRA_LIBS=[
-        '${NON_PPAPI_BROWSER_LIBS}',
         'srpc',
         'imc_syscalls',
         'platform',

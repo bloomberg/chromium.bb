@@ -13,9 +13,7 @@ pm_es_obj = env.ComponentObject('pm_exit_status_test.o',
 pm_es_nexe_name = env.ProgramNameForNmf('pm_exit_status_test')
 pm_es_nexe = env.ComponentProgram(pm_es_nexe_name,
                                   pm_es_obj,
-                                  EXTRA_LIBS=['ppapi_cpp',
-                                              '${PPAPI_LIBS}',
-                                              ])
+                                  EXTRA_LIBS=['ppapi_cpp'])
 env.Publish(pm_es_nexe_name, 'run',
             ['pm_exit_status_test.html'])
 
