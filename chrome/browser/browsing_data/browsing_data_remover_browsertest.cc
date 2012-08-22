@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   download_manager->GetAllDownloads(FilePath(), &downloads);
   EXPECT_TRUE(downloads.empty());
 }
-
+#if !defined(OS_LINUX)
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   ASSERT_TRUE(test_server()->Start());
@@ -87,3 +87,4 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   RunScriptAndCheckResult(L"insertRecord('text2')", "done");
   RunScriptAndCheckResult(L"getRecords()", "text2");
 }
+#endif

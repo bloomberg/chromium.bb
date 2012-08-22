@@ -293,6 +293,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
   }
 }
 
+#if !defined(OS_LINUX)
+
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
@@ -334,6 +336,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
             FindInPageWchar(tab, ASCIIToWide(download_url.spec()).c_str(), kFwd,
                             kIgnoreCase, NULL));
 }
+#endif
 
 // Verify search selection coordinates. The data file used is set-up such that
 // the text occurs on the same line, and we verify their positions by verifying
