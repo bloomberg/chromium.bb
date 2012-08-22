@@ -157,6 +157,7 @@ def main():
   if len(src_dirs) == 0:
     src_dirs = [
       os.path.join(src_dir, 'app'),
+      os.path.join(src_dir, 'ash'),
       os.path.join(src_dir, 'chrome'),
       os.path.join(src_dir, 'chrome_frame'),
       os.path.join(src_dir, 'content'),
