@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -26,6 +27,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/event.h"
 #include "ui/base/gestures/gesture_configuration.h"
@@ -94,7 +96,7 @@ aura::Window* GetTargetForSystemGestureEvent(aura::Window* target) {
   return system_target;
 }
 
-Widget* CreateAffordanceWidget() {
+Widget* CreateAffordanceWidget(aura::RootWindow* root_window) {
   Widget* widget = new Widget;
   Widget::InitParams params;
   params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -105,7 +107,7 @@ Widget* CreateAffordanceWidget() {
   widget->Init(params);
   widget->SetOpacity(0xFF);
   widget->GetNativeWindow()->SetParent(
-      ash::Shell::GetPrimaryRootWindowController()->GetContainer(
+      ash::GetRootWindowController(root_window)->GetContainer(
           ash::internal::kShellWindowId_OverlayContainer));
   return widget;
 }
@@ -176,9 +178,10 @@ namespace internal {
 class LongPressAffordanceAnimation::LongPressAffordanceView
     : public views::View {
  public:
-  explicit LongPressAffordanceView(const gfx::Point& event_location)
+  LongPressAffordanceView(const gfx::Point& event_location,
+                          aura::RootWindow* root_window)
       : views::View(),
-        widget_(CreateAffordanceWidget()),
+        widget_(CreateAffordanceWidget(root_window)),
         current_angle_(kAffordanceAngleStartValue),
         current_scale_(kAffordanceScaleStartValue) {
     widget_->SetContentsView(this);
@@ -186,11 +189,12 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
 
     // We are owned by the LongPressAffordance.
     set_owned_by_client();
+    gfx::Point point = event_location;
+    aura::client::GetScreenPositionClient(root_window)->ConvertPointToScreen(
+        root_window, &point);
     widget_->SetBounds(gfx::Rect(
-        event_location.x() - (kAffordanceOuterRadius +
-            2 * kAffordanceGlowWidth),
-        event_location.y() - (kAffordanceOuterRadius +
-            2 * kAffordanceGlowWidth),
+        point.x() - (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth),
+        point.y() - (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth),
         GetPreferredSize().width(),
         GetPreferredSize().height()));
     widget_->Show();
@@ -282,7 +286,8 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
 LongPressAffordanceAnimation::LongPressAffordanceAnimation()
     : ui::LinearAnimation(kAffordanceFrameRateHz, this),
       view_(NULL),
-      tap_down_target_(NULL) {
+      tap_down_target_(NULL),
+      tap_down_display_id_(0) {
   int duration =
       ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
       ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
@@ -303,6 +308,7 @@ void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
       // Start animation.
       tap_down_location_ = event->root_location();
       tap_down_target_ = target;
+      tap_down_display_id_ = gfx::Screen::GetDisplayNearestWindow(target).id();
       timer_.Start(FROM_HERE,
                     base::TimeDelta::FromMilliseconds(timer_start_time_ms),
                     this,
@@ -328,7 +334,13 @@ void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
 }
 
 void LongPressAffordanceAnimation::StartAnimation() {
-  view_.reset(new LongPressAffordanceView(tap_down_location_));
+  aura::RootWindow* root_window = ash::Shell::GetInstance()->
+      display_controller()->GetRootWindowForDisplayId(tap_down_display_id_);
+  if (!root_window) {
+    StopAnimation();
+    return;
+  }
+  view_.reset(new LongPressAffordanceView(tap_down_location_, root_window));
   Start();
 }
 
@@ -339,6 +351,7 @@ void LongPressAffordanceAnimation::StopAnimation() {
     Stop();
   view_.reset();
   tap_down_target_ = NULL;
+  tap_down_display_id_ = 0;
 }
 
 void LongPressAffordanceAnimation::AnimateToState(double state) {
@@ -350,6 +363,7 @@ void LongPressAffordanceAnimation::AnimationEnded(
     const ui::Animation* animation) {
   view_.reset();
   tap_down_target_ = NULL;
+  tap_down_display_id_ = 0;
 }
 
 void LongPressAffordanceAnimation::AnimationProgressed(
@@ -360,7 +374,11 @@ void LongPressAffordanceAnimation::AnimationCanceled(
     const ui::Animation* animation) {
   view_.reset();
   tap_down_target_ = NULL;
+  tap_down_display_id_ = 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SystemPinchHandler
 
 class SystemPinchHandler {
  public:

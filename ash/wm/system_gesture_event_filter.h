@@ -80,6 +80,7 @@ class LongPressAffordanceAnimation : public ui::AnimationDelegate,
   gfx::Point tap_down_location_;
   aura::Window* tap_down_target_;
   base::OneShotTimer<LongPressAffordanceAnimation> timer_;
+  int tap_down_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceAnimation);
 };
