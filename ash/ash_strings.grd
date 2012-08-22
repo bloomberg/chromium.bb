@@ -272,7 +272,7 @@ Press Ctrl+Alt+Z to cancel.
         Disable Wi-Fi
       </message>
       <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
-        Join other ...
+        Join other...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
         Enable mobile data
