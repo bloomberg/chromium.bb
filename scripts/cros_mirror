@@ -57,6 +57,7 @@ Options:
   -q, --quiet         Be quiet!
   -r, --root          The directory to hold all mirroring information
   -u, --url           The URL that people will use to pull from this mirror
+  -m, --manifest      The repo manifest to use as a basis (default default.xml)
   -h, --help          This!
 
 You must specify the --url option at least once so that all of the paths can
@@ -77,20 +78,22 @@ EOF
 
 JOBS=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
 MANIFEST_URL=
+MANIFEST_NAME=default.xml
 QUIET=
 ROOT=
 URL=
 while [[ $# -gt 0 ]]; do
   case $1 in
-  --external) MANIFEST_URL=${MANIFEST_URL_EXT};;
-  --internal) MANIFEST_URL=${MANIFEST_URL_INT};;
-  -j|--jobs)  JOBS=$2; shift;;
-  -q|--quiet) QUIET="-q";;
-  -r|--root)  ROOT=$2; shift;;
-  -u|--url)   URL=$2; shift;;
-  -h|--help)  usage;;
-  -x)         set -x;;
-  *)          usage 1;;
+  --external)       MANIFEST_URL=${MANIFEST_URL_EXT};;
+  --internal)       MANIFEST_URL=${MANIFEST_URL_INT};;
+  -j|--jobs)        JOBS=$2; shift;;
+  -q|--quiet)       QUIET="-q";;
+  -r|--root)        ROOT=$2; shift;;
+  -u|--url)         URL=$2; shift;;
+  -m|--manifest)    MANIFEST_NAME=$2; shift;;
+  -h|--help)        usage;;
+  -x)               set -x;;
+  *)                usage 1;;
   esac
   shift
 done
@@ -133,7 +136,8 @@ fi
 # Initialize the whole tree mirror style.
 #
 repo_init() {
-  repo init -u "${MANIFEST_URL}" --repo-url="${REPO_URL}" ${QUIET} "$@"
+  repo init -u "${MANIFEST_URL}" -m "${MANIFEST_NAME}" \
+    --repo-url="${REPO_URL}" ${QUIET} "$@"
 }
 if [[ ! -d .repo ]]; then
   # Default to external manifest.
@@ -142,10 +146,16 @@ if [[ ! -d .repo ]]; then
 else
   # Allow people to change manifests on the fly (internal<->external).
   CURRENT_URL=$(git --git-dir=.repo/manifests.git config remote.origin.url)
+  # Find the previously defined manifest name by following the symbolic link.
+  CURRENT_NAME=$(readlink .repo/manifest.xml)
+  # Strip off the "manifests/" prefix.
+  CURRENT_NAME=${CURRENT_NAME#manifests/}
   # If no manifest was selected, default to the current one.
   : ${MANIFEST_URL:=${CURRENT_URL}}
-  if [[ "${CURRENT_URL}" != "${MANIFEST_URL}" ]]; then
-    info "re-initing due to URL change: ${CURRENT_URL} -> ${MANIFEST_URL}"
+  if [[ "${CURRENT_URL}" != "${MANIFEST_URL}" || \
+        "${CURRENT_NAME}" != "${MANIFEST_NAME}" ]]; then
+    info "re-initing due to URL or manifest change: \
+      ${CURRENT_URL} -> ${MANIFEST_URL}, ${CURRENT_NAME} -> ${MANIFEST_NAME}"
     repo_init
   fi
 fi
