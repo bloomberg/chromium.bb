@@ -28,6 +28,9 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // see http://crbug.com/60035.
   command_line->AppendSwitch(switches::kDisablePreconnect);
 
+  // Turn off built-in asynchronous DNS client.
+  command_line->AppendSwitch(switches::kDisableAsyncDns);
+
   // Don't show the first run ui.
   command_line->AppendSwitch(switches::kNoFirstRun);
 

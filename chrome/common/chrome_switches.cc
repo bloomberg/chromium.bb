@@ -250,6 +250,9 @@ const char kDiagnostics[]                   = "diagnostics";
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
 
+// Disables the experimental asynchronous DNS client.
+const char kDisableAsyncDns[]               = "disable-async-dns";
+
 // Disables asynchronous spellchecking features for all time. Disabling this
 // feature also disables unified spellchecking.
 const char kDisableAsynchronousSpellChecking[] =

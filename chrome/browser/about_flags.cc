@@ -148,6 +148,14 @@ const Experiment::Choice kPointerLockUIChoices[] = {
     switches::kDisablePointerLock, ""}
 };
 
+const Experiment::Choice kAsyncDnsChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableAsyncDns, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableAsyncDns, ""}
+};
+
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -522,8 +530,8 @@ const Experiment kExperiments[] = {
     "enable-async-dns",
     IDS_FLAGS_ENABLE_ASYNC_DNS_NAME,
     IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION,
-    kOsWin | kOsMac | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableAsyncDns)
+    kOsWin | kOsMac | kOsLinux,
+    MULTI_VALUE_TYPE(kAsyncDnsChoices)
   },
   {
     "enable-video-track",

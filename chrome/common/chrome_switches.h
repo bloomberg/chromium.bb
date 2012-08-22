@@ -77,6 +77,7 @@ extern const char kDebugPrint[];
 extern const char kDemandUserScopeApproval[];
 extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
+extern const char kDisableAsyncDns[];
 extern const char kDisableAsynchronousSpellChecking[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundMode[];
