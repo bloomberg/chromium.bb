@@ -46,12 +46,6 @@ const char library_name[] = "ppapi_tests.plugin";
 const char library_name[] = "libppapi_tests.so";
 #endif
 
-// The large timeout was causing the cycle time for the whole test suite
-// to be too long when a tiny bug caused all tests to timeout.
-// http://crbug.com/108264
-static int kTimeoutMs = 90000;
-//static int kTimeoutMs = TestTimeouts::large_test_timeout_ms());
-
 bool IsAudioOutputAvailable() {
   scoped_ptr<media::AudioManager> audio_manager(media::AudioManager::Create());
   return audio_manager->HasAudioOutputDevices();
@@ -59,55 +53,24 @@ bool IsAudioOutputAvailable() {
 
 }  // namespace
 
-PPAPITestBase::TestFinishObserver::TestFinishObserver(
-    RenderViewHost* render_view_host,
-    base::TimeDelta timeout)
-    : finished_(false),
-      waiting_(false),
-      timeout_(timeout) {
-  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 content::Source<RenderViewHost>(render_view_host));
-  timer_.Start(FROM_HERE, timeout, this, &TestFinishObserver::OnTimeout);
+PPAPITestMessageHandler::PPAPITestMessageHandler() {
 }
 
-bool PPAPITestBase::TestFinishObserver::WaitForFinish() {
-  if (!finished_) {
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
-  }
-  return finished_;
+TestMessageHandler::MessageResponse PPAPITestMessageHandler::HandleMessage(
+    const std::string& json) {
+ std::string trimmed;
+ TrimString(json, "\"", &trimmed);
+ if (trimmed == "...") {
+   return CONTINUE;
+ } else {
+   message_ = trimmed;
+   return DONE;
+ }
 }
 
-void PPAPITestBase::TestFinishObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_DOM_OPERATION_RESPONSE);
-  content::Details<DomOperationNotificationDetails> dom_op_details(details);
-  // We might receive responses for other script execution, but we only
-  // care about the test finished message.
-  std::string response;
-  TrimString(dom_op_details->json, "\"", &response);
-  if (response == "...") {
-    timer_.Stop();
-    timer_.Start(FROM_HERE, timeout_, this, &TestFinishObserver::OnTimeout);
-  } else {
-    result_ = response;
-    finished_ = true;
-    if (waiting_)
-      MessageLoopForUI::current()->Quit();
-  }
-}
-
-void PPAPITestBase::TestFinishObserver::Reset() {
-  finished_ = false;
-  waiting_ = false;
-  result_.clear();
-}
-
-void PPAPITestBase::TestFinishObserver::OnTimeout() {
-  MessageLoopForUI::current()->Quit();
+void PPAPITestMessageHandler::Reset() {
+  TestMessageHandler::Reset();
+  message_.clear();
 }
 
 PPAPITestBase::PPAPITestBase() {
@@ -229,15 +192,15 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // value of "..." means it's still working and we should continue to wait,
   // any other value indicates completion (in this case it will start with
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
-  TestFinishObserver observer(
+  PPAPITestMessageHandler handler;
+  JavascriptTestObserver observer(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      base::TimeDelta::FromMilliseconds(kTimeoutMs));
+      &handler);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
-
-  EXPECT_STREQ("PASS", observer.result().c_str());
+  ASSERT_TRUE(observer.Run()) << handler.error_message();
+  EXPECT_STREQ("PASS", handler.message().c_str());
 }
 
 void PPAPITestBase::RunHTTPTestServer(

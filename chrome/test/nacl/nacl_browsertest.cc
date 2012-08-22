@@ -4,58 +4,21 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/timer.h"
+#include "base/values.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/javascript_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/dom_operation_notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 #include "webkit/plugins/webplugininfo.h"
 
 namespace {
-
-// Base class for handling a stream of automation messages produced by a
-// JavascriptTestObserver.
-class TestMessageHandler {
- public:
-  enum MessageResponse {
-    // Reset the timeout and keep running.
-    CONTINUE,
-    // Stop runnning.
-    DONE
-  };
-
-  TestMessageHandler() : ok_(true) {}
-  virtual ~TestMessageHandler() {};
-
-  virtual MessageResponse HandleMessage(const std::string& json) = 0;
-
-  void SetError(const std::string& message) {
-    ok_ = false;
-    error_message_ = message;
-  }
-
-  bool ok() const {
-    return ok_;
-  }
-
-  const std::string& error_message() const {
-    return error_message_;
-  }
-
- private:
-  bool ok_;
-  std::string error_message_;
-};
 
 // A helper base class that decodes structured automation messages of the form:
 // {"type": type_name, ...}
@@ -92,14 +55,25 @@ class StructuredMessageHandler : public TestMessageHandler {
     return HandleStructuredMessage(type, msg);
   }
 
-  virtual MessageResponse HandleStructuredMessage(const std::string& type,
-                                                  DictionaryValue* msg) = 0;
+  // This method provides a higher-level interface for handling JSON messages
+  // from the DOM automation controler.  Instead of handling a string
+  // containing a JSON-encoded object, this specialization of TestMessageHandler
+  // decodes the string into a dictionary. This makes it easier to send and
+  // receive structured messages.  It is assumed the dictionary will always have
+  // a "type" field that indicates the nature of message.
+  virtual MessageResponse HandleStructuredMessage(
+      const std::string& type,
+      base::DictionaryValue* msg) = 0;
 
-  MessageResponse MissingField(const std::string& type,
-                               const std::string& field) WARN_UNUSED_RESULT {
+ protected:
+  // The structured message is missing an expected field.
+  MessageResponse MissingField(
+      const std::string& type,
+      const std::string& field) WARN_UNUSED_RESULT {
     return InternalError(type + " message did not have field: " + field);
   }
 
+  // Somthing went wrong while decodind the message.
   MessageResponse InternalError(const std::string& reason) WARN_UNUSED_RESULT {
     SetError(reason);
     return DONE;
@@ -146,66 +120,6 @@ class LoadTestMessageHandler : public StructuredMessageHandler {
   bool test_passed_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadTestMessageHandler);
-};
-
-// This class captures a stream of automation messages coming from a Javascript
-// test and dispatches them to a message handler.
-// TODO(ncbray) factor out and share with PPAPI tests.
-class JavascriptTestObserver : public content::NotificationObserver {
- public:
-  JavascriptTestObserver(
-      content::RenderViewHost* render_view_host,
-      TestMessageHandler* handler)
-      : handler_(handler),
-        running_(false) {
-    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   content::Source<content::RenderViewHost>(render_view_host));
-  }
-
-  // Pump the message loop until the message handler indicates the Javascript
-  // test is done running.  Return true if the test jig functioned correctly and
-  // nothing timed out.
-  bool Run() {
-    running_ = true;
-    content::RunMessageLoop();
-    running_ = false;
-    return handler_->ok();
-  }
-
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
-    DCHECK(type == content::NOTIFICATION_DOM_OPERATION_RESPONSE);
-    content::Details<content::DomOperationNotificationDetails> dom_op_details(
-        details);
-    // We might receive responses for other script execution, but we only
-    // care about the test finished message.
-    TestMessageHandler::MessageResponse response =
-        handler_->HandleMessage(dom_op_details->json);
-
-    if (response == TestMessageHandler::DONE) {
-      EndTest();
-    } else {
-      Continue();
-    }
-  }
-
- private:
-  void Continue() {
-  }
-
-  void EndTest() {
-    if (running_) {
-      MessageLoopForUI::current()->Quit();
-    }
-  }
-
-  TestMessageHandler* handler_;
-  bool running_;
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(JavascriptTestObserver);
 };
 
 // NaCl browser tests serve files out of the build directory because nexes and

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/test/base/javascript_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -731,15 +732,16 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
 // This test messes with tab visibility so is custom.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   // The plugin will be loaded in the foreground tab and will send us a message.
-  TestFinishObserver observer(
+  PPAPITestMessageHandler handler;
+  JavascriptTestObserver observer(
       chrome::GetActiveWebContents(browser())->GetRenderViewHost(),
-      TestTimeouts::action_max_timeout());
+      &handler);
 
   GURL url = GetTestFileUrl("View_PageHideShow");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
-  EXPECT_STREQ("TestPageHideShow:Created", observer.result().c_str());
+  ASSERT_TRUE(observer.Run()) << handler.error_message();
+  EXPECT_STREQ("TestPageHideShow:Created", handler.message().c_str());
   observer.Reset();
 
   // Make a new tab to cause the original one to hide, this should trigger the
@@ -750,17 +752,15 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   ui_test_utils::NavigateToURL(&params);
 
   // Wait until the test acks that it got hidden.
-  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
-  EXPECT_STREQ("TestPageHideShow:Hidden", observer.result().c_str());
-
-  // Wait for the test completion event.
+  ASSERT_TRUE(observer.Run()) << handler.error_message();
+  EXPECT_STREQ("TestPageHideShow:Hidden", handler.message().c_str());
   observer.Reset();
 
   // Switch back to the test tab.
   chrome::ActivateTabAt(browser(), 0, true);
 
-  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
-  EXPECT_STREQ("PASS", observer.result().c_str());
+  ASSERT_TRUE(observer.Run()) << handler.error_message();
+  EXPECT_STREQ("PASS", handler.message().c_str());
 }
 
 // Tests that if a plugin accepts touch events, the browser knows to send touch
