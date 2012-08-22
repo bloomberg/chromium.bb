@@ -118,8 +118,6 @@ void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
     return;
   }
 
-  agent_host->NotifyClientClosing();
-
   UnbindClientHost(agent_host, client_host);
 }
 

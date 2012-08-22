@@ -35,9 +35,6 @@ class CONTENT_EXPORT DevToolsAgentHost {
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message);
 
-  // TODO(yurys): get rid of this method
-  virtual void NotifyClientClosing() = 0;
-
   virtual int GetRenderProcessId() = 0;
 
   void set_close_listener(CloseListener* listener) {
@@ -49,6 +46,9 @@ class CONTENT_EXPORT DevToolsAgentHost {
   virtual ~DevToolsAgentHost() {}
 
   virtual void SendMessageToAgent(IPC::Message* msg) = 0;
+  virtual void NotifyClientAttaching() = 0;
+  virtual void NotifyClientDetaching() = 0;
+
   void NotifyCloseListener();
 
   CloseListener* close_listener_;

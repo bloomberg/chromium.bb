@@ -163,9 +163,9 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::Source<Profile>(original_profile));
   }
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
                  content::Source<content::BrowserContext>(profile));
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
                  content::Source<content::BrowserContext>(profile));
 
   event_page_idle_time_ = base::TimeDelta::FromSeconds(10);
@@ -629,7 +629,7 @@ void ExtensionProcessManager::Observe(
       break;
     }
 
-    case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING: {
+    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED: {
       RenderViewHost* render_view_host =
           content::Details<RenderViewHost>(details).ptr();
       WebContents* web_contents =
@@ -640,13 +640,15 @@ void ExtensionProcessManager::Observe(
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         const Extension* extension = GetExtensionForRenderViewHost(
             render_view_host);
-        if (extension)
+        if (extension) {
+          CancelSuspend(extension);
           IncrementLazyKeepaliveCount(extension);
+        }
       }
       break;
     }
 
-    case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING: {
+    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED: {
       RenderViewHost* render_view_host =
           content::Details<RenderViewHost>(details).ptr();
       WebContents* web_contents =

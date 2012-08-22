@@ -93,7 +93,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
         }
         break;
       }
-      case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING: {
+      case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED: {
         RenderViewHost* rvh = [controller_ extensionHost]->render_view_host();
         if (content::Details<RenderViewHost>(rvh) == details)
           // Set the flag on the controller so the popup is not hidden when
@@ -101,7 +101,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
           [controller_ setBeingInspected:YES];
         break;
       }
-      case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING: {
+      case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED: {
         RenderViewHost* rvh = [controller_ extensionHost]->render_view_host();
         if (content::Details<RenderViewHost>(rvh) == details)
           // Allow the devtools to finish detaching before we close the popup
@@ -164,7 +164,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     // Listen for the the devtools window closing so we can close this window if
     // it is being inspected and the inspector is closed.
     registrar_->Add(notificationBridge_.get(),
-                    content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+                    content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
                     content::Source<content::BrowserContext>(
                         host->profile()));
     if (beingInspected_) {
@@ -177,7 +177,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
       // Listen for the dev tools opening on this popup, so we can stop it going
       // away when the dev tools get focus.
       registrar_->Add(notificationBridge_.get(),
-                      content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+                      content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
                       content::Source<content::BrowserContext>(
                           host->profile()));
     }

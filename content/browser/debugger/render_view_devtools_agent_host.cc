@@ -77,15 +77,6 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     : content::RenderViewHostObserver(rvh),
       render_view_host_(rvh) {
   g_instances.Get()[rvh] = this;
-
-  // Notify that the view is being opened. This allows any views being debugged
-  // to do anything special they need to do to support debugging.
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
-      content::Source<content::BrowserContext>(
-          render_view_host_->GetSiteInstance()->GetProcess()->
-              GetBrowserContext()),
-      content::Details<RenderViewHost>(render_view_host_));
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
@@ -93,9 +84,18 @@ void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
   render_view_host_->Send(msg);
 }
 
-void RenderViewDevToolsAgentHost::NotifyClientClosing() {
+void RenderViewDevToolsAgentHost::NotifyClientAttaching() {
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+      content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
+      content::Source<content::BrowserContext>(
+          render_view_host_->GetSiteInstance()->GetProcess()->
+              GetBrowserContext()),
+      content::Details<RenderViewHost>(render_view_host_));
+}
+
+void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
       content::Source<content::BrowserContext>(
           render_view_host_->GetSiteInstance()->GetProcess()->
               GetBrowserContext()),

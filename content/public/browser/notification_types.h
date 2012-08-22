@@ -163,13 +163,13 @@ enum NotificationType {
 
   // Devtools ------------------------------------------------------------------
 
-  // Indicates that a devtools window is opening. The source is the
-  // BrowserContext* and the details is the inspected RenderViewHost*.
-  NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+  // Indicates that a devtools agent has attached to a client. The source is
+  // the BrowserContext* and the details is the inspected RenderViewHost*.
+  NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
 
-  // Indicates that a devtools window is closing. The source is the
-  // BrowserContext* and the details is the inspected RenderViewHost*.
-  NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+  // Indicates that a devtools agent has detached from a client. The source is
+  // the BrowserContext* and the details is the inspected RenderViewHost*.
+  NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
 
   // WebContents ---------------------------------------------------------------
 

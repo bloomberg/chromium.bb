@@ -153,7 +153,8 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
             worker_id_.second,
             *message));
   }
-  virtual void NotifyClientClosing() OVERRIDE {}
+  virtual void NotifyClientAttaching() OVERRIDE {}
+  virtual void NotifyClientDetaching() OVERRIDE {}
   virtual int GetRenderProcessId() OVERRIDE { return -1; }
 
   WorkerId worker_id_;

@@ -91,12 +91,12 @@ ExtensionPopup::ExtensionPopup(
 
   // Listen for the dev tools opening on this popup, so we can stop it going
   // away when the dev tools get focus.
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
                  content::Source<Profile>(host->profile()));
 
   // Listen for the dev tools closing, so we can close this window if it is
   // being inspected and the inspector is closed.
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
       content::Source<content::BrowserContext>(host->profile()));
 }
 
@@ -118,7 +118,7 @@ void ExtensionPopup::Observe(int type,
       if (content::Details<extensions::ExtensionHost>(host()) == details)
         GetWidget()->Close();
       break;
-    case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
+    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED:
       // Make sure it's the devtools window that inspecting our popup.
       // Widget::Close posts a task, which should give the devtools window a
       // chance to finish detaching from the inspected RenderViewHost.
@@ -127,7 +127,7 @@ void ExtensionPopup::Observe(int type,
         GetWidget()->Close();
       }
       break;
-    case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING:
+    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED:
       // First check that the devtools are being opened on this popup.
       if (content::Details<RenderViewHost>(host()->render_view_host()) ==
           details) {

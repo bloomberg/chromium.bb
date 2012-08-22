@@ -63,11 +63,11 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
 
-  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
                  content::Source<Profile>(host->profile()));
 
   if (!being_inspected_) {
-    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
                    content::Source<Profile>(host->profile()));
   }
 }
@@ -101,7 +101,7 @@ void ExtensionPopupGtk::Observe(int type,
       if (content::Details<extensions::ExtensionHost>(host_.get()) == details)
         DestroyPopup();
       break;
-    case content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING:
+    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED:
       // Make sure it's the devtools window that is inspecting our popup.
       if (content::Details<RenderViewHost>(host_->render_view_host()) !=
           details)
@@ -113,7 +113,7 @@ void ExtensionPopupGtk::Observe(int type,
 
       being_inspected_ = true;
       break;
-    case content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING:
+    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED:
       // Make sure it's the devtools window that is inspecting our popup.
       if (content::Details<RenderViewHost>(host_->render_view_host()) !=
           details)
