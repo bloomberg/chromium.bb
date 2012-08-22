@@ -28,6 +28,8 @@ class FileSystemContext;
 
 namespace gdata {
 struct SearchResultInfo;
+struct DriveWebAppInfo;
+class DriveWebAppsRegistry;
 }
 
 namespace ui {
@@ -122,8 +124,40 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  bool FindDriveAppTasks(const std::vector<GURL>& file_urls,
+  struct FileInfo {
+    GURL file_url;
+    FilePath file_path;
+    std::string mime_type;
+  };
+  typedef std::vector<FileInfo> FileInfoList;
+
+  // Typedef for holding a map from app_id to DriveWebAppInfo so
+  // we can look up information on the apps.
+  typedef std::map<std::string, gdata::DriveWebAppInfo*> WebAppInfoMap;
+
+  // Look up apps in the registry, and collect applications that match the file
+  // paths given. Returns the intersection of all available application ids in
+  // |available_apps| and a map of application ID to the Drive web application
+  // info collected in |app_info| so details can be collected later. The caller
+  // takes ownership of the pointers in |app_info|.
+  static void IntersectAvailableDriveTasks(
+      gdata::DriveWebAppsRegistry* registry,
+      const FileInfoList& file_info_list,
+      WebAppInfoMap* app_info,
+      std::set<std::string>* available_apps);
+
+  // Takes a map of app_id to application information in |app_info|, and the set
+  // of |available_apps| and adds Drive tasks to the |result_list| for each of
+  // the |available_apps|.
+  static void CreateDriveTasks(gdata::DriveWebAppsRegistry* registry,
+                               const WebAppInfoMap& app_info,
+                               const std::set<std::string>& available_apps,
+                               ListValue* result_list);
+
+  // Find the list of drive apps that can be used with the given file types.
+  bool FindDriveAppTasks(const FileInfoList& file_info_list,
                          ListValue* result_list);
+
 };
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.

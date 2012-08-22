@@ -119,7 +119,7 @@ TestRunner.prototype.runExecuteReadTask = function() {
 
   var self = this;
   var fileURL = this.fileEntry_.toURL();
-  chrome.fileBrowserPrivate.getFileTasks([fileURL],
+  chrome.fileBrowserPrivate.getFileTasks([fileURL], [],
     function(tasks) {
       if (!tasks || !tasks.length) {
         self.errorCallback_({message: 'No tasks registered'},

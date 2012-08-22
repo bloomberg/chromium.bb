@@ -148,6 +148,11 @@
             "optional": true,
             "items": {"$ref": "DriveWebApp"},
             "description": "An array of WebApps capable of opening this file."
+          },
+          "contentMimeType": {
+            "type": "string",
+            "optional": true,
+            "description": "GData MIME type for this file."
           }
         }
       },
@@ -422,6 +427,12 @@
             "name": "fileURLs",
             "type": "array",
             "description": "Array of selected file URLs",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "mimeTypes",
+            "type": "array",
+            "description": "Array of selected file MIME types",
             "items": { "type": "string" }
           },
           {

@@ -132,7 +132,7 @@ TestRunner.prototype.onFileCreatorInit_ = function() {
     this.errorCallback_({message: "Test file extension not set."});
     return;
   }
-console.log(this.fileExtension);
+  console.log(this.fileExtension);
   var self = this;
   this.fileCreator_.createFile('.log',
       function(file, text) {
@@ -149,7 +149,7 @@ TestRunner.prototype.onFileCreated_ = function(file, text) {
   this.expectations_.setFileAndFileText(file, text);
   var fileUrl = file.toURL();
 
-  chrome.fileBrowserPrivate.getFileTasks([fileUrl],
+  chrome.fileBrowserPrivate.getFileTasks([fileUrl], [],
                                          this.onGetTasks_.bind(this, fileUrl));
 };
 
