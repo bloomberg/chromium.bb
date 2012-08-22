@@ -14,8 +14,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -510,7 +510,7 @@ TEST(DriveResourceMetadataTest, DBTest) {
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
   DriveResourceMetadata resource_metadata;
-  FilePath db_path(GDataCache::GetCacheRootPath(profile.get()).
+  FilePath db_path(DriveCache::GetCacheRootPath(profile.get()).
       AppendASCII("meta").AppendASCII("resource_metadata.db"));
   // InitFromDB should fail with GDATA_FILE_ERROR_NOT_FOUND since the db
   // doesn't exist.

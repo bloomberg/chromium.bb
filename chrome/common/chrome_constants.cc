@@ -177,7 +177,7 @@ const FilePath::CharType kPepperFlashPluginFilename[] =
 const wchar_t kUserDataDirname[] = L"User Data";
 
 #if defined(OS_CHROMEOS)
-const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");
+const FilePath::CharType kDriveCacheDirname[] = FPL("GCache");
 #endif  // defined(OS_CHROMEOS)
 
 // We don't enable record mode in the released product because users could

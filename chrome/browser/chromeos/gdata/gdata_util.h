@@ -57,9 +57,9 @@ const FilePath& GetSpecialRemoteRootPath();
 GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name);
 
-// Given a profile and a gdata_cache_path, return the file resource url.
+// Given a profile and a drive_cache_path, return the file resource url.
 void ModifyGDataFileResourceUrl(Profile* profile,
-                                const FilePath& gdata_cache_path,
+                                const FilePath& drive_cache_path,
                                 GURL* url);
 
 // Returns true if the given path is under the GData mount point.
@@ -73,7 +73,7 @@ FilePath ExtractGDataPath(const FilePath& path);
 // Inserts all possible cache paths for a given vector of paths on gdata mount
 // point into the output vector |cache_paths|, and then invokes callback.
 // Caller must ensure that |cache_paths| lives until the callback is invoked.
-void InsertGDataCachePathsPermissions(
+void InsertDriveCachePathsPermissions(
     Profile* profile_,
     scoped_ptr<std::vector<FilePath> > gdata_paths,
     std::vector<std::pair<FilePath, int> >* cache_paths,

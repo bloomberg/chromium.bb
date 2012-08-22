@@ -88,7 +88,7 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                                const FilePath& file,
                                scoped_ptr<DocumentEntry> entry,
                                const FilePath& file_content_path,
-                               GDataCache::FileOperationType cache_operation,
+                               DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE {}
   // This function is not mockable by gmock because scoped_ptr is not supported.
   virtual void UpdateEntryData(const std::string& resource_id,

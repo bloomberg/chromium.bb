@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 
 namespace gdata {
 
-MockGDataCacheObserver::MockGDataCacheObserver() {
+MockDriveCacheObserver::MockDriveCacheObserver() {
 }
 
-MockGDataCacheObserver::~MockGDataCacheObserver() {
+MockDriveCacheObserver::~MockDriveCacheObserver() {
 }
 
 }  // namespace gdata

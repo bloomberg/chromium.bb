@@ -118,7 +118,7 @@ void SubstituteGDataDownloadPathInternal(Profile* profile,
   DVLOG(1) << "SubstituteGDataDownloadPathInternal";
 
   const FilePath gdata_tmp_download_dir = GetSystemService(profile)->cache()->
-      GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
+      GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS);
 
   // Swap the gdata path with a local path. Local path must be created
   // on a blocking thread.
@@ -374,7 +374,7 @@ void GDataDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
 
     case DownloadItem::COMPLETE:
       UploadDownloadItem(download);
-      MoveFileToGDataCache(download);
+      MoveFileToDriveCache(download);
       RemovePendingDownload(download);
       break;
 
@@ -628,7 +628,7 @@ void GDataDownloadObserver::OnUploadComplete(
   DCHECK(upload_data);
 
   // Take ownership of the DocumentEntry from UploadFileInfo. This is used by
-  // GDataFileSystem::AddUploadedFile() to add the entry to GDataCache after the
+  // GDataFileSystem::AddUploadedFile() to add the entry to DriveCache after the
   // upload completes.
   upload_data->set_entry(upload_file_info->entry.Pass());
 
@@ -636,7 +636,7 @@ void GDataDownloadObserver::OnUploadComplete(
   upload_data->CompleteDownload();
 }
 
-void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
+void GDataDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadingUserData* upload_data = GetUploadingUserData(download);
@@ -666,7 +666,7 @@ void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
                                   upload_data->virtual_dir_path(),
                                   entry.Pass(),
                                   download->GetTargetFilePath(),
-                                  GDataCache::FILE_OPERATION_MOVE,
+                                  DriveCache::FILE_OPERATION_MOVE,
                                   base::Bind(&base::DoNothing));
   }
 }

@@ -22,9 +22,9 @@ class Value;
 namespace gdata {
 
 class DocumentFeed;
+class DriveCache;
 class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
-class GDataCache;
 struct GetDocumentsUiState;
 
 // Set of parameters sent to LoadDocumentFeedCallback callback.
@@ -100,7 +100,7 @@ class GDataWapiFeedLoader {
       DriveResourceMetadata* resource_metadata,
       DriveServiceInterface* drive_service,
       DriveWebAppsRegistryInterface* webapps_registry,
-      GDataCache* cache,
+      DriveCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_);
   ~GDataWapiFeedLoader();
 
@@ -237,7 +237,7 @@ class GDataWapiFeedLoader {
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DriveServiceInterface* drive_service_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
-  GDataCache* cache_;  // Not owned.
+  DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ObserverList<Observer> observers_;
 

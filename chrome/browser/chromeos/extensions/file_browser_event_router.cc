@@ -357,7 +357,7 @@ void FileBrowserEventRouter::MountCompleted(
       FilePath source_path(mount_info.source_path);
       gdata::GDataSystemService* system_service =
           gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-      gdata::GDataCache* cache =
+      gdata::DriveCache* cache =
           system_service ? system_service->cache() : NULL;
       if (cache) {
         cache->SetMountedStateOnUIThread(

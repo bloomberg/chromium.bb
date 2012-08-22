@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
+#include "chrome/browser/chromeos/gdata/drive_cache_metadata.h"
 
 #include <leveldb/db.h>
 
@@ -18,17 +18,17 @@ namespace {
 // A map table of resource ID to file path.
 typedef std::map<std::string, FilePath> ResourceIdToFilePathMap;
 
-const FilePath::CharType kGDataCacheMetadataDBPath[] =
+const FilePath::CharType kDriveCacheMetadataDBPath[] =
     FILE_PATH_LITERAL("cache_metadata.db");
 
 // Returns true if |file_path| is a valid symbolic link as |sub_dir_type|.
 // Otherwise, returns false with the reason.
 bool IsValidSymbolicLink(const FilePath& file_path,
-                         GDataCache::CacheSubDirectoryType sub_dir_type,
+                         DriveCache::CacheSubDirectoryType sub_dir_type,
                          const std::vector<FilePath>& cache_paths,
                          std::string* reason) {
-  DCHECK(sub_dir_type == GDataCache::CACHE_TYPE_PINNED ||
-         sub_dir_type == GDataCache::CACHE_TYPE_OUTGOING);
+  DCHECK(sub_dir_type == DriveCache::CACHE_TYPE_PINNED ||
+         sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING);
 
   FilePath destination;
   if (!file_util::ReadSymbolicLink(file_path, &destination)) {
@@ -42,13 +42,13 @@ bool IsValidSymbolicLink(const FilePath& file_path,
   }
 
   // pinned-but-not-fetched files are symlinks to kSymLinkToDevNull.
-  if (sub_dir_type == GDataCache::CACHE_TYPE_PINNED &&
+  if (sub_dir_type == DriveCache::CACHE_TYPE_PINNED &&
       destination == FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull)) {
     return true;
   }
 
   // The destination file should be in the persistent directory.
-  if (!cache_paths[GDataCache::CACHE_TYPE_PERSISTENT].IsParent(destination)) {
+  if (!cache_paths[DriveCache::CACHE_TYPE_PERSISTENT].IsParent(destination)) {
     *reason = "pointing to a file outside of persistent directory";
     return false;
   }
@@ -67,14 +67,14 @@ bool IsValidSymbolicLink(const FilePath& file_path,
 void RemoveInvalidFilesFromPersistentDirectory(
     const ResourceIdToFilePathMap& persistent_file_map,
     const ResourceIdToFilePathMap& outgoing_file_map,
-    GDataCacheMetadata::CacheMap* cache_map) {
+    DriveCacheMetadata::CacheMap* cache_map) {
   for (ResourceIdToFilePathMap::const_iterator iter =
            persistent_file_map.begin();
        iter != persistent_file_map.end(); ++iter) {
     const std::string& resource_id = iter->first;
     const FilePath& file_path = iter->second;
 
-    GDataCacheMetadata::CacheMap::iterator cache_map_iter =
+    DriveCacheMetadata::CacheMap::iterator cache_map_iter =
         cache_map->find(resource_id);
     if (cache_map_iter != cache_map->end()) {
       const DriveCacheEntry& cache_entry = cache_map_iter->second;
@@ -104,8 +104,8 @@ void RemoveInvalidFilesFromPersistentDirectory(
 // ResourceIdToFilePathMap, if these are processed properly.
 void ScanCacheDirectory(
     const std::vector<FilePath>& cache_paths,
-    GDataCache::CacheSubDirectoryType sub_dir_type,
-    GDataCacheMetadata::CacheMap* cache_map,
+    DriveCache::CacheSubDirectoryType sub_dir_type,
+    DriveCacheMetadata::CacheMap* cache_map,
     ResourceIdToFilePathMap* processed_file_map) {
   DCHECK(cache_map);
   DCHECK(processed_file_map);
@@ -128,7 +128,7 @@ void ScanCacheDirectory(
     cache_entry.set_md5(md5);
     // If we're scanning pinned directory and if entry already exists, just
     // update its pinned state.
-    if (sub_dir_type == GDataCache::CACHE_TYPE_PINNED) {
+    if (sub_dir_type == DriveCache::CACHE_TYPE_PINNED) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
         LOG(WARNING) << "Removing an invalid symlink: " << current.value()
@@ -137,7 +137,7 @@ void ScanCacheDirectory(
         continue;
       }
 
-      GDataCacheMetadata::CacheMap::iterator iter =
+      DriveCacheMetadata::CacheMap::iterator iter =
           cache_map->find(resource_id);
       if (iter != cache_map->end()) {  // Entry exists, update pinned state.
         iter->second.set_is_pinned(true);
@@ -149,7 +149,7 @@ void ScanCacheDirectory(
       // /dev/null; follow through to create an entry with the PINNED but not
       // PRESENT state.
       cache_entry.set_is_pinned(true);
-    } else if (sub_dir_type == GDataCache::CACHE_TYPE_OUTGOING) {
+    } else if (sub_dir_type == DriveCache::CACHE_TYPE_OUTGOING) {
       std::string reason;
       if (!IsValidSymbolicLink(current, sub_dir_type, cache_paths, &reason)) {
         LOG(WARNING) << "Removing an invalid symlink: " << current.value()
@@ -161,7 +161,7 @@ void ScanCacheDirectory(
       // If we're scanning outgoing directory, entry must exist and be dirty.
       // Otherwise, it's a logic error from previous execution, remove this
       // outgoing symlink and move on.
-      GDataCacheMetadata::CacheMap::iterator iter =
+      DriveCacheMetadata::CacheMap::iterator iter =
           cache_map->find(resource_id);
       if (iter == cache_map->end() || !iter->second.is_dirty()) {
         LOG(WARNING) << "Removing an symlink to a non-dirty file: "
@@ -172,9 +172,9 @@ void ScanCacheDirectory(
 
       processed_file_map->insert(std::make_pair(resource_id, current));
       continue;
-    } else if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT ||
-               sub_dir_type == GDataCache::CACHE_TYPE_TMP) {
-      if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT)
+    } else if (sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT ||
+               sub_dir_type == DriveCache::CACHE_TYPE_TMP) {
+      if (sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT)
         cache_entry.set_is_persistent(true);
 
       if (file_util::IsLink(current)) {
@@ -187,7 +187,7 @@ void ScanCacheDirectory(
         // Mounted archives in cache should be unmounted upon logout/shutdown.
         // But if we encounter a mounted file at start, delete it and create an
         // entry with not PRESENT state.
-        DCHECK(sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT);
+        DCHECK(sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT);
         file_util::Delete(current, false);
       } else {
         // The cache file is present.
@@ -196,7 +196,7 @@ void ScanCacheDirectory(
         // Adds the dirty bit if |md5| indicates that the file is dirty, and
         // the file is in the persistent directory.
         if (md5 == util::kLocallyModifiedFileExtension) {
-          if (sub_dir_type == GDataCache::CACHE_TYPE_PERSISTENT) {
+          if (sub_dir_type == DriveCache::CACHE_TYPE_PERSISTENT) {
             cache_entry.set_is_dirty(true);
           } else {
             LOG(WARNING) << "Removing a dirty file in tmp directory: "
@@ -217,19 +217,19 @@ void ScanCacheDirectory(
 }
 
 void ScanCachePaths(const std::vector<FilePath>& cache_paths,
-                    GDataCacheMetadata::CacheMap* cache_map) {
+                    DriveCacheMetadata::CacheMap* cache_map) {
   DVLOG(1) << "Scanning directories";
 
   // Scan cache persistent and tmp directories to enumerate all files and create
   // corresponding entries for cache map.
   ResourceIdToFilePathMap persistent_file_map;
   ScanCacheDirectory(cache_paths,
-                     GDataCache::CACHE_TYPE_PERSISTENT,
+                     DriveCache::CACHE_TYPE_PERSISTENT,
                      cache_map,
                      &persistent_file_map);
   ResourceIdToFilePathMap tmp_file_map;
   ScanCacheDirectory(cache_paths,
-                     GDataCache::CACHE_TYPE_TMP,
+                     DriveCache::CACHE_TYPE_TMP,
                      cache_map,
                      &tmp_file_map);
 
@@ -241,14 +241,14 @@ void ScanCachePaths(const std::vector<FilePath>& cache_paths,
   // directory per the contents of the pinned directory.
   ResourceIdToFilePathMap pinned_file_map;
   ScanCacheDirectory(cache_paths,
-                     GDataCache::CACHE_TYPE_PINNED,
+                     DriveCache::CACHE_TYPE_PINNED,
                      cache_map,
                      &pinned_file_map);
   // Then scan outgoing directory to check if dirty-files are committed
   // properly (i.e. symlinks created in outgoing directory).
   ResourceIdToFilePathMap outgoing_file_map;
   ScanCacheDirectory(cache_paths,
-                     GDataCache::CACHE_TYPE_OUTGOING,
+                     DriveCache::CACHE_TYPE_OUTGOING,
                      cache_map,
                      &outgoing_file_map);
 
@@ -284,18 +284,18 @@ bool CheckIfMd5Matches(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GDataCacheMetadata implementation with std::map.
+// DriveCacheMetadata implementation with std::map.
 // Used for testing.
 
-class FakeGDataCacheMetadata : public GDataCacheMetadata {
+class FakeDriveCacheMetadata : public DriveCacheMetadata {
  public:
-  explicit FakeGDataCacheMetadata(
+  explicit FakeDriveCacheMetadata(
       base::SequencedTaskRunner* blocking_task_runner);
 
  private:
-  virtual ~FakeGDataCacheMetadata();
+  virtual ~FakeDriveCacheMetadata();
 
-  // GDataCacheMetadata overrides:
+  // DriveCacheMetadata overrides:
   virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
@@ -311,27 +311,27 @@ class FakeGDataCacheMetadata : public GDataCacheMetadata {
 
   CacheMap cache_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeGDataCacheMetadata);
+  DISALLOW_COPY_AND_ASSIGN(FakeDriveCacheMetadata);
 };
 
-FakeGDataCacheMetadata::FakeGDataCacheMetadata(
+FakeDriveCacheMetadata::FakeDriveCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner)
-    : GDataCacheMetadata(blocking_task_runner) {
+    : DriveCacheMetadata(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-FakeGDataCacheMetadata::~FakeGDataCacheMetadata() {
+FakeDriveCacheMetadata::~FakeDriveCacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
-void FakeGDataCacheMetadata::Initialize(
+void FakeDriveCacheMetadata::Initialize(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
   ScanCachePaths(cache_paths, &cache_map_);
 }
 
-void FakeGDataCacheMetadata::AddOrUpdateCacheEntry(
+void FakeDriveCacheMetadata::AddOrUpdateCacheEntry(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
@@ -344,7 +344,7 @@ void FakeGDataCacheMetadata::AddOrUpdateCacheEntry(
   }
 }
 
-void FakeGDataCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
+void FakeDriveCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
@@ -354,7 +354,7 @@ void FakeGDataCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
   }
 }
 
-bool FakeGDataCacheMetadata::GetCacheEntry(const std::string& resource_id,
+bool FakeDriveCacheMetadata::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
                                           DriveCacheEntry* entry) {
   DCHECK(entry);
@@ -376,7 +376,7 @@ bool FakeGDataCacheMetadata::GetCacheEntry(const std::string& resource_id,
   return true;
 }
 
-void FakeGDataCacheMetadata::RemoveTemporaryFiles() {
+void FakeDriveCacheMetadata::RemoveTemporaryFiles() {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.begin();
@@ -390,7 +390,7 @@ void FakeGDataCacheMetadata::RemoveTemporaryFiles() {
   }
 }
 
-void FakeGDataCacheMetadata::Iterate(const IterateCallback& callback) {
+void FakeDriveCacheMetadata::Iterate(const IterateCallback& callback) {
   AssertOnSequencedWorkerPool();
 
   for (CacheMap::const_iterator iter = cache_map_.begin();
@@ -399,7 +399,7 @@ void FakeGDataCacheMetadata::Iterate(const IterateCallback& callback) {
   }
 }
 
-void FakeGDataCacheMetadata::ForceRescanForTesting(
+void FakeDriveCacheMetadata::ForceRescanForTesting(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
@@ -407,17 +407,17 @@ void FakeGDataCacheMetadata::ForceRescanForTesting(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GDataCacheMetadata implementation with level::db.
+// DriveCacheMetadata implementation with level::db.
 
-class GDataCacheMetadataDB : public GDataCacheMetadata {
+class DriveCacheMetadataDB : public DriveCacheMetadata {
  public:
-  explicit GDataCacheMetadataDB(
+  explicit DriveCacheMetadataDB(
       base::SequencedTaskRunner* blocking_task_runner);
 
  private:
-  virtual ~GDataCacheMetadataDB();
+  virtual ~DriveCacheMetadataDB();
 
-  // GDataCacheMetadata overrides:
+  // DriveCacheMetadata overrides:
   virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
       const std::string& resource_id,
@@ -436,26 +436,26 @@ class GDataCacheMetadataDB : public GDataCacheMetadata {
 
   scoped_ptr<leveldb::DB> level_db_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadataDB);
+  DISALLOW_COPY_AND_ASSIGN(DriveCacheMetadataDB);
 };
 
-GDataCacheMetadataDB::GDataCacheMetadataDB(
+DriveCacheMetadataDB::DriveCacheMetadataDB(
     base::SequencedTaskRunner* blocking_task_runner)
-    : GDataCacheMetadata(blocking_task_runner) {
+    : DriveCacheMetadata(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-GDataCacheMetadataDB::~GDataCacheMetadataDB() {
+DriveCacheMetadataDB::~DriveCacheMetadataDB() {
   AssertOnSequencedWorkerPool();
 }
 
-void GDataCacheMetadataDB::Initialize(
+void DriveCacheMetadataDB::Initialize(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
   const FilePath db_path =
-      cache_paths[GDataCache::CACHE_TYPE_META].Append(
-          kGDataCacheMetadataDBPath);
+      cache_paths[DriveCache::CACHE_TYPE_META].Append(
+          kDriveCacheMetadataDBPath);
   DVLOG(1) << "db path=" << db_path.value();
 
   const bool db_exists = file_util::PathExists(db_path);
@@ -483,7 +483,7 @@ void GDataCacheMetadataDB::Initialize(
   }
 }
 
-void GDataCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
+void DriveCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
   DVLOG(1) << "InsertMapIntoDB";
   for (CacheMap::const_iterator it = cache_map.begin();
        it != cache_map.end(); ++it) {
@@ -491,7 +491,7 @@ void GDataCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
   }
 }
 
-void GDataCacheMetadataDB::AddOrUpdateCacheEntry(
+void DriveCacheMetadataDB::AddOrUpdateCacheEntry(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
@@ -505,14 +505,14 @@ void GDataCacheMetadataDB::AddOrUpdateCacheEntry(
                    leveldb::Slice(serialized));
 }
 
-void GDataCacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
+void DriveCacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   DVLOG(1) << "RemoveCacheEntry, resource_id=" << resource_id;
   level_db_->Delete(leveldb::WriteOptions(), leveldb::Slice(resource_id));
 }
 
-bool GDataCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
+bool DriveCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
                                           DriveCacheEntry* entry) {
   DCHECK(entry);
@@ -541,7 +541,7 @@ bool GDataCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
   return true;
 }
 
-void GDataCacheMetadataDB::RemoveTemporaryFiles() {
+void DriveCacheMetadataDB::RemoveTemporaryFiles() {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
@@ -554,7 +554,7 @@ void GDataCacheMetadataDB::RemoveTemporaryFiles() {
   }
 }
 
-void GDataCacheMetadataDB::Iterate(const IterateCallback& callback) {
+void DriveCacheMetadataDB::Iterate(const IterateCallback& callback) {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
@@ -567,7 +567,7 @@ void GDataCacheMetadataDB::Iterate(const IterateCallback& callback) {
   }
 }
 
-void GDataCacheMetadataDB::ForceRescanForTesting(
+void DriveCacheMetadataDB::ForceRescanForTesting(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
@@ -578,32 +578,32 @@ void GDataCacheMetadataDB::ForceRescanForTesting(
 
 }  // namespace
 
-GDataCacheMetadata::GDataCacheMetadata(
+DriveCacheMetadata::DriveCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-GDataCacheMetadata::~GDataCacheMetadata() {
+DriveCacheMetadata::~DriveCacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
 // static
-scoped_ptr<GDataCacheMetadata> GDataCacheMetadata::CreateGDataCacheMetadata(
+scoped_ptr<DriveCacheMetadata> DriveCacheMetadata::CreateDriveCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner) {
-  return scoped_ptr<GDataCacheMetadata>(
-      new GDataCacheMetadataDB(blocking_task_runner));
+  return scoped_ptr<DriveCacheMetadata>(
+      new DriveCacheMetadataDB(blocking_task_runner));
 }
 
 // static
-scoped_ptr<GDataCacheMetadata>
-GDataCacheMetadata::CreateGDataCacheMetadataForTesting(
+scoped_ptr<DriveCacheMetadata>
+DriveCacheMetadata::CreateDriveCacheMetadataForTesting(
     base::SequencedTaskRunner* blocking_task_runner) {
-  return scoped_ptr<GDataCacheMetadata>(
-      new FakeGDataCacheMetadata(blocking_task_runner));
+  return scoped_ptr<DriveCacheMetadata>(
+      new FakeDriveCacheMetadata(blocking_task_runner));
 }
 
-void GDataCacheMetadata::AssertOnSequencedWorkerPool() {
+void DriveCacheMetadata::AssertOnSequencedWorkerPool() {
   DCHECK(!blocking_task_runner_ ||
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }

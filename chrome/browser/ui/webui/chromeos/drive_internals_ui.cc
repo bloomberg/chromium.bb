@@ -13,8 +13,8 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/gdata/auth_service.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -236,7 +236,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
   const FilePath root_path =
-      gdata::GDataCache::GetCacheRootPath(profile);
+      gdata::DriveCache::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
   base::DictionaryValue* gcache_summary = new DictionaryValue;
   BrowserThread::PostBlockingPoolTaskAndReply(

@@ -67,7 +67,7 @@ GDataFileSystemInterface* GetGDataFileSystem(Profile* profile) {
   return system_service ? system_service->file_system() : NULL;
 }
 
-GDataCache* GetGDataCache(Profile* profile) {
+DriveCache* GetDriveCache(Profile* profile) {
   GDataSystemService* system_service =
       GDataSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->cache() : NULL;
@@ -79,11 +79,11 @@ FileWriteHelper* GetFileWriteHelper(Profile* profile) {
   return system_service ? system_service->file_write_helper() : NULL;
 }
 
-void GetHostedDocumentURLBlockingThread(const FilePath& gdata_cache_path,
+void GetHostedDocumentURLBlockingThread(const FilePath& drive_cache_path,
                                         GURL* url) {
   std::string json;
-  if (!file_util::ReadFileToString(gdata_cache_path, &json)) {
-    NOTREACHED() << "Unable to read file " << gdata_cache_path.value();
+  if (!file_util::ReadFileToString(drive_cache_path, &json)) {
+    NOTREACHED() << "Unable to read file " << drive_cache_path.value();
     return;
   }
   DVLOG(1) << "Hosted doc content " << json;
@@ -130,8 +130,8 @@ void OnGetEntryInfoByResourceId(Profile* profile,
 }
 
 // Invoked upon completion of GetEntryInfoByPath initiated by
-// InsertGDataCachePathPermissions.
-void OnGetEntryInfoForInsertGDataCachePathsPermissions(
+// InsertDriveCachePathPermissions.
+void OnGetEntryInfoForInsertDriveCachePathsPermissions(
     Profile* profile,
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback,
@@ -144,7 +144,7 @@ void OnGetEntryInfoForInsertGDataCachePathsPermissions(
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
-  GDataCache* cache = GetGDataCache(profile);
+  DriveCache* cache = GetDriveCache(profile);
   if (!cache || error != GDATA_FILE_OK) {
     callback.Run();
     return;
@@ -160,25 +160,25 @@ void OnGetEntryInfoForInsertGDataCachePathsPermissions(
   // operations the file access check is done for drive/ paths.
   cache_paths->push_back(std::make_pair(
       cache->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_PERSISTENT,
-          GDataCache::CACHED_FILE_FROM_SERVER),
+          DriveCache::CACHE_TYPE_PERSISTENT,
+          DriveCache::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
   // TODO(tbarzic): When we start supporting openFile operation, we may have to
   // change permission for localy modified files to match handler's permissions.
   cache_paths->push_back(std::make_pair(
       cache->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_PERSISTENT,
-          GDataCache::CACHED_FILE_LOCALLY_MODIFIED),
+          DriveCache::CACHE_TYPE_PERSISTENT,
+          DriveCache::CACHED_FILE_LOCALLY_MODIFIED),
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       cache->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_PERSISTENT,
-          GDataCache::CACHED_FILE_MOUNTED),
+          DriveCache::CACHE_TYPE_PERSISTENT,
+          DriveCache::CACHED_FILE_MOUNTED),
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       cache->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_TMP,
-          GDataCache::CACHED_FILE_FROM_SERVER),
+          DriveCache::CACHE_TYPE_TMP,
+          DriveCache::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
 
   callback.Run();
@@ -234,34 +234,34 @@ GURL GetFileResourceUrl(const std::string& resource_id,
 }
 
 void ModifyGDataFileResourceUrl(Profile* profile,
-                                const FilePath& gdata_cache_path,
+                                const FilePath& drive_cache_path,
                                 GURL* url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataFileSystemInterface* file_system = GetGDataFileSystem(profile);
   if (!file_system)
     return;
-  GDataCache* cache = GetGDataCache(profile);
+  DriveCache* cache = GetDriveCache(profile);
   if (!cache)
     return;
 
-  if (cache->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP_DOCUMENTS).
-          IsParent(gdata_cache_path)) {
+  if (cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOCUMENTS).
+      IsParent(drive_cache_path)) {
     // Handle hosted documents. The edit url is in the temporary file, so we
     // read it on a blocking thread.
     GURL* edit_url = new GURL();
     content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
         base::Bind(&GetHostedDocumentURLBlockingThread,
-                   gdata_cache_path, edit_url),
+                   drive_cache_path, edit_url),
         base::Bind(&OpenEditURLUIThread, profile, base::Owned(edit_url)));
     *url = GURL();
-  } else if (cache->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP).
-                 IsParent(gdata_cache_path) ||
-             cache->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PERSISTENT).
-                 IsParent(gdata_cache_path)) {
+  } else if (cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP).
+                 IsParent(drive_cache_path) ||
+             cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT).
+                 IsParent(drive_cache_path)) {
     // Handle all other gdata files.
     const std::string resource_id =
-        gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
+        drive_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
     file_system->GetEntryInfoByResourceId(
         resource_id,
         base::Bind(&OnGetEntryInfoByResourceId,
@@ -292,7 +292,7 @@ FilePath ExtractGDataPath(const FilePath& path) {
   return extracted;
 }
 
-void InsertGDataCachePathsPermissions(
+void InsertDriveCachePathsPermissions(
     Profile* profile,
     scoped_ptr<std::vector<FilePath> > gdata_paths,
     std::vector<std::pair<FilePath, int> >* cache_paths,
@@ -315,15 +315,15 @@ void InsertGDataCachePathsPermissions(
   // Call GetEntryInfoByPath() to get file info for |gdata_path| then insert
   // all possible cache paths to the output vector |cache_paths|.
   // Note that we can only process one file path at a time. Upon completion
-  // of OnGetEntryInfoForInsertGDataCachePathsPermissions(), we recursively call
-  // InsertGDataCachePathsPermissions() to process the next file path from the
+  // of OnGetEntryInfoForInsertDriveCachePathsPermissions(), we recursively call
+  // InsertDriveCachePathsPermissions() to process the next file path from the
   // back of the input vector |gdata_paths| until it is empty.
   file_system->GetEntryInfoByPath(
       gdata_path,
-      base::Bind(&OnGetEntryInfoForInsertGDataCachePathsPermissions,
+      base::Bind(&OnGetEntryInfoForInsertDriveCachePathsPermissions,
                  profile,
                  cache_paths,
-                 base::Bind(&InsertGDataCachePathsPermissions,
+                 base::Bind(&InsertDriveCachePathsPermissions,
                              profile,
                              base::Passed(&gdata_paths),
                              cache_paths,

@@ -75,7 +75,7 @@ GDataSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
 
 GDataSyncClient::GDataSyncClient(Profile* profile,
                                  GDataFileSystemInterface* file_system,
-                                 GDataCache* cache)
+                                 DriveCache* cache)
     : profile_(profile),
       file_system_(file_system),
       cache_(cache),

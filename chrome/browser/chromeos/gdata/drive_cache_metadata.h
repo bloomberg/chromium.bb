@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_METADATA_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_METADATA_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_METADATA_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_METADATA_H_
 
 #include <map>
 #include <vector>
@@ -11,15 +11,15 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 
 namespace gdata {
 
-// GDataCacheMetadata is interface to maintain metadata of GDataCache's cached
+// DriveCacheMetadata is interface to maintain metadata of DriveCache's cached
 // files. This class only manages metadata. File operations are done by
-// GDataCache.
+// DriveCache.
 // All member access including ctor and dtor must be made on the blocking pool.
-class GDataCacheMetadata {
+class DriveCacheMetadata {
  public:
   // Callback for Iterate().
   typedef base::Callback<void(const std::string& resource_id,
@@ -29,15 +29,15 @@ class GDataCacheMetadata {
   // A map table of cache file's resource id to its CacheEntry* entry.
   typedef std::map<std::string, DriveCacheEntry> CacheMap;
 
-  virtual ~GDataCacheMetadata();
+  virtual ~DriveCacheMetadata();
 
-  // Creates GDataCacheMetadata instance.
-  static scoped_ptr<GDataCacheMetadata> CreateGDataCacheMetadata(
+  // Creates DriveCacheMetadata instance.
+  static scoped_ptr<DriveCacheMetadata> CreateDriveCacheMetadata(
       base::SequencedTaskRunner* blocking_task_runner);
 
-  // Creates GDataCacheMetadata instance. This uses FakeGDataCacheMetadata,
-  // which is an in-memory implmentation and faster than GDataCacheMetadataDB.
-  static scoped_ptr<GDataCacheMetadata> CreateGDataCacheMetadataForTesting(
+  // Creates DriveCacheMetadata instance. This uses FakeDriveCacheMetadata,
+  // which is an in-memory implmentation and faster than DriveCacheMetadataDB.
+  static scoped_ptr<DriveCacheMetadata> CreateDriveCacheMetadataForTesting(
       base::SequencedTaskRunner* blocking_task_runner);
 
   // Initialize the cache metadata store.
@@ -71,7 +71,7 @@ class GDataCacheMetadata {
       const std::vector<FilePath>& cache_paths) = 0;
 
  protected:
-  explicit GDataCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
+  explicit DriveCacheMetadata(base::SequencedTaskRunner* blocking_task_runner);
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
@@ -80,9 +80,9 @@ class GDataCacheMetadata {
  private:
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadata);
+  DISALLOW_COPY_AND_ASSIGN(DriveCacheMetadata);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_METADATA_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_METADATA_H_

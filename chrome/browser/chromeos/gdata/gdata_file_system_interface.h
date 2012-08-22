@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
@@ -349,7 +349,7 @@ class GDataFileSystemInterface {
                                const FilePath& virtual_dir_path,
                                scoped_ptr<DocumentEntry> entry,
                                const FilePath& file_content_path,
-                               GDataCache::FileOperationType cache_operation,
+                               DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) = 0;
 
   // Updates the data associated with the file referenced by |resource_id| and

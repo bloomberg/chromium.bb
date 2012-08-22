@@ -79,7 +79,7 @@ class GDataSyncClientTest : public testing::Test {
     // Initialize the sync client.
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
-    cache_ = GDataCache::CreateGDataCacheOnUIThread(
+    cache_ = DriveCache::CreateDriveCacheOnUIThread(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
     sync_client_.reset(new GDataSyncClient(profile_.get(),
@@ -159,15 +159,15 @@ class GDataSyncClientTest : public testing::Test {
   void SetUpTestFiles() {
     // Create a directory in the temporary directory for pinned symlinks.
     const FilePath pinned_dir =
-        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PINNED);
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PINNED);
     ASSERT_TRUE(file_util::CreateDirectory(pinned_dir));
     // Create a directory in the temporary directory for persistent files.
     const FilePath persistent_dir =
-        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PERSISTENT);
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT);
     ASSERT_TRUE(file_util::CreateDirectory(persistent_dir));
     // Create a directory in the temporary directory for outgoing symlinks.
     const FilePath outgoing_dir =
-        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_OUTGOING);
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_OUTGOING);
     ASSERT_TRUE(file_util::CreateDirectory(outgoing_dir));
 
     // Create a symlink in the pinned directory to /dev/null.
@@ -284,7 +284,7 @@ class GDataSyncClientTest : public testing::Test {
   ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StrictMock<MockGDataFileSystem> > mock_file_system_;
-  GDataCache* cache_;
+  DriveCache* cache_;
   scoped_ptr<GDataSyncClient> sync_client_;
   chromeos::MockNetworkLibrary* mock_network_library_;
   scoped_ptr<chromeos::Network> active_network_;

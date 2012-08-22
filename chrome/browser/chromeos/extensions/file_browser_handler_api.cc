@@ -276,7 +276,7 @@ void FileHandlerSelectFileFunction::GrantPermissions(
   scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>());
   gdata_paths->push_back(virtual_path);
 
-  gdata::util::InsertGDataCachePathsPermissions(
+  gdata::util::InsertDriveCachePathsPermissions(
       profile(),
       gdata_paths.Pass(),
       &permissions_to_grant_,
@@ -328,4 +328,3 @@ FileSelector* FileHandlerSelectFileFunction::GetFileSelector() {
 FileSelector* FileHandlerSelectFileFunction::file_selector_for_test_ = NULL;
 
 bool FileHandlerSelectFileFunction::gesture_check_disabled_for_test_ = false;
-

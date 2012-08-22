@@ -16,8 +16,8 @@
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
@@ -42,7 +42,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                         public content::NotificationObserver {
  public:
   GDataFileSystem(Profile* profile,
-                  GDataCache* cache,
+                  DriveCache* cache,
                   DriveServiceInterface* drive_service,
                   GDataUploaderInterface* uploader,
                   DriveWebAppsRegistryInterface* webapps_registry,
@@ -119,7 +119,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const FilePath& virtual_dir_path,
                                scoped_ptr<DocumentEntry> entry,
                                const FilePath& file_content_path,
-                               GDataCache::FileOperationType cache_operation,
+                               DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE;
   virtual void UpdateEntryData(const std::string& resource_id,
                                const std::string& md5,
@@ -676,7 +676,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId().
-  // Called when GDataCache::GetFileOnUIThread() is completed for
+  // Called when DriveCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.
   void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
@@ -772,7 +772,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  const FilePath& virtual_dir_path,
                                  scoped_ptr<DocumentEntry> entry,
                                  const FilePath& file_content_path,
-                                 GDataCache::FileOperationType cache_operation,
+                                 DriveCache::FileOperationType cache_operation,
                                  const base::Closure& callback);
   void UpdateEntryDataOnUIThread(const std::string& resource_id,
                                  const std::string& md5,
@@ -842,7 +842,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   Profile* profile_;
 
   // The cache owned by GDataSystemService.
-  GDataCache* cache_;
+  DriveCache* cache_;
 
   // The uploader owned by GDataSystemService.
   GDataUploaderInterface* uploader_;

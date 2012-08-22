@@ -388,7 +388,7 @@ struct GDataFileSystem::AddUploadedFileParams {
                         DriveDirectory* parent_dir,
                         scoped_ptr<DriveEntry> new_entry,
                         const FilePath& file_content_path,
-                        GDataCache::FileOperationType cache_operation,
+                        DriveCache::FileOperationType cache_operation,
                         const base::Closure& callback)
   : upload_mode(upload_mode),
     parent_dir(parent_dir),
@@ -402,7 +402,7 @@ struct GDataFileSystem::AddUploadedFileParams {
   DriveDirectory* parent_dir;
   scoped_ptr<DriveEntry> new_entry;
   FilePath file_content_path;
-  GDataCache::FileOperationType cache_operation;
+  DriveCache::FileOperationType cache_operation;
   base::Closure callback;
   std::string resource_id;
   std::string md5;
@@ -413,7 +413,7 @@ struct GDataFileSystem::AddUploadedFileParams {
 
 GDataFileSystem::GDataFileSystem(
     Profile* profile,
-    GDataCache* cache,
+    DriveCache* cache,
     DriveServiceInterface* drive_service,
     GDataUploaderInterface* uploader,
     DriveWebAppsRegistryInterface* webapps_registry,
@@ -801,7 +801,7 @@ void GDataFileSystem::OnTransferCompleted(
                     upload_file_info->gdata_path.DirName(),
                     upload_file_info->entry.Pass(),
                     upload_file_info->file_path,
-                    GDataCache::FILE_OPERATION_COPY,
+                    DriveCache::FILE_OPERATION_COPY,
                     base::Bind(&OnAddUploadFileCompleted, callback, error));
   } else if (!callback.is_null()) {
     callback.Run(error);
@@ -1515,7 +1515,7 @@ void GDataFileSystem::GetResolvedFileByPath(
         blocking_task_runner_,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
-                       GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
+                       DriveCache::CACHE_TYPE_TMP_DOCUMENTS),
                    GURL(entry_proto->file_specific_info().alternate_url()),
                    entry_proto->resource_id(),
                    error,
@@ -1535,8 +1535,8 @@ void GDataFileSystem::GetResolvedFileByPath(
   FilePath local_tmp_path = cache_->GetCacheFilePath(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5(),
-      GDataCache::CACHE_TYPE_TMP,
-      GDataCache::CACHED_FILE_FROM_SERVER);
+      DriveCache::CACHE_TYPE_TMP,
+      DriveCache::CACHED_FILE_FROM_SERVER);
   cache_->GetFileOnUIThread(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5(),
@@ -1697,7 +1697,7 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
-      base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
+      base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
                  file_size,
                  has_enough_space),
@@ -2106,7 +2106,7 @@ void GDataFileSystem::OnUpdatedFileUploaded(
                   upload_file_info->gdata_path.DirName(),
                   upload_file_info->entry.Pass(),
                   upload_file_info->file_path,
-                  GDataCache::FILE_OPERATION_MOVE,
+                  DriveCache::FILE_OPERATION_MOVE,
                   base::Bind(&OnAddUploadFileCompleted, callback, error));
 }
 
@@ -2487,7 +2487,7 @@ void GDataFileSystem::OnFileDownloaded(
   util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
-      base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
+      base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
                  0,
                  has_enough_space),
@@ -2531,7 +2531,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
           params.resource_id,
           params.md5,
           downloaded_file_path,
-          GDataCache::FILE_OPERATION_MOVE,
+          DriveCache::FILE_OPERATION_MOVE,
           base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
                      ui_weak_ptr_));
     } else {
@@ -2829,7 +2829,7 @@ void GDataFileSystem::AddUploadedFile(
     const FilePath& virtual_dir_path,
     scoped_ptr<DocumentEntry> entry,
     const FilePath& file_content_path,
-    GDataCache::FileOperationType cache_operation,
+    DriveCache::FileOperationType cache_operation,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2852,7 +2852,7 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
     const FilePath& virtual_dir_path,
     scoped_ptr<DocumentEntry> entry,
     const FilePath& file_content_path,
-    GDataCache::FileOperationType cache_operation,
+    DriveCache::FileOperationType cache_operation,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2997,7 +2997,7 @@ void GDataFileSystem::UpdateEntryDataOnUIThread(
   cache_->StoreOnUIThread(resource_id,
                           md5,
                           file_content_path,
-                          GDataCache::FILE_OPERATION_MOVE,
+                          DriveCache::FILE_OPERATION_MOVE,
                           base::Bind(&OnCacheUpdatedForAddUploadedFile,
                                      callback));
 }

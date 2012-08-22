@@ -95,7 +95,7 @@ extern const FilePath::CharType kPepperFlashPluginFilename[];
 extern const wchar_t kUserDataDirname[];
 
 #if defined(OS_CHROMEOS)
-extern const FilePath::CharType kGDataCacheDirname[];
+extern const FilePath::CharType kDriveCacheDirname[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const bool kRecordModeEnabled;

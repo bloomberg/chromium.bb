@@ -60,7 +60,7 @@ void GDataSystemService::Initialize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive_service_.reset(drive_service);
-  cache_ = GDataCache::CreateGDataCacheOnUIThread(
+  cache_ = DriveCache::CreateDriveCacheOnUIThread(
       cache_root,
       blocking_task_runner_);
   uploader_.reset(new GDataUploader(drive_service_.get()));
@@ -87,7 +87,7 @@ void GDataSystemService::Initialize(
   download_observer_->Initialize(
       download_manager,
       cache_->GetCacheDirectoryPath(
-          GDataCache::CACHE_TYPE_TMP_DOWNLOADS));
+          DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
 
   AddDriveMountPoint();
   contacts_service_->Initialize();
@@ -221,7 +221,7 @@ ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
 
   FilePath cache_root =
       g_test_cache_root ? FilePath(*g_test_cache_root) :
-                          GDataCache::GetCacheRootPath(profile);
+                          DriveCache::GetCacheRootPath(profile);
   delete g_test_cache_root;
   g_test_cache_root = NULL;
 

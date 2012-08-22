@@ -19,10 +19,10 @@ class FilePath;
 
 namespace gdata {
 
+class DriveCache;
 class DriveServiceInterface;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
-class GDataCache;
 class GDataContactsService;
 class GDataDownloadObserver;
 class GDataFileSystemInterface;
@@ -38,7 +38,7 @@ class GDataUploader;
 class GDataSystemService : public ProfileKeyedService  {
  public:
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
-  GDataCache* cache() { return cache_; }
+  DriveCache* cache() { return cache_; }
   GDataFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   GDataUploader* uploader() { return uploader_.get(); }
@@ -76,7 +76,7 @@ class GDataSystemService : public ProfileKeyedService  {
 
   Profile* profile_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  GDataCache* cache_;
+  DriveCache* cache_;
   scoped_ptr<DriveServiceInterface> drive_service_;
   scoped_ptr<GDataUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;

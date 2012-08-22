@@ -25,8 +25,8 @@
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_cache_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -214,7 +214,7 @@ class GDataFileSystemTest : public testing::Test {
         num_callback_invocations_(0),
         expected_error_(GDATA_FILE_OK),
         expected_cache_state_(0),
-        expected_sub_dir_type_(GDataCache::CACHE_TYPE_META),
+        expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
         expected_success_(true),
         expect_outgoing_symlink_(false),
         root_feed_changestamp_(0) {
@@ -243,8 +243,8 @@ class GDataFileSystemTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    cache_ = GDataCache::CreateGDataCacheOnUIThread(
-        GDataCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
+    cache_ = DriveCache::CreateDriveCacheOnUIThread(
+        DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
     mock_uploader_.reset(new StrictMock<MockGDataUploader>);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
@@ -257,7 +257,7 @@ class GDataFileSystemTest : public testing::Test {
                                        mock_webapps_registry_.get(),
                                        blocking_task_runner_);
 
-    mock_cache_observer_.reset(new StrictMock<MockGDataCacheObserver>);
+    mock_cache_observer_.reset(new StrictMock<MockDriveCacheObserver>);
     cache_->AddObserver(mock_cache_observer_.get());
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
@@ -351,8 +351,8 @@ class GDataFileSystemTest : public testing::Test {
                                const std::string& md5) {
     return cache_->GetCacheFilePath(resource_id,
                                     md5,
-                                    GDataCache::CACHE_TYPE_TMP,
-                                    GDataCache::CACHED_FILE_FROM_SERVER);
+                                    DriveCache::CACHE_TYPE_TMP,
+                                    DriveCache::CACHED_FILE_FROM_SERVER);
   }
 
   // Gets entry info by path synchronously.
@@ -434,8 +434,8 @@ class GDataFileSystemTest : public testing::Test {
     const FilePath file_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
-        GDataCache::CACHE_TYPE_TMP,
-        GDataCache::CACHED_FILE_FROM_SERVER);
+        DriveCache::CACHE_TYPE_TMP,
+        DriveCache::CACHED_FILE_FROM_SERVER);
     return file_util::PathExists(file_path);
   }
 
@@ -445,14 +445,14 @@ class GDataFileSystemTest : public testing::Test {
       const FilePath& source_path,
       GDataFileError expected_error,
       int expected_cache_state,
-      GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
+      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
     cache_->StoreOnUIThread(
         resource_id, md5, source_path,
-        GDataCache::FILE_OPERATION_COPY,
+        DriveCache::FILE_OPERATION_COPY,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
@@ -464,7 +464,7 @@ class GDataFileSystemTest : public testing::Test {
       const std::string& md5,
       GDataFileError expected_error,
       int expected_cache_state,
-      GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
+      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -482,7 +482,7 @@ class GDataFileSystemTest : public testing::Test {
       const std::string& md5,
       GDataFileError expected_error,
       int expected_cache_state,
-      GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
+      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -519,7 +519,7 @@ class GDataFileSystemTest : public testing::Test {
       const std::string& md5,
       GDataFileError expected_error,
       int expected_cache_state,
-      GDataCache::CacheSubDirectoryType expected_sub_dir_type) {
+      DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
@@ -544,7 +544,7 @@ class GDataFileSystemTest : public testing::Test {
     expected_cache_state_ = (test_util::TEST_CACHE_STATE_PRESENT |
                              test_util::TEST_CACHE_STATE_DIRTY |
                              test_util::TEST_CACHE_STATE_PERSISTENT);
-    expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
+    expected_sub_dir_type_ = DriveCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = false;
     VerifyMarkDirty(error, resource_id, md5, cache_file_path);
   }
@@ -559,7 +559,7 @@ class GDataFileSystemTest : public testing::Test {
     expected_cache_state_ = (test_util::TEST_CACHE_STATE_PRESENT |
                              test_util::TEST_CACHE_STATE_DIRTY |
                              test_util::TEST_CACHE_STATE_PERSISTENT);
-    expected_sub_dir_type_ = GDataCache::CACHE_TYPE_PERSISTENT;
+    expected_sub_dir_type_ = DriveCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = true;
     VerifyCacheFileState(error, resource_id, md5);
   }
@@ -582,7 +582,7 @@ class GDataFileSystemTest : public testing::Test {
           test_util::ToCacheEntry(expected_cache_state_),
           cache_entry));
       EXPECT_EQ(expected_sub_dir_type_,
-                GDataCache::GetSubDirectoryType(cache_entry));
+                DriveCache::GetSubDirectoryType(cache_entry));
     } else {
       EXPECT_FALSE(cache_entry_found);
     }
@@ -593,11 +593,11 @@ class GDataFileSystemTest : public testing::Test {
         md5,
         test_util::ToCacheEntry(expected_cache_state_).is_pinned() ||
         test_util::ToCacheEntry(expected_cache_state_).is_dirty() ?
-                GDataCache::CACHE_TYPE_PERSISTENT :
-                GDataCache::CACHE_TYPE_TMP,
+                DriveCache::CACHE_TYPE_PERSISTENT :
+                DriveCache::CACHE_TYPE_TMP,
         test_util::ToCacheEntry(expected_cache_state_).is_dirty() ?
-            GDataCache::CACHED_FILE_LOCALLY_MODIFIED :
-            GDataCache::CACHED_FILE_FROM_SERVER);
+            DriveCache::CACHED_FILE_LOCALLY_MODIFIED :
+            DriveCache::CACHED_FILE_FROM_SERVER);
     bool exists = file_util::PathExists(dest_path);
     if (test_util::ToCacheEntry(expected_cache_state_).is_present())
       EXPECT_TRUE(exists);
@@ -608,8 +608,8 @@ class GDataFileSystemTest : public testing::Test {
     FilePath symlink_path = cache_->GetCacheFilePath(
         resource_id,
         std::string(),
-        GDataCache::CACHE_TYPE_PINNED,
-        GDataCache::CACHED_FILE_FROM_SERVER);
+        DriveCache::CACHE_TYPE_PINNED,
+        DriveCache::CACHED_FILE_FROM_SERVER);
     // Check that pin symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (test_util::ToCacheEntry(expected_cache_state_).is_pinned()) {
@@ -628,8 +628,8 @@ class GDataFileSystemTest : public testing::Test {
     symlink_path = cache_->GetCacheFilePath(
         resource_id,
         std::string(),
-        GDataCache::CACHE_TYPE_OUTGOING,
-        GDataCache::CACHED_FILE_FROM_SERVER);
+        DriveCache::CACHE_TYPE_OUTGOING,
+        DriveCache::CACHED_FILE_FROM_SERVER);
     // Check that outgoing symlink exists, without dereferencing to target path.
     exists = file_util::IsLink(symlink_path);
     if (expect_outgoing_symlink_ &&
@@ -846,19 +846,19 @@ class GDataFileSystemTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
-  GDataCache* cache_;
+  DriveCache* cache_;
   scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
   GDataFileSystem* file_system_;
   StrictMock<MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
   StrictMock<MockFreeDiskSpaceGetter>* mock_free_disk_space_checker_;
-  scoped_ptr<StrictMock<MockGDataCacheObserver> > mock_cache_observer_;
+  scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
   int num_callback_invocations_;
   GDataFileError expected_error_;
   int expected_cache_state_;
-  GDataCache::CacheSubDirectoryType expected_sub_dir_type_;
+  DriveCache::CacheSubDirectoryType expected_sub_dir_type_;
   bool expected_success_;
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
@@ -2071,7 +2071,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
                    GetTestFilePath("root_feed.json"),
                    GDATA_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
-                   GDataCache::CACHE_TYPE_TMP);
+                   DriveCache::CACHE_TYPE_TMP);
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
   ASSERT_TRUE(CacheFileExists("<resource_id>", "<md5>"));
 
@@ -2170,7 +2170,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
                    GetTestFilePath("root_feed.json"),
                    GDATA_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
-                   GDataCache::CACHE_TYPE_TMP);
+                   DriveCache::CACHE_TYPE_TMP);
 
   // Make sure we don't fetch metadata for downloading file.
   EXPECT_CALL(*mock_drive_service_, GetDocumentEntry(_, _)).Times(0);
@@ -2278,7 +2278,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
                    GetTestFilePath("root_feed.json"),
                    GDATA_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
-                   GDataCache::CACHE_TYPE_TMP);
+                   DriveCache::CACHE_TYPE_TMP);
 
   // The file is obtained from the cache.
   // Make sure we don't call downloads at all.
@@ -2312,12 +2312,12 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
           kMd5,
           GDATA_FILE_OK,
           test_util::TEST_CACHE_STATE_PINNED,
-          GDataCache::CACHE_TYPE_TMP);
+          DriveCache::CACHE_TYPE_TMP);
 
   // First store a file to cache. A cache file will be created at:
   // GCache/v1/persistent/<kResourceId>.<kMd5>
   const FilePath original_cache_file_path =
-      GDataCache::GetCacheRootPath(profile_.get())
+      DriveCache::GetCacheRootPath(profile_.get())
       .AppendASCII("persistent")
       .AppendASCII(kResourceId + "." + kMd5);
   TestStoreToCache(kResourceId,
@@ -2327,7 +2327,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
-                   GDataCache::CACHE_TYPE_PERSISTENT);
+                   DriveCache::CACHE_TYPE_PERSISTENT);
   ASSERT_TRUE(file_util::PathExists(original_cache_file_path));
 
   // Add the dirty bit. The cache file will be renamed to
@@ -2339,9 +2339,9 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
-                GDataCache::CACHE_TYPE_PERSISTENT);
+                DriveCache::CACHE_TYPE_PERSISTENT);
   const FilePath dirty_cache_file_path =
-      GDataCache::GetCacheRootPath(profile_.get())
+      DriveCache::GetCacheRootPath(profile_.get())
       .AppendASCII("persistent")
       .AppendASCII(kResourceId + ".local");
   ASSERT_FALSE(file_util::PathExists(original_cache_file_path));
@@ -2364,9 +2364,9 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
                   test_util::TEST_CACHE_STATE_PINNED |
                   test_util::TEST_CACHE_STATE_DIRTY |
                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                  GDataCache::CACHE_TYPE_PERSISTENT);
+                  DriveCache::CACHE_TYPE_PERSISTENT);
   const FilePath outgoing_symlink_path =
-      GDataCache::GetCacheRootPath(profile_.get())
+      DriveCache::GetCacheRootPath(profile_.get())
       .AppendASCII("outgoing")
       .AppendASCII(kResourceId);
   ASSERT_TRUE(file_util::PathExists(dirty_cache_file_path));

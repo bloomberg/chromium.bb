@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_H_
 
 #include <map>
 #include <string>
@@ -28,7 +28,7 @@ class SequencedTaskRunner;
 namespace gdata {
 
 class DriveCacheEntry;
-class GDataCacheMetadata;
+class DriveCacheMetadata;
 
 // Callback for SetMountedStateOnUIThread and ClearAllOnUIThread.
 typedef base::Callback<void(GDataFileError error,
@@ -65,19 +65,19 @@ typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
 typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
-// GDataCache is used to maintain cache states of GDataFileSystem.
+// DriveCache is used to maintain cache states of GDataFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
 // GetCacheFilePath() for example), should be called from the sequenced
-// worker pool with the sequence token set by CreateGDataCacheOnUIThread(). This
+// worker pool with the sequence token set by CreateDriveCacheOnUIThread(). This
 // threading model is enforced by AssertOnSequencedWorkerPool().
 //
 // TODO(hashimoto): Change threading model of this class to make public methods
 // being called on UI thread unless mentioned otherwise. crbug.com/132926
-class GDataCache {
+class DriveCache {
  public:
   // Enum defining GCache subdirectory location.
-  // This indexes into |GDataCache::cache_paths_| vector.
+  // This indexes into |DriveCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Downloaded feeds.
     CACHE_TYPE_PINNED,         // Symlinks to files in persistent dir that are
@@ -143,7 +143,7 @@ class GDataCache {
   // <user_profile_dir>/GCache/v1
   //
   // Can be called on any thread.
-  bool IsUnderGDataCacheDirectory(const FilePath& path) const;
+  bool IsUnderDriveCacheDirectory(const FilePath& path) const;
 
   // Adds observer.
   // Must be called on UI thread.
@@ -287,13 +287,13 @@ class GDataCache {
                      const std::string& md5,
                      DriveCacheEntry* entry);
 
-  // Factory methods for GDataCache.
+  // Factory methods for DriveCache.
   // |pool| and |sequence_token| are used to assert that the functions are
   // called on the right sequenced worker pool with the right sequence token.
   //
   // For testing, the thread assertion can be disabled by passing NULL and
   // the default value of SequenceToken.
-  static GDataCache* CreateGDataCacheOnUIThread(
+  static DriveCache* CreateDriveCacheOnUIThread(
       const FilePath& cache_root_path,
       base::SequencedTaskRunner* blocking_task_runner);
 
@@ -321,9 +321,9 @@ class GDataCache {
       const DriveCacheEntry& cache_entry);
 
  private:
-  GDataCache(const FilePath& cache_root_path,
+  DriveCache(const FilePath& cache_root_path,
              base::SequencedTaskRunner* blocking_task_runner);
-  virtual ~GDataCache();
+  virtual ~DriveCache();
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
@@ -439,20 +439,20 @@ class GDataCache {
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
-  // GDataCache::CacheSubDirectoryType enum.
+  // DriveCache::CacheSubDirectoryType enum.
   const std::vector<FilePath> cache_paths_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The cache state data. This member must be access only on the blocking pool.
-  scoped_ptr<GDataCacheMetadata> metadata_;
+  scoped_ptr<DriveCacheMetadata> metadata_;
 
   // List of observers, this member must be accessed on UI thread.
   ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataCache> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GDataCache);
+  base::WeakPtrFactory<DriveCache> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DriveCache);
 };
 
 
@@ -478,4 +478,4 @@ void SetFreeDiskSpaceGetterForTesting(
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_CACHE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_H_

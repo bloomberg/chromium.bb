@@ -17,9 +17,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/common/chrome_switches.h"
@@ -240,7 +240,7 @@ GDataWapiFeedLoader::GDataWapiFeedLoader(
     DriveResourceMetadata* resource_metadata,
     DriveServiceInterface* drive_service,
     DriveWebAppsRegistryInterface* webapps_registry,
-    GDataCache* cache,
+    DriveCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : resource_metadata_(resource_metadata),
       drive_service_(drive_service),
@@ -325,7 +325,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
 #ifndef NDEBUG
     // Save account metadata feed for analysis.
     const FilePath path =
-        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
             kAccountMetadataFile);
     util::PostBlockingPoolSequencedTask(
         FROM_HERE,
@@ -596,7 +596,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
       blocking_task_runner_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                  cache_->GetCacheDirectoryPath(
-                     GDataCache::CACHE_TYPE_META).Append(file_name),
+                     DriveCache::CACHE_TYPE_META).Append(file_name),
                  base::Passed(&data)));
 #endif
 
@@ -709,7 +709,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
       blocking_task_runner_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                  cache_->GetCacheDirectoryPath(
-                     GDataCache::CACHE_TYPE_META).Append(file_name),
+                     DriveCache::CACHE_TYPE_META).Append(file_name),
                  base::Passed(&data)));
 #endif
 
@@ -823,7 +823,7 @@ void GDataWapiFeedLoader::LoadFromCache(
 
   LoadRootFeedParams* params = new LoadRootFeedParams(should_load_from_server,
                                                       callback);
-  FilePath path = cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META);
+  FilePath path = cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META);
   if (UseLevelDB()) {
     path = path.Append(kResourceMetadataDBFile);
     resource_metadata_->InitFromDB(path, blocking_task_runner_,
@@ -920,7 +920,7 @@ void GDataWapiFeedLoader::SaveFileSystem() {
     resource_metadata_->SaveToDB();
   } else {
     const FilePath path =
-        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
+        cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
             kFilesystemProtoFile);
     scoped_ptr<std::string> serialized_proto(new std::string());
     resource_metadata_->SerializeToString(serialized_proto.get());

@@ -139,7 +139,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // Callback invoked by GDataUploader when the upload associated with
   // |download_id| has completed. |error| indicated whether the
   // call was successful. This function takes ownership of DocumentEntry from
-  // |upload_file_info| for use by MoveFileToGDataCache(). It also invokes the
+  // |upload_file_info| for use by MoveFileToDriveCache(). It also invokes the
   // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
   void OnUploadComplete(int32 download_id,
                         GDataFileError error,
@@ -147,7 +147,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
   // Moves the downloaded file to gdata cache.
   // Must be called after GDataDownloadObserver receives COMPLETE notification.
-  void MoveFileToGDataCache(content::DownloadItem* download);
+  void MoveFileToDriveCache(content::DownloadItem* download);
 
   // Private data.
   // The uploader owned by GDataSystemService. Used to trigger file uploads.

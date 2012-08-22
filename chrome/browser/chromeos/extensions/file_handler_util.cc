@@ -865,7 +865,7 @@ void ExtensionTaskExecutor::InitHandlerHostFileAccessPermissions(
 
   // For files on gdata mount point, we'll have to give handler host permissions
   // for their cache paths. This has to be called on UI thread.
-  gdata::util::InsertGDataCachePathsPermissions(profile(),
+  gdata::util::InsertDriveCachePathsPermissions(profile(),
                                                 gdata_paths.Pass(),
                                                 &handler_host_permissions_,
                                                 callback);

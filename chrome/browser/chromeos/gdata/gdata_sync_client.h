@@ -15,7 +15,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -44,7 +44,7 @@ namespace gdata {
 // edited) files to gdata. Will work on this once downloading is done.
 // crosbug.com/27836.
 class GDataSyncClient : public GDataFileSystemInterface::Observer,
-                        public GDataCache::Observer,
+                        public DriveCache::Observer,
                         public chromeos::NetworkLibrary::NetworkManagerObserver,
                         public content::NotificationObserver {
  public:
@@ -70,7 +70,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
   // cache (ex. store a file to the cache when the file is downloaded).
   GDataSyncClient(Profile* profile,
                   GDataFileSystemInterface* file_system,
-                  GDataCache* cache);
+                  DriveCache* cache);
   virtual ~GDataSyncClient();
 
   // Initializes the GDataSyncClient.
@@ -80,7 +80,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
   virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
-  // GDataCache::Observer overrides.
+  // DriveCache::Observer overrides.
   virtual void OnCachePinned(const std::string& resource_id,
                              const std::string& md5) OVERRIDE;
   virtual void OnCacheUnpinned(const std::string& resource_id,
@@ -184,7 +184,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
                        const content::NotificationDetails& details) OVERRIDE;
   Profile* profile_;
   GDataFileSystemInterface* file_system_;  // Owned by GDataSystemService.
-  GDataCache* cache_;  // Owned by GDataSystemService.
+  DriveCache* cache_;  // Owned by GDataSystemService.
   scoped_ptr<PrefChangeRegistrar> registrar_;
 
   // The queue of tasks used to fetch/upload files in the background

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
+#include "chrome/browser/chromeos/gdata/drive_cache_metadata.h"
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
@@ -13,29 +13,29 @@
 
 namespace gdata {
 
-class GDataCacheMetadataTest : public testing::Test {
+class DriveCacheMetadataTest : public testing::Test {
  public:
-  GDataCacheMetadataTest() {}
+  DriveCacheMetadataTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Create cache directories.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    cache_paths_ = GDataCache::GetCachePaths(temp_dir_.path());
-    ASSERT_TRUE(GDataCache::CreateCacheDirectories(cache_paths_));
+    cache_paths_ = DriveCache::GetCachePaths(temp_dir_.path());
+    ASSERT_TRUE(DriveCache::CreateCacheDirectories(cache_paths_));
 
-    persistent_directory_ = cache_paths_[GDataCache::CACHE_TYPE_PERSISTENT];
-    tmp_directory_ = cache_paths_[GDataCache::CACHE_TYPE_TMP];
-    pinned_directory_ = cache_paths_[GDataCache::CACHE_TYPE_PINNED];
-    outgoing_directory_ = cache_paths_[GDataCache::CACHE_TYPE_OUTGOING];
+    persistent_directory_ = cache_paths_[DriveCache::CACHE_TYPE_PERSISTENT];
+    tmp_directory_ = cache_paths_[DriveCache::CACHE_TYPE_TMP];
+    pinned_directory_ = cache_paths_[DriveCache::CACHE_TYPE_PINNED];
+    outgoing_directory_ = cache_paths_[DriveCache::CACHE_TYPE_OUTGOING];
   }
 
   virtual void TearDown() OVERRIDE {
     metadata_.reset();
   }
 
-  // Sets up the GDataCacheMetadata object.
+  // Sets up the DriveCacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_ = GDataCacheMetadata::CreateGDataCacheMetadata(NULL).Pass();
+    metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(NULL).Pass();
     metadata_->Initialize(cache_paths_);
   }
 
@@ -113,7 +113,7 @@ class GDataCacheMetadataTest : public testing::Test {
  protected:
   // Helper function to insert an item with key |resource_id| into |cache_map|.
   // |md5| and |cache_state| are used to create the value CacheEntry.
-  void InsertIntoMap(GDataCacheMetadata::CacheMap* cache_map,
+  void InsertIntoMap(DriveCacheMetadata::CacheMap* cache_map,
                      const std::string& resource_id,
                      const DriveCacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
@@ -121,15 +121,15 @@ class GDataCacheMetadataTest : public testing::Test {
   }
 
   // Adds all entries in |cache_map| to the metadata storage.
-  void AddAllMapEntries(const GDataCacheMetadata::CacheMap& cache_map) {
-    for (GDataCacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
+  void AddAllMapEntries(const DriveCacheMetadata::CacheMap& cache_map) {
+    for (DriveCacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
          iter != cache_map.end(); ++iter) {
       metadata_->AddOrUpdateCacheEntry(iter->first, iter->second);
     }
   }
 
   ScopedTempDir temp_dir_;
-  scoped_ptr<GDataCacheMetadata> metadata_;
+  scoped_ptr<DriveCacheMetadata> metadata_;
   std::vector<FilePath> cache_paths_;
   FilePath persistent_directory_;
   FilePath tmp_directory_;
@@ -137,9 +137,9 @@ class GDataCacheMetadataTest : public testing::Test {
   FilePath outgoing_directory_;
 };
 
-// Test all the methods of GDataCacheMetadata except for
+// Test all the methods of DriveCacheMetadata except for
 // RemoveTemporaryFiles.
-TEST_F(GDataCacheMetadataTest, CacheTest) {
+TEST_F(DriveCacheMetadataTest, CacheTest) {
   SetUpCacheMetadata();
 
   // Save an initial entry.
@@ -241,7 +241,7 @@ TEST_F(GDataCacheMetadataTest, CacheTest) {
   EXPECT_TRUE(cache_entry.is_present());
 }
 
-TEST_F(GDataCacheMetadataTest, Initialization) {
+TEST_F(DriveCacheMetadataTest, Initialization) {
   using file_util::PathExists;
   using file_util::IsLink;
   SetUpCacheWithVariousFiles();
@@ -266,8 +266,8 @@ TEST_F(GDataCacheMetadataTest, Initialization) {
   DriveCacheEntry cache_entry;
   ASSERT_TRUE(metadata_->GetCacheEntry("id_foo", "md5foo", &cache_entry));
   EXPECT_EQ("md5foo", cache_entry.md5());
-  EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
-            GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
+            DriveCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
       test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT |
                               test_util::TEST_CACHE_STATE_PINNED |
@@ -281,8 +281,8 @@ TEST_F(GDataCacheMetadataTest, Initialization) {
   // "id_bar" is present and dirty.
   ASSERT_TRUE(metadata_->GetCacheEntry("id_bar", "", &cache_entry));
   EXPECT_EQ("local", cache_entry.md5());
-  EXPECT_EQ(GDataCache::CACHE_TYPE_PERSISTENT,
-            GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(DriveCache::CACHE_TYPE_PERSISTENT,
+            DriveCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
       test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT |
                               test_util::TEST_CACHE_STATE_DIRTY |
@@ -308,8 +308,8 @@ TEST_F(GDataCacheMetadataTest, Initialization) {
   // "id_qux" is just present in tmp directory.
   ASSERT_TRUE(metadata_->GetCacheEntry("id_qux", "md5qux", &cache_entry));
   EXPECT_EQ("md5qux", cache_entry.md5());
-  EXPECT_EQ(GDataCache::CACHE_TYPE_TMP,
-            GDataCache::GetSubDirectoryType(cache_entry));
+  EXPECT_EQ(DriveCache::CACHE_TYPE_TMP,
+            DriveCache::GetSubDirectoryType(cache_entry));
   EXPECT_TRUE(test_util::CacheStatesEqual(
       test_util::ToCacheEntry(test_util::TEST_CACHE_STATE_PRESENT),
       cache_entry));
@@ -346,11 +346,11 @@ TEST_F(GDataCacheMetadataTest, Initialization) {
   EXPECT_FALSE(IsLink(pinned_directory_.AppendASCII("id_not_symlink")));
 }
 
-// Test GDataCacheMetadata::RemoveTemporaryFiles.
-TEST_F(GDataCacheMetadataTest, RemoveTemporaryFilesTest) {
+// Test DriveCacheMetadata::RemoveTemporaryFiles.
+TEST_F(DriveCacheMetadataTest, RemoveTemporaryFilesTest) {
   SetUpCacheMetadata();
 
-  GDataCacheMetadata::CacheMap cache_map;
+  DriveCacheMetadata::CacheMap cache_map;
   {
     DriveCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");

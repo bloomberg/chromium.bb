@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_cache.h"
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
 
 #include <vector>
 
@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
+#include "chrome/browser/chromeos/gdata/drive_cache_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -26,17 +26,17 @@ using content::BrowserThread;
 namespace gdata {
 namespace {
 
-const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
-const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
-const FilePath::CharType kGDataCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
-const FilePath::CharType kGDataCacheOutgoingDir[] =
+const FilePath::CharType kDriveCacheVersionDir[] = FILE_PATH_LITERAL("v1");
+const FilePath::CharType kDriveCacheMetaDir[] = FILE_PATH_LITERAL("meta");
+const FilePath::CharType kDriveCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
+const FilePath::CharType kDriveCacheOutgoingDir[] =
     FILE_PATH_LITERAL("outgoing");
-const FilePath::CharType kGDataCachePersistentDir[] =
+const FilePath::CharType kDriveCachePersistentDir[] =
     FILE_PATH_LITERAL("persistent");
-const FilePath::CharType kGDataCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
-const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
+const FilePath::CharType kDriveCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
+const FilePath::CharType kDriveCacheTmpDownloadsDir[] =
     FILE_PATH_LITERAL("tmp/downloads");
-const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
+const FilePath::CharType kDriveCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
 
 // Used to tweak GetAmountOfFreeDiskSpace() behavior for testing.
@@ -67,19 +67,19 @@ bool HasEnoughSpaceFor(int64 num_bytes) {
 
 // Create cache directory paths and set permissions.
 void InitCachePaths(const std::vector<FilePath>& cache_paths) {
-  if (cache_paths.size() < GDataCache::NUM_CACHE_TYPES) {
+  if (cache_paths.size() < DriveCache::NUM_CACHE_TYPES) {
     NOTREACHED();
     LOG(ERROR) << "Size of cache_paths is invalid.";
     return;
   }
 
-  if (!GDataCache::CreateCacheDirectories(cache_paths))
+  if (!DriveCache::CreateCacheDirectories(cache_paths))
     return;
 
   // Change permissions of cache persistent directory to u+rwx,og+x (711) in
   // order to allow archive files in that directory to be mounted by cros-disks.
   file_util::SetPosixFilePermissions(
-      cache_paths[GDataCache::CACHE_TYPE_PERSISTENT],
+      cache_paths[DriveCache::CACHE_TYPE_PERSISTENT],
       file_util::FILE_PERMISSION_USER_MASK |
       file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
       file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
@@ -110,25 +110,25 @@ void RemoveAllFiles(const FilePath& directory) {
 GDataFileError ModifyCacheState(
     const FilePath& source_path,
     const FilePath& dest_path,
-    GDataCache::FileOperationType file_operation_type,
+    DriveCache::FileOperationType file_operation_type,
     const FilePath& symlink_path,
     bool create_symlink) {
   // Move or copy |source_path| to |dest_path| if they are different.
   if (source_path != dest_path) {
     bool success = false;
-    if (file_operation_type == GDataCache::FILE_OPERATION_MOVE)
+    if (file_operation_type == DriveCache::FILE_OPERATION_MOVE)
       success = file_util::Move(source_path, dest_path);
-    else if (file_operation_type == GDataCache::FILE_OPERATION_COPY)
+    else if (file_operation_type == DriveCache::FILE_OPERATION_COPY)
       success = file_util::CopyFile(source_path, dest_path);
     if (!success) {
       LOG(ERROR) << "Failed to "
-                 << (file_operation_type == GDataCache::FILE_OPERATION_MOVE ?
+                 << (file_operation_type == DriveCache::FILE_OPERATION_MOVE ?
                      "move " : "copy ")
                  << source_path.value()
                  << " to " << dest_path.value();
       return GDATA_FILE_ERROR_FAILED;
     } else {
-      DVLOG(1) << (file_operation_type == GDataCache::FILE_OPERATION_MOVE ?
+      DVLOG(1) << (file_operation_type == DriveCache::FILE_OPERATION_MOVE ?
                    "Moved " : "Copied ")
                << source_path.value()
                << " to " << dest_path.value();
@@ -308,7 +308,7 @@ void RunGetCacheEntryCallback(
 
 }  // namespace
 
-GDataCache::GDataCache(const FilePath& cache_root_path,
+DriveCache::DriveCache(const FilePath& cache_root_path,
                        base::SequencedTaskRunner* blocking_task_runner)
     : cache_root_path_(cache_root_path),
       cache_paths_(GetCachePaths(cache_root_path_)),
@@ -317,18 +317,18 @@ GDataCache::GDataCache(const FilePath& cache_root_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-GDataCache::~GDataCache() {
+DriveCache::~DriveCache() {
   AssertOnSequencedWorkerPool();
 }
 
-FilePath GDataCache::GetCacheDirectoryPath(
+FilePath DriveCache::GetCacheDirectoryPath(
     CacheSubDirectoryType sub_dir_type) const {
   DCHECK_LE(0, sub_dir_type);
   DCHECK_GT(NUM_CACHE_TYPES, sub_dir_type);
   return cache_paths_[sub_dir_type];
 }
 
-FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
+FilePath DriveCache::GetCacheFilePath(const std::string& resource_id,
                                       const std::string& md5,
                                       CacheSubDirectoryType sub_dir_type,
                                       CachedFileOrigin file_origin) const {
@@ -356,26 +356,26 @@ FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
   return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
 }
 
-void GDataCache::AssertOnSequencedWorkerPool() {
+void DriveCache::AssertOnSequencedWorkerPool() {
   DCHECK(!blocking_task_runner_ ||
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
-bool GDataCache::IsUnderGDataCacheDirectory(const FilePath& path) const {
+bool DriveCache::IsUnderDriveCacheDirectory(const FilePath& path) const {
   return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
-void GDataCache::AddObserver(Observer* observer) {
+void DriveCache::AddObserver(Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void GDataCache::RemoveObserver(Observer* observer) {
+void DriveCache::RemoveObserver(Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
 
-void GDataCache::GetCacheEntryOnUIThread(
+void DriveCache::GetCacheEntryOnUIThread(
     const std::string& resource_id,
     const std::string& md5,
     const GetCacheEntryCallback& callback) {
@@ -385,7 +385,7 @@ void GDataCache::GetCacheEntryOnUIThread(
   DriveCacheEntry* cache_entry = new DriveCacheEntry;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::GetCacheEntryHelper,
+      base::Bind(&DriveCache::GetCacheEntryHelper,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -397,7 +397,7 @@ void GDataCache::GetCacheEntryOnUIThread(
                  base::Owned(cache_entry)));
 }
 
-void GDataCache::GetResourceIdsOfBacklogOnUIThread(
+void DriveCache::GetResourceIdsOfBacklogOnUIThread(
     const GetResourceIdsOfBacklogCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -405,7 +405,7 @@ void GDataCache::GetResourceIdsOfBacklogOnUIThread(
   std::vector<std::string>* to_upload = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::GetResourceIdsOfBacklog,
+      base::Bind(&DriveCache::GetResourceIdsOfBacklog,
                  base::Unretained(this),
                  to_fetch,
                  to_upload),
@@ -415,14 +415,14 @@ void GDataCache::GetResourceIdsOfBacklogOnUIThread(
                  base::Owned(to_upload)));
 }
 
-void GDataCache::GetResourceIdsOfExistingPinnedFilesOnUIThread(
+void DriveCache::GetResourceIdsOfExistingPinnedFilesOnUIThread(
     const GetResourceIdsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string>* resource_ids = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::GetResourceIdsOfExistingPinnedFiles,
+      base::Bind(&DriveCache::GetResourceIdsOfExistingPinnedFiles,
                  base::Unretained(this),
                  resource_ids),
       base::Bind(&RunGetResourceIdsCallback,
@@ -430,14 +430,14 @@ void GDataCache::GetResourceIdsOfExistingPinnedFilesOnUIThread(
                  base::Owned(resource_ids)));
 }
 
-void GDataCache::GetResourceIdsOfAllFilesOnUIThread(
+void DriveCache::GetResourceIdsOfAllFilesOnUIThread(
     const GetResourceIdsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string>* resource_ids = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::GetResourceIdsOfAllFiles,
+      base::Bind(&DriveCache::GetResourceIdsOfAllFiles,
                  base::Unretained(this),
                  resource_ids),
       base::Bind(&RunGetResourceIdsCallback,
@@ -445,7 +445,7 @@ void GDataCache::GetResourceIdsOfAllFilesOnUIThread(
                  base::Owned(resource_ids)));
 }
 
-void GDataCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
+void DriveCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
                                           bool* has_enough_space) {
   AssertOnSequencedWorkerPool();
 
@@ -459,13 +459,13 @@ void GDataCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
   // First remove temporary files from the cache map.
   metadata_->RemoveTemporaryFiles();
   // Then remove all files under "tmp" directory.
-  RemoveAllFiles(GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP));
+  RemoveAllFiles(GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP));
 
   // Check the disk space again.
   *has_enough_space = HasEnoughSpaceFor(num_bytes);
 }
 
-void GDataCache::GetFileOnUIThread(const std::string& resource_id,
+void DriveCache::GetFileOnUIThread(const std::string& resource_id,
                                    const std::string& md5,
                                    const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -475,7 +475,7 @@ void GDataCache::GetFileOnUIThread(const std::string& resource_id,
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::GetFile,
+      base::Bind(&DriveCache::GetFile,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -489,7 +489,7 @@ void GDataCache::GetFileOnUIThread(const std::string& resource_id,
                  base::Owned(cache_file_path)));
 }
 
-void GDataCache::StoreOnUIThread(const std::string& resource_id,
+void DriveCache::StoreOnUIThread(const std::string& resource_id,
                                  const std::string& md5,
                                  const FilePath& source_path,
                                  FileOperationType file_operation_type,
@@ -500,7 +500,7 @@ void GDataCache::StoreOnUIThread(const std::string& resource_id,
       new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::Store,
+      base::Bind(&DriveCache::Store,
                  base::Unretained(this),
                  resource_id,
                  md5,
@@ -514,7 +514,7 @@ void GDataCache::StoreOnUIThread(const std::string& resource_id,
                  md5));
 }
 
-void GDataCache::PinOnUIThread(const std::string& resource_id,
+void DriveCache::PinOnUIThread(const std::string& resource_id,
                                const std::string& md5,
                                const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -523,13 +523,13 @@ void GDataCache::PinOnUIThread(const std::string& resource_id,
       new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::Pin,
+      base::Bind(&DriveCache::Pin,
                  base::Unretained(this),
                  resource_id,
                  md5,
-                 GDataCache::FILE_OPERATION_MOVE,
+                 DriveCache::FILE_OPERATION_MOVE,
                  error),
-      base::Bind(&GDataCache::OnPinned,
+      base::Bind(&DriveCache::OnPinned,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(error),
                  resource_id,
@@ -537,7 +537,7 @@ void GDataCache::PinOnUIThread(const std::string& resource_id,
                  callback));
 }
 
-void GDataCache::UnpinOnUIThread(const std::string& resource_id,
+void DriveCache::UnpinOnUIThread(const std::string& resource_id,
                                  const std::string& md5,
                                  const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -545,13 +545,13 @@ void GDataCache::UnpinOnUIThread(const std::string& resource_id,
       new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::Unpin,
+      base::Bind(&DriveCache::Unpin,
                  base::Unretained(this),
                  resource_id,
                  md5,
-                 GDataCache::FILE_OPERATION_MOVE,
+                 DriveCache::FILE_OPERATION_MOVE,
                  error),
-      base::Bind(&GDataCache::OnUnpinned,
+      base::Bind(&DriveCache::OnUnpinned,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(error),
                  resource_id,
@@ -559,7 +559,7 @@ void GDataCache::UnpinOnUIThread(const std::string& resource_id,
                  callback));
 }
 
-void GDataCache::SetMountedStateOnUIThread(
+void DriveCache::SetMountedStateOnUIThread(
     const FilePath& file_path,
     bool to_mount,
     const ChangeCacheStateCallback& callback) {
@@ -570,7 +570,7 @@ void GDataCache::SetMountedStateOnUIThread(
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::SetMountedState,
+      base::Bind(&DriveCache::SetMountedState,
                  base::Unretained(this),
                  file_path,
                  to_mount,
@@ -582,7 +582,7 @@ void GDataCache::SetMountedStateOnUIThread(
                  base::Owned(cache_file_path)));
 }
 
-void GDataCache::MarkDirtyOnUIThread(const std::string& resource_id,
+void DriveCache::MarkDirtyOnUIThread(const std::string& resource_id,
                                      const std::string& md5,
                                      const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -592,11 +592,11 @@ void GDataCache::MarkDirtyOnUIThread(const std::string& resource_id,
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::MarkDirty,
+      base::Bind(&DriveCache::MarkDirty,
                  base::Unretained(this),
                  resource_id,
                  md5,
-                 GDataCache::FILE_OPERATION_MOVE,
+                 DriveCache::FILE_OPERATION_MOVE,
                  error,
                  cache_file_path),
       base::Bind(&RunGetFileFromCacheCallback,
@@ -607,7 +607,7 @@ void GDataCache::MarkDirtyOnUIThread(const std::string& resource_id,
                  base::Owned(cache_file_path)));
 }
 
-void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
+void DriveCache::CommitDirtyOnUIThread(const std::string& resource_id,
                                        const std::string& md5,
                                        const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -615,13 +615,13 @@ void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
   GDataFileError* error = new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::CommitDirty,
+      base::Bind(&DriveCache::CommitDirty,
                  base::Unretained(this),
                  resource_id,
                  md5,
-                 GDataCache::FILE_OPERATION_MOVE,
+                 DriveCache::FILE_OPERATION_MOVE,
                  error),
-      base::Bind(&GDataCache::OnCommitDirty,
+      base::Bind(&DriveCache::OnCommitDirty,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(error),
                  resource_id,
@@ -629,7 +629,7 @@ void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
                  callback));
 }
 
-void GDataCache::ClearDirtyOnUIThread(const std::string& resource_id,
+void DriveCache::ClearDirtyOnUIThread(const std::string& resource_id,
                                       const std::string& md5,
                                       const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -638,11 +638,11 @@ void GDataCache::ClearDirtyOnUIThread(const std::string& resource_id,
       new GDataFileError(GDATA_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::ClearDirty,
+      base::Bind(&DriveCache::ClearDirty,
                  base::Unretained(this),
                  resource_id,
                  md5,
-                 GDataCache::FILE_OPERATION_MOVE,
+                 DriveCache::FILE_OPERATION_MOVE,
                  error),
       base::Bind(&RunCacheOperationCallback,
                  callback,
@@ -651,7 +651,7 @@ void GDataCache::ClearDirtyOnUIThread(const std::string& resource_id,
                  md5));
 }
 
-void GDataCache::RemoveOnUIThread(const std::string& resource_id,
+void DriveCache::RemoveOnUIThread(const std::string& resource_id,
                                   const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -660,7 +660,7 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
 
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::Remove,
+      base::Bind(&DriveCache::Remove,
                  base::Unretained(this),
                  resource_id,
                  error),
@@ -671,14 +671,14 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
                  ""  /* md5 */));
 }
 
-void GDataCache::ClearAllOnUIThread(const ChangeCacheStateCallback& callback) {
+void DriveCache::ClearAllOnUIThread(const ChangeCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataFileError* error = new GDataFileError(GDATA_FILE_OK);
 
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataCache::ClearAll,
+      base::Bind(&DriveCache::ClearAll,
                  base::Unretained(this),
                  error),
       base::Bind(&RunChangeCacheStateCallback,
@@ -687,31 +687,31 @@ void GDataCache::ClearAllOnUIThread(const ChangeCacheStateCallback& callback) {
                  &cache_root_path_));
 }
 
-void GDataCache::RequestInitializeOnUIThread() {
+void DriveCache::RequestInitializeOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GDataCache::Initialize, base::Unretained(this)));
+      base::Bind(&DriveCache::Initialize, base::Unretained(this)));
 }
 
-void GDataCache::RequestInitializeOnUIThreadForTesting() {
+void DriveCache::RequestInitializeOnUIThreadForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GDataCache::InitializeForTesting, base::Unretained(this)));
+      base::Bind(&DriveCache::InitializeForTesting, base::Unretained(this)));
 }
 
-void GDataCache::ForceRescanOnUIThreadForTesting() {
+void DriveCache::ForceRescanOnUIThreadForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GDataCache::ForceRescanForTesting, base::Unretained(this)));
+      base::Bind(&DriveCache::ForceRescanForTesting, base::Unretained(this)));
 }
 
-bool GDataCache::GetCacheEntry(const std::string& resource_id,
+bool DriveCache::GetCacheEntry(const std::string& resource_id,
                                const std::string& md5,
                                DriveCacheEntry* entry) {
   DCHECK(entry);
@@ -720,14 +720,14 @@ bool GDataCache::GetCacheEntry(const std::string& resource_id,
 }
 
 // static
-GDataCache* GDataCache::CreateGDataCacheOnUIThread(
+DriveCache* DriveCache::CreateDriveCacheOnUIThread(
     const FilePath& cache_root_path,
     base::SequencedTaskRunner* blocking_task_runner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new GDataCache(cache_root_path, blocking_task_runner);
+  return new DriveCache(cache_root_path, blocking_task_runner);
 }
 
-void GDataCache::DestroyOnUIThread() {
+void DriveCache::DestroyOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Invalidate the weak pointer.
@@ -736,39 +736,39 @@ void GDataCache::DestroyOnUIThread() {
   // Destroy myself on the blocking pool.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GDataCache::Destroy,
+      base::Bind(&DriveCache::Destroy,
                  base::Unretained(this)));
 }
 
-void GDataCache::Initialize() {
+void DriveCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
   InitCachePaths(cache_paths_);
-  metadata_ = GDataCacheMetadata::CreateGDataCacheMetadata(
+  metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(
       blocking_task_runner_).Pass();
   metadata_->Initialize(cache_paths_);
 }
 
-void GDataCache::InitializeForTesting() {
+void DriveCache::InitializeForTesting() {
   AssertOnSequencedWorkerPool();
 
   InitCachePaths(cache_paths_);
-  metadata_ = GDataCacheMetadata::CreateGDataCacheMetadataForTesting(
+  metadata_ = DriveCacheMetadata::CreateDriveCacheMetadataForTesting(
       blocking_task_runner_).Pass();
   metadata_->Initialize(cache_paths_);
 }
 
-void GDataCache::Destroy() {
+void DriveCache::Destroy() {
   AssertOnSequencedWorkerPool();
   delete this;
 }
 
-void GDataCache::ForceRescanForTesting() {
+void DriveCache::ForceRescanForTesting() {
   AssertOnSequencedWorkerPool();
   metadata_->ForceRescanForTesting(cache_paths_);
 }
 
-void GDataCache::GetResourceIdsOfBacklog(
+void DriveCache::GetResourceIdsOfBacklog(
     std::vector<std::string>* to_fetch,
     std::vector<std::string>* to_upload) {
   AssertOnSequencedWorkerPool();
@@ -778,7 +778,7 @@ void GDataCache::GetResourceIdsOfBacklog(
   metadata_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload));
 }
 
-void GDataCache::GetResourceIdsOfExistingPinnedFiles(
+void DriveCache::GetResourceIdsOfExistingPinnedFiles(
     std::vector<std::string>* resource_ids) {
   AssertOnSequencedWorkerPool();
   DCHECK(resource_ids);
@@ -786,7 +786,7 @@ void GDataCache::GetResourceIdsOfExistingPinnedFiles(
   metadata_->Iterate(base::Bind(&CollectExistingPinnedFile, resource_ids));
 }
 
-void GDataCache::GetResourceIdsOfAllFiles(
+void DriveCache::GetResourceIdsOfAllFiles(
     std::vector<std::string>* resource_ids) {
   AssertOnSequencedWorkerPool();
   DCHECK(resource_ids);
@@ -794,7 +794,7 @@ void GDataCache::GetResourceIdsOfAllFiles(
   metadata_->Iterate(base::Bind(&CollectAnyFile, resource_ids));
 }
 
-void GDataCache::GetFile(const std::string& resource_id,
+void DriveCache::GetFile(const std::string& resource_id,
                          const std::string& md5,
                          GDataFileError* error,
                          FilePath* cache_file_path) {
@@ -824,7 +824,7 @@ void GDataCache::GetFile(const std::string& resource_id,
   }
 }
 
-void GDataCache::Store(const std::string& resource_id,
+void DriveCache::Store(const std::string& resource_id,
                        const std::string& md5,
                        const FilePath& source_path,
                        FileOperationType file_operation_type,
@@ -921,7 +921,7 @@ void GDataCache::Store(const std::string& resource_id,
   }
 }
 
-void GDataCache::Pin(const std::string& resource_id,
+void DriveCache::Pin(const std::string& resource_id,
                      const std::string& md5,
                      FileOperationType file_operation_type,
                      GDataFileError* error) {
@@ -1008,7 +1008,7 @@ void GDataCache::Pin(const std::string& resource_id,
   }
 }
 
-void GDataCache::Unpin(const std::string& resource_id,
+void DriveCache::Unpin(const std::string& resource_id,
                        const std::string& md5,
                        FileOperationType file_operation_type,
                        GDataFileError* error) {
@@ -1093,7 +1093,7 @@ void GDataCache::Unpin(const std::string& resource_id,
   }
 }
 
-void GDataCache::SetMountedState(const FilePath& file_path,
+void DriveCache::SetMountedState(const FilePath& file_path,
                                  bool to_mount,
                                  GDataFileError *error,
                                  FilePath* cache_file_path) {
@@ -1157,7 +1157,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   }
 }
 
-void GDataCache::MarkDirty(const std::string& resource_id,
+void DriveCache::MarkDirty(const std::string& resource_id,
                            const std::string& md5,
                            FileOperationType file_operation_type,
                            GDataFileError* error,
@@ -1262,7 +1262,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   }
 }
 
-void GDataCache::CommitDirty(const std::string& resource_id,
+void DriveCache::CommitDirty(const std::string& resource_id,
                              const std::string& md5,
                              FileOperationType file_operation_type,
                              GDataFileError* error) {
@@ -1321,7 +1321,7 @@ void GDataCache::CommitDirty(const std::string& resource_id,
                             true /* create symlink */);
 }
 
-void GDataCache::ClearDirty(const std::string& resource_id,
+void DriveCache::ClearDirty(const std::string& resource_id,
                             const std::string& md5,
                             FileOperationType file_operation_type,
                             GDataFileError* error) {
@@ -1410,7 +1410,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
   }
 }
 
-void GDataCache::Remove(const std::string& resource_id,
+void DriveCache::Remove(const std::string& resource_id,
                         GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -1473,7 +1473,7 @@ void GDataCache::Remove(const std::string& resource_id,
   *error = GDATA_FILE_OK;
 }
 
-void GDataCache::ClearAll(GDataFileError* error) {
+void DriveCache::ClearAll(GDataFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1483,7 +1483,7 @@ void GDataCache::ClearAll(GDataFileError* error) {
   *error = success ? GDATA_FILE_OK : GDATA_FILE_ERROR_FAILED;
 }
 
-void GDataCache::OnPinned(GDataFileError* error,
+void DriveCache::OnPinned(GDataFileError* error,
                           const std::string& resource_id,
                           const std::string& md5,
                           const CacheOperationCallback& callback) {
@@ -1497,7 +1497,7 @@ void GDataCache::OnPinned(GDataFileError* error,
     FOR_EACH_OBSERVER(Observer, observers_, OnCachePinned(resource_id, md5));
 }
 
-void GDataCache::OnUnpinned(GDataFileError* error,
+void DriveCache::OnUnpinned(GDataFileError* error,
                             const std::string& resource_id,
                             const std::string& md5,
                             const CacheOperationCallback& callback) {
@@ -1515,13 +1515,13 @@ void GDataCache::OnUnpinned(GDataFileError* error,
   bool* has_enough_space = new bool(false);
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
+      base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(this),
                  0,
                  base::Owned(has_enough_space)));
 }
 
-void GDataCache::OnCommitDirty(GDataFileError* error,
+void DriveCache::OnCommitDirty(GDataFileError* error,
                                const std::string& resource_id,
                                const std::string& md5,
                                const CacheOperationCallback& callback) {
@@ -1535,7 +1535,7 @@ void GDataCache::OnCommitDirty(GDataFileError* error,
     FOR_EACH_OBSERVER(Observer, observers_, OnCacheCommitted(resource_id));
 }
 
-void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
+void DriveCache::GetCacheEntryHelper(const std::string& resource_id,
                                      const std::string& md5,
                                      bool* success,
                                      DriveCacheEntry* cache_entry) {
@@ -1547,31 +1547,31 @@ void GDataCache::GetCacheEntryHelper(const std::string& resource_id,
 }
 
 // static
-FilePath GDataCache::GetCacheRootPath(Profile* profile) {
+FilePath DriveCache::GetCacheRootPath(Profile* profile) {
   FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
   FilePath cache_root_path =
-      cache_base_path.Append(chrome::kGDataCacheDirname);
-  return cache_root_path.Append(kGDataCacheVersionDir);
+      cache_base_path.Append(chrome::kDriveCacheDirname);
+  return cache_root_path.Append(kDriveCacheVersionDir);
 }
 
 // static
-std::vector<FilePath> GDataCache::GetCachePaths(
+std::vector<FilePath> DriveCache::GetCachePaths(
     const FilePath& cache_root_path) {
   std::vector<FilePath> cache_paths;
-  // The order should match GDataCache::CacheSubDirectoryType enum.
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheMetaDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCachePinnedDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheOutgoingDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCachePersistentDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDownloadsDir));
-  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDocumentsDir));
+  // The order should match DriveCache::CacheSubDirectoryType enum.
+  cache_paths.push_back(cache_root_path.Append(kDriveCacheMetaDir));
+  cache_paths.push_back(cache_root_path.Append(kDriveCachePinnedDir));
+  cache_paths.push_back(cache_root_path.Append(kDriveCacheOutgoingDir));
+  cache_paths.push_back(cache_root_path.Append(kDriveCachePersistentDir));
+  cache_paths.push_back(cache_root_path.Append(kDriveCacheTmpDir));
+  cache_paths.push_back(cache_root_path.Append(kDriveCacheTmpDownloadsDir));
+  cache_paths.push_back(cache_root_path.Append(kDriveCacheTmpDocumentsDir));
   return cache_paths;
 }
 
 // static
-bool GDataCache::CreateCacheDirectories(
+bool DriveCache::CreateCacheDirectories(
     const std::vector<FilePath>& paths_to_create) {
   bool success = true;
 
@@ -1591,7 +1591,7 @@ bool GDataCache::CreateCacheDirectories(
 }
 
 // static
-GDataCache::CacheSubDirectoryType GDataCache::GetSubDirectoryType(
+DriveCache::CacheSubDirectoryType DriveCache::GetSubDirectoryType(
     const DriveCacheEntry& cache_entry) {
   return cache_entry.is_persistent() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
 }
