@@ -107,13 +107,13 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   TestURLRequestContext context;
   TestDelegate delegate;
-  TestURLRequest url_request(test_server.GetURL("headers.html"),
+  TestURLRequest url_request(test_server.GetURL("files/headers.html"),
                                                 &delegate, &context);
   url_request.Start();
   MessageLoop::current()->Run();
 
   ListValue content_types;
-  content_types.Append(Value::CreateStringValue("text/html"));
+  content_types.Append(Value::CreateStringValue("text/plain"));
   scoped_ptr<WebRequestConditionAttribute> attribute_include =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);

@@ -104,7 +104,7 @@ runTests([
                  'schemes': ["http"]
              },
              'resourceType': ["main_frame"],
-             'contentType': ["text/html"],
+             'contentType': ["text/plain"],
              'excludeContentType': ["image/png"]})],
          'actions': [new CancelRequest()]}
       ],
