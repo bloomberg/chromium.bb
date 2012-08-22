@@ -72,15 +72,11 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   CheckChromeVersion(profile.get(), true);
 }
 
-#if defined(OS_WIN)
-#define MAYBE_CreateOldProfileSynchronous DISABLED_CreateOldProfileSynchronous
-#else
-#define MAYBE_CreateOldProfileSynchronous CreateOldProfileSynchronous
-#endif
-
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile synchronously with an existing prefs file.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_CreateOldProfileSynchronous) {
+// Flaky: http://crbug.com/141517
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateOldProfileSynchronous) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
@@ -115,15 +111,11 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
   CheckChromeVersion(profile.get(), true);
 }
 
-#if defined(OS_WIN)
-#define MAYBE_CreateOldProfileAsynchronous DISABLED_CreateOldProfileAsynchronous
-#else
-#define MAYBE_CreateOldProfileAsynchronous CreateOldProfileAsynchronous
-#endif
-
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile asynchronously with an existing prefs file.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_CreateOldProfileAsynchronous) {
+// Flaky: http://crbug.com/141517
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateOldProfileAsynchronous) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.path());
