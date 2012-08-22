@@ -377,7 +377,7 @@ int NetworkMenuModel::GetGroupIdAt(int index) const {
 }
 
 bool NetworkMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
-  if (!menu_items_[index].icon.empty()) {
+  if (!menu_items_[index].icon.isNull()) {
     *icon = menu_items_[index].icon;
     return true;
   }

@@ -285,7 +285,7 @@ void ChangePictureOptionsHandler::UpdateProfileImage() {
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
   if (previous_image_index_ != User::kProfileImageIndex &&
-      !user_manager->DownloadedProfileImage().empty())
+      !user_manager->DownloadedProfileImage().isNull())
     SendProfileImage(user_manager->DownloadedProfileImage(), false);
 
   user_manager->DownloadProfileImage(kProfileDownloadReason);
@@ -315,7 +315,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     // this URL, too.
 
     if (previous_image_index_ == User::kExternalImageIndex) {
-      DCHECK(!previous_image_.empty());
+      DCHECK(!previous_image_.isNull());
       user_manager->SaveUserImage(user.email(),
                                   UserImage::CreateAndEncode(previous_image_));
     } else {
@@ -339,7 +339,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     VLOG(1) << "Selected default user image: " << image_index;
   } else if (image_url == user_photo_data_url_) {
     // Camera image is selected.
-    if (user_photo_.empty()) {
+    if (user_photo_.isNull()) {
       DCHECK(image_decoder_.get());
       waiting_for_camera_photo = true;
       VLOG(1) << "Still waiting for camera image to decode";

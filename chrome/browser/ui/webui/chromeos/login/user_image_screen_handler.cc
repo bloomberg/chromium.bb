@@ -268,7 +268,7 @@ void UserImageScreenHandler::HandleImageAccepted(const base::ListValue* args) {
   switch (selected_image_) {
     case User::kExternalImageIndex:
       // Photo decoding may not have been finished yet.
-      if (user_photo_.empty())
+      if (user_photo_.isNull())
         accept_photo_after_decoding_ = true;
       else
         screen_->OnPhotoTaken(user_photo_);

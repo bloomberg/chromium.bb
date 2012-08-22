@@ -97,9 +97,6 @@ class UI_EXPORT ImageSkia {
   std::vector<ImageSkiaRep> GetRepresentations() const;
 #endif  // OS_MACOSX
 
-  // Returns true if object is null or its size is empty.
-  bool empty() const;
-
   // Returns true if this is a null object.
   // TODO(pkotwicz): Merge this function into empty().
   bool isNull() const { return storage_ == NULL; }
@@ -108,11 +105,6 @@ class UI_EXPORT ImageSkia {
   int width() const;
   int height() const;
   gfx::Size size() const;
-
-  // Wrapper function for SkBitmap::extractBitmap.
-  // Deprecated, use ImageSkiaOperations::ExtractSubset instead.
-  // TODO(pkotwicz): Remove this function.
-  bool extractSubset(ImageSkia* dst, const SkIRect& subset) const;
 
   // Returns pointer to 1x bitmap contained by this object. If there is no 1x
   // bitmap, the bitmap whose scale factor is closest to 1x is returned.

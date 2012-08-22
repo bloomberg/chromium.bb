@@ -133,7 +133,7 @@ BalloonHost* BalloonViewAsh::GetHost() const {
 }
 
 void BalloonViewAsh::FetchIcon(const Notification& notification) {
-  if (!notification.icon().empty()) {
+  if (!notification.icon().isNull()) {
     ash::Shell::GetInstance()->status_area_widget()->
         web_notification_tray()->SetNotificationImage(
             notification.notification_id(), notification.icon());

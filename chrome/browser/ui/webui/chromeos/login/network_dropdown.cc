@@ -164,7 +164,7 @@ void NetworkDropdown::SetNetworkIconAndText() {
   SkBitmap icon_bitmap = icon_image.GetRepresentation(
       ui::GetScaleFactorFromScale(web_ui_->GetDeviceScale())).sk_bitmap();
   std::string icon_str =
-      icon_image.empty() ?
+      icon_image.isNull() ?
           std::string() : web_ui_util::GetImageDataUrl(icon_bitmap);
   base::StringValue title(text);
   base::StringValue icon(icon_str);

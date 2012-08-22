@@ -237,10 +237,6 @@ std::vector<ImageSkiaRep> ImageSkia::GetRepresentations() const {
 
 #endif  // OS_MACOSX
 
-bool ImageSkia::empty() const {
-  return isNull() || storage_->size().IsEmpty();
-}
-
 int ImageSkia::width() const {
   return isNull() ? 0 : storage_->size().width();
 }
@@ -251,12 +247,6 @@ gfx::Size ImageSkia::size() const {
 
 int ImageSkia::height() const {
   return isNull() ? 0 : storage_->size().height();
-}
-
-bool ImageSkia::extractSubset(ImageSkia* dst, const SkIRect& subset) const {
-  gfx::Rect rect(subset.x(), subset.y(), subset.width(), subset.height());
-  *dst = ImageSkiaOperations::ExtractSubset(*this, rect);
-  return (!dst->isNull());
 }
 
 std::vector<ImageSkiaRep> ImageSkia::image_reps() const {

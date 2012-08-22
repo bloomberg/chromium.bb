@@ -186,7 +186,7 @@ void AppListItemView::UpdateIcon() {
 
   gfx::ImageSkia icon = model_->icon();
   // Clear icon and bail out if model icon is empty.
-  if (icon.empty()) {
+  if (icon.isNull()) {
     icon_->SetImage(NULL);
     return;
   }

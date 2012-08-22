@@ -305,7 +305,7 @@ void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
 gfx::Image ExtensionAction::GetIcon(int tab_id) const {
   // Check if a specific icon is set for this tab.
   gfx::ImageSkia icon = GetValue(&icon_, tab_id);
-  if (icon.empty()) {
+  if (icon.isNull()) {
     // Need to find an icon from a path.
     const std::string* path = NULL;
     // Check if one of the elements of icon_path() was selected.

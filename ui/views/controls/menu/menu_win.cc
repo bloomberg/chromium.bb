@@ -401,7 +401,7 @@ void MenuWin::AddMenuItemInternal(int index,
                                   MenuItemType type) {
   DCHECK(type != SEPARATOR) << "Call AddSeparator instead!";
 
-  if (!owner_draw_ && !icon.empty())
+  if (!owner_draw_ && !icon.isNull())
     owner_draw_ = true;
 
   if (label.empty() && !delegate()) {

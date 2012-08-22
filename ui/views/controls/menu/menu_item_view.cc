@@ -224,7 +224,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(int index,
     item->SetTitle(GetDelegate()->GetLabel(item_id));
   else
     item->SetTitle(label);
-  if (!icon.empty())
+  if (!icon.isNull())
     item->SetIcon(icon);
   if (type == SUBMENU)
     item->CreateSubmenu();
@@ -366,7 +366,7 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 }
 
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
-  if (icon.empty()) {
+  if (icon.isNull()) {
     SetIconView(NULL);
     return;
   }

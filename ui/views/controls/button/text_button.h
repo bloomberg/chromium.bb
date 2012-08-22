@@ -323,7 +323,7 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   virtual void SetHoverIcon(const gfx::ImageSkia& icon);
   virtual void SetPushedIcon(const gfx::ImageSkia& icon);
 
-  bool HasIcon() const { return !icon_.empty(); }
+  bool HasIcon() const { return !icon_.isNull(); }
 
   // Meanings are reversed for right-to-left layouts.
   enum IconPlacement {

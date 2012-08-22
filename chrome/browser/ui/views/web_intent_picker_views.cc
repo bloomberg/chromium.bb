@@ -39,6 +39,7 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/text_button.h"
@@ -219,9 +220,8 @@ const gfx::ImageSkia& ThrobberNativeTextButton::GetImageToPaint() const {
   const int image_size = frames_->height();
   const int image_offset = current_frame * image_size;
 
-  SkIRect subset_rect = SkIRect::MakeXYWH(image_offset, 0,
-                                          image_size, image_size);
-  frames_->extractSubset(&this_frame_, subset_rect);
+  gfx::Rect subset_rect(image_offset, 0, image_size, image_size);
+  this_frame_ = gfx::ImageSkiaOperations::ExtractSubset(*frames_, subset_rect);
   return this_frame_;
 }
 

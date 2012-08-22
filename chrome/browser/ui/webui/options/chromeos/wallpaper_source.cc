@@ -133,7 +133,7 @@ void WallpaperImageSource::GetCurrentUserWallpaper(int request_id) {
     SkBitmap wallpaper;
     gfx::ImageSkia wallpaper_skia = ash::Shell::GetInstance()->
         desktop_background_controller()->GetCurrentWallpaperImage();
-    if (!wallpaper_skia.empty())
+    if (!wallpaper_skia.isNull())
       wallpaper = *wallpaper_skia.bitmap();
     SkBitmap copy;
     if (wallpaper.deepCopyTo(&copy, wallpaper.config()))

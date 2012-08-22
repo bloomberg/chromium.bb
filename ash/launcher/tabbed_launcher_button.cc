@@ -58,8 +58,8 @@ void TabbedLauncherButton::IconView::AnimationProgressed(
 }
 
 void TabbedLauncherButton::IconView::SetTabImage(const gfx::ImageSkia& image) {
-  if (image.empty()) {
-    if (!image_.empty()) {
+  if (image.isNull()) {
+    if (!image_.isNull()) {
       // Pause for 500ms, then ease out for 200ms.
       ui::MultiAnimation::Parts animation_parts;
       animation_parts.push_back(ui::MultiAnimation::Part(500, ui::Tween::ZERO));

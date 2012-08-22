@@ -372,7 +372,7 @@ void ImageLoadingTracker::OnBitmapLoaded(
     gfx::Image image;
     std::string extension_id = info->extension_id;
 
-    if (!info->image_skia.empty())
+    if (!info->image_skia.isNull())
       image = gfx::Image(info->image_skia);
 
     load_map_.erase(load_map_it);

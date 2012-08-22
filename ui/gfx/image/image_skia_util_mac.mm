@@ -70,7 +70,7 @@ gfx::ImageSkia ImageSkiaFromResizedNSImage(NSImage* image,
 
     SkBitmap bitmap(gfx::NSImageRepToSkBitmap(ns_image_rep,
         desired_size_for_scale, false));
-    if (bitmap.isNull() || bitmap.empty())
+    if (bitmap.isNull())
       continue;
 
     image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap,
@@ -86,7 +86,7 @@ gfx::ImageSkia ApplicationIconAtSize(int desired_size) {
 }
 
 NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
-  if (image_skia.empty())
+  if (image_skia.isNull())
     return nil;
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);
@@ -104,7 +104,7 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
 
 NSImage* NSImageFromImageSkiaWithColorSpace(const gfx::ImageSkia& image_skia,
                                             CGColorSpaceRef color_space) {
-  if (image_skia.empty())
+  if (image_skia.isNull())
     return nil;
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);

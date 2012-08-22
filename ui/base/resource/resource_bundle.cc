@@ -46,7 +46,7 @@ const int kLargeFontSizeDelta = 8;
 ui::ScaleFactor GetActualScaleFactor(const gfx::ImageSkia& image,
                                      const SkBitmap& bitmap,
                                      ui::ScaleFactor data_pack_scale_factor) {
-  if (image.empty())
+  if (image.isNull())
     return data_pack_scale_factor;
 
   return ui::GetScaleFactorFromScale(
@@ -326,7 +326,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
       }
     }
 
-    if (image_skia.empty()) {
+    if (image_skia.isNull()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.
       // The load failed to retrieve the image; show a debugging red square.

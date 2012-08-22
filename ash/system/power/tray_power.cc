@@ -24,6 +24,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/text_button.h"
@@ -126,7 +127,6 @@ TrayPower::~TrayPower() {
 gfx::ImageSkia TrayPower::GetBatteryImage(
     const PowerSupplyStatus& supply_status,
     IconSet icon_set) {
-  gfx::ImageSkia image;
   gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       icon_set == ICON_DARK ?
       IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
@@ -145,12 +145,11 @@ gfx::ImageSkia TrayPower::GetBatteryImage(
 
   // TODO(mbolohan): Remove the 2px offset when the assets are centered. See
   // crbug.com/119832.
-  SkIRect region = SkIRect::MakeXYWH(
+  gfx::Rect region(
       (supply_status.line_power_on ? kBatteryImageWidth : 0) + 2,
       image_index * kBatteryImageHeight,
       kBatteryImageWidth - 2, kBatteryImageHeight);
-  all.ToImageSkia()->extractSubset(&image, region);
-  return image;
+  return gfx::ImageSkiaOperations::ExtractSubset(*all.ToImageSkia(), region);
 }
 
 views::View* TrayPower::CreateTrayView(user::LoginStatus status) {

@@ -211,7 +211,7 @@ void SearchResultView::OnIconChanged() {
   // looks nicer to keep the stale icon for a little while on screen instead of
   // clearing it out. It should work correctly as long as the SearchResult does
   // not forget to SetIcon when it's ready.
-  if (image.empty())
+  if (image.isNull())
     return;
 
   // Scales down big icons but leave small ones unchanged.

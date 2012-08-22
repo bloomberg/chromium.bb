@@ -252,20 +252,22 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     }
     // Update the icon for extension panels.
     SkBitmap new_image = favicon_loader_->GetFavicon();
-    if (new_image.empty() && tab->extension_tab_helper()->GetExtensionAppIcon())
+    if (new_image.isNull() &&
+        tab->extension_tab_helper()->GetExtensionAppIcon()) {
       new_image = *tab->extension_tab_helper()->GetExtensionAppIcon();
+    }
     // Only update the icon if we have a new image, or none has been set yet.
     // This avoids flickering to an empty image when a pinned app is opened.
-    if (!new_image.empty())
+    if (!new_image.isNull())
       item.image = new_image;
-    else if (item.image.empty())
+    else if (item.image.isNull())
       item.image = extensions::Extension::GetDefaultIcon(true);
   } else {
     DCHECK_EQ(TYPE_TABBED, type());
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
       item.image = tab->favicon_tab_helper()->GetFavicon().AsBitmap();
-      if (item.image.empty()) {
+      if (item.image.isNull()) {
         item.image = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }
     } else {

@@ -146,7 +146,7 @@ void LauncherButton::SetShadowedImage(const gfx::ImageSkia& image) {
 }
 
 void LauncherButton::SetImage(const gfx::ImageSkia& image) {
-  if (image.empty()) {
+  if (image.isNull()) {
     // TODO: need an empty image.
     icon_view_->SetImage(image);
     return;

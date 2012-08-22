@@ -26,7 +26,7 @@ TEST_F(ImageButtonTest, Basics) {
   ImageButton button(NULL);
 
   // Our image to paint starts empty.
-  EXPECT_TRUE(button.GetImageToPaint().empty());
+  EXPECT_TRUE(button.GetImageToPaint().isNull());
 
   // Without a theme, buttons are 16x14 by default.
   EXPECT_EQ("16x14", button.GetPreferredSize().ToString());
@@ -40,7 +40,7 @@ TEST_F(ImageButtonTest, Basics) {
   button.SetImage(CustomButton::BS_NORMAL, &normal_image);
 
   // Image uses normal image for painting.
-  EXPECT_FALSE(button.GetImageToPaint().empty());
+  EXPECT_FALSE(button.GetImageToPaint().isNull());
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
 
@@ -56,7 +56,7 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
 
   // We're still painting the normal image.
-  EXPECT_FALSE(button.GetImageToPaint().empty());
+  EXPECT_FALSE(button.GetImageToPaint().isNull());
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
 
@@ -71,13 +71,13 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
 
   // We're still painting the normal image.
-  EXPECT_FALSE(button.GetImageToPaint().empty());
+  EXPECT_FALSE(button.GetImageToPaint().isNull());
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
 
   // Reset the overlay image.
   button.SetOverlayImage(NULL);
-  EXPECT_TRUE(button.overlay_image_.empty());
+  EXPECT_TRUE(button.overlay_image_.isNull());
 }
 
 }  // namespace views

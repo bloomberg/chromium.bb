@@ -24,7 +24,7 @@ bool IsAnimatedImage(const UserImage::RawImage& data) {
 bool EncodeBGRAImageSkia(const gfx::ImageSkia& image,
                          bool discard_transparency,
                          std::vector<unsigned char>* output) {
-  if (image.empty() || !image.bitmap())
+  if (image.isNull() || !image.bitmap())
     return false;
   return gfx::PNGCodec::EncodeBGRASkBitmap(*image.bitmap(),
       discard_transparency, output);

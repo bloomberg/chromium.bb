@@ -561,7 +561,7 @@ void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
 void UserManagerImpl::SaveUserImageFromProfileImage(
     const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!downloaded_profile_image_.empty()) {
+  if (!downloaded_profile_image_.isNull()) {
     // Profile image has already been downloaded, so save it to file right now.
     DCHECK(profile_image_url_.is_valid());
     SaveUserImageInternal(
@@ -974,7 +974,7 @@ void UserManagerImpl::SetUserImage(const std::string& username,
     DCHECK(user->image_index() != User::kInvalidImageIndex ||
            is_current_user_new_);
     bool image_changed = user->image_index() != User::kInvalidImageIndex;
-    if (!user_image.image().empty())
+    if (!user_image.image().isNull())
       user->SetImage(user_image, image_index);
     else
       user->SetStubImage(image_index);
@@ -1111,7 +1111,7 @@ bool UserManagerImpl::SaveBitmapToFile(const UserImage& user_image,
 void UserManagerImpl::InitDownloadedProfileImage() {
   DCHECK(logged_in_user_);
   DCHECK_EQ(logged_in_user_->image_index(), User::kProfileImageIndex);
-  if (downloaded_profile_image_.empty() && !logged_in_user_->image_is_stub()) {
+  if (downloaded_profile_image_.isNull() && !logged_in_user_->image_is_stub()) {
     VLOG(1) << "Profile image initialized";
     downloaded_profile_image_ = logged_in_user_->image();
     downloaded_profile_image_data_url_ =

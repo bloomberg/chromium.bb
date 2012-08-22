@@ -280,7 +280,7 @@ std::string DesktopNotificationService::AddIconNotification(
   }
 #endif
   GURL icon_url;
-  if (!icon.empty())
+  if (!icon.isNull())
     icon_url = GURL(web_ui_util::GetImageDataUrl(icon));
   return AddNotification(
       origin_url, title, message, icon_url, replace_id, delegate, profile);

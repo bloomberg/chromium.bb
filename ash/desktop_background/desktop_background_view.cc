@@ -153,7 +153,7 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   DesktopBackgroundView* view = new DesktopBackgroundView();
   params.delegate = view;
-  if (controller->GetWallpaper().empty())
+  if (controller->GetWallpaper().isNull())
     params.transparent = true;
   params.parent = root_window->GetChildById(container_id);
   desktop_widget->Init(params);

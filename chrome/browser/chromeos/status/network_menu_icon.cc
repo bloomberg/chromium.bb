@@ -421,7 +421,7 @@ void NetworkIcon::Update() {
   }
 
   // Determine whether or not we need to update the icon.
-  bool dirty = image_.empty();
+  bool dirty = image_.isNull();
 
   // If the network state has changed, the icon needs updating.
   if (state_ != network->state()) {
@@ -561,7 +561,7 @@ void NetworkIcon::UpdateIcon(const Network* network) {
 }
 
 void NetworkIcon::GenerateImage() {
-  if (icon_.empty())
+  if (icon_.isNull())
     return;
 
   image_ = NetworkMenuIcon::GenerateImageFromComponents(icon_, top_left_badge_,
