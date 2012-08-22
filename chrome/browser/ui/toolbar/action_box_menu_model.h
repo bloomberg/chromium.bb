@@ -23,14 +23,25 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
                            public ui::SimpleMenuModel::Delegate,
                            public content::NotificationObserver {
  public:
-  ActionBoxMenuModel(Browser* browser, ExtensionService* extension_service);
+  // |starred| - true when the current page is bookmarked and thus the star icon
+  // should be drawn in the "starred" rather than "unstarred" state.
+  ActionBoxMenuModel(Browser* browser,
+                     ExtensionService* extension_service,
+                     bool starred);
   virtual ~ActionBoxMenuModel();
 
+  // Returns true if item associated with an extension.
+  bool IsItemExtension(int index);
+
+  // Returns an extension associated with model item at |index|
+  // or NULL if it is not an extension item.
+  const extensions::Extension* GetExtensionAt(int index);
+
+ private:
   const extensions::ExtensionList& action_box_menu_items() {
     return extension_service_->toolbar_model()->action_box_menu_items();
   }
 
- private:
   typedef std::map<int, std::string> IdToEntensionIdMap;
 
   // Overridden from ui::SimpleMenuModel::Delegate:

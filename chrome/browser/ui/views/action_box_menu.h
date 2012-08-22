@@ -28,9 +28,7 @@ class ActionBoxMenu : public views::MenuDelegate,
                       public BrowserActionView::Delegate,
                       public content::NotificationObserver {
  public:
-  ActionBoxMenu(Browser* browser,
-                ActionBoxMenuModel* model,
-                bool starred);
+  ActionBoxMenu(Browser* browser, ActionBoxMenuModel* model);
   virtual ~ActionBoxMenu();
 
   void Init();
@@ -65,10 +63,6 @@ class ActionBoxMenu : public views::MenuDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Adds a new bookmark menu item to the menu, |next_id| is incremented.
-  views::MenuItemView* AddBookmarkMenuItem(views::MenuItemView* parent,
-                                           int* next_id);
-
   // Populates |root_| with all the child menu items from the |model_|.
   void PopulateMenu();
 
@@ -81,12 +75,6 @@ class ActionBoxMenu : public views::MenuDelegate,
 
   // The model that tracks the order of the toolbar icons.
   ActionBoxMenuModel* model_;
-
-  // Set when the current page is bookmarked and thus the star icon should be
-  // drawn in the "starred" rather than "unstarred" state.
-  bool starred_;
-
-  ScopedVector<BrowserActionView> browser_action_views_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxMenu);
 };

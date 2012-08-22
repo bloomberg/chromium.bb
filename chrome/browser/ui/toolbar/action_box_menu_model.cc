@@ -25,7 +25,8 @@ const int kFirstExtensionCommandId = 0xE000;
 // ActionBoxMenuModel
 
 ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
-                                       ExtensionService* extension_service)
+                                       ExtensionService* extension_service,
+                                       bool starred)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       browser_(browser),
       extension_service_(extension_service) {
@@ -33,8 +34,9 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
   InsertItemWithStringIdAt(0, IDC_CHROME_TO_MOBILE_PAGE,
                            IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
   SetIcon(0, *rb.GetImageSkiaNamed(IDR_MOBILE));
-  InsertItemWithStringIdAt(1, IDC_BOOKMARK_PAGE, IDS_BOOKMARK_STAR);
-  SetIcon(1, *rb.GetImageSkiaNamed(IDR_STAR));
+  InsertItemWithStringIdAt(1, IDC_BOOKMARK_PAGE,
+                           starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
+  SetIcon(1, *rb.GetImageSkiaNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 
   // Adds extensions to the model.
   int command_id = kFirstExtensionCommandId;
@@ -52,6 +54,24 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
 ActionBoxMenuModel::~ActionBoxMenuModel() {
   // Ensures parent destructor does not use a partially destroyed delegate.
   set_delegate(NULL);
+}
+
+bool ActionBoxMenuModel::IsItemExtension(int index) {
+  return GetCommandIdAt(index) >= kFirstExtensionCommandId;
+}
+
+const extensions::Extension* ActionBoxMenuModel::GetExtensionAt(int index) {
+  if (!IsItemExtension(index))
+    return NULL;
+
+  // ExtensionList is mutable, so need to get up-to-date extension.
+  int command_id = GetCommandIdAt(index);
+  IdToEntensionIdMap::const_iterator it =
+      id_to_extension_id_map_.find(command_id);
+  if (it == id_to_extension_id_map_.end())
+    return NULL;
+
+  return extension_service_->GetExtensionById(it->second, false);
 }
 
 bool ActionBoxMenuModel::IsCommandIdChecked(int command_id) const {

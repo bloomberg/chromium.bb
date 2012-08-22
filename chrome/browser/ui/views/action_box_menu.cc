@@ -24,13 +24,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // ActionBoxMenu
 
-ActionBoxMenu::ActionBoxMenu(Browser* browser,
-                             ActionBoxMenuModel* model,
-                             bool starred)
+ActionBoxMenu::ActionBoxMenu(Browser* browser, ActionBoxMenuModel* model)
     : browser_(browser),
       root_(NULL),
-      model_(model),
-      starred_(starred) {
+      model_(model) {
 }
 
 ActionBoxMenu::~ActionBoxMenu() {
@@ -127,37 +124,20 @@ void ActionBoxMenu::Observe(int type,
 }
 
 void ActionBoxMenu::PopulateMenu() {
-  int item_id = 1;
-  AddBookmarkMenuItem(root_, &item_id);
-  if (model_->GetItemCount() > 0)
-    root_->AppendSeparator();
-
-  const extensions::ExtensionList& action_box_items =
-      model_->action_box_menu_items();
-  for (size_t model_index = 0; model_index < action_box_items.size();
+  for (int model_index = 0; model_index < model_->GetItemCount();
        ++model_index) {
-    DCHECK(model_->GetTypeAt(model_index) == ui::MenuModel::TYPE_COMMAND);
     views::MenuItemView* menu_item = root_->AppendMenuItemFromModel(
-        model_, model_index, item_id + model_index);
-    menu_item->SetMargins(0, 0);
-    const extensions::Extension* extension = action_box_items[model_index];
-    BrowserActionView* view = new BrowserActionView(extension,
-        browser_, this);
-    browser_action_views_.push_back(view);
-    menu_item->SetIconView(view);
+        model_, model_index, model_index + 1);
+    if (model_->GetTypeAt(model_index) == ui::MenuModel::TYPE_COMMAND) {
+      menu_item->SetMargins(0, 0);
+      if (model_->IsItemExtension(model_index)) {
+        const extensions::Extension* extension =
+            model_->GetExtensionAt(model_index);
+        BrowserActionView* view = new BrowserActionView(extension,
+            browser_, this);
+        // |menu_item| will own the |view| from now on.
+        menu_item->SetIconView(view);
+      }
+    }
   }
-}
-
-views::MenuItemView* ActionBoxMenu::AddBookmarkMenuItem(
-    views::MenuItemView* parent,
-    int* item_id) {
-  string16 label = l10n_util::GetStringUTF16(starred_ ?
-      IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
-  gfx::ImageSkia* icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          starred_ ? IDR_STAR_LIT : IDR_STAR);
-  views::MenuItemView* item =
-      parent->AppendMenuItemWithIcon(*item_id, label, *icon);
-  (*item_id)++;
-  return item;
 }

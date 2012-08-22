@@ -81,8 +81,8 @@ void ActionBoxButtonView::OnMenuButtonClicked(View* source,
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 
-  ActionBoxMenuModel model(browser_, extension_service);
-  ActionBoxMenu action_box_menu(browser_, &model, starred_);
+  ActionBoxMenuModel model(browser_, extension_service, starred_);
+  ActionBoxMenu action_box_menu(browser_, &model);
   action_box_menu.Init();
   action_box_menu.RunMenu(this);
 }
