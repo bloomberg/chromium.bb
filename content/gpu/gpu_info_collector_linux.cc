@@ -247,6 +247,18 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
         gpu_info->driver_version = driver_version;
       }
       break;
+    case kVendorIDIntel:
+      // In dual-GPU cases, sometimes PCI scan only gives us the
+      // integrated GPU (i.e., the Intel one).
+      driver_version = CollectDriverVersionNVidia();
+      if (!driver_version.empty()) {
+        gpu_info->driver_vendor = "NVIDIA";
+        gpu_info->driver_version = driver_version;
+        // Machines with more than two GPUs are not handled.
+        if (gpu_info->secondary_gpus.size() <= 1)
+          gpu_info->optimus = true;
+      }
+      break;
   }
 
   return rt;
