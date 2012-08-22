@@ -629,11 +629,11 @@
         <structure type="chrome_scaled_image" name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" />
-      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="speech_input_mic_empty.png" />
-      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="speech_input_mic_full.png" />
-      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_MASK" file="speech_input_mic_mask.png" />
-      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_NOISE" file="speech_input_mic_noise.png" />
-      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" />
+      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="common/speech_input_mic_empty.png" />
+      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="common/speech_input_mic_full.png" />
+      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_MASK" file="common/speech_input_mic_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_NOISE" file="common/speech_input_mic_noise.png" />
+      <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_SPINNER" file="common/speech_input_spinner.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_BALLOON_ICON" file="speech_input_tray_balloon_icon.png" />
       <if expr="is_linux or pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="speech_input_tray_linux_mic_empty.png" />
