@@ -86,6 +86,10 @@ void StoragePartitionImplMap::PostCreateInitialization(
                    partition->GetAppCacheService(),
                    browser_context_->IsOffTheRecord() ? FilePath() :
                        partition_path.Append(kAppCacheDirname),
+                       // TODO(michaeln): This is not right, appcache will be
+                       // using the cookies and cache of a the default
+                       // partition when populating the cache.
+                       // http://crbug.com/85121
                        browser_context_->GetResourceContext(),
                    make_scoped_refptr(
                        browser_context_->GetSpecialStoragePolicy())));

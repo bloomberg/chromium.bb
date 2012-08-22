@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
@@ -55,8 +56,8 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
         kInitialQuotaKilobytes * 1024 * QuotaManager::kPerHostTemporaryPortion;
     SetTempQuota(
         kTemporaryStorageQuotaMaxSize,
-        BrowserContext::GetQuotaManager(
-            shell()->web_contents()->GetBrowserContext()));
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext())->GetQuotaManager());
   }
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {

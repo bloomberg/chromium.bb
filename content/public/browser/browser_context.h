@@ -23,7 +23,6 @@ class URLRequestContextGetter;
 }
 
 namespace quota {
-class QuotaManager;
 class SpecialStoragePolicy;
 }
 
@@ -56,7 +55,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       StoragePartitionCallback;
 
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
-  static quota::QuotaManager* GetQuotaManager(BrowserContext* browser_context);
   static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
   static webkit_database::DatabaseTracker* GetDatabaseTracker(
       BrowserContext* browser_context);

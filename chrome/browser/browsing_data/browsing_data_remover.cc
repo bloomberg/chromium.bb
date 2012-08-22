@@ -384,8 +384,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_INDEXEDDB || remove_mask & REMOVE_WEBSQL ||
       remove_mask & REMOVE_APPCACHE || remove_mask & REMOVE_FILE_SYSTEMS) {
-    if (!quota_manager_)
-      quota_manager_ = content::BrowserContext::GetQuotaManager(profile_);
+    if (!quota_manager_) {
+      quota_manager_ =
+          BrowserContext::GetDefaultStoragePartition(profile_)->
+              GetQuotaManager();
+    }
     waiting_for_clear_quota_managed_data_ = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

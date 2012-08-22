@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -156,8 +157,8 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
         * 1024 * QuotaManager::kPerHostTemporaryPortion;
     SetTempQuota(
         kTemporaryStorageQuotaMaxSize,
-        BrowserContext::GetQuotaManager(
-            shell()->web_contents()->GetBrowserContext()));
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext())->GetQuotaManager());
   }
 
   static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {

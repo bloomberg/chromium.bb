@@ -99,13 +99,6 @@ DownloadManager* BrowserContext::GetDownloadManager(
       context, kDownloadManagerKeyName);
 }
 
-quota::QuotaManager* BrowserContext::GetQuotaManager(
-    BrowserContext* browser_context) {
-  // TODO(ajwong): Change this API to require a SiteInstance instead of
-  // using GetDefaultStoragePartition().
-  return GetDefaultStoragePartition(browser_context)->GetQuotaManager();
-}
-
 IndexedDBContext* BrowserContext::GetIndexedDBContext(
     BrowserContext* browser_context) {
   // TODO(ajwong): Change this API to require a SiteInstance instead of
