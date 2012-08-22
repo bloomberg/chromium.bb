@@ -599,7 +599,7 @@
     },  # target_name: views_unittests
     {
       'target_name': 'views_examples_with_content_lib',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
@@ -666,6 +666,7 @@
         'examples/throbber_example.h',
         'examples/tree_view_example.cc',
         'examples/tree_view_example.h',
+        'examples/views_examples_export.h',
         'examples/webview_example.cc',
         'examples/webview_example.h',
         'examples/widget_example.cc',
