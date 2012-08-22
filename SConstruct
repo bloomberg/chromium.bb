@@ -426,6 +426,26 @@ pre_base_env = Environment(
 )
 
 
+def ShouldRetry(args, result):
+  # nacl-gcc is flaky on Windows.
+  # http://code.google.com/p/nativeclient/issues/detail?id=1918
+  if sys.platform in ('win32', 'cygwin') and 'nacl' in args[0] and result == 5:
+    return True
+  return False
+
+
+def PatchedSpawn(sh, escape, cmd, args, env):
+  result = OriginalSpawn(sh, escape, cmd, args, env)
+  if result and ShouldRetry(args, result):
+    sys.stdout.write(':-( SCONS RETRY HACK )-:\n')
+    result = OriginalSpawn(sh, escape, cmd, args, env)
+  return result
+
+
+# Monkeypatch SCons process spawning to retry on certain errors.
+OriginalSpawn = pre_base_env['SPAWN']
+pre_base_env['SPAWN'] = PatchedSpawn
+
 # CLANG
 DeclareBit('clang', 'Use clang to build trusted code')
 pre_base_env.SetBitFromOption('clang', False)
