@@ -456,8 +456,6 @@
     'browser/in_process_webkit/indexed_db_database_callbacks.h',
     'browser/in_process_webkit/indexed_db_dispatcher_host.cc',
     'browser/in_process_webkit/indexed_db_dispatcher_host.h',
-    'browser/in_process_webkit/indexed_db_key_utility_client.cc',
-    'browser/in_process_webkit/indexed_db_key_utility_client.h',
     'browser/in_process_webkit/indexed_db_quota_client.cc',
     'browser/in_process_webkit/indexed_db_quota_client.h',
     'browser/in_process_webkit/indexed_db_transaction_callbacks.cc',

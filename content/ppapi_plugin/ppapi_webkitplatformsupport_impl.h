@@ -47,14 +47,6 @@ class PpapiWebKitPlatformSupportImpl :
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
-  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
-      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-      const WebKit::WebIDBKeyPath& keyPath,
-      WebKit::WebVector<WebKit::WebIDBKey>& keys);
-  virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
-      const WebKit::WebIDBKey& key,
-      const WebKit::WebSerializedScriptValue& value,
-      const WebKit::WebIDBKeyPath& keyPath);
 
  private:
   class SandboxSupport;

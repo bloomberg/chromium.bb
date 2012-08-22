@@ -20,13 +20,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
@@ -378,27 +375,6 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
 
 WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
   return new TestWebIDBFactory();
-}
-
-void TestWebKitPlatformSupport::createIDBKeysFromSerializedValuesAndKeyPath(
-      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-      const WebKit::WebIDBKeyPath& keyPath,
-      WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
-  WebKit::WebVector<WebKit::WebIDBKey> keys(values.size());
-  for (size_t i = 0; i < values.size(); ++i) {
-    keys[i] = WebKit::WebIDBKey::createFromValueAndKeyPath(
-        values[i], keyPath);
-  }
-  keys_out.swap(keys);
-}
-
-WebKit::WebSerializedScriptValue
-TestWebKitPlatformSupport::injectIDBKeyIntoSerializedValue(
-    const WebKit::WebIDBKey& key,
-    const WebKit::WebSerializedScriptValue& value,
-    const WebKit::WebIDBKeyPath& keyPath) {
-  return WebKit::WebIDBKey::injectIDBKeyIntoSerializedValue(
-      key, value, keyPath);
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

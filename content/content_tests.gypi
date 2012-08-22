@@ -574,7 +574,6 @@
         'browser/fileapi/file_system_browsertest.cc',
         'browser/in_process_webkit/indexed_db_browsertest.cc',
         'browser/in_process_webkit/indexed_db_layout_browsertest.cc',
-        'browser/indexed_db/idbbindingutilities_browsertest.cc',
         'browser/media_browsertest.cc',
         'browser/plugin_data_remover_impl_browsertest.cc',
         'browser/plugin_browsertest.cc',

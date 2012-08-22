@@ -362,8 +362,6 @@
         'gl_bindings_skia_cmd_buffer.h',
         'glue_serialize.cc',
         'glue_serialize.h',
-        'idb_bindings.cc',
-        'idb_bindings.h',
         'image_decoder.cc',
         'image_decoder.h',
         'image_resource_fetcher.cc',
