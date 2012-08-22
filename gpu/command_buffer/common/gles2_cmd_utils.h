@@ -146,6 +146,19 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static std::string GetStringBool(uint32 value);
   static std::string GetStringError(uint32 value);
 
+  // Parses a uniform name.
+  //   array_pos: the position of the last '[' character in name.
+  //   element_index: the index of the array element specifed in the name.
+  //   getting_array: True if name refers to array.
+  // returns true of parsing was successful. Returing true does NOT mean
+  // it's a valid uniform name. On the otherhand, returning false does mean
+  // it's an invalid uniform name.
+  static bool ParseUniformName(
+      const std::string& name,
+      size_t* array_pos,
+      int* element_index,
+      bool* getting_array);
+
   #include "../common/gles2_cmd_utils_autogen.h"
 
  private:

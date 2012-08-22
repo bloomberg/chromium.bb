@@ -599,6 +599,69 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   EXPECT_EQ(strlen(kUniform3BadName) + 4u, static_cast<size_t>(value));
 }
 
+// Test the bug comparing similar array names is fixed.
+TEST_F(ProgramManagerWithShaderTest, SimilarArrayNames) {
+  static const char* kUniform2Name = "u_nameLong[0]";
+  static const char* kUniform3Name = "u_name[0]";
+  static const GLint kUniform2Size = 2;
+  static const GLint kUniform3Size = 2;
+  static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
+    { kUniform1Name,
+      kUniform1Size,
+      kUniform1Type,
+      kUniform1FakeLocation,
+      kUniform1RealLocation,
+      kUniform1DesiredLocation,
+      kUniform1Name,
+    },
+    { kUniform2Name,
+      kUniform2Size,
+      kUniform2Type,
+      kUniform2FakeLocation,
+      kUniform2RealLocation,
+      kUniform2DesiredLocation,
+      kUniform2Name,
+    },
+    { kUniform3Name,
+      kUniform3Size,
+      kUniform3Type,
+      kUniform3FakeLocation,
+      kUniform3RealLocation,
+      kUniform3DesiredLocation,
+      kUniform3Name,
+    },
+  };
+  const size_t kNumUniforms = arraysize(kUniforms);
+  static const GLuint kClientProgramId = 1234;
+  static const GLuint kServiceProgramId = 5679;
+  const GLuint kVShaderClientId = 2001;
+  const GLuint kFShaderClientId = 2002;
+  const GLuint kVShaderServiceId = 3001;
+  const GLuint kFShaderServiceId = 3002;
+  SetupShader(
+      kAttribs, kNumAttribs, kUniforms, kNumUniforms, kServiceProgramId);
+  ShaderManager::ShaderInfo* vshader = shader_manager_.CreateShaderInfo(
+      kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
+  ASSERT_TRUE(vshader != NULL);
+  vshader->SetStatus(true, "", NULL);
+  ShaderManager::ShaderInfo* fshader = shader_manager_.CreateShaderInfo(
+      kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
+  ASSERT_TRUE(fshader != NULL);
+  fshader->SetStatus(true, "", NULL);
+  ProgramManager::ProgramInfo* program_info =
+      manager_.CreateProgramInfo(kClientProgramId, kServiceProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  EXPECT_TRUE(program_info->AttachShader(&shader_manager_, vshader));
+  EXPECT_TRUE(program_info->AttachShader(&shader_manager_, fshader));
+  program_info->Link(NULL, NULL, NULL, NULL);
+
+  // Check that we get the correct locations.
+  EXPECT_EQ(kUniform2FakeLocation,
+            program_info->GetUniformFakeLocation(kUniform2Name));
+  EXPECT_EQ(kUniform3FakeLocation,
+            program_info->GetUniformFakeLocation(kUniform3Name));
+}
+
 // Some GL drivers incorrectly return the wrong type. For example they return
 // GL_FLOAT_VEC2 when they should return GL_FLOAT_MAT2. Check we handle this.
 TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {

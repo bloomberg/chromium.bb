@@ -181,6 +181,48 @@ TEST_F(GLES2UtilTest, RenderbufferBytesPerPixel) {
    EXPECT_EQ(0u, GLES2Util::RenderbufferBytesPerPixel(-1));
 }
 
+namespace {
+
+void CheckParseUniformName(
+    const char* name,
+    bool expected_success,
+    size_t expected_array_pos,
+    int expected_index,
+    bool expected_getting_array) {
+  int index = 1234;
+  size_t array_pos = 1244;
+  bool getting_array = false;
+  bool success = GLES2Util::ParseUniformName(
+      name, &array_pos, &index, &getting_array);
+  EXPECT_EQ(expected_success, success);
+  if (success) {
+    EXPECT_EQ(expected_array_pos, array_pos);
+    EXPECT_EQ(expected_index, index);
+    EXPECT_EQ(expected_getting_array, getting_array);
+  }
+}
+
+}  // anonymous namespace
+
+TEST_F(GLES2UtilTest, ParseUniformName) {
+  CheckParseUniformName("u_name", true, std::string::npos, 0, false);
+  CheckParseUniformName("u_name[]", false, std::string::npos, 0, false);
+  CheckParseUniformName("u_name]", false, std::string::npos, 0, false);
+  CheckParseUniformName("u_name[0a]", false, std::string::npos, 0, false);
+  CheckParseUniformName("u_name[a0]", false, std::string::npos, 0, false);
+  CheckParseUniformName("u_name[0a0]", false, std::string::npos, 0, false);
+  CheckParseUniformName("u_name[0]", true, 6u, 0, true);
+  CheckParseUniformName("u_name[2]", true, 6u, 2, true);
+  CheckParseUniformName("u_name[02]", true, 6u, 2, true);
+  CheckParseUniformName("u_name[20]", true, 6u, 20, true);
+  CheckParseUniformName("u_name[020]", true, 6u, 20, true);
+  CheckParseUniformName("u_name[0][0]", true, 9u, 0, true);
+  CheckParseUniformName("u_name[3][2]", true, 9u, 2, true);
+  CheckParseUniformName("u_name[03][02]", true, 10u, 2, true);
+  CheckParseUniformName("u_name[30][20]", true, 10u, 20, true);
+  CheckParseUniformName("u_name[030][020]", true, 11u, 20, true);
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

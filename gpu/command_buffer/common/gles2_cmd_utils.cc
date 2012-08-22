@@ -667,6 +667,39 @@ std::string GLES2Util::GetQualifiedEnumString(
   return GetStringEnum(value);
 }
 
+bool GLES2Util::ParseUniformName(
+    const std::string& name,
+    size_t* array_pos,
+    int* element_index,
+    bool* getting_array) {
+  bool getting_array_location = false;
+  size_t open_pos = std::string::npos;
+  int index = 0;
+  if (name[name.size() - 1] == ']') {
+    if (name.size() < 3) {
+      return false;
+    }
+    open_pos = name.find_last_of('[');
+    if (open_pos == std::string::npos ||
+        open_pos >= name.size() - 2) {
+      return false;
+    }
+    size_t last = name.size() - 1;
+    for (size_t pos = open_pos + 1; pos < last; ++pos) {
+      int8 digit = name[pos] - '0';
+      if (digit < 0 || digit > 9) {
+        return false;
+      }
+      index = index * 10 + digit;
+    }
+    getting_array_location = true;
+  }
+  *getting_array = getting_array_location;
+  *element_index = index;
+  *array_pos = open_pos;
+  return true;
+}
+
 ContextCreationAttribParser::ContextCreationAttribParser()
   : alpha_size_(-1),
     blue_size_(-1),
