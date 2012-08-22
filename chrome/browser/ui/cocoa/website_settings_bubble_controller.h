@@ -62,10 +62,12 @@ class WebsiteSettingsUIBridge;
 }
 
 // Designated initializer. The controller will release itself when the bubble
-// is closed. |parentWindow| cannot be nil.
+// is closed. |parentWindow| cannot be nil. |tabContents| may be nil for
+// testing purposes.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
-               tabContents:(TabContents*)tabContents;
+               tabContents:(TabContents*)tabContents
+            isInternalPage:(BOOL)isInternalPage;
 
 - (void)permissionValueChanged:(id)sender;
 

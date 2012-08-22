@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/cert_store.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -33,14 +34,23 @@ const CGFloat kVerticalSpacing = 10;
 // Padding between the window frame and content.
 const CGFloat kFramePadding = 20;
 
+// Padding between the window frame and content for the internal page bubble.
+const CGFloat kInternalPageFramePadding = 10;
+
 // Spacing between the optional headline and description text views.
 const CGFloat kHeadlineSpacing = 2;
 
 // Spacing between images on the Connection tab and the text.
 const CGFloat kConnectionImageSpacing = 10;
 
+// Spacing between the image and text for internal pages.
+const CGFloat kInternalPageImageSpacing = 10;
+
 // Square size of the images on the Connections tab.
 const CGFloat kConnectionImageSize = 30;
+
+// Square size of the image that is shown for internal pages.
+const CGFloat kInternalPageImageSize = 26;
 
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 19;
@@ -222,7 +232,8 @@ NSColor* IdentityVerifiedTextColor() {
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
-               tabContents:(TabContents*)tabContents {
+               tabContents:(TabContents*)tabContents
+            isInternalPage:(BOOL)isInternalPage {
   DCHECK(parentWindow);
 
   tabContents_ = tabContents;
@@ -240,7 +251,20 @@ NSColor* IdentityVerifiedTextColor() {
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
-    [self initializeContents];
+
+    // Create the container view that uses flipped coordinates.
+    NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, 300);
+    contentView_.reset(
+        [[WebsiteSettingsContentView alloc] initWithFrame:contentFrame]);
+
+    // Replace the window's content.
+    [[[self window] contentView] setSubviews:
+        [NSArray arrayWithObject:contentView_.get()]];
+
+    if (isInternalPage)
+      [self initializeContentsForInternalPage];
+    else
+      [self initializeContents];
 
     bridge_.reset(bridge);
     bridge_->set_bubble_controller(self);
@@ -258,17 +282,46 @@ NSColor* IdentityVerifiedTextColor() {
   presenter_.reset(presenter);
 }
 
+// Create the subviews for the bubble for internal Chrome pages.
+- (void)initializeContentsForInternalPage {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  NSPoint controlOrigin = NSMakePoint(
+      kInternalPageFramePadding,
+      kInternalPageFramePadding + info_bubble::kBubbleArrowHeight);
+  NSSize imageSize = NSMakeSize(kInternalPageImageSize,
+                                kInternalPageImageSize);
+  NSImageView* imageView = [self addImageWithSize:imageSize
+                                           toView:contentView_
+                                          atPoint:controlOrigin];
+  [imageView setImage:rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26).ToNSImage()];
+
+  controlOrigin.x += NSWidth([imageView frame]) + kInternalPageImageSpacing;
+  string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
+  NSTextField* textField = [self addText:text
+                                withSize:[NSFont smallSystemFontSize]
+                                    bold:NO
+                                  toView:contentView_
+                                 atPoint:controlOrigin];
+  // Center the text vertically with the image.
+  NSRect textFrame = [textField frame];
+  textFrame.origin.y += (imageSize.height - NSHeight(textFrame)) / 2;
+  [textField setFrame:textFrame];
+
+  // Adjust the contentView to fit everything.
+  CGFloat maxY = std::max(NSMaxY([imageView frame]), NSMaxY(textFrame));
+  [contentView_ setFrame:NSMakeRect(
+      0, 0, kWindowWidth, maxY + kInternalPageFramePadding)];
+
+  [self sizeAndPositionWindow];
+}
+
 // Create the subviews for the website settings bubble.
 - (void)initializeContents {
   // Keeps track of the position that the next control should be drawn at.
   NSPoint controlOrigin = NSMakePoint(
       kFramePadding,
       kFramePadding + info_bubble::kBubbleArrowHeight);
-
-  // Create the container view that uses flipped coordinates.
-  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, 300);
-  contentView_.reset(
-      [[WebsiteSettingsContentView alloc] initWithFrame:contentFrame]);
 
   // Create a text field (empty for now) to show the site identity.
   identityField_ = [self addText:string16()
@@ -337,10 +390,6 @@ NSColor* IdentityVerifiedTextColor() {
   permissionsTabContentView_ = [self addPermissionsTabToTabView:tabView_];
   [self addConnectionTabToTabView:tabView_];
 
-  // Replace the window's content.
-  [[[self window] contentView] setSubviews:
-      [NSArray arrayWithObject:contentView_.get()]];
-
   [self performLayout];
 }
 
@@ -389,16 +438,17 @@ NSColor* IdentityVerifiedTextColor() {
   scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
       initWithFrame:[tabView_ contentRect]]);
 
-  // Place all the text at the same position. It will be adjusted in
-  // performLayout.
+  // Place all the text and images at the same position. The positions will be
+  // adjusted in performLayout.
   NSPoint textPosition = NSMakePoint(
       kFramePadding + kConnectionImageSize + kConnectionImageSpacing,
       kFramePadding);
+  NSPoint imagePosition = NSMakePoint(kFramePadding, kFramePadding);
   NSSize imageSize = NSMakeSize(kConnectionImageSize, kConnectionImageSize);
 
   identityStatusIcon_ = [self addImageWithSize:imageSize
                                         toView:contentView
-                                      atOffset:kFramePadding];
+                                       atPoint:imagePosition];
   identityStatusDescriptionField_ =
       [self addText:string16()
            withSize:[NSFont smallSystemFontSize]
@@ -409,7 +459,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   connectionStatusIcon_ = [self addImageWithSize:imageSize
                                           toView:contentView
-                                        atOffset:kFramePadding];
+                                         atPoint:imagePosition];
   connectionStatusDescriptionField_ =
       [self addText:string16()
            withSize:[NSFont smallSystemFontSize]
@@ -420,7 +470,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   firstVisitIcon_ = [self addImageWithSize:imageSize
                                     toView:contentView
-                                  atOffset:kFramePadding];
+                                   atPoint:imagePosition];
   firstVisitHeaderField_ =
       [self addText:l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE)
            withSize:[NSFont smallSystemFontSize]
@@ -531,8 +581,12 @@ NSColor* IdentityVerifiedTextColor() {
   [contentView_ setFrame:NSMakeRect(
       0, 0, kWindowWidth, NSMaxY([tabView_ frame]))];
 
-  // Now adjust and position the window.
+  [self sizeAndPositionWindow];
+}
 
+// Adjust the size of the window to match the size of the content, and position
+// the bubble anchor appropriately.
+- (void)sizeAndPositionWindow {
   NSRect windowFrame =
       NSMakeRect(0, 0, kWindowWidth, NSHeight([contentView_ frame]));
   windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
@@ -617,8 +671,8 @@ NSColor* IdentityVerifiedTextColor() {
 // position and the given y position. Return the new NSImageView.
 - (NSImageView*)addImageWithSize:(NSSize)size
                           toView:(NSView*)view
-                        atOffset:(CGFloat)offset {
-  NSRect frame = NSMakeRect(kFramePadding, offset, size.width, size.height);
+                         atPoint:(NSPoint)point {
+  NSRect frame = NSMakeRect(point.x, point.y, size.width, size.height);
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
@@ -743,7 +797,7 @@ NSColor* IdentityVerifiedTextColor() {
       permissionInfo.type, setting).ToNSImage();
   NSImageView* imageView = [self addImageWithSize:[image size]
                                            toView:view
-                                         atOffset:point.y];
+                                          atPoint:point];
   [imageView setImage:image];
   point.x += kPermissionImageSize + kPermissionImageSpacing;
 
@@ -802,7 +856,7 @@ NSColor* IdentityVerifiedTextColor() {
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW).ToNSImage();
   NSImageView* imageView = [self addImageWithSize:[image size]
                                            toView:view
-                                         atOffset:point.y];
+                                          atPoint:point];
   [imageView setImage:image];
   point.x += kPermissionImageSize + kPermissionImageSpacing;
 
@@ -939,6 +993,9 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
                                    TabContents* tab_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) {
+  bool is_internal_page = url.SchemeIs(chrome::kChromeInternalScheme) ||
+                          url.SchemeIs(chrome::kChromeUIScheme);
+
   // Create the bridge. This will be owned by the bubble controller.
   WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge();
 
@@ -946,19 +1003,22 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
   WebsiteSettingsBubbleController* bubble_controller =
       [[WebsiteSettingsBubbleController alloc] initWithParentWindow:parent
           websiteSettingsUIBridge:bridge
-          tabContents:tab_contents];
+          tabContents:tab_contents
+          isInternalPage:is_internal_page];
 
-  // Initialize the presenter, which holds the model and controls the UI.
-  // This is also owned by the bubble controller.
-  WebsiteSettings* presenter = new WebsiteSettings(
-      bridge,
-      profile,
-      tab_contents->content_settings(),
-      tab_contents->infobar_tab_helper(),
-      url,
-      ssl,
-      content::CertStore::GetInstance());
-  [bubble_controller setPresenter:presenter];
+  if (!is_internal_page) {
+    // Initialize the presenter, which holds the model and controls the UI.
+    // This is also owned by the bubble controller.
+    WebsiteSettings* presenter = new WebsiteSettings(
+        bridge,
+        profile,
+        tab_contents->content_settings(),
+        tab_contents->infobar_tab_helper(),
+        url,
+        ssl,
+        content::CertStore::GetInstance());
+    [bubble_controller setPresenter:presenter];
+  }
 
   [bubble_controller showWindow:nil];
 }

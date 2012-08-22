@@ -79,7 +79,8 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
         [[WebsiteSettingsBubbleController alloc]
             initWithParentWindow:test_window()
             websiteSettingsUIBridge:bridge_
-            tabContents:nil];
+            tabContents:nil
+            isInternalPage:NO];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
