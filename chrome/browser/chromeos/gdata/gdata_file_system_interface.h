@@ -283,7 +283,7 @@ class GDataFileSystemInterface {
   // bit committed. We should eliminate the restriction. crbug.com/134558.
   //
   // Can be called from UI/IO thread. |callback| and is run on the calling
-  // thread.
+  // thread.  |callback| must not be null.
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
       const FileOperationCallback& callback) = 0;

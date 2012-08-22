@@ -1947,6 +1947,8 @@ void GDataFileSystem::UpdateFileByResourceId(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::UpdateFileByResourceIdOnUIThread,
                  ui_weak_ptr_,
@@ -1958,30 +1960,39 @@ void GDataFileSystem::UpdateFileByResourceIdOnUIThread(
     const std::string& resource_id,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  directory_service_->GetEntryByResourceIdAsync(resource_id,
-      base::Bind(&GDataFileSystem::UpdateFileByEntryOnUIThread,
+  // TODO(satorux): GetEntryInfoByResourceId() is called twice for
+  // UpdateFileByResourceIdOnUIThread(). crbug.com/143873
+  directory_service_->GetEntryInfoByResourceId(
+      resource_id,
+      base::Bind(&GDataFileSystem::UpdateFileByEntryInfo,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::UpdateFileByEntryOnUIThread(
+void GDataFileSystem::UpdateFileByEntryInfo(
     const FileOperationCallback& callback,
-    GDataEntry* entry) {
+    GDataFileError error,
+    const FilePath& /* dive_file_path */,
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (!entry || !entry->AsGDataFile()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   GDATA_FILE_ERROR_NOT_FOUND));
+  if (error != GDATA_FILE_OK) {
+    callback.Run(error);
     return;
   }
-  GDataFile* file = entry->AsGDataFile();
+
+  DCHECK(entry_proto.get());
+  if (entry_proto->file_info().is_directory()) {
+    callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
+    return;
+  }
 
   cache_->GetFileOnUIThread(
-      file->resource_id(),
-      file->file_md5(),
+      entry_proto->resource_id(),
+      entry_proto->file_specific_info().file_md5(),
       base::Bind(&GDataFileSystem::OnGetFileCompleteForUpdateFile,
                  ui_weak_ptr_,
                  callback));
@@ -1991,13 +2002,13 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
     const FileOperationCallback& callback,
     GDataFileError error,
     const std::string& resource_id,
-    const std::string& md5,
+    const std::string& /* md5 */,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
+    callback.Run(error);
     return;
   }
 
@@ -2016,7 +2027,6 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
                  ui_weak_ptr_,
                  callback,
                  resource_id,
-                 md5,
                  cache_file_path,
                  base::Owned(get_size_error),
                  base::Owned(file_size)));
@@ -2025,48 +2035,55 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFile(
 void GDataFileSystem::OnGetFileSizeCompleteForUpdateFile(
     const FileOperationCallback& callback,
     const std::string& resource_id,
-    const std::string& md5,
     const FilePath& cache_file_path,
     GDataFileError* error,
     int64* file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (*error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(*error);
+    callback.Run(*error);
     return;
   }
 
-  directory_service_->GetEntryByResourceIdAsync(resource_id,
+  // TODO(satorux): GetEntryInfoByResourceId() is called twice for
+  // UpdateFileByResourceIdOnUIThread(). crbug.com/143873
+  directory_service_->GetEntryInfoByResourceId(
+      resource_id,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry,
           ui_weak_ptr_,
           callback,
-          md5,
           *file_size,
           cache_file_path));
 }
 
 void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
     const FileOperationCallback& callback,
-    const std::string& md5,
     int64 file_size,
     const FilePath& cache_file_path,
-    GDataEntry* entry) {
+    GDataFileError error,
+    const FilePath& drive_file_path,
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (!entry || !entry->AsGDataFile()) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
+  if (error != GDATA_FILE_OK) {
+    callback.Run(error);
     return;
   }
-  GDataFile* file = entry->AsGDataFile();
+
+  DCHECK(entry_proto.get());
+  if (entry_proto->file_info().is_directory()) {
+    callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
+    return;
+  }
 
   uploader_->UploadExistingFile(
-      file->upload_url(),
-      file->GetFilePath(),
+      GURL(entry_proto->upload_url()),
+      drive_file_path,
       cache_file_path,
       file_size,
-      file->content_mime_type(),
+      entry_proto->file_specific_info().content_mime_type(),
       base::Bind(&GDataFileSystem::OnUpdatedFileUploaded,
                  ui_weak_ptr_,
                  callback));

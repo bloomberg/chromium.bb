@@ -666,32 +666,49 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataFileError error,
       const DriveEntryProto* entry_proto);
 
+  // Part of UpdateFileByResourceId(). Called when
+  // GDataDirectory::GetEntryInfoByResourceId() is complete.
+  // |callback| must not be null.
+  void UpdateFileByEntryInfo(
+      const FileOperationCallback& callback,
+      GDataFileError error,
+      const FilePath& /* drive_file_path */,
+      scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Part of UpdateFileByResourceId().
   // Called when GDataCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
+  // |callback| must not be null.
   void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
                                       GDataFileError error,
                                       const std::string& resource_id,
                                       const std::string& md5,
                                       const FilePath& cache_file_path);
 
+  // Part of UpdateFileByResourceId().
   // Callback for getting the size of the cache file in the blocking pool.
+  // |callback| must not be null.
   void OnGetFileSizeCompleteForUpdateFile(const FileOperationCallback& callback,
                                           const std::string& resource_id,
-                                          const std::string& md5,
                                           const FilePath& cache_file_path,
                                           GDataFileError* error,
                                           int64* file_size);
 
+  // Part of UpdateFileByResourceId().
   // Callback for GDataRootDirectory::GetEntryByResourceIdAsync.
+  // |callback| must not be null.
   void OnGetFileCompleteForUpdateFileByEntry(
       const FileOperationCallback& callback,
-      const std::string& md5,
       int64 file_size,
       const FilePath& cache_file_path,
-      GDataEntry* entry);
+      GDataFileError error,
+      const FilePath& drive_file_path,
+      scoped_ptr<DriveEntryProto> entry_proto);
 
+  // Part of UpdateFileByResourceId().
   // Called when GDataUploader::UploadUpdatedFile() is completed for
   // UpdateFileByResourceId().
+  // |callback| must not be null.
   void OnUpdatedFileUploaded(const FileOperationCallback& callback,
                              GDataFileError error,
                              scoped_ptr<UploadFileInfo> upload_file_info);
@@ -738,8 +755,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataEntry* entry);
   void UpdateFileByResourceIdOnUIThread(const std::string& resource_id,
                                         const FileOperationCallback& callback);
-  void UpdateFileByEntryOnUIThread(const FileOperationCallback& callback,
-                                   GDataEntry* entry);
   void GetEntryInfoByPathOnUIThread(const FilePath& file_path,
                                     const GetEntryInfoCallback& callback);
   void GetEntryInfoByResourceIdOnUIThread(
