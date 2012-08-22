@@ -52,6 +52,8 @@ TestBrowserWindowAura::TestBrowserWindowAura(aura::Window *native_window)
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
 
+} // namespace
+
 // A test class for preparing window positioner tests - it creates a testing
 // base by adding a window, a popup and a panel which can be independently
 // positioned to see where the positioner will place the window.
@@ -156,9 +158,9 @@ void WindowPositionerTest::SetUp() {
   // Get the alignment size.
   grid_size_ = ash::Shell::GetInstance()->GetGridSize();
   if (!grid_size_) {
-    grid_size_ = 10;
+    grid_size_ = WindowPositioner::kMinimumWindowOffset;
   } else {
-    while (grid_size_ < 10)
+    while (grid_size_ < WindowPositioner::kMinimumWindowOffset)
       grid_size_ *= 2;
   }
 }
@@ -182,8 +184,6 @@ void WindowPositionerTest::TearDown() {
   delete window_positioner_;
   window_positioner_ = NULL;
 }
-
-} // namespace
 
 TEST_F(WindowPositionerTest, cascading) {
   const gfx::Rect work_area = gfx::Screen::GetPrimaryDisplay().work_area();

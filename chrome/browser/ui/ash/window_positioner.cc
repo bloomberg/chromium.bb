@@ -13,6 +13,13 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 
+namespace ash {
+
+// statics
+
+// Currently matches kGridSize * 2 (defined in ash/wm/workspace_controller.cc).
+const int WindowPositioner::kMinimumWindowOffset = 32;
+
 WindowPositioner::WindowPositioner()
     : pop_position_offset_increment_x(0),
       pop_position_offset_increment_y(0),
@@ -27,11 +34,11 @@ WindowPositioner::~WindowPositioner() {
 
 gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   int grid = ash::Shell::GetInstance()->GetGridSize();
-  // Make sure that the grid has a minimum resolution of 10 pixels.
+  // Make sure that the grid has a minimum resolution.
   if (!grid) {
-    grid = 10;
+    grid = kMinimumWindowOffset;
   } else {
-    while (grid < 10)
+    while (grid < kMinimumWindowOffset)
       grid *= 2;
   }
   popup_position_offset_from_screen_corner_x = grid;
@@ -188,3 +195,5 @@ gfx::Rect WindowPositioner::AlignPopupPosition(
     y = work_area.bottom() - h;
   return gfx::Rect(x, y, w, h);
 }
+
+}  // namespace ash

@@ -12,6 +12,12 @@ namespace aura {
 class Window;
 }
 
+namespace ash {
+
+namespace test {
+class WindowPositionerTest;
+}
+
 // WindowPositioner is used by the browser to move new popups automatically to
 // a usable position on the closest work area (of the active window).
 class WindowPositioner {
@@ -27,6 +33,8 @@ class WindowPositioner {
   gfx::Rect GetPopupPosition(const gfx::Rect& old_pos);
 
  protected:
+  friend class test::WindowPositionerTest;
+
   // Find a smart way to position the popup window. If there is no space this
   // function will return an empty rectangle.
   gfx::Rect SmartPopupPosition(const gfx::Rect& old_pos,
@@ -42,8 +50,8 @@ class WindowPositioner {
                                const gfx::Rect &work_area,
                                int grid);
 
-  // Constants to identify the type of resize.
-  static const int kBoundsChange_None;
+  // Constant exposed for unittest.
+  static const int kMinimumWindowOffset;
 
   // The offset in X and Y for the next popup which opens.
   int pop_position_offset_increment_x;
@@ -60,5 +68,7 @@ class WindowPositioner {
 
   DISALLOW_COPY_AND_ASSIGN(WindowPositioner);
 };
+
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_ASH_WINDOW_POSITIONER_H_

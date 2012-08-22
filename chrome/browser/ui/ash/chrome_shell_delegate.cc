@@ -68,7 +68,7 @@ Browser* GetTargetBrowser() {
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
 ChromeShellDelegate::ChromeShellDelegate()
-    : window_positioner_(new WindowPositioner()),
+    : window_positioner_(new ash::WindowPositioner()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   instance_ = this;
 #if defined(OS_CHROMEOS)

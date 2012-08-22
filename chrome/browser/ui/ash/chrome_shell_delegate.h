@@ -13,7 +13,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace ash {
 class WindowPositioner;
+}
 
 namespace views {
 class View;
@@ -27,7 +29,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   static ChromeShellDelegate* instance() { return instance_; }
 
-  WindowPositioner* window_positioner() { return window_positioner_.get(); }
+  ash::WindowPositioner* window_positioner() {
+    return window_positioner_.get();
+  }
 
   // ash::ShellDelegate overrides;
   virtual bool IsUserLoggedIn() OVERRIDE;
@@ -69,7 +73,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<WindowPositioner> window_positioner_;
+  scoped_ptr<ash::WindowPositioner> window_positioner_;
 
   base::WeakPtrFactory<ChromeShellDelegate> weak_factory_;
 
