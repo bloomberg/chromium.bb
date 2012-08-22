@@ -48,6 +48,8 @@
         '../sync/sync.gyp:sync_notifier',
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/bzip2/bzip2.gyp:bzip2',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/cld/cld.gyp:cld',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/hunspell/hunspell.gyp:hunspell',

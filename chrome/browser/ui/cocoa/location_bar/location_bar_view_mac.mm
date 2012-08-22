@@ -120,8 +120,7 @@ LocationBarViewMac::LocationBarViewMac(
     command_updater_->AddCommandObserver(IDC_CHROME_TO_MOBILE_PAGE, this);
     chrome_to_mobile_decoration_.reset(
         new ChromeToMobileDecoration(profile, command_updater));
-    ChromeToMobileServiceFactory::GetForProfile(profile)->
-        RequestMobileListUpdate();
+    UpdateChromeToMobileEnabled();
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {

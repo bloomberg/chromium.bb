@@ -295,16 +295,14 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     AddChildView(star_view_);
     star_view_->SetVisible(true);
 
-    // Also disable Chrome To Mobile for off-the-record and non-synced profiles,
+    // Disable Chrome To Mobile for off-the-record and non-synced profiles,
     // or if the feature is disabled by a command line flag or chrome://flags.
     if (!profile_->IsOffTheRecord() && profile_->IsSyncAccessible() &&
         ChromeToMobileService::IsChromeToMobileEnabled()) {
       chrome_to_mobile_view_ = new ChromeToMobileView(this, command_updater_);
       AddChildView(chrome_to_mobile_view_);
-      ChromeToMobileService* service =
-          ChromeToMobileServiceFactory::GetForProfile(profile_);
-      service->RequestMobileListUpdate();
-      chrome_to_mobile_view_->SetVisible(service->HasMobiles());
+      chrome_to_mobile_view_->SetVisible(
+          ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles());
     }
   }
 
