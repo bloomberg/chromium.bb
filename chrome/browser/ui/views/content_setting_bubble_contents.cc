@@ -11,7 +11,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "content/public/browser/notification_source.h"
@@ -97,13 +96,11 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
-    Profile* profile,
     WebContents* web_contents,
     views::View* anchor_view,
     views::BubbleBorder::ArrowLocation arrow_location)
     : BubbleDelegateView(anchor_view, arrow_location),
       content_setting_bubble_model_(content_setting_bubble_model),
-      profile_(profile),
       web_contents_(web_contents),
       custom_link_(NULL),
       manage_link_(NULL),

@@ -204,7 +204,6 @@ void ContentSettingImageView::OnClick() {
           tab_contents,
           profile,
           content_setting_image_model_->get_content_settings_type()),
-      profile,
       tab_contents->web_contents(),
       this,
       views::BubbleBorder::TOP_RIGHT);

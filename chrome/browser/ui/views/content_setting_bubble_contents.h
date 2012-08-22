@@ -16,18 +16,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-// ContentSettingBubbleContents is used when the user turns on different kinds
-// of content blocking (e.g. "block images").  When viewing a page with blocked
-// content, icons appear in the omnibox corresponding to the content types that
-// were blocked, and the user can click one to get a bubble hosting a few
-// controls.  This class provides the content of that bubble.  In general,
-// these bubbles typically have a title, a pair of radio buttons for toggling
-// the blocking settings for the current site, a close button, and a link to
-// get to a more comprehensive settings management dialog.  A few types have
-// more or fewer controls than this.
-
 class ContentSettingBubbleModel;
-class Profile;
 
 namespace content {
 class WebContents;
@@ -38,6 +27,15 @@ class TextButton;
 class RadioButton;
 }
 
+// ContentSettingBubbleContents is used when the user turns on different kinds
+// of content blocking (e.g. "block images").  When viewing a page with blocked
+// content, icons appear in the omnibox corresponding to the content types that
+// were blocked, and the user can click one to get a bubble hosting a few
+// controls.  This class provides the content of that bubble.  In general,
+// these bubbles typically have a title, a pair of radio buttons for toggling
+// the blocking settings for the current site, a close button, and a link to
+// get to a more comprehensive settings management dialog.  A few types have
+// more or fewer controls than this.
 class ContentSettingBubbleContents : public views::BubbleDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener,
@@ -45,7 +43,6 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
  public:
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
-      Profile* profile,
       content::WebContents* web_contents,
       views::View* anchor_view,
       views::BubbleBorder::ArrowLocation arrow_location);
@@ -76,9 +73,6 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
 
   // Provides data for this bubble.
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
-
-  // The active profile.
-  Profile* profile_;
 
   // The active web contents.
   content::WebContents* web_contents_;
