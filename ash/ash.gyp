@@ -318,8 +318,6 @@
         'wm/window_cycle_controller.h',
         'wm/window_cycle_list.cc',
         'wm/window_cycle_list.h',
-        'wm/window_frame.cc',
-        'wm/window_frame.h',
         'wm/window_modality_controller.cc',
         'wm/window_modality_controller.h',
         'wm/window_properties.cc',

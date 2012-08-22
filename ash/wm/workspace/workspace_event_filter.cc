@@ -6,7 +6,6 @@
 
 #include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_frame.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/aura_constants.h"
@@ -19,17 +18,6 @@
 
 namespace ash {
 namespace {
-
-// Sends OnWindowHoveredChanged(|hovered|) to the WindowFrame for |window|,
-// which may be NULL.
-void WindowHoverChanged(aura::Window* window, bool hovered) {
-  if (!window)
-    return;
-  WindowFrame* window_frame = window->GetProperty(kWindowFrameKey);
-  if (!window_frame)
-    return;
-  window_frame->OnWindowHoverChanged(hovered);
-}
 
 void SingleAxisMaximize(aura::Window* window, const gfx::Rect& maximize_rect) {
   gfx::Rect bounds_in_screen =
@@ -68,15 +56,12 @@ namespace internal {
 
 WorkspaceEventFilter::WorkspaceEventFilter(aura::Window* owner)
     : ToplevelWindowEventFilter(owner),
-      hovered_window_(NULL),
       destroyed_(NULL) {
 }
 
 WorkspaceEventFilter::~WorkspaceEventFilter() {
   if (destroyed_)
     *destroyed_ = true;
-  if (hovered_window_)
-    hovered_window_->RemoveObserver(this);
 }
 
 bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
@@ -91,11 +76,9 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
       break;
     }
     case ui::ET_MOUSE_ENTERED:
-      UpdateHoveredWindow(wm::GetActivatableWindow(target));
       break;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_EXITED:
-      UpdateHoveredWindow(NULL);
       break;
     case ui::ET_MOUSE_PRESSED: {
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
@@ -118,12 +101,6 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
   return ToplevelWindowEventFilter::PreHandleMouseEvent(target, event);
 }
 
-void WorkspaceEventFilter::OnWindowDestroyed(aura::Window* window) {
-  DCHECK_EQ(hovered_window_, window);
-  hovered_window_->RemoveObserver(this);
-  hovered_window_ = NULL;
-}
-
 WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
@@ -137,19 +114,6 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
   return WorkspaceWindowResizer::Create(
       window, point_in_parent, window_component,
       std::vector<aura::Window*>());
-}
-
-void WorkspaceEventFilter::UpdateHoveredWindow(
-    aura::Window* toplevel_window) {
-  if (toplevel_window == hovered_window_)
-    return;
-  if (hovered_window_)
-    hovered_window_->RemoveObserver(this);
-  WindowHoverChanged(hovered_window_, false);
-  hovered_window_ = toplevel_window;
-  WindowHoverChanged(hovered_window_, true);
-  if (hovered_window_)
-    hovered_window_->AddObserver(this);
 }
 
 void WorkspaceEventFilter::HandleVerticalResizeDoubleClick(
