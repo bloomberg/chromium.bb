@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILES_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILES_H_
 
 #include <map>
 #include <set>
@@ -18,11 +18,11 @@
 
 namespace gdata {
 
+class DriveDirectory;
 class DriveDirectoryProto;
 class DriveEntryProto;
-class GDataDirectory;
+class DriveFile;
 class GDataDirectoryService;
-class GDataFile;
 class PlatformFileInfoProto;
 
 // Used to read a directory from the file system.
@@ -30,21 +30,21 @@ class PlatformFileInfoProto;
 // |entries| are contents, both files and directories, of the directory.
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
-// Base class for representing files and directories in gdata virtual file
+// Base class for representing files and directories in Drive virtual file
 // system.
-class GDataEntry {
+class DriveEntry {
  public:
-  virtual ~GDataEntry();
+  virtual ~DriveEntry();
 
-  virtual GDataFile* AsGDataFile();
-  virtual GDataDirectory* AsGDataDirectory();
+  virtual DriveFile* AsDriveFile();
+  virtual DriveDirectory* AsDriveDirectory();
 
   // Initializes from DocumentEntry.
   virtual void InitFromDocumentEntry(const DocumentEntry& doc);
 
-  // const versions of AsGDataFile and AsGDataDirectory.
-  const GDataFile* AsGDataFileConst() const;
-  const GDataDirectory* AsGDataDirectoryConst() const;
+  // const versions of AsDriveFile and AsDriveDirectory.
+  const DriveFile* AsDriveFileConst() const;
+  const DriveDirectory* AsDriveDirectoryConst() const;
 
   // Serialize/Parse to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
@@ -79,7 +79,7 @@ class GDataEntry {
   static std::string UnescapeUtf8FileName(const std::string& input);
 
   // Return the parent of this entry. NULL for root.
-  GDataDirectory* parent() const { return parent_; }
+  DriveDirectory* parent() const { return parent_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
 
   // This is not the full path, use GetFilePath for that.
@@ -117,7 +117,7 @@ class GDataEntry {
   bool is_deleted() const { return deleted_; }
 
   // Returns virtual file path representing this file system entry. This path
-  // corresponds to file path expected by public methods of GDataFileSyste
+  // corresponds to file path expected by public methods of GDataFileSystem
   // class.
   FilePath GetFilePath() const;
 
@@ -127,13 +127,13 @@ class GDataEntry {
 
  protected:
   // For access to SetParent from AddEntry.
-  friend class GDataDirectory;
+  friend class DriveDirectory;
 
-  explicit GDataEntry(GDataDirectoryService* directory_service);
+  explicit DriveEntry(GDataDirectoryService* directory_service);
 
   // Sets the parent directory of this file system entry.
-  // It is intended to be used by GDataDirectory::AddEntry() only.
-  void SetParent(GDataDirectory* parent);
+  // It is intended to be used by DriveDirectory::AddEntry() only.
+  void SetParent(DriveDirectory* parent);
 
   base::PlatformFileInfo file_info_;
   // Title of this file (i.e. the 'title' attribute associated with a regular
@@ -158,20 +158,20 @@ class GDataEntry {
   // due to de-duplication (See AddEntry).
   FilePath::StringType base_name_;
 
-  GDataDirectory* parent_;
+  DriveDirectory* parent_;
   // Weak pointer to GDataDirectoryService.
   GDataDirectoryService* directory_service_;
   bool deleted_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GDataEntry);
+  DISALLOW_COPY_AND_ASSIGN(DriveEntry);
 };
 
 // Represents "file" in in a GData virtual file system. On gdata feed side,
 // this could be either a regular file or a server side document.
-class GDataFile : public GDataEntry {
+class DriveFile : public DriveEntry {
  public:
-  virtual ~GDataFile();
+  virtual ~DriveFile();
 
   // Converts to/from proto.
   void FromProto(const DriveEntryProto& proto);
@@ -187,7 +187,7 @@ class GDataFile : public GDataEntry {
   bool is_hosted_document() const { return is_hosted_document_; }
   void set_file_info(const base::PlatformFileInfo& info) { file_info_ = info; }
 
-  // Overrides GDataEntry::SetBaseNameFromTitle() to set |base_name_| based
+  // Overrides DriveEntry::SetBaseNameFromTitle() to set |base_name_| based
   // on the value of |title_| as well as |is_hosted_document_| and
   // |document_extension_| for hosted documents.
   virtual void SetBaseNameFromTitle() OVERRIDE;
@@ -195,11 +195,11 @@ class GDataFile : public GDataEntry {
  private:
   friend class GDataDirectoryService;  // For access to ctor.
 
-  explicit GDataFile(GDataDirectoryService* directory_service);
+  explicit DriveFile(GDataDirectoryService* directory_service);
   // Initializes from DocumentEntry.
   virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
 
-  virtual GDataFile* AsGDataFile() OVERRIDE;
+  virtual DriveFile* AsDriveFile() OVERRIDE;
 
   DocumentEntry::EntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
@@ -209,14 +209,14 @@ class GDataFile : public GDataEntry {
   std::string document_extension_;
   bool is_hosted_document_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataFile);
+  DISALLOW_COPY_AND_ASSIGN(DriveFile);
 };
 
 // Represents "directory" in a GData virtual file system. Maps to gdata
 // collection element.
-class GDataDirectory : public GDataEntry {
+class DriveDirectory : public DriveEntry {
  public:
-  virtual ~GDataDirectory();
+  virtual ~DriveDirectory();
 
   // Converts to/from proto.
   void FromProto(const DriveDirectoryProto& proto);
@@ -230,27 +230,27 @@ class GDataDirectory : public GDataEntry {
   friend class GDataDirectoryService;
   friend class GDataWapiFeedProcessor;
 
-  explicit GDataDirectory(GDataDirectoryService* directory_service);
+  explicit DriveDirectory(GDataDirectoryService* directory_service);
 
   // Initializes from DocumentEntry.
   virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
 
-  virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
+  virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
 
   // Adds child file to the directory and takes over the ownership of |file|
   // object. The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
   // TODO(satorux): Remove this. crbug.com/139649
-  void AddEntry(GDataEntry* entry);
+  void AddEntry(DriveEntry* entry);
 
   // Removes the entry from its children list and destroys the entry instance.
   // TODO(satorux): Remove this. crbug.com/139649
-  void RemoveEntry(GDataEntry* entry);
+  void RemoveEntry(DriveEntry* entry);
 
   // Takes over all entries from |dir|.
   // TODO(satorux): Remove this. crbug.com/139649
-  void TakeOverEntries(GDataDirectory* dir);
+  void TakeOverEntries(DriveDirectory* dir);
 
   // Takes over entry represented by |resource_id|. Helper function for
   // TakeOverEntries. TODO(satorux): Remove this. crbug.com/139649
@@ -262,7 +262,7 @@ class GDataDirectory : public GDataEntry {
 
   // Removes the entry from its children without destroying the
   // entry instance.
-  void RemoveChild(GDataEntry* entry);
+  void RemoveChild(DriveEntry* entry);
 
   // Removes child elements.
   void RemoveChildren();
@@ -278,9 +278,9 @@ class GDataDirectory : public GDataEntry {
   GDataChildMap child_files_;
   GDataChildMap child_directories_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
+  DISALLOW_COPY_AND_ASSIGN(DriveDirectory);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILES_H_

@@ -560,7 +560,7 @@ class GetGDataFilesFunction : public FileBrowserFunction {
   void OnFileReady(gdata::GDataFileError error,
                    const FilePath& local_path,
                    const std::string& unused_mime_type,
-                   gdata::GDataFileType file_type);
+                   gdata::DriveFileType file_type);
 
   std::queue<FilePath> remaining_gdata_paths_;
   ListValue* local_paths_;

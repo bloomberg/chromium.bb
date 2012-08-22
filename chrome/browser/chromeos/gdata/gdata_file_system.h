@@ -298,7 +298,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                 GDataFileError error,
                                 const FilePath& local_file_path,
                                 const std::string& unused_mime_type,
-                                GDataFileType file_type);
+                                DriveFileType file_type);
 
   // Invoked upon completion of GetFileByPath initiated by
   // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls
@@ -312,7 +312,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                         GDataFileError error,
                                         const FilePath& local_file_path,
                                         const std::string& unused_mime_type,
-                                        GDataFileType file_type);
+                                        DriveFileType file_type);
 
   // Invoked upon completion of GetFileByPath initiated by OpenFile. If
   // GetFileByPath is successful, calls MarkDirtyInCache to mark the cache
@@ -326,7 +326,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataFileError error,
       const FilePath& file_path,
       const std::string& mime_type,
-      GDataFileType file_type);
+      DriveFileType file_type);
 
   // Copies a document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.
@@ -529,9 +529,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Callback for GetEntryByResourceIdAsync.
   // Removes stale entry upon upload of file.
   void RemoveStaleEntryOnUpload(const std::string& resource_id,
-                                GDataDirectory* parent_dir,
+                                DriveDirectory* parent_dir,
                                 const FileMoveCallback& callback,
-                                GDataEntry* existing_entry);
+                                DriveEntry* existing_entry);
 
   // Continues to add an uploaded file after existing entry has been deleted.
   void ContinueAddUploadedFile(AddUploadedFileParams* params,
@@ -749,10 +749,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetFileByEntryOnUIThread(
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback,
-      GDataEntry* entry);
+      DriveEntry* entry);
   void GetEntryInfoByEntryOnUIThread(
       const GetEntryInfoWithFilePathCallback& callback,
-      GDataEntry* entry);
+      DriveEntry* entry);
   void UpdateFileByResourceIdOnUIThread(const std::string& resource_id,
                                         const FileOperationCallback& callback);
   void GetEntryInfoByPathOnUIThread(const FilePath& file_path,

@@ -24,17 +24,17 @@ namespace gdata {
 
 struct CreateDBParams;
 class DocumentEntry;
+class DriveDirectory;
+class DriveEntry;
 class DriveEntryProto;
-class GDataDirectory;
-class GDataEntry;
-class GDataFile;
+class DriveFile;
 class ResourceMetadataDB;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // File type on the gdata file system can be either a regular file or
 // a hosted document.
-enum GDataFileType {
+enum DriveFileType {
   REGULAR_FILE,
   HOSTED_DOCUMENT,
 };
@@ -66,7 +66,7 @@ const int32 kProtoVersion = 2;
 
 // Callback type used to get result of file search.
 // If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
-typedef base::Callback<void(GDataFileError error, GDataEntry* entry)>
+typedef base::Callback<void(GDataFileError error, DriveEntry* entry)>
     FindEntryCallback;
 
 // Used for file operations like removing files.
@@ -124,21 +124,21 @@ struct EntryInfoPairResult {
 typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
     GetEntryInfoPairCallback;
 
-// Class to handle GDataEntry* lookups, add/remove GDataEntry*.
+// Class to handle DriveEntry* lookups, add/remove DriveEntry*.
 class GDataDirectoryService {
  public:
   // Callback for GetEntryByResourceIdAsync.
-  typedef base::Callback<void(GDataEntry* entry)> GetEntryByResourceIdCallback;
+  typedef base::Callback<void(DriveEntry* entry)> GetEntryByResourceIdCallback;
 
-  // Map of resource id and serialized GDataEntry.
+  // Map of resource id and serialized DriveEntry.
   typedef std::map<std::string, std::string> SerializedMap;
-  // Map of resource id strings to GDataEntry*.
-  typedef std::map<std::string, GDataEntry*> ResourceMap;
+  // Map of resource id strings to DriveEntry*.
+  typedef std::map<std::string, DriveEntry*> ResourceMap;
 
   GDataDirectoryService();
   ~GDataDirectoryService();
 
-  GDataDirectory* root() { return root_.get(); }
+  DriveDirectory* root() { return root_.get(); }
 
   // Last time when we dumped serialized file system to disk.
   const base::Time& last_serialized() const { return last_serialized_; }
@@ -156,14 +156,14 @@ class GDataDirectoryService {
   const ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
 
-  // Creates a GDataEntry from a DocumentEntry.
-  GDataEntry* FromDocumentEntry(const DocumentEntry& doc);
+  // Creates a DriveEntry from a DocumentEntry.
+  DriveEntry* FromDocumentEntry(const DocumentEntry& doc);
 
-  // Creates a GDataFile instance.
-  GDataFile* CreateGDataFile();
+  // Creates a DriveFile instance.
+  DriveFile* CreateDriveFile();
 
-  // Creates a GDataDirectory instance.
-  GDataDirectory* CreateGDataDirectory();
+  // Creates a DriveDirectory instance.
+  DriveDirectory* CreateDriveDirectory();
 
   // Sets root directory resource id and initialize the root entry.
   void InitializeRootEntry(const std::string& root_id);
@@ -172,38 +172,38 @@ class GDataDirectoryService {
   // |callback| may not be null.
   // TODO(achuith,satorux): Use DriveEntryProto instead for new_entry.
   // crbug.com/142048
-  void AddEntryToDirectory(GDataDirectory* directory,
-                           GDataEntry* new_entry,
+  void AddEntryToDirectory(DriveDirectory* directory,
+                           DriveEntry* new_entry,
                            const FileMoveCallback& callback);
 
   // Moves |entry| to |directory_path| asynchronously. Removes entry from
   // previous parent. Must be called on UI thread. |callback| is called on the
   // UI thread. |callback| may not be null.
   void MoveEntryToDirectory(const FilePath& directory_path,
-                            GDataEntry* entry,
+                            DriveEntry* entry,
                             const FileMoveCallback& callback);
 
   // Removes |entry| from its parent. Calls |callback| with the path of the
   // parent directory. |callback| may not be null.
-  void RemoveEntryFromParent(GDataEntry* entry,
+  void RemoveEntryFromParent(DriveEntry* entry,
                              const FileMoveCallback& callback);
 
   // Adds the entry to resource map.
-  void AddEntryToResourceMap(GDataEntry* entry);
+  void AddEntryToResourceMap(DriveEntry* entry);
 
   // Removes the entry from resource map.
   void RemoveEntryFromResourceMap(const std::string& resource_id);
 
   // Searches for |file_path| synchronously.
   // TODO(satorux): Replace this with an async version crbug.com/137160
-  GDataEntry* FindEntryByPathSync(const FilePath& file_path);
+  DriveEntry* FindEntryByPathSync(const FilePath& file_path);
 
-  // Returns the GDataEntry* with the corresponding |resource_id|.
+  // Returns the DriveEntry* with the corresponding |resource_id|.
   // TODO(satorux): Remove this in favor of GetEntryInfoByResourceId()
   // but can be difficult. See crbug.com/137374
-  GDataEntry* GetEntryByResourceId(const std::string& resource_id);
+  DriveEntry* GetEntryByResourceId(const std::string& resource_id);
 
-  // Returns the GDataEntry* in the callback with the corresponding
+  // Returns the DriveEntry* in the callback with the corresponding
   // |resource_id|. TODO(satorux): Remove this in favor of
   // GetEntryInfoByResourceId(). crbug.com/137512
   void GetEntryByResourceIdAsync(const std::string& resource_id,
@@ -245,7 +245,7 @@ class GDataDirectoryService {
 
   // Replaces file entry with the same resource id as |fresh_file| with its
   // fresh value |fresh_file|.
-  void RefreshFile(scoped_ptr<GDataFile> fresh_file);
+  void RefreshFile(scoped_ptr<DriveFile> fresh_file);
 
   // Removes all child files of |directory| and replace with file_map.
   // |callback| is called with the directory path. |callback| may not be null.
@@ -272,12 +272,12 @@ class GDataDirectoryService {
   // Clears root_ and the resource map.
   void ClearRoot();
 
-  // Creates GDataEntry from serialized string.
-  scoped_ptr<GDataEntry> FromProtoString(
+  // Creates DriveEntry from serialized string.
+  scoped_ptr<DriveEntry> FromProtoString(
       const std::string& serialized_proto);
 
-  // Continues with GetEntryInfoPairByPaths after the first GDataEntry has been
-  // asynchronously fetched. This fetches the second GDataEntry only if the
+  // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
+  // asynchronously fetched. This fetches the second DriveEntry only if the
   // first was found.
   void GetEntryInfoPairByPathsAfterGetFirst(
       const FilePath& first_path,
@@ -286,7 +286,7 @@ class GDataDirectoryService {
       GDataFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Continues with GetIntroInfoPairByPaths after the second GDataEntry has been
+  // Continues with GetIntroInfoPairByPaths after the second DriveEntry has been
   // asynchronously fetched.
   void GetEntryInfoPairByPathsAfterGetSecond(
       const FilePath& second_path,
@@ -295,18 +295,17 @@ class GDataDirectoryService {
       GDataFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  // These internal functions need friend access to private GDataDirectory
+  // These internal functions need friend access to private DriveDirectory
   // methods.
   // Replaces file entry |old_entry| with its fresh value |fresh_file|.
-  static void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
-                                  GDataEntry* old_entry);
+  static void RefreshFileInternal(scoped_ptr<DriveFile> fresh_file,
+                                  DriveEntry* old_entry);
 
   // Removes all child files of |directory| and replace with file_map.
   // |callback| may not be null.
   static void RefreshDirectoryInternal(const ResourceMap& file_map,
                                        const FileMoveCallback& callback,
-                                       GDataEntry* directory_entry);
-
+                                       DriveEntry* directory_entry);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -314,7 +313,7 @@ class GDataDirectoryService {
 
   ResourceMap resource_map_;
 
-  scoped_ptr<GDataDirectory> root_;  // Stored in the serialized proto.
+  scoped_ptr<DriveDirectory> root_;  // Stored in the serialized proto.
 
   base::Time last_serialized_;
   size_t serialized_size_;

@@ -15,8 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/operation_registry.h"
@@ -232,7 +232,7 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
 // in a new tab with a URL computed based on the |file_type|
 void OnGDataFileFound(Profile* profile,
                       const FilePath& file_path,
-                      gdata::GDataFileType file_type,
+                      gdata::DriveFileType file_type,
                       gdata::GDataFileError error,
                       scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

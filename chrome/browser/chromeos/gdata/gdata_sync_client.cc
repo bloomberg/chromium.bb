@@ -403,7 +403,7 @@ void GDataSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
                                           GDataFileError error,
                                           const FilePath& local_path,
                                           const std::string& ununsed_mime_type,
-                                          GDataFileType file_type) {
+                                          DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == GDATA_FILE_OK) {

@@ -167,7 +167,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
                            GDataFileError error,
                            const FilePath& local_path,
                            const std::string& ununsed_mime_type,
-                           GDataFileType file_type);
+                           DriveFileType file_type);
 
   // Called when the file for |resource_id| is uploaded.
   // Calls DoSyncLoop() to go back to the sync loop.

@@ -16,11 +16,11 @@
 
 namespace gdata {
 
-class GDataDirectory;
+class DriveDirectory;
 class GDataDirectoryService;
-class GDataEntry;
+class DriveEntry;
 
-typedef std::map<std::string /* resource_id */, GDataEntry*>
+typedef std::map<std::string /* resource_id */, DriveEntry*>
     FileResourceIdMap;
 
 // Struct used to record UMA stats with FeedToFileResourceMap().
@@ -81,8 +81,8 @@ class GDataWapiFeedProcessor {
   // added to |orphaned_dir_service| such notifications are not raised since
   // we ignore such files and don't add them to the file system now.
   static void AddEntryToDirectoryAndCollectChangedDirectories(
-      GDataEntry* entry,
-      GDataDirectory* directory,
+      DriveEntry* entry,
+      DriveDirectory* directory,
       GDataDirectoryService* orphaned_dir_service,
       std::set<FilePath>* changed_dirs);
 
@@ -90,15 +90,15 @@ class GDataWapiFeedProcessor {
   // directory too, it will collect all its children file paths into
   // |changed_dirs| as well.
   static void RemoveEntryFromDirectoryAndCollectChangedDirectories(
-      GDataDirectory* directory,
-      GDataEntry* entry,
+      DriveDirectory* directory,
+      DriveEntry* entry,
       std::set<FilePath>* changed_dirs);
 
   // Finds directory where new |file| should be added to during feed processing.
   // |orphaned_entries_dir| collects files/dirs that don't have a parent in
   // either locally cached file system or in this new feed.
-  GDataDirectory* FindDirectoryForNewEntry(
-      GDataEntry* new_entry,
+  DriveDirectory* FindDirectoryForNewEntry(
+      DriveEntry* new_entry,
       const FileResourceIdMap& file_map,
       GDataDirectoryService* orphaned_dir_service);
 

@@ -12,7 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -167,7 +167,7 @@ GDataDirectoryService::GDataDirectoryService()
       largest_changestamp_(0),
       origin_(UNINITIALIZED),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  root_.reset(CreateGDataDirectory());
+  root_.reset(CreateDriveDirectory());
   if (!util::IsDriveV2ApiEnabled())
     InitializeRootEntry(kGDataRootDirectoryResourceId);
 }
@@ -181,28 +181,28 @@ GDataDirectoryService::~GDataDirectoryService() {
                                       directory_service_db_.release());
 }
 
-GDataEntry* GDataDirectoryService::FromDocumentEntry(const DocumentEntry& doc) {
-  GDataEntry* entry = NULL;
+DriveEntry* GDataDirectoryService::FromDocumentEntry(const DocumentEntry& doc) {
+  DriveEntry* entry = NULL;
   if (doc.is_folder())
-    entry = CreateGDataDirectory();
+    entry = CreateDriveDirectory();
   else if (doc.is_hosted_document() || doc.is_file())
-    entry = CreateGDataFile();
+    entry = CreateDriveFile();
 
   if (entry)
     entry->InitFromDocumentEntry(doc);
   return entry;
 }
 
-GDataFile* GDataDirectoryService::CreateGDataFile() {
-  return new GDataFile(this);
+DriveFile* GDataDirectoryService::CreateDriveFile() {
+  return new DriveFile(this);
 }
 
-GDataDirectory* GDataDirectoryService::CreateGDataDirectory() {
-  return new GDataDirectory(this);
+DriveDirectory* GDataDirectoryService::CreateDriveDirectory() {
+  return new DriveDirectory(this);
 }
 
 void GDataDirectoryService::InitializeRootEntry(const std::string& root_id) {
-  root_.reset(CreateGDataDirectory());
+  root_.reset(CreateDriveDirectory());
   root_->set_title(kGDataRootDirectory);
   root_->SetBaseNameFromTitle();
   root_->set_resource_id(root_id);
@@ -220,8 +220,8 @@ void GDataDirectoryService::ClearRoot() {
 }
 
 void GDataDirectoryService::AddEntryToDirectory(
-    GDataDirectory* directory,
-    GDataEntry* new_entry,
+    DriveDirectory* directory,
+    DriveEntry* new_entry,
     const FileMoveCallback& callback) {
   DCHECK(directory);
   DCHECK(new_entry);
@@ -235,7 +235,7 @@ void GDataDirectoryService::AddEntryToDirectory(
 
 void GDataDirectoryService::MoveEntryToDirectory(
     const FilePath& directory_path,
-    GDataEntry* entry,
+    DriveEntry* entry,
     const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(entry);
@@ -244,15 +244,15 @@ void GDataDirectoryService::MoveEntryToDirectory(
   if (entry->parent())
     entry->parent()->RemoveChild(entry);
 
-  GDataEntry* destination = FindEntryByPathSync(directory_path);
+  DriveEntry* destination = FindEntryByPathSync(directory_path);
   FilePath moved_file_path;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
   if (!destination) {
     error = GDATA_FILE_ERROR_NOT_FOUND;
-  } else if (!destination->AsGDataDirectory()) {
+  } else if (!destination->AsDriveDirectory()) {
     error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
   } else {
-    destination->AsGDataDirectory()->AddEntry(entry);
+    destination->AsDriveDirectory()->AddEntry(entry);
     moved_file_path = entry->GetFilePath();
     error = GDATA_FILE_OK;
   }
@@ -262,9 +262,9 @@ void GDataDirectoryService::MoveEntryToDirectory(
 }
 
 void GDataDirectoryService::RemoveEntryFromParent(
-    GDataEntry* entry,
+    DriveEntry* entry,
     const FileMoveCallback& callback) {
-  GDataDirectory* parent = entry->parent();
+  DriveDirectory* parent = entry->parent();
   DCHECK(parent);
   DCHECK(!callback.is_null());
   DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
@@ -274,7 +274,7 @@ void GDataDirectoryService::RemoveEntryFromParent(
       base::Bind(callback, GDATA_FILE_OK, parent->GetFilePath()));
 }
 
-void GDataDirectoryService::AddEntryToResourceMap(GDataEntry* entry) {
+void GDataDirectoryService::AddEntryToResourceMap(DriveEntry* entry) {
   DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
   DCHECK(!entry->resource_id().empty());
   std::pair<ResourceMap::iterator, bool> ret =
@@ -290,32 +290,32 @@ void GDataDirectoryService::RemoveEntryFromResourceMap(
   DCHECK_EQ(1u, ret);  // resource_id was found in the map.
 }
 
-GDataEntry* GDataDirectoryService::FindEntryByPathSync(
+DriveEntry* GDataDirectoryService::FindEntryByPathSync(
     const FilePath& file_path) {
   if (file_path == root_->GetFilePath())
     return root_.get();
 
   std::vector<FilePath::StringType> components;
   file_path.GetComponents(&components);
-  GDataDirectory* current_dir = root_.get();
+  DriveDirectory* current_dir = root_.get();
 
   for (size_t i = 1; i < components.size() && current_dir; ++i) {
     std::string resource_id = current_dir->FindChild(components[i]);
     if (resource_id.empty())
       return NULL;
 
-    GDataEntry* entry = GetEntryByResourceId(resource_id);
+    DriveEntry* entry = GetEntryByResourceId(resource_id);
     DCHECK(entry);
 
     if (i == components.size() - 1)  // Last component.
       return entry;
     else
-      current_dir = entry->AsGDataDirectory();
+      current_dir = entry->AsDriveDirectory();
   }
   return NULL;
 }
 
-GDataEntry* GDataDirectoryService::GetEntryByResourceId(
+DriveEntry* GDataDirectoryService::GetEntryByResourceId(
     const std::string& resource_id) {
   DCHECK(!resource_id.empty());
   ResourceMap::const_iterator iter = resource_map_.find(resource_id);
@@ -325,7 +325,7 @@ GDataEntry* GDataDirectoryService::GetEntryByResourceId(
 void GDataDirectoryService::GetEntryByResourceIdAsync(
     const std::string& resource_id,
     const GetEntryByResourceIdCallback& callback) {
-  GDataEntry* entry = GetEntryByResourceId(resource_id);
+  DriveEntry* entry = GetEntryByResourceId(resource_id);
   callback.Run(entry);
 }
 
@@ -339,7 +339,7 @@ void GDataDirectoryService::GetEntryInfoByResourceId(
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
   FilePath drive_file_path;
 
-  GDataEntry* entry = GetEntryByResourceId(resource_id);
+  DriveEntry* entry = GetEntryByResourceId(resource_id);
   if (entry) {
     entry_proto.reset(new DriveEntryProto);
     entry->ToProtoFull(entry_proto.get());
@@ -366,7 +366,7 @@ void GDataDirectoryService::GetEntryInfoByPath(
   scoped_ptr<DriveEntryProto> entry_proto;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
 
-  GDataEntry* entry = FindEntryByPathSync(path);
+  DriveEntry* entry = FindEntryByPathSync(path);
   if (entry) {
     entry_proto.reset(new DriveEntryProto);
     entry->ToProtoFull(entry_proto.get());
@@ -389,11 +389,11 @@ void GDataDirectoryService::ReadDirectoryByPath(
   scoped_ptr<DriveEntryProtoVector> entries;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
 
-  GDataEntry* entry = FindEntryByPathSync(path);
-  if (entry && entry->AsGDataDirectory()) {
-    entries = entry->AsGDataDirectory()->ToProtoVector();
+  DriveEntry* entry = FindEntryByPathSync(path);
+  if (entry && entry->AsDriveDirectory()) {
+    entries = entry->AsDriveDirectory()->ToProtoVector();
     error = GDATA_FILE_OK;
-  } else if (entry && !entry->AsGDataDirectory()) {
+  } else if (entry && !entry->AsDriveDirectory()) {
     error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
   } else {
     error = GDATA_FILE_ERROR_NOT_FOUND;
@@ -421,7 +421,7 @@ void GDataDirectoryService::GetEntryInfoPairByPaths(
                  callback));
 }
 
-void GDataDirectoryService::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
+void GDataDirectoryService::RefreshFile(scoped_ptr<DriveFile> fresh_file) {
   DCHECK(fresh_file.get());
 
   // Need to get a reference here because Passed() could get evaluated first.
@@ -434,12 +434,12 @@ void GDataDirectoryService::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
 
 // static
 void GDataDirectoryService::RefreshFileInternal(
-    scoped_ptr<GDataFile> fresh_file,
-    GDataEntry* old_entry) {
-  GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
+    scoped_ptr<DriveFile> fresh_file,
+    DriveEntry* old_entry) {
+  DriveDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
   if (entry_parent) {
     DCHECK_EQ(fresh_file->resource_id(), old_entry->resource_id());
-    DCHECK(old_entry->AsGDataFile());
+    DCHECK(old_entry->AsDriveFile());
 
     entry_parent->RemoveEntry(old_entry);
     entry_parent->AddEntry(fresh_file.release());
@@ -462,7 +462,7 @@ void GDataDirectoryService::RefreshDirectory(
 void GDataDirectoryService::RefreshDirectoryInternal(
     const ResourceMap& file_map,
     const FileMoveCallback& callback,
-    GDataEntry* directory_entry) {
+    DriveEntry* directory_entry) {
   DCHECK(!callback.is_null());
 
   if (!directory_entry) {
@@ -470,7 +470,7 @@ void GDataDirectoryService::RefreshDirectoryInternal(
     return;
   }
 
-  GDataDirectory* directory = directory_entry->AsGDataDirectory();
+  DriveDirectory* directory = directory_entry->AsDriveDirectory();
   if (!directory) {
     callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY, FilePath());
     return;
@@ -481,9 +481,9 @@ void GDataDirectoryService::RefreshDirectoryInternal(
   // Add files from file_map.
   for (ResourceMap::const_iterator it = file_map.begin();
        it != file_map.end(); ++it) {
-    scoped_ptr<GDataEntry> entry(it->second);
+    scoped_ptr<DriveEntry> entry(it->second);
     // Skip if it's not a file (i.e. directory).
-    if (!entry->AsGDataFile())
+    if (!entry->AsDriveFile())
       continue;
     directory->AddEntry(entry.release());
   }
@@ -574,24 +574,24 @@ void GDataDirectoryService::InitResourceMap(
 
     const std::string resource_id =
         iter->first.substr(strlen(kDBKeyResourceIdPrefix));
-    scoped_ptr<GDataEntry> entry = FromProtoString(iter->second);
+    scoped_ptr<DriveEntry> entry = FromProtoString(iter->second);
     if (entry.get()) {
       DVLOG(1) << "Inserting resource " << resource_id
                << " into resource_map";
       resource_map.insert(std::make_pair(resource_id, entry.release()));
     } else {
-      NOTREACHED() << "Failed to parse GDataEntry for resource " << resource_id;
+      NOTREACHED() << "Failed to parse DriveEntry for resource " << resource_id;
     }
   }
 
   // Fix up parent-child relations.
   for (ResourceMap::iterator iter = resource_map.begin();
       iter != resource_map.end(); ++iter) {
-    GDataEntry* entry = iter->second;
+    DriveEntry* entry = iter->second;
     ResourceMap::iterator parent_it =
         resource_map.find(entry->parent_resource_id());
     if (parent_it != resource_map.end()) {
-      GDataDirectory* parent = parent_it->second->AsGDataDirectory();
+      DriveDirectory* parent = parent_it->second->AsDriveDirectory();
       if (parent) {
         DVLOG(1) << "Adding " << entry->resource_id()
                  << " as a child of " << parent->resource_id();
@@ -600,7 +600,7 @@ void GDataDirectoryService::InitResourceMap(
         NOTREACHED() << "Parent is not a directory " << parent->resource_id();
       }
     } else if (entry->resource_id() == kGDataRootDirectoryResourceId) {
-      root_.reset(entry->AsGDataDirectory());
+      root_.reset(entry->AsDriveDirectory());
       DCHECK(root_.get());
       AddEntryToResourceMap(root_.get());
     } else {
@@ -689,21 +689,21 @@ bool GDataDirectoryService::ParseFromString(
   return true;
 }
 
-scoped_ptr<GDataEntry> GDataDirectoryService::FromProtoString(
+scoped_ptr<DriveEntry> GDataDirectoryService::FromProtoString(
     const std::string& serialized_proto) {
   DriveEntryProto entry_proto;
   if (!entry_proto.ParseFromString(serialized_proto))
-    return scoped_ptr<GDataEntry>();
+    return scoped_ptr<DriveEntry>();
 
-  scoped_ptr<GDataEntry> entry;
+  scoped_ptr<DriveEntry> entry;
   if (entry_proto.file_info().is_directory()) {
-    entry.reset(CreateGDataDirectory());
-    // Call GDataEntry::FromProto instead of GDataDirectory::FromProto because
+    entry.reset(CreateDriveDirectory());
+    // Call DriveEntry::FromProto instead of DriveDirectory::FromProto because
     // the proto does not include children.
     entry->FromProto(entry_proto);
   } else {
-    scoped_ptr<GDataFile> file(CreateGDataFile());
-    // Call GDataFile::FromProto.
+    scoped_ptr<DriveFile> file(CreateDriveFile());
+    // Call DriveFile::FromProto.
     file->FromProto(entry_proto);
     entry.reset(file.release());
   }

@@ -2026,7 +2026,7 @@ void GetGDataFilesFunction::OnFileReady(
     gdata::GDataFileError error,
     const FilePath& local_path,
     const std::string& unused_mime_type,
-    gdata::GDataFileType file_type) {
+    gdata::DriveFileType file_type) {
   FilePath gdata_path = remaining_gdata_paths_.front();
 
   if (error == gdata::GDATA_FILE_OK) {

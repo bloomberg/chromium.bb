@@ -38,7 +38,7 @@ struct SearchResultInfo {
 typedef base::Callback<void(GDataFileError error,
                             const FilePath& file_path,
                             const std::string& mime_type,
-                            GDataFileType file_type)> GetFileCallback;
+                            DriveFileType file_type)> GetFileCallback;
 
 // Used to read a directory from the file system.
 // Similar to ReadDirectoryCallback but this one provides

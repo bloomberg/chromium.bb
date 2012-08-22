@@ -12,8 +12,8 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,7 +67,7 @@ void OnGetFileByPathForOpen(
     GDataFileError gdata_error,
     const FilePath& local_path,
     const std::string& unused_mime_type,
-    GDataFileType file_type) {
+    DriveFileType file_type) {
   base::PlatformFileError error =
       util::GDataFileErrorToPlatformError(gdata_error);
   if (error != base::PLATFORM_FILE_OK) {
@@ -100,7 +100,7 @@ void CallSnapshotFileCallback(
     GDataFileError gdata_error,
     const FilePath& local_path,
     const std::string& unused_mime_type,
-    GDataFileType file_type) {
+    DriveFileType file_type) {
   scoped_refptr<ShareableFileReference> file_ref;
   base::PlatformFileError error =
       util::GDataFileErrorToPlatformError(gdata_error);
@@ -166,7 +166,7 @@ void DidCloseFileForTruncate(
 base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
     const DriveEntryProto& proto) {
   base::PlatformFileInfo file_info;
-  GDataEntry::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
+  DriveEntry::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
 
   base::FileUtilProxy::Entry entry;
   entry.name = proto.base_name();
@@ -596,7 +596,7 @@ void GDataFileSystemProxy::OnGetEntryInfoByPath(
   }
 
   base::PlatformFileInfo file_info;
-  GDataEntry::ConvertProtoToPlatformFileInfo(
+  DriveEntry::ConvertProtoToPlatformFileInfo(
       entry_proto->file_info(),
       &file_info);
 
@@ -668,7 +668,7 @@ void GDataFileSystemProxy::OnGetMetadata(
   DCHECK(entry_proto.get());
 
   base::PlatformFileInfo file_info;
-  GDataEntry::ConvertProtoToPlatformFileInfo(
+  DriveEntry::ConvertProtoToPlatformFileInfo(
       entry_proto->file_info(),
       &file_info);
 

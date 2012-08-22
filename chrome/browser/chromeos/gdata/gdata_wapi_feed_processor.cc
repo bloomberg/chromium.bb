@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -107,14 +107,14 @@ void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
        it != file_map->end();) {
     // Ensure that the entry is deleted, unless the ownership is explicitly
     // transferred by entry.release().
-    scoped_ptr<GDataEntry> entry(it->second);
+    scoped_ptr<DriveEntry> entry(it->second);
     DCHECK_EQ(it->first, entry->resource_id());
     // Erase the entry so the deleted entry won't be referenced.
     file_map->erase(it++);
 
-    GDataEntry* old_entry =
+    DriveEntry* old_entry =
         directory_service_->GetEntryByResourceId(entry->resource_id());
-    GDataDirectory* dest_dir = NULL;
+    DriveDirectory* dest_dir = NULL;
     if (entry->is_deleted()) {  // Deleted file/directory.
       DVLOG(1) << "Removing file " << entry->base_name();
       if (!old_entry)
@@ -137,9 +137,9 @@ void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
         continue;
       }
       // Move children files over if we are dealing with directories.
-      if (old_entry->AsGDataDirectory() && entry->AsGDataDirectory()) {
-        entry->AsGDataDirectory()->TakeOverEntries(
-            old_entry->AsGDataDirectory());
+      if (old_entry->AsDriveDirectory() && entry->AsDriveDirectory()) {
+        entry->AsDriveDirectory()->TakeOverEntries(
+            old_entry->AsDriveDirectory());
       }
       // Remove the old instance of this entry.
       RemoveEntryFromDirectoryAndCollectChangedDirectories(
@@ -183,50 +183,50 @@ void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
 
 // static
 void GDataWapiFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
-    GDataEntry* entry,
-    GDataDirectory* directory,
+    DriveEntry* entry,
+    DriveDirectory* directory,
     GDataDirectoryService* orphaned_dir_service,
     std::set<FilePath>* changed_dirs) {
   directory->AddEntry(entry);
-  if (entry->AsGDataDirectory() && directory != orphaned_dir_service->root())
+  if (entry->AsDriveDirectory() && directory != orphaned_dir_service->root())
     changed_dirs->insert(entry->GetFilePath());
 }
 
 // static
 void GDataWapiFeedProcessor::
 RemoveEntryFromDirectoryAndCollectChangedDirectories(
-    GDataDirectory* directory,
-    GDataEntry* entry,
+    DriveDirectory* directory,
+    DriveEntry* entry,
     std::set<FilePath>* changed_dirs) {
   // Get the list of all sub-directory paths, so we can notify their listeners
   // that they are smoked.
-  GDataDirectory* dir = entry->AsGDataDirectory();
+  DriveDirectory* dir = entry->AsDriveDirectory();
   if (dir)
     dir->GetChildDirectoryPaths(changed_dirs);
   directory->RemoveEntry(entry);
 }
 
-GDataDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
-    GDataEntry* new_entry,
+DriveDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
+    DriveEntry* new_entry,
     const FileResourceIdMap& file_map,
     GDataDirectoryService* orphaned_dir_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GDataDirectory* dir = NULL;
+  DriveDirectory* dir = NULL;
   // Added file.
   const std::string& parent_id = new_entry->parent_resource_id();
   if (parent_id.empty()) {
     dir = directory_service_->root();
     DVLOG(1) << "Root parent for " << new_entry->base_name();
   } else {
-    GDataEntry* entry = directory_service_->GetEntryByResourceId(parent_id);
-    dir = entry ? entry->AsGDataDirectory() : NULL;
+    DriveEntry* entry = directory_service_->GetEntryByResourceId(parent_id);
+    dir = entry ? entry->AsDriveDirectory() : NULL;
     if (!dir) {
       // The parent directory was also added with this set of feeds.
       FileResourceIdMap::const_iterator find_iter =
           file_map.find(parent_id);
       dir = (find_iter != file_map.end() &&
              find_iter->second) ?
-                find_iter->second->AsGDataDirectory() : NULL;
+                find_iter->second->AsDriveDirectory() : NULL;
       if (dir) {
         DVLOG(1) << "Found parent for " << new_entry->base_name()
                  << " in file_map " << parent_id;
@@ -270,12 +270,12 @@ GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
              feed->entries().begin();
          iter != feed->entries().end(); ++iter) {
       DocumentEntry* doc = *iter;
-      GDataEntry* entry = directory_service_->FromDocumentEntry(*doc);
+      DriveEntry* entry = directory_service_->FromDocumentEntry(*doc);
       // Some document entries don't map into files (i.e. sites).
       if (!entry)
         continue;
       // Count the number of files.
-      GDataFile* as_file = entry->AsGDataFile();
+      DriveFile* as_file = entry->AsDriveFile();
       if (as_file) {
         if (as_file->is_hosted_document())
           ++uma_stats->num_hosted_documents;
@@ -288,8 +288,8 @@ GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
           file_map->find(entry->resource_id());
 
       // An entry with the same self link may already exist, so we need to
-      // release the existing GDataEntry instance before overwriting the
-      // entry with another GDataEntry instance.
+      // release the existing DriveEntry instance before overwriting the
+      // entry with another DriveEntry instance.
       if (map_entry != file_map->end()) {
         LOG(WARNING) << "Found duplicate file "
                      << map_entry->second->base_name();
@@ -298,13 +298,13 @@ GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
         file_map->erase(map_entry);
       }
       file_map->insert(
-          std::pair<std::string, GDataEntry*>(entry->resource_id(), entry));
+          std::pair<std::string, DriveEntry*>(entry->resource_id(), entry));
     }
   }
 
   if (error != GDATA_FILE_OK) {
-    // If the code above fails to parse a feed, any GDataEntry instance
-    // added to |file_by_url| is not managed by a GDataDirectory instance,
+    // If the code above fails to parse a feed, any DriveEntry instance
+    // added to |file_by_url| is not managed by a DriveDirectory instance,
     // so we need to explicitly release them here.
     STLDeleteValues(file_map);
   }

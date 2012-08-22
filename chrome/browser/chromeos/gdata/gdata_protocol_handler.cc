@@ -167,7 +167,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
   void OnGetFileByResourceId(GDataFileError error,
                              const FilePath& local_file_path,
                              const std::string& mime_type,
-                             GDataFileType file_type);
+                             DriveFileType file_type);
 
   // Helper callback for GetFileSizeOnBlockingPool that sets |remaining_bytes_|
   // to |file_size|, and notifies result for Start().
@@ -658,7 +658,7 @@ void GDataURLRequestJob::OnGetFileByResourceId(
     GDataFileError error,
     const FilePath& local_file_path,
     const std::string& mime_type,
-    GDataFileType file_type) {
+    DriveFileType file_type) {
   DVLOG(1) << "Got OnGetFileByResourceId";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

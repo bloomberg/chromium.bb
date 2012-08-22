@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/drive_files.h"
 
 #include "base/platform_file.h"
 #include "base/string_util.h"
@@ -27,27 +27,27 @@ std::string ExtractResourceId(const GURL& url) {
 
 }  // namespace
 
-// GDataEntry class.
+// DriveEntry class.
 
-GDataEntry::GDataEntry(GDataDirectoryService* directory_service)
+DriveEntry::DriveEntry(GDataDirectoryService* directory_service)
     : parent_(NULL),
       directory_service_(directory_service),
       deleted_(false) {
   DCHECK(directory_service);
 }
 
-GDataEntry::~GDataEntry() {
+DriveEntry::~DriveEntry() {
 }
 
-GDataFile* GDataEntry::AsGDataFile() {
+DriveFile* DriveEntry::AsDriveFile() {
   return NULL;
 }
 
-GDataDirectory* GDataEntry::AsGDataDirectory() {
+DriveDirectory* DriveEntry::AsDriveDirectory() {
   return NULL;
 }
 
-void GDataEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
+void DriveEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
   // interface and other client to use the 'title' attribute, instead of
@@ -73,17 +73,17 @@ void GDataEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
     parent_resource_id_ = ExtractResourceId(parent_link->href());
 }
 
-const GDataFile* GDataEntry::AsGDataFileConst() const {
+const DriveFile* DriveEntry::AsDriveFileConst() const {
   // cast away const and call the non-const version. This is safe.
-  return const_cast<GDataEntry*>(this)->AsGDataFile();
+  return const_cast<DriveEntry*>(this)->AsDriveFile();
 }
 
-const GDataDirectory* GDataEntry::AsGDataDirectoryConst() const {
+const DriveDirectory* DriveEntry::AsDriveDirectoryConst() const {
   // cast away const and call the non-const version. This is safe.
-  return const_cast<GDataEntry*>(this)->AsGDataDirectory();
+  return const_cast<DriveEntry*>(this)->AsDriveDirectory();
 }
 
-FilePath GDataEntry::GetFilePath() const {
+FilePath DriveEntry::GetFilePath() const {
   FilePath path;
   if (parent())
     path = parent()->GetFilePath();
@@ -91,17 +91,17 @@ FilePath GDataEntry::GetFilePath() const {
   return path;
 }
 
-void GDataEntry::SetParent(GDataDirectory* parent) {
+void DriveEntry::SetParent(DriveDirectory* parent) {
   parent_ = parent;
   parent_resource_id_ = parent ? parent->resource_id() : "";
 }
 
-void GDataEntry::SetBaseNameFromTitle() {
+void DriveEntry::SetBaseNameFromTitle() {
   base_name_ = EscapeUtf8FileName(title_);
 }
 
 // static
-std::string GDataEntry::EscapeUtf8FileName(const std::string& input) {
+std::string DriveEntry::EscapeUtf8FileName(const std::string& input) {
   std::string output;
   if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
     return output;
@@ -110,38 +110,38 @@ std::string GDataEntry::EscapeUtf8FileName(const std::string& input) {
 }
 
 // static
-std::string GDataEntry::UnescapeUtf8FileName(const std::string& input) {
+std::string DriveEntry::UnescapeUtf8FileName(const std::string& input) {
   std::string output = input;
   ReplaceSubstringsAfterOffset(&output, 0, std::string(kEscapedSlash), kSlash);
   return output;
 }
 
-// GDataFile class implementation.
+// DriveFile class implementation.
 
-GDataFile::GDataFile(GDataDirectoryService* directory_service)
-    : GDataEntry(directory_service),
+DriveFile::DriveFile(GDataDirectoryService* directory_service)
+    : DriveEntry(directory_service),
       kind_(DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
 }
 
-GDataFile::~GDataFile() {
+DriveFile::~DriveFile() {
 }
 
-GDataFile* GDataFile::AsGDataFile() {
+DriveFile* DriveFile::AsDriveFile() {
   return this;
 }
 
-void GDataFile::SetBaseNameFromTitle() {
+void DriveFile::SetBaseNameFromTitle() {
   if (is_hosted_document_) {
     base_name_ = EscapeUtf8FileName(title_ + document_extension_);
   } else {
-    GDataEntry::SetBaseNameFromTitle();
+    DriveEntry::SetBaseNameFromTitle();
   }
 }
 
-void GDataFile::InitFromDocumentEntry(const DocumentEntry& doc) {
-  GDataEntry::InitFromDocumentEntry(doc);
+void DriveFile::InitFromDocumentEntry(const DocumentEntry& doc) {
+  DriveEntry::InitFromDocumentEntry(doc);
 
   // Check if this entry is a true file, or...
   if (doc.is_file()) {
@@ -180,30 +180,30 @@ void GDataFile::InitFromDocumentEntry(const DocumentEntry& doc) {
     alternate_url_ = alternate_link->href();
 }
 
-// GDataDirectory class implementation.
+// DriveDirectory class implementation.
 
-GDataDirectory::GDataDirectory(GDataDirectoryService* directory_service)
-    : GDataEntry(directory_service) {
+DriveDirectory::DriveDirectory(GDataDirectoryService* directory_service)
+    : DriveEntry(directory_service) {
   file_info_.is_directory = true;
 }
 
-GDataDirectory::~GDataDirectory() {
+DriveDirectory::~DriveDirectory() {
   RemoveChildren();
 }
 
-GDataDirectory* GDataDirectory::AsGDataDirectory() {
+DriveDirectory* DriveDirectory::AsDriveDirectory() {
   return this;
 }
 
-void GDataDirectory::InitFromDocumentEntry(const DocumentEntry& doc) {
-  GDataEntry::InitFromDocumentEntry(doc);
+void DriveDirectory::InitFromDocumentEntry(const DocumentEntry& doc) {
+  DriveEntry::InitFromDocumentEntry(doc);
 
   const Link* upload_link = doc.GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   if (upload_link)
     upload_url_ = upload_link->href();
 }
 
-void GDataDirectory::AddEntry(GDataEntry* entry) {
+void DriveDirectory::AddEntry(DriveEntry* entry) {
   DCHECK(!entry->parent());
 
   // The entry name may have been changed due to prior name de-duplication.
@@ -240,17 +240,17 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
   directory_service_->AddEntryToResourceMap(entry);
 
   // Setup child and parent links.
-  if (entry->AsGDataFile())
+  if (entry->AsDriveFile())
     child_files_.insert(std::make_pair(entry->base_name(),
                                        entry->resource_id()));
 
-  if (entry->AsGDataDirectory())
+  if (entry->AsDriveDirectory())
     child_directories_.insert(std::make_pair(entry->base_name(),
                                              entry->resource_id()));
   entry->SetParent(this);
 }
 
-void GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
+void DriveDirectory::TakeOverEntries(DriveDirectory* dir) {
   for (GDataChildMap::const_iterator iter = dir->child_files_.begin();
        iter != dir->child_files_.end(); ++iter) {
     TakeOverEntry(iter->second);
@@ -264,22 +264,22 @@ void GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
   dir->child_directories_.clear();
 }
 
-void GDataDirectory::TakeOverEntry(const std::string& resource_id) {
-  GDataEntry* entry = directory_service_->GetEntryByResourceId(resource_id);
+void DriveDirectory::TakeOverEntry(const std::string& resource_id) {
+  DriveEntry* entry = directory_service_->GetEntryByResourceId(resource_id);
   DCHECK(entry);
   directory_service_->RemoveEntryFromResourceMap(resource_id);
   entry->SetParent(NULL);
   AddEntry(entry);
 }
 
-void GDataDirectory::RemoveEntry(GDataEntry* entry) {
+void DriveDirectory::RemoveEntry(DriveEntry* entry) {
   DCHECK(entry);
 
   RemoveChild(entry);
   delete entry;
 }
 
-std::string GDataDirectory::FindChild(
+std::string DriveDirectory::FindChild(
     const FilePath::StringType& file_name) const {
   GDataChildMap::const_iterator iter = child_files_.find(file_name);
   if (iter != child_files_.end())
@@ -292,7 +292,7 @@ std::string GDataDirectory::FindChild(
   return std::string();
 }
 
-void GDataDirectory::RemoveChild(GDataEntry* entry) {
+void DriveDirectory::RemoveChild(DriveEntry* entry) {
   DCHECK(entry);
 
   const std::string& base_name(entry->base_name());
@@ -308,16 +308,16 @@ void GDataDirectory::RemoveChild(GDataEntry* entry) {
   entry->SetParent(NULL);
 }
 
-void GDataDirectory::RemoveChildren() {
+void DriveDirectory::RemoveChildren() {
   RemoveChildFiles();
   RemoveChildDirectories();
 }
 
-void GDataDirectory::RemoveChildFiles() {
+void DriveDirectory::RemoveChildFiles() {
   DVLOG(1) << "RemoveChildFiles " << resource_id();
   for (GDataChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    GDataEntry* child = directory_service_->GetEntryByResourceId(iter->second);
+    DriveEntry* child = directory_service_->GetEntryByResourceId(iter->second);
     DCHECK(child);
     directory_service_->RemoveEntryFromResourceMap(iter->second);
     delete child;
@@ -325,11 +325,11 @@ void GDataDirectory::RemoveChildFiles() {
   child_files_.clear();
 }
 
-void GDataDirectory::RemoveChildDirectories() {
+void DriveDirectory::RemoveChildDirectories() {
   for (GDataChildMap::iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    GDataDirectory* dir = directory_service_->GetEntryByResourceId(
-        iter->second)->AsGDataDirectory();
+    DriveDirectory* dir = directory_service_->GetEntryByResourceId(
+        iter->second)->AsDriveDirectory();
     DCHECK(dir);
     // Remove directories recursively.
     dir->RemoveChildren();
@@ -339,11 +339,11 @@ void GDataDirectory::RemoveChildDirectories() {
   child_directories_.clear();
 }
 
-void GDataDirectory::GetChildDirectoryPaths(std::set<FilePath>* child_dirs) {
+void DriveDirectory::GetChildDirectoryPaths(std::set<FilePath>* child_dirs) {
   for (GDataChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    GDataDirectory* dir = directory_service_->GetEntryByResourceId(
-        iter->second)->AsGDataDirectory();
+    DriveDirectory* dir = directory_service_->GetEntryByResourceId(
+        iter->second)->AsDriveDirectory();
     DCHECK(dir);
     child_dirs->insert(dir->GetFilePath());
     dir->GetChildDirectoryPaths(child_dirs);
@@ -353,7 +353,7 @@ void GDataDirectory::GetChildDirectoryPaths(std::set<FilePath>* child_dirs) {
 // Convert to/from proto.
 
 // static
-void GDataEntry::ConvertProtoToPlatformFileInfo(
+void DriveEntry::ConvertProtoToPlatformFileInfo(
     const PlatformFileInfoProto& proto,
     base::PlatformFileInfo* file_info) {
   file_info->size = proto.size();
@@ -368,7 +368,7 @@ void GDataEntry::ConvertProtoToPlatformFileInfo(
 }
 
 // static
-void GDataEntry::ConvertPlatformFileInfoToProto(
+void DriveEntry::ConvertPlatformFileInfoToProto(
     const base::PlatformFileInfo& file_info,
     PlatformFileInfoProto* proto) {
   proto->set_size(file_info.size);
@@ -379,7 +379,7 @@ void GDataEntry::ConvertPlatformFileInfoToProto(
   proto->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
-void GDataEntry::FromProto(const DriveEntryProto& proto) {
+void DriveEntry::FromProto(const DriveEntryProto& proto) {
   ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info_);
 
   // Don't copy from proto.base_name() as base_name_ is computed in
@@ -393,7 +393,7 @@ void GDataEntry::FromProto(const DriveEntryProto& proto) {
   SetBaseNameFromTitle();
 }
 
-void GDataEntry::ToProto(DriveEntryProto* proto) const {
+void DriveEntry::ToProto(DriveEntryProto* proto) const {
   ConvertPlatformFileInfoToProto(file_info_, proto->mutable_file_info());
 
   // The base_name field is used in GetFileInfoByPathAsync(). As shown in
@@ -407,22 +407,22 @@ void GDataEntry::ToProto(DriveEntryProto* proto) const {
   proto->set_upload_url(upload_url_.spec());
 }
 
-void GDataEntry::ToProtoFull(DriveEntryProto* proto) const {
-  if (AsGDataFileConst()) {
-    AsGDataFileConst()->ToProto(proto);
-  } else if (AsGDataDirectoryConst()) {
+void DriveEntry::ToProtoFull(DriveEntryProto* proto) const {
+  if (AsDriveFileConst()) {
+    AsDriveFileConst()->ToProto(proto);
+  } else if (AsDriveDirectoryConst()) {
     // Unlike files, directories don't have directory specific info, so just
-    // calling GDataEntry::ToProto().
+    // calling DriveEntry::ToProto().
     ToProto(proto);
   } else {
     NOTREACHED();
   }
 }
 
-void GDataFile::FromProto(const DriveEntryProto& proto) {
+void DriveFile::FromProto(const DriveEntryProto& proto) {
   DCHECK(!proto.file_info().is_directory());
 
-  GDataEntry::FromProto(proto);
+  DriveEntry::FromProto(proto);
 
   thumbnail_url_ = GURL(proto.file_specific_info().thumbnail_url());
   alternate_url_ = GURL(proto.file_specific_info().alternate_url());
@@ -432,8 +432,8 @@ void GDataFile::FromProto(const DriveEntryProto& proto) {
   is_hosted_document_ = proto.file_specific_info().is_hosted_document();
 }
 
-void GDataFile::ToProto(DriveEntryProto* proto) const {
-  GDataEntry::ToProto(proto);
+void DriveFile::ToProto(DriveEntryProto* proto) const {
+  DriveEntry::ToProto(proto);
   DCHECK(!proto->file_info().is_directory());
   DriveFileSpecificInfo* file_specific_info =
       proto->mutable_file_specific_info();
@@ -445,47 +445,47 @@ void GDataFile::ToProto(DriveEntryProto* proto) const {
   file_specific_info->set_is_hosted_document(is_hosted_document_);
 }
 
-void GDataDirectory::FromProto(const DriveDirectoryProto& proto) {
+void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
   DCHECK(!proto.gdata_entry().has_file_specific_info());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
-    scoped_ptr<GDataFile> file(directory_service_->CreateGDataFile());
+    scoped_ptr<DriveFile> file(directory_service_->CreateDriveFile());
     file->FromProto(proto.child_files(i));
     AddEntry(file.release());
   }
   for (int i = 0; i < proto.child_directories_size(); ++i) {
-    scoped_ptr<GDataDirectory> dir(directory_service_->CreateGDataDirectory());
+    scoped_ptr<DriveDirectory> dir(directory_service_->CreateDriveDirectory());
     dir->FromProto(proto.child_directories(i));
     AddEntry(dir.release());
   }
 
   // The states of the directory should be updated after children are
   // handled successfully, so that incomplete states are not left.
-  GDataEntry::FromProto(proto.gdata_entry());
+  DriveEntry::FromProto(proto.gdata_entry());
 }
 
-void GDataDirectory::ToProto(DriveDirectoryProto* proto) const {
-  GDataEntry::ToProto(proto->mutable_gdata_entry());
+void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
+  DriveEntry::ToProto(proto->mutable_gdata_entry());
   DCHECK(proto->gdata_entry().file_info().is_directory());
 
   for (GDataChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    GDataFile* file = directory_service_->GetEntryByResourceId(
-        iter->second)->AsGDataFile();
+    DriveFile* file = directory_service_->GetEntryByResourceId(
+        iter->second)->AsDriveFile();
     DCHECK(file);
     file->ToProto(proto->add_child_files());
   }
   for (GDataChildMap::const_iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
-    GDataDirectory* dir = directory_service_->GetEntryByResourceId(
-        iter->second)->AsGDataDirectory();
+    DriveDirectory* dir = directory_service_->GetEntryByResourceId(
+        iter->second)->AsDriveDirectory();
     DCHECK(dir);
     dir->ToProto(proto->add_child_directories());
   }
 }
 
-scoped_ptr<DriveEntryProtoVector> GDataDirectory::ToProtoVector() const {
+scoped_ptr<DriveEntryProtoVector> DriveDirectory::ToProtoVector() const {
   scoped_ptr<DriveEntryProtoVector> entries(new DriveEntryProtoVector);
   // Use ToProtoFull, as we don't want to include children in |proto|.
   for (GDataChildMap::const_iterator iter = child_files_.begin();
@@ -504,9 +504,9 @@ scoped_ptr<DriveEntryProtoVector> GDataDirectory::ToProtoVector() const {
   return entries.Pass();
 }
 
-void GDataEntry::SerializeToString(std::string* serialized_proto) const {
-  const GDataFile* file = AsGDataFileConst();
-  const GDataDirectory* dir = AsGDataDirectoryConst();
+void DriveEntry::SerializeToString(std::string* serialized_proto) const {
+  const DriveFile* file = AsDriveFileConst();
+  const DriveDirectory* dir = AsDriveDirectoryConst();
 
   if (file) {
     DriveEntryProto entry_proto;

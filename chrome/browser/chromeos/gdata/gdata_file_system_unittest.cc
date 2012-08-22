@@ -773,7 +773,7 @@ class GDataFileSystemTest : public testing::Test {
     virtual void GetFileCallback(GDataFileError error,
                                  const FilePath& file_path,
                                  const std::string& mime_type,
-                                 GDataFileType file_type) {
+                                 DriveFileType file_type) {
       last_error_ = error;
       download_path_ = file_path;
       mime_type_ = mime_type;
@@ -825,7 +825,7 @@ class GDataFileSystemTest : public testing::Test {
     FilePath download_path_;
     FilePath opened_file_path_;
     std::string mime_type_;
-    GDataFileType file_type_;
+    DriveFileType file_type_;
     int64 quota_bytes_total_;
     int64 quota_bytes_used_;
     scoped_ptr<DriveEntryProto> entry_proto_;
