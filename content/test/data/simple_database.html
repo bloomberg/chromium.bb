@@ -1,8 +1,4 @@
 <html>
-<!--database_tester.html
-Script with javascript functions for simple database operations. This is used in
-pyauto tests.
--->
 <script>
 
 // Open a Web SQL database.
@@ -18,18 +14,17 @@ try {
 
 // Creates a table named "table1" with one text column named "data".
 function createTable() {
-  if (!g_db) {
-    sendErrorToTest("database is not open");
-  }
+  if (!g_db)
+    return;
   g_db.transaction(
       function(tx) {
         tx.executeSql("CREATE TABLE table1 (data TEXT)");
       },
       function(error) {
-        sendErrorToTest("cannot create table: " + error);
+        sendValueToTest(error);
       },
       function() {
-        sendValueToTest("created");
+        sendValueToTest("done");
       });
 }
 
@@ -40,12 +35,13 @@ function insertRecord(text) {
         tx.executeSql("INSERT INTO table1 VALUES (?)", [text]);
       },
       function(error) {
-        sendErrorToTest("insert error: " + error);
+        sendValueToTest(error);
       },
       function() {
-        sendValueToTest("inserted");
+        sendValueToTest("done");
       });
 }
+
 
 // Updates a record at the given index with the given text. The indices are
 // 0-based and are ordered from oldest record, to newest record.
@@ -61,17 +57,17 @@ function updateRecord(index, text) {
                 if (result.rowsAffected == 1)
                   didUpdate = true;
                 else if (result.rowsAffected == 0)
-                  sendErrorToTest("could not update index: " + index);
+                  sendValueToTest("could not update index: " + index);
                 else
-                  sendErrorToTest("multiple rows with index: " + index);
+                  sendValueToTest("multiple rows with index: " + index);
               });
         },
         function(error) {
-          sendErrorToTest("update error: " + error);
+          sendValueToTest("update error: " + error);
         },
         function() {
           if (didUpdate)
-            sendValueToTest("updated");
+            sendValueToTest("done");
         });
   });
 }
@@ -84,10 +80,10 @@ function deleteRecord(index) {
           tx.executeSql("DELETE FROM table1 WHERE ROWID=?", [rowId]);
         },
         function(error) {
-          sendErrorToTest("delete error: " + error);
+          sendValueToTest("delete error: " + error);
         },
         function() {
-          sendValueToTest("deleted");
+          sendValueToTest("done");
         });
   });
 }
@@ -99,14 +95,16 @@ function getRecords() {
         "SELECT data FROM table1 ORDER BY ROWID",
         [],
         function(tx, result) {
-          items = [];
+          items = "";
           for (var i = 0; i < result.rows.length; i++) {
-            items.push(result.rows.item(i).data);
+            if (items != "")
+              items += ", ";
+            items += result.rows.item(i).data;
           }
           sendValueToTest(items);
         },
         function(tx, error) {
-          sendErrorToTest("getRecords error: " + error);
+          sendValueToTest("getRecords error: " + error);
         });
   });
 }
@@ -126,34 +124,18 @@ function findId(index, callback) {
           if (result.rows.length >= 1)
             callback(result.rows.item(0).id);
           else
-            sendErrorToTest("could not find row with index: " + index);
+            sendValueToTest("could not find row with index: " + index);
         },
         function(tx, error) {
-          sendErrorToTest("findId error: " + error);
+        sendValueToTest("findId error: " + error);
         });
   });
 }
 
-// Helper function that sends a message back to the test, which contains a value
-// corresponding to the logical return value of the function, and a boolean
-// indicating success.
 function sendValueToTest(value) {
-  sendHelper(true, "", value);
-}
-
-// Helper function that sends a message back to the test, which contains an
-// error message and a boolean indicating failure.
-function sendErrorToTest(errorMsg) {
-  sendHelper(false, errorMsg, 0);
-}
-
-function sendHelper(success, errorMsg, returnValue) {
-  var result = {
-    "succeeded": success,
-    "errorMsg": errorMsg,
-    "returnValue": returnValue
-  };
-  window.domAutomationController.send(JSON.stringify(result));
+  //alert(value);
+  window.domAutomationController.setAutomationId(0);
+  window.domAutomationController.send(value);
 }
 
 </script>

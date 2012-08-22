@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -13,16 +15,33 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
+namespace {
+void SetUrlRequestMock(const FilePath& path) {
+  URLRequestMockHTTPJob::AddUrlHandler(path);
+}
+}
+
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
   BrowsingDataRemoverBrowserTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    FilePath path;
+    PathService::Get(content::DIR_TEST_DATA, &path);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
+  }
 
   void RunScriptAndCheckResult(const std::wstring& script,
                                const std::string& result) {
@@ -79,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
-  ASSERT_TRUE(test_server()->Start());
-  GURL url = test_server()->GetURL("files/database/simple_database.html");
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath().AppendASCII("simple_database.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 
   RunScriptAndCheckResult(L"createTable()", "done");

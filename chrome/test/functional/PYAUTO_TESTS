@@ -43,7 +43,6 @@
       'content',
       'cookies',
       'crash_reporter',
-      'databases',
       'downloads',
       'execute_javascript',
       'extensions',

@@ -566,6 +566,7 @@
         'browser/appcache/appcache_browsertest.cc',
         'browser/audio_browsertest.cc',
         'browser/child_process_security_policy_browsertest.cc',
+        'browser/database_browsertest.cc',
         'browser/device_orientation/device_orientation_browsertest.cc',
         'browser/dom_storage/dom_storage_browsertest.cc',
         'browser/download/mhtml_generation_browsertest.cc',
