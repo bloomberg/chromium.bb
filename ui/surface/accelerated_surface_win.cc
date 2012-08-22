@@ -232,48 +232,11 @@ class AcceleratedPresenterMap {
   scoped_refptr<AcceleratedPresenter> CreatePresenter(gfx::NativeWindow window);
   void RemovePresenter(const scoped_refptr<AcceleratedPresenter>& presenter);
   scoped_refptr<AcceleratedPresenter> GetPresenter(gfx::NativeWindow window);
-
  private:
   base::Lock lock_;
   typedef std::map<gfx::NativeWindow, AcceleratedPresenter*> PresenterMap;
   PresenterMap presenters_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenterMap);
-};
-
-// Presents a swap chain on the main thread without blocking.
-class PresentOnMainThread :
-    public base::RefCountedThreadSafe<PresentOnMainThread> {
- public:
-  enum Result {
-    INCOMPLETE,
-    COMPLETE,
-    FAILED
-  };
-
-  PresentOnMainThread(
-      const base::win::ScopedComPtr<IDirect3DSwapChain9Ex>& swap_chain,
-      HWND window,
-      const gfx::Size& size);
-
-  // This is called by a present thread. It returns when either the present
-  // has completed or the timeout has elapsed. It returns whether the
-  // present completed and atomically cancels it if it times out. That is,
-  // if it returns INCOMPLETE, the present definitely will not happen.
-  Result WaitForCompletion(base::TimeDelta timeout);
-
-  // This is posted on the main thread. It either presents or reschedules
-  // itself if the present would block.
-  void DoPresent();
-
- private:
-  base::win::ScopedComPtr<IDirect3DSwapChain9Ex> swap_chain_;
-  HWND window_;
-  gfx::Size size_;
-  base::WaitableEvent completion_event_;
-  bool canceled_;
-  Result result_;
-  base::Lock lock_;
-  DISALLOW_COPY_AND_ASSIGN(PresentOnMainThread);
 };
 
 base::LazyInstance<PresentThreadPool>
@@ -454,72 +417,11 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
   return it->second;
 }
 
-PresentOnMainThread::PresentOnMainThread(
-    const base::win::ScopedComPtr<IDirect3DSwapChain9Ex>& swap_chain,
-    HWND window,
-    const gfx::Size& size)
-  : swap_chain_(swap_chain),
-    window_(window),
-    size_(size),
-    completion_event_(false, false),
-    canceled_(false),
-    result_(INCOMPLETE) {
-}
-
-PresentOnMainThread::Result PresentOnMainThread::WaitForCompletion(
-    base::TimeDelta timeout) {
-  completion_event_.TimedWait(timeout);
-
-  base::AutoLock locked(lock_);
-  canceled_ = true;
-  return result_;
-}
-
-void PresentOnMainThread::DoPresent() {
-  TRACE_EVENT0("gpu", "PresentOnMainThread");
-
-  base::AutoLock locked(lock_);
-
-  if (canceled_)
-    return;
-
-  DWM_TIMING_INFO info = {
-    sizeof(DWM_TIMING_INFO)
-  };
-  HRESULT hr = DwmGetCompositionTimingInfo(window_, &info);
-  if (SUCCEEDED(hr) && info.cRefreshNextPresented > 0) {
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PresentOnMainThread::DoPresent,
-                    this),
-        base::TimeDelta::FromMilliseconds(1));
-    return;
-  }
-
-  RECT rect = {
-    0, 0,
-    size_.width(), size_.height()
-  };
-
-  hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
-
-  // For latency_tests.cc:
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
-
-  if (SUCCEEDED(hr))
-    result_ = COMPLETE;
-  else
-    result_ = FAILED;
-
-  completion_event_.Signal();
-}
-
 AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
     : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
       window_(window),
       event_(false, false),
       hidden_(true) {
-  main_message_loop_ = base::MessageLoopProxy::current();
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
@@ -581,6 +483,7 @@ bool AcceleratedPresenter::DoRealPresent(HDC dc)
   if (!window_)
     return true;
 
+
   RECT window_rect;
   GetClientRect(window_, &window_rect);
   if (window_rect.right != present_size_.width() ||
@@ -612,13 +515,12 @@ bool AcceleratedPresenter::DoRealPresent(HDC dc)
   };
 
   {
-    TRACE_EVENT0("gpu", "Present");
+    TRACE_EVENT0("gpu", "PresentEx");
     hr = swap_chain_->Present(&present_rect,
                               &present_rect,
                               window_,
                               NULL,
-                              0);
-
+                              D3DPRESENT_INTERVAL_IMMEDIATE);
     // For latency_tests.cc:
     UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
     if (FAILED(hr))
@@ -825,22 +727,16 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     parameters.BackBufferHeight = quantized_size.height();
     parameters.BackBufferCount = 1;
     parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
-    parameters.hDeviceWindow = window_;
+    parameters.hDeviceWindow = GetShellWindow();
     parameters.Windowed = TRUE;
     parameters.Flags = 0;
     parameters.PresentationInterval = GetPresentationInterval();
     parameters.SwapEffect = D3DSWAPEFFECT_COPY;
 
     swap_chain_ = NULL;
-
-    base::win::ScopedComPtr<IDirect3DSwapChain9> swap_chain;
     HRESULT hr = present_thread_->device()->CreateAdditionalSwapChain(
         &parameters,
-        swap_chain.Receive());
-    if (FAILED(hr))
-      return;
-
-    hr = swap_chain_.QueryFrom(swap_chain);
+        swap_chain_.Receive());
     if (FAILED(hr))
       return;
   }
@@ -920,69 +816,19 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     default_render_target->Release();
   }
 
-  // Issue a query that indicate when the texture has been
-  // copied to the swap chain on the GPU. Do it before presenting so it
-  // doesn't wait for the present as well.
   hr = present_thread_->query()->Issue(D3DISSUE_END);
   if (FAILED(hr))
     return;
-  hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
-  if (FAILED(hr))
-    return;
 
-  hidden_ = false;
   present_size_ = size;
 
-  // If Aero is enabled, the present must take place on the main thread because
-  // if the the main thread uses GDI while the present is taking place, things
-  // flicker.
-  DWM_TIMING_INFO timing_info = {
-    sizeof(DWM_TIMING_INFO)
-  };
-  hr = DwmGetCompositionTimingInfo(window_, &timing_info);
-  if (SUCCEEDED(hr)) {
-    scoped_refptr<PresentOnMainThread> present_on_main_thread(
-        new PresentOnMainThread(swap_chain_,
-                                window_,
-                                present_size_));
-    main_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &PresentOnMainThread::DoPresent,
-            present_on_main_thread));
-
-    // The timeout is to avoid a deadlock if the main thread is synchronously
-    // presenting.
-    TRACE_EVENT0("gpu", "waitevent");
-    PresentOnMainThread::Result result =
-        present_on_main_thread->WaitForCompletion(
-            4 * base::TimeDelta::FromQPCValue(timing_info.qpcRefreshPeriod));
-
-    // If the present did not complete on time then schedule the window for
-    // repainting later.
-    if (result != PresentOnMainThread::COMPLETE) {
-      // Reset the device if it failed.
-      if (result == PresentOnMainThread::FAILED)
-        present_thread_->ResetDevice();
-
-      InvalidateRect(window_, NULL, FALSE);
-    }
-  } else {
-    hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
-
-    // For latency_tests.cc:
-    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
-
-    if (hr == D3DERR_DEVICELOST)
-      present_thread_->ResetDevice();
-  }
-
-  // Wait for the blit to complete before notifying the GPU process
+  // Wait for the StretchRect to complete before notifying the GPU process
   // that it is safe to write to its backing store again.
   {
     TRACE_EVENT0("gpu", "spin");
     do {
       hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
+
       if (hr == S_FALSE)
         Sleep(1);
     } while (hr == S_FALSE);
@@ -991,6 +837,17 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   static const base::TimeDelta swap_delay = GetSwapDelay();
   if (swap_delay.ToInternalValue())
     base::PlatformThread::Sleep(swap_delay);
+
+  {
+    TRACE_EVENT0("gpu", "Present");
+    hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
+    // For latency_tests.cc:
+    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
+    if (FAILED(hr) &&
+        FAILED(present_thread_->device()->CheckDeviceState(window_))) {
+      present_thread_->ResetDevice();
+    }
+  }
 
   {
     TRACE_EVENT0("gpu", "GetPresentationStats");
@@ -1009,6 +866,8 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
                  "timebase", timebase.ToInternalValue(),
                  "interval", interval.ToInternalValue());
   }
+
+  hidden_ = false;
 }
 
 void AcceleratedPresenter::DoSuspend() {
