@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -118,6 +119,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       last_cursor_(ui::kCursorNull),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
+      mouse_event_dispatch_target_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           gesture_recognizer_(ui::GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),
@@ -589,6 +591,12 @@ void RootWindow::HandleMouseMoved(const ui::MouseEvent& event, Window* target) {
                                     event.flags());
     ProcessMouseEvent(mouse_moved_handler_, &translated_event);
   }
+
+  if (mouse_event_dispatch_target_ != target) {
+    mouse_moved_handler_ = NULL;
+    return;
+  }
+
   mouse_moved_handler_ = target;
   // Send an entered event.
   if (mouse_moved_handler_ && mouse_moved_handler_->delegate()) {
@@ -755,6 +763,8 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     mouse_pressed_handler_ = NULL;
   if (invisible->Contains(mouse_moved_handler_))
     mouse_moved_handler_ = NULL;
+  if (invisible->Contains(mouse_event_dispatch_target_))
+    mouse_event_dispatch_target_ = NULL;
   gesture_recognizer_->FlushTouchQueue(invisible);
 }
 
@@ -976,11 +986,15 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       ui::EF_LEFT_MOUSE_BUTTON |
       ui::EF_MIDDLE_MOUSE_BUTTON |
       ui::EF_RIGHT_MOUSE_BUTTON;
+  AutoReset<Window*> reset(&mouse_event_dispatch_target_, target);
   SetLastMouseLocation(this, event->location());
   synthesize_mouse_move_ = false;
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
+      mouse_event_dispatch_target_ = target;
       HandleMouseMoved(*event, target);
+      if (mouse_event_dispatch_target_ != target)
+        return false;
       break;
     case ui::ET_MOUSE_PRESSED:
       if (!mouse_pressed_handler_)

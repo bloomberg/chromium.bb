@@ -368,6 +368,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
+  Window* mouse_event_dispatch_target_;
   FocusManager* focus_manager_;
 
   // The gesture_recognizer_ for this.
