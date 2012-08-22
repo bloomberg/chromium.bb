@@ -134,9 +134,10 @@ class TraceTestCases(unittest.TestCase):
     for index in range(len(expected_out_re)):
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], lines[index]),
-          (index, expected_out_re[index], repr(lines[index])))
+          '%d: %s\n%r\n%s' % (
+            index, expected_out_re[index], lines[index], out))
     # Junk is printed on win32.
-    if sys.platform != 'win32':
+    if sys.platform != 'win32' and not VERBOSE:
       self.assertEquals('', err)
 
     expected_json = {}

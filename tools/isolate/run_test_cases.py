@@ -276,6 +276,7 @@ class ThreadPool(object):
     if progress and timeout:
       while not self._tasks.join(timeout):
         progress.print_update()
+      progress.print_update()
     else:
       self._tasks.join()
     out = []

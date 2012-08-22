@@ -1278,6 +1278,15 @@ class Strace(ApiBase):
           return
         self._handle_file(args[0], False)
 
+      @parse_args(r'^AT_FDCWD, \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
+      def handle_openat(self, args, _result):
+        # TODO(maruel): Implelement relative open if necessary instead of the
+        # AT_FDCWD flag, let's hope not since this means tracking all active
+        # directory handles.
+        if 'O_DIRECTORY' in args[1]:
+          return
+        self._handle_file(args[0], False)
+
       @parse_args(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$', False)
       def handle_readlink(self, args, _result):
         self._handle_file(args[0], False)
