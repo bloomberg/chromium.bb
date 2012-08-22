@@ -61,7 +61,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Helper function to send the given message to the GPU process on the IO
   // thread.  Calls Get and if a host is returned, sends it.  Can be called from
-  // any thread.
+  // any thread.  Deletes the message if it cannot be sent.
   CONTENT_EXPORT static void SendOnIO(GpuProcessKind kind,
                                       content::CauseForGpuLaunch cause,
                                       IPC::Message* message);

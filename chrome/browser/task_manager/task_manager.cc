@@ -980,15 +980,17 @@ class TaskManagerModelGpuDataManagerObserver
                   NotifyVideoMemoryUsageStats,
               video_memory_usage_stats));
     }
-    delete this;
   }
 };
 
 void TaskManagerModel::RefreshVideoMemoryUsageStats()
 {
   if (pending_video_memory_usage_stats_update_) return;
+  if (!video_memory_usage_stats_observer_.get()) {
+    video_memory_usage_stats_observer_.reset(
+        new TaskManagerModelGpuDataManagerObserver());
+  }
   pending_video_memory_usage_stats_update_ = true;
-  new TaskManagerModelGpuDataManagerObserver;
   content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate();
 }
 

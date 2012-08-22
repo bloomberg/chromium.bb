@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class TaskManagerModel;
+class TaskManagerModelGpuDataManagerObserver;
 
 namespace base {
 class ProcessMetrics;
@@ -571,6 +572,11 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // A map that contains the video memory usage for a process
   content::GPUVideoMemoryUsageStats video_memory_usage_stats_;
   bool pending_video_memory_usage_stats_update_;
+
+  // An observer waiting for video memory usage stats updates from the GPU
+  // process
+  scoped_ptr<TaskManagerModelGpuDataManagerObserver>
+      video_memory_usage_stats_observer_;
 
   // A map that contains the private/shared memory usage of the process. We
   // cache this because the same APIs are called on linux and windows, and
