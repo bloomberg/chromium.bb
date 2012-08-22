@@ -818,8 +818,8 @@ class BenchmarkPerfTest(BasePerfTest):
     """
     self.assertTrue(
         self.WaitUntil(
-            lambda: self.ExecuteJavascript(js_is_done, tab_index=1) == 'true',
-            timeout=300, retry_sleep=1),
+            lambda: self.ExecuteJavascript(js_is_done, tab_index=1),
+            timeout=300, expect_retval='true', retry_sleep=1),
         msg='Timed out when waiting for SunSpider benchmark score.')
 
     js_get_results = """
@@ -2050,6 +2050,17 @@ class BasePageCyclerTest(BasePerfTest):
              '--enable-file-cookies',
              '--allow-outdated-plugins'])
 
+  def WaitUntilStarted(self, start_url):
+    """Check that the test navigates away from the start_url."""
+    js_is_started = """
+        var is_started = document.location.href !== "%s";
+        window.domAutomationController.send(JSON.stringify(is_started));
+    """ % start_url
+    self.assertTrue(
+        self.WaitUntil(lambda: self.ExecuteJavascript(js_is_started) == 'true',
+                       timeout=10),
+        msg='Timed out when waiting to leave start page.')
+
   def WaitUntilDone(self, url, iterations):
     """Check cookies for "__pc_done=1" to know the test is over."""
     def IsDone():
@@ -2153,6 +2164,8 @@ class BasePageCyclerTest(BasePerfTest):
     iterations = self._num_iterations
     start_url = self.StartUrl(name, iterations)
     self.NavigateToURL(start_url)
+    if self.use_auto:
+      self.WaitUntilStarted(start_url)
     self.WaitUntilDone(start_url, iterations)
     pages, times = self.CollectPagesAndTimes(start_url)
     final_result = self.ComputeFinalResult(pages, times, iterations)
