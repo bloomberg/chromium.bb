@@ -37,6 +37,7 @@ class Profile;
 class SelectedKeywordDecoration;
 class StarDecoration;
 class ToolbarModel;
+class ZoomDecoration;
 
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an OmniboxViewMac instance to
@@ -92,6 +93,13 @@ class LocationBarViewMac : public LocationBar,
   // Set ChromeToMobileDecoration's lit state (to update the icon).
   void SetChromeToMobileDecorationLit(bool lit);
 
+  // Happens when the zoom changes for the active tab. |can_show_bubble| is
+  // false when the change in zoom for the active tab wasn't an explicit user
+  // action (e.g. switching tabs, creating a new tab, creating a new browser).
+  // Additionally, |can_show_bubble| will only be true when the bubble wouldn't
+  // be obscured by other UI (wrench menu) or redundant (+/- from wrench).
+  void ZoomChangedForActiveTab(bool can_show_bubble);
+
   // Get the point in window coordinates on the star for the bookmark bubble to
   // aim at.
   NSPoint GetBookmarkBubblePoint() const;
@@ -103,6 +111,10 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates in the security icon at which the page
   // info bubble aims.
   NSPoint GetPageInfoBubblePoint() const;
+
+  // When any image decorations change, call this to ensure everything is
+  // redrawn and laid out if necessary.
+  void OnDecorationsChanged();
 
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores
@@ -196,6 +208,9 @@ class LocationBarViewMac : public LocationBar,
   // Update the Chrome To Mobile page action visibility and command state.
   void UpdateChromeToMobileEnabled();
 
+  // Updates the zoom decoration in the omnibox with the current zoom level.
+  void UpdateZoomDecoration();
+
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
@@ -228,6 +243,10 @@ class LocationBarViewMac : public LocationBar,
 
   // Chrome To Mobile page action icon.
   scoped_ptr<ChromeToMobileDecoration> chrome_to_mobile_decoration_;
+
+  // A zoom icon at the end of the omnibox, which shows at non-standard zoom
+  // levels.
+  scoped_ptr<ZoomDecoration> zoom_decoration_;
 
   // The installed page actions.
   std::vector<ExtensionAction*> page_actions_;

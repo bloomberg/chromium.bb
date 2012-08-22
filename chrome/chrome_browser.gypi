@@ -2915,6 +2915,8 @@
         'browser/ui/cocoa/location_bar/selected_keyword_decoration.mm',
         'browser/ui/cocoa/location_bar/star_decoration.h',
         'browser/ui/cocoa/location_bar/star_decoration.mm',
+        'browser/ui/cocoa/location_bar/zoom_decoration.h',
+        'browser/ui/cocoa/location_bar/zoom_decoration.mm',
         'browser/ui/cocoa/login_prompt_cocoa.h',
         'browser/ui/cocoa/login_prompt_cocoa.mm',
         'browser/ui/cocoa/main_menu_item.h',

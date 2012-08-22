@@ -686,17 +686,8 @@ void BrowserView::SetStarredState(bool is_starred) {
   GetLocationBarView()->SetStarToggled(is_starred);
 }
 
-void BrowserView::SetZoomIconState(
-    ZoomController::ZoomIconState zoom_icon_state) {
-  GetLocationBarView()->SetZoomIconState(zoom_icon_state);
-}
-
-void BrowserView::SetZoomIconTooltipPercent(int zoom_percent) {
-  GetLocationBarView()->SetZoomIconTooltipPercent(zoom_percent);
-}
-
-void BrowserView::ShowZoomBubble(int zoom_percent) {
-  GetLocationBarView()->ShowZoomBubble(zoom_percent);
+void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
+  GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble);
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {

@@ -249,16 +249,8 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
   [controller_ setStarredState:is_starred ? YES : NO];
 }
 
-void BrowserWindowCocoa::SetZoomIconState(ZoomController::ZoomIconState state) {
-  // TODO(khorimoto): Find someone to implement this.
-}
-
-void BrowserWindowCocoa::SetZoomIconTooltipPercent(int zoom_percent) {
-  // TODO(khorimoto): Find someone to implement this.
-}
-
-void BrowserWindowCocoa::ShowZoomBubble(int zoom_percent) {
-  // TODO(khorimoto): Find someone to implement this.
+void BrowserWindowCocoa::ZoomChangedForActiveTab(bool can_show_bubble) {
+  [controller_ zoomChangedForActiveTab:can_show_bubble ? YES : NO];
 }
 
 gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {

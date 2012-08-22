@@ -839,16 +839,8 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
   toolbar_->GetLocationBarView()->SetStarred(is_starred);
 }
 
-void BrowserWindowGtk::SetZoomIconState(ZoomController::ZoomIconState state) {
-  toolbar_->GetLocationBarView()->SetZoomIconState(state);
-}
-
-void BrowserWindowGtk::SetZoomIconTooltipPercent(int zoom_percent) {
-  toolbar_->GetLocationBarView()->SetZoomIconTooltipPercent(zoom_percent);
-}
-
-void BrowserWindowGtk::ShowZoomBubble(int zoom_percent) {
-  toolbar_->GetLocationBarView()->ShowZoomBubble(zoom_percent);
+void BrowserWindowGtk::ZoomChangedForActiveTab(bool can_show_bubble) {
+  toolbar_->GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble);
 }
 
 gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {

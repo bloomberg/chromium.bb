@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/font.h"
@@ -185,14 +184,8 @@ class LocationBarView : public LocationBar,
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
 
-  // Sets the tooltip for the zoom icon.
-  void SetZoomIconTooltipPercent(int zoom_percent);
-
-  // Sets the zoom icon state.
-  void SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state);
-
-  // Shows the zoom bubble.
-  void ShowZoomBubble(int zoom_percent);
+  // See comment in browser_window.h for more info.
+  void ZoomChangedForActiveTab(bool can_show_bubble);
 
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
@@ -420,6 +413,9 @@ class LocationBarView : public LocationBar,
   // Update the views for the Page Actions, to reflect state changes for
   // PageActions.
   void RefreshPageActionViews();
+
+  // Update the view for the zoom icon based on the current tab's zoom.
+  void RefreshZoomView();
 
   // Sets the visibility of view to new_vis.
   void ToggleVisibility(bool new_vis, views::View* view);

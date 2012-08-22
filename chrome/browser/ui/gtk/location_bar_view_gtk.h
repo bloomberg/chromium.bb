@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "content/public/browser/notification_observer.h"
@@ -101,20 +100,18 @@ class LocationBarViewGtk : public OmniboxEditController,
   // restore saved state that the tab holds.
   void Update(const content::WebContents* tab_for_state_restoring);
 
-  // Show the zoom bubble.
-  void ShowZoomBubble(int zoom_percent);
-
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
 
   // Shows the Chrome To Mobile bubble.
   void ShowChromeToMobileBubble();
 
-  // Sets the tooltip for the zoom icon.
-  void SetZoomIconTooltipPercent(int zoom_percent);
+  // Shows the bookmark bubble.
+  void ShowZoomBubble();
 
-  // Sets the zoom icon state.
-  void SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state);
+  // Happens when the zoom changes for the active tab. |can_show_bubble| will be
+  // true if it was a user action and a bubble could be shown.
+  void ZoomChangedForActiveTab(bool can_show_bubble);
 
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);

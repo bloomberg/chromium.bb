@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -120,14 +119,11 @@ class BrowserWindow : public BaseWindow {
   // Sets the starred state for the current tab.
   virtual void SetStarredState(bool is_starred) = 0;
 
-  // Sets the zoom icon state for the current tab.
-  virtual void SetZoomIconState(ZoomController::ZoomIconState state) = 0;
-
-  // Sets the zoom icon tooltip zoom percentage for the current tab.
-  virtual void SetZoomIconTooltipPercent(int zoom_percent) = 0;
-
-  // Show zoom bubble for the current tab.
-  virtual void ShowZoomBubble(int zoom_percent) = 0;
+  // Called to force the zoom state to for the active tab to be recalculated.
+  // |can_show_bubble| is true when a user presses the zoom up or down keyboard
+  // shortcuts and will be false in other cases (e.g. switching tabs, "clicking"
+  // + or - in the wrench menu to change zoom).
+  virtual void ZoomChangedForActiveTab(bool can_show_bubble) = 0;
 
   // Accessors for fullscreen mode state.
   virtual void EnterFullscreen(const GURL& url,
