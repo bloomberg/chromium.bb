@@ -28,7 +28,7 @@ bool DisplayManager::use_fullscreen_host_window_ = false;
 
 // static
 gfx::Display DisplayManager::CreateDisplayFromSpec(const std::string& spec) {
-  static int synthesized_display_id = 1000;
+  static int64 synthesized_display_id = 1000;
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   int x = 0, y = 0, width, height;

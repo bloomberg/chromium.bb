@@ -24,7 +24,7 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
-DECLARE_WINDOW_PROPERTY_TYPE(int);
+DECLARE_WINDOW_PROPERTY_TYPE(int64);
 
 namespace ash {
 namespace internal {
@@ -42,7 +42,8 @@ using aura::Window;
 using std::string;
 using std::vector;
 
-DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey, -1);
+DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
+                           gfx::Display::kInvalidDisplayID);
 
 MultiDisplayManager::MultiDisplayManager() {
   Init();
@@ -196,7 +197,7 @@ std::string MultiDisplayManager::GetDisplayNameAt(size_t index) {
 #if defined(USE_X11)
   gfx::Display* display = GetDisplayAt(index);
   std::vector<XID> outputs;
-  if (display && display->id() != -1 &&
+  if (display && display->id() != gfx::Display::kInvalidDisplayID &&
       ui::GetOutputDeviceHandles(&outputs)) {
     for (size_t i = 0; i < outputs.size(); ++i) {
       uint16 manufacturer_id = 0;
@@ -285,7 +286,7 @@ void MultiDisplayManager::ScaleDisplayImpl() {
 
 gfx::Display& MultiDisplayManager::FindDisplayForRootWindow(
     const aura::RootWindow* root_window) {
-  int id = root_window->GetProperty(kDisplayIdKey);
+  int64 id = root_window->GetProperty(kDisplayIdKey);
   for (Displays::iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     if ((*iter).id() == id)

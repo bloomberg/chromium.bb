@@ -181,7 +181,7 @@ void DisplayChangeObserverX11::NotifyDisplayChange() {
   // PowerManager lays out the outputs vertically. Sort them by Y
   // coordinates.
   std::sort(displays.begin(), displays.end(), CompareDisplayY);
-  int id = 0;
+  int64 id = 0;
   for (std::vector<gfx::Display>::iterator iter = displays.begin();
        iter != displays.end(); ++iter) {
     if (iter->id() == gfx::Display::kInvalidDisplayID) {
