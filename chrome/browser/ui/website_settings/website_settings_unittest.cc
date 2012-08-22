@@ -177,7 +177,13 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
       url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
 
-  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  EXPECT_CALL(*mock_ui(), SetFirstVisit(string16()));
+
+  // SetPermissionInfo() is called once initially, and then again every time
+  // OnSitePermissionChanged() is called.
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(5);
 
   // Execute code under tests.
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
@@ -335,7 +341,14 @@ TEST_F(WebsiteSettingsTest, NoInfoBar) {
 }
 
 TEST_F(WebsiteSettingsTest, ShowInfoBar) {
-  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  EXPECT_CALL(*mock_ui(), SetFirstVisit(string16()));
+
+  // SetPermissionInfo() is called once initially, and then again every time
+  // OnSitePermissionChanged() is called.
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(2);
+
   EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);

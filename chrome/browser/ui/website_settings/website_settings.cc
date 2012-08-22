@@ -163,6 +163,9 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   content_settings_->SetWebsiteSetting(
       primary_pattern, secondary_pattern, type, "", value);
   show_info_bar_ = true;
+
+  // Refresh the UI to reflect the new setting.
+  PresentSitePermissions();
 }
 
 void WebsiteSettings::OnGotVisitCountToHost(HistoryService::Handle handle,

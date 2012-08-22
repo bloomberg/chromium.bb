@@ -78,7 +78,8 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     controller_ =
         [[WebsiteSettingsBubbleController alloc]
             initWithParentWindow:test_window()
-            websiteSettingsUIBridge:bridge_];
+            websiteSettingsUIBridge:bridge_
+            tabContents:nil];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
@@ -186,21 +187,61 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   CreateBubble();
 
   ContentSettingsType kTestPermissionTypes[] = {
+    // NOTE: FULLSCREEN does not support "Always block", so it must appear as
+    // one of the first three permissions.
+    CONTENT_SETTINGS_TYPE_FULLSCREEN,
     CONTENT_SETTINGS_TYPE_IMAGES,
     CONTENT_SETTINGS_TYPE_JAVASCRIPT,
     CONTENT_SETTINGS_TYPE_PLUGINS,
     CONTENT_SETTINGS_TYPE_POPUPS,
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_MOUSELOCK,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM,
   };
 
-  // Create a list of 6 different permissions, all set to "Allow".
+  ContentSetting kTestSettings[] = {
+    CONTENT_SETTING_DEFAULT,
+    CONTENT_SETTING_DEFAULT,
+    CONTENT_SETTING_DEFAULT,
+    CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_BLOCK,
+    CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_BLOCK,
+    CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_BLOCK,
+  };
+
+  ContentSetting kTestDefaultSettings[] = {
+    CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_BLOCK,
+    CONTENT_SETTING_ASK
+  };
+
+  content_settings::SettingSource kTestSettingSources[] = {
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_POLICY,
+    content_settings::SETTING_SOURCE_POLICY,
+    content_settings::SETTING_SOURCE_EXTENSION,
+    content_settings::SETTING_SOURCE_EXTENSION,
+  };
+
+  // Create a list of 5 different permissions, corresponding to all the
+  // possible settings:
+  // - [allow, block, ask] by default
+  // - [block, allow] * [by user, by policy, by extension]
   PermissionInfoList list;
   WebsiteSettingsUI::PermissionInfo info;
-  info.setting = CONTENT_SETTING_ALLOW;
-  info.default_setting = CONTENT_SETTING_ALLOW;
   for (size_t i = 0; i < arraysize(kTestPermissionTypes); ++i) {
     info.type = kTestPermissionTypes[i];
+    info.setting = kTestSettings[i];
+    if (info.setting == CONTENT_SETTING_DEFAULT)
+      info.default_setting = kTestDefaultSettings[i];
+    info.source = kTestSettingSources[i];
     list.push_back(info);
   }
   bridge_->SetPermissionInfo(list);
@@ -219,30 +260,15 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   // The section header ("Permissions") will also be found, hence the +1.
   EXPECT_EQ(arraysize(kTestPermissionTypes) + 1, [labels count]);
 
-  // Find the first permission pop-up button
-  NSPopUpButton* button = nil;
+  // Ensure that the button labels are distinct.
+  [labels removeAllObjects];
   for (NSView* view in subviews) {
     if ([view isKindOfClass:[NSPopUpButton class]]) {
-      button = static_cast<NSPopUpButton*>(view);
-      break;
+      NSPopUpButton* button = static_cast<NSPopUpButton*>(view);
+      [labels addObject:[[button selectedCell] title]];
     }
   }
-  ASSERT_NSNE(nil, button);
-
-  // Check that the button title is updated when the setting is changed.
-
-  NSString* original_title = [[[button cell] menuItem] title];
-  [button selectItemAtIndex:kMenuIndexContentSettingBlock];
-  [controller_ permissionValueChanged:button];
-  EXPECT_NSNE(original_title, [[[button cell] menuItem] title]);
-
-  [button selectItemAtIndex:kMenuIndexContentSettingDefault];
-  [controller_ permissionValueChanged:button];
-  EXPECT_NSNE(original_title, [[[button cell] menuItem] title]);
-
-  [button selectItemAtIndex:kMenuIndexContentSettingAllow];
-  [controller_ permissionValueChanged:button];
-  EXPECT_NSEQ(original_title, [[[button cell] menuItem] title]);
+  EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
 }
 
 }  // namespace
