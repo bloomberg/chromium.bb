@@ -71,12 +71,13 @@ class ContactManager : public ContactManagerInterface,
   void Init();
 
   // ContactManagerInterface overrides:
-  virtual void AddObserver(ContactManagerObserver* observer, Profile* profile);
+  virtual void AddObserver(ContactManagerObserver* observer,
+                           Profile* profile) OVERRIDE;
   virtual void RemoveObserver(ContactManagerObserver* observer,
-                              Profile* profile);
-  virtual scoped_ptr<ContactPointers> GetAllContacts(Profile* profile);
+                              Profile* profile) OVERRIDE;
+  virtual scoped_ptr<ContactPointers> GetAllContacts(Profile* profile) OVERRIDE;
   virtual const Contact* GetContactById(Profile* profile,
-                                        const std::string& contact_id);
+                                        const std::string& contact_id) OVERRIDE;
 
   // ContactStoreObserver overrides:
   virtual void OnContactsUpdated(ContactStore* store) OVERRIDE;

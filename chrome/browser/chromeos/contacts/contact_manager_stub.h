@@ -25,12 +25,13 @@ class ContactManagerStub : public ContactManagerInterface {
   void NotifyObserversAboutUpdatedContacts();
 
   // ContactManagerInterface overrides:
-  virtual void AddObserver(ContactManagerObserver* observer, Profile* profile);
+  virtual void AddObserver(ContactManagerObserver* observer, Profile* profile)
+      OVERRIDE;
   virtual void RemoveObserver(ContactManagerObserver* observer,
-                              Profile* profile);
-  virtual scoped_ptr<ContactPointers> GetAllContacts(Profile* profile);
+                              Profile* profile) OVERRIDE;
+  virtual scoped_ptr<ContactPointers> GetAllContacts(Profile* profile) OVERRIDE;
   virtual const Contact* GetContactById(Profile* profile,
-                                        const std::string& contact_id);
+                                        const std::string& contact_id) OVERRIDE;
 
  private:
   // Profile expected to be passed to ContactManagerInterface methods.
