@@ -63,7 +63,7 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   // The constructor creates a dialog controller which owns itself.
   MediaGalleriesDialogController(TabContents* tab_contents,
                                  const extensions::Extension& extension,
-                                 const base::Callback<void(void)>& on_finish);
+                                 const base::Closure& on_finish);
 
   // Called by the view.
   virtual string16 GetHeader() const;
@@ -115,7 +115,7 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   NewGalleryPermissions new_galleries_;
 
   // We run this callback when done.
-  base::Callback<void(void)> on_finish_;
+  base::Closure on_finish_;
 
   // The model that tracks galleries and extensions' permissions.
   MediaGalleriesPreferences* preferences_;

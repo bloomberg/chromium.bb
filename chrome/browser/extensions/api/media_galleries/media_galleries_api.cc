@@ -57,9 +57,17 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     ShowDialog();
     return true;
   } else if (interactive == "if_needed") {
-    // TODO(estade): implement.
+    std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
+        MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+            render_view_host()->GetProcess(), *GetExtension());
+    if (filesystems.empty())
+      ShowDialog();
+    else
+      ReturnGalleries(filesystems);
+
+    return true;
   } else if (interactive == "no") {
-    ReturnGalleries();
+    GetAndReturnGalleries();
     return true;
   }
 
@@ -67,14 +75,16 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   return false;
 }
 
-void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries() {
-  const content::RenderProcessHost* rph = render_view_host()->GetProcess();
-  chrome::MediaFileSystemRegistry* media_fs_registry =
-      MediaFileSystemRegistry::GetInstance();
-  const std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
-      media_fs_registry->GetMediaFileSystemsForExtension(rph, *GetExtension());
+void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
+  std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
+      MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
+          render_view_host()->GetProcess(), *GetExtension());
+  ReturnGalleries(filesystems);
+}
 
-  const int child_id = rph->GetID();
+void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
+    const std::vector<MediaFileSystemRegistry::MediaFSInfo>& filesystems) {
+  const int child_id = render_view_host()->GetProcess()->GetID();
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
     base::DictionaryValue* dict_value = new base::DictionaryValue();
@@ -110,17 +120,16 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
     if (window) {
       tab_contents = window->tab_contents();
     } else {
-      // Abort showing the dialog.
-      ReturnGalleries();
+      // Abort showing the dialog. TODO(estade) Perhaps return an error instead.
+      GetAndReturnGalleries();
       return;
     }
   }
 
   // Controller will delete itself.
-  new chrome::MediaGalleriesDialogController(
-      tab_contents, *GetExtension(),
-      base::Bind(&MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries,
-                 this));
+  base::Closure cb = base::Bind(
+      &MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries, this);
+  new chrome::MediaGalleriesDialogController(tab_contents, *GetExtension(), cb);
 }
 
 // MediaGalleriesAssembleMediaFileFunction -------------------------------------

@@ -8,7 +8,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
 
+#include <vector>
+
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/media_gallery/media_file_system_registry.h"
 
 namespace extensions {
 
@@ -23,8 +26,14 @@ class MediaGalleriesGetMediaFileSystemsFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Grabs the galleries from the preferences system and returns them.
-  void ReturnGalleries();
+  // Grabs galleries from the media file system registry and passes them to
+  // |ReturnGalleries|.
+  void GetAndReturnGalleries();
+
+  // Returns galleries to the caller.
+  void ReturnGalleries(
+      const std::vector<chrome::MediaFileSystemRegistry::MediaFSInfo>&
+          filesystems);
 
   // Shows the configuration dialog to edit gallery preferences.
   void ShowDialog();

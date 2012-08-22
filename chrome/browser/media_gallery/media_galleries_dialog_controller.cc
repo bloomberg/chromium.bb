@@ -23,7 +23,7 @@ namespace chrome {
 MediaGalleriesDialogController::MediaGalleriesDialogController(
     TabContents* tab_contents,
     const Extension& extension,
-    const base::Callback<void(void)>& on_finish)
+    const base::Closure& on_finish)
       : tab_contents_(tab_contents),
         extension_(&extension),
         on_finish_(on_finish),
