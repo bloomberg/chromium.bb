@@ -311,7 +311,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUISimUnlockHost)
     return &NewWebUI<chromeos::SimUnlockUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
-    return &NewWebUI<SystemInfoUI>;
+    return &NewWebUI<chromeos::SystemInfoUI>;
 #endif  // defined(OS_CHROMEOS)
 
   /****************************************************************************

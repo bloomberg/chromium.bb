@@ -7,6 +7,8 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
+namespace chromeos {
+
 class SystemInfoUI : public content::WebUIController {
  public:
   explicit SystemInfoUI(content::WebUI* web_ui);
@@ -14,5 +16,7 @@ class SystemInfoUI : public content::WebUIController {
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUI);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_SYSTEM_INFO_UI_H_

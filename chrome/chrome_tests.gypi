@@ -1185,6 +1185,7 @@
         'browser/chromeos/system/mock_statistics_provider.cc',
         'browser/chromeos/system/mock_statistics_provider.h',
         'browser/chromeos/system/name_value_pairs_parser_unittest.cc',
+        'browser/chromeos/system_logs/lsb_release_log_source_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/chromeos/web_socket_proxy_helper_unittest.cc',
         'browser/command_updater_unittest.cc',

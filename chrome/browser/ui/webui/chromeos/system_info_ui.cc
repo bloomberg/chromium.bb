@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -18,8 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/system/sysinfo_provider.h"
-#include "chrome/browser/chromeos/system/syslogs_provider.h"
+#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,6 +42,8 @@
 using content::WebContents;
 using content::WebUIMessageHandler;
 
+namespace chromeos {
+
 class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
   SystemInfoUIHTMLSource();
@@ -58,24 +60,16 @@ class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  private:
   ~SystemInfoUIHTMLSource() {}
 
-  void SyslogsComplete(chromeos::system::LogDictionaryType* sys_info,
-                       std::string* ignored_content);
-  void SysInfoComplete(chromeos::system::SysInfoResponse* response);
+  void SysInfoComplete(scoped_ptr<SystemLogsResponse> response);
   void RequestComplete();
   void WaitForData();
-
-  CancelableRequestConsumer logs_consumer_;
-  CancelableRequestConsumer sys_info_consumer_;
 
   // Stored data from StartDataRequest()
   std::string path_;
   int request_id_;
 
-  int pending_requests_;
-  chromeos::system::LogDictionaryType* logs_;
-  chromeos::system::SysInfoResponse* sys_info_;
-  scoped_ptr<chromeos::system::SysInfoProvider> sys_info_provider_;
-
+  scoped_ptr<SystemLogsResponse> response_;
+  base::WeakPtrFactory<SystemInfoUIHTMLSource> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SystemInfoUIHTMLSource);
 };
 
@@ -101,8 +95,9 @@ class SystemInfoHandler : public WebUIMessageHandler,
 
 SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
     : DataSource(chrome::kChromeUISystemInfoHost, MessageLoop::current()),
-      request_id_(0), logs_(NULL), sys_info_(NULL),
-      sys_info_provider_(chromeos::system::SysInfoProvider::Create()) {
+      request_id_(0),
+      response_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
@@ -110,44 +105,20 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
                                               int request_id) {
   path_ = path;
   request_id_ = request_id;
-  pending_requests_ = 0;
 
-  chromeos::system::SyslogsProvider* provider =
-      chromeos::system::SyslogsProvider::GetInstance();
-  if (provider) {
-    provider->RequestSyslogs(
-        false,  // don't compress.
-        chromeos::system::SyslogsProvider::SYSLOGS_SYSINFO,
-        &logs_consumer_,
-        base::Bind(&SystemInfoUIHTMLSource::SyslogsComplete,
-                   base::Unretained(this)));
-    pending_requests_++;
-  }
-
-  sys_info_provider_->Fetch(&sys_info_consumer_,
-                            base::Bind(
-                                &SystemInfoUIHTMLSource::SysInfoComplete,
-                                base::Unretained(this)));
-  pending_requests_++;
+  SystemLogsFetcher* fetcher = new SystemLogsFetcher();
+  fetcher->Fetch(base::Bind(&SystemInfoUIHTMLSource::SysInfoComplete,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SystemInfoUIHTMLSource::SyslogsComplete(
-    chromeos::system::LogDictionaryType* sys_info,
-    std::string* ignored_content) {
-  logs_ = sys_info;
-  RequestComplete();
-}
 
 void SystemInfoUIHTMLSource::SysInfoComplete(
-    chromeos::system::SysInfoResponse* sys_info) {
-  sys_info_ = sys_info;
+    scoped_ptr<SystemLogsResponse> sys_info) {
+  response_ = sys_info.Pass();
   RequestComplete();
 }
 
 void SystemInfoUIHTMLSource::RequestComplete() {
-  if (--pending_requests_)
-    return;
-
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
   strings.SetString("description",
@@ -163,36 +134,16 @@ void SystemInfoUIHTMLSource::RequestComplete() {
   strings.SetString("collapse_btn",
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
   SetFontAndTextDirection(&strings);
-
-  if (logs_ || sys_info_) {
+  if (response_.get()) {
     ListValue* details = new ListValue();
     strings.Set("details", details);
-    if (logs_) {
-      chromeos::system::LogDictionaryType::iterator it;
-      for (it = logs_->begin(); it != logs_->end(); ++it) {
-        DictionaryValue* val = new DictionaryValue;
-        // Skip the 'debugd' key; this is a duplicate of all the logs that
-        // we're already getting from the debugd daemon. This will be fixed
-        // with http://code.google.com/p/chromium/issues/detail?id=138582
-        // which incidentally will also remove this code.
-        if (it->first == "debugd")
-          continue;
-
-        val->SetString("stat_name", it->first);
-        val->SetString("stat_value", it->second);
-        details->Append(val);
-      }
-      delete logs_;
-    }
-    if (sys_info_) {
-      chromeos::system::SysInfoResponse::iterator it;
-      for (it = sys_info_->begin(); it != sys_info_->end(); ++it) {
-        DictionaryValue* val = new DictionaryValue;
-        val->SetString("stat_name", it->first);
-        val->SetString("stat_value", it->second);
-        details->Append(val);
-      }
-      delete sys_info_;
+    for (SystemLogsResponse::const_iterator it = response_->begin();
+         it != response_->end();
+         ++it) {
+      DictionaryValue* val = new DictionaryValue;
+      val->SetString("stat_name", it->first);
+      val->SetString("stat_value", it->second);
+      details->Append(val);
     }
     strings.SetString("anchor", path_);
   }
@@ -201,7 +152,6 @@ void SystemInfoUIHTMLSource::RequestComplete() {
           IDR_ABOUT_SYS_HTML, ui::SCALE_FACTOR_NONE));
   std::string full_html = jstemplate_builder::GetTemplatesHtml(
       systeminfo_html, &strings, "t" /* template root node id */);
-
   SendResponse(request_id_, base::RefCountedString::TakeString(&full_html));
 }
 
@@ -235,3 +185,5 @@ SystemInfoUI::SystemInfoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, html_source);
 }
+
+}  // namespace chromeos
