@@ -85,33 +85,9 @@
     },
     {
       'target_name': 'ppapi_cdm_wrapper',
-      'type': 'static_library',
-      'dependencies': [
-        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
-      ],
-      'sources': [
-        'crypto/ppapi/cdm_wrapper.cc',
-      ],
-    },
-    {
-      'target_name': 'clearkeycdm',
-      'type': 'shared_library',
-      'defines': ['CDM_IMPLEMENTATION'],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/media/media.gyp:media'
-      ],
-      'sources': [
-        'crypto/ppapi/clear_key_cdm.cc',
-        'crypto/ppapi/clear_key_cdm.h',
-      ],
-    },
-    {
-      'target_name': 'clearkeycdmplugin',
       'type': 'none',
       'dependencies': [
-        'ppapi_cdm_wrapper',
-        'clearkeycdm',
+        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp'
       ],
       'conditions': [
         ['os_posix==1 and OS!="mac"', {
@@ -136,6 +112,9 @@
               '-Wl,-exported_symbol,_PPP_ShutdownModule'
             ]},
         }],
+      ],
+      'sources': [
+        'crypto/ppapi/cdm_wrapper.cc',
       ],
     }
   ],
