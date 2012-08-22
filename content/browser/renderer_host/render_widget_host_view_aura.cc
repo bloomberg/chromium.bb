@@ -482,9 +482,6 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const base::Callback<void(bool)>& callback,
     skia::PlatformCanvas* output) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
-  ui::Compositor* compositor = GetCompositor();
-  if (!compositor)
-    return;
 
   std::map<uint64, scoped_refptr<ui::Texture> >::iterator it =
       image_transport_clients_.find(current_surface_);
@@ -500,7 +497,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper(compositor);
+  GLHelper* gl_helper = factory->GetGLHelper();
   if (!gl_helper)
     return;
 
@@ -873,10 +870,9 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  ui::Compositor* compositor = GetCompositor();
-  if (shared_surface_handle_.is_null() && compositor) {
+  if (shared_surface_handle_.is_null()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
+    shared_surface_handle_ = factory->CreateSharedSurfaceHandle();
     factory->AddObserver(this);
   }
   return shared_surface_handle_;
@@ -1449,7 +1445,7 @@ void RenderWidgetHostViewAura::OnCompositingAborted(
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ImageTransportFactoryObserver implementation:
 
-void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
+void RenderWidgetHostViewAura::OnLostResources() {
   image_transport_clients_.clear();
   current_surface_ = 0;
   protection_state_id_ = 0;
@@ -1462,7 +1458,7 @@ void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
   DCHECK(!shared_surface_handle_.is_null());
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->DestroySharedSurfaceHandle(shared_surface_handle_);
-  shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
+  shared_surface_handle_ = factory->CreateSharedSurfaceHandle();
   host_->CompositingSurfaceUpdated();
   host_->ScheduleComposite();
 }
@@ -1613,7 +1609,7 @@ void RenderWidgetHostViewAura::InsertSyncPointAndACK(
   // sync point will not be waited for in the GPU process.
   if (compositor) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    sync_point = factory->InsertSyncPoint(compositor);
+    sync_point = factory->InsertSyncPoint();
   }
 
   RenderWidgetHostImpl::AcknowledgeBufferPresent(

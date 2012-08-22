@@ -191,8 +191,7 @@ class WebGLBench : public BenchCompositorObserver {
     webgl_.SetBounds(bounds);
     parent_->Add(&webgl_);
 
-    context_.reset(
-        ui::ContextFactory::GetInstance()->CreateOffscreenContext(compositor));
+    context_.reset(ui::ContextFactory::GetInstance()->CreateOffscreenContext());
     context_->makeContextCurrent();
     texture_ = new WebGLTexture(context_.get(), bounds.size());
     fbo_ = context_->createFramebuffer();

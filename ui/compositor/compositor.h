@@ -54,10 +54,9 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual WebKit::WebGraphicsContext3D* CreateContext(
       Compositor* compositor) = 0;
 
-  // Creates a context for given compositor used for offscreen rendering. See
-  // the comments of CreateContext to know how per-compositor data is handled.
-  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext(
-      Compositor* compositor) = 0;
+  // Creates a context used for offscreen rendering. This context can be shared
+  // with all compositors.
+  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() = 0;
 
   // Destroys per-compositor data.
   virtual void RemoveCompositor(Compositor* compositor) = 0;
@@ -72,8 +71,7 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   // ContextFactory implementation
   virtual WebKit::WebGraphicsContext3D* CreateContext(
       Compositor* compositor) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext(
-      Compositor* compositor) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
 
   bool Initialize();

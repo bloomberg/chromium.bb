@@ -88,9 +88,8 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContext(
   return CreateContextCommon(compositor, false);
 }
 
-WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext(
-    Compositor* compositor) {
-  return CreateContextCommon(compositor, true);
+WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
+  return CreateContextCommon(NULL, true);
 }
 
 void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
@@ -99,6 +98,7 @@ void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
 WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
     Compositor* compositor,
     bool offscreen) {
+  DCHECK(offscreen || compositor);
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   WebKit::WebGraphicsContext3D* context =
