@@ -100,6 +100,9 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
     bool offscreen) {
   DCHECK(offscreen || compositor);
   WebKit::WebGraphicsContext3D::Attributes attrs;
+  attrs.depth = false;
+  attrs.stencil = false;
+  attrs.antialias = false;
   attrs.shareResources = true;
   WebKit::WebGraphicsContext3D* context =
       offscreen ?

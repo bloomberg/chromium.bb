@@ -299,6 +299,9 @@ class GpuProcessTransportFactory :
       int surface_id) {
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
+    attrs.depth = false;
+    attrs.stencil = false;
+    attrs.antialias = false;
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
