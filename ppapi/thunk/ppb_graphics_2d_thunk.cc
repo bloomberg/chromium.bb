@@ -76,7 +76,7 @@ int32_t Flush(PP_Resource graphics_2d, PP_CompletionCallback callback) {
   EnterGraphics2D enter(graphics_2d, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Flush(enter.callback()));
+  return enter.SetResult(enter.object()->Flush(enter.callback(), NULL));
 }
 
 PP_Bool SetScale(PP_Resource graphics_2d, float scale) {

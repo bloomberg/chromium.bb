@@ -69,6 +69,15 @@ class TestGraphics2D : public TestCase {
   // has issued its callback. Returns true on success.
   bool FlushAndWaitForDone(pp::Graphics2D* context);
 
+  // Creates an image and replaces the contents of the Graphics2D with the
+  // image, waiting for completion. This returns the resource ID of the image
+  // data we created. This image data will be released by the time the call
+  // completes, but it can be used for comparisons later.
+  //
+  // Returns 0 on failure.
+  PP_Resource ReplaceContentsAndReturnID(pp::Graphics2D* dc,
+                                         const pp::Size& size);
+
   std::string TestInvalidResource();
   std::string TestInvalidSize();
   std::string TestHumongous();
@@ -79,6 +88,7 @@ class TestGraphics2D : public TestCase {
   std::string TestReplace();
   std::string TestFlush();
   std::string TestDev();
+  std::string TestReplaceContentsCaching();
 
   // Used by the tests that access the C API directly.
   const PPB_Graphics2D* graphics_2d_interface_;

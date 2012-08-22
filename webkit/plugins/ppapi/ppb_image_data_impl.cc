@@ -132,13 +132,6 @@ const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
   return backend_->GetMappedBitmap();
 }
 
-void PPB_ImageData_Impl::Swap(PPB_ImageData_Impl* other) {
-  backend_.swap(other->backend_);
-  std::swap(other->format_, format_);
-  std::swap(other->width_, width_);
-  std::swap(other->height_, height_);
-}
-
 // ImageDataPlatformBackend --------------------------------------------------
 
 ImageDataPlatformBackend::ImageDataPlatformBackend() {

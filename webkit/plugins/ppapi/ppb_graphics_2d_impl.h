@@ -51,10 +51,11 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   virtual void Scroll(const PP_Rect* clip_rect,
                       const PP_Point* amount) OVERRIDE;
   virtual void ReplaceContents(PP_Resource image_data) OVERRIDE;
-  virtual int32_t Flush(
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
   virtual bool SetScale(float scale) OVERRIDE;
   virtual float GetScale() OVERRIDE;
+  virtual int32_t Flush(
+      scoped_refptr< ::ppapi::TrackedCallback> callback,
+      PP_Resource* old_image_data) OVERRIDE;
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);
 
@@ -142,7 +143,8 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
   void ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
                      gfx::Rect* invalidated_rect);
   void ExecuteReplaceContents(PPB_ImageData_Impl* image,
-                              gfx::Rect* invalidated_rect);
+                              gfx::Rect* invalidated_rect,
+                              PP_Resource* old_image_data);
 
   // Schedules the offscreen callback to be fired at a future time. This
   // will add the given item to the offscreen_flush_callbacks_ vector.

@@ -322,12 +322,14 @@ void PPB_Graphics2D_Impl::ReplaceContents(PP_Resource image_data) {
   queued_operations_.push_back(operation);
 }
 
-int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
+int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback,
+                                   PP_Resource* old_image_data) {
   TRACE_EVENT0("pepper", "PPB_Graphics2D_Impl::Flush");
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
     return PP_ERROR_INPROGRESS;
 
+  bool done_replace_contents = false;
   bool nothing_visible = true;
   for (size_t i = 0; i < queued_operations_.size(); i++) {
     QueuedOperation& operation = queued_operations_[i];
@@ -345,7 +347,13 @@ int32_t PPB_Graphics2D_Impl::Flush(scoped_refptr<TrackedCallback> callback) {
                       &op_rect);
         break;
       case QueuedOperation::REPLACE:
-        ExecuteReplaceContents(operation.replace_image, &op_rect);
+        // Since the out parameter |old_image_data| takes ownership of the
+        // reference, if there are more than one ReplaceContents calls queued
+        // the first |old_image_data| will get overwritten and leaked. So we
+        // only supply this for the first call.
+        ExecuteReplaceContents(operation.replace_image, &op_rect,
+                               done_replace_contents ? NULL : old_image_data);
+        done_replace_contents = true;
         break;
     }
 
@@ -695,7 +703,8 @@ void PPB_Graphics2D_Impl::ExecuteScroll(const gfx::Rect& clip,
 }
 
 void PPB_Graphics2D_Impl::ExecuteReplaceContents(PPB_ImageData_Impl* image,
-                                                 gfx::Rect* invalidated_rect) {
+                                                 gfx::Rect* invalidated_rect,
+                                                 PP_Resource* old_image_data) {
   if (image->format() != image_data_->format()) {
     DCHECK(image->width() == image_data_->width() &&
            image->height() == image_data_->height());
@@ -711,8 +720,10 @@ void PPB_Graphics2D_Impl::ExecuteReplaceContents(PPB_ImageData_Impl* image,
     // guarantee that the current backing store is always mapped.
     if (!image->Map())
       return;
-    image_data_->Unmap();
-    image_data_->Swap(image);
+
+    if (old_image_data)
+      *old_image_data = image_data_->GetReference();
+    image_data_ = image;
   }
   *invalidated_rect = gfx::Rect(0, 0,
                                 image_data_->width(), image_data_->height());

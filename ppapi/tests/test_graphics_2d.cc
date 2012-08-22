@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <set>
+
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
@@ -53,6 +55,7 @@ void TestGraphics2D::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(Replace, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(Flush, filter);
   RUN_TEST(Dev, filter);
+  RUN_TEST(ReplaceContentsCaching, filter);
 }
 
 void TestGraphics2D::QuitMessageLoop() {
@@ -169,6 +172,21 @@ bool TestGraphics2D::IsSquareInDC(const pp::Graphics2D& dc,
   if (!ReadImageData(dc, &readback, pp::Point(0, 0)))
     return false;
   return IsSquareInImage(readback, background_color, square, square_color);
+}
+
+
+PP_Resource TestGraphics2D::ReplaceContentsAndReturnID(
+    pp::Graphics2D* dc,
+    const pp::Size& size) {
+  pp::ImageData image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, true);
+
+  PP_Resource id = image.pp_resource();
+
+  dc->ReplaceContents(&image);
+  if (!FlushAndWaitForDone(dc))
+    return 0;
+
+  return id;
 }
 
 // Test all the functions with an invalid handle. Most of these just check for
@@ -666,6 +684,48 @@ std::string TestGraphics2D::TestDev() {
   if (size.width != w || size.height != h ||
       is_always_opaque != PP_FromBool(false))
     return "Mismatch of data.";
+
+  PASS();
+}
+
+// This test makes sure that the out-of-process image data caching works as
+// expected. Doing ReplaceContents quickly should re-use the image data from
+// older ones.
+std::string TestGraphics2D::TestReplaceContentsCaching() {
+  // The cache is only active when running in the proxy, so skip it otherwise.
+  if (!testing_interface_->IsOutOfProcess())
+    PASS();
+
+  // Here we test resource IDs as a way to determine if the resource is being
+  // cached and re-used. This is non-optimal since it's entirely possible
+  // (and maybe better) for the proxy to return new resource IDs for the
+  // re-used objects. Howevever, our current implementation does this so it is
+  // an easy thing to check for.
+  //
+  // You could check for the shared memory pointers getting re-used, but the
+  // OS is very likely to use the same memory location for a newly-mapped image
+  // if one was deleted, meaning that it could pass even if the cache is broken.
+  // This would then require that we add some address-re-use-preventing code
+  // which would be tricky.
+  std::set<PP_Resource> resources;
+
+  pp::Size size(16, 16);
+  pp::Graphics2D dc(instance_, size, false);
+
+  // Do two replace contentses, adding the old resource IDs to our map.
+  PP_Resource imageres = ReplaceContentsAndReturnID(&dc, size);
+  ASSERT_TRUE(imageres);
+  resources.insert(imageres);
+  imageres = ReplaceContentsAndReturnID(&dc, size);
+  ASSERT_TRUE(imageres);
+  resources.insert(imageres);
+
+  // Now doing more replace contents should re-use older IDs if the cache is
+  // working.
+  imageres = ReplaceContentsAndReturnID(&dc, size);
+  ASSERT_TRUE(resources.find(imageres) != resources.end());
+  imageres = ReplaceContentsAndReturnID(&dc, size);
+  ASSERT_TRUE(resources.find(imageres) != resources.end());
 
   PASS();
 }

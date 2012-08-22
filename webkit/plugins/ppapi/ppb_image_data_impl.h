@@ -97,9 +97,6 @@ class WEBKIT_PLUGINS_EXPORT PPB_ImageData_Impl
 
   const SkBitmap* GetMappedBitmap() const;
 
-  // Swaps the guts of this image data with another.
-  void Swap(PPB_ImageData_Impl* other);
-
  private:
   PP_ImageDataFormat format_;
   int width_;

@@ -434,6 +434,10 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
                     ppapi::HostResource /* graphics_3d */,
                     int32_t /* pp_error */)
 
+// PPB_ImageData.
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPBImageData_NotifyUnusedImageData,
+                    ppapi::HostResource /* old_image_data */)
+
 // PPB_Instance.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBInstance_MouseLockComplete,
                     PP_Instance /* instance */,

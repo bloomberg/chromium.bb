@@ -14,6 +14,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
@@ -45,7 +46,8 @@ class Graphics2D : public Resource, public thunk::PPB_Graphics2D_API {
   void ReplaceContents(PP_Resource image_data);
   bool SetScale(float scale);
   float GetScale();
-  int32_t Flush(scoped_refptr<TrackedCallback> callback);
+  int32_t Flush(scoped_refptr<TrackedCallback> callback,
+                PP_Resource* old_image_data);
 
   // Notification that the host has sent an ACK for a pending Flush.
   void FlushACK(int32_t result_code);
@@ -143,7 +145,12 @@ float Graphics2D::GetScale() {
   return scale_;
 }
 
-int32_t Graphics2D::Flush(scoped_refptr<TrackedCallback> callback) {
+int32_t Graphics2D::Flush(scoped_refptr<TrackedCallback> callback,
+                          PP_Resource* old_image_data) {
+  // We don't support this feature, it's for in-renderer only.
+  if (old_image_data)
+    *old_image_data = 0;
+
   if (TrackedCallback::IsPending(current_flush_callback_))
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
   current_flush_callback_ = callback;
@@ -255,7 +262,18 @@ void PPB_Graphics2D_Proxy::OnHostMsgFlush(const HostResource& graphics_2d) {
       &PPB_Graphics2D_Proxy::SendFlushACKToPlugin, graphics_2d);
   if (enter.failed())
     return;
-  enter.SetResult(enter.object()->Flush(enter.callback()));
+  PP_Resource old_image_data = 0;
+  enter.SetResult(enter.object()->Flush(enter.callback(), &old_image_data));
+  if (old_image_data) {
+    // If the Graphics2D has an old image data it's not using any more, send
+    // it back to the plugin for possible re-use. See ppb_image_data_proxy.cc
+    // for a description how this process works.
+    HostResource old_image_data_host_resource;
+    old_image_data_host_resource.SetHostResource(graphics_2d.instance(),
+                                                 old_image_data);
+    dispatcher()->Send(new PpapiMsg_PPBImageData_NotifyUnusedImageData(
+        API_ID_PPB_IMAGE_DATA, old_image_data_host_resource));
+  }
 }
 
 void PPB_Graphics2D_Proxy::OnHostMsgSetScale(const HostResource& graphics_2d,

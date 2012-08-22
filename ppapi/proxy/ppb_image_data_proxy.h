@@ -50,6 +50,7 @@ class ImageData : public ppapi::Resource,
 
   // Resource overrides.
   virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() OVERRIDE;
+  virtual void LastPluginRefWasDeleted() OVERRIDE;
 
   // PPB_ImageData API.
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
@@ -60,6 +61,9 @@ class ImageData : public ppapi::Resource,
   virtual SkCanvas* GetCanvas() OVERRIDE;
 
   const PP_ImageDataDesc& desc() const { return desc_; }
+
+  // Fills the contents of the image with 0.
+  void ZeroContents();
 
 #if !defined(OS_NACL)
   static ImageHandle NullHandle();
@@ -99,7 +103,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
   static const ApiID kApiID = API_ID_PPB_IMAGE_DATA;
 
  private:
-  // Message handlers.
+  // Plugin->Host message handlers.
   void OnHostMsgCreate(PP_Instance instance,
                        int32_t format,
                        const PP_Size& size,
@@ -114,6 +118,9 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
                            HostResource* result,
                            std::string* image_data_desc,
                            base::SharedMemoryHandle* result_image_handle);
+
+  // Host->Plugin message handlers.
+  void OnPluginMsgNotifyUnusedImageData(const HostResource& old_image_data);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_ImageData_Proxy);
 };

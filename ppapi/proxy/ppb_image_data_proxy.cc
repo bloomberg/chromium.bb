@@ -6,15 +6,20 @@
 
 #include <string.h>  // For memcpy
 
+#include <map>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -27,8 +32,256 @@
 #include "ui/surface/transport_dib.h"
 #endif
 
+using ppapi::thunk::PPB_ImageData_API;
+
 namespace ppapi {
 namespace proxy {
+
+namespace {
+
+// How ImageData re-use works
+// --------------------------
+//
+// When a plugin does ReplaceContents, it transfers the ImageData to the system
+// for use as the backing store for the instance. When animating plugins (like
+// video) re-creating image datas for each frame and mapping the memory has a
+// high overhead. So we try to re-use these when possible.
+//
+// 1. Plugin does ReplaceContents and Flush and the proxy queues up an
+//    asynchronous request to the renderer.
+// 2. Plugin frees its ImageData reference. If it doesn't do this we can't
+//    re-use it.
+// 3. When the last plugin ref of an ImageData is released, we don't actually
+//    delete it. Instead we put it on a queue where we hold onto it in the
+//    plugin process for a short period of time.
+// 4. When the Flush for the Graphics2D.ReplaceContents is executed, the proxy
+//    will request the old ImageData. This is the one that's being replaced by
+//    the new contents so is being abandoned, and without our caching system it
+//    would get deleted at this point.
+// 5. The proxy in the renderer will send NotifyUnusedImageData back to the
+//    plugin process. We check if the given resource is in the queue and mark
+//    it as usable.
+// 6. When the plugin requests a new image data, we check our queue and if there
+//    is a usable ImageData of the right size and format, we'll return it
+//    instead of making a new one. Since when you're doing full frame
+//    animations, generally the size doesn't change so cache hits should be
+//    high.
+//
+// Some notes:
+//
+//  - We only re-use image datas when the plugin does ReplaceContents on them.
+//    Theoretically we could re-use them in other cases but the lifetime
+//    becomes more difficult to manage. The plugin could have used an ImageData
+//    in an arbitrary number of queued up PaintImageData calls which we would
+//    have to check. By doing ReplaceContents, the plugin is promising that it's
+//    done with the image, so this is a good signal.
+//
+//  - If a flush takes a long time or there are many released image datas
+//    accumulating in our queue such that some are deleted, we will have
+//    released our reference by the time the renderer notifies us of an unused
+//    image data. In this case we just give up.
+//
+//  - We maintain a per-instance cache. Some pages have many instances of
+//    Flash, for example, each of a different size. If they're all animating we
+//    want each to get its own image data re-use.
+//
+//  - We generate new resource IDs when re-use happens to try to avoid weird
+//    problems if the plugin messes up its refcounting.
+
+// Keep a cache entry for this many seconds before expiring it. We get an entry
+// back from the renderer after an ImageData is swapped out, so it means the
+// plugin has to be painting at least two frames for this time interval to
+// get caching.
+static const int kMaxAgeSeconds = 2;
+
+// ImageDataCacheEntry ---------------------------------------------------------
+
+struct ImageDataCacheEntry {
+  ImageDataCacheEntry() : added_time(), usable(false), image() {}
+  ImageDataCacheEntry(ImageData* i)
+      : added_time(base::TimeTicks::Now()),
+        usable(false),
+        image(i) {
+  }
+
+  base::TimeTicks added_time;
+
+  // Set to true when the renderer tells us that it's OK to re-use this iamge.
+  bool usable;
+
+  scoped_refptr<ImageData> image;
+};
+
+// ImageDataInstanceCache ------------------------------------------------------
+
+// Per-instance cache of image datas.
+class ImageDataInstanceCache {
+ public:
+  ImageDataInstanceCache() : next_insertion_point_(0) {}
+
+  // These functions have the same spec as the ones in ImageDataCache.
+  scoped_refptr<ImageData> Get(int width, int height,
+                               PP_ImageDataFormat format);
+  void Add(ImageData* image_data);
+  void ImageDataUsable(ImageData* image_data);
+
+  // Expires old entries. Returns true if there are still entries in the list,
+  // false if this instance cache is now empty.
+  bool ExpireEntries();
+
+ private:
+  // We'll store this many ImageDatas per instance.
+  const static int kCacheSize = 2;
+
+  ImageDataCacheEntry images_[kCacheSize];
+
+  // Index into cache where the next item will go.
+  int next_insertion_point_;
+};
+
+scoped_refptr<ImageData> ImageDataInstanceCache::Get(
+    int width, int height,
+    PP_ImageDataFormat format) {
+  // Just do a brute-force search since the cache is so small.
+  for (int i = 0; i < kCacheSize; i++) {
+    if (!images_[i].usable)
+      continue;
+    const PP_ImageDataDesc& desc = images_[i].image->desc();
+    if (desc.format == format &&
+        desc.size.width == width && desc.size.height == height) {
+      scoped_refptr<ImageData> ret(images_[i].image);
+      images_[i] = ImageDataCacheEntry();
+      return ret;
+    }
+  }
+  return scoped_refptr<ImageData>();
+}
+
+void ImageDataInstanceCache::Add(ImageData* image_data) {
+  images_[next_insertion_point_] = ImageDataCacheEntry(image_data);
+
+  // Go to the next location, wrapping around to get LRU.
+  next_insertion_point_++;
+  if (next_insertion_point_ >= kCacheSize)
+    next_insertion_point_ = 0;
+}
+
+void ImageDataInstanceCache::ImageDataUsable(ImageData* image_data) {
+  for (int i = 0; i < kCacheSize; i++) {
+    if (images_[i].image.get() == image_data) {
+      images_[i].usable = true;
+      return;
+    }
+  }
+}
+
+bool ImageDataInstanceCache::ExpireEntries() {
+  base::TimeTicks threshold_time =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(kMaxAgeSeconds);
+
+  bool has_entry = false;
+  for (int i = 0; i < kCacheSize; i++) {
+    if (images_[i].image.get()) {
+      // Entry present.
+      if (images_[i].added_time <= threshold_time) {
+        // Found an entry to expire.
+        images_[i] = ImageDataCacheEntry();
+        next_insertion_point_ = i;
+      } else {
+        // Found an entry that we're keeping.
+        has_entry = true;
+      }
+    }
+  }
+  return has_entry;
+}
+
+// ImageDataCache --------------------------------------------------------------
+
+class ImageDataCache {
+ public:
+  ImageDataCache() : weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+  ~ImageDataCache() {}
+
+  static ImageDataCache* GetInstance();
+
+  // Retrieves an image data from the cache of the specified size and format if
+  // one exists. If one doesn't exist, this will return a null refptr.
+  scoped_refptr<ImageData> Get(PP_Instance instance,
+                               int width, int height,
+                               PP_ImageDataFormat format);
+
+  // Adds the given image data to the cache. There should be no plugin
+  // references to it. This may delete an older item from the cache.
+  void Add(ImageData* image_data);
+
+  // Notification from the renderer that the given image data is usable.
+  void ImageDataUsable(ImageData* image_data);
+
+ private:
+  friend struct LeakySingletonTraits<ImageDataCache>;
+
+  // Timer callback to expire entries for the given instance.
+  void OnTimer(PP_Instance instance);
+
+  // This class does timer calls and we don't want to run these outside of the
+  // scope of the object. Technically, since this class is a leaked static,
+  // this will never happen and this factory is unnecessary. However, it's
+  // probably better not to make assumptions about the lifetime of this class.
+  base::WeakPtrFactory<ImageDataCache> weak_factory_;
+
+  typedef std::map<PP_Instance, ImageDataInstanceCache> CacheMap;
+  CacheMap cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageDataCache);
+};
+
+// static
+ImageDataCache* ImageDataCache::GetInstance() {
+  return Singleton<ImageDataCache,
+                   LeakySingletonTraits<ImageDataCache> >::get();
+}
+
+scoped_refptr<ImageData> ImageDataCache::Get(PP_Instance instance,
+                                             int width, int height,
+                                             PP_ImageDataFormat format) {
+  CacheMap::iterator found = cache_.find(instance);
+  if (found == cache_.end())
+    return scoped_refptr<ImageData>();
+  return found->second.Get(width, height, format);
+}
+
+void ImageDataCache::Add(ImageData* image_data) {
+  cache_[image_data->pp_instance()].Add(image_data);
+
+  // Schedule a timer to invalidate this entry.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ImageDataCache::OnTimer,
+                 weak_factory_.GetWeakPtr(),
+                 image_data->pp_instance()),
+      base::TimeDelta::FromSeconds(kMaxAgeSeconds));
+}
+
+void ImageDataCache::ImageDataUsable(ImageData* image_data) {
+  CacheMap::iterator found = cache_.find(image_data->pp_instance());
+  if (found != cache_.end())
+    found->second.ImageDataUsable(image_data);
+}
+
+void ImageDataCache::OnTimer(PP_Instance instance) {
+  CacheMap::iterator found = cache_.find(instance);
+  if (found == cache_.end())
+    return;
+  if (!found->second.ExpireEntries()) {
+    // There are no more entries for this instance, remove it from the cache.
+    cache_.erase(found);
+  }
+}
+
+}  // namespace
+
+// ImageData -------------------------------------------------------------------
 
 #if !defined(OS_NACL)
 ImageData::ImageData(const HostResource& resource,
@@ -58,8 +311,13 @@ ImageData::ImageData(const HostResource& resource,
 ImageData::~ImageData() {
 }
 
-thunk::PPB_ImageData_API* ImageData::AsPPB_ImageData_API() {
+PPB_ImageData_API* ImageData::AsPPB_ImageData_API() {
   return this;
+}
+
+void ImageData::LastPluginRefWasDeleted() {
+  // The plugin no longer needs this ImageData, add it to our cache.
+  ImageDataCache::GetInstance()->Add(this);
 }
 
 PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
@@ -121,6 +379,12 @@ SkCanvas* ImageData::GetCanvas() {
 #endif
 }
 
+void ImageData::ZeroContents() {
+  void* data = Map();
+  memset(data, 0, desc_.stride * desc_.size.height);
+  Unmap();
+}
+
 #if !defined(OS_NACL)
 // static
 ImageHandle ImageData::NullHandle() {
@@ -144,6 +408,8 @@ ImageHandle ImageData::HandleFromInt(int32_t i) {
 }
 #endif  // !defined(OS_NACL)
 
+// PPB_ImageData_Proxy ---------------------------------------------------------
+
 PPB_ImageData_Proxy::PPB_ImageData_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher) {
 }
@@ -159,6 +425,18 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
+
+  // Check the cache.
+  scoped_refptr<ImageData> cached_image_data =
+      ImageDataCache::GetInstance()->Get(instance, size.width, size.height,
+                                         format);
+  if (cached_image_data.get()) {
+    // We have one we can re-use rather than allocating a new one. Only zero
+    // out if requested.
+    if (PP_ToBool(init_to_zero))
+      cached_image_data->ZeroContents();
+    return cached_image_data->GetReference();
+  }
 
   HostResource result;
   std::string image_data_desc;
@@ -190,6 +468,10 @@ bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnHostMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_CreateNaCl,
                         OnHostMsgCreateNaCl)
+
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBImageData_NotifyUnusedImageData,
+                        OnPluginMsgNotifyUnusedImageData)
+
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -220,8 +502,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
   result->SetHostResource(instance, resource);
 
   // Get the description, it's just serialized as a string.
-  thunk::EnterResourceNoLock<thunk::PPB_ImageData_API> enter_resource(
-      resource, false);
+  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(resource, false);
   PP_ImageDataDesc desc;
   if (enter_resource.object()->Describe(&desc) == PP_TRUE) {
     image_data_desc->resize(sizeof(PP_ImageDataDesc));
@@ -271,8 +552,7 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
   result->SetHostResource(instance, resource);
 
   // Get the description, it's just serialized as a string.
-  thunk::EnterResourceNoLock<thunk::PPB_ImageData_API> enter_resource(
-      resource, false);
+  thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(resource, false);
   if (enter_resource.failed())
     return;
   PP_ImageDataDesc desc;
@@ -298,6 +578,28 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
   *result_image_handle =
       dispatcher->ShareHandleWithRemote(platform_file, false);
 #endif  // defined(OS_NACL)
+}
+
+void PPB_ImageData_Proxy::OnPluginMsgNotifyUnusedImageData(
+    const HostResource& old_image_data) {
+  PluginGlobals* plugin_globals = PluginGlobals::Get();
+  if (!plugin_globals)
+    return;  // This may happen if the plugin is maliciously sending this
+             // message to the renderer.
+
+  EnterPluginFromHostResource<PPB_ImageData_API> enter(old_image_data);
+  if (enter.succeeded()) {
+    ImageData* image_data = static_cast<ImageData*>(enter.object());
+    ImageDataCache::GetInstance()->ImageDataUsable(image_data);
+  }
+
+  // The renderer sent us a reference with the message. If the image data was
+  // still cached in our process, the proxy still holds a reference so we can
+  // remove the one the renderer just sent is. If the proxy no longer holds a
+  // reference, we released everything and we should also release the one the
+  // renderer just sent us.
+  dispatcher()->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
+      API_ID_PPB_CORE, old_image_data));
 }
 
 }  // namespace proxy
