@@ -125,10 +125,10 @@ void OomMemoryDetails::OnDetailsAvailable() {
 // OomPriorityManager
 
 OomPriorityManager::TabStats::TabStats()
-  : is_pinned(false),
+  : is_app(false),
+    is_pinned(false),
     is_selected(false),
     is_discarded(false),
-    sudden_termination_allowed(false),
     renderer_handle(0),
     tab_contents_id(0) {
 }
@@ -190,7 +190,8 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
     int score = pid_to_oom_score_[it->renderer_handle];
     str += base::IntToString16(score);
     str += ASCIIToUTF16(")");
-    str += ASCIIToUTF16(it->sudden_termination_allowed ? " sudden_ok " : "");
+    str += ASCIIToUTF16(it->is_app ? " app" : "");
+    str += ASCIIToUTF16(it->is_pinned ? " pinned" : "");
     str += ASCIIToUTF16(it->is_discarded ? " discarded" : "");
     titles.push_back(str);
   }
@@ -314,6 +315,11 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
   if (first.is_pinned != second.is_pinned)
     return first.is_pinned == true;
 
+  // Being an app is important too, as you're the only visible surface in the
+  // window and we don't want to discard that.
+  if (first.is_app != second.is_app)
+    return first.is_app == true;
+
   // TODO(jamescook): Incorporate sudden_termination_allowed into the sort
   // order.  We don't do this now because pages with unload handlers set
   // sudden_termination_allowed false, and that covers too many common pages
@@ -435,16 +441,16 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
        browser_iterator != BrowserList::end_last_active();
        ++browser_iterator) {
     Browser* browser = *browser_iterator;
+    bool is_browser_for_app = browser->is_app();
     const TabStripModel* model = browser->tab_strip_model();
     for (int i = 0; i < model->count(); i++) {
       WebContents* contents = model->GetTabContentsAt(i)->web_contents();
       if (!contents->IsCrashed()) {
         TabStats stats;
+        stats.is_app = is_browser_for_app;
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = model->IsTabDiscarded(i);
-        stats.sudden_termination_allowed =
-            contents->GetRenderProcessHost()->SuddenTerminationAllowed();
         stats.last_selected = contents->GetLastSelectedTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.title = contents->GetTitle();

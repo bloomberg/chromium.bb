@@ -17,11 +17,11 @@ typedef testing::Test OomPriorityManagerTest;
 
 namespace {
 enum TestIndicies {
-  kMostImportant,
-  kNotPinned,
-  kNotSelected,
-  kSimilarTime,
-  kSimilarTimeOverThreshold,
+  kSelected,
+  kPinned,
+  kApp,
+  kRecent,
+  kOld,
   kReallyOld,
   kOldButPinned
 };
@@ -33,68 +33,57 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   chromeos::OomPriorityManager::TabStatsList test_list;
   const base::TimeTicks now = base::TimeTicks::Now();
 
+  // Add kSelected last to verify we are sorting the array.
+
   {
     OomPriorityManager::TabStats stats;
-    stats.is_selected = true;
     stats.is_pinned = true;
-    stats.last_selected = now;
-    stats.renderer_handle = kMostImportant;
+    stats.renderer_handle = kPinned;
     test_list.push_back(stats);
   }
 
   {
     OomPriorityManager::TabStats stats;
-    stats.is_selected = true;
-    stats.is_pinned = false;
-    stats.last_selected = now;
-    stats.renderer_handle = kNotPinned;
+    stats.is_app = true;
+    stats.renderer_handle = kApp;
     test_list.push_back(stats);
   }
 
   {
     OomPriorityManager::TabStats stats;
-    stats.is_selected = false;
-    stats.is_pinned = false;
-    stats.last_selected = now;
-    stats.renderer_handle = kNotSelected;
-    test_list.push_back(stats);
-  }
-
-  {
-    OomPriorityManager::TabStats stats;
-    stats.is_selected = false;
-    stats.is_pinned = false;
     stats.last_selected = now - base::TimeDelta::FromSeconds(10);
-    stats.renderer_handle = kSimilarTime;
+    stats.renderer_handle = kRecent;
     test_list.push_back(stats);
   }
 
   {
     OomPriorityManager::TabStats stats;
-    stats.is_selected = false;
-    stats.is_pinned = false;
     stats.last_selected = now - base::TimeDelta::FromMinutes(15);
-    stats.renderer_handle = kSimilarTimeOverThreshold;
+    stats.renderer_handle = kOld;
     test_list.push_back(stats);
   }
 
   {
     OomPriorityManager::TabStats stats;
-    stats.is_selected = false;
-    stats.is_pinned = false;
     stats.last_selected = now - base::TimeDelta::FromDays(365);
     stats.renderer_handle = kReallyOld;
     test_list.push_back(stats);
   }
 
-  // This also is out of order, so verifies that we are actually
-  // sorting the array.
   {
     OomPriorityManager::TabStats stats;
-    stats.is_selected = false;
     stats.is_pinned = true;
     stats.last_selected = now - base::TimeDelta::FromDays(365);
     stats.renderer_handle = kOldButPinned;
+    test_list.push_back(stats);
+  }
+
+  // This entry sorts to the front, so by adding it last we verify that
+  // we are actually sorting the array.
+  {
+    OomPriorityManager::TabStats stats;
+    stats.is_selected = true;
+    stats.renderer_handle = kSelected;
     test_list.push_back(stats);
   }
 
@@ -102,16 +91,12 @@ TEST_F(OomPriorityManagerTest, Comparator) {
             test_list.end(),
             OomPriorityManager::CompareTabStats);
 
-  EXPECT_EQ(kMostImportant, test_list[0].renderer_handle);
-  EXPECT_EQ(kNotPinned, test_list[1].renderer_handle);
+  EXPECT_EQ(kSelected, test_list[0].renderer_handle);
+  EXPECT_EQ(kPinned, test_list[1].renderer_handle);
   EXPECT_EQ(kOldButPinned, test_list[2].renderer_handle);
-  // The order of kNotSelected and kSimilarTime is indeterminate:
-  // they are equal in the eyes of the sort.
-  EXPECT_TRUE((test_list[3].renderer_handle == kNotSelected &&
-               test_list[4].renderer_handle == kSimilarTime) ||
-              (test_list[3].renderer_handle == kSimilarTime &&
-               test_list[4].renderer_handle == kNotSelected));
-  EXPECT_EQ(kSimilarTimeOverThreshold, test_list[5].renderer_handle);
+  EXPECT_EQ(kApp, test_list[3].renderer_handle);
+  EXPECT_EQ(kRecent, test_list[4].renderer_handle);
+  EXPECT_EQ(kOld, test_list[5].renderer_handle);
   EXPECT_EQ(kReallyOld, test_list[6].renderer_handle);
 }
 

@@ -63,10 +63,10 @@ class OomPriorityManager : public content::NotificationObserver {
   struct TabStats {
     TabStats();
     ~TabStats();
+    bool is_app;  // browser window is an app
     bool is_pinned;
     bool is_selected;  // selected in the currently active browser window
     bool is_discarded;
-    bool sudden_termination_allowed;
     base::TimeTicks last_selected;
     base::ProcessHandle renderer_handle;
     string16 title;
