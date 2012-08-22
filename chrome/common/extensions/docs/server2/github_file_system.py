@@ -18,19 +18,20 @@ def _MakeKey(version):
   return ZIP_KEY + '.' + str(version)
 
 class _AsyncFetchFutureZip(object):
-  def __init__(self, fetcher, blobstore, new_version, old_version):
+  def __init__(self, fetcher, blobstore, key_to_set, key_to_delete=None):
     self._fetch = fetcher.FetchAsync(ZIP_KEY)
     self._blobstore = blobstore
-    self._new_version = new_version
-    self._old_version = old_version
+    self._key_to_set = key_to_set
+    self._key_to_delete = key_to_delete
 
   def Get(self):
     blob = self._fetch.Get().content
-    self._blobstore.Set(_MakeKey(self._new_version),
+    self._blobstore.Set(_MakeKey(self._key_to_set),
                         blob,
                         blobstore.BLOBSTORE_GITHUB)
-    self._blobstore.Delete(_MakeKey(self._old_version),
-                           blobstore.BLOBSTORE_GITHUB)
+    if self._key_to_delete is not None:
+      self._blobstore.Delete(_MakeKey(self._key_to_delete),
+                             blobstore.BLOBSTORE_GITHUB)
     return ZipFile(StringIO(blob))
 
 class GithubFileSystem(FileSystem):
@@ -40,18 +41,19 @@ class GithubFileSystem(FileSystem):
     self._fetcher = fetcher
     self._object_store = object_store
     self._blobstore = blobstore
-    self._version = self.Stat(ZIP_KEY).version
-    self._GetZip(self._version)
+    self._version = None
+    self._GetZip(self.Stat(ZIP_KEY).version)
 
   def _GetZip(self, version):
     blob = self._blobstore.Get(_MakeKey(version), blobstore.BLOBSTORE_GITHUB)
     if blob is not None:
-      self._zip_file = Future(value=ZipFile(BytesIO(blob)))
+      self._zip_file = Future(value=ZipFile(StringIO(blob)))
     else:
-      self._zip_file = Future(delegate=_AsyncFetchFutureZip(self._fetcher,
-                                                            self._blobstore,
-                                                            version,
-                                                            self._version))
+      self._zip_file = Future(
+          delegate=_AsyncFetchFutureZip(self._fetcher,
+                                        self._blobstore,
+                                        version,
+                                        key_to_delete=self._version))
     self._version = version
 
   def _ReadFile(self, path):
@@ -82,7 +84,7 @@ class GithubFileSystem(FileSystem):
     return Future(value=result)
 
   def Stat(self, path):
-    version = self._object_store.Get(path, object_store.GITHUB_STAT)
+    version = self._object_store.Get(path, object_store.GITHUB_STAT).Get()
     if version is not None:
       return StatInfo(version)
     version = json.loads(

@@ -159,11 +159,13 @@ class Handler(webapp.RequestHandler):
                                                               self.response)
 
   def _Render(self, files, branch):
+    original_response = self.response
     for f in files:
       path = branch + f.split(PUBLIC_TEMPLATE_PATH)[-1]
       self.request = _MockRequest(path)
       self.response = _MockResponse()
       self._HandleGet(path)
+    self.response = original_response
 
   def _HandleCron(self, path):
     branch = path.split('/')[-1]
@@ -174,6 +176,7 @@ class Handler(webapp.RequestHandler):
     render_cache = builder.build(lambda x: self._Render(x, branch),
                                  fs_cache.RENDER)
     render_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH)
+    self.response.out.write('Success')
 
   def get(self):
     path = self.request.path

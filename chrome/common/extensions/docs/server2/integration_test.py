@@ -11,9 +11,6 @@ import unittest
 from fake_fetchers import ConfigureFakeFetchers
 
 KNOWN_FAILURES = [
-  # Apps samples fails because it requires fetching data from github.com.
-  # This should be tested though: http://crbug.com/141910.
-  os.path.join('apps', 'samples.html'),
 ]
 
 ConfigureFakeFetchers()
@@ -68,6 +65,13 @@ class IntegrationTest(unittest.TestCase):
       Handler(request, response, local_path='../..').get()
       self.assertEqual(200, response.status)
       self.assertTrue(response.out.getvalue())
+
+  def testCron(self):
+    request = _MockRequest('/cron/trunk')
+    response = _MockResponse()
+    Handler(request, response, local_path='../..').get()
+    self.assertEqual(200, response.status)
+    self.assertEqual('Success', response.out.getvalue())
 
 if __name__ == '__main__':
   unittest.main()

@@ -68,14 +68,21 @@ class FakeViewvcServer(object):
       return '\n'.join(html)
     return _ReadFile(path)
 
-class FakeGithub(object):
+class FakeGithubStat(object):
   def fetch(self, url):
     return '{ "commit": { "tree": { "sha": 0} } }'
+
+class FakeGithubZip(object):
+  def fetch(self, url):
+    return _ReadFile(os.path.join('test_data',
+                                  'github_file_system',
+                                  'apps_samples.zip'))
 
 def ConfigureFakeFetchers():
   appengine_wrappers.ConfigureFakeUrlFetch({
     url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(),
     '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(),
     '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(),
-    '%s/.*' % url_constants.GITHUB_URL: FakeGithub()
+    '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(),
+    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip()
   })

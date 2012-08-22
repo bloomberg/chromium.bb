@@ -3,56 +3,48 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import unittest
 
-from fake_url_fetcher import FakeUrlFetcher
+from appengine_blobstore import AppEngineBlobstore
+from appengine_url_fetcher import AppEngineUrlFetcher
+from appengine_wrappers import files
+from fake_fetchers import ConfigureFakeFetchers
 from github_file_system import GithubFileSystem
 from in_memory_object_store import InMemoryObjectStore
-
-class FakeBlobstore(object):
-  def Set(self, blob, key, version):
-    return None
-
-  def Get(self, key, version):
-    return None
-
-  def Delete(self, key, version):
-    return None
-
-class FakeGithubFetcher(FakeUrlFetcher):
-  class _Response(object):
-    def __init__(self, content):
-      self.content = content
-
-  def Fetch(self, path):
-    if path == 'zipball':
-      return super(FakeGithubFetcher, self).Fetch('file_system.zip')
-    return self._Response('{ "commit": { "tree": { "sha": 0 } } }')
+import url_constants
 
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):
-    self._file_system = GithubFileSystem(FakeGithubFetcher('test_data'),
-                                         InMemoryObjectStore('test'),
-                                         FakeBlobstore())
+    ConfigureFakeFetchers()
+    self._base_path = os.path.join('test_data', 'github_file_system')
+    self._file_system = GithubFileSystem(
+        AppEngineUrlFetcher(url_constants.GITHUB_URL),
+        InMemoryObjectStore('github'),
+        AppEngineBlobstore())
 
-  def testReadFiles(self):
-    expected = {
-      '/test1.txt': 'test1\n',
-      '/test2.txt': 'test2\n',
-      '/test3.txt': 'test3\n',
-    }
-    self.assertEqual(
-        expected,
-        self._file_system.Read(
-            ['/test1.txt', '/test2.txt', '/test3.txt']).Get())
+  def _ReadLocalFile(self, filename):
+    with open(os.path.join(self._base_path, filename), 'r') as f:
+      return f.read()
 
-def testListDir(self):
-  expected = ['dir/']
-  for i in range(7):
-    expected.append('file%d.html' % i)
-  self.assertEqual(expected,
-                   sorted(self._file_system.ReadSingle('/list/')))
+  def testList(self):
+    self.assertEqual(json.loads(self._ReadLocalFile('expected_list.json')),
+                     self._file_system.Read(['/']).Get())
+
+  def testRead(self):
+   self.assertEqual(self._ReadLocalFile('expected_read.txt'),
+                    self._file_system.ReadSingle('/analytics/launch.js'))
+
+  def testStat(self):
+    self.assertEqual(0, self._file_system.Stat('zipball').version)
+
+  def testKeyGeneration(self):
+    self.assertEqual(0, len(files.GetBlobKeys()))
+    self._file_system.ReadSingle('/analytics/launch.js')
+    self.assertEqual(1, len(files.GetBlobKeys()))
+    self._file_system.ReadSingle('/analytics/main.css')
+    self.assertEqual(1, len(files.GetBlobKeys()))
 
 if __name__ == '__main__':
   unittest.main()

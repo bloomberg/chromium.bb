@@ -14,6 +14,7 @@ try:
   import google.appengine.api.urlfetch as urlfetch
 except ImportError:
   import re
+  from StringIO import StringIO
 
   FAKE_URL_FETCHER_CONFIGURATION = None
 
@@ -67,8 +68,56 @@ except ImportError:
     def __getattr__(self, attr):
       raise NotImplementedError()
 
-  blobstore = NotImplemented()
-  files = NotImplemented()
+  _BLOBS = {}
+  class FakeBlobstore(object):
+    class BlobReader(object):
+      def __init__(self, blob_key):
+        self._data = _BLOBS[blob_key].getvalue()
+
+      def read(self):
+        return self._data
+
+  blobstore = FakeBlobstore()
+
+  class FakeFileInterface(object):
+    """This class allows a StringIO object to be used in a with block like a
+    file.
+    """
+    def __init__(self, io):
+      self._io = io
+
+    def __exit__(self, *args):
+      pass
+
+    def write(self, data):
+      self._io.write(data)
+
+    def __enter__(self, *args):
+      return self._io
+
+  class FakeFiles(object):
+    _next_blobstore_key = 0
+    class blobstore(object):
+      @staticmethod
+      def create():
+        FakeFiles._next_blobstore_key += 1
+        return FakeFiles._next_blobstore_key
+
+      @staticmethod
+      def get_blob_key(filename):
+        return filename
+
+    def open(self, filename, mode):
+      _BLOBS[filename] = StringIO()
+      return FakeFileInterface(_BLOBS[filename])
+
+    def GetBlobKeys(self):
+      return _BLOBS.keys()
+
+    def finalize(self, filename):
+      pass
+
+  files = FakeFiles()
 
   class InMemoryMemcache(object):
     """A fake memcache that does nothing.
@@ -88,6 +137,7 @@ except ImportError:
 
     def delete(self, key, namespace):
       return
+
   memcache = InMemoryMemcache()
 
   class webapp(object):
@@ -102,17 +152,32 @@ except ImportError:
         self.request.path = path
 
   class _Db_Result(object):
+    def __init__(self, data):
+      self._data = data
+
+    class _Result(object):
+      def __init__(self, value):
+        self.value = value
+
     def get(self):
-      return []
+      return self._Result(self._data)
 
   class db(object):
+    _store = {}
     class StringProperty(object):
       pass
 
     class Model(object):
+      def __init__(self, key_='', value=''):
+        self._key = key_
+        self._value = value
+
       @staticmethod
-      def gql(*args):
-        return _Db_Result()
+      def gql(query, key):
+        return _Db_Result(db._store.get(key, None))
+
+      def put(self):
+        db._store[self._key] = self._value
 
   class BlobReferenceProperty(object):
     pass
