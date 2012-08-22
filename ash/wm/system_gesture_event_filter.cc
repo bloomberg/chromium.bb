@@ -58,24 +58,27 @@ const int kAffordanceInnerRadius = 50;
 const int kAffordanceOuterStartAngle = -109;
 const int kAffordanceInnerStartAngle = -65;
 
-// The following are half widths (half to avoid division by 2)
-const int kAffordanceGlowWidth = 12;
+const int kAffordanceGlowWidth = 20;
+// The following is half width to avoid division by 2.
 const int kAffordanceArcWidth = 3;
 
 // Start and end values for various animations.
 const double kAffordanceScaleStartValue = 0.8;
 const double kAffordanceScaleEndValue = 1.0;
+const double kAffordanceShrinkScaleEndValue = 0.5;
 const double kAffordanceOpacityStartValue = 0.1;
-const double kAffordanceOpacityEndValue = 0.6;
+const double kAffordanceOpacityEndValue = 0.5;
 const int kAffordanceAngleStartValue = 0;
 // The end angle is a bit greater than 360 to make sure the circle completes at
 // the end of the animation.
 const int kAffordanceAngleEndValue = 380;
+const int kAffordanceDelayBeforeShrinkMs = 200;
+const int kAffordanceShrinkAnimationDurationMs = 100;
 
 // Visual constants.
-const SkColor kAffordanceGlowStartColor = SkColorSetARGB(64, 255, 255, 255);
+const SkColor kAffordanceGlowStartColor = SkColorSetARGB(24, 255, 255, 255);
 const SkColor kAffordanceGlowEndColor = SkColorSetARGB(0, 255, 255, 255);
-const SkColor kAffordanceArcColor = SkColorSetARGB(128, 64, 64, 64);
+const SkColor kAffordanceArcColor = SkColorSetARGB(80, 0, 0, 0);
 const int kAffordanceFrameRateHz = 60;
 
 const double kPinchThresholdForMaximize = 1.5;
@@ -124,46 +127,47 @@ void PaintAffordanceArc(gfx::Canvas* canvas,
   paint.setAntiAlias(true);
 
   SkPath arc_path;
-  arc_path.addArc(SkRect::MakeXYWH(center.x() - radius + kAffordanceArcWidth,
-                                   center.y() - radius + kAffordanceArcWidth,
-                                   2 * (radius - kAffordanceArcWidth),
-                                   2 * (radius - kAffordanceArcWidth)),
+  arc_path.addArc(SkRect::MakeXYWH(center.x() - radius,
+                                   center.y() - radius,
+                                   2 * radius,
+                                   2 * radius),
                   start_angle, end_angle);
   canvas->DrawPath(arc_path, paint);
 }
 
 void PaintAffordanceGlow(gfx::Canvas* canvas,
                         gfx::Point& center,
-                        int radius,
-                        int start_angle,
-                        int end_angle,
+                        int start_radius,
+                        int end_radius,
                         SkColor* colors,
-                        int num_colors,
-                        int glow_width) {
+                        SkScalar* pos,
+                        int num_colors) {
   SkPoint sk_center;
+  int radius = (end_radius + start_radius) / 2;
+  int glow_width = end_radius - start_radius;
   sk_center.iset(center.x(), center.y());
   SkShader* shader = SkGradientShader::CreateTwoPointRadial(
       sk_center,
-      SkIntToScalar(radius),
+      SkIntToScalar(start_radius),
       sk_center,
-      SkIntToScalar(radius + 2 * glow_width),
+      SkIntToScalar(end_radius),
       colors,
-      NULL,
+      pos,
       num_colors,
       SkShader::kClamp_TileMode);
   DCHECK(shader);
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(2 * glow_width);
+  paint.setStrokeWidth(glow_width);
   paint.setShader(shader);
   paint.setAntiAlias(true);
   shader->unref();
   SkPath arc_path;
-  arc_path.addArc(SkRect::MakeXYWH(center.x() - radius - glow_width,
-                                   center.y() - radius - glow_width,
-                                   2 * (radius + glow_width),
-                                   2 * (radius + glow_width)),
-                  start_angle, end_angle);
+  arc_path.addArc(SkRect::MakeXYWH(center.x() - radius,
+                                   center.y() - radius,
+                                   2 * radius,
+                                   2 * radius),
+                  0, 360);
   canvas->DrawPath(arc_path, paint);
 }
 
@@ -193,17 +197,18 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
     aura::client::GetScreenPositionClient(root_window)->ConvertPointToScreen(
         root_window, &point);
     widget_->SetBounds(gfx::Rect(
-        point.x() - (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth),
-        point.y() - (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth),
+        point.x() - (kAffordanceOuterRadius + kAffordanceGlowWidth),
+        point.y() - (kAffordanceOuterRadius + kAffordanceGlowWidth),
         GetPreferredSize().width(),
         GetPreferredSize().height()));
     widget_->Show();
+    widget_->GetNativeView()->layer()->SetOpacity(kAffordanceOpacityStartValue);
   }
 
   virtual ~LongPressAffordanceView() {
   }
 
-  void UpdateWithAnimation(ui::Animation* animation) {
+  void UpdateWithGrowAnimation(ui::Animation* animation) {
     // Update the portion of the circle filled so far and re-draw.
     current_angle_ = animation->CurrentValueBetween(kAffordanceAngleStartValue,
         kAffordanceAngleEndValue);
@@ -215,11 +220,20 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
     SchedulePaint();
   }
 
+  void UpdateWithShrinkAnimation(ui::Animation* animation) {
+    current_scale_ = animation->CurrentValueBetween(kAffordanceScaleEndValue,
+        kAffordanceShrinkScaleEndValue);
+    widget_->GetNativeView()->layer()->SetOpacity(
+        animation->CurrentValueBetween(kAffordanceOpacityEndValue,
+            kAffordanceOpacityStartValue));
+    SchedulePaint();
+  }
+
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(2 * (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth),
-        2 * (kAffordanceOuterRadius + 2 * kAffordanceGlowWidth));
+    return gfx::Size(2 * (kAffordanceOuterRadius + kAffordanceGlowWidth),
+        2 * (kAffordanceOuterRadius + kAffordanceGlowWidth));
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -234,44 +248,22 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
     canvas->Transform(scale);
     canvas->Translate(gfx::Point(-center.x(), -center.y()));
 
+    // Paint affordance glow
+    int start_radius = kAffordanceInnerRadius - kAffordanceGlowWidth;
+    int end_radius = kAffordanceOuterRadius + kAffordanceGlowWidth;
+    const int num_colors = 3;
+    SkScalar pos[num_colors] = {0, 0.5, 1};
+    SkColor colors[num_colors] = {kAffordanceGlowEndColor,
+        kAffordanceGlowStartColor, kAffordanceGlowEndColor};
+    PaintAffordanceGlow(canvas, center, start_radius, end_radius, colors, pos,
+        num_colors);
+
     // Paint inner circle.
     PaintAffordanceArc(canvas, center, kAffordanceInnerRadius,
         kAffordanceInnerStartAngle, -current_angle_);
     // Paint outer circle.
     PaintAffordanceArc(canvas, center, kAffordanceOuterRadius,
         kAffordanceOuterStartAngle, current_angle_);
-
-    const int num_colors = 2;
-    SkColor colors[num_colors];
-    colors[0] = kAffordanceGlowEndColor;
-    colors[1] = kAffordanceGlowStartColor;
-
-    // Paint inner glow for inner circle.
-    PaintAffordanceGlow(canvas, center,
-        kAffordanceInnerRadius - 2 * (kAffordanceGlowWidth +
-            kAffordanceArcWidth),
-        kAffordanceInnerStartAngle, -current_angle_, colors, num_colors,
-        kAffordanceGlowWidth);
-
-    // Paint inner glow for outer circle.
-    PaintAffordanceGlow(canvas, center, kAffordanceInnerRadius,
-        kAffordanceOuterStartAngle, current_angle_, colors, num_colors,
-        (kAffordanceOuterRadius - 2 * kAffordanceArcWidth -
-            kAffordanceInnerRadius) / 2);
-
-    colors[0] = kAffordanceGlowStartColor;
-    colors[1] = kAffordanceGlowEndColor;
-
-    // Paint outer glow for inner circle.
-    PaintAffordanceGlow(canvas, center, kAffordanceInnerRadius,
-        kAffordanceInnerStartAngle, -current_angle_, colors, num_colors,
-        (kAffordanceOuterRadius - 2 * kAffordanceArcWidth -
-            kAffordanceInnerRadius) / 2);
-
-    // Paint outer glow for outer circle.
-    PaintAffordanceGlow(canvas, center, kAffordanceOuterRadius,
-        kAffordanceOuterStartAngle, current_angle_, colors, num_colors,
-        kAffordanceGlowWidth);
 
     canvas->Restore();
   }
@@ -286,20 +278,18 @@ class LongPressAffordanceAnimation::LongPressAffordanceView
 LongPressAffordanceAnimation::LongPressAffordanceAnimation()
     : ui::LinearAnimation(kAffordanceFrameRateHz, this),
       view_(NULL),
-      tap_down_target_(NULL),
-      tap_down_display_id_(0) {
-  int duration =
-      ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
-      ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
-  SetDuration(duration);
+      tap_down_touch_id_(-1),
+      tap_down_display_id_(0),
+      current_animation_type_(NONE) {
 }
 
 LongPressAffordanceAnimation::~LongPressAffordanceAnimation() {}
 
 void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
-                                                ui::LocatedEvent* event) {
-  // Once we have a target, we are only interested in events on that target.
-  if (tap_down_target_ && tap_down_target_ != target)
+                                                ui::LocatedEvent* event,
+                                                int touch_id) {
+  // Once we have a touch id, we are only interested in event of that touch id.
+  if (tap_down_touch_id_ != -1 && tap_down_touch_id_ != touch_id)
     return;
   int64 timer_start_time_ms =
       ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
@@ -307,25 +297,30 @@ void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
     case ui::ET_GESTURE_TAP_DOWN:
       // Start animation.
       tap_down_location_ = event->root_location();
-      tap_down_target_ = target;
+      tap_down_touch_id_ = touch_id;
+      current_animation_type_ = GROW_ANIMATION;
       tap_down_display_id_ = gfx::Screen::GetDisplayNearestWindow(target).id();
       timer_.Start(FROM_HERE,
-                    base::TimeDelta::FromMilliseconds(timer_start_time_ms),
-                    this,
-                    &LongPressAffordanceAnimation::StartAnimation);
+                   base::TimeDelta::FromMilliseconds(timer_start_time_ms),
+                   this,
+                   &LongPressAffordanceAnimation::StartAnimation);
       break;
     case ui::ET_TOUCH_MOVED:
       // If animation is running, We want it to be robust to small finger
       // movements. So we stop the animation only when the finger moves a
       // certain distance.
-      if (is_animating() && !ui::gestures::IsInsideManhattanSquare(
+      if (!ui::gestures::IsInsideManhattanSquare(
           event->root_location(), tap_down_location_))
         StopAnimation();
+      break;
+    case ui::ET_TOUCH_CANCELLED:
+    case ui::ET_GESTURE_END:
+      // We will stop the animation on TOUCH_RELEASED.
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       if (is_animating())
         End();
-      // fall through to default to reset the view and tap down target.
+      break;
     default:
       // On all other touch and gesture events, we hide the animation.
       StopAnimation();
@@ -334,47 +329,83 @@ void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
 }
 
 void LongPressAffordanceAnimation::StartAnimation() {
-  aura::RootWindow* root_window = ash::Shell::GetInstance()->
-      display_controller()->GetRootWindowForDisplayId(tap_down_display_id_);
-  if (!root_window) {
-    StopAnimation();
-    return;
+  aura::RootWindow* root_window = NULL;
+  switch (current_animation_type_) {
+    case GROW_ANIMATION:
+      root_window = ash::Shell::GetInstance()->display_controller()->
+          GetRootWindowForDisplayId(tap_down_display_id_);
+      if (!root_window) {
+        StopAnimation();
+        return;
+      }
+      view_.reset(new LongPressAffordanceView(tap_down_location_, root_window));
+      SetDuration(
+          ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
+          ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000 -
+          kAffordanceDelayBeforeShrinkMs);
+      Start();
+      break;
+    case SHRINK_ANIMATION:
+      SetDuration(kAffordanceShrinkAnimationDurationMs);
+      Start();
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  view_.reset(new LongPressAffordanceView(tap_down_location_, root_window));
-  Start();
 }
 
 void LongPressAffordanceAnimation::StopAnimation() {
   if (timer_.IsRunning())
     timer_.Stop();
+  // Since, Animation::Stop() calls AnimationEnded(), we need to reset the
+  // |current_animation_type_| before Stop(), otherwise AnimationEnded() may
+  // start the timer again.
+  current_animation_type_ = NONE;
   if (is_animating())
     Stop();
   view_.reset();
-  tap_down_target_ = NULL;
+  tap_down_touch_id_ = -1;
   tap_down_display_id_ = 0;
 }
 
 void LongPressAffordanceAnimation::AnimateToState(double state) {
   DCHECK(view_.get());
-  view_->UpdateWithAnimation(this);
+  switch (current_animation_type_) {
+    case GROW_ANIMATION:
+      view_->UpdateWithGrowAnimation(this);
+      break;
+    case SHRINK_ANIMATION:
+      view_->UpdateWithShrinkAnimation(this);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+bool LongPressAffordanceAnimation::ShouldSendCanceledFromStop() {
+  return false;
 }
 
 void LongPressAffordanceAnimation::AnimationEnded(
     const ui::Animation* animation) {
-  view_.reset();
-  tap_down_target_ = NULL;
-  tap_down_display_id_ = 0;
-}
-
-void LongPressAffordanceAnimation::AnimationProgressed(
-    const ui::Animation* animation) {
-}
-
-void LongPressAffordanceAnimation::AnimationCanceled(
-    const ui::Animation* animation) {
-  view_.reset();
-  tap_down_target_ = NULL;
-  tap_down_display_id_ = 0;
+  switch (current_animation_type_) {
+    case GROW_ANIMATION:
+      current_animation_type_ = SHRINK_ANIMATION;
+      timer_.Start(FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kAffordanceDelayBeforeShrinkMs),
+          this, &LongPressAffordanceAnimation::StartAnimation);
+      break;
+    case SHRINK_ANIMATION:
+      current_animation_type_ = NONE;
+      // fall through to reset the view.
+    default:
+      view_.reset();
+      tap_down_touch_id_ = -1;
+      tap_down_display_id_ = 0;
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -565,14 +596,15 @@ ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   touch_uma_.RecordTouchEvent(target, *event);
-  long_press_affordance_->ProcessEvent(target, event);
+  long_press_affordance_->ProcessEvent(target, event, event->touch_id());
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target, ui::GestureEvent* event) {
   touch_uma_.RecordGestureEvent(target, *event);
-  long_press_affordance_->ProcessEvent(target, event);
+  long_press_affordance_->ProcessEvent(target, event,
+      event->GetLowestTouchId());
   if (!target || target == target->GetRootWindow()) {
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN: {
