@@ -204,6 +204,14 @@ DirOpenResult Directory::OpenImpl(
   kernel_ = new Kernel(name, info, delegate, transaction_observer);
   kernel_->metahandles_index->swap(metas_bucket);
   InitializeIndices();
+
+  // Write back the share info to reserve some space in 'next_id'.  This will
+  // prevent local ID reuse in the case of an early crash.  See the comments in
+  // TakeSnapshotForSaveChanges() or crbug.com/142987 for more information.
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+  if (!SaveChanges())
+    return FAILED_INITIAL_WRITE;
+
   return OPENED;
 }
 

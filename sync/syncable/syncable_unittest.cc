@@ -392,28 +392,6 @@ TEST_F(SyncableGeneralTest, ToValue) {
   dir.SaveChanges();
 }
 
-// A Directory whose backing store always fails SaveChanges by returning false.
-class TestUnsaveableDirectory : public Directory {
- public:
-  class UnsaveableBackingStore : public OnDiskDirectoryBackingStore {
-   public:
-     UnsaveableBackingStore(const std::string& dir_name,
-                            const FilePath& backing_filepath)
-         : OnDiskDirectoryBackingStore(dir_name, backing_filepath) { }
-     virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) {
-       return false;
-     }
-  };
-
-  TestUnsaveableDirectory(const std::string& dir_name,
-                          const FilePath& backing_filepath)
-      : Directory(&encryptor_, &handler_, NULL,
-                  new UnsaveableBackingStore(dir_name, backing_filepath)) {}
- private:
-  FakeEncryptor encryptor_;
-  TestUnrecoverableErrorHandler handler_;
-};
-
 // A test fixture for syncable::Directory.  Uses an in-memory database to keep
 // the unit tests fast.
 class SyncableDirectoryTest : public testing::Test {
@@ -520,6 +498,15 @@ class SyncableDirectoryTest : public testing::Test {
   // not have any pointers to the directory (open transactions included)
   // when you call this.
   DirOpenResult SimulateSaveAndReloadDir();
+
+  // This function will close and re-open the directory without saving any
+  // pending changes.  This is intended to simulate the recovery from a crash
+  // scenario.  The same warnings for SimulateSaveAndReloadDir apply here.
+  DirOpenResult SimulateCrashAndReloadDir();
+
+ private:
+  // A helper function for Simulate{Save,Crash}AndReloadDir.
+  DirOpenResult ReloadDirImpl();
 };
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
@@ -1261,6 +1248,27 @@ TEST_F(SyncableDirectoryTest,
   EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
 }
 
+// Ask the directory to generate a unique ID.  Close and re-open the database
+// without saving, then ask for another unique ID.  Verify IDs are not reused.
+// This scenario simulates a crash within the first few seconds of operation.
+TEST_F(SyncableDirectoryTest, LocalIdReuseTest) {
+  Id pre_crash_id = dir_->NextId();
+  SimulateCrashAndReloadDir();
+  Id post_crash_id = dir_->NextId();
+  EXPECT_NE(pre_crash_id, post_crash_id);
+}
+
+// Ask the directory to generate a unique ID.  Save the directory.  Close and
+// re-open the database without saving, then ask for another unique ID.  Verify
+// IDs are not reused.  This scenario simulates a steady-state crash.
+TEST_F(SyncableDirectoryTest, LocalIdReuseTestWithSave) {
+  Id pre_crash_id = dir_->NextId();
+  dir_->SaveChanges();
+  SimulateCrashAndReloadDir();
+  Id post_crash_id = dir_->NextId();
+  EXPECT_NE(pre_crash_id, post_crash_id);
+}
+
 // Ensure that the unsynced, is_del and server unkown entries that may have been
 // left in the database by old clients will be deleted when we open the old
 // database.
@@ -1333,6 +1341,102 @@ TEST_F(SyncableDirectoryTest, OldClientLeftUnsyncedDeletedLocalItem) {
   }
 }
 
+// An OnDirectoryBackingStore that can be set to always fail SaveChanges.
+class TestBackingStore : public OnDiskDirectoryBackingStore {
+ public:
+  TestBackingStore(const std::string& dir_name,
+                   const FilePath& backing_filepath);
+
+  virtual ~TestBackingStore();
+
+  virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot)
+      OVERRIDE;
+
+   void StartFailingSaveChanges() {
+     fail_save_changes_ = true;
+   }
+
+ private:
+   bool fail_save_changes_;
+};
+
+TestBackingStore::TestBackingStore(const std::string& dir_name,
+                                   const FilePath& backing_filepath)
+  : OnDiskDirectoryBackingStore(dir_name, backing_filepath),
+    fail_save_changes_(false) {
+}
+
+TestBackingStore::~TestBackingStore() { }
+
+bool TestBackingStore::SaveChanges(
+    const Directory::SaveChangesSnapshot& snapshot){
+  if (fail_save_changes_) {
+    return false;
+  } else {
+    return OnDiskDirectoryBackingStore::SaveChanges(snapshot);
+  }
+}
+
+// A directory whose Save() function can be set to always fail.
+class TestDirectory : public Directory {
+ public:
+  // A factory function used to work around some initialization order issues.
+  static TestDirectory* Create(
+      Encryptor *encryptor,
+      UnrecoverableErrorHandler *handler,
+      const std::string& dir_name,
+      const FilePath& backing_filepath);
+
+  virtual ~TestDirectory();
+
+  void StartFailingSaveChanges() {
+    backing_store_->StartFailingSaveChanges();
+  }
+
+ private:
+  TestDirectory(Encryptor* encryptor,
+                UnrecoverableErrorHandler* handler,
+                TestBackingStore* backing_store);
+
+  TestBackingStore* backing_store_;
+};
+
+TestDirectory* TestDirectory::Create(
+    Encryptor *encryptor,
+    UnrecoverableErrorHandler *handler,
+    const std::string& dir_name,
+    const FilePath& backing_filepath) {
+  TestBackingStore* backing_store =
+      new TestBackingStore(dir_name, backing_filepath);
+  return new TestDirectory(encryptor, handler, backing_store);
+}
+
+TestDirectory::TestDirectory(Encryptor* encryptor,
+                             UnrecoverableErrorHandler* handler,
+                             TestBackingStore* backing_store)
+    : Directory(encryptor, handler, NULL, backing_store),
+      backing_store_(backing_store) {
+}
+
+TestDirectory::~TestDirectory() { }
+
+TEST(OnDiskSyncableDirectory, FailInitialWrite) {
+  FakeEncryptor encryptor;
+  TestUnrecoverableErrorHandler handler;
+  ScopedTempDir temp_dir;
+  FilePath file_path = temp_dir.path().Append(
+      FILE_PATH_LITERAL("Test.sqlite3"));
+  std::string name = "user@x.com";
+  NullDirectoryChangeDelegate delegate;
+
+  scoped_ptr<TestDirectory> test_dir(
+      TestDirectory::Create(&encryptor, &handler, name, file_path));
+
+  test_dir->StartFailingSaveChanges();
+  ASSERT_EQ(FAILED_INITIAL_WRITE, test_dir->Open(name, &delegate,
+                                                 NullTransactionObserver()));
+}
+
 // A variant of SyncableDirectoryTest that uses a real sqlite database.
 class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
  protected:
@@ -1343,12 +1447,7 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     file_path_ = temp_dir_.path().Append(
         FILE_PATH_LITERAL("Test.sqlite3"));
     file_util::Delete(file_path_, true);
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL,
-        new OnDiskDirectoryBackingStore(kName, file_path_)));
-    ASSERT_TRUE(dir_.get());
-    ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_,
-                                 NullTransactionObserver()));
-    ASSERT_TRUE(dir_->good());
+    CreateDirectory();
   }
 
   virtual void TearDown() {
@@ -1358,33 +1457,27 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
     file_util::Delete(file_path_, true);
   }
 
-  void ReloadDir() {
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL,
-        new OnDiskDirectoryBackingStore(kName, file_path_)));
+  // Creates a new directory.  Deletes the old directory, if it exists.
+  void CreateDirectory() {
+    test_directory_ =
+        TestDirectory::Create(&encryptor_, &handler_, kName, file_path_);
+    dir_.reset(test_directory_);
     ASSERT_TRUE(dir_.get());
     ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_,
                                  NullTransactionObserver()));
+    ASSERT_TRUE(dir_->good());
   }
 
   void SaveAndReloadDir() {
     dir_->SaveChanges();
-    ReloadDir();
+    CreateDirectory();
   }
 
-  void SwapInUnsaveableDirectory() {
-    dir_.reset(); // Delete the old directory.
-
-    // We first assign the object to a pointer of type TestUnsaveableDirectory
-    // because the OpenUnsaveable function is not available in the parent class.
-    scoped_ptr<TestUnsaveableDirectory> dir(new TestUnsaveableDirectory(
-        kName, file_path_));
-    ASSERT_TRUE(dir.get());
-    ASSERT_EQ(OPENED, dir->Open(kName, &delegate_, NullTransactionObserver()));
-
-    // Finally, move the unsaveable directory to the dir_ variable.
-    dir_ = dir.Pass();
+  void StartFailingSaveChanges() {
+    test_directory_->StartFailingSaveChanges();
   }
 
+  TestDirectory *test_directory_;  // mirrors scoped_ptr<Directory> dir_
   ScopedTempDir temp_dir_;
   FilePath file_path_;
 };
@@ -1615,9 +1708,8 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailure) {
   }
   ASSERT_TRUE(dir_->SaveChanges());
 
-  // Now do some operations using a directory for which SaveChanges will
-  // always fail.
-  SwapInUnsaveableDirectory();
+  // Now do some operations when SaveChanges() will fail.
+  StartFailingSaveChanges();
   ASSERT_TRUE(dir_->good());
 
   int64 handle2 = 0;
@@ -1687,9 +1779,8 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   }
   ASSERT_TRUE(dir_->SaveChanges());
 
-  // Now do some operations using a directory for which SaveChanges will
-  // always fail.
-  SwapInUnsaveableDirectory();
+  // Now do some operations while SaveChanges() is set to fail.
+  StartFailingSaveChanges();
   ASSERT_TRUE(dir_->good());
 
   ModelTypeSet set(BOOKMARKS);
@@ -1721,6 +1812,14 @@ DirOpenResult SyncableDirectoryTest::SimulateSaveAndReloadDir() {
   if (!dir_->SaveChanges())
     return FAILED_IN_UNITTEST;
 
+  return ReloadDirImpl();
+}
+
+DirOpenResult SyncableDirectoryTest::SimulateCrashAndReloadDir() {
+  return ReloadDirImpl();
+}
+
+DirOpenResult SyncableDirectoryTest::ReloadDirImpl() {
   // Do some tricky things to preserve the backing store.
   DirectoryBackingStore* saved_store = dir_->store_.release();
 

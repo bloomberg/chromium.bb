@@ -16,6 +16,7 @@ enum DirOpenResult { NOT_INITIALIZED,
                      FAILED_DATABASE_CORRUPT,  // Something is wrong with the DB
                      FAILED_LOGICAL_CORRUPTION, // Invalid database contents
                      FAILED_IN_UNITTEST, // For tests.
+                     FAILED_INITIAL_WRITE,  // Early write to DB failed.
 };
 }  // namespace syncable
 }  // namespace syncer
