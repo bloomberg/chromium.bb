@@ -73,7 +73,7 @@ class Rietveld(object):
 
   def close_issue(self, issue):
     """Closes the Rietveld issue for this changelist."""
-    logging.info('closing issue %s' % issue)
+    logging.info('closing issue %d' % issue)
     self.post("/%d/close" % issue, [('xsrf_token', self.xsrf_token())])
 
   def get_description(self, issue):
@@ -82,14 +82,14 @@ class Rietveld(object):
 
   def get_issue_properties(self, issue, messages):
     """Returns all the issue's metadata as a dictionary."""
-    url = '/api/%s' % issue
+    url = '/api/%d' % issue
     if messages:
       url += '?messages=true'
     return json.loads(self.get(url))
 
   def get_patchset_properties(self, issue, patchset):
     """Returns the patchset properties."""
-    url = '/api/%s/%s' % (issue, patchset)
+    url = '/api/%d/%d' % (issue, patchset)
     return json.loads(self.get(url))
 
   def get_file_content(self, issue, patchset, item):
@@ -99,7 +99,7 @@ class Rietveld(object):
     """
     # content = 0 is the old file, 1 is the new file.
     content = 1
-    url = '/%s/binary/%s/%s/%s' % (issue, patchset, item, content)
+    url = '/%d/binary/%d/%d/%d' % (issue, patchset, item, content)
     return self.get(url)
 
   def get_file_diff(self, issue, patchset, item):
@@ -107,7 +107,7 @@ class Rietveld(object):
 
     Returns a useless diff for binary files.
     """
-    url = '/download/issue%s_%s_%s.diff' % (issue, patchset, item)
+    url = '/download/issue%d_%d_%d.diff' % (issue, patchset, item)
     return self.get(url)
 
   def get_patch(self, issue, patchset):
@@ -218,8 +218,8 @@ class Rietveld(object):
 
   def update_description(self, issue, description):
     """Sets the description for an issue on Rietveld."""
-    logging.info('new description for issue %s' % issue)
-    self.post('/%s/description' % issue, [
+    logging.info('new description for issue %d' % issue)
+    self.post('/%d/description' % issue, [
         ('description', description),
         ('xsrf_token', self.xsrf_token())])
 
@@ -228,8 +228,8 @@ class Rietveld(object):
     tail = '…\n(message too large)'
     if len(message) > max_message:
       message = message[:max_message-len(tail)] + tail
-    logging.info('issue %s; comment: %s' % (issue, message))
-    return self.post('/%s/publish' % issue, [
+    logging.info('issue %d; comment: %s' % (issue, message))
+    return self.post('/%d/publish' % issue, [
         ('xsrf_token', self.xsrf_token()),
         ('message', message),
         ('message_only', 'True'),
@@ -237,7 +237,7 @@ class Rietveld(object):
         ('no_redirect', 'True')])
 
   def set_flag(self, issue, patchset, flag, value):
-    return self.post('/%s/edit_flags' % issue, [
+    return self.post('/%d/edit_flags' % issue, [
         ('last_patchset', str(patchset)),
         ('xsrf_token', self.xsrf_token()),
         (flag, value)])
