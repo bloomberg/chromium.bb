@@ -1235,7 +1235,8 @@ void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender) {
     hover_controller->StartThrobbing(0);
 
   GdkEvent* event = gtk_get_current_event();
-  if (event->button.button == 1) {
+  if (event->button.button == 1 ||
+      (event->button.button == 2 && sender == overflow_button_)) {
     PopupForButton(sender);
   } else if (event->button.button == 2) {
     const BookmarkNode* node = GetNodeForToolButton(sender);
