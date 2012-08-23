@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -173,7 +174,10 @@ void BrowserInstantController::ResetInstant() {
   if (!browser_shutdown::ShuttingDownWithoutClosingBrowsers() &&
       InstantController::IsEnabled(browser_->profile()) &&
       browser_->is_type_tabbed() && !browser_->profile()->IsOffTheRecord()) {
-    instant_.reset(new InstantController(this, InstantController::INSTANT));
+    InstantController::Mode mode = InstantController::INSTANT;
+    if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()))
+      mode = InstantController::EXTENDED;
+    instant_.reset(new InstantController(this, mode));
     instant_unload_handler_.reset(new InstantUnloadHandler(browser_));
   } else {
     instant_.reset();

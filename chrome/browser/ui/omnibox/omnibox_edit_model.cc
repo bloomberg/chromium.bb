@@ -981,6 +981,9 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     PopupBoundsChangedTo(gfx::Rect());
     NotifySearchTabHelper();
   }
+
+  if (InstantController* instant = controller_->GetInstant())
+    instant->HandleAutocompleteResults(*autocomplete_controller_->providers());
 }
 
 bool OmniboxEditModel::query_in_progress() const {

@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+struct InstantAutocompleteResult;
 class InstantLoaderDelegate;
 class TabContents;
 
@@ -62,6 +63,10 @@ class InstantLoader : public content::NotificationObserver {
   // coordinates). This is used by the page to offset the results to avoid them
   // being covered by the omnibox dropdown.
   void SetOmniboxBounds(const gfx::Rect& bounds);
+
+  // Tells the preview page about the available autocomplete results.
+  void SendAutocompleteResults(
+      const std::vector<InstantAutocompleteResult>& results);
 
   // Releases the preview TabContents passing ownership to the caller. This
   // should be called when the preview is committed. Notifies the page but not

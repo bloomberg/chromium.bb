@@ -7,7 +7,8 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -59,6 +60,7 @@ std::string ModeToString(InstantController::Mode mode) {
     case InstantController::SUGGEST:  return "_Suggest";
     case InstantController::HIDDEN:   return "_Hidden";
     case InstantController::SILENT:   return "_Silent";
+    case InstantController::EXTENDED: return "_Extended";
   }
 
   NOTREACHED();
@@ -198,8 +200,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
     //    these cause the overlay to Hide().
     // 3. User arrows-up to Q or types Q again. The last text we processed is
     //    still Q, so we don't Update() the loader, but we do need to Show().
-    if (loader_processed_last_update_ && mode_ == INSTANT)
+    if (loader_processed_last_update_ &&
+        (mode_ == INSTANT || mode_ == EXTENDED)) {
       Show();
+    }
     return true;
   }
 
@@ -227,7 +231,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
 // needs to fire when the preview bounds change (e.g.: open/close info bar).
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
-  if (omnibox_bounds_ == bounds || mode_ != INSTANT)
+  if (omnibox_bounds_ == bounds || (mode_ != INSTANT && mode_ != EXTENDED))
     return;
 
   omnibox_bounds_ = bounds;
@@ -239,6 +243,33 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
         base::TimeDelta::FromMilliseconds(kUpdateBoundsDelayMS), this,
         &InstantController::SendBoundsToPage);
   }
+}
+
+void InstantController::HandleAutocompleteResults(
+    const std::vector<AutocompleteProvider*>& providers) {
+  if (mode_ != EXTENDED || !GetPreviewContents())
+    return;
+
+  std::vector<InstantAutocompleteResult> results;
+  for (ACProviders::const_iterator provider = providers.begin();
+       provider != providers.end(); ++provider) {
+    for (ACMatches::const_iterator match = (*provider)->matches().begin();
+         match != (*provider)->matches().end(); ++match) {
+      InstantAutocompleteResult result;
+      result.provider = UTF8ToUTF16((*provider)->name());
+      result.is_search =
+          match->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+          match->type == AutocompleteMatch::SEARCH_HISTORY ||
+          match->type == AutocompleteMatch::SEARCH_SUGGEST ||
+          match->type == AutocompleteMatch::SEARCH_OTHER_ENGINE;
+      result.contents = match->description;
+      result.destination_url = match->destination_url;
+      result.relevance = match->relevance;
+      results.push_back(result);
+    }
+  }
+
+  loader_->SendAutocompleteResults(results);
 }
 
 TabContents* InstantController::GetPreviewContents() const {
@@ -587,11 +618,33 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
   *instant_url = instant_url_ref.ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(string16()));
 
+  // Extended mode should always use HTTPS. TODO(sreeram): This section can be
+  // removed if TemplateURLs supported "https://{google:host}/..." instead of
+  // only supporting "{google:baseURL}...".
+  if (mode_ == EXTENDED) {
+    GURL url_obj(*instant_url);
+    if (!url_obj.is_valid())
+      return false;
+
+    if (!url_obj.SchemeIsSecure()) {
+      const std::string new_scheme = "https";
+      const std::string new_port = "443";
+      GURL::Replacements secure;
+      secure.SetSchemeStr(new_scheme);
+      secure.SetPortStr(new_port);
+      url_obj = url_obj.ReplaceComponents(secure);
+
+      if (!url_obj.is_valid())
+        return false;
+
+      *instant_url = url_obj.spec();
+    }
+  }
+
   std::map<std::string, int>::const_iterator iter =
       blacklisted_urls_.find(*instant_url);
   if (iter != blacklisted_urls_.end() &&
       iter->second > kMaxInstantSupportFailures) {
-    instant_url->clear();
     return false;
   }
 

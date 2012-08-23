@@ -302,6 +302,14 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   rvh->Send(new ChromeViewMsg_SearchBoxResize(rvh->GetRoutingID(), bounds));
 }
 
+void InstantLoader::SendAutocompleteResults(
+    const std::vector<InstantAutocompleteResult>& results) {
+  content::RenderViewHost* rvh =
+      preview_contents_->web_contents()->GetRenderViewHost();
+  rvh->Send(new ChromeViewMsg_SearchBoxAutocompleteResults(rvh->GetRoutingID(),
+                                                           results));
+}
+
 TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
                                                    const string16& text) {
   content::RenderViewHost* rvh =

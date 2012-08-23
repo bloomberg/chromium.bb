@@ -10,6 +10,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -110,7 +111,11 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return InstantController::IsEnabled(profile_) ? "&ion=1" : std::string();
+  if (InstantController::IsEnabled(profile_)) {
+    return chrome::search::IsInstantExtendedAPIEnabled(profile_) ? "&espv=1"
+                                                                 : "&ion=1";
+  }
+  return std::string();
 }
 
 // static

@@ -23,6 +23,7 @@
 #include "ui/gfx/rect.h"
 
 struct AutocompleteMatch;
+class AutocompleteProvider;
 class InstantControllerDelegate;
 class InstantLoader;
 class PrefService;
@@ -55,11 +56,14 @@ class InstantController : public InstantLoaderDelegate {
   //   HIDDEN: Same as SUGGEST, without the inline autocompletion.
   //   SILENT: Same as HIDDEN, without issuing queries as the user types. The
   //       query is sent only after the user presses <Enter>.
+  //   EXTENDED: Similar to INSTANT, but with extended functionality, such as
+  //       rendering suggestions within the preview and previews of URLs.
   enum Mode {
     INSTANT,
     SUGGEST,
     HIDDEN,
     SILENT,
+    EXTENDED,
   };
 
   InstantController(InstantControllerDelegate* delegate, Mode mode);
@@ -85,6 +89,10 @@ class InstantController : public InstantLoaderDelegate {
 
   // Sets the bounds of the omnibox dropdown, in screen coordinates.
   void SetOmniboxBounds(const gfx::Rect& bounds);
+
+  // Send autocomplete results from |providers| to the preview page.
+  void HandleAutocompleteResults(
+      const std::vector<AutocompleteProvider*>& providers);
 
   // The preview TabContents. May be NULL if ReleasePreviewContents() has been
   // called, with no subsequent successful call to Update(). InstantController
