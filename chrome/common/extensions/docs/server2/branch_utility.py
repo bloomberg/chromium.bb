@@ -43,8 +43,7 @@ class BranchUtility(object):
       return channel_name
 
     branch_number = self._object_store.Get(channel_name + '.' + self._base_path,
-                                           object_store.BRANCH_UTILITY,
-                                           time=86400).Get()
+                                           object_store.BRANCH_UTILITY).Get()
     if branch_number is not None:
       return branch_number
 
@@ -66,10 +65,8 @@ class BranchUtility(object):
                              None,
                              operator.itemgetter(1),
                              True)
-    # Cache for 24 hours.
     self._object_store.Set(channel_name + '.' + self._base_path,
                            sorted_branches[0][0],
-                           object_store.BRANCH_UTILITY,
-                           time=86400)
+                           object_store.BRANCH_UTILITY)
 
     return sorted_branches[0][0]

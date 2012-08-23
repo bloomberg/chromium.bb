@@ -23,16 +23,21 @@ class AppEngineUrlFetcher(object):
     """Fetches a file synchronously.
     """
     if self._base_path is not None:
-      return urlfetch.fetch(self._base_path + '/' + url)
+      return urlfetch.fetch(self._base_path + '/' + url,
+                            headers={ 'Cache-Control': 'max-age=0' })
     else:
-      return urlfetch.fetch(url)
+      return urlfetch.fetch(url, headers={ 'Cache-Control': 'max-age=0' })
 
   def FetchAsync(self, url):
     """Fetches a file asynchronously, and returns a Future with the result.
     """
     rpc = urlfetch.create_rpc()
     if self._base_path is not None:
-      urlfetch.make_fetch_call(rpc, self._base_path + '/' + url)
+      urlfetch.make_fetch_call(rpc,
+                               self._base_path + '/' + url,
+                               headers={ 'Cache-Control': 'max-age=0' })
     else:
-      urlfetch.make_fetch_call(rpc, url)
+      urlfetch.make_fetch_call(rpc,
+                               url,
+                               headers={ 'Cache-Control': 'max-age=0' })
     return Future(delegate=_AsyncFetchDelegate(rpc))

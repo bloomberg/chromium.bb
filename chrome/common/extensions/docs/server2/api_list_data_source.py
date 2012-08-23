@@ -45,8 +45,10 @@ class APIListDataSource(object):
             })
           else:
             chrome_apis.append({ 'name': template_name.replace('_', '.') })
-      chrome_apis[-1]['last'] = True
-      experimental_apis[-1]['last'] = True
+      if len(chrome_apis):
+        chrome_apis[-1]['last'] = True
+      if len(experimental_apis):
+        experimental_apis[-1]['last'] = True
       return {
         'chrome': chrome_apis,
         'experimental': experimental_apis

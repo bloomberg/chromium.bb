@@ -162,22 +162,26 @@ class Handler(webapp.RequestHandler):
                                                               self.request,
                                                               self.response)
 
-  def _Render(self, files, branch):
+  def _Render(self, files, channel):
     original_response = self.response
     for f in files:
-      path = branch + f.split(PUBLIC_TEMPLATE_PATH)[-1]
+      path = channel + f.split(PUBLIC_TEMPLATE_PATH)[-1]
       self.request = _MockRequest(path)
       self.response = _MockResponse()
-      self._HandleGet(path)
+      try:
+        self._HandleGet(path)
+      except Exception as e:
+        logging.error('Error rendering %s: %s' % (path, str(e)))
     self.response = original_response
 
   def _HandleCron(self, path):
-    branch = path.split('/')[-1]
+    channel = path.split('/')[-1]
+    branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel)
     logging.info('Running cron job for %s.' % branch)
     branch_memcache = InMemoryObjectStore(branch)
     file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
     factory = CompiledFileSystem.Factory(file_system, branch_memcache)
-    render_cache = factory.Create(lambda x: self._Render(x, branch),
+    render_cache = factory.Create(lambda x: self._Render(x, channel),
                                   compiled_fs.RENDER)
     render_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH)
     self.response.out.write('Success')

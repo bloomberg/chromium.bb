@@ -54,13 +54,13 @@ except ImportError:
         self.headers = { 'content-type': 'none' }
         self.status_code = 200
 
-    def fetch(self, url):
+    def fetch(self, url, **kwargs):
       return self._Response(_GetConfiguration(url).fetch(url))
 
     def create_rpc(self):
       return _RPC()
 
-    def make_fetch_call(self, rpc, url):
+    def make_fetch_call(self, rpc, url, **kwargs):
       rpc.result = self.fetch(url)
   urlfetch = FakeUrlFetch()
 
