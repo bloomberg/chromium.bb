@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 
+#include "ash/shell.h"
+#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -69,19 +71,22 @@ void KioskModeIdleLogout::Observe(
 }
 
 void KioskModeIdleLogout::IdleNotify(int64 threshold) {
-  // We're idle, next time we go active, we need to know so we can remove
-  // the logout dialog if it's still up.
-  RequestNextActiveNotification();
-
   IdleLogoutDialogView::ShowDialog();
+
+  // Register the user activity observer so we know when we go active again.
+  if (!ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
+    ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
 }
 
-void KioskModeIdleLogout::ActiveNotify() {
+void KioskModeIdleLogout::OnUserActivity() {
   // Before anything else, close the logout dialog to prevent restart
   IdleLogoutDialogView::CloseDialog();
 
-  // Now that we're active, register a request for notification for
-  // the next time we go idle.
+  // User is active now, we don't care about getting continuous notifications
+  // for user activity till we go idle again.
+  if (ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
+    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+
   RequestNextIdleNotification();
 }
 
@@ -90,11 +95,10 @@ void KioskModeIdleLogout::SetupIdleNotifications() {
       DBusThreadManager::Get()->GetPowerManagerClient();
   if (!power_manager->HasObserver(this))
     power_manager->AddObserver(this);
-}
 
-void KioskModeIdleLogout::RequestNextActiveNotification() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestActiveNotification();
+  // Add the power manager and user activity
+  // observers but remove the login observer.
+  registrar_.RemoveAll();
 }
 
 void KioskModeIdleLogout::RequestNextIdleNotification() {

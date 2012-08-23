@@ -27,7 +27,7 @@ std::string GetUserName(const std::string& email) {
 }  // namespace
 
 // The demo user is represented by a domainless username.
-const char kDemoUser[] = "demouser";
+const char kDemoUser[] = "demouser@";
 // Incognito user is represented by an empty string (since some code already
 // depends on that and it's hard to figure out what).
 const char kGuestUser[] = "";

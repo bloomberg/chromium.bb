@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 
 #include "ash/screensaver/screensaver_view.h"
+#include "ash/shell.h"
+#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -17,7 +19,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
@@ -28,7 +29,6 @@ namespace chromeos {
 
 typedef base::Callback<void(
     scoped_refptr<Extension>,
-    Profile*,
     const FilePath&)> UnpackCallback;
 
 class ScreensaverUnpackerClient
@@ -91,14 +91,12 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
     return;
   }
 
-  Profile* default_profile = ProfileManager::GetDefaultProfile();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           unpack_callback_,
           screensaver_extension,
-          default_profile,
           extension_base_path));
 }
 
@@ -126,10 +124,11 @@ KioskModeScreensaver::~KioskModeScreensaver() {
         base::Bind(
             &extension_file_util::DeleteFile, extension_base_path_, true));
   }
-  chromeos::PowerManagerClient* power_manager =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-  if (power_manager->HasObserver(this))
-    power_manager->RemoveObserver(this);
+
+  // In case we're shutting down without ever triggering the active
+  // notification and/or logging in.
+  ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  registrar_.RemoveAll();
 }
 
 void KioskModeScreensaver::GetScreensaverCrxPath() {
@@ -163,7 +162,6 @@ void KioskModeScreensaver::ScreensaverPathCallback(
 
 void KioskModeScreensaver::SetupScreensaver(
     scoped_refptr<Extension> extension,
-    Profile* default_profile,
     const FilePath& extension_base_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extension_base_path_ = extension_base_path;
@@ -172,25 +170,19 @@ void KioskModeScreensaver::SetupScreensaver(
   if (chromeos::UserManager::Get()->IsUserLoggedIn())
     return;
 
+  // Add our observers for login and user active.
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
+  ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
 
-  // We will register ourselves now and unregister if a user logs in.
-  chromeos::PowerManagerClient* power_manager =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-  if (!power_manager->HasObserver(this))
-    power_manager->AddObserver(this);
-
-  // We need to disappear and login the demo user if we go active.
-  chromeos::DBusThreadManager::Get()->
-      GetPowerManagerClient()->RequestActiveNotification();
-
+  Profile* default_profile = ProfileManager::GetDefaultProfile();
   // Add the extension to the extension service and display the screensaver.
   if (default_profile) {
     default_profile->GetExtensionService()->AddExtension(extension);
     ash::ShowScreensaver(extension->GetFullLaunchURL());
   } else {
     LOG(ERROR) << "Couldn't get default profile. Unable to load screensaver!";
+    ShutdownKioskModeScreensaver();
   }
 }
 
@@ -200,28 +192,30 @@ void KioskModeScreensaver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_SESSION_STARTED);
-  // User logged in, remove our observers, screensaver will be deactivated.
-  chromeos::PowerManagerClient* power_manager =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-  if (power_manager->HasObserver(this))
-    power_manager->RemoveObserver(this);
+
+  registrar_.RemoveAll();
 
   ash::CloseScreensaver();
   ShutdownKioskModeScreensaver();
 }
 
-void KioskModeScreensaver::ActiveNotify() {
+void KioskModeScreensaver::OnUserActivity() {
+  // We don't want to handle further user notifications; we'll either login
+  // the user and close out or or at least close the screensaver.
+  ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+
   // User is active, log us in.
   ExistingUserController* controller =
       ExistingUserController::current_controller();
 
   if (controller) {
-    // Logging in will shut us down, removing the screen saver.
+    // Logging in will shut us down and remove the screen saver.
     controller->LoginAsDemoUser();
   } else {
     // Remove the screensaver so the user can at least use the underlying
     // login screen to be able to log in.
     ash::CloseScreensaver();
+    ShutdownKioskModeScreensaver();
   }
 }
 

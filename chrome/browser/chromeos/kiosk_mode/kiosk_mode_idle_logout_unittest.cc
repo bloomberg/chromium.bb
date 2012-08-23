@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 
+#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -21,20 +22,22 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-class KioskModeIdleLogoutTest : public testing::Test {
+class KioskModeIdleLogoutTest : public ash::test::AshTestBase {
  public:
   KioskModeIdleLogoutTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, message_loop()),
         idle_logout_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
     DBusThreadManager::Initialize();
+    AshTestBase::SetUp();
     idle_logout_ = new KioskModeIdleLogout();
   }
 
   virtual void TearDown() OVERRIDE {
     delete idle_logout_;
+    AshTestBase::TearDown();
     DBusThreadManager::Shutdown();
   }
 
@@ -47,11 +50,10 @@ class KioskModeIdleLogoutTest : public testing::Test {
 
   bool PowerManagerObserverRegistered() {
     chromeos::PowerManagerClient* power_manager =
-                chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
     return power_manager->HasObserver(idle_logout_);
   }
 
-  MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
   KioskModeIdleLogout* idle_logout_;
@@ -72,6 +74,8 @@ TEST_F(KioskModeIdleLogoutTest, CheckObserversAfterUserLogin) {
       // NoDetails here is fine.
       content::NotificationService::NoDetails());
 
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(LoginUserObserverRegistered());
   EXPECT_TRUE(PowerManagerObserverRegistered());
 }
 

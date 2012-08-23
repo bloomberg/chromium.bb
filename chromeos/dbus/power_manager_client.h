@@ -77,9 +77,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     // Called when we go idle for threshold time.
     virtual void IdleNotify(int64 threshold_secs) {}
 
-    // Called when we go from idle to active.
-    virtual void ActiveNotify() {}
-
     // Called when a request is received to dim or undim the screen in software
     // (as opposed to the more-common method of adjusting the backlight).
     virtual void ScreenDimmingRequested(ScreenDimmingState state) {}
@@ -153,10 +150,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // removed from the notification queue. If you wish notifications the next
   // time the machine goes idle for that much time, request again.
   virtual void RequestIdleNotification(int64 threshold_secs) = 0;
-
-  // Requests that the observers be notified in case of an Idle->Active event.
-  // NOTE: Like the previous request, this will also get triggered exactly once.
-  virtual void RequestActiveNotification() = 0;
 
   // Notifies the power manager that the user is active (i.e. generating input
   // events).

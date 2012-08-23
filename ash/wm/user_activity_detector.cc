@@ -12,12 +12,16 @@
 
 namespace ash {
 
-const double UserActivityDetector::kNotifyIntervalSec = 1.0;
+const double UserActivityDetector::kNotifyIntervalMs = 200.0;
 
 UserActivityDetector::UserActivityDetector() {
 }
 
 UserActivityDetector::~UserActivityDetector() {
+}
+
+bool UserActivityDetector::HasObserver(UserActivityObserver* observer) const {
+  return observers_.HasObserver(observer);
 }
 
 void UserActivityDetector::AddObserver(UserActivityObserver* observer) {
@@ -69,8 +73,8 @@ void UserActivityDetector::MaybeNotify() {
   base::TimeTicks now =
       !now_for_test_.is_null() ? now_for_test_ : base::TimeTicks::Now();
   if (last_observer_notification_time_.is_null() ||
-      (now - last_observer_notification_time_).InSecondsF() >=
-      kNotifyIntervalSec) {
+      (now - last_observer_notification_time_).InMillisecondsF() >=
+      kNotifyIntervalMs) {
     FOR_EACH_OBSERVER(UserActivityObserver, observers_, OnUserActivity());
     last_observer_notification_time_ = now;
   }

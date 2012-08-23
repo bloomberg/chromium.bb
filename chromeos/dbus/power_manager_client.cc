@@ -91,14 +91,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
-        power_manager::kActiveNotifySignal,
-        base::Bind(&PowerManagerClientImpl::ActiveNotifySignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
         power_manager::kSoftwareScreenDimmingRequestedSignal,
         base::Bind(
             &PowerManagerClientImpl::SoftwareScreenDimmingRequestedReceived,
@@ -216,10 +208,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         dbus::ObjectProxy::EmptyResponseCallback());
-  }
-
-  virtual void RequestActiveNotification() OVERRIDE {
-    RequestIdleNotification(0);
   }
 
   virtual void NotifyUserActivity(
@@ -485,20 +473,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, IdleNotify(threshold));
   }
 
-  void ActiveNotifySignalReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    int64 threshold = 0;
-    if (!reader.PopInt64(&threshold)) {
-      LOG(ERROR) << "Active Notify signal had incorrect parameters: "
-                 << signal->ToString();
-      return;
-    }
-    DCHECK_EQ(threshold, 0);
-
-    VLOG(1) << "Active Notify.";
-    FOR_EACH_OBSERVER(Observer, observers_, ActiveNotify());
-  }
-
   void SoftwareScreenDimmingRequestedReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     int32 signal_state = 0;
@@ -612,7 +586,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   }
 
   virtual void RequestIdleNotification(int64 threshold) OVERRIDE {}
-  virtual void RequestActiveNotification() OVERRIDE {}
   virtual void NotifyUserActivity(
       const base::TimeTicks& last_activity_time) OVERRIDE {}
   virtual void NotifyVideoActivity(
