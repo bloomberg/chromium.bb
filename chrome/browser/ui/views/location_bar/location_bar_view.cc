@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -284,11 +283,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   zoom_view_ = new ZoomView(model_, delegate_);
   AddChildView(zoom_view_);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox) &&
-      browser_) {
-    action_box_button_view_ = new ActionBoxButtonView(browser_, profile_);
-    AddChildView(action_box_button_view_);
-  } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
+  if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star and ChromeToMobile icons are
     // hidden in popups and in the app launcher.
     star_view_ = new StarView(command_updater_);
@@ -304,6 +299,12 @@ void LocationBarView::Init(views::View* popup_parent_view) {
       chrome_to_mobile_view_->SetVisible(
           ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles());
     }
+  }
+  if (ActionBoxButtonView::IsActionBoxEnabled() && browser_) {
+    action_box_button_view_ = new ActionBoxButtonView(browser_, profile_);
+    AddChildView(action_box_button_view_);
+    if (star_view_)
+      star_view_->SetVisible(false);
   }
 
   registrar_.Add(this,
@@ -414,7 +415,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
                       edit_bookmarks_enabled_.GetValue();
 
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (star_view_)
+  if (star_view_ && !ActionBoxButtonView::IsActionBoxEnabled())
     star_view_->SetVisible(star_enabled);
 
   bool enabled = chrome_to_mobile_view_ && !model_->input_in_progress() &&
@@ -511,8 +512,14 @@ views::View* LocationBarView::GetPageActionView(ExtensionAction *page_action) {
 void LocationBarView::SetStarToggled(bool on) {
   if (star_view_)
     star_view_->SetToggled(on);
-  if (action_box_button_view_)
+
+  if (action_box_button_view_) {
     action_box_button_view_->set_starred(on);
+    if (star_view_ && (star_view_->visible() != on)) {
+      star_view_->SetVisible(on);
+      Layout();
+    }
+  }
 }
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/action_box_menu.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -69,6 +71,11 @@ SkColor ActionBoxButtonView::GetBorderColor() {
     default:
       return kNormalBorderColor;
   }
+}
+
+bool ActionBoxButtonView::IsActionBoxEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableActionBox);
 }
 
 void ActionBoxButtonView::GetAccessibleState(ui::AccessibleViewState* state) {

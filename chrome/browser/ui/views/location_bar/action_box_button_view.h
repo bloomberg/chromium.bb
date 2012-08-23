@@ -23,11 +23,13 @@ class ActionBoxButtonView : public views::MenuButton,
 
   void set_starred(bool starred) { starred_ = starred; }
 
+  static bool IsActionBoxEnabled();
+
  private:
-  // CustomButton
+  // Overridden from views::CustomButton:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // MenuButtonListener
+  // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
