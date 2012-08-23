@@ -47,8 +47,13 @@ void RendererGpuVideoDecoderFactories::AsyncGetContext(
     WebGraphicsContext3DCommandBufferImpl* context,
     base::WaitableEvent* waiter) {
   context_ = context->AsWeakPtr();
-  if (context_)
-    context_->makeContextCurrent();
+  if (context_) {
+    if (context_->makeContextCurrent()) {
+      // Called once per media player, but is a no-op after the first one in
+      // each renderer.
+      context_->insertEventMarkerEXT("GpuVDAContext3D");
+    }
+  }
   if (waiter)
     waiter->Signal();
 }
