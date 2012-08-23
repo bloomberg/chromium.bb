@@ -279,7 +279,6 @@ function bb_extract_build {
   python ../../../../scripts/slave/extract_build.py \
     --build-dir "$SRC_ROOT" \
     --build-output-dir "out" \
-    --target Debug \
     --factory-properties "$FACTORY_PROPERTIES" \
     --build-properties "$BUILD_PROPERTIES"
   extract_exitcode=$?
