@@ -161,7 +161,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
 
   for (std::vector<WebFrame*>::iterator frame_it = frame_vector.begin();
        frame_it != frame_vector.end(); ++frame_it) {
-    WebFrame* frame = *frame_it;
+    WebFrame* child_frame = *frame_it;
     if (params.is_javascript) {
       // We recheck access here in the renderer for extra safety against races
       // with navigation.
@@ -173,11 +173,12 @@ void UserScriptScheduler::ExecuteCodeImpl(
       //
       // For child frames, we just skip ones the extension doesn't have access
       // to and carry on.
-      if (!extension->CanExecuteScriptOnPage(frame->document().url(),
+      if (!extension->CanExecuteScriptOnPage(child_frame->document().url(),
+                                             frame_->document().url(),
                                              extension_helper->tab_id(),
                                              NULL,
                                              NULL)) {
-        if (frame->parent()) {
+        if (child_frame->parent()) {
           continue;
         } else {
           render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
@@ -185,7 +186,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
               params.request_id,
               ExtensionErrorUtils::FormatErrorMessage(
                   extension_manifest_errors::kCannotAccessPage,
-                  frame->document().url().spec()),
+                  child_frame->document().url().spec()),
               -1,
               GURL(""),
               execution_results));
@@ -205,14 +206,14 @@ void UserScriptScheduler::ExecuteCodeImpl(
       v8_converter->SetUndefinedAllowed(true);
       v8::Handle<v8::Value> script_value;
       if (params.in_main_world) {
-        script_value = frame->executeScriptAndReturnValue(source);
+        script_value = child_frame->executeScriptAndReturnValue(source);
       } else {
         WebKit::WebVector<v8::Local<v8::Value> > results;
         std::vector<WebScriptSource> sources;
         sources.push_back(source);
-        frame->executeScriptInIsolatedWorld(
+        child_frame->executeScriptInIsolatedWorld(
             dispatcher_->user_script_slave()->
-                GetIsolatedWorldIdForExtension(extension, frame),
+                GetIsolatedWorldIdForExtension(extension, child_frame),
             &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS,
             &results);
         // We only expect one value back since we only pushed one source
@@ -226,7 +227,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
         script_value.Clear();
       }
     } else {
-      frame->document().insertUserStyleSheet(
+      child_frame->document().insertUserStyleSheet(
           WebString::fromUTF8(params.code),
           // Author level is consistent with WebView::addUserStyleSheet.
           WebDocument::UserStyleAuthorLevel);

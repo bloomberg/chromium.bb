@@ -3575,7 +3575,8 @@ bool Extension::HasMultipleUISurfaces() const {
   return num_surfaces > 1;
 }
 
-bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
+bool Extension::CanExecuteScriptOnPage(const GURL& document_url,
+                                       const GURL& top_frame_url,
                                        int tab_id,
                                        const UserScript* script,
                                        std::string* error) const {
@@ -3586,7 +3587,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
   // against the store app extent?
   GURL store_url(extension_urls::GetWebstoreLaunchURL());
-  if ((page_url.host() == store_url.host()) &&
+  if ((document_url.host() == store_url.host()) &&
       !CanExecuteScriptEverywhere() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowScriptingGallery)) {
@@ -3595,33 +3596,41 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
     return false;
   }
 
-  if (page_url.SchemeIs(chrome::kChromeUIScheme) &&
-      !CanExecuteScriptEverywhere())
+  if (document_url.SchemeIs(chrome::kChromeUIScheme) &&
+      !CanExecuteScriptEverywhere()) {
     return false;
+  }
+
+  if (top_frame_url.SchemeIs(chrome::kExtensionScheme) &&
+      top_frame_url.GetOrigin() !=
+          GetBaseURLFromExtensionId(id()).GetOrigin() &&
+      !CanExecuteScriptEverywhere()) {
+    return false;
+  }
 
   // If a tab ID is specified, try the tab-specific permissions.
   if (tab_id >= 0) {
     scoped_refptr<const PermissionSet> tab_permissions =
         runtime_data_.GetTabSpecificPermissions(tab_id);
     if (tab_permissions.get() &&
-        tab_permissions->explicit_hosts().MatchesSecurityOrigin(page_url)) {
+        tab_permissions->explicit_hosts().MatchesSecurityOrigin(document_url)) {
       return true;
     }
   }
 
   // If a script is specified, use its matches.
   if (script)
-    return script->MatchesURL(page_url);
+    return script->MatchesURL(document_url);
 
   // Otherwise, see if this extension has permission to execute script
   // programmatically on pages.
   if (runtime_data_.GetActivePermissions()->HasExplicitAccessToOrigin(
-          page_url))
+          document_url))
     return true;
 
   if (error) {
     *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                                     page_url.spec());
+                                                     document_url.spec());
   }
 
   return false;

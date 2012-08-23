@@ -281,6 +281,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     // Content scripts are not tab-specific.
     int kNoTabId = -1;
     if (!extension->CanExecuteScriptOnPage(data_source_url,
+                                           frame->top()->document().url(),
                                            kNoTabId,
                                            script,
                                            NULL)) {

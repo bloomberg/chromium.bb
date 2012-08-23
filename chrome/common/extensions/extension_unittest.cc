@@ -668,62 +668,68 @@ TEST(ExtensionTest, WantsFileAccess) {
   // <all_urls> permission
   extension = LoadManifest("permissions", "permissions_all_urls.json");
   EXPECT_TRUE(extension->wants_file_access());
-  EXPECT_FALSE(extension->CanExecuteScriptOnPage(file_url, -1, NULL, NULL));
+  EXPECT_FALSE(extension->CanExecuteScriptOnPage(
+      file_url, file_url, -1, NULL, NULL));
   extension = LoadManifest(
       "permissions", "permissions_all_urls.json", Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
-  EXPECT_TRUE(extension->CanExecuteScriptOnPage(file_url, -1, NULL, NULL));
+  EXPECT_TRUE(extension->CanExecuteScriptOnPage(
+      file_url, file_url, -1, NULL, NULL));
 
   // file:///* permission
   extension = LoadManifest("permissions", "permissions_file_scheme.json");
   EXPECT_TRUE(extension->wants_file_access());
-  EXPECT_FALSE(extension->CanExecuteScriptOnPage(file_url, -1, NULL, NULL));
+  EXPECT_FALSE(extension->CanExecuteScriptOnPage(
+      file_url, file_url, -1, NULL, NULL));
   extension = LoadManifest("permissions", "permissions_file_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
-  EXPECT_TRUE(extension->CanExecuteScriptOnPage(file_url, -1, NULL, NULL));
+  EXPECT_TRUE(extension->CanExecuteScriptOnPage(
+      file_url, file_url, -1, NULL, NULL));
 
   // http://* permission
   extension = LoadManifest("permissions", "permissions_http_scheme.json");
   EXPECT_FALSE(extension->wants_file_access());
-  EXPECT_FALSE(extension->CanExecuteScriptOnPage(file_url, -1, NULL, NULL));
+  EXPECT_FALSE(extension->CanExecuteScriptOnPage(
+      file_url, file_url, -1, NULL, NULL));
   extension = LoadManifest("permissions", "permissions_http_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_FALSE(extension->wants_file_access());
-  EXPECT_FALSE(extension->CanExecuteScriptOnPage(file_url, -1, NULL, NULL));
+  EXPECT_FALSE(extension->CanExecuteScriptOnPage(
+      file_url, file_url, -1, NULL, NULL));
 
   // <all_urls> content script match
   extension = LoadManifest("permissions", "content_script_all_urls.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(extension->CanExecuteScriptOnPage(
-      file_url, -1, &extension->content_scripts()[0], NULL));
+      file_url, file_url, -1, &extension->content_scripts()[0], NULL));
   extension = LoadManifest("permissions", "content_script_all_urls.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(extension->CanExecuteScriptOnPage(
-      file_url, -1, &extension->content_scripts()[0], NULL));
+      file_url, file_url, -1, &extension->content_scripts()[0], NULL));
 
   // file:///* content script match
   extension = LoadManifest("permissions", "content_script_file_scheme.json");
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_FALSE(extension->CanExecuteScriptOnPage(
-      file_url, -1, &extension->content_scripts()[0], NULL));
+      file_url, file_url, -1, &extension->content_scripts()[0], NULL));
   extension = LoadManifest("permissions", "content_script_file_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_TRUE(extension->wants_file_access());
   EXPECT_TRUE(extension->CanExecuteScriptOnPage(
-      file_url, -1, &extension->content_scripts()[0], NULL));
+      file_url, file_url, -1, &extension->content_scripts()[0], NULL));
 
   // http://* content script match
   extension = LoadManifest("permissions", "content_script_http_scheme.json");
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(extension->CanExecuteScriptOnPage(
-      file_url, -1, &extension->content_scripts()[0], NULL));
+      file_url, file_url, -1, &extension->content_scripts()[0], NULL));
   extension = LoadManifest("permissions", "content_script_http_scheme.json",
       Extension::ALLOW_FILE_ACCESS);
   EXPECT_FALSE(extension->wants_file_access());
   EXPECT_FALSE(extension->CanExecuteScriptOnPage(
-      file_url, -1, &extension->content_scripts()[0], NULL));
+      file_url, file_url, -1, &extension->content_scripts()[0], NULL));
 }
 
 TEST(ExtensionTest, ExtraFlags) {
@@ -775,12 +781,22 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
     urls_.insert(about_url);
   }
 
+  bool AllowedScript(const Extension* extension, const GURL& url,
+                     const GURL& top_url) {
+    return extension->CanExecuteScriptOnPage(url, top_url, -1, NULL, NULL);
+  }
+
+  bool BlockedScript(const Extension* extension, const GURL& url,
+                     const GURL& top_url) {
+    return !extension->CanExecuteScriptOnPage(url, top_url, -1, NULL, NULL);
+  }
+
   bool Allowed(const Extension* extension, const GURL& url) {
     return Allowed(extension, url, -1);
   }
 
   bool Allowed(const Extension* extension, const GURL& url, int tab_id) {
-    return (extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
+    return (extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) &&
             extension->CanCaptureVisiblePage(url, tab_id, NULL));
   }
 
@@ -789,7 +805,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool CaptureOnly(const Extension* extension, const GURL& url, int tab_id) {
-    return !extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
+    return !extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) &&
             extension->CanCaptureVisiblePage(url, tab_id, NULL);
   }
 
@@ -798,7 +814,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   }
 
   bool Blocked(const Extension* extension, const GURL& url, int tab_id) {
-    return !(extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) ||
+    return !(extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) ||
              extension->CanCaptureVisiblePage(url, tab_id, NULL));
   }
 
@@ -851,6 +867,15 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   EXPECT_TRUE(CaptureOnly(extension, favicon_url));
   EXPECT_TRUE(Blocked(extension, about_url));
   EXPECT_TRUE(Blocked(extension, extension_url));
+
+  // Test access to iframed content.
+  GURL within_extension_url = extension->GetResourceURL("page.html");
+  EXPECT_TRUE(AllowedScript(extension, http_url, http_url_with_path));
+  EXPECT_TRUE(AllowedScript(extension, https_url, http_url_with_path));
+  EXPECT_TRUE(AllowedScript(extension, http_url, within_extension_url));
+  EXPECT_TRUE(AllowedScript(extension, https_url, within_extension_url));
+  EXPECT_TRUE(BlockedScript(extension, http_url, extension_url));
+  EXPECT_TRUE(BlockedScript(extension, https_url, extension_url));
 
   EXPECT_FALSE(extension->HasHostPermission(settings_url));
   EXPECT_FALSE(extension->HasHostPermission(about_url));

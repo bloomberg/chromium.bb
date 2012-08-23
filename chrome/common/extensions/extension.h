@@ -531,7 +531,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   //
   // This method is also aware of certain special pages that extensions are
   // usually not allowed to run script on.
-  bool CanExecuteScriptOnPage(const GURL& page_url,
+  bool CanExecuteScriptOnPage(const GURL& document_url,
+                              const GURL& top_document_url,
                               int tab_id,
                               const UserScript* script,
                               std::string* error) const;

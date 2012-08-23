@@ -83,6 +83,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptViewSource) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/view_source")) << message_;
 }
 
+// crbug.com/126257 -- content scripts should not get injected into other
+// extensions.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptOtherExtensions) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+  // First, load extension that sets up content script.
+  ASSERT_TRUE(RunExtensionTest("content_scripts/other_extensions/injector"))
+      << message_;
+  // Then load targeted extension to make sure its content isn't changed.
+  ASSERT_TRUE(RunExtensionTest("content_scripts/other_extensions/victim"))
+      << message_;
+}
+
 // crbug.com/120762
 IN_PROC_BROWSER_TEST_F(
     ExtensionApiTest,

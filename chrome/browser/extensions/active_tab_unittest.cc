@@ -79,7 +79,7 @@ class ActiveTabTest : public TabContentsTestHarness {
   bool IsAllowed(const scoped_refptr<const Extension>& extension,
                  const GURL& url,
                  int tab_id) {
-    return extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
+    return extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) &&
            extension->CanCaptureVisiblePage(url, tab_id, NULL) &&
            HasTabsPermission(extension, tab_id);
   }
@@ -93,7 +93,7 @@ class ActiveTabTest : public TabContentsTestHarness {
                  const GURL& url,
                  int tab_id) {
     // Note: can't check HasTabsPermission because it isn't URL specific.
-    return !extension->CanExecuteScriptOnPage(url, tab_id, NULL, NULL) &&
+    return !extension->CanExecuteScriptOnPage(url, url, tab_id, NULL, NULL) &&
            !extension->CanCaptureVisiblePage(url, tab_id, NULL);
   }
 

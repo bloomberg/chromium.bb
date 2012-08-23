@@ -78,7 +78,11 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   // we check again in the renderer.
   CHECK(contents);
   if (!GetExtension()->CanExecuteScriptOnPage(
-          contents->web_contents()->GetURL(), execute_tab_id_, NULL, &error_)) {
+          contents->web_contents()->GetURL(),
+          contents->web_contents()->GetURL(),
+          execute_tab_id_,
+          NULL,
+          &error_)) {
     return false;
   }
 

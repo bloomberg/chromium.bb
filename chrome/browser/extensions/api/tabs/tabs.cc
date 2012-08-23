@@ -1307,7 +1307,11 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(chrome::kJavaScriptScheme)) {
     if (!GetExtension()->CanExecuteScriptOnPage(
-            tab_contents_->web_contents()->GetURL(), tab_id, NULL, &error_)) {
+            tab_contents_->web_contents()->GetURL(),
+            tab_contents_->web_contents()->GetURL(),
+            tab_id,
+            NULL,
+            &error_)) {
       return false;
     }
 
