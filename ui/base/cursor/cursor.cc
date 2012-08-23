@@ -36,5 +36,15 @@ void Cursor::SetPlatformCursor(const PlatformCursor& platform) {
   RefCustomCursor();
 }
 
+void Cursor::Assign(const Cursor& cursor) {
+  if (*this == cursor)
+    return;
+  native_type_ = cursor.native_type_;
+  if (platform_cursor_)
+    UnrefCustomCursor();
+  platform_cursor_ = cursor.platform_cursor_;
+  if (platform_cursor_)
+    RefCustomCursor();
+}
 
 }  // namespace ui

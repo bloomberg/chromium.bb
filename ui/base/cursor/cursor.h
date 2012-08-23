@@ -114,7 +114,13 @@ class UI_EXPORT Cursor {
            platform_cursor_ != cursor.platform_cursor_;
   }
 
+  void operator=(const Cursor& cursor) {
+    Assign(cursor);
+  }
+
  private:
+  void Assign(const Cursor& cursor);
+
   // See definitions above.
   int native_type_;
 
