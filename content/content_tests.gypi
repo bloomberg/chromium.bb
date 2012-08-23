@@ -818,6 +818,9 @@
             {
               'action_name': 'content_shell_test_generate_apk',
               'inputs': [
+                '<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar',
+                '<(PRODUCT_DIR)/lib.java/chromium_net_javatests.jar',
+                '<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar',
                 '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
                 '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
                 '<!@(find <(DEPTH)/content/shell/android/javatests/ -name "*.java")'

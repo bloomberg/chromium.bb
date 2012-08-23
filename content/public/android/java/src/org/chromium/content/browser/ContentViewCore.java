@@ -24,14 +24,13 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
 import org.chromium.content.app.AppResource;
+import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.ContentViewGestureHandler;
+import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.TouchPoint;
 import org.chromium.content.browser.ZoomManager;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content.common.TraceEvent;
-
-import org.chromium.content.browser.accessibility.AccessibilityInjector;
-import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
@@ -162,6 +161,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private float mNativePageScaleFactor = 1.0f;
     private float mNativeMinimumScale = 1.0f;
     private float mNativeMaximumScale = 1.0f;
+
+    private PopupZoomer mPopupZoomer;
 
     // TODO(klobag): this is to avoid a bug in GestureDetector. With multi-touch,
     // mAlwaysInTapRegion is not reset. So when the last finger is up, onSingleTapUp()
@@ -295,7 +296,36 @@ public class ContentViewCore implements MotionEventDelegate {
         mZoomManager.updateMultiTouchSupport();
         mContentViewGestureHandler = new ContentViewGestureHandler(context, this, mZoomManager);
 
+        initPopupZoomer(mContext);
+
         Log.i(TAG, "mNativeContentView=0x"+ Integer.toHexString(mNativeContentViewCore));
+    }
+
+    private void initPopupZoomer(Context context){
+        assert AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS != 0;
+        mPopupZoomer = new PopupZoomer(context, AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS);
+        mContainerView.addView(mPopupZoomer);
+        PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
+            @Override
+            public boolean onSingleTap(View v, MotionEvent e) {
+                mContainerView.requestFocus();
+                if (mNativeContentViewCore != 0) {
+                    nativeSingleTap(mNativeContentViewCore, e.getEventTime(), (int) e.getX(),
+                            (int) e.getY(), true);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onLongPress(View v, MotionEvent e) {
+                if (mNativeContentViewCore != 0) {
+                    nativeLongPress(mNativeContentViewCore, e.getEventTime(), (int) e.getX(),
+                            (int) e.getY(), true);
+                }
+                return true;
+            }
+        };
+        mPopupZoomer.setOnTapListener(listener);
     }
 
     /**
@@ -704,6 +734,8 @@ public class ContentViewCore implements MotionEventDelegate {
             long timeMs, int x, int y, boolean isLongPress, boolean showPress) {
         //TODO(yusufo):Upstream the rest of the bits about handlerControllers.
         if (!mContainerView.isFocused()) mContainerView.requestFocus();
+
+        if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(x, y);
 
         if (isLongPress) {
             if (mNativeContentViewCore != 0) {
