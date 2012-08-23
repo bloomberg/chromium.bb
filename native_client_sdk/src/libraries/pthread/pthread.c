@@ -6,38 +6,98 @@
 #include <errno.h>
 #include "pthread.h"
 
-int pthread_mutex_init(pthread_mutex_t* m, void* traits) {
-  *m = (int) CreateMutex(NULL, 0, NULL);
+int pthread_mutex_init(pthread_mutex_t* m, void* attrs) {
+  InitializeCriticalSection(m);
   return 0;
 }
 
 int pthread_mutex_destroy(pthread_mutex_t* m) {
-  CloseHandle((HANDLE) *m);
+  DeleteCriticalSection(m);
   return 0;
 }
 
 int pthread_mutex_lock(pthread_mutex_t* m) {
-  if (WaitForSingleObject((HANDLE) *m, INFINITE) == WAIT_OBJECT_0)
-    return 0;
-
-  return EINVAL;
+  EnterCriticalSection(m);
+  return 0;
 }
 
 int pthread_mutex_unlock(pthread_mutex_t* m) {
-  if (ReleaseMutex((HANDLE) *m)) return 0;
-
-  return EINVAL;
+  LeaveCriticalSection(m);
+  return 0;
 }
 
 int pthread_mutex_trylock(pthread_mutex_t* m) {
-  int val = WaitForSingleObject((HANDLE) *m, 0);
-  
-  if (val == WAIT_OBJECT_0) return 0;
+  if (TryEnterCriticalSection(m))
+    return 0;
+  return EBUSY;
+}
 
-  if (val == WAIT_TIMEOUT) {
-    errno = EBUSY;
-  } else {
-    errno = EINVAL;
+int pthread_cond_init(pthread_cond_t* c, void* attrs) {
+  InitializeConditionVariable(c);
+  return 0;
+}
+
+int pthread_cond_destroy(pthread_cond_t* c) {
+  return 0;
+}
+
+int pthread_cond_broadcast(pthread_cond_t* c) {
+  WakeAllConditionVariable(c);
+  return 0;
+}
+
+int pthread_cond_signal(pthread_cond_t* c) {
+  WakeConditionVariable(c);
+  return 0;
+}
+
+int pthread_cond_wait(pthread_cond_t* c, pthread_mutex_t* m) {
+  if (SleepConditionVariableCS(c, m, INFINITE))
+    return 0;
+  return EINVAL;
+}
+
+typedef struct {
+  void* (*start_routine)(void*);
+  void* arg;
+} PthreadCreateInfo;
+
+static DWORD WINAPI PthreadCreateThreadFunc(LPVOID param) {
+  PthreadCreateInfo* pthread_create_info = (PthreadCreateInfo*)param;
+  void* result = (pthread_create_info->start_routine)(pthread_create_info->arg);
+  (void)result;  // Ignore result
+  HeapFree(GetProcessHeap(), 0, pthread_create_info);
+  return 0;
+}
+
+int pthread_create(pthread_t* t,
+                   void* attrs,
+                   void* (*start_routine)(void*),
+                   void* arg) {
+  HANDLE thread_handle;
+  PthreadCreateInfo* pthread_create_info;
+ 
+  pthread_create_info = (PthreadCreateInfo*)HeapAlloc(
+      GetProcessHeap(),
+      0,
+      sizeof(PthreadCreateInfo));
+  if (pthread_create_info == NULL)
+    return EAGAIN;
+
+  pthread_create_info->start_routine = start_routine;
+  pthread_create_info->arg = arg;
+
+  thread_handle = CreateThread(NULL,  // lpThreadAttributes
+                               0,  // dwStackSize
+                               &PthreadCreateThreadFunc,  // lpStartAddress
+                               pthread_create_info,  // lpParameter,
+                               0,  // dwCreationFlags
+                               NULL);  // lpThreadId
+  if (thread_handle == NULL) {
+    HeapFree(GetProcessHeap(), 0, pthread_create_info);
+    return EAGAIN;
   }
-  return -1;
+
+  *t = thread_handle;
+  return 0;
 }
