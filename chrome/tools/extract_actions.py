@@ -133,7 +133,8 @@ def AddComputedActions(actions):
   # Actions for safe_browsing_blocking_page.cc.
   for interstitial in ('Phishing', 'Malware', 'Multiple'):
     for action in ('Show', 'Proceed', 'DontProceed', 'ForcedDontProceed'):
-      actions.add('SBInterstitial%s%s' % (interstitial, action))
+      for group in ('', '_V1', '_V2'):
+        actions.add('SBInterstitial%s%s%s' % (interstitial, action, group))
 
   # Actions for language_options_handler.cc (Chrome OS specific).
   for input_method_id in INPUT_METHOD_IDS:

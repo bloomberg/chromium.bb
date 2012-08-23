@@ -6,6 +6,10 @@
 // malware and phishing urls.  It then uses a real browser to go to
 // these urls, and sends "goback" or "proceed" commands and verifies
 // they work.
+//
+// TODO(mattm): remove / merge this file with
+// safe_browsing_blocking_page_test.cc once the SBInterstitial field trial
+// finishes.
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
@@ -183,12 +187,12 @@ class TestMalwareDetailsFactory : public MalwareDetailsFactory {
 };
 
 // A SafeBrowingBlockingPage class that lets us wait until it's hidden.
-class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPageV1 {
+class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPageV2 {
  public:
   TestSafeBrowsingBlockingPage(SafeBrowsingService* service,
                                WebContents* web_contents,
                                const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPageV1(service, web_contents, unsafe_resources),
+      : SafeBrowsingBlockingPageV2(service, web_contents, unsafe_resources),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
     malware_details_proceed_delay_ms_ = 100;
@@ -231,9 +235,9 @@ class TestSafeBrowsingBlockingPageFactory
 }  // namespace
 
 // Tests the safe browsing blocking page in a browser.
-class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
+class SafeBrowsingBlockingPageV2Test : public InProcessBrowserTest {
  public:
-  SafeBrowsingBlockingPageTest() {
+  SafeBrowsingBlockingPageV2Test() {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -391,14 +395,13 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
       if (!value.get() || !value->GetAsString(&ready_state))
         return false;
     } while (ready_state != "complete");
-    // Now get the display style for the "proceed anyway" <div>.
+    // Now check hidden state of the "proceed anyway" <span>.
     scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(
         string16(),
         ASCIIToUTF16(
-            "var list = document.querySelectorAll("
-            "    'div[jsdisplay=\"!proceedDisabled\"]');\n"
-            "if (list.length == 1)\n"
-            "  list[0].style.display === 'none';\n"
+            "var element = document.getElementById('proceed-span');\n"
+            "if (element !== null)\n"
+            "  element.hidden;\n"
             "else\n"
             "  'Fail with non-boolean result value';\n")));
     if (!value.get())
@@ -413,14 +416,14 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageTest);
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2Test);
 };
 
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
 const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
                        MalwareRedirectInIFrameCanceled) {
   // 1. Test the case that redirect is a subresource.
   MalwareRedirectCancelAndProceed("openWinIFrame");
@@ -429,7 +432,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   AssertNoInterstitial(true);
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareRedirectCanceled) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
+                       MalwareRedirectCanceled) {
   // 2. Test the case that redirect is the only resource.
   MalwareRedirectCancelAndProceed("openWin");
   // Clicking proceed won't do anything if the main request is cancelled
@@ -437,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareRedirectCanceled) {
   EXPECT_TRUE(YesInterstitial());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, MalwareDontProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
@@ -454,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
       chrome::GetActiveWebContents(browser())->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, MalwareProceed) {
   GURL url = test_server()->GetURL(kEmptyPage);
   AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
@@ -471,22 +475,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   EXPECT_EQ(url, chrome::GetActiveWebContents(browser())->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
+                       MalwareLearnMore) {
   GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  SendCommand("\"takeMeBack\"");   // Simulate the user clicking "proceed"
-  AssertNoInterstitial(false);    // Assert the interstitial is gone
-  EXPECT_EQ(
-      GURL(chrome::kAboutBlankURL),  // We are back to "about:blank".
-      chrome::GetActiveWebContents(browser())->GetURL());
-}
-
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
-  GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
+  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -496,58 +488,18 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(
           &chrome::GetActiveWebContents(browser())->GetController()));
-  SendCommand("\"proceed\"");   // Simulate the user clicking "proceed".
-  observer.Wait();
-  AssertNoInterstitial(true);    // Assert the interstitial is gone
-  EXPECT_EQ(url, chrome::GetActiveWebContents(browser())->GetURL());
-}
-
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
-  GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
-  // event that clears the interstitial.  We wait for DidNavigate instead.
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(
-          &chrome::GetActiveWebContents(browser())->GetController()));
-  SendCommand("\"reportError\"");   // Simulate the user clicking "report error"
-  observer.Wait();
-  AssertNoInterstitial(false);    // Assert the interstitial is gone
-
-  // We are in the error reporting page.
-  EXPECT_EQ(
-      "/safebrowsing/report_error/",
-      chrome::GetActiveWebContents(browser())->GetURL().path());
-}
-
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       PhishingLearnMore) {
-  GURL url = test_server()->GetURL(kEmptyPage);
-  AddURLResult(url, SafeBrowsingService::URL_PHISHING);
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // Note: NOTIFICATION_LOAD_STOP may come before or after the DidNavigate
-  // event that clears the interstitial.  We wait for DidNavigate instead.
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(
-          &chrome::GetActiveWebContents(browser())->GetController()));
-  SendCommand("\"learnMore\"");   // Simulate the user clicking "learn more"
+  SendCommand("\"learnMore2\"");   // Simulate the user clicking "learn more"
   observer.Wait();
   AssertNoInterstitial(false);    // Assert the interstitial is gone
 
   // We are in the help page.
   EXPECT_EQ(
-      "/support/bin/answer.py",
+      "/goodtoknow/online-safety/malware/",
        chrome::GetActiveWebContents(browser())->GetURL().path());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeDontProceed) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
+                       MalwareIframeDontProceed) {
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
   AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
@@ -568,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeDontProceed) {
 }
 
 // Crashy, http://crbug.com/68834.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
                        DISABLED_MalwareIframeProceed) {
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
@@ -582,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_EQ(url, chrome::GetActiveWebContents(browser())->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
                        MalwareIframeReportDetails) {
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
@@ -607,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 // Verifies that the "proceed anyway" link isn't available when it is disabled
 // by the corresponding policy. Also verifies that sending the "proceed"
 // command anyway doesn't advance to the malware site.
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ProceedDisabled) {
   // Simulate a policy disabling the "proceed anyway" link.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingProceedAnywayDisabled, true);

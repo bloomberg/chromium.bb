@@ -74,7 +74,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   }
 
   // InterstitialPageDelegate method:
-  virtual std::string GetHTMLContents() OVERRIDE;
   virtual void CommandReceived(const std::string& command) OVERRIDE;
   virtual void OverrideRendererPrefs(
       content::RendererPreferences* prefs) OVERRIDE;
@@ -84,6 +83,9 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
  protected:
   friend class SafeBrowsingBlockingPageTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           ProceedThenDontProceed);
+  friend class SafeBrowsingBlockingPageV2Test;
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageV2Test,
                            ProceedThenDontProceed);
 
   void SetReportingPreference(bool report);
@@ -102,29 +104,14 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
     return interstitial_page_;
   }
 
- private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest, MalwareReports);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageV2Test, MalwareReports);
 
   enum BlockingPageEvent {
     SHOW,
     PROCEED,
     DONT_PROCEED,
   };
-
-  // Fills the passed dictionary with the strings passed to JS Template when
-  // creating the HTML.
-  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
-  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
-  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
-
-  // A helper method used by the Populate methods above used to populate common
-  // fields.
-  void PopulateStringDictionary(base::DictionaryValue* strings,
-                                const string16& title,
-                                const string16& headline,
-                                const string16& description1,
-                                const string16& description2,
-                                const string16& description3);
 
   // Records a user action for this interstitial, using the form
   // SBInterstitial[Phishing|Malware|Multiple][Show|Proceed|DontProceed].
@@ -200,10 +187,17 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // is shown to the user. Will return is_null() once we reported the
   // user action.
   base::TimeTicks interstitial_show_time_;
-  // True if the interstitial that is shown is a malware interstitial
-  // and false if it's a phishing interstitial.  If it's a multi-threat
-  // interstitial we'll say it's malware.
-  bool is_malware_interstitial_;
+
+  // Whether the user has expanded the "see more" section of the page already
+  // during this interstitial page.
+  bool has_expanded_see_more_section_;
+
+  // Which type of interstitial this is.
+  enum {
+    TYPE_MALWARE,
+    TYPE_PHISHING,
+    TYPE_MALWARE_AND_PHISHING,
+  } interstitial_type_;
 
   // The factory used to instanciate SafeBrowsingBlockingPage objects.
   // Usefull for tests, so they can provide their own implementation of
@@ -211,6 +205,65 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   static SafeBrowsingBlockingPageFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
+};
+
+class SafeBrowsingBlockingPageV1 : public SafeBrowsingBlockingPage {
+ public:
+  // Don't instanciate this class directly, use ShowBlockingPage instead.
+  SafeBrowsingBlockingPageV1(SafeBrowsingService* service,
+                             content::WebContents* web_contents,
+                             const UnsafeResourceList& unsafe_resources);
+
+  // InterstitialPageDelegate method:
+  virtual std::string GetHTMLContents() OVERRIDE;
+
+ private:
+  // Fills the passed dictionary with the strings passed to JS Template when
+  // creating the HTML.
+  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
+  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
+  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
+
+  // A helper method used by the Populate methods above used to populate common
+  // fields.
+  void PopulateStringDictionary(base::DictionaryValue* strings,
+                                const string16& title,
+                                const string16& headline,
+                                const string16& description1,
+                                const string16& description2,
+                                const string16& description3);
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV1);
+};
+
+class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
+ public:
+  // Don't instanciate this class directly, use ShowBlockingPage instead.
+  SafeBrowsingBlockingPageV2(SafeBrowsingService* service,
+                             content::WebContents* web_contents,
+                             const UnsafeResourceList& unsafe_resources);
+
+  // InterstitialPageDelegate method:
+  virtual std::string GetHTMLContents() OVERRIDE;
+
+ private:
+  // Fills the passed dictionary with the strings passed to JS Template when
+  // creating the HTML.
+  void PopulateMultipleThreatStringDictionary(base::DictionaryValue* strings);
+  void PopulateMalwareStringDictionary(base::DictionaryValue* strings);
+  void PopulatePhishingStringDictionary(base::DictionaryValue* strings);
+
+  // A helper method used by the Populate methods above used to populate common
+  // fields.
+  void PopulateStringDictionary(base::DictionaryValue* strings,
+                                const string16& title,
+                                const string16& headline,
+                                const string16& description1,
+                                const string16& description2,
+                                const string16& description3,
+                                const string16& description4);
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2);
 };
 
 // Factory for creating SafeBrowsingBlockingPage.  Useful for tests.

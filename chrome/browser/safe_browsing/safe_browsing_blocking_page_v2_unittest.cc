@@ -1,6 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// TODO(mattm): remove / merge this file with
+// safe_browsing_blocking_page_unittest.cc once the SBInterstitial field trial
+// finishes.
 
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,12 +36,12 @@ static const char* kBadURL3 = "http://www.badguys3.com/";
 namespace {
 
 // A SafeBrowingBlockingPage class that does not create windows.
-class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPageV1 {
+class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPageV2 {
  public:
   TestSafeBrowsingBlockingPage(SafeBrowsingService* service,
                                WebContents* web_contents,
                                const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPageV1(service, web_contents, unsafe_resources) {
+      : SafeBrowsingBlockingPageV2(service, web_contents, unsafe_resources) {
     // Don't delay details at all for the unittest.
     malware_details_proceed_delay_ms_ = 0;
 
@@ -79,7 +83,7 @@ class TestSafeBrowsingBlockingPageFactory
 
 }  // namespace
 
-class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
+class SafeBrowsingBlockingPageV2Test : public ChromeRenderViewHostTestHarness {
  public:
   // The decision the user made.
   enum UserResponse {
@@ -88,7 +92,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  SafeBrowsingBlockingPageTest()
+  SafeBrowsingBlockingPageV2Test()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_user_blocking_thread_(
             BrowserThread::FILE_USER_BLOCKING, MessageLoop::current()),
@@ -189,7 +193,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
                     bool is_subresource,
                     const GURL& url) {
     resource->callback =
-        base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
+        base::Bind(&SafeBrowsingBlockingPageV2Test::OnBlockingPageComplete,
                    base::Unretained(this));
     resource->url = url;
     resource->is_subresource = is_subresource;
@@ -207,7 +211,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.
-TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
+TEST_F(SafeBrowsingBlockingPageV2Test, MalwarePageDontProceed) {
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -241,7 +245,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
 }
 
 // Tests showing a blocking page for a malware page and then proceeding.
-TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
+TEST_F(SafeBrowsingBlockingPageV2Test, MalwarePageProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -273,7 +277,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
 
 // Tests showing a blocking page for a page that contains malware subresources
 // and not proceeding.
-TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
+TEST_F(SafeBrowsingBlockingPageV2Test, PageWithMalwareResourceDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -308,7 +312,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
 
 // Tests showing a blocking page for a page that contains malware subresources
 // and proceeding.
-TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
+TEST_F(SafeBrowsingBlockingPageV2Test, PageWithMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -340,7 +344,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
 // Tests showing a blocking page for a page that contains multiple malware
 // subresources and not proceeding.  This just tests that the extra malware
 // subresources (which trigger queued interstitial pages) do not break anything.
-TEST_F(SafeBrowsingBlockingPageTest,
+TEST_F(SafeBrowsingBlockingPageV2Test,
        PageWithMultipleMalwareResourceDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
@@ -379,117 +383,9 @@ TEST_F(SafeBrowsingBlockingPageTest,
   service_->GetDetails()->clear();
 }
 
-// Tests showing a blocking page for a page that contains multiple malware
-// subresources and proceeding through the first interstitial, but not the next.
-TEST_F(SafeBrowsingBlockingPageTest,
-       PageWithMultipleMalwareResourceProceedThenDontProceed) {
-  // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
-
-  // Navigate somewhere.
-  Navigate(kGoogleURL, 1);
-
-  // Navigate somewhere else.
-  Navigate(kGoodURL, 2);
-
-  // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(true, kBadURL);
-
-  // More bad resources loading causing more interstitials. The new
-  // interstitials should be queued.
-  ShowInterstitial(true, kBadURL2);
-  ShowInterstitial(true, kBadURL3);
-
-  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
-  ASSERT_TRUE(sb_interstitial);
-
-  // Proceed through the 1st interstitial.
-  ProceedThroughInterstitial(sb_interstitial);
-  EXPECT_EQ(OK, user_response());
-
-  // A report should have been sent.
-  EXPECT_EQ(1u, service_->GetDetails()->size());
-  service_->GetDetails()->clear();
-
-  ResetUserResponse();
-
-  // We should land to a 2nd interstitial (aggregating all the malware resources
-  // loaded while the 1st interstitial was showing).
-  sb_interstitial = GetSafeBrowsingBlockingPage();
-  ASSERT_TRUE(sb_interstitial);
-
-  // Don't proceed through the 2nd interstitial.
-  DontProceedThroughSubresourceInterstitial(sb_interstitial);
-  EXPECT_EQ(CANCEL, user_response());
-  EXPECT_FALSE(GetSafeBrowsingBlockingPage());
-
-  // We did not proceed, we should be back to the first page, the 2nd one should
-  // have been removed from the navigation controller.
-  ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
-
-  // No report should have been sent -- we don't create a report the
-  // second time.
-  EXPECT_EQ(0u, service_->GetDetails()->size());
-  service_->GetDetails()->clear();
-}
-
-// Tests showing a blocking page for a page that contains multiple malware
-// subresources and proceeding through the multiple interstitials.
-TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
-  // Enable malware reports.
-  Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
-
-  // Navigate somewhere else.
-  Navigate(kGoodURL, 1);
-
-  // Simulate that page loading a bad-resource triggering an interstitial.
-  ShowInterstitial(true, kBadURL);
-
-  // More bad resources loading causing more interstitials. The new
-  // interstitials should be queued.
-  ShowInterstitial(true, kBadURL2);
-  ShowInterstitial(true, kBadURL3);
-
-  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
-  ASSERT_TRUE(sb_interstitial);
-
-  // Proceed through the 1st interstitial.
-  ProceedThroughInterstitial(sb_interstitial);
-  EXPECT_EQ(OK, user_response());
-
-  // A report should have been sent.
-  EXPECT_EQ(1u, service_->GetDetails()->size());
-  service_->GetDetails()->clear();
-
-  ResetUserResponse();
-
-  // We should land to a 2nd interstitial (aggregating all the malware resources
-  // loaded while the 1st interstitial was showing).
-  sb_interstitial = GetSafeBrowsingBlockingPage();
-  ASSERT_TRUE(sb_interstitial);
-
-  // Proceed through the 2nd interstitial.
-  ProceedThroughInterstitial(sb_interstitial);
-  EXPECT_EQ(OK, user_response());
-
-  // We did proceed, we should be back to the initial page.
-  ASSERT_EQ(1, controller().GetEntryCount());
-  EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
-
-  // No report should have been sent -- we don't create a report the
-  // second time.
-  EXPECT_EQ(0u, service_->GetDetails()->size());
-  service_->GetDetails()->clear();
-}
-
 // Tests showing a blocking page then navigating back and forth to make sure the
 // controller entries are OK.  http://crbug.com/17627
-TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
+TEST_F(SafeBrowsingBlockingPageV2Test, NavigatingBackAndForth) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -537,7 +433,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 
 // Tests that calling "don't proceed" after "proceed" has been called doesn't
 // cause problems. http://crbug.com/30079
-TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
+TEST_F(SafeBrowsingBlockingPageV2Test, ProceedThenDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -572,7 +468,7 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 }
 
 // Tests showing a blocking page for a malware page with reports disabled.
-TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
+TEST_F(SafeBrowsingBlockingPageV2Test, MalwareReportsDisabled) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());
@@ -605,7 +501,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
 }
 
 // Test setting the malware report preferance
-TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
+TEST_F(SafeBrowsingBlockingPageV2Test, MalwareReports) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       contents()->GetBrowserContext());

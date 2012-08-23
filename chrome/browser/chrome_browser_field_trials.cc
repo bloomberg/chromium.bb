@@ -20,6 +20,7 @@
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -124,6 +125,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();
+  SetUpSafeBrowsingInterstitialFieldTrial();
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -581,4 +583,14 @@ void ChromeBrowserFieldTrials::DisableNewTabFieldTrialIfNecesssary() {
     if (ui::GetDisplayLayout() != ui::LAYOUT_DESKTOP || using_hidpi_assets)
       trial->Disable();
   }
+}
+
+void ChromeBrowserFieldTrials::SetUpSafeBrowsingInterstitialFieldTrial() {
+  const base::FieldTrial::Probability kDivisor = 100;
+  const base::FieldTrial::Probability kVersion2Probability = 50;  // 50% prob.
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial("SBInterstitial", kDivisor,
+                                                 "V1", 2012, 9, 19, NULL));
+  trial->UseOneTimeRandomization();
+  trial->AppendGroup("V2", kVersion2Probability);
 }

@@ -62,6 +62,9 @@ class ChromeBrowserFieldTrials {
   // Disables the new tab field trial if not running in desktop mode.
   void DisableNewTabFieldTrialIfNecesssary();
 
+  // Sets up the Safe Browsing interstitial redesign trial.
+  void SetUpSafeBrowsingInterstitialFieldTrial();
+
   const CommandLine& parsed_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserFieldTrials);
