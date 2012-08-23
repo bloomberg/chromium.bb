@@ -337,7 +337,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   }
 #if !defined(OS_MACOSX)
   else if (sender == examples_button_) {
-    views::examples::ShowExamplesWindow(
+    views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,
         ash::Shell::GetInstance()->browser_context());
   }

@@ -117,7 +117,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
       }
       case EXAMPLES_WINDOW: {
 #if !defined(OS_MACOSX)
-        views::examples::ShowExamplesWindow(
+        views::examples::ShowExamplesWindowWithContent(
             views::examples::DO_NOTHING_ON_CLOSE,
             ash::Shell::GetInstance()->browser_context());
 #endif

@@ -62,7 +62,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
 #endif
   views_delegate_.reset(new ExamplesViewsDelegate);
 
-  ShowExamplesWindow(QUIT_ON_CLOSE, browser_context_.get());
+  ShowExamplesWindowWithContent(QUIT_ON_CLOSE, browser_context_.get());
 }
 
 void ExamplesBrowserMainParts::PostMainMessageLoopRun() {

@@ -197,8 +197,8 @@ ExamplesWindowContents(Operation operation,
 // static
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
-void ShowExamplesWindow(Operation operation,
-                        content::BrowserContext* browser_context) {
+void ShowExamplesWindowWithContent(Operation operation,
+                                   content::BrowserContext* browser_context) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {

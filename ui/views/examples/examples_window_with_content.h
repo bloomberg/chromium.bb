@@ -20,7 +20,7 @@ enum Operation {
 };
 
 // Shows a window with the views examples in it.
-VIEWS_EXAMPLES_EXPORT void ShowExamplesWindow(
+VIEWS_EXAMPLES_EXPORT void ShowExamplesWindowWithContent(
     Operation operation,
     content::BrowserContext* browser_context);
 
