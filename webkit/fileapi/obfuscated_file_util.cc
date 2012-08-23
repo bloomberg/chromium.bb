@@ -54,11 +54,6 @@ void InitFileInfo(
   file_info->name = file_name;
 }
 
-bool IsRootDirectory(const FileSystemURL& url) {
-  return (url.path().empty() ||
-          url.path().value() == FILE_PATH_LITERAL("/"));
-}
-
 // Costs computed as per crbug.com/86114, based on the LevelDB implementation of
 // path storage under Linux.  It's not clear if that will differ on Windows, on
 // which FilePath uses wide chars [since they're converted to UTF-8 for storage
