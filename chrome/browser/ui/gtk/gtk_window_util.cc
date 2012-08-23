@@ -173,4 +173,14 @@ void UnMaximize(GtkWindow* window,
     gtk_window_resize(window, bounds.width(), bounds.height() - 1);
 }
 
+void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
+  gtk_window_set_wmclass(window,
+                         wmclass.c_str(),
+                         gdk_get_program_class());
+
+  // Set WM_WINDOW_ROLE for session management purposes.
+  // See http://tronche.com/gui/x/icccm/sec-5.html .
+  gtk_window_set_role(window, wmclass.c_str());
+}
+
 }  // namespace gtk_window_util

@@ -40,6 +40,8 @@ void UnMaximize(GtkWindow* window,
                 const gfx::Rect& bounds,
                 const gfx::Rect& restored_bounds);
 
+// Set a custom WM_CLASS for a window.
+void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass);
 }  // namespace gtk_window_util
 
 #endif  // CHROME_BROWSER_UI_GTK_GTK_WINDOW_UTIL_H_

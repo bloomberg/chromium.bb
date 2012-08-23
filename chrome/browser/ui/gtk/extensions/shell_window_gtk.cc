@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
@@ -68,6 +69,9 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
 
   // TODO(mihaip): Mirror contents of <title> tag in window title
   gtk_window_set_title(window_, extension()->name().c_str());
+
+  gtk_window_util::SetWindowCustomClass(window_,
+      web_app::GetWMClassFromAppName(extension()->name()));
 
   g_signal_connect(window_, "delete-event",
                    G_CALLBACK(OnMainWindowDeleteEventThunk), this);

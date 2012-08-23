@@ -270,17 +270,6 @@ GQuark GetBrowserWindowQuarkKey() {
   return quark;
 }
 
-// Set a custom WM_CLASS for a window.
-void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
-  gtk_window_set_wmclass(window,
-                         wmclass.c_str(),
-                         gdk_get_program_class());
-
-  // Set WM_WINDOW_ROLE for session management purposes.
-  // See http://tronche.com/gui/x/icccm/sec-5.html .
-  gtk_window_set_role(window, wmclass.c_str());
-}
-
 }  // namespace
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
@@ -351,8 +340,10 @@ void BrowserWindowGtk::Init() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (browser_->is_app()) {
     std::string app_name = browser_->app_name();
-    if (app_name != DevToolsWindow::kDevToolsApp)
-      SetWindowCustomClass(window_, web_app::GetWMClassFromAppName(app_name));
+    if (app_name != DevToolsWindow::kDevToolsApp) {
+      gtk_window_util::SetWindowCustomClass(window_,
+          web_app::GetWMClassFromAppName(app_name));
+    }
   } else if (command_line.HasSwitch(switches::kUserDataDir)) {
     // Set the class name to e.g. "Chrome (/tmp/my-user-data)".  The
     // class name will show up in the alt-tab list in gnome-shell if
@@ -360,9 +351,8 @@ void BrowserWindowGtk::Init() {
     // file.
     const std::string user_data_dir =
         command_line.GetSwitchValueNative(switches::kUserDataDir);
-    SetWindowCustomClass(window_,
-                         std::string(gdk_get_program_class()) +
-                         " (" + user_data_dir + ")");
+    gtk_window_util::SetWindowCustomClass(window_,
+        std::string(gdk_get_program_class()) + " (" + user_data_dir + ")");
   }
 
   // For popups, we initialize widgets then set the window geometry, because
