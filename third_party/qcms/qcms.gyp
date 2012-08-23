@@ -26,6 +26,9 @@
           './src',
         ],
       },
+      # Warning (sign-conversion) fixed upstream by large refactoring. Can be
+      # removed on next roll.
+      'msvs_disabled_warnings': [ 4018 ],
       'conditions': [
         [ 'target_arch != "arm" and OS in ["linux", "freebsd", "openbsd", "solaris"]', {
           'cflags': [

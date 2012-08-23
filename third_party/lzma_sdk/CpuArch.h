@@ -4,6 +4,7 @@
 #ifndef __CPU_ARCH_H
 #define __CPU_ARCH_H
 
+#include <stdlib.h>
 #include "Types.h"
 
 EXTERN_C_BEGIN

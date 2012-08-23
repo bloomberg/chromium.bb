@@ -18,6 +18,10 @@
         '../..',
         '<(DEPTH)/third_party/wtl/include',
       ],
+      # "/GS can not protect parameters and local variables from local buffer
+      # overrun because optimizations are disabled in function". Nothing to be
+      # done about this warning.
+      'msvs_disabled_warnings': [ 4748 ],
       'sources': [
         'call_stack.cc',
         'call_stack.h',
