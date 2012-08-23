@@ -55,7 +55,8 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
   base::CloseProcessHandle(handle);
 }
 
-IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, CloudPrintPolicyFlag) {
+// Disabled due to http://crbug.com/144393.
+IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, DISABLED_CloudPrintPolicyFlag) {
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
   // This is important for the test as the way the browser process is launched
