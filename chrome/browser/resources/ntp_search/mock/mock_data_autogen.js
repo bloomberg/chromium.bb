@@ -39,8 +39,7 @@ chrome.mock && chrome.mock({
           'version': '0.1'
         }
       ],
-      'showLauncher': false,
-      'showPromo': false
+      'showLauncher': false
     }
   ],
   'getRecentlyClosedTabs': [
@@ -179,6 +178,7 @@ chrome.mock && chrome.mock({
     'otherSessionsLearnMoreUrl': 'http://support.google.com/chrome/bin/' +
         'answer.py?answer=185277&hl=en',
     'recentlyclosed': 'Recently closed',
+    'recently_closed_page_id': 5120,
     'removethumbnailtooltip': 'Don\'t show on this page',
     'restoreSessionMenuItemText': 'Open all',
     'restoreThumbnailsShort': 'Restore all',

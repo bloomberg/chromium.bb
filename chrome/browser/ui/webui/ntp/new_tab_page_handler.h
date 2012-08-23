@@ -55,7 +55,8 @@ class NewTabPageHandler : public content::WebUIMessageHandler {
     APPS_PAGE_ID = 2 << kPageIdOffset,
     BOOKMARKS_PAGE_ID = 3 << kPageIdOffset,
     SUGGESTIONS_PAGE_ID = 4 << kPageIdOffset,
-    LAST_PAGE_ID = SUGGESTIONS_PAGE_ID
+    RECENTLY_CLOSED_PAGE_ID = 5 << kPageIdOffset,
+    LAST_PAGE_ID = RECENTLY_CLOSED_PAGE_ID
   };
   static const int kHistogramEnumerationMax =
       (LAST_PAGE_ID >> kPageIdOffset) + 1;

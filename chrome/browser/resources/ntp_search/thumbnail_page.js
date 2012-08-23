@@ -76,8 +76,9 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Update the appearance of this tile according to |data|.
+     * Formats this tile according to |data|.
      * @param {Object} data A dictionary of relevant data for the page.
+     * @private
      */
     formatThumbnail_: function(data) {
       var title = this.querySelector('.title');
@@ -91,7 +92,7 @@ cr.define('ntp', function() {
       this.querySelector('.thumbnail-image').style.backgroundImage =
           url(thumbnailUrl);
 
-      this.href = data.url;
+      this.href = data.href || data.url;
     },
   });
 
@@ -132,9 +133,6 @@ cr.define('ntp', function() {
     initialize: function() {
       this.classList.add('thumbnail-page');
       this.data_ = null;
-
-      this.addEventListener('carddeselected', this.handleCardDeselected_);
-      this.addEventListener('cardselected', this.handleCardSelected_);
     },
 
     /**
@@ -171,24 +169,6 @@ cr.define('ntp', function() {
         else
           tile.updateForData(page);
       }
-    },
-
-    /**
-     * Handles the 'card deselected' event (i.e. the user clicked to another
-     * pane).
-     * @param {Event} e The CardChanged event.
-     */
-    handleCardDeselected_: function(e) {
-      console.error('ThumbnailPage: handleCardDeselected_ is not implemented.');
-    },
-
-    /**
-     * Handles the 'card selected' event (i.e. the user clicked to select the
-     * this page's pane).
-     * @param {Event} e The CardChanged event.
-     */
-    handleCardSelected_: function(e) {
-      console.error('ThumbnailPage: handleCardSelected_ is not implemented.');
     },
 
     /**

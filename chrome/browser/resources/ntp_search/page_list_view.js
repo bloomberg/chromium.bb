@@ -65,6 +65,12 @@ cr.define('ntp', function() {
     mostVisitedPage: undefined,
 
     /**
+     * The Recently Closed page.
+     * @type {!Element|undefined}
+     */
+    recentlyClosedPage: undefined,
+
+    /**
      * The 'dots-list' element.
      * @type {!Element|undefined}
      */
@@ -152,14 +158,10 @@ cr.define('ntp', function() {
         // Note that this is kicked off asynchronously.  'getAppsCallback' will
         // be invoked at some point after this function returns.
         chrome.send('getApps');
-      } else {
+      } else if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
         // No apps page.
-        if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
-          this.setShownPage_(
-              loadTimeData.getInteger('most_visited_page_id'), 0);
-        }
-
-        document.body.classList.add('bare-minimum');
+        this.setShownPage_(
+            loadTimeData.getInteger('most_visited_page_id'), 0);
       }
 
       document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
@@ -234,6 +236,11 @@ cr.define('ntp', function() {
         assert(this.tilePages.length == 1,
                'MostVisitedPage should be added as first tile page');
         this.mostVisitedPage = page;
+      }
+
+      if (typeof ntp.RecentlyClosedPage != 'undefined' &&
+          page instanceof ntp.RecentlyClosedPage) {
+        this.recentlyClosedPage = page;
       }
 
       if (typeof ntp.SuggestionsPage != 'undefined' &&
@@ -393,8 +400,6 @@ cr.define('ntp', function() {
           this.appsPages[pageIndex].insertApp(app, false);
       }
 
-      ntp.AppsPage.setPromo(data.showPromo ? data : null);
-
       this.cardSlider.currentCard = prevCurrentCard;
 
       if (highlightApp)
@@ -491,6 +496,10 @@ cr.define('ntp', function() {
           if (this.mostVisitedPage)
             this.cardSlider.selectCardByValue(this.mostVisitedPage);
           break;
+        case loadTimeData.getInteger('recently_closed_page_id'):
+          if (this.recentlyClosedPage)
+            this.cardSlider.selectCardByValue(this.recentlyClosedPage);
+          break;
         case loadTimeData.getInteger('suggestions_page_id'):
           if (this.suggestionsPage)
             this.cardSlider.selectCardByValue(this.suggestionsPage);
@@ -545,6 +554,9 @@ cr.define('ntp', function() {
         } else if (page.classList.contains('most-visited-page')) {
           this.setShownPage_(
               loadTimeData.getInteger('most_visited_page_id'), 0);
+        } else if (page.classList.contains('recently-closed-page')) {
+          this.setShownPage_(
+              loadTimeData.getInteger('recently_closed_page_id'), 0);
         } else if (page.classList.contains('suggestions-page')) {
           this.setShownPage_(loadTimeData.getInteger('suggestions_page_id'), 0);
         } else {

@@ -109,9 +109,6 @@ cr.define('ntp', function() {
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function onLoad() {
-    sectionsToWaitFor = loadTimeData.getBoolean('showApps') ? 2 : 1;
-    if (loadTimeData.getBoolean('isSuggestionsPageEnabled'))
-      sectionsToWaitFor++;
     measureNavDots();
 
     // Load the current theme colors.
@@ -123,9 +120,6 @@ cr.define('ntp', function() {
     notificationContainer.addEventListener(
         'webkitTransitionEnd', onNotificationTransitionEnd);
 
-    cr.ui.decorate($('recently-closed-menu-button'), ntp.RecentMenuButton);
-    chrome.send('getRecentlyClosedTabs');
-
     if (loadTimeData.getBoolean('showOtherSessionsMenu')) {
       otherSessionsButton = getRequiredElement('other-sessions-menu-button');
       cr.ui.decorate(otherSessionsButton, ntp.OtherSessionsMenuButton);
@@ -133,29 +127,16 @@ cr.define('ntp', function() {
     }
 
     var mostVisited = new ntp.MostVisitedPage();
-    // Move the footer into the most visited page if we are in "bare minimum"
-    // mode.
-    if (document.body.classList.contains('bare-minimum'))
-      mostVisited.appendFooter(getRequiredElement('footer'));
     newTabView.appendTilePage(mostVisited,
                               loadTimeData.getString('mostvisited'),
                               false);
     chrome.send('getMostVisited');
 
-    if (loadTimeData.getBoolean('isSuggestionsPageEnabled')) {
-      var suggestions_script = document.createElement('script');
-      suggestions_script.src = 'suggestions_page.js';
-      suggestions_script.onload = function() {
-         newTabView.appendTilePage(new ntp.SuggestionsPage(),
-                                   loadTimeData.getString('suggestions'),
-                                   false,
-                                   (newTabView.appsPages.length > 0) ?
-                                       newTabView.appsPages[0] : null);
-         chrome.send('getSuggestions');
-         cr.dispatchSimpleEvent(document, 'sectionready', true, true);
-      };
-      document.querySelector('head').appendChild(suggestions_script);
-    }
+    var recentlyClosed = new ntp.RecentlyClosedPage();
+    newTabView.appendTilePage(recentlyClosed,
+                              loadTimeData.getString('recentlyclosed'),
+                              false);
+    chrome.send('getRecentlyClosedTabs');
 
     var webStoreLink = loadTimeData.getString('webStoreLink');
     var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
@@ -434,8 +415,8 @@ cr.define('ntp', function() {
       notificationContainer.hidden = true;
   }
 
-  function setRecentlyClosedTabs(dataItems) {
-    $('recently-closed-menu-button').dataItems = dataItems;
+  function setRecentlyClosedTabs(data) {
+    newTabView.recentlyClosedPage.data = data;
   }
 
   function setMostVisitedPages(data, hasBlacklistedUrls) {

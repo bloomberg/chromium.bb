@@ -35,6 +35,8 @@ cr.define('ntp', function() {
 
       this.addEventListener('click', this.handleClick_);
       this.addEventListener('keydown', this.handleKeyDown_);
+      this.addEventListener('carddeselected', this.handleCardDeselected_);
+      this.addEventListener('cardselected', this.handleCardSelected_);
     },
 
     /**
@@ -199,10 +201,8 @@ cr.define('ntp', function() {
      * @param {Event} e The CardChanged event.
      */
     handleCardSelected_: function(e) {
-      if (!document.documentElement.classList.contains('starting-up')) {
-        this.layout_();
+      if (!document.documentElement.classList.contains('starting-up'))
         chrome.send('mostVisitedSelected');
-      }
     },
 
     /**

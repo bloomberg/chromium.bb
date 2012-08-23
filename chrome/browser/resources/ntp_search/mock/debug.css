@@ -34,7 +34,7 @@
 
 #ntp5 .dot {
   display: inline-block;
-  max-width: 119px;
+  max-width: 132px;
 }
 
 #ntp5 .dot input {
@@ -64,10 +64,6 @@
 
 #ntp5 #notification-container {
   bottom: inherit;
-}
-
-body.bare-minimum#ntp5 #dot-list {
-  visibility: visible;
 }
 
 /* =========================================================================

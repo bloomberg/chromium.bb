@@ -395,17 +395,6 @@ cr.define('ntp', function() {
     positionNotification_: function() {
     },
 
-     /**
-      * Places an element at the bottom of the content div. Used in bare-minimum
-      * mode to hold #footer.
-      * TODO(pedrosimonetti): Delete & make Footer non-required(shared/js/util).
-      * @param {HTMLElement} footerNode The node to append to content.
-      */
-    appendFooter: function(footerNode) {
-      this.footerNode_ = footerNode;
-      this.content_.appendChild(footerNode);
-    },
-
     /**
      * Scrolls the page in response to an mousewheel event, although the event
      * may have been triggered on a different element. Return true if the
