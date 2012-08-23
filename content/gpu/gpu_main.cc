@@ -265,9 +265,11 @@ void WarmUpSandbox(const content::GPUInfo& gpu_info,
 #endif
 
 #if defined(OS_LINUX)
-  if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
-      gpu_info.driver_vendor == "NVIDIA" &&
-      should_initialize_gl_context) {
+  // We special case Optimus since the vendor_id we see may not be Nvidia.
+  bool uses_nvidia_driver = (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA.
+                             gpu_info.driver_vendor == "NVIDIA") ||
+                            gpu_info.optimus;
+  if (uses_nvidia_driver && should_initialize_gl_context) {
     // We need this on Nvidia to pre-open /dev/nvidiactl and /dev/nvidia0.
     CreateDummyGlContext();
   }
