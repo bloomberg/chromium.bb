@@ -37,6 +37,7 @@ class PPB_Widget_Impl : public ::ppapi::Resource,
   virtual PP_Bool HandleEvent(PP_Resource pp_input_event) OVERRIDE;
   virtual PP_Bool GetLocation(PP_Rect* location) OVERRIDE;
   virtual void SetLocation(const PP_Rect* location) OVERRIDE;
+  virtual void SetScale(float scale) OVERRIDE;
 
   // Notifies the plugin instance that the given rect needs to be repainted.
   void Invalidate(const PP_Rect* dirty);
@@ -48,9 +49,11 @@ class PPB_Widget_Impl : public ::ppapi::Resource,
   virtual void SetLocationInternal(const PP_Rect* location) = 0;
 
   PP_Rect location() const { return location_; }
+  float scale() const { return scale_; }
 
  private:
   PP_Rect location_;
+  float scale_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Widget_Impl);
 };
