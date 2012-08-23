@@ -30,7 +30,7 @@ if trusted_env.Bit('windows'):
   extra_libs.append('dbghelp.lib')
 runner = trusted_env.ComponentProgram(
     'test_host', ['test_host.c'],
-    EXTRA_LIBS=['sel', 'sel_debug_dummy'] + extra_libs)
+    EXTRA_LIBS=['sel'] + extra_libs)
 
 crash_types = [
     ('run_crash_in_syscall_test', 'NACL_TEST_CRASH_MEMORY'),

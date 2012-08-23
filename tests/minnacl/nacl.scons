@@ -19,7 +19,7 @@ trusted_env = env['TRUSTED_ENV']
 
 runner = trusted_env.ComponentProgram(
     'minimal_test_host', ['minimal_test_host.c'],
-    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+    EXTRA_LIBS=['sel'])
 
 
 test_prog = env.ComponentProgram(

@@ -30,7 +30,7 @@ if env.Bit('host_windows'):
 
 test_host = trusted_env.ComponentProgram(
     'step_test_host', ['step_test_host.c'],
-    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+    EXTRA_LIBS=['sel'])
 
 test_command = [test_host, test_guest]
 bootstrap, _ = env.GetBootstrap()

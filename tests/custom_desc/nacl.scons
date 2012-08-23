@@ -11,7 +11,7 @@ trusted_env = env['TRUSTED_ENV']
 
 test_host = trusted_env.ComponentProgram(
     'desc_test_host', ['desc_test_host.c'],
-    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+    EXTRA_LIBS=['sel'])
 
 test_guest = env.ComponentProgram(
     'desc_test_guest', ['desc_test_guest.c'],

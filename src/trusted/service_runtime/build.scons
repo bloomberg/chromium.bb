@@ -269,8 +269,6 @@ env.DualLibrary('nacl_error_code',
                 ['nacl_error_code.c',
                  ])
 
-env.ComponentLibrary('sel_debug_dummy', 'nacl_debug_init_dummy.c')
-
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
                       ])
@@ -641,7 +639,7 @@ if env.Bit('posix'):
       not env.IsRunningUnderValgrind()):
     nacl_signal_exe = env.ComponentProgram(
         'nacl_signal_unittest', 'nacl_signal_unittest.c',
-        EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+        EXTRA_LIBS=['sel'])
     node = env.CommandTest('nacl_signal_unittest.out',
                            command=[nacl_signal_exe],
                            exit_status='trusted_sigsegv_or_equivalent',
@@ -652,7 +650,7 @@ if env.Bit('posix'):
 
   test_prog = env.ComponentProgram('nacl_signal_frame_test',
                                    'nacl_signal_frame_test.c',
-                                   EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+                                   EXTRA_LIBS=['sel'])
   node = env.CommandTest('nacl_signal_frame_test.out',
                          command=[test_prog],
                          declares_exit_status=True,

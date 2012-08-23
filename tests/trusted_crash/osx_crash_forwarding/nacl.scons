@@ -22,7 +22,7 @@ trusted_env = env['TRUSTED_ENV']
 
 runner = trusted_env.ComponentProgram(
     'mach_crash_forwarding_test', ['mach_crash_forwarding_test.c'],
-    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+    EXTRA_LIBS=['sel'])
 
 def GetNexeByName(name):
   return env.File('${STAGING_DIR}/%s${PROGSUFFIX}' %
