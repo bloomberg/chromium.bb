@@ -59,9 +59,9 @@ GL_APICALL void         GL_APIENTRY glGenerateMipmap (GLenumTextureBindTarget ta
 GL_APICALL void         GL_APIENTRY glGenFramebuffers (GLsizeiNotNegative n, GLuint* framebuffers);
 GL_APICALL void         GL_APIENTRY glGenRenderbuffers (GLsizeiNotNegative n, GLuint* renderbuffers);
 GL_APICALL void         GL_APIENTRY glGenTextures (GLsizeiNotNegative n, GLuint* textures);
-GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
-GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
-GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLidProgram program, GLsizeiNotNegative maxcount, GLsizei* count, GLuint* shaders);
+GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
+GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLidProgram program, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* size, GLenum* type, char* name);
+GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLidProgram program, GLsizeiNotNegative maxcount, GLsizeiOptional* count, GLuint* shaders);
 GL_APICALL GLint        GL_APIENTRY glGetAttribLocation (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenumGLState pname, GLboolean* params);
 GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenumBufferTarget target, GLenumBufferParameter pname, GLint* params);
@@ -70,12 +70,12 @@ GL_APICALL void         GL_APIENTRY glGetFloatv (GLenumGLState pname, GLfloat* p
 GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumFrameBufferParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenumGLState pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramiv (GLidProgram program, GLenumProgramParameter pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* length, char* infolog);
+GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetShaderiv (GLidShader shader, GLenumShaderParameter pname, GLint* params);
-GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* infolog);
+GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* infolog);
 GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenumShaderType shadertype, GLenumShaderPrecision precisiontype, GLint* range, GLint* precision);
-GL_APICALL void         GL_APIENTRY glGetShaderSource (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* source);
+GL_APICALL void         GL_APIENTRY glGetShaderSource (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* source);
 GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenumStringType name);
 GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenumGetTexParamTarget target, GLenumTextureParameter pname, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenumGetTexParamTarget target, GLenumTextureParameter pname, GLint* params);
@@ -180,7 +180,7 @@ GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum*
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint texture);
-GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* source);
+GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* source);
 GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);
 GL_APICALL void         GL_APIENTRY glTexImageIOSurface2DCHROMIUM (GLenumTextureBindTarget target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);
 GL_APICALL void         GL_APIENTRY glCopyTextureCHROMIUM (GLenum target, GLenum source_id, GLenum dest_id, GLint level, GLintTextureInternalFormat internalformat);

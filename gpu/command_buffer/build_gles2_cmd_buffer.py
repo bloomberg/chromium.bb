@@ -4632,6 +4632,10 @@ class Argument(object):
 
   def __init__(self, name, type):
     self.name = name
+    self.optional = type.endswith("Optional*")
+    if self.optional:
+      type = type[:-9] + "*"
+    print name, type
     self.type = type
 
     if type in self.cmd_type_map_:
@@ -4712,8 +4716,9 @@ class Argument(object):
     if len(parts) > 1:
       return
     if parts[0] in self.need_validation_:
-      file.Write("  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(%s, %s);\n" %
-          (self.type[:-1], self.name))
+      file.Write(
+          "  GPU_CLIENT_VALIDATE_DESTINATION_%sINITALIZATION(%s, %s);\n" %
+          ("OPTIONAL_" if self.optional else "", self.type[:-1], self.name))
 
 
   def WriteGetAddress(self, file):
