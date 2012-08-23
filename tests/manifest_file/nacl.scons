@@ -16,6 +16,7 @@ srpc_mf_nexe = env.ComponentProgram(srpc_mf_nexe_name,
                                         'gio',
                                         'imc',
                                         'imc_syscalls',
+                                        '${NONIRT_LIBS}',
                                         '${PTHREAD_LIBS}'])
 env.Publish(srpc_mf_nexe_name, 'run',
             ['srpc_manifest_file_test.html', 'test_file.txt'])
@@ -31,8 +32,6 @@ node = env.SelUniversalTest(
                          '--command_file',
                          env.File('srpc_manifest_file_test.stdin')],
     stdout_golden=env.File('srpc_manifest_file_test.stdout'),
-    # Slight misnomer: actually just enables the IRT.
-    uses_ppapi=True
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests'],

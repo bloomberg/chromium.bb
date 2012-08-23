@@ -1446,7 +1446,6 @@ def CommandSelLdrTestNacl(env, name, nexe,
                           size='medium',
                           # True for *.nexe statically linked with glibc
                           glibc_static=False,
-                          uses_ppapi=False,
                           skip_bootstrap=False,
                           wrapper_program_prefix=None,
                           # e.g., [ 'python', 'time_check.py', '--' ]
@@ -1507,8 +1506,8 @@ def CommandSelLdrTestNacl(env, name, nexe,
     # Enable file access.
     sel_ldr_flags += ['-a']
 
-  if env.Bit('tests_use_irt') or uses_ppapi:
-    sel_ldr_flags += ['-B', nacl_env.GetIrtNexe(chrome_irt=uses_ppapi)]
+  if env.Bit('tests_use_irt'):
+    sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
 
   if skip_bootstrap:
     loader_cmd = [loader]

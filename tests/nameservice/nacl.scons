@@ -31,6 +31,7 @@ srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
                                         'gio',
                                         'imc',
                                         'imc_syscalls',
+                                        '${NONIRT_LIBS}',
                                         '${PTHREAD_LIBS}'])
 env.Publish(srpc_ns_nexe_name, 'run',
             ['srpc_nameservice_test.html'])
@@ -44,8 +45,6 @@ node = env.SelUniversalTest(
                          '--command_file',
                          env.File('srpc_nameservice_test.stdin')],
     stdout_golden=env.File('srpc_nameservice_test.stdout'),
-    # Slight misnomer: actually just enables the IRT.
-    uses_ppapi=True
     )
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
