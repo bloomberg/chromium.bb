@@ -1531,7 +1531,6 @@ void LocationBarViewGtk::SetStarred(bool starred) {
 void LocationBarViewGtk::ZoomChangedForActiveTab(bool can_show_bubble) {
   UpdateZoomIcon();
 
-  // TODO(dbeam): don't show bubble if the wrench menu is showing.
   if (can_show_bubble && gtk_widget_get_visible(zoom_.get()))
     ShowZoomBubble();
 }

@@ -38,6 +38,9 @@ class WrenchMenu : public views::MenuDelegate,
   // Shows the menu relative to the specified view.
   void RunMenu(views::MenuButton* host);
 
+  // Whether the menu is currently visible to the user.
+  bool IsShowing();
+
   // MenuDelegate overrides:
   virtual string16 GetTooltipText(int id, const gfx::Point& p) const OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,

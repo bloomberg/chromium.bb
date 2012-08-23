@@ -428,6 +428,10 @@ void BrowserToolbarGtk::UpdateWebContents(WebContents* contents,
     actions_toolbar_->Update();
 }
 
+bool BrowserToolbarGtk::IsWrenchMenuShowing() const {
+  return wrench_menu_.get() && gtk_widget_get_visible(wrench_menu_->widget());
+}
+
 // BrowserToolbarGtk, private --------------------------------------------------
 
 void BrowserToolbarGtk::SetUpDragForHomeButton(bool enable) {

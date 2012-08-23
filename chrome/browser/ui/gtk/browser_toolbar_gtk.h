@@ -104,6 +104,9 @@ class BrowserToolbarGtk : public CommandObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Whether the wrench/hotdogs menu is currently visible to the user.
+  bool IsWrenchMenuShowing() const;
+
   // Message that we should react to a state change.
   void UpdateWebContents(content::WebContents* contents,
                          bool should_restore_state);

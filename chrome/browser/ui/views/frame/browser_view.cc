@@ -695,7 +695,8 @@ void BrowserView::SetStarredState(bool is_starred) {
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble);
+  GetLocationBarView()->ZoomChangedForActiveTab(
+      can_show_bubble && !toolbar_->IsWrenchMenuShowing());
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {

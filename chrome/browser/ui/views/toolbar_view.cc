@@ -839,6 +839,10 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return AccessiblePaneView::AcceleratorPressed(accelerator);
 }
 
+bool ToolbarView::IsWrenchMenuShowing() const {
+  return wrench_menu_.get() && wrench_menu_->IsShowing();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, protected:
 

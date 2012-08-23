@@ -159,6 +159,9 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& acc) OVERRIDE;
 
+  // Whether the wrench/hotdogs menu is currently showing.
+  bool IsWrenchMenuShowing() const;
+
   // The apparent horizontal space between most items, and the vertical padding
   // above and below them.
   static const int kStandardSpacing;

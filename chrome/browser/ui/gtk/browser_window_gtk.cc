@@ -833,7 +833,8 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
 }
 
 void BrowserWindowGtk::ZoomChangedForActiveTab(bool can_show_bubble) {
-  toolbar_->GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble);
+  toolbar_->GetLocationBarView()->ZoomChangedForActiveTab(
+      can_show_bubble && !toolbar_->IsWrenchMenuShowing());
 }
 
 gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {

@@ -797,6 +797,10 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
     selected_menu_model_->ActivatedAt(selected_index_);
 }
 
+bool WrenchMenu::IsShowing() {
+  return menu_runner_.get() && menu_runner_->IsRunning();
+}
+
 string16 WrenchMenu::GetTooltipText(int id,
                                     const gfx::Point& p) const {
   return is_bookmark_command(id) ?
