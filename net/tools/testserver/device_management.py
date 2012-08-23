@@ -403,7 +403,7 @@ class RequestHandler(object):
           field_value = policies['mandatory'][field.name]
         elif field.name in policies['recommended']:
           field_value = policies['recommended'][field.name]
-        if field_value != None:
+        if field_value is not None:
           got_fields = True
           self.SetProtobufMessageField(group_message, field, field_value)
       if got_fields:
@@ -559,12 +559,12 @@ class TestServer(object):
           print 'Failed to load private key from %s' % key_path
           continue
 
-        assert key != None
+        assert key is not None
         self.keys.append({ 'private_key' : key })
     else:
       # Generate a key if none were specified.
       key = tlslite.api.generateRSAKey(1024)
-      assert key != None
+      assert key is not None
       self.keys.append({ 'private_key' : key })
 
     # Derive the public keys from the loaded private keys.
