@@ -236,6 +236,11 @@ class _DevToolsSocketClient(asyncore.dispatcher):
 
   def handle_close(self):
     """Called when the socket is closed; overridden from asyncore."""
+    if self._show_socket_messages:
+      msg = ('=========================\n'
+             'Socket closed.\n'
+             '=========================')
+      print msg
     self.close()
 
   def writable(self):
@@ -253,6 +258,11 @@ class _DevToolsSocketClient(asyncore.dispatcher):
 
   def handle_error(self):
     """Called when an exception is raised; overridden from asyncore."""
+    if self._show_socket_messages:
+      msg = ('=========================\n'
+             'Socket error.\n'
+             '=========================')
+      print msg
     self.close()
     self.inspector_thread.ClientSocketExceptionOccurred()
     asyncore.dispatcher.handle_error(self)
