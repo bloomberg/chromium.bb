@@ -350,6 +350,8 @@
         'wm/workspace/workspace_event_filter.h',
         'wm/workspace/workspace_layout_manager.cc',
         'wm/workspace/workspace_layout_manager.h',
+        'wm/workspace/workspace_layout_manager2.cc',
+        'wm/workspace/workspace_layout_manager2.h',
         'wm/workspace/workspace_manager.cc',
         'wm/workspace/workspace_manager.h',
         'wm/workspace/workspace_manager2.cc',

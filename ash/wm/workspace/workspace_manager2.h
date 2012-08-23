@@ -28,6 +28,7 @@ namespace ash {
 namespace internal {
 
 class ShelfLayoutManager;
+class WorkspaceLayoutManager2;
 class WorkspaceManagerTest2;
 class Workspace2;
 
@@ -60,10 +61,10 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   virtual aura::Window* GetParentForNewWindow(aura::Window* window) OVERRIDE;
 
  private:
+  friend class WorkspaceLayoutManager2;
   friend class WorkspaceManager2Test;
 
   class LayoutManager;
-  class WorkspaceLayoutManager;
 
   typedef std::vector<Workspace2*> Workspaces;
 
@@ -102,6 +103,8 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // These methods are forwarded from the LayoutManager installed on the
   // Workspace's window.
   void OnWindowAddedToWorkspace(Workspace2* workspace, aura::Window* child);
+  void OnWillRemoveWindowFromWorkspace(Workspace2* workspace,
+                                       aura::Window* child);
   void OnWindowRemovedFromWorkspace(Workspace2* workspace, aura::Window* child);
   void OnWorkspaceChildWindowVisibilityChanged(Workspace2* workspace,
                                                aura::Window* child);

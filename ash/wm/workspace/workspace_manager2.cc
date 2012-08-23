@@ -10,13 +10,13 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -88,108 +88,6 @@ class WorkspaceManagerLayoutManager2 : public BaseLayoutManager {
 };
 
 }  // namespace
-
-// WorkspaceLayoutManager ------------------------------------------------------
-
-// LayoutManager installed on the window each workspace contains.
-class WorkspaceManager2::WorkspaceLayoutManager : public BaseLayoutManager {
- public:
-  WorkspaceLayoutManager(aura::RootWindow* root_window, Workspace2* workspace)
-      : BaseLayoutManager(root_window),
-        workspace_(workspace) {
-  }
-  virtual ~WorkspaceLayoutManager() {
-  }
-
-  // Overridden from BaseWorkspaceLayoutManager:
-  virtual void OnWindowAddedToLayout(Window* child) OVERRIDE {
-    BaseLayoutManager::OnWindowAddedToLayout(child);
-    child->SetProperty(kWorkspaceKey, workspace_);
-    workspace_manager()->OnWindowAddedToWorkspace(workspace_, child);
-  }
-
-  virtual void OnWillRemoveWindowFromLayout(Window* child) OVERRIDE {
-    BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
-    child->ClearProperty(kWorkspaceKey);
-  }
-
-  virtual void OnWindowRemovedFromLayout(Window* child) OVERRIDE {
-    BaseLayoutManager::OnWindowRemovedFromLayout(child);
-    workspace_manager()->OnWindowRemovedFromWorkspace(workspace_, child);
-  }
-
-  virtual void OnChildWindowVisibilityChanged(Window* child,
-                                              bool visibile) OVERRIDE {
-    BaseLayoutManager::OnChildWindowVisibilityChanged(child, visibile);
-    workspace_manager()->OnWorkspaceChildWindowVisibilityChanged(workspace_,
-                                                                 child);
-  }
-
-  virtual void SetChildBounds(Window* child,
-                              const gfx::Rect& requested_bounds) OVERRIDE {
-    BaseLayoutManager::SetChildBounds(child, requested_bounds);
-    workspace_manager()->OnWorkspaceWindowChildBoundsChanged(workspace_, child);
-  }
-
-
-  // Overriden from WindowObserver:
-  virtual void OnWindowPropertyChanged(Window* window,
-                                       const void* key,
-                                       intptr_t old) {
-    BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
-
-    if (key == aura::client::kAlwaysOnTopKey &&
-        window->GetProperty(aura::client::kAlwaysOnTopKey)) {
-      internal::AlwaysOnTopController* controller =
-          window->GetRootWindow()->GetProperty(
-              internal::kAlwaysOnTopControllerKey);
-      controller->GetContainer(window)->AddChild(window);
-    }
-  }
-
- protected:
-  // Overriden from WindowObserver:
-  virtual void ShowStateChanged(Window* window,
-                                ui::WindowShowState last_show_state) OVERRIDE {
-    // NOTE: we can't use BaseLayoutManager::ShowStateChanged() as we need to
-    // forward to WorkspaceManager before the window is hidden.
-    if (wm::IsWindowMinimized(window)) {
-      // Save the previous show state so that we can correctly restore it.
-      window->SetProperty(internal::kRestoreShowStateKey, last_show_state);
-      SetWindowVisibilityAnimationType(
-          window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-
-      workspace_manager()->OnWorkspaceWindowShowStateChanged(
-          workspace_, window, last_show_state);
-
-      // Hide the window.
-      window->Hide();
-
-      // Activate another window.
-      if (wm::IsActiveWindow(window))
-        wm::DeactivateWindow(window);
-    } else {
-      if ((window->TargetVisibility() ||
-           last_show_state == ui::SHOW_STATE_MINIMIZED) &&
-          !window->layer()->visible()) {
-        // The layer may be hidden if the window was previously minimized. Make
-        // sure it's visible.
-        window->Show();
-      }
-      workspace_manager()->OnWorkspaceWindowShowStateChanged(
-          workspace_, window, last_show_state);
-    }
-  }
-
- private:
-  WorkspaceManager2* workspace_manager() {
-    return workspace_->workspace_manager();
-  }
-
-  Workspace2* workspace_;
-
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
-};
 
 // WorkspaceManager2 -----------------------------------------------------------
 
@@ -378,7 +276,7 @@ Workspace2* WorkspaceManager2::CreateWorkspace(bool maximized) {
   Workspace2* workspace = new Workspace2(this, contents_view_, maximized);
   workspace->SetGridSize(grid_size_);
   workspace->window()->SetLayoutManager(
-      new WorkspaceLayoutManager(contents_view_->GetRootWindow(), workspace));
+      new WorkspaceLayoutManager2(contents_view_->GetRootWindow(), workspace));
   return workspace;
 }
 
@@ -449,11 +347,17 @@ void WorkspaceManager2::SelectNextWorkspace() {
 
 void WorkspaceManager2::OnWindowAddedToWorkspace(Workspace2* workspace,
                                                  Window* child) {
+  child->SetProperty(kWorkspaceKey, workspace);
   // Do nothing (other than updating shelf visibility) as the right parent was
   // chosen by way of GetParentForNewWindow() or we explicitly moved the window
   // to the workspace.
   if (workspace == active_workspace_)
     UpdateShelfVisibility();
+}
+
+void WorkspaceManager2::OnWillRemoveWindowFromWorkspace(Workspace2* workspace,
+                                                        Window* child) {
+  child->ClearProperty(kWorkspaceKey);
 }
 
 void WorkspaceManager2::OnWindowRemovedFromWorkspace(Workspace2* workspace,
