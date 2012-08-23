@@ -97,7 +97,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
       const ReAuthenticateCallback& callback) OVERRIDE;
 
  protected:
-  UrlFetchOperationBase(OperationRegistry* registry);
+  explicit UrlFetchOperationBase(OperationRegistry* registry);
   UrlFetchOperationBase(OperationRegistry* registry,
                         OperationRegistry::OperationType type,
                         const FilePath& path);
