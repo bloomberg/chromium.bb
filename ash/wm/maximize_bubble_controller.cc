@@ -517,21 +517,19 @@ gfx::Size MaximizeBubbleController::Bubble::GetPreferredSize() {
 }
 
 void MaximizeBubbleController::Bubble::OnWidgetClosing(views::Widget* widget) {
-  if (bubble_widget_ != widget)
-    return;
+  if (bubble_widget_ == widget) {
+    mouse_watcher_->Stop();
 
-  mouse_watcher_->Stop();
-
-  if (owner_) {
-    // If the bubble destruction was triggered by some other external influence
-    // then ourselves, the owner needs to be informed that the menu is gone.
-    shutting_down_ = true;
-    owner_->RequestDestructionThroughOwner();
-    owner_ = NULL;
+    if (owner_) {
+      // If the bubble destruction was triggered by some other external
+      // influence then ourselves, the owner needs to be informed that the menu
+      // is gone.
+      shutting_down_ = true;
+      owner_->RequestDestructionThroughOwner();
+      owner_ = NULL;
+    }
   }
-  // Remove any existing observers.
-  bubble_widget_->RemoveObserver(this);
-  anchor_widget()->RemoveObserver(this);
+  BubbleDelegateView::OnWidgetClosing(widget);
 }
 
 void MaximizeBubbleController::Bubble::ControllerRequestsCloseAndDelete() {
