@@ -14,7 +14,6 @@
   top: inherit;
 }
 
-#ntp5 .dot .selection-bar,
 #ntp5 .tile-page-scrollbar,
 #ntp5 .top-margin,
 #ntp5 #footer,
@@ -25,27 +24,6 @@
 
 #ntp5 .tile-page {
   display: block;
-}
-
-#ntp5 #dot-list {
-  display: inline-block;
-  margin: 0 auto;
-}
-
-#ntp5 .dot {
-  display: inline-block;
-  max-width: 132px;
-}
-
-#ntp5 .dot input {
-  color: #666;
-  font-size: 1.1667em;
-  font-weight: normal;
-  text-align: center;
-}
-
-#ntp5 #dot-list .dot.selected input {
-  color: rgb(221, 75, 57);
 }
 
 #ntp5 #page-list {

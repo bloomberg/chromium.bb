@@ -30,28 +30,7 @@ body {
 }
 
 #page-list-menu {
+  height: 14px;
   margin: 8px auto 30px;
   text-align: center;
-}
-
-/* -----------------------------------------------------------------------------
-   Dot List
------------------------------------------------------------------------------ */
-
-#dot-list {
-  color: #666;
-  height: 25px;
-  list-style: none;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
-}
-
-#dot-list li {
-  display: inline-block;
-  margin-left: 13px;
-  margin-right: 13px;
-  min-width: 55px;  /* TODO(pedrosimonetti): Confirm value with Marcin. */
-  white-space: nowrap;
 }

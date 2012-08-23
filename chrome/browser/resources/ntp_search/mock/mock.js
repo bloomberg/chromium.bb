@@ -188,6 +188,7 @@
   var debugStylesheet = null;
   var animationSelectorSpeedMap = {
     '#page-list': 200,
+    '.dot': 200,
     '.tile-grid': 200,
     '.tile-grid-content': 200,
     '.tile-row': 200,

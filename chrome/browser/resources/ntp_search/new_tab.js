@@ -97,7 +97,7 @@ cr.define('ntp', function() {
     __proto__: ntp.PageListView.prototype,
 
     /** @inheritDoc */
-    appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
+    appendTilePage: function(page, title, opt_refNode) {
       ntp.PageListView.prototype.appendTilePage.apply(this, arguments);
 
       if (infoBubble)
@@ -109,8 +109,6 @@ cr.define('ntp', function() {
    * Invoked at startup once the DOM is available to initialize the app.
    */
   function onLoad() {
-    measureNavDots();
-
     // Load the current theme colors.
     themeChanged();
 
@@ -128,14 +126,12 @@ cr.define('ntp', function() {
 
     var mostVisited = new ntp.MostVisitedPage();
     newTabView.appendTilePage(mostVisited,
-                              loadTimeData.getString('mostvisited'),
-                              false);
+                              loadTimeData.getString('mostvisited'));
     chrome.send('getMostVisited');
 
     var recentlyClosed = new ntp.RecentlyClosedPage();
     newTabView.appendTilePage(recentlyClosed,
-                              loadTimeData.getString('recentlyclosed'),
-                              false);
+                              loadTimeData.getString('recentlyclosed'));
     chrome.send('getRecentlyClosedTabs');
 
     var webStoreLink = loadTimeData.getString('webStoreLink');
@@ -245,24 +241,6 @@ cr.define('ntp', function() {
       readyCallbacks.push(callback);
     else
       window.setTimeout(callback, 0);  // Do soon after, but asynchronously.
-  }
-
-  /**
-   * Fills in an invisible div with the 'Most Visited' string so that
-   * its length may be measured and the nav dots sized accordingly.
-   */
-  function measureNavDots() {
-    var measuringDiv = $('fontMeasuringDiv');
-    measuringDiv.textContent = loadTimeData.getString('mostvisited');
-    // The 4 is for border and padding.
-    var pxWidth = Math.max(measuringDiv.clientWidth * 1.15 + 4, 80);
-
-    var styleElement = document.createElement('style');
-    styleElement.type = 'text/css';
-    // max-width is used because if we run out of space, the nav dots will be
-    // shrunk.
-    styleElement.textContent = '.dot { max-width: ' + pxWidth + 'px; }';
-    document.querySelector('head').appendChild(styleElement);
   }
 
   function themeChanged(opt_hasAttribution) {
@@ -521,10 +499,6 @@ cr.define('ntp', function() {
     return newTabView.cardSlider;
   }
 
-  function saveAppPageName() {
-    return newTabView.saveAppPageName.apply(newTabView, arguments);
-  }
-
   function setAppToBeHighlighted(appId) {
     newTabView.highlightAppId = appId;
   }
@@ -541,7 +515,6 @@ cr.define('ntp', function() {
     getThumbnailUrl: getThumbnailUrl,
     onLoad: onLoad,
     NtpFollowAction: NtpFollowAction,
-    saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
     setForeignSessions: setForeignSessions,

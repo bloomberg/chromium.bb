@@ -216,13 +216,12 @@ cr.define('ntp', function() {
      *
      * @param {TilePage} page The page element.
      * @param {string} title The title of the tile page.
-     * @param {bool} titleIsEditable If true, the title can be changed.
      * @param {TilePage} opt_refNode Optional reference node to insert in front
      *     of.
      * When opt_refNode is falsey, |page| will just be appended to the end of
      * the page list.
      */
-    appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
+    appendTilePage: function(page, title, opt_refNode) {
       if (opt_refNode) {
         var refIndex = this.getTilePageIndex(opt_refNode);
         this.cardSlider.addCardAtIndex(page, refIndex);
@@ -248,11 +247,8 @@ cr.define('ntp', function() {
         this.suggestionsPage = page;
       }
 
-      // If we're appending an AppsPage and it's a temporary page, animate it.
-      var animate = page instanceof ntp.AppsPage &&
-                    page.classList.contains('temporary');
       // Make a deep copy of the dot template to add a new one.
-      var newDot = new ntp.NavDot(page, title, titleIsEditable, animate);
+      var newDot = new ntp.NavDot(page, title);
       page.navigationDot = newDot;
       this.dotList.insertBefore(newDot,
                                 opt_refNode ? opt_refNode.navigationDot : null);
@@ -386,8 +382,7 @@ cr.define('ntp', function() {
             pageName = pageNames[this.appsPages.length];
 
           var origPageCount = this.appsPages.length;
-          this.appendTilePage(new ntp.AppsPage(), pageName, true,
-                              nextPageAfterApps);
+          this.appendTilePage(new ntp.AppsPage(), pageName, nextPageAfterApps);
           // Confirm that appsPages is a live object, updated when a new page is
           // added (otherwise we'd have an infinite loop)
           assert(this.appsPages.length == origPageCount + 1,
@@ -438,8 +433,7 @@ cr.define('ntp', function() {
       if (pageIndex >= this.appsPages.length) {
         while (pageIndex >= this.appsPages.length) {
           this.appendTilePage(new ntp.AppsPage(),
-                              loadTimeData.getString('appDefaultPageName'),
-                              true);
+                              loadTimeData.getString('appDefaultPageName'));
         }
         this.updateSliderCards();
       }
@@ -467,13 +461,6 @@ cr.define('ntp', function() {
 
       for (var i = 0; i < data.apps.length; ++i) {
         $(data.apps[i].id).appData = data.apps[i];
-      }
-
-      // Set the App dot names. Skip the first dot (Most Visited).
-      var dots = this.dotList.getElementsByClassName('dot');
-      var start = this.mostVisitedPage ? 1 : 0;
-      for (var i = start; i < dots.length; ++i) {
-        dots[i].displayTitle = data.appPageNames[i - start] || '';
       }
     },
 
@@ -621,18 +608,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Save the name of an apps page.
-     * Store the apps page name into the preferences store.
-     * @param {AppsPage} appsPage The app page for which we wish to save.
-     * @param {string} name The name of the page.
-     */
-    saveAppPageName: function(appPage, name) {
-      var index = this.getAppsPageIndex(appPage);
-      assert(index != -1);
-      chrome.send('saveAppPageName', [name, index]);
-    },
-
-    /**
      * Window resize handler.
      * @private
      */
@@ -695,11 +670,10 @@ cr.define('ntp', function() {
     /**
      * Removes a page and navigation dot (if the navdot exists).
      * @param {TilePage} page The page to be removed.
-     * @param {boolean=} opt_animate If the removal should be animated.
      */
-    removeTilePageAndDot_: function(page, opt_animate) {
+    removeTilePageAndDot_: function(page) {
       if (page.navigationDot)
-        page.navigationDot.remove(opt_animate);
+        page.navigationDot.remove();
       this.cardSlider.removeCard(page);
     }
   };
