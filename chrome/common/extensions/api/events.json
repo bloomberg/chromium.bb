@@ -191,7 +191,7 @@
       {
         "id": "UrlFilter",
         "type": "object",
-        "description": "Filters URLs for various criteria",
+        "description": "Filters URLs for various criteria. See <a href='#filtered'>event filtering</a>.",
         "nocompile": true,
         "properties": {
           "hostContains": {

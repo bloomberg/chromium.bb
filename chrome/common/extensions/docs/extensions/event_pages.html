@@ -295,6 +295,14 @@ Follow this checklist to convert your extension's
   session, use the <a href="storage.html">storage API</a> or
   IndexedDB. Since the event page does not stay loaded for long, you
   can no longer rely on global variables for runtime state.
+  </li><li>Use <a href="events.html#filtered">event filters</a> to restrict
+  your event notifications to the cases you care about. For example, if
+  you listen to the <a href="tabs.html#event-onUpdated">tabs.onUpdated</a>
+  event, try using the
+  <a href="webNavigation.html#event-onCompleted">webNavigation.onComplete</a>
+  event with filters instead (the tabs API does not support filters).
+  That way, your event page will only be loaded for events that
+  interest you.
   </li><li>Listen to the
   <code><a href="runtime.html#event-onSuspend">chrome.runtime.onSuspend</a></code>
   event if you need to do last second cleanup before your event page
