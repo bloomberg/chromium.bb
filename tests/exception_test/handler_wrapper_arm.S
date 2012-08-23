@@ -20,12 +20,4 @@ exception_handler_wrapper:
         /*
          * Second bundle:
          */
-        /*
-         * TODO(mcgrathr): This should be simply "b exception_handler".
-         * But the LLVM (PNaCl) assembler generates the wrong reloc.
-         * http://code.google.com/p/nativeclient/issues/detail?id=2846
-         */
-        movw ip, #:lower16:exception_handler
-        movt ip, #:upper16:exception_handler
-        bic ip, ip, #0xc000000f
-        bx ip
+        b exception_handler
