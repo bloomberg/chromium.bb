@@ -27,6 +27,7 @@ untrusted_irt_scons_files = [
 
 
 nonvariant_test_scons_files = [
+    'tests/breakpad_crash_test/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/crash/nacl.scons',

@@ -74,6 +74,11 @@ def Main(args):
       # TODO(mseaborn): Change the tests to ignore the excess crash
       # dump until we find out what is causing it.
       tests_to_disable.extend([
+          'run_breakpad_trusted_crash_in_startup_test',
+          'run_breakpad_crash_in_syscall_test',
+          'run_breakpad_untrusted_crash_test',
+          # TODO(mseaborn): Remove these when the test is removed from
+          # the NaCl tree.
           'run_inbrowser_trusted_crash_in_startup_test',
           'run_inbrowser_crash_in_syscall_test',
           'run_inbrowser_untrusted_crash_test',
