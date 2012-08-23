@@ -43,6 +43,7 @@ MenuConfig* MenuConfig::Create() {
   config->label_to_accelerator_padding = 20;
   config->always_use_icon_to_label_padding = true;
   config->align_arrow_and_shortcut = true;
+  config->offset_context_menus = true;
 
   return config;
 }

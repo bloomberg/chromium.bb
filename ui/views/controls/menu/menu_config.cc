@@ -40,7 +40,8 @@ MenuConfig::MenuConfig()
       item_min_height(0),
       show_accelerators(true),
       always_use_icon_to_label_padding(false),
-      align_arrow_and_shortcut(false) {
+      align_arrow_and_shortcut(false),
+      offset_context_menus(false) {
   // Use 40px tall menu items when running in touch optimized mode.
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     item_top_margin = item_no_icon_top_margin = 12;

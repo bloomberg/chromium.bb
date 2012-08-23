@@ -119,7 +119,8 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
   // This blocks until the user choses something or dismisses the menu.
   ignore_result(context_menu_runner.RunMenuAt(menu_button_->GetWidget(),
       NULL, gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED));
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED |
+      views::MenuRunner::CONTEXT_MENU));
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

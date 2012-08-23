@@ -86,6 +86,7 @@ class VIEWS_EXPORT MenuController
                     MenuItemView* root,
                     const gfx::Rect& bounds,
                     MenuItemView::AnchorPosition position,
+                    bool context_menu,
                     int* mouse_event_flags);
 
   // Whether or not Run blocks.
@@ -198,6 +199,9 @@ class VIEWS_EXPORT MenuController
 
     // Bounds for the monitor we're showing on.
     gfx::Rect monitor_bounds;
+
+    // Is the current menu a context menu.
+    bool context_menu;
   };
 
   // Used by GetMenuPart to indicate the menu part at a particular location.
@@ -268,7 +272,8 @@ class VIEWS_EXPORT MenuController
   SendAcceleratorResultType SendAcceleratorToHotTrackedView();
 
   void UpdateInitialLocation(const gfx::Rect& bounds,
-                             MenuItemView::AnchorPosition position);
+                             MenuItemView::AnchorPosition position,
+                             bool context_menu);
 
   // Invoked when the user accepts the selected item. This is only used
   // when blocking. This schedules the loop to quit.

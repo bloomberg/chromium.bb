@@ -174,6 +174,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
 
   // Run the loop.
   MenuItemView* result = controller->Run(parent, button, menu_, bounds, anchor,
+                                        (types & MenuRunner::CONTEXT_MENU) != 0,
                                          &mouse_event_flags);
 
   if (for_drop_) {

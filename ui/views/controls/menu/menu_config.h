@@ -110,6 +110,9 @@ struct VIEWS_EXPORT MenuConfig {
   // True if submenu arrow and shortcut right edge should be aligned.
   bool align_arrow_and_shortcut;
 
+  // True if the context menu's should be offset from the cursor position.
+  bool offset_context_menus;
+
  private:
   // Creates and configures a new MenuConfig as appropriate for the current
   // platform.

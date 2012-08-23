@@ -53,7 +53,8 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   if (menu_runner_->RunMenuAt(
           parent_widget_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
           views::MenuItemView::TOPLEFT,
-          (views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED)) ==
+          (views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED |
+           views::MenuRunner::CONTEXT_MENU)) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }

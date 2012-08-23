@@ -253,7 +253,8 @@ struct MenuController::SelectByCharDetails {
 MenuController::State::State()
     : item(NULL),
       submenu_open(false),
-      anchor(views::MenuItemView::TOPLEFT) {}
+      anchor(views::MenuItemView::TOPLEFT),
+      context_menu(false) {}
 
 MenuController::State::~State() {}
 
@@ -272,6 +273,7 @@ MenuItemView* MenuController::Run(Widget* parent,
                                   MenuItemView* root,
                                   const gfx::Rect& bounds,
                                   MenuItemView::AnchorPosition position,
+                                  bool context_menu,
                                   int* result_mouse_event_flags) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
@@ -295,7 +297,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   // Reset current state.
   pending_state_ = State();
   state_ = State();
-  UpdateInitialLocation(bounds, position);
+  UpdateInitialLocation(bounds, position, context_menu);
 
   owner_ = parent;
 
@@ -1080,7 +1082,9 @@ MenuController::SendAcceleratorResultType
 
 void MenuController::UpdateInitialLocation(
     const gfx::Rect& bounds,
-    MenuItemView::AnchorPosition position) {
+    MenuItemView::AnchorPosition position,
+    bool context_menu) {
+  pending_state_.context_menu = context_menu;
   pending_state_.initial_bounds = bounds;
   if (bounds.height() > 1) {
     // Inset the bounds slightly, otherwise drag coordinates don't line up
@@ -1181,10 +1185,9 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   // Subtract 1 from the height to make the popup flush with the button border.
   UpdateInitialLocation(gfx::Rect(screen_menu_loc.x(), screen_menu_loc.y(),
                                   button->width(), button->height() - 1),
-                        anchor);
+                        anchor, state_.context_menu);
   alt_menu->PrepareForRun(
-      has_mnemonics,
-      source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
+      has_mnemonics, source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
   alt_menu->controller_ = this;
   SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;
@@ -1550,9 +1553,18 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   if (!item->GetParentMenuItem()) {
     // First item, position relative to initial location.
     x = state_.initial_bounds.x();
+
+    // Offsets for context menu prevent menu items being selected by
+    // simply opening the menu (bug 142992).
+    if (MenuConfig::instance().offset_context_menus && state_.context_menu)
+      x += 1;
+
     y = state_.initial_bounds.bottom();
-    if (state_.anchor == MenuItemView::TOPRIGHT)
+    if (state_.anchor == MenuItemView::TOPRIGHT) {
       x = x + state_.initial_bounds.width() - pref.width();
+      if (MenuConfig::instance().offset_context_menus && state_.context_menu)
+        x -= 1;
+    }
 
     if (!state_.monitor_bounds.IsEmpty() &&
         y + pref.height() > state_.monitor_bounds.bottom()) {
@@ -1622,6 +1634,13 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       y = state_.initial_bounds.y() - pref.height();
     } else {
       item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
+    }
+    if (state_.monitor_bounds.width() != 0 &&
+        MenuConfig::instance().offset_context_menus && state_.context_menu) {
+      if (x + pref.width() > state_.monitor_bounds.right())
+        x = state_.initial_bounds.x() - pref.width() - 1;
+      if (x < state_.monitor_bounds.x())
+        x = state_.monitor_bounds.x();
     }
   } else {
     // Not the first menu; position it relative to the bounds of the menu

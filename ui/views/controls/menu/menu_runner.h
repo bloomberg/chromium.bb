@@ -52,6 +52,10 @@ class VIEWS_EXPORT MenuRunner {
     // caller, instead the delegate is notified when the menu closes via the
     // DropMenuClosed method.
     FOR_DROP      = 1 << 2,
+
+    // The menu is a context menu (not necessarily nested), for example right
+    // click on a link on a website in the browser.
+    CONTEXT_MENU  = 1 << 3,
   };
 
   enum RunResult {
