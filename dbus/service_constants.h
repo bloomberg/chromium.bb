@@ -1078,6 +1078,8 @@ const char kReadDirectoryByPath[] = "ReadDirectoryByPath";
 const char kReadDirectoryById[] = "ReadDirectoryById";
 const char kReadFileByPath[] = "ReadFileByPath";
 const char kReadFileById[] = "ReadFileById";
+const char kGetFileInfoByPath[] = "GetFileInfoByPath";
+const char kGetFileInfoById[] = "GetFileInfoById";
 
 // Signals.
 const char kMTPStorageAttached[] = "MTPStorageAttached";
