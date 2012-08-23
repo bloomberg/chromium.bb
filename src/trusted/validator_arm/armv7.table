@@ -634,7 +634,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "        xx1x1      ~1111     = Load2RegisterImm8Op 
                                   => LoadBasedImmedMemory
                                   Ldrh_Rule_74_A1_P152
-                                  cccc000pd1w1nnnnttttiiii1011iiii NotRnIsPc
+                                  cccc000pd1w1nnnnttttiiii1011iiii
 | "        "          1111      = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrh_Rule_75_A1_P154
@@ -650,7 +650,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                   => LoadBasedImmedMemoryDouble
                                   Ldrd_Rule_66_A1_P136
                                   cccc000pd1w0nnnnttttiiii1101iiii
-                                  NotRnIsPc (v5TE)
+                                  (v5TE)
 | "        "          1111      = Load2RegisterImm8DoubleOp
                                   => LoadBasedImmedMemoryDouble 
                                   Ldrd_Rule_67_A1_P138
@@ -658,7 +658,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "        xx1x1      ~1111     = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrsb_Rule_78_A1_P160
-                                  cccc000pd1w1nnnnttttiiii1101iiii NotRnIsPc
+                                  cccc000pd1w1nnnnttttiiii1101iiii
 | "        "          1111      = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   ldrsb_Rule_79_A1_162
@@ -677,7 +677,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "        xx1x1      ~1111     = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrsh_Rule_82_A1_P168
-                                  cccc000pd1w1nnnnttttiiii1111iiii NotRnIsPc
+                                  cccc000pd1w1nnnnttttiiii1111iiii
 | "        "          1111      = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrsh_Rule_83_A1_P170
@@ -905,31 +905,42 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         RegsNotPc (v6)
 | "          000      ~1111     -     = Binary4RegisterDualOp
                                         => Defs16To19CondsDontCareRdRaRmRnNotPc
-                                        Usda8_Rule_254_A1_P502
+                                        Usada8_Rule_254_A1_P502
                                         cccc01111000ddddaaaammmm0001nnnn
                                         # Note: In baseline class, bits(15:12)
                                         # is Ra (not Rd as column name
                                         # suggests).
-                                        NotRaIsPcAndRegsNotPc (v6)
+                                        RegsNotPc (v6)
 | 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
                                         => Defs12To15CondsDontCareRdRnNotPc
+# TODO(karl) Add restriction:
+#   mdbit = lsbit + widthminus1
+#   if msbit <= 32 then
+#      R[d] = SignExtend(R[n]<msbit:lsbit>, 32)
+#   else
+#      UNPREDICTABLE.
                                         Sbfx_Rule_154_A1_P308
                                         cccc0111101wwwwwddddlllll101nnnn (v6T2)
+# TODO(karl) Add RegsNotPc as safety constraint.
 | 1110x      x00      -         1111  = Unary1RegisterBitRange
                                         # Note: Alternative form for clearing
                                         # bits in a memory address (i.e.
                                         # alternative for bic).
                                         Bfc_17_A1_P46
                                         cccc0111110mmmmmddddlllll0011111 (v6T2)
+# TODO(karl) Add RegsNotPc as safety constraint.
 | "          x00      -         ~1111 = Binary2RegisterBitRange
+# TODO(karl) Add RegsNotPc as safety constraint.
                                         => Defs12To15CondsDontCare
                                         Bfi_Rule_18_A1_P48
                                         cccc0111110mmmmmddddlllll001nnnn
-                                        NotRnIsPc (v6T2)
+                                        (v6T2)
 | 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
                                         => Defs12To15CondsDontCareRdRnNotPc
+# TODO(karl) Add same restriction as for Sbfx_Rule_154_A1_P308
                                         Ubfx_Rule_236_A1_P466
                                         cccc0111111mmmmmddddlllll101nnnn (v6T2)
+# TODO(karl) Add RegsNotPc as safety constraint.
 | 11111      111      -         -     = Roadblock  # Permanently Undefined
 | else:                               = Undefined  # Note on page A5-21
 +--

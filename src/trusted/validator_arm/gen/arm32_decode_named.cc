@@ -936,7 +936,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
   if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
       (insn.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12) == ~1111 */)
-    return Binary4RegisterDualOp_Usda8_Rule_254_A1_P502_instance_;
+    return Binary4RegisterDualOp_Usada8_Rule_254_A1_P502_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&

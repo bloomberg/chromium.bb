@@ -19,6 +19,21 @@ def _popcount(int):
         count = count + ((int >> bit) & 1)
     return count
 
+# Note: For historical reasons, columns are a 3-tuple of the
+# form (name, hi_bit, lo_bit). The following accessors try to
+# hide the implementation details of how columns are modeled.
+
+def column_name(col):
+  """Returns the name of the column."""
+  return col[0]
+
+def column_hi(col):
+  """Returns the hi bit of the column."""
+  return col[1]
+
+def column_lo(col):
+  """Returns the low bit of the column."""
+  return col[2]
 
 class BitPattern(object):
     """A pattern for matching strings of bits.  See parse() for syntax."""
@@ -45,8 +60,8 @@ class BitPattern(object):
         Raises:
             Exception: the input didn't meet the rules described above.
         """
-        hi_bit = column[1]
-        lo_bit = column[2]
+        hi_bit = column_hi(column)
+        lo_bit = column_lo(column)
         num_bits = hi_bit - lo_bit + 1
         # Convert - into a full-width don't-care pattern.
         if pattern == '-':
@@ -100,6 +115,17 @@ class BitPattern(object):
     def always_matches(column=None):
       """Returns a bit pattern corresponding to always matches."""
       return BitPattern(0, 0, '==', column)
+
+    def matches_any(self):
+      """Returns true if pattern matches any pattern of bits."""
+      return self.mask == 0
+
+    def negate(self):
+      """Returns pattern that is negation of given pattern"""
+      if self.is_equal_op():
+        return BitPattern(self.mask, self.value, '!=', self.column)
+      else:
+        return BitPattern(self.mask, self.value, '==', self.column)
 
     def __init__(self, mask, value, op, column=None):
         """Initializes a BitPattern.
@@ -254,17 +280,21 @@ class BitPattern(object):
                      % (input, self.mask, self.op, self.value))
         if self.column:
           # Add comment describing test if column is known.
-          bits = self._bits_repr()
-          bits = bits[self.column[2]:self.column[1]+1]
-          bits.reverse()
           return ("%s /* %s(%s:%s) == %s%s */"
                   % (value,
-                     self.column[0],
-                     self.column[1],
-                     self.column[2],
+                     column_name(self.column),
+                     column_hi(self.column),
+                     column_lo(self.column),
                      '' if self.is_equal_op() else '~',
-                     ''.join(bits)))
+                     self.bitstring()))
         return value
+
+    def bitstring(self):
+      """Returns a string describing the bitstring of the pattern."""
+      bits = self._bits_repr()
+      bits = bits[column_lo(self.column) : column_hi(self.column) + 1]
+      bits.reverse()
+      return ''.join(bits)
 
     def __cmp__(self, other):
         """Compares two patterns for sorting purposes.  We sort by
@@ -296,7 +326,10 @@ class BitPattern(object):
          it based on the columns passed in. Otherwise return self.
       """
       if self.column: return self
-      for (name, hi_bit, lo_bit) in columns:
+      for c in columns:
+        name = column_name(c)
+        hi_bit = column_hi(c)
+        lo_bit = column_lo(c)
         index = self.first_bit()
         if index is None : continue
         if index >= lo_bit and index <= hi_bit:
@@ -663,6 +696,12 @@ class Decoder(object):
       if tbl.name == name:
         return tbl
     return None
+
+  def get_class_defs(self):
+    return self._class_defs
+
+  def set_class_defs(self, class_defs):
+    self._class_defs = class_defs
 
   def add_class_def(self, cls, supercls):
     """Adds that cls's superclass is supercls. Returns true if able to add.

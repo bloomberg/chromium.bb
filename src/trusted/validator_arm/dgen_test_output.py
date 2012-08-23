@@ -173,25 +173,82 @@ _cl_args = {}
 CLASS = '%(DECODER)s_%(rule)s'
 NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
 INSTANCE = '%(DECODER_class)s_instance_'
-BASE_TESTER='%(decoder_base)sTester%(safety)s%(restrictions)s'
+BASE_TESTER='%(decoder_base)sTester%(row_name)s%(safety)s%(restrictions)s'
 BASE_BASE_TESTER='%(decoder_base)sTester%(safety)s'
-DECODER_TESTER='%(baseline)sTester_%(rule)s_%(safety)s%(restrictions)s'
+DECODER_TESTER='%(baseline)sTester_%(row_name)s%(safety)s%(restrictions)s_%(rule)s'
+
+def _negated_constraint(constraint):
+  """Returns the negated pattern for the pattern text passed in."""
+  if constraint[0] == '~':
+    return constraint[1:]
+  else:
+    return '~' + constraint
 
 def _constraint_name(c):
+  """Returns an identifier describing the given (textual) constraint
+     restriction."""
   if c[0] == '~':
     return 'Not' + c[1:]
   else:
     return c
 
 def _constraints_name(restrictions):
+  """Returns an identifier describing the constraint restrictions for
+     a row with constraint restrictions."""
   return ''.join([ _constraint_name(c) for c in restrictions ])
 
-def _install_action(decoder, action, values):
-  # Installs common names needed from the given decoder action. This
-  # code is somewhat inefficient in that most cases, most of the
+def _pattern_column_name(pattern):
+  """Returns an identifier describing the column name of the pattern."""
+  if pattern.column:
+    if (dgen_core.column_hi(pattern.column) ==
+        dgen_core.column_lo(pattern.column)):
+      return '%s_%s' % (dgen_core.column_name(pattern.column),
+                        dgen_core.column_hi(pattern.column))
+    return "%s_%sTo%s" % (dgen_core.column_name(pattern.column),
+                          dgen_core.column_hi(pattern.column),
+                          dgen_core.column_lo(pattern.column))
+  else:
+    return 'Bits31To0'
+
+def _pattern_name(pattern):
+  """Returns an identifier describing the pattern."""
+  name = _pattern_column_name(pattern)
+  return name
+
+def _pattern_row_name(row):
+  """Returns an identifier describing the row pattern entries."""
+  row_name = ""
+  first_pat = True
+  for pat in _interesting_patterns(row.patterns):
+    if first_pat:
+      first_pat = False
+    else:
+      row_name += '_'
+    col_name = _pattern_column_name(pat)
+    if pat.is_equal_op():
+      col_name = "%sIs%s" % (col_name, pat.bitstring())
+    else:
+      col_name = "Not%sIs%s" % (col_name, pat.bitstring())
+    row_name += col_name
+  return row_name
+
+def _interesting_patterns(patterns):
+  """ Filters out non-interesting patterns."""
+  # Only include rows not corresponding to rule pattern,
+  # and not always true.
+  return [ p for p in patterns if (
+      (not p.column or dgen_core.column_name(p.column) != '$pattern')
+      and not p.matches_any())]
+
+def _install_action(decoder, action, values, row_name = ''):
+  """Install common names needed to generate code for the given action,
+     and adds it to the values map.
+     """
+  # This code is somewhat inefficient in that most cases, most of the
   # added strings are not needed. On the other hand, by having a
   # single routine that generates all action specific names at one
   # spot, it is much easier to change definitions.
+  values['row_name'] = row_name
   values['baseline'] = action.baseline
   values['actual'] = action.actual
   values['decoder_base'] = decoder.base_class(values['baseline'])
@@ -618,11 +675,13 @@ TEST_CC_HEADER="""%(FILE_HEADER)s
 
 namespace nacl_arm_test {
 
-// Generates a derived class decoder tester for each decoder action
-// in the parse tables. This derived class introduces a default
-// constructor that automatically initializes the expected decoder
-// to the corresponding instance in the generated DecoderState.
+// The following classes are derived class decoder testers that
+// add row pattern constraints and decoder restrictions to each tester.
+// This is done so that it can be used to make sure that the
+// corresponding pattern is not tested for cases that would be excluded
+//  due to row checks, or restrictions specified by the row restrictions.
 """
+
 CONSTRAINT_TESTER_CLASS_HEADER="""
 class %(base_tester)s
     : public %(base_base_tester)s {
@@ -640,13 +699,30 @@ bool %(base_tester)s
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {"""
 
+ROW_CONSTRAINTS_HEADER="""
+
+  // Check that row patterns apply to pattern being checked.'"""
+
+PATTERN_CONSTRAINT_RESTRICTIONS_HEADER="""
+
+  // Check pattern restrictions of row."""
+
 CONSTRAINT_CHECK="""
   if (%s) return false;"""
 
 CONSTRAINT_TESTER_CLASS_FOOTER="""
+
+  // Check other preconditions defined for the base decoder.
   return %(base_base_tester)s::
       PassesParsePreconditions(inst, decoder);
 }
+"""
+
+TESTER_CLASS_HEADER="""
+// The following are derived class decoder testers for decoder actions
+// associated with a pattern of an action. These derived classes introduce
+// a default constructor that automatically initializes the expected decoder
+// to the corresponding instance in the generated DecoderState.
 """
 
 TESTER_CLASS="""
@@ -667,7 +743,8 @@ class %(decoder_name)sTests : public ::testing::Test {
   %(decoder_name)sTests() {}
 };
 
-// The following test each pattern specified in parse decoder tables.
+// The following functions test each pattern specified in parse
+// decoder tables.
 """
 
 TEST_FUNCTION_ACTUAL_VS_BASELINE="""
@@ -698,9 +775,13 @@ int main(int argc, char* argv[]) {
 """
 
 def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
+  """Generates pattern tests for the rows in the given list of tables
+     in the given decoder."""
   global _cl_args
   if not decoder.primary: raise Exception('No tables provided.')
   _cl_args = cl_args
+
+  decoder = _decoder_restricted_to_tables(decoder, tables)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -711,56 +792,91 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   _generate_constraint_testers(decoder, values, out)
   _generate_rule_testers(decoder, values, out)
   out.write(TEST_HARNESS % values)
-  _generate_test_patterns(_decoder_restricted_to_tables(decoder, tables),
-                          values, out)
+  _generate_test_patterns(decoder, values, out)
   out.write(TEST_CC_FOOTER % values)
 
-def _generate_constraint_testers(decoder, values, out):
-  generated_names = set()
-  for d in decoder.action_filter(
-      ['baseline', 'rule', 'constraints']).decoders():
-    if d.constraints.restrictions:
-      _install_action(decoder, d, values)
-      constraint_tester = values['base_tester']
-      if constraint_tester not in generated_names:
-        generated_names.add(constraint_tester)
-        constraints = [dgen_core.BitPattern.parse(_negated_constraint(c),
-                                                  ('constraint', 31, 0))
-                       for c in d.constraints.restrictions]
-        out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
-        out.write(CONSTRAINT_CHECK % constraints[0].to_c_expr('inst.Bits()'))
-        for c in constraints[1:]:
-          out.write(CONSTRAINT_CHECK % c.to_c_expr('inst'))
-        out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
+def _install_test_row(row, decoder, values, with_patterns=False):
+  """Installs data associated with the given row into the values map.
 
-def _negated_constraint(constraint):
-  if constraint[0] == '~':
-    return constraint[1:]
+     Installs the baseline class, rule name, and constraints associated
+     with the row. If with_patterns is specified, then pattern information and
+     actual class information is also inserted.
+     """
+  if with_patterns:
+    action_fields = ['actual', 'baseline', 'rule', 'pattern', 'constraints']
   else:
-    return '~' + constraint
+    action_fields = ['baseline', 'rule', 'constraints']
+  action = row.action.action_filter(action_fields)
+  _install_action(decoder, action, values,
+                  row_name = _pattern_row_name(row))
+  return action
+
+def _rows_to_test(decoder, values, with_patterns=False):
+  """Returns the rows of the decoder that define enough information
+     that testing can be done.
+     """
+  generated_names = set()
+  rows = []
+  for table in decoder.tables():
+    for row in table.rows():
+      if (isinstance(row.action, dgen_core.DecoderAction) and
+          row.action.pattern):
+        _install_test_row(row, decoder, values, with_patterns)
+        constraint_tester = values['base_tester']
+        if constraint_tester not in generated_names:
+          generated_names.add(constraint_tester)
+          rows.append(row)
+  return rows
+
+def _generate_constraint_testers(decoder, values, out):
+  """Generates the testers needed to implement the constraints
+     associated with each row having a pattern.
+     """
+  for row in _rows_to_test(decoder, values):
+    action = _install_test_row(row, decoder, values)
+    out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
+    row_patterns = _interesting_patterns(row.patterns)
+    if row_patterns:
+      out.write(ROW_CONSTRAINTS_HEADER % values);
+      for p in row_patterns:
+        out.write(CONSTRAINT_CHECK % p.negate().to_c_expr('inst.Bits()'))
+    if action.constraints.restrictions:
+      out.write(PATTERN_CONSTRAINT_RESTRICTIONS_HEADER)
+      for c in action.constraints.restrictions:
+        out.write(CONSTRAINT_CHECK %
+                  dgen_core.BitPattern.parse(_negated_constraint(c),
+                                             ('constraint', 31, 0)).
+                  to_c_expr('inst.Bits()'))
+    out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
 
 def _generate_rule_testers(decoder, values, out):
-  generated_names = set()
-  for d in decoder.action_filter(['baseline', 'rule', 'constraints']).rules():
-    _install_action(decoder, d, values)
-    rule_tester = values['decoder_tester']
-    if rule_tester not in generated_names:
-      out.write(TESTER_CLASS % values)
-      generated_names.add(rule_tester)
+  """Generates the testers that tests the rule associated with
+     each row having a pattern.
+     """
+  out.write(TESTER_CLASS_HEADER % values)
+  for row in _rows_to_test(decoder, values):
+    _install_test_row(row, decoder, values)
+    out.write(TESTER_CLASS % values)
 
 def _decoder_restricted_to_tables(decoder, tables):
+  """Returns a copy of the decoder, with only the given table names (
+     or all tables if no names are specified.
+     """
   if not tables:
     return decoder
   new_decoder = dgen_core.Decoder()
   for tbl in [tbl for tbl in decoder.tables() if tbl.name in tables]:
     new_decoder.add(tbl)
+  new_decoder.set_class_defs(decoder.get_class_defs())
   return new_decoder
 
 def _generate_test_patterns(decoder, values, out):
-  for d in decoder.decoders():
-    if d.pattern:
-      _install_action(decoder, d, values)
-      if d.actual == d.baseline:
-        out.write(TEST_FUNCTION_BASELINE % values)
-      else:
-        out.write(TEST_FUNCTION_ACTUAL_VS_BASELINE % values)
+  """Generates a test function for each row having a pattern associated
+     with the table row.
+     """
+  for row in _rows_to_test(decoder, values, with_patterns=True):
+    action = _install_test_row(row, decoder, values, with_patterns=True)
+    if action.actual == action.baseline:
+      out.write(TEST_FUNCTION_BASELINE % values)
+    else:
+      out.write(TEST_FUNCTION_ACTUAL_VS_BASELINE % values)
