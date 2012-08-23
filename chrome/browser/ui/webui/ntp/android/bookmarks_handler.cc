@@ -11,6 +11,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -350,9 +351,10 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
     if (!node)
       return;
 
-    FaviconService* favicon_service = profile->GetFaviconService(
-        Profile::EXPLICIT_ACCESS);
+    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+        profile, Profile::EXPLICIT_ACCESS);
     FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+        profile,
         node->url(),
         history::FAVICON | history::TOUCH_ICON,
         &cancelable_consumer_,
@@ -377,7 +379,8 @@ void BookmarksHandler::OnShortcutFaviconDataAvailable(
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
   const BookmarkNode* node = cancelable_consumer_.GetClientData(
-      profile->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
+      FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS),
+      handle);
 
   TabAndroid* tab = TabAndroid::FromWebContents(
       web_ui()->GetWebContents());

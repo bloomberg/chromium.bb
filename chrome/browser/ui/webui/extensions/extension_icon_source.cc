@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -204,7 +205,7 @@ void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
 
 void ExtensionIconSource::LoadFaviconImage(int request_id) {
   FaviconService* favicon_service =
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   // Fall back to the default icons if the service isn't available.
   if (favicon_service == NULL) {
     LoadDefaultImage(request_id);
@@ -213,6 +214,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
   GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+      profile_,
       favicon_url,
       history::FAVICON,
       &cancelable_consumer_,
@@ -225,7 +227,8 @@ void ExtensionIconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
     history::FaviconData favicon) {
   int request_id = cancelable_consumer_.GetClientData(
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), request_handle);
+      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS),
+      request_handle);
   ExtensionIconRequest* request = GetData(request_id);
 
   // Fallback to the default icon if there wasn't a favicon.

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/icon_messages.h"
 #include "content/public/browser/favicon_status.h"
@@ -157,7 +158,8 @@ int FaviconHandler::DownloadImage(
 }
 
 FaviconService* FaviconHandler::GetFaviconService() {
-  return profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  return FaviconServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
 }
 
 bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
@@ -372,8 +374,8 @@ void FaviconHandler::GetFaviconForURL(
     int icon_types,
     CancelableRequestConsumerBase* consumer,
     const FaviconService::FaviconDataCallback& callback) {
-  GetFaviconService()->GetFaviconForURL(page_url, icon_types, consumer,
-                                        callback);
+  GetFaviconService()->GetFaviconForURL(profile_, page_url, icon_types,
+                                        consumer, callback);
 }
 
 void FaviconHandler::SetHistoryFavicon(

@@ -5,6 +5,7 @@
 #include <string>
 
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -28,8 +29,8 @@ void Browser::RegisterIntentHandlerHelper(
   if (!web_intents::IsWebIntentsEnabledForProfile(tab_contents->profile()))
     return;
 
-  FaviconService* favicon_service =
-      tab_contents->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      tab_contents->profile(), Profile::EXPLICIT_ACCESS);
 
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
       tab_contents->infobar_tab_helper(),

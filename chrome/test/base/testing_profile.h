@@ -37,7 +37,6 @@ class SpecialStoragePolicy;
 
 class CommandLine;
 class ExtensionSpecialStoragePolicy;
-class FaviconService;
 class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
@@ -216,7 +215,6 @@ class TestingProfile : public Profile {
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual FaviconService* GetFaviconService(ServiceAccessType access) OVERRIDE;
   // The CookieMonster will only be returned if a Context has been created. Do
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
@@ -308,17 +306,11 @@ class TestingProfile : public Profile {
   // Finishes initialization when a profile is created asynchronously.
   void FinishInit();
 
-  // Destroys favicon service if it has been created.
-  void DestroyFaviconService();
-
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
   virtual base::Callback<ChromeURLDataManagerBackend*(void)>
       GetChromeURLDataManagerBackendGetter() const OVERRIDE;
-
-  // The favicon service. Only created if CreateFaviconService is invoked.
-  scoped_ptr<FaviconService> favicon_service_;
 
   // The policy service. Lazily created as a stub.
   scoped_ptr<policy::PolicyService> policy_service_;

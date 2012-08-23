@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -75,9 +76,8 @@ class ModelEntry {
 
   void LoadFavicon() {
     load_state_ = LOADED;
-    FaviconService* favicon_service =
-        model_->template_url_service()->profile()->GetFaviconService(
-            Profile::EXPLICIT_ACCESS);
+    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+        model_->template_url_service()->profile(), Profile::EXPLICIT_ACCESS);
     if (!favicon_service)
       return;
     GURL favicon_url = template_url()->favicon_url();

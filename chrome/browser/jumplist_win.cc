@@ -23,6 +23,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
@@ -574,8 +575,8 @@ void JumpList::RemoveObserver() {
 
 void JumpList::CancelPendingUpdate() {
   if (handle_) {
-    FaviconService* favicon_service =
-        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
     favicon_service->CancelRequest(handle_);
     handle_ = NULL;
   }
@@ -699,9 +700,9 @@ bool JumpList::StartLoadingFavicon() {
     url = GURL(icon_urls_.front().first);
   }
   FaviconService* favicon_service =
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   handle_ = favicon_service->GetFaviconForURL(
-      url, history::FAVICON, &favicon_consumer_,
+      profile_, url, history::FAVICON, &favicon_consumer_,
       base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)));
   return true;
 }

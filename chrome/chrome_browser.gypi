@@ -1120,6 +1120,8 @@
         'browser/favicon/favicon_handler_delegate.h',
         'browser/favicon/favicon_service.cc',
         'browser/favicon/favicon_service.h',
+        'browser/favicon/favicon_service_factory.cc',
+        'browser/favicon/favicon_service_factory.h',
         'browser/favicon/favicon_tab_helper.cc',
         'browser/favicon/favicon_tab_helper.h',
         'browser/favicon/favicon_util.cc',

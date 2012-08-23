@@ -11,9 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/ref_counted_util.h"
 
 class GURL;
+class HistoryService;
 class Profile;
 
 // The favicon service provides methods to access favicons. It calls the history
@@ -21,9 +23,10 @@ class Profile;
 //
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
-class FaviconService : public CancelableRequestProvider {
+class FaviconService : public CancelableRequestProvider,
+                       public ProfileKeyedService {
  public:
-  explicit FaviconService(Profile* profile);
+  explicit FaviconService(HistoryService* history_service);
 
   virtual ~FaviconService();
 
@@ -71,7 +74,8 @@ class FaviconService : public CancelableRequestProvider {
   // Note: this version is intended to be used to retrieve the favicon of a
   // page that has been browsed in the past. |expired| in the callback is
   // always false.
-  Handle GetFaviconForURL(const GURL& page_url,
+  Handle GetFaviconForURL(Profile* profile,
+                          const GURL& page_url,
                           int icon_types,
                           CancelableRequestConsumerBase* consumer,
                           const FaviconDataCallback& callback);
@@ -105,7 +109,7 @@ class FaviconService : public CancelableRequestProvider {
                   history::IconType icon_type);
 
  private:
-  Profile* profile_;
+  HistoryService* history_service_;
 
   // Helper to forward an empty result if we cannot get the history service.
   void ForwardEmptyResultAsync(GetFaviconRequest* request);
