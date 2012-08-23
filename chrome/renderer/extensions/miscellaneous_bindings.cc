@@ -220,7 +220,8 @@ void MiscellaneousBindings::DispatchOnConnect(
       continue;
     }
 
-    CHECK(!retval.IsEmpty() && retval->IsBoolean());
+    CHECK(!retval.IsEmpty());
+    CHECK(retval->IsBoolean());
     if (retval->BooleanValue())
       port_created = true;
   }

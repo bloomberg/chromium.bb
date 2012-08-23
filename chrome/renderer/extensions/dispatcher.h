@@ -174,10 +174,6 @@ class Dispatcher : public content::RenderProcessObserver {
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();
 
-  // Calls RenderThread's RegisterExtension and keeps tracks of which v8
-  // extension is for Chrome Extensions only.
-  void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
-
   // Sets up the host permissions for |extension|.
   void InitOriginPermissions(const Extension* extension);
   void AddOrRemoveOriginPermissions(
@@ -225,9 +221,6 @@ class Dispatcher : public content::RenderProcessObserver {
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.
   base::RepeatingTimer<content::RenderThread> forced_idle_timer_;
-
-  // The v8 extensions which are restricted to extension-related contexts.
-  std::set<std::string> restricted_v8_extensions_;
 
   // All declared function names.
   std::set<std::string> function_names_;

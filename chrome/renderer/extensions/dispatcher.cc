@@ -973,14 +973,6 @@ void Dispatcher::UpdateActiveExtensions() {
   child_process_logging::SetActiveExtensions(active_extensions);
 }
 
-void Dispatcher::RegisterExtension(v8::Extension* extension,
-                                            bool restrict_to_extensions) {
-  if (restrict_to_extensions)
-    restricted_v8_extensions_.insert(extension->name());
-
-  RenderThread::Get()->RegisterExtension(extension);
-}
-
 void Dispatcher::OnUsingWebRequestAPI(
     bool adblock, bool adblock_plus, bool other) {
   webrequest_adblock_ = adblock;
