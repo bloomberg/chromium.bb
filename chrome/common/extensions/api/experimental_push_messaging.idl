@@ -13,6 +13,20 @@
     DOMString payload;
   };
 
+  dictionary ChannelIdResult {
+    // The channel ID for this app to use for push messaging.
+    DOMString channelId;
+  };
+
+  callback ChannelIdCallback = void (ChannelIdResult channelId);
+
+  interface Functions {
+    // Retrieves the channel ID associated with this extension. Typically, an
+    // extension will want to send this value to its application server so the
+    // server can use it to trigger push messages back to the extension.
+    static void getChannelId(ChannelIdCallback callback);
+  };
+
   interface Events {
     // Fired when a push message has been received.
     // |message| : The details associated with the message.

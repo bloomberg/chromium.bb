@@ -211,6 +211,8 @@
         'browser/extensions/api/proxy/proxy_api_constants.h',
         'browser/extensions/api/proxy/proxy_api_helpers.cc',
         'browser/extensions/api/proxy/proxy_api_helpers.h',
+        'browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.cc',
+        'browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h',
         'browser/extensions/api/push_messaging/push_messaging_api.cc',
         'browser/extensions/api/push_messaging/push_messaging_api.h',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler.cc',

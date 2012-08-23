@@ -14,12 +14,16 @@
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
+#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 class Profile;
 
 namespace extensions {
 
 class PushMessagingInvalidationMapper;
+class ObfuscatedGaiaIdFetcher;
 
 // Observes a single InvalidationHandler and generates onMessage events.
 class PushMessagingEventRouter
@@ -56,6 +60,32 @@ class PushMessagingEventRouter
   scoped_ptr<PushMessagingInvalidationMapper> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingEventRouter);
+};
+
+class PushMessagingGetChannelIdFunction
+    : public AsyncExtensionFunction, public ObfuscatedGaiaIdFetcher::Delegate {
+ public:
+  PushMessagingGetChannelIdFunction();
+
+ protected:
+  virtual ~PushMessagingGetChannelIdFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.pushMessaging.getChannelId");
+
+ private:
+  void ReportResult(const std::string& gaia_id,
+                    const std::string& error_message);
+
+  // ObfuscatedGiaiaIdFetcher::Delegate implementation.
+  virtual void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id)
+      OVERRIDE;
+  virtual void OnObfuscatedGaiaIdFetchFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+  scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
 };
 
 }  // namespace extension

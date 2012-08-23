@@ -24,7 +24,15 @@
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/common/extensions/api/experimental_push_messaging.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 
@@ -124,6 +132,66 @@ void PushMessagingEventRouter::Observe(
     default:
       NOTREACHED();
   }
+}
+
+// GetChannelId class functions
+
+PushMessagingGetChannelIdFunction::PushMessagingGetChannelIdFunction() {}
+
+PushMessagingGetChannelIdFunction::~PushMessagingGetChannelIdFunction() {}
+
+bool PushMessagingGetChannelIdFunction::RunImpl() {
+  // Start the async fetch of the GAIA ID.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  net::URLRequestContextGetter* context = profile()->GetRequestContext();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
+  const std::string& refresh_token =
+      token_service->GetOAuth2LoginRefreshToken();
+  fetcher_.reset(new ObfuscatedGaiaIdFetcher(context, this, refresh_token));
+
+  // Balanced in ReportResult()
+  AddRef();
+
+  fetcher_->Start();
+
+  // Will finish asynchronously.
+  return true;
+}
+
+void PushMessagingGetChannelIdFunction::ReportResult(
+    const std::string& gaia_id, const std::string& error_string) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Unpack the status and GaiaId parameters, and use it to build the
+  // channel ID here.
+  std::string channel_id(gaia_id);
+  if (!gaia_id.empty()) {
+    channel_id += ".";
+    channel_id += extension_id();
+  }
+
+  // TODO(petewil): It may be a good idea to further
+  // obfuscate the channel ID to prevent the user's obfuscated GAIA ID
+  // from being readily obtained.  Security review will tell us if we need to.
+
+  // Create a ChannelId results object and set the fields.
+  glue::ChannelIdResult result;
+  result.channel_id = channel_id;
+  SetError(error_string);
+  results_ = glue::GetChannelId::Results::Create(result);
+  SendResponse(true);
+
+  // Balanced in RunImpl
+  Release();
+}
+
+void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchSuccess(
+    const std::string& gaia_id) {
+  ReportResult(gaia_id, std::string());
+}
+
+void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
+      const GoogleServiceAuthError& error) {
+  ReportResult(std::string(), error.error_message());
 }
 
 }  // namespace extensions
