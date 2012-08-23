@@ -7,7 +7,7 @@
     'chromium_code': 1,
   },
   'includes': [
-    '../native_client/build/untrusted.gypi',
+    '../build/common_untrusted.gypi',
     'ppapi_shared.gypi',
   ],
   'conditions': [
