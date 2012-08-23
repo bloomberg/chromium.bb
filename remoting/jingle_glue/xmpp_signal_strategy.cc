@@ -13,6 +13,7 @@
 #include "jingle/glue/chrome_async_socket.h"
 #include "jingle/glue/task_pump.h"
 #include "jingle/glue/xmpp_client_socket_factory.h"
+#include "jingle/notifier/base/gaia_constants.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -239,7 +240,7 @@ void XmppSignalStrategy::SendKeepAlive() {
 buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
     const buzz::XmppClientSettings& settings) {
   buzz::Jid jid(settings.user(), settings.host(), buzz::STR_EMPTY);
-  std::string mechanism = notifier::GaiaTokenPreXmppAuth::kDefaultAuthMechanism;
+  std::string mechanism = notifier::kDefaultGaiaAuthMechanism;
   if (settings.token_service() == "oauth2") {
     mechanism = "X-OAUTH2";
   }

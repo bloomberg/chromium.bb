@@ -4,7 +4,7 @@
 
 #include "jingle/notifier/base/notifier_options.h"
 
-#include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
+#include "jingle/notifier/base/gaia_constants.h"
 
 namespace notifier {
 
@@ -13,7 +13,7 @@ NotifierOptions::NotifierOptions()
       allow_insecure_connection(false),
       invalidate_xmpp_login(false),
       notification_method(kDefaultNotificationMethod),
-      auth_mechanism(GaiaTokenPreXmppAuth::kDefaultAuthMechanism) {}
+      auth_mechanism(kDefaultGaiaAuthMechanism) {}
 
 NotifierOptions::~NotifierOptions() { }
 

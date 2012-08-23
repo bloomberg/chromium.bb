@@ -55,8 +55,6 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
   virtual buzz::SaslMechanism* CreateSaslMechanism(
       const std::string& mechanism) OVERRIDE;
 
-  static const char kDefaultAuthMechanism[];
-
  private:
   std::string username_;
   std::string token_;

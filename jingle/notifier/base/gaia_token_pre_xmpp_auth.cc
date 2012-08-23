@@ -48,9 +48,6 @@ class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
 
 }  // namespace
 
-// By default use a Google cookie auth mechanism.
-const char GaiaTokenPreXmppAuth::kDefaultAuthMechanism[] = "X-GOOGLE-TOKEN";
-
 GaiaTokenPreXmppAuth::GaiaTokenPreXmppAuth(
     const std::string& username,
     const std::string& token,
