@@ -2784,6 +2784,7 @@ irt_variant_tests = [
     # works in nacl_env but not in nacl_irt_test_env) while also
     # adding tests to nacl_irt_test_env.
     'tests/inbrowser_test_runner/nacl.scons',
+    'tests/inbrowser_test_runner/nacl_chrome.scons',
     'tests/untrusted_crash_dump/nacl.scons',
 ]
 
@@ -2821,6 +2822,10 @@ nonvariant_tests = [
 nacl_env.Append(BUILD_SCONSCRIPTS=nonvariant_tests)
 nacl_env.AddChromeFilesFromGroup('nonvariant_test_scons_files')
 nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests)
+
+# Defines TESTS_TO_RUN_INBROWSER.
+SConscript('tests/inbrowser_test_runner/selection.scons',
+           exports=['nacl_env'])
 
 # Possibly install a toolchain by downloading it
 # TODO: explore using a less heavy weight mechanism
