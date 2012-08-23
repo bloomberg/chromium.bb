@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -542,7 +541,7 @@ void SessionModelAssociator::LoadFaviconForTab(TabLink* tab_link) {
   if (!command_line.HasSwitch(switches::kSyncTabFavicons))
     return;
   FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   SessionID::id_type tab_id = tab_link->tab()->GetSessionId();
@@ -552,7 +551,7 @@ void SessionModelAssociator::LoadFaviconForTab(TabLink* tab_link) {
   }
   DVLOG(1) << "Triggering favicon load for url " << tab_link->url().spec();
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      profile_, tab_link->url(), history::FAVICON, &load_consumer_,
+      tab_link->url(), history::FAVICON, &load_consumer_,
       base::Bind(&SessionModelAssociator::OnFaviconDataAvailable,
                  AsWeakPtr()));
   load_consumer_.SetClientData(favicon_service, handle, tab_id);
@@ -567,8 +566,7 @@ void SessionModelAssociator::OnFaviconDataAvailable(
     return;
   SessionID::id_type tab_id =
       load_consumer_.GetClientData(
-          FaviconServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS), handle);
+          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   TabLinksMap::iterator iter = tab_map_.find(tab_id);
   if (iter == tab_map_.end()) {
     DVLOG(1) << "Ignoring favicon for closed tab " << tab_id;

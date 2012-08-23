@@ -13,7 +13,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -238,8 +237,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
     web_data_service_ = WebDataServiceFactory::GetForProfile(
         GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
-    favicon_service_ = FaviconServiceFactory::GetForProfile(
-        GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
+    favicon_service_ =
+        GetBrowser()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
     controller_ = chrome::GetActiveTabContents(GetBrowser())->
         web_intent_picker_controller();
 

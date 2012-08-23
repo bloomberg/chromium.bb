@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -233,7 +232,7 @@ void ProfileWriter::AddBookmarks(const std::vector<BookmarkEntry>& bookmarks,
 
 void ProfileWriter::AddFavicons(
     const std::vector<history::ImportedFaviconUsage>& favicons) {
-  FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)->
+  profile_->GetFaviconService(Profile::EXPLICIT_ACCESS)->
       SetImportedFavicons(favicons);
 }
 

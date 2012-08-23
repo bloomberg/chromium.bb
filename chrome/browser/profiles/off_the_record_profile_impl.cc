@@ -219,6 +219,15 @@ GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {
   return NULL;
 }
 
+FaviconService* OffTheRecordProfileImpl::GetFaviconService(
+    ServiceAccessType sat) {
+  if (sat == EXPLICIT_ACCESS)
+    return profile_->GetFaviconService(sat);
+
+  NOTREACHED() << "This profile is OffTheRecord";
+  return NULL;
+}
+
 policy::UserCloudPolicyManager*
     OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
   return profile_->GetUserCloudPolicyManager();

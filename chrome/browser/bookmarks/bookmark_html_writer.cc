@@ -20,7 +20,6 @@
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -458,9 +457,9 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
     // Filter out urls that we've already got favicon for.
     URLFaviconMap::const_iterator iter = favicons_map_->find(url);
     if (favicons_map_->end() == iter) {
-      FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-          profile_, Profile::EXPLICIT_ACCESS);
-      favicon_service->GetFaviconForURL(profile_, GURL(url), history::FAVICON,
+      FaviconService* favicon_service =
+          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      favicon_service->GetFaviconForURL(GURL(url), history::FAVICON,
           &favicon_consumer_,
           base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
                      base::Unretained(this)));

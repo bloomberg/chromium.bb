@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/top_sites.h"
@@ -259,6 +260,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
           new VisitedLinkEventListener(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
+      favicon_service_created_(false),
       start_time_(Time::Now()),
       delegate_(delegate),
       predictor_(NULL) {
@@ -507,6 +509,10 @@ ProfileImpl::~ProfileImpl() {
   if (top_sites_.get())
     top_sites_->Shutdown();
 
+  // FaviconService depends on HistoryServce so make sure we delete
+  // HistoryService first.
+  favicon_service_.reset();
+
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
 
@@ -731,6 +737,14 @@ ProfileImpl::GetMediaRequestContextForRenderProcess(
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {
   return io_data_.GetResourceContext();
+}
+
+FaviconService* ProfileImpl::GetFaviconService(ServiceAccessType sat) {
+  if (!favicon_service_created_) {
+    favicon_service_created_ = true;
+    favicon_service_.reset(new FaviconService(this));
+  }
+  return favicon_service_.get();
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {

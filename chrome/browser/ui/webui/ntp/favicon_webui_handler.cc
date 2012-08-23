@@ -13,7 +13,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
@@ -89,8 +88,8 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   std::string dom_id;
   CHECK(args->GetString(1, &dom_id));
 
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service =
+      Profile::FromWebUI(web_ui())->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty())
     return;
 
@@ -110,7 +109,6 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
 
   dom_id_map_[id_] = dom_id;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      Profile::FromWebUI(web_ui()),
       url,
       history::FAVICON,
       &consumer_,
@@ -122,8 +120,8 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
 void FaviconWebUIHandler::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
     history::FaviconData favicon) {
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service =
+      Profile::FromWebUI(web_ui())->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int id = consumer_.GetClientData(favicon_service, request_handle);
   scoped_ptr<StringValue> color_value;
 

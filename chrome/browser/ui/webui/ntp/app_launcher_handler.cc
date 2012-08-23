@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -692,7 +691,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
 
   Profile* profile = Profile::FromWebUI(web_ui());
   FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
+      profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service) {
     LOG(ERROR) << "No favicon service";
     return;
@@ -705,7 +704,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   install_info->page_ordinal = page_ordinal;
 
   FaviconService::Handle h = favicon_service->GetFaviconForURL(
-      profile, launch_url, history::FAVICON, &favicon_consumer_,
+      launch_url, history::FAVICON, &favicon_consumer_,
       base::Bind(&AppLauncherHandler::OnFaviconForApp, base::Unretained(this)));
   favicon_consumer_.SetClientData(favicon_service, h, install_info.release());
 }

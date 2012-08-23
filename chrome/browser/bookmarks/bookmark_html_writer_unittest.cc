@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/base/testing_profile.h"
@@ -196,9 +195,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
   HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS)->
       AddPage(url1, history::SOURCE_BROWSED);
-  FaviconServiceFactory::GetForProfile(
-      &profile, Profile::EXPLICIT_ACCESS)->SetFavicon(
-          url1, url1_favicon, icon_data, history::FAVICON);
+  profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
+      url1_favicon, icon_data, history::FAVICON);
   message_loop.RunAllPending();
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
   model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
@@ -221,9 +219,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
 
   // Clear favicon so that it would be read from file.
   std::vector<unsigned char> empty_data;
-  FaviconServiceFactory::GetForProfile(
-      &profile, Profile::EXPLICIT_ACCESS)->SetFavicon(
-          url1, url1_favicon, empty_data, history::FAVICON);
+  profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
+      url1_favicon, empty_data, history::FAVICON);
   message_loop.RunAllPending();
 
   // Read the bookmarks back in.

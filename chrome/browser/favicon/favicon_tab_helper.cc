@@ -5,7 +5,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
 #include "chrome/browser/favicon/favicon_handler.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/favicon/select_favicon_frames.h"
 #include "chrome/browser/history/history.h"
@@ -105,8 +104,8 @@ void FaviconTabHelper::SaveFavicon() {
     return;
   history->AddPageNoVisitForBookmark(entry->GetURL(), entry->GetTitle());
 
-  FaviconService* service = FaviconServiceFactory::GetForProfile(
-      profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
+  FaviconService* service = profile_->
+      GetOriginalProfile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
   if (!service)
     return;
   const FaviconStatus& favicon(entry->GetFavicon());
@@ -166,8 +165,8 @@ void FaviconTabHelper::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
   if (reload_type != NavigationController::NO_RELOAD &&
       !profile_->IsOffTheRecord()) {
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_, Profile::IMPLICIT_ACCESS);
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::IMPLICIT_ACCESS);
     if (favicon_service)
       favicon_service->SetFaviconOutOfDateForPage(url);
   }

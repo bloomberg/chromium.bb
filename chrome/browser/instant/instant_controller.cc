@@ -8,7 +8,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -288,8 +287,8 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
     preview->history_tab_helper()->UpdateHistoryPageTitle(*entry);
 
     // Update the favicon.
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        preview->profile(), Profile::EXPLICIT_ACCESS);
+    FaviconService* favicon_service =
+        preview->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
     if (favicon_service && entry->GetFavicon().valid &&
         entry->GetFavicon().image.IsEmpty()) {
       std::vector<unsigned char> image_data;

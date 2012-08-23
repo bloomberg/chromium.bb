@@ -18,7 +18,6 @@
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -780,8 +779,7 @@ void BookmarkModel::OnFaviconDataAvailable(
     history::FaviconData favicon) {
   BookmarkNode* node =
       load_consumer_.GetClientData(
-          FaviconServiceFactory::GetForProfile(
-              profile_, Profile::EXPLICIT_ACCESS), handle);
+          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
   if (favicon.is_valid()) {
@@ -800,12 +798,12 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
     return;
 
   DCHECK(node->url().is_valid());
-  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service =
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      profile_, node->url(), history::FAVICON, &load_consumer_,
+      node->url(), history::FAVICON, &load_consumer_,
       base::Bind(&BookmarkModel::OnFaviconDataAvailable,
                  base::Unretained(this)));
   load_consumer_.SetClientData(favicon_service, handle, node);
@@ -819,8 +817,8 @@ void BookmarkModel::FaviconLoaded(const BookmarkNode* node) {
 
 void BookmarkModel::CancelPendingFaviconLoadRequests(BookmarkNode* node) {
   if (node->favicon_load_handle()) {
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
     if (favicon_service)
       favicon_service->CancelRequest(node->favicon_load_handle());
     node->set_favicon_load_handle(0);

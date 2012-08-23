@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
@@ -217,7 +216,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
 #endif
-  FaviconServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
 #if defined(USE_AURA)
   GesturePrefsObserverFactoryAura::GetInstance();

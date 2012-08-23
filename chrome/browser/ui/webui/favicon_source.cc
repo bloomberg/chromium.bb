@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -44,7 +43,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
                                      bool is_incognito,
                                      int request_id) {
   FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service || path.empty()) {
     SendDefaultResponse(request_id);
     return;
@@ -106,7 +105,6 @@ void FaviconSource::StartDataRequest(const std::string& path,
 
     // TODO(estade): fetch the requested size.
     handle = favicon_service->GetFaviconForURL(
-        profile_,
         url,
         icon_types_,
         &cancelable_consumer_,
@@ -134,7 +132,7 @@ void FaviconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
     history::FaviconData favicon) {
   FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(favicon_service,
                                                       request_handle);
 
