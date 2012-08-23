@@ -29,10 +29,10 @@ class Manifest(object):
     self._text = text or '<manifest>\n</manifest>'
     self.nodes = ElementTree.fromstring(self._text)
 
-  def AddNonWorkonProject(self, name, path, remote):
+  def AddNonWorkonProject(self, name, path, remote=None, revision=None):
     """Add a new nonworkon project element to the manifest tree."""
     element = ElementTree.Element('project', name=name, path=path,
-                                  remote=remote)
+                                  remote=remote, revision=revision)
     element.attrib['workon'] = 'False'
     self.nodes.append(element)
     return element
@@ -146,6 +146,10 @@ def main(argv):
                     default=False, help='Is this a workon package?')
   parser.add_option('-r', '--remote', dest='remote',
                     default=None)
+  parser.add_option('-v', '--revision', dest='revision',
+                    default=None,
+                    help="Use to override the manifest defined default "
+                    "revision used for a given project.")
   parser.add_option('--upgrade-minilayout', default=False, action='store_true',
                     help="Upgrade a minilayout checkout into a full.xml "
                     "checkout utilizing manifest groups.")
@@ -202,6 +206,12 @@ def main(argv):
           "must be add <project> <path> --remote <remote-arg>")
     name, path = args[1:]
 
+  revision = options.revision
+  if revision is not None:
+    if (not cros_build_lib.IsRefsTags(revision) and
+        not cros_build_lib.IsSHA1(revision)):
+      revision = cros_build_lib.StripLeadingRefsHeads(revision, False)
+
   main_manifest = Manifest.FromPath(options.manifest_sym_path,
                                     empty_if_missing=False)
   local_manifest = Manifest.FromPath(options.local_manifest_path)
@@ -223,7 +233,9 @@ def main(argv):
                  "your local_manifest.xml" % (name, path))
 
   else:
-    element = local_manifest.AddNonWorkonProject(name, path, options.remote)
+    element = local_manifest.AddNonWorkonProject(name=name, path=path,
+                                                 remote=options.remote,
+                                                 revision=revision)
     _AddProjectsToManifestGroups(options, element.attrib['name'])
 
     with open(options.local_manifest_path, 'w') as f:
