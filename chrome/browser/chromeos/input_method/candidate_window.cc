@@ -141,19 +141,23 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 
 // Creates shortcut text from the given index and the orientation.
 string16 CreateShortcutText(int index,
-                            InputMethodLookupTable::Orientation orientation) {
+                            const InputMethodLookupTable& table) {
   // Choose the character used for the shortcut label.
   const char kShortcutCharacters[] = "1234567890ABCDEF";
   // The default character should not be used but just in case.
-  char shortcut_character = L'?';
-  // -1 to exclude the null character at the end.
-  if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1))
-    shortcut_character = kShortcutCharacters[index];
+  std::string shortcut_text = " ";
+  if (table.labels.empty()) {
+    // -1 to exclude the null character at the end.
+    if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1))
+      shortcut_text = std::string(1, kShortcutCharacters[index]);
+  } else {
+    if (index < static_cast<int>(table.labels.size()))
+      shortcut_text = table.labels[index];
+  }
 
-  std::string shortcut_text(1, shortcut_character);
-  if (orientation != InputMethodLookupTable::kVertical)
+  if (table.orientation != InputMethodLookupTable::kVertical)
     shortcut_text += '.';
-  return ASCIIToUTF16(shortcut_text);
+  return UTF8ToUTF16(shortcut_text);
 }
 
 // Creates the shortcut label, and returns it (never returns NULL).
@@ -263,7 +267,7 @@ gfx::Size ComputeShortcutColumnSize(
   // We'll create temporary shortcut labels, and choose the largest width and
   // height.
   for (int i = 0; i < lookup_table.page_size; ++i) {
-    shortcut_label->SetText(CreateShortcutText(i, lookup_table.orientation));
+    shortcut_label->SetText(CreateShortcutText(i, lookup_table));
     gfx::Size text_size = wrapped_shortcut_label->GetPreferredSize();
     shortcut_column_width = std::max(shortcut_column_width, text_size.width());
     shortcut_column_height = std::max(shortcut_column_height,
@@ -987,7 +991,7 @@ void CandidateWindowView::UpdateCandidates(
         // candidates is 5). Second, we want to add a period after each
         // shortcut label when the candidate window is horizontal.
         candidate_view->SetShortcutText(
-            CreateShortcutText(i, new_lookup_table.orientation));
+            CreateShortcutText(i, new_lookup_table));
       }
       // Set the candidate text.
       if (candidate_index < new_lookup_table.candidates.size() &&

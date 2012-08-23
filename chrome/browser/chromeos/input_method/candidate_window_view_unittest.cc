@@ -287,6 +287,8 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   const char* kEmptyLabel = "";
   const char* kDefaultVerticalLabel[] = { "1", "2", "3" };
   const char* kDefaultHorizontalLabel[] = { "1.", "2.", "3." };
+  const char* kCustomizedLabel[] = { "a", "s", "d" };
+  const char* kExpectedHorizontalCustomizedLabel[] = { "a.", "s.", "d." };
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -394,6 +396,54 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     // Confirm actual labels not containing ".".
     for (size_t i = 0; i < kPageSize; ++i) {
       ExpectLabels(kEmptyLabel, kSampleCandidate[i], kSampleAnnotation[i],
+                   candidate_window_view.candidate_views_[i]);
+    }
+  }
+  {
+    SCOPED_TRACE("Vertical customized label case");
+    const size_t kPageSize = 3;
+    InputMethodLookupTable table;
+    ClearInputMethodLookupTable(kPageSize, &table);
+
+    table.orientation = InputMethodLookupTable::kVertical;
+    for (size_t i = 0; i < kPageSize; ++i) {
+      table.candidates.push_back(kSampleCandidate[i]);
+      table.annotations.push_back(kSampleAnnotation[i]);
+      table.labels.push_back(kCustomizedLabel[i]);
+    }
+
+    candidate_window_view.UpdateCandidates(table);
+
+    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    // Confirm actual labels not containing ".".
+    for (size_t i = 0; i < kPageSize; ++i) {
+      ExpectLabels(kCustomizedLabel[i],
+                   kSampleCandidate[i],
+                   kSampleAnnotation[i],
+                   candidate_window_view.candidate_views_[i]);
+    }
+  }
+  {
+    SCOPED_TRACE("Horizontal customized label case");
+    const size_t kPageSize = 3;
+    InputMethodLookupTable table;
+    ClearInputMethodLookupTable(kPageSize, &table);
+
+    table.orientation = InputMethodLookupTable::kHorizontal;
+    for (size_t i = 0; i < kPageSize; ++i) {
+      table.candidates.push_back(kSampleCandidate[i]);
+      table.annotations.push_back(kSampleAnnotation[i]);
+      table.labels.push_back(kCustomizedLabel[i]);
+    }
+
+    candidate_window_view.UpdateCandidates(table);
+
+    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    // Confirm actual labels not containing ".".
+    for (size_t i = 0; i < kPageSize; ++i) {
+      ExpectLabels(kExpectedHorizontalCustomizedLabel[i],
+                   kSampleCandidate[i],
+                   kSampleAnnotation[i],
                    candidate_window_view.candidate_views_[i]);
     }
   }
@@ -530,7 +580,7 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   const char kSampleShortcut3[] = "C";
 
   const char kSampleAnnotation1[] = "Sample Annotation 1";
-  const char kSampleAnnotation2[] = "\xE3\x81\x82"; // multi byte string.
+  const char kSampleAnnotation2[] = "\xE3\x81\x82";  // multi byte string.
   const char kSampleAnnotation3[] = "......";
 
   // For testing, we have to prepare empty widget.
