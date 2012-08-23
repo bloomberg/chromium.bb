@@ -503,21 +503,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-// http://crbug.com/
-#if defined(OS_WIN)
-#define MAYBE_WebGLGreenTriangle DISABLED_WebGLGreenTriangle
-#else
-#define MAYBE_WebGLGreenTriangle WebGLGreenTriangle
-#endif
-
-// http://crbug.com/136430
-#if defined(OS_WIN)
-#define MAYBE_CSS3DBlueBox FLAKY_CSS3DBlueBox
-#else
-#define MAYBE_CSS3DBlueBox CSS3DBlueBox
-#endif
-
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, WebGLGreenTriangle) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
@@ -540,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
                ref_pixels, ref_pixel_count);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_CSS3DBlueBox) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, CSS3DBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
