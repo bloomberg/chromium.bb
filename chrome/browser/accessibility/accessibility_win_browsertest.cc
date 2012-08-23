@@ -741,8 +741,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(found, true);
 }
 
+// Disabled because of http://crbug.com/144390.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestToggleButtonRoleAndStates) {
+                       DISABLED_TestToggleButtonRoleAndStates) {
   content::WindowedNotificationObserver tree_updated_observer1(
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
       content::NotificationService::AllSources());
