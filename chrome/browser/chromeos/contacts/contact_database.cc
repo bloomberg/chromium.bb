@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
@@ -23,6 +24,30 @@ using content::BrowserThread;
 namespace contacts {
 
 namespace {
+
+// Initialization results reported via the "Contacts.DatabaseInitResult"
+// histogram.
+enum HistogramInitResult {
+  HISTOGRAM_INIT_RESULT_SUCCESS = 0,
+  HISTOGRAM_INIT_RESULT_FAILURE = 1,
+  HISTOGRAM_INIT_RESULT_DELETED_CORRUPTED = 2,
+  HISTOGRAM_INIT_RESULT_MAX_VALUE = 3,
+};
+
+// Save results reported via the "Contacts.DatabaseSaveResult" histogram.
+enum HistogramSaveResult {
+  HISTOGRAM_SAVE_RESULT_SUCCESS = 0,
+  HISTOGRAM_SAVE_RESULT_FAILURE = 1,
+  HISTOGRAM_SAVE_RESULT_MAX_VALUE = 2,
+};
+
+// Load results reported via the "Contacts.DatabaseLoadResult" histogram.
+enum HistogramLoadResult {
+  HISTOGRAM_LOAD_RESULT_SUCCESS = 0,
+  HISTOGRAM_LOAD_RESULT_METADATA_PARSE_FAILURE = 1,
+  HISTOGRAM_LOAD_RESULT_CONTACT_PARSE_FAILURE = 2,
+  HISTOGRAM_LOAD_RESULT_MAX_VALUE = 3,
+};
 
 // LevelDB key used for storing UpdateMetadata messages.
 const char kUpdateMetadataKey[] = "__chrome_update_metadata__";
@@ -145,9 +170,12 @@ void ContactDatabase::InitFromTaskRunner(const FilePath& database_dir,
                                          bool* success) {
   DCHECK(IsRunByTaskRunner());
   DCHECK(success);
-  VLOG(1) << "Opening " << database_dir.value();
 
+  VLOG(1) << "Opening " << database_dir.value();
+  UMA_HISTOGRAM_MEMORY_KB("Contacts.DatabaseSizeBytes",
+                          file_util::ComputeDirectorySize(database_dir));
   *success = false;
+  HistogramInitResult histogram_result = HISTOGRAM_INIT_RESULT_SUCCESS;
 
   leveldb::Options options;
   options.create_if_missing = true;
@@ -172,10 +200,16 @@ void ContactDatabase::InitFromTaskRunner(const FilePath& database_dir,
       LOG(WARNING) << "Deleting possibly-corrupt database";
       file_util::Delete(database_dir, true);
       delete_and_retry_on_corruption = false;
+      histogram_result = HISTOGRAM_INIT_RESULT_DELETED_CORRUPTED;
     } else {
+      histogram_result = HISTOGRAM_INIT_RESULT_FAILURE;
       break;
     }
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Contacts.DatabaseInitResult",
+                            histogram_result,
+                            HISTOGRAM_INIT_RESULT_MAX_VALUE);
 }
 
 void ContactDatabase::SaveContactsFromTaskRunner(
@@ -240,6 +274,12 @@ void ContactDatabase::SaveContactsFromTaskRunner(
     *success = true;
   else
     LOG(WARNING) << "Failed writing contacts: " << status.ToString();
+
+  UMA_HISTOGRAM_ENUMERATION("Contacts.DatabaseSaveResult",
+                            *success ?
+                            HISTOGRAM_SAVE_RESULT_SUCCESS :
+                            HISTOGRAM_SAVE_RESULT_FAILURE,
+                            HISTOGRAM_SAVE_RESULT_MAX_VALUE);
 }
 
 void ContactDatabase::LoadContactsFromTaskRunner(
@@ -264,6 +304,9 @@ void ContactDatabase::LoadContactsFromTaskRunner(
     if (db_iterator->key().ToString() == kUpdateMetadataKey) {
       if (!metadata->ParseFromArray(value_slice.data(), value_slice.size())) {
         LOG(WARNING) << "Unable to parse metadata";
+        UMA_HISTOGRAM_ENUMERATION("Contacts.DatabaseLoadResult",
+                                  HISTOGRAM_LOAD_RESULT_METADATA_PARSE_FAILURE,
+                                  HISTOGRAM_LOAD_RESULT_MAX_VALUE);
         return;
       }
     } else {
@@ -271,6 +314,9 @@ void ContactDatabase::LoadContactsFromTaskRunner(
       if (!contact->ParseFromArray(value_slice.data(), value_slice.size())) {
         LOG(WARNING) << "Unable to parse contact "
                      << db_iterator->key().ToString();
+        UMA_HISTOGRAM_ENUMERATION("Contacts.DatabaseLoadResult",
+                                  HISTOGRAM_LOAD_RESULT_CONTACT_PARSE_FAILURE,
+                                  HISTOGRAM_LOAD_RESULT_MAX_VALUE);
         return;
       }
       contacts->push_back(contact.release());
@@ -279,6 +325,9 @@ void ContactDatabase::LoadContactsFromTaskRunner(
   }
 
   *success = true;
+  UMA_HISTOGRAM_ENUMERATION("Contacts.DatabaseLoadResult",
+                            HISTOGRAM_LOAD_RESULT_SUCCESS,
+                            HISTOGRAM_LOAD_RESULT_MAX_VALUE);
 }
 
 }  // namespace contacts

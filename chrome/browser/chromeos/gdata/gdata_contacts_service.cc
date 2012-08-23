@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -30,6 +31,19 @@ using content::BrowserThread;
 namespace gdata {
 
 namespace {
+
+// Download outcomes reported via the "Contacts.FullUpdateResult" and
+// "Contacts.IncrementalUpdateResult" histograms.
+enum HistogramResult {
+  HISTOGRAM_RESULT_SUCCESS = 0,
+  HISTOGRAM_RESULT_GROUPS_DOWNLOAD_FAILURE = 1,
+  HISTOGRAM_RESULT_GROUPS_PARSE_FAILURE = 2,
+  HISTOGRAM_RESULT_MY_CONTACTS_GROUP_NOT_FOUND = 3,
+  HISTOGRAM_RESULT_CONTACTS_DOWNLOAD_FAILURE = 4,
+  HISTOGRAM_RESULT_CONTACTS_PARSE_FAILURE = 5,
+  HISTOGRAM_RESULT_PHOTO_DOWNLOAD_FAILURE = 6,
+  HISTOGRAM_RESULT_MAX_VALUE = 7,
+};
 
 // Maximum number of profile photos that we'll download per second.
 // At values above 10, Google starts returning 503 errors.
@@ -431,6 +445,8 @@ class GDataContactsService::DownloadContactsRequest {
         my_contacts_group_id_(service->cached_my_contacts_group_id_),
         num_in_progress_photo_downloads_(0),
         photo_download_failed_(false),
+        num_photo_download_404_errors_(0),
+        total_photo_bytes_(0),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(service_);
@@ -452,6 +468,7 @@ class GDataContactsService::DownloadContactsRequest {
   // Otherwise, the contact groups download is started.
   void Run() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    download_start_time_ = base::TimeTicks::Now();
     if (!my_contacts_group_id_.empty()) {
       StartContactsDownload();
     } else {
@@ -471,10 +488,61 @@ class GDataContactsService::DownloadContactsRequest {
  private:
   // Invokes the failure callback and notifies GDataContactsService that the
   // request is done.
-  void ReportFailure() {
+  void ReportFailure(HistogramResult histogram_result) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    SendHistograms(histogram_result);
     failure_callback_.Run();
     service_->OnRequestComplete(this);
+  }
+
+  // Reports UMA stats after the request has completed.
+  void SendHistograms(HistogramResult result) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_GE(result, 0);
+    DCHECK_LT(result, HISTOGRAM_RESULT_MAX_VALUE);
+
+    bool success = (result == HISTOGRAM_RESULT_SUCCESS);
+    base::TimeDelta elapsed_time =
+        base::TimeTicks::Now() - download_start_time_;
+    int photo_error_percent = static_cast<int>(
+        100.0 * transient_photo_download_errors_per_contact_.size() /
+        contact_photo_urls_.size() + 0.5);
+
+    if (min_update_time_.is_null()) {
+      UMA_HISTOGRAM_ENUMERATION("Contacts.FullUpdateResult",
+                                result, HISTOGRAM_RESULT_MAX_VALUE);
+      if (success) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("Contacts.FullUpdateDuration",
+                                   elapsed_time);
+        UMA_HISTOGRAM_COUNTS_10000("Contacts.FullUpdateContacts",
+                                   contacts_->size());
+        UMA_HISTOGRAM_COUNTS_10000("Contacts.FullUpdatePhotos",
+                                   contact_photo_urls_.size());
+        UMA_HISTOGRAM_MEMORY_KB("Contacts.FullUpdatePhotoBytes",
+                                total_photo_bytes_);
+        UMA_HISTOGRAM_COUNTS_10000("Contacts.FullUpdatePhoto404Errors",
+                                   num_photo_download_404_errors_);
+        UMA_HISTOGRAM_PERCENTAGE("Contacts.FullUpdatePhotoErrorPercent",
+                                 photo_error_percent);
+      }
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Contacts.IncrementalUpdateResult",
+                                result, HISTOGRAM_RESULT_MAX_VALUE);
+      if (success) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("Contacts.IncrementalUpdateDuration",
+                                   elapsed_time);
+        UMA_HISTOGRAM_COUNTS_10000("Contacts.IncrementalUpdateContacts",
+                                   contacts_->size());
+        UMA_HISTOGRAM_COUNTS_10000("Contacts.IncrementalUpdatePhotos",
+                                   contact_photo_urls_.size());
+        UMA_HISTOGRAM_MEMORY_KB("Contacts.IncrementalUpdatePhotoBytes",
+                                total_photo_bytes_);
+        UMA_HISTOGRAM_COUNTS_10000("Contacts.IncrementalUpdatePhoto404Errors",
+                                   num_photo_download_404_errors_);
+        UMA_HISTOGRAM_PERCENTAGE("Contacts.IncrementalUpdatePhotoErrorPercent",
+                                 photo_error_percent);
+      }
+    }
   }
 
   // Callback for GetContactGroupsOperation calls.  Starts downloading the
@@ -484,7 +552,7 @@ class GDataContactsService::DownloadContactsRequest {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (error != HTTP_SUCCESS) {
       LOG(WARNING) << "Got error " << error << " while downloading groups";
-      ReportFailure();
+      ReportFailure(HISTOGRAM_RESULT_GROUPS_DOWNLOAD_FAILURE);
       return;
     }
 
@@ -494,7 +562,7 @@ class GDataContactsService::DownloadContactsRequest {
     base::JSONValueConverter<ContactGroups> converter;
     if (!converter.Convert(*feed_data, &groups)) {
       LOG(WARNING) << "Unable to parse groups feed";
-      ReportFailure();
+      ReportFailure(HISTOGRAM_RESULT_GROUPS_PARSE_FAILURE);
       return;
     }
 
@@ -504,7 +572,7 @@ class GDataContactsService::DownloadContactsRequest {
       StartContactsDownload();
     } else {
       LOG(WARNING) << "Unable to find ID for \"My Contacts\" group";
-      ReportFailure();
+      ReportFailure(HISTOGRAM_RESULT_MY_CONTACTS_GROUP_NOT_FOUND);
     }
   }
 
@@ -531,7 +599,7 @@ class GDataContactsService::DownloadContactsRequest {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (error != HTTP_SUCCESS) {
       LOG(WARNING) << "Got error " << error << " while downloading contacts";
-      ReportFailure();
+      ReportFailure(HISTOGRAM_RESULT_CONTACTS_DOWNLOAD_FAILURE);
       return;
     }
 
@@ -539,7 +607,7 @@ class GDataContactsService::DownloadContactsRequest {
             << PrettyPrintValue(*(feed_data.get()));
     if (!ProcessContactsFeedData(*feed_data.get())) {
       LOG(WARNING) << "Unable to process contacts feed data";
-      ReportFailure();
+      ReportFailure(HISTOGRAM_RESULT_CONTACTS_PARSE_FAILURE);
       return;
     }
 
@@ -643,8 +711,9 @@ class GDataContactsService::DownloadContactsRequest {
       VLOG(1) << "Done downloading photos; invoking callback";
       photo_download_timer_.Stop();
       if (photo_download_failed_) {
-        ReportFailure();
+        ReportFailure(HISTOGRAM_RESULT_PHOTO_DOWNLOAD_FAILURE );
       } else {
+        SendHistograms(HISTOGRAM_RESULT_SUCCESS);
         success_callback_.Run(contacts_.Pass());
         service_->OnRequestComplete(this);
       }
@@ -701,6 +770,7 @@ class GDataContactsService::DownloadContactsRequest {
     if (error == HTTP_NOT_FOUND) {
       LOG(WARNING) << "Got error " << error << " while downloading photo "
                    << "for " << contact->contact_id() << "; skipping";
+      num_photo_download_404_errors_++;
       CheckCompletion();
       return;
     }
@@ -715,6 +785,7 @@ class GDataContactsService::DownloadContactsRequest {
       return;
     }
 
+    total_photo_bytes_ += download_data->size();
     contact->set_raw_untrusted_photo(*download_data);
     CheckCompletion();
   }
@@ -756,6 +827,15 @@ class GDataContactsService::DownloadContactsRequest {
 
   // Did we encounter a fatal error while downloading a photo?
   bool photo_download_failed_;
+
+  // How many photos did we skip due to 404 errors?
+  int num_photo_download_404_errors_;
+
+  // Total size of all photos that were downloaded.
+  size_t total_photo_bytes_;
+
+  // Time at which Run() was called.
+  base::TimeTicks download_start_time_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
