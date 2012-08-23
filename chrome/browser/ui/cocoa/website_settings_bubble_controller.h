@@ -31,11 +31,21 @@ class WebsiteSettingsUIBridge;
   // The main content view for the Permissions tab.
   NSView* permissionsTabContentView_;
 
+  // The main content view for the Connection tab.
+  NSView* connectionTabContentView_;
+
   // Container for cookies info on the Permissions tab.
   NSView* cookiesView_;
 
   // The link button for showing cookies and site data info.
-  NSButton* cookiesLinkButton_;
+  NSButton* cookiesButton_;
+
+  // The link button for showing certificate information.
+  NSButton* certificateInfoButton_;
+
+  // The ID of the server certificate from the identity info.
+  // This should always be non-zero on a secure connection, and 0 otherwise.
+  int certificateId_;
 
   // Container for permission info on the Permissions tab.
   NSView* permissionsView_;

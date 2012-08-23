@@ -6,6 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/certificate_viewer.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
@@ -388,7 +389,7 @@ NSColor* IdentityVerifiedTextColor() {
   [contentView_ addSubview:tabView_.get()];
 
   permissionsTabContentView_ = [self addPermissionsTabToTabView:tabView_];
-  [self addConnectionTabToTabView:tabView_];
+  connectionTabContentView_ = [self addConnectionTabToTabView:tabView_];
 
   [self performLayout];
 }
@@ -416,19 +417,26 @@ NSColor* IdentityVerifiedTextColor() {
   // Its position will be set in performLayout.
   NSString* cookieButtonText = l10n_util::GetNSString(
       IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA);
-  cookiesLinkButton_ = [self addLinkButtonWithText:cookieButtonText
-                                            toView:contentView];
-  [cookiesLinkButton_ setTarget:self];
-  [cookiesLinkButton_ setAction:@selector(showCookiesAndSiteData:)];
+  cookiesButton_ = [self addLinkButtonWithText:cookieButtonText
+                                        toView:contentView];
+  [cookiesButton_ setTarget:self];
+  [cookiesButton_ setAction:@selector(showCookiesAndSiteData:)];
 
   return contentView.get();
 }
 
 // Handler for the link button below the list of cookies.
 - (void)showCookiesAndSiteData:(id)sender {
-  [self close];
   DCHECK(tabContents_);
   chrome::ShowCollectedCookiesDialog(tabContents_);
+}
+
+// Handler for the link button to show certificate information.
+- (void)showCertificateInfo:(id)sender {
+  DCHECK(certificateId_);
+  ShowCertificateViewerByID(tabContents_->web_contents(),
+                            [self parentWindow],
+                            certificateId_);
 }
 
 // Create the contents of the Connection tab and add it to the given tab view.
@@ -466,6 +474,7 @@ NSColor* IdentityVerifiedTextColor() {
                bold:NO
              toView:contentView.get()
             atPoint:textPosition];
+  certificateInfoButton_ = nil;  // This will be created only if necessary.
   separatorAfterConnection_ = [self addSeparatorToView:contentView];
 
   firstVisitIcon_ = [self addImageWithSize:imageSize
@@ -509,21 +518,17 @@ NSColor* IdentityVerifiedTextColor() {
   yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
 
   // Lay out the Permissions tab.
-  NSRect cookiesViewFrame = [cookiesView_ frame];
-  cookiesViewFrame.origin.y = kFramePadding;
-  [cookiesView_ setFrame:cookiesViewFrame];
+  yPos = [self setYPositionOfView:cookiesView_ to:kFramePadding];
 
   // Put the link button for cookies and site data just below the cookie info.
-  NSRect linkButtonFrame = [cookiesLinkButton_ frame];
-  linkButtonFrame.origin.y = NSMaxY(cookiesViewFrame);
-  linkButtonFrame.origin.x = kFramePadding;
-  [cookiesLinkButton_ setFrame:linkButtonFrame];
+  NSRect cookiesButtonFrame = [cookiesButton_ frame];
+  cookiesButtonFrame.origin.y = yPos;
+  cookiesButtonFrame.origin.x = kFramePadding;
+  [cookiesButton_ setFrame:cookiesButtonFrame];
 
   // Put the permission info just below the link button.
-  NSRect permissionsViewFrame = [permissionsView_ frame];
-  permissionsViewFrame.origin.y =
-      NSMaxY(linkButtonFrame) + kFramePadding;
-  [permissionsView_ setFrame:permissionsViewFrame];
+  [self setYPositionOfView:permissionsView_
+                        to:NSMaxY(cookiesButtonFrame) + kFramePadding];
 
   // Lay out the Connection tab.
 
@@ -531,6 +536,14 @@ NSColor* IdentityVerifiedTextColor() {
   [self sizeTextFieldHeightToFit:identityStatusDescriptionField_];
   yPos = std::max(NSMaxY([identityStatusDescriptionField_ frame]),
                   NSMaxY([identityStatusIcon_ frame]));
+  if (certificateInfoButton_) {
+    NSRect certificateButtonFrame = [certificateInfoButton_ frame];
+    certificateButtonFrame.origin.x = NSMinX(
+        [identityStatusDescriptionField_ frame]);
+    certificateButtonFrame.origin.y = yPos + kVerticalSpacing;
+    [certificateInfoButton_ setFrame:certificateButtonFrame];
+    yPos = NSMaxY(certificateButtonFrame);
+  }
   yPos = [self setYPositionOfView:separatorAfterIdentity_
                                to:yPos + kVerticalSpacing];
   yPos += kVerticalSpacing;
@@ -555,13 +568,11 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Adjust the tab view size and place it below the identity status.
 
-  NSRect segmentedControlFrame = [segmentedControl_ frame];
-  segmentedControlFrame.origin.y =
-      NSMaxY([identityStatusField_ frame]);
-  [segmentedControl_ setFrame:segmentedControlFrame];
+  yPos = [self setYPositionOfView:segmentedControl_
+                               to:NSMaxY([identityStatusField_ frame])];
 
   NSRect tabViewFrame = [tabView_ frame];
-  tabViewFrame.origin.y = NSMaxY(segmentedControlFrame);
+  tabViewFrame.origin.y = yPos;
 
   // Determine the height of the tab contents.
 
@@ -894,6 +905,20 @@ NSColor* IdentityVerifiedTextColor() {
       status == WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT ||
       status == WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
     [identityStatusField_ setTextColor:IdentityVerifiedTextColor()];
+  }
+  // If there is a certificate, add a button for viewing the certificate info.
+  certificateId_ = identityInfo.cert_id;
+  if (certificateId_) {
+    if (!certificateInfoButton_) {
+      NSString* text = l10n_util::GetNSString(IDS_PAGEINFO_CERT_INFO_BUTTON);
+      certificateInfoButton_ = [self addLinkButtonWithText:text
+          toView:connectionTabContentView_];
+
+      [certificateInfoButton_ setTarget:self];
+      [certificateInfoButton_ setAction:@selector(showCertificateInfo:)];
+    }
+  } else {
+    certificateInfoButton_ = nil;
   }
 
   [identityStatusIcon_ setImage:WebsiteSettingsUI::GetIdentityIcon(
