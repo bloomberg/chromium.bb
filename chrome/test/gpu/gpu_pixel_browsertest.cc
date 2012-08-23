@@ -158,6 +158,19 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
                     int64 ref_img_update_revision,
                     const ReferencePixel* ref_pixels,
                     size_t ref_pixel_count) {
+#if defined(OS_LINUX)
+    // Linux bots on main waterfall do not have virtual GPUs.
+    if (ref_img_option_ == kReferenceImageNone)
+      return;
+#endif
+
+#if defined(OS_MACOSX)
+    // Pixel readback is affected by color profile settings on mac.
+    // crbug.com/144435
+    if (ref_img_option_ == kReferenceImageNone)
+      return;
+#endif
+
     if (ref_img_option_ == kReferenceImageLocal) {
       ref_img_revision_no_older_than_ = ref_img_update_revision;
       ObtainLocalRefImageRevision();
@@ -397,6 +410,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
                      size_t ref_pixel_count) {
     SkAutoLockPixels lock_bmp(gen_bmp);
 
+    bool rt = true;
     for (size_t i = 0; i < ref_pixel_count; ++i) {
       int x = ref_pixels[i].x;
       int y = ref_pixels[i].y;
@@ -404,20 +418,20 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       unsigned char g = ref_pixels[i].g;
       unsigned char b = ref_pixels[i].b;
 
-      DCHECK(x >= 0 && x < gen_bmp.width() && y >= 0 && y < gen_bmp.height());
+      CHECK(x >= 0 && x < gen_bmp.width() && y >= 0 && y < gen_bmp.height());
 
       unsigned char* rgba = reinterpret_cast<unsigned char*>(
           gen_bmp.getAddr32(x, y));
-      DCHECK(rgba);
+      CHECK(rgba);
       if (rgba[0] != b || rgba[1] != g || rgba[2] != r) {
         std::string error_message = base::StringPrintf(
             "pixel(%d,%d) expects [%u,%u,%u], but gets [%u,%u,%u] instead",
             x, y, r, g, b, rgba[0], rgba[1], rgba[2]);
         LOG(ERROR) << error_message.c_str();
-        return false;
+        rt = false;
       }
     }
-    return true;
+    return rt;
   }
 
   // Returns a gfx::Rect representing the bounds that the browser window should
@@ -503,21 +517,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-// http://crbug.com/
-#if defined(OS_WIN)
-#define MAYBE_WebGLGreenTriangle DISABLED_WebGLGreenTriangle
-#else
-#define MAYBE_WebGLGreenTriangle WebGLGreenTriangle
-#endif
-
-// http://crbug.com/136430
-#if defined(OS_WIN)
-#define MAYBE_CSS3DBlueBox FLAKY_CSS3DBlueBox
-#else
-#define MAYBE_CSS3DBlueBox CSS3DBlueBox
-#endif
-
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, WebGLGreenTriangle) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLGreenTriangle) {
                ref_pixels, ref_pixel_count);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_CSS3DBlueBox) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, CSS3DBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 123489;
