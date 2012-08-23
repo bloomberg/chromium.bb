@@ -6,7 +6,7 @@ import logging
 
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
-import file_system_cache as fs_cache
+import compiled_file_system as compiled_fs
 from third_party.handlebar import Handlebar
 
 EXTENSIONS_URL = '/chrome/extensions'
@@ -45,7 +45,7 @@ class TemplateDataSource(object):
                  api_list_data_source_factory,
                  intro_data_source_factory,
                  samples_data_source_factory,
-                 cache_builder,
+                 cache_factory,
                  public_template_path,
                  private_template_path):
       self._branch_info = _MakeChannelDict(channel_name)
@@ -53,7 +53,7 @@ class TemplateDataSource(object):
       self._api_list_data_source_factory = api_list_data_source_factory
       self._intro_data_source_factory = intro_data_source_factory
       self._samples_data_source_factory = samples_data_source_factory
-      self._cache = cache_builder.build(Handlebar, fs_cache.HANDLEBAR)
+      self._cache = cache_factory.Create(Handlebar, compiled_fs.HANDLEBAR)
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
       self._static_resources = (

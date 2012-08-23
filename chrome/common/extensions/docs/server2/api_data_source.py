@@ -6,7 +6,7 @@ import json
 import os
 
 from file_system import FileNotFoundError
-import file_system_cache as fs_cache
+import compiled_file_system as compiled_fs
 from handlebar_dict_generator import HandlebarDictGenerator
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
@@ -26,16 +26,17 @@ class _LazySamplesGetter(object):
 
 class APIDataSource(object):
   """This class fetches and loads JSON APIs from the FileSystem passed in with
-  |cache_builder|, so the APIs can be plugged into templates.
+  |cache_factory|, so the APIs can be plugged into templates.
   """
   class Factory(object):
-    def __init__(self, cache_builder, base_path, samples_factory):
-      self._permissions_cache = cache_builder.build(self._LoadPermissions,
-                                                    fs_cache.PERMS)
-      self._json_cache = cache_builder.build(self._LoadJsonAPI, fs_cache.JSON)
-      self._idl_cache = cache_builder.build(self._LoadIdlAPI, fs_cache.IDL)
-      self._idl_names_cache = cache_builder.build(self._GetIDLNames,
-                                                  fs_cache.IDL_NAMES)
+    def __init__(self, cache_factory, base_path, samples_factory):
+      self._permissions_cache = cache_factory.Create(self._LoadPermissions,
+                                                     compiled_fs.PERMS)
+      self._json_cache = cache_factory.Create(self._LoadJsonAPI,
+                                              compiled_fs.JSON)
+      self._idl_cache = cache_factory.Create(self._LoadIdlAPI, compiled_fs.IDL)
+      self._idl_names_cache = cache_factory.Create(self._GetIDLNames,
+                                                   compiled_fs.IDL_NAMES)
       self._samples_factory = samples_factory
       self._base_path = base_path
 

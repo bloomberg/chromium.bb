@@ -6,7 +6,7 @@ import logging
 import os
 
 from file_system import FileNotFoundError
-import file_system_cache as fs_cache
+import compiled_file_system as compiled_fs
 import third_party.json_schema_compiler.model as model
 from docs_server_utils import SanitizeAPIName
 
@@ -20,8 +20,8 @@ class APIListDataSource(object):
   that are used in the api_index.html and experimental.html pages.
   """
   class Factory(object):
-    def __init__(self, cache_builder, file_system, api_path, public_path):
-      self._cache = cache_builder.build(self._ListAPIs, fs_cache.LIST)
+    def __init__(self, cache_factory, file_system, api_path, public_path):
+      self._cache = cache_factory.Create(self._ListAPIs, compiled_fs.LIST)
       self._file_system = file_system
       def Normalize(string):
         return string if string.endswith('/') else (string + '/')

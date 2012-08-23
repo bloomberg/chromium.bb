@@ -18,8 +18,8 @@ from in_memory_object_store import InMemoryObjectStore
 from appengine_url_fetcher import AppEngineUrlFetcher
 from branch_utility import BranchUtility
 from example_zipper import ExampleZipper
-from file_system_cache import FileSystemCache
-import file_system_cache as fs_cache
+from compiled_file_system import CompiledFileSystem
+import compiled_file_system as compiled_fs
 from github_file_system import GithubFileSystem
 from intro_data_source import IntroDataSource
 from local_file_system import LocalFileSystem
@@ -46,8 +46,8 @@ GITHUB_FILE_SYSTEM = GithubFileSystem(
     AppEngineUrlFetcher(url_constants.GITHUB_URL),
     GITHUB_MEMCACHE,
     AppEngineBlobstore())
-GITHUB_CACHE_BUILDER = FileSystemCache.Builder(GITHUB_FILE_SYSTEM,
-                                               GITHUB_MEMCACHE)
+GITHUB_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(GITHUB_FILE_SYSTEM,
+                                                         GITHUB_MEMCACHE)
 
 STATIC_DIR_PREFIX = 'docs/server2'
 EXTENSIONS_PATH = 'chrome/common/extensions'
@@ -81,21 +81,22 @@ def _GetInstanceForBranch(channel_name, local_path):
   else:
     file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
 
-  cache_builder = FileSystemCache.Builder(file_system, branch_memcache)
-  api_list_data_source_factory = APIListDataSource.Factory(cache_builder,
+  cache_factory = CompiledFileSystem.Factory(file_system, branch_memcache)
+  api_list_data_source_factory = APIListDataSource.Factory(cache_factory,
                                                            file_system,
                                                            API_PATH,
                                                            PUBLIC_TEMPLATE_PATH)
   intro_data_source_factory = IntroDataSource.Factory(
-      cache_builder,
+      cache_factory,
       [INTRO_PATH, ARTICLE_PATH])
-  samples_data_source_factory = SamplesDataSource.Factory(branch,
-                                                          file_system,
-                                                          GITHUB_FILE_SYSTEM,
-                                                          cache_builder,
-                                                          GITHUB_CACHE_BUILDER,
-                                                          EXAMPLES_PATH)
-  api_data_source_factory = APIDataSource.Factory(cache_builder,
+  samples_data_source_factory = SamplesDataSource.Factory(
+      branch,
+      file_system,
+      GITHUB_FILE_SYSTEM,
+      cache_factory,
+      GITHUB_COMPILED_FILE_SYSTEM,
+      EXAMPLES_PATH)
+  api_data_source_factory = APIDataSource.Factory(cache_factory,
                                                   API_PATH,
                                                   samples_data_source_factory)
   template_data_source_factory = TemplateDataSource.Factory(
@@ -104,17 +105,17 @@ def _GetInstanceForBranch(channel_name, local_path):
       api_list_data_source_factory,
       intro_data_source_factory,
       samples_data_source_factory,
-      cache_builder,
+      cache_factory,
       PUBLIC_TEMPLATE_PATH,
       PRIVATE_TEMPLATE_PATH)
   example_zipper = ExampleZipper(file_system,
-                                 cache_builder,
+                                 cache_factory,
                                  DOCS_PATH,
                                  EXAMPLES_PATH)
   SERVER_INSTANCES[branch] = ServerInstance(
       template_data_source_factory,
       example_zipper,
-      cache_builder)
+      cache_factory)
   return SERVER_INSTANCES[branch]
 
 def _GetURLFromBranch(branch):
@@ -172,9 +173,9 @@ class Handler(webapp.RequestHandler):
     logging.info('Running cron job for %s.' % branch)
     branch_memcache = InMemoryObjectStore(branch)
     file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
-    builder = FileSystemCache.Builder(file_system, branch_memcache)
-    render_cache = builder.build(lambda x: self._Render(x, branch),
-                                 fs_cache.RENDER)
+    factory = CompiledFileSystem.Factory(file_system, branch_memcache)
+    render_cache = factory.Create(lambda x: self._Render(x, branch),
+                                  compiled_fs.RENDER)
     render_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH)
     self.response.out.write('Success')
 

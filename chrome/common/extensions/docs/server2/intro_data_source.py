@@ -7,7 +7,7 @@ import re
 
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
-import file_system_cache as fs_cache
+import compiled_file_system as compiled_fs
 from third_party.handlebar import Handlebar
 
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
@@ -57,9 +57,9 @@ class _IntroParser(HTMLParser):
 class IntroDataSource(object):
 
   class Factory(object):
-    def __init__(self, cache_builder, base_paths):
-      self._cache = cache_builder.build(self._MakeIntroDict,
-                                        fs_cache.INTRO)
+    def __init__(self, cache_factory, base_paths):
+      self._cache = cache_factory.Create(self._MakeIntroDict,
+                                         compiled_fs.INTRO)
       self._base_paths = base_paths
 
     def _MakeIntroDict(self, intro):

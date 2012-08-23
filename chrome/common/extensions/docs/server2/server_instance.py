@@ -7,7 +7,7 @@ import mimetypes
 import os
 
 from file_system import FileNotFoundError
-import file_system_cache as fs_cache
+import compiled_file_system as compiled_fs
 
 STATIC_DIR_PREFIX = 'docs/server2'
 DOCS_PATH = 'docs'
@@ -19,10 +19,10 @@ class ServerInstance(object):
   def __init__(self,
                template_data_source_factory,
                example_zipper,
-               cache_builder):
+               cache_factory):
     self._template_data_source_factory = template_data_source_factory
     self._example_zipper = example_zipper
-    self._cache = cache_builder.build(lambda x: x, fs_cache.STATIC)
+    self._cache = cache_factory.Create(lambda x: x, compiled_fs.STATIC)
     mimetypes.init()
 
   def _FetchStaticResource(self, path, response):

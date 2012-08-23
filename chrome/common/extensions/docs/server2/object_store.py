@@ -8,8 +8,8 @@ from future import Future
 CACHE_TIMEOUT = 300
 
 BRANCH_UTILITY            = 'BranchUtility'
-FILE_SYSTEM_CACHE         = 'FileSystemCache'
-FILE_SYSTEM_CACHE_LISTING = 'FileSystemCacheListing'
+FILE_SYSTEM_CACHE         = 'CompiledFileSystem'
+FILE_SYSTEM_CACHE_LISTING = 'CompiledFileSystemListing'
 FILE_SYSTEM_READ          = 'Read'
 FILE_SYSTEM_STAT          = 'Stat'
 GITHUB_STAT               = 'GithubStat'

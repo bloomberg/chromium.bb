@@ -25,18 +25,18 @@ class _CacheEntry(object):
     self._cache_data = cache_data
     self.version = version
 
-class FileSystemCache(object):
+class CompiledFileSystem(object):
   """This class caches FileSystem data that has been processed.
   """
-  class Builder(object):
-    """A class to build a FileSystemCache.
+  class Factory(object):
+    """A class to build a CompiledFileSystem.
     """
     def __init__(self, file_system, object_store):
       self._file_system = file_system
       self._object_store = object_store
 
-    def build(self, populate_function, namespace):
-      return FileSystemCache(self._file_system,
+    def Create(self, populate_function, namespace):
+      return CompiledFileSystem(self._file_system,
                              populate_function,
                              self._object_store,
                              namespace)
@@ -45,7 +45,7 @@ class FileSystemCache(object):
     self._file_system = file_system
     self._populate_function = populate_function
     self._object_store = object_store
-    self._namespace = 'FileSystemCache.' + namespace
+    self._namespace = 'CompiledFileSystem.' + namespace
 
   def _MakeKey(self, key):
     return self._namespace + '.' + key
