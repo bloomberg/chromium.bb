@@ -375,10 +375,13 @@ void BrowserWindowGtk::Init() {
   SetBackgroundColor();
   HideUnsupportedWindowFeatures();
 
-  // Setting _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED tells gnome-shell to not force
-  // fullscreen on the window when it matches the desktop size.
-  ui::SetHideTitlebarWhenMaximizedProperty(
-      ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)));
+  if (UseCustomFrame()) {
+    // Setting _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED tells gnome-shell to not force
+    // fullscreen on the window when it matches the desktop size.
+    ui::SetHideTitlebarWhenMaximizedProperty(
+        ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)),
+        ui::HIDE_TITLEBAR_WHEN_MAXIMIZED);
+  }
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
@@ -1240,6 +1243,10 @@ void BrowserWindowGtk::Observe(int type,
       std::string* pref_name = content::Details<std::string>(details).ptr();
       if (*pref_name == prefs::kUseCustomChromeFrame) {
         UpdateCustomFrame();
+        ui::SetHideTitlebarWhenMaximizedProperty(
+            ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)),
+            UseCustomFrame() ? ui::HIDE_TITLEBAR_WHEN_MAXIMIZED
+                             : ui::SHOW_TITLEBAR_WHEN_MAXIMIZED);
       } else {
         NOTREACHED() << "Got pref change notification we didn't register for!";
       }

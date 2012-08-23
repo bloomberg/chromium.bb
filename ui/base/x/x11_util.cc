@@ -488,8 +488,9 @@ void* GetVisualFromGtkWidget(GtkWidget* widget) {
 }
 #endif  // defined(TOOLKIT_GTK)
 
-void SetHideTitlebarWhenMaximizedProperty(XID window) {
-  uint32 hide = 1;
+void SetHideTitlebarWhenMaximizedProperty(XID window,
+                                          HideTitlebarWhenMaximized property) {
+  uint32 hide = property;
   XChangeProperty(GetXDisplay(),
       window,
       GetAtom("_GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED"),
