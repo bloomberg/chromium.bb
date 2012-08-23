@@ -485,6 +485,10 @@ class CONTENT_EXPORT WebContentsImpl
                       bool success,
                       const string16& user_input);
 
+  // Callback function when requesting permission to access the PPAPI broker.
+  // |result| is true if permission was granted.
+  void OnPpapiBrokerPermissionResult(int request_id, bool result);
+
   // IPC message handlers.
   void OnRegisterIntentService(const webkit_glue::WebIntentServiceData& data,
                                bool user_gesture);
@@ -534,6 +538,9 @@ class CONTENT_EXPORT WebContentsImpl
   void OnWebUISend(const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);
+  void OnRequestPpapiBrokerPermission(int request_id,
+                                      const GURL& url,
+                                      const FilePath& plugin_path);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

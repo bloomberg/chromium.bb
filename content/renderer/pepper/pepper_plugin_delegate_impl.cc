@@ -476,6 +476,7 @@ bool PepperPluginDelegateImpl::StopWaitingForBrokerConnection(
       return true;
     }
   }
+
   return false;
 }
 
@@ -809,26 +810,56 @@ PepperPluginDelegateImpl::ConnectToBroker(
     webkit::ppapi::PPB_Broker_Impl* client) {
   DCHECK(client);
 
-  // If a broker needs to be created, this will ensure it does not get deleted
-  // before Connect() adds a reference.
-  scoped_refptr<PepperBrokerImpl> broker_impl;
-
   webkit::ppapi::PluginModule* plugin_module =
       webkit::ppapi::ResourceHelper::GetPluginModule(client);
   if (!plugin_module)
     return NULL;
 
-  webkit::ppapi::PluginDelegate::Broker* broker = plugin_module->GetBroker();
-  if (!broker) {
-    broker_impl = CreateBroker(plugin_module);
-    if (!broker_impl.get())
+  scoped_refptr<PepperBrokerImpl> broker =
+      static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
+  if (!broker.get()) {
+    broker = CreateBroker(plugin_module);
+    if (!broker.get())
       return NULL;
-    broker = broker_impl;
   }
 
-  // Adds a reference, ensuring not deleted when broker_impl goes out of scope.
-  broker->Connect(client);
+  int request_id = pending_permission_requests_.Add(
+      new base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>(client->AsWeakPtr()));
+  if (!render_view_->Send(
+          new ViewHostMsg_RequestPpapiBrokerPermission(
+              render_view_->routing_id(),
+              request_id,
+              client->GetDocumentUrl(),
+              plugin_module->path()))) {
+    return NULL;
+  }
+
+  // Adds a reference, ensuring that the broker is not deleted when
+  // |broker| goes out of scope.
+  broker->AddPendingConnect(client);
+
   return broker;
+}
+
+void PepperPluginDelegateImpl::OnPpapiBrokerPermissionResult(
+    int request_id,
+    bool result) {
+  scoped_ptr<base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> > client_ptr(
+      pending_permission_requests_.Lookup(request_id));
+  DCHECK(client_ptr.get());
+  pending_permission_requests_.Remove(request_id);
+  base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> client = *client_ptr;
+  if (!client)
+    return;
+
+  webkit::ppapi::PluginModule* plugin_module =
+      webkit::ppapi::ResourceHelper::GetPluginModule(client);
+  if (!plugin_module)
+    return;
+
+  PepperBrokerImpl* broker =
+      static_cast<PepperBrokerImpl*>(plugin_module->GetBroker());
+  broker->OnBrokerPermissionResult(client, result);
 }
 
 bool PepperPluginDelegateImpl::AsyncOpenFile(

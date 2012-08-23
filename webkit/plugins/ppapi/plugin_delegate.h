@@ -299,12 +299,10 @@ class PluginDelegate {
   // Provides access to the ppapi broker.
   class Broker {
    public:
-    virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
-
     // Decrements the references to the broker.
     // When there are no more references, this renderer's dispatcher is
     // destroyed, allowing the broker to shutdown if appropriate.
-    // Callers should not reference this object after calling Disconnect.
+    // Callers should not reference this object after calling Disconnect().
     virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 
    protected:
@@ -404,7 +402,7 @@ class PluginDelegate {
 
   // A pointer is returned immediately, but it is not ready to be used until
   // BrokerConnected has been called.
-  // The caller is responsible for calling Release() on the returned pointer
+  // The caller is responsible for calling Disconnect() on the returned pointer
   // to clean up the corresponding resources allocated during this call.
   virtual Broker* ConnectToBroker(webkit::ppapi::PPB_Broker_Impl* client) = 0;
 

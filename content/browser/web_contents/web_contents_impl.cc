@@ -682,6 +682,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnSetSelectedColorInColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PepperPluginHung, OnPepperPluginHung)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
+                        OnRequestPpapiBrokerPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -2238,6 +2240,33 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
                                   const base::ListValue& args) {
   if (delegate_)
     delegate_->WebUISend(this, source_url, name, args);
+}
+
+void WebContentsImpl::OnRequestPpapiBrokerPermission(
+    int request_id,
+    const GURL& url,
+    const FilePath& plugin_path) {
+  base::Callback<void(bool)> callback =
+      base::Bind(&WebContentsImpl::OnPpapiBrokerPermissionResult,
+                 base::Unretained(this), request_id);
+  ObserverListBase<WebContentsObserver>::Iterator it(observers_);
+  WebContentsObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->RequestPpapiBrokerPermission(this, url, plugin_path,
+                                               callback))
+      return;
+  }
+
+  // Fall back to allowing the request if no observer handled it.
+  OnPpapiBrokerPermissionResult(request_id, true);
+}
+
+void WebContentsImpl::OnPpapiBrokerPermissionResult(int request_id,
+                                                    bool result) {
+  RenderViewHostImpl* rvh = GetRenderViewHostImpl();
+  rvh->Send(new ViewMsg_PpapiBrokerPermissionResult(rvh->GetRoutingID(),
+                                                    request_id,
+                                                    result));
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

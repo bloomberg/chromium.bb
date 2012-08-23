@@ -36,6 +36,10 @@ class WEBKIT_PLUGINS_EXPORT PPB_Broker_Impl
       scoped_refptr< ::ppapi::TrackedCallback> connect_callback) OVERRIDE;
   virtual int32_t GetHandle(int32_t* handle) OVERRIDE;
 
+  // Returns the URL of the document this plug-in runs in. This is necessary to
+  // decide whether to grant access to the PPAPI broker.
+  GURL GetDocumentUrl();
+
   void BrokerConnected(int32_t handle, int32_t result);
 
  private:

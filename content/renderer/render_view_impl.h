@@ -910,6 +910,7 @@ class RenderViewImpl : public RenderWidget,
                          int message_id);
   void OnPpapiBrokerChannelCreated(int request_id,
                                    const IPC::ChannelHandle& handle);
+  void OnPpapiBrokerPermissionResult(int request_id, bool result);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage();

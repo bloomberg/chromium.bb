@@ -116,24 +116,14 @@ PepperBrokerImpl::PepperBrokerImpl(webkit::ppapi::PluginModule* plugin_module,
 }
 
 PepperBrokerImpl::~PepperBrokerImpl() {
-  // Report failure to all clients that had pending operations.
-  for (ClientMap::iterator i = pending_connects_.begin();
-       i != pending_connects_.end(); ++i) {
-    base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
-    if (weak_ptr) {
-      weak_ptr->BrokerConnected(
-          ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
-          PP_ERROR_ABORTED);
-    }
-  }
-  pending_connects_.clear();
-
+  ReportFailureToClients(PP_ERROR_ABORTED);
   plugin_module_->SetBroker(NULL);
   plugin_module_ = NULL;
 }
 
 // If the channel is not ready, queue the connection.
-void PepperBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
+void PepperBrokerImpl::AddPendingConnect(
+    webkit::ppapi::PPB_Broker_Impl* client) {
   DCHECK(pending_connects_.find(client) == pending_connects_.end())
       << "Connect was already called for this client";
 
@@ -146,13 +136,7 @@ void PepperBrokerImpl::Connect(webkit::ppapi::PPB_Broker_Impl* client) {
   // longer using it.
   AddRef();
 
-  if (!dispatcher_.get()) {
-    pending_connects_[client] = client->AsWeakPtr();
-    return;
-  }
-  DCHECK(pending_connects_.empty());
-
-  ConnectPluginToBroker(client);
+  pending_connects_[client].client = client->AsWeakPtr();
 }
 
 void PepperBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
@@ -179,7 +163,7 @@ void PepperBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
       bool stopped = delegate_->StopWaitingForBrokerConnection(this);
 
       // Verify the assumption that there are no references other than the one
-      // client holds, which will be released below.
+      // |client| holds, which will be released below.
       DCHECK(!stopped || HasOneRef());
     }
   }
@@ -193,26 +177,81 @@ void PepperBrokerImpl::OnBrokerChannelConnected(
     const IPC::ChannelHandle& channel_handle) {
   scoped_ptr<PepperBrokerDispatcherWrapper> dispatcher(
       new PepperBrokerDispatcherWrapper);
-  if (dispatcher->Init(channel_handle)) {
-    dispatcher_.reset(dispatcher.release());
+  if (!dispatcher->Init(channel_handle)) {
+    ReportFailureToClients(PP_ERROR_FAILED);
+    return;
+  }
 
-    // Process all pending channel requests from the plugins.
-    for (ClientMap::iterator i = pending_connects_.begin();
-         i != pending_connects_.end(); ++i) {
-      base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
-      if (weak_ptr)
-        ConnectPluginToBroker(weak_ptr);
+  dispatcher_.reset(dispatcher.release());
+
+  // Process all pending channel requests from the plugins.
+  for (ClientMap::iterator i = pending_connects_.begin();
+       i != pending_connects_.end();) {
+    base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr =
+        i->second.client;
+    if (!i->second.is_authorized) {
+      ++i;
+      continue;
     }
-  } else {
-    // Report failure to all clients.
-    for (ClientMap::iterator i = pending_connects_.begin();
-         i != pending_connects_.end(); ++i) {
-      base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
-      if (weak_ptr) {
-        weak_ptr->BrokerConnected(
-            ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
-            PP_ERROR_FAILED);
-      }
+
+    if (weak_ptr)
+      ConnectPluginToBroker(weak_ptr);
+
+    pending_connects_.erase(i++);
+  }
+}
+
+void PepperBrokerImpl::OnBrokerPermissionResult(
+    webkit::ppapi::PPB_Broker_Impl* client,
+    bool result) {
+  ClientMap::iterator entry = pending_connects_.find(client);
+  if (entry == pending_connects_.end())
+    return;
+
+  if (!entry->second.client) {
+    // Client has gone away.
+    pending_connects_.erase(entry);
+    return;
+  }
+
+  if (!result) {
+    // Report failure.
+    client->BrokerConnected(
+        ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
+        PP_ERROR_NOACCESS);
+    pending_connects_.erase(entry);
+    return;
+  }
+
+  if (dispatcher_.get()) {
+    ConnectPluginToBroker(client);
+    pending_connects_.erase(entry);
+    return;
+  }
+
+  // Mark the request as authorized, continue waiting for the broker
+  // connection.
+  DCHECK(!entry->second.is_authorized);
+  entry->second.is_authorized = true;
+}
+
+PepperBrokerImpl::PendingConnection::PendingConnection()
+    : is_authorized(false) {
+}
+
+PepperBrokerImpl::PendingConnection::~PendingConnection() {
+}
+
+void PepperBrokerImpl::ReportFailureToClients(int error_code) {
+  DCHECK_NE(PP_OK, error_code);
+  for (ClientMap::iterator i = pending_connects_.begin();
+       i != pending_connects_.end(); ++i) {
+    base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr =
+        i->second.client;
+    if (weak_ptr) {
+      weak_ptr->BrokerConnected(
+          ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
+          error_code);
     }
   }
   pending_connects_.clear();

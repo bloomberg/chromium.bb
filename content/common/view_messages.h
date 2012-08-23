@@ -1310,6 +1310,13 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
                     int /* request_id */,
                     IPC::ChannelHandle /* handle */)
 
+// Reply to ViewHostMsg_RequestPpapiBrokerPermission.
+// Tells the renderer whether permission to access to PPAPI broker was granted
+// or not.
+IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerPermissionResult,
+                    int /* request_id */,
+                    bool /* result */)
+
 // Tells the renderer to empty its plugin list cache, optional reloading
 // pages containing plugins.
 IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
@@ -1848,6 +1855,15 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_OpenChannelToPpapiBroker,
                      int /* routing_id */,
                      int /* request_id */,
                      FilePath /* path */)
+
+// A renderer sends this to the browser process when it wants to access a PPAPI
+// broker. In contrast to ViewHostMsg_OpenChannelToPpapiBroker, this is called
+// for every connection.
+// The browser will respond with ViewMsg_PpapiBrokerPermissionResult.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
+                    int /* request_id */,
+                    GURL /* document_url */,
+                    FilePath /* plugin_path */)
 
 #if defined(USE_X11)
 // A renderer sends this when it needs a browser-side widget for

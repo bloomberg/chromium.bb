@@ -985,6 +985,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
     IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
                         OnPpapiBrokerChannelCreated)
+    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
+                        OnPpapiBrokerPermissionResult)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
                         OnGetAllSavableResourceLinksForCurrentPage)
     IPC_MESSAGE_HANDLER(
@@ -5831,6 +5833,12 @@ void RenderViewImpl::OnPpapiBrokerChannelCreated(
     const IPC::ChannelHandle& handle) {
   pepper_delegate_.OnPpapiBrokerChannelCreated(request_id,
                                                handle);
+}
+
+void RenderViewImpl::OnPpapiBrokerPermissionResult(
+    int request_id,
+    bool result) {
+  pepper_delegate_.OnPpapiBrokerPermissionResult(request_id, result);
 }
 
 #if defined(OS_MACOSX)

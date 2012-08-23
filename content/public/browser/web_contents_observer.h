@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 
+#include "base/callback_forward.h"
 #include "base/process_util.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
@@ -128,6 +129,18 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when the user agent override for a WebContents has been changed.
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
+
+  // Requests permission to access the PPAPI broker. If the object handles the
+  // request, it should return true and eventually call the passed in |callback|
+  // with the result. Otherwise it should return false, in which case the next
+  // observer will be called.
+  // Implementations should make sure not to call the callback after the
+  // WebContents has been destroyed.
+  virtual bool RequestPpapiBrokerPermission(
+      WebContents* web_contents,
+      const GURL& url,
+      const FilePath& plugin_path,
+      const base::Callback<void(bool)>& callback);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

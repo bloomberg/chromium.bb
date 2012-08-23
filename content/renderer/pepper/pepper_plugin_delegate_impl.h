@@ -130,6 +130,10 @@ class PepperPluginDelegateImpl
   // Removes broker from pending_connect_broker_ if present. Returns true if so.
   bool StopWaitingForBrokerConnection(PepperBrokerImpl* broker);
 
+  // Called when we know whether permission to access the PPAPI broker was
+  // granted.
+  void OnPpapiBrokerPermissionResult(int request_id, bool result);
+
   // Notification that the render view has been focused or defocused. This
   // notifies all of the plugins.
   void OnSetFocus(bool has_focus);
@@ -496,6 +500,10 @@ class PepperPluginDelegateImpl
 
   typedef IDMap<scoped_refptr<PepperBrokerImpl>, IDMapOwnPointer> BrokerMap;
   BrokerMap pending_connect_broker_;
+
+  typedef IDMap<base::WeakPtr<webkit::ppapi::PPB_Broker_Impl> >
+      PermissionRequestMap;
+  PermissionRequestMap pending_permission_requests_;
 
   // Whether or not the focus is on a PPAPI plugin
   webkit::ppapi::PluginInstance* focused_plugin_;
