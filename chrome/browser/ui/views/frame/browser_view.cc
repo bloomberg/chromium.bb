@@ -1588,7 +1588,7 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   if (base::win::IsMetroProcess())
     return;
 #endif
