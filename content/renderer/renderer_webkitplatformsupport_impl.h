@@ -67,6 +67,14 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const WebKit::WebURL& url) OVERRIDE;
   virtual void screenColorProfile(WebKit::WebVector<char>* to_profile) OVERRIDE;
   virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
+  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebIDBKeyPath& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys) OVERRIDE;
+  virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
+      const WebKit::WebIDBKey& key,
+      const WebKit::WebSerializedScriptValue& value,
+      const WebKit::WebIDBKeyPath& keyPath) OVERRIDE;
   virtual WebKit::WebFileSystem* fileSystem() OVERRIDE;
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
   virtual bool canAccelerate2dCanvas();

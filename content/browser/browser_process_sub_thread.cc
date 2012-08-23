@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/browser/notification_service_impl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -68,6 +69,8 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
 
   // Destroy all URLRequests started by URLFetchers.
   net::URLFetcher::CancelAll();
+
+  IndexedDBKeyUtilityClient::Shutdown();
 
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever

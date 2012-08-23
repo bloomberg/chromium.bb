@@ -17,6 +17,9 @@
 class FilePath;
 
 namespace content {
+class IndexedDBKey;
+class IndexedDBKeyPath;
+class SerializedScriptValue;
 class WebKitPlatformSupportImpl;
 }
 
@@ -39,6 +42,14 @@ class UtilityThreadImpl : public content::UtilityThread,
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // IPC message handlers.
+  void OnIDBKeysFromValuesAndKeyPath(
+      int id,
+      const std::vector<content::SerializedScriptValue>&
+          serialized_script_values,
+      const content::IndexedDBKeyPath& idb_key_path);
+  void OnInjectIDBKey(const content::IndexedDBKey& key,
+                      const content::SerializedScriptValue& value,
+                      const content::IndexedDBKeyPath& key_path);
   void OnBatchModeStarted();
   void OnBatchModeFinished();
 

@@ -264,6 +264,26 @@ WebKit::WebIDBFactory* TestShellWebKitInit::idbFactory() {
   return WebKit::WebIDBFactory::create();
 }
 
+void TestShellWebKitInit::createIDBKeysFromSerializedValuesAndKeyPath(
+    const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+    const WebKit::WebIDBKeyPath& keyPath,
+    WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
+  WebKit::WebVector<WebKit::WebIDBKey> keys(values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
+    keys[i] = WebKit::WebIDBKey::createFromValueAndKeyPath(
+        values[i], keyPath);
+  }
+  keys_out.swap(keys);
+}
+
+WebKit::WebSerializedScriptValue
+TestShellWebKitInit::injectIDBKeyIntoSerializedValue(
+    const WebKit::WebIDBKey& key, const WebKit::WebSerializedScriptValue& value,
+    const WebKit::WebIDBKeyPath& keyPath) {
+  return WebKit::WebIDBKey::injectIDBKeyIntoSerializedValue(
+      key, value, keyPath);
+}
+
 WebKit::WebSharedWorkerRepository*
 TestShellWebKitInit::sharedWorkerRepository() {
   return NULL;

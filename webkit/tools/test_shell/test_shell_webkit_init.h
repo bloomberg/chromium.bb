@@ -8,7 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -74,6 +77,17 @@ class TestShellWebKitInit : public webkit_glue::WebKitPlatformSupportImpl {
       const WebKit::WebString& path, unsigned quota) OVERRIDE;
 
   virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
+
+  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebIDBKeyPath& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys_out) OVERRIDE;
+
+  virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
+      const WebKit::WebIDBKey& key,
+      const WebKit::WebSerializedScriptValue& value,
+      const WebKit::WebIDBKeyPath& keyPath) OVERRIDE;
+
 
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine) {
