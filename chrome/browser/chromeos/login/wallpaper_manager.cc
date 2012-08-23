@@ -663,6 +663,10 @@ void WallpaperManager::SetWallpaper(const std::string& username,
 
 bool WallpaperManager::ShouldPersistDataForUser(const std::string& email) {
   UserManager* user_manager = UserManager::Get();
+  // |email| is from user list in local state. We should persist data in this
+  // case.
+  if (!user_manager->IsUserLoggedIn())
+    return true;
   return !(email == user_manager->GetLoggedInUser().email() &&
            user_manager->IsCurrentUserEphemeral());
 }
