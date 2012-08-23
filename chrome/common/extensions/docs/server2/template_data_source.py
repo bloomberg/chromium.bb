@@ -59,11 +59,14 @@ class TemplateDataSource(object):
       self._static_resources = (
           (('/' + channel_name) if channel_name != 'local' else '') + '/static')
 
-    def Create(self, request):
+    def Create(self, request, path):
       """Returns a new TemplateDataSource bound to |request|.
       """
+      branch_info = self._branch_info.copy()
+      branch_info['showWarning'] = (not path.startswith('apps') and
+                                    branch_info['showWarning'])
       return TemplateDataSource(
-          self._branch_info,
+          branch_info,
           self._api_data_source_factory.Create(request),
           self._api_list_data_source_factory.Create(),
           self._intro_data_source_factory.Create(),

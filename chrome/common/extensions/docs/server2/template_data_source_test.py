@@ -47,7 +47,7 @@ class TemplateDataSourceTest(unittest.TestCase):
         data_source.Render(template_name))
 
   def _CreateTemplateDataSource(self, input_dict, cache_factory):
-    return (TemplateDataSource.Factory('fake_branch',
+    return (TemplateDataSource.Factory('fake_channel',
                                        _FakeFactory(input_dict),
                                        self._fake_api_list_data_source_factory,
                                        self._fake_intro_data_source_factory,
@@ -55,7 +55,7 @@ class TemplateDataSourceTest(unittest.TestCase):
                                        cache_factory,
                                        '.',
                                        '.')
-            .Create(_FakeRequest()))
+            .Create(_FakeRequest(), 'extensions/foo'))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')

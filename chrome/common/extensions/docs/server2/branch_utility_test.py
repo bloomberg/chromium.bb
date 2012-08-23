@@ -10,27 +10,31 @@ import unittest
 
 class BranchUtilityTest(unittest.TestCase):
   def setUp(self):
-    self._branch_util = BranchUtility('branch_utility/first.json',
-                                      'stable',
-                                      FakeUrlFetcher('test_data'),
-                                      InMemoryObjectStore(''))
+    self._branch_util = BranchUtility(
+        'branch_utility/first.json',
+        { 'extensions': 'stable', 'apps': 'trunk' },
+        FakeUrlFetcher('test_data'),
+        InMemoryObjectStore(''))
 
   def testSplitChannelNameFromPath(self):
-    self.assertEquals(('dev', 'hello/stuff.html'),
+    self.assertEquals(('dev', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
-                      'dev/hello/stuff.html'))
-    self.assertEquals(('beta', 'hello/stuff.html'),
+                      'dev/extensions/stuff.html'))
+    self.assertEquals(('beta', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
-                      'beta/hello/stuff.html'))
-    self.assertEquals(('trunk', 'hello/stuff.html'),
+                      'beta/extensions/stuff.html'))
+    self.assertEquals(('trunk', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
-                      'trunk/hello/stuff.html'))
-    self.assertEquals(('stable', 'hello/stuff.html'),
+                      'trunk/extensions/stuff.html'))
+    self.assertEquals(('stable', 'extensions/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
-                      'hello/stuff.html'))
-    self.assertEquals(('stable', 'hello/dev/stuff.html'),
+                      'extensions/stuff.html'))
+    self.assertEquals(('trunk', 'apps/stuff.html'),
                       self._branch_util.SplitChannelNameFromPath(
-                      'hello/dev/stuff.html'))
+                      'apps/stuff.html'))
+    self.assertEquals(('stable', 'extensions/dev/stuff.html'),
+                      self._branch_util.SplitChannelNameFromPath(
+                      'extensions/dev/stuff.html'))
 
   def testGetBranchNumberForChannelName(self):
     self.assertEquals('1132',

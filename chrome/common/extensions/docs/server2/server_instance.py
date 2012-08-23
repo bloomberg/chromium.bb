@@ -37,7 +37,8 @@ class ServerInstance(object):
     return result
 
   def Get(self, path, request, response):
-    templates = self._template_data_source_factory.Create(request)
+    # TODO(cduvall): bundle up all the request-scoped data into a single object.
+    templates = self._template_data_source_factory.Create(request, path)
 
     if fnmatch(path, 'extensions/examples/*.zip'):
       content = self._example_zipper.Create(

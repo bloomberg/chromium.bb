@@ -33,11 +33,14 @@ import url_constants
 # The branch that the server will default to when no branch is specified in the
 # URL. This is necessary because it is not possible to pass flags to the script
 # handler.
-DEFAULT_BRANCH = 'local'
+# Production settings:
+# DEFAULT_BRANCHES = { 'extensions': 'stable', 'apps': 'trunk' }
+# Dev settings:
+DEFAULT_BRANCHES = { 'extensions': 'local', 'apps': 'local' }
 
 BRANCH_UTILITY_MEMCACHE = InMemoryObjectStore('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
-                               DEFAULT_BRANCH,
+                               DEFAULT_BRANCHES,
                                AppEngineUrlFetcher(None),
                                BRANCH_UTILITY_MEMCACHE)
 
