@@ -1186,7 +1186,6 @@ TEST_F(TopSitesTest, CreateTopSitesThenHistory) {
                     false);
 
   // Create TopSites, but not History.
-  HistoryServiceFactory::GetInstance()->SetTestingFactory(profile(), NULL);
   profile()->CreateTopSites();
   WaitForTopSites();
   EXPECT_FALSE(IsTopSitesLoaded());

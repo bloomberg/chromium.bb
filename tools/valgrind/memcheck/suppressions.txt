@@ -5794,30 +5794,6 @@
    fun:_ZN8appcache15AppCacheService10InitializeERK8FilePathPN4base16MessageLoopProxyES6_
    fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadERK8FilePathPN7content15ResourceContextE13scoped_refptrIN5quota20SpecialStoragePolicyEE
 }
-{
-   bug_144081
-   Memcheck:Leak
-   ...
-   fun:_ZN7history19URLIndexPrivateData18RebuildFromHistoryEPNS_15HistoryDatabaseE13scoped_refptrIS0_E
-   fun:_ZN7history16InMemoryURLIndex35RebuildPrivateDataFromHistoryDBTask13RunOnDBThreadEPNS_14HistoryBackendEPNS_15HistoryDatabaseE
-}
-{
-   bug_144082
-   Memcheck:Leak
-   ...
-   fun:_ZN7history16InMemoryURLIndex37DoneRebuidingPrivateDataFromHistoryDBEb13scoped_refptrINS_19URLIndexPrivateDataEE
-   fun:_ZN7history16InMemoryURLIndex35RebuildPrivateDataFromHistoryDBTask19DoneRunOnMainThreadEv
-}
-{
-   bug_144083
-   Memcheck:Leak
-   ...
-   fun:_ZN7history25InitializeSchemeWhitelistEPSt3setISsSt4lessISsESaISsEE
-   fun:_ZN7history19URLIndexPrivateDataC1ERK8FilePathRKSs
-   fun:_ZN7history16InMemoryURLIndexC1EP7ProfileRK8FilePathRKSs
-   fun:_ZN14HistoryService4InitERK8FilePathP15BookmarkServicebb
-   fun:_ZN14TestingProfile18InitHistoryServiceEP14HistoryServiceb
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

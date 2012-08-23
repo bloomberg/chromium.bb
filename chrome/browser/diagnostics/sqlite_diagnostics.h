@@ -18,7 +18,6 @@ sql::ErrorDelegate* GetErrorHandlerForHistoryDb();
 sql::ErrorDelegate* GetErrorHandlerForThumbnailDb();
 sql::ErrorDelegate* GetErrorHandlerForTextDb();
 sql::ErrorDelegate* GetErrorHandlerForWebDb();
-sql::ErrorDelegate* GetErrorHandlerForHQPCacheDb();
 
 // Factories for the db integrity tests we run in diagnostic mode.
 DiagnosticTest* MakeSqliteWebDbTest();
@@ -26,7 +25,6 @@ DiagnosticTest* MakeSqliteCookiesDbTest();
 DiagnosticTest* MakeSqliteHistoryDbTest();
 DiagnosticTest* MakeSqliteArchivedHistoryDbTest();
 DiagnosticTest* MakeSqliteThumbnailsDbTest();
-DiagnosticTest* MakeSqliteHQPCacheDbTest();
 DiagnosticTest* MakeSqliteAppCacheDbTest();
 DiagnosticTest* MakeSqliteWebDatabaseTrackerDbTest();
 

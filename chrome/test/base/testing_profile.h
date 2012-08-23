@@ -37,8 +37,6 @@ class SpecialStoragePolicy;
 
 class CommandLine;
 class ExtensionSpecialStoragePolicy;
-class FaviconService;
-class HistoryService;
 class HostContentSettingsMap;
 class PrefService;
 class ProfileDependencyManager;
@@ -140,12 +138,6 @@ class TestingProfile : public Profile {
   // the history backend will fail to initialize its database; this is useful
   // for testing error conditions.
   void CreateHistoryService(bool delete_file, bool no_db);
-
-  // Initializes the history service. If |no_db| is true, the history backend
-  // will fail to initialize its database; this is useful for testing error
-  // conditions. Returns true upon success.
-  virtual bool InitHistoryService(HistoryService* history_service,
-                                  bool no_db);
 
   // Shuts down and nulls out the reference to HistoryService.
   void DestroyHistoryService();
