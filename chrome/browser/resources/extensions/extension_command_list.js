@@ -33,6 +33,8 @@ cr.define('options', function() {
    */
   function keystrokeToString(event) {
     var output = '';
+    if (cr.isMac && event.metaKey)
+      output = 'Command+';
     if (event.ctrlKey)
       output = 'Ctrl+';
     if (!event.ctrlKey && event.altKey)
@@ -232,8 +234,8 @@ cr.define('options', function() {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!event.ctrlKey && !event.altKey)
-        return;  // Ctrl or Alt is a must.
+      if (!event.ctrlKey && !event.altKey && (!cr.isMac || !event.metaKey))
+        return;  // Ctrl or Alt is a must (or Cmd on Mac).
 
       var keystroke = keystrokeToString(event);
       event.target.textContent = keystroke;

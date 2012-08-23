@@ -360,6 +360,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_SHIFT_MODIFIER" desc="Shift key shortcut modifier">
         Shift+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
       </message>
+      <message name="IDS_APP_COMMAND_MODIFIER" desc="Command key shortcut modifier">
+        Command+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
+      </message>
 
       <!-- Byte size units -->
       <message name="IDS_APP_BYTES" desc="Units tag indicating a quantity of bytes">

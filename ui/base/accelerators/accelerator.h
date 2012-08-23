@@ -49,6 +49,7 @@ class UI_EXPORT Accelerator {
   bool IsShiftDown() const;
   bool IsCtrlDown() const;
   bool IsAltDown() const;
+  bool IsCmdDown() const;
 
   // Returns a string with the localized shortcut if any.
   string16 GetShortcutText() const;
