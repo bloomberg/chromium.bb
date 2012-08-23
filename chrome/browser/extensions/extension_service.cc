@@ -518,7 +518,8 @@ void ExtensionService::InitEventRouters() {
 }
 
 void ExtensionService::Shutdown() {
-  push_messaging_event_router_->Shutdown();
+  if (push_messaging_event_router_.get())
+    push_messaging_event_router_->Shutdown();
 }
 
 const Extension* ExtensionService::GetExtensionById(
