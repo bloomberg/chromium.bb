@@ -281,8 +281,7 @@
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="icon_add_user_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" />        
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER24" file="icon_power24.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER_WHITE" file="icon_power_white.png" />
       </if>
@@ -427,10 +426,10 @@
       <structure type="chrome_scaled_image" name="IDR_MOBILE" file="mobile.png" />
       <structure type="chrome_scaled_image" name="IDR_MOBILE_LIT" file="mobile_lit.png" />
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD" file="network_hide_password.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD_HOVER" file="network_hide_password_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD" file="network_show_password.png" />
-        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD_HOVER" file="network_show_password_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD" file="cros/network_hide_password.png" />
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_HIDE_PASSWORD_HOVER" file="cros/network_hide_password_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD" file="cros/network_show_password.png" />
+        <structure type="chrome_scaled_image" name="IDR_NETWORK_SHOW_PASSWORD_HOVER" file="cros/network_show_password_hover.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab.png" />
@@ -625,9 +624,6 @@
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_BADGE" file="protector_search_badge.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_MENU" file="protector_search_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" />
-      <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="common/speech_input_mic_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="common/speech_input_mic_full.png" />
@@ -833,8 +829,7 @@
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_INITIALIZING" file="initializing_video.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_NO_VIDEO" file="no_video.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" />
-        <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="volume_down_icon.png" />
-        <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_MUTE_ICON" file="volume_mute_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_DOWN_ICON" file="volume_down_icon.png" />        
         <structure type="chrome_scaled_image" name="IDR_VOLUME_BUBBLE_UP_ICON" file="volume_up_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_WARNING" file="alert_small.png" />
