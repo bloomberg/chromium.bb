@@ -125,6 +125,8 @@ void PPP_VideoDecoder_Proxy::OnMsgProvidePictureBuffers(
     uint32_t texture_target) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
+  if (!plugin_decoder)
+    return;
   CallWhileUnlocked(ppp_video_decoder_impl_->ProvidePictureBuffers,
                     decoder.instance(),
                     plugin_decoder,
@@ -137,6 +139,8 @@ void PPP_VideoDecoder_Proxy::OnMsgDismissPictureBuffer(
     const HostResource& decoder, int32_t picture_id) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
+  if (!plugin_decoder)
+    return;
   CallWhileUnlocked(ppp_video_decoder_impl_->DismissPictureBuffer,
                     decoder.instance(),
                     plugin_decoder,
@@ -147,6 +151,8 @@ void PPP_VideoDecoder_Proxy::OnMsgPictureReady(
     const HostResource& decoder, const PP_Picture_Dev& picture) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
+  if (!plugin_decoder)
+    return;
   CallWhileUnlocked(ppp_video_decoder_impl_->PictureReady,
                     decoder.instance(),
                     plugin_decoder,
@@ -157,6 +163,8 @@ void PPP_VideoDecoder_Proxy::OnMsgNotifyError(
     const HostResource& decoder, PP_VideoDecodeError_Dev error) {
   PP_Resource plugin_decoder = PluginGlobals::Get()->plugin_resource_tracker()->
       PluginResourceForHostResource(decoder);
+  if (!plugin_decoder)
+    return;
   CallWhileUnlocked(ppp_video_decoder_impl_->NotifyError,
                     decoder.instance(),
                     plugin_decoder,
