@@ -17,19 +17,18 @@
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/common/chrome_version_info.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
-
-namespace net {
-class URLFetcher;
-}  // namespace net
 
 namespace chrome_variations {
 
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.
-class VariationsService : public net::URLFetcherDelegate {
+class VariationsService
+    : public net::URLFetcherDelegate,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver{
  public:
   VariationsService();
   virtual ~VariationsService();
@@ -45,11 +44,13 @@ class VariationsService : public net::URLFetcherDelegate {
   void StartRepeatedVariationsSeedFetch();
 
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
-  // the response.
-  void FetchVariationsSeed();
+  // the response. If the network is down at the time, sets a flag to retry when
+  // the network is back online. This is virtual so it can be overriden for
+  // testing.
+  virtual void FetchVariationsSeed();
 
-  // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // Exposed for testing.
+  void SetWasOfflineDuringLastRequestAttemptForTesting(bool offline);
 
   // Register Variations related prefs in Local State.
   static void RegisterPrefs(PrefService* prefs);
@@ -61,10 +62,20 @@ class VariationsService : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersionWildcards);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyStartDate);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotFetchIfOffline);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotFetchIfOnlineToOnline);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, FetchOnReconnect);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, IsStudyExpired);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, LoadSeed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, StoreSeed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
+
+  // net::URLFetcherDelegate implementation:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // Store the given seed data to the given local prefs. Note that |seed_data|
   // is assumed to be the raw serialized protobuf data stored in a string. It
@@ -125,15 +136,19 @@ class VariationsService : public net::URLFetcherDelegate {
   // is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_seed_request_;
 
-  // The URL to use for querying the variations server.
+  // The URL to use for querying the Variations server.
   GURL variations_server_url_;
 
-  // Cached serial number from the most recently fetched variations seed.
+  // Cached serial number from the most recently fetched Variations seed.
   std::string variations_serial_number_;
 
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
   // it gets called prior to |StartRepeatedVariationsSeedFetch|.
   bool create_trials_from_seed_called_;
+
+  // Tracks whether or not the last seed request attempt failed due to being
+  // offline.
+  bool was_offline_during_last_request_attempt_;
 
   // The timer used to repeatedly ping the server. Keep this as an instance
   // member so if VariationsService goes out of scope, the timer is

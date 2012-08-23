@@ -84,7 +84,7 @@ base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 
-// Determine and return the variations server URL.
+// Determine and return the Variations server URL.
 GURL GetVariationsServerURL() {
   std::string server_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kVariationsServerURL));
@@ -99,10 +99,14 @@ GURL GetVariationsServerURL() {
 
 VariationsService::VariationsService()
     : variations_server_url_(GetVariationsServerURL()),
-      create_trials_from_seed_called_(false) {
+      create_trials_from_seed_called_(false),
+      was_offline_during_last_request_attempt_(false) {
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
-VariationsService::~VariationsService() {}
+VariationsService::~VariationsService() {
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+}
 
 bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
   create_trials_from_seed_called_ = true;
@@ -150,9 +154,11 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
 void VariationsService::FetchVariationsSeed() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  const bool is_offline = net::NetworkChangeNotifier::IsOffline();
-  UMA_HISTOGRAM_BOOLEAN("Variations.NetworkAvailability", !is_offline);
-  if (is_offline) {
+  was_offline_during_last_request_attempt_ =
+      net::NetworkChangeNotifier::IsOffline();
+  UMA_HISTOGRAM_BOOLEAN("Variations.NetworkAvailability",
+                        !was_offline_during_last_request_attempt_);
+  if (was_offline_during_last_request_attempt_) {
     DVLOG(1) << "Network was offline.";
     return;
   }
@@ -171,9 +177,21 @@ void VariationsService::FetchVariationsSeed() {
   pending_seed_request_->Start();
 }
 
+void VariationsService::SetWasOfflineDuringLastRequestAttemptForTesting(
+    bool offline) {
+  was_offline_during_last_request_attempt_ = offline;
+}
+
+// static
+void VariationsService::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
+                           base::Time().ToInternalValue());
+}
+
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_seed_request_.get(), source);
-  // When we're done handling the request, the fetcher will be deleted.
+  // The fetcher will be deleted when the request is handled.
   scoped_ptr<const net::URLFetcher> request(
       pending_seed_request_.release());
   if (request->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
@@ -198,11 +216,24 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   StoreSeedData(seed_data, response_date, g_browser_process->local_state());
 }
 
-// static
-void VariationsService::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
-  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
-                           base::Time().ToInternalValue());
+void VariationsService::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // If the connection type is back online, start a request if the last request
+  // failed due to being offline.
+  if (was_offline_during_last_request_attempt_ &&
+      type != net::NetworkChangeNotifier::CONNECTION_NONE) {
+    VLOG(1) << "Retrying fetch due to network reconnect.";
+    FetchVariationsSeed();
+
+    // Since FetchVariationsSeed was explicitly called here, reset the timer to
+    // avoid retrying for a full period.
+    // net::NetworkChangeNotifier::IsOffline may be inconsistent with |type|, so
+    // we check if FetchVariationsSeed set
+    // |was_offline_during_last_request_attempt_| to true before we reset the
+    // timer.
+    if (!was_offline_during_last_request_attempt_ && timer_.IsRunning())
+      timer_.Reset();
+  }
 }
 
 bool VariationsService::StoreSeedData(const std::string& seed_data,
