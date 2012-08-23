@@ -36,7 +36,6 @@
       'about_plugins_ui.AboutPluginsUITest',
       'apptest',
       'autofill',
-      'bookmarks',
       'browser',
       'chromoting.it2me_basic',
       'codesign',
@@ -146,9 +145,6 @@
 
       # Mysteriously broken?
       # crbug.com/138857
-      '-bookmarks.BookmarksTest.testAddBookmarksInMultiProfileIncognito',
-      '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfileIncognito',
-      '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfileIncognito',
       '-multiprofile.MultiprofileTest.testMakeSearchEngineDefaultInMultiprofile',
     ],
 
@@ -312,13 +308,6 @@
       # So one-click infobar tests do tno apply to chromeos.
       '-infobars.OneClickInfobarTest',
       # Multi-profile doesn't apply to chromeos yet.
-      '-bookmarks.BookmarksTest.testAddBookmarkInMultiProfile',
-      '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfile',
-      '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfile',
-      '-bookmarks.BookmarksTest.testAddBookmarksInMultiProfileIncognito',
-      '-bookmarks.BookmarksTest.testRemoveBookmarksInMultiProfileIncognito',
-      '-bookmarks.BookmarksTest.testEditBookmarksInMultiProfileIncognito',
-      '-bookmarks.BookmarksTest.testSearchBookmarksInMultiProfile',
       '-multiprofile',
       '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
       # These require a custom setup on ChromeOS and have their own suite for

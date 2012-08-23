@@ -263,6 +263,27 @@ TEST_F(BookmarkModelTest, AddURL) {
               new_node->id() != model_.mobile_node()->id());
 }
 
+TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
+  const BookmarkNode* root = model_.bookmark_bar_node();
+  const string16 title(WideToUTF16(
+      L"\u767e\u5ea6\u4e00\u4e0b\uff0c\u4f60\u5c31\u77e5\u9053"));
+  const GURL url("https://www.baidu.com/");
+
+  const BookmarkNode* new_node = model_.AddURL(root, 0, title, url);
+  AssertObserverCount(1, 0, 0, 0, 0);
+  observer_details_.ExpectEquals(root, NULL, 0, -1);
+
+  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(title, new_node->GetTitle());
+  ASSERT_TRUE(url == new_node->url());
+  ASSERT_EQ(BookmarkNode::URL, new_node->type());
+  ASSERT_TRUE(new_node == model_.GetMostRecentlyAddedNodeForURL(url));
+
+  EXPECT_TRUE(new_node->id() != root->id() &&
+              new_node->id() != model_.other_node()->id() &&
+              new_node->id() != model_.mobile_node()->id());
+}
+
 TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_.bookmark_bar_node();
