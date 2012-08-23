@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "net/url_request/url_request.h"
-#include "third_party/re2/re2/re2.h"
 
 namespace extensions {
 
@@ -108,18 +108,20 @@ scoped_ptr<WebRequestAction> CreateRedirectRequestByRegExAction(
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kFromKey, &from));
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kToKey, &to));
 
-  to = WebRequestRedirectByRegExAction::PerlToRe2Style(to);
+  // TODO(battre): Add this line once we migrate from ICU RegEx to RE2 RegEx.s
+  // to = WebRequestRedirectByRegExAction::PerlToRe2Style(to);
 
-  RE2::Options options;
-  options.set_case_sensitive(false);
-  scoped_ptr<RE2> from_pattern(new RE2(from, options));
-
-  if (!from_pattern->ok()) {
+  UParseError parse_error;
+  UErrorCode status = U_ZERO_ERROR;
+  scoped_ptr<icu::RegexPattern> pattern(
+      icu::RegexPattern::compile(icu::UnicodeString(from.data(), from.size()),
+                                 0, parse_error, status));
+  if (U_FAILURE(status) || !pattern.get()) {
     *error = "Invalid pattern '" + from + "' -> '" + to + "'";
     return scoped_ptr<WebRequestAction>(NULL);
   }
   return scoped_ptr<WebRequestAction>(
-      new WebRequestRedirectByRegExAction(from_pattern.Pass(), to));
+      new WebRequestRedirectByRegExAction(pattern.Pass(), to));
 }
 
 scoped_ptr<WebRequestAction> CreateSetRequestHeaderAction(
@@ -577,7 +579,7 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
 //
 
 WebRequestRedirectByRegExAction::WebRequestRedirectByRegExAction(
-    scoped_ptr<RE2> from_pattern,
+    scoped_ptr<icu::RegexPattern> from_pattern,
     const std::string& to_pattern)
     : from_pattern_(from_pattern.Pass()),
       to_pattern_(to_pattern.data(), to_pattern.size()) {}
@@ -652,17 +654,29 @@ LinkedPtrEventResponseDelta WebRequestRedirectByRegExAction::CreateDelta(
   CHECK(request_data.stage & GetStages());
   CHECK(from_pattern_.get());
 
+  UErrorCode status = U_ZERO_ERROR;
   const std::string& old_url = request_data.request->url().spec();
-  std::string new_url = old_url;
-  if (!RE2::Replace(&new_url, *from_pattern_, to_pattern_) ||
-      new_url == old_url) {
+  icu::UnicodeString old_url_unicode(old_url.data(), old_url.size());
+
+  scoped_ptr<icu::RegexMatcher> matcher(
+      from_pattern_->matcher(old_url_unicode, status));
+  if (U_FAILURE(status) || !matcher.get())
     return LinkedPtrEventResponseDelta(NULL);
-  }
+
+  icu::UnicodeString new_url = matcher->replaceAll(to_pattern_, status);
+  if (U_FAILURE(status))
+    return LinkedPtrEventResponseDelta(NULL);
+
+  std::string new_url_utf8;
+  UTF16ToUTF8(new_url.getBuffer(), new_url.length(), &new_url_utf8);
+
+  if (new_url_utf8 == request_data.request->url().spec())
+    return LinkedPtrEventResponseDelta(NULL);
 
   LinkedPtrEventResponseDelta result(
       new extension_web_request_api_helpers::EventResponseDelta(
           extension_id, extension_install_time));
-  result->new_url = GURL(new_url);
+  result->new_url = GURL(new_url_utf8);
   return result;
 }
 

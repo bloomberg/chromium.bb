@@ -24,7 +24,7 @@
 #include <iosfwd>
 #include <map>
 #include <stack>
-#include <ostream>
+#include <iostream>
 #include <utility>
 #include <set>
 

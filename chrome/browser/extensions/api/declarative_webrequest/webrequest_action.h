@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/common/extensions/api/events.h"
 #include "googleurl/src/gurl.h"
+#include "unicode/regex.h"
 
 class WebRequestPermission;
 
@@ -35,10 +36,6 @@ class Extension;
 
 namespace net {
 class URLRequest;
-}
-
-namespace re2 {
-class RE2;
 }
 
 namespace extensions {
@@ -239,10 +236,11 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
 // Action that instructs to redirect a network request.
 class WebRequestRedirectByRegExAction : public WebRequestAction {
  public:
-  // The |to_pattern| has to be passed in RE2 syntax with the exception that
-  // capture groups are referenced in Perl style ($1, $2, ...).
-  explicit WebRequestRedirectByRegExAction(scoped_ptr<re2::RE2> from_pattern,
-                                           const std::string& to_pattern);
+  // The |to_pattern| has to be passed in ICU syntax.
+  // TODO(battre): Change this to Perl style when migrated to RE2.
+  explicit WebRequestRedirectByRegExAction(
+      scoped_ptr<icu::RegexPattern> from_pattern,
+      const std::string& to_pattern);
   virtual ~WebRequestRedirectByRegExAction();
 
   // Conversion of capture group styles between Perl style ($1, $2, ...) and
@@ -258,8 +256,8 @@ class WebRequestRedirectByRegExAction : public WebRequestAction {
       const base::Time& extension_install_time) const OVERRIDE;
 
  private:
-  scoped_ptr<re2::RE2> from_pattern_;
-  std::string to_pattern_;
+  scoped_ptr<icu::RegexPattern> from_pattern_;
+  icu::UnicodeString to_pattern_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectByRegExAction);
 };

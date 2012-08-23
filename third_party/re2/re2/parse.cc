@@ -1455,13 +1455,6 @@ static void AddUGroup(CharClassBuilder *cc, UGroup *g, int sign,
       // to what's already missing.  Too hard, so do in two steps.
       CharClassBuilder ccb1;
       AddUGroup(&ccb1, g, +1, parse_flags);
-      // If the flags say to take out \n, put it in, so that negating will take it out.
-      // Normally AddRangeFlags does this, but we're bypassing AddRangeFlags.
-      bool cutnl = !(parse_flags & Regexp::ClassNL) ||
-                   (parse_flags & Regexp::NeverNL);
-      if (cutnl) {
-        ccb1.AddRange('\n', '\n');
-      }
       ccb1.Negate();
       cc->AddCharClass(&ccb1);
       return;
@@ -2004,13 +1997,8 @@ Regexp* Regexp::Parse(const StringPiece& s, ParseFlags global_flags,
             return NULL;
           break;
         }
-        if (ps.flags() & NeverCapture) {
-          if (!ps.DoLeftParenNoCapture())
-            return NULL;
-        } else {
-          if (!ps.DoLeftParen(NULL))
-            return NULL;
-        }
+        if (!ps.DoLeftParen(NULL))
+          return NULL;
         t.remove_prefix(1);  // '('
         break;
 

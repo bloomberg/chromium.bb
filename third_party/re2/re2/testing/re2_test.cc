@@ -757,18 +757,18 @@ TEST(RE2, FullMatchTypeTests) {
     CHECK(RE2::FullMatch("100",  "(-?\\d+)", &v)); CHECK_EQ(v, 100);
     CHECK(RE2::FullMatch("-100", "(-?\\d+)", &v)); CHECK_EQ(v, -100);
 
-    snprintf(buf, sizeof(buf), "%lld", (long long int)max);
+    snprintf(buf, sizeof(buf), "%lld", max);
     CHECK(RE2::FullMatch(buf,    "(-?\\d+)", &v)); CHECK_EQ(v, max);
 
-    snprintf(buf, sizeof(buf), "%lld", (long long int)min);
+    snprintf(buf, sizeof(buf), "%lld", min);
     CHECK(RE2::FullMatch(buf,    "(-?\\d+)", &v)); CHECK_EQ(v, min);
 
-    snprintf(buf, sizeof(buf), "%lld", (long long int)max);
+    snprintf(buf, sizeof(buf), "%lld", max);
     assert(buf[strlen(buf)-1] != '9');
     buf[strlen(buf)-1]++;
     CHECK(!RE2::FullMatch(buf,   "(-?\\d+)", &v));
 
-    snprintf(buf, sizeof(buf), "%lld", (long long int)min);
+    snprintf(buf, sizeof(buf), "%lld", min);
     assert(buf[strlen(buf)-1] != '9');
     buf[strlen(buf)-1]++;
     CHECK(!RE2::FullMatch(buf,   "(-?\\d+)", &v));
@@ -782,7 +782,7 @@ TEST(RE2, FullMatchTypeTests) {
     CHECK(RE2::FullMatch("100",  "(-?\\d+)", &v));  CHECK_EQ(v, 100);
     CHECK(RE2::FullMatch("-100", "(-?\\d+)", &v2)); CHECK_EQ(v2, -100);
 
-    snprintf(buf, sizeof(buf), "%llu", (long long unsigned)max);
+    snprintf(buf, sizeof(buf), "%llu", max);
     CHECK(RE2::FullMatch(buf,    "(-?\\d+)", &v)); CHECK_EQ(v, max);
 
     assert(buf[strlen(buf)-1] != '9');
@@ -1251,14 +1251,6 @@ TEST(RE2, NeverNewline) {
       EXPECT_EQ(m, t.match);
     }
   }
-}
-
-// Check that there are no capturing groups in "never capture" mode.
-TEST(RE2, NeverCapture) {
-  RE2::Options opt;
-  opt.set_never_capture(true);
-  RE2 re("(r)(e)", opt);
-  EXPECT_EQ(0, re.NumberOfCapturingGroups());
 }
 
 // Bitstate bug was looking at submatch[0] even if nsubmatch == 0.

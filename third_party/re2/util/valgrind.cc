@@ -7,12 +7,18 @@
 
 namespace re2 {
 
-int RunningOnValgrind() {
+static bool checkValgrind() {
 #ifdef RUNNING_ON_VALGRIND
 	return RUNNING_ON_VALGRIND;
 #else
-	return 0;
+	return false;
 #endif
+}
+
+static const int valgrind = checkValgrind();
+
+int RunningOnValgrind() {
+  return valgrind;
 }
 
 }  // namespace re2

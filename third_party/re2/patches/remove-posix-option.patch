@@ -1,0 +1,24 @@
+diff -r 2d252384c5e8 re2/re2.cc
+--- a/re2/re2.cc	Mon Mar 05 14:20:36 2012 -0500
++++ b/re2/re2.cc	Wed Jun 20 20:32:24 2012 +0200
+@@ -40,7 +40,7 @@
+ //   log errors
+ const RE2::Options RE2::DefaultOptions;  // EncodingUTF8, false, false, true
+ const RE2::Options RE2::Latin1(RE2::Options::EncodingLatin1, false, false, true);
+-const RE2::Options RE2::POSIX(RE2::Options::EncodingUTF8, true, true, true);
++//const RE2::Options RE2::POSIX(RE2::Options::EncodingUTF8, true, true, true);
+ const RE2::Options RE2::Quiet(RE2::Options::EncodingUTF8, false, false, false);
+ 
+ // If a regular expression has no error, its error_ field points here
+diff -r 2d252384c5e8 re2/re2.h
+--- a/re2/re2.h	Mon Mar 05 14:20:36 2012 -0500
++++ b/re2/re2.h	Wed Jun 20 20:32:24 2012 +0200
+@@ -233,7 +233,7 @@
+   // RE2 constructor.
+   static const Options DefaultOptions;
+   static const Options Latin1; // treat input as Latin-1 (default UTF-8)
+-  static const Options POSIX;  // POSIX syntax, leftmost-longest match
++  //static const Options POSIX;  // POSIX syntax, leftmost-longest match
+   static const Options Quiet;  // do not log about regexp parse errors
+ 
+   // Need to have the const char* and const string& forms for implicit

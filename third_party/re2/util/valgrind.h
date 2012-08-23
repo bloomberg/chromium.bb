@@ -4063,7 +4063,6 @@ typedef
 
 #endif /* PLAT_ppc64_aix5 */
 
-
 #ifndef WIN32
 /* ------------------------------------------------------------------ */
 /* ARCHITECTURE INDEPENDENT MACROS for CLIENT REQUESTS.               */

@@ -1,7 +1,6 @@
-diff --git a/third_party/re2/AUTHORS b/third_party/re2/AUTHORS
-index 3c0f928..e17d9bf 100644
---- a/third_party/re2/AUTHORS
-+++ b/third_party/re2/AUTHORS
+diff -r c79416ca4228 AUTHORS
+--- a/AUTHORS	Tue May 29 11:50:48 2012 -0400
++++ b/AUTHORS	Wed Jun 20 19:00:08 2012 +0200
 @@ -8,5 +8,6 @@
  
  # Please keep the list sorted.
@@ -9,23 +8,20 @@ index 3c0f928..e17d9bf 100644
 +Brian Gunlogson <unixman83@gmail.com>
  Google Inc.
  Stefano Rivera <stefano.rivera@gmail.com>
-diff --git a/third_party/re2/CONTRIBUTORS b/third_party/re2/CONTRIBUTORS
-index ac64332..15053eb 100644
---- a/third_party/re2/CONTRIBUTORS
-+++ b/third_party/re2/CONTRIBUTORS
+diff -r c79416ca4228 CONTRIBUTORS
+--- a/CONTRIBUTORS	Tue May 29 11:50:48 2012 -0400
++++ b/CONTRIBUTORS	Wed Jun 20 19:00:08 2012 +0200
 @@ -26,6 +26,7 @@
  
  # Please keep the list sorted.
  
 +Brian Gunlogson <unixman83@gmail.com>
- Dominic Battré <battre@chromium.org>
  Rob Pike <r@google.com>
  Russ Cox <rsc@swtch.com>
-diff --git a/third_party/re2/mswin/stdint.h b/third_party/re2/mswin/stdint.h
-new file mode 100644
-index 0000000..d02608a
---- /dev/null
-+++ b/third_party/re2/mswin/stdint.h
+ Sanjay Ghemawat <sanjay@google.com>
+diff -r c79416ca4228 mswin/stdint.h
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/mswin/stdint.h	Wed Jun 20 19:00:08 2012 +0200
 @@ -0,0 +1,247 @@
 +// ISO C9x  compliant stdint.h for Microsoft Visual Studio
 +// Based on ISO/IEC 9899:TC2 Committee draft (May 6, 2005) WG14/N1124 
@@ -274,11 +270,383 @@ index 0000000..d02608a
 +
 +
 +#endif // _MSC_STDINT_H_ ]
-diff --git a/third_party/re2/re2/compile.cc b/third_party/re2/re2/compile.cc
-index 9cddb71..adb45fd 100644
---- a/third_party/re2/re2/compile.cc
-+++ b/third_party/re2/re2/compile.cc
-@@ -502,7 +502,7 @@ int Compiler::RuneByteSuffix(uint8 lo, uint8 hi, bool foldcase, int next) {
+diff -r c79416ca4228 re2.sln
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/re2.sln	Wed Jun 20 19:00:08 2012 +0200
+@@ -0,0 +1,38 @@
++﻿
++Microsoft Visual Studio Solution File, Format Version 10.00
++# Visual Studio 2008
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "re2", "re2.vcproj", "{494BD4B2-1ADD-4053-981D-BA14D6DF9219}"
++	ProjectSection(ProjectDependencies) = postProject
++		{AB36233A-643A-4D2E-93B3-0602DA52C8D5} = {AB36233A-643A-4D2E-93B3-0602DA52C8D5}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "re2_testing", "re2_testing\re2_testing.vcproj", "{1B9A5974-DA06-4F57-BFFC-4DE19B968AE8}"
++	ProjectSection(ProjectDependencies) = postProject
++		{494BD4B2-1ADD-4053-981D-BA14D6DF9219} = {494BD4B2-1ADD-4053-981D-BA14D6DF9219}
++	EndProjectSection
++EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "util", "util\util.vcproj", "{AB36233A-643A-4D2E-93B3-0602DA52C8D5}"
++EndProject
++Global
++	GlobalSection(SolutionConfigurationPlatforms) = preSolution
++		Debug|Win32 = Debug|Win32
++		Release|Win32 = Release|Win32
++	EndGlobalSection
++	GlobalSection(ProjectConfigurationPlatforms) = postSolution
++		{494BD4B2-1ADD-4053-981D-BA14D6DF9219}.Debug|Win32.ActiveCfg = Debug|Win32
++		{494BD4B2-1ADD-4053-981D-BA14D6DF9219}.Debug|Win32.Build.0 = Debug|Win32
++		{494BD4B2-1ADD-4053-981D-BA14D6DF9219}.Release|Win32.ActiveCfg = Release|Win32
++		{494BD4B2-1ADD-4053-981D-BA14D6DF9219}.Release|Win32.Build.0 = Release|Win32
++		{1B9A5974-DA06-4F57-BFFC-4DE19B968AE8}.Debug|Win32.ActiveCfg = Debug|Win32
++		{1B9A5974-DA06-4F57-BFFC-4DE19B968AE8}.Debug|Win32.Build.0 = Debug|Win32
++		{1B9A5974-DA06-4F57-BFFC-4DE19B968AE8}.Release|Win32.ActiveCfg = Release|Win32
++		{1B9A5974-DA06-4F57-BFFC-4DE19B968AE8}.Release|Win32.Build.0 = Release|Win32
++		{AB36233A-643A-4D2E-93B3-0602DA52C8D5}.Debug|Win32.ActiveCfg = Debug|Win32
++		{AB36233A-643A-4D2E-93B3-0602DA52C8D5}.Debug|Win32.Build.0 = Debug|Win32
++		{AB36233A-643A-4D2E-93B3-0602DA52C8D5}.Release|Win32.ActiveCfg = Release|Win32
++		{AB36233A-643A-4D2E-93B3-0602DA52C8D5}.Release|Win32.Build.0 = Release|Win32
++	EndGlobalSection
++	GlobalSection(SolutionProperties) = preSolution
++		HideSolutionNode = FALSE
++	EndGlobalSection
++EndGlobal
+diff -r c79416ca4228 re2.vcproj
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/re2.vcproj	Wed Jun 20 19:00:08 2012 +0200
+@@ -0,0 +1,327 @@
++<?xml version="1.0" encoding="Windows-1252"?>
++<VisualStudioProject
++	ProjectType="Visual C++"
++	Version="9.00"
++	Name="re2"
++	ProjectGUID="{494BD4B2-1ADD-4053-981D-BA14D6DF9219}"
++	RootNamespace="re2"
++	Keyword="Win32Proj"
++	TargetFrameworkVersion="196613"
++	>
++	<Platforms>
++		<Platform
++			Name="Win32"
++		/>
++	</Platforms>
++	<ToolFiles>
++	</ToolFiles>
++	<Configurations>
++		<Configuration
++			Name="Debug|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="4"
++			CharacterSet="1"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="0"
++				AdditionalIncludeDirectories=".;.\mswin"
++				PreprocessorDefinitions="WIN32;NOMINMAX;DEBUG;_WINDOWS;_UNICODE;NOPCH;WIN32_LEAN_AND_MEAN"
++				MinimalRebuild="true"
++				BasicRuntimeChecks="3"
++				RuntimeLibrary="3"
++				UsePrecompiledHeader="0"
++				WarningLevel="3"
++				DebugInformationFormat="4"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLibrarianTool"
++				AdditionalDependencies="$(TargetDir)\util.lib"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++		<Configuration
++			Name="Release|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="4"
++			CharacterSet="1"
++			WholeProgramOptimization="1"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="2"
++				EnableIntrinsicFunctions="true"
++				AdditionalIncludeDirectories=".;.\mswin"
++				PreprocessorDefinitions="WIN32;NOMINMAX;NDEBUG;_WINDOWS;_UNICODE;NOPCH;WIN32_LEAN_AND_MEAN"
++				StringPooling="true"
++				RuntimeLibrary="2"
++				EnableFunctionLevelLinking="true"
++				UsePrecompiledHeader="0"
++				WarningLevel="3"
++				DebugInformationFormat="3"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLibrarianTool"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++	</Configurations>
++	<References>
++	</References>
++	<Files>
++		<Filter
++			Name="Source Files"
++			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
++			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
++			>
++			<File
++				RelativePath=".\re2\bitstate.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\compile.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\dfa.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\filtered_re2.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\mimics_pcre.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\nfa.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\onepass.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\parse.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\perl_groups.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\prefilter.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\prefilter_tree.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\prog.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\re2.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\regexp.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\util\rune.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\set.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\simplify.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\util\strutil.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\tostring.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\unicode_casefold.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\unicode_groups.cc"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Header Files"
++			Filter="h;hpp;hxx;hm;inl;inc;xsd"
++			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
++			>
++			<File
++				RelativePath=".\re2\filtered_re2.h"
++				>
++			</File>
++			<File
++				RelativePath=".\util\logging.h"
++				>
++			</File>
++			<File
++				RelativePath=".\util\mutex.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\prefilter.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\prefilter_tree.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\prog.h"
++				>
++			</File>
++			<File
++				RelativePath=".\util\random.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\re2.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\regexp.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\set.h"
++				>
++			</File>
++			<File
++				RelativePath=".\stdint.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\unicode_casefold.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\unicode_groups.h"
++				>
++			</File>
++			<File
++				RelativePath=".\util\utf.h"
++				>
++			</File>
++			<File
++				RelativePath=".\util\util.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\variadic_function.h"
++				>
++			</File>
++			<File
++				RelativePath=".\re2\walker-inl.h"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Resource Files"
++			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
++			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
++			>
++		</Filter>
++		<File
++			RelativePath=".\ClassDiagram1.cd"
++			>
++		</File>
++	</Files>
++	<Globals>
++	</Globals>
++</VisualStudioProject>
+diff -r c79416ca4228 re2/compile.cc
+--- a/re2/compile.cc	Tue May 29 11:50:48 2012 -0400
++++ b/re2/compile.cc	Wed Jun 20 19:00:08 2012 +0200
+@@ -501,7 +501,7 @@
      return UncachedRuneByteSuffix(lo, hi, foldcase, next);
    }
  
@@ -287,10 +655,9 @@ index 9cddb71..adb45fd 100644
    map<uint64, int>::iterator it = rune_cache_.find(key);
    if (it != rune_cache_.end())
      return it->second;
-diff --git a/third_party/re2/re2/prefilter_tree.cc b/third_party/re2/re2/prefilter_tree.cc
-index d8bc37a..cdcf77e 100644
---- a/third_party/re2/re2/prefilter_tree.cc
-+++ b/third_party/re2/re2/prefilter_tree.cc
+diff -r c79416ca4228 re2/prefilter_tree.cc
+--- a/re2/prefilter_tree.cc	Tue May 29 11:50:48 2012 -0400
++++ b/re2/prefilter_tree.cc	Wed Jun 20 19:00:08 2012 +0200
 @@ -8,6 +8,11 @@
  #include "re2/prefilter_tree.h"
  #include "re2/re2.h"
@@ -303,10 +670,9 @@ index d8bc37a..cdcf77e 100644
  DEFINE_int32(filtered_re2_min_atom_len,
               3,
               "Strings less than this length are not stored as atoms");
-diff --git a/third_party/re2/re2/re2.cc b/third_party/re2/re2/re2.cc
-index 3cc3dd4..989add6 100644
---- a/third_party/re2/re2/re2.cc
-+++ b/third_party/re2/re2/re2.cc
+diff -r c79416ca4228 re2/re2.cc
+--- a/re2/re2.cc	Tue May 29 11:50:48 2012 -0400
++++ b/re2/re2.cc	Wed Jun 20 19:00:08 2012 +0200
 @@ -11,7 +11,13 @@
  
  #include <stdio.h>
@@ -321,73 +687,40 @@ index 3cc3dd4..989add6 100644
  #include <errno.h>
  #include "util/util.h"
  #include "util/flags.h"
-@@ -31,10 +37,22 @@ const VariadicFunction2<bool, const StringPiece&, const RE2&, RE2::Arg, RE2::Par
+@@ -31,8 +37,6 @@
  const VariadicFunction2<bool, StringPiece*, const RE2&, RE2::Arg, RE2::ConsumeN> RE2::Consume;
  const VariadicFunction2<bool, StringPiece*, const RE2&, RE2::Arg, RE2::FindAndConsumeN> RE2::FindAndConsume;
  
--// This will trigger LNK2005 error in MSVC.
--#ifndef COMPILER_MSVC
 -const int RE2::Options::kDefaultMaxMem;  // initialized in re2.h
--#endif  // COMPILER_MSVC
+-
+ // Commonly-used option sets; arguments to constructor are:
+ //   utf8 input
+ //   posix syntax
+diff -r c79416ca4228 re2/re2.h
+--- a/re2/re2.h	Tue May 29 11:50:48 2012 -0400
++++ b/re2/re2.h	Wed Jun 20 19:00:08 2012 +0200
+@@ -5,6 +5,8 @@
+ #ifndef RE2_RE2_H
+ #define RE2_RE2_H
+ 
 +#define kDefaultMaxMem (8<<20)
 +
-+RE2::Options::Options()
-+  :  encoding_(EncodingUTF8),
-+     posix_syntax_(false),
-+     longest_match_(false),
-+     log_errors_(true),
-+     max_mem_(kDefaultMaxMem),
-+     literal_(false),
-+     never_nl_(false),
-+     never_capture_(false),
-+     case_sensitive_(true),
-+     perl_classes_(false),
-+     word_boundary_(false),
-+     one_line_(false) {
-+}
- 
- RE2::Options::Options(RE2::CannedOptions opt)
-   : encoding_(opt == RE2::Latin1 ? EncodingLatin1 : EncodingUTF8),
-diff --git a/third_party/re2/re2/re2.h b/third_party/re2/re2/re2.h
-index 9f5b66d..98b06b8 100644
---- a/third_party/re2/re2/re2.h
-+++ b/third_party/re2/re2/re2.h
-@@ -552,28 +552,16 @@ class RE2 {
+ // C++ interface to the re2 regular-expression library.
+ // RE2 supports Perl-style regular expressions (with extensions like
+ // \d, \w, \s, ...).
+@@ -517,9 +519,6 @@
+     // Once a DFA fills its budget, it flushes its cache and starts over.
      // If this happens too often, RE2 falls back on the NFA implementation.
  
-     // For now, make the default budget something close to Code Search.
-+#ifndef WIN32
-     static const int kDefaultMaxMem = 8<<20;
-+#endif
- 
+-    // For now, make the default budget something close to Code Search.
+-    static const int kDefaultMaxMem = 8<<20;
+-
      enum Encoding {
        EncodingUTF8 = 1,
        EncodingLatin1
-     };
- 
--    Options() :
--      encoding_(EncodingUTF8),
--      posix_syntax_(false),
--      longest_match_(false),
--      log_errors_(true),
--      max_mem_(kDefaultMaxMem),
--      literal_(false),
--      never_nl_(false),
--      never_capture_(false),
--      case_sensitive_(true),
--      perl_classes_(false),
--      word_boundary_(false),
--      one_line_(false) {
--    }
--    
-+    Options();
-     /*implicit*/ Options(CannedOptions);
- 
-     Encoding encoding() const { return encoding_; }
-diff --git a/third_party/re2/re2/stringpiece.h b/third_party/re2/re2/stringpiece.h
-index ab9297c..38a5150 100644
---- a/third_party/re2/re2/stringpiece.h
-+++ b/third_party/re2/re2/stringpiece.h
+diff -r c79416ca4228 re2/stringpiece.h
+--- a/re2/stringpiece.h	Tue May 29 11:50:48 2012 -0400
++++ b/re2/stringpiece.h	Wed Jun 20 19:00:08 2012 +0200
 @@ -23,6 +23,9 @@
  #include <cstddef>
  #include <iosfwd>
@@ -398,10 +731,9 @@ index ab9297c..38a5150 100644
  
  namespace re2 {
  
-diff --git a/third_party/re2/re2/testing/re2_test.cc b/third_party/re2/re2/testing/re2_test.cc
-index b99cacf..911e868 100644
---- a/third_party/re2/re2/testing/re2_test.cc
-+++ b/third_party/re2/re2/testing/re2_test.cc
+diff -r c79416ca4228 re2/testing/re2_test.cc
+--- a/re2/testing/re2_test.cc	Tue May 29 11:50:48 2012 -0400
++++ b/re2/testing/re2_test.cc	Wed Jun 20 19:00:08 2012 +0200
 @@ -6,7 +6,9 @@
  // TODO: Test extractions for PartialMatch/Consume
  
@@ -424,7 +756,7 @@ index b99cacf..911e868 100644
  DECLARE_bool(logtostderr);
  
  namespace re2 {
-@@ -657,6 +664,7 @@ TEST(RE2, FullMatchTypedNullArg) {
+@@ -657,6 +664,7 @@
    CHECK(!RE2::FullMatch("hello", "(.*)", (float*)NULL));
  }
  
@@ -432,7 +764,7 @@ index b99cacf..911e868 100644
  // Check that numeric parsing code does not read past the end of
  // the number being parsed.
  TEST(RE2, NULTerminated) {
-@@ -678,6 +686,7 @@ TEST(RE2, NULTerminated) {
+@@ -678,6 +686,7 @@
    CHECK(RE2::FullMatch(StringPiece(v + pagesize - 1, 1), "(.*)", &x));
    CHECK_EQ(x, 1);
  }
@@ -440,10 +772,311 @@ index b99cacf..911e868 100644
  
  TEST(RE2, FullMatchTypeTests) {
    // Type tests
-diff --git a/third_party/re2/util/logging.h b/third_party/re2/util/logging.h
-index 734e7a1..7302ea6 100644
---- a/third_party/re2/util/logging.h
-+++ b/third_party/re2/util/logging.h
+diff -r c79416ca4228 re2_testing/re2_testing.vcproj
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/re2_testing/re2_testing.vcproj	Wed Jun 20 19:00:08 2012 +0200
+@@ -0,0 +1,298 @@
++<?xml version="1.0" encoding="Windows-1252"?>
++<VisualStudioProject
++	ProjectType="Visual C++"
++	Version="9.00"
++	Name="re2_testing"
++	ProjectGUID="{1B9A5974-DA06-4F57-BFFC-4DE19B968AE8}"
++	RootNamespace="re2_testing"
++	TargetFrameworkVersion="196613"
++	>
++	<Platforms>
++		<Platform
++			Name="Win32"
++		/>
++	</Platforms>
++	<ToolFiles>
++	</ToolFiles>
++	<Configurations>
++		<Configuration
++			Name="Debug|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="1"
++			CharacterSet="2"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="0"
++				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;..\mswin"
++				PreprocessorDefinitions="WIN32;NOMINMAX;DEBUG;_WINDOWS;_UNICODE;NOPCH;WIN32_LEAN_AND_MEAN;NOGDI"
++				MinimalRebuild="true"
++				BasicRuntimeChecks="3"
++				RuntimeLibrary="3"
++				WarningLevel="3"
++				DebugInformationFormat="4"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLinkerTool"
++				AdditionalDependencies="$(TargetDir)/re2.lib"
++				GenerateDebugInformation="true"
++				TargetMachine="1"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCManifestTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCAppVerifierTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++		<Configuration
++			Name="Release|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="1"
++			CharacterSet="2"
++			WholeProgramOptimization="1"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="2"
++				EnableIntrinsicFunctions="true"
++				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;..\mswin"
++				PreprocessorDefinitions="WIN32;NOMINMAX;DEBUG;_WINDOWS;_UNICODE;NOPCH;WIN32_LEAN_AND_MEAN;NOGDI"
++				RuntimeLibrary="2"
++				EnableFunctionLevelLinking="true"
++				WarningLevel="3"
++				DebugInformationFormat="3"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLinkerTool"
++				AdditionalDependencies="$(TargetDir)/re2.lib"
++				GenerateDebugInformation="true"
++				OptimizeReferences="2"
++				EnableCOMDATFolding="2"
++				TargetMachine="1"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCManifestTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCAppVerifierTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++	</Configurations>
++	<References>
++	</References>
++	<Files>
++		<Filter
++			Name="Source Files"
++			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
++			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
++			>
++			<File
++				RelativePath="..\re2\testing\backtrack.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\charclass_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\compile_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\dump.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\exhaustive_tester.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\filtered_re2_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\mimics_pcre_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\null_walker.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\parse_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\possible_match_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\util\random.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\re2_arg_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\re2_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\regexp_generator.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\regexp_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\required_prefix_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\search_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\set_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\simplify_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\string_generator.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\string_generator_test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\util\test.cc"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\tester.cc"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Header Files"
++			Filter="h;hpp;hxx;hm;inl;inc;xsd"
++			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
++			>
++			<File
++				RelativePath="..\re2\testing\exhaustive_tester.h"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\regexp_generator.h"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\string_generator.h"
++				>
++			</File>
++			<File
++				RelativePath="..\util\test.h"
++				>
++			</File>
++			<File
++				RelativePath="..\re2\testing\tester.h"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Resource Files"
++			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
++			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
++			>
++		</Filter>
++	</Files>
++	<Globals>
++	</Globals>
++</VisualStudioProject>
+diff -r c79416ca4228 util/logging.h
+--- a/util/logging.h	Tue May 29 11:50:48 2012 -0400
++++ b/util/logging.h	Wed Jun 20 19:00:08 2012 +0200
 @@ -7,8 +7,13 @@
  #ifndef RE2_UTIL_LOGGING_H__
  #define RE2_UTIL_LOGGING_H__
@@ -458,10 +1091,9 @@ index 734e7a1..7302ea6 100644
  
  // Debug-only checking.
  #define DCHECK(condition) assert(condition)
-diff --git a/third_party/re2/util/mutex.h b/third_party/re2/util/mutex.h
-index 9787bfb..e321fae 100644
---- a/third_party/re2/util/mutex.h
-+++ b/third_party/re2/util/mutex.h
+diff -r c79416ca4228 util/mutex.h
+--- a/util/mutex.h	Tue May 29 11:50:48 2012 -0400
++++ b/util/mutex.h	Wed Jun 20 19:00:08 2012 +0200
 @@ -12,8 +12,10 @@
  
  namespace re2 {
@@ -473,7 +1105,7 @@ index 9787bfb..e321fae 100644
  
  #if defined(NO_THREADS)
    typedef int MutexType;      // to keep a lock-count
-@@ -32,7 +34,9 @@ namespace re2 {
+@@ -32,7 +34,9 @@
  # include <pthread.h>
    typedef pthread_mutex_t MutexType;
  #elif defined(WIN32)
@@ -484,10 +1116,9 @@ index 9787bfb..e321fae 100644
  # ifdef GMUTEX_TRYLOCK
    // We need Windows NT or later for TryEnterCriticalSection().  If you
    // don't need that functionality, you can remove these _WIN32_WINNT
-diff --git a/third_party/re2/util/pcre.cc b/third_party/re2/util/pcre.cc
-index 5e67e1f..1602133 100644
---- a/third_party/re2/util/pcre.cc
-+++ b/third_party/re2/util/pcre.cc
+diff -r c79416ca4228 util/pcre.cc
+--- a/util/pcre.cc	Tue May 29 11:50:48 2012 -0400
++++ b/util/pcre.cc	Wed Jun 20 19:00:08 2012 +0200
 @@ -11,6 +11,11 @@
  #include "util/flags.h"
  #include "util/pcre.h"
@@ -500,11 +1131,10 @@ index 5e67e1f..1602133 100644
  #define PCREPORT(level) LOG(level)
  
  // Default PCRE limits.
-diff --git a/third_party/re2/util/pcre.h b/third_party/re2/util/pcre.h
-index 4dda95d..771ac91 100644
---- a/third_party/re2/util/pcre.h
-+++ b/third_party/re2/util/pcre.h
-@@ -180,9 +180,15 @@ struct pcre_extra { int flags, match_limit, match_limit_recursion; };
+diff -r c79416ca4228 util/pcre.h
+--- a/util/pcre.h	Tue May 29 11:50:48 2012 -0400
++++ b/util/pcre.h	Wed Jun 20 19:00:08 2012 +0200
+@@ -180,9 +180,15 @@
  #define PCRE_ERROR_MATCHLIMIT 2
  #define PCRE_ERROR_RECURSIONLIMIT 3
  #define PCRE_INFO_CAPTURECOUNT 0
@@ -520,10 +1150,9 @@ index 4dda95d..771ac91 100644
  }  // namespace re2
  #endif
  
-diff --git a/third_party/re2/util/stringprintf.cc b/third_party/re2/util/stringprintf.cc
-index c908181..d4691d1 100644
---- a/third_party/re2/util/stringprintf.cc
-+++ b/third_party/re2/util/stringprintf.cc
+diff -r c79416ca4228 util/stringprintf.cc
+--- a/util/stringprintf.cc	Tue May 29 11:50:48 2012 -0400
++++ b/util/stringprintf.cc	Wed Jun 20 19:00:08 2012 +0200
 @@ -4,6 +4,10 @@
  
  #include "util/util.h"
@@ -535,10 +1164,9 @@ index c908181..d4691d1 100644
  namespace re2 { 
  
  static void StringAppendV(string* dst, const char* format, va_list ap) {
-diff --git a/third_party/re2/util/test.cc b/third_party/re2/util/test.cc
-index 0644829..2fe1bfa 100644
---- a/third_party/re2/util/test.cc
-+++ b/third_party/re2/util/test.cc
+diff -r c79416ca4228 util/test.cc
+--- a/util/test.cc	Tue May 29 11:50:48 2012 -0400
++++ b/util/test.cc	Wed Jun 20 19:00:08 2012 +0200
 @@ -3,7 +3,9 @@
  // license that can be found in the LICENSE file.
  
@@ -549,7 +1177,7 @@ index 0644829..2fe1bfa 100644
  #include "util/test.h"
  
  DEFINE_string(test_tmpdir, "/var/tmp", "temp directory");
-@@ -23,9 +25,13 @@ void RegisterTest(void (*fn)(void), const char *name) {
+@@ -23,9 +25,13 @@
  
  namespace re2 {
  int64 VirtualProcessSize() {
@@ -563,10 +1191,9 @@ index 0644829..2fe1bfa 100644
  }
  }  // namespace re2
  
-diff --git a/third_party/re2/util/util.h b/third_party/re2/util/util.h
-index 63a9c6f..dab7e16 100644
---- a/third_party/re2/util/util.h
-+++ b/third_party/re2/util/util.h
+diff -r c79416ca4228 util/util.h
+--- a/util/util.h	Tue May 29 11:50:48 2012 -0400
++++ b/util/util.h	Wed Jun 20 19:00:08 2012 +0200
 @@ -12,7 +12,9 @@
  #include <stddef.h>         // For size_t
  #include <assert.h>
@@ -577,7 +1204,7 @@ index 63a9c6f..dab7e16 100644
  #include <time.h>
  
  // C++
-@@ -50,7 +52,11 @@ using std::tr1::unordered_set;
+@@ -48,7 +50,11 @@
  #else
  
  #include <unordered_set>
@@ -589,19 +1216,276 @@ index 63a9c6f..dab7e16 100644
  
  #endif
  
-diff --git a/third_party/re2/util/valgrind.h b/third_party/re2/util/valgrind.h
-index ca10b1a..d097b0c 100644
---- a/third_party/re2/util/valgrind.h
-+++ b/third_party/re2/util/valgrind.h
-@@ -4064,6 +4064,7 @@ typedef
+diff -r c79416ca4228 util/util.vcproj
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/util/util.vcproj	Wed Jun 20 19:00:08 2012 +0200
+@@ -0,0 +1,253 @@
++<?xml version="1.0" encoding="Windows-1252"?>
++<VisualStudioProject
++	ProjectType="Visual C++"
++	Version="9.00"
++	Name="util"
++	ProjectGUID="{AB36233A-643A-4D2E-93B3-0602DA52C8D5}"
++	RootNamespace="util"
++	Keyword="Win32Proj"
++	TargetFrameworkVersion="196613"
++	>
++	<Platforms>
++		<Platform
++			Name="Win32"
++		/>
++	</Platforms>
++	<ToolFiles>
++	</ToolFiles>
++	<Configurations>
++		<Configuration
++			Name="Debug|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="4"
++			CharacterSet="1"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="0"
++				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;..\mswin"
++				PreprocessorDefinitions="WIN32;NOMINMAX;DEBUG;_WINDOWS;_UNICODE;NOPCH;WIN32_LEAN_AND_MEAN;NOGDI"
++				MinimalRebuild="true"
++				BasicRuntimeChecks="3"
++				RuntimeLibrary="3"
++				UsePrecompiledHeader="0"
++				WarningLevel="3"
++				DebugInformationFormat="4"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLibrarianTool"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++		<Configuration
++			Name="Release|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="4"
++			CharacterSet="1"
++			WholeProgramOptimization="1"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="2"
++				EnableIntrinsicFunctions="true"
++				AdditionalIncludeDirectories="&quot;$(SolutionDir)&quot;;..\mswin"
++				PreprocessorDefinitions="WIN32;NOMINMAX;DEBUG;_WINDOWS;_UNICODE;NOPCH;WIN32_LEAN_AND_MEAN;NOGDI"
++				RuntimeLibrary="2"
++				EnableFunctionLevelLinking="true"
++				UsePrecompiledHeader="0"
++				WarningLevel="3"
++				DebugInformationFormat="3"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLibrarianTool"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++			/>
++		</Configuration>
++	</Configurations>
++	<References>
++	</References>
++	<Files>
++		<Filter
++			Name="Source Files"
++			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
++			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
++			>
++			<File
++				RelativePath=".\arena.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\hash.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\pcre.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\random.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\rune.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\stringpiece.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\stringprintf.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\strutil.cc"
++				>
++			</File>
++			<File
++				RelativePath=".\valgrind.cc"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Header Files"
++			Filter="h;hpp;hxx;hm;inl;inc;xsd"
++			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
++			>
++			<File
++				RelativePath=".\arena.h"
++				>
++			</File>
++			<File
++				RelativePath=".\atomicops.h"
++				>
++			</File>
++			<File
++				RelativePath=".\benchmark.h"
++				>
++			</File>
++			<File
++				RelativePath=".\flags.h"
++				>
++			</File>
++			<File
++				RelativePath=".\logging.h"
++				>
++			</File>
++			<File
++				RelativePath=".\pcre.h"
++				>
++			</File>
++			<File
++				RelativePath=".\random.h"
++				>
++			</File>
++			<File
++				RelativePath=".\sparse_array.h"
++				>
++			</File>
++			<File
++				RelativePath=".\sparse_set.h"
++				>
++			</File>
++			<File
++				RelativePath=".\utf.h"
++				>
++			</File>
++			<File
++				RelativePath=".\util.h"
++				>
++			</File>
++			<File
++				RelativePath=".\valgrind.h"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Resource Files"
++			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
++			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
++			>
++		</Filter>
++	</Files>
++	<Globals>
++	</Globals>
++</VisualStudioProject>
+diff -r c79416ca4228 util/valgrind.h
+--- a/util/valgrind.h	Tue May 29 11:50:48 2012 -0400
++++ b/util/valgrind.h	Wed Jun 20 19:00:08 2012 +0200
+@@ -4063,7 +4063,7 @@
+ 
  #endif /* PLAT_ppc64_aix5 */
  
- 
+-
 +#ifndef WIN32
  /* ------------------------------------------------------------------ */
  /* ARCHITECTURE INDEPENDENT MACROS for CLIENT REQUESTS.               */
  /*                                                                    */
-@@ -4170,7 +4171,7 @@ typedef
+@@ -4170,7 +4170,7 @@
                                 VG_USERREQ__DISCARD_TRANSLATIONS,  \
                                 _qzz_addr, _qzz_len, 0, 0, 0);     \
     }
