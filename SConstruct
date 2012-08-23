@@ -727,6 +727,7 @@ tests_to_disable_qemu = set([
     # under QEMU.
     'run_debug_stub_test',
     'run_egyptian_cotton_test',  # still broken with qemu 2012/06/12
+    'run_faulted_thread_queue_test',
     'run_many_threads_sequential_test',
     'run_mmap_atomicity_test',   # still broken with qemu 2012/06/12
     # http://code.google.com/p/nativeclient/issues/detail?id=2142
@@ -2796,6 +2797,7 @@ nonvariant_tests = [
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',
     'tests/exit_status/nacl.scons',
+    'tests/faulted_thread_queue/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/inbrowser_crash_test/nacl.scons',
     'tests/minnacl/nacl.scons',

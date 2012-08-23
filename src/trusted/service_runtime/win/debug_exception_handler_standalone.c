@@ -6,6 +6,8 @@
 
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
+#include <string.h>
+
 #include <windows.h>
 
 #include "native_client/src/include/portability_io.h"
@@ -114,7 +116,7 @@ static void DecodeHexString(uint8_t *dest, char *src, size_t size) {
   }
 }
 
-int NaClDebugExceptionHandlerStandaloneMain(int argc, char **argv) {
+static int NaClDebugExceptionHandlerStandaloneMain(int argc, char **argv) {
   int target_pid;
   NaClHandle socket;
   char *rest1;
@@ -176,4 +178,10 @@ int NaClDebugExceptionHandlerStandaloneMain(int argc, char **argv) {
 
   NaClDebugExceptionHandlerRun(process_handle, info, info_size);
   return 0;
+}
+
+void NaClDebugExceptionHandlerStandaloneHandleArgs(int argc, char **argv) {
+  if (argc >= 2 && strcmp(argv[1], "--debug-exception-handler") == 0) {
+    exit(NaClDebugExceptionHandlerStandaloneMain(argc - 2, argv + 2));
+  }
 }

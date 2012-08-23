@@ -66,6 +66,13 @@ void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
                                         const struct NaClSignalContext *regs);
 
 /*
+ * Enable faults in untrusted code to be handled via the thread
+ * suspension interface.  This function may only be called during a
+ * NaClApp's startup.  Returns whether the function succeeded.
+ */
+int NaClFaultedThreadQueueEnable(struct NaClApp *nap);
+
+/*
  * NaClAppThreadUnblockIfFaulted() takes a thread that has been
  * suspended using NaClUntrustedThreadsSuspendAll().  If the thread
  * has been blocked as a result of faulting in untrusted code, the

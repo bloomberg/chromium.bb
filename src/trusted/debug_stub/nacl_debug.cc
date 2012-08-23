@@ -26,10 +26,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
-#if NACL_WINDOWS
-# include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
-#endif
+#include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 using port::IPlatform;
 using port::IThread;
@@ -131,8 +128,11 @@ void NaClDebugStop(int ErrCode) throw() {
  * declares the function so it does not need to be declared in our header.
  */
 int NaClDebugInit(struct NaClApp *nap) {
+  if (!NaClFaultedThreadQueueEnable(nap)) {
+    NaClLog(LOG_ERROR, "NaClDebugInit: Failed to initialize fault handling\n");
+    return 0;
+  }
   nap->debug_stub_callbacks = &debug_callbacks;
-  nap->enable_faulted_thread_queue = 1;
   NaClDebugStubInit();
 
   CHECK(g_target == NULL);
@@ -148,14 +148,6 @@ int NaClDebugInit(struct NaClApp *nap) {
     g_target->AddTemporaryBreakpoint(nap->user_entry_pt + nap->mem_start);
   }
   g_target->AddTemporaryBreakpoint(nap->initial_entry_pt + nap->mem_start);
-
-#if NACL_WINDOWS
-  if (!NaClDebugExceptionHandlerEnsureAttached(nap)) {
-    NaClLog(LOG_ERROR, "NaClDebugInit: "
-            "Failed to attach debug exception handler\n");
-    return 0;
-  }
-#endif
 
   NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
   CHECK(NaClThreadCtor(thread, NaClStubThread, g_target,

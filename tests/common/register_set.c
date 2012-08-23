@@ -13,9 +13,16 @@
 #endif
 
 
+/* Flags readable and writable by untrusted code. */
 const uint8_t kX86FlagBits[5] = { 0, 2, 6, 7, 11 };
+/*
+ * kX86KnownFlagsMask contains kX86FlagBits plus the trap flag (which
+ * is not readable or writable by untrusted code) so that trusted-code
+ * tests will check that the trap flag is still set.
+ */
 static const uint32_t kX86KnownFlagsMask =
-    (1<<0) | (1<<2) | (1<<6) | (1<<7) | (1<<11);
+    (1<<0) | (1<<2) | (1<<6) | (1<<7) | (1<<11) |
+    (1<<8); /* Trap flag */
 
 void RegsFillTestValues(struct NaClSignalContext *regs) {
   unsigned int index;

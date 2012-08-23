@@ -51,9 +51,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
-#if NACL_WINDOWS
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
-#endif
 
 static void VmentryPrinter(void           *state,
                     struct NaClVmmapEntry *vmep) {
@@ -227,11 +225,7 @@ int main(int  argc,
 
   fflush((FILE *) NULL);
 
-#if NACL_WINDOWS
-  if (argc >= 2 && strcmp(argv[1], "--debug-exception-handler") == 0) {
-    exit(NaClDebugExceptionHandlerStandaloneMain(argc - 2, argv + 2));
-  }
-#endif
+  NaClDebugExceptionHandlerStandaloneHandleArgs(argc, argv);
 
   if (!GioFileRefCtor(&gout, stdout)) {
     fprintf(stderr, "Could not create general standard output channel\n");

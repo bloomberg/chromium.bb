@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
 void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
   size_t index;
@@ -62,4 +63,9 @@ void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
     NaClLog(LOG_WARNING,
             "NaClAppThreadSetSuspendedRegisters: Registers not modified\n");
   }
+}
+
+int NaClFaultedThreadQueueEnable(struct NaClApp *nap) {
+  nap->enable_faulted_thread_queue = 1;
+  return NaClDebugExceptionHandlerEnsureAttached(nap);
 }

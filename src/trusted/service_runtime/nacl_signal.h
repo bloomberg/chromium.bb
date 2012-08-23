@@ -43,6 +43,9 @@ enum NaClSignalResult {
   NACL_SIGNAL_RETURN    /* Skip all other handlers and return */
 };
 
+#define NACL_ABI_SIGTRAP 5
+#define NACL_ABI_SIGSEGV 11
+
 #if NACL_WINDOWS
 enum PosixSignals {
   SIGINT  = 2,

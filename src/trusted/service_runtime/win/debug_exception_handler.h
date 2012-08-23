@@ -7,9 +7,12 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_WIN_DEBUG_EXCEPTION_HANDLER_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_WIN_DEBUG_EXCEPTION_HANDLER_H_
 
-#include <windows.h>
-
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/nacl_compiler_annotations.h"
+
+#if NACL_WINDOWS
+
+#include <windows.h>
 
 EXTERN_C_BEGIN
 
@@ -46,8 +49,29 @@ int NaClDebugExceptionHandlerStandaloneAttach(const void *info,
 /*
  * This implements sel_ldr's --debug-exception-handler option.
  */
-int NaClDebugExceptionHandlerStandaloneMain(int argc, char **argv);
+void NaClDebugExceptionHandlerStandaloneHandleArgs(int argc, char **argv);
 
 EXTERN_C_END
+
+#else
+
+/*
+ * We provide no-op implementations for the non-Windows case to reduce
+ * the number of #ifs where these functions are called.
+ */
+
+static INLINE int NaClDebugExceptionHandlerEnsureAttached(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+
+  return 1;
+}
+
+static INLINE void NaClDebugExceptionHandlerStandaloneHandleArgs(int argc,
+                                                                 char **argv) {
+  UNREFERENCED_PARAMETER(argc);
+  UNREFERENCED_PARAMETER(argv);
+}
+
+#endif
 
 #endif /* NATIVE_CLIENT_SERVICE_RUNTIME_WIN_DEBUG_EXCEPTION_HANDLER_H_ */

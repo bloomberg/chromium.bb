@@ -50,16 +50,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-
-#if NACL_WINDOWS
-#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
-#endif
 
 
 struct NaClDescQuotaInterface;
@@ -2769,10 +2766,9 @@ int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
   }
   NaClXMutexLock(&nap->exception_mu);
 
-#if NACL_WINDOWS
   /*
    * This needs to be done while holding the lock so that we don't
-   * start two debug exception handlers.
+   * start two Windows debug exception handlers.
    */
   if (handler_addr != 0) {
     if (!NaClDebugExceptionHandlerEnsureAttached(nap)) {
@@ -2780,7 +2776,6 @@ int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
       goto unlock_exit;
     }
   }
-#endif
 
   if (0 != old_handler &&
       !NaClCopyOutToUser(nap, (uintptr_t) old_handler,
