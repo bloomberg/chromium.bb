@@ -7,14 +7,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/message_decoder.h"
-
-class MessageLoop;
 
 namespace net {
 class IOBuffer;
@@ -35,27 +33,24 @@ namespace protocol {
 // It is still possible that the MessageReceivedCallback is called
 // twice (so that there is more than one outstanding message),
 // e.g. when we the sender sends multiple messages in one TCP packet.
-class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
+class MessageReader : public base::NonThreadSafe {
  public:
   typedef base::Callback<void(scoped_ptr<CompoundBuffer>, const base::Closure&)>
       MessageReceivedCallback;
 
   MessageReader();
+  virtual ~MessageReader();
 
   // Initialize the MessageReader with a socket. If a message is received
   // |callback| is called.
   void Init(net::Socket* socket, const MessageReceivedCallback& callback);
 
  private:
-  friend class base::RefCountedThreadSafe<MessageReader>;
-  virtual ~MessageReader();
-
   void DoRead();
   void OnRead(int result);
   void HandleReadResult(int result);
   void OnDataReceived(net::IOBuffer* data, int data_size);
-  void OnMessageDone(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  void ProcessDoneEvent();
+  void OnMessageDone();
 
   net::Socket* socket_;
 
@@ -75,6 +70,10 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
 
   // Callback is called when a message is received.
   MessageReceivedCallback message_received_callback_;
+
+  base::WeakPtrFactory<MessageReader> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageReader);
 };
 
 // Version of MessageReader for protocol buffer messages, that parses
@@ -82,7 +81,10 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
 template <class T>
 class ProtobufMessageReader {
  public:
-  typedef typename base::Callback<void(scoped_ptr<T>, const base::Closure&)>
+  // The callback that is called when a new message is received. |done_task|
+  // must be called by the callback when it's done processing the |message|.
+  typedef typename base::Callback<void(scoped_ptr<T> message,
+                                       const base::Closure& done_task)>
       MessageReceivedCallback;
 
   ProtobufMessageReader() { };
@@ -91,7 +93,7 @@ class ProtobufMessageReader {
   void Init(net::Socket* socket, const MessageReceivedCallback& callback) {
     DCHECK(!callback.is_null());
     message_received_callback_ = callback;
-    message_reader_ = new MessageReader();
+    message_reader_.reset(new MessageReader());
     message_reader_->Init(
         socket, base::Bind(&ProtobufMessageReader<T>::OnNewData,
                            base::Unretained(this)));
@@ -111,7 +113,7 @@ class ProtobufMessageReader {
     }
   }
 
-  scoped_refptr<MessageReader> message_reader_;
+  scoped_ptr<MessageReader> message_reader_;
   MessageReceivedCallback message_received_callback_;
 };
 

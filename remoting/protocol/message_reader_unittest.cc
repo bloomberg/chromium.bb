@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_session.h"
@@ -44,20 +43,12 @@ class MockMessageReceivedCallback {
 class MessageReaderTest : public testing::Test {
  public:
   MessageReaderTest()
-      : other_thread_("SecondTestThread"),
-        run_task_finished_(false, false) {
-  }
-
-  void RunDoneTaskOnOtherThread(const base::Closure& done_task) {
-    other_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&MessageReaderTest::RunClosure,
-                   base::Unretained(this), done_task));
+      : run_task_finished_(false, false) {
   }
 
  protected:
   virtual void SetUp() OVERRIDE {
-    reader_ = new MessageReader();
+    reader_.reset(new MessageReader());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -94,9 +85,8 @@ class MessageReaderTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  base::Thread other_thread_;
   base::WaitableEvent run_task_finished_;
-  scoped_refptr<MessageReader> reader_;
+  scoped_ptr<MessageReader> reader_;
   FakeSocket socket_;
   MockMessageReceivedCallback callback_;
   std::vector<CompoundBuffer*> messages_;
@@ -261,32 +251,6 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   done_task.Run();
 
   EXPECT_TRUE(socket_.read_pending());
-}
-
-// Verify that socket operations occur on same thread, even when the OnMessage()
-// callback triggers |done_task| to run on a different thread.
-TEST_F(MessageReaderTest, UseSocketOnCorrectThread) {
-  AddMessage(kTestMessage1);
-  other_thread_.Start();
-
-  EXPECT_CALL(callback_, OnMessage(_))
-      .WillOnce(Invoke(this, &MessageReaderTest::RunDoneTaskOnOtherThread));
-
-  InitReader();
-
-  run_task_finished_.Wait();
-  message_loop_.RunAllPending();
-
-  Mock::VerifyAndClearExpectations(&callback_);
-
-  // Write another message and verify that we receive it.
-  base::Closure done_task;
-  EXPECT_CALL(callback_, OnMessage(_))
-      .WillOnce(SaveArg<0>(&done_task));
-  AddMessage(kTestMessage2);
-  EXPECT_TRUE(CompareResult(messages_[1], kTestMessage2));
-
-  done_task.Run();
 }
 
 // Read() returns error.
