@@ -269,6 +269,7 @@ class VaapiH264Decoder {
   int frame_num_;
   int prev_frame_num_;
   int prev_frame_num_offset_;
+  bool prev_has_memmgmnt5_;
 
   // Values related to previously decoded reference picture.
   bool prev_ref_has_memmgmnt5_;

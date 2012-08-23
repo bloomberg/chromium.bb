@@ -1132,62 +1132,161 @@ bool VaapiH264Decoder::InitCurrPicture(H264SliceHeader* slice_hdr) {
 
 bool VaapiH264Decoder::CalculatePicOrderCounts(H264SliceHeader* slice_hdr) {
   DCHECK_NE(curr_sps_id_, -1);
+  const H264SPS* sps = parser_.GetSPS(curr_sps_id_);
 
   int pic_order_cnt_lsb = slice_hdr->pic_order_cnt_lsb;
   curr_pic_->pic_order_cnt_lsb = pic_order_cnt_lsb;
-  if (parser_.GetSPS(curr_sps_id_)->pic_order_cnt_type != 0) {
-    DVLOG(1) << "Unsupported pic_order_cnt_type";
-    return false;
-  }
 
-  // See spec 8.2.1.1.
-  int prev_pic_order_cnt_msb, prev_pic_order_cnt_lsb;
-  if (slice_hdr->idr_pic_flag) {
-    prev_pic_order_cnt_msb = prev_pic_order_cnt_lsb = 0;
-  } else {
-    if (prev_ref_has_memmgmnt5_) {
-      if (prev_ref_field_ != H264Picture::FIELD_BOTTOM) {
-        prev_pic_order_cnt_msb = 0;
-        prev_pic_order_cnt_lsb = prev_ref_top_field_order_cnt_;
+  switch (sps->pic_order_cnt_type) {
+    case 0:
+      // See spec 8.2.1.1.
+      int prev_pic_order_cnt_msb, prev_pic_order_cnt_lsb;
+      if (slice_hdr->idr_pic_flag) {
+        prev_pic_order_cnt_msb = prev_pic_order_cnt_lsb = 0;
       } else {
-        prev_pic_order_cnt_msb = 0;
-        prev_pic_order_cnt_lsb = 0;
+        if (prev_ref_has_memmgmnt5_) {
+          if (prev_ref_field_ != H264Picture::FIELD_BOTTOM) {
+            prev_pic_order_cnt_msb = 0;
+            prev_pic_order_cnt_lsb = prev_ref_top_field_order_cnt_;
+          } else {
+            prev_pic_order_cnt_msb = 0;
+            prev_pic_order_cnt_lsb = 0;
+          }
+        } else {
+          prev_pic_order_cnt_msb = prev_ref_pic_order_cnt_msb_;
+          prev_pic_order_cnt_lsb = prev_ref_pic_order_cnt_lsb_;
+        }
       }
-    } else {
-      prev_pic_order_cnt_msb = prev_ref_pic_order_cnt_msb_;
-      prev_pic_order_cnt_lsb = prev_ref_pic_order_cnt_lsb_;
-    }
-  }
 
-  DCHECK_NE(max_pic_order_cnt_lsb_, 0);
-  if ((pic_order_cnt_lsb < prev_pic_order_cnt_lsb) &&
-      (prev_pic_order_cnt_lsb - pic_order_cnt_lsb >=
-       max_pic_order_cnt_lsb_ / 2)) {
-    curr_pic_->pic_order_cnt_msb = prev_pic_order_cnt_msb +
-        max_pic_order_cnt_lsb_;
-  } else if ((pic_order_cnt_lsb > prev_pic_order_cnt_lsb) &&
-      (pic_order_cnt_lsb - prev_pic_order_cnt_lsb >
-       max_pic_order_cnt_lsb_ / 2)) {
-    curr_pic_->pic_order_cnt_msb = prev_pic_order_cnt_msb -
-        max_pic_order_cnt_lsb_;
-  } else {
-    curr_pic_->pic_order_cnt_msb = prev_pic_order_cnt_msb;
-  }
+      DCHECK_NE(max_pic_order_cnt_lsb_, 0);
+      if ((pic_order_cnt_lsb < prev_pic_order_cnt_lsb) &&
+          (prev_pic_order_cnt_lsb - pic_order_cnt_lsb >=
+           max_pic_order_cnt_lsb_ / 2)) {
+        curr_pic_->pic_order_cnt_msb = prev_pic_order_cnt_msb +
+          max_pic_order_cnt_lsb_;
+      } else if ((pic_order_cnt_lsb > prev_pic_order_cnt_lsb) &&
+          (pic_order_cnt_lsb - prev_pic_order_cnt_lsb >
+           max_pic_order_cnt_lsb_ / 2)) {
+        curr_pic_->pic_order_cnt_msb = prev_pic_order_cnt_msb -
+          max_pic_order_cnt_lsb_;
+      } else {
+        curr_pic_->pic_order_cnt_msb = prev_pic_order_cnt_msb;
+      }
 
-  if (curr_pic_->field != H264Picture::FIELD_BOTTOM) {
-    curr_pic_->top_field_order_cnt = curr_pic_->pic_order_cnt_msb +
-        pic_order_cnt_lsb;
-  }
-
-  if (curr_pic_->field != H264Picture::FIELD_TOP) {
-    // TODO posciak: perhaps replace with pic->field?
-    if (!slice_hdr->field_pic_flag) {
-      curr_pic_->bottom_field_order_cnt = curr_pic_->top_field_order_cnt +
-          slice_hdr->delta_pic_order_cnt_bottom;
-    } else {
-      curr_pic_->bottom_field_order_cnt = curr_pic_->pic_order_cnt_msb +
+      if (curr_pic_->field != H264Picture::FIELD_BOTTOM) {
+        curr_pic_->top_field_order_cnt = curr_pic_->pic_order_cnt_msb +
           pic_order_cnt_lsb;
+      }
+
+      if (curr_pic_->field != H264Picture::FIELD_TOP) {
+        // TODO posciak: perhaps replace with pic->field?
+        if (!slice_hdr->field_pic_flag) {
+          curr_pic_->bottom_field_order_cnt = curr_pic_->top_field_order_cnt +
+            slice_hdr->delta_pic_order_cnt_bottom;
+        } else {
+          curr_pic_->bottom_field_order_cnt = curr_pic_->pic_order_cnt_msb +
+            pic_order_cnt_lsb;
+        }
+      }
+      break;
+
+    case 1: {
+      // See spec 8.2.1.2.
+      if (prev_has_memmgmnt5_)
+        prev_frame_num_offset_ = 0;
+
+      if (slice_hdr->idr_pic_flag)
+        curr_pic_->frame_num_offset = 0;
+      else if (prev_frame_num_ > slice_hdr->frame_num)
+        curr_pic_->frame_num_offset = prev_frame_num_offset_ + max_frame_num_;
+      else
+        curr_pic_->frame_num_offset = prev_frame_num_offset_;
+
+      int abs_frame_num = 0;
+      if (sps->num_ref_frames_in_pic_order_cnt_cycle != 0)
+        abs_frame_num = curr_pic_->frame_num_offset + slice_hdr->frame_num;
+      else
+        abs_frame_num = 0;
+
+      if (slice_hdr->nal_ref_idc == 0 && abs_frame_num > 0)
+        --abs_frame_num;
+
+      int expected_pic_order_cnt = 0;
+      if (abs_frame_num > 0) {
+        if (sps->num_ref_frames_in_pic_order_cnt_cycle == 0) {
+          DVLOG(1) << "Invalid num_ref_frames_in_pic_order_cnt_cycle "
+                   << "in stream";
+          return false;
+        }
+
+        int pic_order_cnt_cycle_cnt = (abs_frame_num - 1) /
+            sps->num_ref_frames_in_pic_order_cnt_cycle;
+        int frame_num_in_pic_order_cnt_cycle = (abs_frame_num - 1) %
+            sps->num_ref_frames_in_pic_order_cnt_cycle;
+
+        expected_pic_order_cnt = pic_order_cnt_cycle_cnt *
+            sps->expected_delta_per_pic_order_cnt_cycle;
+        // frame_num_in_pic_order_cnt_cycle is verified < 255 in parser
+        for (int i = 0; i <= frame_num_in_pic_order_cnt_cycle; ++i)
+          expected_pic_order_cnt += sps->offset_for_ref_frame[i];
+      }
+
+      if (!slice_hdr->nal_ref_idc)
+        expected_pic_order_cnt += sps->offset_for_non_ref_pic;
+
+      if (!slice_hdr->field_pic_flag) {
+        curr_pic_->top_field_order_cnt = expected_pic_order_cnt +
+            slice_hdr->delta_pic_order_cnt[0];
+        curr_pic_->bottom_field_order_cnt = curr_pic_->top_field_order_cnt +
+            sps->offset_for_top_to_bottom_field +
+            slice_hdr->delta_pic_order_cnt[1];
+      } else if (!slice_hdr->bottom_field_flag) {
+        curr_pic_->top_field_order_cnt = expected_pic_order_cnt +
+            slice_hdr->delta_pic_order_cnt[0];
+      } else {
+        curr_pic_->bottom_field_order_cnt = expected_pic_order_cnt +
+            sps->offset_for_top_to_bottom_field +
+            slice_hdr->delta_pic_order_cnt[0];
+      }
+      break;
     }
+
+    case 2:
+      // See spec 8.2.1.3.
+      if (prev_has_memmgmnt5_)
+        prev_frame_num_offset_ = 0;
+
+      if (slice_hdr->idr_pic_flag)
+        curr_pic_->frame_num_offset = 0;
+      else if (prev_frame_num_ > slice_hdr->frame_num)
+        curr_pic_->frame_num_offset = prev_frame_num_offset_ + max_frame_num_;
+      else
+        curr_pic_->frame_num_offset = prev_frame_num_offset_;
+
+      int temp_pic_order_cnt;
+      if (slice_hdr->idr_pic_flag) {
+        temp_pic_order_cnt = 0;
+      } else if (!slice_hdr->nal_ref_idc) {
+        temp_pic_order_cnt =
+            2 * (curr_pic_->frame_num_offset + slice_hdr->frame_num) - 1;
+      } else {
+        temp_pic_order_cnt = 2 * (curr_pic_->frame_num_offset +
+            slice_hdr->frame_num);
+      }
+
+      if (!slice_hdr->field_pic_flag) {
+        curr_pic_->top_field_order_cnt = temp_pic_order_cnt;
+        curr_pic_->bottom_field_order_cnt = temp_pic_order_cnt;
+      } else if (slice_hdr->bottom_field_flag) {
+        curr_pic_->bottom_field_order_cnt = temp_pic_order_cnt;
+      } else {
+        curr_pic_->top_field_order_cnt = temp_pic_order_cnt;
+      }
+      break;
+
+    default:
+      DVLOG(1) << "Invalid pic_order_cnt_type: " << sps->pic_order_cnt_type;
+      return false;
   }
 
   switch (curr_pic_->field) {
@@ -1787,6 +1886,8 @@ bool VaapiH264Decoder::FinishPicture() {
     prev_ref_pic_order_cnt_lsb_ = curr_pic_->pic_order_cnt_lsb;
     prev_ref_field_ = curr_pic_->field;
   }
+  prev_has_memmgmnt5_ = curr_pic_->mem_mgmt_5;
+  prev_frame_num_offset_ = curr_pic_->frame_num_offset;
 
   // Remove unused (for reference or later output) pictures from DPB.
   dpb_.RemoveUnused();
@@ -1869,11 +1970,6 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
 
   if (sps->gaps_in_frame_num_value_allowed_flag) {
     DVLOG(1) << "Gaps in frame numbers not supported";
-    return false;
-  }
-
-  if (sps->pic_order_cnt_type != 0) {
-    DVLOG(1) << "Unsupported pic_order_cnt_type";
     return false;
   }
 

@@ -627,6 +627,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
   READ_UE_OR_RETURN(&sps->pic_order_cnt_type);
   TRUE_OR_RETURN(sps->pic_order_cnt_type < 3);
 
+  sps->expected_delta_per_pic_order_cnt_cycle = 0;
   if (sps->pic_order_cnt_type == 0) {
     READ_UE_OR_RETURN(&sps->log2_max_pic_order_cnt_lsb_minus4);
     TRUE_OR_RETURN(sps->log2_max_pic_order_cnt_lsb_minus4 < 13);
@@ -635,8 +636,13 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
     READ_SE_OR_RETURN(&sps->offset_for_non_ref_pic);
     READ_SE_OR_RETURN(&sps->offset_for_top_to_bottom_field);
     READ_UE_OR_RETURN(&sps->num_ref_frames_in_pic_order_cnt_cycle);
-    for (int i = 0; i < sps->num_ref_frames_in_pic_order_cnt_cycle; ++i)
+    TRUE_OR_RETURN(sps->num_ref_frames_in_pic_order_cnt_cycle < 255);
+
+    for (int i = 0; i < sps->num_ref_frames_in_pic_order_cnt_cycle; ++i) {
       READ_SE_OR_RETURN(&sps->offset_for_ref_frame[i]);
+      sps->expected_delta_per_pic_order_cnt_cycle +=
+          sps->offset_for_ref_frame[i];
+    }
   }
 
   READ_UE_OR_RETURN(&sps->max_num_ref_frames);

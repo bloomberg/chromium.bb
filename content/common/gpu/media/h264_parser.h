@@ -70,6 +70,7 @@ struct CONTENT_EXPORT H264SPS {
   int offset_for_non_ref_pic;
   int offset_for_top_to_bottom_field;
   int num_ref_frames_in_pic_order_cnt_cycle;
+  int expected_delta_per_pic_order_cnt_cycle; // calculated
   int offset_for_ref_frame[255];
   int max_num_ref_frames;
   bool gaps_in_frame_num_value_allowed_flag;

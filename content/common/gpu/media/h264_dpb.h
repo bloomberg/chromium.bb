@@ -37,6 +37,7 @@ struct H264Picture {
   int pic_num;
   int long_term_pic_num;
   int frame_num;  // from slice header
+  int frame_num_offset;
   int frame_num_wrap;
   int long_term_frame_idx;
 
