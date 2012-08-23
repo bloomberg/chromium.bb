@@ -352,7 +352,7 @@ void Pipeline::OnAudioDisabled() {
 }
 
 void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
-  DCHECK(time <= max_time);
+  DCHECK_LE(time.InMicroseconds(), max_time.InMicroseconds());
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
