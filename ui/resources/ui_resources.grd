@@ -231,7 +231,13 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT" file="cros/window_position_right_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_H" file="cros/window_position_right_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_P" file="cros/window_position_right_pressed.png" />
-
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_RESTORE" file="cros/window_position_left_normal_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_RESTORE_H" file="cros/window_position_left_hover_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_RESTORE_P" file="cros/window_position_left_pressed_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE" file="cros/window_position_right_normal_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_H" file="cros/window_position_right_hover_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_P" file="cros/window_position_right_pressed_restore.png" />
+        
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" />
 
