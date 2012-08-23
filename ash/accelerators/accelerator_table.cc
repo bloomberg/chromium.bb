@@ -19,6 +19,10 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
   { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
   { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
+  // Single shift release turns off caps lock.
+  { false, ui::VKEY_LSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
+  { false, ui::VKEY_SHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
+  { false, ui::VKEY_RSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
 
   { true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
   // Shortcuts for Japanese IME.
@@ -189,6 +193,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
 #if defined(OS_CHROMEOS)
   CYCLE_DISPLAY_MODE,
 #endif  // defined(OS_CHROMEOS)
+  DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
   NEXT_IME,

@@ -476,6 +476,11 @@ bool AcceleratorController::PerformAction(int action,
         return false;
       ash::Shell::GetInstance()->ToggleAppList();
       return true;
+    case DISABLE_CAPS_LOCK:
+      // TODO(mazda): Handle this using |caps_lock_delegate_|.
+      if (shell->tray_delegate()->IsCapsLockOn())
+        shell->tray_delegate()->SetCapsLockEnabled(false);
+      return true;
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
         return caps_lock_delegate_->HandleToggleCapsLock();
