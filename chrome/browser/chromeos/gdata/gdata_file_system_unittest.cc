@@ -59,7 +59,7 @@ void DriveSearchCallback(
     MessageLoop* message_loop,
     const SearchResultPair* expected_results,
     size_t expected_results_size,
-    GDataFileError error,
+    DriveFileError error,
     const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > results) {
   ASSERT_TRUE(results.get());
@@ -166,7 +166,7 @@ class MockGDataUploader : public GDataUploaderInterface {
     const UploadFileInfo::UploadCompletionCallback callback =
         upload_file_info->completion_callback;
     if (!callback.is_null())
-      callback.Run(GDATA_FILE_OK, upload_file_info.Pass());
+      callback.Run(DRIVE_FILE_OK, upload_file_info.Pass());
 
     const int kUploadId = 123;
     return kUploadId;
@@ -212,7 +212,7 @@ class GDataFileSystemTest : public testing::Test {
         mock_drive_service_(NULL),
         mock_webapps_registry_(NULL),
         num_callback_invocations_(0),
-        expected_error_(GDATA_FILE_OK),
+        expected_error_(DRIVE_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(DriveCache::CACHE_TYPE_META),
         expected_success_(true),
@@ -326,7 +326,7 @@ class GDataFileSystemTest : public testing::Test {
 
     ASSERT_EQ(file_system_->AddNewDirectory(directory_path.DirName(),
                                             entry_value),
-              GDATA_FILE_OK)
+              DRIVE_FILE_OK)
         << "Failed adding "
         << directory_path.DirName().value();
   }
@@ -339,12 +339,12 @@ class GDataFileSystemTest : public testing::Test {
     return file_system_->UpdateFromFeedForTesting(
         list,
         largest_changestamp,
-        root_feed_changestamp_++) == GDATA_FILE_OK;
+        root_feed_changestamp_++) == DRIVE_FILE_OK;
   }
 
   bool RemoveEntry(const FilePath& file_path) {
     return file_system_->RemoveEntryAndCacheLocally(file_path) ==
-        GDATA_FILE_OK;
+        DRIVE_FILE_OK;
   }
 
   FilePath GetCachePathForFile(const std::string& resource_id,
@@ -443,7 +443,7 @@ class GDataFileSystemTest : public testing::Test {
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& source_path,
-      GDataFileError expected_error,
+      DriveFileError expected_error,
       int expected_cache_state,
       DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -462,7 +462,7 @@ class GDataFileSystemTest : public testing::Test {
   void TestPin(
       const std::string& resource_id,
       const std::string& md5,
-      GDataFileError expected_error,
+      DriveFileError expected_error,
       int expected_cache_state,
       DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -480,7 +480,7 @@ class GDataFileSystemTest : public testing::Test {
   void TestMarkDirty(
       const std::string& resource_id,
       const std::string& md5,
-      GDataFileError expected_error,
+      DriveFileError expected_error,
       int expected_cache_state,
       DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -496,14 +496,14 @@ class GDataFileSystemTest : public testing::Test {
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyMarkDirty(GDataFileError error,
+  void VerifyMarkDirty(DriveFileError error,
                        const std::string& resource_id,
                        const std::string& md5,
                        const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
 
     // Verify filename of |cache_file_path|.
-    if (error == GDATA_FILE_OK) {
+    if (error == DRIVE_FILE_OK) {
       FilePath base_name = cache_file_path.BaseName();
       EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
                 FilePath::kExtensionSeparator +
@@ -517,7 +517,7 @@ class GDataFileSystemTest : public testing::Test {
   void TestCommitDirty(
       const std::string& resource_id,
       const std::string& md5,
-      GDataFileError expected_error,
+      DriveFileError expected_error,
       int expected_cache_state,
       DriveCache::CacheSubDirectoryType expected_sub_dir_type) {
     expected_error_ = expected_error;
@@ -536,11 +536,11 @@ class GDataFileSystemTest : public testing::Test {
   // Verify the file identified by |resource_id| and |md5| is in the expected
   // cache state after |OpenFile|, that is, marked dirty and has no outgoing
   // symlink, etc.
-  void VerifyCacheStateAfterOpenFile(GDataFileError error,
+  void VerifyCacheStateAfterOpenFile(DriveFileError error,
                                      const std::string& resource_id,
                                      const std::string& md5,
                                      const FilePath& cache_file_path) {
-    expected_error_ = GDATA_FILE_OK;
+    expected_error_ = DRIVE_FILE_OK;
     expected_cache_state_ = (test_util::TEST_CACHE_STATE_PRESENT |
                              test_util::TEST_CACHE_STATE_DIRTY |
                              test_util::TEST_CACHE_STATE_PERSISTENT);
@@ -552,10 +552,10 @@ class GDataFileSystemTest : public testing::Test {
   // Verify the file identified by |resource_id| and |md5| is in the expected
   // cache state after |CloseFile|, that is, marked dirty and has an outgoing
   // symlink, etc.
-  void VerifyCacheStateAfterCloseFile(GDataFileError error,
+  void VerifyCacheStateAfterCloseFile(DriveFileError error,
                                       const std::string& resource_id,
                                       const std::string& md5) {
-    expected_error_ = GDATA_FILE_OK;
+    expected_error_ = DRIVE_FILE_OK;
     expected_cache_state_ = (test_util::TEST_CACHE_STATE_PRESENT |
                              test_util::TEST_CACHE_STATE_DIRTY |
                              test_util::TEST_CACHE_STATE_PERSISTENT);
@@ -564,7 +564,7 @@ class GDataFileSystemTest : public testing::Test {
     VerifyCacheFileState(error, resource_id, md5);
   }
 
-  void VerifyCacheFileState(GDataFileError error,
+  void VerifyCacheFileState(DriveFileError error,
                             const std::string& resource_id,
                             const std::string& md5) {
     ++num_callback_invocations_;
@@ -765,12 +765,12 @@ class GDataFileSystemTest : public testing::Test {
     : public base::RefCountedThreadSafe<CallbackHelper> {
    public:
     CallbackHelper()
-        : last_error_(GDATA_FILE_OK),
+        : last_error_(DRIVE_FILE_OK),
           quota_bytes_total_(0),
           quota_bytes_used_(0),
           entry_proto_(NULL) {}
 
-    virtual void GetFileCallback(GDataFileError error,
+    virtual void GetFileCallback(DriveFileError error,
                                  const FilePath& file_path,
                                  const std::string& mime_type,
                                  DriveFileType file_type) {
@@ -780,13 +780,13 @@ class GDataFileSystemTest : public testing::Test {
       file_type_ = file_type;
     }
 
-    virtual void FileOperationCallback(GDataFileError error) {
+    virtual void FileOperationCallback(DriveFileError error) {
       DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
       last_error_ = error;
     }
 
-    virtual void GetAvailableSpaceCallback(GDataFileError error,
+    virtual void GetAvailableSpaceCallback(DriveFileError error,
                                            int64 bytes_total,
                                            int64 bytes_used) {
       last_error_ = error;
@@ -794,34 +794,34 @@ class GDataFileSystemTest : public testing::Test {
       quota_bytes_used_ = bytes_used;
     }
 
-    virtual void OpenFileCallback(GDataFileError error,
+    virtual void OpenFileCallback(DriveFileError error,
                                   const FilePath& file_path) {
       last_error_ = error;
       opened_file_path_ = file_path;
       MessageLoop::current()->Quit();
     }
 
-    virtual void CloseFileCallback(GDataFileError error) {
+    virtual void CloseFileCallback(DriveFileError error) {
       last_error_ = error;
       MessageLoop::current()->Quit();
     }
 
     virtual void GetEntryInfoCallback(
-        GDataFileError error,
+        DriveFileError error,
         scoped_ptr<DriveEntryProto> entry_proto) {
       last_error_ = error;
       entry_proto_ = entry_proto.Pass();
     }
 
     virtual void ReadDirectoryCallback(
-        GDataFileError error,
+        DriveFileError error,
         bool /* hide_hosted_documents */,
         scoped_ptr<DriveEntryProtoVector> entries) {
       last_error_ = error;
       directory_entries_ = entries.Pass();
     }
 
-    GDataFileError last_error_;
+    DriveFileError last_error_;
     FilePath download_path_;
     FilePath opened_file_path_;
     std::string mime_type_;
@@ -856,7 +856,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 
   int num_callback_invocations_;
-  GDataFileError expected_error_;
+  DriveFileError expected_error_;
   int expected_cache_state_;
   DriveCache::CacheSubDirectoryType expected_sub_dir_type_;
   bool expected_success_;
@@ -873,9 +873,9 @@ void AsyncInitializationCallback(
     int expected_counter,
     const FilePath& expected_file_path,
     MessageLoop* message_loop,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
-  ASSERT_EQ(GDATA_FILE_OK, error);
+  ASSERT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entry_proto.get());
   ASSERT_TRUE(entry_proto->file_info().is_directory());
   EXPECT_EQ(expected_file_path.value(), entry_proto->base_name());
@@ -1283,7 +1283,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
       local_src_file_path, remote_dest_file_path, callback);
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   // Now the remote file should exist.
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
@@ -1335,7 +1335,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
       local_src_file_path, remote_dest_file_path, callback);
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   // Now the remote file should exist.
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
@@ -1384,7 +1384,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
       remote_src_file_path, local_dest_file_path, callback);
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   std::string cache_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(cache_file, &cache_file_data));
@@ -1411,7 +1411,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
       remote_src_file_path, local_dest_file_path, callback);
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   scoped_ptr<DriveEntryProto> entry_proto = GetEntryInfoByPathSync(
       remote_src_file_path);
@@ -1433,7 +1433,7 @@ TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
 
   file_system_->Copy(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(dest_file_path));
@@ -1462,7 +1462,7 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
   EXPECT_TRUE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(dest_parent_path));
@@ -1498,7 +1498,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
 
   file_system_->Copy(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_A_DIRECTORY,
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY,
             callback_helper_->last_error_);
 
   EXPECT_TRUE(EntryExists(src_file_path));
@@ -1537,7 +1537,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_TRUE(EntryExists(dest_file_path));
@@ -1586,7 +1586,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_TRUE(EntryExists(dest_file_path));
@@ -1637,7 +1637,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   ASSERT_TRUE(EntryExists(dest_file_path));
@@ -1712,7 +1712,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(interim_file_path));
@@ -1736,7 +1736,7 @@ TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(dest_file_path));
@@ -1765,7 +1765,7 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
@@ -1801,7 +1801,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_A_DIRECTORY,
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY,
             callback_helper_->last_error_);
 
   EXPECT_TRUE(EntryExists(src_file_path));
@@ -1950,7 +1950,7 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // Set last error so it's not a valid error code.
-  callback_helper_->last_error_ = static_cast<GDataFileError>(1);
+  callback_helper_->last_error_ = static_cast<DriveFileError>(1);
   file_system_->CreateDirectory(
       FilePath(FILE_PATH_LITERAL("drive/Sample Directory Title")),
       false,  // is_exclusive
@@ -1960,7 +1960,7 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   test_util::RunBlockingPoolTask();
   // TODO(gspencer): Uncomment this when we get a blob that
   // works that can be returned from the mock.
-  // EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  // EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
@@ -1998,7 +1998,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
                               GetContentCallback());
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),
             callback_helper_->download_path_.value());
@@ -2038,7 +2038,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
                               GetContentCallback());
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_ERROR_NO_SPACE,
+  EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE,
             callback_helper_->last_error_);
 }
 
@@ -2069,7 +2069,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   TestStoreToCache("<resource_id>",
                    "<md5>",
                    GetTestFilePath("root_feed.json"),
-                   GDATA_FILE_OK,
+                   DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
@@ -2093,7 +2093,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
                               GetContentCallback());
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
   EXPECT_EQ(downloaded_file.value(),
             callback_helper_->download_path_.value());
@@ -2144,7 +2144,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
                               GetContentCallback());
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_ERROR_NO_SPACE,
+  EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE,
             callback_helper_->last_error_);
 }
 
@@ -2168,7 +2168,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
   TestStoreToCache(entry_proto->resource_id(),
                    entry_proto->file_specific_info().file_md5(),
                    GetTestFilePath("root_feed.json"),
-                   GDATA_FILE_OK,
+                   DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -2276,7 +2276,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
   TestStoreToCache(entry_proto->resource_id(),
                    entry_proto->file_specific_info().file_md5(),
                    GetTestFilePath("root_feed.json"),
-                   GDATA_FILE_OK,
+                   DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -2310,7 +2310,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(kResourceId, kMd5)).Times(1);
   TestPin(kResourceId,
           kMd5,
-          GDATA_FILE_OK,
+          DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PINNED,
           DriveCache::CACHE_TYPE_TMP);
 
@@ -2323,7 +2323,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   TestStoreToCache(kResourceId,
                    kMd5,
                    GetTestFilePath("root_feed.json"),  // Anything works.
-                   GDATA_FILE_OK,
+                   DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
                    test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -2334,7 +2334,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // GCache/v1/persistent/<kResourceId>.local
   TestMarkDirty(kResourceId,
                 kMd5,
-                GDATA_FILE_OK,
+                DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_DIRTY |
@@ -2359,7 +2359,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(kResourceId)).Times(1);
   TestCommitDirty(kResourceId,
                   kMd5,
-                  GDATA_FILE_OK,
+                  DRIVE_FILE_OK,
                   test_util::TEST_CACHE_STATE_PRESENT |
                   test_util::TEST_CACHE_STATE_PINNED |
                   test_util::TEST_CACHE_STATE_DIRTY |
@@ -2404,7 +2404,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       "audio/mpeg",
       _))  // callback
       .WillOnce(MockUploadExistingFile(
-          GDATA_FILE_OK,
+          DRIVE_FILE_OK,
           FilePath::FromUTF8Unsafe("drive/File1"),
           dirty_cache_file_path,
           document_entry));
@@ -2429,7 +2429,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   file_system_->UpdateFileByResourceId(kResourceId, callback);
   test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
   // Make sure that the number of files did not change (i.e. we updated an
   // existing file, rather than adding a new file. The number of files
   // increases if we don't handle the file update right).
@@ -2455,7 +2455,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
 
   file_system_->UpdateFileByResourceId(kResourceId, callback);
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 }
 
 TEST_F(GDataFileSystemTest, ContentSearch) {
@@ -2606,14 +2606,14 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   const FilePath opened_file_path = callback_helper_->opened_file_path_;
 
   // Verify that the file was properly opened.
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   // Try to open the already opened file.
   file_system_->OpenFile(kFileInRoot, callback);
   message_loop_.Run();
 
   // It must fail.
-  EXPECT_EQ(GDATA_FILE_ERROR_IN_USE, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_IN_USE, callback_helper_->last_error_);
 
   // Verify that the file contents match the expected contents.
   std::string cache_file_data;
@@ -2621,7 +2621,7 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(kExpectedFileData, cache_file_data);
 
   // Verify that the cache state was changed as expected.
-  VerifyCacheStateAfterOpenFile(GDATA_FILE_OK,
+  VerifyCacheStateAfterOpenFile(DRIVE_FILE_OK,
                                 file_resource_id,
                                 file_md5,
                                 opened_file_path);
@@ -2631,10 +2631,10 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   message_loop_.Run();
 
   // Verify that the file was properly closed.
-  EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 
   // Verify that the cache state was changed as expected.
-  VerifyCacheStateAfterCloseFile(GDATA_FILE_OK,
+  VerifyCacheStateAfterCloseFile(DRIVE_FILE_OK,
                                  file_resource_id,
                                  file_md5);
 
@@ -2643,7 +2643,7 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   message_loop_.Run();
 
   // It must fail.
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 }
 
 }   // namespace gdata

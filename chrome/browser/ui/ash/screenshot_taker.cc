@@ -130,9 +130,9 @@ void SaveScreenshot(const FilePath& screenshot_path,
 // TODO(kinaba): crbug.com/140425, remove this ungly #ifdef dispatch.
 #ifdef OS_CHROMEOS
 void SaveScreenshotToGData(scoped_refptr<base::RefCountedBytes> png_data,
-                           gdata::GDataFileError error,
+                           gdata::DriveFileError error,
                            const FilePath& local_path) {
-  if (error != gdata::GDATA_FILE_OK) {
+  if (error != gdata::DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to write screenshot image to Google Drive: " << error;
     return;
   }

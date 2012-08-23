@@ -141,7 +141,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
 
   // Called when a file entry is obtained.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
-                                 GDataFileError error,
+                                 DriveFileError error,
                                  const FilePath& file_path,
                                  scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -152,19 +152,19 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
                        const DriveCacheEntry& cache_entry);
 
   // Called when an existing cache entry and the local files are removed.
-  void OnRemove(GDataFileError error,
+  void OnRemove(DriveFileError error,
                 const std::string& resource_id,
                 const std::string& md5);
 
   // Called when a file is pinned.
-  void OnPinned(GDataFileError error,
+  void OnPinned(DriveFileError error,
                 const std::string& resource_id,
                 const std::string& md5);
 
   // Called when the file for |resource_id| is fetched.
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnFetchFileComplete(const SyncTask& sync_task,
-                           GDataFileError error,
+                           DriveFileError error,
                            const FilePath& local_path,
                            const std::string& ununsed_mime_type,
                            DriveFileType file_type);
@@ -172,7 +172,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
   // Called when the file for |resource_id| is uploaded.
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnUploadFileComplete(const std::string& resource_id,
-                            GDataFileError error);
+                            DriveFileError error);
 
   // chromeos::NetworkLibrary::NetworkManagerObserver override.
   virtual void OnNetworkManagerChanged(

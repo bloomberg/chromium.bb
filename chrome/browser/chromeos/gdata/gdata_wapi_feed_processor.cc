@@ -30,7 +30,7 @@ GDataWapiFeedProcessor::GDataWapiFeedProcessor(
 GDataWapiFeedProcessor::~GDataWapiFeedProcessor() {
 }
 
-GDataFileError GDataWapiFeedProcessor::ApplyFeeds(
+DriveFileError GDataWapiFeedProcessor::ApplyFeeds(
     const std::vector<DocumentFeed*>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
@@ -42,11 +42,11 @@ GDataFileError GDataWapiFeedProcessor::ApplyFeeds(
   int64 delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats uma_stats;
   FileResourceIdMap file_map;
-  GDataFileError error = FeedToFileResourceMap(feed_list,
+  DriveFileError error = FeedToFileResourceMap(feed_list,
                                                &file_map,
                                                &delta_feed_changestamp,
                                                &uma_stats);
-  if (error != GDATA_FILE_OK)
+  if (error != DRIVE_FILE_OK)
     return error;
 
   ApplyFeedFromFileUrlMap(
@@ -59,7 +59,7 @@ GDataFileError GDataWapiFeedProcessor::ApplyFeeds(
   if (!is_delta_feed)
     UpdateFileCountUmaHistograms(uma_stats);
 
-  return GDATA_FILE_OK;
+  return DRIVE_FILE_OK;
 }
 
 void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
@@ -239,7 +239,7 @@ DriveDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
   return dir;
 }
 
-GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
+DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,
@@ -247,7 +247,7 @@ GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(uma_stats);
 
-  GDataFileError error = GDATA_FILE_OK;
+  DriveFileError error = DRIVE_FILE_OK;
   uma_stats->num_regular_files = 0;
   uma_stats->num_hosted_documents = 0;
   uma_stats->num_files_with_entry_kind.clear();
@@ -302,7 +302,7 @@ GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
     }
   }
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     // If the code above fails to parse a feed, any DriveEntry instance
     // added to |file_by_url| is not managed by a DriveDirectory instance,
     // so we need to explicitly release them here.

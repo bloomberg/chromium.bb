@@ -163,7 +163,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
   // Helper callback for handling async responses from
   // GDataFileSystem::GetFileByResourceId().
-  void OnGetFileByResourceId(GDataFileError error,
+  void OnGetFileByResourceId(DriveFileError error,
                              const FilePath& local_file_path,
                              const std::string& mime_type,
                              DriveFileType file_type);
@@ -174,7 +174,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
   // Helper callback for GetEntryInfoByResourceId invoked by StartAsync.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
-                                  GDataFileError error,
+                                  DriveFileError error,
                                   const FilePath& gdata_file_path,
                                   scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -508,13 +508,13 @@ void GDataURLRequestJob::StartAsync(GDataFileSystemInterface** file_system) {
 
 void GDataURLRequestJob::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& gdata_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = GDATA_FILE_ERROR_NOT_FOUND;
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     DCHECK(entry_proto.get());
     mime_type_ = entry_proto->file_specific_info().content_mime_type();
     gdata_file_path_ = gdata_file_path;
@@ -654,14 +654,14 @@ bool GDataURLRequestJob::ReadFromDownloadData() {
 }
 
 void GDataURLRequestJob::OnGetFileByResourceId(
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& local_file_path,
     const std::string& mime_type,
     DriveFileType file_type) {
   DVLOG(1) << "Got OnGetFileByResourceId";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error != GDATA_FILE_OK || file_type != REGULAR_FILE) {
+  if (error != DRIVE_FILE_OK || file_type != REGULAR_FILE) {
     LOG(WARNING) << "Failed to start request: can't get file for resource id";
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_FILE_NOT_FOUND));

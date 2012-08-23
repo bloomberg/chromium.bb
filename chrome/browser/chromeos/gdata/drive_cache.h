@@ -31,17 +31,17 @@ class DriveCacheEntry;
 class DriveCacheMetadata;
 
 // Callback for SetMountedStateOnUIThread and ClearAllOnUIThread.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const FilePath& file_path)>
     ChangeCacheStateCallback;
 
 // Callback for completion of cache operation.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const std::string& resource_id,
                             const std::string& md5)> CacheOperationCallback;
 
 // Callback for GetFileFromCache.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const std::string& resource_id,
                             const std::string& md5,
                             const FilePath& cache_file_path)>
@@ -358,7 +358,7 @@ class DriveCache {
   // Used to implement GetFileOnUIThread.
   void GetFile(const std::string& resource_id,
                const std::string& md5,
-               GDataFileError* error,
+               DriveFileError* error,
                FilePath* cache_file_path);
 
   // Used to implement StoreOnUIThread.
@@ -366,66 +366,66 @@ class DriveCache {
              const std::string& md5,
              const FilePath& source_path,
              FileOperationType file_operation_type,
-             GDataFileError* error);
+             DriveFileError* error);
 
   // Used to implement PinOnUIThread.
   void Pin(const std::string& resource_id,
            const std::string& md5,
            FileOperationType file_operation_type,
-           GDataFileError* error);
+           DriveFileError* error);
 
   // Used to implement UnpinOnUIThread.
   void Unpin(const std::string& resource_id,
              const std::string& md5,
              FileOperationType file_operation_type,
-             GDataFileError* error);
+             DriveFileError* error);
 
   // Used to implement SetMountedStateOnUIThread.
   void SetMountedState(const FilePath& file_path,
                        bool to_mount,
-                       GDataFileError* error,
+                       DriveFileError* error,
                        FilePath* cache_file_path);
 
   // Used to implement MarkDirtyOnUIThread.
   void MarkDirty(const std::string& resource_id,
                  const std::string& md5,
                  FileOperationType file_operation_type,
-                 GDataFileError* error,
+                 DriveFileError* error,
                  FilePath* cache_file_path);
 
   // Used to implement CommitDirtyOnUIThread.
   void CommitDirty(const std::string& resource_id,
                    const std::string& md5,
                    FileOperationType file_operation_type,
-                   GDataFileError* error);
+                   DriveFileError* error);
 
   // Used to implement ClearDirtyOnUIThread.
   void ClearDirty(const std::string& resource_id,
                   const std::string& md5,
                   FileOperationType file_operation_type,
-                  GDataFileError* error);
+                  DriveFileError* error);
 
   // Used to implement RemoveOnUIThread.
   void Remove(const std::string& resource_id,
-              GDataFileError* error);
+              DriveFileError* error);
 
   // Used to implement ClearAllUIThread.
-  void ClearAll(GDataFileError* error);
+  void ClearAll(DriveFileError* error);
 
   // Runs callback and notifies the observers when file is pinned.
-  void OnPinned(GDataFileError* error,
+  void OnPinned(DriveFileError* error,
                 const std::string& resource_id,
                 const std::string& md5,
                 const CacheOperationCallback& callback);
 
   // Runs callback and notifies the observers when file is unpinned.
-  void OnUnpinned(GDataFileError* error,
+  void OnUnpinned(DriveFileError* error,
                   const std::string& resource_id,
                   const std::string& md5,
                   const CacheOperationCallback& callback);
 
   // Runs callback and notifies the observers when file is committed.
-  void OnCommitDirty(GDataFileError* error,
+  void OnCommitDirty(DriveFileError* error,
                      const std::string& resource_id,
                      const std::string& md5,
                      const CacheOperationCallback& callback);

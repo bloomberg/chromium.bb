@@ -26,7 +26,7 @@ class DriveResourceMetadata;
 class PlatformFileInfoProto;
 
 // Used to read a directory from the file system.
-// If |error| is not GDATA_FILE_OK, |entries| is set to NULL.
+// If |error| is not DRIVE_FILE_OK, |entries| is set to NULL.
 // |entries| are contents, both files and directories, of the directory.
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 

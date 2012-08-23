@@ -135,9 +135,9 @@ void SubstituteGDataDownloadPathInternal(Profile* profile,
 
 // Callback for GDataFileSystem::CreateDirectory.
 void OnCreateDirectory(const base::Closure& substitute_callback,
-                       GDataFileError error) {
+                       DriveFileError error) {
   DVLOG(1) << "OnCreateDirectory " << error;
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     substitute_callback.Run();
   } else {
     // TODO(achuith): Handle this.
@@ -149,15 +149,15 @@ void OnCreateDirectory(const base::Closure& substitute_callback,
 void OnEntryFound(Profile* profile,
     const FilePath& gdata_dir_path,
     const base::Closure& substitute_callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
-  if (error == GDATA_FILE_ERROR_NOT_FOUND) {
+  if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
     // Destination gdata directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;
     GetSystemService(profile)->file_system()->CreateDirectory(
         gdata_dir_path, is_exclusive, is_recursive,
         base::Bind(&OnCreateDirectory, substitute_callback));
-  } else if (error == GDATA_FILE_OK) {
+  } else if (error == DRIVE_FILE_OK) {
     substitute_callback.Run();
   } else {
     // TODO(achuith): Handle this.
@@ -505,7 +505,7 @@ void GDataDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
 void GDataDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
@@ -559,7 +559,7 @@ void GDataDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
 void GDataDownloadObserver::CreateUploadFileInfoAfterCheckTargetDir(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
@@ -609,7 +609,7 @@ void GDataDownloadObserver::StartUpload(
 
 void GDataDownloadObserver::OnUploadComplete(
     int32 download_id,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());

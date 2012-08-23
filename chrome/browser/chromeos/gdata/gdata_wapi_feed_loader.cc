@@ -67,16 +67,16 @@ void LoadProtoOnBlockingPool(const FilePath& path,
                              LoadRootFeedParams* params) {
   base::PlatformFileInfo info;
   if (!file_util::GetFileInfo(path, &info)) {
-    params->load_error = GDATA_FILE_ERROR_NOT_FOUND;
+    params->load_error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
   params->last_modified = info.last_modified;
   if (!file_util::ReadFileToString(path, &params->proto)) {
     LOG(WARNING) << "Proto file not found at " << path.value();
-    params->load_error = GDATA_FILE_ERROR_NOT_FOUND;
+    params->load_error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
-  params->load_error = GDATA_FILE_OK;
+  params->load_error = DRIVE_FILE_OK;
 }
 
 // Saves json file content content in |feed| to |file_pathname| on blocking
@@ -165,7 +165,7 @@ LoadRootFeedParams::LoadRootFeedParams(
     bool should_load_from_server,
     const FileOperationCallback& callback)
     : should_load_from_server(should_load_from_server),
-      load_error(GDATA_FILE_OK),
+      load_error(DRIVE_FILE_OK),
       load_start_time(base::Time::Now()),
       callback(callback) {
 }
@@ -312,8 +312,8 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
   params.start_changestamp = local_changestamp + 1;
   params.load_finished_callback = callback;
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     // Get changes starting from the next changestamp from what we have locally.
     LoadFromServer(params);
     return;
@@ -360,7 +360,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
   // No changes detected, tell the client that the loading was successful.
   if (!changes_detected) {
     if (!callback.is_null())
-      callback.Run(GDATA_FILE_OK);
+      callback.Run(DRIVE_FILE_OK);
     return;
   }
 
@@ -383,8 +383,8 @@ void GDataWapiFeedLoader::OnGetAboutResource(
                                    weak_ptr_factory_.GetWeakPtr()));
   params.load_finished_callback = callback;
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     // Get changes starting from the next changestamp from what we have locally.
     LoadFromServer(params);
     return;
@@ -420,7 +420,7 @@ void GDataWapiFeedLoader::OnGetAboutResource(
   // No changes detected, tell the client that the loading was successful.
   if (!changes_detected) {
     if (!callback.is_null())
-      callback.Run(GDATA_FILE_OK);
+      callback.Run(DRIVE_FILE_OK);
     return;
   }
 
@@ -435,8 +435,8 @@ void GDataWapiFeedLoader::OnGetApplicationList(
     scoped_ptr<base::Value> json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK)
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK)
     return;
 
   if (json.get()) {
@@ -520,10 +520,10 @@ void GDataWapiFeedLoader::SearchFromServer(
 }
 
 void GDataWapiFeedLoader::OnFeedFromServerLoaded(GetDocumentsParams* params,
-                                                 GDataFileError error) {
+                                                 DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!params->callback.is_null())
       params->callback.Run(error);
     return;
@@ -533,7 +533,7 @@ void GDataWapiFeedLoader::OnFeedFromServerLoaded(GetDocumentsParams* params,
                          params->start_changestamp,
                          params->root_feed_changestamp);
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!params->callback.is_null())
       params->callback.Run(error);
 
@@ -545,7 +545,7 @@ void GDataWapiFeedLoader::OnFeedFromServerLoaded(GetDocumentsParams* params,
 
   // Tell the client that the loading was successful.
   if (!params->callback.is_null()) {
-    params->callback.Run(GDATA_FILE_OK);
+    params->callback.Run(DRIVE_FILE_OK);
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnFeedFromServerLoaded());
@@ -566,13 +566,13 @@ void GDataWapiFeedLoader::OnGetDocuments(
                         base::TimeTicks::Now() - start_time);
   }
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error == GDATA_FILE_OK &&
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error == DRIVE_FILE_OK &&
       (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
-    error = GDATA_FILE_ERROR_FAILED;
+    error = DRIVE_FILE_ERROR_FAILED;
   }
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     resource_metadata_->set_origin(initial_origin);
     callback.Run(params, error);
     return;
@@ -581,7 +581,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
   GURL next_feed_url;
   scoped_ptr<DocumentFeed> current_feed(DocumentFeed::ExtractAndParse(*data));
   if (!current_feed.get()) {
-    callback.Run(params, GDATA_FILE_ERROR_FAILED);
+    callback.Run(params, DRIVE_FILE_ERROR_FAILED);
     return;
   }
   const bool has_next_feed_url = current_feed->GetNextFeedURL(&next_feed_url);
@@ -679,13 +679,13 @@ void GDataWapiFeedLoader::OnGetChangelist(
                         base::TimeTicks::Now() - start_time);
   }
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error == GDATA_FILE_OK &&
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error == DRIVE_FILE_OK &&
       (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
-    error = GDATA_FILE_ERROR_FAILED;
+    error = DRIVE_FILE_ERROR_FAILED;
   }
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     resource_metadata_->set_origin(initial_origin);
     callback.Run(params, error);
     return;
@@ -694,7 +694,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
   GURL next_feed_url;
   scoped_ptr<ChangeList> current_feed(ChangeList::CreateFrom(*data));
   if (!current_feed.get()) {
-    callback.Run(params, GDATA_FILE_ERROR_FAILED);
+    callback.Run(params, DRIVE_FILE_ERROR_FAILED);
     return;
   }
   const bool has_next_feed = !current_feed->next_page_token().empty();
@@ -850,13 +850,13 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
 
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
-  if (params->load_error == GDATA_FILE_OK) {
+  if (params->load_error == DRIVE_FILE_OK) {
     DVLOG(1) << "ParseFromString";
     if (resource_metadata_->ParseFromString(params->proto)) {
       resource_metadata_->set_last_serialized(params->last_modified);
       resource_metadata_->set_serialized_size(params->proto.size());
     } else {
-      params->load_error = GDATA_FILE_ERROR_FAILED;
+      params->load_error = DRIVE_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
     }
   }
@@ -866,7 +866,7 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
 
 void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
     LoadRootFeedParams* params,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "Time elapsed to load directory service from disk="
@@ -877,8 +877,8 @@ void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
   FileOperationCallback callback = params->callback;
   // If we got feed content from cache, tell the client that the loading was
   // successful.
-  if (error == GDATA_FILE_OK && !callback.is_null()) {
-    callback.Run(GDATA_FILE_OK);
+  if (error == DRIVE_FILE_OK && !callback.is_null()) {
+    callback.Run(DRIVE_FILE_OK);
     // Reset the callback so we don't run the same callback once
     // ReloadFeedFromServerIfNeeded() is complete.
     callback.Reset();
@@ -934,7 +934,7 @@ void GDataWapiFeedLoader::SaveFileSystem() {
   }
 }
 
-GDataFileError GDataWapiFeedLoader::UpdateFromFeed(
+DriveFileError GDataWapiFeedLoader::UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
@@ -944,7 +944,7 @@ GDataFileError GDataWapiFeedLoader::UpdateFromFeed(
   std::set<FilePath> changed_dirs;
 
   GDataWapiFeedProcessor feed_processor(resource_metadata_);
-  const GDataFileError error = feed_processor.ApplyFeeds(
+  const DriveFileError error = feed_processor.ApplyFeeds(
       feed_list,
       start_changestamp,
       root_feed_changestamp,

@@ -36,7 +36,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
                     const std::string& action_id);
   virtual ~DriveTaskExecutor();
 
-  void OnFileEntryFetched(GDataFileError error,
+  void OnFileEntryFetched(DriveFileError error,
                           scoped_ptr<DriveEntryProto> entry_proto);
   void OnAppAuthorized(const std::string& resource_id,
                        GDataErrorCode error,

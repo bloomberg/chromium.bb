@@ -66,36 +66,36 @@ const int32 kProtoVersion = 2;
 
 // Callback type used to get result of file search.
 // If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
-typedef base::Callback<void(GDataFileError error, DriveEntry* entry)>
+typedef base::Callback<void(DriveFileError error, DriveEntry* entry)>
     FindEntryCallback;
 
 // Used for file operations like removing files.
-typedef base::Callback<void(GDataFileError error)>
+typedef base::Callback<void(DriveFileError error)>
     FileOperationCallback;
 
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const FilePath& file_path)>
     FileMoveCallback;
 
 // Used to get entry info from the file system.
-// If |error| is not GDATA_FILE_OK, |entry_info| is set to NULL.
-typedef base::Callback<void(GDataFileError error,
+// If |error| is not DRIVE_FILE_OK, |entry_info| is set to NULL.
+typedef base::Callback<void(DriveFileError error,
                             scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoCallback;
 
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             scoped_ptr<DriveEntryProtoVector> entries)>
     ReadDirectoryCallback;
 
 // Used to get entry info from the file system, with the Drive file path.
-// If |error| is not GDATA_FILE_OK, |entry_proto| is set to NULL.
+// If |error| is not DRIVE_FILE_OK, |entry_proto| is set to NULL.
 //
 // |drive_file_path| parameter is provided as DriveEntryProto does not contain
 // the Drive file path (i.e. only contains the base name without parent
 // directory names).
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const FilePath& drive_file_path,
                             scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoWithFilePathCallback;
@@ -106,7 +106,7 @@ struct EntryInfoResult {
   ~EntryInfoResult();
 
   FilePath path;
-  GDataFileError error;
+  DriveFileError error;
   scoped_ptr<DriveEntryProto> proto;
 };
 
@@ -283,7 +283,7 @@ class DriveResourceMetadata {
       const FilePath& first_path,
       const FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
-      GDataFileError error,
+      DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Continues with GetIntroInfoPairByPaths after the second DriveEntry has been
@@ -292,7 +292,7 @@ class DriveResourceMetadata {
       const FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       scoped_ptr<EntryInfoPairResult> result,
-      GDataFileError error,
+      DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // These internal functions need friend access to private DriveDirectory

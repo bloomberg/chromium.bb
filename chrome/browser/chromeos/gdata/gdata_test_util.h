@@ -48,32 +48,32 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b);
 
 // Copies |error| to |output|. Used to run asynchronous functions that take
 // FileOperationCallback from tests.
-void CopyErrorCodeFromFileOperationCallback(GDataFileError* output,
-                                            GDataFileError error);
+void CopyErrorCodeFromFileOperationCallback(DriveFileError* output,
+                                            DriveFileError error);
 
 // Copies |error| and |moved_file_path| to |out_error| and |out_file_path|.
 // Used to run asynchronous functions that take FileMoveCallback from tests.
-void CopyResultsFromFileMoveCallback(GDataFileError* out_error,
+void CopyResultsFromFileMoveCallback(DriveFileError* out_error,
                                      FilePath* out_file_path,
-                                     GDataFileError error,
+                                     DriveFileError error,
                                      const FilePath& moved_file_path);
 
 // Copies |error| and |entry_proto| to |out_error| and |out_entry_proto|
 // respectively. Used to run asynchronous functions that take
 // GetEntryInfoCallback from tests.
 void CopyResultsFromGetEntryInfoCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     scoped_ptr<DriveEntryProto>* out_entry_proto,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto);
 
 // Copies |error| and |entries| to |out_error| and |out_entries|
 // respectively. Used to run asynchronous functions that take
 // GetEntryInfoCallback from tests.
 void CopyResultsFromReadDirectoryCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     scoped_ptr<DriveEntryProtoVector>* out_entries,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProtoVector> entries);
 
 // Copies |error|, |drive_file_path|, and |entry_proto| to |out_error|,
@@ -81,10 +81,10 @@ void CopyResultsFromReadDirectoryCallback(
 // asynchronous functions that take GetEntryInfoWithFilePathCallback from
 // tests.
 void CopyResultsFromGetEntryInfoWithFilePathCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     FilePath* out_drive_file_path,
     scoped_ptr<DriveEntryProto>* out_entry_proto,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto);
 

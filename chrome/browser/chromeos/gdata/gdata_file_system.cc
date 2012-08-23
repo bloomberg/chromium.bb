@@ -57,7 +57,7 @@ const int kGDataUpdateCheckIntervalInSec = 60;
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
 void RunGetFileCallbackHelper(const GetFileCallback& callback,
-                              GDataFileError* error,
+                              DriveFileError* error,
                               FilePath* file_path,
                               std::string* mime_type,
                               DriveFileType* file_type) {
@@ -73,7 +73,7 @@ void RunGetFileCallbackHelper(const GetFileCallback& callback,
 // Ditto for FileOperationCallback
 void RunFileOperationCallbackHelper(
     const FileOperationCallback& callback,
-    GDataFileError* error) {
+    DriveFileError* error) {
   DCHECK(error);
 
   if (!callback.is_null())
@@ -83,7 +83,7 @@ void RunFileOperationCallbackHelper(
 // Callback for cache file operations invoked by AddUploadedFileOnUIThread.
 void OnCacheUpdatedForAddUploadedFile(
     const base::Closure& callback,
-    GDataFileError /* error */,
+    DriveFileError /* error */,
     const std::string& /* resource_id */,
     const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -95,7 +95,7 @@ void OnCacheUpdatedForAddUploadedFile(
 // OnTransferCompleted.
 void OnAddUploadFileCompleted(
     const FileOperationCallback& callback,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
     callback.Run(error);
@@ -123,21 +123,21 @@ class InitialLoadObserver : public GDataFileSystemInterface::Observer {
 
 // Gets the file size of |local_file|.
 void GetLocalFileSizeOnBlockingPool(const FilePath& local_file,
-                                    GDataFileError* error,
+                                    DriveFileError* error,
                                     int64* file_size) {
   DCHECK(error);
   DCHECK(file_size);
 
   *file_size = 0;
   *error = file_util::GetFileSize(local_file, file_size) ?
-      GDATA_FILE_OK :
-      GDATA_FILE_ERROR_NOT_FOUND;
+      DRIVE_FILE_OK :
+      DRIVE_FILE_ERROR_NOT_FOUND;
 }
 
 // Gets the file size and the content type of |local_file|.
 void GetLocalFileInfoOnBlockingPool(
     const FilePath& local_file,
-    GDataFileError* error,
+    DriveFileError* error,
     int64* file_size,
     std::string* content_type) {
   DCHECK(error);
@@ -149,8 +149,8 @@ void GetLocalFileInfoOnBlockingPool(
 
   *file_size = 0;
   *error = file_util::GetFileSize(local_file, file_size) ?
-      GDATA_FILE_OK :
-      GDATA_FILE_ERROR_NOT_FOUND;
+      DRIVE_FILE_OK :
+      DRIVE_FILE_ERROR_NOT_FOUND;
 }
 
 // Checks if a local file at |local_file_path| is a JSON file referencing a
@@ -177,7 +177,7 @@ void CreateDocumentJsonFileOnBlockingPool(
     const FilePath& document_dir,
     const GURL& edit_url,
     const std::string& resource_id,
-    GDataFileError* error,
+    DriveFileError* error,
     FilePath* temp_file_path,
     std::string* mime_type,
     DriveFileType* file_type) {
@@ -186,7 +186,7 @@ void CreateDocumentJsonFileOnBlockingPool(
   DCHECK(mime_type);
   DCHECK(file_type);
 
-  *error = GDATA_FILE_ERROR_FAILED;
+  *error = DRIVE_FILE_ERROR_FAILED;
 
   if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
     std::string document_content = base::StringPrintf(
@@ -195,13 +195,13 @@ void CreateDocumentJsonFileOnBlockingPool(
     int document_size = static_cast<int>(document_content.size());
     if (file_util::WriteFile(*temp_file_path, document_content.data(),
                              document_size) == document_size) {
-      *error = GDATA_FILE_OK;
+      *error = DRIVE_FILE_OK;
     }
   }
 
   *mime_type = kMimeTypeJson;
   *file_type = HOSTED_DOCUMENT;
-  if (*error != GDATA_FILE_OK)
+  if (*error != DRIVE_FILE_OK)
       temp_file_path->clear();
 }
 
@@ -215,16 +215,16 @@ void GetFileInfoOnBlockingPool(const FilePath& path,
 
 // Copies a file from |src_file_path| to |dest_file_path| on the local
 // file system using file_util::CopyFile. |error| is set to
-// GDATA_FILE_OK on success or GDATA_FILE_ERROR_FAILED
+// DRIVE_FILE_OK on success or DRIVE_FILE_ERROR_FAILED
 // otherwise.
 void CopyLocalFileOnBlockingPool(
     const FilePath& src_file_path,
     const FilePath& dest_file_path,
-    GDataFileError* error) {
+    DriveFileError* error) {
   DCHECK(error);
 
   *error = file_util::CopyFile(src_file_path, dest_file_path) ?
-      GDATA_FILE_OK : GDATA_FILE_ERROR_FAILED;
+      DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
 // Callback for GetEntryByResourceIdAsync.
@@ -236,7 +236,7 @@ void AddEntryToSearchResults(
     std::vector<SearchResultInfo>* results,
     const SearchCallback& callback,
     const base::Closure& entry_skipped_callback,
-    GDataFileError error,
+    DriveFileError error,
     bool run_callback,
     const GURL& next_feed,
     DriveEntry* entry) {
@@ -264,7 +264,7 @@ void AddEntryToSearchResults(
 void RunGetEntryInfoWithFilePathCallback(
     const GetEntryInfoWithFilePathCallback& callback,
     const FilePath& path,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   if (!callback.is_null())
     callback.Run(error, path, entry_proto.Pass());
@@ -466,10 +466,10 @@ void GDataFileSystem::CheckForUpdates() {
 }
 
 void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
-                                      GDataFileError error) {
+                                      DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK)
+  if (error != DRIVE_FILE_OK)
     resource_metadata_->set_origin(initial_origin);
 }
 
@@ -560,7 +560,7 @@ void GDataFileSystem::GetEntryInfoByEntryOnUIThread(
         base::Bind(&RunGetEntryInfoWithFilePathCallback,
                    callback, entry->GetFilePath()));
   } else {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND,
                  FilePath(),
                  scoped_ptr<DriveEntryProto>());
   }
@@ -575,7 +575,7 @@ void GDataFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
     AddObserver(new InitialLoadObserver(this,
-                                        base::Bind(callback, GDATA_FILE_OK)));
+                                        base::Bind(callback, DRIVE_FILE_OK)));
     return;
   } else if (resource_metadata_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
@@ -594,7 +594,7 @@ void GDataFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   // LoadFeedIfNeeded() is asynchronous.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, GDATA_FILE_OK));
+      base::Bind(callback, DRIVE_FILE_OK));
 }
 
 void GDataFileSystem::TransferFileFromRemoteToLocal(
@@ -634,12 +634,12 @@ void GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo(
     const FilePath& local_src_file_path,
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
@@ -647,7 +647,7 @@ void GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo(
   DCHECK(entry_proto.get());
   if (!entry_proto->file_info().is_directory()) {
     // The parent of |remote_dest_file_path| is not a directory.
-    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -698,8 +698,8 @@ void GDataFileSystem::TransferRegularFile(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error =
+      new DriveFileError(DRIVE_FILE_OK);
   int64* file_size = new int64;
   std::string* content_type = new std::string;
   util::PostBlockingPoolSequencedTaskAndReply(
@@ -722,7 +722,7 @@ void GDataFileSystem::TransferRegularFile(
 
 void GDataFileSystem::StartFileUploadOnUIThread(
     const StartFileUploadParams& params,
-    GDataFileError* error,
+    DriveFileError* error,
     int64* file_size,
     std::string* content_type) {
   // This method needs to run on the UI thread as required by
@@ -732,7 +732,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   DCHECK(file_size);
   DCHECK(content_type);
 
-  if (*error != GDATA_FILE_OK) {
+  if (*error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(*error);
 
@@ -754,14 +754,14 @@ void GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
     const StartFileUploadParams& params,
     int64 file_size,
     std::string content_type,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto.get() && !entry_proto->file_info().is_directory())
-    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
+    error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
     return;
@@ -790,12 +790,12 @@ void GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
 
 void GDataFileSystem::OnTransferCompleted(
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 
-  if (error == GDATA_FILE_OK && upload_file_info->entry.get()) {
+  if (error == DRIVE_FILE_OK && upload_file_info->entry.get()) {
     AddUploadedFile(UPLOAD_NEW_FILE,
                     upload_file_info->gdata_path.DirName(),
                     upload_file_info->entry.Pass(),
@@ -844,10 +844,10 @@ void GDataFileSystem::CopyOnUIThreadAfterGetEntryInfoPair(
   DCHECK(!callback.is_null());
   DCHECK(result.get());
 
-  if (result->first.error != GDATA_FILE_OK) {
+  if (result->first.error != DRIVE_FILE_OK) {
     callback.Run(result->first.error);
     return;
-  } else if (result->second.error != GDATA_FILE_OK) {
+  } else if (result->second.error != DRIVE_FILE_OK) {
     callback.Run(result->second.error);
     return;
   }
@@ -856,13 +856,13 @@ void GDataFileSystem::CopyOnUIThreadAfterGetEntryInfoPair(
   scoped_ptr<DriveEntryProto> dest_parent_proto = result->second.proto.Pass();
 
   if (!dest_parent_proto->file_info().is_directory()) {
-    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   } else if (src_file_proto->file_info().is_directory()) {
     // TODO(kochi): Implement copy for directories. In the interim,
     // we handle recursive directory copy in the file manager.
     // crbug.com/141596
-    callback.Run(GDATA_FILE_ERROR_INVALID_OPERATION);
+    callback.Run(DRIVE_FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -890,14 +890,14 @@ void GDataFileSystem::CopyOnUIThreadAfterGetEntryInfoPair(
 void GDataFileSystem::OnGetFileCompleteForCopy(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& local_file_path,
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
@@ -910,14 +910,14 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
 void GDataFileSystem::OnGetFileCompleteForTransferFile(
     const FilePath& local_dest_file_path,
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& local_file_path,
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
@@ -925,8 +925,8 @@ void GDataFileSystem::OnGetFileCompleteForTransferFile(
   // GetFileByPath downloads the file from gdata to a local cache, which is then
   // copied to the actual destination path on the local file system using
   // CopyLocalFileOnBlockingPool.
-  GDataFileError* copy_file_error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* copy_file_error =
+      new DriveFileError(DRIVE_FILE_OK);
   util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
@@ -962,7 +962,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
 
   // It is a no-op if the file is renamed to the same name.
   if (file_path.BaseName().value() == new_name) {
-    callback.Run(GDATA_FILE_OK, file_path);
+    callback.Run(DRIVE_FILE_OK, file_path);
     return;
   }
 
@@ -981,11 +981,11 @@ void GDataFileSystem::RenameAfterGetEntryInfo(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
     const FileMoveCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, file_path);
     return;
@@ -1052,17 +1052,17 @@ void GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
   DCHECK(!callback.is_null());
   DCHECK(result.get());
 
-  if (result->first.error != GDATA_FILE_OK) {
+  if (result->first.error != DRIVE_FILE_OK) {
     callback.Run(result->first.error);
     return;
-  } else if (result->second.error != GDATA_FILE_OK) {
+  } else if (result->second.error != DRIVE_FILE_OK) {
     callback.Run(result->second.error);
     return;
   }
 
   scoped_ptr<DriveEntryProto> dest_parent_proto = result->second.proto.Pass();
   if (!dest_parent_proto->file_info().is_directory()) {
-    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -1107,14 +1107,14 @@ void GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
 void GDataFileSystem::MoveEntryFromRootDirectory(
     const FilePath& dir_path,
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK_EQ(kDriveRootDirectory, file_path.DirName().value());
 
   // Return if there is an error or |dir_path| is the root directory.
-  if (error != GDATA_FILE_OK || dir_path == FilePath(kDriveRootDirectory)) {
+  if (error != DRIVE_FILE_OK || dir_path == FilePath(kDriveRootDirectory)) {
     callback.Run(error);
     return;
   }
@@ -1135,10 +1135,10 @@ void GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
   DCHECK(!callback.is_null());
   DCHECK(result.get());
 
-  if (result->first.error != GDATA_FILE_OK) {
+  if (result->first.error != DRIVE_FILE_OK) {
     callback.Run(result->first.error);
     return;
-  } else if (result->second.error != GDATA_FILE_OK) {
+  } else if (result->second.error != DRIVE_FILE_OK) {
     callback.Run(result->second.error);
     return;
   }
@@ -1147,7 +1147,7 @@ void GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
   scoped_ptr<DriveEntryProto> dir_proto = result->second.proto.Pass();
 
   if (!dir_proto->file_info().is_directory()) {
-    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -1165,14 +1165,14 @@ void GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
 
 void GDataFileSystem::RemoveEntryFromNonRootDirectory(
     const FileMoveCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   const FilePath dir_path = file_path.DirName();
   // Return if there is an error or |dir_path| is the root directory.
-  if (error != GDATA_FILE_OK || dir_path == FilePath(kDriveRootDirectory)) {
+  if (error != DRIVE_FILE_OK || dir_path == FilePath(kDriveRootDirectory)) {
     callback.Run(error, file_path);
     return;
   }
@@ -1195,10 +1195,10 @@ void GDataFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
 
   const FilePath& file_path = result->first.path;
   const FilePath& dir_path = result->second.path;
-  if (result->first.error != GDATA_FILE_OK) {
+  if (result->first.error != DRIVE_FILE_OK) {
     callback.Run(result->first.error, file_path);
     return;
-  } else if (result->second.error != GDATA_FILE_OK) {
+  } else if (result->second.error != DRIVE_FILE_OK) {
     callback.Run(result->second.error, file_path);
     return;
   }
@@ -1207,7 +1207,7 @@ void GDataFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
   scoped_ptr<DriveEntryProto> dir_proto = result->second.proto.Pass();
 
   if (!dir_proto->file_info().is_directory()) {
-    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY, file_path);
+    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, file_path);
     return;
   }
 
@@ -1255,11 +1255,11 @@ void GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
     const FilePath& file_path,
     bool /* is_recursive */,
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null()) {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE, base::Bind(callback, error));
@@ -1309,7 +1309,7 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
     case FOUND_INVALID: {
       if (!callback.is_null()) {
         MessageLoop::current()->PostTask(FROM_HERE,
-            base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
+            base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
       }
 
       return;
@@ -1318,8 +1318,8 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
       if (!callback.is_null()) {
         MessageLoop::current()->PostTask(FROM_HERE,
             base::Bind(callback,
-                       is_exclusive ? GDATA_FILE_ERROR_EXISTS :
-                                      GDATA_FILE_OK));
+                       is_exclusive ? DRIVE_FILE_ERROR_EXISTS :
+                                      DRIVE_FILE_OK));
       }
 
       return;
@@ -1340,7 +1340,7 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
   if (directory_path !=  first_missing_path && !is_recursive) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
-           base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
+           base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
     }
     return;
   }
@@ -1393,32 +1393,32 @@ void GDataFileSystem::OnGetEntryInfoForCreateFile(
     const FilePath& file_path,
     bool is_exclusive,
     const FileOperationCallback& callback,
-    GDataFileError result,
+    DriveFileError result,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   // The |file_path| is invalid. It is an error.
-  if (result != GDATA_FILE_ERROR_NOT_FOUND &&
-      result != GDATA_FILE_OK) {
+  if (result != DRIVE_FILE_ERROR_NOT_FOUND &&
+      result != DRIVE_FILE_OK) {
     callback.Run(result);
     return;
   }
 
   // An entry already exists at |file_path|.
-  if (result == GDATA_FILE_OK) {
+  if (result == DRIVE_FILE_OK) {
     DCHECK(entry_proto.get());
     // If an exclusive mode is requested, or the entry is not a regular file,
     // it is an error.
     if (is_exclusive ||
         entry_proto->file_info().is_directory() ||
         entry_proto->file_specific_info().is_hosted_document()) {
-      callback.Run(GDATA_FILE_ERROR_EXISTS);
+      callback.Run(DRIVE_FILE_ERROR_EXISTS);
       return;
     }
 
     // Otherwise nothing more to do. Succeeded.
-    callback.Run(GDATA_FILE_OK);
+    callback.Run(DRIVE_FILE_OK);
     return;
   }
 
@@ -1461,12 +1461,12 @@ void GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetContentCallback& get_content_callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If |error| == PLATFORM_FILE_OK then |entry_proto| must be valid.
-  DCHECK(error != GDATA_FILE_OK ||
+  DCHECK(error != DRIVE_FILE_OK ||
          (entry_proto.get() && !entry_proto->resource_id().empty()));
   GetResolvedFileByPath(file_path,
                         get_file_callback,
@@ -1479,19 +1479,19 @@ void GDataFileSystem::GetResolvedFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetContentCallback& get_content_callback,
-    GDataFileError error,
+    DriveFileError error,
     const DriveEntryProto* entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto && !entry_proto->has_file_specific_info())
-    error = GDATA_FILE_ERROR_NOT_FOUND;
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!get_file_callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(get_file_callback,
-                     GDATA_FILE_ERROR_NOT_FOUND,
+                     DRIVE_FILE_ERROR_NOT_FOUND,
                      FilePath(),
                      std::string(),
                      REGULAR_FILE));
@@ -1504,8 +1504,8 @@ void GDataFileSystem::GetResolvedFileByPath(
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
   if (entry_proto->file_specific_info().is_hosted_document()) {
-    GDataFileError* error =
-        new GDataFileError(GDATA_FILE_OK);
+    DriveFileError* error =
+        new DriveFileError(DRIVE_FILE_OK);
     FilePath* temp_file_path = new FilePath;
     std::string* mime_type = new std::string;
     DriveFileType* file_type = new DriveFileType(REGULAR_FILE);
@@ -1600,7 +1600,7 @@ void GDataFileSystem::GetFileByEntryOnUIThread(
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(get_file_callback,
-                     GDATA_FILE_ERROR_NOT_FOUND,
+                     DRIVE_FILE_ERROR_NOT_FOUND,
                      FilePath(),
                      std::string(),
                      REGULAR_FILE));
@@ -1612,14 +1612,14 @@ void GDataFileSystem::GetFileByEntryOnUIThread(
 }
 
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
-                                         GDataFileError error,
+                                         DriveFileError error,
                                          const std::string& resource_id,
                                          const std::string& md5,
                                          const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Have we found the file in cache? If so, return it back to the caller.
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     if (!params.get_file_callback.is_null()) {
       params.get_file_callback.Run(error,
                                    cache_file_path,
@@ -1661,20 +1661,20 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
                                          scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError error = util::GDataToGDataFileError(status);
+  DriveFileError error = util::GDataToDriveFileError(status);
 
   scoped_ptr<DriveEntry> fresh_entry;
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
     if (doc_entry.get())
       fresh_entry.reset(resource_metadata_->FromDocumentEntry(*doc_entry));
     if (!fresh_entry.get() || !fresh_entry->AsDriveFile()) {
       LOG(ERROR) << "Got invalid entry from server for " << params.resource_id;
-      error = GDATA_FILE_ERROR_FAILED;
+      error = DRIVE_FILE_ERROR_FAILED;
     }
   }
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!params.get_file_callback.is_null()) {
       params.get_file_callback.Run(error,
                                    cache_file_path,
@@ -1718,7 +1718,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
   if (!*has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
     if (!params.get_file_callback.is_null()) {
-      params.get_file_callback.Run(GDATA_FILE_ERROR_NO_SPACE,
+      params.get_file_callback.Run(DRIVE_FILE_ERROR_NO_SPACE,
                                    cache_file_path,
                                    params.mime_type,
                                    REGULAR_FILE);
@@ -1766,11 +1766,11 @@ void GDataFileSystem::GetEntryInfoByPathOnUIThread(
 void GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad(
     const FilePath& file_path,
     const GetEntryInfoCallback& callback,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error, scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -1784,12 +1784,12 @@ void GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad(
 
 void GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry(
     const GetEntryInfoCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error, scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -1828,11 +1828,11 @@ void GDataFileSystem::ReadDirectoryByPathOnUIThread(
 void GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
     const FilePath& file_path,
     const ReadDirectoryWithSettingCallback& callback,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error,
                  hide_hosted_docs_,
                  scoped_ptr<DriveEntryProtoVector>());
@@ -1848,12 +1848,12 @@ void GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
 
 void GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
     const ReadDirectoryWithSettingCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProtoVector> entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error,
                  hide_hosted_docs_,
                  scoped_ptr<DriveEntryProtoVector>());
@@ -1861,7 +1861,7 @@ void GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
   }
   DCHECK(entries.get());  // This is valid for emptry directories too.
 
-  callback.Run(GDATA_FILE_OK, hide_hosted_docs_, entries.Pass());
+  callback.Run(DRIVE_FILE_OK, hide_hosted_docs_, entries.Pass());
 }
 
 void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
@@ -1888,11 +1888,11 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
 
 void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
     const FilePath& file_path,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK ||
+  if (error != DRIVE_FILE_OK ||
       !entry_proto->file_info().is_directory()) {
     LOG(ERROR) << "Directory entry not found: " << file_path.value();
     return;
@@ -1909,11 +1909,11 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
 void GDataFileSystem::OnRequestDirectoryRefresh(
     const FilePath& directory_path,
     GetDocumentsParams* params,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(params);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to refresh directory: " << directory_path.value()
                << ": " << error;
     return;
@@ -1928,7 +1928,7 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
       &file_map,
       &unused_delta_feed_changestamp,
       &unused_uma_stats);
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to convert feed: " << directory_path.value()
                << ": " << error;
     return;
@@ -1972,20 +1972,20 @@ void GDataFileSystem::UpdateFileByResourceIdOnUIThread(
 
 void GDataFileSystem::UpdateFileByEntryInfo(
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& /* dive_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
 
   DCHECK(entry_proto.get());
   if (entry_proto->file_info().is_directory()) {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -1999,21 +1999,21 @@ void GDataFileSystem::UpdateFileByEntryInfo(
 
 void GDataFileSystem::OnGetFileCompleteForUpdateFile(
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const std::string& resource_id,
     const std::string& /* md5 */,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
 
   // Gets the size of the cache file. Since the file is locally modified, the
   // file size information stored in DriveEntry is not correct.
-  GDataFileError* get_size_error = new GDataFileError(GDATA_FILE_ERROR_FAILED);
+  DriveFileError* get_size_error = new DriveFileError(DRIVE_FILE_ERROR_FAILED);
   int64* file_size = new int64(-1);
   util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
@@ -2035,12 +2035,12 @@ void GDataFileSystem::OnGetFileSizeCompleteForUpdateFile(
     const FileOperationCallback& callback,
     const std::string& resource_id,
     const FilePath& cache_file_path,
-    GDataFileError* error,
+    DriveFileError* error,
     int64* file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (*error != GDATA_FILE_OK) {
+  if (*error != DRIVE_FILE_OK) {
     callback.Run(*error);
     return;
   }
@@ -2060,20 +2060,20 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
     const FileOperationCallback& callback,
     int64 file_size,
     const FilePath& cache_file_path,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
 
   DCHECK(entry_proto.get());
   if (entry_proto->file_info().is_directory()) {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -2090,12 +2090,12 @@ void GDataFileSystem::OnGetFileCompleteForUpdateFileByEntry(
 
 void GDataFileSystem::OnUpdatedFileUploaded(
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
     return;
@@ -2140,8 +2140,8 @@ void GDataFileSystem::OnGetAvailableSpace(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error, -1, -1);
     return;
   }
@@ -2150,11 +2150,11 @@ void GDataFileSystem::OnGetAvailableSpace(
   if (data.get())
     feed = AccountMetadataFeed::CreateFrom(*data);
   if (!feed.get()) {
-    callback.Run(GDATA_FILE_ERROR_FAILED, -1, -1);
+    callback.Run(DRIVE_FILE_ERROR_FAILED, -1, -1);
     return;
   }
 
-  callback.Run(GDATA_FILE_OK,
+  callback.Run(DRIVE_FILE_OK,
                feed->quota_bytes_total(),
                feed->quota_bytes_used());
 }
@@ -2166,8 +2166,8 @@ void GDataFileSystem::OnGetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error, -1, -1);
     return;
   }
@@ -2177,11 +2177,11 @@ void GDataFileSystem::OnGetAboutResource(
     about = AboutResource::CreateFrom(*resource_json);
 
   if (!about.get()) {
-    callback.Run(GDATA_FILE_ERROR_FAILED, -1, -1);
+    callback.Run(DRIVE_FILE_ERROR_FAILED, -1, -1);
     return;
   }
 
-  callback.Run(GDATA_FILE_OK,
+  callback.Run(DRIVE_FILE_OK,
                about->quota_bytes_total(),
                about->quota_bytes_used());
 }
@@ -2192,8 +2192,8 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
 
@@ -2207,7 +2207,7 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   error = AddNewDirectory(params.created_directory_path.DirName(),
                           created_entry);
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
 
@@ -2226,16 +2226,16 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 
   if (!params.callback.is_null()) {
     // Finally done with the create request.
-    params.callback.Run(GDATA_FILE_OK);
+    params.callback.Run(DRIVE_FILE_OK);
   }
 }
 
 void GDataFileSystem::OnSearch(const SearchCallback& callback,
                                GetDocumentsParams* params,
-                               GDataFileError error) {
+                               DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
@@ -2351,7 +2351,7 @@ void GDataFileSystem::LoadRootFeedFromCacheForTesting() {
       FileOperationCallback());
 }
 
-GDataFileError GDataFileSystem::UpdateFromFeedForTesting(
+DriveFileError GDataFileSystem::UpdateFromFeedForTesting(
     const std::vector<DocumentFeed*>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
@@ -2363,7 +2363,7 @@ GDataFileError GDataFileSystem::UpdateFromFeedForTesting(
 }
 
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
-                                        GDataFileError error,
+                                        DriveFileError error,
                                         const FilePath& /* file_path */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
@@ -2378,21 +2378,21 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
 
   scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
   if (!doc_entry.get()) {
-    callback.Run(GDATA_FILE_ERROR_FAILED);
+    callback.Run(DRIVE_FILE_ERROR_FAILED);
     return;
   }
 
   DriveEntry* entry = resource_metadata_->FromDocumentEntry(*doc_entry);
   if (!entry) {
-    callback.Run(GDATA_FILE_ERROR_FAILED);
+    callback.Run(DRIVE_FILE_ERROR_FAILED);
     return;
   }
 
@@ -2417,8 +2417,8 @@ void GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error == GDATA_FILE_OK) {
+  DriveFileError error = util::GDataToDriveFileError(status);
+  if (error == DRIVE_FILE_OK) {
     DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
     if (entry) {
       DCHECK_EQ(resource_metadata_->root(), entry->parent());
@@ -2431,7 +2431,7 @@ void GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted(
               callback));
       return;
     } else {
-      error = GDATA_FILE_ERROR_NOT_FOUND;
+      error = DRIVE_FILE_ERROR_NOT_FOUND;
     }
   }
 
@@ -2445,9 +2445,9 @@ void GDataFileSystem::OnRemovedDocument(
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError error = util::GDataToGDataFileError(status);
+  DriveFileError error = util::GDataToDriveFileError(status);
 
-  if (error == GDATA_FILE_OK)
+  if (error == DRIVE_FILE_OK)
     error = RemoveEntryAndCacheLocally(file_path);
 
   if (!callback.is_null()) {
@@ -2519,12 +2519,12 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
     bool* has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError error = util::GDataToGDataFileError(status);
+  DriveFileError error = util::GDataToDriveFileError(status);
 
   // Make sure that downloaded file is properly stored in cache. We don't have
   // to wait for this operation to finish since the user can already use the
   // downloaded file.
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     if (*has_enough_space) {
       cache_->StoreOnUIThread(
           params.resource_id,
@@ -2542,7 +2542,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
           base::Bind(base::IgnoreResult(&file_util::Delete),
                      downloaded_file_path,
                      false /* recursive*/));
-      error = GDATA_FILE_ERROR_NO_SPACE;
+      error = DRIVE_FILE_ERROR_NO_SPACE;
     }
   }
 
@@ -2554,7 +2554,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
   }
 }
 
-void GDataFileSystem::OnDownloadStoredToCache(GDataFileError error,
+void GDataFileSystem::OnDownloadStoredToCache(DriveFileError error,
                                               const std::string& resource_id,
                                               const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2569,8 +2569,8 @@ void GDataFileSystem::RenameEntryLocally(
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  const DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, FilePath());
     return;
@@ -2579,7 +2579,7 @@ void GDataFileSystem::RenameEntryLocally(
   DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
   if (!entry) {
     if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+      callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
     return;
   }
 
@@ -2609,15 +2609,15 @@ void GDataFileSystem::MoveEntryToRootDirectoryLocally(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  const GDataFileError error = util::GDataToGDataFileError(status);
-  if (error != GDATA_FILE_OK) {
+  const DriveFileError error = util::GDataToDriveFileError(status);
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error, FilePath());
     return;
   }
 
   DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
   if (!entry) {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
     return;
   }
 
@@ -2631,11 +2631,11 @@ void GDataFileSystem::MoveEntryToRootDirectoryLocally(
 
 void GDataFileSystem::NotifyAndRunFileMoveCallback(
     const FileMoveCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& moved_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == GDATA_FILE_OK)
+  if (error == DRIVE_FILE_OK)
     OnDirectoryChanged(moved_file_path.DirName());
 
   if (!callback.is_null())
@@ -2644,38 +2644,38 @@ void GDataFileSystem::NotifyAndRunFileMoveCallback(
 
 void GDataFileSystem::NotifyAndRunFileOperationCallback(
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& moved_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == GDATA_FILE_OK)
+  if (error == DRIVE_FILE_OK)
     OnDirectoryChanged(moved_file_path.DirName());
 
   callback.Run(error);
 }
 
 void GDataFileSystem::OnDirectoryChangeFileMoveCallback(
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& directory_path) {
-  if (error == GDATA_FILE_OK)
+  if (error == DRIVE_FILE_OK)
     OnDirectoryChanged(directory_path);
 }
 
-GDataFileError GDataFileSystem::RemoveEntryAndCacheLocally(
+DriveFileError GDataFileSystem::RemoveEntryAndCacheLocally(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string resource_id;
-  GDataFileError error = RemoveEntryLocally(file_path, &resource_id);
-  if (error != GDATA_FILE_OK)
+  DriveFileError error = RemoveEntryLocally(file_path, &resource_id);
+  if (error != DRIVE_FILE_OK)
     return error;
 
   // If resource_id is not empty, remove its corresponding file from cache.
   if (!resource_id.empty())
     cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
 
-  return GDATA_FILE_OK;
+  return DRIVE_FILE_OK;
 }
 
 void GDataFileSystem::RemoveStaleEntryOnUpload(
@@ -2688,7 +2688,7 @@ void GDataFileSystem::RemoveStaleEntryOnUpload(
       existing_entry->parent() == parent_dir) {
     resource_metadata_->RemoveEntryFromParent(existing_entry, callback);
   } else {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
     LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
   }
 }
@@ -2713,7 +2713,7 @@ void GDataFileSystem::NotifyFileSystemToBeUnmounted() {
 
 void GDataFileSystem::NotifyInitialLoadFinishedAndRun(
     const FileOperationCallback& callback,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -2724,34 +2724,34 @@ void GDataFileSystem::NotifyInitialLoadFinishedAndRun(
   callback.Run(error);
 }
 
-GDataFileError GDataFileSystem::AddNewDirectory(
+DriveFileError GDataFileSystem::AddNewDirectory(
     const FilePath& directory_path, base::Value* entry_value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!entry_value)
-    return GDATA_FILE_ERROR_FAILED;
+    return DRIVE_FILE_ERROR_FAILED;
 
   scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(*entry_value));
 
   if (!doc_entry.get())
-    return GDATA_FILE_ERROR_FAILED;
+    return DRIVE_FILE_ERROR_FAILED;
 
   // Find parent directory element within the cached file system snapshot.
   DriveEntry* entry = resource_metadata_->FindEntryByPathSync(directory_path);
   if (!entry)
-    return GDATA_FILE_ERROR_FAILED;
+    return DRIVE_FILE_ERROR_FAILED;
 
   // Check if parent is a directory since in theory since this is a callback
   // something could in the meantime have nuked the parent dir and created a
   // file with the exact same name.
   DriveDirectory* parent_dir = entry->AsDriveDirectory();
   if (!parent_dir)
-    return GDATA_FILE_ERROR_FAILED;
+    return DRIVE_FILE_ERROR_FAILED;
 
   DriveEntry* new_entry =
       resource_metadata_->FromDocumentEntry(*doc_entry);
   if (!new_entry)
-    return GDATA_FILE_ERROR_FAILED;
+    return DRIVE_FILE_ERROR_FAILED;
 
   resource_metadata_->AddEntryToDirectory(
       parent_dir,
@@ -2759,7 +2759,7 @@ GDataFileError GDataFileSystem::AddNewDirectory(
       base::Bind(&GDataFileSystem::NotifyAndRunFileMoveCallback,
                  ui_weak_ptr_,
                  FileMoveCallback()));
-  return GDATA_FILE_OK;
+  return DRIVE_FILE_OK;
 }
 
 GDataFileSystem::FindMissingDirectoryResult
@@ -2795,7 +2795,7 @@ GDataFileSystem::FindFirstMissingParentDirectory(
   return DIRECTORY_ALREADY_PRESENT;
 }
 
-GDataFileError GDataFileSystem::RemoveEntryLocally(
+DriveFileError GDataFileSystem::RemoveEntryLocally(
     const FilePath& file_path, std::string* resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2805,11 +2805,11 @@ GDataFileError GDataFileSystem::RemoveEntryLocally(
   DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
 
   if (!entry)
-    return GDATA_FILE_ERROR_NOT_FOUND;
+    return DRIVE_FILE_ERROR_NOT_FOUND;
 
   // You can't remove root element.
   if (!entry->parent())
-    return GDATA_FILE_ERROR_ACCESS_DENIED;
+    return DRIVE_FILE_ERROR_ACCESS_DENIED;
 
   // If it's a file (only files have resource id), get its resource id so that
   // we can remove it after releasing the auto lock.
@@ -2820,7 +2820,7 @@ GDataFileError GDataFileSystem::RemoveEntryLocally(
       entry,
       base::Bind(&GDataFileSystem::OnDirectoryChangeFileMoveCallback,
                  ui_weak_ptr_));
-  return GDATA_FILE_OK;
+  return DRIVE_FILE_OK;
 }
 
 void GDataFileSystem::AddUploadedFile(
@@ -2901,16 +2901,16 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
                    parent_dir,
                    file_move_callback));
   } else {
-    file_move_callback.Run(GDATA_FILE_OK, FilePath());
+    file_move_callback.Run(DRIVE_FILE_OK, FilePath());
   }
 }
 
 void GDataFileSystem::ContinueAddUploadedFile(
     AddUploadedFileParams* params,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(GDATA_FILE_OK, error);
+  DCHECK_EQ(DRIVE_FILE_OK, error);
   DCHECK(params->new_entry.get());
   DriveFile* file = params->new_entry->AsDriveFile();
   DCHECK(file);
@@ -2929,7 +2929,7 @@ void GDataFileSystem::ContinueAddUploadedFile(
 
 void GDataFileSystem::AddUploadedFileToCache(
     AddUploadedFileParams* params,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -3064,7 +3064,7 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   if (open_files_.find(file_path) != open_files_.end()) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, GDATA_FILE_ERROR_IN_USE, FilePath()));
+        base::Bind(callback, DRIVE_FILE_ERROR_IN_USE, FilePath()));
     return;
   }
   open_files_.insert(file_path);
@@ -3083,22 +3083,22 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
 void GDataFileSystem::OnGetEntryInfoCompleteForOpenFile(
     const FilePath& file_path,
     const OpenFileCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = GDATA_FILE_ERROR_NOT_FOUND;
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     if (entry_proto->file_specific_info().file_md5().empty() ||
         entry_proto->file_specific_info().is_hosted_document()) {
       // No support for opening a directory or hosted document.
-      error = GDATA_FILE_ERROR_INVALID_OPERATION;
+      error = DRIVE_FILE_ERROR_INVALID_OPERATION;
     }
   }
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, FilePath());
     return;
@@ -3121,13 +3121,13 @@ void GDataFileSystem::OnGetEntryInfoCompleteForOpenFile(
 void GDataFileSystem::OnGetFileCompleteForOpenFile(
     const OpenFileCallback& callback,
     const GetFileCompleteForOpenParams& entry_proto,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& file_path,
     const std::string& mime_type,
     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, FilePath());
     return;
@@ -3146,7 +3146,7 @@ void GDataFileSystem::OnGetFileCompleteForOpenFile(
 
 void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
     const OpenFileCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& cache_file_path) {
@@ -3158,14 +3158,14 @@ void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
 
 void GDataFileSystem::OnOpenFileFinished(const FilePath& file_path,
                                          const OpenFileCallback& callback,
-                                         GDataFileError result,
+                                         DriveFileError result,
                                          const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // All the invocation of |callback| from operations initiated from OpenFile
   // must go through here. Removes the |file_path| from the remembered set when
   // the file was not successfully opened.
-  if (result != GDATA_FILE_OK)
+  if (result != DRIVE_FILE_OK)
     open_files_.erase(file_path);
 
   if (!callback.is_null())
@@ -3194,7 +3194,7 @@ void GDataFileSystem::CloseFileOnUIThread(
     // The file is not being opened.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, GDATA_FILE_ERROR_NOT_FOUND));
+        base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -3213,15 +3213,15 @@ void GDataFileSystem::CloseFileOnUIThread(
 void GDataFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
     const FilePath& file_path,
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = GDATA_FILE_ERROR_NOT_FOUND;
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     callback.Run(error);
     return;
   }
@@ -3242,7 +3242,7 @@ void GDataFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
 
 void GDataFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache(
     const FileOperationCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const std::string& /* resource_id */,
     const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3254,7 +3254,7 @@ void GDataFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache(
 void GDataFileSystem::CloseFileOnUIThreadFinalize(
     const FilePath& file_path,
     const FileOperationCallback& callback,
-    GDataFileError result) {
+    DriveFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -3278,7 +3278,7 @@ void GDataFileSystem::CheckLocalModificationAndRun(
   // For entries that will never be cached, use the original entry info as is.
   if (!entry_proto->has_file_specific_info() ||
       entry_proto->file_specific_info().is_hosted_document()) {
-    callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+    callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
     return;
   }
 
@@ -3303,7 +3303,7 @@ void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
 
   // When no dirty cache is found, use the original entry info as is.
   if (!success || !cache_entry.is_dirty()) {
-    callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+    callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
     return;
   }
 
@@ -3321,7 +3321,7 @@ void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
 void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
     scoped_ptr<DriveEntryProto> entry_proto,
     const GetEntryInfoCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& local_cache_path) {
@@ -3329,8 +3329,8 @@ void GDataFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
   DCHECK(!callback.is_null());
 
   // When no dirty cache is found, use the original entry info as is.
-  if (error != GDATA_FILE_OK) {
-    callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
     return;
   }
 
@@ -3361,14 +3361,14 @@ void GDataFileSystem::CheckLocalModificationAndRunAfterGetFileInfo(
   DCHECK(!callback.is_null());
 
   if (!*get_file_info_result) {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
     return;
   }
 
   PlatformFileInfoProto entry_file_info;
   DriveEntry::ConvertPlatformFileInfoToProto(*file_info, &entry_file_info);
   *entry_proto->mutable_file_info() = entry_file_info;
-  callback.Run(GDATA_FILE_OK, entry_proto.Pass());
+  callback.Run(DRIVE_FILE_OK, entry_proto.Pass());
 }
 
 }  // namespace gdata

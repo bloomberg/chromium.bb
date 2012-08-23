@@ -233,14 +233,14 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
 void OnGDataFileFound(Profile* profile,
                       const FilePath& file_path,
                       gdata::DriveFileType file_type,
-                      gdata::GDataFileError error,
+                      gdata::DriveFileError error,
                       scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
+    error = gdata::DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error == gdata::GDATA_FILE_OK) {
+  if (error == gdata::DRIVE_FILE_OK) {
     GURL page_url;
     if (file_type == gdata::REGULAR_FILE) {
       page_url = gdata::util::GetFileResourceUrl(

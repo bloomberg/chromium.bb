@@ -60,7 +60,7 @@ struct LoadRootFeedParams {
 
   bool should_load_from_server;
   std::string proto;
-  GDataFileError load_error;
+  DriveFileError load_error;
   base::Time last_modified;
   // Time when filesystem began to be loaded from disk.
   base::Time load_start_time;
@@ -69,7 +69,7 @@ struct LoadRootFeedParams {
 
 // Callback run as a response to LoadFromServer.
 typedef base::Callback<void(GetDocumentsParams* params,
-                            GDataFileError error)>
+                            DriveFileError error)>
     LoadDocumentFeedCallback;
 
 // GDataWapiFeedLoader is used to load feeds from WAPI (codename for
@@ -152,7 +152,7 @@ class GDataWapiFeedLoader {
   //
   // See comments at GDataWapiFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
-  GDataFileError UpdateFromFeed(
+  DriveFileError UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp);
@@ -169,7 +169,7 @@ class GDataWapiFeedLoader {
   // Continues handling root directory refresh after the directory service
   // is fully loaded.
   void ContinueWithInitializedDirectoryService(LoadRootFeedParams* params,
-                                               GDataFileError error);
+                                               DriveFileError error);
 
   // Helper callback for handling results of metadata retrieval initiated from
   // ReloadFeedFromServerIfNeeded(). This method makes a decision about fetching
@@ -204,7 +204,7 @@ class GDataWapiFeedLoader {
   // the content of the refreshed directory object and continue initially
   // started FindEntryByPath() request.
   void OnFeedFromServerLoaded(GetDocumentsParams* params,
-                              GDataFileError error);
+                              DriveFileError error);
 
   // Callback for handling response from |GDataWapiService::GetDocuments|.
   // Invokes |callback| when done.

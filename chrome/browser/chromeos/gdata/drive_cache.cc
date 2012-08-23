@@ -107,7 +107,7 @@ void RemoveAllFiles(const FilePath& directory) {
 // - deleting symlink if |symlink_path| is not empty
 // - creating symlink if |symlink_path| is not empty and |create_symlink| is
 //   true.
-GDataFileError ModifyCacheState(
+DriveFileError ModifyCacheState(
     const FilePath& source_path,
     const FilePath& dest_path,
     DriveCache::FileOperationType file_operation_type,
@@ -126,7 +126,7 @@ GDataFileError ModifyCacheState(
                      "move " : "copy ")
                  << source_path.value()
                  << " to " << dest_path.value();
-      return GDATA_FILE_ERROR_FAILED;
+      return DRIVE_FILE_ERROR_FAILED;
     } else {
       DVLOG(1) << (file_operation_type == DriveCache::FILE_OPERATION_MOVE ?
                    "Moved " : "Copied ")
@@ -138,7 +138,7 @@ GDataFileError ModifyCacheState(
   }
 
   if (symlink_path.empty())
-    return GDATA_FILE_OK;
+    return DRIVE_FILE_OK;
 
   // Remove symlink regardless of |create_symlink| because creating a link will
   // not overwrite an existing one.
@@ -148,16 +148,16 @@ GDataFileError ModifyCacheState(
   file_util::Delete(symlink_path, false);
 
   if (!create_symlink)
-    return GDATA_FILE_OK;
+    return DRIVE_FILE_OK;
 
   // Create new symlink to |dest_path|.
   if (!file_util::CreateSymbolicLink(dest_path, symlink_path)) {
     LOG(ERROR) << "Failed to create a symlink from " << symlink_path.value()
                << " to " << dest_path.value();
-    return GDATA_FILE_ERROR_FAILED;
+    return DRIVE_FILE_ERROR_FAILED;
   }
 
-  return GDATA_FILE_OK;
+  return DRIVE_FILE_OK;
 }
 
 // Deletes all files that match |path_to_delete_pattern| except for
@@ -229,7 +229,7 @@ void CollectAnyFile(std::vector<std::string>* resource_ids,
 // Runs callback with pointers dereferenced.
 // Used to implement SetMountedStateOnUIThread and ClearAllOnUIThread.
 void RunChangeCacheStateCallback(const ChangeCacheStateCallback& callback,
-                                 const GDataFileError* error,
+                                 const DriveFileError* error,
                                  const FilePath* cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
@@ -242,7 +242,7 @@ void RunChangeCacheStateCallback(const ChangeCacheStateCallback& callback,
 // Runs callback with pointers dereferenced.
 // Used to implement *OnUIThread methods.
 void RunCacheOperationCallback(const CacheOperationCallback& callback,
-                               GDataFileError* error,
+                               DriveFileError* error,
                                const std::string& resource_id,
                                const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -255,7 +255,7 @@ void RunCacheOperationCallback(const CacheOperationCallback& callback,
 // Runs callback with pointers dereferenced.
 // Used to implement *OnUIThread methods.
 void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
-                                 GDataFileError* error,
+                                 DriveFileError* error,
                                  const std::string& resource_id,
                                  const std::string& md5,
                                  FilePath* cache_file_path) {
@@ -470,8 +470,7 @@ void DriveCache::GetFileOnUIThread(const std::string& resource_id,
                                    const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -496,8 +495,7 @@ void DriveCache::StoreOnUIThread(const std::string& resource_id,
                                  const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::Store,
@@ -519,8 +517,7 @@ void DriveCache::PinOnUIThread(const std::string& resource_id,
                                const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::Pin,
@@ -541,8 +538,7 @@ void DriveCache::UnpinOnUIThread(const std::string& resource_id,
                                  const std::string& md5,
                                  const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::Unpin,
@@ -565,8 +561,7 @@ void DriveCache::SetMountedStateOnUIThread(
     const ChangeCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -587,8 +582,7 @@ void DriveCache::MarkDirtyOnUIThread(const std::string& resource_id,
                                      const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -612,7 +606,7 @@ void DriveCache::CommitDirtyOnUIThread(const std::string& resource_id,
                                        const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error = new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::CommitDirty,
@@ -634,8 +628,7 @@ void DriveCache::ClearDirtyOnUIThread(const std::string& resource_id,
                                       const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::ClearDirty,
@@ -655,9 +648,7 @@ void DriveCache::RemoveOnUIThread(const std::string& resource_id,
                                   const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error =
-      new GDataFileError(GDATA_FILE_OK);
-
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::Remove,
@@ -674,8 +665,7 @@ void DriveCache::RemoveOnUIThread(const std::string& resource_id,
 void DriveCache::ClearAllOnUIThread(const ChangeCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileError* error = new GDataFileError(GDATA_FILE_OK);
-
+  DriveFileError* error = new DriveFileError(DRIVE_FILE_OK);
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&DriveCache::ClearAll,
@@ -796,7 +786,7 @@ void DriveCache::GetResourceIdsOfAllFiles(
 
 void DriveCache::GetFile(const std::string& resource_id,
                          const std::string& md5,
-                         GDataFileError* error,
+                         DriveFileError* error,
                          FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -818,9 +808,9 @@ void DriveCache::GetFile(const std::string& resource_id,
         md5,
         GetSubDirectoryType(cache_entry),
         file_origin);
-    *error = GDATA_FILE_OK;
+    *error = DRIVE_FILE_OK;
   } else {
-    *error = GDATA_FILE_ERROR_NOT_FOUND;
+    *error = DRIVE_FILE_ERROR_NOT_FOUND;
   }
 }
 
@@ -828,7 +818,7 @@ void DriveCache::Store(const std::string& resource_id,
                        const std::string& md5,
                        const FilePath& source_path,
                        FileOperationType file_operation_type,
-                       GDataFileError* error) {
+                       DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -836,14 +826,14 @@ void DriveCache::Store(const std::string& resource_id,
     int64 file_size;
     if (!file_util::GetFileSize(source_path, &file_size)) {
       LOG(WARNING) << "Couldn't get file size for: " << source_path.value();
-      *error = GDATA_FILE_ERROR_FAILED;
+      *error = DRIVE_FILE_ERROR_FAILED;
       return;
     }
 
     bool enough_space = false;
     FreeDiskSpaceIfNeededFor(file_size, &enough_space);
     if (!enough_space) {
-      *error = GDATA_FILE_ERROR_NO_SPACE;
+      *error = DRIVE_FILE_ERROR_NO_SPACE;
       return;
     }
   }
@@ -862,7 +852,7 @@ void DriveCache::Store(const std::string& resource_id,
                    << (cache_entry.is_dirty() ? "dirty" : "mounted")
                    << " file: res_id=" << resource_id
                    << ", md5=" << md5;
-      *error = GDATA_FILE_ERROR_IN_USE;
+      *error = DRIVE_FILE_ERROR_IN_USE;
       return;
     }
 
@@ -912,7 +902,7 @@ void DriveCache::Store(const std::string& resource_id,
   // Delete files that match |stale_filenames_pattern| except for |dest_path|.
   DeleteFilesSelectively(stale_filenames_pattern, dest_path);
 
-  if (*error == GDATA_FILE_OK) {
+  if (*error == DRIVE_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_present(true);
@@ -924,7 +914,7 @@ void DriveCache::Store(const std::string& resource_id,
 void DriveCache::Pin(const std::string& resource_id,
                      const std::string& md5,
                      FileOperationType file_operation_type,
-                     GDataFileError* error) {
+                     DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -999,7 +989,7 @@ void DriveCache::Pin(const std::string& resource_id,
                             symlink_path,
                             create_symlink);
 
-  if (*error == GDATA_FILE_OK) {
+  if (*error == DRIVE_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_pinned(true);
@@ -1011,7 +1001,7 @@ void DriveCache::Pin(const std::string& resource_id,
 void DriveCache::Unpin(const std::string& resource_id,
                        const std::string& md5,
                        FileOperationType file_operation_type,
-                       GDataFileError* error) {
+                       DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1021,7 +1011,7 @@ void DriveCache::Unpin(const std::string& resource_id,
     LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = GDATA_FILE_ERROR_NOT_FOUND;
+    *error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1079,7 +1069,7 @@ void DriveCache::Unpin(const std::string& resource_id,
       symlink_path,  // This will be deleted if it exists.
       false /* don't create symlink*/);
 
-  if (*error == GDATA_FILE_OK) {
+  if (*error == DRIVE_FILE_OK) {
     // Now that file operations have completed, update cache map.
     if (cache_entry.is_present()) {
       cache_entry.set_md5(md5);
@@ -1095,7 +1085,7 @@ void DriveCache::Unpin(const std::string& resource_id,
 
 void DriveCache::SetMountedState(const FilePath& file_path,
                                  bool to_mount,
-                                 GDataFileError *error,
+                                 DriveFileError *error,
                                  FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -1112,11 +1102,11 @@ void DriveCache::SetMountedState(const FilePath& file_path,
   // Get cache entry associated with the resource_id and md5
   DriveCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
-    *error = GDATA_FILE_ERROR_NOT_FOUND;
+    *error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
   if (to_mount == cache_entry.is_mounted()) {
-    *error = GDATA_FILE_ERROR_INVALID_OPERATION;
+    *error = DRIVE_FILE_ERROR_INVALID_OPERATION;
     return;
   }
 
@@ -1149,7 +1139,7 @@ void DriveCache::SetMountedState(const FilePath& file_path,
   // Move cache blob from source path to destination path.
   *error = ModifyCacheState(source_path, *cache_file_path,
                             FILE_OPERATION_MOVE, FilePath(), false);
-  if (*error == GDATA_FILE_OK) {
+  if (*error == DRIVE_FILE_OK) {
     // Now that cache operation is complete, update cache map
     cache_entry.set_md5(md5);
     cache_entry.set_is_persistent(dest_subdir == CACHE_TYPE_PERSISTENT);
@@ -1160,7 +1150,7 @@ void DriveCache::SetMountedState(const FilePath& file_path,
 void DriveCache::MarkDirty(const std::string& resource_id,
                            const std::string& md5,
                            FileOperationType file_operation_type,
-                           GDataFileError* error,
+                           DriveFileError* error,
                            FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
@@ -1179,7 +1169,7 @@ void DriveCache::MarkDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = GDATA_FILE_ERROR_NOT_FOUND;
+    *error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1211,7 +1201,7 @@ void DriveCache::MarkDirty(const std::string& resource_id,
         false /* don't create symlink */);
 
     // Determine current path of dirty file.
-    if (*error == GDATA_FILE_OK) {
+    if (*error == DRIVE_FILE_OK) {
       *cache_file_path = GetCacheFilePath(
           resource_id,
           md5,
@@ -1253,7 +1243,7 @@ void DriveCache::MarkDirty(const std::string& resource_id,
       symlink_path,
       !symlink_path.empty() /* create symlink */);
 
-  if (*error == GDATA_FILE_OK) {
+  if (*error == DRIVE_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_dirty(true);
@@ -1265,7 +1255,7 @@ void DriveCache::MarkDirty(const std::string& resource_id,
 void DriveCache::CommitDirty(const std::string& resource_id,
                              const std::string& md5,
                              FileOperationType file_operation_type,
-                             GDataFileError* error) {
+                             DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1282,7 +1272,7 @@ void DriveCache::CommitDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't commit dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = GDATA_FILE_ERROR_NOT_FOUND;
+    *error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1292,7 +1282,7 @@ void DriveCache::CommitDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't commit a non-dirty file: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = GDATA_FILE_ERROR_INVALID_OPERATION;
+    *error = DRIVE_FILE_ERROR_INVALID_OPERATION;
     return;
   }
 
@@ -1324,7 +1314,7 @@ void DriveCache::CommitDirty(const std::string& resource_id,
 void DriveCache::ClearDirty(const std::string& resource_id,
                             const std::string& md5,
                             FileOperationType file_operation_type,
-                            GDataFileError* error) {
+                            DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1339,7 +1329,7 @@ void DriveCache::ClearDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << "res_id=" << resource_id
                  << ", md5=" << md5;
-    *error = GDATA_FILE_ERROR_NOT_FOUND;
+    *error = DRIVE_FILE_ERROR_NOT_FOUND;
     return;
   }
 
@@ -1349,7 +1339,7 @@ void DriveCache::ClearDirty(const std::string& resource_id,
     LOG(WARNING) << "Can't clear dirty state of a non-dirty file: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    *error = GDATA_FILE_ERROR_INVALID_OPERATION;
+    *error = DRIVE_FILE_ERROR_INVALID_OPERATION;
     return;
   }
 
@@ -1385,7 +1375,7 @@ void DriveCache::ClearDirty(const std::string& resource_id,
                             false /* don't create symlink */);
 
   // If file is pinned, update symlink in pinned dir.
-  if (*error == GDATA_FILE_OK && cache_entry.is_pinned()) {
+  if (*error == DRIVE_FILE_OK && cache_entry.is_pinned()) {
     symlink_path = GetCacheFilePath(resource_id,
                                     std::string(),
                                     CACHE_TYPE_PINNED,
@@ -1401,7 +1391,7 @@ void DriveCache::ClearDirty(const std::string& resource_id,
                               true /* create symlink */);
   }
 
-  if (*error == GDATA_FILE_OK) {
+  if (*error == DRIVE_FILE_OK) {
     // Now that file operations have completed, update cache map.
     cache_entry.set_md5(md5);
     cache_entry.set_is_dirty(false);
@@ -1411,7 +1401,7 @@ void DriveCache::ClearDirty(const std::string& resource_id,
 }
 
 void DriveCache::Remove(const std::string& resource_id,
-                        GDataFileError* error) {
+                        DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
@@ -1429,7 +1419,7 @@ void DriveCache::Remove(const std::string& resource_id,
                  (cache_entry.is_dirty() ? "dirty" : "mounted") :
                  "non-existent")
              << " in cache, not removing";
-    *error = GDATA_FILE_OK;
+    *error = DRIVE_FILE_OK;
     return;
   }
 
@@ -1470,20 +1460,20 @@ void DriveCache::Remove(const std::string& resource_id,
   // Now that all file operations have completed, remove from cache map.
   metadata_->RemoveCacheEntry(resource_id);
 
-  *error = GDATA_FILE_OK;
+  *error = DRIVE_FILE_OK;
 }
 
-void DriveCache::ClearAll(GDataFileError* error) {
+void DriveCache::ClearAll(DriveFileError* error) {
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
   bool success = file_util::Delete(cache_root_path_, true);
   Initialize();
 
-  *error = success ? GDATA_FILE_OK : GDATA_FILE_ERROR_FAILED;
+  *error = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
-void DriveCache::OnPinned(GDataFileError* error,
+void DriveCache::OnPinned(DriveFileError* error,
                           const std::string& resource_id,
                           const std::string& md5,
                           const CacheOperationCallback& callback) {
@@ -1493,11 +1483,11 @@ void DriveCache::OnPinned(GDataFileError* error,
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5);
 
-  if (*error == GDATA_FILE_OK)
+  if (*error == DRIVE_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCachePinned(resource_id, md5));
 }
 
-void DriveCache::OnUnpinned(GDataFileError* error,
+void DriveCache::OnUnpinned(DriveFileError* error,
                             const std::string& resource_id,
                             const std::string& md5,
                             const CacheOperationCallback& callback) {
@@ -1507,7 +1497,7 @@ void DriveCache::OnUnpinned(GDataFileError* error,
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5);
 
-  if (*error == GDATA_FILE_OK)
+  if (*error == DRIVE_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCacheUnpinned(resource_id, md5));
 
   // Now the file is moved from "persistent" to "tmp" directory.
@@ -1521,7 +1511,7 @@ void DriveCache::OnUnpinned(GDataFileError* error,
                  base::Owned(has_enough_space)));
 }
 
-void DriveCache::OnCommitDirty(GDataFileError* error,
+void DriveCache::OnCommitDirty(DriveFileError* error,
                                const std::string& resource_id,
                                const std::string& md5,
                                const CacheOperationCallback& callback) {
@@ -1531,7 +1521,7 @@ void DriveCache::OnCommitDirty(GDataFileError* error,
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5);
 
-  if (*error == GDATA_FILE_OK)
+  if (*error == DRIVE_FILE_OK)
     FOR_EACH_OBSERVER(Observer, observers_, OnCacheCommitted(resource_id));
 }
 

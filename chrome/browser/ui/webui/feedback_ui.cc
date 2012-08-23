@@ -123,10 +123,10 @@ bool ScreenshotGDataTimestampComp(const gdata::DriveEntryProto& entry1,
 void ReadDirectoryCallback(size_t max_saved,
                            std::vector<std::string>* saved_screenshots,
                            base::Closure callback,
-                           gdata::GDataFileError error,
+                           gdata::DriveFileError error,
                            bool hide_hosted_documents,
                            scoped_ptr<gdata::DriveEntryProtoVector> entries) {
-  if (error != gdata::GDATA_FILE_OK) {
+  if (error != gdata::DRIVE_FILE_OK) {
     callback.Run();
     return;
   }

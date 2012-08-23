@@ -36,11 +36,11 @@ class FileWriteHelper {
   void PrepareWritableFileAndRunAfterCreateFile(
       const FilePath& file_path,
       const OpenFileCallback& callback,
-      GDataFileError result);
+      DriveFileError result);
   void PrepareWritableFileAndRunAfterOpenFile(
       const FilePath& file_path,
       const OpenFileCallback& callback,
-      GDataFileError result,
+      DriveFileError result,
       const FilePath& local_cache_path);
   void PrepareWritableFileAndRunAfterCallback(const FilePath& file_path);
 

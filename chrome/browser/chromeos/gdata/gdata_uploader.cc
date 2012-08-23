@@ -249,7 +249,7 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
     }
     if (!upload_file_info->should_retry_file_open) {
       UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                   GDATA_FILE_ERROR_NOT_FOUND);
+                   DRIVE_FILE_ERROR_NOT_FOUND);
     }
     return;
   }
@@ -258,7 +258,7 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
   upload_file_info->should_retry_file_open = false;
   if (upload_file_info->initial_upload_location.is_empty()) {
     UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                 GDATA_FILE_ERROR_ABORT);
+                 DRIVE_FILE_ERROR_ABORT);
     return;
   }
   drive_service_->InitiateUpload(
@@ -289,7 +289,7 @@ void GDataUploader::OnUploadLocationReceived(
   if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
     UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
-                 GDATA_FILE_ERROR_ABORT);
+                 DRIVE_FILE_ERROR_ABORT);
     return;
   }
 
@@ -425,7 +425,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     upload_file_info->entry = entry.Pass();
     if (!upload_file_info->completion_callback.is_null()) {
       upload_file_info->completion_callback.Run(
-          GDATA_FILE_OK,
+          DRIVE_FILE_OK,
           scoped_ptr<UploadFileInfo>(upload_file_info));
     }
     return;
@@ -447,8 +447,8 @@ void GDataUploader::OnResumeUploadResponseReceived(
     UploadFailed(
         scoped_ptr<UploadFileInfo>(upload_file_info),
         response.code == HTTP_FORBIDDEN ?
-            GDATA_FILE_ERROR_NO_SPACE :
-            GDATA_FILE_ERROR_ABORT);
+            DRIVE_FILE_ERROR_NO_SPACE :
+            DRIVE_FILE_ERROR_ABORT);
     return;
   }
 
@@ -461,7 +461,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
 }
 
 void GDataUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
-                                 GDataFileError error) {
+                                 DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RemoveUpload(upload_file_info->upload_id);

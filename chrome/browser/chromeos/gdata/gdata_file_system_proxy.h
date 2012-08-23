@@ -93,7 +93,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // calling thread.
   void OnStatusCallback(
       const fileapi::FileSystemOperationInterface::StatusCallback& callback,
-      GDataFileError error);
+      DriveFileError error);
 
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
@@ -101,7 +101,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& file_path,
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback,
-      GDataFileError error,
+      DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper callback for relaying reply for GetEntryInfoByPath() to the
@@ -110,7 +110,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& entry_path,
       const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
           callback,
-      GDataFileError error,
+      DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
@@ -118,7 +118,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnReadDirectory(
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
-      GDataFileError error,
+      DriveFileError error,
       bool hide_hosted_documents,
       scoped_ptr<DriveEntryProtoVector> proto_entries);
 
@@ -127,7 +127,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnCreateWritableSnapshotFile(
       const FilePath& virtual_path,
       const fileapi::WritableSnapshotFile& callback,
-      GDataFileError result,
+      DriveFileError result,
       const FilePath& local_path);
 
   // Helper callback for closing the local cache file and committing the dirty
@@ -143,7 +143,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& virtual_path,
       int64 length,
       const fileapi::FileSystemOperationInterface::StatusCallback& callback,
-      GDataFileError open_result,
+      DriveFileError open_result,
       const FilePath& local_cache_path);
 
   // Invoked during Truncate() operation. This is called when the truncation of
@@ -160,7 +160,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       int file_flags,
       base::ProcessHandle peer_handle,
       const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
-      GDataFileError gdata_error,
+      DriveFileError file_error,
       const FilePath& local_cache_path);
 
   // Invoked during OpenFile() operation when file create flags are set.
@@ -169,7 +169,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       int file_flags,
       base::ProcessHandle peer_handle,
       const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
-      GDataFileError gdata_error);
+      DriveFileError file_error);
 
   // Invoked during OpenFile() operation when base::PLATFORM_FILE_OPEN_TRUNCATED
   // flag is set. This is called when the truncation of a local cache file is

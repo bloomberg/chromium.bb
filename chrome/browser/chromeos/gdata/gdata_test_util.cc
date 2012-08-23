@@ -63,16 +63,16 @@ bool CacheStatesEqual(const DriveCacheEntry& a, const DriveCacheEntry& b) {
           a.is_persistent() == b.is_persistent());
 }
 
-void CopyErrorCodeFromFileOperationCallback(GDataFileError* output,
-                                            GDataFileError error) {
+void CopyErrorCodeFromFileOperationCallback(DriveFileError* output,
+                                            DriveFileError error) {
   DCHECK(output);
   *output = error;
 }
 
 void CopyResultsFromFileMoveCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     FilePath* out_file_path,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& moved_file_path) {
   DCHECK(out_error);
   DCHECK(out_file_path);
@@ -82,9 +82,9 @@ void CopyResultsFromFileMoveCallback(
 }
 
 void CopyResultsFromGetEntryInfoCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     scoped_ptr<DriveEntryProto>* out_entry_proto,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(out_error);
   DCHECK(out_entry_proto);
@@ -94,9 +94,9 @@ void CopyResultsFromGetEntryInfoCallback(
 }
 
 void CopyResultsFromReadDirectoryCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     scoped_ptr<DriveEntryProtoVector>* out_entries,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProtoVector> entries) {
   DCHECK(out_error);
   DCHECK(out_entries);
@@ -106,10 +106,10 @@ void CopyResultsFromReadDirectoryCallback(
 }
 
 void CopyResultsFromGetEntryInfoWithFilePathCallback(
-    GDataFileError* out_error,
+    DriveFileError* out_error,
     FilePath* out_drive_file_path,
     scoped_ptr<DriveEntryProto>* out_entry_proto,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(out_error);

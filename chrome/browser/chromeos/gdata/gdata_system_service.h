@@ -69,7 +69,7 @@ class GDataSystemService : public ProfileKeyedService  {
 
   // Adds back the drive mount point. Used to implement ClearCache().
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
-                              GDataFileError error,
+                              DriveFileError error,
                               const FilePath& file_path);
 
   friend class GDataSystemServiceFactory;

@@ -221,9 +221,9 @@ void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
 
 #ifdef OS_CHROMEOS
 void PrintToPdfCallbackWithCheck(Metafile* metafile,
-                                 gdata::GDataFileError error,
+                                 gdata::DriveFileError error,
                                  const FilePath& path) {
-  if (error != gdata::GDATA_FILE_OK) {
+  if (error != gdata::DRIVE_FILE_OK) {
     LOG(ERROR) << "Save to pdf failed to write: " << error;
   } else {
     metafile->SaveTo(path);

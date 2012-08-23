@@ -39,7 +39,7 @@ DriveDirectory* AddDirectory(DriveDirectory* parent,
                                   dir_name;
   dir->set_title(dir_name);
   dir->set_resource_id(resource_id);
-  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath moved_file_path;
   resource_metadata->MoveEntryToDirectory(
       parent->GetFilePath(),
@@ -48,7 +48,7 @@ DriveDirectory* AddDirectory(DriveDirectory* parent,
                  &error,
                  &moved_file_path));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(parent->GetFilePath().AppendASCII(dir_name), moved_file_path);
   return dir;
 }
@@ -65,7 +65,7 @@ DriveFile* AddFile(DriveDirectory* parent,
   file->set_title(title);
   file->set_resource_id(resource_id);
   file->set_file_md5(std::string("file_md5:") + title);
-  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath moved_file_path;
   resource_metadata->MoveEntryToDirectory(
       parent->GetFilePath(),
@@ -74,7 +74,7 @@ DriveFile* AddFile(DriveDirectory* parent,
                  &error,
                  &moved_file_path));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(parent->GetFilePath().AppendASCII(title), moved_file_path);
   return file;
 }
@@ -185,17 +185,17 @@ void VerifyDirectoryService(DriveResourceMetadata* resource_metadata) {
 }
 
 // Callback for DriveResourceMetadata::InitFromDB.
-void InitFromDBCallback(GDataFileError expected_error,
-                        GDataFileError actual_error) {
+void InitFromDBCallback(DriveFileError expected_error,
+                        DriveFileError actual_error) {
   EXPECT_EQ(expected_error, actual_error);
 }
 
 // Callback for DriveResourceMetadata::ReadDirectoryByPath.
 void ReadDirectoryByPathCallback(
     scoped_ptr<DriveEntryProtoVector>* result,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProtoVector> entries) {
-  EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   *result = entries.Pass();
 }
 
@@ -248,7 +248,7 @@ TEST(DriveResourceMetadataTest, RefreshFile) {
   directory_entry->set_resource_id("folder:directory_resource_id");
   directory_entry->set_title("directory");
   directory_entry->SetBaseNameFromTitle();
-  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath moved_file_path;
   FilePath root_path(kDriveRootDirectory);
   resource_metadata.MoveEntryToDirectory(
@@ -258,7 +258,7 @@ TEST(DriveResourceMetadataTest, RefreshFile) {
                  &error,
                  &moved_file_path));
   test_util::RunBlockingPoolTask();
-  ASSERT_EQ(GDATA_FILE_OK, error);
+  ASSERT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(root_path.AppendASCII(directory_entry->base_name()),
             moved_file_path);
 
@@ -267,7 +267,7 @@ TEST(DriveResourceMetadataTest, RefreshFile) {
   initial_file_entry->set_resource_id("file:file_resource_id");
   initial_file_entry->set_title("file");
   initial_file_entry->SetBaseNameFromTitle();
-  error = GDATA_FILE_ERROR_FAILED;
+  error = DRIVE_FILE_ERROR_FAILED;
   moved_file_path.clear();
   resource_metadata.MoveEntryToDirectory(
       directory_entry->GetFilePath(),
@@ -276,7 +276,7 @@ TEST(DriveResourceMetadataTest, RefreshFile) {
                  &error,
                  &moved_file_path));
   test_util::RunBlockingPoolTask();
-  ASSERT_EQ(GDATA_FILE_OK, error);
+  ASSERT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(directory_entry->GetFilePath().AppendASCII(
                 initial_file_entry->base_name()), moved_file_path);
 
@@ -323,7 +323,7 @@ TEST(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
   InitDirectoryService(&resource_metadata);
 
   // Confirm that an existing file is found.
-  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
   resource_metadata.GetEntryInfoByResourceId(
@@ -331,20 +331,20 @@ TEST(DriveResourceMetadataTest, GetEntryInfoByResourceId) {
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"), drive_file_path);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file4", entry_proto->base_name());
 
   // Confirm that a non existing file is not found.
-  error = GDATA_FILE_ERROR_FAILED;
+  error = DRIVE_FILE_ERROR_FAILED;
   entry_proto.reset();
   resource_metadata.GetEntryInfoByResourceId(
       "file:non_existing",
       base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
                  &error, &drive_file_path, &entry_proto));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 }
 
@@ -356,26 +356,26 @@ TEST(DriveResourceMetadataTest, GetEntryInfoByPath) {
   InitDirectoryService(&resource_metadata);
 
   // Confirm that an existing file is found.
-  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   resource_metadata.GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entry_proto.get());
   EXPECT_EQ("file4", entry_proto->base_name());
 
   // Confirm that a non existing file is not found.
-  error = GDATA_FILE_ERROR_FAILED;
+  error = DRIVE_FILE_ERROR_FAILED;
   entry_proto.reset();
   resource_metadata.GetEntryInfoByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/non_existing"),
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error, &entry_proto));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 }
 
@@ -387,14 +387,14 @@ TEST(DriveResourceMetadataTest, ReadDirectoryByPath) {
   InitDirectoryService(&resource_metadata);
 
   // Confirm that an existing directory is found.
-  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProtoVector> entries;
   resource_metadata.ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/dir1"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entries.get());
   ASSERT_EQ(3U, entries->size());
 
@@ -409,25 +409,25 @@ TEST(DriveResourceMetadataTest, ReadDirectoryByPath) {
   EXPECT_EQ("file5", base_names[2]);
 
   // Confirm that a non existing directory is not found.
-  error = GDATA_FILE_ERROR_FAILED;
+  error = DRIVE_FILE_ERROR_FAILED;
   entries.reset();
   resource_metadata.ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/non_existing"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entries.get());
 
-  // Confirm that reading a file results in GDATA_FILE_ERROR_NOT_A_DIRECTORY.
-  error = GDATA_FILE_ERROR_FAILED;
+  // Confirm that reading a file results in DRIVE_FILE_ERROR_NOT_A_DIRECTORY.
+  error = DRIVE_FILE_ERROR_FAILED;
   entries.reset();
   resource_metadata.ReadDirectoryByPath(
       FilePath::FromUTF8Unsafe("drive/dir1/file4"),
       base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
                  &error, &entries));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_A_DIRECTORY, error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
   EXPECT_FALSE(entries.get());
 }
 
@@ -447,13 +447,13 @@ TEST(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
                  &pair_result));
   test_util::RunBlockingPoolTask();
   // The first entry should be found.
-  EXPECT_EQ(GDATA_FILE_OK, pair_result->first.error);
+  EXPECT_EQ(DRIVE_FILE_OK, pair_result->first.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"),
             pair_result->first.path);
   ASSERT_TRUE(pair_result->first.proto.get());
   EXPECT_EQ("file4", pair_result->first.proto->base_name());
   // The second entry should be found.
-  EXPECT_EQ(GDATA_FILE_OK, pair_result->second.error);
+  EXPECT_EQ(DRIVE_FILE_OK, pair_result->second.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file5"),
             pair_result->second.path);
   ASSERT_TRUE(pair_result->second.proto.get());
@@ -468,12 +468,12 @@ TEST(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
                  &pair_result));
   test_util::RunBlockingPoolTask();
   // The first entry should not be found.
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, pair_result->first.error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, pair_result->first.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
             pair_result->first.path);
   ASSERT_FALSE(pair_result->first.proto.get());
   // The second entry should not be found, because the first one failed.
-  EXPECT_EQ(GDATA_FILE_ERROR_FAILED, pair_result->second.error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_FAILED, pair_result->second.error);
   EXPECT_EQ(FilePath(), pair_result->second.path);
   ASSERT_FALSE(pair_result->second.proto.get());
 
@@ -486,13 +486,13 @@ TEST(DriveResourceMetadataTest, GetEntryInfoPairByPaths) {
                  &pair_result));
   test_util::RunBlockingPoolTask();
   // The first entry should be found.
-  EXPECT_EQ(GDATA_FILE_OK, pair_result->first.error);
+  EXPECT_EQ(DRIVE_FILE_OK, pair_result->first.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"),
             pair_result->first.path);
   ASSERT_TRUE(pair_result->first.proto.get());
   EXPECT_EQ("file4", pair_result->first.proto->base_name());
   // The second entry should not be found.
-  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, pair_result->second.error);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, pair_result->second.error);
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
             pair_result->second.path);
   ASSERT_FALSE(pair_result->second.proto.get());
@@ -512,10 +512,10 @@ TEST(DriveResourceMetadataTest, DBTest) {
   DriveResourceMetadata resource_metadata;
   FilePath db_path(DriveCache::GetCacheRootPath(profile.get()).
       AppendASCII("meta").AppendASCII("resource_metadata.db"));
-  // InitFromDB should fail with GDATA_FILE_ERROR_NOT_FOUND since the db
+  // InitFromDB should fail with DRIVE_FILE_ERROR_NOT_FOUND since the db
   // doesn't exist.
   resource_metadata.InitFromDB(db_path, blocking_task_runner,
-      base::Bind(&InitFromDBCallback, GDATA_FILE_ERROR_NOT_FOUND));
+      base::Bind(&InitFromDBCallback, DRIVE_FILE_ERROR_NOT_FOUND));
   test_util::RunBlockingPoolTask();
   InitDirectoryService(&resource_metadata);
 
@@ -524,9 +524,9 @@ TEST(DriveResourceMetadataTest, DBTest) {
   test_util::RunBlockingPoolTask();
 
   DriveResourceMetadata resource_metadata2;
-  // InitFromDB should succeed with GDATA_FILE_OK as the db now exists.
+  // InitFromDB should succeed with DRIVE_FILE_OK as the db now exists.
   resource_metadata2.InitFromDB(db_path, blocking_task_runner,
-      base::Bind(&InitFromDBCallback, GDATA_FILE_OK));
+      base::Bind(&InitFromDBCallback, DRIVE_FILE_OK));
   test_util::RunBlockingPoolTask();
 
   VerifyDirectoryService(&resource_metadata2);

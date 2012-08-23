@@ -119,7 +119,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   void CreateUploadFileInfoAfterCheckExistence(
     int32 download_id,
     scoped_ptr<UploadFileInfo> upload_file_info,
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for handling results of GDataFileSystem::GetEntryInfoByPath()
@@ -129,7 +129,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   void CreateUploadFileInfoAfterCheckTargetDir(
       int32 download_id,
       scoped_ptr<UploadFileInfo> upload_file_info,
-      GDataFileError error,
+      DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Starts the upload.
@@ -142,7 +142,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // |upload_file_info| for use by MoveFileToDriveCache(). It also invokes the
   // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
   void OnUploadComplete(int32 download_id,
-                        GDataFileError error,
+                        DriveFileError error,
                         scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Moves the downloaded file to gdata cache.

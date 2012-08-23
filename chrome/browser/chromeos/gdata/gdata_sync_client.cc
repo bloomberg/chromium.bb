@@ -321,15 +321,15 @@ void GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
 
 void GDataSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& /* gdata_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = GDATA_FILE_ERROR_NOT_FOUND;
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     LOG(WARNING) << "Entry not found: " << resource_id;
     return;
   }
@@ -366,12 +366,12 @@ void GDataSyncClient::OnGetCacheEntry(
   }
 }
 
-void GDataSyncClient::OnRemove(GDataFileError error,
+void GDataSyncClient::OnRemove(DriveFileError error,
                                const std::string& resource_id,
                                const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     LOG(WARNING) << "Failed to remove cache entry: " << resource_id;
     return;
   }
@@ -384,12 +384,12 @@ void GDataSyncClient::OnRemove(GDataFileError error,
                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataSyncClient::OnPinned(GDataFileError error,
+void GDataSyncClient::OnPinned(DriveFileError error,
                                const std::string& resource_id,
                                const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != GDATA_FILE_OK) {
+  if (error != DRIVE_FILE_OK) {
     LOG(WARNING) << "Failed to pin cache entry: " << resource_id;
     return;
   }
@@ -400,18 +400,18 @@ void GDataSyncClient::OnPinned(GDataFileError error,
 }
 
 void GDataSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
-                                          GDataFileError error,
+                                          DriveFileError error,
                                           const FilePath& local_path,
                                           const std::string& ununsed_mime_type,
                                           DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     DVLOG(1) << "Fetched " << sync_task.resource_id << ": "
              << local_path.value();
   } else {
     switch (error) {
-      case GDATA_FILE_ERROR_NO_CONNECTION:
+      case DRIVE_FILE_ERROR_NO_CONNECTION:
         // Re-queue the task so that we'll retry once the connection is back.
         queue_.push_front(sync_task);
         break;
@@ -426,10 +426,10 @@ void GDataSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
 }
 
 void GDataSyncClient::OnUploadFileComplete(const std::string& resource_id,
-                                           GDataFileError error) {
+                                           DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == GDATA_FILE_OK) {
+  if (error == DRIVE_FILE_OK) {
     DVLOG(1) << "Uploaded " << resource_id;
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.

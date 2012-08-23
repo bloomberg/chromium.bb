@@ -79,7 +79,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 }
 
 void DriveTaskExecutor::OnFileEntryFetched(
-    GDataFileError error,
+    DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   // If we aborted, then this will be zero.
   if (!current_index_)
@@ -90,9 +90,9 @@ void DriveTaskExecutor::OnFileEntryFetched(
 
   // Here, we are only insterested in files.
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = GDATA_FILE_ERROR_NOT_FOUND;
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
 
-  if (!system_service || error != GDATA_FILE_OK) {
+  if (!system_service || error != DRIVE_FILE_OK) {
     Done(false);
     return;
   }

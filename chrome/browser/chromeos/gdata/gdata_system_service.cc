@@ -122,14 +122,14 @@ void GDataSystemService::ClearCacheAndRemountFileSystem(
 
 void GDataSystemService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   AddDriveMountPoint();
 
   if (!callback.is_null())
-    callback.Run(error == GDATA_FILE_OK);
+    callback.Run(error == DRIVE_FILE_OK);
 }
 
 void GDataSystemService::AddDriveMountPoint() {

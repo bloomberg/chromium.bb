@@ -223,7 +223,7 @@ class GDataSyncClientTest : public testing::Test {
     EXPECT_CALL(*mock_file_system_,
                 GetFileByResourceId(resource_id, _, _))
         .WillOnce(MockGetFileByResourceId(
-            GDATA_FILE_OK,
+            DRIVE_FILE_OK,
             FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
             std::string("mime_type_does_not_matter"),
             REGULAR_FILE));
@@ -235,7 +235,7 @@ class GDataSyncClientTest : public testing::Test {
       const std::string& resource_id) {
     EXPECT_CALL(*mock_file_system_,
                 UpdateFileByResourceId(resource_id, _))
-        .WillOnce(MockUpdateFileByResourceId(GDATA_FILE_OK));
+        .WillOnce(MockUpdateFileByResourceId(DRIVE_FILE_OK));
   }
 
   // Sets the expectation for MockGDataFileSystem::GetFileInfoByResourceId(),
@@ -250,7 +250,7 @@ class GDataSyncClientTest : public testing::Test {
   EXPECT_CALL(*mock_file_system_,
               GetEntryInfoByResourceId(resource_id, _))
       .WillOnce(MockUpdateFileByResourceId(
-          GDATA_FILE_OK,
+          DRIVE_FILE_OK,
           new_md5));
   }
 
@@ -368,7 +368,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_ResumedConnection) {
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
       .WillOnce(DoAll(
           InvokeWithoutArgs(this, &GDataSyncClientTest::ConnectToNone),
-          MockGetFileByResourceId(GDATA_FILE_ERROR_NO_CONNECTION,
+          MockGetFileByResourceId(DRIVE_FILE_ERROR_NO_CONNECTION,
                                   file_path,
                                   mime_type,
                                   REGULAR_FILE)));
@@ -378,7 +378,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_ResumedConnection) {
   // Expect fetch retry on network reconnection.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
       .WillOnce(MockGetFileByResourceId(
-          GDATA_FILE_OK, file_path, mime_type, REGULAR_FILE));
+          DRIVE_FILE_OK, file_path, mime_type, REGULAR_FILE));
 
   ConnectToWifi();
 }

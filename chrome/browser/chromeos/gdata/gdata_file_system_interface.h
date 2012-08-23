@@ -35,7 +35,7 @@ struct SearchResultInfo {
 };
 
 // Used to get files from the file system.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const FilePath& file_path,
                             const std::string& mime_type,
                             DriveFileType file_type)> GetFileCallback;
@@ -43,27 +43,27 @@ typedef base::Callback<void(GDataFileError error,
 // Used to read a directory from the file system.
 // Similar to ReadDirectoryCallback but this one provides
 // |hide_hosted_documents|
-// If |error| is not GDATA_FILE_OK, |entries| is set to NULL.
+// If |error| is not DRIVE_FILE_OK, |entries| is set to NULL.
 // |entries| are contents, both files and directories, of the directory.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             bool hide_hosted_documents,
                             scoped_ptr<DriveEntryProtoVector> entries)>
     ReadDirectoryWithSettingCallback;
 
 // Used to get drive content search results.
-// If |error| is not GDATA_FILE_OK, |result_paths| is empty.
+// If |error| is not DRIVE_FILE_OK, |result_paths| is empty.
 typedef base::Callback<void(
-    GDataFileError error,
+    DriveFileError error,
     const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             const FilePath& file_path)> OpenFileCallback;
 
 // Used to get available space for the account from GData.
-typedef base::Callback<void(GDataFileError error,
+typedef base::Callback<void(DriveFileError error,
                             int64 bytes_total,
                             int64 bytes_used)> GetAvailableSpaceCallback;
 

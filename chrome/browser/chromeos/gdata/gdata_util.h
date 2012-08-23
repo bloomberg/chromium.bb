@@ -108,8 +108,8 @@ void ParseCacheFilePath(const FilePath& path,
 // Returns true if Drive v2 API is enabled via commandline switch.
 bool IsDriveV2ApiEnabled();
 
-// Returns a PlatformFileError that corresponds to the GDataFileError provided.
-base::PlatformFileError GDataFileErrorToPlatformError(GDataFileError error);
+// Returns a PlatformFileError that corresponds to the DriveFileError provided.
+base::PlatformFileError DriveFileErrorToPlatformError(DriveFileError error);
 
 // Parses an RFC 3339 date/time into a base::Time, returning true on success.
 // The time string must be in the format "yyyy-mm-ddThh:mm:ss.dddTZ" (TZ is
@@ -122,7 +122,7 @@ std::string FormatTimeAsString(const base::Time& time);
 std::string FormatTimeAsStringLocaltime(const base::Time& time);
 
 // Callback type for PrepareWritableFilePathAndRun.
-typedef base::Callback<void (GDataFileError, const FilePath& path)>
+typedef base::Callback<void (DriveFileError, const FilePath& path)>
     OpenFileCallback;
 
 // Invokes |callback| on blocking thread pool, after converting virtual |path|
@@ -137,8 +137,8 @@ void PrepareWritableFileAndRun(Profile* profile,
                                const FilePath& path,
                                const OpenFileCallback& callback);
 
-// Converts gdata error code into file platform error code.
-GDataFileError GDataToGDataFileError(GDataErrorCode status);
+// Converts GData error code into file platform error code.
+DriveFileError GDataToDriveFileError(GDataErrorCode status);
 
 // Wrapper around BrowserThread::PostTask to post a task to the blocking
 // pool with the given sequence token.

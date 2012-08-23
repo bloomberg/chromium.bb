@@ -49,14 +49,14 @@ class GDataWapiFeedProcessor {
   // In the case of processing the root feeds |root_feed_changestamp| is used
   // as its initial changestamp value. The value comes from
   // AccountMetadataFeed.
-  GDataFileError ApplyFeeds(const std::vector<DocumentFeed*>& feed_list,
+  DriveFileError ApplyFeeds(const std::vector<DocumentFeed*>& feed_list,
                             int64 start_changestamp,
                             int64 root_feed_changestamp,
                             std::set<FilePath>* changed_dirs);
 
   // Converts list of document feeds from collected feeds into
   // FileResourceIdMap.
-  GDataFileError FeedToFileResourceMap(
+  DriveFileError FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,

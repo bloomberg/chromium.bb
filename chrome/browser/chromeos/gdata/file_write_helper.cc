@@ -40,10 +40,10 @@ void FileWriteHelper::PrepareWritableFileAndRun(
 void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
     const FilePath& file_path,
     const OpenFileCallback& callback,
-    GDataFileError error) {
+    DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != gdata::GDATA_FILE_OK) {
+  if (error != gdata::DRIVE_FILE_OK) {
     if (!callback.is_null()) {
       content::BrowserThread::GetBlockingPool()->PostTask(
           FROM_HERE,
@@ -62,11 +62,11 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterCreateFile(
 void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
     const FilePath& file_path,
     const OpenFileCallback& callback,
-    GDataFileError error,
+    DriveFileError error,
     const FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != gdata::GDATA_FILE_OK) {
+  if (error != gdata::DRIVE_FILE_OK) {
     if (!callback.is_null()) {
       content::BrowserThread::GetBlockingPool()->PostTask(
           FROM_HERE,
@@ -78,7 +78,7 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
   if (!callback.is_null()) {
     content::BrowserThread::GetBlockingPool()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(callback, GDATA_FILE_OK, local_cache_path),
+        base::Bind(callback, DRIVE_FILE_OK, local_cache_path),
         base::Bind(&FileWriteHelper::PrepareWritableFileAndRunAfterCallback,
                    weak_ptr_factory_.GetWeakPtr(),
                    file_path));

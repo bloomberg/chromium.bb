@@ -142,11 +142,11 @@ void ScreenshotSource::SendSavedScreenshot(
 void ScreenshotSource::GetSavedScreenshotCallback(
     const std::string& screenshot_path,
     int request_id,
-    gdata::GDataFileError error,
+    gdata::DriveFileError error,
     const FilePath& file,
     const std::string& unused_mime_type,
     gdata::DriveFileType file_type) {
-  if (error != gdata::GDATA_FILE_OK || file_type != gdata::REGULAR_FILE) {
+  if (error != gdata::DRIVE_FILE_OK || file_type != gdata::REGULAR_FILE) {
     ScreenshotDataPtr read_bytes(new ScreenshotData);
     CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
     return;
