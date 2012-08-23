@@ -105,6 +105,8 @@ def _CheckLicenseHeaders(directory_list, whitelisted_files):
   directory_list.append('data/page_cycler/')
   # 'Copyright' appears in strings.
   directory_list.append('chrome/app/resources/')
+  # This is a Chrome on Linux reference build, doesn't exist in the snapshot
+  directory_list.append('chrome/tools/test/reference_build/chrome_linux/')
 
   # Exclude files under listed directories and some known offenders.
   offending_files = []
