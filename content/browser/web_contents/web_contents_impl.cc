@@ -719,15 +719,6 @@ const GURL& WebContentsImpl::GetURL() const {
   return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
 }
 
-
-const base::PropertyBag* WebContentsImpl::GetPropertyBag() const {
-  return &property_bag_;
-}
-
-base::PropertyBag* WebContentsImpl::GetPropertyBag() {
-  return &property_bag_;
-}
-
 content::WebContentsDelegate* WebContentsImpl::GetDelegate() {
   return delegate_;
 }

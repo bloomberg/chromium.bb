@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/property_bag.h"
 #include "content/browser/browser_plugin/old/old_browser_plugin_host.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -163,8 +162,6 @@ class CONTENT_EXPORT WebContentsImpl
   RenderViewHostManager* GetRenderManagerForTesting();
 
   // content::WebContents ------------------------------------------------------
-  virtual const base::PropertyBag* GetPropertyBag() const OVERRIDE;
-  virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
   virtual content::WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(content::WebContentsDelegate* delegate) OVERRIDE;
   virtual NavigationControllerImpl& GetController() OVERRIDE;
@@ -641,10 +638,6 @@ class CONTENT_EXPORT WebContentsImpl
   void GetBrowserPluginEmbedderInfo(content::RenderViewHost* render_view_host,
                                     std::string* embedder_channel_name,
                                     int* embedder_container_id);
-
-  // Stores random bits of data for others to associate with this object.
-  // WARNING: this needs to be deleted after NavigationController.
-  base::PropertyBag property_bag_;
 
   // Data for core operation ---------------------------------------------------
 

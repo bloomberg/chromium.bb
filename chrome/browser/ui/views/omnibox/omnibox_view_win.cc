@@ -16,7 +16,6 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/iat_patch_function.h"
@@ -94,16 +93,19 @@ int CopyOrLinkDragOperation(int drag_operation) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
+const char kAutocompleteEditStateKey[] = "AutocompleteEditState";
+
 // The AutocompleteEditState struct contains enough information about the
 // OmniboxEditModel and OmniboxViewWin to save/restore a user's
 // typing, caret position, etc. across tab changes.  We explicitly don't
 // preserve things like whether the popup was open as this might be weird.
-struct AutocompleteEditState {
+struct AutocompleteEditState : public base::SupportsUserData::Data {
   AutocompleteEditState(const OmniboxEditModel::State& model_state,
                         const OmniboxViewWin::State& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
+  virtual ~AutocompleteEditState() {}
 
   const OmniboxEditModel::State model_state;
   const OmniboxViewWin::State view_state;
@@ -376,13 +378,6 @@ BOOL WINAPI EndPaintIntercept(HWND hWnd, const PAINTSTRUCT* lpPaint) {
   return (edit_hwnd && (hWnd == edit_hwnd)) || ::EndPaint(hWnd, lpPaint);
 }
 
-// Returns a lazily initialized property bag accessor for saving our state in a
-// WebContents.
-base::PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
-  static base::PropertyAccessor<AutocompleteEditState> state;
-  return &state;
-}
-
 class PaintPatcher {
  public:
   PaintPatcher();
@@ -554,8 +549,9 @@ void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
 
   CHARRANGE selection;
   GetSelection(selection);
-  GetStateAccessor()->SetProperty(tab->GetPropertyBag(),
-      AutocompleteEditState(
+  tab->SetUserData(
+      kAutocompleteEditStateKey,
+      new AutocompleteEditState(
           model_state,
           State(selection, saved_selection_for_focus_change_)));
 }
@@ -586,8 +582,8 @@ void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
     // won't overwrite all our local state.
     RevertAll();
 
-    const AutocompleteEditState* state = GetStateAccessor()->GetProperty(
-        tab_for_state_restoring->GetPropertyBag());
+    const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
+        tab_for_state_restoring->GetUserData(&kAutocompleteEditStateKey));
     if (state) {
       model()->RestoreState(state->model_state);
 

@@ -13,12 +13,9 @@ class ConstrainedWindow;
 class Profile;
 class TabContents;
 
-namespace base {
-template<class T> class PropertyAccessor;
-}
-
 namespace content {
 class RenderViewHost;
+class WebContents;
 }
 
 namespace ui {
@@ -69,14 +66,13 @@ class WEB_DIALOGS_EXPORT ConstrainedWebDialogUI
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  // Returns a property accessor that can be used to set the
-  // ConstrainedWebDialogDelegate property on a WebContents.
-  static base::PropertyAccessor<ConstrainedWebDialogDelegate*>&
-      GetPropertyAccessor();
+  // Sets the delegate on the WebContents.
+  static void SetConstrainedDelegate(content::WebContents* web_contents,
+                                     ConstrainedWebDialogDelegate* delegate);
 
  protected:
-  // Returns the WebContents' PropertyBag's ConstrainedWebDialogDelegate.
-  // Returns NULL if that property is not set.
+  // Returns the ConstrainedWebDialogDelegate saved with the WebContents.
+  // Returns NULL if no such delegate is set.
   ConstrainedWebDialogDelegate* GetConstrainedDelegate();
 
  private:

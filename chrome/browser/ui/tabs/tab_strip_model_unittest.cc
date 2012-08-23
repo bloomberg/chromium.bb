@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/property_bag.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -117,6 +116,22 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
   DISALLOW_COPY_AND_ASSIGN(TabStripDummyDelegate);
 };
 
+namespace {
+
+const char kTabStripModelTestIDUserDataKey[] = "TabStripModelTestIDUserData";
+
+class TabStripModelTestIDUserData : public base::SupportsUserData::Data {
+ public:
+  explicit TabStripModelTestIDUserData(int id) : id_(id) {}
+  virtual ~TabStripModelTestIDUserData() {}
+  int id() { return id_; }
+
+ private:
+  int id_;
+};
+
+}  // namespace
+
 class TabStripModelTest : public ChromeRenderViewHostTestHarness {
  public:
   TabStripModelTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
@@ -157,12 +172,17 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
 
   // Sets the id of the specified contents.
   void SetID(WebContents* contents, int id) {
-    GetIDAccessor()->SetProperty(contents->GetPropertyBag(), id);
+    contents->SetUserData(&kTabStripModelTestIDUserDataKey,
+                          new TabStripModelTestIDUserData(id));
   }
 
   // Returns the id of the specified contents.
   int GetID(WebContents* contents) {
-    return *GetIDAccessor()->GetProperty(contents->GetPropertyBag());
+    TabStripModelTestIDUserData* user_data =
+        static_cast<TabStripModelTestIDUserData*>(
+            contents->GetUserData(&kTabStripModelTestIDUserDataKey));
+
+    return user_data ? user_data->id() : -1;
   }
 
   // Returns the state of the given tab strip as a string. The state consists
@@ -226,11 +246,6 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  base::PropertyAccessor<int>* GetIDAccessor() {
-    static base::PropertyAccessor<int> accessor;
-    return &accessor;
-  }
-
   content::TestBrowserThread browser_thread_;
 
   std::wstring test_dir_;

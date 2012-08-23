@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/property_bag.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
@@ -346,8 +345,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 
   // This must be done before loading the page; see the comments in
   // WebDialogUI.
-  WebDialogUI::GetPropertyAccessor().SetProperty(
-      tabContents_->web_contents()->GetPropertyBag(), delegate_.get());
+  WebDialogUI::SetDelegate(tabContents_->web_contents(), delegate_.get());
 
   tabContents_->web_contents()->GetController().LoadURL(
       delegate_->GetDialogContentURL(),

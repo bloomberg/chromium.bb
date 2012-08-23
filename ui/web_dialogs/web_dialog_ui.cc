@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/property_bag.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -20,22 +19,36 @@
 using content::RenderViewHost;
 using content::WebUIMessageHandler;
 
-static base::LazyInstance<base::PropertyAccessor<ui::WebDialogDelegate*> >
-    g_web_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
-
 namespace ui {
+
+namespace {
+
+const char kWebDialogDelegateUserDataKey[] = "WebDialogDelegateUserData";
+
+class WebDialogDelegateUserData : public base::SupportsUserData::Data {
+ public:
+  explicit WebDialogDelegateUserData(WebDialogDelegate* delegate)
+      : delegate_(delegate) {}
+  virtual ~WebDialogDelegateUserData() {}
+  WebDialogDelegate* delegate() { return delegate_; }
+
+ private:
+  WebDialogDelegate* delegate_;  // unowned
+};
+
+}  // namespace
 
 WebDialogUI::WebDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
 }
 
 WebDialogUI::~WebDialogUI() {
-  // Don't unregister our property. During the teardown of the WebContents,
+  // Don't unregister our user data. During the teardown of the WebContents,
   // this will be deleted, but the WebContents will already be destroyed.
   //
   // This object is owned indirectly by the WebContents. WebUIs can change, so
   // it's scary if this WebUI is changed out and replaced with something else,
-  // since the property will still point to the old delegate. But the delegate
+  // since the user data will still point to the old delegate. But the delegate
   // is itself the owner of the WebContents for a dialog so will be in scope,
   // and the HTML dialogs won't swap WebUIs anyway since they don't navigate.
 }
@@ -45,12 +58,24 @@ void WebDialogUI::CloseDialog(const base::ListValue* args) {
 }
 
 // static
-base::PropertyAccessor<WebDialogDelegate*>& WebDialogUI::GetPropertyAccessor() {
-  return g_web_dialog_ui_property_accessor.Get();
+void WebDialogUI::SetDelegate(content::WebContents* web_contents,
+                              WebDialogDelegate* delegate) {
+  web_contents->SetUserData(&kWebDialogDelegateUserDataKey,
+                            new WebDialogDelegateUserData(delegate));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private:
+
+WebDialogDelegate* WebDialogUI::GetDelegate(
+    content::WebContents* web_contents) {
+  WebDialogDelegateUserData* user_data =
+      static_cast<WebDialogDelegateUserData*>(
+          web_contents->GetUserData(&kWebDialogDelegateUserDataKey));
+
+  return user_data ? user_data->delegate() : NULL;
+}
+
 
 void WebDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   // Hook up the javascript function calls, also known as chrome.send("foo")
@@ -61,11 +86,10 @@ void WebDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   // Pass the arguments to the renderer supplied by the delegate.
   std::string dialog_args;
   std::vector<WebUIMessageHandler*> handlers;
-  WebDialogDelegate** delegate = GetPropertyAccessor().GetProperty(
-      web_ui()->GetWebContents()->GetPropertyBag());
+  WebDialogDelegate* delegate = GetDelegate(web_ui()->GetWebContents());
   if (delegate) {
-    dialog_args = (*delegate)->GetDialogArgs();
-    (*delegate)->GetWebUIMessageHandlers(&handlers);
+    dialog_args = delegate->GetDialogArgs();
+    delegate->GetWebUIMessageHandlers(&handlers);
   }
 
   if (0 != (web_ui()->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
@@ -76,18 +100,17 @@ void WebDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   }
 
   if (delegate)
-    (*delegate)->OnDialogShown(web_ui(), render_view_host);
+    delegate->OnDialogShown(web_ui(), render_view_host);
 }
 
 void WebDialogUI::OnDialogClosed(const ListValue* args) {
-  WebDialogDelegate** delegate = GetPropertyAccessor().GetProperty(
-      web_ui()->GetWebContents()->GetPropertyBag());
+  WebDialogDelegate* delegate = GetDelegate(web_ui()->GetWebContents());
   if (delegate) {
     std::string json_retval;
     if (args && !args->empty() && !args->GetString(0, &json_retval))
       NOTREACHED() << "Could not read JSON argument";
 
-    (*delegate)->OnDialogClosed(json_retval);
+    delegate->OnDialogClosed(json_retval);
   }
 }
 

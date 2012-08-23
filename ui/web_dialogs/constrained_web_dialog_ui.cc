@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/property_bag.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,11 +22,29 @@ using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
-static base::LazyInstance<
-    base::PropertyAccessor<ui::ConstrainedWebDialogDelegate*> >
-    g_constrained_web_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
-
 namespace ui {
+
+namespace {
+
+const char kConstrainedWebDialogDelegateUserDataKey[] =
+    "ConstrainedWebDialogDelegateUserData";
+
+class ConstrainedWebDialogDelegateUserData
+    : public base::SupportsUserData::Data {
+ public:
+  explicit ConstrainedWebDialogDelegateUserData(
+      ConstrainedWebDialogDelegate* delegate) : delegate_(delegate) {}
+  virtual ~ConstrainedWebDialogDelegateUserData() {}
+
+  ConstrainedWebDialogDelegate* delegate() { return delegate_; }
+
+ private:
+  ConstrainedWebDialogDelegate* delegate_;  // unowned
+
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateUserData);
+};
+
+}  // namespace
 
 ConstrainedWebDialogUI::ConstrainedWebDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
@@ -72,16 +89,21 @@ void ConstrainedWebDialogUI::OnDialogCloseMessage(const ListValue* args) {
   delegate->OnDialogCloseFromWebUI();
 }
 
-ConstrainedWebDialogDelegate* ConstrainedWebDialogUI::GetConstrainedDelegate() {
-  ConstrainedWebDialogDelegate** property = GetPropertyAccessor().GetProperty(
-      web_ui()->GetWebContents()->GetPropertyBag());
-  return property ? *property : NULL;
+// static
+void ConstrainedWebDialogUI::SetConstrainedDelegate(
+    content::WebContents* web_contents,
+    ConstrainedWebDialogDelegate* delegate) {
+  web_contents->SetUserData(&kConstrainedWebDialogDelegateUserDataKey,
+                            new ConstrainedWebDialogDelegateUserData(delegate));
 }
 
-// static
-base::PropertyAccessor<ConstrainedWebDialogDelegate*>&
-    ConstrainedWebDialogUI::GetPropertyAccessor() {
-  return g_constrained_web_dialog_ui_property_accessor.Get();
+ConstrainedWebDialogDelegate* ConstrainedWebDialogUI::GetConstrainedDelegate() {
+  ConstrainedWebDialogDelegateUserData* user_data =
+      static_cast<ConstrainedWebDialogDelegateUserData*>(
+          web_ui()->GetWebContents()->
+              GetUserData(&kConstrainedWebDialogDelegateUserDataKey));
+
+  return user_data ? user_data->delegate() : NULL;
 }
 
 }  // namespace ui

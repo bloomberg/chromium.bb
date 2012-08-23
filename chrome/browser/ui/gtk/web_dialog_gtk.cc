@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -211,8 +210,7 @@ gfx::NativeWindow WebDialogGtk::InitDialog() {
 
   // This must be done before loading the page; see the comments in
   // WebDialogUI.
-  WebDialogUI::GetPropertyAccessor().SetProperty(
-      tab_->web_contents()->GetPropertyBag(), this);
+  WebDialogUI::SetDelegate(tab_->web_contents(), this);
 
   tab_->web_contents()->GetController().LoadURL(
       GetDialogContentURL(),

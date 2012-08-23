@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/property_bag.h"
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,6 +38,24 @@
 
 namespace test {
 
+namespace {
+
+const char kTabDragControllerInteractiveUITestUserDataKey[] =
+    "TabDragControllerInteractiveUITestUserData";
+
+class TabDragControllerInteractiveUITestUserData
+    : public base::SupportsUserData::Data {
+ public:
+  explicit TabDragControllerInteractiveUITestUserData(int id) : id_(id) {}
+  virtual ~TabDragControllerInteractiveUITestUserData() {}
+  int id() { return id_; }
+
+ private:
+  int id_;
+};
+
+}  // namespace
+
 class QuitDraggingObserver : public content::NotificationObserver {
  public:
   QuitDraggingObserver() {
@@ -68,15 +85,9 @@ gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
   return center;
 }
 
-base::PropertyAccessor<int>* id_accessor() {
-  static base::PropertyAccessor<int>* accessor = NULL;
-  if (!accessor)
-    accessor = new base::PropertyAccessor<int>;
-  return accessor;
-}
-
 void SetID(content::WebContents* tab_contents, int id) {
-  id_accessor()->SetProperty(tab_contents->GetPropertyBag(), id);
+  tab_contents->SetUserData(&kTabDragControllerInteractiveUITestUserDataKey,
+                            new TabDragControllerInteractiveUITestUserData(id));
 }
 
 void ResetIDs(TabStripModel* model, int start) {
@@ -89,10 +100,13 @@ std::string IDString(TabStripModel* model) {
   for (int i = 0; i < model->count(); ++i) {
     if (i != 0)
       result += " ";
-    int* id_value = id_accessor()->GetProperty(
-        model->GetTabContentsAt(i)->web_contents()->GetPropertyBag());
-    if (id_value)
-      result += base::IntToString(*id_value);
+    content::WebContents* contents = model->GetTabContentsAt(i)->web_contents();
+    TabDragControllerInteractiveUITestUserData* user_data =
+        static_cast<TabDragControllerInteractiveUITestUserData*>(
+            contents->GetUserData(
+                &kTabDragControllerInteractiveUITestUserDataKey));
+    if (user_data)
+      result += base::IntToString(user_data->id());
     else
       result += "?";
   }

@@ -6,7 +6,6 @@
 
 #include <Carbon/Carbon.h>  // kVK_Return
 
-#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -85,8 +84,10 @@ NSColor* SecurityErrorSchemeColor() {
   return ColorWithRGBBytes(0xa2, 0x00, 0x00);
 }
 
+const char kOmniboxViewMacStateKey[] = "OmniboxViewMacState";
+
 // Store's the model and view state across tab switches.
-struct OmniboxViewMacState {
+struct OmniboxViewMacState : public base::SupportsUserData::Data {
   OmniboxViewMacState(const OmniboxEditModel::State model_state,
                       const bool has_focus,
                       const NSRange& selection)
@@ -94,29 +95,21 @@ struct OmniboxViewMacState {
         has_focus(has_focus),
         selection(selection) {
   }
+  virtual ~OmniboxViewMacState() {}
 
   const OmniboxEditModel::State model_state;
   const bool has_focus;
   const NSRange selection;
 };
 
-// Returns a lazily initialized property bag accessor for saving our
-// state in a WebContents.  When constructed |accessor| generates a
-// globally-unique id used to index into the per-tab PropertyBag used
-// to store the state data.
-base::PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
-  CR_DEFINE_STATIC_LOCAL(
-      base::PropertyAccessor<OmniboxViewMacState>, accessor, ());
-  return &accessor;
-}
-
 // Accessors for storing and getting the state from the tab.
 void StoreStateToTab(WebContents* tab,
-                     const OmniboxViewMacState& state) {
-  GetStateAccessor()->SetProperty(tab->GetPropertyBag(), state);
+                     OmniboxViewMacState* state) {
+  tab->SetUserData(kOmniboxViewMacStateKey, state);
 }
 const OmniboxViewMacState* GetStateFromTab(const WebContents* tab) {
-  return GetStateAccessor()->GetProperty(tab->GetPropertyBag());
+  return static_cast<OmniboxViewMacState*>(
+      tab->GetUserData(&kOmniboxViewMacStateKey));
 }
 
 // Helper to make converting url_parse ranges to NSRange easier to
@@ -187,7 +180,8 @@ void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
     range = NSMakeRange(0, GetTextLength());
   }
 
-  OmniboxViewMacState state(model()->GetStateForTabSwitch(), hasFocus, range);
+  OmniboxViewMacState* state =
+      new OmniboxViewMacState(model()->GetStateForTabSwitch(), hasFocus, range);
   StoreStateToTab(tab, state);
 }
 

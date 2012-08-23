@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 
 #include "base/logging.h"
-#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -161,24 +160,19 @@ struct ViewState {
   gfx::SelectionModel selection_model;
 };
 
-struct AutocompleteEditState {
+const char kAutocompleteEditStateKey[] = "AutocompleteEditState";
+
+struct AutocompleteEditState : public base::SupportsUserData::Data {
   AutocompleteEditState(const OmniboxEditModel::State& model_state,
                         const ViewState& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
+  virtual ~AutocompleteEditState() {}
 
   const OmniboxEditModel::State model_state;
   const ViewState view_state;
 };
-
-// Returns a lazily initialized property bag accessor for saving our state in a
-// WebContents.
-base::PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
-  CR_DEFINE_STATIC_LOCAL(
-      base::PropertyAccessor<AutocompleteEditState>, state, ());
-  return &state;
-}
 
 // A convenience method for applying URL styles.
 void ApplyURLStyle(views::Textfield* textfield,
@@ -481,9 +475,9 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   OmniboxEditModel::State model_state = model()->GetStateForTabSwitch();
   gfx::SelectionModel selection;
   textfield_->GetSelectionModel(&selection);
-  GetStateAccessor()->SetProperty(
-      tab->GetPropertyBag(),
-      AutocompleteEditState(model_state, ViewState(selection)));
+  tab->SetUserData(
+      kAutocompleteEditStateKey,
+      new AutocompleteEditState(model_state, ViewState(selection)));
 }
 
 void OmniboxViewViews::Update(const WebContents* contents) {
@@ -500,8 +494,8 @@ void OmniboxViewViews::Update(const WebContents* contents) {
   // for views-implementation.
   if (contents) {
     RevertAll();
-    const AutocompleteEditState* state =
-        GetStateAccessor()->GetProperty(contents->GetPropertyBag());
+    const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
+        contents->GetUserData(&kAutocompleteEditStateKey));
     if (state) {
       model()->RestoreState(state->model_state);
 

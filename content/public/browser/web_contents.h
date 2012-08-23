@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
@@ -20,7 +21,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 namespace base {
-class PropertyBag;
 class TimeTicks;
 }
 
@@ -46,7 +46,9 @@ class WebContentsView;
 struct RendererPreferences;
 
 // Describes what goes in the main content area of a tab.
-class WebContents : public PageNavigator, public IPC::Sender {
+class WebContents : public PageNavigator,
+                    public IPC::Sender,
+                    public base::SupportsUserData {
  public:
   // |base_web_contents| is used if we want to size the new WebContents's view
   // based on the view of an existing WebContents.  This can be NULL if not
@@ -82,12 +84,6 @@ class WebContents : public PageNavigator, public IPC::Sender {
   virtual ~WebContents() {}
 
   // Intrinsic tab state -------------------------------------------------------
-
-  // Returns the property bag for this WebContents, where callers can add
-  // extra data they may wish to associate with the tab. Returns a pointer
-  // rather than a reference since the PropertyAccessors expect this.
-  virtual const base::PropertyBag* GetPropertyBag() const = 0;
-  virtual base::PropertyBag* GetPropertyBag() = 0;
 
   // Gets/Sets the delegate.
   virtual WebContentsDelegate* GetDelegate() = 0;

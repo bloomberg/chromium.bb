@@ -5,31 +5,41 @@
 #include "chrome/browser/view_type_utils.h"
 
 #include "base/lazy_instance.h"
-#include "base/property_bag.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 
 namespace chrome {
 
-static base::LazyInstance<base::PropertyAccessor<ViewType> >
-    g_view_type_property_accessor = LAZY_INSTANCE_INITIALIZER;
+namespace {
 
-base::PropertyAccessor<ViewType>* GetPropertyAccessor() {
-  return g_view_type_property_accessor.Pointer();
-}
+const char kViewTypeUserDataKey[] = "ViewTypeUserData";
+
+class ViewTypeUserData : public base::SupportsUserData::Data {
+ public:
+  explicit ViewTypeUserData(ViewType type) : type_(type) {}
+  virtual ~ViewTypeUserData() {}
+  ViewType type() { return type_; }
+
+ private:
+  ViewType type_;
+};
+
+}  // namespace
 
 ViewType GetViewType(WebContents* tab) {
   if (!tab)
     return VIEW_TYPE_INVALID;
-  ViewType* type = GetPropertyAccessor()->GetProperty(tab->GetPropertyBag());
-  if (type)
-    return *type;
-  return VIEW_TYPE_INVALID;
+
+  ViewTypeUserData* user_data = static_cast<ViewTypeUserData*>(
+      tab->GetUserData(&kViewTypeUserDataKey));
+
+  return user_data ? user_data->type() : VIEW_TYPE_INVALID;
 }
 
 void SetViewType(WebContents* tab, ViewType type) {
-  GetPropertyAccessor()->SetProperty(tab->GetPropertyBag(), type);
+  tab->SetUserData(&kViewTypeUserDataKey,
+                   new ViewTypeUserData(type));
 }
 
 }  // namespace chrome

@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
@@ -89,24 +88,19 @@ struct ViewState {
   OmniboxViewGtk::CharRange selection_range;
 };
 
-struct AutocompleteEditState {
+const char kAutocompleteEditStateKey[] = "AutocompleteEditState";
+
+struct AutocompleteEditState : public base::SupportsUserData::Data {
   AutocompleteEditState(const OmniboxEditModel::State& model_state,
                         const ViewState& view_state)
       : model_state(model_state),
         view_state(view_state) {
   }
+  virtual ~AutocompleteEditState() {}
 
   const OmniboxEditModel::State model_state;
   const ViewState view_state;
 };
-
-// Returns a lazily initialized property bag accessor for saving our state in a
-// WebContents.
-base::PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
-  CR_DEFINE_STATIC_LOCAL(
-      base::PropertyAccessor<AutocompleteEditState>, state, ());
-  return &state;
-}
 
 // Set up style properties to override the default GtkTextView; if a theme has
 // overridden some of these properties, an inner-line will be displayed inside
@@ -427,9 +421,9 @@ void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
     SavePrimarySelection(selected_text_);
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
   OmniboxEditModel::State model_state = model()->GetStateForTabSwitch();
-  GetStateAccessor()->SetProperty(
-      tab->GetPropertyBag(),
-      AutocompleteEditState(model_state, ViewState(GetSelection())));
+  tab->SetUserData(
+      kAutocompleteEditStateKey,
+      new AutocompleteEditState(model_state, ViewState(GetSelection())));
 }
 
 void OmniboxViewGtk::Update(const WebContents* contents) {
@@ -445,8 +439,8 @@ void OmniboxViewGtk::Update(const WebContents* contents) {
   if (contents) {
     selected_text_.clear();
     RevertAll();
-    const AutocompleteEditState* state =
-        GetStateAccessor()->GetProperty(contents->GetPropertyBag());
+    const AutocompleteEditState* state = static_cast<AutocompleteEditState*>(
+        contents->GetUserData(&kAutocompleteEditStateKey));
     if (state) {
       model()->RestoreState(state->model_state);
 

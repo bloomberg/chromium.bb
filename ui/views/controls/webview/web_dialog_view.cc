@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -308,8 +307,7 @@ void WebDialogView::InitDialog() {
 
   // Set the delegate. This must be done before loading the page. See
   // the comment above WebDialogUI in its header file for why.
-  WebDialogUI::GetPropertyAccessor().SetProperty(
-      web_contents->GetPropertyBag(), this);
+  WebDialogUI::SetDelegate(web_contents, this);
 
   if (delegate_) {
     gfx::Size out;

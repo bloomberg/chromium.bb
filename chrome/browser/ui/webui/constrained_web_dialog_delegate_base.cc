@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/property_bag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -41,9 +40,8 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   } else {
     web_contents->SetDelegate(this);
   }
-  // Set |this| as a property so the ConstrainedWebDialogUI can retrieve it.
-  ConstrainedWebDialogUI::GetPropertyAccessor().SetProperty(
-      web_contents->GetPropertyBag(), this);
+  // Set |this| as a delegate so the ConstrainedWebDialogUI can retrieve it.
+  ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents, this);
 
   web_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
                                         content::Referrer(),
