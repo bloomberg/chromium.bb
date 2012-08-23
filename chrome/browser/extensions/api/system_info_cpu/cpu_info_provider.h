@@ -4,24 +4,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_CPU_CPU_INFO_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_CPU_CPU_INFO_PROVIDER_H_
 
+#include "chrome/browser/extensions/system_info_provider.h"
 #include "chrome/common/extensions/api/experimental_system_info_cpu.h"
 
 namespace extensions {
 
-// An interface for retrieving cpu information on different platforms.
-class CpuInfoProvider {
- public:
-   // Return a CpuInfoProvider instance. The caller is responsible for
-   // releasing it.
-   static CpuInfoProvider* Create();
-
-   virtual ~CpuInfoProvider() {}
-
-   // Return true if succeed to get CPU information, otherwise return false.
-   // Should be implemented on different platforms.
-   virtual bool GetCpuInfo(
-       api::experimental_system_info_cpu::CpuInfo* info) = 0;
-};
+typedef SystemInfoProvider<api::experimental_system_info_cpu::CpuInfo>
+    CpuInfoProvider;
 
 }  // namespace extensions
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_CPU_CPU_INFO_PROVIDER_H_
+

@@ -5,10 +5,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_CPU_SYSTEM_INFO_CPU_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/experimental_system_info_cpu.h"
 
 namespace extensions {
-
-class CpuInfoProvider;
 
 class SystemInfoCpuGetFunction : public AsyncExtensionFunction {
  public:
@@ -18,12 +17,8 @@ class SystemInfoCpuGetFunction : public AsyncExtensionFunction {
  private:
   virtual ~SystemInfoCpuGetFunction();
   virtual bool RunImpl() OVERRIDE;
-  void WorkOnFileThread();
-  void RespondOnUIThread(bool success);
-  void GetCpuInfoOnFileThread();
-
-  // The CpuInfoProvider instance, lives on FILE thread.
-  CpuInfoProvider* provider_;
+  void OnGetCpuInfoCompleted(
+      const api::experimental_system_info_cpu::CpuInfo& info, bool success);
 };
 
 }  // namespace extensions

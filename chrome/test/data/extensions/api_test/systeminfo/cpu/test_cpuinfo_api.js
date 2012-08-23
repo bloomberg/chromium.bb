@@ -9,11 +9,16 @@ chrome.systemInfo = chrome.experimental.systemInfo;
 
 chrome.test.runTests([
   function testGet() {
-    chrome.systemInfo.cpu.get(chrome.test.callbackPass(function(result){
-      chrome.test.assertTrue(result.cores.length == 1);
-      var core = result.cores[0];
-      chrome.test.assertTrue(core.load == 53);
-    }));
+    for(var i = 0; i < 20; ++i) {
+      chrome.systemInfo.cpu.get(chrome.test.callbackPass(function(result) {
+        chrome.test.assertTrue(result.cores.length == 4);
+        var core;
+        for (var i = 0; i < result.cores.length; ++i) {
+          core = result.cores[i];
+          chrome.test.assertTrue(core.load == i*10);
+        }
+      }));
+    }
   },
 ]);
 
