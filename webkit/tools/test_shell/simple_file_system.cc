@@ -65,7 +65,7 @@ void RegisterBlob(const GURL& blob_url, const FilePath& file_path) {
   net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
 
   BlobData::Item item;
-  item.SetToFile(file_path, 0, -1, base::Time());
+  item.SetToFilePathRange(file_path, 0, -1, base::Time());
   g_blob_storage_controller->StartBuildingBlob(blob_url);
   g_blob_storage_controller->AppendBlobDataItem(blob_url, item);
   g_blob_storage_controller->FinishBuildingBlob(blob_url, mime_type);

@@ -78,14 +78,14 @@ TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadData) {
   // Setup upload data elements for comparison.
   net::UploadElement blob_element1, blob_element2;
   blob_element1.SetToBytes(
-      blob_data->items().at(0).data.c_str() +
-          static_cast<int>(blob_data->items().at(0).offset),
-      static_cast<int>(blob_data->items().at(0).length));
+      blob_data->items().at(0).bytes() +
+          static_cast<int>(blob_data->items().at(0).offset()),
+      static_cast<int>(blob_data->items().at(0).length()));
   blob_element2.SetToFilePathRange(
-      blob_data->items().at(1).file_path,
-      blob_data->items().at(1).offset,
-      blob_data->items().at(1).length,
-      blob_data->items().at(1).expected_modification_time);
+      blob_data->items().at(1).path(),
+      blob_data->items().at(1).offset(),
+      blob_data->items().at(1).length(),
+      blob_data->items().at(1).expected_modification_time());
 
   net::UploadElement upload_element1, upload_element2;
   upload_element1.SetToBytes("Hello", 5);

@@ -11,15 +11,6 @@
 
 namespace webkit_blob {
 
-BlobData::Item::Item()
-    : type(TYPE_DATA),
-      data_external(NULL),
-      offset(0),
-      length(0) {
-}
-
-BlobData::Item::~Item() {}
-
 BlobData::BlobData() {}
 
 BlobData::~BlobData() {}
@@ -27,30 +18,30 @@ BlobData::~BlobData() {}
 void BlobData::AppendData(const char* data, size_t length) {
   DCHECK(length > 0);
   items_.push_back(Item());
-  items_.back().SetToData(data, length);
+  items_.back().SetToBytes(data, length);
 }
 
-void BlobData::AppendFile(const FilePath& file_path, uint64 offset,
-                          uint64 length,
+void BlobData::AppendFile(const FilePath& file_path,
+                          uint64 offset, uint64 length,
                           const base::Time& expected_modification_time) {
   DCHECK(length > 0);
   items_.push_back(Item());
-  items_.back().SetToFile(file_path, offset, length,
-                          expected_modification_time);
+  items_.back().SetToFilePathRange(file_path, offset, length,
+                                   expected_modification_time);
 }
 
 void BlobData::AppendBlob(const GURL& blob_url, uint64 offset, uint64 length) {
   DCHECK(length > 0);
   items_.push_back(Item());
-  items_.back().SetToBlob(blob_url, offset, length);
+  items_.back().SetToBlobUrlRange(blob_url, offset, length);
 }
 
 int64 BlobData::GetMemoryUsage() const {
   int64 memory = 0;
   for (std::vector<Item>::const_iterator iter = items_.begin();
        iter != items_.end(); ++iter) {
-    if (iter->type == TYPE_DATA)
-      memory += iter->data.size();
+    if (iter->type() == Item::TYPE_BYTES)
+      memory += iter->length();
   }
   return memory;
 }

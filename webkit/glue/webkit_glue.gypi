@@ -142,6 +142,7 @@
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         'blob',
         'fileapi',
+        'webkit_base',
         'webkit_media',
         'webkit_resources',
         'webkit_strings',

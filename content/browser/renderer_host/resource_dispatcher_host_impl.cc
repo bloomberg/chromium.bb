@@ -178,10 +178,10 @@ bool ShouldServiceRequest(ProcessType process_type,
         request_data.request_body->elements();
     std::vector<ResourceRequestBody::Element>::const_iterator iter;
     for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
-      if (iter->type() == ResourceRequestBody::TYPE_FILE &&
-          !policy->CanReadFile(child_id, iter->file_path())) {
+      if (iter->type() == ResourceRequestBody::Element::TYPE_FILE &&
+          !policy->CanReadFile(child_id, iter->path())) {
         NOTREACHED() << "Denied unauthorized upload of "
-                     << iter->file_path().value();
+                     << iter->path().value();
         return false;
       }
     }

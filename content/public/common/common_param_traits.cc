@@ -260,73 +260,74 @@ void ParamTraits<scoped_refptr<net::UploadData> >::Log(const param_type& p,
   l->append("<net::UploadData>");
 }
 
-template <>
-struct ParamTraits<webkit_glue::ResourceRequestBody::Element> {
-  typedef webkit_glue::ResourceRequestBody::Element param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p.type()));
-    switch (p.type()) {
-      case webkit_glue::ResourceRequestBody::TYPE_BYTES: {
-        m->WriteData(p.bytes(), static_cast<int>(p.bytes_length()));
-        break;
-      }
-      case webkit_glue::ResourceRequestBody::TYPE_FILE: {
-        WriteParam(m, p.file_path());
-        WriteParam(m, p.file_range_offset());
-        WriteParam(m, p.file_range_length());
-        WriteParam(m, p.expected_file_modification_time());
-        break;
-      }
-      default: {
-        WriteParam(m, p.blob_url());
-        break;
-      }
+void ParamTraits<webkit_base::DataElement>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, static_cast<int>(p.type()));
+  switch (p.type()) {
+    case webkit_base::DataElement::TYPE_BYTES: {
+      m->WriteData(p.bytes(), static_cast<int>(p.length()));
+      break;
+    }
+    case webkit_base::DataElement::TYPE_FILE: {
+      WriteParam(m, p.path());
+      WriteParam(m, p.offset());
+      WriteParam(m, p.length());
+      WriteParam(m, p.expected_modification_time());
+      break;
+    }
+    default: {
+      WriteParam(m, p.url());
+      break;
     }
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
-    int type;
-    if (!ReadParam(m, iter, &type))
-      return false;
-    switch (type) {
-      case webkit_glue::ResourceRequestBody::TYPE_BYTES: {
-        const char* data;
-        int len;
-        if (!m->ReadData(iter, &data, &len))
-          return false;
-        r->SetToBytes(data, len);
-        break;
-      }
-      case webkit_glue::ResourceRequestBody::TYPE_FILE: {
-        FilePath file_path;
-        uint64 offset, length;
-        base::Time expected_modification_time;
-        if (!ReadParam(m, iter, &file_path))
-          return false;
-        if (!ReadParam(m, iter, &offset))
-          return false;
-        if (!ReadParam(m, iter, &length))
-          return false;
-        if (!ReadParam(m, iter, &expected_modification_time))
-          return false;
-        r->SetToFilePathRange(file_path, offset, length,
-                              expected_modification_time);
-        break;
-      }
-      default: {
-        DCHECK(type == webkit_glue::ResourceRequestBody::TYPE_BLOB);
-        GURL blob_url;
-        if (!ReadParam(m, iter, &blob_url))
-          return false;
-        r->SetToBlobUrl(blob_url);
-        break;
-      }
+}
+
+bool ParamTraits<webkit_base::DataElement>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  int type;
+  if (!ReadParam(m, iter, &type))
+    return false;
+  switch (type) {
+    case webkit_base::DataElement::TYPE_BYTES: {
+      const char* data;
+      int len;
+      if (!m->ReadData(iter, &data, &len))
+        return false;
+      r->SetToBytes(data, len);
+      break;
     }
-    return true;
+    case webkit_base::DataElement::TYPE_FILE: {
+      FilePath file_path;
+      uint64 offset, length;
+      base::Time expected_modification_time;
+      if (!ReadParam(m, iter, &file_path))
+        return false;
+      if (!ReadParam(m, iter, &offset))
+        return false;
+      if (!ReadParam(m, iter, &length))
+        return false;
+      if (!ReadParam(m, iter, &expected_modification_time))
+        return false;
+      r->SetToFilePathRange(file_path, offset, length,
+                            expected_modification_time);
+      break;
+    }
+    default: {
+      DCHECK(type == webkit_base::DataElement::TYPE_BLOB);
+      GURL blob_url;
+      if (!ReadParam(m, iter, &blob_url))
+        return false;
+      r->SetToBlobUrl(blob_url);
+      break;
+    }
   }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<webkit_glue::ResourceRequestBody::Element>");
-  }
-};
+  return true;
+}
+
+void ParamTraits<webkit_base::DataElement>::Log(
+    const param_type& p, std::string* l) {
+  l->append("<webkit_base::DataElement>");
+}
 
 void ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Write(
     Message* m,
@@ -347,7 +348,7 @@ bool ParamTraits<scoped_refptr<webkit_glue::ResourceRequestBody> >::Read(
     return false;
   if (!has_object)
     return true;
-  std::vector<webkit_glue::ResourceRequestBody::Element> elements;
+  std::vector<webkit_base::DataElement> elements;
   if (!ReadParam(m, iter, &elements))
     return false;
   int64 identifier;

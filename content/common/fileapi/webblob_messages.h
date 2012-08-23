@@ -11,20 +11,7 @@
 
 #define IPC_MESSAGE_START BlobMsgStart
 
-IPC_ENUM_TRAITS(webkit_blob::BlobData::Type)
-
-IPC_STRUCT_TRAITS_BEGIN(webkit_blob::BlobData::Item)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-  IPC_STRUCT_TRAITS_MEMBER(file_path)
-  IPC_STRUCT_TRAITS_MEMBER(blob_url)
-  IPC_STRUCT_TRAITS_MEMBER(offset)
-  IPC_STRUCT_TRAITS_MEMBER(length)
-  IPC_STRUCT_TRAITS_MEMBER(expected_modification_time)
-IPC_STRUCT_TRAITS_END()
-
 // Blob messages sent from the renderer to the browser.
-
 
 // Registers a blob as being built.
 IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuildingBlob,

@@ -6,6 +6,7 @@
   'includes': [
     '../../build/win_precompile.gypi',
     '../appcache/webkit_appcache.gypi',
+    '../base/webkit_base.gypi',
     '../blob/webkit_blob.gypi',
     '../database/webkit_database.gypi',
     '../dom_storage/webkit_dom_storage.gypi',

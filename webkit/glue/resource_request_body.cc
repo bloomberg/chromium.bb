@@ -13,16 +13,6 @@ using webkit_blob::BlobStorageController;
 
 namespace webkit_glue {
 
-ResourceRequestBody::Element::Element()
-    : type_(TYPE_BYTES),
-      bytes_start_(NULL),
-      bytes_length_(0),
-      file_range_offset_(0),
-      file_range_length_(kuint64max) {
-}
-
-ResourceRequestBody::Element::~Element() {}
-
 ResourceRequestBody::ResourceRequestBody() : identifier_(0) {}
 
 void ResourceRequestBody::AppendBytes(const char* bytes, int bytes_len) {
@@ -58,21 +48,23 @@ net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
   for (size_t i = 0; i < elements_.size(); ++i) {
     const Element& element = elements_[i];
     switch (element.type()) {
-      case TYPE_BYTES:
+      case Element::TYPE_BYTES:
         elements->push_back(net::UploadElement());
-        elements->back().SetToSharedBytes(element.bytes(),
-                                        element.bytes_length());
+        elements->back().SetToSharedBytes(element.bytes(), element.length());
         break;
-      case TYPE_FILE:
+      case Element::TYPE_FILE:
         elements->push_back(net::UploadElement());
         elements->back().SetToFilePathRange(
-            element.file_path(),
-            element.file_range_offset(),
-            element.file_range_length(),
-            element.expected_file_modification_time());
+            element.path(),
+            element.offset(),
+            element.length(),
+            element.expected_modification_time());
         break;
-      case TYPE_BLOB:
-        ResolveBlobReference(blob_controller, element.blob_url(), elements);
+      case Element::TYPE_BLOB:
+        ResolveBlobReference(blob_controller, element.url(), elements);
+        break;
+      case Element::TYPE_UNKNOWN:
+        NOTREACHED();
         break;
     }
   }
@@ -104,18 +96,18 @@ void ResourceRequestBody::ResolveBlobReference(
     elements->push_back(net::UploadElement());
     net::UploadElement& element = elements->back();
     const BlobData::Item& item = blob_data->items().at(i);
-    switch (item.type) {
-      case BlobData::TYPE_DATA:
+    switch (item.type()) {
+      case BlobData::Item::TYPE_BYTES:
         element.SetToSharedBytes(
-            &item.data.at(0) + static_cast<int>(item.offset),
-            static_cast<int>(item.length));
+            item.bytes() + static_cast<int>(item.offset()),
+            static_cast<int>(item.length()));
         break;
-      case BlobData::TYPE_FILE:
+      case BlobData::Item::TYPE_FILE:
         element.SetToFilePathRange(
-            item.file_path,
-            item.offset,
-            item.length,
-            item.expected_modification_time);
+            item.path(),
+            item.offset(),
+            item.length(),
+            item.expected_modification_time());
         break;
       default:
         NOTREACHED();

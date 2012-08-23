@@ -54,6 +54,7 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_media',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',

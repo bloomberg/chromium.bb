@@ -24,6 +24,7 @@
         'dom_storage',
         'fileapi',
         'glue',
+        'webkit_base',
         'webkit_gpu',
         'webkit_media',
         'webkit_support_common',

@@ -523,13 +523,13 @@ void FileAPIMessageFilter::OnStartBuildingBlob(const GURL& url) {
 void FileAPIMessageFilter::OnAppendBlobDataItem(
     const GURL& url, const BlobData::Item& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (item.type == BlobData::TYPE_FILE &&
+  if (item.type() == BlobData::Item::TYPE_FILE &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-          process_id_, item.file_path)) {
+          process_id_, item.path())) {
     OnRemoveBlob(url);
     return;
   }
-  if (item.length == 0) {
+  if (item.length() == 0) {
     BadMessageReceived();
     return;
   }
@@ -554,7 +554,7 @@ void FileAPIMessageFilter::OnAppendSharedMemory(
   }
 
   BlobData::Item item;
-  item.SetToDataExternal(static_cast<char*>(shared_memory.memory()),
+  item.SetToSharedBytes(static_cast<char*>(shared_memory.memory()),
                         buffer_size);
   blob_storage_context_->controller()->AppendBlobDataItem(url, item);
 }
@@ -726,7 +726,7 @@ void FileAPIMessageFilter::RegisterFileAsBlob(const GURL& blob_url,
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
   BlobData::Item item;
-  item.SetToFile(platform_path, 0, -1, base::Time());
+  item.SetToFilePathRange(platform_path, 0, -1, base::Time());
   BlobStorageController* controller = blob_storage_context_->controller();
   controller->StartBuildingBlob(blob_url);
   controller->AppendBlobDataItem(blob_url, item);
