@@ -34,33 +34,92 @@
            };
   })().bind(window);
 
-  function GpuBenchmarkingScrollStats() {
-    this.initialStats_ = this.getRenderingStats_();
+  /**
+   * Scrolls a given element down a certain amount to emulate user scrolling.
+   * Uses smooth scrolling capabilities provided by the platform, if available.
+   * @constructor
+   */
+  function SmoothScrollDownGesture(opt_element, opt_isGmailTest) {
+    this.element_ = opt_element || document.body;
+    this.isGmailTest_ = opt_isGmailTest;
+  };
+
+  SmoothScrollDownGesture.prototype.start = function(callback) {
+    this.callback_ = callback;
+    if (chrome &&
+        chrome.gpuBenchmarking &&
+        chrome.gpuBenchmarking.beginSmoothScrollDown) {
+      chrome.gpuBenchmarking.beginSmoothScrollDown(true, function() {
+        callback();
+      });
+      return;
+    }
+
+    if (this.isGmailTest_) {
+      this.element_.scrollByLines(1);
+      requestAnimationFrame(callback);
+      return;
+    }
+
+    var SCROLL_DELTA = 100;
+    this.element_.scrollTop += SCROLL_DELTA;
+    requestAnimationFrame(callback);
   }
 
-  GpuBenchmarkingScrollStats.prototype.getResult = function() {
-    var stats = this.getRenderingStats_();
+  /**
+   * Tracks rendering performance using the gpuBenchmarking.renderingStats API.
+   * @constructor
+   */
+  function GpuBenchmarkingRenderingStats() {
+  }
+
+  GpuBenchmarkingRenderingStats.prototype.start = function() {
+    this.initialStats_ = this.getRenderingStats_();
+  }
+  GpuBenchmarkingRenderingStats.prototype.stop = function() {
+    this.finalStats_ = this.getRenderingStats_();
+  }
+
+  GpuBenchmarkingRenderingStats.prototype.getResult = function() {
+    if (!this.initialStats_)
+      throw new Error("Start not called.");
+
+    if (!this.finalStats_)
+      throw new Error("Stop was not called.");
+
+    var stats = this.finalStats_;
     for (var key in stats)
       stats[key] -= this.initialStats_[key];
     return stats;
   };
 
-  GpuBenchmarkingScrollStats.prototype.getRenderingStats_ = function() {
+  GpuBenchmarkingRenderingStats.prototype.getRenderingStats_ = function() {
     var stats = chrome.gpuBenchmarking.renderingStats();
     stats.totalTimeInSeconds = getTimeMs() / 1000;
     return stats;
   };
 
-  function RafScrollStats(timestamp) {
-    this.frameTimes_ = [timestamp];
-    this.recording_ = true;
-    requestAnimationFrame(this.processStep_.bind(this));
+  /**
+   * Tracks rendering performance using requestAnimationFrame.
+   * @constructor
+   */
+  function RafRenderingStats() {
+    this.recording_ = false;
+    this.frameTimes_ = [];
   }
 
-  RafScrollStats.prototype.getResult = function() {
-    this.recording_ = false;
+  RafRenderingStats.prototype.start = function() {
+    if (this.recording_)
+      throw new Error("Already started.");
+    this.recording_ = true;
+    requestAnimationFrame(this.recordFrameTime_.bind(this));
+  }
 
-    // Fill in the result object.
+  RafRenderingStats.prototype.stop = function() {
+    this.recording_ = false;
+  }
+
+  RafRenderingStats.prototype.getResult = function() {
     var result = {};
     result.numAnimationFrames = this.frameTimes_.length - 1;
     result.droppedFrameCount = this.getDroppedFrameCount_(this.frameTimes_);
@@ -69,15 +128,15 @@
     return result;
   };
 
-  RafScrollStats.prototype.processStep_ = function(timestamp) {
+  RafRenderingStats.prototype.recordFrameTime_ = function(timestamp) {
     if (!this.recording_)
       return;
 
     this.frameTimes_.push(timestamp);
-    requestAnimationFrame(this.processStep_.bind(this));
+    requestAnimationFrame(this.recordFrameTime_.bind(this));
   };
 
-  RafScrollStats.prototype.getDroppedFrameCount_ = function(frameTimes) {
+  RafRenderingStats.prototype.getDroppedFrameCount_ = function(frameTimes) {
     var droppedFrameCount = 0;
     for (var i = 1; i < frameTimes.length; i++) {
       var frameTime = frameTimes[i] - frameTimes[i-1];
@@ -87,16 +146,26 @@
     return droppedFrameCount;
   };
 
-  // In this class, a "step" is when the page is being scrolled.
-  // i.e. startScroll -> startStep -> scroll -> processStep ->
-  //                  -> startStep -> scroll -> processStep -> endScroll
-  function ScrollTest(callback, opt_isGmailTest) {
+  // This class scrolls a page from the top to the bottom a given number of
+  // times.
+  //
+  // Each full transit of the page is called a "pass."
+  //
+  // The page is scrolled down by a set of scroll gestures. These gestures
+  // correspond to a reading gesture on that platform.
+  //
+  // i.e. for TOTAL_ITERATIONS_ = 2, we do
+  // start_ -> startPass_ -> ...scrolling... -> onGestureComplete_ ->
+  //        -> startPass_ -> .. scrolling... -> onGestureComplete_ -> callback_
+  //
+  // TODO(nduca): This test starts in its constructor. That is strange. We
+  // should change it to start explicitly.
+  function ScrollTest(opt_callback, opt_isGmailTest) {
     var self = this;
 
     this.TOTAL_ITERATIONS_ = 2;
-    this.SCROLL_DELTA_ = 100;
 
-    this.callback_ = callback;
+    this.callback_ = opt_callback;
     this.isGmailTest_ = opt_isGmailTest;
     this.iteration_ = 0;
 
@@ -114,58 +183,47 @@
     }
   }
 
-  ScrollTest.prototype.scroll_ = function(x, y) {
-    if (this.isGmailTest_)
-      this.element_.scrollByLines(1);
-    else
-      window.scrollBy(x, y);
-  };
-
   ScrollTest.prototype.start_ = function(opt_element) {
     // Assign this.element_ here instead of constructor, because the constructor
     // ensures this method will be called after the document is loaded.
     this.element_ = opt_element || document.body;
-    requestAnimationFrame(this.startScroll_.bind(this));
+    requestAnimationFrame(this.startPass_.bind(this));
   };
 
-  ScrollTest.prototype.startScroll_ = function(timestamp) {
+  ScrollTest.prototype.startPass_ = function() {
     this.element_.scrollTop = 0;
     if (window.chrome && chrome.gpuBenchmarking)
-      this.scrollStats_ = new GpuBenchmarkingScrollStats();
+      this.renderingStats_ = new GpuBenchmarkingRenderingStats();
     else
-      this.scrollStats_ = new RafScrollStats(timestamp);
-    this.startStep_();
+      this.renderingStats_ = new RafRenderingStats();
+    this.renderingStats_.start();
+
+    this.gesture_ = new SmoothScrollDownGesture(this.element_,
+                                                this.isGmailTest_);
+    this.gesture_.start(this.onGestureComplete_.bind(this));
   };
 
-  ScrollTest.prototype.startStep_ = function() {
-    this.scroll_(0, this.SCROLL_DELTA_);
-    requestAnimationFrame(this.processStep_.bind(this));
-  };
-
-  ScrollTest.prototype.endScroll_ = function() {
-    this.results_.push(this.scrollStats_.getResult());
-    this.iteration_++;
-  };
-
-  ScrollTest.prototype.processStep_ = function(timestamp) {
+  ScrollTest.prototype.onGestureComplete_ = function(timestamp) {
     // clientHeight is "special" for the body element.
+    var clientHeight;
     if (this.element_ == document.body)
-      var clientHeight = window.innerHeight;
+      clientHeight = window.innerHeight;
     else
-      var clientHeight = this.element_.clientHeight;
-    var isScrollComplete =
+      clientHeight = this.element_.clientHeight;
+
+    var isPassComplete =
         this.element_.scrollTop + clientHeight >= this.element_.scrollHeight;
 
-    if (!isScrollComplete) {
-      this.startStep_();
+    if (!isPassComplete) {
+      this.gesture_.start(this.onGestureComplete_.bind(this));
       return;
     }
 
-    this.endScroll_();
+    this.endPass_();
 
     var isTestComplete = this.iteration_ >= this.TOTAL_ITERATIONS_;
     if (!isTestComplete) {
-      requestAnimationFrame(this.startScroll_.bind(this));
+      this.startPass_();
       return;
     }
 
@@ -175,6 +233,13 @@
     else
       console.log(this.results_);
   };
+
+  ScrollTest.prototype.endPass_ = function() {
+    this.renderingStats_.stop();
+    this.results_.push(this.renderingStats_.getResult());
+    this.iteration_++;
+  };
+
 
   window.__ScrollTest = ScrollTest;
 })();
