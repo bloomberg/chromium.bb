@@ -1156,9 +1156,9 @@ FileManager.prototype = {
     }
 
     // TODO(benchan): Currently, there is no FileWatcher emulation for
-    // GDataFileSystem, so we need to manually trigger the directory rescan
+    // DriveFileSystem, so we need to manually trigger the directory rescan
     // after paste operations complete. Remove this once we emulate file
-    // watching functionalities in GDataFileSystem.
+    // watching functionalities in DriveFileSystem.
     if (this.isOnGData()) {
       if (event.reason == 'SUCCESS' || event.reason == 'ERROR' ||
           event.reason == 'CANCELLED') {
@@ -4204,4 +4204,3 @@ FileManager.prototype = {
     defaultActionSeparator.hidden = !taskItem;
   }
 })();
-

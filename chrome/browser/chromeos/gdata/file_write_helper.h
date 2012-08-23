@@ -8,16 +8,16 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 
 namespace gdata {
 
-// This class provides higher level operations for writing to GData files over
-// GDataFileSystemInterface.
+// This class provides higher level operations for writing to Drive files over
+// DriveFileSystemInterface.
 class FileWriteHelper {
  public:
-  explicit FileWriteHelper(GDataFileSystemInterface* file_system);
+  explicit FileWriteHelper(DriveFileSystemInterface* file_system);
   ~FileWriteHelper();
 
   // Prepares a local temporary file path and passes it to |callback| on the
@@ -45,7 +45,7 @@ class FileWriteHelper {
   void PrepareWritableFileAndRunAfterCallback(const FilePath& file_path);
 
   // File system owned by GDataSystemService.
-  GDataFileSystemInterface* file_system_;
+  DriveFileSystemInterface* file_system_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and

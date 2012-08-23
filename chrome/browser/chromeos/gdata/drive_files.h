@@ -117,7 +117,7 @@ class DriveEntry {
   bool is_deleted() const { return deleted_; }
 
   // Returns virtual file path representing this file system entry. This path
-  // corresponds to file path expected by public methods of GDataFileSystem
+  // corresponds to file path expected by public methods of DriveFileSystem
   // class.
   FilePath GetFilePath() const;
 

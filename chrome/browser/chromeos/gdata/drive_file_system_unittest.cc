@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -53,7 +53,7 @@ struct SearchResultPair {
   const bool is_directory;
 };
 
-// Callback to GDataFileSystem::Search used in ContentSearch tests.
+// Callback to DriveFileSystem::Search used in ContentSearch tests.
 // Verifies returned vector of results.
 void DriveSearchCallback(
     MessageLoop* message_loop,
@@ -98,7 +98,7 @@ ACTION_P4(MockUploadExistingFile,
 }
 
 // Action used to set mock expectations for
-// GDataFileSystem::CopyDocument().
+// DriveFileSystem::CopyDocument().
 ACTION_P2(MockCopyDocument, status, value) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
@@ -202,9 +202,9 @@ class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
   MOCK_METHOD1(UpdateFromApplicationList, void(const AppList& applist));
 };
 
-class GDataFileSystemTest : public testing::Test {
+class DriveFileSystemTest : public testing::Test {
  protected:
-  GDataFileSystemTest()
+  DriveFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
         cache_(NULL),
@@ -229,12 +229,12 @@ class GDataFileSystemTest : public testing::Test {
     callback_helper_ = new CallbackHelper;
 
     // Allocate and keep a pointer to the mock, and inject it into the
-    // GDataFileSystem object, which will own the mock object.
+    // DriveFileSystem object, which will own the mock object.
     mock_drive_service_ = new StrictMock<MockDriveService>;
 
     EXPECT_CALL(*mock_drive_service_, Initialize(profile_.get())).Times(1);
 
-    // Likewise, this will be owned by GDataFileSystem.
+    // Likewise, this will be owned by DriveFileSystem.
     mock_free_disk_space_checker_ = new StrictMock<MockFreeDiskSpaceGetter>;
     SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
 
@@ -250,7 +250,7 @@ class GDataFileSystemTest : public testing::Test {
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
-    file_system_ = new GDataFileSystem(profile_.get(),
+    file_system_ = new DriveFileSystem(profile_.get(),
                                        cache_,
                                        mock_drive_service_,
                                        mock_uploader_.get(),
@@ -402,7 +402,7 @@ class GDataFileSystemTest : public testing::Test {
     bool result = false;
     blocking_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&GDataFileSystemTest::GetCacheEntryFromOriginThreadInternal,
+        base::Bind(&DriveFileSystemTest::GetCacheEntryFromOriginThreadInternal,
                    base::Unretained(this),
                    resource_id,
                    md5,
@@ -453,7 +453,7 @@ class GDataFileSystemTest : public testing::Test {
     cache_->StoreOnUIThread(
         resource_id, md5, source_path,
         DriveCache::FILE_OPERATION_COPY,
-        base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
+        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
     test_util::RunBlockingPoolTask();
@@ -471,7 +471,7 @@ class GDataFileSystemTest : public testing::Test {
 
     cache_->PinOnUIThread(
         resource_id, md5,
-        base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
+        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
     test_util::RunBlockingPoolTask();
@@ -490,7 +490,7 @@ class GDataFileSystemTest : public testing::Test {
 
     cache_->MarkDirtyOnUIThread(
         resource_id, md5,
-        base::Bind(&GDataFileSystemTest::VerifyMarkDirty,
+        base::Bind(&DriveFileSystemTest::VerifyMarkDirty,
                    base::Unretained(this)));
 
     test_util::RunBlockingPoolTask();
@@ -527,7 +527,7 @@ class GDataFileSystemTest : public testing::Test {
 
     cache_->CommitDirtyOnUIThread(
         resource_id, md5,
-        base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
+        base::Bind(&DriveFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
     test_util::RunBlockingPoolTask();
@@ -848,7 +848,7 @@ class GDataFileSystemTest : public testing::Test {
   scoped_refptr<CallbackHelper> callback_helper_;
   DriveCache* cache_;
   scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
-  GDataFileSystem* file_system_;
+  DriveFileSystem* file_system_;
   StrictMock<MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
   StrictMock<MockFreeDiskSpaceGetter>* mock_free_disk_space_checker_;
@@ -866,7 +866,7 @@ class GDataFileSystemTest : public testing::Test {
   static bool cros_initialized_;
 };
 
-bool GDataFileSystemTest::cros_initialized_ = false;
+bool DriveFileSystemTest::cros_initialized_ = false;
 
 void AsyncInitializationCallback(
     int* counter,
@@ -885,7 +885,7 @@ void AsyncInitializationCallback(
     message_loop->Quit();
 }
 
-TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
+TEST_F(DriveFileSystemTest, DuplicatedAsyncInitialization) {
   int counter = 0;
   GetEntryInfoCallback callback = base::Bind(
       &AsyncInitializationCallback,
@@ -908,7 +908,7 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_EQ(2, counter);
 }
 
-TEST_F(GDataFileSystemTest, SearchRootDirectory) {
+TEST_F(DriveFileSystemTest, SearchRootDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("drive"));
@@ -918,7 +918,7 @@ TEST_F(GDataFileSystemTest, SearchRootDirectory) {
   EXPECT_EQ(kDriveRootDirectoryResourceId, entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchExistingFile) {
+TEST_F(DriveFileSystemTest, SearchExistingFile) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
@@ -928,7 +928,7 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
   EXPECT_EQ("file:2_file_resource_id", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchExistingDocument) {
+TEST_F(DriveFileSystemTest, SearchExistingDocument) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
@@ -938,7 +938,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   EXPECT_EQ("document:5_document_resource_id", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
+TEST_F(DriveFileSystemTest, SearchNonExistingFile) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
@@ -947,7 +947,7 @@ TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
   ASSERT_FALSE(entry.get());
 }
 
-TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
+TEST_F(DriveFileSystemTest, SearchEncodedFileNames) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath1 = FilePath(
@@ -968,7 +968,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
   EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
+TEST_F(DriveFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath1 = FilePath(
@@ -989,7 +989,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   EXPECT_EQ("file:slash_subdir_file", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
+TEST_F(DriveFileSystemTest, SearchDuplicateNames) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath1 = FilePath(
@@ -1005,7 +1005,7 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   EXPECT_EQ("file:4_file_resource_id", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
+TEST_F(DriveFileSystemTest, SearchExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
@@ -1015,7 +1015,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
   ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, SearchInSubdir) {
+TEST_F(DriveFileSystemTest, SearchInSubdir) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
@@ -1026,7 +1026,7 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
 }
 
 // Check the reconstruction of the directory structure from only the root feed.
-TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
+TEST_F(DriveFileSystemTest, SearchInSubSubdir) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
@@ -1037,7 +1037,7 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   ASSERT_EQ("folder:sub_sub_directory_folder_id", entry->resource_id());
 }
 
-TEST_F(GDataFileSystemTest, FilePathTests) {
+TEST_F(DriveFileSystemTest, FilePathTests) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_TRUE(EntryExists(FilePath(FILE_PATH_LITERAL("drive/File 1.txt"))));
@@ -1047,7 +1047,7 @@ TEST_F(GDataFileSystemTest, FilePathTests) {
           FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"))));
 }
 
-TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
+TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
@@ -1064,7 +1064,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
 }
 
 
-TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
+TEST_F(DriveFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
@@ -1090,7 +1090,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
       FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 }
 
-TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
+TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
   // Add file to a new directory.
@@ -1107,7 +1107,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
       FILE_PATH_LITERAL("drive/New Directory/File in new dir.gdoc"))));
 }
 
-TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
+TEST_F(DriveFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
@@ -1119,7 +1119,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
                  ++latest_changelog);
 }
 
-TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
+TEST_F(DriveFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
@@ -1159,7 +1159,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
       "Sub Sub Directory Folder"))));
 }
 
-TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
+TEST_F(DriveFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
@@ -1191,7 +1191,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
       "drive/SubDirectory File 1.txt"))));
 }
 
-TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
+TEST_F(DriveFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
@@ -1215,7 +1215,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
       "drive/Directory 1/New SubDirectory File 1.txt"))));
 }
 
-TEST_F(GDataFileSystemTest, CachedFeedLoading) {
+TEST_F(DriveFileSystemTest, CachedFeedLoading) {
   SaveTestFileSystem();
   TestLoadMetadataFromCache();
 
@@ -1227,7 +1227,7 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
       FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3"))));
 }
 
-TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
+TEST_F(DriveFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   SaveTestFileSystem();
 
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
@@ -1253,7 +1253,7 @@ TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   test_util::RunBlockingPoolTask();
 }
 
-TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
+TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -1289,7 +1289,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
+TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   LoadRootFeedDocument("root_feed.json");
 
   // Prepare a local file, which is a json file of a hosted document, which
@@ -1341,7 +1341,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
+TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   LoadRootFeedDocument("root_feed.json");
 
   FileOperationCallback callback =
@@ -1396,7 +1396,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   EXPECT_EQ(remote_src_file_data, local_dest_file_data);
 }
 
-TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
+TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   LoadRootFeedDocument("root_feed.json");
 
   FileOperationCallback callback =
@@ -1419,7 +1419,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   VerifyHostedDocumentJSONFile(*entry_proto, local_dest_file_path);
 }
 
-TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
+TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/Dummy file.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
 
@@ -1439,7 +1439,7 @@ TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
+TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
   FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Dummy"));
   FilePath dest_file_path(FILE_PATH_LITERAL("drive/Dummy/Test.log"));
@@ -1471,7 +1471,7 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
 
 // Test the case where the parent of |dest_file_path| is an existing file,
 // not a directory.
-TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
+TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
   FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL(
@@ -1508,7 +1508,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, RenameFile) {
+TEST_F(DriveFileSystemTest, RenameFile) {
   const FilePath src_file_path(
       FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
   const FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
@@ -1544,7 +1544,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
   EXPECT_EQ(src_file_resource_id, GetResourceIdByPath(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
+TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
   FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
   FilePath dest_file_path(FILE_PATH_LITERAL("drive/Directory 1/Test.log"));
@@ -1593,7 +1593,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   EXPECT_EQ(src_file_resource_id, GetResourceIdByPath(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
+TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
   FilePath src_file_path(
       FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
@@ -1644,7 +1644,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_EQ(src_file_resource_id, GetResourceIdByPath(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
+TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
   FilePath src_file_path(
       FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
@@ -1722,7 +1722,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_EQ(src_file_resource_id, GetResourceIdByPath(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
+TEST_F(DriveFileSystemTest, MoveNotExistingFile) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/Dummy file.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
 
@@ -1742,7 +1742,7 @@ TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
+TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
   FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Dummy"));
   FilePath dest_file_path(FILE_PATH_LITERAL("drive/Dummy/Test.log"));
@@ -1774,7 +1774,7 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
 
 // Test the case where the parent of |dest_file_path| is a existing file,
 // not a directory.
-TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
+TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
   FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
   FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL(
@@ -1809,7 +1809,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   EXPECT_FALSE(EntryExists(dest_file_path));
 }
 
-TEST_F(GDataFileSystemTest, RemoveEntries) {
+TEST_F(DriveFileSystemTest, RemoveEntries) {
   LoadRootFeedDocument("root_feed.json");
 
   FilePath nonexisting_file(FILE_PATH_LITERAL("drive/Dummy file.txt"));
@@ -1863,7 +1863,7 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
   test_util::RunBlockingPoolTask();
 }
 
-TEST_F(GDataFileSystemTest, CreateDirectory) {
+TEST_F(DriveFileSystemTest, CreateDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1885,7 +1885,7 @@ TEST_F(GDataFileSystemTest, CreateDirectory) {
   EXPECT_TRUE(EntryExists(subdir_path));
 }
 
-TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
+TEST_F(DriveFileSystemTest, FindFirstMissingParentDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   GURL last_dir_content_url;
@@ -1894,7 +1894,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   // Create directory in root.
   FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
   EXPECT_EQ(
-      GDataFileSystem::FOUND_MISSING,
+      DriveFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path,
           &last_dir_content_url,
           &first_missing_parent_path));
@@ -1905,7 +1905,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   // Missing folders in subdir of an existing folder.
   FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
   EXPECT_EQ(
-      GDataFileSystem::FOUND_MISSING,
+      DriveFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path2,
           &last_dir_content_url,
           &first_missing_parent_path));
@@ -1916,7 +1916,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   // Missing two folders on the path.
   FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
   EXPECT_EQ(
-      GDataFileSystem::FOUND_MISSING,
+      DriveFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path3,
           &last_dir_content_url,
           &first_missing_parent_path));
@@ -1926,7 +1926,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
 
   // Folders on top of an existing file.
   EXPECT_EQ(
-      GDataFileSystem::FOUND_INVALID,
+      DriveFileSystem::FOUND_INVALID,
       file_system_->FindFirstMissingParentDirectory(
           FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
           &last_dir_content_url,
@@ -1934,7 +1934,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
 
   // Existing folder.
   EXPECT_EQ(
-      GDataFileSystem::DIRECTORY_ALREADY_PRESENT,
+      DriveFileSystem::DIRECTORY_ALREADY_PRESENT,
       file_system_->FindFirstMissingParentDirectory(
           FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
           &last_dir_content_url,
@@ -1942,7 +1942,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
 }
 
 // Create a directory through the document service
-TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
+TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
   LoadRootFeedDocument("root_feed.json");
   EXPECT_CALL(*mock_drive_service_,
               CreateDirectory(_, "Sample Directory Title", _)).Times(1);
@@ -1963,7 +1963,7 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   // EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
+TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2004,7 +2004,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
+TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2042,7 +2042,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
             callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
+TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2104,7 +2104,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_FALSE(CacheFileExists("<resource_id>", "<md5>"));
 }
 
-TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
+TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2148,7 +2148,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
             callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
+TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -2192,7 +2192,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
+TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2216,7 +2216,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
                                callback_helper_->download_path_);
 }
 
-TEST_F(GDataFileSystemTest, GetFileByResourceId) {
+TEST_F(DriveFileSystemTest, GetFileByResourceId) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -2256,7 +2256,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
+TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -2295,7 +2295,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
+TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
 
@@ -2439,7 +2439,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   ASSERT_FALSE(file_util::PathExists(outgoing_symlink_path));
 }
 
-TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
+TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   LoadRootFeedDocument("root_feed.json");
 
   // This is nonexistent in root_feed.json.
@@ -2458,7 +2458,7 @@ TEST_F(GDataFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, ContentSearch) {
+TEST_F(DriveFileSystemTest, ContentSearch) {
   LoadRootFeedDocument("root_feed.json");
 
   mock_drive_service_->set_search_result("search_result_feed.json");
@@ -2478,7 +2478,7 @@ TEST_F(GDataFileSystemTest, ContentSearch) {
   message_loop_.Run();  // Wait to get our result.
 }
 
-TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
+TEST_F(DriveFileSystemTest, ContentSearchWithNewEntry) {
   LoadRootFeedDocument("root_feed.json");
 
   // Search result returning two entries "Directory 1/" and
@@ -2511,7 +2511,7 @@ TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
   message_loop_.Run();  // Wait to get our result.
 }
 
-TEST_F(GDataFileSystemTest, ContentSearchEmptyResult) {
+TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
   LoadRootFeedDocument("root_feed.json");
 
   mock_drive_service_->set_search_result("empty_feed.json");
@@ -2528,7 +2528,7 @@ TEST_F(GDataFileSystemTest, ContentSearchEmptyResult) {
   message_loop_.Run();  // Wait to get our result.
 }
 
-TEST_F(GDataFileSystemTest, GetAvailableSpace) {
+TEST_F(DriveFileSystemTest, GetAvailableSpace) {
   GetAvailableSpaceCallback callback =
       base::Bind(&CallbackHelper::GetAvailableSpaceCallback,
                  callback_helper_.get());
@@ -2541,7 +2541,7 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
   EXPECT_EQ(GG_LONGLONG(9876543210), callback_helper_->quota_bytes_total_);
 }
 
-TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
+TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
   LoadRootFeedDocument("root_feed.json");
 
   // We'll fetch documents in the root directory with its resource ID.
@@ -2556,7 +2556,7 @@ TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
   test_util::RunBlockingPoolTask();
 }
 
-TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
+TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   LoadRootFeedDocument("root_feed.json");
 
   OpenFileCallback callback =

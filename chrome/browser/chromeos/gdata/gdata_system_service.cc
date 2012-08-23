@@ -8,12 +8,12 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/drive_api_service.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
 #include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -65,7 +65,7 @@ void GDataSystemService::Initialize(
       blocking_task_runner_);
   uploader_.reset(new GDataUploader(drive_service_.get()));
   webapps_registry_.reset(new DriveWebAppsRegistry);
-  file_system_.reset(new GDataFileSystem(profile_,
+  file_system_.reset(new DriveFileSystem(profile_,
                                          cache(),
                                          drive_service_.get(),
                                          uploader(),
@@ -142,7 +142,7 @@ void GDataSystemService::AddDriveMountPoint() {
   if (provider && !provider->HasMountPoint(mount_point)) {
     provider->AddRemoteMountPoint(
         mount_point,
-        new GDataFileSystemProxy(file_system_.get()));
+        new DriveFileSystemProxy(file_system_.get()));
   }
 
   file_system_->Initialize();

@@ -11,7 +11,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
@@ -184,7 +184,7 @@ class DriveCacheTest : public testing::Test {
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_OUTGOING)));
 
     // Dump some files into cache dirs so that
-    // GDataFileSystem::InitializeCacheOnBlockingPool would scan through them
+    // DriveFileSystem::InitializeCacheOnBlockingPool would scan through them
     // and populate cache map accordingly.
 
     // Copy files from data dir to cache dir to act as cached files.

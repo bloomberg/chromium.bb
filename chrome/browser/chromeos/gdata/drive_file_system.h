@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_H_
 
 #include <map>
 #include <set>
@@ -17,9 +17,9 @@
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "content/public/browser/notification_observer.h"
@@ -36,25 +36,25 @@ class GDataUploaderInterface;
 class GDataWapiFeedLoader;
 struct UploadFileInfo;
 
-// The production implementation of GDataFileSystemInterface.
-class GDataFileSystem : public GDataFileSystemInterface,
+// The production implementation of DriveFileSystemInterface.
+class DriveFileSystem : public DriveFileSystemInterface,
                         public GDataWapiFeedLoader::Observer,
                         public content::NotificationObserver {
  public:
-  GDataFileSystem(Profile* profile,
+  DriveFileSystem(Profile* profile,
                   DriveCache* cache,
                   DriveServiceInterface* drive_service,
                   GDataUploaderInterface* uploader,
                   DriveWebAppsRegistryInterface* webapps_registry,
                   base::SequencedTaskRunner* blocking_task_runner);
-  virtual ~GDataFileSystem();
+  virtual ~DriveFileSystem();
 
-  // GDataFileSystem overrides.
+  // DriveFileSystem overrides.
   virtual void Initialize() OVERRIDE;
   virtual void AddObserver(
-      GDataFileSystemInterface::Observer* observer) OVERRIDE;
+      DriveFileSystemInterface::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
-      GDataFileSystemInterface::Observer* observer) OVERRIDE;
+      DriveFileSystemInterface::Observer* observer) OVERRIDE;
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;
@@ -149,8 +149,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       int64 root_feed_changestamp);
 
  private:
-  friend class GDataFileSystemTest;
-  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
+  friend class DriveFileSystemTest;
+  FRIEND_TEST_ALL_PREFIXES(DriveFileSystemTest,
                            FindFirstMissingParentDirectory);
 
   // Defines possible search results of FindFirstMissingParentDirectory().
@@ -202,7 +202,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
   // file system, |remote_dest_file_path| is the virtual destination path within
-  // gdata file system. If |resource_id| is a non-empty string, the transfer is
+  // Drive file system. If |resource_id| is a non-empty string, the transfer is
   // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
   // TransferRegularFile.
   //
@@ -216,7 +216,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
   // |local_file_path| must be a regular file (i.e. not a hosted document) from
   // the local file system, |remote_dest_file_path| is the virtual destination
-  // path within gdata file system.
+  // path within Drive file system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
   void TransferRegularFile(const FilePath& local_file_path,
@@ -838,7 +838,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // other threads with base::Unretained(this).
   scoped_ptr<DriveResourceMetadata> resource_metadata_;
 
-  // The profile hosts the GDataFileSystem via GDataSystemService.
+  // The profile hosts the DriveFileSystem via GDataSystemService.
   Profile* profile_;
 
   // The cache owned by GDataSystemService.
@@ -867,19 +867,19 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The loader is used to load the feeds.
   scoped_ptr<GDataWapiFeedLoader> feed_loader_;
 
-  ObserverList<GDataFileSystemInterface::Observer> observers_;
+  ObserverList<DriveFileSystemInterface::Observer> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   // Note: These should remain the last member so they'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataFileSystem> ui_weak_ptr_factory_;
+  base::WeakPtrFactory<DriveFileSystem> ui_weak_ptr_factory_;
   // Unlike other classes, we need this as we need this to redirect a task
   // from IO thread to UI thread.
-  base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
+  base::WeakPtr<DriveFileSystem> ui_weak_ptr_;
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_H_

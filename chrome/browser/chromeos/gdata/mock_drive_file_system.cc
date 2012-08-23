@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/mock_gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_file_system.h"
 
 namespace gdata {
 
-MockGDataFileSystem::MockGDataFileSystem() {
+MockDriveFileSystem::MockDriveFileSystem() {
 }
 
-MockGDataFileSystem::~MockGDataFileSystem() {
+MockDriveFileSystem::~MockDriveFileSystem() {
 }
 
 }  // namespace gdata

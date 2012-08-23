@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_proxy.h"
 
 #include <string>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,7 +59,7 @@ void OnPlatformFileOpened(
 }
 
 // Helper function to run OpenFileCallback from
-// GDataFileSystemProxy::OpenFile().
+// DriveFileSystemProxy::OpenFile().
 void OnGetFileByPathForOpen(
     const FileSystemOperationInterface::OpenFileCallback& callback,
     int file_flags,
@@ -93,7 +93,7 @@ void OnGetFileByPathForOpen(
 }
 
 // Helper function to run SnapshotFileCallback from
-// GDataFileSystemProxy::CreateSnapshotFile().
+// DriveFileSystemProxy::CreateSnapshotFile().
 void CallSnapshotFileCallback(
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
     const base::PlatformFileInfo& file_info,
@@ -126,10 +126,10 @@ void CallSnapshotFileCallback(
   callback.Run(error, final_file_info, local_path, file_ref);
 }
 
-// Emits debug log when GDataFileSystem::CloseFile() is complete.
+// Emits debug log when DriveFileSystem::CloseFile() is complete.
 void EmitDebugLogForCloseFile(const FilePath& local_path,
-                              DriveFileError error_code) {
-  DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << error_code;
+                              DriveFileError file_error) {
+  DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << file_error;
 }
 
 void DoTruncateOnFileThread(
@@ -176,17 +176,17 @@ base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
   return entry;
 }
 
-// GDataFileSystemProxy class implementation.
+// DriveFileSystemProxy class implementation.
 
-GDataFileSystemProxy::GDataFileSystemProxy(
-    GDataFileSystemInterface* file_system)
+DriveFileSystemProxy::DriveFileSystemProxy(
+    DriveFileSystemInterface* file_system)
     : file_system_(file_system) {
   // Should be created from the file browser extension API (AddMountFunction)
   // on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void GDataFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
+void DriveFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
     const FileSystemOperationInterface::GetMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   FilePath file_path;
@@ -201,13 +201,13 @@ void GDataFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
 
   file_system_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnGetMetadata,
+      base::Bind(&DriveFileSystemProxy::OnGetMetadata,
                  this,
                  file_path,
                  callback));
 }
 
-void GDataFileSystemProxy::Copy(const FileSystemURL& src_file_url,
+void DriveFileSystemProxy::Copy(const FileSystemURL& src_file_url,
     const FileSystemURL& dest_file_url,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -223,10 +223,10 @@ void GDataFileSystemProxy::Copy(const FileSystemURL& src_file_url,
   file_system_->Copy(
       src_file_path,
       dest_file_path,
-      base::Bind(&GDataFileSystemProxy::OnStatusCallback, this, callback));
+      base::Bind(&DriveFileSystemProxy::OnStatusCallback, this, callback));
 }
 
-void GDataFileSystemProxy::Move(const FileSystemURL& src_file_url,
+void DriveFileSystemProxy::Move(const FileSystemURL& src_file_url,
     const FileSystemURL& dest_file_url,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -242,10 +242,10 @@ void GDataFileSystemProxy::Move(const FileSystemURL& src_file_url,
   file_system_->Move(
       src_file_path,
       dest_file_path,
-      base::Bind(&GDataFileSystemProxy::OnStatusCallback, this, callback));
+      base::Bind(&DriveFileSystemProxy::OnStatusCallback, this, callback));
 }
 
-void GDataFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
+void DriveFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -262,12 +262,12 @@ void GDataFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
 
   file_system_->ReadDirectoryByPath(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnReadDirectory,
+      base::Bind(&DriveFileSystemProxy::OnReadDirectory,
                  this,
                  callback));
 }
 
-void GDataFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
+void DriveFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -281,10 +281,10 @@ void GDataFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
   file_system_->Remove(
       file_path,
       recursive,
-      base::Bind(&GDataFileSystemProxy::OnStatusCallback, this, callback));
+      base::Bind(&DriveFileSystemProxy::OnStatusCallback, this, callback));
 }
 
-void GDataFileSystemProxy::CreateDirectory(
+void DriveFileSystemProxy::CreateDirectory(
     const FileSystemURL& file_url,
     bool exclusive,
     bool recursive,
@@ -302,10 +302,10 @@ void GDataFileSystemProxy::CreateDirectory(
       file_path,
       exclusive,
       recursive,
-      base::Bind(&GDataFileSystemProxy::OnStatusCallback, this, callback));
+      base::Bind(&DriveFileSystemProxy::OnStatusCallback, this, callback));
 }
 
-void GDataFileSystemProxy::CreateFile(
+void DriveFileSystemProxy::CreateFile(
     const FileSystemURL& file_url,
     bool exclusive,
     const FileSystemOperationInterface::StatusCallback& callback) {
@@ -321,10 +321,10 @@ void GDataFileSystemProxy::CreateFile(
   file_system_->CreateFile(
       file_path,
       exclusive,
-      base::Bind(&GDataFileSystemProxy::OnStatusCallback, this, callback));
+      base::Bind(&DriveFileSystemProxy::OnStatusCallback, this, callback));
 }
 
-void GDataFileSystemProxy::Truncate(
+void DriveFileSystemProxy::Truncate(
     const FileSystemURL& file_url, int64 length,
     const FileSystemOperationInterface::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -347,14 +347,14 @@ void GDataFileSystemProxy::Truncate(
   // CreateWritableSnapshotFile downloads the whole content unnecessarily.
   file_system_->OpenFile(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnFileOpenedForTruncate,
+      base::Bind(&DriveFileSystemProxy::OnFileOpenedForTruncate,
                  this,
                  file_path,
                  length,
                  callback));
 }
 
-void GDataFileSystemProxy::OnOpenFileForWriting(
+void DriveFileSystemProxy::OnOpenFileForWriting(
     int file_flags,
     base::ProcessHandle peer_handle,
     const FileSystemOperationInterface::OpenFileCallback& callback,
@@ -390,7 +390,7 @@ void GDataFileSystemProxy::OnOpenFileForWriting(
   DCHECK(posted);
 }
 
-void GDataFileSystemProxy::OnCreateFileForOpen(
+void DriveFileSystemProxy::OnCreateFileForOpen(
     const FilePath& file_path,
     int file_flags,
     base::ProcessHandle peer_handle,
@@ -416,14 +416,14 @@ void GDataFileSystemProxy::OnCreateFileForOpen(
   // Open created (or existing) file for writing.
   file_system_->OpenFile(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnOpenFileForWriting,
+      base::Bind(&DriveFileSystemProxy::OnOpenFileForWriting,
                  this,
                  file_flags,
                  peer_handle,
                  callback));
 }
 
-void GDataFileSystemProxy::OnFileOpenedForTruncate(
+void DriveFileSystemProxy::OnFileOpenedForTruncate(
     const FilePath& virtual_path,
     int64 length,
     const fileapi::FileSystemOperationInterface::StatusCallback& callback,
@@ -447,7 +447,7 @@ void GDataFileSystemProxy::OnFileOpenedForTruncate(
                      local_cache_path,
                      length,
                      result),
-          base::Bind(&GDataFileSystemProxy::DidTruncate,
+          base::Bind(&DriveFileSystemProxy::DidTruncate,
                      this,
                      virtual_path,
                      callback,
@@ -455,7 +455,7 @@ void GDataFileSystemProxy::OnFileOpenedForTruncate(
   DCHECK(posted);
 }
 
-void GDataFileSystemProxy::DidTruncate(
+void DriveFileSystemProxy::DidTruncate(
     const FilePath& virtual_path,
     const FileSystemOperationInterface::StatusCallback& callback,
     base::PlatformFileError* truncate_result) {
@@ -470,7 +470,7 @@ void GDataFileSystemProxy::DidTruncate(
                  base::PlatformFileError(*truncate_result)));
 }
 
-void GDataFileSystemProxy::OpenFile(
+void DriveFileSystemProxy::OpenFile(
     const FileSystemURL& file_url,
     int file_flags,
     base::ProcessHandle peer_handle,
@@ -509,7 +509,7 @@ void GDataFileSystemProxy::OpenFile(
       // Open existing file for writing.
       file_system_->OpenFile(
           file_path,
-          base::Bind(&GDataFileSystemProxy::OnOpenFileForWriting,
+          base::Bind(&DriveFileSystemProxy::OnOpenFileForWriting,
                      this,
                      file_flags,
                      peer_handle,
@@ -529,7 +529,7 @@ void GDataFileSystemProxy::OpenFile(
     file_system_->CreateFile(
         file_path,
         file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE,
-        base::Bind(&GDataFileSystemProxy::OnCreateFileForOpen,
+        base::Bind(&DriveFileSystemProxy::OnCreateFileForOpen,
                    this,
                    file_path,
                    file_flags,
@@ -545,7 +545,7 @@ void GDataFileSystemProxy::OpenFile(
   }
 }
 
-void GDataFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
+void DriveFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
   FilePath file_path;
   if (!ValidateUrl(url, &file_path))
     return;
@@ -554,7 +554,7 @@ void GDataFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
                           base::Bind(&EmitDebugLogForCloseFile, file_path));
 }
 
-void GDataFileSystemProxy::CreateSnapshotFile(
+void DriveFileSystemProxy::CreateSnapshotFile(
     const FileSystemURL& file_url,
     const FileSystemOperationInterface::SnapshotFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -572,13 +572,13 @@ void GDataFileSystemProxy::CreateSnapshotFile(
 
   file_system_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnGetEntryInfoByPath,
+      base::Bind(&DriveFileSystemProxy::OnGetEntryInfoByPath,
                  this,
                  file_path,
                  callback));
 }
 
-void GDataFileSystemProxy::OnGetEntryInfoByPath(
+void DriveFileSystemProxy::OnGetEntryInfoByPath(
     const FilePath& entry_path,
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
     DriveFileError error,
@@ -607,7 +607,7 @@ void GDataFileSystemProxy::OnGetEntryInfoByPath(
                               GetContentCallback());
 }
 
-void GDataFileSystemProxy::CreateWritableSnapshotFile(
+void DriveFileSystemProxy::CreateWritableSnapshotFile(
     const FileSystemURL& file_url,
     const fileapi::WritableSnapshotFile& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -624,19 +624,19 @@ void GDataFileSystemProxy::CreateWritableSnapshotFile(
 
   file_system_->OpenFile(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnCreateWritableSnapshotFile,
+      base::Bind(&DriveFileSystemProxy::OnCreateWritableSnapshotFile,
                  this,
                  file_path,
                  callback));
 }
 
-GDataFileSystemProxy::~GDataFileSystemProxy() {
+DriveFileSystemProxy::~DriveFileSystemProxy() {
   // Should be deleted from the CrosMountPointProvider on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 // static.
-bool GDataFileSystemProxy::ValidateUrl(
+bool DriveFileSystemProxy::ValidateUrl(
     const FileSystemURL& url, FilePath* file_path) {
   // what platform you're on.
   if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive) {
@@ -646,13 +646,13 @@ bool GDataFileSystemProxy::ValidateUrl(
   return true;
 }
 
-void GDataFileSystemProxy::OnStatusCallback(
+void DriveFileSystemProxy::OnStatusCallback(
     const fileapi::FileSystemOperationInterface::StatusCallback& callback,
     DriveFileError error) {
   callback.Run(util::DriveFileErrorToPlatformError(error));
 }
 
-void GDataFileSystemProxy::OnGetMetadata(
+void DriveFileSystemProxy::OnGetMetadata(
     const FilePath& file_path,
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     DriveFileError error,
@@ -675,7 +675,7 @@ void GDataFileSystemProxy::OnGetMetadata(
   callback.Run(base::PLATFORM_FILE_OK, file_info, file_path);
 }
 
-void GDataFileSystemProxy::OnReadDirectory(
+void DriveFileSystemProxy::OnReadDirectory(
     const FileSystemOperationInterface::ReadDirectoryCallback&
     callback,
     DriveFileError error,
@@ -692,7 +692,7 @@ void GDataFileSystemProxy::OnReadDirectory(
   DCHECK(proto_entries.get());
 
   std::vector<base::FileUtilProxy::Entry> entries;
-  // Convert gdata files to something File API stack can understand.
+  // Convert Drive files to something File API stack can understand.
   for (size_t i = 0; i < proto_entries->size(); ++i) {
     const DriveEntryProto& proto = (*proto_entries)[i];
     if (proto.has_file_specific_info() &&
@@ -706,7 +706,7 @@ void GDataFileSystemProxy::OnReadDirectory(
   callback.Run(base::PLATFORM_FILE_OK, entries, false);
 }
 
-void GDataFileSystemProxy::OnCreateWritableSnapshotFile(
+void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
     const FilePath& virtual_path,
     const fileapi::WritableSnapshotFile& callback,
     DriveFileError result,
@@ -721,7 +721,7 @@ void GDataFileSystemProxy::OnCreateWritableSnapshotFile(
         ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
     file_ref->AddFinalReleaseCallback(
-        base::Bind(&GDataFileSystemProxy::CloseWritableSnapshotFile,
+        base::Bind(&DriveFileSystemProxy::CloseWritableSnapshotFile,
                    this,
                    virtual_path));
   }
@@ -730,7 +730,7 @@ void GDataFileSystemProxy::OnCreateWritableSnapshotFile(
       util::DriveFileErrorToPlatformError(result), local_path, file_ref);
 }
 
-void GDataFileSystemProxy::CloseWritableSnapshotFile(
+void DriveFileSystemProxy::CloseWritableSnapshotFile(
     const FilePath& virtual_path,
     const FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

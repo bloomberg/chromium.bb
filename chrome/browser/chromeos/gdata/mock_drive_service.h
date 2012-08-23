@@ -20,7 +20,7 @@ namespace gdata {
 
 class MockDriveService : public DriveServiceInterface {
  public:
-  // DriveService is usually owned and created by GDataFileSystem.
+  // DriveService is usually owned and created by DriveFileSystem.
   MockDriveService();
   virtual ~MockDriveService();
 

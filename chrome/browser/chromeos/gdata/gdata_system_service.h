@@ -20,16 +20,16 @@ class FilePath;
 namespace gdata {
 
 class DriveCache;
+class DriveFileSystemInterface;
 class DriveServiceInterface;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
 class GDataContactsService;
 class GDataDownloadObserver;
-class GDataFileSystemInterface;
 class GDataSyncClient;
 class GDataUploader;
 
-// GDataSystemService runs the GData system, including the GData file system
+// GDataSystemService runs the GData system, including the Drive file system
 // implementation for the file manager, and some other sub systems.
 //
 // The class is essentially a container that manages lifetime of the objects
@@ -39,7 +39,7 @@ class GDataSystemService : public ProfileKeyedService  {
  public:
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
   DriveCache* cache() { return cache_; }
-  GDataFileSystemInterface* file_system() { return file_system_.get(); }
+  DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   GDataUploader* uploader() { return uploader_.get(); }
   GDataContactsService* contacts_service() { return contacts_service_.get(); }
@@ -80,7 +80,7 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<DriveServiceInterface> drive_service_;
   scoped_ptr<GDataUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
-  scoped_ptr<GDataFileSystemInterface> file_system_;
+  scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;

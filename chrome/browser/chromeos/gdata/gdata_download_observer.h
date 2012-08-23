@@ -20,7 +20,7 @@ namespace gdata {
 
 class DocumentEntry;
 class DriveEntryProto;
-class GDataFileSystemInterface;
+class DriveFileSystemInterface;
 class GDataUploader;
 struct UploadFileInfo;
 
@@ -30,7 +30,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
                               public content::DownloadItem::Observer {
  public:
   GDataDownloadObserver(GDataUploader* uploader,
-                        GDataFileSystemInterface* file_system);
+                        DriveFileSystemInterface* file_system);
   virtual ~GDataDownloadObserver();
 
   // Become an observer of  DownloadManager.
@@ -122,7 +122,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto);
 
-  // Callback for handling results of GDataFileSystem::GetEntryInfoByPath()
+  // Callback for handling results of DriveFileSystem::GetEntryInfoByPath()
   // initiated by CreateUploadFileInfoAfterCheckExistence(). This callback
   // reads the directory entry to determine the upload path, then calls
   // StartUpload() to actually start the upload.
@@ -153,7 +153,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // The uploader owned by GDataSystemService. Used to trigger file uploads.
   GDataUploader* gdata_uploader_;
   // The file system owned by GDataSystemService.
-  GDataFileSystemInterface* file_system_;
+  DriveFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.
   content::DownloadManager* download_manager_;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_INTERFACE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_INTERFACE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_INTERFACE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_INTERFACE_H_
 
 #include <string>
 #include <vector>
@@ -62,16 +62,16 @@ typedef base::Callback<void(
 typedef base::Callback<void(DriveFileError error,
                             const FilePath& file_path)> OpenFileCallback;
 
-// Used to get available space for the account from GData.
+// Used to get available space for the account from Drive.
 typedef base::Callback<void(DriveFileError error,
                             int64 bytes_total,
                             int64 bytes_used)> GetAvailableSpaceCallback;
 
-// GData file system abstraction layer.
-// The interface is defined to make GDataFileSystem mockable.
-class GDataFileSystemInterface {
+// Drive file system abstraction layer.
+// The interface is defined to make DriveFileSystem mockable.
+class DriveFileSystemInterface {
  public:
-  virtual ~GDataFileSystemInterface() {}
+  virtual ~DriveFileSystemInterface() {}
 
   // Used to notify events on the file system.
   // All events are notified on UI thread.
@@ -132,7 +132,7 @@ class GDataFileSystemInterface {
       const GetEntryInfoWithFilePathCallback& callback) = 0;
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
-  // |remote_src_file_path| is the virtual source path on the gdata file system.
+  // |remote_src_file_path| is the virtual source path on the Drive file system.
   // |local_dest_file_path| is the destination path on the local file system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
@@ -144,7 +144,7 @@ class GDataFileSystemInterface {
 
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
   // |local_src_file_path| must be a file from the local file system.
-  // |remote_dest_file_path| is the virtual destination path within gdata file
+  // |remote_dest_file_path| is the virtual destination path within Drive file
   // system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
@@ -154,19 +154,19 @@ class GDataFileSystemInterface {
       const FilePath& remote_dest_file_path,
       const FileOperationCallback& callback) = 0;
 
-  // Retrieves a file at the virtual path |file_path| on the gdata file system
+  // Retrieves a file at the virtual path |file_path| on the Drive file system
   // onto the cache, and mark it dirty. The local path to the cache file is
   // returned to |callback|. After opening the file, both read and write
   // on the file can be done with normal local file operations.
   //
   // |CloseFile| must be called when the modification to the cache is done.
-  // Otherwise, GData file system does not pick up the file for uploading.
+  // Otherwise, Drive file system does not pick up the file for uploading.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void OpenFile(const FilePath& file_path,
                         const OpenFileCallback& callback) = 0;
 
-  // Closes a file at the virtual path |file_path| on the gdata file system,
+  // Closes a file at the virtual path |file_path| on the Drive file system,
   // which is opened via OpenFile(). It commits the dirty flag on the cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
@@ -256,7 +256,7 @@ class GDataFileSystemInterface {
   // Gets |file_path| from the file system. The file entry represented by
   // |file_path| needs to be present in in-memory representation of the file
   // system in order to be retrieved. If the file is not cached, the file
-  // will be downloaded through gdata api.
+  // will be downloaded through GData API or Drive V2 API.
   //
   // Can be called from UI/IO thread. |get_file_callback| and
   // |get_content_callback| are run on the calling thread.
@@ -265,7 +265,7 @@ class GDataFileSystemInterface {
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback) = 0;
 
-  // Gets a file by the given |resource_id| from the gdata server. Used for
+  // Gets a file by the given |resource_id| from the Drive server. Used for
   // fetching pinned-but-not-fetched files.
   //
   // Can be called from UI/IO thread. |get_file_callback| and
@@ -275,7 +275,7 @@ class GDataFileSystemInterface {
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback) = 0;
 
-  // Updates a file by the given |resource_id| on the gdata server by
+  // Updates a file by the given |resource_id| on the Drive server by
   // uploading an updated version. Used for uploading dirty files. The file
   // should already be present in the cache.
   //
@@ -365,4 +365,4 @@ class GDataFileSystemInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_INTERFACE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_INTERFACE_H_

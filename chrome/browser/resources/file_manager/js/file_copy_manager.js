@@ -780,9 +780,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     }
 
     if (task.sourceOnGData && task.targetOnGData) {
-      // TODO(benchan): GDataFileSystem has not implemented directory copy,
+      // TODO(benchan): DriveFileSystem has not implemented directory copy,
       // and thus we only call FileEntry.copyTo() for files. Revisit this
-      // code when GDataFileSystem supports directory copy.
+      // code when DriveFileSystem supports directory copy.
       if (!sourceEntry.isDirectory) {
         resolveDirAndBaseName(
             targetDirEntry, targetRelativePath,
@@ -796,7 +796,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       }
     }
 
-    // TODO(benchan): Until GDataFileSystem supports FileWriter, we use the
+    // TODO(benchan): Until DriveFileSystem supports FileWriter, we use the
     // transferFile API to copy files into or out from a gdata file system.
     if (sourceEntry.isFile && (task.sourceOnGData || task.targetOnGData)) {
       var sourceFileUrl = sourceEntry.toURL();
@@ -942,4 +942,3 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
 
   sourceEntry.file(onSourceFileFound, errorCallback);
 };
-

@@ -21,7 +21,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -95,7 +95,7 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
         ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
     FilePath download_path = download_prefs->DownloadPath();
     if (gdata::util::IsUnderGDataMountPoint(download_path)) {
-      gdata::GDataFileSystemInterface* file_system =
+      gdata::DriveFileSystemInterface* file_system =
           gdata::GDataSystemServiceFactory::GetForProfile(
               profile_)->file_system();
       file_system->GetFileByResourceId(

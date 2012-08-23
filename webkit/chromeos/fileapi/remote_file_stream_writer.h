@@ -22,7 +22,7 @@ namespace fileapi {
 
 class RemoteFileSystemProxyInterface;
 
-// FileStreamWriter interface for writing to a file on GData file system.
+// FileStreamWriter interface for writing to a file on remote file system.
 class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
  public:
   // Creates a writer for a file on |remote_filesystem| with path url |url|

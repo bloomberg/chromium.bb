@@ -16,7 +16,7 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_source.h"
@@ -43,7 +43,7 @@ namespace gdata {
 // TODO(satorux): This client should also upload pinned but dirty (locally
 // edited) files to gdata. Will work on this once downloading is done.
 // crosbug.com/27836.
-class GDataSyncClient : public GDataFileSystemInterface::Observer,
+class GDataSyncClient : public DriveFileSystemInterface::Observer,
                         public DriveCache::Observer,
                         public chromeos::NetworkLibrary::NetworkManagerObserver,
                         public content::NotificationObserver {
@@ -69,14 +69,14 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
   // |file_system| is used access the
   // cache (ex. store a file to the cache when the file is downloaded).
   GDataSyncClient(Profile* profile,
-                  GDataFileSystemInterface* file_system,
+                  DriveFileSystemInterface* file_system,
                   DriveCache* cache);
   virtual ~GDataSyncClient();
 
   // Initializes the GDataSyncClient.
   void Initialize();
 
-  // GDataFileSystemInterface overrides.
+  // DriveFileSystemInterface::Observer overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
 
@@ -183,7 +183,7 @@ class GDataSyncClient : public GDataFileSystemInterface::Observer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
   Profile* profile_;
-  GDataFileSystemInterface* file_system_;  // Owned by GDataSystemService.
+  DriveFileSystemInterface* file_system_;  // Owned by GDataSystemService.
   DriveCache* cache_;  // Owned by GDataSystemService.
   scoped_ptr<PrefChangeRegistrar> registrar_;
 

@@ -65,7 +65,7 @@ typedef base::Callback<void(const std::vector<std::string>& resource_ids)>
 typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
-// DriveCache is used to maintain cache states of GDataFileSystem.
+// DriveCache is used to maintain cache states of DriveFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
 // GetCacheFilePath() for example), should be called from the sequenced
@@ -456,7 +456,7 @@ class DriveCache {
 };
 
 
-// The minimum free space to keep. GDataFileSystem::GetFileByPath() returns
+// The minimum free space to keep. DriveFileSystem::GetFileByPath() returns
 // GDATA_FILE_ERROR_NO_SPACE if the available space is smaller than
 // this value.
 //

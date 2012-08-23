@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_FILE_SYSTEM_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_FILE_SYSTEM_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_FILE_SYSTEM_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_FILE_SYSTEM_H_
 
 #include <string>
 
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gdata {
 
-// Mock for GDataFileSystemInterface.
-class MockGDataFileSystem : public GDataFileSystemInterface {
+// Mock for DriveFileSystemInterface.
+class MockDriveFileSystem : public DriveFileSystemInterface {
  public:
-  MockGDataFileSystem();
-  virtual ~MockGDataFileSystem();
+  MockDriveFileSystem();
+  virtual ~MockDriveFileSystem();
 
-  // GDataFileSystemInterface overrides.
+  // DriveFileSystemInterface overrides.
   MOCK_METHOD0(Initialize, void());
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
@@ -100,4 +100,4 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_FILE_SYSTEM_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_FILE_SYSTEM_H_

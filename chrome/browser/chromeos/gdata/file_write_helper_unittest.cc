@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_file_system.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,13 +51,13 @@ class FileWriteHelperTest : public testing::Test {
  public:
   FileWriteHelperTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        mock_file_system_(new StrictMock<MockGDataFileSystem>) {
+        mock_file_system_(new StrictMock<MockDriveFileSystem>) {
   }
 
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr< StrictMock<MockGDataFileSystem> > mock_file_system_;
+  scoped_ptr< StrictMock<MockDriveFileSystem> > mock_file_system_;
 };
 
 TEST_F(FileWriteHelperTest, PrepareFileForWritingSuccess) {

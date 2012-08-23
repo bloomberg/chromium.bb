@@ -589,7 +589,7 @@ class GetGDataFilesFunction : public FileBrowserFunction {
   // response if the queue is empty.
   void GetFileOrSendResponse();
 
-  // Called by GDataFileSystem::GetFile(). Pops the file from
+  // Called by DriveFileSystem::GetFile(). Pops the file from
   // |remaining_gdata_paths_|, and calls GetFileOrSendResponse().
   void OnFileReady(gdata::DriveFileError error,
                    const FilePath& local_path,
@@ -651,7 +651,7 @@ class TransferFileFunction : public FileBrowserFunction {
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread()
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
-  // Helper callback for handling response from GDataFileSystem::TransferFile().
+  // Helper callback for handling response from DriveFileSystem::TransferFile().
   void OnTransferCompleted(gdata::DriveFileError error);
 };
 

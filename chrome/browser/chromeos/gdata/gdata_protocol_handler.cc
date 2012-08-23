@@ -18,9 +18,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -111,8 +111,8 @@ GDataSystemService* GetSystemService() {
       ProfileManager::GetDefaultProfile());
 }
 
-// Helper function to get GDataFileSystem from Profile on UI thread.
-void GetFileSystemOnUIThread(GDataFileSystemInterface** file_system) {
+// Helper function to get DriveFileSystem from Profile on UI thread.
+void GetFileSystemOnUIThread(DriveFileSystemInterface** file_system) {
   GDataSystemService* system_service = GetSystemService();
   *file_system = system_service ? system_service->file_system() : NULL;
 }
@@ -147,7 +147,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
  private:
   // Helper for Start() to let us start asynchronously.
-  void StartAsync(GDataFileSystemInterface** file_system);
+  void StartAsync(DriveFileSystemInterface** file_system);
 
   // Helper methods for Delegate::OnUrlFetchDownloadData and ReadRawData to
   // receive download data and copy to response buffer.
@@ -162,7 +162,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
   bool ReadFromDownloadData();
 
   // Helper callback for handling async responses from
-  // GDataFileSystem::GetFileByResourceId().
+  // DriveFileSystem::GetFileByResourceId().
   void OnGetFileByResourceId(DriveFileError error,
                              const FilePath& local_file_path,
                              const std::string& mime_type,
@@ -204,7 +204,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
   void CloseFileStream();
 
   scoped_ptr<base::WeakPtrFactory<GDataURLRequestJob> > weak_ptr_factory_;
-  GDataFileSystemInterface* file_system_;
+  DriveFileSystemInterface* file_system_;
 
   bool error_;  // True if we've encountered an error.
   bool headers_set_;  // True if headers have been set.
@@ -301,7 +301,7 @@ void GDataURLRequestJob::Start() {
   // UI thread; StartAsync reply task will proceed with actually starting the
   // request.
 
-  GDataFileSystemInterface** file_system = new GDataFileSystemInterface*(NULL);
+  DriveFileSystemInterface** file_system = new DriveFileSystemInterface*(NULL);
   BrowserThread::PostTaskAndReply(
       BrowserThread::UI,
       FROM_HERE,
@@ -318,7 +318,7 @@ void GDataURLRequestJob::Kill() {
   CloseFileStream();
 
   // If download operation for gdata file (via
-  // GDataFileSystem::GetFileByResourceId) is still in progress, cancel it by
+  // DriveFileSystem::GetFileByResourceId) is still in progress, cancel it by
   // posting a task on the UI thread.
   // Download operation is still in progress if:
   // 1) |local_file_path_| is still empty; it gets filled when callback for
@@ -471,7 +471,7 @@ GDataURLRequestJob::~GDataURLRequestJob() {
 
 //======================= GDataURLRequestJob private methods ===================
 
-void GDataURLRequestJob::StartAsync(GDataFileSystemInterface** file_system) {
+void GDataURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   file_system_ = *file_system;

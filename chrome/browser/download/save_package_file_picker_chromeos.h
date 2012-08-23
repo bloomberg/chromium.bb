@@ -10,10 +10,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
-namespace gdata {
-class GDataFileSystem;
-}
-
 namespace ui {
 struct SelectedFileInfo;
 }

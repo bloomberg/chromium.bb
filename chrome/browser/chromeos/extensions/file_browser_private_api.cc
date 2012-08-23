@@ -853,7 +853,7 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
 
     // If "localPath" parameter is set, use it as the real path.
     // TODO(satorux): Eventually, we should be able to get the real path
-    // from GDataFileSystem instead of passing through with filesystem
+    // from DriveFileSystem instead of passing through with filesystem
     // URLs. crosbug.com/27510.
     //
     // TODO(satorux): GURL::query() is not yet supported for filesystem:
@@ -1229,7 +1229,7 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
     gdata::GDataSystemService* system_service =
         gdata::GDataSystemServiceFactory::GetForProfile(profile_);
 
-    gdata::GDataFileSystemInterface* file_system =
+    gdata::DriveFileSystemInterface* file_system =
         system_service->file_system();
 
     file_system->GetAvailableSpace(
@@ -2230,14 +2230,14 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
         destination_file,
         base::Bind(&TransferFileFunction::OnTransferCompleted, this));
   } else if (!source_file_under_gdata && destination_file_under_gdata) {
-    // Transfer a file from local to gdata file system
+    // Transfer a file from local to Drive file system
     destination_file = gdata::util::ExtractGDataPath(destination_file);
     system_service->file_system()->TransferFileFromLocalToRemote(
         source_file,
         destination_file,
         base::Bind(&TransferFileFunction::OnTransferCompleted, this));
   } else {
-    // Local-to-local or gdata-to-gdata file transfers should be done via
+    // Local-to-local or Drive-to-Drive file transfers should be done via
     // FileEntry.copyTo in the File API and are thus not supported here.
     NOTREACHED();
     SendResponse(false);
@@ -2353,7 +2353,7 @@ void SearchDriveFunction::OnSearch(
   DCHECK(results.get());
 
   base::ListValue* entries = new ListValue();
-  // Convert gdata files to something File API stack can understand.
+  // Convert Drive files to something File API stack can understand.
   for (size_t i = 0; i < results->size(); ++i) {
     DictionaryValue* entry = new DictionaryValue();
     entry->SetString("fileSystemName", file_system_name_);

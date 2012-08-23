@@ -11,7 +11,7 @@ using content::BrowserThread;
 
 namespace gdata {
 
-FileWriteHelper::FileWriteHelper(GDataFileSystemInterface* file_system)
+FileWriteHelper::FileWriteHelper(DriveFileSystemInterface* file_system)
     : file_system_(file_system),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Must be created in GDataSystemService.

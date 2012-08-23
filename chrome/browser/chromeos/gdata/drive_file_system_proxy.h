@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_PROXY_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_PROXY_H_
 
+#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 namespace fileapi {
@@ -16,15 +16,15 @@ class FileSystemURL;
 namespace gdata {
 
 class DriveEntryProto;
-class GDataFileSystemInterface;
+class DriveFileSystemInterface;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
-// Implementation of File API's remote file system proxy for GData file system.
-class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
+// Implementation of File API's remote file system proxy for Drive file system.
+class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
-  // |file_system| is the GDataFileSystem instance owned by GDataSystemService.
-  explicit GDataFileSystemProxy(GDataFileSystemInterface* file_system);
+  // |file_system| is the DriveFileSystem instance owned by GDataSystemService.
+  explicit DriveFileSystemProxy(DriveFileSystemInterface* file_system);
 
   // fileapi::RemoteFileSystemProxyInterface overrides.
   virtual void GetFileInfo(
@@ -80,7 +80,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 
  protected:
-  virtual ~GDataFileSystemProxy();
+  virtual ~DriveFileSystemProxy();
 
  private:
   // Checks if a given |url| belongs to this file system. If it does,
@@ -180,13 +180,13 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 
-  // GDataFileSystem is owned by Profile, which outlives GDataFileSystemProxy,
+  // DriveFileSystem is owned by Profile, which outlives DriveFileSystemProxy,
   // which is owned by CrosMountPointProvider (i.e. by the time Profile is
   // removed, the file manager is already gone). Hence it's safe to use this as
   // a raw pointer.
-  GDataFileSystemInterface* file_system_;
+  DriveFileSystemInterface* file_system_;
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_PROXY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_PROXY_H_

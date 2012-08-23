@@ -66,7 +66,7 @@ DriveWebAppInfo::DriveWebAppInfo(const std::string& app_id,
 DriveWebAppInfo::~DriveWebAppInfo() {
 }
 
-// GDataFileSystem::WebAppFileSelector struct implementation.
+// DriveFileSystem::WebAppFileSelector struct implementation.
 
 DriveWebAppsRegistry::WebAppFileSelector::WebAppFileSelector(
     const GURL& product_link,

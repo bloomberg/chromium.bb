@@ -12,7 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
@@ -88,7 +88,7 @@ class BackgroundObserver {
 };
 
 // TODO(tbarzic): We should probably share GetTestFilePath and LoadJSONFile
-// with gdata_file_system_unittest.
+// with drive_file_system_unittest.
 // Generates file path in gdata test directory for a file with name |filename|.
 FilePath GetTestFilePath(const FilePath::StringType& filename) {
   FilePath path;
