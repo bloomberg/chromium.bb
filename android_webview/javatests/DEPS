@@ -1,0 +1,4 @@
+include_rules = [
+  # Temporary until we move all common test code to content/public/android.
+  "!content/android/javatests",
+]

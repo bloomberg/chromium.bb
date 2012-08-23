@@ -6,7 +6,11 @@
 # chrome/ should go into android_webview/lib/ or be refactored.
 
 include_rules = [
+  # lib is the top-level target, and must remain a leaf in the dependency tree.
+  "-android_webview/lib",
+
   "+chrome/android/java/src/org/chromium/chrome/browser/component",
   "+chrome/browser/component",
   "+content/public",
+  "+jni",
 ]

@@ -4,9 +4,10 @@
 
 #include "android_webview/lib/main/webview_main_delegate.h"
 
+#include "android_webview/lib/aw_browser_dependency_factory_impl.h"
+#include "android_webview/lib/aw_content_browser_client.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -14,7 +15,7 @@
 
 namespace android_webview {
 
-base::LazyInstance<chrome::ChromeContentBrowserClient>
+base::LazyInstance<AwContentBrowserClient>
     g_webview_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_webview_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
@@ -46,6 +47,8 @@ int WebViewMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
   if (process_type.empty()) {
+    AwBrowserDependencyFactoryImpl::InstallInstance();
+
     browser_runner_.reset(content::BrowserMainRunner::Create());
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK(exit_code < 0);

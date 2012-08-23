@@ -4,14 +4,25 @@
 
 #include "android_webview/native/android_webview_jni_registrar.h"
 
+#include "android_webview/native/android_web_view_util.h"
+#include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
 
 namespace android_webview {
 
+static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
+  { "AndroidWebViewUtil", RegisterAndroidWebViewUtil },
+  { "AwContents", RegisterAwContents },
+};
+
 bool RegisterJni(JNIEnv* env) {
-  return web_contents_delegate_android::RegisterJni(env);
+  if (!web_contents_delegate_android::RegisterJni(env))
+    return false;
+
+  return RegisterNativeMethods(env,
+      kWebViewRegisteredMethods, arraysize(kWebViewRegisteredMethods));
 }
 
 } // namespace android_webview

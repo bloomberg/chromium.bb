@@ -15,5 +15,16 @@ include_rules = [
   "!chrome/browser/android/tab_android.h",
 
   # Temporary until autofill becomes a browser component.
-  "!chrome/browser/autofill/autofill_external_delegate.h"
+  "!chrome/browser/autofill/autofill_external_delegate.h",
+
+  # Temporary until we implement our own versions of the *Client classes.
+  "!chrome/browser/browser_process.h",
+  "!chrome/browser/profiles/profile.h",
+  "!chrome/browser/profiles/profile_manager.h",
+
+  # Temporary until the javascript dialog creator is unpicked from WebView.
+  "!chrome/browser/ui/app_modal_dialogs/javascript_dialog_creator.h",
+
+  # Temporarily required until we instantiate components individually.
+  "!chrome/browser/ui/tab_contents/tab_contents.h",
 ]

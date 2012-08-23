@@ -22,14 +22,26 @@
       'sources': [
         'android_webview_jni_registrar.cc',
         'android_webview_jni_registrar.h',
+        'android_web_view_util.cc',
+        'android_web_view_util.h',
+        'aw_browser_dependency_factory.cc',
+        'aw_browser_dependency_factory.h',
+        'aw_contents_container.h',
+        'aw_contents.cc',
+        'aw_contents.h',
         'aw_web_contents_delegate.cc',
         'aw_web_contents_delegate.h',
+        'intercepted_request_data.cc',
+        'intercepted_request_data.h',
       ],
     },
     {
       'target_name': 'android_webview_native_jni',
       'type': 'none',
       'sources': [
+          '../java/src/org/chromium/android_webview/AndroidWebViewUtil.java',
+          '../java/src/org/chromium/android_webview/AwContents.java',
+          '../java/src/org/chromium/android_webview/InterceptedRequestData.java',
       ],
       'variables': {
         'jni_gen_dir': 'android_webview',

@@ -54,6 +54,28 @@ public class LoadUrlParams {
     }
 
     /**
+     * Helper method to create a LoadUrlParams object for data url.
+     * @param data Data to be loaded.
+     * @param mimeType Mime type of the data.
+     * @param isBase64Encoded True if the data is encoded in Base 64 format.
+     */
+    public static LoadUrlParams createLoadDataParams(
+            String data, String mimeType, boolean isBase64Encoded) {
+        StringBuilder dataUrl = new StringBuilder("data:");
+        dataUrl.append(mimeType);
+        if (isBase64Encoded) {
+            dataUrl.append(";base64");
+        }
+        dataUrl.append(",");
+        dataUrl.append(data);
+
+        LoadUrlParams params = new LoadUrlParams(dataUrl.toString());
+        params.setLoadType(LoadUrlParams.LOAD_TYPE_DATA);
+        params.setTransitionType(ContentViewCore.PAGE_TRANSITION_TYPED);
+        return params;
+    }
+
+    /**
      * Set load type of this load. Defaults to LOAD_TYPE_DEFAULT.
      * @param loadType One of LOAD_TYPE static constants above.
      */

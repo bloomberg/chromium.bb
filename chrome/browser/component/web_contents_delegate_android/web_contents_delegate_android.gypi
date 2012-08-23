@@ -30,5 +30,17 @@
         'web_contents_delegate_android.h',
       ],
     },
+    {
+      'target_name': 'web_contents_delegate_android_java',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base_java',
+      ],
+      'variables': {
+        'package_name': 'web_contents_delegate_android',
+        'java_in_dir': 'java',
+      },
+      'includes': [ '../../../../build/java.gypi' ],
+    },
   ],
 }

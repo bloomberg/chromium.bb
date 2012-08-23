@@ -15,7 +15,7 @@
           'target_name': 'browser_component_jni_headers',
           'type': 'none',
           'sources': [
-            '../../android/java/src/org/chromium/chrome/browser/component/web_contents_delegate_android/WebContentsDelegateAndroid.java',
+            'web_contents_delegate_android/java/src/org/chromium/chrome/browser/component/web_contents_delegate_android/WebContentsDelegateAndroid.java',
           ],
           'variables': {
             'jni_gen_dir': 'chrome/browser_component',
