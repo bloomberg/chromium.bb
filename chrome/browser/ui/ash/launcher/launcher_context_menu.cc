@@ -27,6 +27,10 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       AddItem(
           MENU_PIN,
           l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
+      if (controller->IsOpen(item->id)) {
+        AddItem(MENU_CLOSE,
+                l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
+      }
       AddSeparator();
       AddCheckItemWithStringId(
           LAUNCH_TYPE_REGULAR_TAB,

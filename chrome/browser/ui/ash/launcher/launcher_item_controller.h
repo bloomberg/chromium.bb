@@ -43,7 +43,7 @@ class LauncherItemController {
   }
 
   // Returns the title for this item.
-  virtual string16 GetTitle() const = 0;
+  virtual string16 GetTitle() = 0;
   // Returns true if this item controls |window|.
   virtual bool HasWindow(aura::Window* window) const = 0;
   // Shows and actives the appropriate window associated with this item.

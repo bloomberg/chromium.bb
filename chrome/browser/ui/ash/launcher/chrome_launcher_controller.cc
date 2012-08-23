@@ -30,11 +30,11 @@
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -46,9 +46,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
-#include "ui/views/widget/widget.h"
 
 using extensions::Extension;
 
@@ -78,7 +76,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::LauncherModel* model)
     : model_(model),
       profile_(profile),
-      activation_client_(NULL),
       observed_sync_service_(NULL) {
   if (!profile_) {
     // Use the original profile as on chromeos we may get a temporary off the
@@ -96,7 +93,8 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
 
   instance_ = this;
   model_->AddObserver(this);
-  extensions::ShellWindowRegistry::Get(profile_)->AddObserver(this);
+  // TODO(stevenjb): Find a better owner for shell_window_controller_?
+  shell_window_controller_.reset(new ShellWindowLauncherController(this));
   app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
   app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
 
@@ -113,7 +111,9 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
-  extensions::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
+  // Reset the shell window controller here since it has a weak pointer to this.
+  shell_window_controller_.reset();
+
   model_->RemoveObserver(this);
   for (IDToItemMap::iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
@@ -121,13 +121,6 @@ ChromeLauncherController::~ChromeLauncherController() {
   }
   if (instance_ == this)
     instance_ = NULL;
-  if (activation_client_)
-    activation_client_->RemoveObserver(this);
-
-  for (WindowToIDMap::iterator i = window_to_id_map_.begin();
-       i != window_to_id_map_.end(); ++i) {
-    i->first->RemoveObserver(this);
-  }
 
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->RemoveShellObserver(this);
@@ -166,12 +159,6 @@ void ChromeLauncherController::Init() {
   if (ash::Shell::HasInstance()) {
     SetShelfAutoHideBehaviorFromPrefs();
     SetShelfAlignmentFromPrefs();
-
-    activation_client_ =
-        aura::client::GetActivationClient(
-            ash::Shell::GetInstance()->GetPrimaryRootWindow());
-    activation_client_->AddObserver(this);
-
     ash::Shell::GetInstance()->AddShellObserver(this);
   }
 }
@@ -210,18 +197,28 @@ void ChromeLauncherController::SetItemStatus(ash::LauncherID id,
   model_->Set(index, item);
 }
 
-void ChromeLauncherController::LauncherItemClosed(ash::LauncherID id) {
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  id_to_item_map_.erase(id);
-  model_->RemoveItemAt(model_->ItemIndexByID(id));
+void ChromeLauncherController::SetItemController(
+    ash::LauncherID id,
+    LauncherItemController* controller) {
+  IDToItemMap::iterator iter = id_to_item_map_.find(id);
+  DCHECK(iter != id_to_item_map_.end());
+  iter->second.controller = controller;
+}
+
+void ChromeLauncherController::CloseLauncherItem(ash::LauncherID id) {
+  if (IsPinned(id)) {
+    SetItemStatus(id, ash::STATUS_CLOSED);
+    SetItemController(id, NULL);
+  } else {
+    LauncherItemClosed(id);
+  }
 }
 
 void ChromeLauncherController::Unpin(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  DCHECK(!id_to_item_map_[id].controller);
 
-  if (extensions::ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
-      id_to_item_map_[id].app_id).size() > 0) {
+  LauncherItemController* controller = id_to_item_map_[id].controller;
+  if (controller && controller->type() == LauncherItemController::TYPE_APP) {
     int index = model_->ItemIndexByID(id);
     ash::LauncherItem item = model_->items()[index];
     item.type = ash::TYPE_PLATFORM_APP;
@@ -235,7 +232,6 @@ void ChromeLauncherController::Unpin(ash::LauncherID id) {
 
 void ChromeLauncherController::Pin(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  DCHECK(!id_to_item_map_[id].controller);
 
   int index = model_->ItemIndexByID(id);
   ash::LauncherItem item = model_->items()[index];
@@ -289,16 +285,15 @@ void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
   }
 }
 
-void ChromeLauncherController::OpenAppID(
-    const std::string& app_id,
-    int event_flags) {
+void ChromeLauncherController::OpenAppID(const std::string& app_id,
+                                         int event_flags) {
+  // If there is a shell window controller for this app, open it.
   ash::LauncherID launcher_id = GetLauncherIDForAppID(app_id);
-  // Check if this item has any windows in the activation list.
-  for (WindowList::const_iterator i = platform_app_windows_.begin();
-       i != platform_app_windows_.end(); ++i) {
-    if (window_to_id_map_[*i] == launcher_id) {
-      (*i)->Show();
-      ash::wm::ActivateWindow(*i);
+  if (launcher_id > 0) {
+    LauncherItemController* controller =
+        id_to_item_map_[launcher_id].controller;
+    if (controller) {
+      controller->Open();
       return;
     }
   }
@@ -651,82 +646,6 @@ void ChromeLauncherController::Observe(
   }
 }
 
-void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
-  aura::Window* window = shell_window->GetBaseWindow()->GetNativeWindow();
-  ash::LauncherItemStatus status = ash::wm::IsActiveWindow(window) ?
-      ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
-  window->AddObserver(this);
-  const std::string app_id = shell_window->extension()->id();
-  ash::LauncherID id = 0;
-  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end(); ++i) {
-    if (i->second.app_id == app_id) {
-      id = i->first;
-      SetItemStatus(id, status);
-      break;
-    }
-  }
-  if (id == 0)
-    id = CreateAppLauncherItem(NULL, app_id, status);
-  window_to_id_map_[window] = id;
-  if (status == ash::STATUS_ACTIVE)
-    platform_app_windows_.push_front(window);
-  else
-    platform_app_windows_.push_back(window);
-}
-
-void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
-  // Window removal is handled in OnWindowRemovingFromRootWindow() below.
-}
-
-void ChromeLauncherController::OnWindowActivated(aura::Window* active,
-                                                 aura::Window* old_active) {
-  if (window_to_id_map_.find(active) != window_to_id_map_.end()) {
-    ash::LauncherID active_id = window_to_id_map_[active];
-    platform_app_windows_.remove(active);
-    platform_app_windows_.push_front(active);
-    if (window_to_id_map_.find(old_active) != window_to_id_map_.end() &&
-        window_to_id_map_[old_active] == active_id) {
-      // Old and new windows are for the same item. Don't change the status.
-      return;
-    }
-    SetItemStatus(active_id, ash::STATUS_ACTIVE);
-  }
-  if (window_to_id_map_.find(old_active) != window_to_id_map_.end())
-    SetItemStatus(window_to_id_map_[old_active], ash::STATUS_RUNNING);
-}
-
-void ChromeLauncherController::OnWindowRemovingFromRootWindow(
-    aura::Window* window) {
-  window->RemoveObserver(this);
-  DCHECK(window_to_id_map_.find(window) != window_to_id_map_.end());
-  ash::LauncherID id = window_to_id_map_[window];
-  window_to_id_map_.erase(window);
-
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  platform_app_windows_.remove(window);
-  extensions::ShellWindowRegistry::ShellWindowSet remaining_windows =
-      extensions::ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
-          id_to_item_map_[id].app_id);
-
-  // We can't count on getting called before or after the ShellWindowRegistry.
-  if (remaining_windows.size() > 1 ||
-      (remaining_windows.size() == 1 &&
-          (*remaining_windows.begin())->GetBaseWindow()->GetNativeWindow() !=
-              window)) {
-    return;
-  }
-
-  // Close or remove item.
-  int index = model_->ItemIndexByID(id);
-  DCHECK_GE(index, 0);
-  ash::LauncherItem item = model_->items()[index];
-  if (item.type == ash::TYPE_APP_SHORTCUT)
-    SetItemStatus(id, ash::STATUS_CLOSED);
-  else
-    LauncherItemClosed(id);
-}
-
 void ChromeLauncherController::OnShelfAlignmentChanged() {
   const char* pref_value = NULL;
   switch (ash::Shell::GetInstance()->GetShelfAlignment()) {
@@ -804,15 +723,27 @@ ash::LauncherItemStatus ChromeLauncherController::GetItemStatus(
   return item.status;
 }
 
+void ChromeLauncherController::LauncherItemClosed(ash::LauncherID id) {
+  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
+  id_to_item_map_.erase(id);
+  model_->RemoveItemAt(model_->ItemIndexByID(id));
+}
+
 void ChromeLauncherController::DoPinAppWithID(const std::string& app_id) {
   // If there is an item, do nothing and return.
   if (IsAppPinned(app_id))
     return;
 
-  // Otherwise, create an item for it.
-  CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
-  if (CanPin())
-    PersistPinnedState();
+  ash::LauncherID launcher_id = GetLauncherIDForAppID(app_id);
+  if (launcher_id) {
+    // App item exists, pin it
+    Pin(launcher_id);
+  } else {
+    // Otherwise, create an item for it.
+    CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+    if (CanPin())
+      PersistPinnedState();
+  }
 }
 
 void ChromeLauncherController::DoUnpinAppsWithID(const std::string& app_id) {
@@ -943,10 +874,9 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
 
   ash::LauncherItem item;
   if (!controller) {
-    if (status == ash::STATUS_CLOSED)
-      item.type = ash::TYPE_APP_SHORTCUT;
-    else
-      item.type = ash::TYPE_PLATFORM_APP;
+    item.type = ash::TYPE_APP_SHORTCUT;
+  } else if (controller->type() == LauncherItemController::TYPE_APP) {
+    item.type = ash::TYPE_PLATFORM_APP;
   } else if (controller->type() == LauncherItemController::TYPE_APP_PANEL ||
              controller->type() ==
              LauncherItemController::TYPE_EXTENSION_PANEL) {

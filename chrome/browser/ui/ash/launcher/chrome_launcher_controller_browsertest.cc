@@ -372,23 +372,31 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   EXPECT_TRUE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
 
   // Add window for app1. This will activate it.
-  ShellWindow* window3 = CreateShellWindow(extension1);
-  ash::wm::ActivateWindow(window3->GetNativeWindow());
+  ShellWindow* window1b = CreateShellWindow(extension1);
+  ash::wm::ActivateWindow(window1b->GetNativeWindow());
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window3->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
+
+  // Activate launcher item for app1, this will cycle the active window.
+  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
+  EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
+  launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
+  EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
 
   // Activate the second app again
   launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id2));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_TRUE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
-  EXPECT_FALSE(ash::wm::IsActiveWindow(window3->GetNativeWindow()));
+  EXPECT_FALSE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
-  // Activate the first app app
+  // Activate the first app again
   launcher->ActivateLauncherItem(launcher->model()->ItemIndexByID(item_id1));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window1->GetNativeWindow()));
   EXPECT_FALSE(ash::wm::IsActiveWindow(window2->GetNativeWindow()));
-  EXPECT_TRUE(ash::wm::IsActiveWindow(window3->GetNativeWindow()));
+  EXPECT_TRUE(ash::wm::IsActiveWindow(window1b->GetNativeWindow()));
 
   // Close second app.
   CloseShellWindow(window2);
@@ -398,11 +406,10 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   EXPECT_EQ(ash::STATUS_ACTIVE, launcher->model()->ItemByID(item_id1)->status);
 
   // Close first app.
-  CloseShellWindow(window3);
+  CloseShellWindow(window1b);
   CloseShellWindow(window1);
   --item_count;
   EXPECT_EQ(item_count, launcher->model()->item_count());
-
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {

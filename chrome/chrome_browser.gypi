@@ -2539,6 +2539,8 @@
         'browser/ui/ash/launcher/launcher_favicon_loader.h',
         'browser/ui/ash/launcher/launcher_item_controller.cc',
         'browser/ui/ash/launcher/launcher_item_controller.h',
+        'browser/ui/ash/launcher/shell_window_launcher_controller.cc',
+        'browser/ui/ash/launcher/shell_window_launcher_controller.h',
         'browser/ui/ash/screenshot_taker.cc',
         'browser/ui/ash/screenshot_taker.h',
         'browser/ui/ash/tabs/dock_info_ash.cc',

@@ -71,7 +71,7 @@ class BrowserLauncherItemController : public LauncherItemController,
   void BrowserActivationStateChanged();
 
   // LauncherItemController overrides:
-  virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetTitle() OVERRIDE;
   virtual bool HasWindow(aura::Window* window) const OVERRIDE;
   virtual void Open() OVERRIDE;
   virtual void Close() OVERRIDE;

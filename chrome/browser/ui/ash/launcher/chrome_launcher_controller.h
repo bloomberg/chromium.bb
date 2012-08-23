@@ -20,11 +20,9 @@
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 
 namespace ash {
@@ -33,11 +31,6 @@ class LauncherModel;
 
 namespace aura {
 class Window;
-
-namespace client {
-class ActivationClient;
-}
-
 }
 
 class BrowserLauncherItemControllerTest;
@@ -45,19 +38,21 @@ class LauncherItemController;
 class PrefService;
 class Profile;
 class ProfileSyncService;
+class ShellWindowLauncherController;
 class TabContents;
 
 // ChromeLauncherController manages the launcher items needed for content
-// windows: tabbed browsers (BrowserLauncherItemController), browser shortcuts,
-// and App windows.
+// windows. Launcher items have a type, an optional app id, and a controller.
+// * Tabbed browsers and browser app windows have BrowserLauncherItemController,
+//   owned by the BrowserView instance.
+// * App shell windows have ShellWindowLauncherItemController, owned by
+//   ShellWindowLauncherController.
+// * Shortcuts have no LauncherItemController.
 class ChromeLauncherController
     : public ash::LauncherDelegate,
       public ash::LauncherModelObserver,
       public ash::ShellObserver,
       public content::NotificationObserver,
-      public extensions::ShellWindowRegistry::Observer,
-      public aura::client::ActivationChangeObserver,
-      public aura::WindowObserver,
       public ProfileSyncServiceObserver {
  public:
   // Indicates if a launcher item is incognito or not.
@@ -123,8 +118,13 @@ class ChromeLauncherController
   // Updates the running status of an item.
   void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
 
-  // Invoked when the underlying browser/app is closed.
-  void LauncherItemClosed(ash::LauncherID id);
+  // Updates the controller associated with id (which should be a shortcut).
+  // |controller| remains owned by caller.
+  void SetItemController(ash::LauncherID id,
+                         LauncherItemController* controller);
+
+  // Closes or unpins the launcher item.
+  void CloseLauncherItem(ash::LauncherID id);
 
   // Pins the specified id. Currently only supports platform apps.
   void Pin(ash::LauncherID id);
@@ -238,18 +238,6 @@ class ChromeLauncherController
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from ShellWindowRegistry::Observer:
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
-
-  // Overridden from client::ActivationChangeObserver:
-  virtual void OnWindowActivated(
-      aura::Window* active,
-      aura::Window* old_active) OVERRIDE;
-
-  // Overridden from aura::WindowObserver:
-  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
-
   // Overridden from ash::ShellObserver:
   virtual void OnShelfAlignmentChanged() OVERRIDE;
 
@@ -281,8 +269,6 @@ class ChromeLauncherController
   };
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
-  typedef std::map<aura::Window*, ash::LauncherID> WindowToIDMap;
-  typedef std::list<aura::Window*> WindowList;
   typedef std::list<TabContents*> TabContentsList;
   typedef std::map<std::string, TabContentsList> AppIDToTabContentsListMap;
   typedef std::map<TabContents*, std::string> TabContentsToAppIDMap;
@@ -297,6 +283,9 @@ class ChromeLauncherController
 
   // Returns item status for given |id|.
   ash::LauncherItemStatus GetItemStatus(ash::LauncherID id) const;
+
+  // Invoked when the associated browser or app is closed.
+  void LauncherItemClosed(ash::LauncherID id);
 
   // Internal helpers for pinning and unpinning that handle both
   // client-triggered and internal pinning operations.
@@ -348,13 +337,8 @@ class ChromeLauncherController
   // Direct access to app_id for a tab contents.
   TabContentsToAppIDMap tab_contents_to_app_id_;
 
-  // Allows us to get from an aura::Window to the id of a launcher item.
-  // Currently only used for platform app windows.
-  WindowToIDMap window_to_id_map_;
-
-  // Maintains the activation order. The first element is most recent.
-  // Currently only used for platform app windows.
-  WindowList platform_app_windows_;
+  // Used to track shell windows.
+  scoped_ptr<ShellWindowLauncherController> shell_window_controller_;
 
   // Used to get app info for tabs.
   scoped_ptr<AppTabHelper> app_tab_helper_;
@@ -365,7 +349,6 @@ class ChromeLauncherController
   content::NotificationRegistrar notification_registrar_;
 
   PrefChangeRegistrar pref_change_registrar_;
-  aura::client::ActivationClient* activation_client_;
 
   ProfileSyncService* observed_sync_service_;
   base::OneShotTimer<ChromeLauncherController> loading_timer_;
