@@ -14,6 +14,8 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+
 namespace gfx {
 
 template<typename Class,
@@ -64,11 +66,11 @@ class UI_EXPORT RectBase {
   }
 
   /// Scales the rectangle by |scale|.
-  Class Scale(float scale) const {
+  Class Scale(float scale) const WARN_UNUSED_RESULT {
     return Scale(scale, scale);
   }
 
-  Class Scale(float x_scale, float y_scale) const {
+  Class Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
     return Class(origin_.Scale(x_scale, y_scale),
                  size_.Scale(x_scale, y_scale));
   }
@@ -114,17 +116,17 @@ class UI_EXPORT RectBase {
   bool Intersects(const Class& rect) const;
 
   // Computes the intersection of this rectangle with the given rectangle.
-  Class Intersect(const Class& rect) const;
+  Class Intersect(const Class& rect) const WARN_UNUSED_RESULT;
 
   // Computes the union of this rectangle with the given rectangle.  The union
   // is the smallest rectangle containing both rectangles.
-  Class Union(const Class& rect) const;
+  Class Union(const Class& rect) const WARN_UNUSED_RESULT;
 
   // Computes the rectangle resulting from subtracting |rect| from |this|.  If
   // |rect| does not intersect completely in either the x- or y-direction, then
   // |*this| is returned.  If |rect| contains |this|, then an empty Rect is
   // returned.
-  Class Subtract(const Class& rect) const;
+  Class Subtract(const Class& rect) const WARN_UNUSED_RESULT;
 
   // Returns true if this rectangle equals that of the supplied rectangle.
   bool Equals(const Class& rect) const {
@@ -136,14 +138,14 @@ class UI_EXPORT RectBase {
   // a x-location of 2 and a width of 4, and the supplied rectangle had
   // an x-location of 0 with a width of 5, the returned rectangle would have
   // an x-location of 1 with a width of 4.
-  Class AdjustToFit(const Class& rect) const;
+  Class AdjustToFit(const Class& rect) const WARN_UNUSED_RESULT;
 
   // Returns the center of this rectangle.
   PointClass CenterPoint() const;
 
   // Return a rectangle that has the same center point but with a size capped
   // at given |size|.
-  Class Center(const SizeClass& size) const;
+  Class Center(const SizeClass& size) const WARN_UNUSED_RESULT;
 
   // Splits |this| in two halves, |left_half| and |right_half|.
   void SplitVertically(Class* left_half, Class* right_half) const;

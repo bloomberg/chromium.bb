@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
@@ -32,30 +33,30 @@ class UI_EXPORT PointBase {
     y_ += delta_y;
   }
 
-  Class Scale(float scale) const {
+  Class Scale(float scale) const WARN_UNUSED_RESULT {
     return Scale(scale, scale);
   }
 
-  Class Scale(float x_scale, float y_scale) const {
+  Class Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
     return Class(static_cast<Type>(x_ * x_scale),
                  static_cast<Type>(y_ * y_scale));
   }
 
-  Class Add(const Class& other) const{
+  Class Add(const Class& other) const WARN_UNUSED_RESULT {
     const Class* orig = static_cast<const Class*>(this);
     Class copy = *orig;
     copy.Offset(other.x_, other.y_);
     return copy;
   }
 
-  Class Subtract(const Class& other) const {
+  Class Subtract(const Class& other) const WARN_UNUSED_RESULT {
     const Class* orig = static_cast<const Class*>(this);
     Class copy = *orig;
     copy.Offset(-other.x_, -other.y_);
     return copy;
   }
 
-  Class Middle(const Class& other) const {
+  Class Middle(const Class& other) const WARN_UNUSED_RESULT {
     return Class((x_ + other.x_) / 2, (y_ + other.y_) / 2);
   }
 

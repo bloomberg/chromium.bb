@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
@@ -31,11 +32,11 @@ class UI_EXPORT SizeBase {
     set_height(height_ + height);
   }
 
-  Class Scale(float scale) const {
+  Class Scale(float scale) const WARN_UNUSED_RESULT {
     return Scale(scale, scale);
   }
 
-  Class Scale(float x_scale, float y_scale) const {
+  Class Scale(float x_scale, float y_scale) const WARN_UNUSED_RESULT {
     return Class(static_cast<Type>(width_ * x_scale),
                  static_cast<Type>(height_ * y_scale));
   }
