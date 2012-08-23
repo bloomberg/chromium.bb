@@ -317,6 +317,7 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"Process_RunApp6 findstr.exe"));
 
+#if !defined(_WIN64)
   if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
     // WinXP results are not reliable.
     EXPECT_EQ(SBOX_TEST_SECOND_ERROR,
@@ -324,6 +325,7 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
     EXPECT_EQ(SBOX_TEST_SECOND_ERROR,
         runner.RunTest(L"Process_RunApp4 findstr.exe"));
   }
+#endif
 }
 
 TEST(ProcessPolicyTest, OpenToken) {
