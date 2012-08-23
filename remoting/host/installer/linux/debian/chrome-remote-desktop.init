@@ -1,0 +1,104 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             chrome-remoting
+# Required-Start:       $remote_fs $syslog
+# Required-Stop:        $remote_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         1
+# Short-Description:    Chrome Remote Desktop service
+### END INIT INFO
+
+# /etc/init.d/chrome-remote-desktop: Start and stop Chrome Remote Desktop host daemon.
+
+HOST_PATH=/usr/bin/me2me_virtual_host
+
+# Group of users for which Chrome Remote Desktop is enabled. Users are added
+# to that group when they start the host for the first time.
+CHROME_REMOTING_GROUP=chrome-remoting
+
+test -x $HOST_PATH || exit 0
+
+. /lib/lsb/init-functions
+
+if [ "$(whoami)" == "root" ]; then
+  # Extract list of users in the chrome-remoting group.
+  USERS=$(getent group $CHROME_REMOTING_GROUP |
+          awk -F ':' '{ gsub(",", " ", $4); print $4 }')
+else
+  USERS=$(whoami)
+fi
+
+run_and_ignore_error() {
+  user=$1
+  shift
+
+  su_command=su
+  if [ "$1" == "--login" ]; then
+    su_command="su --login"
+    shift
+  fi
+
+  set +e
+  if [ "$(whoami)" == "$user" ]; then
+    $@
+  else
+    $su_command $user --command "$@"
+  fi
+}
+
+do_start() {
+  log_begin_msg "Starting Chrome Remote Desktop host for $1..."
+  run_and_ignore_error $1 --login "$HOST_PATH --silent"
+  log_end_msg $?
+}
+
+do_stop() {
+  log_begin_msg "Stopping Chrome Remote Desktop host for $1..."
+  run_and_ignore_error $1 "$HOST_PATH --stop"
+  log_end_msg $?
+}
+
+do_reload() {
+  log_begin_msg "Reloading Chrome Remote Desktop host configuration for $1..."
+  run_and_ignore_error $1 "$HOST_PATH --reload"
+  log_end_msg $?
+}
+
+do_restart() {
+  log_begin_msg "Restarting Chrome Remote Desktop host for $1..."
+  run_and_ignore_error $1 "$HOST_PATH --stop"
+  run_and_ignore_error $1 --login "$HOST_PATH --silent"
+  log_end_msg $?
+}
+
+for_each_user() {
+  for user in $USERS; do
+    $1 $user
+  done
+}
+
+case "$1" in
+  start)
+    for_each_user do_start
+    ;;
+
+  stop)
+    for_each_user do_stop
+    ;;
+
+  reload|force-reload)
+    for_each_user do_reload
+    ;;
+
+  restart)
+    for_each_user do_restart
+    ;;
+
+  *)
+    log_success_msg "Usage: /etc/init.d/chrome-remote-desktop" \
+        "{start|stop|reload|force-reload|restart}"
+    exit 1
+esac
+
+exit 0
