@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "webvttparser.h"  // NOLINT
+#include "./webvttparser.h"  // NOLINT
 #include <climits>
 
 using std::string;
@@ -27,8 +27,7 @@ Reader::Reader() {
 Reader::~Reader() {
 }
 
-Parser::Parser(Reader* r)
-  : reader_(r), unget_(-1) {
+Parser::Parser(Reader* r) : reader_(r), unget_(-1) {
 }
 
 int Parser::Init() {
@@ -44,10 +43,9 @@ int Parser::Init() {
   // order to defend against non-WebVTT streams (e.g. binary files) that don't
   // happen to comprise lines of text demarcated with line terminators.
 
-  const char idstr[] = "WEBVTT";
-  const char* p = idstr;
+  const char kId[] = "WEBVTT";
 
-  while (*p) {
+  for (const char* p = kId; *p; ++p) {
     char c;
     e = GetChar(&c);
 
@@ -59,8 +57,6 @@ int Parser::Init() {
 
     if (c != *p)
       return -1;
-
-    ++p;
   }
 
   string line;
@@ -112,7 +108,7 @@ int Parser::Parse(Cue* cue) {
   for (;;) {
     e = ParseLine(&line);
 
-    if (e)
+    if (e)  // EOF is OK here
       return e;
 
     if (!line.empty())
@@ -124,31 +120,42 @@ int Parser::Parse(Cue* cue) {
   // a timings line by scanning for the arrow token, the lexeme of which
   // may not appear in the cue identifier line.
 
-  string::size_type off = line.find("-->");
+  const char kArrow[] = "-->";
+  string::size_type arrow_pos = line.find(kArrow);
 
-  if (off != string::npos) {  // timings line
+  if (arrow_pos != string::npos) {
+    // We found a timings line, which implies that we don't have a cue
+    // identifier.
+
     cue->identifier.clear();
   } else {
+    // We did not find a timings line, so we assume that we have a cue
+    // identifier line, and then try again to find the cue timings on
+    // the next line.
+
     cue->identifier.swap(line);
 
     e = ParseLine(&line);
 
-    if (e)
+    if (e < 0)  // error
       return e;
 
-    off = line.find("-->");
+    if (e > 0)  // EOF
+      return -1;
 
-    if (off == string::npos)  // not a timings line
+    arrow_pos = line.find(kArrow);
+
+    if (arrow_pos == string::npos)  // not a timings line
       return -1;
   }
 
-  e = ParseTimingsLine(line,
-                       off,
+  e = ParseTimingsLine(&line,
+                       arrow_pos,
                        &cue->start_time,
                        &cue->stop_time,
                        &cue->settings);
 
-  if (e)
+  if (e)  // error
     return e;
 
   // The cue payload comprises all the non-empty
@@ -219,85 +226,100 @@ int Parser::ParseBOM() {
   return 0;  // success
 }
 
-int Parser::ParseLineTerminator(char c) {
+int Parser::ParseLine(string* line_ptr) {
+  if (line_ptr == NULL)
+    return -1;
+
+  string& ln = *line_ptr;
+  ln.clear();
+
+  // Consume characters from the stream, until we
+  // reach end-of-line (or end-of-stream).
+
   // The WebVTT spec states that lines may be
   // terminated in any of these three ways:
   //  LF
   //  CR
   //  CR LF
 
-  if (c == kLF)
-    return 0;  // success
-
-  if (c != kCR)
-    return -1;  // error
-
-  // We detected a CR.  We must interrogate the next character
-  // in the stream, to determine whether we have a LF.
-
-  int e = GetChar(&c);
-
-  if (e < 0)  // error
-    return e;
-
-  if (e > 0)  // EOF
-    return 0;  // success
-
-  if (c == kLF)
-    return 0;  // success
-
-  // The next character in the stream is not a LF, so
-  // return it to the stream; this completes this line.
-
-  UngetChar(c);
-  return 0;  // success
-}
-
-int Parser::ParseLine(string* line) {
-  line->clear();
+  // We interrogate each character as we read it from the stream.
+  // If we detect an end-of-line character, we consume the full
+  // end-of-line indication, and we're done; otherwise, accumulate
+  // the character and repeat.
 
   for (;;) {
     char c;
-    int e = GetChar(&c);
+    const int e = GetChar(&c);
 
     if (e < 0)  // error
       return e;
 
     if (e > 0)  // EOF
-      return (line->empty()) ? 1 : 0;
+      return (ln.empty()) ? 1 : 0;
 
-    if (c == kLF || c == kCR) {
-      e = ParseLineTerminator(c);
+    // We have a character, so we must first determine
+    // whether we have reached end-of-line.
 
-      if (e < 0)  // error
-        return e;
+    if (c == kLF)
+      return 0;  // handle the easy end-of-line case immediately
 
-      return 0;
-    }
+    if (c == kCR)
+      break;  // handle the hard end-of-line case outside of loop
 
-    line->push_back(c);
+    // To defend against pathological or malicious streams, we
+    // cap the line length at some arbitrarily-large value:
+    enum { kMaxLineLength = 10000 };  // arbitrary
+
+    if (ln.length() >= kMaxLineLength)
+      return -1;
+
+    // We don't have an end-of-line character, so accumulate
+    // the character in our line buffer.
+    ln.push_back(c);
   }
+
+  // We detected a CR.  We must interrogate the next character
+  // in the stream, to determine whether we have a LF (which
+  // would make it part of this same line).
+
+  char c;
+  const int e = GetChar(&c);
+
+  if (e < 0)  // error
+    return e;
+
+  if (e > 0)  // EOF
+    return 0;
+
+  // If next character in the stream is not a LF, return it
+  // to the stream (because it's part of the next line).
+  if (c != kLF)
+    UngetChar(c);
+
+  return 0;
 }
 
 int Parser::ParseTimingsLine(
-  string& line,
-  string::size_type arrow_pos,
-  Time* start_time,
-  Time* stop_time,
-  Cue::settings_t* settings) {
-  //
-  // Place a NUL character at the start of the arrow token, in
-  // order to demarcate the start time from remainder of line.
+    string* line_ptr,
+    string::size_type arrow_pos,
+    Time* start_time,
+    Time* stop_time,
+    Cue::settings_t* settings) {
+  if (line_ptr == NULL)
+    return -1;
+
+  string& line = *line_ptr;
 
   if (arrow_pos == string::npos || arrow_pos >= line.length())
     return -1;
 
+  // Place a NUL character at the start of the arrow token, in
+  // order to demarcate the start time from remainder of line.
   line[arrow_pos] = kNUL;
   string::size_type idx = 0;
 
-  int e = ParseTime(line, idx, start_time);
-
-  if (e)
+  int e = ParseTime(line, &idx, start_time);
+  if (e)  // error
     return e;
 
   // Detect any junk that follows the start time,
@@ -316,30 +338,30 @@ int Parser::ParseTimingsLine(
   line.push_back(kNUL);
   idx = arrow_pos + 3;
 
-  e = ParseTime(line, idx, stop_time);
-
-  if (e)
+  e = ParseTime(line, &idx, stop_time);
+  if (e)  // error
     return e;
 
   e = ParseSettings(line, idx, settings);
-
-  if (e)
+  if (e)  // error
     return e;
 
   return 0;  // success
 }
 
 int Parser::ParseTime(
-  const string& line,
-  string::size_type& idx,
-  Time* time) {
-  //
-  // WebVTT timestamp syntax comes in three flavors:
-  //  SS[.sss]
-  //  MM:SS[.sss]
-  //  HH:MM:SS[.sss]
+    const string& line,
+    string::size_type* idx_ptr,
+    Time* time) {
+  if (idx_ptr == NULL)
+    return -1;
+
+  string::size_type& idx = *idx_ptr;
 
   if (idx == string::npos || idx >= line.length())
+    return -1;
+
+  if (time == NULL)
     return -1;
 
   // Consume any whitespace that precedes the timestamp.
@@ -350,15 +372,20 @@ int Parser::ParseTime(
     ++idx;
   }
 
-  Time& t = *time;
+  // WebVTT timestamp syntax comes in three flavors:
+  //  SS[.sss]
+  //  MM:SS[.sss]
+  //  HH:MM:SS[.sss]
 
   // Parse a generic number value.  We don't know which component
   // of the time we have yet, until we do more parsing.
 
-  int val = ParseNumber(line, idx);
+  int val = ParseNumber(line, &idx);
 
   if (val < 0)  // error
     return val;
+
+  Time& t = *time;
 
   // The presence of a colon character indicates that we have
   // an [HH:]MM:SS style syntax.
@@ -376,7 +403,7 @@ int Parser::ParseTime(
 
     // Parse second value
 
-    val = ParseNumber(line, idx);
+    val = ParseNumber(line, &idx);
 
     if (val < 0)
       return val;
@@ -395,7 +422,7 @@ int Parser::ParseTime(
       // We have parsed the hours and minutes.
       // We must now parse the seconds.
 
-      val = ParseNumber(line, idx);
+      val = ParseNumber(line, &idx);
 
       if (val < 0)
         return val;
@@ -442,7 +469,7 @@ int Parser::ParseTime(
   } else {
     ++idx;  // consume FULL STOP
 
-    val = ParseNumber(line, idx);
+    val = ParseNumber(line, &idx);
 
     if (val < 0)
       return val;
@@ -470,25 +497,23 @@ int Parser::ParseTime(
 }
 
 int Parser::ParseSettings(
-  const string& line,
-  string::size_type idx,
-  Cue::settings_t* settings) {
-  //
-  // Scanning starts at position idx, and stops when
-  // we consume a NUL character.
-
+    const string& line,
+    string::size_type idx,
+    Cue::settings_t* settings) {
   settings->clear();
 
   if (idx == string::npos || idx >= line.length())
     return -1;
 
   for (;;) {
-    // Parse the whitespace that precedes the NAME:VALUE pair.
+    // We must parse a line comprising a sequence of 0 or more
+    // NAME:VALUE pairs, separated by whitespace.  The line iself is
+    // terminated with a NUL char (indicating end-of-line).
 
     for (;;) {
       const char c = line[idx];
 
-      if (c == kNUL)
+      if (c == kNUL)  // end-of-line
         return 0;  // success
 
       if (c != kSPACE && c != kTAB)
@@ -497,7 +522,8 @@ int Parser::ParseSettings(
       ++idx;  // consume whitespace
     }
 
-    // There is something on the line for us to scan.
+    // We have consumed the whitespace, and have not yet reached
+    // end-of-line, so there is something on the line for us to parse.
 
     settings->push_back(Setting());
     Setting& s = settings->back();
@@ -544,8 +570,14 @@ int Parser::ParseSettings(
   }
 }
 
-int Parser::ParseNumber(const std::string& line,
-                        std::string::size_type& idx) {
+int Parser::ParseNumber(
+    const string& line,
+    string::size_type* idx_ptr) {
+  if (idx_ptr == NULL)
+    return -1;
+
+  string::size_type& idx = *idx_ptr;
+
   if (idx == string::npos || idx >= line.length())
     return -1;
 
