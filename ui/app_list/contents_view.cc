@@ -252,7 +252,7 @@ bool ContentsView::OnScrollEvent(const ui::ScrollEvent& event) {
 
   if (abs(event.x_offset()) > kMinScrollToSwitchPage) {
     if (!pagination_model_->has_transition()) {
-      pagination_model_->SelectPageRelative(event.x_offset() > 0 ? 1 : -1,
+      pagination_model_->SelectPageRelative(event.x_offset() > 0 ? -1 : 1,
                                             true);
     }
     return true;
