@@ -2472,6 +2472,7 @@
         'browser/ui/android/login_prompt_android.cc',
         'browser/ui/android/simple_message_box_android.cc',
         'browser/ui/android/ssl_client_certificate_selector.cc',
+        'browser/ui/android/status_tray_android.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.cc',
         'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h',
         'browser/ui/android/tab_model/tab_model.cc',
