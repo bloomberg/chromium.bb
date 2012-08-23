@@ -32,7 +32,7 @@ struct ChannelConfig {
     CODEC_VERBATIM,
     CODEC_ZIP,
     CODEC_VP8,
-    CODEC_VORBIS,
+    CODEC_OPUS,
     CODEC_SPEEX,
   };
 

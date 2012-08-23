@@ -48,7 +48,7 @@ const NameMapElement<ChannelConfig::Codec> kCodecs[] = {
   { ChannelConfig::CODEC_VERBATIM, "verbatim" },
   { ChannelConfig::CODEC_VP8, "vp8" },
   { ChannelConfig::CODEC_ZIP, "zip" },
-  { ChannelConfig::CODEC_VORBIS, "vorbis" },
+  { ChannelConfig::CODEC_OPUS, "opus" },
   { ChannelConfig::CODEC_SPEEX, "speex" },
 };
 
@@ -134,7 +134,7 @@ ContentDescription* ContentDescription::Copy() const {
 //     <control transport="stream" version="1" />
 //     <event transport="datagram" version="1" />
 //     <video transport="stream" codec="vp8" version="1" />
-//     <audio transport="stream" codec="vorbis" version="1" />
+//     <audio transport="stream" codec="opus" version="1" />
 //     <authentication>
 //      Message created by Authenticator implementation.
 //     </authentication>

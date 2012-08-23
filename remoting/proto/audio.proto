@@ -22,7 +22,7 @@ message AudioPacket {
   enum Encoding {
     ENCODING_INVALID = -1;
     ENCODING_RAW = 0;  // Uncompressed encoding
-    ENCODING_VORBIS = 1;
+    ENCODING_OPUS = 1;
     ENCODING_SPEEX = 2;
   }
 
