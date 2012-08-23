@@ -26,7 +26,7 @@ void TabToValue(const TabRestoreService::Tab& tab,
                 DictionaryValue* dictionary) {
   const TabNavigation& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
-  NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
+  NewTabUI::SetUrlTitleAndDirection(dictionary, current_navigation.title(),
                                     current_navigation.virtual_url());
   dictionary->SetString("type", "tab");
   dictionary->SetDouble("timestamp", tab.timestamp.ToDoubleT());

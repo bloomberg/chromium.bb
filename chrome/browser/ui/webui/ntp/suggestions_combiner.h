@@ -79,7 +79,7 @@ class SuggestionsCombiner {
 
   // Checks if a URL is already open for the current profile. URLs open in an
   // incognito window are not reported.
-  bool IsURLAlreadyOpen(const GURL& url);
+  bool IsUrlAlreadyOpen(const GURL& url);
 
   typedef ScopedVector<SuggestionsSource> SuggestionsSources;
 

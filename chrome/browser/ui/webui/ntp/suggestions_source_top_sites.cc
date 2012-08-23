@@ -72,7 +72,7 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
     time_filter.set_sorting_order(GetSortingOrder());
 
     history->QueryFilteredURLs(0, time_filter, debug_, &history_consumer_,
-        base::Bind(&SuggestionsSourceTopSites::OnSuggestionsURLsAvailable,
+        base::Bind(&SuggestionsSourceTopSites::OnSuggestionsUrlsAvailable,
                    base::Unretained(this)));
   }
 }
@@ -82,7 +82,7 @@ void SuggestionsSourceTopSites::SetCombiner(SuggestionsCombiner* combiner) {
   combiner_ = combiner;
 }
 
-void SuggestionsSourceTopSites::OnSuggestionsURLsAvailable(
+void SuggestionsSourceTopSites::OnSuggestionsUrlsAvailable(
     CancelableRequestProvider::Handle handle,
     const history::FilteredURLList& data) {
   DCHECK(combiner_);
@@ -92,7 +92,7 @@ void SuggestionsSourceTopSites::OnSuggestionsURLsAvailable(
       continue;
 
     DictionaryValue* page_value = new DictionaryValue();
-    NewTabUI::SetURLTitleAndDirection(page_value,
+    NewTabUI::SetUrlTitleAndDirection(page_value,
                                       suggested_url.title,
                                       suggested_url.url);
     page_value->SetDouble("score", suggested_url.score);

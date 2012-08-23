@@ -93,7 +93,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Callback for the "recordAppLaunchByURL" message. Takes an escaped URL and a
   // launch source (integer), and if the URL represents an app, records the
   // action for UMA.
-  void HandleRecordAppLaunchByURL(const base::ListValue* args);
+  void HandleRecordAppLaunchByUrl(const base::ListValue* args);
 
   // Callback for "closeNotification" message.
   void HandleNotificationClose(const base::ListValue* args);
@@ -130,7 +130,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Records an app launch in the corresponding |bucket| of the app launch
   // histogram if the |escaped_url| corresponds to an installed app.
-  static void RecordAppLaunchByURL(Profile* profile,
+  static void RecordAppLaunchByUrl(Profile* profile,
                                    std::string escaped_url,
                                    extension_misc::AppLaunchBucket bucket);
 

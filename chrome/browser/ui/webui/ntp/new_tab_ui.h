@@ -39,7 +39,7 @@ class NewTabUI : public content::WebUIController,
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
-  static void SetURLTitleAndDirection(base::DictionaryValue* dictionary,
+  static void SetUrlTitleAndDirection(base::DictionaryValue* dictionary,
                                       const string16& title,
                                       const GURL& gurl);
 

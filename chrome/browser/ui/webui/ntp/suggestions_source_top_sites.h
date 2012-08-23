@@ -36,7 +36,7 @@ class SuggestionsSourceTopSites : public SuggestionsSource {
   virtual void FetchItems(Profile* profile) OVERRIDE;
   virtual void SetCombiner(SuggestionsCombiner* combiner) OVERRIDE;
 
-  void OnSuggestionsURLsAvailable(
+  void OnSuggestionsUrlsAvailable(
       CancelableRequestProvider::Handle handle,
       const history::FilteredURLList& data);
 

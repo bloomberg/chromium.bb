@@ -306,7 +306,7 @@ bool ForeignSessionHandler::SessionTabToValue(
   GURL tab_url = current_navigation.virtual_url();
   if (tab_url == GURL(chrome::kChromeUINewTabURL))
     return false;
-  NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
+  NewTabUI::SetUrlTitleAndDirection(dictionary, current_navigation.title(),
                                     tab_url);
   dictionary->SetString("type", "tab");
   dictionary->SetDouble("timestamp",

@@ -40,7 +40,7 @@ class SuggestionsSource {
 
   // Removes the most important item from this source and returns it. The
   // returned item must be in the right format to be sent to the javascript,
-  // which you typically get by calling NewTabUI::SetURLTitleAndDirection. If
+  // which you typically get by calling NewTabUI::SetUrlTitleAndDirection. If
   // the source is empty this method returns null.
   // The caller takes ownership of the returned item.
   virtual base::DictionaryValue* PopItem() = 0;

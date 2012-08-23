@@ -146,12 +146,12 @@ void SuggestionsCombiner::AddExtendedInformation(
     std::string url_string;
     if (page_value->GetString("url", &url_string)) {
       GURL url(url_string);
-      page_value->SetBoolean("already_open", IsURLAlreadyOpen(url));
+      page_value->SetBoolean("already_open", IsUrlAlreadyOpen(url));
     }
   }
 }
 
-bool SuggestionsCombiner::IsURLAlreadyOpen(const GURL &url) {
+bool SuggestionsCombiner::IsUrlAlreadyOpen(const GURL &url) {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     const Browser* browser = *it;

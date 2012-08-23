@@ -43,10 +43,10 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   void HandleGetMostVisited(const base::ListValue* args);
 
   // Callback for the "blacklistURLFromMostVisited" message.
-  void HandleBlacklistURL(const base::ListValue* args);
+  void HandleBlacklistUrl(const base::ListValue* args);
 
   // Callback for the "removeURLsFromMostVisitedBlacklist" message.
-  void HandleRemoveURLsFromBlacklist(const base::ListValue* args);
+  void HandleRemoveUrlsFromBlacklist(const base::ListValue* args);
 
   // Callback for the "clearMostVisitedURLsBlacklist" message.
   void HandleClearBlacklist(const base::ListValue* args);
@@ -78,13 +78,13 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   void SetPagesValueFromTopSites(const history::MostVisitedURLList& data);
 
   // Callback for TopSites.
-  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
+  void OnMostVisitedUrlsAvailable(const history::MostVisitedURLList& data);
 
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
-  void BlacklistURL(const GURL& url);
+  void BlacklistUrl(const GURL& url);
 
   // Returns the key used in url_blacklist_ for the passed |url|.
-  std::string GetDictionaryKeyForURL(const std::string& url);
+  std::string GetDictionaryKeyForUrl(const std::string& url);
 
   // Sends pages_value_ to the javascript side to and resets page_value_.
   void SendPagesValue();

@@ -299,7 +299,7 @@ bool NewTabUI::IsDiscoveryInNTPEnabled() {
 }
 
 // static
-void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
+void NewTabUI::SetUrlTitleAndDirection(DictionaryValue* dictionary,
                                        const string16& title,
                                        const GURL& gurl) {
   dictionary->SetString("url", gurl.spec());

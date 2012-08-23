@@ -72,7 +72,7 @@ void SuggestionsSourceDiscovery::FetchItems(Profile* profile) {
   for (SuggestedLinkList::const_iterator it = list->begin();
        it != list->end(); ++it) {
     DictionaryValue* page_value = new DictionaryValue();
-    NewTabUI::SetURLTitleAndDirection(page_value,
+    NewTabUI::SetUrlTitleAndDirection(page_value,
                                       ASCIIToUTF16((*it)->link_text()),
                                       GURL((*it)->link_url()));
     page_value->SetDouble("score", (*it)->score());
