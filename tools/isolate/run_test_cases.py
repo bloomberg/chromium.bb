@@ -366,6 +366,18 @@ def fix_python_path(cmd):
   return out
 
 
+def setup_gtest_env():
+  """Copy the enviroment variables and setup for running a gtest."""
+  env = os.environ.copy()
+  for name in GTEST_ENV_VARS_TO_REMOVE:
+    env.pop(name, None)
+
+  # Forcibly enable color by default, if not already disabled.
+  env.setdefault('GTEST_COLOR', 'on')
+
+  return env
+
+
 def gtest_list_tests(executable):
   """List all the test cases for a google test.
 
@@ -373,13 +385,16 @@ def gtest_list_tests(executable):
   """
   cmd = [executable, '--gtest_list_tests']
   cmd = fix_python_path(cmd)
+  env = setup_gtest_env()
   try:
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         env=env)
   except OSError, e:
     raise Failure('Failed to run %s\n%s' % (executable, str(e)))
   out, err = p.communicate()
   if p.returncode:
-    raise Failure('Failed to run %s\n%s' % (executable, err), p.returncode)
+    raise Failure('Failed to run %s\nstdout:\n%s\nstderr:\n%s' %
+                  (executable, out, err), p.returncode)
   # pylint: disable=E1103
   if err and not err.startswith('Xlib:  extension "RANDR" missing on display '):
     logging.error('Unexpected spew in gtest_list_tests:\n%s\n%s', err, cmd)
@@ -464,11 +479,7 @@ class Runner(object):
     self.retry_count = retry_count
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
-    self.env = os.environ.copy()
-    for name in GTEST_ENV_VARS_TO_REMOVE:
-      self.env.pop(name, None)
-    # Forcibly enable color by default, if not already disabled.
-    self.env.setdefault('GTEST_COLOR', 'on')
+    self.env = setup_gtest_env()
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
@@ -607,14 +618,79 @@ def run_test_cases(executable, test_cases, jobs, timeout, result_file):
   return int(bool(fail))
 
 
+class OptionParserWithTestSharding(optparse.OptionParser):
+  """Adds automatic handling of test sharding"""
+  def __init__(self, *args, **kwargs):
+    optparse.OptionParser.__init__(self, *args, **kwargs)
+
+    def as_digit(variable, default):
+      return int(variable) if variable.isdigit() else default
+
+    group = optparse.OptionGroup(self, 'Which shard to run')
+    group.add_option(
+        '-i', '--index',
+        type='int',
+        default=as_digit(os.environ.get('GTEST_SHARD_INDEX', ''), None),
+        help='Shard index to run')
+    group.add_option(
+        '-s', '--shards',
+        type='int',
+        default=as_digit(os.environ.get('GTEST_TOTAL_SHARDS', ''), None),
+        help='Total number of shards to calculate from the --index to run')
+    self.add_option_group(group)
+
+
+class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
+  """Adds automatic handling of test sharding and filtering."""
+  def __init__(self, *args, **kwargs):
+    OptionParserWithTestSharding.__init__(self, *args, **kwargs)
+
+    group = optparse.OptionGroup(self, 'Which test cases to run')
+    group.add_option(
+        '-w', '--whitelist',
+        default=[],
+        action='append',
+        help='filter to apply to test cases to run, wildcard-style, defaults '
+        'to all test')
+    group.add_option(
+        '-b', '--blacklist',
+        default=[],
+        action='append',
+        help='filter to apply to test cases to skip, wildcard-style, defaults '
+        'to no test')
+    group.add_option(
+        '-T', '--test-case-file',
+        help='File containing the exact list of test cases to run')
+    group.add_option(
+        '--gtest_filter',
+        default=os.environ.get('GTEST_FILTER', ''),
+        help='Runs a single test, provideded to keep compatibility with '
+        'other tools')
+    self.add_option_group(group)
+
+  def parse_args(self, *args, **kwargs):
+    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
+
+    if options.gtest_filter:
+      # Override any other option.
+      # Based on UnitTestOptions::FilterMatchesTest() in
+      # http://code.google.com/p/googletest/source/browse/#svn%2Ftrunk%2Fsrc
+      if '-' in options.gtest_filter:
+        options.whitelist, options.blacklist = options.gtest_filter.split('-',
+                                                                          1)
+      else:
+        options.whitelist = options.gtest_filter
+        options.blacklist = ''
+      options.whitelist = [i for i in options.whitelist.split(':') if i]
+      options.blacklist = [i for i in options.blacklist.split(':') if i]
+
+    return options, args
+
+
 def main(argv):
   """CLI frontend to validate arguments."""
-  def as_digit(variable, default):
-    if variable.isdigit():
-      return int(variable)
-    return default
-
-  parser = optparse.OptionParser(usage='%prog <options> [gtest]')
+  parser = OptionParserWithTestShardingAndFiltering(
+      usage='%prog <options> [gtest]')
   parser.add_option(
       '-j', '--jobs',
       type='int',
@@ -638,39 +714,6 @@ def main(argv):
       '--result',
       default=os.environ.get('RUN_TEST_CASES_RESULT_FILE', ''),
       help='Override the default name of the generated .run_test_cases file')
-
-  group = optparse.OptionGroup(parser, 'Which test cases to run')
-  group.add_option(
-      '-w', '--whitelist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to run, wildcard-style, defaults to '
-           'all test')
-  group.add_option(
-      '-b', '--blacklist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to skip, wildcard-style, defaults to '
-           'no test')
-  group.add_option(
-      '-i', '--index',
-      type='int',
-      default=as_digit(os.environ.get('GTEST_SHARD_INDEX', ''), None),
-      help='Shard index to run')
-  group.add_option(
-      '-s', '--shards',
-      type='int',
-      default=as_digit(os.environ.get('GTEST_TOTAL_SHARDS', ''), None),
-      help='Total number of shards to calculate from the --index to run')
-  group.add_option(
-      '-T', '--test-case-file',
-      help='File containing the exact list of test cases to run')
-  group.add_option(
-      '--gtest_filter',
-      default=os.environ.get('GTEST_FILTER', ''),
-      help='Runs a single test, provideded to keep compatibility with '
-           'other tools')
-  parser.add_option_group(group)
   options, args = parser.parse_args(argv)
 
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
@@ -692,18 +735,6 @@ def main(argv):
       executable += '.exe'
   if not os.path.isfile(executable):
     parser.error('"%s" doesn\'t exist.' % executable)
-
-  if options.gtest_filter:
-    # Override any other option.
-    # Based on UnitTestOptions::FilterMatchesTest() in
-    # http://code.google.com/p/googletest/source/browse/#svn%2Ftrunk%2Fsrc
-    if '-' in options.gtest_filter:
-      options.whitelist, options.blacklist = options.gtest_filter.split('-', 1)
-    else:
-      options.whitelist = options.gtest_filter
-      options.blacklist = ''
-    options.whitelist = [i for i in options.whitelist.split(':') if i]
-    options.blacklist = [i for i in options.blacklist.split(':') if i]
 
   # Grab the test cases.
   if options.test_case_file:

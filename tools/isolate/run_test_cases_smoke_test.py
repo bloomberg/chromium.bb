@@ -145,6 +145,9 @@ class TraceTestCases(unittest.TestCase):
 
     expected_out_re = [
         'Failed to run .+gtest_fake_error.py',
+        'stdout:',
+        '',
+        'stderr:',
         'Unable to list tests'
     ]
 
