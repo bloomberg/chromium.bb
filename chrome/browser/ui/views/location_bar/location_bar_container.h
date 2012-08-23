@@ -69,7 +69,7 @@ class LocationBarContainer : public views::View,
   void PlatformInit();
 
   // Returns the background color.
-  static SkColor GetBackgroundColor();
+  SkColor GetBackgroundColor();
 
   // Returns animation duration in milliseconds.
   static int GetAnimationDuration();
@@ -85,6 +85,8 @@ class LocationBarContainer : public views::View,
   views::NativeViewHost* native_view_host_;
 
   bool in_toolbar_;
+
+  bool instant_extended_api_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarContainer);
 };

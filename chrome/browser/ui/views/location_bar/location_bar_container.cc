@@ -23,7 +23,8 @@ LocationBarContainer::LocationBarContainer(views::View* parent,
       view_parent_(NULL),
       location_bar_view_(NULL),
       native_view_host_(NULL),
-      in_toolbar_(true) {
+      in_toolbar_(true),
+      instant_extended_api_enabled_(instant_extended_api_enabled) {
   parent->AddChildView(this);
   animator_.set_tween_type(ui::Tween::EASE_IN_OUT);
   PlatformInit();
