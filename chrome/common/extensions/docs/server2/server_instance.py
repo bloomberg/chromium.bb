@@ -54,6 +54,7 @@ class ServerInstance(object):
       content = templates.Render(path)
 
     if content:
+      response.headers['cache-control'] = 'max-age=300'
       response.out.write(content)
     else:
       response.set_status(404);

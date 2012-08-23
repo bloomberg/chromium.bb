@@ -23,6 +23,7 @@ class _MockResponse(object):
   def __init__(self):
     self.status = 200
     self.out = StringIO()
+    self.headers = {}
 
   def set_status(self, status):
     self.status = status
