@@ -122,9 +122,14 @@ const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
 const char kSessionManagerStartSessionService[] = "StartSessionService";
 const char kSessionManagerStopSessionService[] = "StopSessionService";
 const char kSessionManagerLockScreen[] = "LockScreen";
+const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
 const char kSessionManagerUnlockScreen[] = "UnlockScreen";
+const char kSessionManagerHandleLockScreenDismissed[] =
+    "HandleLockScreenDismissed";
 // Signals
 const char kSessionManagerSessionStateChanged[] = "SessionStateChanged";
+const char kScreenIsLockedSignal[] = "ScreenIsLocked";
+const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
 }  // namespace login_manager
 
 namespace speech_synthesis {
@@ -144,7 +149,6 @@ const char kChromiumInterface[] = "org.chromium.Chromium";
 // ScreenLock signals.
 const char kLockScreenSignal[] = "LockScreen";
 const char kUnlockScreenSignal[] = "UnlockScreen";
-const char kUnlockScreenFailedSignal[] = "UnlockScreenFailed";
 // Text-to-speech service signals
 const char kTTSReadySignal[] = "TTSReady";
 const char kTTSFailedSignal[] = "TTSFailed";
