@@ -1143,4 +1143,13 @@ const char kGetAllLogs[] = "GetAllLogs";
 const char kTestICMP[] = "TestICMP";
 }  // namespace debugd
 
+namespace permission_broker {
+const char kPermissionBrokerInterface[] = "org.chromium.PermissionBroker";
+const char kPermissionBrokerServicePath[] = "/org/chromium/PermissionBroker";
+const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
+
+// Methods
+const char kRequestAccess[] = "RequestAccess";
+}  // namespace permission_broker
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
