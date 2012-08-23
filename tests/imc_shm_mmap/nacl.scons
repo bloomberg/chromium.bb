@@ -6,16 +6,10 @@
 Import('env')
 
 
-if env.Bit('tests_use_irt'):
-  testrunner_libs = ['testrunner_browser']
-else:
-  testrunner_libs = ['testrunner']
-
-
 imc_shm_mmap_test = env.ComponentProgram(
     env.ProgramNameForNmf('imc_shm_mmap_test'),
     'imc_shm_mmap_test.c',
-    EXTRA_LIBS=['${NONIRT_LIBS}', 'imc_syscalls'] + testrunner_libs)
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'imc_syscalls', '${TESTRUNNER_LIBS}'])
 
 node = env.CommandSelLdrTestNacl('imc_shm_mmap_test.out',
                                  imc_shm_mmap_test,

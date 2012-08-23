@@ -52,11 +52,6 @@ def GetTemplate(env):
   else:
     return 'templates_x86.S'
 
-if env.Bit('tests_use_irt'):
-  testrunner_libs = ['testrunner_browser']
-else:
-  testrunner_libs = ['testrunner']
-
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
 dynamic_load_test_nexe = env.ComponentProgram(
@@ -66,12 +61,12 @@ dynamic_load_test_nexe = env.ComponentProgram(
      'dynamic_delete_test_threaded.c',
      template_obj],
     EXTRA_LIBS=['${NONIRT_LIBS}', '${DYNCODE_LIBS}',
-                '${PTHREAD_LIBS}'] + testrunner_libs)
+                '${PTHREAD_LIBS}', '${TESTRUNNER_LIBS}'])
 
 dynamic_modify_test_nexe = env.ComponentProgram(
     env.ProgramNameForNmf('dynamic_modify_test'),
     ['dynamic_modify_test.c', template_obj],
-    EXTRA_LIBS=['${NONIRT_LIBS}', '${DYNCODE_LIBS}'] + testrunner_libs)
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${DYNCODE_LIBS}', '${TESTRUNNER_LIBS}'])
 
 write_to_dyncode_nexe = env.ComponentProgram(
     'write_to_dyncode',

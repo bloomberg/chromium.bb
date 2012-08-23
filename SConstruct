@@ -2614,6 +2614,7 @@ for variant_bit, variant_suffix in target_variant_map:
 if nacl_env.Bit('bitcode'):
   nacl_env['TARGET_VARIANT'] += '-clang'
 
+nacl_env.Replace(TESTRUNNER_LIBS=['testrunner'])
 # TODO(mseaborn): Drop this once chrome side has inlined this.
 nacl_env.Replace(PPAPI_LIBS=['ppapi'])
 
@@ -3097,6 +3098,7 @@ nacl_irt_test_env = nacl_env.Clone(
     BUILD_SCONSCRIPTS = [],
     )
 nacl_irt_test_env.SetBits('tests_use_irt')
+nacl_irt_test_env.Replace(TESTRUNNER_LIBS=['testrunner_browser'])
 
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests)
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_only_tests)

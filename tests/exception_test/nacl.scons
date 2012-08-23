@@ -11,13 +11,6 @@ test_args = {'sel_ldr_flags': ['-e', '-E', 'OUTSIDE_BROWSER=1'],
 if env.Bit('target_arm') and env.UsingEmulator():
   test_args['sel_ldr_flags'].extend(['-E', 'UNDER_QEMU_ARM=1'])
 
-
-if env.Bit('tests_use_irt'):
-  testrunner_libs = ['testrunner_browser']
-else:
-  testrunner_libs = ['testrunner']
-
-
 # To keep PNaCl enthusiasts happy, we support a pure-bitcode version
 # of the test, but it is less strict.  The non-PNaCl version uses
 # assembly code and can check for exact values of the reported
@@ -41,7 +34,7 @@ else:
 exception_test = env.ComponentProgram(
     env.ProgramNameForNmf('exception_test'),
     ['exception_test.c'] + helper_files,
-    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'] + testrunner_libs)
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}', '${TESTRUNNER_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)
