@@ -75,6 +75,10 @@ void TransferBufferTest::TearDown() {
         .Times(1)
         .RetiresOnSaturation();
   }
+  // For command buffer.
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
   transfer_buffer_.reset();
 }
 
@@ -281,6 +285,10 @@ void TransferBufferExpandContractTest::TearDown() {
         .Times(1)
         .RetiresOnSaturation();
   }
+  // For command buffer.
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
   transfer_buffer_.reset();
 }
 

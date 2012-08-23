@@ -69,12 +69,16 @@ bool CommandBufferHelper::AllocateRingBuffer() {
   return true;
 }
 
-void CommandBufferHelper::FreeRingBuffer() {
-  GPU_CHECK_EQ(put_, get_offset());
+void CommandBufferHelper::FreeResources() {
   if (HaveRingBuffer()) {
     command_buffer_->DestroyTransferBuffer(ring_buffer_id_);
     ring_buffer_id_ = -1;
   }
+}
+
+void CommandBufferHelper::FreeRingBuffer() {
+  GPU_CHECK_EQ(put_, get_offset());
+  FreeResources();
 }
 
 bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
@@ -83,6 +87,7 @@ bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
 }
 
 CommandBufferHelper::~CommandBufferHelper() {
+  FreeResources();
 }
 
 bool CommandBufferHelper::FlushSync() {

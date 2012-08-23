@@ -274,6 +274,7 @@ class GPU_EXPORT CommandBufferHelper {
   }
 
   bool AllocateRingBuffer();
+  void FreeResources();
 
   CommandBuffer* command_buffer_;
   int32 ring_buffer_id_;

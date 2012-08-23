@@ -481,6 +481,10 @@ void GLES2ImplementationTest::SetUp() {
 void GLES2ImplementationTest::TearDown() {
   Mock::VerifyAndClear(gl_.get());
   EXPECT_CALL(*command_buffer(), OnFlush()).Times(AnyNumber());
+  // For command buffer.
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
   gl_.reset();
 }
 
