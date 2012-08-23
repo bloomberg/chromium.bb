@@ -7,7 +7,6 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "gtest_ppapi/ref_count.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
@@ -37,8 +36,9 @@ class GTestEventListener : public ::testing::EmptyTestEventListener {
   virtual void OnTestProgramEnd(const ::testing::UnitTest& unit_test);
 
  private:
-  void PostMessage(const std::string& str);
-  void PostMessageCallback(int32_t result, const std::string& str);
+  // Called MyPostMessage as to not conflict with win32 macro PostMessage.
+  void MyPostMessage(const std::string& str);
+  void MyPostMessageCallback(int32_t result, const std::string& str);
 
   pp::Instance* instance_;
   pp::CompletionCallbackFactory<GTestEventListener> factory_;

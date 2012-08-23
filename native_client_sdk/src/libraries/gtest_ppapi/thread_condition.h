@@ -5,7 +5,7 @@
 #ifndef GTEST_PPAPI_THREAD_CONDITION_H_
 #define GTEST_PPAPI_THREAD_CONDITION_H_
 
-#include "gtest_ppapi/pthread_ext.h"
+#include <pthread.h>
 
 struct timespec;
 
@@ -55,12 +55,6 @@ class ThreadCondition {
   //   cond_lock->Unlock();
   void Wait() {
     pthread_cond_wait(&condition_, &cond_mutex_);
-  }
-
-  // Same as Wait, but wait at most until abs_time. Returns false if the system
-  // time exceeds abs_time before the condition is signaled.
-  bool TimedWait(struct timespec *abs_time) {
-    return (pthread_cond_timedwait(&condition_, &cond_mutex_, abs_time) == 0);
   }
 
  private:

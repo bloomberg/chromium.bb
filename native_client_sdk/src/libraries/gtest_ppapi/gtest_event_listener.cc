@@ -3,13 +3,18 @@
 // found in the LICENSE file.
 #include "gtest_ppapi/gtest_event_listener.h"
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 
+#if defined(WIN32)
+#undef PostMessage
+#endif
+
 GTestEventListener::GTestEventListener(pp::Instance* instance)
   : instance_(instance),
-    factory_(this) {
+    PP_ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
   assert(pp::Module::Get()->core()->IsMainThread());
 }
 
@@ -24,7 +29,7 @@ void GTestEventListener::OnTestProgramStart(
   msg << " from "<< num_test_cases << " test case";
   if (num_test_cases > 1) msg << 's';
   msg << '.';
-  PostMessage(msg.str());
+  MyPostMessage(msg.str());
 }
 
 void GTestEventListener::OnTestCaseStart(
@@ -44,12 +49,12 @@ void GTestEventListener::OnTestPartResult(
     msg << test_part_result.file_name();
     msg << "::" << test_part_result.line_number() << "::";
     msg << test_part_result.summary();
-    PostMessage(msg.str());
+    MyPostMessage(msg.str());
 
     msg.str("");
     msg << "::failure_log::";
     msg << test_part_result.summary();
-    PostMessage(msg.str());
+    MyPostMessage(msg.str());
   }
 }
 
@@ -59,7 +64,7 @@ void GTestEventListener::OnTestEnd(const ::testing::TestInfo& test_info) {
   msg << test_info.test_case_name() << "." << test_info.name();
 
   msg << (test_info.result()->Failed() ? ": FAILED" : ": OK");
-  PostMessage(msg.str());
+  MyPostMessage(msg.str());
 }
 
 void GTestEventListener::OnTestCaseEnd(
@@ -76,20 +81,20 @@ void GTestEventListener::OnTestProgramEnd(
   msg << "::Result::";
   msg << ((num_failed_tests > 0) ? "failed::" : "success::");
   msg << num_passed_tests << "::" << num_failed_tests << "::";
-  PostMessage(msg.str());
+  MyPostMessage(msg.str());
 }
 
-void GTestEventListener::PostMessage(const std::string& str) {
+void GTestEventListener::MyPostMessage(const std::string& str) {
   if (pp::Module::Get()->core()->IsMainThread()) {
     instance_->PostMessage(str);
   } else {
     pp::CompletionCallback cc = factory_.NewCallback(
-        &GTestEventListener::PostMessageCallback, str);
+        &GTestEventListener::MyPostMessageCallback, str);
     pp::Module::Get()->core()->CallOnMainThread(0, cc, PP_OK);
   }
 }
 
-void GTestEventListener::PostMessageCallback(int32_t result,
+void GTestEventListener::MyPostMessageCallback(int32_t result,
                                              const std::string& str) {
   instance_->PostMessage(str);
 }

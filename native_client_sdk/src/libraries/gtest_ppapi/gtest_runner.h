@@ -4,7 +4,7 @@
 #ifndef GTEST_PPAPI_GTEST_RUNNER_H_
 #define GTEST_PPAPI_GTEST_RUNNER_H_
 
-#include "gtest_ppapi/pthread_ext.h"
+#include <pthread.h>
 #include "gtest_ppapi/thread_condition.h"
 
 namespace pp {

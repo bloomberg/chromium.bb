@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib', 'glibc', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'gtest_ppapi',
@@ -16,14 +16,10 @@
   'HEADERS': [
     {
       'FILES': [
-        "condition_lock.h",
         "gtest_event_listener.h",
         "gtest_instance.h",
         "gtest_nacl_environment.h",
         "gtest_runner.h",
-        "pthread_ext.h",
-        "ref_count.h",
-        "scoped_mutex_lock.h",
         "thread_condition.h",
       ],
       'DEST': 'include/gtest_ppapi',
@@ -31,5 +27,4 @@
   ],
   'DEST': 'testing',
   'NAME': 'gtest_ppapi',
-  'EXPERIMENTAL': True
 }

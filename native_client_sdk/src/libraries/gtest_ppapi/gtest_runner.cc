@@ -9,13 +9,13 @@
 #include "gtest_ppapi/gtest_event_listener.h"
 #include "gtest_ppapi/gtest_nacl_environment.h"
 
-pthread_t GTestRunner::g_test_runner_thread_ = NACL_PTHREAD_ILLEGAL_THREAD_ID;
+pthread_t GTestRunner::g_test_runner_thread_;
 GTestRunner* GTestRunner::gtest_runner_ = NULL;
 
 void GTestRunner::CreateGTestRunnerThread(pp::Instance* instance,
                                           int argc, char** argv) {
-  assert(g_test_runner_thread_ == NACL_PTHREAD_ILLEGAL_THREAD_ID);
-  if (g_test_runner_thread_ == NACL_PTHREAD_ILLEGAL_THREAD_ID) {
+  assert(!gtest_runner_);
+  if (!gtest_runner_) {
     gtest_runner_ = new GTestRunner();
     gtest_runner_->Init(instance, argc, argv);
     pthread_create(&g_test_runner_thread_, NULL, ThreadFunc, NULL);
@@ -34,7 +34,6 @@ void* GTestRunner::ThreadFunc(void* param) {
   gtest_runner_->RunLoop();
   delete gtest_runner_;
   gtest_runner_ = NULL;
-  pthread_exit(NULL);
   return NULL;
 }
 

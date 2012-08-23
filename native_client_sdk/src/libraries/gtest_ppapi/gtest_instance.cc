@@ -6,6 +6,10 @@
 #include "gtest_ppapi/gtest_runner.h"
 #include "ppapi/cpp/var.h"
 
+#if defined(WIN32)
+#undef PostMessage
+#endif
+
 GTestInstance::GTestInstance(PP_Instance instance)
   : pp::Instance(instance) {
 }
