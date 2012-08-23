@@ -5,47 +5,184 @@
 #include "chrome/browser/policy/user_cloud_policy_store.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/proto/device_management_local.pb.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "content/public/browser/browser_thread.h"
 
-using enterprise_management::PolicyData;
+namespace em = enterprise_management;
 
 namespace policy {
 
-UserCloudPolicyStore::UserCloudPolicyStore(Profile* profile)
+enum PolicyLoadStatus {
+  // Policy blob was successfully loaded and parsed.
+  LOAD_RESULT_SUCCESS,
+
+  // No previously stored policy was found.
+  LOAD_RESULT_NO_POLICY_FILE,
+
+  // Could not load the previously stored policy due to either a parse or
+  // file read error.
+  LOAD_RESULT_LOAD_ERROR,
+};
+
+// Struct containing the result of a policy load - if |status| ==
+// LOAD_RESULT_SUCCESS, |policy| is initialized from the policy file on disk.
+struct PolicyLoadResult {
+  PolicyLoadStatus status;
+  em::PolicyFetchResponse policy;
+};
+
+namespace {
+
+// Subdirectory in the user's profile for storing user policies.
+const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Policy");
+// File in the above directory for storing user policy data.
+const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("User Policy");
+
+// Loads policy from the backing file (must be called via a task on
+// the FILE thread). Returns a PolicyLoadStruct with the results of the fetch.
+policy::PolicyLoadResult LoadPolicyFromDiskOnFileThread(const FilePath& path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  policy::PolicyLoadResult result;
+  // If the backing file does not exist, just return.
+  if (!file_util::PathExists(path)) {
+    result.status = policy::LOAD_RESULT_NO_POLICY_FILE;
+    return result;
+  }
+  std::string data;
+  if (!file_util::ReadFileToString(path, &data) ||
+      !result.policy.ParseFromArray(data.c_str(), data.size())) {
+    LOG(WARNING) << "Failed to read or parse policy data from " << path.value();
+    result.status = policy::LOAD_RESULT_LOAD_ERROR;
+    return result;
+  }
+
+  result.status = policy::LOAD_RESULT_SUCCESS;
+  return result;
+}
+
+// Stores policy to the backing file (must be called via a task on
+// the FILE thread).
+void StorePolicyToDiskOnFileThread(const FilePath& path,
+                                   const em::PolicyFetchResponse& policy) {
+  DVLOG(1) << "Storing policy to " << path.value();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  std::string data;
+  if (!policy.SerializeToString(&data)) {
+    DLOG(WARNING) << "Failed to serialize policy data";
+    return;
+  }
+
+  if (!file_util::CreateDirectory(path.DirName())) {
+    DLOG(WARNING) << "Failed to create directory " << path.DirName().value();
+    return;
+  }
+
+  int size = data.size();
+  if (file_util::WriteFile(path, data.c_str(), size) != size) {
+    DLOG(WARNING) << "Failed to write " << path.value();
+  }
+}
+
+}  // namespace
+
+UserCloudPolicyStore::UserCloudPolicyStore(Profile* profile,
+                                           const FilePath& path)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      profile_(profile) {
+      profile_(profile),
+      backing_file_path_(path) {
 }
 
 UserCloudPolicyStore::~UserCloudPolicyStore() {
 }
 
 void UserCloudPolicyStore::Load() {
-  // TODO(atwilson): Read policy from file.
-  policy_.reset();
-  policy_map_.Clear();
+  DVLOG(1) << "Initiating policy load from disk";
+  // Cancel any pending Load/Store/Validate operations.
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Start a new Load operation and have us get called back when it is
+  // complete.
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&LoadPolicyFromDiskOnFileThread, backing_file_path_),
+      base::Bind(&UserCloudPolicyStore::PolicyLoaded,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void UserCloudPolicyStore::PolicyLoaded(PolicyLoadResult result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  switch (result.status) {
+    case LOAD_RESULT_LOAD_ERROR:
+      status_ = STATUS_LOAD_ERROR;
+      NotifyStoreError();
+      break;
+
+    case LOAD_RESULT_NO_POLICY_FILE:
+      DVLOG(1) << "No policy found on disk";
+      NotifyStoreLoaded();
+      break;
+
+    case LOAD_RESULT_SUCCESS: {
+      // Found policy on disk - need to validate it before it can be used.
+      scoped_ptr<em::PolicyFetchResponse> cloud_policy(
+          new em::PolicyFetchResponse(result.policy));
+      Validate(cloud_policy.Pass(),
+               base::Bind(
+                   &UserCloudPolicyStore::InstallLoadedPolicyAfterValidation,
+                   weak_factory_.GetWeakPtr()));
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+void UserCloudPolicyStore::InstallLoadedPolicyAfterValidation(
+    UserCloudPolicyValidator* validator) {
+  validation_status_ = validator->status();
+  if (!validator->success()) {
+    DVLOG(1) << "Validation failed: status=" << validation_status_;
+    status_ = STATUS_VALIDATION_ERROR;
+    NotifyStoreError();
+    return;
+  }
+
+  DVLOG(1) << "Validation succeeded - installing policy with dm_token: " <<
+      validator->policy_data()->request_token();
+  DVLOG(1) << "Device ID: " << validator->policy_data()->device_id();
+
+  InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
+  status_ = STATUS_OK;
   NotifyStoreLoaded();
 }
 
 void UserCloudPolicyStore::RemoveStoredPolicy() {
-  // TODO(atwilson): Remove policy from disk.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&file_util::Delete),
+                 backing_file_path_,
+                 false));
 }
 
-void UserCloudPolicyStore::Store(
-    const enterprise_management::PolicyFetchResponse& policy) {
+void UserCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
   // Stop any pending requests to store policy, then validate the new policy
   // before storing it.
   weak_factory_.InvalidateWeakPtrs();
-  scoped_ptr<enterprise_management::PolicyFetchResponse> policy_copy(
-      new enterprise_management::PolicyFetchResponse(policy));
+  scoped_ptr<em::PolicyFetchResponse> policy_copy(
+      new em::PolicyFetchResponse(policy));
   Validate(policy_copy.Pass(),
            base::Bind(&UserCloudPolicyStore::StorePolicyAfterValidation,
                       weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStore::Validate(
-    scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+    scoped_ptr<em::PolicyFetchResponse> policy,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
   scoped_ptr<UserCloudPolicyValidator> validator =
@@ -63,12 +200,19 @@ void UserCloudPolicyStore::Validate(
 void UserCloudPolicyStore::StorePolicyAfterValidation(
     UserCloudPolicyValidator* validator) {
   validation_status_ = validator->status();
+  DVLOG(1) << "Policy validation complete: status = " << validation_status_;
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
     NotifyStoreError();
     return;
   }
-  // TODO(atwilson): Write policy to file.
+
+  // Persist the validated policy (just fire a task - don't bother getting a
+  // reply because we can't do anything if it fails).
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&StorePolicyToDiskOnFileThread,
+                 backing_file_path_, *validator->policy()));
   InstallPolicy(validator->policy_data().Pass(), validator->payload().Pass());
   status_ = STATUS_OK;
   NotifyStoreLoaded();
@@ -77,7 +221,9 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
 // static
 scoped_ptr<CloudPolicyStore> CloudPolicyStore::CreateUserPolicyStore(
     Profile* profile) {
-  return scoped_ptr<CloudPolicyStore>(new UserCloudPolicyStore(profile));
+  FilePath path =
+      profile->GetPath().Append(kPolicyDir).Append(kPolicyCacheFile);
+  return scoped_ptr<CloudPolicyStore>(new UserCloudPolicyStore(profile, path));
 }
 
 }  // namespace policy

@@ -105,6 +105,8 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
   // Finally, set up registration if necessary.
   if (policy && policy->has_request_token() && policy->has_device_id() &&
       !client_->is_registered()) {
+    DVLOG(1) << "Setting up registration with request token: "
+             << policy->request_token();
     client_->SetupRegistration(policy->request_token(),
                                policy->device_id());
   }

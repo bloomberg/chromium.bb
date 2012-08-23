@@ -125,13 +125,25 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
       DCHECK(manager_->cloud_policy_service());
     }
 
-    // Register the CloudPolicyService if needed.
-    if (!manager_->IsClientRegistered())
+    // Register the CloudPolicyService if the cloud policy store is complete.
+    // The code below is somewhat racy in that if the store is not initialized
+    // by the time we get here, we won't register the client. In practice, we
+    // handle the case where there's no policy file because checking for the
+    // file always completes before the token DB is loaded (since they use the
+    // same thread for their operations).
+    // TODO(atwilson): If there's a problem loading the stored policy, we could
+    // be left with no policy, so we should move this code to
+    // UserCloudPolicyManager and have it initiate a DMToken fetch only once
+    // the policy load is complete (http://crbug.com/143187).
+    if (!manager_->IsClientRegistered() &&
+        manager_->cloud_policy_service()->store()->is_initialized()) {
       RegisterCloudPolicyService();
+    }
   }
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService() {
+  DVLOG(1) << "Fetching new DM Token";
   // TODO(atwilson): Move the code to mint the devicemanagement token into
   // TokenService.
   std::string token = TokenServiceFactory::GetForProfile(profile_)->
@@ -170,6 +182,7 @@ void UserPolicySigninService::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
   // Pass along the new access token to the CloudPolicyClient.
+  DVLOG(1) << "Fetched new scoped OAuth token:" << access_token;
   manager_->RegisterClient(access_token);
   oauth2_access_token_fetcher_.reset();
 }

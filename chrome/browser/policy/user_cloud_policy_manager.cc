@@ -33,7 +33,7 @@ namespace {
 
 // Subdirectory in the user's profile for storing user policies.
 const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Device Management");
-// File in the above directory for stroing user policy dmtokens.
+// File in the above directory for storing user policy dmtokens.
 const FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
 // File in the above directory for storing user policy data.
 const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
@@ -123,8 +123,10 @@ bool UserCloudPolicyManager::IsClientRegistered() const {
 
 void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
   DCHECK(cloud_policy_service()) << "Callers must invoke Initialize() first";
-  if (!cloud_policy_service()->client()->is_registered())
+  if (!cloud_policy_service()->client()->is_registered()) {
+    DVLOG(1) << "Registering client with access token: " << access_token;
     cloud_policy_service()->client()->Register(access_token);
+  }
 }
 
 bool UserCloudPolicyManager::IsInitializationComplete() const {

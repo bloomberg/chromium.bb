@@ -73,18 +73,18 @@ class CloudPolicyStore {
     return validation_status_;
   }
 
-  // Store a new policy blob. Pending store operations will be canceled. The
-  // store operation may proceed asynchronously and observers are notified once
-  // the operation finishes. If successful, OnStoreLoaded() will be invoked on
-  // the observers and the updated policy can be read through policy(). Errors
-  // generate OnStoreError() notifications.
+  // Store a new policy blob. Pending load/store operations will be canceled.
+  // The store operation may proceed asynchronously and observers are notified
+  // once the operation finishes. If successful, OnStoreLoaded() will be invoked
+  // on the observers and the updated policy can be read through policy().
+  // Errors generate OnStoreError() notifications.
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) = 0;
 
-  // Load the current policy blob from persistent storage. This may trigger
-  // asynchronous operations. Upon success, OnStoreLoaded() will be called on
-  // the registered observers. Otherwise, OnStoreError() reports the reason for
-  // failure.
+  // Load the current policy blob from persistent storage. Pending load/store
+  // operations will be canceled. This may trigger asynchronous operations.
+  // Upon success, OnStoreLoaded() will be called on the registered observers.
+  // Otherwise, OnStoreError() reports the reason for failure.
   virtual void Load() = 0;
 
   // Deletes any existing policy blob and notifies observers via OnStoreLoaded()
