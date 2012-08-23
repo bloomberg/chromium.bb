@@ -638,7 +638,6 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         case ui::ET_MOUSE_DRAGGED:
         case ui::ET_MOUSE_PRESSED:
         case ui::ET_MOUSE_RELEASED:
-        case ui::ET_MOUSEWHEEL:
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
           if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
@@ -667,6 +666,11 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
             }
           }
           ui::MouseEvent mouseev(xev);
+          delegate_->OnHostMouseEvent(&mouseev);
+          break;
+        }
+        case ui::ET_MOUSEWHEEL: {
+          ui::MouseWheelEvent mouseev(xev);
           delegate_->OnHostMouseEvent(&mouseev);
           break;
         }

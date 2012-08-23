@@ -226,14 +226,14 @@ WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
 }
 
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    ui::MouseEvent* event) {
+    ui::MouseWheelEvent* event) {
   WebKit::WebMouseWheelEvent webkit_event;
 
   webkit_event.type = WebKit::WebInputEvent::MouseWheel;
   webkit_event.button = WebKit::WebMouseEvent::ButtonNone;
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
-  webkit_event.deltaY = ui::GetMouseWheelOffset(event->native_event());
+  webkit_event.deltaY = event->offset();
   webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
 
   return webkit_event;

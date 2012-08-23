@@ -23,7 +23,7 @@ WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
 #else
 WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    ui::MouseEvent* event);
+    ui::MouseWheelEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
@@ -80,7 +80,7 @@ WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseEvent* event) {
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseWheelEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseWheelEvent webkit_event =

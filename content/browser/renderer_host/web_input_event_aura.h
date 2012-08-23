@@ -12,6 +12,7 @@ namespace ui {
 class GestureEvent;
 class KeyEvent;
 class MouseEvent;
+class MouseWheelEvent;
 class ScrollEvent;
 class TouchEvent;
 }
@@ -21,7 +22,7 @@ namespace content {
 CONTENT_EXPORT WebKit::WebMouseEvent MakeWebMouseEvent(
     ui::MouseEvent* event);
 CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
-    ui::MouseEvent* event);
+    ui::MouseWheelEvent* event);
 CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
     ui::ScrollEvent* event);
 CONTENT_EXPORT WebKit::WebKeyboardEvent MakeWebKeyboardEvent(

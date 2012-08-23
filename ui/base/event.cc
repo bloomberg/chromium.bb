@@ -23,6 +23,8 @@ namespace {
 
 base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
 #if defined(USE_X11)
+  if (!event || event->type == GenericEvent)
+    return NULL;
   XEvent* copy = new XEvent;
   *copy = *event;
   return copy;
@@ -74,11 +76,15 @@ Event::Event(const base::NativeEvent& native_event,
 }
 
 Event::Event(const Event& copy)
-    : native_event_(copy.native_event_),
+    : native_event_(::CopyNativeEvent(copy.native_event_)),
       type_(copy.type_),
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_),
       delete_native_event_(false) {
+#if defined(USE_X11)
+  if (native_event_)
+    delete_native_event_ = true;
+#endif
 }
 
 void Event::Init() {

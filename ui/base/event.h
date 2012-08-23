@@ -294,6 +294,16 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   explicit MouseWheelEvent(const MouseEvent& mouse_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
 
+  template <class T>
+  MouseWheelEvent(const MouseWheelEvent& model,
+                  T* source,
+                  T* target,
+                  EventType type,
+                  int flags)
+      : MouseEvent(model, source, target, type, flags),
+        offset_(model.offset_) {
+  }
+
   // The amount to scroll. This is in multiples of kWheelDelta.
   // Note: offset() > 0 means scroll up / left.
   int offset() const { return offset_; }
