@@ -1356,7 +1356,7 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
     static_cast<BackingStoreAura*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
   } else if (aura::Env::GetInstance()->render_white_bg()) {
-    canvas->FillRect(gfx::Rect(window_->bounds().size()), SK_ColorWHITE);
+    canvas->DrawColor(SK_ColorWHITE);
   }
 }
 
