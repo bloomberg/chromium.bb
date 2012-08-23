@@ -454,14 +454,14 @@
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the chrome and chrome_dll
-              # targets.  In this case, --breakpad=0, --keystone=0, and --svn=0
-              # are used because Breakpad, Keystone, and Subversion keys are
+              # targets.  In this case, --breakpad=0, --keystone=0, and --scm=0
+              # are used because Breakpad, Keystone, and SCM keys are
               # never placed into the helper.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
                          '--breakpad=0',
                          '--keystone=0',
-                         '--svn=0'],
+                         '--scm=0'],
             },
             {
               # Make sure there isn't any Objective-C in the helper app's
@@ -561,14 +561,14 @@
             {
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the chrome and chrome_dll
-              # targets.  In this case, --breakpad=0, --keystone=0, and --svn=0
-              # are used because Breakpad, Keystone, and Subversion keys are
+              # targets.  In this case, --breakpad=0, --keystone=0, and --scm=0
+              # are used because Breakpad, Keystone, and SCM keys are
               # never placed into the app mode loader.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
                          '--breakpad=0',
                          '--keystone=0',
-                         '--svn=0'],
+                         '--scm=0'],
             },
           ],
         },  # target app_mode_app

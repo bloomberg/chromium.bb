@@ -360,14 +360,14 @@
                   # The framework needs the Breakpad keys if this feature is
                   # enabled.  It does not need the Keystone keys; these always
                   # come from the outer application bundle.  The framework
-                  # doesn't currently use the Subversion keys for anything,
+                  # doesn't currently use the SCM keys for anything,
                   # but this seems like a really good place to store them.
                   'postbuild_name': 'Tweak Info.plist',
                   'action': ['<(tweak_info_plist_path)',
                              '--breakpad=<(mac_breakpad_compiled_in)',
                              '--breakpad_uploads=<(mac_breakpad_uploads)',
                              '--keystone=0',
-                             '--svn=1',
+                             '--scm=1',
                              '--branding=<(branding)'],
                 },
                 {
