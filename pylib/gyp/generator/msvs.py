@@ -1026,7 +1026,7 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
   # Get the information for this configuration
   include_dirs, resource_include_dirs = _GetIncludeDirs(config)
   libraries = _GetLibraries(spec)
-  out_file, vc_tool, _ = _GetOutputFilePathAndTool(spec)
+  out_file, vc_tool, _ = _GetOutputFilePathAndTool(spec, msbuild=False)
   defines = _GetDefines(config)
   defines = [_EscapeCppDefineForMSVS(d) for d in defines]
   disabled_warnings = _GetDisabledWarnings(config)
@@ -1130,7 +1130,7 @@ def _GetLibraries(spec):
   return unique_libraries_list
 
 
-def _GetOutputFilePathAndTool(spec):
+def _GetOutputFilePathAndTool(spec, msbuild):
   """Returns the path and tool to use for this target.
 
   Figures out the path of the file this spec will create and the name of
@@ -1158,6 +1158,8 @@ def _GetOutputFilePathAndTool(spec):
     product_extension = spec.get('product_extension')
     if product_extension:
       suffix = '.' + product_extension
+    elif msbuild:
+      suffix = '$(TargetExt)'
     prefix = spec.get('product_prefix', '')
     product_name = spec.get('product_name', '$(ProjectName)')
     out_file = ntpath.join(out_dir, prefix + product_name + suffix)
@@ -2571,13 +2573,13 @@ def _GetMSBuildAttributes(spec, config, build_file):
     config_type = _GetMSVSConfigurationType(spec, build_file)
     config_type = _ConvertMSVSConfigurationType(config_type)
     msbuild_attributes = config.get('msbuild_configuration_attributes', {})
-    msbuild_attributes['ConfigurationType'] = config_type
+    msbuild_attributes.setdefault('ConfigurationType', config_type)
     output_dir = msbuild_attributes.get('OutputDirectory',
-                                      '$(SolutionDir)$(Configuration)\\')
-    msbuild_attributes['OutputDirectory'] = _FixPath(output_dir)
+                                      '$(SolutionDir)$(Configuration)')
+    msbuild_attributes['OutputDirectory'] = _FixPath(output_dir) + '\\'
     if 'IntermediateDirectory' not in msbuild_attributes:
-      intermediate = '$(Configuration)\\'
-      msbuild_attributes['IntermediateDirectory'] = _FixPath(intermediate)
+      intermediate = _FixPath('$(Configuration)') + '\\'
+      msbuild_attributes['IntermediateDirectory'] = intermediate
     if 'CharacterSet' in msbuild_attributes:
       msbuild_attributes['CharacterSet'] = _ConvertMSVSCharacterSet(
           msbuild_attributes['CharacterSet'])
@@ -2754,7 +2756,7 @@ def _FinalizeMSBuildSettings(spec, configuration):
     msbuild_settings = MSVSSettings.ConvertToMSBuildSettings(msvs_settings)
   include_dirs, resource_include_dirs = _GetIncludeDirs(configuration)
   libraries = _GetLibraries(spec)
-  out_file, _, msbuild_tool = _GetOutputFilePathAndTool(spec)
+  out_file, _, msbuild_tool = _GetOutputFilePathAndTool(spec, msbuild=True)
   defines = _GetDefines(configuration)
   if converted:
     # Visual Studio 2010 has TR1
@@ -3009,7 +3011,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
                               extension_to_rule_name)
   missing_sources = _VerifySourcesExist(sources, project_dir)
 
-  for (_, configuration) in configurations.iteritems():
+  for configuration in configurations.itervalues():
     _FinalizeMSBuildSettings(spec, configuration)
 
   # Add attributes to root element
