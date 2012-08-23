@@ -779,7 +779,6 @@ void GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
   upload_file_info->all_bytes_present = true;
   upload_file_info->content_type = content_type;
   upload_file_info->initial_upload_location = GURL(entry_proto->upload_url());
-  upload_file_info->upload_mode = UPLOAD_NEW_FILE;
 
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
@@ -3001,7 +3000,6 @@ void GDataFileSystem::UpdateEntryDataOnUIThread(
                           base::Bind(&OnCacheUpdatedForAddUploadedFile,
                                      callback));
 }
-
 
 void GDataFileSystem::Observe(int type,
                               const content::NotificationSource& source,
