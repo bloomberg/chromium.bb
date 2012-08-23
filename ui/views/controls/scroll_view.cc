@@ -408,7 +408,8 @@ ui::GestureStatus ScrollView::OnGestureEvent(const ui::GestureEvent& event) {
   // the scrollbars.
   bool scroll_event = event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
                       event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-                      event.type() == ui::ET_GESTURE_SCROLL_END;
+                      event.type() == ui::ET_GESTURE_SCROLL_END ||
+                      event.type() == ui::ET_SCROLL_FLING_START;
 
   if (vert_sb_->visible()) {
     if (vert_sb_->bounds().Contains(event.location()) || scroll_event)

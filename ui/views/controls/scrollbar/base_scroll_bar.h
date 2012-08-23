@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
 #define UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
 
+#include "ui/views/animation/scroll_animator.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_delegate.h"
@@ -22,6 +23,7 @@ class MenuRunner;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
+                                   public ScrollDelegate,
                                    public ContextMenuController,
                                    public MenuDelegate {
  public:
@@ -73,7 +75,10 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   virtual int GetLayoutSize() const OVERRIDE = 0;
   virtual int GetPosition() const OVERRIDE;
 
-  // ContextMenuController overrides.
+  // ScrollDelegate overrides:
+  virtual void OnScroll(float dx, float dy) OVERRIDE;
+
+  // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& point) OVERRIDE;
 
@@ -156,6 +161,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   int context_menu_mouse_position_;
 
   scoped_ptr<MenuRunner> menu_runner_;
+  scoped_ptr<ScrollAnimator> scroll_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScrollBar);
 };
