@@ -78,11 +78,17 @@ struct RagelDecodeState {
   uint8_t inst_num_bytes;
   uint8_t valid_state;  /* indicates if this struct describes an instruction */
   const char *inst_name;
-  int inst_is_legal;
+  int inst_is_legal;  /* legal means decodes correctly */
+  int inst_is_valid;  /* valid means validator is happy */
 };
 struct RagelDecodeState RState;
 
-void RagelPrintInst() {
+static const char* RGetInstMnemonic(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
+  return RState.inst_name;
+}
+
+static void RagelPrintInst() {
   int i;
   int print_num_bytes = RState.inst_num_bytes;
 
@@ -92,6 +98,8 @@ void RagelPrintInst() {
   }
   printf(": %s\n", RState.inst_name);
 }
+
+
 
 /* It's difficult to use this to detect actual decoder errors because for */
 /* enuminst we want to ignore errors for all but the first instruction.   */
@@ -140,6 +148,7 @@ static void InitializeRagelDecodeState(struct RagelDecodeState *rs,
   rs->inst_offset = itext;
   rs->inst_num_bytes = 0;
   rs->inst_is_legal = 0;
+  rs->inst_is_valid = 0;
   rs->inst_name = "undefined";
 }
 
@@ -187,7 +196,7 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
            sizeof(chunk) - tempstate.inst_num_bytes);
     res = ValidateChunkArch(chunk, sizeof(chunk), 0 /*options*/,
                             &old_validator_features, RagelValidateError, NULL);
-    RState.inst_is_legal = res;
+    RState.inst_is_valid = res;
   }
 
 #undef DecodeChunkArch
@@ -198,6 +207,12 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
 static Bool RIsInstLegal(const NaClEnumerator* enumerator) {
   UNREFERENCED_PARAMETER(enumerator);
   return RState.inst_is_legal;
+}
+
+/* Returns true if the instruction parsed a legal instruction. */
+static Bool RIsInstValid(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
+  return RState.inst_is_valid;
 }
 
 /* Prints out the disassembled instruction. */
@@ -231,11 +246,11 @@ NaClEnumeratorDecoder* RegisterRagelDecoder() {
   ragel_decoder._base._print_inst_fn = RPrintInst;
   ragel_decoder._base._is_inst_legal_fn = RIsInstLegal;
   ragel_decoder._base._install_flag_fn = InstallFlag;
-  ragel_decoder._base._get_inst_mnemonic_fn = NULL;
+  ragel_decoder._base._get_inst_mnemonic_fn = RGetInstMnemonic;
   ragel_decoder._base._get_inst_num_operands_fn = NULL;
   ragel_decoder._base._get_inst_operands_text_fn = NULL;
   ragel_decoder._base._writes_to_reserved_reg_fn = NULL;
-  ragel_decoder._base._maybe_inst_validates_fn = NULL;
+  ragel_decoder._base._maybe_inst_validates_fn = RIsInstValid;
   ragel_decoder._base._segment_validates_fn = NULL;
   ragel_decoder._base._usage_message = "Runs ragel to decode instructions.";
   return &ragel_decoder._base;

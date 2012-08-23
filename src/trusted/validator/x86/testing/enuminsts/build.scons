@@ -7,7 +7,7 @@ import os
 import sys
 Import('env')
 
-# enuminst is x86 only
+# vdiff is x86 only
 if not env.Bit('target_x86'): Return()
 
 # ------------------------------------------------------
@@ -29,10 +29,9 @@ if env.AllBits('windows', 'debug'):
 test_env = env.Clone()
 test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB', '-DNACL_RAGEL_DECODER'])
 
-enuminst = test_env.ComponentProgram(
-  'enuminst',
-  ['enuminsts.c', 'input_tester.c', 'nacl_tester.c',
-   'ragel_tester.c', 'str_utils.c', 'text2hex.c'],
+vdiff = test_env.ComponentProgram(
+  'vdiff',
+  ['vdiff.c', 'nacl_tester.c', 'ragel_tester.c', 'str_utils.c', 'text2hex.c'],
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncvalidate'),
               test_env.NaClTargetArchSuffix('dfa_decode'),
@@ -49,4 +48,5 @@ enuminst = test_env.ComponentProgram(
               env.NaClTargetArchSuffix('dfa_validate_caller'),
               'platform', 'gio', 'utils',
              ])
-env.Requires(enuminst, crt)
+
+env.Requires(vdiff, crt)

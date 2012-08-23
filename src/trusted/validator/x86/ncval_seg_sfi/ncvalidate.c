@@ -70,6 +70,11 @@ static const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
  */
 static int kMaxDiagnostics = 0;
 
+/* This flag controls a mode for testing only in which inter-instruction
+ * checks are disabled.
+ */
+static Bool NACL_FLAG_unsafe_single_inst32_mode = FALSE;
+
 int NCValidatorGetMaxDiagnostics() {
   return kMaxDiagnostics;
 }
@@ -420,6 +425,9 @@ static void RememberJumpTarget(const NCDecoderInst *dinst, int32_t jump_offset,
   NaClPcAddress target = (dinst->inst_addr + dinst->inst.bytes.length
                           + jump_offset);
 
+  /* For testing only, this mode disables inter-instruction checks. */
+  if (NACL_FLAG_unsafe_single_inst32_mode) return;
+
   if (target < vstate->codesize) {
     NCSetAdrTable(target, vstate->kttable);
   } else if ((target & vstate->bundle_mask) == 0) {
@@ -721,7 +729,10 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
   OpcodeHisto(NCInstBytesByteInline(&dinst->inst_bytes,
                                     dinst->inst.prefixbytes),
               vstate);
-  RememberInstructionBoundary(dinst, vstate);
+  /* For testing only, this mode disables inter-instruction checks. */
+  if (!NACL_FLAG_unsafe_single_inst32_mode) {
+    RememberInstructionBoundary(dinst, vstate);
+  }
 
   cpufeatures = &(vstate->cpufeatures);
 
@@ -887,6 +898,19 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
     }
   }
   return TRUE;
+}
+
+Bool UnsafePartialValidateInst(const NCDecoderInst *dinst) {
+  NCValidatorState *vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
+  Bool result = FALSE;
+
+  NACL_FLAG_unsafe_single_inst32_mode = TRUE;
+  NCStatsInit(vstate);
+  if (ValidateInst(dinst)) {
+    result = vstate->stats.sawfailure == 0;
+  };
+  NACL_FLAG_unsafe_single_inst32_mode = FALSE;
+  return result;
 }
 
 /*

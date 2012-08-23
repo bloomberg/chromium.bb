@@ -100,6 +100,10 @@ Bool NaClInstValidates(uint8_t* mbase,
     state->cur_inst_vector = NULL;
   } while(0);
   NaClValidatorStateDestroy(state);
+  /* Strictly speaking this shouldn't be necessary, as the mode */
+  /* should only be used from tests. Disabling it here as a     */
+  /* defensive tactic. */
+  NACL_FLAGS_unsafe_single_inst_mode = FALSE;
   return validates;
 }
 

@@ -133,4 +133,10 @@ void NCStatsBadAlignment(struct NCValidatorState *vstate);
  */
 void NCStatsInternalError(struct NCValidatorState *vstate);
 
+/* Provide a partial-validation operation, checking a single instruction
+ * but ignoring inter-instruction considerations, useful for validator
+ * testing.
+ */
+Bool UnsafePartialValidateInst(const NCDecoderInst *dinst);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_INTERNALTYPES_H__ */
