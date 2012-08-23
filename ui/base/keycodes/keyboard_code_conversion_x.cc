@@ -388,6 +388,8 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
       return VKEY_MEDIA_LAUNCH_APP2;
     case XF86XK_WLAN:
       return VKEY_WLAN;
+    case XF86XK_PowerOff:
+      return VKEY_POWER;
     case XF86XK_MonBrightnessDown:
       return VKEY_BRIGHTNESS_DOWN;
     case XF86XK_MonBrightnessUp:
@@ -744,6 +746,8 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return XF86XK_LaunchB;
     case VKEY_WLAN:
       return XF86XK_WLAN;
+    case VKEY_POWER:
+      return XF86XK_PowerOff;
     case VKEY_BRIGHTNESS_DOWN:
       return XF86XK_MonBrightnessDown;
     case VKEY_BRIGHTNESS_UP:

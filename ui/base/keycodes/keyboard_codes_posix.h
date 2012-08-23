@@ -209,6 +209,7 @@ enum KeyboardCode {
   // POSIX specific VKEYs. Note that as of Windows SDK 7.1, 0x97-9F, 0xD8-DA,
   // and 0xE8 are unassigned.
   VKEY_WLAN = 0x97,
+  VKEY_POWER = 0x98,
   VKEY_BRIGHTNESS_DOWN = 0xD8,
   VKEY_BRIGHTNESS_UP = 0xD9,
   VKEY_KBD_BRIGHTNESS_DOWN = 0xDA,
