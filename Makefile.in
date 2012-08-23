@@ -66,29 +66,43 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+
 # This allows using fixed NDK headers when building for Android.
-@ANDROID_HOST_TRUE@am__append_1 = -I$(top_srcdir)/src/common/android/include
+# This is only necessary for building the unit tests until GTest is upgraded
+# to a future version.
+@ANDROID_HOST_TRUE@am__append_1 =  \
+@ANDROID_HOST_TRUE@	-I$(top_srcdir)/src/common/android/include \
+@ANDROID_HOST_TRUE@	-I$(top_srcdir)/src/common/android/testing/include
+
+# These are good warnings to be treated as errors
+@GCC_TRUE@am__append_2 = \
+@GCC_TRUE@	-Werror=non-virtual-dtor \
+@GCC_TRUE@	-Werror=vla \
+@GCC_TRUE@	-Werror=unused-variable \
+@GCC_TRUE@	-Werror=missing-braces \
+@GCC_TRUE@	-Werror=overloaded-virtual
+
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
 check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 	$(am__EXEEXT_7)
-@DISABLE_PROCESSOR_FALSE@am__append_2 = src/libbreakpad.a
-@DISABLE_PROCESSOR_FALSE@am__append_3 = src/third_party/libdisasm/libdisasm.a
-@LINUX_HOST_TRUE@am__append_4 = src/client/linux/libbreakpad_client.a
-@DISABLE_PROCESSOR_FALSE@am__append_5 = \
+@DISABLE_PROCESSOR_FALSE@am__append_3 = src/libbreakpad.a
+@DISABLE_PROCESSOR_FALSE@am__append_4 = src/third_party/libdisasm/libdisasm.a
+@LINUX_HOST_TRUE@am__append_5 = src/client/linux/libbreakpad_client.a
+@DISABLE_PROCESSOR_FALSE@am__append_6 = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk
 
-@LINUX_HOST_TRUE@am__append_6 = \
+@LINUX_HOST_TRUE@am__append_7 = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_dumper_unittest_helper
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_7 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_8 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/core2md/core2md \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/dump_syms \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/minidump_upload \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/sym_upload
 
-@DISABLE_PROCESSOR_FALSE@am__append_8 = \
+@DISABLE_PROCESSOR_FALSE@am__append_9 = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/address_map_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/binarystream_unittest \
@@ -113,14 +127,14 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest
 
-@LINUX_HOST_TRUE@am__append_9 = \
+@LINUX_HOST_TRUE@am__append_10 = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_10 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_11 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest
 
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_11 = \
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_12 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
 noinst_PROGRAMS =
@@ -433,6 +447,9 @@ am__src_client_linux_linux_client_unittest_SOURCES_DIST =  \
 src_client_linux_linux_client_unittest_OBJECTS =  \
 	$(am_src_client_linux_linux_client_unittest_OBJECTS)
 am__DEPENDENCIES_1 =
+src_client_linux_linux_client_unittest_LINK = $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(src_client_linux_linux_client_unittest_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am__src_client_linux_linux_dumper_unittest_helper_SOURCES_DIST = src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
 @LINUX_HOST_TRUE@am_src_client_linux_linux_dumper_unittest_helper_OBJECTS = src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
 src_client_linux_linux_dumper_unittest_helper_OBJECTS =  \
@@ -1217,16 +1234,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # This allows #includes to be relative to src/
-AM_CPPFLAGS = -I$(top_srcdir)/src $(am__append_1)
-
-# These are good warnings to be treated as errors
-@GCC_TRUE@AM_CXXFLAGS = \
-@GCC_TRUE@	-Werror=non-virtual-dtor \
-@GCC_TRUE@	-Werror=vla \
-@GCC_TRUE@	-Werror=unused-variable \
-@GCC_TRUE@	-Werror=missing-braces \
-@GCC_TRUE@	-Werror=overloaded-virtual
-
+AM_CPPFLAGS = -I$(top_srcdir)/src
+AM_CXXFLAGS = $(am__append_1) $(am__append_2)
 
 # Specify include paths for ac macros
 ACLOCAL_AMFLAGS = -I m4
@@ -1238,8 +1247,8 @@ dist_doc_DATA = \
 	NEWS \
 	README
 
-noinst_LIBRARIES = $(am__append_3)
-lib_LIBRARIES = $(am__append_2) $(am__append_4)
+noinst_LIBRARIES = $(am__append_4)
+lib_LIBRARIES = $(am__append_3) $(am__append_5)
 @LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
@@ -1442,6 +1451,9 @@ TESTS_ENVIRONMENT =
 @LINUX_HOST_TRUE@	src/common/linux/safe_readlink.o \
 @LINUX_HOST_TRUE@	src/common/string_conversion.o \
 @LINUX_HOST_TRUE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDFLAGS = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	-llog
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_dumper_unittest_helper \
@@ -2576,7 +2588,7 @@ src/processor/src_client_linux_linux_client_unittest-pathname_stripper.$(OBJEXT)
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/linux_client_unittest$(EXEEXT): $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_DEPENDENCIES) src/client/linux/$(am__dirstamp)
 	@rm -f src/client/linux/linux_client_unittest$(EXEEXT)
-	$(CXXLINK) $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_LDADD) $(LIBS)
+	$(src_client_linux_linux_client_unittest_LINK) $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_LDADD) $(LIBS)
 src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT):  \
 	src/client/linux/minidump_writer/$(am__dirstamp) \
 	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)

@@ -182,7 +182,9 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
 
   size_t num_nt_prpsinfo = 0;
   size_t num_nt_prstatus = 0;
+#if defined(__i386__) || defined(__x86_64__)
   size_t num_nt_fpregset = 0;
+#endif
 #if defined(__i386__)
   size_t num_nt_prxfpreg = 0;
 #endif

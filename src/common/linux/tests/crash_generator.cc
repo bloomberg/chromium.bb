@@ -43,6 +43,9 @@
 
 #include <string>
 
+#if defined(__ANDROID__)
+#include "common/android/testing/pthread_fixes.h"
+#endif
 #include "common/linux/eintr_wrapper.h"
 #include "common/tests/auto_tempdir.h"
 #include "common/tests/file_utils.h"

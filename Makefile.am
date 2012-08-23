@@ -32,14 +32,20 @@
 
 # This allows #includes to be relative to src/
 AM_CPPFLAGS = -I$(top_srcdir)/src
+
+AM_CXXFLAGS =
+
 if ANDROID_HOST
 # This allows using fixed NDK headers when building for Android.
-AM_CPPFLAGS += -I$(top_srcdir)/src/common/android/include
+AM_CXXFLAGS += -I$(top_srcdir)/src/common/android/include
+# This is only necessary for building the unit tests until GTest is upgraded
+# to a future version.
+AM_CXXFLAGS += -I$(top_srcdir)/src/common/android/testing/include
 endif
 
 if GCC
 # These are good warnings to be treated as errors
-AM_CXXFLAGS = \
+AM_CXXFLAGS += \
 	-Werror=non-virtual-dtor \
 	-Werror=vla \
 	-Werror=unused-variable \
@@ -351,6 +357,10 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/linux/safe_readlink.o \
 	src/common/string_conversion.o \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+if ANDROID_HOST
+src_client_linux_linux_client_unittest_LDFLAGS = \
+	-llog
+endif
 
 src_client_linux_linux_client_unittest_DEPENDENCIES = \
 	src/client/linux/linux_dumper_unittest_helper \
