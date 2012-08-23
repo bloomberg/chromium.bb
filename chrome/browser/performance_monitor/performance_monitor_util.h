@@ -8,23 +8,23 @@
 #include "base/callback.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
+#include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/event.h"
-#include "chrome/browser/performance_monitor/metric_info.h"
+#include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/common/extensions/extension_constants.h"
 
 namespace performance_monitor {
 namespace util {
 
 // Metric data can be either dense or sporadic, so AggregateMetric() normalizes
-// the metric data in time. |metric_infos| must be sorted in increasing time.
+// the metric data in time. |metrics| must be sorted in increasing time.
 // Put concisely, AggregateMetric() does sample rate conversion from irregular
 // metric data points to a sample period of |resolution| beginning at |start|.
 // Each sampling window starts and ends at an integer multiple away from
 // |start| and data points are omitted if there are no points to resample.
-std::vector<MetricInfo> AggregateMetric(
-    const std::vector<MetricInfo>& metric_infos,
-    const base::Time& start,
-    const base::TimeDelta& resolution);
+Database::MetricVector AggregateMetric(const Database::MetricVector& metrics,
+                                       const base::Time& start,
+                                       const base::TimeDelta& resolution);
 
 // Posts |request| to the performance monitor database's sequenced thread. On
 // completion |reply| is posted to the thread that called
