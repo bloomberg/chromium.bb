@@ -22,7 +22,13 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
+#include "chrome/browser/media_gallery/media_gallery_constants.h"
 #include "chrome/browser/media_gallery/media_storage_util.h"
+
+namespace chrome {
+
+using base::SystemMonitor;
+using content::BrowserThread;
 
 namespace {
 
@@ -50,14 +56,6 @@ const char kSerial[] = "ID_SERIAL";
 const char kSerialShort[] = "ID_SERIAL_SHORT";
 const char kVendor[] = "ID_VENDOR";
 const char kVendorID[] = "ID_VENDOR_ID";
-
-// Delimiter constants.
-const char kNonSpaceDelim[] = ":";
-const char kSpaceDelim[] = " ";
-
-// Unique id prefix constants.
-const char kFSUniqueIdPrefix[] = "UUID:";
-const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
 
 // Device mount point details.
 struct MountPointEntryInfo {
@@ -161,16 +159,10 @@ bool GetDeviceInfo(const std::string& device_path, std::string* id,
     *id = chrome::MediaStorageUtil::MakeDeviceId(
         chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
   }
-
   return true;
 }
 
 }  // namespace
-
-namespace chrome {
-
-using base::SystemMonitor;
-using content::BrowserThread;
 
 MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
     const FilePath& path)

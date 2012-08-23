@@ -1479,6 +1479,8 @@
         'browser/media_gallery/media_galleries_preferences.h',
         'browser/media_gallery/media_galleries_preferences_factory.cc',
         'browser/media_gallery/media_galleries_preferences_factory.h',
+        'browser/media_gallery/media_gallery_constants.cc',
+        'browser/media_gallery/media_gallery_constants.h',
         'browser/media_gallery/media_gallery_database.cc',
         'browser/media_gallery/media_gallery_database.h',
         'browser/media_gallery/media_gallery_database_types.cc',
