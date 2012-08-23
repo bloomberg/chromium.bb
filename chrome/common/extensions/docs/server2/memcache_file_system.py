@@ -51,8 +51,6 @@ class MemcacheFileSystem(FileSystem):
       version = dir_stat.version
     else:
       version = dir_stat.child_versions.get(path.split('/')[-1], None)
-      # TODO(cduvall): IDL APIs are restatting every load because this exception
-      # is thrown so they never get cached.
       if version is None:
         raise FileNotFoundError(path)
     mapping = { path: version }

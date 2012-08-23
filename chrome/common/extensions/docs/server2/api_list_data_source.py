@@ -16,6 +16,9 @@ IGNORED_FILES = [
 ]
 
 class APIListDataSource(object):
+  """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
+  that are used in the api_index.html and experimental.html pages.
+  """
   class Factory(object):
     def __init__(self, cache_builder, file_system, api_path, public_path):
       self._cache = cache_builder.build(self._ListAPIs, fs_cache.LIST)
@@ -59,9 +62,6 @@ class APIListDataSource(object):
     def Create(self):
       return APIListDataSource(self._cache, self._api_path)
 
-  """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
-  that are used in the api_index.html and experimental.html pages.
-  """
   def __init__(self, cache, api_path):
     self._cache = cache
     self._api_path = api_path
