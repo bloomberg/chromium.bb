@@ -24,13 +24,21 @@ namespace {
 // Delay on first fetch so we don't interfere with startup.
 static const int kStartResourceFetchDelay = 5000;
 
-// Delay between calls to update the cache (12h), and 10s in debug mode.
+// Delay between calls to update the cache (12 hours), and 3 min in debug mode.
 static const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
-static const int kTestCacheUpdateDelay = 10 * 1000;
+static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
 static const int kPromoServiceVersion = 7;
+
+// The promotion type used for Unpack() and ScheduleNotificationOnInit.
+static const NotificationPromo::PromoType kDefaultPromoType =
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    NotificationPromo::MOBILE_NTP_SYNC_PROMO;
+#else
+    NotificationPromo::NTP_NOTIFICATION_PROMO;
+#endif
 
 GURL GetPromoResourceURL() {
   const std::string promo_server_url = CommandLine::ForCurrentProcess()->
@@ -135,9 +143,10 @@ void PromoResourceService::ScheduleNotificationOnInit() {
   } else {
     // If the promo start is in the future, set a notification task to
     // invalidate the NTP cache at the time of the promo start.
-    double promo_start = prefs_->GetDouble(prefs::kNtpPromoStart);
-    double promo_end = prefs_->GetDouble(prefs::kNtpPromoEnd);
-    ScheduleNotification(promo_start, promo_end);
+    NotificationPromo notification_promo(profile_);
+    notification_promo.InitFromPrefs(kDefaultPromoType);
+    ScheduleNotification(notification_promo.StartTimeForGroup(),
+                         notification_promo.EndTime());
   }
 }
 
@@ -179,13 +188,7 @@ std::string PromoResourceService::GetPromoLocale() {
 
 void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   NotificationPromo notification_promo(profile_);
-  NotificationPromo::PromoType promo_type =
-#if !defined(OS_ANDROID)
-    NotificationPromo::NTP_NOTIFICATION_PROMO;
-#else
-    NotificationPromo::MOBILE_NTP_SYNC_PROMO;
-#endif
-  notification_promo.InitFromJson(parsed_json, promo_type);
+  notification_promo.InitFromJson(parsed_json, kDefaultPromoType);
 
   if (notification_promo.new_notification()) {
     ScheduleNotification(notification_promo.StartTimeForGroup(),
