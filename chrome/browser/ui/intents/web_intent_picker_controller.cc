@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
@@ -69,7 +70,8 @@ const int kMinThrobberDisplayTimeMs = 2000;
 
 // Gets the favicon service for the profile in |tab_contents|.
 FaviconService* GetFaviconService(TabContents* tab_contents) {
-  return tab_contents->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  return FaviconServiceFactory::GetForProfile(tab_contents->profile(),
+                                              Profile::EXPLICIT_ACCESS);
 }
 
 // Gets the web intents registry for the profile in |tab_contents|.
@@ -503,6 +505,7 @@ void WebIntentPickerController::AddServiceToModel(
 
   pending_async_count_++;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+      tab_contents_->profile(),
       service.service_url,
       history::FAVICON,
       &favicon_consumer_,

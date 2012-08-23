@@ -8,6 +8,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -529,8 +530,9 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   HistoryServiceFactory::GetForProfile(
       profile(), Profile::EXPLICIT_ACCESS)->AddPage(
           url1, history::SOURCE_BROWSED);
-  profile()->GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
-      url1_favicon, icon_data, history::FAVICON);
+  FaviconServiceFactory::GetForProfile(
+      profile(), Profile::EXPLICIT_ACCESS)->SetFavicon(
+          url1, url1_favicon, icon_data, history::FAVICON);
 
   // Will return the current icon (default) but start an anync call
   // to retrieve the favicon from the favicon service.

@@ -84,7 +84,6 @@ class ProfileImpl : public Profile,
   virtual extensions::EventRouter* GetExtensionEventRouter() OVERRIDE;
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
@@ -210,9 +209,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
-  scoped_ptr<FaviconService> favicon_service_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
-  bool favicon_service_created_;
 
   // Whether or not the last session exited cleanly. This is set only once.
   bool last_session_exited_cleanly_;

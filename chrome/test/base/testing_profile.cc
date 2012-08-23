@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
@@ -297,14 +298,20 @@ TestingProfile::~TestingProfile() {
     host_content_settings_map_->ShutdownOnUIThread();
 
   DestroyTopSites();
-  DestroyFaviconService();
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
 }
 
+static ProfileKeyedService* BuildFaviconService(Profile* profile) {
+  return new FaviconService(
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile));
+}
+
 void TestingProfile::CreateFaviconService() {
-  favicon_service_.reset(new FaviconService(this));
+  // It is up to the caller to create the history service if one is needed.
+  FaviconServiceFactory::GetInstance()->SetTestingFactory(
+      this, BuildFaviconService);
 }
 
 static scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
@@ -370,10 +377,6 @@ void TestingProfile::DestroyTopSites() {
     if (MessageLoop::current())
       MessageLoop::current()->RunAllPending();
   }
-}
-
-void TestingProfile::DestroyFaviconService() {
-  favicon_service_.reset();
 }
 
 static ProfileKeyedService* BuildBookmarkModel(Profile* profile) {
@@ -518,10 +521,6 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
   if (!extension_special_storage_policy_.get())
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(NULL);
   return extension_special_storage_policy_.get();
-}
-
-FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
-  return favicon_service_.get();
 }
 
 net::CookieMonster* TestingProfile::GetCookieMonster() {

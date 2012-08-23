@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -452,9 +453,9 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
 
 void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   FaviconService::Handle handle = service->GetFaviconForURL(
-      item->url, history::FAVICON, &favicon_consumer_,
+      profile_, item->url, history::FAVICON, &favicon_consumer_,
       base::Bind(&HistoryMenuBridge::GotFaviconData, base::Unretained(this)));
   favicon_consumer_.SetClientData(service, handle, item);
   item->icon_handle = handle;
@@ -468,7 +469,8 @@ void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
 
   HistoryItem* item =
       favicon_consumer_.GetClientData(
-          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
+          FaviconServiceFactory::GetForProfile(
+              profile_, Profile::EXPLICIT_ACCESS), handle);
   DCHECK(item);
   item->icon_requested = false;
   item->icon_handle = 0;
@@ -491,8 +493,8 @@ void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
 void HistoryMenuBridge::CancelFaviconRequest(HistoryItem* item) {
   DCHECK(item);
   if (item->icon_requested) {
-    FaviconService* service =
-        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    FaviconService* service = FaviconServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
     service->CancelRequest(item->icon_handle);
     item->icon_requested = false;
     item->icon_handle = 0;

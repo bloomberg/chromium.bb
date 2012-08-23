@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -240,12 +241,12 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
     return;
   }
   requested_favicons_.insert(entry->GetUniqueID());
-  FaviconService* favicon_service =
-      browser_->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      browser_->profile(), Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-      entry->GetURL(), history::FAVICON, &load_consumer_,
+      browser_->profile(), entry->GetURL(), history::FAVICON, &load_consumer_,
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this)));
   load_consumer_.SetClientData(favicon_service, handle, entry->GetUniqueID());

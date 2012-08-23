@@ -215,19 +215,6 @@ class Profile : public content::BrowserContext {
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() = 0;
 
-  // Retrieves a pointer to the FaviconService associated with this
-  // profile.  The FaviconService is lazily created the first time
-  // that this method is called.
-  //
-  // Although FaviconService is refcounted, this will not addref, and callers
-  // do not need to do any reference counting as long as they keep the pointer
-  // only for the local scope (which they should do anyway since the browser
-  // process may decide to shut down).
-  //
-  // |access| defines what the caller plans to do with the service. See
-  // the ServiceAccessType definition above.
-  virtual FaviconService* GetFaviconService(ServiceAccessType access) = 0;
-
   // Accessor. The instance is created upon first access.
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() = 0;
 
