@@ -245,11 +245,10 @@ std::vector<TimeRange> Database::GetActiveIntervals(const base::Time& start,
   return results;
 }
 
-Database::EventVector Database::GetEvents(EventType type,
-                                          const base::Time& start,
-                                          const base::Time& end) {
+Database::EventList Database::GetEvents(EventType type, const base::Time& start,
+                                        const base::Time& end) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  EventVector events;
+  EventList events;
   std::string start_key = CreateEventKey(start, EVENT_UNDEFINED);
   std::string end_key = CreateEventKey(end, EVENT_NUMBER_OF_EVENTS);
   scoped_ptr<leveldb::Iterator> it(event_db_->NewIterator(read_options_));
@@ -292,8 +291,7 @@ Database::EventTypeSet Database::GetEventTypes(const base::Time& start,
   return results;
 }
 
-bool Database::AddMetric(const std::string& activity,
-                         MetricType metric,
+bool Database::AddMetric(const std::string& activity, MetricType metric,
                          const std::string& value) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   UpdateActiveInterval();
@@ -313,9 +311,10 @@ bool Database::AddMetric(const std::string& activity,
   return recent_status.ok() && metric_status.ok();
 }
 
-Database::MetricTypeSet Database::GetActiveMetrics(const base::Time& start,
-                                                   const base::Time& end) {
+std::vector<const MetricDetails*> Database::GetActiveMetrics(
+    const base::Time& start, const base::Time& end) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::vector<const MetricDetails*> results;
   std::string recent_start_key = CreateRecentKey(
       start, static_cast<MetricType>(0), std::string());
   std::string recent_end_key = CreateRecentKey(
@@ -323,7 +322,7 @@ Database::MetricTypeSet Database::GetActiveMetrics(const base::Time& start,
   std::string recent_end_of_time_key = CreateRecentKey(
       clock_->GetTime(), METRIC_NUMBER_OF_METRICS, std::string());
 
-  MetricTypeSet active_metrics;
+  std::set<MetricType> active_metrics;
   // Get all the guaranteed metrics.
   scoped_ptr<leveldb::Iterator> recent_it(
       recent_db_->NewIterator(read_options_));
@@ -335,7 +334,7 @@ Database::MetricTypeSet Database::GetActiveMetrics(const base::Time& start,
   }
   // Get all the possible metrics (metrics that may have been updated after
   // |end|).
-  MetricTypeSet possible_metrics;
+  std::set<MetricType> possible_metrics;
   for (recent_it->Seek(recent_end_key);
        recent_it->Valid() &&
        recent_it->key().ToString() <= recent_end_of_time_key;
@@ -343,7 +342,7 @@ Database::MetricTypeSet Database::GetActiveMetrics(const base::Time& start,
     RecentKey split_key = SplitRecentKey(recent_it->key().ToString());
     possible_metrics.insert(split_key.type);
   }
-  MetricTypeSet::iterator possible_it;
+  std::set<MetricType>::iterator possible_it;
   scoped_ptr<leveldb::Iterator> metric_it(
       metric_db_->NewIterator(read_options_));
   for (possible_it = possible_metrics.begin();
@@ -359,30 +358,34 @@ Database::MetricTypeSet Database::GetActiveMetrics(const base::Time& start,
       active_metrics.insert(*possible_it);
     }
   }
+  std::set<MetricType>::iterator it;
+  for (it = active_metrics.begin(); it != active_metrics.end(); ++it)
+    results.push_back(GetMetricDetails(*it));
 
-  return active_metrics;
+  return results;
 }
 
-std::set<std::string> Database::GetActiveActivities(MetricType metric_type,
-                                                    const base::Time& start) {
+std::vector<std::string> Database::GetActiveActivities(
+    MetricType metric_type, const base::Time& start) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::set<std::string> results;
+  std::vector<std::string> results;
   std::string start_key = CreateRecentKey(
       start, static_cast<MetricType>(0), std::string());
   scoped_ptr<leveldb::Iterator> it(recent_db_->NewIterator(read_options_));
   for (it->Seek(start_key); it->Valid(); it->Next()) {
     RecentKey split_key = SplitRecentKey(it->key().ToString());
     if (split_key.type == metric_type)
-      results.insert(split_key.activity);
+      results.push_back(split_key.activity);
   }
   return results;
 }
 
-bool Database::GetRecentStatsForActivityAndMetric(const std::string& activity,
-                                                  MetricType metric_type,
-                                                  Metric* metric) {
+bool Database::GetRecentStatsForActivityAndMetric(
+    const std::string& activity,
+    MetricType metric,
+    MetricInfo* info) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::string recent_map_key = CreateRecentMapKey(metric_type, activity);
+  std::string recent_map_key = CreateRecentMapKey(metric, activity);
   if (!ContainsKey(recent_map_, recent_map_key))
     return false;
   std::string recent_key = recent_map_[recent_map_key];
@@ -390,17 +393,15 @@ bool Database::GetRecentStatsForActivityAndMetric(const std::string& activity,
   std::string result;
   leveldb::Status status = recent_db_->Get(read_options_, recent_key, &result);
   if (status.ok())
-    *metric = Metric(SplitRecentKey(recent_key).time, result);
+    *info = MetricInfo(SplitRecentKey(recent_key).time, result);
   return status.ok();
 }
 
-Database::MetricVector Database::GetStatsForActivityAndMetric(
-    const std::string& activity,
-    MetricType metric_type,
-    const base::Time& start,
-    const base::Time& end) {
+Database::MetricInfoVector Database::GetStatsForActivityAndMetric(
+    const std::string& activity, MetricType metric_type,
+    const base::Time& start, const base::Time& end) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  MetricVector results;
+  MetricInfoVector results;
   std::string start_key = CreateMetricKey(start, metric_type, activity);
   std::string end_key = CreateMetricKey(end, metric_type, activity);
   scoped_ptr<leveldb::Iterator> it(metric_db_->NewIterator(read_options_));
@@ -409,15 +410,13 @@ Database::MetricVector Database::GetStatsForActivityAndMetric(
        it->Next()) {
     MetricKey split_key = SplitMetricKey(it->key().ToString());
     if (split_key.activity == activity)
-      results.push_back(Metric(split_key.time, it->value().ToString()));
+      results.push_back(MetricInfo(split_key.time, it->value().ToString()));
   }
   return results;
 }
 
 Database::MetricVectorMap Database::GetStatsForMetricByActivity(
-    MetricType metric_type,
-    const base::Time& start,
-    const base::Time& end) {
+    MetricType metric_type, const base::Time& start, const base::Time& end) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   MetricVectorMap results;
   std::string start_key = CreateMetricKey(start, metric_type, std::string());
@@ -429,10 +428,10 @@ Database::MetricVectorMap Database::GetStatsForMetricByActivity(
     MetricKey split_key = SplitMetricKey(it->key().ToString());
     if (!results[split_key.activity].get()) {
       results[split_key.activity] =
-          linked_ptr<MetricVector >(new MetricVector());
+          linked_ptr<MetricInfoVector>(new MetricInfoVector());
     }
     results[split_key.activity]->push_back(
-        Metric(split_key.time, it->value().ToString()));
+        MetricInfo(split_key.time, it->value().ToString()));
   }
   return results;
 }

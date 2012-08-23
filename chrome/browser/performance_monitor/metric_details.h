@@ -7,9 +7,19 @@
 
 #include <string>
 
-#include "chrome/browser/performance_monitor/metric.h"
-
 namespace performance_monitor {
+
+// Keep this enum synced with kMetricDetailsList in the cc file.
+enum MetricType {
+  METRIC_CPU_USAGE,
+  METRIC_PRIVATE_MEMORY_USAGE,
+  METRIC_SHARED_MEMORY_USAGE,
+  METRIC_STARTUP_TIME,
+  METRIC_TEST_STARTUP_TIME,
+  METRIC_SESSION_RESTORE_TIME,
+  METRIC_PAGE_LOAD_TIME,
+  METRIC_NUMBER_OF_METRICS
+};
 
 struct MetricDetails {
   const char* const name;

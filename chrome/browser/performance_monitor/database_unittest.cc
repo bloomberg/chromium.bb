@@ -209,7 +209,7 @@ TEST(PerformanceMonitorDatabaseSetupTest,
 
 ////// PerformanceMonitorDatabaseEventTests ////////////////////////////////////
 TEST_F(PerformanceMonitorDatabaseEventTest, GetAllEvents) {
-  Database::EventVector events = db_->GetEvents();
+  std::vector<linked_ptr<Event> > events = db_->GetEvents();
   ASSERT_EQ(4u, events.size());
   EXPECT_TRUE(events[0]->data()->Equals(install_event_1_->data()));
   EXPECT_TRUE(events[1]->data()->Equals(install_event_2_->data()));
@@ -218,7 +218,7 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetAllEvents) {
 }
 
 TEST_F(PerformanceMonitorDatabaseEventTest, GetAllEventTypes) {
-  Database::EventTypeSet types = db_->GetEventTypes();
+  std::set<EventType> types = db_->GetEventTypes();
   ASSERT_EQ(2u, types.size());
   ASSERT_EQ(1u, types.count(EVENT_EXTENSION_INSTALL));
   ASSERT_EQ(1u, types.count(EVENT_EXTENSION_UNINSTALL));
@@ -229,20 +229,23 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetEventInTimeRange) {
   scoped_ptr<Event> crash_event = util::CreateRendererFreezeEvent(
       clock_->GetTime(), "chrome://freeze");
   db_->AddEvent(*crash_event.get());
-  Database::EventVector events = db_->GetEvents(start_time, clock_->GetTime());
+  std::vector<linked_ptr<Event> > events =
+      db_->GetEvents(start_time, clock_->GetTime());
   ASSERT_EQ(1u, events.size());
   EXPECT_TRUE(events[0]->data()->Equals(crash_event->data()));
 }
 
 TEST_F(PerformanceMonitorDatabaseEventTest, GetInstallEvents) {
-  Database::EventVector events = db_->GetEvents(EVENT_EXTENSION_INSTALL);
+  std::vector<linked_ptr<Event> > events =
+      db_->GetEvents(EVENT_EXTENSION_INSTALL);
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(events[0]->data()->Equals(install_event_1_->data()));
   EXPECT_TRUE(events[1]->data()->Equals(install_event_2_->data()));
 }
 
 TEST_F(PerformanceMonitorDatabaseEventTest, GetUnusedEventType) {
-  Database::EventVector events = db_->GetEvents(EVENT_EXTENSION_DISABLE);
+  std::vector<linked_ptr<Event> > events =
+      db_->GetEvents(EVENT_EXTENSION_DISABLE);
   ASSERT_TRUE(events.empty());
   events = db_->GetEvents(EVENT_EXTENSION_DISABLE, clock_->GetTime(),
                           clock_->GetTime());
@@ -264,7 +267,8 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetEventsTimeRange) {
   base::Time end_time = clock_->GetTime();
   db_->AddEvent(*new_install_event.get());
   db_->AddEvent(*new_uninstall_event.get());
-  Database::EventVector events = db_->GetEvents(start_time, end_time);
+  std::vector<linked_ptr<Event> > events =
+      db_->GetEvents(start_time, end_time);
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(events[0]->data()->Equals(new_install_event->data()));
   EXPECT_TRUE(events[1]->data()->Equals(new_uninstall_event->data()));
@@ -276,17 +280,19 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetEventsTimeRange) {
 
 ////// PerformanceMonitorDatabaseMetricTests ///////////////////////////////////
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetActiveMetrics) {
-  Database::MetricTypeSet active_metrics =
+  std::vector<const MetricDetails*> active_metrics =
     db_->GetActiveMetrics(base::Time(), clock_->GetTime());
+  std::sort(active_metrics.begin(), active_metrics.end());
 
-  Database::MetricTypeSet expected_metrics;
-  expected_metrics.insert(METRIC_CPU_USAGE);
-  expected_metrics.insert(METRIC_PRIVATE_MEMORY_USAGE);
+  std::vector<const MetricDetails*> expected_metrics;
+  expected_metrics.push_back(GetMetricDetails(METRIC_CPU_USAGE));
+  expected_metrics.push_back(GetMetricDetails(METRIC_PRIVATE_MEMORY_USAGE));
+  std::sort(expected_metrics.begin(), expected_metrics.end());
   EXPECT_EQ(expected_metrics, active_metrics);
 }
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetRecentMetric) {
-  Metric stat;
+  MetricInfo stat;
   ASSERT_TRUE(db_->GetRecentStatsForActivityAndMetric(activity_,
       METRIC_PRIVATE_MEMORY_USAGE, &stat));
   EXPECT_EQ(3000000, stat.value);
@@ -319,7 +325,7 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStateOverride) {
 }
 
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForActivityAndMetric) {
-  Database::MetricVector stats = db_->GetStatsForActivityAndMetric(
+  Database::MetricInfoVector stats = db_->GetStatsForActivityAndMetric(
       activity_, METRIC_CPU_USAGE, base::Time(), clock_->GetTime());
   ASSERT_EQ(1u, stats.size());
   EXPECT_EQ(13.1, stats[0].value);
@@ -346,7 +352,7 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForMetricByActivity) {
   Database::MetricVectorMap stats_map = db_->GetStatsForMetricByActivity(
       METRIC_CPU_USAGE, base::Time(), clock_->GetTime());
   ASSERT_EQ(2u, stats_map.size());
-  linked_ptr<Database::MetricVector> stats = stats_map[activity_];
+  linked_ptr<Database::MetricInfoVector> stats = stats_map[activity_];
   ASSERT_EQ(1u, stats->size());
   EXPECT_EQ(13.1, stats->at(0).value);
   stats = stats_map[kProcessChromeAggregate];
@@ -368,7 +374,7 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetStatsForMetricByActivity) {
 TEST_F(PerformanceMonitorDatabaseMetricTest, GetFullRange) {
   db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("3.4"));
   db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("21"));
-  Database::MetricVector stats =
+  Database::MetricInfoVector stats =
       db_->GetStatsForActivityAndMetric(METRIC_CPU_USAGE);
   ASSERT_EQ(3u, stats.size());
   ASSERT_EQ(50.5, stats[0].value);
@@ -382,7 +388,7 @@ TEST_F(PerformanceMonitorDatabaseMetricTest, GetRange) {
   db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("9"));
   base::Time end = clock_->GetTime();
   db_->AddMetric(kProcessChromeAggregate, METRIC_CPU_USAGE, std::string("21"));
-  Database::MetricVector stats =
+  Database::MetricInfoVector stats =
       db_->GetStatsForActivityAndMetric(METRIC_CPU_USAGE, start, end);
   ASSERT_EQ(2u, stats.size());
   ASSERT_EQ(3, stats[0].value);

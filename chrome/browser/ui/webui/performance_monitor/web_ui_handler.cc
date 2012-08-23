@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/event.h"
-#include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/performance_monitor/metric_details.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
@@ -43,9 +42,10 @@ void DoGetActiveIntervals(ListValue* results,
 void DoGetEvents(ListValue* results, EventType event_type,
                  const base::Time& start, const base::Time& end) {
   Database* db = PerformanceMonitor::GetInstance()->database();
-  Database::EventVector events = db->GetEvents(event_type, start, end);
+  std::vector<linked_ptr<Event> > events =
+      db->GetEvents(event_type, start, end);
 
-  for (Database::EventVector::iterator it = events.begin();
+  for (std::vector<linked_ptr<Event> >::iterator it = events.begin();
        it != events.end(); ++it) {
     results->Append((*it)->data()->DeepCopy());
   }
@@ -61,14 +61,14 @@ void DoGetMetric(ListValue* results,
   Database::MetricVectorMap metric_vector_map =
       db->GetStatsForMetricByActivity(metric_type, start, end);
 
-  linked_ptr<Database::MetricVector> metric_vector =
+  linked_ptr<Database::MetricInfoVector> metric_vector =
       metric_vector_map[kProcessChromeAggregate];
   if (!metric_vector.get())
-    metric_vector.reset(new Database::MetricVector());
+    metric_vector.reset(new Database::MetricInfoVector());
 
-  Database::MetricVector aggregated_metrics =
+  Database::MetricInfoVector aggregated_metrics =
       util::AggregateMetric(*metric_vector, start, resolution);
-  for (Database::MetricVector::const_iterator it = aggregated_metrics.begin();
+  for (Database::MetricInfoVector::iterator it = aggregated_metrics.begin();
        it != aggregated_metrics.end(); ++it) {
     DictionaryValue* metric_value = new DictionaryValue();
     metric_value->SetDouble("time", it->time.ToJsTime());

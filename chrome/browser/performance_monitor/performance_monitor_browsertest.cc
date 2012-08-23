@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
-#include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,8 +45,7 @@
 #endif
 
 using extensions::Extension;
-
-namespace performance_monitor {
+using performance_monitor::Event;
 
 namespace {
 
@@ -114,7 +112,7 @@ void CheckEventType(int expected_event_type, const linked_ptr<Event>& event) {
 // Verify that we received the proper number of events, checking the type of
 // each one.
 void CheckEventTypes(const std::vector<int> expected_event_types,
-                     const Database::EventVector& events) {
+                 const std::vector<linked_ptr<Event> >& events) {
   ASSERT_EQ(expected_event_types.size(), events.size());
 
   for (size_t i = 0; i < expected_event_types.size(); ++i)
@@ -126,7 +124,7 @@ void CheckEventTypes(const std::vector<int> expected_event_types,
 // extension.
 void CheckExtensionEvents(
     const std::vector<int>& expected_event_types,
-    const Database::EventVector& events,
+    const std::vector<linked_ptr<Event> >& events,
     const std::vector<ExtensionBasicInfo>& extension_infos) {
   CheckEventTypes(expected_event_types, events);
 
@@ -139,6 +137,8 @@ void CheckExtensionEvents(
 }
 
 }  // namespace
+
+namespace performance_monitor {
 
 class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
  public:
@@ -174,7 +174,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
-  void GetEventsOnBackgroundThread(Database::EventVector* events) {
+  void GetEventsOnBackgroundThread(std::vector<linked_ptr<Event> >* events) {
     // base::Time is potentially flaky in that there is no guarantee that it
     // won't actually decrease between successive calls. If we call GetEvents
     // and the Database uses base::Time::Now() and gets a lesser time, then it
@@ -187,13 +187,13 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
   // A handle for getting the events from the database, which must be done on
   // the background thread. Since we are testing, we can mock synchronicity
   // with FlushForTesting().
-  Database::EventVector GetEvents() {
+  std::vector<linked_ptr<Event> > GetEvents() {
     // Ensure that any event insertions happen prior to getting events in order
     // to avoid race conditions.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     content::RunAllPendingInMessageLoop();
 
-    Database::EventVector events;
+    std::vector<linked_ptr<Event> > events;
     content::BrowserThread::PostBlockingPoolSequencedTask(
         Database::kDatabaseSequenceToken,
         FROM_HERE,
@@ -205,7 +205,7 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     return events;
   }
 
-  void GetStatsOnBackgroundThread(Database::MetricVector* metrics,
+  void GetStatsOnBackgroundThread(Database::MetricInfoVector* metrics,
                                   MetricType type) {
     *metrics = performance_monitor_->database()->GetStatsForActivityAndMetric(
         type, base::Time(), base::Time::FromInternalValue(kint64max));
@@ -213,11 +213,11 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
 
   // A handle for getting statistics from the database (see previous comments on
   // GetEvents() and GetEventsOnBackgroundThread).
-  Database::MetricVector GetStats(MetricType type) {
+  Database::MetricInfoVector GetStats(MetricType type) {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     content::RunAllPendingInMessageLoop();
 
-    Database::MetricVector metrics;
+    Database::MetricInfoVector metrics;
     content::BrowserThread::PostBlockingPoolSequencedTask(
         Database::kDatabaseSequenceToken,
         FROM_HERE,
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, InstallExtensionEvent) {
   std::vector<int> expected_event_types;
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
   CheckExtensionEvents(expected_event_types, events, extension_infos);
 }
 
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
   expected_event_types.push_back(EVENT_EXTENSION_DISABLE);
   expected_event_types.push_back(EVENT_EXTENSION_ENABLE);
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
   CheckExtensionEvents(expected_event_types, events, extension_infos);
 }
 
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
   expected_event_types.push_back(EVENT_EXTENSION_UPDATE);
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
 
   CheckExtensionEvents(expected_event_types, events, extension_infos);
 }
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UninstallExtensionEvent) {
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
   expected_event_types.push_back(EVENT_EXTENSION_UNINSTALL);
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
 
   CheckExtensionEvents(expected_event_types, events, extension_infos);
 }
@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   ASSERT_TRUE(version.is_valid());
   std::string version_string = version.Version();
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
   ASSERT_EQ(1u, events.size());
   ASSERT_EQ(EVENT_CHROME_UPDATE, events[0]->type());
 
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, GatherStatistics) {
 
   // No stats should be recorded for this CPUUsage because this was the first
   // call to GatherStatistics.
-  Database::MetricVector stats = GetStats(METRIC_CPU_USAGE);
+  Database::MetricInfoVector stats = GetStats(METRIC_CPU_USAGE);
   ASSERT_EQ(0u, stats.size());
 
   stats = GetStats(METRIC_PRIVATE_MEMORY_USAGE);
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, GatherStatistics) {
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, KilledByOSEvent) {
   content::CrashTab(chrome::GetActiveWebContents(browser()));
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
 
   ASSERT_EQ(1u, events.size());
   CheckEventType(EVENT_KILLED_BY_OS_CRASH, events[0]);
@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
 
   windowed_observer.Wait();
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
   ASSERT_EQ(1u, events.size());
 
   CheckEventType(EVENT_RENDERER_CRASH, events[0]);
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
   performance_monitor()->CheckForUncleanExits();
   content::RunAllPendingInMessageLoop();
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
 
   const size_t kNumEvents = 1;
   ASSERT_EQ(kNumEvents, events.size());
@@ -661,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
   g_browser_process->profile_manager()->GetProfile(second_profile_path);
   content::RunAllPendingInMessageLoop();
 
-  Database::EventVector events = GetEvents();
+  std::vector<linked_ptr<Event> > events = GetEvents();
 
   const size_t kNumEvents = 2;
   ASSERT_EQ(kNumEvents, events.size());
@@ -677,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, StartupTime) {
-  Database::MetricVector metrics = GetStats(METRIC_TEST_STARTUP_TIME);
+  Database::MetricInfoVector metrics = GetStats(METRIC_TEST_STARTUP_TIME);
 
   ASSERT_EQ(1u, metrics.size());
   ASSERT_LT(metrics[0].value, kMaxStartupTime.ToInternalValue());
@@ -692,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorSessionRestoreBrowserTest,
 
   QuitBrowserAndRestore(browser(), 1);
 
-  Database::MetricVector metrics = GetStats(METRIC_TEST_STARTUP_TIME);
+  Database::MetricInfoVector metrics = GetStats(METRIC_TEST_STARTUP_TIME);
   ASSERT_EQ(1u, metrics.size());
   ASSERT_LT(metrics[0].value, kMaxStartupTime.ToInternalValue());
 
@@ -714,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, PageLoadTime) {
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(FILE_PATH_LITERAL("title2.html"))));
 
-  Database::MetricVector metrics = GetStats(METRIC_PAGE_LOAD_TIME);
+  Database::MetricInfoVector metrics = GetStats(METRIC_PAGE_LOAD_TIME);
 
   ASSERT_EQ(2u, metrics.size());
   ASSERT_LT(metrics[0].value, kMaxLoadTime.ToInternalValue());
