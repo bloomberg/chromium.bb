@@ -19,6 +19,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
@@ -334,7 +336,8 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
 // The view for a notification entry (icon + message + buttons).
 class WebNotificationView : public views::View,
                             public views::ButtonListener,
-                            public views::MenuButtonListener {
+                            public views::MenuButtonListener,
+                            public ui::ImplicitAnimationObserver {
  public:
   WebNotificationView(WebNotificationTray* tray,
                       const WebNotification& notification)
@@ -342,12 +345,16 @@ class WebNotificationView : public views::View,
         notification_(notification),
         icon_(NULL),
         menu_button_(NULL),
-        close_button_(NULL) {
+        close_button_(NULL),
+        scroller_(NULL),
+        gesture_scroll_amount_(0.f) {
     InitView(tray, notification);
   }
 
   virtual ~WebNotificationView() {
   }
+
+  void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
   void InitView(WebNotificationTray* tray,
                 const WebNotification& notification) {
@@ -356,6 +363,8 @@ class WebNotificationView : public views::View,
     SkColor bg_color = notification.is_read
         ? kHeaderBackgroundColorLight : kBackgroundColor;
     set_background(views::Background::CreateSolidBackground(bg_color));
+    SetPaintToLayer(true);
+    SetFillsBoundsOpaquely(false);
 
     icon_ = new views::ImageView;
     icon_->SetImageSize(
@@ -439,9 +448,56 @@ class WebNotificationView : public views::View,
 
   virtual ui::GestureStatus OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE {
-    if (event.type() != ui::ET_GESTURE_TAP)
+    if (event.type() == ui::ET_GESTURE_TAP) {
+      tray_->OnClicked(notification_.id);
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
+
+    if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
+      ShowMenu();
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
+
+    if (event.type() == ui::ET_SCROLL_FLING_START) {
+      // The threshold for the fling velocity is computed empirically.
+      // The unit is in pixels/second.
+      const float kFlingThresholdForClose = 800.f;
+      if (fabsf(event.details().velocity_x()) > kFlingThresholdForClose) {
+        SlideOutAndClose(event.details().velocity_x() < 0 ? SLIDE_LEFT :
+                                                            SLIDE_RIGHT);
+      } else if (scroller_) {
+        RestoreVisualState();
+        scroller_->OnGestureEvent(event);
+      }
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
+
+    if (!event.IsScrollGestureEvent())
       return ui::GESTURE_STATUS_UNKNOWN;
-    tray_->OnClicked(notification_.id);
+
+    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+      gesture_scroll_amount_ = 0.f;
+    } else if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+      // The scroll-update events include the incremental scroll amount.
+      gesture_scroll_amount_ += event.details().scroll_x();
+
+      ui::Transform transform;
+      transform.SetTranslateX(gesture_scroll_amount_);
+      layer()->SetTransform(transform);
+      layer()->SetOpacity(
+          1.f - std::min(fabsf(gesture_scroll_amount_) / width(), 1.f));
+
+    } else if (event.type() == ui::ET_GESTURE_SCROLL_END) {
+      const float kScrollRatioForClosingNotification = 0.5f;
+      float scrolled_ratio = fabsf(gesture_scroll_amount_) / width();
+      if (scrolled_ratio >= kScrollRatioForClosingNotification)
+        SlideOutAndClose(gesture_scroll_amount_ < 0 ? SLIDE_LEFT : SLIDE_RIGHT);
+      else
+        RestoreVisualState();
+    }
+
+    if (scroller_)
+      scroller_->OnGestureEvent(event);
     return ui::GESTURE_STATUS_CONSUMED;
   }
 
@@ -453,9 +509,27 @@ class WebNotificationView : public views::View,
   }
 
   // Overridden from MenuButtonListener.
-  virtual void OnMenuButtonClicked(
-      View* source, const gfx::Point& point) OVERRIDE {
+  virtual void OnMenuButtonClicked(View* source,
+                                   const gfx::Point& point) OVERRIDE {
     if (source != menu_button_)
+      return;
+    ShowMenu();
+  }
+
+  // Overridden from ImplicitAnimationObserver.
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    tray_->SendRemoveNotification(notification_.id);
+  }
+
+ private:
+  enum SlideDirection {
+    SLIDE_LEFT,
+    SLIDE_RIGHT
+  };
+
+  // Shows the menu (if there is one) for the notification.
+  void ShowMenu() {
+    if (!menu_button_)
       return;
     WebNotificationMenuModel menu_model(tray_, notification_);
     views::MenuModelAdapter menu_model_adapter(&menu_model);
@@ -464,19 +538,47 @@ class WebNotificationView : public views::View,
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(menu_button_, &screen_location);
     ignore_result(menu_runner.RunMenuAt(
-        source->GetWidget()->GetTopLevelWidget(),
+        menu_button_->GetWidget()->GetTopLevelWidget(),
         menu_button_,
         gfx::Rect(screen_location, menu_button_->size()),
         views::MenuItemView::TOPRIGHT,
         views::MenuRunner::HAS_MNEMONICS));
   }
 
- private:
+  // Restores the transform and opacity of the view.
+  void RestoreVisualState() {
+    // Restore the layer state.
+    const int kSwipeRestoreDurationMS = 150;
+    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kSwipeRestoreDurationMS));
+    layer()->SetTransform(ui::Transform());
+    layer()->SetOpacity(1.f);
+  }
+
+  // Slides the view out and closes it after the animation.
+  void SlideOutAndClose(SlideDirection direction) {
+    const int kSwipeOutTotalDurationMS = 150;
+    int swipe_out_duration = kSwipeOutTotalDurationMS * layer()->opacity();
+    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(swipe_out_duration));
+    settings.AddObserver(this);
+
+    ui::Transform transform;
+    transform.SetTranslateX(direction == SLIDE_LEFT ? -width() : width());
+    layer()->SetTransform(transform);
+    layer()->SetOpacity(0.f);
+  }
+
   WebNotificationTray* tray_;
   WebNotification notification_;
   views::ImageView* icon_;
   views::MenuButton* menu_button_;
   views::ImageButton* close_button_;
+
+  views::ScrollView* scroller_;
+  float gesture_scroll_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationView);
 };
@@ -595,6 +697,10 @@ class MessageCenterContentsView : public WebContentsView {
     scroller_->SetContentsView(scroll_content_);
     AddChildView(scroller_);
 
+    scroller_->SetPaintToLayer(true);
+    scroller_->SetFillsBoundsOpaquely(false);
+    scroller_->layer()->SetMasksToBounds(true);
+
     button_view_ = new internal::WebNotificationButtonView(tray);
     AddChildView(button_view_);
 
@@ -609,6 +715,7 @@ class MessageCenterContentsView : public WebContentsView {
     for (WebNotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
       WebNotificationView* view = new WebNotificationView(tray_, *iter);
+      view->set_scroller(scroller_);
       scroll_content_->AddChildView(view);
       if (++num_children >= kMaxVisibleNotifications)
         break;
@@ -667,11 +774,16 @@ class WebNotificationContentsView : public WebContentsView {
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
     AddChildView(content_);
 
+    content_->SetPaintToLayer(true);
+    content_->SetFillsBoundsOpaquely(false);
+    content_->layer()->SetMasksToBounds(true);
+
     // Build initial view with no notification.
     Update(WebNotificationList::Notifications());
   }
 
-  void Update(const WebNotificationList::Notifications& notifications) {
+  void Update(
+      const WebNotificationList::Notifications& notifications) OVERRIDE {
     content_->RemoveAllChildViews(true);
     const WebNotification& notification = (notifications.size() > 0) ?
         notifications.front() : WebNotification();
