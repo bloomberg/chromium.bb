@@ -99,6 +99,7 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteArchivedHistoryDbTest());
     tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteHQPCacheDbTest());
     tests_.push_back(MakeSqliteAppCacheDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
@@ -125,6 +126,7 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteArchivedHistoryDbTest());
     tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteAppCacheDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
@@ -152,6 +154,7 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteArchivedHistoryDbTest());
     tests_.push_back(MakeSqliteThumbnailsDbTest());
+    tests_.push_back(MakeSqliteHistoryDbTest());
     tests_.push_back(MakeSqliteAppCacheDbTest());
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }

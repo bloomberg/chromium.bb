@@ -201,7 +201,7 @@ void HistoryService::UnloadBackend() {
 
   // Give the InMemoryURLIndex a chance to shutdown.
   if (in_memory_url_index_.get())
-    in_memory_url_index_->ShutDown();
+    in_memory_url_index_->Shutdown();
 
   // The backend's destructor must run on the history thread since it is not
   // threadsafe. So this thread must not be the last thread holding a reference
@@ -737,7 +737,8 @@ void HistoryService::Observe(int type,
 
 bool HistoryService::Init(const FilePath& history_dir,
                           BookmarkService* bookmark_service,
-                          bool no_db) {
+                          bool no_db,
+                          bool disable_index_cache) {
   if (!thread_->Start()) {
     Cleanup();
     return false;
@@ -756,7 +757,7 @@ bool HistoryService::Init(const FilePath& history_dir,
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
     in_memory_url_index_.reset(
         new history::InMemoryURLIndex(profile_, history_dir_, languages));
-    in_memory_url_index_->Init();
+    in_memory_url_index_->Init(disable_index_cache);
   }
 #endif  // !OS_ANDROID
 

@@ -326,15 +326,20 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
     path = path.Append(chrome::kHistoryFilename);
     file_util::Delete(path, false);
   }
-  // This will create and init the history service.
   HistoryService* history_service = static_cast<HistoryService*>(
       HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           this, BuildHistoryService).get());
-  if (!history_service->Init(this->GetPath(),
-                             BookmarkModelFactory::GetForProfile(this),
-                             no_db)) {
+  if (!InitHistoryService(history_service, no_db))
     HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(this, NULL);
-  }
+}
+
+bool TestingProfile::InitHistoryService(HistoryService* history_service,
+                                        bool no_db) {
+  DCHECK(history_service);
+  // By default, disable the InMemoryURLIndex's cache database.
+  return history_service->Init(GetPath(),
+                               BookmarkModelFactory::GetForProfile(this),
+                               no_db, true);
 }
 
 void TestingProfile::DestroyHistoryService() {

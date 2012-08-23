@@ -8,72 +8,53 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/in_memory_url_cache_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
-using in_memory_url_index::InMemoryURLIndexCacheItem;
+using content::BrowserThread;
 
 namespace history {
 
-// Called by DoSaveToCacheFile to delete any old cache file at |path| when
-// there is no private data to save. Runs on the FILE thread.
-void DeleteCacheFile(const FilePath& path) {
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  file_util::Delete(path, false);
+// InMemoryURLIndex::Observer --------------------------------------------------
+
+InMemoryURLIndex::Observer::Observer(InMemoryURLIndex* index)
+    : index_(index) {
+  DCHECK(index);
+  index_->AddObserver(this);
 }
 
-// Initializes a whitelist of URL schemes.
-void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
-  DCHECK(whitelist);
-  if (!whitelist->empty())
-    return;  // Nothing to do, already initialized.
-  whitelist->insert(std::string(chrome::kAboutScheme));
-  whitelist->insert(std::string(chrome::kChromeUIScheme));
-  whitelist->insert(std::string(chrome::kFileScheme));
-  whitelist->insert(std::string(chrome::kFtpScheme));
-  whitelist->insert(std::string(chrome::kHttpScheme));
-  whitelist->insert(std::string(chrome::kHttpsScheme));
-  whitelist->insert(std::string(chrome::kMailToScheme));
+InMemoryURLIndex::Observer::~Observer() {
+  index_->RemoveObserver(this);
 }
 
-// RefCountedBool --------------------------------------------------------------
-
-RefCountedBool::~RefCountedBool() {}
-
-// Restore/SaveCacheObserver ---------------------------------------------------
-
-InMemoryURLIndex::RestoreCacheObserver::~RestoreCacheObserver() {}
-
-InMemoryURLIndex::SaveCacheObserver::~SaveCacheObserver() {}
+void InMemoryURLIndex::Observer::Loaded() {
+  MessageLoop::current()->QuitNow();
+}
 
 // RebuildPrivateDataFromHistoryDBTask -----------------------------------------
 
 InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
-    RebuildPrivateDataFromHistoryDBTask(
-        InMemoryURLIndex* index,
-        const std::string& languages,
-        const std::set<std::string>& scheme_whitelist)
+    RebuildPrivateDataFromHistoryDBTask(InMemoryURLIndex* index)
     : index_(index),
-      languages_(languages),
-      scheme_whitelist_(scheme_whitelist),
       succeeded_(false) {
+}
+
+InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
+    ~RebuildPrivateDataFromHistoryDBTask() {
 }
 
 bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
     HistoryBackend* backend,
     HistoryDatabase* db) {
-  data_ = URLIndexPrivateData::RebuildFromHistory(db, languages_,
-                                                  scheme_whitelist_);
+  data_ = URLIndexPrivateData::RebuildFromHistory(db, index_->private_data());
   succeeded_ = data_.get() && !data_->Empty();
-  if (!succeeded_ && data_.get())
-    data_->Clear();
   return true;
 }
 
@@ -82,9 +63,15 @@ void InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
   index_->DoneRebuidingPrivateDataFromHistoryDB(succeeded_, data_);
 }
 
-InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
-    ~RebuildPrivateDataFromHistoryDBTask() {
+// IndexUpdateItem -------------------------------------------------------------
+
+InMemoryURLIndex::IndexUpdateItem::IndexUpdateItem(UpdateType update_type,
+                                                   URLRow row)
+    : update_type(update_type),
+      row(row) {
 }
+
+InMemoryURLIndex::IndexUpdateItem::~IndexUpdateItem() {}
 
 // InMemoryURLIndex ------------------------------------------------------------
 
@@ -92,67 +79,83 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
                                    const FilePath& history_dir,
                                    const std::string& languages)
     : profile_(profile),
-      history_dir_(history_dir),
       languages_(languages),
-      private_data_(new URLIndexPrivateData),
-      restore_cache_observer_(NULL),
-      save_cache_observer_(NULL),
+      history_dir_(history_dir),
+      private_data_(new URLIndexPrivateData(history_dir, languages)),
+      sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
+      index_available_(false),
       shutdown_(false),
-      needs_to_be_cached_(false) {
-  InitializeSchemeWhitelist(&scheme_whitelist_);
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   if (profile) {
-    // TODO(mrossetti): Register for language change notifications.
     content::Source<Profile> source(profile);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
                    source);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   }
+  // Note: private_data_ will be reset after rebuilding from the history
+  // database but the ownership of the database passes to the new
+  // private_data_ instance so there is no need to re-register for the
+  // following notification at that time.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_IN_MEMORY_URL_CACHE_DATABASE_FAILURE,
+                 content::Source<InMemoryURLCacheDatabase>(
+                     private_data_->cache_db()));
+  // TODO(mrossetti): Register for language change notifications.
 }
 
 // Called only by unit tests.
-InMemoryURLIndex::InMemoryURLIndex()
+InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir,
+                                   const std::string& languages)
     : profile_(NULL),
-      private_data_(new URLIndexPrivateData),
-      restore_cache_observer_(NULL),
-      save_cache_observer_(NULL),
+      languages_(languages),
+      history_dir_(history_dir),
+      index_available_(false),
       shutdown_(false),
-      needs_to_be_cached_(false) {
-  InitializeSchemeWhitelist(&scheme_whitelist_);
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
-InMemoryURLIndex::~InMemoryURLIndex() {
-  // If there was a history directory (which there won't be for some unit tests)
-  // then insure that the cache has already been saved.
-  DCHECK(history_dir_.empty() || !needs_to_be_cached_);
+InMemoryURLIndex::~InMemoryURLIndex() {}
+
+void InMemoryURLIndex::Init(bool disable_cache) {
+  if (disable_cache) {
+    RebuildFromHistoryIfLoaded();
+  } else {
+    // It's safe to initialize the private data and the cache database without
+    // using the sequenced worker pool as no other database operations will be
+    // going on at the same time.
+    BrowserThread::PostTaskAndReplyWithResult<bool>(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&URLIndexPrivateData::Init, private_data_, sequence_token_),
+        base::Bind(&InMemoryURLIndex::OnPrivateDataInitDone,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
-void InMemoryURLIndex::Init() {
-  PostRestoreFromCacheFileTask();
+void InMemoryURLIndex::OnPrivateDataInitDone(bool succeeded) {
+  if (shutdown_)
+    return;
+  if (succeeded)
+    PostRestoreFromCacheTask();
+  else
+    RebuildFromHistoryIfLoaded();
 }
 
-void InMemoryURLIndex::ShutDown() {
+void InMemoryURLIndex::Shutdown() {
+  // Close down the cache database as quickly as possible. Any pending cache DB
+  // transactions will detect that the database is no longer there and give up.
   registrar_.RemoveAll();
   cache_reader_consumer_.CancelAllRequests();
   shutdown_ = true;
-  FilePath path;
-  if (!GetCacheFilePath(&path))
-    return;
-  scoped_refptr<RefCountedBool> succeeded(new RefCountedBool(false));
-  URLIndexPrivateData::WritePrivateDataToCacheFileTask(
-      private_data_, path, succeeded);
-  needs_to_be_cached_ = false;
+  private_data_->Shutdown();
 }
 
-void InMemoryURLIndex::ClearPrivateData() {
-  private_data_->Clear();
+void InMemoryURLIndex::AddObserver(InMemoryURLIndex::Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-bool InMemoryURLIndex::GetCacheFilePath(FilePath* file_path) {
-  if (history_dir_.empty())
-    return false;
-  *file_path = history_dir_.Append(FILE_PATH_LITERAL("History Provider Cache"));
-  return true;
+void InMemoryURLIndex::RemoveObserver(InMemoryURLIndex::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // Querying --------------------------------------------------------------------
@@ -163,6 +166,10 @@ ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
 }
 
 // Updating --------------------------------------------------------------------
+
+void InMemoryURLIndex::DeleteURL(const GURL& url) {
+  private_data_->DeleteURL(url);
+}
 
 void InMemoryURLIndex::Observe(int notification_type,
                                const content::NotificationSource& source,
@@ -184,6 +191,9 @@ void InMemoryURLIndex::Observe(int notification_type,
                         content::Source<Profile>(profile_));
       ScheduleRebuildFromHistory();
       break;
+    case chrome::NOTIFICATION_IN_MEMORY_URL_CACHE_DATABASE_FAILURE:
+      RepairCacheDatabase();
+      break;
     default:
       // For simplicity, the unit tests send us all notifications, even when
       // we haven't registered for them, so don't assert here.
@@ -192,135 +202,173 @@ void InMemoryURLIndex::Observe(int notification_type,
 }
 
 void InMemoryURLIndex::OnURLVisited(const URLVisitedDetails* details) {
-  needs_to_be_cached_ |=
-      private_data_->UpdateURL(details->row, languages_, scheme_whitelist_);
+  if (index_available_)
+    private_data_->UpdateURL(details->row);
+  else
+    pending_updates_.push_back(IndexUpdateItem(UPDATE_VISIT, details->row));
 }
 
 void InMemoryURLIndex::OnURLsModified(const URLsModifiedDetails* details) {
   for (URLRows::const_iterator row = details->changed_urls.begin();
-       row != details->changed_urls.end(); ++row)
-    needs_to_be_cached_ |=
-        private_data_->UpdateURL(*row, languages_, scheme_whitelist_);
+       row != details->changed_urls.end(); ++row) {
+    if (index_available_)
+      private_data_->UpdateURL(*row);
+    else
+      pending_updates_.push_back(IndexUpdateItem(UPDATE_VISIT, *row));
+  }
 }
 
 void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
   if (details->all_history) {
-    ClearPrivateData();
-    needs_to_be_cached_ = true;
+    PostResetPrivateDataTask();
   } else {
     for (URLRows::const_iterator row = details->rows.begin();
-         row != details->rows.end(); ++row)
-      needs_to_be_cached_ |= private_data_->DeleteURL(row->url());
-  }
-}
-
-// Restoring from Cache --------------------------------------------------------
-
-void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
-  FilePath path;
-  if (!GetCacheFilePath(&path) || shutdown_)
-    return;
-  scoped_refptr<URLIndexPrivateData> restored_private_data =
-      new URLIndexPrivateData;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&URLIndexPrivateData::RestoreFromFileTask, path,
-          restored_private_data, languages_),
-      base::Bind(&InMemoryURLIndex::OnCacheLoadDone, AsWeakPtr(),
-          restored_private_data));
-}
-
-void InMemoryURLIndex::OnCacheLoadDone(
-    scoped_refptr<URLIndexPrivateData> private_data) {
-  if (private_data.get() && !private_data->Empty()) {
-    private_data_ = private_data;
-    if (restore_cache_observer_)
-      restore_cache_observer_->OnCacheRestoreFinished(true);
-  } else if (profile_) {
-    // When unable to restore from the cache file delete the cache file, if
-    // it exists, and then rebuild from the history database if it's available,
-    // otherwise wait until the history database loaded and then rebuild.
-    FilePath path;
-    if (!GetCacheFilePath(&path) || shutdown_)
-      return;
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(DeleteCacheFile, path));
-    HistoryService* service =
-        HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-    if (service && service->backend_loaded()) {
-      ScheduleRebuildFromHistory();
-    } else {
-      registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                     content::Source<Profile>(profile_));
+         row != details->rows.end(); ++row) {
+      if (index_available_)
+        DeleteURL(row->url());
+      else
+        pending_updates_.push_back(IndexUpdateItem(DELETE_VISIT, *row));
     }
   }
 }
 
+void InMemoryURLIndex::FlushPendingUpdates() {
+  for (PendingUpdates::iterator i = pending_updates_.begin();
+       i != pending_updates_.end(); ++i) {
+    if (i->update_type == UPDATE_VISIT)
+      private_data_->UpdateURL(i->row);
+    else if (i->update_type == DELETE_VISIT)
+      DeleteURL(i->row.url());
+  }
+  pending_updates_.clear();
+}
+
+// Restoring from Cache --------------------------------------------------------
+
+void InMemoryURLIndex::PostRestoreFromCacheTask() {
+  // It's safe to restore from the cache database without using the sequenced
+  // worker pool as no other database operations will be going on at the same
+  // time.
+  BrowserThread::PostTaskAndReplyWithResult<bool>(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&URLIndexPrivateData::RestoreFromCacheTask, private_data_),
+      base::Bind(&InMemoryURLIndex::OnCacheRestoreDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void InMemoryURLIndex::OnCacheRestoreDone(bool succeeded) {
+  if (shutdown_) {
+    NotifyHasLoaded();
+    return;
+  }
+  if (succeeded) {
+    FlushPendingUpdates();
+    index_available_ = true;
+    NotifyHasLoaded();
+  } else if (profile_) {
+    RebuildFromHistoryIfLoaded();
+  }
+}
+
+void InMemoryURLIndex::NotifyHasLoaded() {
+  FOR_EACH_OBSERVER(InMemoryURLIndex::Observer, observers_, Loaded());
+}
+
 // Restoring from the History DB -----------------------------------------------
 
+void InMemoryURLIndex::RebuildFromHistoryIfLoaded() {
+  // When unable to restore from the cache database, rebuild from the history
+  // database, if it's available, otherwise wait until the history database
+  // has loaded and then rebuild the index.
+  HistoryService* service =
+      HistoryServiceFactory::GetForProfileIfExists(profile_,
+                                                   Profile::EXPLICIT_ACCESS);
+  if (service && service->backend_loaded()) {
+    ScheduleRebuildFromHistory();
+  } else {
+    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
+                   content::Source<Profile>(profile_));
+  }
+}
+
 void InMemoryURLIndex::ScheduleRebuildFromHistory() {
+  // It's possible that we were waiting on history to finish loading when
+  // the profile was told to shut down.
+  if (shutdown_)
+    return;
+  // Reset availability here as this function is called directly by unit tests.
+  index_available_ = false;
   HistoryService* service =
       HistoryServiceFactory::GetForProfile(profile_,
                                            Profile::EXPLICIT_ACCESS);
+  // Do not update the cache database while rebuilding.
+  private_data_->set_cache_enabled(false);
   service->ScheduleDBTask(
-      new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(
-          this, languages_, scheme_whitelist_),
+      new InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask(this),
       &cache_reader_consumer_);
 }
 
 void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
     bool succeeded,
     scoped_refptr<URLIndexPrivateData> private_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (shutdown_)
+    return;
   if (succeeded) {
     private_data_ = private_data;
-    PostSaveToCacheFileTask();  // Cache the newly rebuilt index.
+    private_data_->set_cache_enabled(true);
+    PostRefreshCacheTask();  // Cache the newly rebuilt index.
   } else {
-    private_data_->Clear();  // Dump the old private data.
-    // There is no need to do anything with the cache file as it was deleted
-    // when the rebuild from the history operation was kicked off.
+    private_data_->set_cache_enabled(true);
+    PostResetPrivateDataTask();
   }
-  if (restore_cache_observer_)
-    restore_cache_observer_->OnCacheRestoreFinished(succeeded);
 }
 
-void InMemoryURLIndex::RebuildFromHistory(HistoryDatabase* history_db) {
-  private_data_ = URLIndexPrivateData::RebuildFromHistory(history_db,
-                                                          languages_,
-                                                          scheme_whitelist_);
+// Reset Cache -----------------------------------------------------------------
+
+void InMemoryURLIndex::PostResetPrivateDataTask() {
+  index_available_ = false;
+  scoped_refptr<base::SequencedTaskRunner> runner =
+      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(sequence_token_);
+  DCHECK(runner.get());
+  runner->PostTaskAndReply(FROM_HERE,
+      base::Bind(&URLIndexPrivateData::Reset, private_data_),
+      base::Bind(&InMemoryURLIndex::OnCacheRefreshOrResetDone,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-// Saving to Cache -------------------------------------------------------------
+// Refresh Cache ---------------------------------------------------------------
 
-void InMemoryURLIndex::PostSaveToCacheFileTask() {
-  FilePath path;
-  if (!GetCacheFilePath(&path))
+void InMemoryURLIndex::PostRefreshCacheTask() {
+  scoped_refptr<base::SequencedTaskRunner> runner =
+      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(sequence_token_);
+  DCHECK(runner.get());
+  runner->PostTaskAndReply(FROM_HERE,
+      base::Bind(&URLIndexPrivateData::RefreshCacheTask, private_data_),
+      base::Bind(&InMemoryURLIndex::OnCacheRefreshOrResetDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void InMemoryURLIndex::OnCacheRefreshOrResetDone() {
+  if (shutdown_) {
+    NotifyHasLoaded();
     return;
-  // If there is anything in our private data then make a copy of it and tell
-  // it to save itself to a file.
-  if (private_data_.get() && !private_data_->Empty()) {
-    // Note that ownership of the copy of our private data is passed to the
-    // completion closure below.
-    scoped_refptr<URLIndexPrivateData> private_data_copy =
-        private_data_->Duplicate();
-    scoped_refptr<RefCountedBool> succeeded(new RefCountedBool(false));
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&URLIndexPrivateData::WritePrivateDataToCacheFileTask,
-                   private_data_copy, path, succeeded),
-        base::Bind(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr(), succeeded));
-  } else {
-    // If there is no data in our index then delete any existing cache file.
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(DeleteCacheFile, path));
   }
+  FlushPendingUpdates();
+  index_available_ = true;
+  NotifyHasLoaded();
 }
 
-void InMemoryURLIndex::OnCacheSaveDone(
-    scoped_refptr<RefCountedBool> succeeded) {
-  if (save_cache_observer_)
-    save_cache_observer_->OnCacheSaveFinished(succeeded->value());
+// Repair Cache ----------------------------------------------------------------
+
+void InMemoryURLIndex::RepairCacheDatabase() {
+  // The database will disable itself when it detects an error so re-enable the
+  // database and try to refresh it from scratch. If that fails then the
+  // database will be left in a disabled state and will be rebuilt from the
+  // history database the next time the profile is opened.
+  private_data_->set_cache_enabled(true);
+  PostRefreshCacheTask();  // Cache the newly rebuilt index.
 }
 
 }  // namespace history

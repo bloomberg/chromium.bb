@@ -1246,6 +1246,8 @@
         'browser/history/in_memory_database.h',
         'browser/history/in_memory_history_backend.cc',
         'browser/history/in_memory_history_backend.h',
+        'browser/history/in_memory_url_cache_database.cc',
+        'browser/history/in_memory_url_cache_database.h',
         'browser/history/in_memory_url_index.cc',
         'browser/history/in_memory_url_index.h',
         'browser/history/in_memory_url_index_types.cc',

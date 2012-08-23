@@ -2,111 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/history_quick_provider.h"
-
-#include <algorithm>
-#include <functional>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/in_memory_url_index.h"
-#include "chrome/browser/history/url_database.h"
-#include "chrome/browser/history/url_index_private_data.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/browser/autocomplete/history_quick_provider.h"
+#include "chrome/browser/history/in_memory_url_cache_database.h"
+#include "chrome/browser/history/in_memory_url_index_base_unittest.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-using base::Time;
-using base::TimeDelta;
-
-using content::BrowserThread;
-
-struct TestURLInfo {
-  std::string url;
-  std::string title;
-  int visit_count;
-  int typed_count;
-  int days_from_now;
-} quick_test_db[] = {
-  {"http://www.google.com/", "Google", 3, 3, 0},
-  {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 0},
-  {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 0},
-  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1, 0},
-  {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 0},
-  {"http://news.google.com/", "Google News", 1, 1, 0},
-  {"http://foo.com/", "Dir", 200, 100, 0},
-  {"http://foo.com/dir/", "Dir", 2, 1, 10},
-  {"http://foo.com/dir/another/", "Dir", 5, 10, 0},
-  {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
-  {"http://foo.com/dir/another/again/myfile.html", "File", 3, 2, 0},
-  {"http://visitedest.com/y/a", "VA", 10, 1, 20},
-  {"http://visitedest.com/y/b", "VB", 9, 1, 20},
-  {"http://visitedest.com/x/c", "VC", 8, 1, 20},
-  {"http://visitedest.com/x/d", "VD", 7, 1, 20},
-  {"http://visitedest.com/y/e", "VE", 6, 1, 20},
-  {"http://typeredest.com/y/a", "TA", 3, 5, 0},
-  {"http://typeredest.com/y/b", "TB", 3, 4, 0},
-  {"http://typeredest.com/x/c", "TC", 3, 3, 0},
-  {"http://typeredest.com/x/d", "TD", 3, 2, 0},
-  {"http://typeredest.com/y/e", "TE", 3, 1, 0},
-  {"http://daysagoest.com/y/a", "DA", 1, 1, 0},
-  {"http://daysagoest.com/y/b", "DB", 1, 1, 1},
-  {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
-  {"http://daysagoest.com/x/d", "DD", 1, 1, 3},
-  {"http://daysagoest.com/y/e", "DE", 1, 1, 4},
-  {"http://abcdefghixyzjklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 0},
-  {"http://abcdefghijklxyzmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://abcdefxyzghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://abcxyzdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://xyzabcdefghijklmnopqrstuvw.com/a", "", 3, 1, 0},
-  {"http://cda.com/Dogs%20Cats%20Gorillas%20Sea%20Slugs%20and%20Mice",
-   "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
-  {"https://monkeytrap.org/", "", 3, 1, 0},
-};
-
-class HistoryQuickProviderTest : public testing::Test,
-                                 public AutocompleteProviderListener {
- public:
-  HistoryQuickProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
-
-  // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
-
+class HistoryQuickProviderTest : public history::InMemoryURLIndexBaseTest {
  protected:
+  virtual FilePath::StringType TestDBName() const OVERRIDE;
+
   class SetShouldContain : public std::unary_function<const std::string&,
                                                       std::set<std::string> > {
    public:
     explicit SetShouldContain(const ACMatches& matched_urls);
-
     void operator()(const std::string& expected);
-
     std::set<std::string> LeftOvers() const { return matches_; }
 
    private:
     std::set<std::string> matches_;
   };
 
-  void SetUp();
-  void TearDown();
-
-  virtual void GetTestData(size_t* data_count, TestURLInfo** test_data);
-
-  // Fills test data into the history system.
-  void FillData();
+  virtual void SetUp() OVERRIDE;
 
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided. |expected_urls| does not
@@ -116,16 +34,6 @@ class HistoryQuickProviderTest : public testing::Test,
                bool can_inline_top_result,
                string16 expected_fill_into_edit);
 
-  // Pass-through functions to simplify our friendship with URLIndexPrivateData.
-  bool UpdateURL(const history::URLRow& row);
-
-  MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
-  scoped_ptr<TestingProfile> profile_;
-  HistoryService* history_service_;
-
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
  private:
@@ -133,63 +41,14 @@ class HistoryQuickProviderTest : public testing::Test,
 };
 
 void HistoryQuickProviderTest::SetUp() {
-  profile_.reset(new TestingProfile());
-  profile_->CreateHistoryService(true, false);
-  profile_->CreateBookmarkModel(true);
-  profile_->BlockUntilBookmarkModelLoaded();
-  history_service_ =
-      HistoryServiceFactory::GetForProfile(profile_.get(),
-                                           Profile::EXPLICIT_ACCESS);
-  EXPECT_TRUE(history_service_);
-  provider_ = new HistoryQuickProvider(this, profile_.get());
-  FillData();
+  InMemoryURLIndexBaseTest::SetUp();
+  LoadIndex();
+  DCHECK(url_index_->index_available());
+  provider_ = new HistoryQuickProvider(NULL, profile_.get());
 }
 
-void HistoryQuickProviderTest::TearDown() {
-  provider_ = NULL;
-}
-
-bool HistoryQuickProviderTest::UpdateURL(const history::URLRow& row) {
-  history::InMemoryURLIndex* index = provider_->GetIndex();
-  DCHECK(index);
-  history::URLIndexPrivateData* private_data = index->private_data();
-  DCHECK(private_data);
-  return private_data->UpdateURL(row, index->languages_,
-                                 index->scheme_whitelist_);
-}
-
-void HistoryQuickProviderTest::OnProviderUpdate(bool updated_matches) {
-  MessageLoop::current()->Quit();
-}
-
-void HistoryQuickProviderTest::GetTestData(size_t* data_count,
-                                           TestURLInfo** test_data) {
-  DCHECK(data_count);
-  DCHECK(test_data);
-  *data_count = arraysize(quick_test_db);
-  *test_data = &quick_test_db[0];
-}
-
-void HistoryQuickProviderTest::FillData() {
-  history::URLDatabase* db = history_service_->InMemoryDatabase();
-  ASSERT_TRUE(db != NULL);
-  size_t data_count = 0;
-  TestURLInfo* test_data = NULL;
-  GetTestData(&data_count, &test_data);
-  for (size_t i = 0; i < data_count; ++i) {
-    const TestURLInfo& cur(test_data[i]);
-    const GURL current_url(cur.url);
-    Time visit_time = Time::Now() - TimeDelta::FromDays(cur.days_from_now);
-
-    history::URLRow url_info(current_url);
-    url_info.set_id(i + 5000);
-    url_info.set_title(UTF8ToUTF16(cur.title));
-    url_info.set_visit_count(cur.visit_count);
-    url_info.set_typed_count(cur.typed_count);
-    url_info.set_last_visit(visit_time);
-    url_info.set_hidden(false);
-    UpdateURL(url_info);
-  }
+FilePath::StringType HistoryQuickProviderTest::TestDBName() const {
+  return FILE_PATH_LITERAL("history_quick_provider_test.db.txt");
 }
 
 HistoryQuickProviderTest::SetShouldContain::SetShouldContain(
@@ -432,52 +291,13 @@ TEST_F(HistoryQuickProviderTest, Spans) {
 
 // HQPOrderingTest -------------------------------------------------------------
 
-TestURLInfo ordering_test_db[] = {
-  {"http://www.teamliquid.net/tlpd/korean/games/21648_bisu_vs_iris", "", 6, 3,
-      256},
-  {"http://www.amazon.com/", "amazon.com: online shopping for electronics, "
-      "apparel, computers, books, dvds & more", 20, 20, 10},
-  {"http://www.teamliquid.net/forum/viewmessage.php?topic_id=52045&"
-      "currentpage=83", "google images", 6, 6, 0},
-  {"http://www.tempurpedic.com/", "tempur-pedic", 7, 7, 0},
-  {"http://www.teamfortress.com/", "", 5, 5, 6},
-  {"http://www.rottentomatoes.com/", "", 3, 3, 7},
-  {"http://music.google.com/music/listen?u=0#start_pl", "", 3, 3, 9},
-  {"https://www.emigrantdirect.com/", "high interest savings account, high "
-      "yield savings - emigrantdirect", 5, 5, 3},
-  {"http://store.steampowered.com/", "", 6, 6, 1},
-  {"http://techmeme.com/", "techmeme", 111, 110, 4},
-  {"http://www.teamliquid.net/tlpd", "team liquid progaming database", 15, 15,
-      2},
-  {"http://store.steampowered.com/", "the steam summer camp sale", 6, 6, 1},
-  {"http://www.teamliquid.net/tlpd/korean/players", "tlpd - bw korean - player "
-      "index", 100, 45, 219},
-  {"http://slashdot.org/", "slashdot: news for nerds, stuff that matters", 3, 3,
-      6},
-  {"http://translate.google.com/", "google translate", 3, 3, 0},
-  {"http://arstechnica.com/", "ars technica", 3, 3, 3},
-  {"http://www.rottentomatoes.com/", "movies | movie trailers | reviews - "
-      "rotten tomatoes", 3, 3, 7},
-  {"http://www.teamliquid.net/", "team liquid - starcraft 2 and brood war pro "
-      "gaming news", 26, 25, 3},
-  {"http://metaleater.com/", "metaleater", 4, 3, 8},
-  {"http://half.com/", "half.com: textbooks , books , music , movies , games , "
-      "video games", 4, 4, 6},
-  {"http://teamliquid.net/", "team liquid - starcraft 2 and brood war pro "
-      "gaming news", 8, 5, 9},
-};
-
 class HQPOrderingTest : public HistoryQuickProviderTest {
  protected:
-  virtual void GetTestData(size_t* data_count,
-                           TestURLInfo** test_data) OVERRIDE;
+  virtual FilePath::StringType TestDBName() const OVERRIDE;
 };
 
-void HQPOrderingTest::GetTestData(size_t* data_count, TestURLInfo** test_data) {
-  DCHECK(data_count);
-  DCHECK(test_data);
-  *data_count = arraysize(ordering_test_db);
-  *test_data = &ordering_test_db[0];
+FilePath::StringType HQPOrderingTest::TestDBName() const {
+  return FILE_PATH_LITERAL("history_quick_provider_ordering_test.db.txt");
 }
 
 TEST_F(HQPOrderingTest, TEMatch) {

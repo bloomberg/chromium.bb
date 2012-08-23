@@ -117,6 +117,7 @@ typedef std::map<string16, WordID> WordMap;
 
 // A map from character to the word_ids of words containing that character.
 typedef std::set<WordID> WordIDSet;  // An index into the WordList.
+// TODO(mrossetti): Consider using <multimap>. See http://crbug.com/138334
 typedef std::map<char16, WordIDSet> CharWordIDMap;
 
 // A map from word (by word_id) to history items containing that word.
@@ -141,24 +142,6 @@ struct RowWordStarts {
   WordStarts title_word_starts_;
 };
 typedef std::map<HistoryID, RowWordStarts> WordStartsMap;
-
-// A RefCountedThreadSafe class that manages a bool used for passing around
-// success when saving the persistent data for the InMemoryURLIndex in a cache.
-class RefCountedBool : public base::RefCountedThreadSafe<RefCountedBool> {
- public:
-  explicit RefCountedBool(bool value) : value_(value) {}
-
-  bool value() const { return value_; }
-  void set_value(bool value) { value_ = value; }
-
- private:
-  friend class base::RefCountedThreadSafe<RefCountedBool>;
-  virtual ~RefCountedBool();
-
-  bool value_;
-
-  DISALLOW_COPY_AND_ASSIGN(RefCountedBool);
-};
 
 }  // namespace history
 

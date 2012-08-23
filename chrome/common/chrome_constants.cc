@@ -139,6 +139,9 @@ const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const FilePath::CharType kHistoryBookmarksFileName[] =
     FPL("Bookmarks From History");
 const FilePath::CharType kHistoryFilename[] = FPL("History");
+const FilePath::CharType kHQPCacheFilename[] = FPL("History Provider Cache");
+const FilePath::CharType kHQPCacheDBFilename[] =
+    FPL("History Provider Cache DB");
 const FilePath::CharType kIsolatedAppStateDirname[] = FPL("Isolated Apps");
 const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
