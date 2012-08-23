@@ -37,76 +37,79 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_ARMv7(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_branch_block_xfer(
+  inline const ClassDecoder& decode_advanced_simd_data_processing_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_dp_immed(
+  inline const ClassDecoder& decode_advanced_simd_element_or_structure_load_store_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_dp_misc(
+  inline const ClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_dp_reg(
+  inline const ClassDecoder& decode_coprocessor_instructions_and_supervisor_call(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_dp_reg_shifted(
+  inline const ClassDecoder& decode_data_processing_and_miscellaneous_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_ext_reg_load_store(
+  inline const ClassDecoder& decode_data_processing_immediate(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_ext_reg_move(
+  inline const ClassDecoder& decode_data_processing_register(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_ext_reg_transfers(
+  inline const ClassDecoder& decode_data_processing_register_shifted_register(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_extra_load_store(
+  inline const ClassDecoder& decode_extension_register_load_store_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_half_mult(
+  inline const ClassDecoder& decode_extra_load_store_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_load_store_word_byte(
+  inline const ClassDecoder& decode_floating_point_data_processing_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_load_store_word_byte_str_or_push(
+  inline const ClassDecoder& decode_halfword_multiply_and_multiply_accumulate(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_media(
+  inline const ClassDecoder& decode_load_store_word_and_unsigned_byte(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_misc(
+  inline const ClassDecoder& decode_load_store_word_and_unsigned_byte_str_or_push(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_misc_hints_simd(
+  inline const ClassDecoder& decode_media_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_msr_and_hints(
+  inline const ClassDecoder& decode_memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_mult(
+  inline const ClassDecoder& decode_miscellaneous_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_other_vfp_data_proc(
+  inline const ClassDecoder& decode_msr_immediate_and_hints(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_pack_sat_rev(
+  inline const ClassDecoder& decode_multiply_and_multiply_accumulate(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_parallel_add_sub_signed(
+  inline const ClassDecoder& decode_other_floating_point_data_processing_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_parallel_add_sub_unsigned(
+  inline const ClassDecoder& decode_packing_unpacking_saturation_and_reversal(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_sat_add_sub(
+  inline const ClassDecoder& decode_parallel_addition_and_subtraction_signed(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_signed_mult(
+  inline const ClassDecoder& decode_parallel_addition_and_subtraction_unsigned(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_simd_dp(
+  inline const ClassDecoder& decode_saturating_addition_and_subtraction(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_simd_dp_1imm(
@@ -127,25 +130,22 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_simd_dp_3same(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_simd_load_store(
-      const Instruction insn) const;
-
   inline const ClassDecoder& decode_simd_load_store_l0(
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_simd_load_store_l1(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_super_cop(
+  inline const ClassDecoder& decode_synchronization_primitives(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_sync(
+  inline const ClassDecoder& decode_transfer_between_arm_core_and_extension_register_8_16_and_32_bit(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_unconditional(
+  inline const ClassDecoder& decode_transfer_between_arm_core_and_extension_registers_64_bit(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_vfp_data_proc(
+  inline const ClassDecoder& decode_unconditional_instructions(
       const Instruction insn) const;
 
   // The following fields define the set of class decoders

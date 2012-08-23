@@ -142,28 +142,28 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- ARMv7 (See Section A5.1)
 | cond(31:28) op1(27:25) op(4)
-| ~1111       00x        -     ->dp_misc
-| "           010        -     ->load_store_word_byte
-| "           011        0     ->load_store_word_byte
-| "           "          1     ->media
-| "           10x        -     ->branch_block_xfer
-| "           11x        -     ->super_cop
-| 1111        -          -     ->unconditional
+| ~1111       00x        -     ->data_processing_and_miscellaneous_instructions
+| "           010        -     ->load_store_word_and_unsigned_byte
+| "           011        0     ->load_store_word_and_unsigned_byte
+| "           "          1     ->media_instructions
+| "           10x        -     ->branch_branch_with_link_and_block_data_transfer
+| "           11x        -     ->coprocessor_instructions_and_supervisor_call
+| 1111        -          -     ->unconditional_instructions
 +--
 
-+-- dp_misc (See Section A5.2)
++-- data_processing_and_miscellaneous_instructions (See Section A5.2)
 | op(25) op1(24:20) op2(7:4)
-| 0      ~10xx0     xxx0     ->dp_reg
-| "      "          0xx1     ->dp_reg_shifted
-| "      10xx0      0xxx     ->misc
-| "      "          1xx0     ->half_mult
-| "      0xxxx      1001     ->mult
-| "      1xxxx      1001     ->sync
-| "      ~0xx1x     1011     ->extra_load_store
+| 0      ~10xx0     xxx0     ->data_processing_register
+| "      "          0xx1     ->data_processing_register_shifted_register
+| "      10xx0      0xxx     ->miscellaneous_instructions
+| "      "          1xx0     ->halfword_multiply_and_multiply_accumulate
+| "      0xxxx      1001     ->multiply_and_multiply_accumulate
+| "      1xxxx      1001     ->synchronization_primitives
+| "      ~0xx1x     1011     ->extra_load_store_instructions
 | "      "          11x1     "
 | "      0xx1x      1011     =Forbidden  # Load/Store Unprivileged, plus undef
 | "      "          11x1     "
-| 1      ~10xx0     -        ->dp_immed
+| 1      ~10xx0     -        ->data_processing_immediate
 | "      10000      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVW A8-194
                                Mov_Rule_96_A2_P194
                                cccc00110000iiiiddddIIIIIIIIIIII
@@ -174,13 +174,13 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                cccc00110100iiiiddddIIIIIIIIIIII
                                RegsNotPc
                                (v6T2)
-| "      10x10      -        ->msr_and_hints
+| "      10x10      -        ->msr_immediate_and_hints
 +--
 
 # Note: We track conditions flags on many of the class decoders
 # in this section, since they can be used to change the value of SP,
 # and we want to allow masking to follow in the next instruction.
-+-- dp_reg (See Section A5.2.1)
++-- data_processing_register (See Section A5.2.1)
 | op1(24:20) op2(11:7) op3(6:5)
 | 0000x      -         -        = Binary3RegisterImmedShiftedOp
                                      => Defs12To15
@@ -242,6 +242,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                      => DontCareInst
                                      Cmn_Rule_33_A1_P76
                                      cccc00010111nnnn0000iiiiitt0mmmm
+# TODO(jfb) op==10xx0 should be unreachable from here:
+#           the previous table should handle it.
 | 1100x      -         -        = Binary3RegisterImmedShiftedOp
                                      => Defs12To15
                                      Orr_Rule_114_A1_P230
@@ -289,7 +291,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                      NotRdIsPcAndS
 +--
 
-+-- dp_reg_shifted (See Section A5.2.2)
++-- data_processing_register_shifted_register (See Section A5.2.2)
 | op1(24:20) op2(6:5)
 | 0000x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
@@ -325,6 +327,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15RdRnRsRmNotPc
                            Rsc_Rule_147_A1_P294
                            cccc0000111unnnnddddssss0tt1mmmm RegsNotPc
+# TODO(jfb) op==10xx0 should be unreachable from here:
+#           the previous table should handle it.
 | 10001      -        = Binary3RegisterShiftedTest
                            => DontCareInstRnRsRmNotPc
                            Tst_Rule_232_A1_P458
@@ -371,7 +375,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            cccc0001111u0000ddddssss0tt1mmmm RegsNotPc
 +--
 
-+-- dp_immed (See Section A5.2.3)
++-- data_processing_immediate (See Section A5.2.3)
 # Note: The two interesting instructions in this set are
 # TestIfAddressMasked and MaskAddress. These two instructions are the
 # ones that we allow testing/setting of bits to mask data addresses
@@ -455,6 +459,8 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Rsc_Rule_145_A1_P290
                            cccc0010111unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+# TODO(jfb) op==10xx0 should be unreachable from here:
+#           the previous table should handle it.
                         # Note: Following instruction is used to test
                         # if the immediate value appropriately (data address)
                         # masks the value in Rn.
@@ -494,7 +500,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            cccc0011111u0000ddddiiiiiiiiiiii NotRdIsPcAndS
 +--
 
-+-- mult (See Section A5.2.5)
++-- multiply_and_multiply_accumulate (See Section A5.2.5)
 | op(23:20)
 | 000x      = Binary3RegisterOpAltA
                  => Defs16To19CondsDontCareRdRmRnNotPc
@@ -546,7 +552,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                  cccc0000111uhhhhllllmmmm1001nnnn RegsNotPc
 +--
 
-+-- sat_add_sub (See Section A5.2.6)
++-- saturating_addition_and_subtraction (See Section A5.2.6)
 | op(22:21)
 | 00        = Binary3RegisterOpAltB
               => Defs12To15CondsDontCareRnRdRmNotPc
@@ -566,7 +572,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
               cccc00010110nnnndddd00000101mmmm RegsNotPc (v5TE)
 +--
 
-+-- half_mult (See Section A5.2.7)
++-- halfword_multiply_and_multiply_accumulate (See Section A5.2.7)
 | op1(22:21) op(5)
                      # Implements Smlabb, Smlabt, Smlatb, and Smlatt
                      # where the t/b bits (xx) are in bits 5:6.
@@ -613,7 +619,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                         cccc00010110ddddzzzzmmmm1xx0nnnn RegsNotPc (v5TE)
 +--
 
-+-- extra_load_store (See Section A5.2.8)
++-- extra_load_store_instructions (See Section A5.2.8)
 | op2(6:5) op1(24:20) Rn(19:16)
 | 01       xx0x0      -         = Store3RegisterOp => StoreBasedOffsetMemory
                                   Strh_Rule_208_A1_P412
@@ -678,10 +684,11 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                   cccc0001d1011111ttttiiii1111iiii
 +--
 
-# Unprivileged load-store table omitted: modeled as Forbidden.
+# extra_load_store_instructions_unpriviledged (See section A5.2.9)
+# Table omitted: modeled as Forbidden.
 # They are not expected in user code.
 
-+-- sync (See Section A5.2.10)
++-- synchronization_primitives (See Section A5.2.10)
 | op(23:20)
 | 0x00      = Deprecated      # SWP, SWPB  TODO(karl): model these? a8-432
 | 1000      = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3
@@ -712,7 +719,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:     = Undefined (v6K)            # Note on page A5-16
 +--
 
-+-- msr_and_hints (See Section A5.2.11)
++-- msr_immediate_and_hints (See Section A5.2.11)
 | op(22) op1(19:16) op2(7:0)
 | 0      0000       0000_0000  = CondNop => DontCareInst
                                  Nop_Rule_110_A1_P222
@@ -760,7 +767,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                        = Forbidden  # Unallocated hints, page A5-17
 +--
 
-+-- misc (See Section A5.2.12)
++-- miscellaneous_instructions (See Section A5.2.12)
 | op2(6:4) op(22:21) op1(19:16)
 | 000      x0        xxxx       = Unary1RegisterSet
                                   Mrs_Rule_102_A1_P206_Or_B6_10
@@ -791,7 +798,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                   Blx_Rule_24_A1_P60
                                   cccc000100101111111111110011mmmm
                                   RegsNotPc (v5T)
-| 101      -         -          ->sat_add_sub
+| 101      -         -          ->saturating_addition_and_subtraction
 | 111      01        -          = BreakPointAndConstantPoolHead
                                   => Breakpoint
                                   Bkpt_Rule_22_A1_P56
@@ -802,11 +809,11 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                         = Undefined     # Note on page A5-18
 +--
 
-+-- load_store_word_byte (See Section A5.3)
++-- load_store_word_and_unsigned_byte (See Section A5.3)
 # Note: Column op1 is repeated so that several rows can define
 # (anded) multiple test conditions for this row.
 | A(25) op1(24:20) B(4) Rn(19:16)  op1_repeated(24:20)
-| 0     xx0x0      -    -          ~0x010 -> load_store_word_byte_str_or_push
+| 0     xx0x0      -    -          ~0x010 -> load_store_word_and_unsigned_byte_str_or_push
 | 1     xx0x0      0    -          ~0x010
                                    = Store3RegisterImm5Op 
                                    => StoreBasedOffsetMemory
@@ -868,9 +875,9 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 1     0x111      0    -          - "
 +--
 
-+-- load_store_word_byte_str_or_push (See Section a5.3)
++-- load_store_word_and_unsigned_byte_str_or_push (See Section A5.3)
 # This table is written to handle special variant of Str that also
-# corresponds to a push, in table load_store_word_byte.
+# corresponds to a push, in table load_store_word_and_unsigned_byte.
 | Flags(24:21) Rn(19:16) Imm12(11:0)
 # Note: The baseline class Store2RegisterImm12OpRnNotRtOnWriteback guarantees
 # that we don't allow Rt(15:12) to be PC or SP.
@@ -885,12 +892,12 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +--
 
 
-+-- media (See Section A5.4)
++-- media_instructions (See Section A5.4)
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
-| 000xx      -        -         -     ->parallel_add_sub_signed
-| 001xx      -        -         -     ->parallel_add_sub_unsigned
-| 01xxx      -        -         -     ->pack_sat_rev
-| 10xxx      -        -         -     ->signed_mult
+| 000xx      -        -         -     ->parallel_addition_and_subtraction_signed
+| 001xx      -        -         -     ->parallel_addition_and_subtraction_unsigned
+| 01xxx      -        -         -     ->packing_unpacking_saturation_and_reversal
+| 10xxx      -        -         -     ->signed_multiply_signed_and_unsigned_divide
 | 11000      000      1111      -     = Binary3RegisterOpAltA
                                         => Defs16To19CondsDontCareRdRmRnNotPc
                                         Usad8_Rule_253_A1_P500
@@ -927,7 +934,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                               = Undefined  # Note on page A5-21
 +--
 
-+-- parallel_add_sub_signed (See Section A5.4.1)
++-- parallel_addition_and_subtraction_signed (See Section A5.4.1)
 | op1(21:20) op2(7:5)
 | 01         000      = Binary3RegisterOpAltB
                         => Defs12To15CondsDontCareRnRdRmNotPc
@@ -1004,7 +1011,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:               = Undefined  # Note on page A5-23
 +--
 
-+-- parallel_add_sub_unsigned (See Section A5.4.2)
++-- parallel_addition_and_subtraction_unsigned (See Section A5.4.2)
 | op1(21:20) op2(7:5)
 | 01         000      = Binary3RegisterOpAltB
                         => Defs12To15CondsDontCareRnRdRmNotPc
@@ -1081,7 +1088,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:               = Undefined  # Note on page A5-23
 +--
 
-+-- pack_sat_rev (See Section A5.4.3)
++-- packing_unpacking_saturation_and_reversal (See Section A5.4.3)
 | op1(22:20) op2(7:5) A(19:16)
 | 000        xx0      -        = Binary3RegisterImmedShiftedOpRegsNotPc
                                  => Defs12To15CondsDontCareRnRdRmNotPc
@@ -1182,7 +1189,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                        = Undefined  # Note on page A5-24
 +--
 
-+-- signed_mult (See Section A5.4.4)
++-- signed_multiply_signed_and_unsigned_divide (See Section A5.4.4)
 | op1(22:20) op2(7:5) A(15:12)
                                  # Implements Smlad and Smladx, where
                                  # the x form is chosen if bit 5 is 1.
@@ -1216,6 +1223,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                  Smusd_Rule_181_P360
                                  cccc01110000dddd1111mmmm01x1nnnn
                                  RegsNotPc (v6T2)
+# TODO(jfb) Some of the the v7 implementations can implement UDIV and SDIV,
+#           see ARM ARM for details. Those look like:
+# 001        000      -          SDIV
+# 011        "        -          UDIV
                                  # Implements Smalad and Smaladx, where
                                  # the x form is chosen if bit 5 is 1.
 | 100        00x      -        = Binary4RegisterDualResult
@@ -1258,7 +1269,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                        = Undefined  # Note on page A5-26
 +--
 
-+-- branch_block_xfer (See Section A5.5)
++-- branch_branch_with_link_and_block_data_transfer (See Section A5.5)
 # TODO(karl): Clean up the actual classes once baseline has been committed.
 | op(25:20) R(15)
 | 0000x0    -     = StoreRegisterList
@@ -1304,14 +1315,14 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                     cccc1011iiiiiiiiiiiiiiiiiiiiiiii
 +--
 
-+-- super_cop (See Section A5.6)
++-- coprocessor_instructions_and_supervisor_call (See Section A5.6)
 # Note: We currently only allow floating point (and advanced SIMD) 
 # coprocessor operations (coproc=101x).
 # Note: Column op1 is repeated so that the first three rows can define
 # (anded) multiple test conditions for this row.
 | op1(25:20) op(4) coproc(11:8) Rn(19:16) op1_repeated(25:20) 
 | 0xxxxx     -     101x         -         ~000x0x
-                   -> ext_reg_load_store
+                   -> extension_register_load_store_instructions
 | 0xxxx0     -     ~101x           -      ~000x0x
                    # Note: Never safe since coproc!=101x
                    = Forbidden  # STC A8-372
@@ -1324,7 +1335,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 00000x     -     -            -          -
                    = Undefined        # see table, section A5.6
 | 00010x     -     101x         -          -
-                   -> ext_reg_transfers
+                   -> transfer_between_arm_core_and_extension_registers_64_bit
 | 000100     -     ~101x        -          -
                    # Note: Never safe since coproc!=101x
                    = Forbidden (v5TE) # MCRR, MCRR2 A8-188
@@ -1332,12 +1343,12 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                    # Note: Never safe since coproc!=101x
                    = Forbidden (v5TE) # MRRC, MRRC2 A8-204
 | 10xxxx     0     101x         -          -
-                   -> vfp_data_proc
+                   -> floating_point_data_processing_instructions
 | "          "     ~101x        -          -
                    # Note: Never safe since coproc!=101x
                    = Forbidden        # CDP, CDP2 A8-68
 | "          1     101x         -          -
-                   -> ext_reg_move
+                   -> transfer_between_arm_core_and_extension_register_8_16_and_32_bit
 | "          "     ~101x        -          -
                    # Note: Never safe since coproc!=101x
                    = Forbidden        # MCR, MCR2 A8-186
@@ -1348,7 +1359,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                    = Forbidden        # SVC (nee SWI) A8-430
 +--
 
-+-- vfp_data_proc (A7.5 Table A7-16, page A7-24)
++-- floating_point_data_processing_instructions (A7.5 Table A7-16, page A7-24)
 # Three register VPD data-processing, CDP instructions for
 # coprocessors 10/11.
 | opc1(23:20) opc3(7:6)
@@ -1373,10 +1384,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 1x00        x0        = CondVfpOp => VfpOp
                           Vdiv_Rule_301_A1_P590
                           cccc11101d00nnnndddd101sn0m0mmmm
-| 1x11        -         -> other_vfp_data_proc
+| 1x11        -         -> other_floating_point_data_processing_instructions
 +--
 
-+-- other_vfp_data_proc (A7.5 Table A7-17, page 17-25)
++-- other_floating_point_data_processing_instructions (A7.5 Table A7-17, page 17-25)
 # Other VPD data-processing, CDP instructions for coprocessors 10/11. 
 #
 # Note: Currently, all instructions use class CoprocessorOp
@@ -1434,7 +1445,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                           cccc11101d11111udddd101fx1i0iiii
 +--
 
-+-- ext_reg_load_store (A7.6)
++-- extension_register_load_store_instructions (A7.6)
 # LDC and STC instructions for coprocessors 10/11.
 #
 # TODO(karl): Decide if baseline classes should also be actual classes, once
@@ -1444,7 +1455,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 # instruction, by matching coproc(11:8)=101x.
 #
 | opcode(24:20) Rn(19:16)
-| 0010x         -         -> ext_reg_transfers
+| 0010x         -         -> transfer_between_arm_core_and_extension_registers_64_bit
 | 01x00         -         = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
                             cccc11001d00nnnndddd101xiiiiiiii
@@ -1479,7 +1490,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                             cccc11010d11nnnndddd101xiiiiiiii
 +--
 
-+-- ext_reg_move (A7.8 page A7-31)
++-- transfer_between_arm_core_and_extension_register_8_16_and_32_bit (A7.8 page A7-31)
 # MRC and MCR instructions for coprocessors 10/11.
 | L(20) C(8) A(23:21) B(6:5)
 | 0     0    000      -      = MoveVfpRegisterOp
@@ -1510,7 +1521,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                      = Undefined  # Note on page A7-31
 +--
 
-+-- ext_reg_transfers (A7.8 page A7-32)
++-- transfer_between_arm_core_and_extension_registers_64_bit (A7.8 page A7-32)
 # These are 64-bit MRRC and MCRR instructions for coprocessors 10/11.
 | C(8) op(7:4)
 | 0    00x1    # TODO(karl): Fix this to do the right thing.
@@ -1521,14 +1532,14 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                = MoveDoubleFromCoprocessor
 +--
 
-+-- unconditional (See Section A5.7)
++-- unconditional_instructions (See Section A5.7)
 # Note: We currently only allow floating point (and advanced SIMD) 
 # coprocessor operations (coproc=101x).
 #
 # Note: Most instructions in this table are forbidden because they
 # aren't specific to the Vfp coprocessors (10, 11).
 | op1(27:20) op(4) Rn(19:16)
-| 0xxx_xxxx  -     -         ->misc_hints_simd
+| 0xxx_xxxx  -     -         ->memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions
 # Note: These instructions are not allowed for any coprocessor.
 | 100x_x1x0  -     -         = ForbiddenUncondNop # SRS B6-20
                              => Forbidden (v6)
@@ -1568,12 +1579,12 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                      = Undefined          # Note on page A5-30
 +--
 
-+-- misc_hints_simd (See Section A5.7.1)
++-- memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions (See Section A5.7.1)
 | op1(26:20) op2(7:4) Rn(19:16)
 | 001_0000   xx0x     xxx0      =Forbidden  # CPS
 | 001_0000   0000     xxx1      =Forbidden  # SETEND
-| 01x_xxxx   -        -         ->simd_dp
-| 100_xxx0   -        -         ->simd_load_store
+| 01x_xxxx   -        -         ->advanced_simd_data_processing_instructions
+| 100_xxx0   -        -         ->advanced_simd_element_or_structure_load_store_instructions
 | 100_x001   -        -         =EffectiveNoOp(MP)    # Unallocated memory hint
 | 100_x101   -        -         =EffectiveNoOp(v7)    # PLI(immediate, literal)
 | 101_x001   -        ~1111     =EffectiveNoOp(MP)    # PLDW(immediate)
@@ -1593,7 +1604,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:                         =Undefined   # Note on page A5-31
 +--
 
-+-- simd_dp (See Section A7.4)
++-- advanced_simd_data_processing_instructions (See Section A7.4)
 | U(24) A(23:19) B(11:8) C(7:4)
 | -     0xxxx    -       -      -> simd_dp_3same
 | "     1x000    -       0xx1   -> simd_dp_1imm
@@ -1776,7 +1787,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "     1111        =Undefined
 +--
 
-+-- simd_load_store (See Section A7.7)
++-- advanced_simd_element_or_structure_load_store_instructions (See Section A7.7)
 # This "table" is the first paragraph in A7.7.
 | L(21)
 | 0    ->simd_load_store_l0
