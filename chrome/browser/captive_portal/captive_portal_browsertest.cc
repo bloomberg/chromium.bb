@@ -1574,10 +1574,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
   // Need an HTTP TestServer to handle a dynamically created server redirect.
   ASSERT_TRUE(test_server()->Start());
 
-  net::TestServer::HTTPSOptions https_options;
-  https_options.server_certificate =
-      net::TestServer::HTTPSOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.server_certificate =
+      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
 

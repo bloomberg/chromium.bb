@@ -190,8 +190,9 @@ class TestServer {
 
   // Initialize a TestServer listening on the specified host (IP or hostname).
   TestServer(Type type, const std::string& host, const FilePath& document_root);
-  // Initialize a HTTPS TestServer with a specific set of HTTPSOptions.
-  TestServer(const HTTPSOptions& https_options,
+  // Initialize a TestServer with a specific set of SSLOptions.
+  TestServer(Type type,
+             const SSLOptions& ssl_options,
              const FilePath& document_root);
 
   %feature("docstring", "Start TestServer over an ephemeral port") Start;
@@ -227,23 +228,23 @@ class TestServer {
 };
 
 }
-// HTTPSOptions
+// SSLOptions
 %feature("docstring",
-         "HTTPSOptions. Sets one of three types of a cert")
-    HTTPSOptions;
-struct HTTPSOptions {
+         "SSLOptions. Sets one of three types of a cert")
+    SSLOptions;
+struct SSLOptions {
   enum ServerCertificate {
     CERT_OK,
     CERT_MISMATCHED_NAME,
     CERT_EXPIRED,
   };
 
-  // Initialize a new HTTPSOptions that will use the specified certificate.
-  explicit HTTPSOptions(ServerCertificate cert);
+  // Initialize a new SSLOptions that will use the specified certificate.
+  explicit SSLOptions(ServerCertificate cert);
 };
 
 %{
-typedef net::TestServer::HTTPSOptions HTTPSOptions;
+typedef net::TestServer::SSLOptions SSLOptions;
 %}
 
 %pointer_class(int, int_ptr);

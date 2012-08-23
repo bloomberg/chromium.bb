@@ -1860,10 +1860,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
 
 // Checks that a top-level page which would trigger an SSL error is canceled.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
-  net::TestServer::HTTPSOptions https_options;
-  https_options.server_certificate =
-      net::TestServer::HTTPSOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.server_certificate =
+      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -1876,10 +1877,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
 // the page. Non-main-frame requests are simply cancelled if they run into
 // an SSL problem.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
-  net::TestServer::HTTPSOptions https_options;
-  https_options.server_certificate =
-      net::TestServer::HTTPSOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.server_certificate =
+      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
@@ -1899,10 +1901,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
 // the page. Non-main-frame requests are simply cancelled if they run into
 // an SSL problem.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorIframe) {
-  net::TestServer::HTTPSOptions https_options;
-  https_options.server_certificate =
-      net::TestServer::HTTPSOptions::CERT_MISMATCHED_NAME;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.server_certificate =
+      net::TestServer::SSLOptions::CERT_MISMATCHED_NAME;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(
@@ -1949,9 +1952,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
-  net::TestServer::HTTPSOptions https_options;
-  https_options.request_client_certificate = true;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/prerender_page.html");
@@ -1962,9 +1966,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
 // subresource will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertSubresource) {
-  net::TestServer::HTTPSOptions https_options;
-  https_options.request_client_certificate = true;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("files/prerender/image.jpeg");
@@ -1984,9 +1989,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that an SSL Client Certificate request that originates from an
 // iframe will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
-  net::TestServer::HTTPSOptions https_options;
-  https_options.request_client_certificate = true;
-  net::TestServer https_server(https_options,
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               ssl_options,
                                FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL(

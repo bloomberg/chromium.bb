@@ -136,7 +136,8 @@ void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
 void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
   FilePath document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
-  net::TestServer test_server(net::BaseTestServer::HTTPSOptions(),
+  net::TestServer test_server(net::TestServer::TYPE_HTTPS,
+                              net::BaseTestServer::SSLOptions(),
                               document_root);
   ASSERT_TRUE(test_server.Start());
   uint16_t port = test_server.host_port_pair().port();

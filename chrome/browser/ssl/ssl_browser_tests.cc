@@ -81,17 +81,19 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
 }  // namespace
 
 class SSLUITest : public InProcessBrowserTest {
-  typedef net::TestServer::HTTPSOptions HTTPSOptions;
+  typedef net::TestServer::SSLOptions SSLOptions;
 
  public:
   SSLUITest()
-      : https_server_(
-            HTTPSOptions(HTTPSOptions::CERT_OK), FilePath(kDocRoot)),
-        https_server_expired_(
-            HTTPSOptions(HTTPSOptions::CERT_EXPIRED), FilePath(kDocRoot)),
-        https_server_mismatched_(
-            HTTPSOptions(HTTPSOptions::CERT_MISMATCHED_NAME),
-            FilePath(kDocRoot)) {}
+      : https_server_(net::TestServer::TYPE_HTTPS,
+                      SSLOptions(SSLOptions::CERT_OK),
+                      FilePath(kDocRoot)),
+        https_server_expired_(net::TestServer::TYPE_HTTPS,
+                              SSLOptions(SSLOptions::CERT_EXPIRED),
+                              FilePath(kDocRoot)),
+        https_server_mismatched_(net::TestServer::TYPE_HTTPS,
+                                 SSLOptions(SSLOptions::CERT_MISMATCHED_NAME),
+                                 FilePath(kDocRoot)) {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // Browser will both run and display insecure content.
