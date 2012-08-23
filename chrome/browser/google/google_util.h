@@ -18,7 +18,8 @@ class Profile;
 // and state relating to Google Chrome distributions (such as RLZ).
 namespace google_util {
 
-extern const char kLinkDoctorBaseURL[];
+GURL LinkDoctorBaseURL();
+void SetMockLinkDoctorBaseURLForTesting();
 
 // Adds the Google locale string to the URL (e.g., hl=en-US).  This does not
 // check to see if the param already exists.

@@ -74,8 +74,10 @@ GURL AlternateErrorPageTabObserver::GetAlternateErrorPageURL() const {
     return url;
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
-    url = google_util::AppendGoogleLocaleParam(
-        GURL(google_util::kLinkDoctorBaseURL));
+    url = google_util::LinkDoctorBaseURL();
+    if (!url.is_valid())
+      return url;
+    url = google_util::AppendGoogleLocaleParam(url);
     url = google_util::AppendGoogleTLDParam(profile_, url);
   }
   return url;

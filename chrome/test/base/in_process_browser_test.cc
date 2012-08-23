@@ -14,6 +14,7 @@
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -146,6 +147,8 @@ void InProcessBrowserTest::SetUp() {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalService::set_is_disabled_for_testing(true);
 #endif
+
+  google_util::SetMockLinkDoctorBaseURLForTesting();
 
   BrowserTestBase::SetUp();
 }

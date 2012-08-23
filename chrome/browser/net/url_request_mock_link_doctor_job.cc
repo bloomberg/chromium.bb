@@ -32,7 +32,7 @@ net::URLRequestJob* URLRequestMockLinkDoctorJob::Factory(
 void URLRequestMockLinkDoctorJob::AddUrlHandler() {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameHandler("http",
-                             GURL(google_util::kLinkDoctorBaseURL).host(),
+                             google_util::LinkDoctorBaseURL().host(),
                              URLRequestMockLinkDoctorJob::Factory);
 }
 

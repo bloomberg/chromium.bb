@@ -26,6 +26,14 @@
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/google/linkdoctor_internal/linkdoctor_internal.h"
+#endif
+
+#ifndef LINKDOCTOR_SERVER_REQUEST_URL
+#define LINKDOCTOR_SERVER_REQUEST_URL ""
+#endif
+
 namespace {
 
 const char* brand_for_testing = NULL;
@@ -46,12 +54,21 @@ bool HasQueryParameter(const std::string& str) {
   return false;
 }
 
+bool gUseMockLinkDoctorBaseURLForTesting = false;
+
 }  // anonymous namespace
 
 namespace google_util {
 
-const char kLinkDoctorBaseURL[] =
-    "http://linkhelp.clients.google.com/tbproxy/lh/fixurl";
+GURL LinkDoctorBaseURL() {
+  if (gUseMockLinkDoctorBaseURLForTesting)
+    return GURL("http://mock.linkdoctor.url/for?testing");
+  return GURL(LINKDOCTOR_SERVER_REQUEST_URL);
+}
+
+void SetMockLinkDoctorBaseURLForTesting() {
+  gUseMockLinkDoctorBaseURLForTesting = true;
+}
 
 BrandForTesting::BrandForTesting(const std::string& brand) : brand_(brand) {
   DCHECK(brand_for_testing == NULL);
