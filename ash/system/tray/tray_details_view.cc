@@ -90,13 +90,13 @@ void TrayDetailsView::Layout() {
     return;
   }
 
-  scroller_->SetFixedSize(gfx::Size());
+  scroller_->set_fixed_size(gfx::Size());
   gfx::Size size = GetPreferredSize();
   if (size.height() > height()) {
     // The available size is smaller than the requested size. Squeeze the
     // scroller so that everything fits in the available size.
     gfx::Size scroller_size = scroll_content_->GetPreferredSize();
-    scroller_->SetFixedSize(gfx::Size(
+    scroller_->set_fixed_size(gfx::Size(
         width() + scroller_->GetScrollBarWidth(),
         scroller_size.height() - (size.height() - height())));
   }
