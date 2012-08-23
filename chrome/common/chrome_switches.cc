@@ -1432,9 +1432,6 @@ const char kEnableTouchpadThreeFingerClick[]
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 
-// Enables device policy support on ChromeOS.
-const char kEnableDevicePolicy[]            = "enable-device-policy";
-
 // Enables Drive v2 API instead of Google Documents List API.
 const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
 
@@ -1447,9 +1444,6 @@ const char kEnableGView[]                   = "enable-gview";
 
 // Enable Kiosk mode for ChromeOS
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
-
-// Enables support for policy-configured networks.
-const char kEnableONCPolicy[]               = "enable-onc-policy";
 
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.

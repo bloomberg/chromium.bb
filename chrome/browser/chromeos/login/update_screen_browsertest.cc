@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
@@ -11,21 +11,25 @@
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
-using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::Invoke;
-using chromeos::UpdateEngineClient;
+using ::testing::Return;
+
+namespace chromeos {
+
+namespace {
 
 static void RequestUpdateCheckSuccess(
     UpdateEngineClient::UpdateCheckCallback callback) {
   callback.Run(UpdateEngineClient::UPDATE_RESULT_SUCCESS);
 }
+
+}  // namespace
 
 class UpdateScreenTest : public WizardInProcessBrowserTest {
  public:
@@ -79,6 +83,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
+        .WillRepeatedly(Return(true));
   }
 
   virtual void SetUpOnMainThread() {

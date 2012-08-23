@@ -32,8 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
-
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AnyOf;
 using ::testing::Invoke;
@@ -41,7 +40,10 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnNull;
 using ::testing::WithArg;
-using ::testing::_;
+
+namespace chromeos {
+
+namespace {
 
 const char kUsername[] = "test_user@gmail.com";
 const char kNewUsername[] = "test_new_user@gmail.com";
@@ -94,6 +96,18 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);
 };
 
+scoped_refptr<Authenticator> CreateAuthenticator(
+    LoginStatusConsumer* consumer) {
+  return new MockAuthenticator(consumer, kUsername, kPassword);
+}
+
+scoped_refptr<Authenticator> CreateAuthenticatorNewUser(
+    LoginStatusConsumer* consumer) {
+  return new MockAuthenticator(consumer, kNewUsername, kPassword);
+}
+
+}  // namespace
+
 class ExistingUserControllerTest : public CrosInProcessBrowserTest {
  protected:
   ExistingUserControllerTest()
@@ -120,6 +134,9 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     mock_network_library_ = cros_mock_->mock_network_library();
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
+        .WillRepeatedly(Return(true));
+
     MockSessionManagerClient* mock_session_manager_client =
         mock_dbus_thread_manager->mock_session_manager_client();
     EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())
@@ -221,16 +238,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerTest);
 };
-
-scoped_refptr<Authenticator> CreateAuthenticator(
-    LoginStatusConsumer* consumer) {
-  return new MockAuthenticator(consumer, kUsername, kPassword);
-}
-
-scoped_refptr<Authenticator> CreateAuthenticatorNewUser(
-    LoginStatusConsumer* consumer) {
-  return new MockAuthenticator(consumer, kNewUsername, kPassword);
-}
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
@@ -15,11 +14,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
 using ::testing::_;
 using ::testing::AnyNumber;
-using ::testing::AtLeast;
 using ::testing::Return;
+
+namespace chromeos {
 
 class LoginTestBase : public CrosInProcessBrowserTest {
  public:
@@ -37,8 +36,12 @@ class LoginTestBase : public CrosInProcessBrowserTest {
     mock_network_library_ = cros_mock_->mock_network_library();
     EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
+    EXPECT_CALL(*mock_cryptohome_library_, InstallAttributesIsReady())
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
+        .WillRepeatedly(Return(true));
   }
 
   MockCryptohomeLibrary* mock_cryptohome_library_;

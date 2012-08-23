@@ -26,6 +26,10 @@
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/widget/widget.h"
 
+using testing::_;
+using testing::AnyNumber;
+using testing::Return;
+
 namespace {
 
 // An object that wait for lock state and fullscreen state.
@@ -106,13 +110,13 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
-        .WillRepeatedly(testing::Return(reinterpret_cast<dbus::Bus*>(NULL)));
+        .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     mock_power_manager_client_ = static_cast<MockPowerManagerClient*>(
         DBusThreadManager::Get()->GetPowerManagerClient());
     cros_mock_->InitStatusAreaMocks();
-    EXPECT_CALL(*mock_power_manager_client_, AddObserver(testing::_))
+    EXPECT_CALL(*mock_power_manager_client_, AddObserver(_))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*mock_power_manager_client_, NotifyScreenUnlockCompleted())
@@ -122,8 +126,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     cros_mock_->SetStatusAreaMocksExpectations();
     MockNetworkLibrary* mock_network_library =
         cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_network_library, AddUserActionObserver(testing::_))
-        .Times(testing::AnyNumber());
+    EXPECT_CALL(*mock_network_library, AddUserActionObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library, LoadOncNetworks(_, _, _, _))
+        .WillRepeatedly(Return(true));
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {

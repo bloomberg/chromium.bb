@@ -384,9 +384,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
     // Initialize user policy before creating the profile so the profile
     // initialization code sees policy settings.
-    g_browser_process->browser_policy_connector()->InitializeUserPolicy(
-        username, false  /* wait_for_policy_fetch */);
-    chromeos::UserManager::Get()->SessionStarted();
+    // Guest accounts are not subject to user policy.
+    if (!chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
+      g_browser_process->browser_policy_connector()->InitializeUserPolicy(
+          username, false  /* wait_for_policy_fetch */);
+      chromeos::UserManager::Get()->SessionStarted();
+    }
   }
 
   // In Aura builds this will initialize ash::Shell.
@@ -413,12 +416,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       profile()->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
   }
 
-  if (parsed_command_line().HasSwitch(switches::kEnableONCPolicy)) {
-    network_config_updater_.reset(
-        new policy::NetworkConfigurationUpdater(
-            g_browser_process->policy_service(),
-            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
-  }
+  network_config_updater_.reset(
+      new policy::NetworkConfigurationUpdater(
+          g_browser_process->policy_service(),
+          chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
 
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests by default.

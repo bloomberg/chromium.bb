@@ -2,13 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/string16.h"
-#include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -21,20 +15,18 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
-#include "grit/generated_resources.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/button.h"
 
-namespace chromeos {
-using ::testing::A;
+using ::testing::_;
 using ::testing::AnyNumber;
-using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using ::testing::_;
 using views::Button;
+
+namespace chromeos {
 
 class DummyButtonListener : public views::ButtonListener {
  public:
@@ -77,6 +69,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
         .Times(AnyNumber());
+    EXPECT_CALL(*mock_network_library_, LoadOncNetworks(_, _, _, _))
+        .WillRepeatedly(Return(true));
 
     cros_mock_->SetStatusAreaMocksExpectations();
 

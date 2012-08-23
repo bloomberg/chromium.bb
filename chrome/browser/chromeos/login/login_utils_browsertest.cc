@@ -119,7 +119,6 @@ class LoginUtilsTest : public testing::Test,
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableDevicePolicy);
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, kDMServer);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 

@@ -530,27 +530,25 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
   device_data_store_.reset();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
-    if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
-      // TODO(mnissler): Initialize new-style device policy here once it's
-      // implemented.
-    } else {
-      device_data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
-      chromeos::CryptohomeLibrary* cryptohome =
-          chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
-      install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
-      DevicePolicyCache* device_policy_cache =
-          new DevicePolicyCache(device_data_store_.get(),
-                                install_attributes_.get());
+  if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
+    // TODO(mnissler): Initialize new-style device policy here once it's
+    // implemented.
+  } else {
+    device_data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
+    chromeos::CryptohomeLibrary* cryptohome =
+        chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+    install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
+    DevicePolicyCache* device_policy_cache =
+        new DevicePolicyCache(device_data_store_.get(),
+                              install_attributes_.get());
 
-      managed_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
-      recommended_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
+    managed_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
+    recommended_cloud_provider_->SetDevicePolicyCache(device_policy_cache);
 
-      device_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
-          device_data_store_.get(),
-          device_policy_cache,
-          GetDeviceManagementUrl()));
-    }
+    device_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
+        device_data_store_.get(),
+        device_policy_cache,
+        GetDeviceManagementUrl()));
   }
 #endif
 }

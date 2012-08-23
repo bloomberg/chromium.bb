@@ -465,12 +465,9 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 }
 
 void ExistingUserController::OnStartEnterpriseEnrollment() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
-    OwnershipService::GetSharedInstance()->GetStatusAsync(
-        base::Bind(&ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-                   weak_factory_.GetWeakPtr()));
-  }
+  OwnershipService::GetSharedInstance()->GetStatusAsync(
+      base::Bind(&ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
