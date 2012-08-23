@@ -36,7 +36,6 @@
       'about_plugins_ui.AboutPluginsUITest',
       'apptest',
       'autofill',
-      'browser',
       'chromoting.it2me_basic',
       'codesign',
       'cookies',
@@ -231,7 +230,6 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      '-browser.BrowserTest.testWindowResize',  # Details at: crbug.com/44963
       # crbug.com/104206
       '-notifications.NotificationsTest.testKillNotificationProcess',
       # Several omnibox tests do not show omnibox results when run
@@ -294,8 +292,6 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      # You cannot resize the browser window on ChromeOS.
-      '-browser.BrowserTest.testWindowResize',
       # ChromeOS doesn't yet support the chromoting host.
       '-chromoting.it2me_basic',
       # No codesign verification on ChromeOS.
@@ -322,8 +318,6 @@
       # ==================================================
       # crbug.com/132337
       '-autofill.AutofillTest.testTabOrderForEditAddress',
-      # crosbug.com/27405
-      '-browser.BrowserTest.testKillAndReloadSharedProcess',
       # crbug.com/129469
       '-chromeos_prefs.ChromeosPrefsTest.testCaptureUserPhoto',
       # Downloads panel stays even after declining a download.
@@ -501,8 +495,6 @@
       # crbug.com/105948
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
-      # crbug.com/115707
-      '-browser.BrowserTest.testMaxProcess',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
