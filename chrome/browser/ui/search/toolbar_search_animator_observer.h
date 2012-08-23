@@ -26,6 +26,9 @@ class ToolbarSearchAnimatorObserver {
   virtual void OnToolbarBackgroundAnimatorCanceled(
       TabContents* tab_contents) = 0;
 
+  // Called when toolbar separator visibility has changed.
+  virtual void OnToolbarSeparatorChanged() = 0;
+
  protected:
   virtual ~ToolbarSearchAnimatorObserver() {}
 };

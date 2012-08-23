@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
@@ -1941,7 +1942,8 @@ void BrowserView::Init() {
 #if defined(USE_AURA)
   Profile* profile = browser_->profile();
   if (chrome::search::IsInstantExtendedAPIEnabled(profile)) {
-    search_view_controller_.reset(new SearchViewController(profile, contents_));
+    search_view_controller_.reset(new SearchViewController(profile, contents_,
+        &browser()->search_delegate()->toolbar_search_animator()));
     omnibox_popup_view_parent =
         search_view_controller_->omnibox_popup_view_parent();
   }

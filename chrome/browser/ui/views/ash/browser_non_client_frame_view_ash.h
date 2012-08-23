@@ -71,6 +71,7 @@ class BrowserNonClientFrameViewAsh
   virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;
   virtual void OnToolbarBackgroundAnimatorCanceled(
       TabContents* tab_contents) OVERRIDE;
+  virtual void OnToolbarSeparatorChanged() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, UseShortHeader);

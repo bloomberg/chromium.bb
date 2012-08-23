@@ -27,7 +27,8 @@ namespace search {
 ToolbarSearchAnimator::ToolbarSearchAnimator(SearchModel* search_model)
     : search_model_(search_model),
       background_change_delay_ms_(kBackgroundChangeDelayMs),
-      background_change_duration_ms_(kBackgroundChangeDurationMs) {
+      background_change_duration_ms_(kBackgroundChangeDurationMs),
+      is_omnibox_popup_open_(false) {
   search_model_->AddObserver(this);
 }
 
@@ -41,6 +42,23 @@ double ToolbarSearchAnimator::GetGradientOpacity() const {
   if (background_animation_.get() && background_animation_->is_animating())
     return background_animation_->CurrentValueBetween(kMinOpacity, kMaxOpacity);
   return search_model_->mode().is_ntp() ? kMinOpacity : kMaxOpacity;
+}
+
+bool ToolbarSearchAnimator::IsToolbarSeparatorVisible() const {
+  // The toolbar separator is only visible in 2 scenarios:
+  // 1) when mode is |SEARCH_SUGGESTIONS| and the omnibox popup has finished
+  //    retracting before the navigation URL was committed, i.e. before the
+  //    mode was changed to |DEFAULT|.
+  // 2) when mode is |DEFAULT| and the omnibox popup has finished retracting.
+  return !is_omnibox_popup_open_ &&
+      (search_model_->mode().mode == Mode::MODE_SEARCH_SUGGESTIONS ||
+       search_model_->mode().is_default());
+}
+
+void ToolbarSearchAnimator::OnOmniboxPopupClosed() {
+  is_omnibox_popup_open_ = false;
+  FOR_EACH_OBSERVER(ToolbarSearchAnimatorObserver, observers_,
+                    OnToolbarSeparatorChanged());
 }
 
 void ToolbarSearchAnimator::FinishAnimation(TabContents* tab_contents) {
@@ -59,6 +77,9 @@ void ToolbarSearchAnimator::RemoveObserver(
 
 void ToolbarSearchAnimator::ModeChanged(const Mode& old_mode,
                                         const Mode& new_mode) {
+  bool prev_omnibox_popup_opened = is_omnibox_popup_open_;
+  is_omnibox_popup_open_ = new_mode.mode == Mode::MODE_SEARCH_SUGGESTIONS;
+
   // If the mode transitions from |NTP| to |SEARCH| and we're not animating
   // background, start fading in gradient background.
   // TODO(kuan): check with UX folks if we need to animate from gradient to flat
@@ -74,6 +95,12 @@ void ToolbarSearchAnimator::ModeChanged(const Mode& old_mode,
   if (new_mode.animate && old_mode.is_search() && new_mode.is_default() &&
       background_animation_.get() && background_animation_->is_animating()) {
     return;
+  }
+
+  // Notify observers if toolbar separator has changed.
+  if (is_omnibox_popup_open_ != prev_omnibox_popup_opened) {
+    FOR_EACH_OBSERVER(ToolbarSearchAnimatorObserver, observers_,
+                      OnToolbarSeparatorChanged());
   }
 
   // For all other cases, reset animation.

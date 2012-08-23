@@ -417,6 +417,11 @@ void BrowserNonClientFrameViewAsh::OnToolbarBackgroundAnimatorCanceled(
   browser_view()->toolbar()->SchedulePaint();
 }
 
+void BrowserNonClientFrameViewAsh::OnToolbarSeparatorChanged() {
+  // Omnibox popup has finished closing, paint the toolbar separator.
+  browser_view()->toolbar()->SchedulePaint();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
@@ -552,7 +557,9 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
   // or mode is |DEFAULT|.
   bool extended_instant_enabled = chrome::search::IsInstantExtendedAPIEnabled(
       browser_view()->browser()->profile());
-  if (!extended_instant_enabled || mode == chrome::search::Mode::MODE_DEFAULT) {
+  if (!extended_instant_enabled ||
+      browser_view()->browser()->search_delegate()->toolbar_search_animator().
+          IsToolbarSeparatorVisible()) {
     canvas->FillRect(
         gfx::Rect(x + kClientEdgeThickness,
                   toolbar_bounds.bottom() - kClientEdgeThickness,

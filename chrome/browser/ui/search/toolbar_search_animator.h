@@ -41,6 +41,13 @@ class ToolbarSearchAnimator : public SearchModelObserver,
   // - 1f: only paint gradient background at full opacity
   double GetGradientOpacity() const;
 
+  // Returns if the toolbar separator is visible.
+  bool IsToolbarSeparatorVisible() const;
+
+  // Called from SearchViewController::PopupVisibilityChanged when omnibox popup
+  // for native suggestions finish closing.
+  void OnOmniboxPopupClosed();
+
   // Called from SearchDelegate::StopObservingTab() when a tab is deactivated or
   // closing or detached, to jump to the end state of the animation.
   // This allows a reactivated tab to show the end state of the animation,
@@ -86,6 +93,9 @@ class ToolbarSearchAnimator : public SearchModelObserver,
   // Time (in ms) of background animation delay and duration.
   int background_change_delay_ms_;
   int background_change_duration_ms_;
+
+  // True if the omnibox popup is open.
+  bool is_omnibox_popup_open_;
 
   // Observers.
   ObserverList<ToolbarSearchAnimatorObserver> observers_;

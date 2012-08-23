@@ -110,6 +110,7 @@ class BrowserTabStripController
   virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;
   virtual void OnToolbarBackgroundAnimatorCanceled(
       TabContents* tab_contents) OVERRIDE;
+  virtual void OnToolbarSeparatorChanged() OVERRIDE {}
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

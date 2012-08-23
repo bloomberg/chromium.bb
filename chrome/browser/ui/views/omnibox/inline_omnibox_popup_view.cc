@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -40,6 +41,8 @@ const int kEditFontAdjust = 0;
 const int kEditFontAdjust = -1;
 #endif
 
+const int kRetractDurationMs = 120;
+
 }  // namespace
 
 InlineOmniboxPopupView::InlineOmniboxPopupView(
@@ -61,6 +64,9 @@ InlineOmniboxPopupView::InlineOmniboxPopupView(
   SetVisible(false);
   set_background(views::Background::CreateSolidBackground(
                      chrome::search::kSuggestBackgroundColor));
+  size_animation_.SetSlideDuration(kRetractDurationMs *
+                                   InstantUI::GetSlowAnimationScaleFactor());
+  size_animation_.SetTweenType(ui::Tween::EASE_IN_OUT);
 }
 
 InlineOmniboxPopupView::~InlineOmniboxPopupView() {
@@ -116,7 +122,7 @@ void InlineOmniboxPopupView::LayoutChildren() {
 // InlineOmniboxPopupView, AutocompletePopupView overrides:
 
 bool InlineOmniboxPopupView::IsOpen() const {
-  return visible();
+  return model_->result().empty() ? false : visible();
 }
 
 void InlineOmniboxPopupView::InvalidateLine(size_t line) {
@@ -131,25 +137,22 @@ void InlineOmniboxPopupView::InvalidateLine(size_t line) {
 }
 
 void InlineOmniboxPopupView::UpdatePopupAppearance() {
-  if (model_->result().empty()) {
-    SetVisible(false);
-    PreferredSizeChanged();
-    return;
-  }
+  gfx::Rect new_target_bounds;
+  if (!model_->result().empty()) {
+    // Update the match cached by each row, in the process of doing so make sure
+    // we have enough row views.
+    size_t child_rv_count = child_count();
+    const size_t result_size = model_->result().size();
+    for (size_t i = 0; i < result_size; ++i) {
+      OmniboxResultView* view = static_cast<OmniboxResultView*>(child_at(i));
+      view->SetMatch(GetMatchAtIndex(i));
+      view->SetVisible(true);
+    }
+    for (size_t i = result_size; i < child_rv_count; ++i)
+      child_at(i)->SetVisible(false);
 
-  // Update the match cached by each row, in the process of doing so make sure
-  // we have enough row views.
-  size_t child_rv_count = child_count();
-  const size_t result_size = model_->result().size();
-  for (size_t i = 0; i < result_size; ++i) {
-    OmniboxResultView* view = static_cast<OmniboxResultView*>(child_at(i));
-    view->SetMatch(GetMatchAtIndex(i));
-    view->SetVisible(true);
+    new_target_bounds = CalculateTargetBounds(CalculatePopupHeight());
   }
-  for (size_t i = result_size; i < child_rv_count; ++i)
-    child_at(i)->SetVisible(false);
-
-  gfx::Rect new_target_bounds = CalculateTargetBounds(CalculatePopupHeight());
 
   // If we're animating and our target height changes, reset the animation.
   // NOTE: If we just reset blindly on _every_ update, then when the user types
@@ -218,6 +221,14 @@ void InlineOmniboxPopupView::AnimationProgressed(
   // We should only be running the animation when the popup is already visible.
   DCHECK(visible());
   PreferredSizeChanged();
+}
+
+void InlineOmniboxPopupView::AnimationEnded(
+    const ui::Animation* animation) {
+  if (model_->result().empty()) {
+    SetVisible(false);
+    PreferredSizeChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
