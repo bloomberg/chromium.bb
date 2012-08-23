@@ -52,7 +52,7 @@ enum FileType {
 };
 
 // A class to represent information about a storage sent from mtpd.
-class StorageInfo {
+class CHROMEOS_EXPORT StorageInfo {
  public:
   StorageInfo(const std::string& storage_name, dbus::Response* response);
   ~StorageInfo();
@@ -124,7 +124,7 @@ class StorageInfo {
 };
 
 // A class to represent information about a file entry sent from mtpd.
-class FileEntry {
+class CHROMEOS_EXPORT FileEntry {
  public:
   explicit FileEntry(dbus::Response* response);
   ~FileEntry();
