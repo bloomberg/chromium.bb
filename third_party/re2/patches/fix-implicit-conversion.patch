@@ -1,7 +1,7 @@
 diff -r e12d4aa8907f re2/dfa.cc
 --- a/re2/dfa.cc	Wed Jul 25 15:13:19 2012 +0200
 +++ b/re2/dfa.cc	Wed Jul 25 15:13:47 2012 +0200
-@@ -1736,7 +1736,7 @@
+@@ -1778,7 +1780,7 @@
      return false;
    }
    if (params.start == DeadState)

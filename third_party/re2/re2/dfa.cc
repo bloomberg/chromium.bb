@@ -117,6 +117,7 @@ class DFA {
     kFlagNeedShift = 16,        // needed kEmpty bits are or'ed in shifted left
   };
 
+#ifndef STL_MSVC
   // STL function structures for use with unordered_set.
   struct StateEqual {
     bool operator()(const State* a, const State* b) const {
@@ -134,6 +135,7 @@ class DFA {
       return true;  // they're equal
     }
   };
+#endif  // STL_MSVC
   struct StateHash {
     size_t operator()(const State* a) const {
       if (a == NULL)
@@ -145,9 +147,34 @@ class DFA {
       else
         return Hash64StringWithSeed(s, len, a->flag_);
     }
+#ifdef STL_MSVC
+    // Less than operator.
+    bool operator()(const State* a, const State* b) const {
+      if (a == b)
+        return false;
+      if (a == NULL || b == NULL)
+        return a == NULL;
+      if (a->ninst_ != b->ninst_)
+        return a->ninst_ < b->ninst_;
+      if (a->flag_ != b->flag_)
+        return a->flag_ < b->flag_;
+      for (int i = 0; i < a->ninst_; ++i)
+        if (a->inst_[i] != b->inst_[i])
+          return a->inst_[i] < b->inst_[i];
+      return false;  // they're equal
+    }
+    // The two public members are required by msvc. 4 and 8 are default values.
+    // Reference: http://msdn.microsoft.com/en-us/library/1s1byw77.aspx
+    static const size_t bucket_size = 4;
+    static const size_t min_buckets = 8;
+#endif  // STL_MSVC
   };
 
+#ifdef STL_MSVC
+  typedef unordered_set<State*, StateHash> StateSet;
+#else  // !STL_MSVC
   typedef unordered_set<State*, StateHash, StateEqual> StateSet;
+#endif  // STL_MSVC
 
 
  private:
@@ -964,8 +991,10 @@ DFA::State* DFA::RunStateOnByte(State* state, int c) {
 
   // If someone else already computed this, return it.
   MaybeReadMemoryBarrier(); // On alpha we need to ensure read ordering
-  if (state->next_[ByteMap(c)])
-    return state->next_[ByteMap(c)];
+  State* ns = state->next_[ByteMap(c)];
+  ANNOTATE_HAPPENS_AFTER(ns);
+  if (ns != NULL)
+    return ns;
 
   // Convert state into Workq.
   StateToWorkq(state, q0_);
@@ -1008,7 +1037,17 @@ DFA::State* DFA::RunStateOnByte(State* state, int c) {
   }
   bool ismatch = false;
   RunWorkqOnByte(q0_, q1_, c, afterflag, &ismatch, kind_, start_unanchored_);
-  swap(q0_, q1_);
+  
+  // Most of the time, we build the state from the output of
+  // RunWorkqOnByte, so swap q0_ and q1_ here.  However, so that
+  // RE2::Set can tell exactly which match instructions
+  // contributed to the match, don't swap if c is kByteEndText.
+  // The resulting state wouldn't be correct for further processing
+  // of the string, but we're at the end of the text so that's okay.
+  // Leaving q0_ alone preseves the match instructions that led to
+  // the current setting of ismatch.
+  if (c != kByteEndText || kind_ != Prog::kManyMatch)
+    swap(q0_, q1_);
 
   // Save afterflag along with ismatch and isword in new state.
   uint flag = afterflag;
@@ -1017,7 +1056,7 @@ DFA::State* DFA::RunStateOnByte(State* state, int c) {
   if (isword)
     flag |= kFlagLastWord;
 
-  State* ns = WorkqToCachedState(q0_, flag);
+  ns = WorkqToCachedState(q0_, flag);
 
   // Write barrier before updating state->next_ so that the
   // main search loop can proceed without any locking, for speed.
@@ -1026,9 +1065,9 @@ DFA::State* DFA::RunStateOnByte(State* state, int c) {
   //   a) the access to next_ should be ignored,
   //   b) 'ns' is properly published.
   WriteMemoryBarrier();  // Flush ns before linking to it.
-  ANNOTATE_PUBLISH_MEMORY_RANGE(ns, sizeof(*ns));
 
   ANNOTATE_IGNORE_WRITES_BEGIN();
+  ANNOTATE_HAPPENS_BEFORE(ns);
   state->next_[ByteMap(c)] = ns;
   ANNOTATE_IGNORE_WRITES_END();
   return ns;
@@ -1353,6 +1392,7 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
 
     MaybeReadMemoryBarrier(); // On alpha we need to ensure read ordering
     State* ns = s->next_[bytemap[c]];
+    ANNOTATE_HAPPENS_AFTER(ns);
     if (ns == NULL) {
       ns = RunStateOnByteUnlocked(s, c);
       if (ns == NULL) {
@@ -1424,20 +1464,6 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
     }
   }
 
-  // Peek in state to see if a match is coming up.
-  if (params->matches && kind_ == Prog::kManyMatch) {
-    vector<int>* v = params->matches;
-    v->clear();
-    if (s > SpecialStateMax) {
-      for (int i = 0; i < s->ninst_; i++) {
-        Prog::Inst* ip = prog_->inst(s->inst_[i]);
-        if (ip->opcode() == kInstMatch)
-          v->push_back(ip->match_id());
-      }
-    }
-  }
-
-
   // Process one more byte to see if it triggers a match.
   // (Remember, matches are delayed one byte.)
   int lastbyte;
@@ -1455,6 +1481,7 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
 
   MaybeReadMemoryBarrier(); // On alpha we need to ensure read ordering
   State* ns = s->next_[ByteMap(lastbyte)];
+  ANNOTATE_HAPPENS_AFTER(ns);
   if (ns == NULL) {
     ns = RunStateOnByteUnlocked(s, lastbyte);
     if (ns == NULL) {
@@ -1482,6 +1509,15 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
   if (s > SpecialStateMax && s->IsMatch()) {
     matched = true;
     lastmatch = p;
+    if (params->matches && kind_ == Prog::kManyMatch) {
+      vector<int>* v = params->matches;
+      v->clear();
+      for (int i = 0; i < s->ninst_; i++) {
+        Prog::Inst* ip = prog_->inst(s->inst_[i]);
+        if (ip->opcode() == kInstMatch)
+          v->push_back(ip->match_id());
+      }
+    }
     if (DebugDFA)
       fprintf(stderr, "match @%d! [%s]\n", static_cast<int>(lastmatch - bp),
               DumpState(s).c_str());
@@ -1639,7 +1675,7 @@ bool DFA::AnalyzeSearch(SearchParams* params) {
             DumpState(info->start).c_str(), info->firstbyte);
 
   params->start = info->start;
-  params->firstbyte = info->firstbyte;
+  params->firstbyte = ANNOTATE_UNPROTECTED_READ(info->firstbyte);
 
   return true;
 }
@@ -1648,12 +1684,16 @@ bool DFA::AnalyzeSearch(SearchParams* params) {
 bool DFA::AnalyzeSearchHelper(SearchParams* params, StartInfo* info,
                               uint flags) {
   // Quick check; okay because of memory barriers below.
-  if (info->firstbyte != kFbUnknown)
+  if (ANNOTATE_UNPROTECTED_READ(info->firstbyte) != kFbUnknown) {
+    ANNOTATE_HAPPENS_AFTER(&info->firstbyte);
     return true;
+  }
 
   MutexLock l(&mutex_);
-  if (info->firstbyte != kFbUnknown)
+  if (info->firstbyte != kFbUnknown) {
+    ANNOTATE_HAPPENS_AFTER(&info->firstbyte);
     return true;
+  }
 
   q0_->clear();
   AddToQueue(q0_,
@@ -1664,12 +1704,14 @@ bool DFA::AnalyzeSearchHelper(SearchParams* params, StartInfo* info,
     return false;
 
   if (info->start == DeadState) {
+    ANNOTATE_HAPPENS_BEFORE(&info->firstbyte);
     WriteMemoryBarrier();  // Synchronize with "quick check" above.
     info->firstbyte = kFbNone;
     return true;
   }
 
   if (info->start == FullMatchState) {
+    ANNOTATE_HAPPENS_BEFORE(&info->firstbyte);
     WriteMemoryBarrier();  // Synchronize with "quick check" above.
     info->firstbyte = kFbNone;	// will be ignored
     return true;
@@ -1682,6 +1724,7 @@ bool DFA::AnalyzeSearchHelper(SearchParams* params, StartInfo* info,
   for (int i = 0; i < 256; i++) {
     State* s = RunStateOnByte(info->start, i);
     if (s == NULL) {
+      ANNOTATE_HAPPENS_BEFORE(&info->firstbyte);
       WriteMemoryBarrier();  // Synchronize with "quick check" above.
       info->firstbyte = firstbyte;
       return false;
@@ -1696,6 +1739,7 @@ bool DFA::AnalyzeSearchHelper(SearchParams* params, StartInfo* info,
       break;
     }
   }
+  ANNOTATE_HAPPENS_BEFORE(&info->firstbyte);
   WriteMemoryBarrier();  // Synchronize with "quick check" above.
   info->firstbyte = firstbyte;
   return true;
@@ -1778,7 +1822,7 @@ DFA* Prog::GetDFA(MatchKind kind) {
   }
 
   // Quick check; okay because of memory barrier below.
-  DFA *dfa = *pdfa;
+  DFA *dfa = ANNOTATE_UNPROTECTED_READ(*pdfa);
   if (dfa != NULL) {
     ANNOTATE_HAPPENS_AFTER(dfa);
     return dfa;
@@ -1786,8 +1830,10 @@ DFA* Prog::GetDFA(MatchKind kind) {
 
   MutexLock l(&dfa_mutex_);
   dfa = *pdfa;
-  if (dfa != NULL)
+  if (dfa != NULL) {
+    ANNOTATE_HAPPENS_AFTER(dfa);
     return dfa;
+  }
 
   // For a forward DFA, half the memory goes to each DFA.
   // For a reverse DFA, all the memory goes to the

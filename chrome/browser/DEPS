@@ -67,6 +67,7 @@ include_rules = [
   "+third_party/libevent",  # For the remote V8 debugging server
   "+third_party/libjingle",
   "+third_party/protobuf/src/google/protobuf",
+  "+third_party/re2",
   "+third_party/sqlite",
   "+third_party/undoview",
 
