@@ -246,7 +246,7 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     if (extension) {
       content::RecordAction(
           content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
-      list_controller_->OpenApp(profile_, extension->id(), event_flags);
+      list_controller_->ActivateApp(profile_, extension->id(), event_flags);
     }
   } else {
     // TODO(xiyuan): What should we do for alternate url case?

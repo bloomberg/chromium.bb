@@ -5,11 +5,7 @@
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
 #include "ash/shell.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/extension_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/common/extensions/extension.h"
 
 AppListControllerAsh::AppListControllerAsh() {}
 
@@ -42,15 +38,4 @@ void AppListControllerAsh::ActivateApp(Profile* profile,
                                        int event_flags) {
   ChromeLauncherController::instance()->OpenAppID(extension_id,
                                                   event_flags);
-}
-
-void AppListControllerAsh::OpenApp(
-    Profile* profile,
-    const std::string& extension_id,
-    int event_flags) {
-  ExtensionService* service = profile->GetExtensionService();
-  const extensions::Extension* extension = service->extensions()->GetByID(
-      extension_id);
-  DCHECK(extension);
-  extension_utils::OpenExtension(profile, extension, event_flags);
 }

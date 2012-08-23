@@ -9,10 +9,6 @@
 
 class Profile;
 
-namespace extensions {
-class Extension;
-}
-
 // Interface to allow the view delegate to call out to whatever is controlling
 // the app list. This will have different implementations for different
 // platforms.
@@ -33,10 +29,6 @@ class AppListController {
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) = 0;
-  // Open the app (e.g. from search results).
-  virtual void OpenApp(Profile* profile,
-                       const std::string& extension_id,
-                       int event_flags) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_H_
