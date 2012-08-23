@@ -64,7 +64,6 @@
       'popups',
       'prefs',
       'prefs_ui',
-      'protector',
       'pyauto_webdriver',
       'search_engines',
       'shortcuts',
@@ -308,8 +307,6 @@
       # this platform.
       '-policy',
       '-policy_prefs_ui',
-      # No Protector on ChromeOS.
-      '-protector',
       # You cannot adjust the downloads directory on ChromeOS.
       '-prefs.PrefsTest.testDownloadDirPref',
 
@@ -507,8 +504,6 @@
       '-translate.TranslateTest.testSeveralLanguages',
       # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
-      # crbug.com/140047
-      '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
     ],
 
     'mac': [
