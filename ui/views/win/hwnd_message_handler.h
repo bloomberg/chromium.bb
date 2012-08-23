@@ -14,20 +14,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 
-namespace gfx {
-class Insets;
-}
-
 namespace views {
 
-class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
 class InputMethod;
 
@@ -44,12 +35,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler();
 
-  void Init(const gfx::Rect& bounds);
-
-  gfx::Rect GetRestoredBounds() const;
-  void GetWindowPlacement(gfx::Rect* bounds,
-                          ui::WindowShowState* show_state) const;
-
   bool IsVisible() const;
   bool IsActive() const;
   bool IsMinimized() const;
@@ -61,8 +46,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   void SetCapture();
   void ReleaseCapture();
   bool HasCapture() const;
-
-  FullscreenHandler* fullscreen_handler() { return fullscreen_handler_.get(); }
 
   InputMethod* CreateInputMethod();
 
@@ -101,7 +84,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   void OnMove(const CPoint& point);
   void OnMoving(UINT param, const RECT* new_bounds);
   LRESULT OnNCActivate(BOOL active);
-  LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
   LRESULT OnNCHitTest(const CPoint& point);
   LRESULT OnNCUAHDrawCaption(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
@@ -114,11 +96,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   LRESULT OnSetText(const wchar_t* text);
   void OnSettingChange(UINT flags, const wchar_t* section);
   void OnSize(UINT param, const CSize& size);
-  void OnSysCommand(UINT notification_code, const CPoint& point);
   void OnThemeChanged();
   LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnVScroll(int scroll_type, short position, HWND scrollbar);
-  void OnWindowPosChanging(WINDOWPOS* window_pos);
   void OnWindowPosChanged(WINDOWPOS* window_pos);
 
   // TODO(beng): Can be removed once this object becomes the WindowImpl.
@@ -149,10 +129,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // or subsequently.
   void ClientAreaSizeChanged();
 
-  // Returns the insets of the client area relative to the non-client area of
-  // the window.
-  gfx::Insets GetClientAreaInsets() const;
-
   // Calls DefWindowProc, safely wrapping the call in a ScopedRedrawLock to
   // prevent frame flicker. DefWindowProc handling can otherwise render the
   // classic-look window title bar directly.
@@ -166,9 +142,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   void LockUpdates(bool force);
   void UnlockUpdates(bool force);
 
-  // Stops ignoring SetWindowPos() requests (see below).
-  void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
-
   // TODO(beng): This won't be a style violation once this object becomes the
   //             WindowImpl.
   HWND hwnd();
@@ -179,11 +152,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
 
   HWNDMessageHandlerDelegate* delegate_;
 
-  scoped_ptr<FullscreenHandler> fullscreen_handler_;
-
   bool remove_standard_frame_;
-
-  // Event handling ------------------------------------------------------------
 
   // The flags currently being used with TrackMouseEvent to track mouse
   // messages. 0 if there is no active tracking. The value of this member is
@@ -197,8 +166,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // The set of touch devices currently down.
   TouchIDs touch_ids_;
 
-  // ScopedRedrawLock ----------------------------------------------------------
-
   // Represents the number of ScopedRedrawLocks active against this widget.
   // If this is greater than zero, the widget should be locked against updates.
   int lock_updates_count_;
@@ -207,22 +174,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // DefWindowProc) to avoid stack-controlled functions (such as unlocking the
   // Window with a ScopedRedrawLock) after destruction.
   bool* destroyed_;
-
-  // Window resizing -----------------------------------------------------------
-
-  // When true, this flag makes us discard incoming SetWindowPos() requests that
-  // only change our position/size.  (We still allow changes to Z-order,
-  // activation, etc.)
-  bool ignore_window_pos_changes_;
-
-  // The following factory is used to ignore SetWindowPos() calls for short time
-  // periods.
-  base::WeakPtrFactory<HWNDMessageHandler> ignore_pos_changes_factory_;
-
-  // The last-seen monitor containing us, and its rect and work area.  These are
-  // used to catch updates to the rect and work area and react accordingly.
-  HMONITOR last_monitor_;
-  gfx::Rect last_monitor_rect_, last_work_area_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

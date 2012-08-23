@@ -41,6 +41,7 @@ class Rect;
 namespace views {
 
 class DropTargetWin;
+class FullscreenHandler;
 class HWNDMessageHandler;
 class InputMethodDelegate;
 class RootView;
@@ -434,6 +435,11 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // show state from the shortcut starutp info).
   virtual int GetShowState() const;
 
+  // Returns the insets of the client area relative to the non-client area of
+  // the window. Override this function instead of OnNCCalcSize, which is
+  // crazily complicated.
+  virtual gfx::Insets GetClientAreaInsets() const;
+
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
@@ -450,6 +456,13 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }
 
+ private:
+  typedef ScopedVector<ui::ViewProp> ViewProps;
+
+  // TODO(beng): This friendship can be removed once all methods relating to
+  //             this object being a WindowImpl are moved to HWNDMessageHandler.
+  friend HWNDMessageHandler;
+
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;
   virtual bool IsUsingCustomFrame() const OVERRIDE;
@@ -462,10 +475,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool WillProcessWorkAreaChange() const OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* path) OVERRIDE;
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
   virtual void GetMinMaxSize(gfx::Size* min_size,
                              gfx::Size* max_size) const OVERRIDE;
-  virtual void ResetWindowControls() OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual InputMethod* GetInputMethod() OVERRIDE;
   virtual void HandleAppDeactivated() OVERRIDE;
@@ -474,7 +485,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void HandleCaptureLost() OVERRIDE;
   virtual void HandleClose() OVERRIDE;
   virtual bool HandleCommand(int command) OVERRIDE;
-  virtual void HandleAccelerator(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void HandleCreate() OVERRIDE;
   virtual void HandleDestroy() OVERRIDE;
   virtual void HandleDisplayChange() OVERRIDE;
@@ -498,13 +508,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
                                       LPARAM l_param) OVERRIDE;
   virtual NativeWidgetWin* AsNativeWidgetWin() OVERRIDE;
 
- private:
-  typedef ScopedVector<ui::ViewProp> ViewProps;
-
-  // TODO(beng): This friendship can be removed once all methods relating to
-  //             this object being a WindowImpl are moved to HWNDMessageHandler.
-  friend HWNDMessageHandler;
-
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
   static void PostProcessActivateMessage(NativeWidgetWin* widget,
@@ -521,6 +524,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // Determines whether the delegate expects the client size or the window size.
   bool WidgetSizeIsClientSize() const;
+
+  // Stops ignoring SetWindowPos() requests (see below).
+  void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
 
   void RestoreEnabledIfNecessary();
 
@@ -606,6 +612,20 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
 
+  // When true, this flag makes us discard incoming SetWindowPos() requests that
+  // only change our position/size.  (We still allow changes to Z-order,
+  // activation, etc.)
+  bool ignore_window_pos_changes_;
+
+  // The following factory is used to ignore SetWindowPos() calls for short time
+  // periods.
+  base::WeakPtrFactory<NativeWidgetWin> ignore_pos_changes_factory_;
+
+  // The last-seen monitor containing us, and its rect and work area.  These are
+  // used to catch updates to the rect and work area and react accordingly.
+  HMONITOR last_monitor_;
+  gfx::Rect last_monitor_rect_, last_work_area_;
+
   // Whether all ancestors have been enabled. This is only used if is_modal_ is
   // true.
   bool restored_enabled_;
@@ -616,6 +636,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   bool has_non_client_view_;
 
   scoped_ptr<HWNDMessageHandler> message_handler_;
+  scoped_ptr<FullscreenHandler> fullscreen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };

@@ -45,7 +45,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
  protected:
   // Overridden from views::NativeWidgetWin:
   virtual int GetShowState() const OVERRIDE;
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
+  virtual gfx::Insets GetClientAreaInsets() const OVERRIDE;
   virtual void UpdateFrameAfterFrameChange() OVERRIDE;
   virtual void OnEndSession(BOOL ending, UINT logoff) OVERRIDE;
   virtual void OnInitMenuPopup(HMENU menu,

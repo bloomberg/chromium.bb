@@ -9,7 +9,6 @@ include_rules = [
   "+ui/views/ime/input_method_delegate.h",
   "+ui/views/ime/input_method_win.h",
   "+ui/views/views_export.h",
-  "+ui/views/widget/monitor_win.h",
   "+ui/views/widget/native_widget_win.h",
 
   # temporary until fullscreen moves to hwnd_message_handler.

@@ -8,7 +8,6 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
-class Insets;
 class Path;
 class Point;
 class Size;
@@ -42,17 +41,10 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* mask) = 0;
 
-  // Returns true if the delegate modifies |insets| to define a custom client
-  // area for the window, false if the default client area should be used. If
-  // false is returned, |insets| is not modified.
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const = 0;
-
   // Returns the minimum and maximum size the window can be resized to by the
   // user.
   virtual void GetMinMaxSize(gfx::Size* min_size,
                              gfx::Size* max_size) const = 0;
-
-  virtual void ResetWindowControls() = 0;
 
   virtual InputMethod* GetInputMethod() = 0;
 
@@ -81,9 +73,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when a command defined by the application was performed. Returns
   // true if the command was handled.
   virtual bool HandleCommand(int command) = 0;
-
-  // Called when an accelerator is invoked.
-  virtual void HandleAccelerator(const ui::Accelerator& accelerator) = 0;
 
   // Called when the HWND is created.
   virtual void HandleCreate() = 0;

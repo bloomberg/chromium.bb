@@ -169,12 +169,12 @@ int BrowserFrameWin::GetShowState() const {
   return si.wShowWindow;
 }
 
-bool BrowserFrameWin::GetClientAreaInsets(gfx::Insets* insets) const {
+gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
   // Use the default client insets for an opaque frame or a glass popup/app
   // frame.
   if (!GetWidget()->ShouldUseNativeFrame() ||
       !browser_view_->IsBrowserTypeNormal()) {
-    return false;
+    return NativeWidgetWin::GetClientAreaInsets();
   }
 
   int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
@@ -184,8 +184,7 @@ bool BrowserFrameWin::GetClientAreaInsets(gfx::Insets* insets) const {
     border_thickness = 0;
   else if (!IsMaximized())
     border_thickness -= kClientEdgeThickness;
-  insets->Set(0, border_thickness, border_thickness, border_thickness);
-  return true;
+  return gfx::Insets(0, border_thickness, border_thickness, border_thickness);
 }
 
 void BrowserFrameWin::UpdateFrameAfterFrameChange() {

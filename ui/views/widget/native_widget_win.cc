@@ -51,6 +51,7 @@
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
+#include "ui/views/win/scoped_fullscreen_visibility.h"
 #include "ui/views/window/native_frame_view.h"
 
 #if !defined(USE_AURA)
@@ -274,6 +275,27 @@ static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
   return TRUE;
 }
 
+// The thickness of an auto-hide taskbar in pixels.
+static const int kAutoHideTaskbarThicknessPx = 2;
+
+bool GetMonitorAndRects(const RECT& rect,
+                        HMONITOR* monitor,
+                        gfx::Rect* monitor_rect,
+                        gfx::Rect* work_area) {
+  DCHECK(monitor);
+  DCHECK(monitor_rect);
+  DCHECK(work_area);
+  *monitor = MonitorFromRect(&rect, MONITOR_DEFAULTTONULL);
+  if (!*monitor)
+    return false;
+  MONITORINFO monitor_info = { 0 };
+  monitor_info.cbSize = sizeof(monitor_info);
+  GetMonitorInfo(*monitor, &monitor_info);
+  *monitor_rect = monitor_info.rcMonitor;
+  *work_area = monitor_info.rcWork;
+  return true;
+}
+
 // Links the HWND to its NativeWidget.
 const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 
@@ -314,10 +336,15 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       previous_cursor_(NULL),
+      ignore_window_pos_changes_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ignore_pos_changes_factory_(this)),
+      last_monitor_(NULL),
       restored_enabled_(false),
       has_non_client_view_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          message_handler_(new HWNDMessageHandler(this))) {
+          message_handler_(new HWNDMessageHandler(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          fullscreen_handler_(new FullscreenHandler(GetWidget()))) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
@@ -393,7 +420,8 @@ void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
 void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
   SetInitParams(params);
 
-  message_handler_->Init(params.bounds);
+  GetMonitorAndRects(params.bounds.ToRECT(), &last_monitor_,
+                     &last_monitor_rect_, &last_work_area_);
 
   // Create the window.
   WindowImpl::Init(params.GetParent(), params.bounds);
@@ -551,7 +579,31 @@ void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
 void NativeWidgetWin::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  message_handler_->GetWindowPlacement(bounds, show_state);
+  WINDOWPLACEMENT wp;
+  wp.length = sizeof(wp);
+  const bool succeeded = !!::GetWindowPlacement(GetNativeView(), &wp);
+  DCHECK(succeeded);
+
+  if (bounds != NULL) {
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    const bool succeeded = !!GetMonitorInfo(
+        MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST), &mi);
+    DCHECK(succeeded);
+    *bounds = gfx::Rect(wp.rcNormalPosition);
+    // Convert normal position from workarea coordinates to screen coordinates.
+    bounds->Offset(mi.rcWork.left - mi.rcMonitor.left,
+                   mi.rcWork.top - mi.rcMonitor.top);
+  }
+
+  if (show_state != NULL) {
+    if (wp.showCmd == SW_SHOWMAXIMIZED)
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+    else if (wp.showCmd == SW_SHOWMINIMIZED)
+      *show_state = ui::SHOW_STATE_MINIMIZED;
+    else
+      *show_state = ui::SHOW_STATE_NORMAL;
+  }
 }
 
 void NativeWidgetWin::SetWindowTitle(const string16& title) {
@@ -649,7 +701,14 @@ gfx::Rect NativeWidgetWin::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect NativeWidgetWin::GetRestoredBounds() const {
-  return message_handler_->GetRestoredBounds();
+  // If we're in fullscreen mode, we've changed the normal bounds to the monitor
+  // rect, so return the saved bounds instead.
+  if (IsFullscreen())
+    return fullscreen_handler_->GetRestoreBounds();
+
+  gfx::Rect bounds;
+  GetWindowPlacement(&bounds, NULL);
+  return bounds;
 }
 
 void NativeWidgetWin::SetBounds(const gfx::Rect& bounds) {
@@ -816,19 +875,19 @@ void NativeWidgetWin::Restore() {
 }
 
 void NativeWidgetWin::SetFullscreen(bool fullscreen) {
-  message_handler_->fullscreen_handler()->SetFullscreen(fullscreen);
+  fullscreen_handler_->SetFullscreen(fullscreen);
 }
 
 void NativeWidgetWin::SetMetroSnapFullscreen(bool metro_snap) {
-  message_handler_->fullscreen_handler()->SetMetroSnap(metro_snap);
+  fullscreen_handler_->SetMetroSnap(metro_snap);
 }
 
 bool NativeWidgetWin::IsFullscreen() const {
-  return message_handler_->fullscreen_handler()->fullscreen();
+  return fullscreen_handler_->fullscreen();
 }
 
 bool NativeWidgetWin::IsInMetroSnapMode() const {
-  return message_handler_->fullscreen_handler()->metro_snap();
+  return fullscreen_handler_->metro_snap();
 }
 
 void NativeWidgetWin::SetOpacity(unsigned char opacity) {
@@ -1158,7 +1217,87 @@ LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
 }
 
 LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  return message_handler_->OnNCCalcSize(mode, l_param);
+  // We only override the default handling if we need to specify a custom
+  // non-client edge width. Note that in most cases "no insets" means no
+  // custom width, but in fullscreen mode or when the NonClientFrameView
+  // requests it, we want a custom width of 0.
+  gfx::Insets insets = GetClientAreaInsets();
+  if (insets.empty() && !IsFullscreen() &&
+      !(mode && message_handler_->remove_standard_frame())) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  RECT* client_rect = mode ?
+      &(reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param)->rgrc[0]) :
+      reinterpret_cast<RECT*>(l_param);
+  client_rect->left += insets.left();
+  client_rect->top += insets.top();
+  client_rect->bottom -= insets.bottom();
+  client_rect->right -= insets.right();
+  if (IsMaximized()) {
+    // Find all auto-hide taskbars along the screen edges and adjust in by the
+    // thickness of the auto-hide taskbar on each such edge, so the window isn't
+    // treated as a "fullscreen app", which would cause the taskbars to
+    // disappear.
+    HMONITOR monitor = MonitorFromWindow(GetNativeView(),
+                                         MONITOR_DEFAULTTONULL);
+    if (!monitor) {
+      // We might end up here if the window was previously minimized and the
+      // user clicks on the taskbar button to restore it in the previously
+      // maximized position. In that case WM_NCCALCSIZE is sent before the
+      // window coordinates are restored to their previous values, so our
+      // (left,top) would probably be (-32000,-32000) like all minimized
+      // windows. So the above MonitorFromWindow call fails, but if we check
+      // the window rect given with WM_NCCALCSIZE (which is our previous
+      // restored window position) we will get the correct monitor handle.
+      monitor = MonitorFromRect(client_rect, MONITOR_DEFAULTTONULL);
+      if (!monitor) {
+        // This is probably an extreme case that we won't hit, but if we don't
+        // intersect any monitor, let us not adjust the client rect since our
+        // window will not be visible anyway.
+        return 0;
+      }
+    }
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_LEFT, monitor))
+      client_rect->left += kAutoHideTaskbarThicknessPx;
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_TOP, monitor)) {
+      if (GetWidget()->ShouldUseNativeFrame()) {
+        // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
+        // WM_NCHITTEST, having any nonclient area atop the window causes the
+        // caption buttons to draw onscreen but not respond to mouse
+        // hover/clicks.
+        // So for a taskbar at the screen top, we can't push the
+        // client_rect->top down; instead, we move the bottom up by one pixel,
+        // which is the smallest change we can make and still get a client area
+        // less than the screen size. This is visibly ugly, but there seems to
+        // be no better solution.
+        --client_rect->bottom;
+      } else {
+        client_rect->top += kAutoHideTaskbarThicknessPx;
+      }
+    }
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_RIGHT, monitor))
+      client_rect->right -= kAutoHideTaskbarThicknessPx;
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_BOTTOM, monitor))
+      client_rect->bottom -= kAutoHideTaskbarThicknessPx;
+
+    // We cannot return WVR_REDRAW when there is nonclient area, or Windows
+    // exhibits bugs where client pixels and child HWNDs are mispositioned by
+    // the width/height of the upper-left nonclient area.
+    return 0;
+  }
+
+  // If the window bounds change, we're going to relayout and repaint anyway.
+  // Returning WVR_REDRAW avoids an extra paint before that of the old client
+  // pixels in the (now wrong) location, and thus makes actions like resizing a
+  // window from the left edge look slightly less broken.
+  // We special case when left or top insets are 0, since these conditions
+  // actually require another repaint to correct the layout after glass gets
+  // turned on and off.
+  if (insets.left() == 0 || insets.top() == 0)
+    return 0;
+  return mode ? WVR_REDRAW : 0;
 }
 
 LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
@@ -1320,7 +1459,54 @@ void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
 }
 
 void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
-  message_handler_->OnSysCommand(notification_code, click);
+  if (!GetWidget()->non_client_view())
+    return;
+
+  // Windows uses the 4 lower order bits of |notification_code| for type-
+  // specific information so we must exclude this when comparing.
+  static const int sc_mask = 0xFFF0;
+  // Ignore size/move/maximize in fullscreen mode.
+  if (IsFullscreen() &&
+      (((notification_code & sc_mask) == SC_SIZE) ||
+       ((notification_code & sc_mask) == SC_MOVE) ||
+       ((notification_code & sc_mask) == SC_MAXIMIZE)))
+    return;
+  if (!GetWidget()->ShouldUseNativeFrame()) {
+    if ((notification_code & sc_mask) == SC_MINIMIZE ||
+        (notification_code & sc_mask) == SC_MAXIMIZE ||
+        (notification_code & sc_mask) == SC_RESTORE) {
+      GetWidget()->non_client_view()->ResetWindowControls();
+    } else if ((notification_code & sc_mask) == SC_MOVE ||
+               (notification_code & sc_mask) == SC_SIZE) {
+      if (!IsVisible()) {
+        // Circumvent ScopedRedrawLocks and force visibility before entering a
+        // resize or move modal loop to get continuous sizing/moving feedback.
+        SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) | WS_VISIBLE);
+      }
+    }
+  }
+
+  // Handle SC_KEYMENU, which means that the user has pressed the ALT
+  // key and released it, so we should focus the menu bar.
+  if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
+    int modifiers = ui::EF_NONE;
+    if (base::win::IsShiftPressed())
+      modifiers |= ui::EF_SHIFT_DOWN;
+    if (base::win::IsCtrlPressed())
+      modifiers |= ui::EF_CONTROL_DOWN;
+    // Retrieve the status of shift and control keys to prevent consuming
+    // shift+alt keys, which are used by Windows to change input languages.
+    ui::Accelerator accelerator(ui::KeyboardCodeForWindowsKeyCode(VK_MENU),
+                                modifiers);
+    GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
+    return;
+  }
+
+  // If the delegate can't handle it, the system implementation will be called.
+  if (!delegate_->ExecuteCommand(notification_code)) {
+    DefWindowProc(GetNativeView(), WM_SYSCOMMAND, notification_code,
+                  MAKELPARAM(click.x, click.y));
+  }
 }
 
 void NativeWidgetWin::OnThemeChanged() {
@@ -1340,7 +1526,89 @@ void NativeWidgetWin::OnVScroll(int scroll_type,
 }
 
 void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
-  message_handler_->OnWindowPosChanging(window_pos);
+  if (ignore_window_pos_changes_) {
+    // If somebody's trying to toggle our visibility, change the nonclient area,
+    // change our Z-order, or activate us, we should probably let it go through.
+    if (!(window_pos->flags & ((IsVisible() ? SWP_HIDEWINDOW : SWP_SHOWWINDOW) |
+        SWP_FRAMECHANGED)) &&
+        (window_pos->flags & (SWP_NOZORDER | SWP_NOACTIVATE))) {
+      // Just sizing/moving the window; ignore.
+      window_pos->flags |= SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW;
+      window_pos->flags &= ~(SWP_SHOWWINDOW | SWP_HIDEWINDOW);
+    }
+  } else if (!GetParent()) {
+    CRect window_rect;
+    HMONITOR monitor;
+    gfx::Rect monitor_rect, work_area;
+    if (GetWindowRect(&window_rect) &&
+        GetMonitorAndRects(window_rect, &monitor, &monitor_rect, &work_area)) {
+      bool work_area_changed = (monitor_rect == last_monitor_rect_) &&
+                               (work_area != last_work_area_);
+      if (monitor && (monitor == last_monitor_) &&
+          ((IsFullscreen() && !fullscreen_handler_->metro_snap()) ||
+            work_area_changed)) {
+        // A rect for the monitor we're on changed.  Normally Windows notifies
+        // us about this (and thus we're reaching here due to the SetWindowPos()
+        // call in OnSettingChange() above), but with some software (e.g.
+        // nVidia's nView desktop manager) the work area can change asynchronous
+        // to any notification, and we're just sent a SetWindowPos() call with a
+        // new (frequently incorrect) position/size.  In either case, the best
+        // response is to throw away the existing position/size information in
+        // |window_pos| and recalculate it based on the new work rect.
+        gfx::Rect new_window_rect;
+        if (IsFullscreen()) {
+          new_window_rect = monitor_rect;
+        } else if (IsZoomed()) {
+          new_window_rect = work_area;
+          int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+          new_window_rect.Inset(-border_thickness, -border_thickness);
+        } else {
+          new_window_rect = gfx::Rect(window_rect).AdjustToFit(work_area);
+        }
+        window_pos->x = new_window_rect.x();
+        window_pos->y = new_window_rect.y();
+        window_pos->cx = new_window_rect.width();
+        window_pos->cy = new_window_rect.height();
+        // WARNING!  Don't set SWP_FRAMECHANGED here, it breaks moving the child
+        // HWNDs for some reason.
+        window_pos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
+        window_pos->flags |= SWP_NOCOPYBITS;
+
+        // Now ignore all immediately-following SetWindowPos() changes.  Windows
+        // likes to (incorrectly) recalculate what our position/size should be
+        // and send us further updates.
+        ignore_window_pos_changes_ = true;
+        DCHECK(!ignore_pos_changes_factory_.HasWeakPtrs());
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&NativeWidgetWin::StopIgnoringPosChanges,
+                       ignore_pos_changes_factory_.GetWeakPtr()));
+      }
+      last_monitor_ = monitor;
+      last_monitor_rect_ = monitor_rect;
+      last_work_area_ = work_area;
+    }
+  }
+
+  if (ScopedFullscreenVisibility::IsHiddenForFullscreen(GetNativeView())) {
+    // Prevent the window from being made visible if we've been asked to do so.
+    // See comment in header as to why we might want this.
+    window_pos->flags &= ~SWP_SHOWWINDOW;
+  }
+
+  // When WM_WINDOWPOSCHANGING message is handled by DefWindowProc, it will
+  // enforce (cx, cy) not to be smaller than (6, 6) for any non-popup window.
+  // We work around this by changing cy back to our intended value.
+  if (!GetParent() && !(window_pos->flags & SWP_NOSIZE) && window_pos->cy < 6) {
+    LONG old_cy = window_pos->cy;
+    DefWindowProc(GetNativeView(), WM_WINDOWPOSCHANGING, 0,
+        reinterpret_cast<LPARAM>(window_pos));
+    window_pos->cy = old_cy;
+    SetMsgHandled(TRUE);
+    return;
+  }
+
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
@@ -1361,6 +1629,40 @@ void NativeWidgetWin::OnFinalMessage(HWND window) {
 
 int NativeWidgetWin::GetShowState() const {
   return SW_SHOWNORMAL;
+}
+
+gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
+  // Returning an empty Insets object causes the default handling in
+  // NativeWidgetWin::OnNCCalcSize() to be invoked.
+  if (!has_non_client_view_ ||
+      (GetWidget()->ShouldUseNativeFrame() &&
+       !message_handler_->remove_standard_frame()))
+    return gfx::Insets();
+
+  if (IsMaximized()) {
+    // Windows automatically adds a standard width border to all sides when a
+    // window is maximized.
+    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    return gfx::Insets(border_thickness, border_thickness, border_thickness,
+                       border_thickness);
+  }
+
+  // The hack below doesn't seem to be necessary when the standard frame is
+  // removed.
+  if (message_handler_->remove_standard_frame())
+    return gfx::Insets();
+  // This is weird, but highly essential. If we don't offset the bottom edge
+  // of the client rect, the window client area and window area will match,
+  // and when returning to glass rendering mode from non-glass, the client
+  // area will not paint black as transparent. This is because (and I don't
+  // know why) the client area goes from matching the window rect to being
+  // something else. If the client area is not the window rect in both
+  // modes, the blackness doesn't occur. Because of this, we need to tell
+  // the RootView to lay out to fit the window rect, rather than the client
+  // rect when using the opaque frame.
+  // Note: this is only required for non-fullscreen windows. Note that
+  // fullscreen windows are in restored state, not maximized.
+  return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
 }
 
 void NativeWidgetWin::OnScreenReaderDetected() {
@@ -1385,9 +1687,7 @@ void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {
 // NativeWidgetWin, HWNDMessageHandlerDelegate implementation:
 
 bool NativeWidgetWin::IsWidgetWindow() const {
-  // We don't NULL check GetWidget()->non_client_view() here because this
-  // function can be called before the widget is fully constructed.
-  return has_non_client_view_;
+  return !!GetWidget()->non_client_view();
 }
 
 bool NativeWidgetWin::IsUsingCustomFrame() const {
@@ -1430,18 +1730,10 @@ void NativeWidgetWin::GetWindowMask(const gfx::Size& size, gfx::Path* path) {
   GetWidget()->non_client_view()->GetWindowMask(size, path);
 }
 
-bool NativeWidgetWin::GetClientAreaInsets(gfx::Insets* insets) const {
-  return false;
-}
-
 void NativeWidgetWin::GetMinMaxSize(gfx::Size* min_size,
                                     gfx::Size* max_size) const {
   *min_size = delegate_->GetMinimumSize();
   *max_size = delegate_->GetMaximumSize();
-}
-
-void NativeWidgetWin::ResetWindowControls() {
-  GetWidget()->non_client_view()->ResetWindowControls();
 }
 
 InputMethod* NativeWidgetWin::GetInputMethod() {
@@ -1479,10 +1771,6 @@ void NativeWidgetWin::HandleClose() {
 
 bool NativeWidgetWin::HandleCommand(int command) {
   return GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
-}
-
-void NativeWidgetWin::HandleAccelerator(const ui::Accelerator& accelerator) {
-  GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
 }
 
 void NativeWidgetWin::HandleCreate() {
