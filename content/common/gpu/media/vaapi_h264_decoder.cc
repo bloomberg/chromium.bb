@@ -631,6 +631,7 @@ static void InitVAPicture(VAPictureH264* va_pic) {
 }
 
 void VaapiH264Decoder::FillVAPicture(VAPictureH264 *va_pic, H264Picture* pic) {
+  DCHECK(pic);
   POCToDecodeSurfaces::iterator iter = poc_to_decode_surfaces_.find(
       pic->pic_order_cnt);
   if (iter == poc_to_decode_surfaces_.end()) {
@@ -1504,8 +1505,9 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
   int ref_idx_lx = 0;
   int pic_num_lx_no_wrap;
   int pic_num_lx;
+  bool done = false;
   H264Picture *pic ;
-  for (int i = 0; i < H264SliceHeader::kRefListModSize; ++i) {
+  for (int i = 0; i < H264SliceHeader::kRefListModSize && !done; ++i) {
     switch (list_mod->modification_of_pic_nums_idc) {
       case 0:
       case 1:
@@ -1577,7 +1579,8 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
 
       case 3:
         // End of modification list.
-        return true;
+        done = true;
+        break;
 
       default:
         // May be recoverable.
@@ -1589,6 +1592,11 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
 
     ++list_mod;
   }
+
+  // Per NOTE 2 in 8.2.4.3.2, the ref_pic_listx size in the above loop is
+  // temporarily made one element longer than the required final list.
+  // Resize the list back to its required size.
+  ref_pic_listx->resize(num_ref_idx_lX_active_minus1 + 1);
 
   return true;
 }
