@@ -64,10 +64,6 @@
   height: 100% !important;
 }
 
-.debug .animate-tile .tile-cell {
-  -webkit-transition: all 201ms ease-in-out;
-}
-
 .debug #page-list-menu {
   background: rgb(255, 170, 255);
 }

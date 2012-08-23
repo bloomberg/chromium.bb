@@ -255,8 +255,6 @@ cr.define('ntp', function() {
       // Set a tab index on the first dot.
       if (this.dotList.dots.length == 1)
         newDot.tabIndex = 3;
-
-      this.eventTracker.add(page, 'pagelayout', this.onPageLayout_.bind(this));
     },
 
     /**
@@ -492,19 +490,6 @@ cr.define('ntp', function() {
             this.cardSlider.selectCardByValue(this.suggestionsPage);
           break;
       }
-    },
-
-    /**
-     * Callback for the 'pagelayout' event.
-     * @param {Event} e The event.
-     */
-    onPageLayout_: function(e) {
-      if (Array.prototype.indexOf.call(this.tilePages, e.currentTarget) !=
-          this.cardSlider.currentCard) {
-        return;
-      }
-
-      this.updatePageSwitchers();
     },
 
     /**

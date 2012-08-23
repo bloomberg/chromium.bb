@@ -7,8 +7,6 @@
 ----------------------------------------------------------------------------- */
 
 #page-list {
-  /* TODO(pedrosimonetti): Confirm the easing function with Marcin. */
-  -webkit-transition: height 200ms ease-in-out;
   padding-bottom: 10px;
 }
 
@@ -24,8 +22,6 @@
 }
 
 .tile-grid {
-  -webkit-transform: translate3d(0, 0, 0);
-  -webkit-transition: width 200ms ease-in-out;
   display: block;
   margin: 0 auto;
   width: 732px;
@@ -33,15 +29,28 @@
 
 .tile-grid-content {
   -webkit-transform: translate3d(0, 0, 0);
-  -webkit-transition: -webkit-transform 200ms ease-in-out;
+  -webkit-transition: -webkit-transform 200ms;
 }
 
 .tile-row {
-  -webkit-transform: translate3d(0, 0, 0);
   -webkit-transition: opacity 200ms ease-in-out;
   height: 105px;
   text-align: start;
   white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------------------
+  Tile Grid Animation
+----------------------------------------------------------------------------- */
+
+.animate-grid-width {
+  -webkit-transform: translate3d(0, 0, 0);
+  -webkit-transition: width 200ms;
+}
+
+.animate-page-height {
+  /* TODO(pedrosimonetti): Confirm the easing function with Marcin. */
+  -webkit-transition: height 200ms ease-in-out;
 }
 
 /* -----------------------------------------------------------------------------
@@ -62,7 +71,7 @@
    Tile Cell Animation
 ----------------------------------------------------------------------------- */
 
-.animate-tile .tile-cell {
+.animate-grid-width .tile-cell {
   -webkit-transition: margin 200ms ease-out;
   -webkit-transition-property: margin, opacity, width;
 }
@@ -87,6 +96,6 @@
   opacity: 0;
 }
 
-.hide-row .tile-cell {
+.tile-grid .hide-row .tile-cell {
   opacity: 1;
 }

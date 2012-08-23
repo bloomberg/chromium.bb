@@ -187,13 +187,12 @@
   var debugArgs = {};
   var debugStylesheet = null;
   var animationSelectorSpeedMap = {
-    '#page-list': 200,
     '.dot': 200,
-    '.tile-grid': 200,
+    '.animate-page-height': 200,
+    '.animate-grid-width': 200,
     '.tile-grid-content': 200,
     '.tile-row': 200,
-    '.animate-tile .tile-cell': 200,
-    '.debug .animate-tile .tile-cell': 200
+    '.animate-grid-width .tile-cell': 200
   };
 
   function adjustAnimationSpeed(slownessFactor) {

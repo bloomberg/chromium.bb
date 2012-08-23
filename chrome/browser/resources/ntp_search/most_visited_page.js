@@ -239,7 +239,6 @@ cr.define('ntp', function() {
         ntp.getCardSlider().currentCardValue &&
         ntp.getCardSlider().currentCardValue.classList
         .contains('most-visited-page')) {
-      ntp.getCardSlider().currentCardValue.layout_(true);
       chrome.send('mostVisitedSelected');
     }
   };
