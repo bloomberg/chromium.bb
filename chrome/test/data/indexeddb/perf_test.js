@@ -12,6 +12,8 @@ var kDontWrite = false;
 var kWriteSameStore = true;
 var kWriteDifferentStore = false;
 var kPlaceholderArg = false;
+var kDontRead = false;
+var kAlternateWithReads = true;
 
 var tests = [
 // Create a single small item in a single object store, then delete everything.
@@ -67,16 +69,23 @@ var tests = [
    kPlaceholderArg],
 // Make batches of random writes into a store, triggered by periodic setTimeout
 // calls.
-  [testSporadicWrites, 5, 0],
+  [testSporadicWrites, 5, 0, kDontRead],
 // Make large batches of random writes into a store, triggered by periodic
 // setTimeout calls.
-  [testSporadicWrites, 500, 0],
+  [testSporadicWrites, 50, 0, kDontRead],
 // Make batches of random writes into a store with many indices, triggered by
 // periodic setTimeout calls.
-  [testSporadicWrites, 5, 10],
+  [testSporadicWrites, 5, 10, kDontRead],
 // Make large batches of random writes into a store with many indices, triggered
 // by periodic setTimeout calls.
-  [testSporadicWrites, 500, 10],
+  [testSporadicWrites, 50, 10, kDontRead],
+// Make batches of random writes into a store, triggered by periodic setTimeout
+// calls.  Intersperse read transactions to test read-write lock conflicts.
+  [testSporadicWrites, 5, 0, kAlternateWithReads],
+// Make large batches of random writes into a store, triggered by periodic
+// setTimeout calls.  Intersperse read transactions to test read-write lock
+// conflicts.
+  [testSporadicWrites, 50, 0, kAlternateWithReads],
 // Make a small bunch of batches of reads of the same keys from an object store.
   [testReadCache, 10, kDontUseIndex],
 // Make a bunch of batches of reads of the same keys from an index.
@@ -416,10 +425,13 @@ function testCursorReadsAndRandomWrites(
 }
 
 function testSporadicWrites(
-    numWritesPerTransaction, numIndices, onTestComplete) {
+    numOperationsPerTransaction, numIndices, alternateWithReads,
+    onTestComplete) {
   var numKeys = 1000;
   // With 30 transactions, spaced 50ms apart, we'll need at least 1.5s.
   var numTransactions = 30;
+  if (alternateWithReads)
+    numTransactions *= 2;
   var delayBetweenBatches = 50;
   var indexName;
   var testName = getDisplayName(arguments);
@@ -463,20 +475,25 @@ function testSporadicWrites(
     if (--numTransactionsLeft) {
       setTimeout(function () { runOneBatch(db); }, delayBetweenBatches);
     }
+
+    var mode, transaction;
+    if (alternateWithReads) {
+      ++numTransactionsRunning;
+      transaction =
+          getTransaction(db, objectStoreNames, "readonly", batchComplete);
+      getRandomValues(transaction, objectStoreNames,
+          numOperationsPerTransaction, numKeys);
+    }
     ++numTransactionsRunning;
+    transaction =
+        getTransaction(db, objectStoreNames, "readwrite", batchComplete);
+    putRandomValues(transaction, objectStoreNames, numOperationsPerTransaction,
+        numKeys);
 
     function batchComplete() {
       assert(numTransactionsRunning);
       if (!--numTransactionsRunning && !numTransactionsLeft)
         completionFunc();
     }
-
-    var mode = "readonly";
-    if (numWritesPerTransaction)
-      mode = "readwrite";
-
-    var transaction = getTransaction(db, objectStoreNames, mode, batchComplete);
-    putRandomValues(transaction, objectStoreNames, numWritesPerTransaction,
-        numKeys);
   }
 }
