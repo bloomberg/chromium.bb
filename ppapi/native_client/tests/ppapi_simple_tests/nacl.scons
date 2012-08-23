@@ -21,7 +21,7 @@ TESTS = [('audio', ('audio',)),
 for test_exe, test_inputs in TESTS:
   nexe = env.ComponentProgram('ppapi_simple_' + test_exe,
                               [test_exe + '.cc'],
-                              EXTRA_LIBS=['${PPAPI_LIBS}',
+                              EXTRA_LIBS=['ppapi',
                                           'ppapi_cpp',
                                           'platform',
                                           'gio',

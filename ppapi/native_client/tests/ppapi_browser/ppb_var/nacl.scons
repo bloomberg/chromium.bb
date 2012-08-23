@@ -17,7 +17,7 @@ env.Alias('ppapi_ppb_var${PROGSUFFIX}', ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 env.ComponentProgram(
     nexe,
     ['ppapi_ppb_var.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
+    EXTRA_LIBS=['ppapi',
                 'ppapi_test_lib',
                 'pthread',
                 'platform',

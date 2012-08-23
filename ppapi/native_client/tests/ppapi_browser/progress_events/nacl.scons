@@ -16,7 +16,7 @@ progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
 progress_events_target = env.ProgramNameForNmf('ppapi_progress_events')
 env.ComponentProgram(progress_events_target,
                      [progress_events_sources],
-                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                     EXTRA_LIBS=['ppapi',
                                  'ppapi_test_lib',
                                  'pthread',
                                  'platform',

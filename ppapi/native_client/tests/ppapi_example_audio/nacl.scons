@@ -14,7 +14,7 @@ env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
 nexe_name = env.ProgramNameForNmf('ppapi_example_audio')
 nexe = env.ComponentProgram(nexe_name,
                             [ 'audio.cc' ],
-                            EXTRA_LIBS=['${PPAPI_LIBS}',
+                            EXTRA_LIBS=['ppapi',
                                         'ppapi_cpp',
                                         'platform',
                                         'gio',

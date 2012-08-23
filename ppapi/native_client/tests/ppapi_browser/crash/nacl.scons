@@ -30,7 +30,7 @@ for crash_type in crash_types:
   env.ComponentProgram(
       nexe,
       ['ppapi_crash_%s.cc' % crash_type],
-      EXTRA_LIBS=['${PPAPI_LIBS}',
+      EXTRA_LIBS=['ppapi',
                   'ppapi_test_lib',
                   'platform',
                   'pthread',

@@ -69,7 +69,7 @@ for demo, sources in gles_book_examples.iteritems():
     nexe = env.ComponentProgram(
         nexe_name,
         ['demos/gles2_book/demo_' + demo + '.cc'] + sources,
-        EXTRA_LIBS=['${PPAPI_LIBS}',
+        EXTRA_LIBS=['ppapi',
                     'ppapi_cpp',
                     'ppapi_gles_demo',
                     'ppapi_cpp',

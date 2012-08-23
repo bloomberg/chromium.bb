@@ -17,7 +17,7 @@ env.Alias('ppapi_ppb_file_system${PROGSUFFIX}',
 
 env.ComponentProgram(nexe,
                      ['ppapi_ppb_file_system.cc'],
-                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                     EXTRA_LIBS=['ppapi',
                                  'ppapi_test_lib',
                                  'platform',
                                  'pthread',

@@ -24,7 +24,7 @@ nexe = env.ProgramNameForNmf('ppapi_extension_mime_handler')
 env.ComponentProgram(
     nexe,
     ['ppapi_extension_mime_handler.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
+    EXTRA_LIBS=['ppapi',
                 'ppapi_test_lib',
                 'pthread',
                 'platform',

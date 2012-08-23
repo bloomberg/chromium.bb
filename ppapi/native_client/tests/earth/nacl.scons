@@ -18,7 +18,7 @@ cobj=['pepper_c.c']
 c_nexe_name = env.ProgramNameForNmf('earth_c')
 cnexe = env.ComponentProgram(c_nexe_name, cobj,
                             EXTRA_LIBS=['earthlib',
-                                        '${PPAPI_LIBS}',
+                                        'ppapi',
                                         'm', 'pthread'])
 env.Publish(c_nexe_name, 'run', ['earth_c.html'])
 
@@ -30,7 +30,6 @@ ccobj=['pepper_cc.cc']
 cc_nexe_name = env.ProgramNameForNmf('earth_cc')
 ccnexe = env.ComponentProgram(cc_nexe_name, ccobj,
                             EXTRA_LIBS=['earthlib',
-                                        '${PPAPI_LIBS}',
                                         'ppapi_cpp',
                                         'm', 'pthread'])
 env.Publish(cc_nexe_name, 'run', ['earth_cc.html'])

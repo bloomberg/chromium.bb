@@ -30,7 +30,7 @@ ppapi_geturl_nexe = env.ComponentProgram(nexe,
                                           'ppapi_geturl.cc',
                                           'url_load_request.cc',
                                           ],
-                                         EXTRA_LIBS=['${PPAPI_LIBS}',
+                                         EXTRA_LIBS=['ppapi',
                                                      'platform'])
 
 env.Publish(nexe, 'run',

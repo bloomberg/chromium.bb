@@ -90,7 +90,7 @@ ppapi_tests_objs = [MakeComponentObject(src) for src in ppapi_tests_sources]
 
 ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
                                         ppapi_tests_objs,
-                                        EXTRA_LIBS=['${PPAPI_LIBS}',
+                                        EXTRA_LIBS=['ppapi',
                                                     'ppapi_cpp'
                                                     ])
 

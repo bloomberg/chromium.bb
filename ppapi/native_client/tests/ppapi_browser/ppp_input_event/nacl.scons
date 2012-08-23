@@ -18,7 +18,7 @@ env.Alias('ppapi_ppp_input_event${PROGSUFFIX}',
 ppapi_ppp_input_event_nexe = env.ComponentProgram(
     nexe,
     ['ppapi_ppp_input_event.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
+    EXTRA_LIBS=['ppapi',
                 'ppapi_test_lib',
                 'platform',  # for CHECK
                 'pthread',

@@ -15,7 +15,7 @@ obj = env.ComponentObject(
     '$SOURCE_ROOT/ppapi/examples/2d/graphics_2d_example.c'
     )
 ppapi_example_2d_nexe = env.ComponentProgram(nexe_name, [obj],
-                                             EXTRA_LIBS=['${PPAPI_LIBS}'])
+                                             EXTRA_LIBS=['ppapi'])
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',

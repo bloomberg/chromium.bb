@@ -18,12 +18,12 @@ env.Alias('ppapi_ppb_image_data${PROGSUFFIX}',
 env.ComponentProgram(
     nexe,
     ['ppapi_ppb_image_data.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
-                 'ppapi_test_lib',
-                 'platform',  # for CHECK
-                 'pthread',
-                 'gio',
-                 ])
+    EXTRA_LIBS=['ppapi',
+                'ppapi_test_lib',
+                'platform',  # for CHECK
+                'pthread',
+                'gio',
+                ])
 
 env.Publish(nexe, 'run',
             [ 'ppapi_ppb_image_data.html',

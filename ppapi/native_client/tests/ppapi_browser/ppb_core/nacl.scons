@@ -18,7 +18,7 @@ env.Alias('ppapi_ppb_core${PROGSUFFIX}',
 env.ComponentProgram(
     nexe,
     ['ppapi_ppb_core.cc'],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
+    EXTRA_LIBS=['ppapi',
                 'ppapi_test_lib',
                 'pthread',
                 'platform',

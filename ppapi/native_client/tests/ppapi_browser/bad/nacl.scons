@@ -46,7 +46,7 @@ for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
   bad_nexe = env.ProgramNameForNmf('ppapi_bad_%s' % kind)
   env.ComponentProgram(bad_nexe,
                        ['ppapi_bad_%s.cc' % kind],
-                       EXTRA_LIBS=['${PPAPI_LIBS}',
+                       EXTRA_LIBS=['ppapi',
                                    'platform',
                                    'pthread',
                                    'gio'])

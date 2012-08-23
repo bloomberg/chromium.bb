@@ -16,7 +16,7 @@ env.Alias('ppapi_ppb_audio${PROGSUFFIX}',
 ppapi_ppb_audio_nexe = env.ComponentProgram(
     nexe,
     [ 'ppapi_ppb_audio.cc' ],
-    EXTRA_LIBS=['${PPAPI_LIBS}',
+    EXTRA_LIBS=['ppapi',
                 'ppapi_test_lib',
                 'platform',  # for CHECK
                 'pthread',

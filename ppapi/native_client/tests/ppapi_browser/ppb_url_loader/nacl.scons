@@ -17,7 +17,7 @@ env.Alias('ppapi_ppb_url_loader${PROGSUFFIX}',
 
 env.ComponentProgram(nexe,
                      ['ppapi_ppb_url_loader.cc'],
-                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                     EXTRA_LIBS=['ppapi',
                                  'ppapi_test_lib',
                                  'platform',
                                  'pthread',
