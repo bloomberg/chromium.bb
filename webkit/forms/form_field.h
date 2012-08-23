@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "webkit/forms/webkit_forms_export.h"
 
 namespace webkit {

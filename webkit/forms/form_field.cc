@@ -6,16 +6,6 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebOptionElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
-
-using WebKit::WebFormControlElement;
-using WebKit::WebElement;
-using WebKit::WebInputElement;
-using WebKit::WebOptionElement;
-using WebKit::WebSelectElement;
-using WebKit::WebVector;
 
 namespace webkit {
 namespace forms {
