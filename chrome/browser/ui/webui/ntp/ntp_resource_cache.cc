@@ -342,6 +342,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   load_time_data.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
+  load_time_data.SetString("appdetails",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_DETAILS));
   load_time_data.SetString("appdisablenotifications",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS));
   load_time_data.SetString("appcreateshortcut",

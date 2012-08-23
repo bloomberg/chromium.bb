@@ -109,6 +109,7 @@ namespace extension_info_keys {
   const char kNameKey[] = "name";
   const char kOfflineEnabledKey[] = "offlineEnabled";
   const char kOptionsUrlKey[] = "optionsUrl";
+  const char kDetailsUrlKey[] = "detailsUrl";
   const char kVersionKey[] = "version";
 
 }  // namespace extension_filenames

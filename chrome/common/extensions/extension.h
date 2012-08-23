@@ -660,6 +660,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
+  const GURL& details_url() const { return details_url_;}
   const PermissionSet* optional_permission_set() const {
     return optional_permission_set_.get();
   }
@@ -1057,6 +1058,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Optional URL to a devtools extension page.
   GURL devtools_url_;
+
+  // URL to the webstore page of the extension.
+  GURL details_url_;
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;

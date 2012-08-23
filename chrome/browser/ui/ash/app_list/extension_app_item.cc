@@ -33,6 +33,7 @@ enum CommandId {
   TOGGLE_PIN,
   OPTIONS,
   UNINSTALL,
+  DETAILS,
   // Order matters in LAUNCHER_TYPE_xxxx and must match LaunchType.
   LAUNCH_TYPE_START = 200,
   LAUNCH_TYPE_PINNED_TAB = LAUNCH_TYPE_START,
@@ -159,6 +160,17 @@ void ExtensionAppItem::ShowExtensionOptions() {
   chrome::Navigate(&params);
 }
 
+void ExtensionAppItem::ShowExtensionDetails() {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return;
+
+  chrome::NavigateParams params(profile_,
+                                extension->details_url(),
+                                content::PAGE_TRANSITION_LINK);
+  chrome::Navigate(&params);
+}
+
 void ExtensionAppItem::StartExtensionUninstall() {
   // ExtensionUninstall deletes itself when done or aborted.
   ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile_,
@@ -211,6 +223,9 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
         extensions::ExtensionSystem::Get(profile_)->management_policy();
     return extension &&
            policy->UserMayModifySettings(extension, NULL);
+  } else if (command_id == DETAILS) {
+    const Extension* extension = GetExtension();
+    return extension && extension->from_webstore();
   }
   return true;
 }
@@ -239,6 +254,8 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
     ShowExtensionOptions();
   } else if (command_id == UNINSTALL) {
     StartExtensionUninstall();
+  } else if (command_id == DETAILS) {
+    ShowExtensionDetails();
   }
 }
 
@@ -281,6 +298,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
         IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
     context_menu_model_->AddSeparator();
     context_menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
+    context_menu_model_->AddItemWithStringId(DETAILS, IDS_NEW_TAB_APP_DETAILS);
     context_menu_model_->AddItemWithStringId(UNINSTALL,
                                              IDS_EXTENSIONS_UNINSTALL);
   }

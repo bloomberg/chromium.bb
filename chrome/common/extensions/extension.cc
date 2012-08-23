@@ -459,6 +459,8 @@ void Extension::GetBasicInfo(bool enabled,
                   options_url().possibly_invalid_spec());
   info->SetString(info_keys::kHomepageUrlKey,
                   GetHomepageURL().possibly_invalid_spec());
+  info->SetString(info_keys::kDetailsUrlKey,
+                  details_url().possibly_invalid_spec());
 }
 
 Extension::Type Extension::GetType() const {
@@ -3134,6 +3136,11 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (is_platform_app()) {
     api_permissions.insert(APIPermission::kAppRuntime);
     api_permissions.insert(APIPermission::kAppWindow);
+  }
+
+  if (from_webstore()) {
+    details_url_ =
+        GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id());
   }
 
   APIPermissionSet optional_api_permissions;

@@ -44,6 +44,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   void LoadImage(const extensions::Extension* extension);
 
   void ShowExtensionOptions();
+  void ShowExtensionDetails();
   void StartExtensionUninstall();
 
   // Overridden from ImageLoadingTracker::Observer:

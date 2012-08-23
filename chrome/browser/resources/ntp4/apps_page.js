@@ -63,11 +63,14 @@ cr.define('ntp', function() {
 
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.options_ = this.appendMenuItem_('appoptions');
+      this.details_ = this.appendMenuItem_('appdetails');
       this.disableNotifications_ =
           this.appendMenuItem_('appdisablenotifications');
       this.uninstall_ = this.appendMenuItem_('appuninstall');
       this.options_.addEventListener('activate',
                                      this.onShowOptions_.bind(this));
+      this.details_.addEventListener('activate',
+                                     this.onShowDetails_.bind(this));
       this.disableNotifications_.addEventListener(
           'activate', this.onDisableNotifications_.bind(this));
       this.uninstall_.addEventListener('activate',
@@ -133,6 +136,7 @@ cr.define('ntp', function() {
       });
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
+      this.details_.disabled = !app.appData.detailsUrl;
       this.uninstall_.disabled = !app.appData.mayDisable;
 
       this.disableNotifications_.hidden = true;
@@ -165,6 +169,11 @@ cr.define('ntp', function() {
     },
     onShowOptions_: function(e) {
       window.location = this.app_.appData.optionsUrl;
+    },
+    onShowDetails_: function(e) {
+      var url = this.app_.appData.detailsUrl;
+      url = appendParam(url, 'utm_source', 'chrome-ntp-launcher');
+      window.location = url;
     },
     onDisableNotifications_: function(e) {
       var app = this.app_;
