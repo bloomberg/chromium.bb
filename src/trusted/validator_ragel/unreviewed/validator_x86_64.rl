@@ -42,7 +42,7 @@
   }
 
   action opcode_in_imm {
-    instruction_info_collected |= IMMEDIATE_IS_OPCODE;
+    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
   action modifiable_instruction {
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
@@ -88,9 +88,10 @@
     (0x4c 0x01 0xfd            | # add %r15,%rbp
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
-    @{ if (restricted_register != REG_RBP) {
+    @{ if (restricted_register == REG_RBP)
+         instruction_info_collected |= RESTRICTED_REGISTER_USED;
+       else
          instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
-       }
        restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
     };
@@ -107,9 +108,10 @@
   rsp_sandboxing =
     (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
-    @{ if (restricted_register != REG_RSP) {
+    @{ if (restricted_register == REG_RSP)
+         instruction_info_collected |= RESTRICTED_REGISTER_USED;
+       else
          instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
-       }
        restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
     };
@@ -297,9 +299,9 @@
     0x49 0x8d 0x34 0x37        . # lea (%r15,%rsi,1),%rsi
     string_instructions_rsi_no_rdi
     @{
-       BitmapClearBit(valid_targets, (instruction_start - data));
-       BitmapClearBit(valid_targets, (instruction_start - 4 - data));
        instruction_start -= 6;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 2);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 6);
        restricted_register = NO_REG;
     };
 
@@ -308,9 +310,9 @@
     0x49 0x8d 0x3c 0x3f        . # lea (%r15,%rdi,1),%rdi
     string_instructions_rdi_no_rsi
     @{
-       BitmapClearBit(valid_targets, (instruction_start - data));
-       BitmapClearBit(valid_targets, (instruction_start - 4 - data));
        instruction_start -= 6;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 2);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 6);
        restricted_register = NO_REG;
     };
 
@@ -322,11 +324,11 @@
     0x49 0x8d 0x3c 0x3f       . # lea (%r15,%rdi,1),%rdi
     string_instructions_rsi_rdi
     @{
-       BitmapClearBit(valid_targets, (instruction_start - data));
-       BitmapClearBit(valid_targets, (instruction_start - 4 - data));
-       BitmapClearBit(valid_targets, (instruction_start - 6 - data));
-       BitmapClearBit(valid_targets, (instruction_start - 10 - data));
        instruction_start -= 12;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 2);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 6);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 8);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 12);
        restricted_register = NO_REG;
     };
 
@@ -347,7 +349,24 @@
   # Remove special instructions which are only allowed in special cases.
   normal_instruction = one_instruction - special_instruction;
 
-  main := ((normal_instruction | special_instruction)
+  # Check if call is properly aligned
+  call_alignment =
+    ((normal_instruction &
+      # Direct call
+      ((data16 REX_RXB? 0xe8 rel16) |
+       (REX_WRXB? 0xe8 rel32) |
+       (data16 REXW_RXB 0xe8 rel32))) |
+     (special_instruction &
+      # Indirect call
+      (any* data16? REX_WRXB? 0xff ((opcode_2 | opcode_3) any* &
+                                    (modrm_memory | modrm_registers)))))
+    @{
+      if (((current_position - data) & kBundleMask) != kBundleMask)
+        instruction_info_collected |= BAD_CALL_ALIGNMENT;
+    };
+
+
+  main := ((call_alignment | normal_instruction | special_instruction)
      >{
        BitmapSetBit(valid_targets, current_position - data);
      }

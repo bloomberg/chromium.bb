@@ -188,6 +188,8 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
   if (validation_error & SPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%spl or %%sp is changed\n",
                                                                         offset);
+  if (validation_error & BAD_CALL_ALIGNMENT)
+    printf("offset 0x%"NACL_PRIxS": warning - bad call alignment\n", offset);
   if (validation_error & BAD_JUMP_TARGET)
     printf("bad jump to around 0x%"NACL_PRIxS"\n", offset);
   if (validation_error & (VALIDATION_ERRORS | BAD_JUMP_TARGET))

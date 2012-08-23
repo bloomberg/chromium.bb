@@ -166,9 +166,13 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
   } else if (!(info & MODIFIABLE_INSTRUCTION)) {
     return FALSE;
   /* Instruction with two-bit immediate can only change these two bits.  */
-  } else if (info & IMMEDIATE_2BIT) {
+  } else if ((info & IMMEDIATE_2BIT) == IMMEDIATE_2BIT) {
     if (memcmp(begin_new, begin_old, instruction_length - 1) != 0 ||
         (*end_new & 0xfc) != (*end_old & 0xfc)) {
+      return FALSE;
+    }
+  } else if (info & LAST_BYTE_IS_NOT_IMMEDIATE) {
+    if (memcmp(begin_new, begin_old, instruction_length - 1) != 0) {
       return FALSE;
     }
   /* Normal instruction can only change an immediate.  */

@@ -149,13 +149,17 @@ enum operand_kind {
 #define SET_DISP_TYPE_DISP8 (instruction_info_collected += DISPLACEMENT_8BIT)
 #define SET_DISP_TYPE_DISP32 (instruction_info_collected += DISPLACEMENT_32BIT)
 #define SET_IMM_TYPE(T) SET_IMM_TYPE_##T
-#define SET_IMM2_TYPE(T) SET_IMM_TYPE_##T
 /* imm2 field is a flag, not accumulator, like with other immediates  */
 #define SET_IMM_TYPE_IMM2 (instruction_info_collected |= IMMEDIATE_2BIT)
 #define SET_IMM_TYPE_IMM8 (instruction_info_collected += IMMEDIATE_8BIT)
 #define SET_IMM_TYPE_IMM16 (instruction_info_collected += IMMEDIATE_16BIT)
 #define SET_IMM_TYPE_IMM32 (instruction_info_collected += IMMEDIATE_32BIT)
 #define SET_IMM_TYPE_IMM64 (instruction_info_collected += IMMEDIATE_64BIT)
+#define SET_IMM2_TYPE(T) SET_IMM2_TYPE_##T
+#define SET_IMM2_TYPE_IMM8 \
+    (instruction_info_collected += SECOND_IMMEDIATE_8BIT)
+#define SET_IMM2_TYPE_IMM16 \
+    (instruction_info_collected += SECOND_IMMEDIATE_16BIT)
 
 #define BITMAP_WORD_NAME BITMAP_WORD_NAME1(NACL_HOST_WORDSIZE)
 #define BITMAP_WORD_NAME1(size) BITMAP_WORD_NAME2(size)
@@ -299,7 +303,8 @@ static INLINE void check_access(ptrdiff_t instruction_start,
     if ((index == NO_REG) || (index == REG_RIZ))
       { /* do nothing. */ }
     else if (index == restricted_register)
-      BitmapClearBit(valid_targets, instruction_start);
+      BitmapClearBit(valid_targets, instruction_start),
+      *instruction_info_collected |= RESTRICTED_REGISTER_USED;
     else
       *instruction_info_collected |= UNRESTRICTED_INDEX_REGISTER;
   } else {

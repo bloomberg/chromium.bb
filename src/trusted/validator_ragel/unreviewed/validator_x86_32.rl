@@ -40,7 +40,9 @@
                   &instruction_info_collected);
   }
 
-  action opcode_in_imm { instruction_info_collected |= IMMEDIATE_IS_OPCODE; }
+  action opcode_in_imm {
+    instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
+  }
 
   include decode_x86_32 "validator_x86_32_instruction.rl";
 
@@ -62,7 +64,22 @@
      0x65 0x8b (0x05|0x0d|0x015|0x1d|0x25|0x2d|0x35|0x3d)
           (0x00|0x04) 0x00 0x00 0x00);           # mov %gs:0x0/0x4,%reg
 
-  main := ((one_instruction | special_instruction)
+  # Check if call is properly aligned
+  call_alignment =
+    ((one_instruction &
+      # Direct call
+      ((data16 0xe8 rel16) |
+       (0xe8 rel32))) |
+     (special_instruction &
+      # Indirect call
+      (any* data16? 0xff ((opcode_2 | opcode_3) any* &
+                          (modrm_memory | modrm_registers)))))
+    @{
+      if (((current_position - data) & kBundleMask) != kBundleMask)
+        instruction_info_collected |= BAD_CALL_ALIGNMENT;
+    };
+
+  main := ((call_alignment | one_instruction | special_instruction)
      >{
        BitmapSetBit(valid_targets, current_position - data);
      }
