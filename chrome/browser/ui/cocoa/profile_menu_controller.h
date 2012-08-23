@@ -37,9 +37,17 @@ class Observer;
 - (id)initWithMainMenuItem:(NSMenuItem*)item;
 
 // Actions for the menu items.
-- (IBAction)switchToProfile:(id)sender;
+- (IBAction)switchToProfileFromMenu:(id)sender;
+- (IBAction)switchToProfileFromDock:(id)sender;
 - (IBAction)editProfile:(id)sender;
 - (IBAction)newProfile:(id)sender;
+
+// If profiles are enabled and there is more than one profile, this inserts
+// profile menu items into the specified menu at the specified offset and
+// returns YES. Otherwise, this returns NO and does not modify the menu.
+- (BOOL)insertItemsIntoMenu:(NSMenu*)menu
+                   atOffset:(NSInteger)offset
+                   fromDock:(BOOL)dock;
 
 @end
 

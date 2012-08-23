@@ -28,6 +28,7 @@ class ProfileMetrics {
     ICON_AVATAR_BUBBLE,       // User opens avatar icon menu from icon
     SWITCH_PROFILE_ICON,      // User switches profiles from icon menu
     SWITCH_PROFILE_MENU,      // User switches profiles from menu bar
+    SWITCH_PROFILE_DOCK,      // User switches profiles from dock (Mac-only)
     NUM_PROFILE_OPEN_METRICS
   };
 
