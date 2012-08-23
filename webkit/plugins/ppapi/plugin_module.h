@@ -117,6 +117,13 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // PPB interfaces.
   static GetInterfaceFunc GetLocalGetInterfaceFunc();
 
+  // Returns whether an interface is supported. This method can be called from
+  // the browser process and used for interface matching before plugin
+  // registration.
+  // NOTE: those custom interfaces provided by PpapiInterfaceFactoryManager
+  // will not be considered when called on the browser process.
+  static bool SupportsInterface(const char* name);
+
   // Returns the module handle. This may be used before Init() is called (the
   // proxy needs this information to set itself up properly).
   PP_Module pp_module() const { return pp_module_; }

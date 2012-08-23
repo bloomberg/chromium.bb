@@ -123,12 +123,12 @@ bool GetPepperFlashDirectory(FilePath* latest_dir,
 // Returns true if the Pepper |interface_name| is implemented  by this browser.
 // It does not check if the interface is proxied.
 bool SupportsPepperInterface(const char* interface_name) {
-  static webkit::ppapi::PluginModule::GetInterfaceFunc get_itf =
-      webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc();
-  if (get_itf(interface_name))
+  if (webkit::ppapi::PluginModule::SupportsInterface(interface_name))
     return true;
-  // It might be that flapper is using as a temporary hack the PDF interface
-  // so we need to check for that as well. TODO(cpu): make this more sane.
+  // The PDF interface is invisible to SupportsInterface() on the browser
+  // process because it is provided using PpapiInterfaceFactoryManager. We need
+  // to check for that as well.
+  // TODO(cpu): make this more sane.
   return (strcmp(interface_name, PPB_PDF_INTERFACE) == 0);
 }
 
@@ -362,7 +362,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-#if defined(GOOGLE_CHROME_BUILD) && !defined(FLAPPER_AVAILABLE)
+#if defined(GOOGLE_CHROME_BUILD)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&StartPepperFlashUpdateRegistration, cus));
 #endif

@@ -271,10 +271,7 @@ const PPB_Testing_Dev testing_interface = {
 
 // GetInterface ----------------------------------------------------------------
 
-const void* GetInterface(const char* name) {
-  // All interfaces should be used on the main thread.
-  CHECK(IsMainThread());
-
+const void* InternalGetInterface(const char* name) {
   // Allow custom interface factories first stab at the GetInterface call.
   const void* custom_interface =
       PpapiInterfaceFactoryManager::GetInstance()->GetInterface(name);
@@ -358,6 +355,13 @@ const void* GetInterface(const char* name) {
     }
   }
   return NULL;
+}
+
+const void* GetInterface(const char* name) {
+  // All interfaces should be used on the main thread.
+  CHECK(IsMainThread());
+
+  return InternalGetInterface(name);
 }
 
 // Gets the PPAPI entry points from the given library and places them into the
@@ -530,6 +534,11 @@ const PPB_Core* PluginModule::GetCore() {
 // static
 PluginModule::GetInterfaceFunc PluginModule::GetLocalGetInterfaceFunc() {
   return &GetInterface;
+}
+
+// static
+bool PluginModule::SupportsInterface(const char* name) {
+  return !!InternalGetInterface(name);
 }
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
