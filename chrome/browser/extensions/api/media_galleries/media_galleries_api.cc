@@ -14,9 +14,11 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -32,7 +34,21 @@ namespace extensions {
 
 namespace {
 
+const char kDisallowedByPolicy[] =
+    "Media Galleries API is disallowed by policy: ";
 const char kInvalidInteractive[] = "Unknown value for interactive.";
+
+// Checks whether the MediaGalleries API is currently accessible (it may be
+// disallowed even if an extension has the requisite permission).
+bool ApiIsAccessible(std::string* error) {
+  if (!ChromeSelectFilePolicy::FileSelectDialogsAllowed()) {
+    *error = std::string(kDisallowedByPolicy) +
+        prefs::kAllowFileSelectionDialogs;
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -46,6 +62,9 @@ MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
 
 bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
+  if (!ApiIsAccessible(&error_))
+    return false;
+
   scoped_ptr<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -138,6 +157,9 @@ MediaGalleriesAssembleMediaFileFunction::
     ~MediaGalleriesAssembleMediaFileFunction() {}
 
 bool MediaGalleriesAssembleMediaFileFunction::RunImpl() {
+  if (!ApiIsAccessible(&error_))
+    return false;
+
   // TODO(vandebo) Update the metadata and return the new file.
   SetResult(Value::CreateNullValue());
   return true;

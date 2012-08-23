@@ -24,16 +24,7 @@ ChromeSelectFilePolicy::ChromeSelectFilePolicy(
 ChromeSelectFilePolicy::~ChromeSelectFilePolicy() {}
 
 bool ChromeSelectFilePolicy::CanOpenSelectFileDialog() {
-  DCHECK(g_browser_process);
-
-  // local_state() can return NULL for tests.
-  if (!g_browser_process->local_state())
-    return false;
-
-  return !g_browser_process->local_state()->FindPreference(
-             prefs::kAllowFileSelectionDialogs) ||
-         g_browser_process->local_state()->GetBoolean(
-             prefs::kAllowFileSelectionDialogs);
+  return FileSelectDialogsAllowed();
 }
 
 void ChromeSelectFilePolicy::SelectFileDenied() {
@@ -51,4 +42,18 @@ void ChromeSelectFilePolicy::SelectFileDenied() {
     LOG(WARNING) << "File-selection dialogs are disabled but no WebContents "
                  << "is given to display the InfoBar.";
   }
+}
+
+// static
+bool ChromeSelectFilePolicy::FileSelectDialogsAllowed() {
+  DCHECK(g_browser_process);
+
+  // local_state() can return NULL for tests.
+  if (!g_browser_process->local_state())
+    return false;
+
+  return !g_browser_process->local_state()->FindPreference(
+             prefs::kAllowFileSelectionDialogs) ||
+         g_browser_process->local_state()->GetBoolean(
+             prefs::kAllowFileSelectionDialogs);
 }

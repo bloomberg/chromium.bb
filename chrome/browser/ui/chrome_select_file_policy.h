@@ -25,6 +25,9 @@ class ChromeSelectFilePolicy : public ui::SelectFilePolicy {
   virtual bool CanOpenSelectFileDialog() OVERRIDE;
   virtual void SelectFileDenied() OVERRIDE;
 
+  // Returns true if local state allows showing file pickers.
+  static bool FileSelectDialogsAllowed();
+
  private:
   content::WebContents* source_contents_;
 

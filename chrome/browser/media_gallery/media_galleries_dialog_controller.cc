@@ -72,7 +72,6 @@ bool MediaGalleriesDialogController::HasPermittedGalleries() const {
 void MediaGalleriesDialogController::OnAddFolderClicked() {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  // TODO(estade): if file dialogs are disabled we need to handle it somehow.
   select_folder_dialog_ =
       ui::SelectFileDialog::Create(this, new ChromeSelectFilePolicy(NULL));
   select_folder_dialog_->SelectFile(
