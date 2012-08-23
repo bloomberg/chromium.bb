@@ -510,10 +510,13 @@ void WrenchMenuModel::Build() {
 #endif
   {
     AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-    string16 num_background_pages = base::FormatNumber(
-        TaskManager::GetBackgroundPageCount());
-    AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
-        IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
+    // We use the task manager to show background pages.
+    if (chrome::CanOpenTaskManager()) {
+      string16 num_background_pages = base::FormatNumber(
+          TaskManager::GetBackgroundPageCount());
+      AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
+          IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
+    }
   }
 
   if (browser_defaults::kShowUpgradeMenuItem)
