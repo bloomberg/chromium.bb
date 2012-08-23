@@ -15801,6 +15801,8 @@ var keyboardOverlayData = {
     'backspace<>CTRL': 'keyboardOverlayDeleteWord',
     'backspace<>CTRL<>SHIFT': 'keyboardOverlayClearBrowsingDataDialog',
     'backspace<>SHIFT': 'keyboardOverlayGoForward',
+    'bright down<>ALT': 'keyboardOverlayKeyboardBrightDown',
+    'bright up<>ALT': 'keyboardOverlayKeyboardBrightUp',
     'c<>CTRL': 'keyboardOverlayCopy',
     'c<>CTRL<>SHIFT': 'keyboardOverlayDomInspector',
     'd<>ALT': 'keyboardOverlayFocusAddressBar',

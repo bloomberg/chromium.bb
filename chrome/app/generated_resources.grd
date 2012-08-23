@@ -16062,6 +16062,12 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
         JavaScript Console
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_KEYBOARD_BRIGHT_DOWN" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
+        Decrease key brightness
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_KEYBOARD_BRIGHT_UP" desc="The text in the keyboard overlay to explain the shortcut (increase the keyboard brightness).">
+        Increase key brightness
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (lock the screen).">
         Lock screen
       </message>
