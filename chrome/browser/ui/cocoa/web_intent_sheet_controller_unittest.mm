@@ -13,6 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
+@class HeaderView;
+
 class WebIntentPickerSheetControllerTest : public CocoaTest {
  public:
 
@@ -27,6 +29,16 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
     [controller_ release];
 
     CocoaTest::TearDown();
+  }
+
+  void CheckHeader(NSView* header_view) {
+    ASSERT_TRUE([header_view isKindOfClass:[NSView class]]);
+    NSArray* views = [header_view subviews];
+
+    ASSERT_EQ(3U, [views count]);
+    ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
+    ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSTextField class]]);
+    ASSERT_TRUE([[views objectAtIndex:2] isKindOfClass:[NSBox class]]);
   }
 
   // Checks the controller's window for the requisite subviews and icons.
@@ -46,7 +58,8 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
     ASSERT_EQ(3U + row_count, [views count]);
 
     const NSUInteger kFirstButton = 1;
-    ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
+    ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSView class]]);
+    CheckHeader([views objectAtIndex:0]);
     for(NSUInteger i = 0; i < row_count; ++i) {
       ASSERT_TRUE([[views objectAtIndex:kFirstButton + i] isKindOfClass:
           [NSButton class]]);

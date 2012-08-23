@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
+#include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -28,6 +29,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 
 using content::OpenURLParams;
@@ -39,7 +41,7 @@ namespace {
 const CGFloat kServiceButtonWidth = 300;
 
 // Spacing in between sections.
-const CGFloat kVerticalSpacing = 10;
+const CGFloat kVerticalSpacing = 18;
 
 // Square size of the close button.
 const CGFloat kCloseButtonSize = 16;
@@ -151,6 +153,103 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (void)setEnabled:(BOOL)enabled {
   for (DimmableImageView* imageView in [self subviews])
     [imageView setEnabled:enabled];
+}
+@end
+
+// NSView for the header of the box.
+@interface HeaderView : NSView {
+ @private
+  // Used to forward button clicks. Weak reference.
+  scoped_nsobject<NSTextField> titleField_;
+  scoped_nsobject<NSTextField> subtitleField_;
+  scoped_nsobject<NSBox> spacer_;
+}
+
+- (id)init;
+@end
+
+@implementation HeaderView
+- (id)init {
+  NSRect contentFrame = NSMakeRect(0, 0, WebIntentPicker::kWindowWidth, 1);
+  if (self = [super initWithFrame:contentFrame]) {
+    NSRect frame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
+                              kTextWidth, 1);
+
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    titleField_.reset([[NSTextField alloc] initWithFrame:frame]);
+    ConfigureTextFieldAsLabel(titleField_);
+    gfx::Font titleFont = rb.GetFont(ConstrainedWindow::kTitleFontStyle);
+    titleFont = titleFont.DeriveFont(0, gfx::Font::BOLD);
+    [titleField_ setFont:titleFont.GetNativeFont()];
+
+    frame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
+                       kTextWidth, 1);
+    subtitleField_.reset([[NSTextField alloc] initWithFrame:frame]);
+    ConfigureTextFieldAsLabel(subtitleField_);
+    gfx::Font textFont = rb.GetFont(ConstrainedWindow::kTextFontStyle);
+    [subtitleField_ setFont:textFont.GetNativeFont()];
+
+    frame = NSMakeRect(0, 0, WebIntentPicker::kWindowWidth, 1.0);
+    spacer_.reset([[NSBox alloc] initWithFrame:frame]);
+    [spacer_ setBoxType:NSBoxSeparator];
+    [spacer_ setBorderColor:[NSColor blackColor]];
+
+    NSArray* subviews = @[titleField_, subtitleField_, spacer_];
+    [self setSubviews:subviews];
+  }
+  return self;
+}
+
+- (void)setTitle:(NSString*)title {
+  NSRect frame = [titleField_ frame];
+  [titleField_ setStringValue:title];
+  frame.size.height +=
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+            titleField_];
+  [titleField_ setFrame: frame];
+}
+
+- (void)setSubtitle:(NSString*)subtitle {
+  if (subtitle && [subtitle length]) {
+    NSRect frame = [subtitleField_ frame];
+
+    [subtitleField_ setHidden:FALSE];
+    [subtitleField_ setStringValue:subtitle];
+     frame.size.height +=
+         [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+               subtitleField_];
+     [subtitleField_ setFrame: frame];
+  } else {
+    [subtitleField_ setHidden:TRUE];
+  }
+}
+
+- (void)performLayout {
+  CGFloat offset = kVerticalSpacing;
+
+  NSRect frame = [spacer_ frame];
+  frame.origin.y = offset;
+  [spacer_ setFrame:frame];
+  offset += NSHeight(frame);
+
+  offset += kVerticalSpacing;
+
+  if (![subtitleField_ isHidden]) {
+    frame = [subtitleField_ frame];
+    frame.origin.y = offset;
+    [subtitleField_ setFrame: frame];
+    offset += NSHeight(frame);
+  }
+
+  frame = [titleField_ frame];
+  frame.origin.y = offset;
+  [titleField_ setFrame:frame];
+  offset += NSHeight(frame);
+
+  // No kContentAreaBorder here, since that is currently handled elsewhere.
+  frame = [self frame];
+  frame.size.height = offset;
+  [self setFrame:frame];
 }
 @end
 
@@ -345,7 +444,6 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 @implementation SuggestionView
 - (id)initWithModel:(WebIntentPickerModel*)model
       forController:(WebIntentPickerSheetController*)controller {
-  const CGFloat kYMargin = 16.0;
   size_t count = model->GetSuggestedExtensionCount();
   if (count == 0)
     return nil;
@@ -357,7 +455,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   suggestionLabel_.reset([[NSTextField alloc] initWithFrame:textFrame]);
   ConfigureTextFieldAsLabel(suggestionLabel_);
 
-  CGFloat offset = kYMargin;
+  CGFloat offset = 0.0;
   for (size_t i = count; i > 0; --i) {
     const WebIntentPickerModel::SuggestedExtension& ext =
         model->GetSuggestedExtensionAt(i - 1);
@@ -375,8 +473,6 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
                       toSubviews:subviews
                       atOffset:offset];
 
-  offset += kYMargin;
-
   NSRect contentFrame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
                                    WebIntentPicker::kWindowWidth, offset);
   if(self =  [super initWithFrame:contentFrame])
@@ -389,6 +485,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (void)updateSuggestionLabelForModel:(WebIntentPickerModel*)model {
   DCHECK(suggestionLabel_.get());
   string16 labelText = model->GetSuggestionsLinkText();
+  if (!model->GetInstalledServiceCount())
+    labelText.clear();
 
   if (labelText.empty()) {
     [suggestionLabel_ setHidden:TRUE];
@@ -657,13 +755,21 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     [self setActionString:nsString];
   }
 
-  NSRect textFrame = [actionTextField_ frame];
-  textFrame.origin.y = offset;
+  scoped_nsobject<HeaderView> header([[HeaderView alloc] init]);
 
-  [actionTextField_ setFrame:textFrame];
-  [subviews addObject:actionTextField_];
+  [header setTitle:[actionTextField_ stringValue]];
+  string16 labelText;
+  if (model_ && model_->GetInstalledServiceCount() == 0)
+    labelText = model_->GetSuggestionsLinkText();
+  [header setSubtitle:base::SysUTF16ToNSString(labelText)];
+  [header performLayout];
 
-  return NSHeight([actionTextField_ frame]);
+  NSRect frame = [header frame];
+  frame.origin.y = offset;
+  [header setFrame:frame];
+  [subviews addObject:header];
+
+  return NSHeight(frame);
 }
 
 - (CGFloat)addInlineHtmlToSubviews:(NSMutableArray*)subviews
@@ -769,7 +875,10 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   scoped_nsobject<NSTextField> title(
       [[NSTextField alloc] initWithFrame:titleFrame]);
   ConfigureTextFieldAsLabel(title);
-  [title setFont:[NSFont systemFontOfSize:kHeaderFontSize]];
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::Font titleFont = rb.GetFont(ConstrainedWindow::kTitleFontStyle);
+  titleFont = titleFont.DeriveFont(0, gfx::Font::BOLD);
+  [title setFont:titleFont.GetNativeFont()];
   [title setStringValue:
       l10n_util::GetNSStringWithFixup(IDS_INTENT_PICKER_NO_SERVICES_TITLE)];
   titleFrame.size.height +=
@@ -836,8 +945,6 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
 
-    offset += kVerticalSpacing;
-
     if (model) {
       [intentButtons_ removeAllObjects];
 
@@ -851,8 +958,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
                                 atOffset:offset];
       }
 
-      // Leave room for defaults section. TODO(groby): Add defaults.
-      offset += kVerticalSpacing * 3;
+      if (model->GetInstalledServiceCount())
+        offset += kVerticalSpacing;
 
       suggestionView_.reset(
           [[SuggestionView alloc] initWithModel:model forController:self]);
@@ -865,7 +972,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   [self addCloseButtonToSubviews:subviews];
 
   // Add the bottom padding.
-  offset += kVerticalSpacing;
+  offset += WebIntentPicker::kContentAreaBorder;
 
   // Replace the window's content.
   [flipView_ setSubviews:subviews];
@@ -881,8 +988,11 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
                            kTextWidth, 1);
 
     actionTextField_.reset([[NSTextField alloc] initWithFrame:textFrame]);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     ConfigureTextFieldAsLabel(actionTextField_);
-    [actionTextField_ setFont:[NSFont systemFontOfSize:kHeaderFontSize]];
+    gfx::Font titleFont = rb.GetFont(ConstrainedWindow::kTitleFontStyle);
+    titleFont = titleFont.DeriveFont(0, gfx::Font::BOLD);
+    [actionTextField_ setFont:titleFont.GetNativeFont()];
   } else {
     textFrame = [actionTextField_ frame];
   }
