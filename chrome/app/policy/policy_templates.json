@@ -3166,7 +3166,7 @@
       If disabled or not specified, taking screenshots is allowed.'''
     },
     {
-      'name': 'DeviceTimezone',
+      'name': 'SystemTimezone',
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:22-'],
@@ -3175,11 +3175,11 @@
       'example_value': 'America/Los_Angeles',
       'id': 158,
       'caption': '''Timezone''',
-      'desc': '''Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone.
+      'desc': '''Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead.
 
-      If this policy is not used or set to an invalid value, users can change the timezone and the change is persistent. Thus a change affects the login-screen and other users.
+      If this policy is not used, the currently active timezone will remain in use however users can change the timezone and the change is persistent. Thus a change by one user affects the login-screen and all other users.
 
-      If no user ever set a timezone, a default value (currently "US/Pacific") is used.
+      New devices start out with the timezone set to "US/Pacific".
 
       The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "http://en.wikipedia.org/wiki/List_of_tz_database_time"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".''',
     },

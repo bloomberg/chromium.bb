@@ -725,7 +725,7 @@ void DevicePolicyCache::DecodeGenericPolicies(
 
   if (policy.has_system_timezone()) {
     if (policy.system_timezone().has_timezone()) {
-      policies->Set(key::kDeviceTimezone,
+      policies->Set(key::kSystemTimezone,
                     POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE,
                     Value::CreateStringValue(

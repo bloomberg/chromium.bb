@@ -298,7 +298,7 @@ class PolicyPrefsTestCases(object):
     'DeviceUpdateScatterFactor': (None, '7200', [], ['chromeos']),
     'DeviceUpdateAllowedConnectionTypes': (None, [], [], ['chromeos']),
     'ReportDeviceLocation': (None, False, [], ['chromeos']),
-    'DeviceTimezone': (None, 'Europe/Brussels', [], ['chromeos']),
+    'SystemTimezone': (None, 'Europe/Brussels', [], ['chromeos']),
 
     # Chrome Frame policies:
     'ChromeFrameRendererSettings': (None, 0, [], []),

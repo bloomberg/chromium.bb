@@ -207,10 +207,16 @@ message StartUpUrlsProto {
 }
 
 message SystemTimezoneProto {
-  // Specifies the timezone which is applied if this value is provided. Valid
-  // values are listed in "timezone_settings.cc". Additionally, timezones from
-  // the "IANA Time Zone Database" (e.g. listed on wikipedia) that are
-  // equivalent to one of the timezones in "timezone_settings.cc" are valid.
+  // Specifies an owner-determined timezone that applies to the login screen and
+  // all users. Valid values are listed in "timezone_settings.cc". Additionally,
+  // timezones from the "IANA Time Zone Database" (e.g. listed on wikipedia)
+  // that are equivalent to one of the timezones in "timezone_settings.cc" are
+  // valid. In case of an invalid value (e.g. the empty string), the setting is
+  // still activated with a fallback timezone (currently "GMT").
+  // Only if no value is provided, the timezone device setting is inactive. In
+  // that case, the currently active timezone will remain in use however users
+  // can change the timezone and the change is persistent. Thus a change by one
+  // user affects the login-screen and all other users.
   optional string timezone = 1;
 }
 
