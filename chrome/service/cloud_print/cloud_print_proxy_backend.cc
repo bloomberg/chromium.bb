@@ -392,6 +392,7 @@ void CloudPrintProxyBackend::Core::InitNotifications(
   notifier_options.request_context_getter =
       g_service_process->GetServiceURLRequestContextGetter();
   notifier_options.auth_mechanism = "X-OAUTH2";
+  notifier_options.try_ssltcp_first = true;
   push_client_ = notifier::PushClient::CreateDefault(notifier_options);
   push_client_->AddObserver(this);
   notifier::Subscription subscription;
