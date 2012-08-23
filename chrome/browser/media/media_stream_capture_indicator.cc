@@ -232,6 +232,7 @@ void MediaStreamCaptureIndicator::CreateStatusTray() {
   status_icon_ = status_tray->CreateStatusIcon();
 
   EnsureStatusTrayIconResources();
+  EnsureImageLoadingTracker();
 }
 
 void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
@@ -273,7 +274,6 @@ void MediaStreamCaptureIndicator::ShowBalloon(
     pending_messages_[request_index_++] =
         l10n_util::GetStringFUTF16(message_id,
                                    UTF8ToUTF16(extension->name()));
-    EnsureImageLoadingTracker();
     tracker_->LoadImage(
         extension,
         extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
