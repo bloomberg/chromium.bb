@@ -508,7 +508,7 @@ void CrxInstaller::CompleteInstall() {
       install_source_,
       extension_->creation_flags() | Extension::REQUIRE_KEY,
       &error);
-  CHECK(error.empty()) << error;
+  LOG_ASSERT(error.empty()) << error;
 
   ReportSuccessFromFileThread();
 }
