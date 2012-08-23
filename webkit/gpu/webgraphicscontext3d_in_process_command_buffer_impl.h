@@ -490,6 +490,10 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
   virtual void consumeTextureCHROMIUM(WGC3Denum target,
                                       const WGC3Dbyte* mailbox);
 
+  virtual void insertEventMarkerEXT(const WGC3Dchar* marker);
+  virtual void pushGroupMarkerEXT(const WGC3Dchar* marker);
+  virtual void popGroupMarkerEXT();
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

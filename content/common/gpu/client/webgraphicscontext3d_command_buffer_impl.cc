@@ -1533,6 +1533,18 @@ DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
 DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
                  WGC3Denum, const WGC3Dbyte*)
 
+void WebGraphicsContext3DCommandBufferImpl::insertEventMarkerEXT(
+    const WGC3Dchar* marker) {
+  gl_->InsertEventMarkerEXT(0, marker);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::pushGroupMarkerEXT(
+    const WGC3Dchar* marker) {
+  gl_->PushGroupMarkerEXT(0, marker);
+}
+
+DELEGATE_TO_GL(popGroupMarkerEXT, PopGroupMarkerEXT);
+
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();
 }
