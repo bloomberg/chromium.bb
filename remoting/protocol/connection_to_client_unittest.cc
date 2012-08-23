@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/protocol/connection_to_client.h"
+
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "remoting/base/base_mock_objects.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"
-#include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

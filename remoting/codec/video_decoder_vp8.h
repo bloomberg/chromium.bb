@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_DECODER_VP8_H_
-#define REMOTING_BASE_DECODER_VP8_H_
+#ifndef REMOTING_CODEC_VIDEO_DECODER_VP8_H_
+#define REMOTING_CODEC_VIDEO_DECODER_VP8_H_
 
 #include "base/compiler_specific.h"
-#include "remoting/base/decoder.h"
+#include "remoting/codec/video_decoder.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;
@@ -57,4 +57,4 @@ class DecoderVp8 : public Decoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_DECODER_VP8_H_
+#endif  // REMOTING_CODEC_VIDEO_DECODER_VP8_H_

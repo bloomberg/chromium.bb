@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "remoting/base/base_mock_objects.h"
+#include "remoting/base/capture_data.h"
+#include "remoting/codec/video_encoder.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -67,6 +68,24 @@ static const int kHeight = 480;
 static const media::VideoFrame::Format kFormat = media::VideoFrame::RGB32;
 static const VideoPacketFormat::Encoding kEncoding =
     VideoPacketFormat::ENCODING_VERBATIM;
+
+class MockEncoder : public Encoder {
+ public:
+  MockEncoder();
+  virtual ~MockEncoder();
+
+  MOCK_METHOD3(Encode, void(
+      scoped_refptr<CaptureData> capture_data,
+      bool key_frame,
+      const DataAvailableCallback& data_available_callback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEncoder);
+};
+
+MockEncoder::MockEncoder() {}
+
+MockEncoder::~MockEncoder() {}
 
 class ScreenRecorderTest : public testing::Test {
  public:

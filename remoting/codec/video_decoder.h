@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_DECODER_H_
-#define REMOTING_BASE_DECODER_H_
+#ifndef REMOTING_CODEC_VIDEO_DECODER_H_
+#define REMOTING_CODEC_VIDEO_DECODER_H_
 
 #include "base/basictypes.h"
 #include "remoting/proto/video.pb.h"
@@ -72,4 +72,4 @@ class Decoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_DECODER_H_
+#endif  // REMOTING_CODEC_VIDEO_DECODER_H_

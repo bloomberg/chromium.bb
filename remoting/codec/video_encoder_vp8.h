@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_ENCODER_VP8_H_
-#define REMOTING_BASE_ENCODER_VP8_H_
+#ifndef REMOTING_CODEC_VIDEO_ENCODER_VP8_H_
+#define REMOTING_CODEC_VIDEO_ENCODER_VP8_H_
 
 #include "base/gtest_prod_util.h"
-#include "remoting/base/encoder.h"
+#include "remoting/codec/video_encoder.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
@@ -61,4 +61,4 @@ class EncoderVp8 : public Encoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_ENCODER_VP8_H_
+#endif  // REMOTING_CODEC_VIDEO_ENCODER_VP8_H_

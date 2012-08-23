@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/base/decoder.h"
+#include "remoting/codec/video_decoder.h"
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/frame_producer.h"
 

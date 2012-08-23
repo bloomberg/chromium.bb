@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
-#include "remoting/base/encoder.h"
+#include "remoting/codec/video_encoder.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_key_pair.h"

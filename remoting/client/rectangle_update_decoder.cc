@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "ppapi/cpp/image_data.h"
-#include "remoting/base/decoder.h"
-#include "remoting/base/decoder_row_based.h"
-#include "remoting/base/decoder_vp8.h"
 #include "remoting/base/util.h"
+#include "remoting/codec/video_decoder.h"
+#include "remoting/codec/video_decoder_row_based.h"
+#include "remoting/codec/video_decoder_vp8.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
 

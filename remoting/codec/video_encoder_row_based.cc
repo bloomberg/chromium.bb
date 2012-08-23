@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/encoder_row_based.h"
+#include "remoting/codec/video_encoder_row_based.h"
 
 #include "base/logging.h"
 #include "remoting/base/capture_data.h"

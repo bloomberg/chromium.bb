@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/codec/video_decoder_vp8.h"
+
 #include "media/base/video_frame.h"
-#include "remoting/base/codec_test.h"
-#include "remoting/base/decoder_vp8.h"
-#include "remoting/base/encoder_vp8.h"
+#include "remoting/codec/codec_test.h"
+#include "remoting/codec/video_encoder_vp8.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

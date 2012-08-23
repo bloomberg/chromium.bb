@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_ENCODER_ROW_BASED_H_
-#define REMOTING_BASE_ENCODER_ROW_BASED_H_
+#ifndef REMOTING_CODEC_VIDEO_ENCODER_ROW_BASED_H_
+#define REMOTING_CODEC_VIDEO_ENCODER_ROW_BASED_H_
 
-#include "remoting/base/encoder.h"
+#include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/skia/include/core/SkRect.h"
 
@@ -68,4 +68,4 @@ class EncoderRowBased : public Encoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_ENCODER_ROW_BASED_H_
+#endif  // REMOTING_CODEC_VIDEO_ENCODER_ROW_BASED_H_

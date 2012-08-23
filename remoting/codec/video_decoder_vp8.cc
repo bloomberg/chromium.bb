@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/decoder_vp8.h"
+#include "remoting/codec/video_decoder_vp8.h"
 
 #include <math.h>
 

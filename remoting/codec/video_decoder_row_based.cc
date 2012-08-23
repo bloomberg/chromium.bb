@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/decoder_row_based.h"
+#include "remoting/codec/video_decoder_row_based.h"
 
 #include "base/logging.h"
 #include "remoting/base/decompressor.h"
