@@ -231,7 +231,7 @@ void NetworkChangeNotifierChromeos::UpdateInitialState(
 net::NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierChromeos::GetNetworkConnectionType(
     const chromeos::Network* network) {
-  if (!network)
+  if (!network || !IsOnline(network->connection_state()))
     return net::NetworkChangeNotifier::CONNECTION_NONE;
 
   switch (network->type()) {
