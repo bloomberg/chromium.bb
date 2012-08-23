@@ -53,7 +53,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     parsed_url = urlparse.urlparse(self.path)
     request = Request(parsed_url.path)
     response = Response()
-    Handler(request, response, local_path=_GetLocalPath()).get()
+    Handler(request, response, local_path=RequestHandler.local_path).get()
     content = response.out.getvalue()
 
     self.send_response(response.status)
@@ -69,15 +69,28 @@ if __name__ == '__main__':
       usage='usage: %prog [option]...')
   parser.add_option('-p', '--port', default="8000",
       help='port to run the server on')
+  parser.add_option('-d', '--directory', default=_GetLocalPath(),
+      help='extensions directory to serve from - '
+           'should be chrome/common/extensions within a Chromium checkout')
 
   (opts, argv) = parser.parse_args()
 
+  if (not os.path.isdir(opts.directory) or
+      not os.path.isdir(os.path.join(opts.directory, 'docs')) or
+      not os.path.isdir(os.path.join(opts.directory, 'api'))):
+    print('Specified directory does not exist or does not contain extension '
+          'docs.')
+    exit()
+
   print('Starting previewserver on port %s' % opts.port)
+  print('Reading from %s' % opts.directory)
+  print('')
   print('The extension documentation can be found at:')
   print('')
   print('  http://localhost:%s' % opts.port)
   print('')
 
+  RequestHandler.local_path = opts.directory
   server = HTTPServer(('', int(opts.port)), RequestHandler)
   try:
     server.serve_forever()
