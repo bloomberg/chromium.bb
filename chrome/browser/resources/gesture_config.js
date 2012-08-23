@@ -124,6 +124,12 @@ var gesture_config = (function() {
       label: 'Rail-Start Proportion',
       units: '%',
       default: 2
+    },
+    {
+      key: 'touchscreen_fling_acceleration_adjustment',
+      label: 'Touchscreen Fling Acceleration Adjustment',
+      units: 'pixels/sec.',
+      default: 1 / 900
     }
   ];
 

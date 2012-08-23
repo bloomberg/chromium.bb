@@ -44,6 +44,8 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_rail_break_proportion(15);
   ui::GestureConfiguration::set_rail_start_proportion(2);
   ui::GestureConfiguration::set_default_radius(0);
+  ui::GestureConfiguration::set_touchscreen_fling_acceleration_adjustment(
+      1.f / 900.f);
   helper_.reset(new AuraTestHelper(&message_loop_));
   helper_->SetUp();
 }

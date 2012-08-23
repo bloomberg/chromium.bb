@@ -744,6 +744,7 @@ extern const char kPointsBufferedForVelocity[];
 extern const char kRailBreakProportion[];
 extern const char kRailStartProportion[];
 extern const char kSemiLongPressTimeInSeconds[];
+extern const char kTouchScreenFlingAccelerationAdjustment[];
 #endif
 
 extern const char kInManagedMode[];

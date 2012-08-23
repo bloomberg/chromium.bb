@@ -278,7 +278,8 @@ float CalibrateFlingVelocity(float velocity) {
   // touchpad scroll-events. This curve needs to be adjusted to work correctly
   // with both touchpad and touchscreen. Until then, scale quadratically.
   // http://crbug.com/120154
-  const float velocity_scaling  = 1.f / 900.f;
+  const float velocity_scaling  =
+      GestureConfiguration::touchscreen_fling_acceleration_adjustment();
   return velocity_scaling * velocity * fabsf(velocity);
 }
 

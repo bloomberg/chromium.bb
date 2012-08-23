@@ -64,6 +64,7 @@ const char* kPrefsToObserve[] = {
   prefs::kRailBreakProportion,
   prefs::kRailStartProportion,
   prefs::kSemiLongPressTimeInSeconds,
+  prefs::kTouchScreenFlingAccelerationAdjustment,
 };
 
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
@@ -142,6 +143,9 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_rail_start_proportion(
       prefs_->GetDouble(
           prefs::kRailStartProportion));
+  GestureConfiguration::set_touchscreen_fling_acceleration_adjustment(
+      prefs_->GetDouble(
+          prefs::kTouchScreenFlingAccelerationAdjustment));
 }
 
 }  // namespace
@@ -235,6 +239,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(
       prefs::kRailStartProportion,
       GestureConfiguration::rail_start_proportion(),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kTouchScreenFlingAccelerationAdjustment,
+      GestureConfiguration::touchscreen_fling_acceleration_adjustment(),
       PrefService::UNSYNCABLE_PREF);
 }
 

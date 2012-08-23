@@ -133,6 +133,12 @@ class UI_EXPORT GestureConfiguration {
   static void set_rail_start_proportion(double val) {
     rail_start_proportion_ = val;
   }
+  static double touchscreen_fling_acceleration_adjustment() {
+    return touchscreen_fling_acceleration_adjustment_;
+  }
+  static void set_touchscreen_fling_acceleration_adjustment(double val) {
+    touchscreen_fling_acceleration_adjustment_ = val;
+  }
 
  private:
   // These are listed in alphabetical order ignoring underscores, to
@@ -169,6 +175,7 @@ class UI_EXPORT GestureConfiguration {
   static int points_buffered_for_velocity_;
   static double rail_break_proportion_;
   static double rail_start_proportion_;
+  static double touchscreen_fling_acceleration_adjustment_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };
