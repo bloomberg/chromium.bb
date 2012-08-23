@@ -39,7 +39,6 @@
       'browser',
       'chromoting.it2me_basic',
       'codesign',
-      'content',
       'cookies',
       'crash_reporter',
       'downloads',
@@ -72,7 +71,6 @@
       'shortcuts',
       'special_tabs',
       'sync.SyncTest',
-      'test_basic',
       'test_pyauto',
       'themes',
 
