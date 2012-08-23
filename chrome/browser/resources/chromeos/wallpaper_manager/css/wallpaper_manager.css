@@ -1,0 +1,144 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html {
+  height: 100%;
+}
+
+body {
+  background-color: #fefefe;
+  font-size: 80%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#categories-list {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  outline: none;
+}
+
+#categories-list > li {
+  -webkit-border-start: 6px solid transparent;
+  -webkit-box-align: center;
+  -webkit-padding-start: 18px;
+  -webkit-user-select: none;
+  color: #777;
+  display: -webkit-box;
+  height: 22px;
+  margin: 10px 0;
+}
+
+#categories-list > li:hover {
+  color: rgb(70, 78, 90);
+  cursor: pointer;
+}
+
+#categories-list > li[selected] {
+  -webkit-border-start-color: rgb(78, 87, 100);
+  color: rgb(70, 78, 90);
+  cursor: default;
+}
+
+.dialog-container {
+  display: -webkit-box;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dialog-sidebar {
+  display: -webkit-box;
+  overflow: hidden;
+  position: relative;
+  width: 180px;
+}
+
+/* A vertical splitter between the categories list and the thumbnails grid.
+ */
+div.sidebar-splitter {
+  cursor: col-resize;
+  margin-left: -3px;
+  margin-right: -3px;
+  position: relative;
+  width: 7px;
+  z-index: 2;
+}
+
+.dialog-main {
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  padding: 4px 2px;
+}
+
+#category-container,
+#custom-container {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+#category-container[hidden],
+#custom-container[hidden] {
+  display: none;
+}
+
+#custom-container {
+  margin: 10px;
+}
+
+.image-picker {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  margin-top: 5px;
+  outline: none;
+  overflow-y: auto;
+}
+
+.image-picker > * {
+  display: inline-block;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.image-picker [role=listitem] {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  height: 80px;
+  margin: 10px;
+  padding: 2px;
+  width: 128px;
+}
+
+.image-picker [selected][lead] {
+  border: 2px solid rgb(0, 102, 204);
+  padding: 1px;
+}
+
+.wallpaper-attr {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+.bottom-bar {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+  height: 30px;
+  padding: 10px 15px;
+}
+
+.bottom-bar > .spacer {
+  -webkit-box-flex: 1;
+}
+
+/* Custom wallpaper thumbnail container. */
+#preview {
+  height: 80px;
+  width: 128px;
+}

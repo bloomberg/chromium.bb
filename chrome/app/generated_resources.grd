@@ -11069,7 +11069,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_WALLPAPER_MANAGER_PREVIEW_LABEL" desc="Custom wallpaper preview label.">
         Preview:
       </message>
- 
+      <message name="IDS_WALLPAPER_MANAGER_DOWNLOADING_LABEL" desc="Downloading in progress label.">
+        Downloading
+      </message>
+
       <!-- File Browser -->
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
