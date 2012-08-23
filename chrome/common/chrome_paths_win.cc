@@ -10,11 +10,13 @@
 #include <shlobj.h>
 #include <shobjidl.h>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/win/metro.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/common/content_switches.h"
 
@@ -29,6 +31,16 @@ bool GetUserDataDirectoryForEnvironment(bool current, FilePath* result) {
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   *result = result->Append(dist->GetInstallSubDir());
+
+  // TODO(rsimha): Continue to return the "Metro" subdirectory to allow testing
+  // of sync credential caching in the presence of strange singleton mode.
+  // Delete this block before shipping. See http://crbug.com/144280.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if ((command_line->HasSwitch(switches::kEnableSyncCredentialCaching)) &&
+      (base::win::IsMetroProcess() ? current : !current)) {
+    *result = result->Append(kMetroChromeUserDataSubDir);
+  }
+
   *result = result->Append(chrome::kUserDataDirname);
   return true;
 }

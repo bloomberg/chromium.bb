@@ -54,6 +54,19 @@ bool CredentialCacheServiceFactory::IsDefaultProfile(Profile* profile) {
          ProfileManager::GetDefaultProfileDir(default_user_data_dir);
 }
 
+// static
+// TODO(rsimha): This is a test-only hook. Remove before shipping.
+// See http://crbug.com/144280.
+bool CredentialCacheServiceFactory::IsDefaultAlternateProfileForTest(
+    Profile* profile) {
+  DCHECK(profile);
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  FilePath alternate_user_data_dir;
+  chrome::GetAlternateUserDataDirectory(&alternate_user_data_dir);
+  return profile->GetPath() ==
+         ProfileManager::GetDefaultProfileDir(alternate_user_data_dir);
+}
+
 bool CredentialCacheServiceFactory::ServiceIsCreatedWithProfile() {
   return true;
 }
@@ -62,9 +75,14 @@ ProfileKeyedService* CredentialCacheServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   // Only instantiate a CredentialCacheService object if we are running in the
   // default profile on Windows 8, and if credential caching is enabled.
+  // TODO(rsimha): To allow for testing, start CredentialCacheService if we are
+  // either in the default profile or the default alternate profile, so that
+  // an instance of desktop chrome using the default metro directory can be
+  // used for testing. See http://crbug.com/144280.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      IsDefaultProfile(profile) &&
+      (IsDefaultProfile(profile) ||
+       IsDefaultAlternateProfileForTest(profile)) &&
       command_line->HasSwitch(switches::kEnableSyncCredentialCaching)) {
     return new syncer::CredentialCacheService(profile);
   }

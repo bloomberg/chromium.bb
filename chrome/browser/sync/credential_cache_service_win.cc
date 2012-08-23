@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
@@ -20,12 +21,14 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/sync/credential_cache_service_factory_win.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
@@ -606,6 +609,18 @@ FilePath CredentialCacheService::GetCredentialPathInAlternateProfile() const {
   DCHECK(profile_);
   FilePath alternate_user_data_dir;
   chrome::GetAlternateUserDataDirectory(&alternate_user_data_dir);
+
+  // TODO(rsimha): This code path is to allow for testing in the presence of
+  // strange singleton mode. Delete this block before shipping.
+  // See http://crbug.com/144280.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSyncCredentialCaching) &&
+      !CredentialCacheServiceFactory::IsDefaultProfile(profile_)) {
+    DCHECK(CredentialCacheServiceFactory::IsDefaultAlternateProfileForTest(
+               profile_));
+    chrome::GetDefaultUserDataDirectory(&alternate_user_data_dir);
+  }
+
   FilePath alternate_default_profile_dir =
       ProfileManager::GetDefaultProfileDir(alternate_user_data_dir);
   return alternate_default_profile_dir.Append(chrome::kSyncCredentialsFilename);
