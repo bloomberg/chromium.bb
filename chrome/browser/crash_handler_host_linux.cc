@@ -128,7 +128,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   //
   // The message sender is in chrome/app/breakpad_linux.cc.
 
+#if !defined(ADDRESS_SANITIZER)
   const size_t kIovSize = 8;
+#else
+  const size_t kIovSize = 9;
+#endif
+
   struct msghdr msg = {0};
   struct iovec iov[kIovSize];
 
@@ -138,6 +143,9 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   char* guid = new char[kGuidSize + 1];
   char* crash_url = new char[kMaxActiveURLSize + 1];
   char* distro = new char[kDistroSize + 1];
+#if defined(ADDRESS_SANITIZER)
+  asan_report_str_ = new char[kMaxAsanReportSize + 1];
+#endif
 
   char* tid_buf_addr = NULL;
   int tid_fd = -1;
@@ -151,8 +159,10 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       kDistroSize + 1 +
       sizeof(tid_buf_addr) + sizeof(tid_fd) +
       sizeof(uptime) +
+#if defined(ADDRESS_SANITIZER)
+      kMaxAsanReportSize + 1 +
+#endif
       sizeof(oom_size);
-
   iov[0].iov_base = crash_context;
   iov[0].iov_len = kCrashContextSize;
   iov[1].iov_base = guid;
@@ -169,6 +179,10 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   iov[6].iov_len = sizeof(uptime);
   iov[7].iov_base = &oom_size;
   iov[7].iov_len = sizeof(oom_size);
+#if defined(ADDRESS_SANITIZER)
+  iov[8].iov_base = asan_report_str_;
+  iov[8].iov_len = kMaxAsanReportSize + 1;
+#endif
   msg.msg_iov = iov;
   msg.msg_iovlen = kIovSize;
   msg.msg_control = control;
@@ -330,6 +344,11 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 #else
   info->upload = (getenv(env_vars::kHeadless) == NULL);
 #endif
+
+#if defined(ADDRESS_SANITIZER)
+  info->asan_report_str = asan_report_str_;
+  info->asan_report_length = strlen(asan_report_str_);
+#endif
   info->process_start_time = uptime;
   info->oom_size = oom_size;
 
@@ -359,11 +378,25 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                          dumps_path.value().c_str(),
                          process_type_.c_str(),
                          rand);
+
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
                                       crashing_pid, crash_context,
                                       kCrashContextSize)) {
     LOG(ERROR) << "Failed to write crash dump for pid " << crashing_pid;
   }
+#if defined(ADDRESS_SANITIZER)
+  // Create a temporary file holding the AddressSanitizer report.
+  const std::string log_filename =
+      base::StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".log",
+                         dumps_path.value().c_str(),
+                         process_type_.c_str(),
+                         rand);
+  FILE* logfile = fopen(log_filename.c_str(), "w");
+  CHECK(logfile);
+  fprintf(logfile, "%s", asan_report_str_);
+  fclose(logfile);
+#endif
+
   delete[] crash_context;
 
   // Freed in CrashDumpTask();
@@ -371,6 +404,13 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   minidump_filename.copy(minidump_filename_str, minidump_filename.length());
   minidump_filename_str[minidump_filename.length()] = '\0';
   info->filename = minidump_filename_str;
+#if defined(ADDRESS_SANITIZER)
+  char* minidump_log_filename_str = new char[minidump_filename.length() + 1];
+  minidump_filename.copy(minidump_log_filename_str, minidump_filename.length());
+  memcpy(minidump_log_filename_str + minidump_filename.length() - 3, "log", 3);
+  minidump_log_filename_str[minidump_filename.length()] = '\0';
+  info->log_filename = minidump_log_filename_str;
+#endif
   info->pid = crashing_pid;
 
   BrowserThread::PostTask(
