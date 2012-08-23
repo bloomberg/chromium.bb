@@ -28,6 +28,7 @@ class WebViewAnimatingOverlay;
 
 namespace extensions {
 class Dispatcher;
+class Extension;
 }
 
 namespace WebKit {
@@ -111,6 +112,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool allowWebComponents(const WebKit::WebDocument&, bool) OVERRIDE;
   virtual bool allowHTMLNotifications(
       const WebKit::WebDocument& document) OVERRIDE;
+  virtual bool allowMutationEvents(const WebKit::WebDocument&,
+                                   bool default_value) OVERRIDE;
   virtual void didNotAllowPlugins(WebKit::WebFrame* frame) OVERRIDE;
   virtual void didNotAllowScript(WebKit::WebFrame* frame) OVERRIDE;
   virtual bool allowDisplayingInsecureContent(
@@ -191,10 +194,10 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
 
-  // Checks if |origin| correponds to an installed extension that has been
-  // granted the |permission|.
-  bool HasExtensionPermission(const WebKit::WebSecurityOrigin& origin,
-                              extensions::APIPermission::ID permission) const;
+  // If |origin| corresponds to an installed extension, returns that extension.
+  // Otherwise returns NULL.
+  const extensions::Extension* GetExtension(
+      const WebKit::WebSecurityOrigin& origin) const;
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;

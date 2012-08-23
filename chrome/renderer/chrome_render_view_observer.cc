@@ -498,21 +498,16 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
   return allowed;
 }
 
-bool ChromeRenderViewObserver::HasExtensionPermission(
-    const WebSecurityOrigin& origin, APIPermission::ID permission) const {
+const extensions::Extension* ChromeRenderViewObserver::GetExtension(
+    const WebSecurityOrigin& origin) const {
   if (!EqualsASCII(origin.protocol(), chrome::kExtensionScheme))
-    return false;
+    return NULL;
 
   const std::string extension_id = origin.host().utf8().data();
   if (!extension_dispatcher_->IsExtensionActive(extension_id))
-    return false;
+    return NULL;
 
-  const extensions::Extension* extension =
-      extension_dispatcher_->extensions()->GetByID(extension_id);
-  if (!extension)
-    return false;
-
-  return extension->HasAPIPermission(permission);
+  return extension_dispatcher_->extensions()->GetByID(extension_id);
 }
 
 bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
@@ -524,12 +519,14 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
   if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
     return true;
 
-  // The <browser> tag is implemented via Shadow DOM.
-  if (HasExtensionPermission(origin, APIPermission::kBrowserTag))
-    return true;
+  if (const extensions::Extension* extension = GetExtension(origin)) {
+    // The <browser> tag is implemented via Shadow DOM.
+    if (extension->HasAPIPermission(APIPermission::kBrowserTag))
+      return true;
 
-  if (HasExtensionPermission(origin, APIPermission::kExperimental))
-    return true;
+    if (extension->HasAPIPermission(APIPermission::kExperimental))
+      return true;
+  }
 
   return false;
 }
@@ -537,7 +534,17 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
 bool ChromeRenderViewObserver::allowHTMLNotifications(
     const WebDocument& document) {
   WebSecurityOrigin origin = document.securityOrigin();
-  return HasExtensionPermission(origin, APIPermission::kNotification);
+  const extensions::Extension* extension = GetExtension(origin);
+  return extension && extension->HasAPIPermission(APIPermission::kNotification);
+}
+
+bool ChromeRenderViewObserver::allowMutationEvents(const WebDocument& document,
+                                                   bool default_value) {
+  WebSecurityOrigin origin = document.securityOrigin();
+  const extensions::Extension* extension = GetExtension(origin);
+  if (extension && extension->is_platform_app())
+    return false;
+  return default_value;
 }
 
 static void SendInsecureContentSignal(int signal) {

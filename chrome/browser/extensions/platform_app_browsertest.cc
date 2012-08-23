@@ -349,4 +349,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   ASSERT_EQ(2, browser()->tab_count());
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/mutation_events")) << message_;
+}
+
 }  // namespace extensions

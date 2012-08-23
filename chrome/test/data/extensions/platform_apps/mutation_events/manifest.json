@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: MutationEvents Disabled",
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": [
+    "app.window"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
