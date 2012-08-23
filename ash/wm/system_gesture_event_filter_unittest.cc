@@ -194,6 +194,60 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   EXPECT_FALSE(consumed);
 }
 
+void MoveToDeviceControlBezelStartPosition(
+    aura::RootWindow* root_window,
+    DelegatePercentTracker* delegate,
+    double expected_value,
+    int xpos,
+    int ypos,
+    int ypos_half,
+    int touch_id) {
+  // Get a target for kTouchId
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
+                        gfx::Point(-10, ypos + ypos_half),
+                        touch_id,
+                        base::Time::NowFromSystemTime() - base::Time());
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+
+  // There is a noise filter which will require several calls before it
+  // allows the touch event through.
+  int initial_count = delegate->handle_percent_count();
+
+  // Position the initial touch down slightly underneath the position of
+  // interest to avoid a conflict with the noise filter.
+  ui::GestureEvent* event1 = CreateGesture(
+      ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos + ypos_half - 10,
+      0, 0, touch_id);
+  bool consumed = root_window->DispatchGestureEvent(event1);
+
+  EXPECT_TRUE(consumed);
+  EXPECT_EQ(initial_count, delegate->handle_percent_count());
+
+  // No move at the beginning will produce no events.
+  ui::GestureEvent* event2 = CreateGesture(
+      ui::ET_GESTURE_SCROLL_UPDATE,
+      xpos, ypos + ypos_half - 10, 0, 0, touch_id);
+  consumed = root_window->DispatchGestureEvent(event2);
+
+  EXPECT_TRUE(consumed);
+  EXPECT_EQ(initial_count, delegate->handle_percent_count());
+
+  // A move to a new Y location will produce an event.
+  ui::GestureEvent* event3 = CreateGesture(
+      ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + ypos_half,
+      0, 10, touch_id);
+
+  int count = initial_count;
+  int loop_counter = 0;
+  while (count == initial_count && loop_counter++ < 100) {
+    EXPECT_TRUE(root_window->DispatchGestureEvent(event3));
+    count = delegate->handle_percent_count();
+  }
+  EXPECT_TRUE(loop_counter && loop_counter < 100);
+  EXPECT_EQ(initial_count + 1, count);
+  EXPECT_EQ(expected_value, delegate->handle_percent());
+}
+
 // Ensure that the device control operation gets properly handled.
 TEST_F(SystemGestureEventFilterTest, DeviceControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
@@ -220,87 +274,81 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
     DelegatePercentTracker* delegate =
         static_cast<DelegatePercentTracker*>(delegateBrightness);
     int xpos = screen.x() - 10;
+    int invalid_xpos_direction = 1;
     int ypos = screen.y();
+    // The expected (middle) value. Note that brightness (first pass) is
+    // slightly higher then 50% since its slider range is 4%..100%.
+    double value = 52.0;
     if (pass) {
       // On the second pass the volume will be tested.
       delegate = static_cast<DelegatePercentTracker*>(delegateVolume);
-      xpos = screen.right() + 40;  // Make sure it is out of the screen.
+      xpos = screen.right() + 10;  // Make sure it is out of the screen.
+      invalid_xpos_direction = -1;
+      value = 50.0;
     }
-    // Get a target for kTouchId
-    ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
-                              gfx::Point(-10, ypos + ypos_half),
-                              kTouchId,
-                              base::Time::NowFromSystemTime() - base::Time());
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+    MoveToDeviceControlBezelStartPosition(
+        root_window, delegate, value, xpos, ypos, ypos_half, kTouchId);
 
-    ui::GestureEvent* event1 = CreateGesture(
-        ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos,
-        0, 0, kTouchId);
-    bool consumed = root_window->DispatchGestureEvent(event1);
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(0, delegate->handle_percent_count());
-
-    // No move at the beginning will produce no events.
-    ui::GestureEvent* event2 = CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE,
-        xpos, ypos, 0, 0, kTouchId);
-    consumed = root_window->DispatchGestureEvent(event2);
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(0, delegate->handle_percent_count());
-
-    // A move to a new Y location will produce an event.
-    ui::GestureEvent* event3 = CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + ypos_half,
-        0, ypos_half, kTouchId);
-    consumed = root_window->DispatchGestureEvent(event3);
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(1, delegate->handle_percent_count());
-    EXPECT_EQ(50.0, delegate->handle_percent());
-
-    // A move to an illegal Y location will produce legal results.
+    // A move towards the screen is fine as long as we do not go inside it.
     ui::GestureEvent* event4 = CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos - 100,
-        0, -ypos_half - 100, kTouchId);
-    consumed = root_window->DispatchGestureEvent(event4);
+        ui::ET_GESTURE_SCROLL_UPDATE,
+        xpos + invalid_xpos_direction,
+        ypos + ypos_half,
+        invalid_xpos_direction, 0, kTouchId);
+    bool consumed = root_window->DispatchGestureEvent(event4);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(2, delegate->handle_percent_count());
-    EXPECT_EQ(100.0, delegate->handle_percent());
 
+    // A move into the screen will cancel the gesture.
     ui::GestureEvent* event5 = CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + 2 * screen.height(),
-        0, 2 * screen.height() + 100, kTouchId);
+        ui::ET_GESTURE_SCROLL_UPDATE,
+        xpos + 20 * invalid_xpos_direction,
+        ypos + ypos_half,
+        20 * invalid_xpos_direction, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event5);
 
     EXPECT_TRUE(consumed);
-    EXPECT_EQ(3, delegate->handle_percent_count());
-    EXPECT_EQ(0.0, delegate->handle_percent());
+    EXPECT_EQ(2, delegate->handle_percent_count());
 
     // Finishing the gesture should not change anything.
-    ui::GestureEvent* event7 = CreateGesture(
+    ui::GestureEvent* event6 = CreateGesture(
         ui::ET_GESTURE_SCROLL_END, xpos, ypos + ypos_half,
+        0, 0, kTouchId);
+    consumed = root_window->DispatchGestureEvent(event6);
+
+    EXPECT_TRUE(consumed);
+    EXPECT_EQ(2, delegate->handle_percent_count());
+
+    // Another event after this one should get ignored.
+    ui::GestureEvent* event7 = CreateGesture(
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos_half,
         0, 0, kTouchId);
     consumed = root_window->DispatchGestureEvent(event7);
 
     EXPECT_TRUE(consumed);
-    EXPECT_EQ(3, delegate->handle_percent_count());
+    EXPECT_EQ(2, delegate->handle_percent_count());
 
-    // Another event after this one should get ignored.
+    ui::TouchEvent release(
+        ui::ET_TOUCH_RELEASED, gfx::Point(2 * xpos, ypos + ypos_half), kTouchId,
+        base::Time::NowFromSystemTime() - base::Time());
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+
+    // Check that huge changes will be interpreted as noise as well.
+    MoveToDeviceControlBezelStartPosition(
+        root_window, delegate, value, xpos, ypos, ypos_half, kTouchId);
+    // Note: The counter is with this call at 3.
+
     ui::GestureEvent* event8 = CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos_half,
-        0, 0, kTouchId);
+        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos / 10,
+        0, ypos / 10 - ypos, kTouchId);
     consumed = root_window->DispatchGestureEvent(event8);
 
     EXPECT_TRUE(consumed);
     EXPECT_EQ(3, delegate->handle_percent_count());
 
-    ui::TouchEvent release1(
-        ui::ET_TOUCH_RELEASED, gfx::Point(2 * xpos, ypos + ypos_half), kTouchId,
-        base::Time::NowFromSystemTime() - base::Time());
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+    // Release the system.
+    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   }
 }
 
