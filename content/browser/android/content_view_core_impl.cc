@@ -278,9 +278,9 @@ void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
 }
 
 void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
-                                   jint dx, jint dy) {
+                                   jint x, jint y, jint dx, jint dy) {
   SendGestureEvent(
-      WebInputEvent::GestureScrollUpdate, time_ms, 0, 0, -dx, -dy, false);
+      WebInputEvent::GestureScrollUpdate, time_ms, x, y, -dx, -dy, false);
 }
 
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,

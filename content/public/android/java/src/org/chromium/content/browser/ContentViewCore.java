@@ -563,9 +563,12 @@ public class ContentViewCore implements MotionEventDelegate {
             case ContentViewGestureHandler.GESTURE_SCROLL_START:
                 nativeScrollBegin(mNativeContentViewCore, timeMs, x, y);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SCROLL_BY:
-                nativeScrollBy(mNativeContentViewCore, timeMs, x, y);
+            case ContentViewGestureHandler.GESTURE_SCROLL_BY: {
+                int dx = b.getInt(ContentViewGestureHandler.DISTANCE_X);
+                int dy = b.getInt(ContentViewGestureHandler.DISTANCE_Y);
+                nativeScrollBy(mNativeContentViewCore, timeMs, x, y, dx, dy);
                 return true;
+            }
             case ContentViewGestureHandler.GESTURE_SCROLL_END:
                 nativeScrollEnd(mNativeContentViewCore, timeMs);
                 return true;
@@ -1161,7 +1164,7 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeScrollEnd(int nativeContentViewCoreImpl, long timeMs);
 
     private native void nativeScrollBy(
-            int nativeContentViewCoreImpl, long timeMs, int deltaX, int deltaY);
+            int nativeContentViewCoreImpl, long timeMs, int x, int y, int deltaX, int deltaY);
 
     private native void nativeFlingStart(
             int nativeContentViewCoreImpl, long timeMs, int x, int y, int vx, int vy);

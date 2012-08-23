@@ -69,7 +69,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                       jobjectArray pts);
   void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
   void ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms);
-  void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms, jint dx, jint dy);
+  void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y,
+                jint dx, jint dy);
   void FlingStart(JNIEnv* env,
                   jobject obj,
                   jlong time_ms,

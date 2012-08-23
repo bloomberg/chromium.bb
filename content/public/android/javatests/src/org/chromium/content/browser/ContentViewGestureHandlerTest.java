@@ -210,4 +210,120 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertTrue("Should have a fling", mMockListener.mLastFling1 != null);
         assertTrue("Should not have a long press", mMockListener.mLastLongPress == null);
     }
+
+    /**
+     * Mock MotionEventDelegate that remembers the most recent gesture event.
+     */
+    static class GestureRecordingMotionEventDelegate implements MotionEventDelegate {
+        public class GestureEvent {
+            private int mType;
+            private long mTimeMs;
+            private int mX;
+            private int mY;
+            private Bundle mExtraParams;
+
+            public GestureEvent(int type, long timeMs, int x, int y, Bundle extraParams) {
+                mType = type;
+                mTimeMs = timeMs;
+                mX = x;
+                mY = y;
+                mExtraParams = extraParams;
+            }
+
+            public int getType() {
+                return mType;
+            }
+
+            public long getTimeMs() {
+                return mTimeMs;
+            }
+
+            public int getX() {
+                return mX;
+            }
+
+            public int getY() {
+                return mY;
+            }
+
+            public Bundle getExtraParams() {
+                return mExtraParams;
+            }
+        };
+        private GestureEvent mMostRecentGestureEvent;
+
+        @Override
+        public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
+            // Not implemented.
+            return false;
+        }
+
+        @Override
+        public boolean sendGesture(int type, long timeMs, int x, int y, Bundle extraParams) {
+            mMostRecentGestureEvent = new GestureEvent(type, timeMs, x, y, extraParams);
+            return true;
+        }
+
+        @Override
+        public boolean didUIStealScroll(float x, float y) {
+            // Not implemented.
+            return false;
+        }
+
+        @Override
+        public void invokeZoomPicker() {
+            // Not implemented.
+        }
+
+        public GestureEvent getMostRecentGestureEvent() {
+            return mMostRecentGestureEvent;
+        }
+    }
+
+    /**
+     * Generate a scroll gesture and verify that the resulting scroll motion event has both absolute
+     * and relative position information.
+     */
+    @SmallTest
+    @Feature({"Android-WebView"})
+    public void testScrollUpdateCoordinates() {
+        final int deltaX = 16;
+        final int deltaY = 84;
+        final long downTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate delegate = new GestureRecordingMotionEventDelegate();
+        ContentViewGestureHandler gestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), delegate,
+                new MockZoomManager(getInstrumentation().getTargetContext(), null));
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(gestureHandler.onTouchEvent(event));
+        assertNotNull(delegate.getMostRecentGestureEvent());
+
+        // Move twice, because the first move gesture is discarded.
+        event = MotionEvent.obtain(
+                downTime, downTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X - deltaX / 2, FAKE_COORD_Y - deltaY / 2, 0);
+        assertTrue(gestureHandler.onTouchEvent(event));
+
+        event = MotionEvent.obtain(
+                downTime, downTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X - deltaX, FAKE_COORD_Y - deltaY, 0);
+        assertTrue(gestureHandler.onTouchEvent(event));
+
+        // Make sure the reported gesture event has all the expected data.
+        GestureRecordingMotionEventDelegate.GestureEvent gestureEvent =
+                delegate.getMostRecentGestureEvent();
+        assertNotNull(gestureEvent);
+        assertEquals(ContentViewGestureHandler.GESTURE_SCROLL_BY, gestureEvent.getType());
+        assertEquals(downTime + 10, gestureEvent.getTimeMs());
+        assertEquals(FAKE_COORD_X - deltaX, gestureEvent.getX());
+        assertEquals(FAKE_COORD_Y - deltaY, gestureEvent.getY());
+
+        Bundle extraParams = gestureEvent.getExtraParams();
+        assertNotNull(extraParams);
+        // No horizontal delta because of snapping.
+        assertEquals(0, extraParams.getInt(ContentViewGestureHandler.DISTANCE_X));
+        assertEquals(deltaY / 2, extraParams.getInt(ContentViewGestureHandler.DISTANCE_Y));
+    }
 }

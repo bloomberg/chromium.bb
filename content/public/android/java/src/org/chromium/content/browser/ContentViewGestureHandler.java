@@ -35,6 +35,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     static final String VELOCITY_Y = "Velocity Y";
     /**
+     * Used for GESTURE_SCROLL_BY x distance
+     */
+    static final String DISTANCE_X = "Distance X";
+    /**
+     * Used for GESTURE_SCROLL_BY y distance
+     */
+    static final String DISTANCE_Y = "Distance Y";
+    /**
      * Used in GESTURE_SINGLE_TAP_CONFIRMED to check whether ShowPress has been called before.
      */
     static final String SHOW_PRESS = "ShowPress";
@@ -306,15 +314,20 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         // distanceX and distanceY is the scrolling offset since last onScroll.
                         // Because we are passing integers to webkit, this could introduce
                         // rounding errors. The rounding errors will accumulate overtime.
-                        // To solve this, we should adding back the rounding errors each time
+                        // To solve this, we should be adding back the rounding errors each time
                         // when we calculate the new offset.
+                        int x = (int) e2.getX();
+                        int y = (int) e2.getY();
                         int dx = (int) (distanceX + mAccumulatedScrollErrorX);
                         int dy = (int) (distanceY + mAccumulatedScrollErrorY);
                         mAccumulatedScrollErrorX = distanceX + mAccumulatedScrollErrorX - dx;
                         mAccumulatedScrollErrorY = distanceY + mAccumulatedScrollErrorY - dy;
+                        mExtraParamBundle.clear();
+                        mExtraParamBundle.putInt(DISTANCE_X, dx);
+                        mExtraParamBundle.putInt(DISTANCE_Y, dy);
                         if ((dx | dy) != 0) {
                             mMotionEventDelegate.sendGesture(GESTURE_SCROLL_BY,
-                                    e2.getEventTime(), dx, dy, null);
+                                    e2.getEventTime(), x, y, mExtraParamBundle);
                         }
 
                         mMotionEventDelegate.invokeZoomPicker();
