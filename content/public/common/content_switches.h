@@ -182,6 +182,7 @@ extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSimulateTouchScreenWithMouse[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSkipGpuDataLoading[];
+extern const char kTapDownDeferralTimeMs[];
 CONTENT_EXPORT extern const char kTestSandbox[];
 extern const char kTraceStartup[];
 extern const char kTraceStartupFile[];

@@ -4,8 +4,11 @@
 
 #include "content/browser/renderer_host/gesture_event_filter.h"
 
+#include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/tap_suppression_controller.h"
+#include "content/public/common/content_switches.h"
 
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
@@ -15,8 +18,34 @@ namespace {
 
 // Default maximum time between the GestureRecognizer generating a
 // GestureTapDown and when it is forwarded to the renderer.
-// TODO(rjkroege): Make this configurable.
-static const int kMaxiumTapGapTimeMs = 100;
+static const int kTapDownDeferralTimeMs = 100;
+
+// Sets |*value| to |switchKey| if it exists or sets it to |defaultValue|.
+static void GetParamHelper(int* value,
+                           int defaultValue,
+                           const char switchKey[]) {
+  if (*value < 0) {
+    *value = defaultValue;
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    std::string command_line_param =
+        command_line->GetSwitchValueASCII(switchKey);
+    if (!command_line_param.empty()) {
+      int v;
+      if (base::StringToInt(command_line_param, &v))
+        *value = v;
+    }
+    DCHECK_GE(*value, 0);
+  }
+}
+
+static int GetTapDownDeferralTimeMs() {
+  static int tap_down_deferral_time_window = -1;
+  GetParamHelper(&tap_down_deferral_time_window,
+                 kTapDownDeferralTimeMs,
+                 switches::kTapDownDeferralTimeMs);
+  return tap_down_deferral_time_window;
+}
+
 
 // TODO(rjkroege): Coalesce pinch updates.
 // Returns |true| if two gesture events should be coalesced.
@@ -32,7 +61,7 @@ GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)
      : render_widget_host_(rwhv),
        fling_in_progress_(false),
        tap_suppression_controller_(new TapSuppressionController(rwhv)),
-       maximum_tap_gap_time_ms_(kMaxiumTapGapTimeMs) {
+       maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()) {
 }
 
 GestureEventFilter::~GestureEventFilter() { }

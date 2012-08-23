@@ -583,6 +583,10 @@ const char kSingleProcess[]                 = "single-process";
 // content. The switch is intended only for tests.
 const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 
+// GestureTapDown events are deferred by this many miillseconds before
+// sending them to the renderer.
+const char kTapDownDeferralTimeMs[]         = "tap-down-deferral-time";
+
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
