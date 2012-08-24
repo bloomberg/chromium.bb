@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_H_
 
 #include "base/file_path.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "ui/gfx/image/image.h"
 
 class ProfileShortcutManager {
@@ -13,12 +14,13 @@ class ProfileShortcutManager {
   virtual ~ProfileShortcutManager();
 
   static bool IsFeatureEnabled();
-  static ProfileShortcutManager* Create();
+  static ProfileShortcutManager* Create(ProfileInfoCache& cache);
 
-  virtual void CreateChromeDesktopShortcut(
+  virtual void StartProfileDesktopShortcutCreation(
       const FilePath& profile_path, const string16& profile_name,
       const gfx::Image& avatar_image) = 0;
-  virtual void DeleteChromeDesktopShortcut(const FilePath& profile_path) = 0;
+  virtual void DeleteProfileDesktopShortcut(const FilePath& profile_path,
+      const string16& profile_name) = 0;
 
  protected:
   ProfileShortcutManager();

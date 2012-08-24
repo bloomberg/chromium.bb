@@ -10,6 +10,7 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 }
 
 // static
-ProfileShortcutManager* ProfileShortcutManager::Create() {
+ProfileShortcutManager* ProfileShortcutManager::Create(
+    ProfileInfoCache& cache) {
   return NULL;
 }

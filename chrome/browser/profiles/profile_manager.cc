@@ -269,7 +269,8 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       content::NotificationService::AllSources());
 
   if (ProfileShortcutManager::IsFeatureEnabled())
-    profile_shortcut_manager_.reset(ProfileShortcutManager::Create());
+    profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
+                                    GetProfileInfoCache()));
 }
 
 ProfileManager::~ProfileManager() {
@@ -456,12 +457,10 @@ void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
     info->callbacks.push_back(callback);
     if (profile_shortcut_manager_.get() && !name.empty() &&
         !icon_url.empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ProfileShortcutManager::CreateChromeDesktopShortcut,
-          base::Unretained(profile_shortcut_manager_.get()), profile_path, name,
+      profile_shortcut_manager_->StartProfileDesktopShortcutCreation(
+          profile_path, name,
           ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-              cache.GetDefaultAvatarIconResourceIDAtIndex(icon_index))));
+              cache.GetDefaultAvatarIconResourceIDAtIndex(icon_index)));
     }
   }
 }
@@ -954,12 +953,14 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
     }
   }
 
-  QueueProfileDirectoryForDeletion(profile_dir);
-  cache.DeleteProfileFromCache(profile_dir);
-
   // Delete possible shortcuts for this profile
   if (profile_shortcut_manager_.get())
-    profile_shortcut_manager_->DeleteChromeDesktopShortcut(profile_dir);
+    profile_shortcut_manager_->DeleteProfileDesktopShortcut(
+        profile_dir, cache.GetNameOfProfileAtIndex(
+        cache.GetIndexOfProfileWithPath(profile_dir)));
+
+  QueueProfileDirectoryForDeletion(profile_dir);
+  cache.DeleteProfileFromCache(profile_dir);
 
   ProfileMetrics::LogNumberOfProfiles(this,
                                       ProfileMetrics::DELETE_PROFILE_EVENT);

@@ -15,7 +15,7 @@
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -48,9 +48,8 @@ const int kShortcutIconSize = 48;
 // Use index 0 when assigning the resulting file as the icon.
 FilePath CreateChromeDesktopShortcutIconForProfile(
     const FilePath& profile_path,
-    const gfx::Image& avatar_image) {
+    const SkBitmap& avatar_bitmap) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  const SkBitmap* avatar_bitmap = avatar_image.ToSkBitmap();
   HICON app_icon_handle = GetAppIconForSize(kShortcutIconSize);
   scoped_ptr<SkBitmap> app_icon_bitmap(
       IconUtil::CreateSkBitmapFromHICON(app_icon_handle));
@@ -62,16 +61,16 @@ FilePath CreateChromeDesktopShortcutIconForProfile(
   // avatar_menu_button::DrawTaskBarDecoration.
   const SkBitmap* source_bitmap = NULL;
   SkBitmap squarer_bitmap;
-  if ((avatar_bitmap->width() == profiles::kAvatarIconWidth) &&
-      (avatar_bitmap->height() == profiles::kAvatarIconHeight)) {
+  if ((avatar_bitmap.width() == profiles::kAvatarIconWidth) &&
+      (avatar_bitmap.height() == profiles::kAvatarIconHeight)) {
     // Shave a couple of columns so the bitmap is more square. So when
     // resized to a square aspect ratio it looks pretty.
     int x = 2;
-    avatar_bitmap->extractSubset(&squarer_bitmap, SkIRect::MakeXYWH(x, 0,
+    avatar_bitmap.extractSubset(&squarer_bitmap, SkIRect::MakeXYWH(x, 0,
         profiles::kAvatarIconWidth - x * 2, profiles::kAvatarIconHeight));
     source_bitmap = &squarer_bitmap;
   } else {
-    source_bitmap = avatar_bitmap;
+    source_bitmap = &avatar_bitmap;
   }
   SkBitmap sk_icon = skia::ImageOperations::Resize(
       *source_bitmap,
@@ -108,51 +107,86 @@ string16 CreateProfileShortcutFlags(const FilePath& profile_path) {
       profile_path.BaseName().value().c_str());
 }
 
-// Wrap a ShellUtil function that returns a bool so it can be posted in a
-// task to the FILE thread.
-void CallShellUtilBoolFunction(
+// Wrap a ShellUtil/FileUtil function that returns a bool so it can be posted
+// in a task to the FILE thread.
+void CallBoolFunction(
     const base::Callback<bool(void)>& bool_function) {
   bool_function.Run();
 }
 
+// Renames an existing Chrome desktop profile shortcut. Must be called on the
+// FILE thread.
+void RenameChromeDesktopShortcutForProfile(
+    const string16& old_shortcut_file,
+    const string16& new_shortcut_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  FilePath shortcut_path;
+  if (ShellUtil::GetDesktopPath(false,  // User's directory instead of system.
+                                &shortcut_path)) {
+    FilePath old_shortcut_path = shortcut_path.Append(old_shortcut_file);
+    FilePath new_shortcut_path = shortcut_path.Append(new_shortcut_file);
+    if (!file_util::Move(old_shortcut_path, new_shortcut_path))
+       LOG(ERROR) << "Could not rename Windows profile desktop shortcut.";
+  }
+}
+
+// Create or update a profile desktop shortcut. Must be called on the FILE
+// thread.
+void CreateOrUpdateProfileDesktopShortcut(
+    const FilePath& profile_path,
+    const string16& profile_name,
+    const SkBitmap& avatar_image,
+    bool create) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  FilePath shortcut_icon = CreateChromeDesktopShortcutIconForProfile(
+    profile_path, avatar_image);
+
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+    return;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!dist)
+    return;
+  string16 description(dist->GetAppDescription());
+
+  uint32 options = create ? ShellUtil::SHORTCUT_CREATE_ALWAYS :
+                            ShellUtil::SHORTCUT_NO_OPTIONS;
+  ShellUtil::CreateChromeDesktopShortcut(
+      dist,
+      chrome_exe.value(),
+      description,
+      profile_name,
+      CreateProfileShortcutFlags(profile_path),
+      shortcut_icon.empty() ? chrome_exe.value() : shortcut_icon.value(),
+      shortcut_icon.empty() ? dist->GetIconIndex() : 0,
+      ShellUtil::CURRENT_USER,
+      options);
+}
+
 }  // namespace
 
-class ProfileShortcutManagerWin : public ProfileShortcutManager {
+class ProfileShortcutManagerWin : public ProfileShortcutManager,
+                                  public ProfileInfoCacheObserver {
  public:
-  ProfileShortcutManagerWin();
+  explicit ProfileShortcutManagerWin(ProfileInfoCache& cache);
   virtual ~ProfileShortcutManagerWin();
 
-  virtual void CreateChromeDesktopShortcut(
+  virtual void StartProfileDesktopShortcutCreation(
       const FilePath& profile_path, const string16& profile_name,
       const gfx::Image& avatar_image) OVERRIDE;
-  virtual void DeleteChromeDesktopShortcut(const FilePath& profile_path)
-      OVERRIDE;
+  virtual void DeleteProfileDesktopShortcut(const FilePath& profile_path,
+      const string16& profile_name) OVERRIDE;
+
+  virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWillBeRemoved(const FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWasRemoved(const FilePath& profile_path,
+                                   const string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(const FilePath& profile_path,
+                                    const string16& old_profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
 
  private:
-  struct ProfileShortcutInfo {
-    string16 flags;
-    string16 profile_name;
-    gfx::Image avatar_image;
-
-    ProfileShortcutInfo()
-        : flags(string16()),
-          profile_name(string16()),
-          avatar_image(gfx::Image()) {
-    }
-
-    ProfileShortcutInfo(
-        string16 p_flags,
-        string16 p_profile_name,
-        gfx::Image p_avatar_image)
-        : flags(p_flags),
-          profile_name(p_profile_name),
-          avatar_image(p_avatar_image) {
-    }
-  };
-
-  // TODO(hallielaine): Repopulate this map on chrome session startup
-  typedef std::map<FilePath, ProfileShortcutInfo> ProfileShortcutsMap;
-  ProfileShortcutsMap profile_shortcuts_;
+  ProfileInfoCache& profile_info_cache_;
 };
 
 // static
@@ -165,65 +199,129 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 }
 
 // static
-ProfileShortcutManager* ProfileShortcutManager::Create() {
-  return new ProfileShortcutManagerWin();
+ProfileShortcutManager* ProfileShortcutManager::Create(
+    ProfileInfoCache& cache) {
+  return new ProfileShortcutManagerWin(cache);
 }
 
-ProfileShortcutManagerWin::ProfileShortcutManagerWin() {
+ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileInfoCache& cache)
+    : profile_info_cache_(cache) {
+    cache.AddObserver(this);
 }
 
 ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
+    profile_info_cache_.RemoveObserver(this);
 }
 
-void ProfileShortcutManagerWin::CreateChromeDesktopShortcut(
+void ProfileShortcutManagerWin::StartProfileDesktopShortcutCreation(
     const FilePath& profile_path, const string16& profile_name,
     const gfx::Image& avatar_image) {
-  FilePath shortcut_icon = CreateChromeDesktopShortcutIconForProfile(
-      profile_path, avatar_image);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
-    return;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 description;
-  if (!dist)
-    return;
-  description = WideToUTF16(dist->GetAppDescription());
+  DCHECK(!avatar_image.IsEmpty());
+  const SkBitmap* avatar_bitmap = avatar_image.ToSkBitmap();
 
-  // Add the profile to the map if it doesn't exist already
-  if (!profile_shortcuts_.count(profile_path)) {
-    string16 flags = CreateProfileShortcutFlags(profile_path);
-    profile_shortcuts_.insert(std::make_pair(profile_path,
-                              ProfileShortcutInfo(flags, profile_name,
-                                  avatar_image)));
-  }
-
-  ShellUtil::CreateChromeDesktopShortcut(
-      dist,
-      chrome_exe.value(),
-      description,
-      profile_shortcuts_[profile_path].profile_name,
-      profile_shortcuts_[profile_path].flags,
-      shortcut_icon.empty() ? chrome_exe.value() : shortcut_icon.value(),
-      shortcut_icon.empty() ? dist->GetIconIndex() : 0,
-      ShellUtil::CURRENT_USER,
-      ShellUtil::SHORTCUT_CREATE_ALWAYS);
+  // Make a copy of the SkBitmap to ensure that we can safely use the image
+  // data on the FILE thread.
+  SkBitmap avatar_bitmap_copy;
+  DCHECK(avatar_bitmap->deepCopyTo(&avatar_bitmap_copy,
+                                avatar_bitmap->getConfig()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateOrUpdateProfileDesktopShortcut,
+                 profile_path, profile_name, avatar_bitmap_copy, true));
 }
 
-void ProfileShortcutManagerWin::DeleteChromeDesktopShortcut(
-    const FilePath& profile_path) {
+void ProfileShortcutManagerWin::DeleteProfileDesktopShortcut(
+    const FilePath& profile_path, const string16& profile_name) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   string16 shortcut;
   // If we can find the shortcut, delete it
   if (ShellUtil::GetChromeShortcutName(dist, false,
-      profile_shortcuts_[profile_path].profile_name, &shortcut)) {
+                                       profile_name, &shortcut)) {
     std::vector<string16> appended_names(1, shortcut);
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-            base::Bind(&CallShellUtilBoolFunction, base::Bind(
+            base::Bind(&CallBoolFunction, base::Bind(
                 &ShellUtil::RemoveChromeDesktopShortcutsWithAppendedNames,
                 appended_names)));
-    profile_shortcuts_.erase(profile_path);
+  }
+  FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
+  BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+            base::Bind(&CallBoolFunction, base::Bind(
+                &file_util::Delete, icon_path, false)));
+}
+
+void ProfileShortcutManagerWin::OnProfileAdded(const FilePath& profile_path) {
+}
+
+void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
+    const FilePath& profile_path) {
+}
+
+void ProfileShortcutManagerWin::OnProfileWasRemoved(
+    const FilePath& profile_path,
+    const string16& profile_name) {
+}
+
+void ProfileShortcutManagerWin::OnProfileNameChanged(
+    const FilePath& profile_path,
+    const string16& old_profile_name) {
+  size_t profile_index = profile_info_cache_.GetIndexOfProfileWithPath(
+      profile_path);
+  if (profile_index == std::string::npos)
+      return;
+
+  string16 new_profile_name =
+      profile_info_cache_.GetNameOfProfileAtIndex(profile_index);
+
+  string16 old_shortcut_file;
+  string16 new_shortcut_file;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (ShellUtil::GetChromeShortcutName(
+          dist, false, old_profile_name, &old_shortcut_file) &&
+      ShellUtil::GetChromeShortcutName(
+          dist, false, new_profile_name, &new_shortcut_file)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&RenameChromeDesktopShortcutForProfile,
+                   old_shortcut_file,
+                   new_shortcut_file));
+  }
+}
+
+void ProfileShortcutManagerWin::OnProfileAvatarChanged(
+    const FilePath& profile_path) {
+  size_t profile_index = profile_info_cache_.GetIndexOfProfileWithPath(
+      profile_path);
+  if (profile_index == std::string::npos)
+      return;
+
+  string16 profile_name =
+      profile_info_cache_.GetNameOfProfileAtIndex(profile_index);
+  string16 shortcut;
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (ShellUtil::GetChromeShortcutName(
+         dist, false,  profile_name, &shortcut)) {
+    size_t new_icon_index = profile_info_cache_.
+        GetAvatarIconIndexOfProfileAtIndex(profile_index);
+    gfx::Image avatar_image =
+         ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+             profile_info_cache_.GetDefaultAvatarIconResourceIDAtIndex(
+                 new_icon_index));
+
+    DCHECK(!avatar_image.IsEmpty());
+    const SkBitmap* avatar_bitmap = avatar_image.ToSkBitmap();
+
+    // Make a copy of the SkBitmap to ensure that we can safely use the image
+    // data on the FILE thread.
+    SkBitmap avatar_bitmap_copy;
+    DCHECK(avatar_bitmap->deepCopyTo(&avatar_bitmap_copy,
+                                     avatar_bitmap->getConfig()));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&CreateOrUpdateProfileDesktopShortcut,
+                   profile_path, profile_name, avatar_bitmap_copy, false));
   }
 }
 
