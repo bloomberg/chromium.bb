@@ -119,11 +119,7 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     js_display->SetDouble("y", bounds.y());
     js_display->SetDouble("width", bounds.width());
     js_display->SetDouble("height", bounds.height());
-    // Do not have good data for displays such like vendor/model names.
-    // So here just uses 'Display 1' or 'Display 2' for their names.
-    // TODO(mukai,oshima): support vendor/model names and use it.
-    js_display->SetString("name", base::StringPrintf(
-        "Display %d", static_cast<int>(i) + 1));
+    js_display->SetString("name", display_manager->GetDisplayNameAt(i));
     displays.Set(i, js_display);
   }
 
