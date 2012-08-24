@@ -220,10 +220,8 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   gfx::Rect expanded_bounds = view->bounds();
   int outside_bounds = kResizeOutsideBoundsSize;
 
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH &&
-      aura::Env::GetInstance()->is_touch_down()) {
+  if (aura::Env::GetInstance()->is_touch_down())
     outside_bounds *= kResizeOutsideBoundsScaleForTouch;
-  }
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
 
   if (!expanded_bounds.Contains(point))

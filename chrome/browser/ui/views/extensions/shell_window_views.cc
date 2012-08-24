@@ -165,10 +165,8 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 #if defined(USE_ASH)
   gfx::Rect expanded_bounds = bounds();
   int outside_bounds = ash::kResizeOutsideBoundsSize;
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH &&
-      aura::Env::GetInstance()->is_touch_down()) {
+  if (aura::Env::GetInstance()->is_touch_down())
     outside_bounds *= ash::kResizeOutsideBoundsScaleForTouch;
-  }
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
