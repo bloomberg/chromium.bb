@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 
+#include "base/string_number_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
@@ -158,3 +160,51 @@ void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
   icon_data->hWnd = window_;
   icon_data->uID = icon_id_;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// StatusIconMetro
+
+StatusIconMetro::StatusIconMetro(UINT id)
+    : id_(id) {
+  DCHECK(base::win::IsMetroProcess());
+}
+
+StatusIconMetro::~StatusIconMetro() {
+}
+
+void StatusIconMetro::SetImage(const SkBitmap& image) {
+  DVLOG(1) << __FUNCTION__;
+}
+
+void StatusIconMetro::SetPressedImage(const SkBitmap& image) {
+  DVLOG(1) << __FUNCTION__;
+}
+
+void StatusIconMetro::SetToolTip(const string16& tool_tip) {
+  DVLOG(1) << __FUNCTION__;
+  tool_tip_ = tool_tip;
+}
+
+void StatusIconMetro::DisplayBalloon(const SkBitmap& icon,
+                                     const string16& title,
+                                     const string16& contents) {
+  DVLOG(1) << __FUNCTION__;
+
+  HMODULE metro_module = base::win::GetMetroModule();
+  DCHECK(metro_module);
+
+  if (metro_module) {
+    base::win::MetroNotification notification =
+        reinterpret_cast<base::win::MetroNotification>(
+            ::GetProcAddress(metro_module, "DisplayNotification"));
+    DCHECK(notification);
+    notification("", "", title.c_str(), contents.c_str(), L"",
+                 base::IntToString(id_).c_str());
+  }
+}
+
+void StatusIconMetro::UpdatePlatformContextMenu(ui::MenuModel* menu) {
+  DVLOG(1) << __FUNCTION__
+           << " This functionality is not supported in Windows 8 metro";
+}
+

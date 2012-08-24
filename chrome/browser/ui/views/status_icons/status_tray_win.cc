@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 
+#include "base/win/metro.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "chrome/common/chrome_constants.h"
@@ -97,7 +98,11 @@ StatusTrayWin::~StatusTrayWin() {
 }
 
 StatusIcon* StatusTrayWin::CreatePlatformStatusIcon() {
-  return new StatusIconWin(next_icon_id_++, window_, kStatusIconMessage);
+  if (base::win::IsMetroProcess()) {
+    return new StatusIconMetro(next_icon_id_++);
+  } else {
+    return new StatusIconWin(next_icon_id_++, window_, kStatusIconMessage);
+  }
 }
 
 StatusTray* StatusTray::Create() {

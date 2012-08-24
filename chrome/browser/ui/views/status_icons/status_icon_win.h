@@ -47,10 +47,11 @@ class StatusIconWin : public StatusIcon {
                               const string16& title,
                               const string16& contents) OVERRIDE;
 
- private:
+ protected:
   // Overridden from StatusIcon:
   virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
 
+ private:
   void InitIconData(NOTIFYICONDATA* icon_data);
 
   // The unique ID corresponding to this icon.
@@ -75,6 +76,30 @@ class StatusIconWin : public StatusIcon {
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconWin);
+};
+
+// Implements status notifications using Windows 8 metro style notifications.
+class StatusIconMetro : public StatusIcon {
+ public:
+  // Constructor which provides this icon's unique ID and messaging window.
+  explicit StatusIconMetro(UINT id);
+  virtual ~StatusIconMetro();
+
+  // Overridden from StatusIcon:
+  virtual void SetImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
+  virtual void DisplayBalloon(const SkBitmap& icon,
+                              const string16& title,
+                              const string16& contents) OVERRIDE;
+ protected:
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
+
+ private:
+  string16 tool_tip_;
+  const UINT id_;
+
+  DISALLOW_COPY_AND_ASSIGN(StatusIconMetro);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_ICON_WIN_H_
