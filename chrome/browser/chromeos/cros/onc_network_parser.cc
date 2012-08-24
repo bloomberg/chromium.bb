@@ -1654,7 +1654,7 @@ ConnectionSecurity OncWifiNetworkParser::ParseSecurity(
   static EnumMapper<ConnectionSecurity>::Pair table[] = {
     { "None", SECURITY_NONE },
     { "WEP-PSK", SECURITY_WEP },
-    { "WPA-PSK", SECURITY_WPA },
+    { "WPA-PSK", SECURITY_PSK },
     { "WPA-EAP", SECURITY_8021X },
   };
   CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionSecurity>, parser,
