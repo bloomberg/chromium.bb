@@ -183,9 +183,9 @@ function bb_goma_make {
     COMMON_JAVAC="$COMMON_JAVAC" \
     "$@"
 
-  local make_exit_status=$?
+  local make_exit_code=$?
   bb_stop_goma_internal
-  return $make_exit_status
+  return $make_exit_code
 }
 
 # Compile step
@@ -281,12 +281,12 @@ function bb_extract_build {
     --build-output-dir "out" \
     --factory-properties "$FACTORY_PROPERTIES" \
     --build-properties "$BUILD_PROPERTIES"
-  extract_exitcode=$?
-  if (( $extract_exitcode > 1 )); then
+  local extract_exit_code=$?
+  if (( $extract_exit_code > 1 )); then
     echo "@@@STEP_WARNINGS@@@"
     return
   fi
-  return $extract_exitcode
+  return $extract_exit_code
   )
 }
 
@@ -302,5 +302,20 @@ function bb_reboot_phones {
         android_commands.AndroidCommands(device='$DEVICE').Reboot(True)" &
   done
   wait
+  )
+}
+
+# Runs the license checker for the WebView build.
+function bb_check_webview_licenses {
+  echo "@@@BUILD_STEP Check licenses for WebView@@@"
+  (
+  set +e
+  cd "${SRC_ROOT}"
+  python android_webview/tools/webview_licenses.py scan
+  local license_exit_code = $?
+  if [[ license_exit_code -ne 0 ]]; then
+    echo "@@@STEP_FAILURE@@@"
+  fi
+  return $license_exit_code
   )
 }
