@@ -67,11 +67,12 @@ function answerCall(peerConnection, message) {
 
 // Internals.
 function iceCallback(candidate, more_to_follow) {
+  if (candidate == null) {
+    debug("Received end of candidates.");
+    return;
+  }
   var msg = "candidate" + "###" + candidate.label + "##" + candidate.toSdp();
   sendToPeer(gRemotePeerId, msg);
-  if (!more_to_follow) {
-    debug("Received end of candidates (more_to_follow == false)");
-  }
 }
 
 function addStreamCallback(event) {
