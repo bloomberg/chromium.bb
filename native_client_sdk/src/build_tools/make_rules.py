@@ -62,18 +62,18 @@ WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -
 # Compile rules for various platforms.
 #
 NACL_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
 }
 
 SO_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC -DTCNAME=<tcname> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> -fPIC -DTCNAME=<tcname> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>'
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> -fPIC $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>'
 }
 
 WIN_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Zi /c $< -DTCNAME=<tcname> $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< -DTCNAME=<tcname> $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
+  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Zi /c $< $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
 }
 
 #
