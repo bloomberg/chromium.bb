@@ -806,6 +806,9 @@ desktop_shell_grab_cursor(void *data,
 	struct desktop *desktop = data;
 
 	switch (cursor) {
+	case DESKTOP_SHELL_CURSOR_NONE:
+		desktop->grab_cursor = CURSOR_BLANK;
+		break;
 	case DESKTOP_SHELL_CURSOR_BUSY:
 		desktop->grab_cursor = CURSOR_WATCH;
 		break;
