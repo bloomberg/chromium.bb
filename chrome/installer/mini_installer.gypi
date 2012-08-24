@@ -77,7 +77,7 @@
     },
     'VCManifestTool': {
       'AdditionalManifestFiles': [
-        '$(ProjectDir)\\mini_installer\\mini_installer.exe.manifest',
+        '$(ProjectDir)\\..\\app\\additional.manifest',
       ],
     },
   },

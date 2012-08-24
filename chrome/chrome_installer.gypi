@@ -86,6 +86,7 @@
             '..',
           ],
           'sources': [
+            'app/additional.manifest',
             'installer/setup/compat_checks_unittest.cc',
             'installer/setup/setup_constants.cc',
             'installer/util/channel_info_unittest.cc',
@@ -129,7 +130,7 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
+              'AdditionalManifestFiles': '$(ProjectDir)\\app\\additional.manifest',
             },
           },
         },
@@ -234,6 +235,7 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
+            'app/additional.manifest',
             'installer/util/installation_validation_helper.cc',
             'installer/util/installation_validation_helper.h',
             'test/mini_installer_test/installer_path_provider.cc',
@@ -249,7 +251,7 @@
           ],
           'msvs_settings': {
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest',
+              'AdditionalManifestFiles': '$(ProjectDir)\\app\\additional.manifest',
             },
           },
         },
@@ -279,6 +281,7 @@
             ],
           },
           'sources': [
+            'app/additional.manifest',
             'installer/mini_installer/chrome.release',
             'installer/setup/chrome_frame_quick_enable.cc',
             'installer/setup/chrome_frame_quick_enable.h',
@@ -305,7 +308,7 @@
               'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
             },
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\installer\\setup\\setup.exe.manifest',
+              'AdditionalManifestFiles': '$(ProjectDir)\\app\\additional.manifest',
             },
           },
           'rules': [
