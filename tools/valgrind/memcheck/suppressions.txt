@@ -5420,19 +5420,6 @@
    fun:_ZN3WTFL19wtfThreadEntryPointEPv
 }
 {
-   bug_131668
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
-   fun:_ZN7history16InMemoryURLIndex28PostRestoreFromCacheFileTaskEv
-   fun:_ZN7history16InMemoryURLIndex4InitEv
-   fun:_ZN14HistoryService4InitERK8FilePathP15BookmarkServiceb
-   fun:_ZN14TestingProfile20CreateHistoryServiceEbb
-   fun:_ZN21ShortcutsProviderTest5SetUpEv
-}
-{
    bug_133167_a
    Memcheck:Uninitialized
    fun:vp8_encode_bool
