@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"
@@ -224,10 +225,12 @@ void SearchViewController::OmniboxPopupViewParent::ChildPreferredSizeChanged(
 SearchViewController::SearchViewController(
     content::BrowserContext* browser_context,
     ContentsContainer* contents_container,
-    chrome::search::ToolbarSearchAnimator* toolbar_search_animator)
+    chrome::search::ToolbarSearchAnimator* toolbar_search_animator,
+    ToolbarView* toolbar_view)
     : browser_context_(browser_context),
       contents_container_(contents_container),
       toolbar_search_animator_(toolbar_search_animator),
+      toolbar_view_(toolbar_view),
       location_bar_container_(NULL),
       state_(STATE_NOT_VISIBLE),
       tab_contents_(NULL),
@@ -352,6 +355,10 @@ void SearchViewController::SetState(State state) {
     case STATE_NTP:
       DestroyViews();
       CreateViews();
+      // In |CreateViews|, the main web contents view was reparented, so force
+      // a search re-layout by |toolbar_view_| to re-position the omnibox per
+      // the new bounds of web contents view.
+      toolbar_view_->LayoutForSearch();
       break;
 
     case STATE_NTP_ANIMATING:
