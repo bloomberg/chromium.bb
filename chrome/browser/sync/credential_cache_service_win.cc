@@ -138,6 +138,15 @@ void CredentialCacheService::Observe(
       break;
     }
 
+    case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
+      // Local sync configuration is done. The sync service is now ready to
+      // be reconfigured. Immediately look for any unconsumed config changes in
+      // the alternate profile. If all changes have been consumed, this is a
+      // no-op.
+      ScheduleNextReadFromAlternateCredentialCache(0);
+      break;
+    }
+
     case chrome::NOTIFICATION_SYNC_CONFIGURE_START: {
       // We have detected a sync sign in, auto-start or reconfigure. Write the
       // latest sync preferences to the local cache.
@@ -207,7 +216,8 @@ void CredentialCacheService::ReadCachedCredentialsFromAlternateProfile() {
       !HasPref(alternate_store_, prefs::kSyncKeepEverythingSynced)) {
     VLOG(1) << "Could not find cached credentials in \""
             << GetCredentialPathInAlternateProfile().value() << "\".";
-    ScheduleNextReadFromAlternateCredentialCache();
+    ScheduleNextReadFromAlternateCredentialCache(
+        kCredentialCachePollIntervalSecs);
     return;
   }
 
@@ -313,7 +323,8 @@ void CredentialCacheService::ReadCachedCredentialsFromAlternateProfile() {
 
   // Schedule the next read from the alternate credential cache so that we can
   // detect future reconfigures or sign outs.
-  ScheduleNextReadFromAlternateCredentialCache();
+  ScheduleNextReadFromAlternateCredentialCache(
+      kCredentialCachePollIntervalSecs);
 }
 
 void CredentialCacheService::WriteSyncPrefsToLocalCache() {
@@ -333,7 +344,9 @@ void CredentialCacheService::WriteSyncPrefsToLocalCache() {
   }
 }
 
-void CredentialCacheService::ScheduleNextReadFromAlternateCredentialCache() {
+void CredentialCacheService::ScheduleNextReadFromAlternateCredentialCache(
+    int delay_secs) {
+  DCHECK_LE(0, delay_secs);
   // We must reinitialize |alternate_store_| here because the underlying
   // credential file in the alternate profile might have changed, and we must
   // re-read it afresh.
@@ -345,7 +358,7 @@ void CredentialCacheService::ScheduleNextReadFromAlternateCredentialCache() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       next_read_.callback(),
-      TimeDelta::FromSeconds(kCredentialCachePollIntervalSecs));
+      TimeDelta::FromSeconds(delay_secs));
 }
 
 bool CredentialCacheService::HasPref(scoped_refptr<JsonPrefStore> store,
@@ -587,7 +600,8 @@ void CredentialCacheService::AlternateStoreObserver::OnInitializationCompleted(
       alternate_store_->GetReadError() == JsonPrefStore::PREF_READ_ERROR_NONE) {
     service_->ReadCachedCredentialsFromAlternateProfile();
   } else {
-    service_->ScheduleNextReadFromAlternateCredentialCache();
+    service_->ScheduleNextReadFromAlternateCredentialCache(
+        kCredentialCachePollIntervalSecs);
   }
 }
 
@@ -648,6 +662,9 @@ void CredentialCacheService::StartListeningForSyncConfigChanges() {
   // during sign in or reconfiguration.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+                 content::Source<ProfileSyncService>(service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_SYNC_CONFIGURE_START,
                  content::Source<ProfileSyncService>(service));
@@ -753,6 +770,10 @@ void CredentialCacheService::InitiateSignOut() {
 bool CredentialCacheService::HaveSyncPrefsChanged(
     bool alternate_keep_everything_synced,
     ModelTypeSet alternate_preferred_types) const {
+  if (alternate_keep_everything_synced &&
+      sync_prefs_.HasKeepEverythingSynced()) {
+    return false;
+  }
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   ModelTypeSet local_preferred_types =
@@ -819,6 +840,7 @@ bool CredentialCacheService::MayReconfigureSync(
   // 3) The user is signed in to the alternate profile with the same account.
   // 4) The user is not already in the process of configuring sync.
   // 5) The alternate cache was updated more recently than the local cache.
+  // 6) The sync backend is initialized and ready to consume config changes.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return !service->signin()->GetAuthenticatedUsername().empty() &&
@@ -826,7 +848,8 @@ bool CredentialCacheService::MayReconfigureSync(
          (alternate_google_services_username ==
           service->signin()->GetAuthenticatedUsername()) &&
          !service->setup_in_progress() &&
-         AlternateCacheIsMoreRecent();
+         AlternateCacheIsMoreRecent() &&
+         service->ShouldPushChanges();
 }
 
 bool CredentialCacheService::ShouldSignInToSync(

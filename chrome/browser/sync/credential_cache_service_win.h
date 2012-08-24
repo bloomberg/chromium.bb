@@ -61,8 +61,8 @@ class CredentialCacheService : public ProfileKeyedService,
   void WriteSyncPrefsToLocalCache();
 
   // Resets |alternate_store_| and schedules the next read from the alternate
-  // credential cache.
-  void ScheduleNextReadFromAlternateCredentialCache();
+  // credential cache in |delay_secs| seconds.
+  void ScheduleNextReadFromAlternateCredentialCache(int delay_secs);
 
  protected:
   // Returns true if the credential cache represented by |store| contains a
@@ -229,7 +229,8 @@ class CredentialCacheService : public ProfileKeyedService,
   // Compares the sync preferences in the local profile with values that were
   // read from the alternate profile -- |alternate_keep_everything_synced| and
   // |alternate_preferred_types|. Returns true if the prefs have changed, and
-  // false otherwise.
+  // false otherwise. Note: Differences in preferred_types are ignored if the
+  // alternate and local values of keep_everything_synced are both true.
   bool HaveSyncPrefsChanged(bool alternate_keep_everything_synced,
                             ModelTypeSet alternate_preferred_types) const;
 
