@@ -38,8 +38,7 @@ const SkColor kPushedBorderColor = SkColorSetRGB(191, 191, 191);
 ActionBoxButtonView::ActionBoxButtonView(Browser* browser, Profile* profile)
     : views::MenuButton(NULL, string16(), this, false),
       browser_(browser),
-      profile_(profile),
-      starred_(false) {
+      profile_(profile) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -88,7 +87,7 @@ void ActionBoxButtonView::OnMenuButtonClicked(View* source,
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 
-  ActionBoxMenuModel model(browser_, extension_service, starred_);
+  ActionBoxMenuModel model(browser_, extension_service);
   ActionBoxMenu action_box_menu(browser_, &model);
   action_box_menu.Init();
   action_box_menu.RunMenu(this);

@@ -18,16 +18,15 @@ namespace extensions {
 class Extension;
 }
 
-// A menu model that builds the contents of the action box menu.
+// A menu model that builds the contents of the action box menu. This model
+// should be built on demand since its content reflects the state of the browser
+// at creation time.
 class ActionBoxMenuModel : public ui::SimpleMenuModel,
                            public ui::SimpleMenuModel::Delegate,
                            public content::NotificationObserver {
  public:
-  // |starred| - true when the current page is bookmarked and thus the star icon
-  // should be drawn in the "starred" rather than "unstarred" state.
   ActionBoxMenuModel(Browser* browser,
-                     ExtensionService* extension_service,
-                     bool starred);
+                     ExtensionService* extension_service);
   virtual ~ActionBoxMenuModel();
 
   // Returns true if item associated with an extension.

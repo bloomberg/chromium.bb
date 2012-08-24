@@ -514,7 +514,6 @@ void LocationBarView::SetStarToggled(bool on) {
     star_view_->SetToggled(on);
 
   if (action_box_button_view_) {
-    action_box_button_view_->set_starred(on);
     if (star_view_ && (star_view_->visible() != on)) {
       star_view_->SetVisible(on);
       Layout();

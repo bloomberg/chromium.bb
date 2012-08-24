@@ -46,8 +46,7 @@ bool PlusDecoration::AcceptsMousePress() {
 bool PlusDecoration::OnMousePressed(NSRect frame) {
   ExtensionService* extension_service = extensions::ExtensionSystem::Get(
       browser_->profile())->extension_service();
-  // TODO: Need to pass correct bookmarked state into ActionBoxMenuModel.
-  ActionBoxMenuModel menu_model(browser_, extension_service, false);
+  ActionBoxMenuModel menu_model(browser_, extension_service);
 
   // Controller for the menu attached to the plus decoration.
   scoped_nsobject<MenuController> menu_controller(

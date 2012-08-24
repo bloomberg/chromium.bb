@@ -21,8 +21,6 @@ class ActionBoxButtonView : public views::MenuButton,
   SkColor GetBackgroundColor();
   SkColor GetBorderColor();
 
-  void set_starred(bool starred) { starred_ = starred; }
-
   static bool IsActionBoxEnabled();
 
  private:
@@ -35,10 +33,6 @@ class ActionBoxButtonView : public views::MenuButton,
 
   Browser* browser_;
   Profile* profile_;
-
-  // Set to true when the current page is bookmarked.
-  // To be passed to action box menu when this button is pressed.
-  bool starred_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxButtonView);
 };
