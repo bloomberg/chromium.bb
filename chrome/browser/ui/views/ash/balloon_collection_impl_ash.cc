@@ -97,6 +97,7 @@ void BalloonCollectionImplAsh::OnClicked(const std::string& notifcation_id) {
   if (!balloon)
     return;
   balloon->OnClick();
+  RemoveById(notifcation_id);
 }
 
 bool BalloonCollectionImplAsh::AddWebUIMessageCallback(
