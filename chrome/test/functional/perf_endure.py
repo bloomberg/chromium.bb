@@ -11,8 +11,6 @@ This module accepts the following environment variable inputs:
       of performance/memory statistics.
 
   DEEP_MEMORY_PROFILE: Enable the Deep Memory Profiler if it's set to 'True'.
-  DEEP_MEMORY_PROFILE_INTERVAL: The number of seconds to wait in-between each
-      sampling for the Deep Memory Profiler.
   DEEP_MEMORY_PROFILE_SAVE: Don't clean up dump files if it's set to 'True'.
 """
 
@@ -50,7 +48,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   # TODO(dennisjeffrey): Do we still need to tolerate errors?
   _ERROR_COUNT_THRESHOLD = 50  # Number of ChromeDriver errors to tolerate.
   _DEEP_MEMORY_PROFILE = False
-  _DEEP_MEMORY_PROFILE_INTERVAL = _GET_PERF_STATS_INTERVAL
   _DEEP_MEMORY_PROFILE_SAVE = False
 
   _DMPROF_DIR_PATH = os.path.join(
@@ -65,9 +62,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._deep_memory_profile = self._GetDeepMemoryProfileEnv(
         'DEEP_MEMORY_PROFILE', bool, self._DEEP_MEMORY_PROFILE)
 
-    self._deep_memory_profile_interval = self._GetDeepMemoryProfileEnv(
-        'DEEP_MEMORY_PROFILE_INTERVAL', int, self._DEEP_MEMORY_PROFILE_INTERVAL)
-
     if self._deep_memory_profile:
       if not self.IsLinux():
         raise NotSupportedEnvironmentError(
@@ -77,10 +71,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       os.environ['HEAPPROFILE'] = os.path.join(self._deep_tempdir, 'endure')
       os.environ['HEAP_PROFILE_MMAP'] = 'True'
       os.environ['DEEP_HEAP_PROFILE'] = 'True'
-      # TODO(dmikurube): Stop to set HEAP_PROFILE_TIME_INTERVAL when PyAuto
-      # supports to dump renderer heap profile.
-      os.environ['HEAP_PROFILE_TIME_INTERVAL'] = (
-          str(self._deep_memory_profile_interval))
 
     perf.BasePerfTest.setUp(self)
 
@@ -96,8 +86,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     logging.info('Gathering perf stats every %d seconds.',
                  self._get_perf_stats_interval)
     if self._deep_memory_profile:
-      logging.info('Running with the Deep Memory Profiler every %d seconds.',
-                   self._deep_memory_profile_interval)
+      logging.info('Running with the Deep Memory Profiler.')
       if self._deep_memory_profile_save:
         logging.info('  Dumped files won\'t be cleaned.')
       else:
@@ -121,9 +110,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._remote_inspector_client.Stop()
     logging.info('Connection to remote inspector terminated.')
     if self._deep_memory_profile:
-      # TODO(dmikurube): Stop to set HEAP_PROFILE_TIME_INTERVAL in setUp when
-      # PyAuto supports to dump renderer heap profile.
-      del os.environ['HEAP_PROFILE_TIME_INTERVAL']
       del os.environ['DEEP_HEAP_PROFILE']
       del os.environ['HEAP_PROFILE_MMAP']
       del os.environ['HEAPPROFILE']
@@ -224,6 +210,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._num_errors = 0
     self._test_start_time = time.time()
     last_perf_stats_time = time.time()
+    if self._deep_memory_profile:
+      self.HeapProfilerDump('renderer', 'Chrome Endure (first)')
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring)
     self._iteration_num = 0  # Available to |do_scenario| if needed.
@@ -239,12 +227,10 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
                       'early.' % self._ERROR_COUNT_THRESHOLD)
         break
 
-      # TODO(dmikurube): Call HeapProfilerDump when PyAuto supports dumping for
-      # renderer processes.
-      # TODO(dmikurube): Need pid of the target process.
-
       if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
+        if self._deep_memory_profile:
+          self.HeapProfilerDump('renderer', 'Chrome Endure')
         self._GetPerformanceStats(
             webapp_name, test_description, tab_title_substring)
 
@@ -272,9 +258,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       self.ExecuteJavascript(js, frame_xpath=frame_xpath)
 
     self._remote_inspector_client.StopTimelineEventMonitoring()
-    # TODO(dmikurube): Call HeapProfilerDump when PyAuto supports dumping for
-    # renderer processes.
 
+    if self._deep_memory_profile:
+      self.HeapProfilerDump('renderer', 'Chrome Endure (last)')
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring, is_last=True)
 
