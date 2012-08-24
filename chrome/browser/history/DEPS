@@ -1,0 +1,59 @@
+include_rules = [
+  # History is being made into a Browser Component, so we have these
+  # three basic rules followed by temporary exceptions.  Please don't
+  # add to the list of exceptions!
+  "-chrome/browser",
+  "+chrome/browser/api",
+  "+chrome/browser/history",
+
+  # TODO(erikwright): Bring this list to zero.
+  #
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  "!chrome/browser/autocomplete/autocomplete_field_trial.h",
+  "!chrome/browser/autocomplete/autocomplete_log.h",
+  "!chrome/browser/autocomplete/autocomplete_match.h",
+  "!chrome/browser/autocomplete/autocomplete_provider.h",
+  "!chrome/browser/autocomplete/autocomplete_result.h",
+  "!chrome/browser/autocomplete/history_provider_util.h",
+  "!chrome/browser/autocomplete/history_url_provider.h",
+  "!chrome/browser/autocomplete/url_prefix.h",
+  "!chrome/browser/bookmarks/bookmark_codec.h",
+  "!chrome/browser/bookmarks/bookmark_model.h",
+  "!chrome/browser/bookmarks/bookmark_model_factory.h",
+  "!chrome/browser/bookmarks/bookmark_service.h",
+  "!chrome/browser/browser_process.h",
+  "!chrome/browser/cancelable_request.h",
+  "!chrome/browser/chromeos/login/existing_user_controller.h",
+  "!chrome/browser/diagnostics/sqlite_diagnostics.h",
+  "!chrome/browser/extensions/event_router.h",
+  "!chrome/browser/extensions/extension_function.h",
+  "!chrome/browser/favicon/favicon_service.h",
+  "!chrome/browser/prefs/pref_service.h",
+  "!chrome/browser/prefs/scoped_user_pref_update.h",
+  "!chrome/browser/profiles/profile.h",
+  "!chrome/browser/profiles/profile_dependency_manager.h",
+  "!chrome/browser/profiles/profile_manager.h",
+  "!chrome/browser/profiles/refcounted_profile_keyed_service.h",
+  "!chrome/browser/profiles/refcounted_profile_keyed_service_factory.h",
+  "!chrome/browser/search_engines/template_url_id.h",
+  "!chrome/browser/ui/profile_error_dialog.h",
+  "!chrome/browser/ui/webui/ntp/most_visited_handler.h",
+  "!chrome/browser/ui/webui/ntp/new_tab_ui.h",
+  "!chrome/browser/visitedlink/visitedlink_master.h",
+]
+
+specific_include_rules = {
+  # TODO(erikwright): Bring this list to zero.
+  #
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  '.*_[a-z]*test\.cc': [
+    "!chrome/browser/bookmarks/bookmark_utils.h",
+    "!chrome/browser/extensions/extension_apitest.h",
+    "!chrome/browser/extensions/extension_function_test_utils.h",
+    "!chrome/browser/ui/browser.h",
+    "!chrome/browser/ui/browser_tabstrip.h",
+    "!chrome/browser/ui/view_ids.h",
+  ]
+}

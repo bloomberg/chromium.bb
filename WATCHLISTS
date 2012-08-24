@@ -65,7 +65,7 @@
       'filepath': 'chrome/browser/chromeos/',
     },
     'browser_components': {
-      'filepath': 'chrome/browser/autofill/',
+      'filepath': 'chrome/browser/autofill/|chrome/browser/history/',
     },
     'browser_compositor': {
       'filepath': 'ui/compositor/'
