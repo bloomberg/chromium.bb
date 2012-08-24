@@ -179,6 +179,9 @@ class WebIntentPickerController
   // Called whenever intent data (both from registry and CWS) arrives.
   void OnIntentDataArrived();
 
+  // Reset internal state to default values.
+  void Reset();
+
   typedef base::Callback<void(const gfx::Image&)>
       ExtensionIconAvailableCallback;
   // Called on a worker thread to decode and resize the extension's icon.

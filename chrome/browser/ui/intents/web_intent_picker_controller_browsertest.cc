@@ -114,7 +114,7 @@ class WebIntentPickerMock : public WebIntentPicker,
   }
 
   // WebIntentPicker implementation.
-  virtual void Close() OVERRIDE {}
+  virtual void Close() OVERRIDE { StopWaiting(); }
   virtual void SetActionString(const string16& action) OVERRIDE {}
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE {
     num_extensions_installed_++;
@@ -153,8 +153,10 @@ class WebIntentPickerMock : public WebIntentPicker,
 
   void StopWaiting() {
     pending_async_completed_ = true;
-    if (message_loop_started_)
+    if (message_loop_started_) {
+      message_loop_started_ = false;
       MessageLoop::current()->Quit();
+    }
   }
 
   int num_installed_services_;

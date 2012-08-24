@@ -693,6 +693,24 @@ void WebIntentPickerController::OnIntentDataArrived() {
     OnPickerEvent(kPickerEventAsyncDataComplete);
 }
 
+void WebIntentPickerController::Reset() {
+  // Abandon all callbacks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  timer_factory_.InvalidateWeakPtrs();
+
+  // Reset state associated with callbacks.
+  pending_async_count_ = 0;
+  pending_registry_calls_count_ = 0;
+  pending_cws_request_ = false;
+
+  // Reset picker.
+  picker_model_.reset(new WebIntentPickerModel());
+  picker_shown_ = false;
+
+  DCHECK(tab_contents_);
+  tab_contents_->constrained_window_tab_helper()->BlockTabContent(false);
+}
+
 // static
 void WebIntentPickerController::DecodeExtensionIconAndResize(
     scoped_ptr<std::string> icon_response,
@@ -865,8 +883,7 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
       break;
 
     case kPickerHidden:
-      // Once the picker dialog is closed, abandon all pending callbacks.
-      weak_ptr_factory_.InvalidateWeakPtrs();
+      Reset();
       break;
 
     default:
