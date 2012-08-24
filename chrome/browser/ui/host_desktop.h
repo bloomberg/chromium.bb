@@ -15,7 +15,11 @@ enum HostDesktopType {
   HOST_DESKTOP_TYPE_NATIVE = 0,
 
   // The UI is hosted in the synthetic Ash desktop.
+#if defined(OS_CHROMEOS)
+  HOST_DESKTOP_TYPE_ASH = HOST_DESKTOP_TYPE_NATIVE,
+#else
   HOST_DESKTOP_TYPE_ASH,
+#endif
 
   HOST_DESKTOP_TYPE_COUNT
 };

@@ -19,6 +19,15 @@ namespace browser {
 
 namespace {
 
+// TODO(mad) eventually move this to host_desktop_type.h.
+#if defined(OS_CHROMEOS)
+chrome::HostDesktopType kDefaultHostDesktopType = chrome::HOST_DESKTOP_TYPE_ASH;
+#else
+chrome::HostDesktopType kDefaultHostDesktopType =
+    chrome::HOST_DESKTOP_TYPE_NATIVE;
+#endif
+
+
 // Type used to indicate to match anything.
 const int kMatchAny                     = 0;
 
@@ -75,28 +84,43 @@ Browser* FindBrowserMatching(const T& begin,
 }
 
 Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
+                                        chrome::HostDesktopType desktop_type,
                                         bool match_tabbed,
                                         bool match_original_profiles) {
+  chrome::BrowserListImpl* browser_list_impl =
+      chrome::BrowserListImpl::GetInstance(desktop_type);
+  if (!browser_list_impl)
+    return NULL;
   uint32 match_types = kMatchAny;
   if (match_tabbed)
     match_types |= kMatchTabbed;
   if (match_original_profiles)
     match_types |= kMatchOriginalProfile;
-  Browser* browser = FindBrowserMatching(
-      BrowserList::begin_last_active(), BrowserList::end_last_active(),
-      profile, Browser::FEATURE_NONE, match_types);
+  Browser* browser = FindBrowserMatching(browser_list_impl->begin_last_active(),
+                                         browser_list_impl->end_last_active(),
+                                         profile,
+                                         Browser::FEATURE_NONE,
+                                         match_types);
   // Fall back to a forward scan of all Browsers if no active one was found.
-  return browser ? browser :
-      FindBrowserMatching(BrowserList::begin(), BrowserList::end(), profile,
-                          Browser::FEATURE_NONE, match_types);
+  return browser ? browser : FindBrowserMatching(browser_list_impl->begin(),
+                                                 browser_list_impl->end(),
+                                                 profile,
+                                                 Browser::FEATURE_NONE,
+                                                 match_types);
 }
 
-size_t GetBrowserCountImpl(Profile* profile, uint32 match_types) {
+size_t GetBrowserCountImpl(Profile* profile,
+                           chrome::HostDesktopType desktop_type,
+                           uint32 match_types) {
+  chrome::BrowserListImpl* browser_list_impl =
+      chrome::BrowserListImpl::GetInstance(desktop_type);
   size_t count = 0;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, match_types))
-      count++;
+  if (browser_list_impl) {
+    for (BrowserList::const_iterator i = browser_list_impl->begin();
+         i != browser_list_impl->end(); ++i) {
+      if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, match_types))
+        count++;
+    }
   }
   return count;
 }
@@ -105,6 +129,7 @@ size_t GetBrowserCountImpl(Profile* profile, uint32 match_types) {
 
 Browser* FindTabbedBrowser(Profile* profile, bool match_original_profiles) {
   return FindBrowserWithTabbedOrAnyType(profile,
+                                        kDefaultHostDesktopType,
                                         true,
                                         match_original_profiles);
 }
@@ -118,12 +143,14 @@ Browser* FindOrCreateTabbedBrowser(Profile* profile) {
 
 Browser* FindAnyBrowser(Profile* profile, bool match_original_profiles) {
   return FindBrowserWithTabbedOrAnyType(profile,
+                                        kDefaultHostDesktopType,
                                         false,
                                         match_original_profiles);
 }
 
-Browser* FindBrowserWithProfile(Profile* profile) {
-  return FindAnyBrowser(profile, false);
+Browser* FindBrowserWithProfile(Profile* profile,
+                                chrome::HostDesktopType desktop_type) {
+  return FindBrowserWithTabbedOrAnyType(profile, desktop_type, false, false);
 }
 
 Browser* FindBrowserWithID(SessionID::id_type desired_id) {
@@ -171,11 +198,11 @@ Browser* FindLastActiveWithHostDesktopType(chrome::HostDesktopType type) {
 }
 
 size_t GetBrowserCount(Profile* profile) {
-  return GetBrowserCountImpl(profile, kMatchAny);
+  return GetBrowserCountImpl(profile, kDefaultHostDesktopType, kMatchAny);
 }
 
 size_t GetTabbedBrowserCount(Profile* profile) {
-  return GetBrowserCountImpl(profile, kMatchTabbed);
+  return GetBrowserCountImpl(profile, kDefaultHostDesktopType, kMatchTabbed);
 }
 
 }  // namespace browser

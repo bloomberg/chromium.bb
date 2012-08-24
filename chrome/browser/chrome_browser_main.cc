@@ -928,7 +928,10 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 void ChromeBrowserMainParts::RunPageCycler() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  Browser* browser = browser::FindBrowserWithProfile(profile_);
+  // We assume a native desktop for tests, but we will need to find a way to
+  // get the proper host desktop type once we start running these tests in ASH.
+  Browser* browser = browser::FindBrowserWithProfile(
+      profile_, chrome::HOST_DESKTOP_TYPE_NATIVE);
   DCHECK(browser);
   PageCycler* page_cycler = NULL;
   FilePath input_file =
