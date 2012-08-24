@@ -507,6 +507,12 @@ size_t Shell::GetEnvEventFilterCount() const {
 
 void Shell::ShowBackgroundMenu(views::Widget* widget,
                                const gfx::Point& location) {
+  // No context menus if user have not logged in.
+  if (!delegate_.get() || !delegate_->IsUserLoggedIn())
+    return;
+  // No context menus when screen is locked.
+  if (IsScreenLocked())
+    return;
   if (shell_context_menu_.get())
     shell_context_menu_->ShowMenu(widget, location);
 }
