@@ -6,7 +6,6 @@
 
 #include "ash/system/power/tray_power.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -30,10 +29,8 @@ const int kLabelMinWidth = 120;
 const int kPaddingBetweenBatteryStatusAndIcon = 3;
 }  // namespace
 
-PowerStatusView::PowerStatusView(ViewType view_type,
-                                 bool default_view_right_align)
-    : default_view_right_align_(default_view_right_align),
-      status_label_(NULL),
+PowerStatusView::PowerStatusView(ViewType view_type)
+    : status_label_(NULL),
       time_label_(NULL),
       time_status_label_(NULL),
       icon_(NULL),
@@ -59,29 +56,16 @@ void PowerStatusView::UpdatePowerStatus(const PowerSupplyStatus& status) {
 }
 
 void PowerStatusView::LayoutDefaultView() {
-  if (default_view_right_align_) {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                             kPaddingBetweenBatteryStatusAndIcon);
-    SetLayoutManager(layout);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                           kPaddingBetweenBatteryStatusAndIcon);
+  SetLayoutManager(layout);
 
-    AddChildView(time_status_label_);
+  time_status_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
+  AddChildView(time_status_label_);
 
-    icon_ = new views::ImageView;
-    AddChildView(icon_);
-  } else {
-    // PowerStatusView is left aligned on the system tray pop up item.
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                             kTrayPopupPaddingBetweenItems);
-    SetLayoutManager(layout);
-
-    icon_ =
-        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
-    AddChildView(icon_);
-
-    AddChildView(time_status_label_);
-  }
+  icon_ = new views::ImageView;
+  AddChildView(icon_);
 }
 
 void PowerStatusView::LayoutNotificationView() {

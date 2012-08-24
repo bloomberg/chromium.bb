@@ -95,7 +95,7 @@ class PowerNotificationView : public TrayNotificationView {
   explicit PowerNotificationView(TrayPower* tray)
       : TrayNotificationView(tray, 0) {
     power_status_view_ =
-        new PowerStatusView(PowerStatusView::VIEW_NOTIFICATION, true);
+        new PowerStatusView(PowerStatusView::VIEW_NOTIFICATION);
     InitView(power_status_view_);
   }
 
