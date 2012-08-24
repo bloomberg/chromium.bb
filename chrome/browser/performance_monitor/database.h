@@ -16,8 +16,7 @@
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/event.h"
-#include "chrome/browser/performance_monitor/metric_info.h"
-#include "chrome/browser/performance_monitor/metric_details.h"
+#include "chrome/browser/performance_monitor/metric.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace performance_monitor {
@@ -88,10 +87,11 @@ struct TimeRange {
 // Value: Statistic
 class Database {
  public:
-  typedef std::vector<linked_ptr<Event> > EventList;
   typedef std::set<EventType> EventTypeSet;
-  typedef std::vector<MetricInfo> MetricInfoVector;
-  typedef std::map<std::string, linked_ptr<MetricInfoVector> > MetricVectorMap;
+  typedef std::vector<linked_ptr<Event> > EventVector;
+  typedef std::set<MetricType> MetricTypeSet;
+  typedef std::vector<Metric> MetricVector;
+  typedef std::map<std::string, linked_ptr<MetricVector> > MetricVectorMap;
 
   static const char kDatabaseSequenceToken[];
 
@@ -119,18 +119,19 @@ class Database {
 
   // Retrieve the events from the database. These methods populate the provided
   // vector, and will search on the given criteria.
-  EventList GetEvents(EventType type, const base::Time& start,
-                      const base::Time& end);
+  EventVector GetEvents(EventType type,
+                        const base::Time& start,
+                        const base::Time& end);
 
-  EventList GetEvents(const base::Time& start, const base::Time& end) {
+  EventVector GetEvents(const base::Time& start, const base::Time& end) {
     return GetEvents(EVENT_UNDEFINED, start, end);
   }
 
-  EventList GetEvents(EventType type) {
+  EventVector GetEvents(EventType type) {
     return GetEvents(type, base::Time(), clock_->GetTime());
   }
 
-  EventList GetEvents() {
+  EventVector GetEvents() {
     return GetEvents(EVENT_UNDEFINED, base::Time(), clock_->GetTime());
   }
 
@@ -151,45 +152,46 @@ class Database {
 
   // Get the metrics that are active for the given process between |start|
   // (inclusive) and |end| (exclusive).
-  std::vector<const MetricDetails*> GetActiveMetrics(const base::Time& start,
-                                                     const base::Time& end);
+  MetricTypeSet GetActiveMetrics(const base::Time& start,
+                                 const base::Time& end);
 
   // Get the activities that are active for the given metric after |start|.
-  std::vector<std::string> GetActiveActivities(MetricType metric_type,
-                                               const base::Time& start);
+  std::set<std::string> GetActiveActivities(MetricType metric_type,
+                                            const base::Time& start);
 
   // Populate info with the most recent activity. Return false if populate
   // was unsuccessful.
   bool GetRecentStatsForActivityAndMetric(const std::string& activity,
-                                          MetricType metric,
-                                          MetricInfo* info);
+                                          MetricType metric_type,
+                                          Metric* metric);
 
-  bool GetRecentStatsForActivityAndMetric(MetricType metric, MetricInfo* info) {
+  bool GetRecentStatsForActivityAndMetric(MetricType metric_type,
+                                           Metric* metric) {
     return GetRecentStatsForActivityAndMetric(kProcessChromeAggregate,
-                                              metric,
-                                              info);
+                                              metric_type,
+                                              metric);
   }
 
   // Query given |metric_type| and |activity|.
-  MetricInfoVector GetStatsForActivityAndMetric(const std::string& activity,
-                                                MetricType metric_type,
-                                                const base::Time& start,
-                                                const base::Time& end);
+  MetricVector GetStatsForActivityAndMetric(const std::string& activity,
+                                            MetricType metric_type,
+                                            const base::Time& start,
+                                            const base::Time& end);
 
-  MetricInfoVector GetStatsForActivityAndMetric(MetricType metric_type,
-                                                const base::Time& start,
-                                                const base::Time& end) {
+  MetricVector GetStatsForActivityAndMetric(MetricType metric_type,
+                                            const base::Time& start,
+                                            const base::Time& end) {
     return GetStatsForActivityAndMetric(kProcessChromeAggregate, metric_type,
                                         start, end);
   }
 
-  MetricInfoVector GetStatsForActivityAndMetric(const std::string& activity,
-                                                MetricType metric_type) {
+  MetricVector GetStatsForActivityAndMetric(const std::string& activity,
+                                            MetricType metric_type) {
     return GetStatsForActivityAndMetric(activity, metric_type, base::Time(),
                                         clock_->GetTime());
   }
 
-  MetricInfoVector GetStatsForActivityAndMetric(MetricType metric_type) {
+  MetricVector GetStatsForActivityAndMetric(MetricType metric_type) {
     return GetStatsForActivityAndMetric(kProcessChromeAggregate, metric_type,
                                         base::Time(), clock_->GetTime());
   }

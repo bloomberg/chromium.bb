@@ -6,7 +6,7 @@
 
 #include "base/time.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/performance_monitor/metric_info.h"
+#include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,13 +17,13 @@ class PerformanceMonitorUtilTest : public ::testing::Test {
 };
 
 TEST(PerformanceMonitorUtilTest, AggregateMetricEmptyTest) {
-  std::vector<MetricInfo> metric;
+  Database::MetricVector metric;
   const base::Time data_time = base::Time::FromDoubleT(1);
-  metric.push_back(MetricInfo(data_time, 1));
+  metric.push_back(Metric(data_time, 1));
 
   const base::Time results_time = base::Time::FromDoubleT(3);
   const base::TimeDelta resolution = base::TimeDelta::FromSeconds(1);
-  const std::vector<MetricInfo> aggregated_metric =
+  const Database::MetricVector aggregated_metric =
       util::AggregateMetric(metric, results_time, resolution);
   ASSERT_EQ(0u, aggregated_metric.size());
 }
@@ -34,9 +34,9 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSimpleTest) {
   const base::TimeDelta results_resolution = base::TimeDelta::FromSeconds(2);
 
   const double value = 3.14;
-  std::vector<MetricInfo> metric;
-  metric.push_back(MetricInfo(data_time, value));
-  const std::vector<MetricInfo> aggregated_metric =
+  Database::MetricVector metric;
+  metric.push_back(Metric(data_time, value));
+  const Database::MetricVector aggregated_metric =
       util::AggregateMetric(metric, results_time, results_resolution);
 
   ASSERT_EQ(1u, aggregated_metric.size());
@@ -51,14 +51,14 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
   const base::TimeDelta results_resolution = base::TimeDelta::FromSeconds(4);
   double current_value = 0;
   int num_points = 12;
-  std::vector<MetricInfo> metric;
+  Database::MetricVector metric;
 
   for (int i = 0; i < num_points; ++i) {
-    metric.push_back(MetricInfo(current_data_time, current_value));
+    metric.push_back(Metric(current_data_time, current_value));
     current_value += 1;
     current_data_time += data_resolution;
   }
-  const std::vector<MetricInfo> aggregated_metric =
+  const Database::MetricVector aggregated_metric =
       util::AggregateMetric(metric, results_time, results_resolution);
   // The first 4 points get ignored because they are before the start time.
   // The remaining 8 points are aggregated into two data points.
@@ -68,21 +68,21 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
 }
 
 TEST(PerformanceMonitorUtilTest, AggregateMetricSparseTest) {
-  std::vector<MetricInfo> metric;
+  Database::MetricVector metric;
 
   const base::Time data_time1 = base::Time::FromDoubleT(20);
   const double value1 = 3.14;
-  metric.push_back(MetricInfo(data_time1, value1));
+  metric.push_back(Metric(data_time1, value1));
   const base::Time data_time2 = base::Time::FromDoubleT(40);
   const double value2 = 6.28;
-  metric.push_back(MetricInfo(data_time2, value2));
+  metric.push_back(Metric(data_time2, value2));
   const base::Time data_time3 = base::Time::FromDoubleT(60);
   const double value3 = 9.42;
-  metric.push_back(MetricInfo(data_time3, value3));
+  metric.push_back(Metric(data_time3, value3));
 
   const base::Time results_time = base::Time::FromDoubleT(19);
   const base::TimeDelta results_resolution = base::TimeDelta::FromSeconds(2);
-  const std::vector<MetricInfo> aggregated_metric =
+  const Database::MetricVector aggregated_metric =
       util::AggregateMetric(metric, results_time, results_resolution);
 
   // The first aggregation point is split between the first value and the second

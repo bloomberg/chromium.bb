@@ -9,23 +9,21 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
-#include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/events.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace performance_monitor {
 namespace util {
 
-std::vector<MetricInfo> AggregateMetric(
-    const std::vector<MetricInfo>& metric_infos,
-    const base::Time& start,
-    const base::TimeDelta& resolution) {
-  std::vector<MetricInfo> results;
+Database::MetricVector AggregateMetric(const Database::MetricVector& metrics,
+                                       const base::Time& start,
+                                       const base::TimeDelta& resolution) {
+  Database::MetricVector results;
   // Ignore all the points before the aggregation start.
-  std::vector<MetricInfo>::const_iterator it = metric_infos.begin();
-  for (; it != metric_infos.end() && it->time < start; ++it) { }
+  Database::MetricVector::const_iterator it = metrics.begin();
+  for (; it != metrics.end() && it->time < start; ++it) { }
 
-  while (it != metric_infos.end()) {
+  while (it != metrics.end()) {
     // Finds the beginning of the next aggregation window.
     int64 window_offset = (it->time - start) / resolution;
     base::Time window_start = start + (window_offset * resolution);
@@ -34,21 +32,21 @@ std::vector<MetricInfo> AggregateMetric(
     double integrated = 0.0;
     double metric_value = 0.0;
 
-    // Aggregate the step function defined by the MetricInfos in |metric_infos|.
-    while (it != metric_infos.end() && it->time <= window_end) {
+    // Aggregate the step function defined by the Metrics in |metrics|.
+    while (it != metrics.end() && it->time <= window_end) {
       metric_value = it->value;
       integrated += metric_value * (it->time - last_sample_time).InSecondsF();
       last_sample_time = it->time;
       ++it;
     }
-    if (it != metric_infos.end())
+    if (it != metrics.end())
       metric_value = it->value;
 
     // If the window splits an area of the step function, split the aggregation
     // at the end of the window.
     integrated += metric_value * (window_end - last_sample_time).InSecondsF();
     double average = integrated / resolution.InSecondsF();
-    results.push_back(MetricInfo(window_end, average));
+    results.push_back(Metric(window_end, average));
   }
   return results;
 }
