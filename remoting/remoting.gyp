@@ -1151,8 +1151,6 @@
         'base/stoppable.h',
         'base/util.cc',
         'base/util.h',
-        # TODO(kxing): Seperate the audio and video codec files into a separate
-        # target.
         'codec/audio_decoder.cc',
         'codec/audio_decoder.h',
         'codec/audio_decoder_speex.cc',
