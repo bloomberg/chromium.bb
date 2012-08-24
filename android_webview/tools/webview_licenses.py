@@ -91,6 +91,7 @@ def _CheckLicenseHeaders(directory_list, whitelisted_files):
           '--exclude-dir', 'third_party',
           '--exclude-dir', 'out',
           '--exclude-dir', '.git',
+          '--exclude-dir', '.svn',
           regex,
           '.']
   p = subprocess.Popen(args=args, cwd=REPOSITORY_ROOT, stdout=subprocess.PIPE)
@@ -101,12 +102,20 @@ def _CheckLicenseHeaders(directory_list, whitelisted_files):
   directory_list.append('android_webview/tools/')
   # This is a build intermediate directory.
   directory_list.append('chrome/app/theme/google_chrome/')
+  # This is tests directory, doesn't exist in the snapshot
+  directory_list.append('content/test/data/')
+  # This is a test output directory.
+  directory_list.append('data/dom_perf/')
   # This is a test output directory.
   directory_list.append('data/page_cycler/')
   # 'Copyright' appears in strings.
   directory_list.append('chrome/app/resources/')
   # This is a Chrome on Linux reference build, doesn't exist in the snapshot
   directory_list.append('chrome/tools/test/reference_build/chrome_linux/')
+  # Remoting internal tools, doesn't exist in the snapshot
+  directory_list.append('remoting/appengine/')
+  # Histogram tools, doesn't exist in the snapshot
+  directory_list.append('tools/histograms/')
 
   # Exclude files under listed directories and some known offenders.
   offending_files = []
@@ -162,6 +171,8 @@ def _FindThirdPartyDirs():
     # Apache 2.0 license. See
     # https://code.google.com/p/chromium/issues/detail?id=140478.
     os.path.join('third_party', 'bidichecker'),
+    # Isn't checked out on clients
+    os.path.join('third_party', 'gles2_conform'),
   ]
   return licenses.FindThirdPartyDirs(prune_paths)
 
