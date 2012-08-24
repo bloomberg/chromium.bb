@@ -22,14 +22,19 @@ namespace default_apps {
 // be changed.
 enum InstallState {
   kUnknown,
-  kAlwaysProvideDefaultApps,
-  kNeverProvideDefaultApps
+  // Now unused, left for backward compatibility.
+  kProvideLegacyDefaultApps,
+  kNeverInstallDefaultApps,
+  kAlreadyInstalledDefaultApps
 };
+
+bool ShouldInstallInProfile(Profile* profile);
+
+bool isLocaleSupported();
 
 // Register preference properties used by default apps to maintain
 // install state.
 void RegisterUserPrefs(PrefService* prefs);
-
 
 // A specialization of the ExternalProviderImpl that conditionally installs apps
 // from the chrome::DIR_DEFAULT_APPS location based on a preference in the

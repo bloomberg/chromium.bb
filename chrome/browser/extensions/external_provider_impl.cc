@@ -394,6 +394,8 @@ void ExternalProviderImpl::CreateExternalProviders(
               Extension::NO_FLAGS)));
 
 #if !defined(OS_CHROMEOS)
+  // The default apps are installed as INTERNAL but use the external
+  // extension installer codeflow.
   provider_list->push_back(
       linked_ptr<ExternalProviderInterface>(
           new default_apps::Provider(
@@ -401,7 +403,7 @@ void ExternalProviderImpl::CreateExternalProviders(
               service,
               new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
                                      ExternalPrefLoader::NONE),
-              Extension::EXTERNAL_PREF,
+              Extension::INTERNAL,
               Extension::INVALID,
               Extension::FROM_WEBSTORE)));
 #endif

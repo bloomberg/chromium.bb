@@ -2261,25 +2261,36 @@ bool ExtensionService::OnExternalExtensionFileFound(
   if (extension_prefs_->IsExternalExtensionUninstalled(id))
     return false;
 
-  DCHECK(version);
-
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
   const Extension* existing = GetExtensionById(id, true);
+
   if (existing) {
-    switch (existing->version()->CompareTo(*version)) {
-      case -1:  // existing version is older, we should upgrade
-        break;
-      case 0:  // existing version is same, do nothing
-        return false;
-      case 1:  // existing version is newer, uh-oh
-        LOG(WARNING) << "Found external version of extension " << id
-                     << "that is older than current version. Current version "
-                     << "is: " << existing->VersionString() << ". New version "
-                     << "is: " << version->GetString()
-                     << ". Keeping current version.";
-        return false;
+    // The default apps will have the location set as INTERNAL. Since older
+    // default apps are installed as EXTERNAL, we override them. However, if the
+    // app is already installed as internal, then do the version check.
+    // TODO (grv) : Remove after Q1-2013.
+    bool is_default_apps_migration =
+        (location == Extension::INTERNAL &&
+         Extension::IsExternalLocation(existing->location()));
+
+    if (!is_default_apps_migration) {
+      DCHECK(version);
+
+      switch (existing->version()->CompareTo(*version)) {
+        case -1:  // existing version is older, we should upgrade
+          break;
+        case 0:  // existing version is same, do nothing
+          return false;
+        case 1:  // existing version is newer, uh-oh
+          LOG(WARNING) << "Found external version of extension " << id
+                       << "that is older than current version. Current version "
+                       << "is: " << existing->VersionString() << ". New "
+                       << "version is: " << version->GetString()
+                       << ". Keeping current version.";
+          return false;
+      }
     }
   }
 
