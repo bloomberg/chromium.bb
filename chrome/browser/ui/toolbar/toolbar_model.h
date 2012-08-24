@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 
+class Profile;
 class ToolbarModelDelegate;
 
 namespace content {
@@ -41,8 +43,21 @@ class ToolbarModel {
   explicit ToolbarModel(ToolbarModelDelegate* delegate);
   ~ToolbarModel();
 
-  // Returns the text that should be displayed in the location bar.
-  string16 GetText() const;
+  // Returns the text for the current page's URL. This will have been formatted
+  // for display to the user:
+  //   - Some characters may be unescaped.
+  //   - The scheme and/or trailing slash may be dropped.
+  //   - if |display_search_urls_as_search_terms| is true, the query will be
+  //   extracted from search URLs for the user's default search engine and those
+  //   will be displayed in place of the URL.
+  string16 GetText(bool display_search_urls_as_search_terms) const;
+
+  // Returns the URL of the current navigation entry.
+  GURL GetURL() const;
+
+  // Returns true if a call to GetText(true) would successfully replace the URL
+  // with search terms.
+  bool WouldReplaceSearchURLWithSearchTerms() const;
 
   // Returns the security level that the toolbar should display.
   SecurityLevel GetSecurityLevel() const;
@@ -73,6 +88,14 @@ class ToolbarModel {
   // from which the states are retrieved.
   // If this returns NULL, default values are used.
   content::NavigationController* GetNavigationController() const;
+
+  // Attempt to extract search terms from |url|. Called by GetText if
+  // |display_search_urls_as_search_terms| is true and by
+  // WouldReplaceSearchURLWithSearchTerms.
+  string16 TryToExtractSearchTermsFromURL(const GURL& url) const;
+
+  // Helper method to extract the profile from the navigation controller.
+  Profile* GetProfile() const;
 
   ToolbarModelDelegate* delegate_;
 

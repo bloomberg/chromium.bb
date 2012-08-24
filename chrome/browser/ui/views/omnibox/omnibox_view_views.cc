@@ -488,7 +488,7 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
 void OmniboxViewViews::Update(const WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
-      model()->UpdatePermanentText(toolbar_model()->GetText());
+      model()->UpdatePermanentText(toolbar_model()->GetText(true));
   ToolbarModel::SecurityLevel security_level =
         toolbar_model()->GetSecurityLevel();
   bool changed_security_level = (security_level != security_level_);

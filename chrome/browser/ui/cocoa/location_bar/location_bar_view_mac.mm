@@ -403,7 +403,7 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
     return;
 
   decoration->set_preview_enabled(preview_enabled);
-  decoration->UpdateVisibility(contents, GURL(toolbar_model_->GetText()));
+  decoration->UpdateVisibility(contents, toolbar_model_->GetURL());
 }
 
 NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
@@ -652,7 +652,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     }
   }
 
-  GURL url = GURL(toolbar_model_->GetText());
+  GURL url = toolbar_model_->GetURL();
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
         toolbar_model_->input_in_progress() ?

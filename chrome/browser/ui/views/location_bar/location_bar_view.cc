@@ -494,7 +494,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
     return;
 
   page_action_view->image_view()->set_preview_enabled(preview_enabled);
-  page_action_view->UpdateVisibility(contents, GURL(model_->GetText()));
+  page_action_view->UpdateVisibility(contents, model_->GetURL());
   Layout();
   SchedulePaint();
 }

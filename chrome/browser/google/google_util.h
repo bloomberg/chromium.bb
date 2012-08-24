@@ -9,7 +9,8 @@
 
 #include <string>
 
-#include <base/basictypes.h>
+#include "base/basictypes.h"
+#include "base/string16.h"
 
 class GURL;
 class Profile;
@@ -40,6 +41,9 @@ bool GetBrand(std::string* brand);
 // that has been assigned to a partner for reactivating a dormant chrome
 // install. Returns false if the information is not available.
 bool GetReactivationBrand(std::string* brand);
+
+// Returns in the search terms used to create the Google search URL |url|.
+string16 GetSearchTermsFromGoogleSearchURL(const std::string& url);
 
 // WARNING: The following IsGoogleXXX() functions use heuristics to rule out
 // "obviously false" answers.  They do NOT guarantee that the string in question

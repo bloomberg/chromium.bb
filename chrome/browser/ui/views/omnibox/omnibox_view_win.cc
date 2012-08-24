@@ -558,7 +558,7 @@ void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
 
 void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
   const bool visibly_changed_permanent_text =
-      model()->UpdatePermanentText(toolbar_model()->GetText());
+      model()->UpdatePermanentText(toolbar_model()->GetText(true));
 
   const ToolbarModel::SecurityLevel security_level =
       toolbar_model()->GetSecurityLevel();

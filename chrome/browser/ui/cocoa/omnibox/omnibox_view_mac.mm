@@ -191,7 +191,8 @@ void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
   // that the field isn't always updated correctly.  Figure out why
   // this is.  Maybe this method should be refactored into more
   // specific cases.
-  bool user_visible = model()->UpdatePermanentText(toolbar_model()->GetText());
+  bool user_visible =
+      model()->UpdatePermanentText(toolbar_model()->GetText(true));
 
   if (tab_for_state_restoring) {
     RevertAll();

@@ -6,9 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -40,22 +42,19 @@ ToolbarModel::~ToolbarModel() {
 }
 
 // ToolbarModel Implementation.
-string16 ToolbarModel::GetText() const {
-  GURL url(chrome::kAboutBlankURL);
-  std::string languages;  // Empty if we don't have a |navigation_controller|.
+string16 ToolbarModel::GetText(bool display_search_urls_as_search_terms) const {
+  GURL url(GetURL());
 
-  NavigationController* navigation_controller = GetNavigationController();
-  if (navigation_controller) {
-    Profile* profile =
-        Profile::FromBrowserContext(navigation_controller->GetBrowserContext());
-    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    NavigationEntry* entry = navigation_controller->GetVisibleEntry();
-    if (!ShouldDisplayURL()) {
-      url = GURL();
-    } else if (entry) {
-      url = entry->GetVirtualURL();
-    }
+  if (display_search_urls_as_search_terms) {
+    string16 search_terms = TryToExtractSearchTermsFromURL(url);
+    if (!search_terms.empty())
+      return search_terms;
   }
+  std::string languages;  // Empty if we don't have a |navigation_controller|.
+  Profile* profile = GetProfile();
+  if (profile)
+    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+
   if (url.spec().length() > content::kMaxURLDisplayChars)
     url = url.IsStandard() ? url.GetOrigin() : GURL(url.scheme() + ":");
   // Note that we can't unescape spaces here, because if the user copies this
@@ -64,6 +63,21 @@ string16 ToolbarModel::GetText() const {
   return AutocompleteInput::FormattedStringWithEquivalentMeaning(
       url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
                           net::UnescapeRule::NORMAL, NULL, NULL, NULL));
+}
+
+GURL ToolbarModel::GetURL() const {
+  const NavigationController* navigation_controller = GetNavigationController();
+  if (navigation_controller) {
+    const NavigationEntry* entry = navigation_controller->GetVisibleEntry();
+    if (entry)
+      return ShouldDisplayURL() ? entry->GetVirtualURL() : GURL();
+  }
+
+  return GURL(chrome::kAboutBlankURL);
+}
+
+bool ToolbarModel::WouldReplaceSearchURLWithSearchTerms() const {
+  return !TryToExtractSearchTermsFromURL(GetURL()).empty();
 }
 
 bool ToolbarModel::ShouldDisplayURL() const {
@@ -180,4 +194,23 @@ NavigationController* ToolbarModel::GetNavigationController() const {
   // to the window).
   WebContents* current_tab = delegate_->GetActiveWebContents();
   return current_tab ? &current_tab->GetController() : NULL;
+}
+
+string16 ToolbarModel::TryToExtractSearchTermsFromURL(const GURL& url) const {
+  Profile* profile = GetProfile();
+  if (profile &&
+      chrome::search::IsInstantExtendedAPIEnabled(profile) &&
+      google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec())) {
+    // TODO(dominich): http://crbug.com/135106 - Replace this with whatever the
+    // final solution is as per http://crbug.com/139176.
+    return google_util::GetSearchTermsFromGoogleSearchURL(url.spec());
+  }
+  return string16();
+}
+
+Profile* ToolbarModel::GetProfile() const {
+  NavigationController* navigation_controller = GetNavigationController();
+  return navigation_controller ?
+      Profile::FromBrowserContext(navigation_controller->GetBrowserContext()) :
+      NULL;
 }
