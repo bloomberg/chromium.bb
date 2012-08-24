@@ -20,10 +20,10 @@ namespace webkit {
 namespace npapi {
 
 // static
-const char PluginGroup::kAdobeReaderGroupName[] = "Adobe Acrobat";
-const char PluginGroup::kJavaGroupName[] = "Java";
-const char PluginGroup::kQuickTimeGroupName[] = "QuickTime";
-const char PluginGroup::kShockwaveGroupName[] = "Shockwave";
+const char PluginGroup::kAdobeReaderGroupName[] = "Adobe Reader";
+const char PluginGroup::kJavaGroupName[] = "Java(TM)";
+const char PluginGroup::kQuickTimeGroupName[] = "QuickTime Player";
+const char PluginGroup::kShockwaveGroupName[] = "Adobe Shockwave Player";
 const char PluginGroup::kRealPlayerGroupName[] = "RealPlayer";
 const char PluginGroup::kSilverlightGroupName[] = "Silverlight";
 const char PluginGroup::kWindowsMediaPlayerGroupName[] = "Windows Media Player";

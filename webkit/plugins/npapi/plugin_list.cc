@@ -61,7 +61,7 @@ namespace npapi {
 // Try and share the group definition for plug-ins that are
 // very consistent across OS'es.
 #define kFlashDefinition { \
-    "adobe-flash-player", "Flash", "Shockwave Flash" }
+    "adobe-flash-player", "Adobe Flash Player", "Shockwave Flash" }
 
 #define kShockwaveDefinition { \
     "adobe-shockwave", PluginGroup::kShockwaveGroupName, \
@@ -85,7 +85,8 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
   kSilverlightDefinition,
   { "flip4mac", "Flip4Mac", "Flip4Mac" },
-  { "divx-player", "DivX Plus Web Player", "DivX Plus Web Player" },
+  { "divx-player", "DivX Web Player", "DivX Plus Web Player" },
+  { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer" },
   kShockwaveDefinition,
   kChromePdfDefinition,
   kGoogleTalkDefinition,
@@ -102,7 +103,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
   { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat" },
   kSilverlightDefinition,
   kShockwaveDefinition,
-  { "divx-player", "DivX Player", "DivX Web Player" },
+  { "divx-player", "DivX Web Player", "DivX Web Player" },
   { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer" },
   { "windows-media-player", PluginGroup::kWindowsMediaPlayerGroupName,
     "Windows Media Player" },
