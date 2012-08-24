@@ -759,7 +759,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableThreadedAnimation,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableGView,
-      ::switches::kEnableHighDPIPDFPlugin,
       ::switches::kEnableLogging,
       ::switches::kEnablePartialSwap,
       ::switches::kEnableUIReleaseFrontSurface,

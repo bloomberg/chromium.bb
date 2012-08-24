@@ -543,9 +543,6 @@ const char kEnableFramelessConstrainedDialogs[] =
 // for example page cycler and layout tests. See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
-// Enable High DPI rendering in Chrome PDF Viewer on High DPI displays.
-const char kEnableHighDPIPDFPlugin[]        = "enable-hidpi-pdf-plugin";
-
 // Enable HTTP pipelining. Attempt to pipeline HTTP connections. Heuristics will
 // try to figure out if pipelining can be used for a given host and request.
 // Without this flag, pipelining will never be used.

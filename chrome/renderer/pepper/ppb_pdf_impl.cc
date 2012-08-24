@@ -318,9 +318,7 @@ PP_Bool IsFeatureEnabled(PP_PDFFeature feature) {
   PP_Bool result = PP_FALSE;
   switch (feature) {
     case PP_PDFFEATURE_HIDPI:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHighDPIPDFPlugin))
-        result = PP_TRUE;
+      result = PP_TRUE;
       break;
   }
   return result;

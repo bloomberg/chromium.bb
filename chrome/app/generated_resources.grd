@@ -5456,12 +5456,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_HIGH_DPI_DESCRIPTION" desc="Description of the 'Force high DPI mode' lab.">
         Overrides the device display density to force the use of high DPI mode and assets.
       </message>
-      <message name="IDS_FLAGS_ENABLE_HIGH_DPI_PDF_PLUGIN_NAME" desc="Name of the 'Enable high DPI PDF Plugin' lab.">
-        Enable high DPI Chrome PDF Viewer
-      </message>
-      <message name="IDS_FLAGS_ENABLE_HIGH_DPI_PDF_PLUGIN_DESCRIPTION" desc="Description of the 'Enable high DPI PDF Plugin' lab.">
-        Enables high DPI mode for the Chrome PDF Viewer on high DPI displays.
-      </message>
       <message name="IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME" desc="Name of the 'Ignore GPU blacklist' lab.">
         Override software rendering list
       </message>
