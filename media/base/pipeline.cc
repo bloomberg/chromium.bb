@@ -424,7 +424,7 @@ TimeDelta Pipeline::TimeForByteOffset_Locked(int64 byte_offset) const {
 
 void Pipeline::DoPause(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  CHECK(!pending_callbacks_.get());
+  DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
   if (audio_renderer_)
@@ -438,7 +438,7 @@ void Pipeline::DoPause(const PipelineStatusCB& done_cb) {
 
 void Pipeline::DoFlush(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  CHECK(!pending_callbacks_.get());
+  DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
   if (audio_renderer_)
@@ -452,7 +452,7 @@ void Pipeline::DoFlush(const PipelineStatusCB& done_cb) {
 
 void Pipeline::DoPlay(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  CHECK(!pending_callbacks_.get());
+  DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
   if (audio_renderer_)
@@ -466,7 +466,7 @@ void Pipeline::DoPlay(const PipelineStatusCB& done_cb) {
 
 void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  CHECK(!pending_callbacks_.get());
+  DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
   if (demuxer_)
@@ -877,7 +877,7 @@ void Pipeline::AudioDisabledTask() {
 
 void Pipeline::FilterStateTransitionTask() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  CHECK(pending_callbacks_.get())
+  DCHECK(pending_callbacks_.get())
       << "Filter state transitions must be completed via pending_callbacks_";
   pending_callbacks_.reset();
 
@@ -1197,7 +1197,7 @@ void Pipeline::DoSeek(base::TimeDelta seek_timestamp,
                       bool skip_demuxer_seek,
                       const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  CHECK(!pending_callbacks_.get());
+  DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
   if (!skip_demuxer_seek) {
