@@ -62,8 +62,11 @@ class ImageData : public ppapi::Resource,
 
   const PP_ImageDataDesc& desc() const { return desc_; }
 
-  // Fills the contents of the image with 0.
-  void ZeroContents();
+  void set_used_in_replace_contents() { used_in_replace_contents_ = true; }
+
+  // Prepares this image data to be recycled to the plugin. The contents will be
+  // cleared if zero_contents is set.
+  void RecycleToPlugin(bool zero_contents);
 
 #if !defined(OS_NACL)
   static ImageHandle NullHandle();
@@ -83,6 +86,10 @@ class ImageData : public ppapi::Resource,
   // Null when the image isn't mapped.
   scoped_ptr<skia::PlatformCanvas> mapped_canvas_;
 #endif
+
+  // Set to true when this ImageData has been used in a call to
+  // Graphics2D.ReplaceContents. This is used to signal that it can be cached.
+  bool used_in_replace_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageData);
 };

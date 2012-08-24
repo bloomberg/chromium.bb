@@ -130,6 +130,8 @@ class ImageDataInstanceCache {
   bool ExpireEntries();
 
  private:
+  void IncrementInsertionPoint();
+
   // We'll store this many ImageDatas per instance.
   const static int kCacheSize = 2;
 
@@ -151,6 +153,10 @@ scoped_refptr<ImageData> ImageDataInstanceCache::Get(
         desc.size.width == width && desc.size.height == height) {
       scoped_refptr<ImageData> ret(images_[i].image);
       images_[i] = ImageDataCacheEntry();
+
+      // Since we just removed an item, this entry is the best place to insert
+      // a subsequent one.
+      next_insertion_point_ = i;
       return ret;
     }
   }
@@ -159,17 +165,22 @@ scoped_refptr<ImageData> ImageDataInstanceCache::Get(
 
 void ImageDataInstanceCache::Add(ImageData* image_data) {
   images_[next_insertion_point_] = ImageDataCacheEntry(image_data);
-
-  // Go to the next location, wrapping around to get LRU.
-  next_insertion_point_++;
-  if (next_insertion_point_ >= kCacheSize)
-    next_insertion_point_ = 0;
+  IncrementInsertionPoint();
 }
 
 void ImageDataInstanceCache::ImageDataUsable(ImageData* image_data) {
   for (int i = 0; i < kCacheSize; i++) {
     if (images_[i].image.get() == image_data) {
       images_[i].usable = true;
+
+      // This test is important. The renderer doesn't guarantee how many image
+      // datas it has or when it notifies us when one is usable. Its possible
+      // to get into situations where it's always telling us the old one is
+      // usable, and then the older one immediately gets expired. Therefore,
+      // if the next insertion would overwrite this now-usable entry, make the
+      // next insertion overwrite some other entry to avoid the replacement.
+      if (next_insertion_point_ == i)
+        IncrementInsertionPoint();
       return;
     }
   }
@@ -194,6 +205,13 @@ bool ImageDataInstanceCache::ExpireEntries() {
     }
   }
   return has_entry;
+}
+
+void ImageDataInstanceCache::IncrementInsertionPoint() {
+  // Go to the next location, wrapping around to get LRU.
+  next_insertion_point_++;
+  if (next_insertion_point_ >= kCacheSize)
+    next_insertion_point_ = 0;
 }
 
 // ImageDataCache --------------------------------------------------------------
@@ -288,7 +306,8 @@ ImageData::ImageData(const HostResource& resource,
                      const PP_ImageDataDesc& desc,
                      ImageHandle handle)
     : Resource(OBJECT_IS_PROXY, resource),
-      desc_(desc) {
+      desc_(desc),
+      used_in_replace_contents_(false) {
 #if defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
 #else
@@ -304,7 +323,8 @@ ImageData::ImageData(const HostResource& resource,
       desc_(desc),
       shm_(handle, false /* read_only */),
       size_(desc.size.width * desc.size.height * 4),
-      map_count_(0) {
+      map_count_(0),
+      used_in_replace_contents_(false) {
 }
 #endif  // !defined(OS_NACL)
 
@@ -316,8 +336,11 @@ PPB_ImageData_API* ImageData::AsPPB_ImageData_API() {
 }
 
 void ImageData::LastPluginRefWasDeleted() {
-  // The plugin no longer needs this ImageData, add it to our cache.
-  ImageDataCache::GetInstance()->Add(this);
+  // The plugin no longer needs this ImageData, add it to our cache if it's
+  // been used in a ReplaceContents. These are the ImageDatas that the renderer
+  // will send back ImageDataUsable messages for.
+  if (used_in_replace_contents_)
+    ImageDataCache::GetInstance()->Add(this);
 }
 
 PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
@@ -379,10 +402,13 @@ SkCanvas* ImageData::GetCanvas() {
 #endif
 }
 
-void ImageData::ZeroContents() {
-  void* data = Map();
-  memset(data, 0, desc_.stride * desc_.size.height);
-  Unmap();
+void ImageData::RecycleToPlugin(bool zero_contents) {
+  used_in_replace_contents_ = false;
+  if (zero_contents) {
+    void* data = Map();
+    memset(data, 0, desc_.stride * desc_.size.height);
+    Unmap();
+  }
 }
 
 #if !defined(OS_NACL)
@@ -431,10 +457,8 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
       ImageDataCache::GetInstance()->Get(instance, size.width, size.height,
                                          format);
   if (cached_image_data.get()) {
-    // We have one we can re-use rather than allocating a new one. Only zero
-    // out if requested.
-    if (PP_ToBool(init_to_zero))
-      cached_image_data->ZeroContents();
+    // We have one we can re-use rather than allocating a new one.
+    cached_image_data->RecycleToPlugin(PP_ToBool(init_to_zero));
     return cached_image_data->GetReference();
   }
 

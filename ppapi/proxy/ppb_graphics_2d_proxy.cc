@@ -16,6 +16,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
@@ -120,13 +121,18 @@ void Graphics2D::Scroll(const PP_Rect* clip_rect,
 }
 
 void Graphics2D::ReplaceContents(PP_Resource image_data) {
-  Resource* image_object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(image_data);
-  if (!image_object || pp_instance() != image_object->pp_instance()) {
+  thunk::EnterResourceNoLock<thunk::PPB_ImageData_API> enter_image(
+      image_data, true);
+  if (enter_image.failed())
+    return;
+
+  ImageData* image_object = static_cast<ImageData*>(enter_image.object());
+  if (pp_instance() != image_object->pp_instance()) {
     Log(PP_LOGLEVEL_ERROR,
-        "PPB_Graphics2D.PaintImageData: Bad image resource.");
+        "PPB_Graphics2D.ReplaceContents: Image resource for another instance.");
     return;
   }
+  image_object->set_used_in_replace_contents();
 
   GetDispatcher()->Send(new PpapiHostMsg_PPBGraphics2D_ReplaceContents(
       kApiID, host_resource(), image_object->host_resource()));
