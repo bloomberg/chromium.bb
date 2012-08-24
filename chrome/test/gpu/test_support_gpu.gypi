@@ -98,5 +98,15 @@
        '<(src_dir)/ui/views/views.gyp:views',
       ],
     }],
+    ['OS=="android"', {
+      'dependencies!': [
+        'chrome',
+      ],
+      'dependencies': [
+        '<@(chromium_dependencies)',
+        'chrome_resources.gyp:packed_resources',
+        'chrome_resources.gyp:packed_extra_resources',
+      ],
+    }],
   ],
 }

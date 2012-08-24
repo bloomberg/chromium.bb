@@ -231,7 +231,10 @@ class WebGLTest : public GpuFeatureTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     GpuFeatureTest::SetUpCommandLine(command_line);
+#if !defined(OS_ANDROID)
+    // On Android, WebGL is disabled by default
     command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
+#endif
   }
 };
 
