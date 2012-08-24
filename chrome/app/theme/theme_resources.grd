@@ -672,8 +672,8 @@
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="statusbar_network_hspa_plus.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_LTE" file="statusbar_network_lte.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="statusbar_network_lte_advanced.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_DARK" file="statusbar_network_roaming_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_LIGHT" file="statusbar_network_roaming_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_DARK" file="cros/statusbar_network_roaming_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_LIGHT" file="cros/statusbar_network_roaming_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE_DARK" file="statusbar_network_secure_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE_LIGHT" file="statusbar_network_secure_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN" file="statusbar_vpn_dark.png" />
