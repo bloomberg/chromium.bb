@@ -546,7 +546,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when no pipelining previewed pages.
-     * @param {string} previewUid Preview unique identifier.
+     * @param {number} previewUid Preview unique identifier.
      * @param {number} previewResponseId The preview request id that resulted in
      *     this response.
      * @private
@@ -564,7 +564,7 @@ cr.define('print_preview', function() {
      * Check if the settings have changed and request a regeneration if needed.
      * Called from PrintPreviewUI::OnDidPreviewPage().
      * @param {number} pageNumber The page number, 0-based.
-     * @param {string} previewUid Preview unique identifier.
+     * @param {number} previewUid Preview unique identifier.
      * @param {number} previewResponseId The preview request id that resulted in
      *     this response.
      * @private
@@ -582,7 +582,7 @@ cr.define('print_preview', function() {
      * Update the print preview when new preview data is available.
      * Create the PDF plugin as needed.
      * Called from PrintPreviewUI::PreviewDataIsAvailable().
-     * @param {string} previewUid Preview unique identifier.
+     * @param {number} previewUid Preview unique identifier.
      * @param {number} previewResponseId The preview request id that resulted in
      *     this response.
      * @private

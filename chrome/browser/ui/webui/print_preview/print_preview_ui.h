@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
-#include "chrome/browser/printing/print_preview_data_service.h"
 #include "ui/web_dialogs/constrained_web_dialog_ui.h"
 
 class PrintPreviewDataService;
@@ -65,14 +64,14 @@ class PrintPreviewUI : public ui::ConstrainedWebDialogUI {
                                     bool source_is_modifiable);
 
   // Determines whether to cancel a print preview request based on
-  // |preview_ui_addr| and |request_id|.
+  // |preview_ui_id| and |request_id|.
   // Can be called from any thread.
-  static void GetCurrentPrintPreviewStatus(const std::string& preview_ui_addr,
+  static void GetCurrentPrintPreviewStatus(int32 preview_ui_id,
                                            int request_id,
                                            bool* cancel);
 
-  // Returns a string to uniquely identify this PrintPreviewUI.
-  std::string GetPrintPreviewUIAddress() const;
+  // Returns an id to uniquely identify this PrintPreviewUI.
+  int32 GetIDForPrintPreviewUI() const;
 
   // Notifies the Web UI of a print preview request with |request_id|.
   void OnPrintPreviewRequest(int request_id);
@@ -86,10 +85,9 @@ class PrintPreviewUI : public ui::ConstrainedWebDialogUI {
 
   // Notifies the Web UI of the default page layout according to the currently
   // selected printer and page size.
-  void OnDidGetDefaultPageLayout(
-      const printing::PageSizeMargins& page_layout,
-      const gfx::Rect& printable_area,
-      bool has_custom_page_size_style);
+  void OnDidGetDefaultPageLayout(const printing::PageSizeMargins& page_layout,
+                                 const gfx::Rect& printable_area,
+                                 bool has_custom_page_size_style);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.
   // |preview_request_id| indicates wich request resulted in this response.
@@ -161,8 +159,9 @@ class PrintPreviewUI : public ui::ConstrainedWebDialogUI {
 
   base::TimeTicks initial_preview_start_time_;
 
-  // Store the PrintPreviewUI address string.
-  std::string preview_ui_addr_str_;
+  // The unique ID for this class instance. Stored here to avoid calling
+  // GetIDForPrintPreviewUI() everywhere.
+  const int32 id_;
 
   // Weak pointer to the WebUI handler.
   PrintPreviewHandler* handler_;

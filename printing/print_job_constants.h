@@ -12,7 +12,7 @@ namespace printing {
 
 PRINTING_EXPORT extern const char kIsFirstRequest[];
 PRINTING_EXPORT extern const char kPreviewRequestID[];
-PRINTING_EXPORT extern const char kPreviewUIAddr[];
+PRINTING_EXPORT extern const char kPreviewUIID[];
 PRINTING_EXPORT extern const char kSettingCloudPrintId[];
 PRINTING_EXPORT extern const char kSettingCloudPrintDialog[];
 PRINTING_EXPORT extern const char kSettingCollate[];
@@ -116,8 +116,8 @@ enum ColorModels {
   RGBA,
   COLORMODE_COLOR,  // Used in samsung printer ppds.
   COLORMODE_MONOCHROME,  // Used in samsung printer ppds.
-  HP_COLOR_COLOR, // Used in HP color printer ppds.
-  HP_COLOR_BLACK, // Used in HP color printer ppds.
+  HP_COLOR_COLOR,  // Used in HP color printer ppds.
+  HP_COLOR_BLACK,  // Used in HP color printer ppds.
   PRINTOUTMODE_NORMAL,  // Used in foomatic ppds.
   PRINTOUTMODE_NORMAL_GRAY,  // Used in foomatic ppds.
   PROCESSCOLORMODEL_CMYK,  // Used in canon printer ppds.

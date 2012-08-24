@@ -39,7 +39,7 @@ struct PrintMsg_Print_Params {
   int document_cookie;
   bool selection_only;
   bool supports_alpha_blend;
-  std::string preview_ui_addr;
+  int32 preview_ui_id;
   int preview_request_id;
   bool is_first_request;
   WebKit::WebPrintScalingOption print_scaling_option;
@@ -110,7 +110,7 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   // *** Parameters below are used only for print preview. ***
 
   // The print preview ui associated with this request.
-  IPC_STRUCT_TRAITS_MEMBER(preview_ui_addr)
+  IPC_STRUCT_TRAITS_MEMBER(preview_ui_id)
 
   // The id of the preview request.
   IPC_STRUCT_TRAITS_MEMBER(preview_request_id)
@@ -386,7 +386,7 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,
 
 // Asks the browser whether the print preview has been cancelled.
 IPC_SYNC_MESSAGE_ROUTED2_1(PrintHostMsg_CheckForCancel,
-                           std::string /* print preview ui address */,
+                           int32 /* PrintPreviewUI ID */,
                            int /* request id */,
                            bool /* print preview cancelled */)
 

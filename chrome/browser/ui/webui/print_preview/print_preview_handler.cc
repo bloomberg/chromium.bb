@@ -343,8 +343,8 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
   // thread.
-  settings->SetString(printing::kPreviewUIAddr,
-                      print_preview_ui->GetPrintPreviewUIAddress());
+  settings->SetInteger(printing::kPreviewUIID,
+                       print_preview_ui->GetIDForPrintPreviewUI());
 
   // Increment request count.
   ++regenerate_preview_request_count_;

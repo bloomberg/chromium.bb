@@ -107,7 +107,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
       IPC::Message* reply_msg);
 
   // Check to see if print preview has been cancelled.
-  void OnCheckForCancel(const std::string& preview_ui_addr,
+  void OnCheckForCancel(int32 preview_ui_id,
                         int preview_request_id,
                         bool* cancel);
 

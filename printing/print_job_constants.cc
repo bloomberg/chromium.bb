@@ -13,7 +13,7 @@ const char kIsFirstRequest[] = "isFirstRequest";
 const char kPreviewRequestID[] = "requestID";
 
 // Unique ID to identify a print preview UI.
-const char kPreviewUIAddr[] = "previewUIAddr";
+const char kPreviewUIID[] = "previewUIID";
 
 // Print using cloud print: true if selected, false if not.
 const char kSettingCloudPrintId[] = "cloudPrintID";

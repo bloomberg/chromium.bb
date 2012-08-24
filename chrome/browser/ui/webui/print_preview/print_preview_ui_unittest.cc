@@ -25,8 +25,12 @@ using content::WebContentsTester;
 
 namespace {
 
-const unsigned char blob1[] =
-    "12346102356120394751634516591348710478123649165419234519234512349134";
+base::RefCountedBytes* CreateTestData() {
+  const unsigned char blob1[] =
+      "12346102356120394751634516591348710478123649165419234519234512349134";
+  std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
+  return new base::RefCountedBytes(preview_data);
+}
 
 size_t GetConstrainedWindowCount(TabContents* tab) {
   return tab->constrained_window_tab_helper()->constrained_window_count();
@@ -76,9 +80,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
       &data);
   EXPECT_EQ(NULL, data.get());
 
-  std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
-  scoped_refptr<base::RefCountedBytes> dummy_data =
-      new base::RefCountedBytes(preview_data);
+  scoped_refptr<base::RefCountedBytes> dummy_data = CreateTestData();
 
   preview_ui->SetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
@@ -127,9 +129,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
   EXPECT_EQ(NULL, data.get());
 
-  std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
-  scoped_refptr<base::RefCountedBytes> dummy_data =
-      new base::RefCountedBytes(preview_data);
+  scoped_refptr<base::RefCountedBytes> dummy_data = CreateTestData();
 
   preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX,
                                           dummy_data.get());
@@ -185,12 +185,13 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
   // Test with invalid |preview_ui_addr|.
   bool cancel = false;
-  preview_ui->GetCurrentPrintPreviewStatus("invalid", 0, &cancel);
+  const int32 kInvalidId = -5;
+  preview_ui->GetCurrentPrintPreviewStatus(kInvalidId, 0, &cancel);
   EXPECT_TRUE(cancel);
 
   const int kFirstRequestId = 1000;
   const int kSecondRequestId = 1001;
-  const std::string preview_ui_addr = preview_ui->GetPrintPreviewUIAddress();
+  const int32 preview_ui_addr = preview_ui->GetIDForPrintPreviewUI();
 
   // Test with kFirstRequestId.
   preview_ui->OnPrintPreviewRequest(kFirstRequestId);

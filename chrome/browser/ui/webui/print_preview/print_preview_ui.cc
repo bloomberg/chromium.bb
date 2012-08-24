@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
@@ -37,50 +38,60 @@ using ui::ConstrainedWebDialogUI;
 namespace {
 
 // Thread-safe wrapper around a std::map to keep track of mappings from
-// PrintPreviewUI addresses to most recent print preview request ids.
+// PrintPreviewUI IDs to most recent print preview request IDs.
 class PrintPreviewRequestIdMapWithLock {
  public:
   PrintPreviewRequestIdMapWithLock() {}
   ~PrintPreviewRequestIdMapWithLock() {}
 
-  // Get the value for |addr|. Returns true and sets |out_value| on success.
-  bool Get(const std::string& addr, int* out_value) {
+  // Gets the value for |preview_id|.
+  // Returns true and sets |out_value| on success.
+  bool Get(int32 preview_id, int* out_value) {
     base::AutoLock lock(lock_);
-    PrintPreviewRequestIdMap::const_iterator it = map_.find(addr);
+    PrintPreviewRequestIdMap::const_iterator it = map_.find(preview_id);
     if (it == map_.end())
       return false;
     *out_value = it->second;
     return true;
   }
 
-  // Sets the |value| for |addr|.
-  void Set(const std::string& addr, int value) {
+  // Sets the |value| for |preview_id|.
+  void Set(int32 preview_id, int value) {
     base::AutoLock lock(lock_);
-    map_[addr] = value;
+    map_[preview_id] = value;
   }
 
-  // Erase the entry for |addr|.
-  void Erase(const std::string& addr) {
+  // Erases the entry for |preview_id|.
+  void Erase(int32 preview_id) {
     base::AutoLock lock(lock_);
-    map_.erase(addr);
+    map_.erase(preview_id);
   }
 
  private:
-  typedef std::map<std::string, int> PrintPreviewRequestIdMap;
+  // Mapping from PrintPreviewUI ID to print preview request ID.
+  typedef std::map<int, int> PrintPreviewRequestIdMap;
 
   PrintPreviewRequestIdMap map_;
   base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewRequestIdMapWithLock);
 };
 
 // Written to on the UI thread, read from any thread.
 base::LazyInstance<PrintPreviewRequestIdMapWithLock>
     g_print_preview_request_id_map = LAZY_INSTANCE_INITIALIZER;
 
+// PrintPreviewUI IDMap used to avoid exposing raw pointer addresses to WebUI.
+// Only accessed on the UI thread.
+base::LazyInstance<IDMap<PrintPreviewUI> >
+    g_print_preview_ui_id_map = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
+      id_(g_print_preview_ui_id_map.Get().Add(this)),
       handler_(NULL),
       source_is_modifiable_(true),
       tab_closed_(false) {
@@ -92,34 +103,33 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
   handler_ = new PrintPreviewHandler();
   web_ui->AddMessageHandler(handler_);
 
-  preview_ui_addr_str_ = GetPrintPreviewUIAddress();
-  g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, -1);
+  g_print_preview_request_id_map.Get().Set(id_, -1);
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
-  print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
-  g_print_preview_request_id_map.Get().Erase(preview_ui_addr_str_);
+  print_preview_data_service()->RemoveEntry(id_);
+  g_print_preview_request_id_map.Get().Erase(id_);
+  g_print_preview_ui_id_map.Get().Remove(id_);
 }
 
 void PrintPreviewUI::GetPrintPreviewDataForIndex(
     int index,
     scoped_refptr<base::RefCountedBytes>* data) {
-  print_preview_data_service()->GetDataEntry(preview_ui_addr_str_, index, data);
+  print_preview_data_service()->GetDataEntry(id_, index, data);
 }
 
 void PrintPreviewUI::SetPrintPreviewDataForIndex(
     int index,
     const base::RefCountedBytes* data) {
-  print_preview_data_service()->SetDataEntry(preview_ui_addr_str_, index, data);
+  print_preview_data_service()->SetDataEntry(id_, index, data);
 }
 
 void PrintPreviewUI::ClearAllPreviewData() {
-  print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
+  print_preview_data_service()->RemoveEntry(id_);
 }
 
 int PrintPreviewUI::GetAvailableDraftPageCount() {
-  return print_preview_data_service()->GetAvailableDraftPageCount(
-      preview_ui_addr_str_);
+  return print_preview_data_service()->GetAvailableDraftPageCount(id_);
 }
 
 void PrintPreviewUI::SetInitiatorTabURLAndTitle(
@@ -140,24 +150,19 @@ void PrintPreviewUI::SetSourceIsModifiable(TabContents* print_preview_tab,
 }
 
 // static
-void PrintPreviewUI::GetCurrentPrintPreviewStatus(
-    const std::string& preview_ui_addr,
-    int request_id,
-    bool* cancel) {
+void PrintPreviewUI::GetCurrentPrintPreviewStatus(int32 preview_ui_id,
+                                                  int request_id,
+                                                  bool* cancel) {
   int current_id = -1;
-  if (!g_print_preview_request_id_map.Get().Get(preview_ui_addr, &current_id)) {
+  if (!g_print_preview_request_id_map.Get().Get(preview_ui_id, &current_id)) {
     *cancel = true;
     return;
   }
   *cancel = (request_id != current_id);
 }
 
-std::string PrintPreviewUI::GetPrintPreviewUIAddress() const {
-  // Store the PrintPreviewUIAddress as a string.
-  // "0x" + deadc0de + '\0' = 2 + 2 * sizeof(this) + 1;
-  char preview_ui_addr[2 + (2 * sizeof(this)) + 1];
-  base::snprintf(preview_ui_addr, sizeof(preview_ui_addr), "%p", this);
-  return preview_ui_addr;
+int32 PrintPreviewUI::GetIDForPrintPreviewUI() const {
+  return id_;
 }
 
 void PrintPreviewUI::OnPrintPreviewTabClosed() {
@@ -182,7 +187,7 @@ void PrintPreviewUI::OnInitiatorTabClosed() {
 }
 
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
-  g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, request_id);
+  g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
 void PrintPreviewUI::OnShowSystemDialog() {
@@ -233,14 +238,14 @@ void PrintPreviewUI::OnDidPreviewPage(int page_number,
                                       int preview_request_id) {
   DCHECK_GE(page_number, 0);
   base::FundamentalValue number(page_number);
-  StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue request_id(preview_request_id);
   web_ui()->CallJavascriptFunction(
       "onDidPreviewPage", number, ui_identifier, request_id);
 }
 
 void PrintPreviewUI::OnReusePreviewData(int preview_request_id) {
-  base::StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
   web_ui()->CallJavascriptFunction("reloadPreviewPages", ui_identifier,
                                    ui_preview_request_id);
@@ -258,7 +263,7 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
                          expected_pages_count);
     initial_preview_start_time_ = base::TimeTicks();
   }
-  base::StringValue ui_identifier(preview_ui_addr_str_);
+  base::FundamentalValue ui_identifier(id_);
   base::FundamentalValue ui_preview_request_id(preview_request_id);
   web_ui()->CallJavascriptFunction("updatePrintPreview", ui_identifier,
                                    ui_preview_request_id);
@@ -273,7 +278,7 @@ void PrintPreviewUI::OnFileSelectionCancelled() {
 }
 
 void PrintPreviewUI::OnCancelPendingPreviewRequest() {
-  g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, -1);
+  g_print_preview_request_id_map.Get().Set(id_, -1);
 }
 
 void PrintPreviewUI::OnPrintPreviewFailed() {

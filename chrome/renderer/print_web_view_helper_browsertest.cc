@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
+#include "chrome/renderer/mock_printer.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
@@ -70,7 +72,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
   dict->SetInteger(printing::kSettingCopies, 1);
   dict->SetString(printing::kSettingDeviceName, "dummy");
-  dict->SetString(printing::kPreviewUIAddr, "0xb33fbeef");
+  dict->SetInteger(printing::kPreviewUIID, 4);
   dict->SetInteger(printing::kPreviewRequestID, 12345);
   dict->SetBoolean(printing::kIsFirstRequest, true);
   dict->SetInteger(printing::kSettingMarginsType, printing::DEFAULT_MARGINS);

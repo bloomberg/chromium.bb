@@ -14,16 +14,16 @@
 // PrintPreviewDataSource serves data for chrome://print requests.
 //
 // The format for requesting PDF data is as follows:
-// chrome://print/<PrintPreviewUIAddrStr>/<PageIndex>/print.pdf
+// chrome://print/<PrintPreviewUIID>/<PageIndex>/print.pdf
 //
 // Parameters (< > required):
-//    <PrintPreviewUIAddrStr> = Print preview UI identifier.
+//    <PrintPreviewUIID> = PrintPreview UI ID
 //    <PageIndex> = Page index is zero-based or
 //                  |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
 //                  a print ready PDF.
 //
 // Example:
-//    chrome://print/0xab0123ef/10/print.pdf
+//    chrome://print/123/10/print.pdf
 //
 // Requests to chrome://print with paths not ending in /print.pdf are used
 // to return the markup or other resources for the print preview page itself.
@@ -35,6 +35,7 @@ class PrintPreviewDataSource : public ChromeWebUIDataSource {
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
+
  private:
   virtual ~PrintPreviewDataSource();
   void Init();

@@ -207,22 +207,21 @@ cr.define('print_preview', function() {
      * @param {number} pageNumber Number of the page with respect to the
      *     document. A value of 3 means it's the third page of the original
      *     document.
-     * @param {string} previewUid Unique identifier of the preview.
+     * @param {number} previewUid Unique identifier of the preview.
      * @private
      */
     dispatchPageReadyEvent_: function(previewIndex, pageNumber, previewUid) {
       var pageGenEvent = new cr.Event(PreviewGenerator.EventType.PAGE_READY);
       pageGenEvent.previewIndex = previewIndex;
-      pageGenEvent.previewUrl =
-          'chrome://print/' + previewUid + '/' + (pageNumber - 1) +
-          '/print.pdf';
+      pageGenEvent.previewUrl = 'chrome://print/' + previewUid.toString() +
+          '/' + (pageNumber - 1) + '/print.pdf';
       this.dispatchEvent(pageGenEvent);
     },
 
     /**
      * Dispatches a PREVIEW_START event. Signals that the preview should be
      * reloaded.
-     * @param {string} previewUid Unique identifier of the preview.
+     * @param {number} previewUid Unique identifier of the preview.
      * @param {number} index Index of the first page of the preview.
      * @private
      */
@@ -232,8 +231,8 @@ cr.define('print_preview', function() {
       if (!this.printTicketStore_.isDocumentModifiable) {
         index = -1;
       }
-      previewStartEvent.previewUrl =
-          'chrome://print/' + previewUid + '/' + index + '/print.pdf';
+      previewStartEvent.previewUrl = 'chrome://print/' +
+          previewUid.toString() + '/' + index + '/print.pdf';
       this.dispatchEvent(previewStartEvent);
     },
 

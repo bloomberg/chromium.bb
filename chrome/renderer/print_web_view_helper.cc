@@ -1437,8 +1437,8 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   if (!print_for_preview_) {
     // Validate expected print preview settings.
-    if (!job_settings->GetString(printing::kPreviewUIAddr,
-                                 &(settings.params.preview_ui_addr)) ||
+    if (!job_settings->GetInteger(printing::kPreviewUIID,
+                                  &(settings.params.preview_ui_id)) ||
         !job_settings->GetInteger(printing::kPreviewRequestID,
                                   &(settings.params.preview_request_id)) ||
         !job_settings->GetBoolean(printing::kIsFirstRequest,
@@ -1608,12 +1608,12 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
 }
 
 bool PrintWebViewHelper::CheckForCancel() {
+  const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   bool cancel = false;
-  Send(new PrintHostMsg_CheckForCancel(
-      routing_id(),
-      print_pages_params_->params.preview_ui_addr,
-      print_pages_params_->params.preview_request_id,
-      &cancel));
+  Send(new PrintHostMsg_CheckForCancel(routing_id(),
+                                       print_params.preview_ui_id,
+                                       print_params.preview_request_id,
+                                       &cancel));
   if (cancel)
     notify_browser_of_print_failure_ = false;
   return cancel;

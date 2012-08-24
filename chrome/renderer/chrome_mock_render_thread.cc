@@ -4,19 +4,22 @@
 
 #include "chrome/renderer/chrome_mock_render_thread.h"
 
-#include <fcntl.h>
+#include <vector>
 
-#include "base/file_util.h"
-#include "base/process_util.h"
+#include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/print_messages.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
-#include "ipc/ipc_message_utils.h"
+#include "chrome/renderer/mock_printer.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/print_job_constants.h"
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include <fcntl.h>
+
+#include "base/file_util.h"
+#endif
 
 ChromeMockRenderThread::ChromeMockRenderThread()
     : printer_(new MockPrinter),
@@ -64,9 +67,11 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void ChromeMockRenderThread::OnMsgOpenChannelToExtension(
-    int routing_id, const std::string& source_extension_id,
+    int routing_id,
+    const std::string& source_extension_id,
     const std::string& target_extension_id,
-    const std::string& channel_name, int* port_id) {
+    const std::string& channel_name,
+    int* port_id) {
   *port_id = 0;
 }
 
@@ -93,14 +98,13 @@ void ChromeMockRenderThread::OnTempFileForPrintingWritten(int render_view_id,
 
 void ChromeMockRenderThread::OnGetDefaultPrintSettings(
     PrintMsg_Print_Params* params) {
-  if (printer_.get())
-    printer_->GetDefaultPrintSettings(params);
+  printer_->GetDefaultPrintSettings(params);
 }
 
 void ChromeMockRenderThread::OnScriptedPrint(
     const PrintHostMsg_ScriptedPrint_Params& params,
     PrintMsg_PrintPages_Params* settings) {
-  if (print_dialog_user_response_ && printer_.get()) {
+  if (print_dialog_user_response_) {
     printer_->ScriptedPrint(params.cookie,
                             params.expected_pages_count,
                             params.has_selection,
@@ -110,14 +114,12 @@ void ChromeMockRenderThread::OnScriptedPrint(
 
 void ChromeMockRenderThread::OnDidGetPrintedPagesCount(
     int cookie, int number_pages) {
-  if (printer_.get())
-    printer_->SetPrintedPagesCount(cookie, number_pages);
+  printer_->SetPrintedPagesCount(cookie, number_pages);
 }
 
 void ChromeMockRenderThread::OnDidPrintPage(
     const PrintHostMsg_DidPrintPage_Params& params) {
-  if (printer_.get())
-    printer_->PrintPage(params);
+  printer_->PrintPage(params);
 }
 
 void ChromeMockRenderThread::OnDidGetPreviewPageCount(
@@ -127,14 +129,13 @@ void ChromeMockRenderThread::OnDidGetPreviewPageCount(
 
 void ChromeMockRenderThread::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
-  DCHECK(params.page_number >= printing::FIRST_PAGE_INDEX);
+  DCHECK_GE(params.page_number, printing::FIRST_PAGE_INDEX);
   print_preview_pages_remaining_--;
 }
 
-void ChromeMockRenderThread::OnCheckForCancel(
-    const std::string& preview_ui_addr,
-    int preview_request_id,
-    bool* cancel) {
+void ChromeMockRenderThread::OnCheckForCancel(int32 preview_ui_id,
+                                              int preview_request_id,
+                                              bool* cancel) {
   *cancel =
       (print_preview_pages_remaining_ == print_preview_cancel_page_number_);
 }
@@ -155,36 +156,38 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
       !job_settings.GetString(printing::kSettingDeviceName, &dummy_string) ||
       !job_settings.GetInteger(printing::kSettingDuplexMode, NULL) ||
       !job_settings.GetInteger(printing::kSettingCopies, NULL) ||
-      !job_settings.GetString(printing::kPreviewUIAddr, &dummy_string) ||
+      !job_settings.GetInteger(printing::kPreviewUIID, NULL) ||
       !job_settings.GetInteger(printing::kPreviewRequestID, NULL) ||
       !job_settings.GetInteger(printing::kSettingMarginsType, &margins_type)) {
     return;
   }
 
   // Just return the default settings.
-  if (printer_.get()) {
-    const ListValue* page_range_array;
-    printing::PageRanges new_ranges;
-    if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
-      for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-        const base::DictionaryValue* dict;
-        if (!page_range_array->GetDictionary(index, &dict))
-          continue;
-        printing::PageRange range;
-        if (!dict->GetInteger(printing::kSettingPageRangeFrom, &range.from) ||
-            !dict->GetInteger(printing::kSettingPageRangeTo, &range.to)) {
-          continue;
-        }
-        // Page numbers are 1-based in the dictionary.
-        // Page numbers are 0-based for the printing context.
-        range.from--;
-        range.to--;
-        new_ranges.push_back(range);
+  const ListValue* page_range_array;
+  printing::PageRanges new_ranges;
+  if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
+    for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
+      const base::DictionaryValue* dict;
+      if (!page_range_array->GetDictionary(index, &dict))
+        continue;
+      printing::PageRange range;
+      if (!dict->GetInteger(printing::kSettingPageRangeFrom, &range.from) ||
+          !dict->GetInteger(printing::kSettingPageRangeTo, &range.to)) {
+        continue;
       }
+      // Page numbers are 1-based in the dictionary.
+      // Page numbers are 0-based for the printing context.
+      range.from--;
+      range.to--;
+      new_ranges.push_back(range);
     }
-    std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
-    printer_->UpdateSettings(document_cookie, params, pages, margins_type);
   }
+  std::vector<int> pages(printing::PageRange::GetPages(new_ranges));
+  printer_->UpdateSettings(document_cookie, params, pages, margins_type);
+}
+
+MockPrinter* ChromeMockRenderThread::printer() {
+  return printer_.get();
 }
 
 void ChromeMockRenderThread::set_print_dialog_user_response(bool response) {
@@ -195,6 +198,6 @@ void ChromeMockRenderThread::set_print_preview_cancel_page_number(int page) {
   print_preview_cancel_page_number_ = page;
 }
 
-int ChromeMockRenderThread::print_preview_pages_remaining() {
+int ChromeMockRenderThread::print_preview_pages_remaining() const {
   return print_preview_pages_remaining_;
 }
