@@ -283,7 +283,7 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
   } else if (state == remoting.HostSetupFlow.State.INSTALL_HOST) {
     remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
     window.location =
-        'http://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg';
+        'https://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg';
   } else if (state == remoting.HostSetupFlow.State.STARTING_HOST) {
     showProcessingMessage(/*i18n-content*/'HOST_SETUP_STARTING');
     this.startHost_();

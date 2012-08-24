@@ -157,6 +157,7 @@
       'webapp/menu_button.js',
       'webapp/oauth2.js',
       'webapp/oauth2_callback.html',
+      'webapp/oauth2_callback.js',
       'webapp/plugin_settings.js',
       'webapp/remoting.js',
       'webapp/scale-to-fit.png',

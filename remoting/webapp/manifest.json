@@ -21,6 +21,7 @@
       "js": [ "cs_oauth2_trampoline.js" ]
     }
   ],
+  "content_security_policy": "default-src 'self'; script-src 'self' https://*.talkgadget.google.com 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://*.talkgadget.google.com; font-src *; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://*.talkgadget.google.com https://relay.google.com",
   "permissions": [
     "https://accounts.google.com/*",
     "https://www.googleapis.com/chromoting/*",

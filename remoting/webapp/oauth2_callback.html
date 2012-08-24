@@ -10,27 +10,6 @@ found in the LICENSE file.
     <script src="oauth2.js"></script>
     <script src="plugin_settings.js"></script>
     <script src="xhr.js"></script>
+    <script src="oauth2_callback.js"></script>
   </head>
-  <body>
-    <script>
-      function retrieveRefreshToken(query) {
-        var parts = query.split('&');
-        var queryArgs = {};
-        for (var i = 0; i < parts.length; i++) {
-          var pair = parts[i].split('=');
-          queryArgs[pair[0]] = pair[1];
-        }
-        if ('code' in queryArgs) {
-          var oauth2 = new remoting.OAuth2();
-          oauth2.exchangeCodeForToken(queryArgs['code'], function() {
-            window.location.replace(chrome.extension.getURL('main.html'));
-          });
-        } else {
-          window.location.replace(chrome.extension.getURL('main.html'));
-        }
-      }
-
-      retrieveRefreshToken(window.location.search.substring(1));
-    </script>
-  </body>
 </html>
