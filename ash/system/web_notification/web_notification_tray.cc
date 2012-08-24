@@ -59,7 +59,9 @@ const int kUpdateDelayMs = 50;
 const int kMaxVisibleNotifications = 100;
 const int kAutocloseDelaySeconds = 5;
 const SkColor kMessageCountColor = SkColorSetARGB(0xff, 0xff, 0xff, 0xff);
-const SkColor kMessageCountDimmedColor = SkColorSetARGB(0x60, 0xff, 0xff, 0xff);
+const SkColor kNotificationColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
+const SkColor kNotificationReadColor = SkColorSetRGB(0xfa, 0xfa, 0xfa);
+
 
 // Individual notifications constants
 const int kWebNotificationWidth = 320;
@@ -358,8 +360,8 @@ class WebNotificationView : public views::View,
                 const WebNotification& notification) {
     set_border(views::Border::CreateSolidSidedBorder(
         1, 0, 0, 0, kBorderLightColor));
-    SkColor bg_color = notification.is_read
-        ? kHeaderBackgroundColorLight : kBackgroundColor;
+    SkColor bg_color = notification.is_read ?
+        kNotificationReadColor : kNotificationColor;
     set_background(views::Background::CreateSolidBackground(bg_color));
     SetPaintToLayer(true);
     SetFillsBoundsOpaquely(false);
@@ -946,7 +948,7 @@ WebNotificationTray::WebNotificationTray(
   gfx::Font font = count_label_->font();
   count_label_->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
   count_label_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-  count_label_->SetEnabledColor(kMessageCountDimmedColor);
+  count_label_->SetEnabledColor(kMessageCountColor);
 
   tray_container()->set_size(gfx::Size(kTrayWidth, kTrayHeight));
   tray_container()->AddChildView(count_label_);
@@ -1178,13 +1180,10 @@ void WebNotificationTray::OnClicked(const std::string& id) {
 void WebNotificationTray::UpdateTray() {
   count_label_->SetText(UTF8ToUTF16(
       GetNotificationText(notification_list()->unread_count())));
-  // Dim the message count text only if the message center is empty.
-  count_label_->SetEnabledColor(
-      (notification_list()->notifications().size() == 0) ?
-      kMessageCountDimmedColor : kMessageCountColor);
   bool is_visible =
       (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
-      (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED);
+      (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
+      (!notification_list()->notifications().empty());
   SetVisible(is_visible);
   Layout();
   SchedulePaint();
