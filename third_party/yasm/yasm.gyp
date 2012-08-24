@@ -71,6 +71,9 @@
         'genstring',
         're2c',
       ],
+      # Patch to fix posted upstream, but not yet merged.
+      # https://github.com/yasm/yasm/pull/64
+      'msvs_disabled_warnings': [ 4018, 4090 ],
       'sources': [
          'source/patched-yasm/frontends/yasm/yasm-options.c',
          'source/patched-yasm/frontends/yasm/yasm.c',
