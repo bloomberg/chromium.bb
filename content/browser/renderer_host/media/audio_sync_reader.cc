@@ -10,7 +10,7 @@
 #include "base/shared_memory.h"
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_buffers_state.h"
-#include "media/audio/audio_util.h"
+#include "media/audio/shared_memory_util.h"
 
 #if defined(OS_WIN)
 const int kMinIntervalBetweenReadCallsInMs = 10;
@@ -26,17 +26,17 @@ AudioSyncReader::~AudioSyncReader() {
 bool AudioSyncReader::DataReady() {
   return !media::IsUnknownDataSize(
       shared_memory_,
-      media::PacketSizeSizeInBytes(shared_memory_->created_size()));
+      media::PacketSizeInBytes(shared_memory_->created_size()));
 }
 
 // media::AudioOutputController::SyncReader implementations.
 void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
-  if (bytes != static_cast<uint32>(media::AudioOutputController::kPauseMark)) {
+  if (bytes != static_cast<uint32>(media::kPauseMark)) {
     // Store unknown length of data into buffer, so we later
     // can find out if data became available.
     media::SetUnknownDataSize(
         shared_memory_,
-        media::PacketSizeSizeInBytes(shared_memory_->created_size()));
+        media::PacketSizeInBytes(shared_memory_->created_size()));
   }
 
   if (socket_.get()) {
@@ -45,7 +45,7 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
 }
 
 uint32 AudioSyncReader::Read(void* data, uint32 size) {
-  uint32 max_size = media::PacketSizeSizeInBytes(
+  uint32 max_size = media::PacketSizeInBytes(
       shared_memory_->created_size());
 
 #if defined(OS_WIN)

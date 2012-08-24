@@ -4,6 +4,7 @@ include_rules = [
   "+native_client/src/trusted/plugin",
 
   "+gpu",
+  "+media",
   "+native_client/src/shared/imc",
   "+native_client/src/shared/srpc",
   "+native_client/src/trusted/desc",

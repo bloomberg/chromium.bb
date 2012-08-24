@@ -29,9 +29,6 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   PPB_Audio_Shared();
   virtual ~PPB_Audio_Shared();
 
-  // Keep in sync with media::AudioOutputController::kPauseMark.
-  static const int kPauseMark;
-
   bool playing() const { return playing_; }
 
   // Sets the callback information that the background thread will use. This
