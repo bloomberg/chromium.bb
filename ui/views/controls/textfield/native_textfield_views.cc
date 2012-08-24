@@ -1069,7 +1069,7 @@ void NativeTextfieldViews::UpdateContextMenu() {
     context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
     context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
     context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
-    context_menu_contents_->AddSeparator();
+    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                                 IDS_APP_SELECT_ALL);
     TextfieldController* controller = textfield_->GetController();

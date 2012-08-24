@@ -135,6 +135,10 @@ class CommonMenuModel : public ui::MenuModel {
     return false;
   }
 
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE {
+    return ui::NORMAL_SEPARATOR;
+  }
+
   virtual bool IsItemCheckedAt(int index) const OVERRIDE {
     return false;
   }

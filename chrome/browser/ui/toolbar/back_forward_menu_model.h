@@ -53,6 +53,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   // out the total number of items to show.
   virtual int GetItemCount() const OVERRIDE;
   virtual ItemType GetTypeAt(int index) const OVERRIDE;
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
   virtual int GetCommandIdAt(int index) const OVERRIDE;
   virtual string16 GetLabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;

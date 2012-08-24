@@ -21,7 +21,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       (tab_strip->IsTabSelected(index) &&
        tab_strip->selection_model().selected_indices().size() > 1);
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
@@ -35,7 +35,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
         TabStripModel::CommandTogglePinned,
         will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
   }
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   if (affects_multiple_tabs) {
     AddItemWithStringId(TabStripModel::CommandCloseTab,
                         IDS_TAB_CXMENU_CLOSETABS);
@@ -47,13 +47,13 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                       IDS_TAB_CXMENU_CLOSEOTHERTABS);
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
                       IDS_TAB_CXMENU_CLOSETABSTORIGHT);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
                       IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTabGroupsContextMenu)) {
-    AddSeparator();
+    AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(TabStripModel::CommandSelectByDomain,
                         IDS_TAB_CXMENU_SELECT_BY_DOMAIN);
     AddItemWithStringId(TabStripModel::CommandSelectByOpener,

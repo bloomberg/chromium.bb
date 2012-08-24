@@ -176,13 +176,13 @@ void PopupPageMenuModel::Build() {
   AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
   AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
   AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CUT, IDS_CUT);
   AddItemWithStringId(IDC_COPY, IDS_COPY);
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
   zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
@@ -192,7 +192,7 @@ void PopupPageMenuModel::Build() {
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
                          encoding_menu_model_.get());
 
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CLOSE_WINDOW, IDS_CLOSE);
 }
 
@@ -1048,9 +1048,9 @@ BrowserTitlebar::ContextMenuModel::ContextMenuModel(
     : SimpleMenuModel(delegate) {
   AddItemWithStringId(IDC_NEW_TAB, IDS_TAB_CXMENU_NEWTAB);
   AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddCheckItemWithStringId(kShowWindowDecorationsCommand,
                            IDS_SHOW_WINDOW_DECORATIONS_MENU);
 }

@@ -275,13 +275,13 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   if (!context_menu_model_.get()) {
     context_menu_model_.reset(new ui::SimpleMenuModel(this));
     context_menu_model_->AddItem(LAUNCH, UTF8ToUTF16(title()));
-    context_menu_model_->AddSeparator();
+    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_model_->AddItemWithStringId(
         TOGGLE_PIN,
         controller_->IsAppPinned(extension_id_) ?
             IDS_APP_LIST_CONTEXT_MENU_UNPIN :
             IDS_APP_LIST_CONTEXT_MENU_PIN);
-    context_menu_model_->AddSeparator();
+    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_model_->AddCheckItemWithStringId(
         LAUNCH_TYPE_REGULAR_TAB,
         IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
@@ -296,7 +296,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     context_menu_model_->AddCheckItemWithStringId(
         LAUNCH_TYPE_FULLSCREEN,
         IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-    context_menu_model_->AddSeparator();
+    context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
     context_menu_model_->AddItemWithStringId(DETAILS, IDS_NEW_TAB_APP_DETAILS);
     context_menu_model_->AddItemWithStringId(UNINSTALL,

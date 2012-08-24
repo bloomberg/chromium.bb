@@ -191,7 +191,7 @@ void AddCustomItemsToMenu(const std::vector<WebMenuItem>& items,
         NOTREACHED();
         break;
       case WebMenuItem::SEPARATOR:
-        menu_model->AddSeparator();
+        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
         break;
       case WebMenuItem::SUBMENU: {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate);
@@ -390,7 +390,7 @@ void RenderViewContextMenu::AppendExtensionItems(
   // If this is the first extension-provided menu item, and there are other
   // items in the menu, add a separator.
   if (*index == 0 && menu_model_.GetItemCount())
-    menu_model_.AddSeparator();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
   int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
 
@@ -441,7 +441,7 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
     // a separator.  The converse case is handled below.
     if (last_type == MenuItem::RADIO &&
         item->type() != MenuItem::RADIO) {
-      menu_model->AddSeparator();
+      menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
       last_type = MenuItem::SEPARATOR;
     }
 
@@ -473,13 +473,13 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
 
         // Auto-append a separator if needed.
         if (last_type != MenuItem::SEPARATOR)
-          menu_model->AddSeparator();
+          menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
       }
 
       menu_model->AddRadioItem(menu_id, title, radio_group_id);
     } else if (item->type() == MenuItem::SEPARATOR) {
       if (i != items.begin() && last_type != MenuItem::SEPARATOR) {
-        menu_model->AddSeparator();
+        menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
       }
     }
     last_type = item->type();
@@ -554,7 +554,7 @@ void RenderViewContextMenu::InitMenu() {
     // If there's a selection, don't early return when there are custom items,
     // but fall through to adding the normal ones after the custom ones.
     if (has_selection) {
-      menu_model_.AddSeparator();
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     } else {
       // Don't add items for Pepper menu.
       if (!params_.custom_context.is_pepper_menu)
@@ -577,7 +577,7 @@ void RenderViewContextMenu::InitMenu() {
         if (!params_.frame_url.is_empty()) {
           is_devtools = IsDevToolsURL(params_.frame_url);
           if (!is_devtools && !IsInternalResourcesURL(params_.frame_url)) {
-            menu_model_.AddSeparator();
+            menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
             AppendFrameItems();
           }
         }
@@ -590,7 +590,7 @@ void RenderViewContextMenu::InitMenu() {
   if (has_link) {
     AppendLinkItems();
     if (params_.media_type != WebContextMenuData::MediaTypeNone)
-      menu_model_.AddSeparator();
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   switch (params_.media_type) {
@@ -688,7 +688,7 @@ void RenderViewContextMenu::AddCheckItem(int command_id,
 }
 
 void RenderViewContextMenu::AddSeparator() {
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
 void RenderViewContextMenu::AddSubMenu(int command_id,
@@ -743,7 +743,7 @@ void RenderViewContextMenu::AppendDeveloperItems() {
   // In the DevTools popup menu, "developer items" is normally the only
   // section, so omit the separator there.
   if (menu_model_.GetItemCount() > 0)
-    menu_model_.AddSeparator();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTELEMENT,
                                   IDS_CONTENT_CONTEXT_INSPECTELEMENT);
 }
@@ -786,7 +786,7 @@ void RenderViewContextMenu::AppendImageItems() {
 
 void RenderViewContextMenu::AppendAudioItems() {
   AppendMediaItems();
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
@@ -797,7 +797,7 @@ void RenderViewContextMenu::AppendAudioItems() {
 
 void RenderViewContextMenu::AppendVideoItems() {
   AppendMediaItems();
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
@@ -840,7 +840,7 @@ void RenderViewContextMenu::AppendPluginItems() {
 
   if (params_.media_flags & WebContextMenuData::MediaCanRotate) {
     if (menu_model_.GetItemCount() > 0)
-      menu_model_.AddSeparator();
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECW,
                                     IDS_CONTENT_CONTEXT_ROTATECW);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ROTATECCW,
@@ -852,7 +852,7 @@ void RenderViewContextMenu::AppendPageItems() {
   menu_model_.AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
   menu_model_.AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
   menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_SAVE_PAGE,
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
@@ -954,7 +954,7 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_UNDO);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
                                   IDS_CONTENT_CONTEXT_REDO);
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_CUT,
                                   IDS_CONTENT_CONTEXT_CUT);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
@@ -965,12 +965,12 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_DELETE,
                                   IDS_CONTENT_CONTEXT_DELETE);
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (!params_.keyword_url.is_empty()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ADDSEARCHENGINE,
                                     IDS_CONTENT_CONTEXT_ADDSEARCHENGINE);
-    menu_model_.AddSeparator();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   AppendSpellcheckOptionsSubMenu();
@@ -983,7 +983,7 @@ void RenderViewContextMenu::AppendEditableItems() {
   AppendBidiSubMenu();
 #endif  // OS_MACOSX
 
-  menu_model_.AddSeparator();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
                                   IDS_CONTENT_CONTEXT_SELECTALL);
 }
@@ -1050,7 +1050,7 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
         IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST + i,
         handlers[i].title());
   }
-  protocol_handler_submenu_model_.AddSeparator();
+  protocol_handler_submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   protocol_handler_submenu_model_.AddItem(
       IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE));

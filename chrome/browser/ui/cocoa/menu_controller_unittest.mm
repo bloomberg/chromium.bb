@@ -108,7 +108,7 @@ TEST_F(MenuControllerTest, BasicCreation) {
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
   model.AddItem(3, ASCIIToUTF16("three"));
-  model.AddSeparator();
+  model.AddSeparator(ui::NORMAL_SEPARATOR);
   model.AddItem(4, ASCIIToUTF16("four"));
   model.AddItem(5, ASCIIToUTF16("five"));
 

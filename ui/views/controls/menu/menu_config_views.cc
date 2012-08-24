@@ -31,13 +31,7 @@ MenuConfig* MenuConfig::Create() {
   config->check_height = check->height();
   config->item_left_margin = 4;
   config->item_min_height = 29;
-  // TODO(skuhne): Separators in menus should have the same padding in touch
-  // mode but currently the touch wrench menu relies on separators having no
-  // padding to implement full-height buttons.
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
-    config->separator_height = 1;
-  else
-    config->separator_height = 15;
+  config->separator_height = 15;
   config->font = rb.GetFont(ResourceBundle::BaseFont);
   config->label_to_arrow_padding = 20;
   config->label_to_accelerator_padding = 20;

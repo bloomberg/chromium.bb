@@ -115,7 +115,7 @@ void BrowserFrameAura::ShowContextMenuForView(views::View* source,
     ui::SimpleMenuModel model(&menu_delegate);
     model.AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
     model.AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-    model.AddSeparator();
+    model.AddSeparator(ui::NORMAL_SEPARATOR);
     model.AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
     views::MenuModelAdapter menu_adapter(&model);
     menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));

@@ -48,7 +48,7 @@ CornerSelectionMenuModel::CornerSelectionMenuModel(Balloon* balloon)
   AddRadioItem(kCornerDefault,
                l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_DEFAULT),
                kCornerGroupId);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddRadioItem(kCornerUpperLeft,
                l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_UPPER_LEFT),
                kCornerGroupId);

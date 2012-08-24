@@ -26,7 +26,7 @@ MediaStreamDevicesMenuModel::MediaStreamDevicesMenuModel(
     selected_command_id_video_ = commands_.size();
     AddDevices(delegate->GetVideoDevices());
     if (audio)
-      AddSeparator();
+      AddSeparator(ui::NORMAL_SEPARATOR);
   }
   if (audio) {
     // The default command ID is the first element that will be inserted.
@@ -112,6 +112,6 @@ void MediaStreamDevicesMenuModel::AddAlwaysAllowOption(bool audio, bool video) {
   else if (!audio && video)
     message_id = IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_VIDEO_ONLY;
 
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddCheckItem(command_id, l10n_util::GetStringUTF16(message_id));
 }

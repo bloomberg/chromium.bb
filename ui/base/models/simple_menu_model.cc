@@ -21,6 +21,7 @@ struct SimpleMenuModel::Item {
   int group_id;
   MenuModel* submenu;
   ButtonMenuItemModel* button_model;
+  MenuSeparatorType separator_type;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,7 +73,7 @@ SimpleMenuModel::~SimpleMenuModel() {
 
 void SimpleMenuModel::AddItem(int command_id, const string16& label) {
   Item item = { command_id, label, gfx::Image(), TYPE_COMMAND, -1, NULL,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   AppendItem(item);
 }
 
@@ -80,15 +81,20 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
   AddItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 
-void SimpleMenuModel::AddSeparator() {
-  Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR, -1,
-                NULL, NULL };
+void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
+#if !defined(USE_AURA)
+  if (separator_type != NORMAL_SEPARATOR) {
+    NOTIMPLEMENTED();
+  }
+#endif
+  Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR,
+                -1, NULL, NULL , separator_type };
   AppendItem(item);
 }
 
 void SimpleMenuModel::AddCheckItem(int command_id, const string16& label) {
   Item item = { command_id, label, gfx::Image(), TYPE_CHECK, -1, NULL,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   AppendItem(item);
 }
 
@@ -99,7 +105,7 @@ void SimpleMenuModel::AddCheckItemWithStringId(int command_id, int string_id) {
 void SimpleMenuModel::AddRadioItem(int command_id, const string16& label,
                                    int group_id) {
   Item item = { command_id, label, gfx::Image(), TYPE_RADIO, group_id, NULL,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   AppendItem(item);
 }
 
@@ -111,14 +117,14 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
 void SimpleMenuModel::AddButtonItem(int command_id,
                                     ButtonMenuItemModel* model) {
   Item item = { command_id, string16(), gfx::Image(), TYPE_BUTTON_ITEM, -1,
-                NULL, model };
+                NULL, model, NORMAL_SEPARATOR };
   AppendItem(item);
 }
 
 void SimpleMenuModel::AddSubMenu(int command_id, const string16& label,
                                  MenuModel* model) {
   Item item = { command_id, label, gfx::Image(), TYPE_SUBMENU, -1, model,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   AppendItem(item);
 }
 
@@ -130,7 +136,7 @@ void SimpleMenuModel::AddSubMenuWithStringId(int command_id,
 void SimpleMenuModel::InsertItemAt(
     int index, int command_id, const string16& label) {
   Item item = { command_id, label, gfx::Image(), TYPE_COMMAND, -1, NULL,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   InsertItemAtIndex(item, index);
 }
 
@@ -139,16 +145,22 @@ void SimpleMenuModel::InsertItemWithStringIdAt(
   InsertItemAt(index, command_id, l10n_util::GetStringUTF16(string_id));
 }
 
-void SimpleMenuModel::InsertSeparatorAt(int index) {
-  Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR, -1,
-                NULL, NULL };
+void SimpleMenuModel::InsertSeparatorAt(int index,
+                                        MenuSeparatorType separator_type) {
+#if !defined(USE_AURA)
+  if (separator_type != NORMAL_SEPARATOR) {
+    NOTIMPLEMENTED();
+  }
+#endif
+  Item item = { kSeparatorId, string16(), gfx::Image(), TYPE_SEPARATOR,
+                -1, NULL, NULL, separator_type };
   InsertItemAtIndex(item, index);
 }
 
 void SimpleMenuModel::InsertCheckItemAt(
     int index, int command_id, const string16& label) {
   Item item = { command_id, label, gfx::Image(), TYPE_CHECK, -1, NULL,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   InsertItemAtIndex(item, index);
 }
 
@@ -161,7 +173,7 @@ void SimpleMenuModel::InsertCheckItemWithStringIdAt(
 void SimpleMenuModel::InsertRadioItemAt(
     int index, int command_id, const string16& label, int group_id) {
   Item item = { command_id, label, gfx::Image(), TYPE_RADIO, group_id, NULL,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   InsertItemAtIndex(item, index);
 }
 
@@ -174,7 +186,7 @@ void SimpleMenuModel::InsertRadioItemWithStringIdAt(
 void SimpleMenuModel::InsertSubMenuAt(
     int index, int command_id, const string16& label, MenuModel* model) {
   Item item = { command_id, label, gfx::Image(), TYPE_SUBMENU, -1, model,
-                NULL };
+                NULL, NORMAL_SEPARATOR };
   InsertItemAtIndex(item, index);
 }
 
@@ -219,6 +231,10 @@ int SimpleMenuModel::GetItemCount() const {
 
 MenuModel::ItemType SimpleMenuModel::GetTypeAt(int index) const {
   return items_[ValidateItemIndex(FlipIndex(index))].type;
+}
+
+ui::MenuSeparatorType SimpleMenuModel::GetSeparatorTypeAt(int index) const {
+  return items_[ValidateItemIndex(FlipIndex(index))].separator_type;
 }
 
 int SimpleMenuModel::GetCommandIdAt(int index) const {

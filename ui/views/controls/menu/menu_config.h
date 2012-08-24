@@ -81,8 +81,17 @@ struct VIEWS_EXPORT MenuConfig {
   // Width of the gutter. Only used if render_gutter is true.
   int gutter_width;
 
-  // Height of the separator.
+  // Height of a normal separator (ui::NORMAL_SEPARATOR).
   int separator_height;
+
+  // Height of a ui::UPPER_SEPARATOR.
+  int separator_upper_height;
+
+  // Height of a ui::LOWER_SEPARATOR.
+  int separator_lower_height;
+
+  // Height of a ui::SPACING_SEPARATOR.
+  int separator_spacing_height;
 
   // Whether or not the gutter should be rendered. The gutter is specific to
   // Vista.

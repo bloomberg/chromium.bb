@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "build/build_config.h"
+#include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
@@ -133,7 +134,8 @@ class VIEWS_EXPORT MenuItemView : public View {
                               int item_id,
                               const string16& label,
                               const gfx::ImageSkia& icon,
-                              Type type);
+                              Type type,
+                              ui::MenuSeparatorType separator_style);
 
   // Remove an item from the menu at a specified index.
   // ChildrenChanged() should be called after removing menu items (whether
@@ -193,7 +195,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const string16& label,
                                    const gfx::ImageSkia& icon,
-                                   Type type);
+                                   Type type,
+                                   ui::MenuSeparatorType separator_style);
 
   // Returns the view that contains child menu items. If the submenu has
   // not been creates, this creates it.

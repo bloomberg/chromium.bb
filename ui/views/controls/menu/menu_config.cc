@@ -33,6 +33,9 @@ MenuConfig::MenuConfig()
       arrow_width(9),
       gutter_width(0),
       separator_height(6),
+      separator_upper_height(3),
+      separator_lower_height(4),
+      separator_spacing_height(3),
       render_gutter(false),
       show_mnemonics(false),
       scroll_arrow_height(3),
@@ -43,6 +46,7 @@ MenuConfig::MenuConfig()
       align_arrow_and_shortcut(false),
       offset_context_menus(false) {
   // Use 40px tall menu items when running in touch optimized mode.
+  // For Windows use 40px tall menu items when running in touch optimized mode.
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     item_top_margin = item_no_icon_top_margin = 12;
     item_bottom_margin = item_no_icon_bottom_margin = 13;

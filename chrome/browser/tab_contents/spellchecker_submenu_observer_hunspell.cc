@@ -57,7 +57,7 @@ void SpellCheckerSubMenuObserver::InitMenu(
   }
 
   // Add an item that opens the 'fonts and languages options' page.
-  submenu_model_.AddSeparator();
+  submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   submenu_model_.AddItemWithStringId(
       IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
       IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);

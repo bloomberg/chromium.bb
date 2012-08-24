@@ -1553,6 +1553,7 @@ class MockMenuModel : public ui::MenuModel {
   MOCK_CONST_METHOD1(GetFirstItemIndex, int(gfx::NativeMenu native_menu));
   MOCK_CONST_METHOD0(GetItemCount, int());
   MOCK_CONST_METHOD1(GetTypeAt, ItemType(int index));
+  MOCK_CONST_METHOD1(GetSeparatorTypeAt, ui::MenuSeparatorType(int index));
   MOCK_CONST_METHOD1(GetCommandIdAt, int(int index));
   MOCK_CONST_METHOD1(GetLabelAt, string16(int index));
   MOCK_CONST_METHOD1(IsItemDynamicAt, bool(int index));

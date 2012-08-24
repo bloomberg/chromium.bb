@@ -42,7 +42,7 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
   int command_id = kFirstExtensionCommandId;
   const extensions::ExtensionList& action_box_items = action_box_menu_items();
   if (!action_box_items.empty()) {
-    AddSeparator();
+    AddSeparator(ui::NORMAL_SEPARATOR);
     for (size_t i = 0; i < action_box_items.size(); ++i) {
       const extensions::Extension* extension = action_box_items[i];
       AddItem(command_id, UTF8ToUTF16(extension->name()));

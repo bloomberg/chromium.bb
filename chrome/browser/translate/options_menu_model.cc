@@ -45,7 +45,7 @@ OptionsMenuModel::OptionsMenuModel(
     AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE,
         l10n_util::GetStringUTF16(
             IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
-    AddSeparator();
+    AddSeparator(ui::NORMAL_SEPARATOR);
   }
   AddItem(IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION,
           l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_REPORT_ERROR,

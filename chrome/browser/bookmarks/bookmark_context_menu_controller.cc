@@ -99,7 +99,7 @@ void BookmarkContextMenuController::AddItem(int id, int localization_id) {
 }
 
 void BookmarkContextMenuController::AddSeparator() {
-  menu_model_->AddSeparator();
+  menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
 void BookmarkContextMenuController::AddCheckboxItem(int id,

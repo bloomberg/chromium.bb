@@ -50,6 +50,11 @@ class MenuModelBase : public ui::MenuModel {
     return items_[index - GetFirstItemIndex(NULL)].type;
   }
 
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(
+      int index) const OVERRIDE {
+    return ui::NORMAL_SEPARATOR;
+  }
+
   virtual int GetCommandIdAt(int index) const OVERRIDE {
     return index - GetFirstItemIndex(NULL) + command_id_base_;
   }

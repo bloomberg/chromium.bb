@@ -170,7 +170,7 @@ void RenderViewContextMenuMac::InitPlatformMenu() {
   bool has_selection = !params_.selection_text.empty();
 
   if (has_selection) {
-    menu_model_.AddSeparator();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY,
         IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY);

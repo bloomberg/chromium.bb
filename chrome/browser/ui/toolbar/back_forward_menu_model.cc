@@ -82,6 +82,11 @@ ui::MenuModel::ItemType BackForwardMenuModel::GetTypeAt(int index) const {
   return IsSeparator(index) ? TYPE_SEPARATOR : TYPE_COMMAND;
 }
 
+ui::MenuSeparatorType BackForwardMenuModel::GetSeparatorTypeAt(
+    int index) const {
+  return ui::NORMAL_SEPARATOR;
+}
+
 int BackForwardMenuModel::GetCommandIdAt(int index) const {
   return index;
 }

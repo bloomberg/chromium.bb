@@ -81,18 +81,18 @@ ExampleMenuModel::ExampleMenuModel()
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       current_encoding_command_id_(COMMAND_SELECT_ASCII) {
   AddItem(COMMAND_DO_SOMETHING, ASCIIToUTF16("Do Something"));
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddRadioItem(COMMAND_SELECT_ASCII, ASCIIToUTF16("ASCII"),
                GROUP_MAKE_DECISION);
   AddRadioItem(COMMAND_SELECT_UTF8, ASCIIToUTF16("UTF-8"),
                GROUP_MAKE_DECISION);
   AddRadioItem(COMMAND_SELECT_UTF16, ASCIIToUTF16("UTF-16"),
                GROUP_MAKE_DECISION);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddCheckItem(COMMAND_CHECK_APPLE, ASCIIToUTF16("Apple"));
   AddCheckItem(COMMAND_CHECK_ORANGE, ASCIIToUTF16("Orange"));
   AddCheckItem(COMMAND_CHECK_KIWI, ASCIIToUTF16("Kiwi"));
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItem(COMMAND_GO_HOME, ASCIIToUTF16("Go Home"));
 
   submenu_.reset(new ui::SimpleMenuModel(this));

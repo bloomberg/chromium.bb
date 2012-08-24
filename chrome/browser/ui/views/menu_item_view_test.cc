@@ -216,7 +216,8 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
                                           1000,
                                           ASCIIToUTF16("inserted item"),
                                           gfx::ImageSkia(),
-                                          views::MenuItemView::NORMAL);
+                                          views::MenuItemView::NORMAL,
+                                          ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu_->ChildrenChanged();
 
@@ -326,7 +327,8 @@ class MenuItemViewTestInsertWithSubmenu : public MenuItemViewTestBase {
                                           1000,
                                           ASCIIToUTF16("inserted item"),
                                           gfx::ImageSkia(),
-                                          views::MenuItemView::NORMAL);
+                                          views::MenuItemView::NORMAL,
+                                          ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu_->ChildrenChanged();
 

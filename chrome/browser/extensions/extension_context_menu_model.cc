@@ -42,7 +42,7 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
       delegate_) {
-    AddSeparator();
+    AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
   }
 }
@@ -165,13 +165,13 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
     extension_action_ = extension->page_action();
 
   AddItem(NAME, UTF8ToUTF16(extension->name()));
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
   AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
   AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
   if (extension->browser_action())
     AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
-  AddSeparator();
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
 }
 

@@ -74,7 +74,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // Methods for adding items to the model.
   void AddItem(int command_id, const string16& label);
   void AddItemWithStringId(int command_id, int string_id);
-  void AddSeparator();
+  void AddSeparator(MenuSeparatorType separator_type);
   void AddCheckItem(int command_id, const string16& label);
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const string16& label, int group_id);
@@ -89,7 +89,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // Methods for inserting items into the model.
   void InsertItemAt(int index, int command_id, const string16& label);
   void InsertItemWithStringIdAt(int index, int command_id, int string_id);
-  void InsertSeparatorAt(int index);
+  void InsertSeparatorAt(int index, MenuSeparatorType separator_type);
   void InsertCheckItemAt(int index, int command_id, const string16& label);
   void InsertCheckItemWithStringIdAt(int index, int command_id, int string_id);
   void InsertRadioItemAt(
@@ -115,6 +115,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   virtual bool HasIcons() const OVERRIDE;
   virtual int GetItemCount() const OVERRIDE;
   virtual ItemType GetTypeAt(int index) const OVERRIDE;
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
   virtual int GetCommandIdAt(int index) const OVERRIDE;
   virtual string16 GetLabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;

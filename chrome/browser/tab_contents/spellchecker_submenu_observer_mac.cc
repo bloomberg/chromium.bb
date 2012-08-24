@@ -44,7 +44,7 @@ void SpellCheckerSubMenuObserver::InitMenu(
           spellcheck_mac::SpellingPanelVisible() ?
               IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
               IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
-  submenu_model_.AddSeparator();
+  submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
   // Add a 'Check Spelling While Typing' item in the sub menu.
   submenu_model_.AddCheckItem(

@@ -192,12 +192,12 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel() {
       OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
   in_progress_download_menu_model_->AddCheckItemWithStringId(
       ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
-  in_progress_download_menu_model_->AddSeparator();
+  in_progress_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   in_progress_download_menu_model_->AddItemWithStringId(
       TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_PAUSE_ITEM);
   in_progress_download_menu_model_->AddItemWithStringId(
       SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
-  in_progress_download_menu_model_->AddSeparator();
+  in_progress_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   in_progress_download_menu_model_->AddItemWithStringId(
       CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
 
@@ -214,10 +214,10 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
       OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN);
   finished_download_menu_model_->AddCheckItemWithStringId(
       ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
-  finished_download_menu_model_->AddSeparator();
+  finished_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   finished_download_menu_model_->AddItemWithStringId(
       SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
-  finished_download_menu_model_->AddSeparator();
+  finished_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   finished_download_menu_model_->AddItemWithStringId(
       CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
 
@@ -234,7 +234,7 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel() {
       DISCARD, IDS_DOWNLOAD_MENU_DISCARD);
   malicious_download_menu_model_->AddItemWithStringId(
       KEEP, IDS_DOWNLOAD_MENU_KEEP);
-  malicious_download_menu_model_->AddSeparator();
+  malicious_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   malicious_download_menu_model_->AddItemWithStringId(
       LEARN_MORE, IDS_DOWNLOAD_MENU_LEARN_MORE);
 

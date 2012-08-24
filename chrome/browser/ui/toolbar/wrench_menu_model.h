@@ -133,13 +133,14 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   // Appends everything needed for the clipboard menu: a menu break, the
   // clipboard menu content and the finalizing menu break. If the last break
-  // is not needed it can be suppressed by setting |append_final_separator|
+  // is not needed it can be suppressed by setting |new_menu|
   // to false.
-  void CreateCutCopyPasteMenu(bool append_final_separator);
+  void CreateCutCopyPasteMenu(bool new_menu);
 
   // Appends everything needed for the zoom menu: a menu break, then the zoom
-  // menu content and then another menu break.
-  void CreateZoomMenu();
+  // menu content and then another menu break. If the new menu type is used,
+  // |new_menu| should be set to true.
+  void CreateZoomMenu(bool new_menu);
 
   string16 GetSyncMenuLabel() const;
 

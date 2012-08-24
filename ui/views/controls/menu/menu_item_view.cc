@@ -206,18 +206,20 @@ void MenuItemView::Cancel() {
   }
 }
 
-MenuItemView* MenuItemView::AddMenuItemAt(int index,
-                                          int item_id,
-                                          const string16& label,
-                                          const gfx::ImageSkia& icon,
-                                          Type type) {
+MenuItemView* MenuItemView::AddMenuItemAt(
+    int index,
+    int item_id,
+    const string16& label,
+    const gfx::ImageSkia& icon,
+    Type type,
+    ui::MenuSeparatorType separator_style) {
   DCHECK_NE(type, EMPTY);
   DCHECK_LE(0, index);
   if (!submenu_)
     CreateSubmenu();
   DCHECK_GE(submenu_->child_count(), index);
   if (type == SEPARATOR) {
-    submenu_->AddChildViewAt(new MenuSeparator(), index);
+    submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
     return NULL;
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
@@ -251,18 +253,21 @@ void MenuItemView::RemoveMenuItemAt(int index) {
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
                                            const string16& label,
                                            Type type) {
-  return AppendMenuItemImpl(item_id, label, gfx::ImageSkia(), type);
+  return AppendMenuItemImpl(item_id, label, gfx::ImageSkia(), type,
+      ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendSubMenu(int item_id,
                                           const string16& label) {
-  return AppendMenuItemImpl(item_id, label, gfx::ImageSkia(), SUBMENU);
+  return AppendMenuItemImpl(item_id, label, gfx::ImageSkia(), SUBMENU,
+      ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendSubMenuWithIcon(int item_id,
                                                   const string16& label,
                                                   const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
+  return AppendMenuItemImpl(
+      item_id, label, icon, SUBMENU, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemWithLabel(int item_id,
@@ -275,13 +280,15 @@ MenuItemView* MenuItemView::AppendDelegateMenuItem(int item_id) {
 }
 
 void MenuItemView::AppendSeparator() {
-  AppendMenuItemImpl(0, string16(), gfx::ImageSkia(), SEPARATOR);
+  AppendMenuItemImpl(
+      0, string16(), gfx::ImageSkia(), SEPARATOR, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
                                                    const string16& label,
                                                    const gfx::ImageSkia& icon) {
-  return AppendMenuItemImpl(item_id, label, icon, NORMAL);
+  return AppendMenuItemImpl(
+      item_id, label, icon, NORMAL, ui::NORMAL_SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
@@ -289,6 +296,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int id) {
   gfx::Image icon;
   string16 label;
+  ui::MenuSeparatorType separator_style = ui::NORMAL_SEPARATOR;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
   switch (menu_type) {
@@ -307,6 +315,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
       break;
     case ui::MenuModel::TYPE_SEPARATOR:
       type = MenuItemView::SEPARATOR;
+      separator_style = model->GetSeparatorTypeAt(index);
       break;
     case ui::MenuModel::TYPE_SUBMENU:
       model->GetIconAt(index, &icon);
@@ -322,15 +331,18 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
   return AppendMenuItemImpl(id,
       label,
       icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
-      type);
+      type,
+      separator_style);
 }
 
-MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
-                                               const string16& label,
-                                               const gfx::ImageSkia& icon,
-                                               Type type) {
+MenuItemView* MenuItemView::AppendMenuItemImpl(
+    int item_id,
+    const string16& label,
+    const gfx::ImageSkia& icon,
+    Type type,
+    ui::MenuSeparatorType separator_style) {
   const int index = submenu_ ? submenu_->child_count() : 0;
-  return AddMenuItemAt(index, item_id, label, icon, type);
+  return AddMenuItemAt(index, item_id, label, icon, type, separator_style);
 }
 
 SubmenuView* MenuItemView::CreateSubmenu() {

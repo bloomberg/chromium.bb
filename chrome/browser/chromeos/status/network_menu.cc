@@ -146,6 +146,7 @@ class NetworkMenuModel : public ui::MenuModel {
   virtual bool HasIcons() const OVERRIDE;
   virtual int GetItemCount() const OVERRIDE;
   virtual ui::MenuModel::ItemType GetTypeAt(int index) const OVERRIDE;
+  virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
   virtual string16 GetLabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
@@ -341,6 +342,10 @@ int NetworkMenuModel::GetItemCount() const {
 
 ui::MenuModel::ItemType NetworkMenuModel::GetTypeAt(int index) const {
   return menu_items_[index].type;
+}
+
+ui::MenuSeparatorType NetworkMenuModel::GetSeparatorTypeAt(int index) const {
+  return ui::NORMAL_SEPARATOR;
 }
 
 string16 NetworkMenuModel::GetLabelAt(int index) const {

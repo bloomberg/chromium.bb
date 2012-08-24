@@ -107,8 +107,12 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
     case kColorId_MenuSeparatorColor:
+#if defined(USE_AURA)
+      return kMenuSeparatorColorTouch;
+#else
       return ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
                  kMenuSeparatorColorTouch : kMenuSeparatorColor;
+#endif
 
     // Label
     case kColorId_LabelEnabledColor:

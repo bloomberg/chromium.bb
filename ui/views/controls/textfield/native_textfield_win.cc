@@ -1197,11 +1197,11 @@ void NativeTextfieldWin::BuildContextMenu() {
     return;
   context_menu_contents_.reset(new ui::SimpleMenuModel(this));
   context_menu_contents_->AddItemWithStringId(IDS_APP_UNDO, IDS_APP_UNDO);
-  context_menu_contents_->AddSeparator();
+  context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
   context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
   context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
-  context_menu_contents_->AddSeparator();
+  context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                               IDS_APP_SELECT_ALL);
 }

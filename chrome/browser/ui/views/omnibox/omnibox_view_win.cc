@@ -2584,7 +2584,7 @@ void OmniboxViewWin::BuildContextMenu() {
     context_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
   } else {
     context_menu_contents_->AddItemWithStringId(IDS_UNDO, IDS_UNDO);
-    context_menu_contents_->AddSeparator();
+    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
     context_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
     context_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
@@ -2592,9 +2592,9 @@ void OmniboxViewWin::BuildContextMenu() {
     // IDS_PASTE_AND_SEARCH label as needed.
     context_menu_contents_->AddItemWithStringId(IDS_PASTE_AND_GO,
                                                 IDS_PASTE_AND_GO);
-    context_menu_contents_->AddSeparator();
+    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDS_SELECT_ALL, IDS_SELECT_ALL);
-    context_menu_contents_->AddSeparator();
+    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     context_menu_contents_->AddItemWithStringId(IDS_EDIT_SEARCH_ENGINES,
                                                 IDS_EDIT_SEARCH_ENGINES);
   }
