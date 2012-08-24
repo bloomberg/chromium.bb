@@ -1304,7 +1304,7 @@ FileManager.prototype = {
         return;
 
       case 'format':
-        var url = this.directoryModel_.getCurrentRootURL();
+        var url = this.directoryModel_.getCurrentRootUrl();
         this.confirm.show(
             str('FORMATTING_WARNING'),
             chrome.fileBrowserPrivate.formatDevice.bind(null, url));
