@@ -75,6 +75,7 @@ class MediaDeviceNotificationsLinux
   // Helper Map to get new entries from mtab file.
   typedef std::map<std::string, std::string> MountPointDeviceMap;
 
+  // Do initialization on the File Thread.
   void InitOnFileThread();
 
   // Parses mtab file and find all changes.
