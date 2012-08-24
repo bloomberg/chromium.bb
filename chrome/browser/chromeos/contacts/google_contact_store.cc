@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/contacts/contact_database.h"
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,7 +66,7 @@ void GoogleContactStore::TestAPI::SetDatabase(ContactDatabaseInterface* db) {
 
 void GoogleContactStore::TestAPI::SetGDataService(
     gdata::GDataContactsServiceInterface* service) {
-  store_->gdata_service_for_testing_.reset(service);
+  store_->gdata_service_.reset(service);
 }
 
 void GoogleContactStore::TestAPI::DoUpdate() {
@@ -105,6 +104,13 @@ GoogleContactStore::~GoogleContactStore() {
 
 void GoogleContactStore::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Create a GData service if one hasn't already been assigned for testing.
+  if (!gdata_service_.get()) {
+    gdata_service_.reset(new gdata::GDataContactsService(profile_));
+    gdata_service_->Initialize();
+  }
+
   FilePath db_path = profile_->GetPath().Append(kDatabaseDirectoryName);
   VLOG(1) << "Initializing contact database \"" << db_path.value() << "\" for "
           << profile_->GetProfileName();
@@ -202,13 +208,7 @@ void GoogleContactStore::UpdateContacts() {
             << profile_->GetProfileName();
   }
 
-  gdata::GDataContactsServiceInterface* service =
-      gdata_service_for_testing_.get() ?
-      gdata_service_for_testing_.get() :
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_)->
-          contacts_service();
-  DCHECK(service);
-  service->DownloadContacts(
+  gdata_service_->DownloadContacts(
       base::Bind(&GoogleContactStore::OnDownloadSuccess,
                  weak_ptr_factory_.GetWeakPtr(),
                  min_update_time.is_null(),

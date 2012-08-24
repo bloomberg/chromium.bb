@@ -24,7 +24,6 @@ class DriveFileSystemInterface;
 class DriveServiceInterface;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
-class GDataContactsService;
 class GDataDownloadObserver;
 class GDataSyncClient;
 class GDataUploader;
@@ -42,7 +41,6 @@ class GDataSystemService : public ProfileKeyedService  {
   DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   GDataUploader* uploader() { return uploader_.get(); }
-  GDataContactsService* contacts_service() { return contacts_service_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
 
   // Clears all the local cache files and in-memory data, and remounts the file
@@ -84,7 +82,6 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
-  scoped_ptr<GDataContactsService> contacts_service_;
   base::WeakPtrFactory<GDataSystemService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataSystemService);

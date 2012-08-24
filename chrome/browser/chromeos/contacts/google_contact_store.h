@@ -53,7 +53,8 @@ class GoogleContactStore
     // Takes ownership of |db|. Must be called before Init().
     void SetDatabase(ContactDatabaseInterface* db);
 
-    // Takes ownership of |service|. Must be called before Init().
+    // Takes ownership of |service|. Must be called before Init(). The caller is
+    // responsible for calling |service|'s Initialize() method.
     void SetGDataService(gdata::GDataContactsServiceInterface* service);
 
     // Triggers an update, similar to what happens when the update timer fires.
@@ -143,11 +144,11 @@ class GoogleContactStore
   // by Google).
   base::Time last_contact_update_time_;
 
+  // Used to download contacts.
+  scoped_ptr<gdata::GDataContactsServiceInterface> gdata_service_;
+
   // Used to save contacts to disk and load them at startup. Owns the object.
   ContactDatabaseInterface* db_;
-
-  // If non-NULL, used in place of the real GData service to download contacts.
-  scoped_ptr<gdata::GDataContactsServiceInterface> gdata_service_for_testing_;
 
   // Used to schedule calls to UpdateContacts().
   base::OneShotTimer<GoogleContactStore> update_timer_;
