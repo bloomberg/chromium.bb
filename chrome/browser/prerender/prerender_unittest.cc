@@ -21,6 +21,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 
+using base::Time;
+using base::TimeDelta;
+using base::TimeTicks;
 using content::BrowserThread;
 using content::Referrer;
 
@@ -81,8 +84,8 @@ class UnitTestPrerenderManager : public PrerenderManager {
 
   explicit UnitTestPrerenderManager(PrerenderTracker* prerender_tracker)
       : PrerenderManager(&profile_, prerender_tracker),
-        time_(base::Time::Now()),
-        time_ticks_(base::TimeTicks::Now()),
+        time_(Time::Now()),
+        time_ticks_(TimeTicks::Now()),
         next_prerender_contents_(NULL),
         prerender_tracker_(prerender_tracker) {
     set_rate_limit_enabled(false);
@@ -118,11 +121,11 @@ class UnitTestPrerenderManager : public PrerenderManager {
     return prerender_contents;
   }
 
-  void AdvanceTime(base::TimeDelta delta) {
+  void AdvanceTime(TimeDelta delta) {
     time_ += delta;
   }
 
-  void AdvanceTimeTicks(base::TimeDelta delta) {
+  void AdvanceTimeTicks(TimeDelta delta) {
     time_ticks_ += delta;
   }
 
@@ -174,11 +177,11 @@ class UnitTestPrerenderManager : public PrerenderManager {
   }
 
   // from PrerenderManager
-  virtual base::Time GetCurrentTime() const OVERRIDE {
+  virtual Time GetCurrentTime() const OVERRIDE {
     return time_;
   }
 
-  virtual base::TimeTicks GetCurrentTimeTicks() const OVERRIDE {
+  virtual TimeTicks GetCurrentTimeTicks() const OVERRIDE {
     return time_ticks_;
   }
 
@@ -202,8 +205,8 @@ class UnitTestPrerenderManager : public PrerenderManager {
     return next_prerender_contents_.release();
   }
 
-  base::Time time_;
-  base::TimeTicks time_ticks_;
+  Time time_;
+  TimeTicks time_ticks_;
   scoped_ptr<PrerenderContents> next_prerender_contents_;
   // PrerenderContents with an |expected_final_status| of FINAL_STATUS_USED,
   // tracked so they will be automatically deleted.
@@ -384,7 +387,7 @@ TEST_F(PrerenderTest, ExpireTest) {
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   prerender_manager()->AdvanceTimeTicks(prerender_manager()->GetMaxAge() +
-                                        base::TimeDelta::FromSeconds(1));
+                                        TimeDelta::FromSeconds(1));
   ASSERT_EQ(null, prerender_manager()->FindEntry(url));
 }
 
@@ -484,7 +487,7 @@ TEST_F(PrerenderTest, RateLimitInWindowTest) {
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
 
   prerender_manager()->set_rate_limit_enabled(true);
-  prerender_manager()->AdvanceTimeTicks(base::TimeDelta::FromMilliseconds(1));
+  prerender_manager()->AdvanceTimeTicks(TimeDelta::FromMilliseconds(1));
 
   GURL url1("http://news.google.com/");
   prerender_manager()->CreateNextPrerenderContents(
@@ -512,7 +515,7 @@ TEST_F(PrerenderTest, RateLimitOutsideWindowTest) {
 
   prerender_manager()->set_rate_limit_enabled(true);
   prerender_manager()->AdvanceTimeTicks(
-      base::TimeDelta::FromMilliseconds(
+      TimeDelta::FromMilliseconds(
           UnitTestPrerenderManager::kMinTimeBetweenPrerendersMs + 500));
 
   GURL url1("http://news.google.com/");
@@ -676,7 +679,7 @@ TEST_F(PrerenderTest, NotSoRecentlyVisited) {
 
   prerender_manager()->RecordNavigation(url);
   prerender_manager()->AdvanceTimeTicks(
-      base::TimeDelta::FromMilliseconds(
+      TimeDelta::FromMilliseconds(
           UnitTestPrerenderManager::kNavigationRecordWindowMs + 500));
 
   DummyPrerenderContents* prerender_contents =
@@ -1018,7 +1021,7 @@ TEST_F(PrerenderTest, LinkManagerExpireThenCancel) {
   EXPECT_FALSE(prerender_contents->prerendering_has_been_cancelled());
   ASSERT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
   prerender_manager()->AdvanceTimeTicks(prerender_manager()->GetMaxAge() +
-                                        base::TimeDelta::FromSeconds(1));
+                                        TimeDelta::FromSeconds(1));
 
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());
   DummyPrerenderContents* null = NULL;
@@ -1042,7 +1045,7 @@ TEST_F(PrerenderTest, LinkManagerExpireThenAddAgain) {
   ASSERT_EQ(first_prerender_contents,
             prerender_manager()->FindEntry(url));
   prerender_manager()->AdvanceTimeTicks(prerender_manager()->GetMaxAge() +
-                                        base::TimeDelta::FromSeconds(1));
+                                        TimeDelta::FromSeconds(1));
   DummyPrerenderContents* null = NULL;
   ASSERT_EQ(null, prerender_manager()->FindEntry(url));
   DummyPrerenderContents* second_prerender_contents =
