@@ -7,7 +7,6 @@
 
 #include <set>
 
-#include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_sink.h"
@@ -33,9 +32,6 @@ class MEDIA_EXPORT AudioRendererMixer
   void RemoveMixerInput(const scoped_refptr<AudioRendererMixerInput>& input);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererMixerTest, VectorFMAC);
-  FRIEND_TEST_ALL_PREFIXES(AudioRendererMixerTest, VectorFMACBenchmark);
-
   // AudioRendererSink::RenderCallback implementation.
   virtual int Render(AudioBus* audio_bus,
                      int audio_delay_milliseconds) OVERRIDE;
@@ -45,14 +41,6 @@ class MEDIA_EXPORT AudioRendererMixer
   // audio data.  When resampling is necessary, ProvideInput() will be called
   // by MultiChannelResampler when more data is necessary.
   void ProvideInput(AudioBus* audio_bus);
-
-  // Multiply each element of |src| (up to |len|) by |scale| and add to |dest|.
-  static void VectorFMAC(const float src[], float scale, int len, float dest[]);
-  static void VectorFMAC_C(const float src[], float scale, int len,
-                           float dest[]);
-  // SSE optimized VectorFMAC, requires |src|, |dest| to be 16-byte aligned.
-  static void VectorFMAC_SSE(const float src[], float scale, int len,
-                             float dest[]);
 
   // Output sink for this mixer.
   scoped_refptr<AudioRendererSink> audio_sink_;

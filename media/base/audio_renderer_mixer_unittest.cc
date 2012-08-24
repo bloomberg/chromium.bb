@@ -8,11 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
-#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string_number_conversions.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -35,137 +32,6 @@ static const int kSampleRate = 48000;
 
 // Number of full sine wave cycles for each Render() call.
 static const int kSineCycles = 4;
-
-// Command line switch for runtime adjustment of VectorFMACBenchmark iterations.
-static const char kVectorFMACIterations[] = "vector-fmac-iterations";
-
-// Test parameters for VectorFMAC tests.
-static const float kScale = 0.5;
-static const float kInputFillValue = 1.0;
-static const float kOutputFillValue = 3.0;
-
-// Ensure various optimized VectorFMAC() methods return the same value.
-TEST(AudioRendererMixerTest, VectorFMAC) {
-  // Initialize a dummy mixer.
-  scoped_refptr<MockAudioRendererSink> sink = new MockAudioRendererSink();
-  EXPECT_CALL(*sink, Start());
-  EXPECT_CALL(*sink, Stop());
-  AudioParameters params(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
-      kBitsPerChannel, kHighLatencyBufferSize);
-  AudioRendererMixer mixer(params, params, sink);
-
-  // Initialize input and output vectors.
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> input_vector(
-      static_cast<float*>(
-          base::AlignedAlloc(sizeof(float) * kHighLatencyBufferSize, 16)));
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> output_vector(
-      static_cast<float*>(
-          base::AlignedAlloc(sizeof(float) * kHighLatencyBufferSize, 16)));
-
-  // Setup input and output vectors.
-  std::fill(input_vector.get(), input_vector.get() + kHighLatencyBufferSize,
-            kInputFillValue);
-  std::fill(output_vector.get(), output_vector.get() + kHighLatencyBufferSize,
-            kOutputFillValue);
-  mixer.VectorFMAC_C(
-      input_vector.get(), kScale, kHighLatencyBufferSize, output_vector.get());
-  for(int i = 0; i < kHighLatencyBufferSize; ++i) {
-    ASSERT_FLOAT_EQ(output_vector.get()[i],
-                    kInputFillValue * kScale + kOutputFillValue);
-  }
-
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-  // Reset vectors, and try with SSE.
-  std::fill(output_vector.get(), output_vector.get() + kHighLatencyBufferSize,
-            kOutputFillValue);
-  mixer.VectorFMAC_SSE(
-      input_vector.get(), kScale, kHighLatencyBufferSize, output_vector.get());
-  for(int i = 0; i < kHighLatencyBufferSize; ++i) {
-    ASSERT_FLOAT_EQ(output_vector.get()[i],
-                    kInputFillValue * kScale + kOutputFillValue);
-  }
-#endif
-}
-
-// Benchmark for the various VectorFMAC() methods.  Make sure to build with
-// branding=Chrome so that DCHECKs are compiled out when benchmarking.  Original
-// benchmarks were run with --vector-fmac-iterations=200000.
-TEST(AudioRendererMixerTest, VectorFMACBenchmark) {
-  // Initialize a dummy mixer.
-  scoped_refptr<MockAudioRendererSink> sink = new MockAudioRendererSink();
-  EXPECT_CALL(*sink, Start());
-  EXPECT_CALL(*sink, Stop());
-  AudioParameters params(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
-      kBitsPerChannel, kHighLatencyBufferSize);
-  AudioRendererMixer mixer(params, params, sink);
-
-  // Initialize input and output vectors.
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> input_vector(
-      static_cast<float*>(
-          base::AlignedAlloc(sizeof(float) * kHighLatencyBufferSize, 16)));
-  scoped_ptr_malloc<float, base::ScopedPtrAlignedFree> output_vector(
-      static_cast<float*>(
-          base::AlignedAlloc(sizeof(float) * kHighLatencyBufferSize, 16)));
-
-  // Retrieve benchmark iterations from command line.
-  int vector_fmac_iterations = 10;
-  std::string iterations(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      kVectorFMACIterations));
-  if (!iterations.empty())
-    base::StringToInt(iterations, &vector_fmac_iterations);
-
-  printf("Benchmarking %d iterations:\n", vector_fmac_iterations);
-
-  // Benchmark VectorFMAC_C().
-  std::fill(input_vector.get(), input_vector.get() + kHighLatencyBufferSize,
-            kInputFillValue);
-  std::fill(output_vector.get(), output_vector.get() + kHighLatencyBufferSize,
-            kOutputFillValue);
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < vector_fmac_iterations; ++i) {
-    mixer.VectorFMAC_C(input_vector.get(), static_cast<float>(M_PI),
-                       kHighLatencyBufferSize, output_vector.get());
-  }
-  double total_time_c_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("VectorFMAC_C took %.2fms.\n", total_time_c_ms);
-
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-  // Benchmark VectorFMAC_SSE() with unaligned size; I.e., size % 4 != 0.
-  ASSERT_NE((kHighLatencyBufferSize - 1) % 4, 0);
-  std::fill(output_vector.get(), output_vector.get() + kHighLatencyBufferSize,
-            kOutputFillValue);
-  start = base::TimeTicks::HighResNow();
-  for (int j = 0; j < vector_fmac_iterations; ++j) {
-    mixer.VectorFMAC_SSE(input_vector.get(), M_PI, kHighLatencyBufferSize - 1,
-                         output_vector.get());
-  }
-  double total_time_sse_unaligned_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("VectorFMAC_SSE (unaligned size) took %.2fms; which is %.2fx faster"
-         " than VectorFMAC_C.\n", total_time_sse_unaligned_ms,
-         total_time_c_ms / total_time_sse_unaligned_ms);
-
-  // Benchmark VectorFMAC_SSE() with aligned size; I.e., size % 4 == 0.
-  ASSERT_EQ(kHighLatencyBufferSize % 4, 0);
-  std::fill(output_vector.get(), output_vector.get() + kHighLatencyBufferSize,
-            kOutputFillValue);
-  start = base::TimeTicks::HighResNow();
-  for (int j = 0; j < vector_fmac_iterations; ++j) {
-    mixer.VectorFMAC_SSE(input_vector.get(), M_PI, kHighLatencyBufferSize,
-                         output_vector.get());
-  }
-  double total_time_sse_aligned_ms =
-      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("VectorFMAC_SSE (aligned size) took %.2fms; which is %.2fx faster than"
-         " VectorFMAC_C and %.2fx faster than VectorFMAC_SSE (unaligned size)."
-         "\n",
-         total_time_sse_aligned_ms, total_time_c_ms / total_time_sse_aligned_ms,
-         total_time_sse_unaligned_ms / total_time_sse_aligned_ms);
-#endif
-}
 
 // Tuple of <input sampling rate, output sampling rate, epsilon>.
 typedef std::tr1::tuple<int, int, double> AudioRendererMixerTestData;

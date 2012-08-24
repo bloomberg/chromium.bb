@@ -4,17 +4,12 @@
 
 #include "media/base/audio_renderer_mixer.h"
 
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-#include <xmmintrin.h>
-#endif
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/cpu.h"
 #include "base/logging.h"
-#include "base/memory/aligned_memory.h"
 #include "media/audio/audio_util.h"
 #include "media/base/limits.h"
+#include "media/base/vector_math.h"
 
 namespace media {
 
@@ -117,8 +112,9 @@ void AudioRendererMixer::ProvideInput(AudioBus* audio_bus) {
 
     // Volume adjust and mix each mixer input into |audio_bus| after rendering.
     for (int i = 0; i < audio_bus->channels(); ++i) {
-       VectorFMAC(mixer_input_audio_bus_->channel(i), volume, frames_filled,
-                  audio_bus->channel(i));
+      vector_math::FMAC(
+          mixer_input_audio_bus_->channel(i), volume, frames_filled,
+          audio_bus->channel(i));
     }
   }
 }
@@ -132,47 +128,5 @@ void AudioRendererMixer::OnRenderError() {
     (*it)->callback()->OnRenderError();
   }
 }
-
-void AudioRendererMixer::VectorFMAC(const float src[], float scale, int len,
-                                    float dest[]) {
-  // Rely on function level static initialization to keep VectorFMACProc
-  // selection thread safe.
-  typedef void (*VectorFMACProc)(const float src[], float scale, int len,
-                                 float dest[]);
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-  static const VectorFMACProc kVectorFMACProc =
-      base::CPU().has_sse() ? VectorFMAC_SSE : VectorFMAC_C;
-#else
-  static const VectorFMACProc kVectorFMACProc = VectorFMAC_C;
-#endif
-
-  return kVectorFMACProc(src, scale, len, dest);
-}
-
-void AudioRendererMixer::VectorFMAC_C(const float src[], float scale, int len,
-                                      float dest[]) {
-  for (int i = 0; i < len; ++i)
-    dest[i] += src[i] * scale;
-}
-
-#if defined(ARCH_CPU_X86_FAMILY) && defined(__SSE__)
-void AudioRendererMixer::VectorFMAC_SSE(const float src[], float scale, int len,
-                                        float dest[]) {
-  // Ensure |src| and |dest| are 16-byte aligned.
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(src) & 0x0F);
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(dest) & 0x0F);
-
-  __m128 m_scale = _mm_set_ps1(scale);
-  int rem = len % 4;
-  for (int i = 0; i < len - rem; i += 4) {
-    _mm_store_ps(dest + i, _mm_add_ps(_mm_load_ps(dest + i),
-                 _mm_mul_ps(_mm_load_ps(src + i), m_scale)));
-  }
-
-  // Handle any remaining values that wouldn't fit in an SSE pass.
-  if (rem)
-    VectorFMAC_C(src + len - rem, scale, rem, dest + len - rem);
-}
-#endif
 
 }  // namespace media
