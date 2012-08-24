@@ -2738,6 +2738,7 @@ irt_variant_tests = [
     'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
     'tests/manifest_file/nacl.scons',
+    'tests/manifest_file/nacl_chrome.scons',
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
