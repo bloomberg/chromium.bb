@@ -562,6 +562,22 @@ class XcodeSettings(object):
     self.configname = None
     return ldflags
 
+  def GetLibtoolflags(self, configname):
+    """Returns flags that need to be passed to the static linker.
+
+    Args:
+        configname: The name of the configuration to get ld flags for.
+    """
+    self.configname = configname
+    libtoolflags = []
+
+    for libtoolflag in self._Settings().get('OTHER_LDFLAGS', []):
+      libtoolflags.append(libtoolflag)
+    # TODO(thakis): ARCHS?
+
+    self.configname = None
+    return libtoolflags
+
   def GetPerTargetSettings(self):
     """Gets a list of all the per-target settings. This will only fetch keys
     whose values are the same across all configurations."""

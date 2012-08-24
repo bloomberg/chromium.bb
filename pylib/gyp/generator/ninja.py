@@ -939,10 +939,16 @@ class NinjaWriter:
       self.target.binary = compile_deps
     elif spec['type'] == 'static_library':
       self.target.binary = self.ComputeOutput(spec)
+      variables = []
+      postbuild = self.GetPostbuildCommand(
+          spec, self.target.binary, self.target.binary)
+      if postbuild:
+        variables.append(('postbuilds', postbuild))
+      if self.xcode_settings:
+        variables.append(('libtool_flags',
+                          self.xcode_settings.GetLibtoolflags(config_name)))
       self.ninja.build(self.target.binary, 'alink', link_deps,
-                       order_only=compile_deps,
-                       variables=[('postbuilds', self.GetPostbuildCommand(
-                           spec, self.target.binary, self.target.binary))])
+                       order_only=compile_deps, variables=variables)
     else:
       self.WriteLink(spec, config_name, config, link_deps)
     return self.target.binary
@@ -1556,7 +1562,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'alink',
       description='LIBTOOL-STATIC $out, POSTBUILDS',
       command='rm -f $out && '
-              './gyp-mac-tool filter-libtool libtool -static -o $out $in'
+              './gyp-mac-tool filter-libtool libtool $libtool_flags '
+              '-static -o $out $in'
               '$postbuilds')
 
     # Record the public interface of $lib in $lib.TOC. See the corresponding
