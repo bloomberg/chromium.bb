@@ -2786,6 +2786,7 @@ irt_variant_tests = [
     'tests/inbrowser_test_runner/nacl.scons',
     'tests/inbrowser_test_runner/nacl_chrome.scons',
     'tests/untrusted_crash_dump/nacl.scons',
+    'tests/untrusted_crash_dump/nacl_chrome.scons',
 ]
 
 # These are tests that are NOT worthwhile to run in an IRT variant.
