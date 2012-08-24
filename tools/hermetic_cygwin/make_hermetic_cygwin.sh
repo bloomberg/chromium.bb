@@ -85,7 +85,7 @@ declare -A description packages
 . "${0/.sh/.conf}"
 . "`dirname \"$0\"`"/make_installer.inc
 
-CYGWIN_VERSION=1.7.15-0.1-with-20120816-cygwin
+CYGWIN_VERSION=1.7.15-0.1-with-20120817-cygwin
 
 mkdir -p packages{,.src,.unpacked} setup
 
