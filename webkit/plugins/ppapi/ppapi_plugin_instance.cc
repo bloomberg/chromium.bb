@@ -333,6 +333,16 @@ PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
   return new PluginInstance(delegate, module, ppp_instance_combined);
 }
 
+PluginInstance::GamepadImpl::GamepadImpl(PluginDelegate* delegate)
+    : delegate_(delegate) {
+}
+
+void PluginInstance::GamepadImpl::Sample(PP_GamepadsSampleData* data) {
+  WebKit::WebGamepads webkit_data;
+  delegate_->SampleGamepads(&webkit_data);
+  ConvertWebKitGamepadData(webkit_data, data);
+}
+
 PluginInstance::PluginInstance(
     PluginDelegate* delegate,
     PluginModule* module,
@@ -360,6 +370,7 @@ PluginInstance::PluginInstance(
       plugin_zoom_interface_(NULL),
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_messaging_interface_(false),
+      gamepad_impl_(delegate),
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
@@ -1551,13 +1562,6 @@ bool PluginInstance::IsRectTopmost(const gfx::Rect& rect) {
 #endif
 }
 
-void PluginInstance::SampleGamepads(PP_Instance instance,
-                                    PP_GamepadsSampleData* data) {
-  WebKit::WebGamepads webkit_data;
-  delegate()->SampleGamepads(&webkit_data);
-  ConvertWebKitGamepadData(webkit_data, data);
-}
-
 bool PluginInstance::IsViewAccelerated() {
   if (!container_)
     return false;
@@ -2083,6 +2087,11 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
 
 ::ppapi::thunk::PPB_Flash_API* PluginInstance::GetFlashAPI() {
   return &flash_impl_;
+}
+
+::ppapi::thunk::PPB_Gamepad_API* PluginInstance::GetGamepadAPI(
+    PP_Instance /* instance */) {
+  return &gamepad_impl_;
 }
 
 int32_t PluginInstance::RequestInputEvents(PP_Instance instance,

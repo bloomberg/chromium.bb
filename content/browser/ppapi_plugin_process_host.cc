@@ -127,13 +127,14 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
                                     host_resolver);
 
   ppapi::PpapiPermissions permissions(info.permissions);
-  host_impl_.reset(new content::BrowserPpapiHostImpl(this, permissions));
+  host_impl_ = new content::BrowserPpapiHostImpl(this, permissions);
 
   file_filter_ = new PepperTrustedFileMessageFilter(
       process_->GetData().id, info.name, profile_data_directory);
 
   process_->GetHost()->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(file_filter_.get());
+  process_->GetHost()->AddFilter(host_impl_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()

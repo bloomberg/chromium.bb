@@ -37,6 +37,7 @@ struct ViewData;
 namespace thunk {
 
 class PPB_Flash_API;
+class PPB_Gamepad_API;
 
 class PPB_Instance_API {
  public:
@@ -90,8 +91,7 @@ class PPB_Instance_API {
   virtual PPB_Flash_API* GetFlashAPI() = 0;
 
   // Gamepad.
-  virtual void SampleGamepads(PP_Instance instance,
-                              PP_GamepadsSampleData* data) = 0;
+  virtual PPB_Gamepad_API* GetGamepadAPI(PP_Instance instance) = 0;
 
   // InputEvent.
   virtual int32_t RequestInputEvents(PP_Instance instance,

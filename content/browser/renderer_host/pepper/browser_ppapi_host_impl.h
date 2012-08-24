@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/public/browser/browser_ppapi_host.h"
-#include "ipc/ipc_listener.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ppapi/host/ppapi_host.h"
 
 namespace IPC {
@@ -18,19 +18,21 @@ class Sender;
 
 namespace content {
 
-class BrowserPpapiHostImpl : public BrowserPpapiHost, public IPC::Listener {
+class BrowserPpapiHostImpl : public BrowserPpapiHost,
+                             public IPC::ChannelProxy::MessageFilter {
  public:
   BrowserPpapiHostImpl(IPC::Sender* sender,
                        const ppapi::PpapiPermissions& permissions);
-  virtual ~BrowserPpapiHostImpl();
 
-  // IPC::Listener.
+  // IPC::ChannelProxy::MessageFilter.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // BrowserPpapiHost.
   virtual ppapi::host::PpapiHost* GetPpapiHost() OVERRIDE;
 
  private:
+  virtual ~BrowserPpapiHostImpl();
+
   ContentBrowserPepperHostFactory host_factory_;
   ppapi::host::PpapiHost ppapi_host_;
 

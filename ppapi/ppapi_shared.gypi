@@ -170,6 +170,7 @@
           'thunk/ppb_flash_message_loop_thunk.cc',
           'thunk/ppb_flash_thunk.cc',
           'thunk/ppb_fullscreen_thunk.cc',
+          'thunk/ppb_gamepad_api.h',
           'thunk/ppb_gamepad_thunk.cc',
           'thunk/ppb_gles_chromium_texture_mapping_thunk.cc',
           'thunk/ppb_graphics_2d_api.h',

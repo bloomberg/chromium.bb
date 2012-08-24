@@ -14,6 +14,7 @@
 #include "base/debug/trace_event.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/plugin_message_filter.h"

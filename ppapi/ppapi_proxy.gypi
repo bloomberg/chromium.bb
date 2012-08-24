@@ -27,6 +27,8 @@
           'proxy/enter_proxy.h',
           'proxy/file_chooser_resource.cc',
           'proxy/file_chooser_resource.h',
+          'proxy/gamepad_resource.cc',
+          'proxy/gamepad_resource.h',
           'proxy/host_dispatcher.cc',
           'proxy/host_dispatcher.h',
           'proxy/host_var_serialization_rules.cc',

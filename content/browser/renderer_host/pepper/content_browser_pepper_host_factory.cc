@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 
+#include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
+#include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
@@ -24,7 +26,21 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
     const ppapi::proxy::ResourceMessageCallParams& params,
     PP_Instance instance,
     const IPC::Message& message) {
-  // TODO(brettw) implement hosts here.
+  DCHECK(host == host_->GetPpapiHost());
+
+  // Make sure the plugin is giving us a valid instance for this resource.
+  /* TODO(brettw) make this work. The browser should be aware of all valid
+     instances.
+  if (!host_->IsValidInstance(instance))
+    return scoped_ptr<ResourceHost>();
+  */
+
+  // Public interfaces with no permissions required.
+  switch (message.type()) {
+    case PpapiHostMsg_Gamepad_Create::ID:
+      return scoped_ptr<ResourceHost>(new PepperGamepadHost(
+          host_, instance, params.pp_resource()));
+  }
   return scoped_ptr<ResourceHost>();
 }
 

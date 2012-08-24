@@ -34,6 +34,7 @@ class ResourceCreationAPI;
 
 namespace proxy {
 
+class GamepadResource;
 class ResourceMessageReplyParams;
 
 // Used to keep track of per-instance data.
@@ -47,6 +48,9 @@ struct InstanceData {
 
   // When non-NULL, indicates the callback to execute when mouse lock is lost.
   scoped_refptr<TrackedCallback> mouse_lock_callback;
+
+  // Lazily created the first time the plugin requests gamepad data.
+  scoped_refptr<GamepadResource> gamepad_resource;
 
   // Calls to |RequestSurroundingText()| are done by posted tasks. Track whether
   // a) a task is pending, to avoid redundant calls, and b) whether we should

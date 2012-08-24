@@ -14,6 +14,7 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
+#include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
@@ -314,9 +315,20 @@ thunk::PPB_Flash_API* PPB_Instance_Proxy::GetFlashAPI() {
   return static_cast<PPB_Flash_Proxy*>(ip);
 }
 
-void PPB_Instance_Proxy::SampleGamepads(PP_Instance instance,
-                                        PP_GamepadsSampleData* data) {
-  NOTIMPLEMENTED();
+thunk::PPB_Gamepad_API* PPB_Instance_Proxy::GetGamepadAPI(
+    PP_Instance instance) {
+  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
+      GetInstanceData(instance);
+  if (!data)
+    return NULL;
+
+  if (!data->gamepad_resource.get()) {
+    Connection connection(
+        PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
+        dispatcher());
+    data->gamepad_resource = new GamepadResource(connection, instance);
+  }
+  return data->gamepad_resource.get();
 }
 
 int32_t PPB_Instance_Proxy::RequestInputEvents(PP_Instance instance,

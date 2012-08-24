@@ -1530,3 +1530,9 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,
                      std::vector<std::string> /* accept_mime_types */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileChooser_ShowReply,
                      std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */)
+
+// Gamepad.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_RequestMemory)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Gamepad_SendMemory,
+                     base::SharedMemoryHandle /* handle */)

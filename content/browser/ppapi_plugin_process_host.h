@@ -124,7 +124,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;
 
-  scoped_ptr<content::BrowserPpapiHostImpl> host_impl_;
+  scoped_refptr<content::BrowserPpapiHostImpl> host_impl_;
 
   // Handles filesystem requests from flash plugins. May be NULL.
   scoped_refptr<PepperFileMessageFilter> file_filter_;

@@ -613,6 +613,8 @@
     'browser/renderer_host/pepper/content_browser_pepper_host_factory.h',
     'browser/renderer_host/pepper/pepper_file_message_filter.cc',
     'browser/renderer_host/pepper/pepper_file_message_filter.h',
+    'browser/renderer_host/pepper/pepper_gamepad_host.cc',
+    'browser/renderer_host/pepper/pepper_gamepad_host.h',
     'browser/renderer_host/pepper/pepper_lookup_request.h',
     'browser/renderer_host/pepper/pepper_message_filter.cc',
     'browser/renderer_host/pepper/pepper_message_filter.h',
