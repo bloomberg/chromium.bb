@@ -69,6 +69,12 @@ static const int kNativeFrameInactiveTabAlpha = 200;
 // even more transparent.
 static const int kNativeFrameInactiveTabAlphaMultiSelection = 150;
 
+#if defined(USE_ASH)
+static const int kInactiveTabAlpha = 230;
+#else
+static const int kInactiveTabAlpha = 255;
+#endif
+
 // Inverse ratio of the width of a tab edge to the width of the tab. When
 // hovering over the left or right edge of a tab, the drop indicator will
 // point between tabs.
@@ -1164,6 +1170,9 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // painting changes as we switch between the two.
   bool stacking = layout_type_ == TAB_STRIP_LAYOUT_STACKED;
 
+  if (kInactiveTabAlpha < 255)
+    canvas->SaveLayerAlpha(kInactiveTabAlpha);
+
   PaintClosingTabs(canvas, tab_count());
 
   for (int i = tab_count() - 1; i >= 0; --i) {
@@ -1202,6 +1211,8 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       tab->Paint(canvas);
     }
   }
+  if (kInactiveTabAlpha < 255)
+    canvas->Restore();
 
   if (GetWidget()->ShouldUseNativeFrame()) {
     bool multiple_tabs_selected = (!selected_tabs.empty() ||
