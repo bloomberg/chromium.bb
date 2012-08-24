@@ -2993,6 +2993,7 @@
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.h',
         'browser/ui/webui/bookmarks_ui_browsertest.cc',
+        'browser/ui/webui/downloads_dom_handler_browsertest.cc',
         'browser/ui/webui/extensions/extension_settings_browsertest.js',
         'browser/ui/webui/inspect_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
