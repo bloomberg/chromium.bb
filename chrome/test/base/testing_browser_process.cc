@@ -158,7 +158,7 @@ AutomationProviderList* TestingBrowserProcess::GetAutomationProviderList() {
   return NULL;
 }
 
-void TestingBrowserProcess::InitDevToolsHttpProtocolHandler(
+void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
     Profile* profile,
     const std::string& ip,
     int port,

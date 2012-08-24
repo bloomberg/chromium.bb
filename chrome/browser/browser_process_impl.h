@@ -78,7 +78,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual IconManager* icon_manager() OVERRIDE;
   virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
-  virtual void InitDevToolsHttpProtocolHandler(
+  virtual void CreateDevToolsHttpProtocolHandler(
       Profile* profile,
       const std::string& ip,
       int port,

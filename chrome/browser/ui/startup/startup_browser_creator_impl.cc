@@ -317,7 +317,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
         frontend_str = command_line_.GetSwitchValueASCII(
             switches::kRemoteDebuggingFrontend);
       }
-      g_browser_process->InitDevToolsHttpProtocolHandler(
+      g_browser_process->CreateDevToolsHttpProtocolHandler(
           profile,
           "127.0.0.1",
           static_cast<int>(port),

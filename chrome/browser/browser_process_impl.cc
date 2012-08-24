@@ -471,14 +471,18 @@ AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {
 #endif
 }
 
-void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(
+void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
     Profile* profile,
     const std::string& ip,
     int port,
     const std::string& frontend_url) {
   DCHECK(CalledOnValidThread());
-  remote_debugging_server_.reset(
-      new RemoteDebuggingServer(profile, ip, port, frontend_url));
+  // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser
+  // is started with several profiles or existing browser process is reused.
+  if (!remote_debugging_server_.get()) {
+    remote_debugging_server_.reset(
+        new RemoteDebuggingServer(profile, ip, port, frontend_url));
+  }
 }
 
 bool BrowserProcessImpl::IsShuttingDown() {

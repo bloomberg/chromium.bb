@@ -136,7 +136,7 @@ class BrowserProcess {
 
   virtual AutomationProviderList* GetAutomationProviderList() = 0;
 
-  virtual void InitDevToolsHttpProtocolHandler(
+  virtual void CreateDevToolsHttpProtocolHandler(
       Profile* profile,
       const std::string& ip,
       int port,

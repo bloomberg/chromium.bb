@@ -76,7 +76,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
-  virtual void InitDevToolsHttpProtocolHandler(
+  virtual void CreateDevToolsHttpProtocolHandler(
       Profile* profile,
       const std::string& ip,
       int port,
