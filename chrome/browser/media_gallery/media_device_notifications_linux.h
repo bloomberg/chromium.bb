@@ -39,9 +39,6 @@ class MediaDeviceNotificationsLinux
  public:
   explicit MediaDeviceNotificationsLinux(const FilePath& path);
 
-  // Must be called for MediaDeviceNotificationsLinux to work.
-  void Init();
-
  protected:
   // Only for use in unit tests.
   MediaDeviceNotificationsLinux(const FilePath& path,
@@ -75,6 +72,10 @@ class MediaDeviceNotificationsLinux
   // Helper Map to get new entries from mtab file.
   typedef std::map<std::string, std::string> MountPointDeviceMap;
 
+  // Common initialization code.
+  void Init();
+
+  // Do more initialization on the File Thread.
   void InitOnFileThread();
 
   // Parses mtab file and find all changes.

@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
@@ -70,6 +71,8 @@ class ScopedReleaseUdevObject {
     udev_unref(udev);
   }
 };
+typedef ScopedGenericObj<struct udev*,
+                         ScopedReleaseUdevObject> ScopedUdevObject;
 
 // ScopedGenericObj functor for UdevDeviceObjectRelease().
 class ScopedReleaseUdevDeviceObject {
@@ -78,6 +81,18 @@ class ScopedReleaseUdevDeviceObject {
     udev_device_unref(device);
   }
 };
+typedef ScopedGenericObj<struct udev_device*,
+                         ScopedReleaseUdevDeviceObject> ScopedUdevDeviceObject;
+
+// Wrapper function for udev_device_get_property_value() that also checks for
+// valid but empty values.
+std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
+                                       const char* key) {
+  const char* value = udev_device_get_property_value(udev_device, key);
+  if (!value)
+    return std::string();
+  return (strlen(value) > 0) ? value : std::string();
+}
 
 // Get the device information using udev library.
 // On success, returns true and fill in |id| and |name|.
@@ -85,7 +100,7 @@ bool GetDeviceInfo(const std::string& device_path, std::string* id,
                    string16* name) {
   DCHECK(!device_path.empty());
 
-  ScopedGenericObj<struct udev*, ScopedReleaseUdevObject> udev_obj(udev_new());
+  ScopedUdevObject udev_obj(udev_new());
   if (!udev_obj.get())
     return false;
 
@@ -101,63 +116,65 @@ bool GetDeviceInfo(const std::string& device_path, std::string* id,
   else
     return false;  // Not a supported type.
 
-  ScopedGenericObj<struct udev_device*, ScopedReleaseUdevDeviceObject>
-      device(udev_device_new_from_devnum(udev_obj, device_type,
-                                         device_stat.st_rdev));
+  ScopedUdevDeviceObject device(
+      udev_device_new_from_devnum(udev_obj, device_type, device_stat.st_rdev));
   if (!device.get())
     return false;
 
-  // Construct a device name using label or manufacturer(vendor and model)
+  // Construct a device name using label or manufacturer (vendor and model)
   // details.
   if (name) {
-    std::string device_label;
-    const char* device_name = NULL;
-    if ((device_name = udev_device_get_property_value(device, kLabel)) ||
-        (device_name = udev_device_get_property_value(device, kSerial))) {
-      device_label = device_name;
-    } else {
+    std::string device_label = GetUdevDevicePropertyValue(device, kLabel);
+    if (device_label.empty())
+      device_label = udev_device_get_property_value(device, kSerial);
+    if (device_label.empty()) {
       // Format: VendorInfo ModelInfo
       // E.g.: KnCompany Model2010
-      const char* vendor_name = NULL;
-      if ((vendor_name = udev_device_get_property_value(device, kVendor)))
-        device_label = vendor_name;
+      std::string vendor_name = GetUdevDevicePropertyValue(device, kVendor);
+      std::string model_name = GetUdevDevicePropertyValue(device, kModel);
+      if (vendor_name.empty() && model_name.empty())
+        return false;
 
-      const char* model_name = NULL;
-      if ((model_name = udev_device_get_property_value(device, kModel))) {
-        if (!device_label.empty())
-          device_label += kSpaceDelim;
-        device_label += model_name;
-      }
+      if (vendor_name.empty())
+        device_label = model_name;
+      else if (model_name.empty())
+        device_label = vendor_name;
+      else
+        device_label = vendor_name + kSpaceDelim + model_name;
     }
 
     if (IsStringUTF8(device_label))
       *name = UTF8ToUTF16(device_label);
   }
 
+  // Construct a device id using label or manufacturer (vendor and model)
+  // details.
   if (id) {
-    std::string unique_id;
-    const char* uuid  = NULL;
-    if ((uuid = udev_device_get_property_value(device, kFsUUID))) {
-      unique_id = std::string(kFSUniqueIdPrefix) + uuid;
-    } else {
+    std::string unique_id = GetUdevDevicePropertyValue(device, kFsUUID);
+    if (unique_id.empty()) {
       // If one of the vendor, model, serial information is missing, its value
       // in the string is empty.
       // Format: VendorModelSerial:VendorInfo:ModelInfo:SerialShortInfo
       // E.g.: VendorModelSerial:Kn:DataTravel_12.10:8000000000006CB02CDB
-      const char* vendor = udev_device_get_property_value(device, kVendorID);
-      const char* model = udev_device_get_property_value(device, kModelID);
-      const char* serial_short = udev_device_get_property_value(device,
-                                                                kSerialShort);
-      if (!vendor && !model && !serial_short)
+      std::string vendor = GetUdevDevicePropertyValue(device, kVendorID);
+      std::string model = GetUdevDevicePropertyValue(device, kModelID);
+      std::string serial_short = GetUdevDevicePropertyValue(device,
+                                                            kSerialShort);
+      if (vendor.empty() && model.empty() && serial_short.empty())
         return false;
 
-      unique_id = std::string(kVendorModelSerialPrefix) +
-                  (vendor ? vendor : "") + kNonSpaceDelim +
-                  (model ? model : "") + kNonSpaceDelim +
-                  (serial_short ? serial_short : "");
+      unique_id = base::StringPrintf("%s%s%s%s%s%s",
+                                     kVendorModelSerialPrefix,
+                                     vendor.c_str(),
+                                     kNonSpaceDelim,
+                                     model.c_str(),
+                                     kNonSpaceDelim,
+                                     serial_short.c_str());
+    } else {
+      unique_id = kFSUniqueIdPrefix + unique_id;
     }
-    *id = chrome::MediaStorageUtil::MakeDeviceId(
-        chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
+    *id = MediaStorageUtil::MakeDeviceId(
+        MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
   }
   return true;
 }
@@ -166,33 +183,21 @@ bool GetDeviceInfo(const std::string& device_path, std::string* id,
 
 MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
     const FilePath& path)
-    : initialized_(false),
-      mtab_path_(path),
+    : mtab_path_(path),
       get_device_info_func_(&GetDeviceInfo) {
+  Init();
 }
 
 MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
     const FilePath& path,
     GetDeviceInfoFunc get_device_info_func)
-    : initialized_(false),
-      mtab_path_(path),
+    : mtab_path_(path),
       get_device_info_func_(get_device_info_func) {
+  Init();
 }
 
 MediaDeviceNotificationsLinux::~MediaDeviceNotificationsLinux() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-}
-
-void MediaDeviceNotificationsLinux::Init() {
-  DCHECK(!mtab_path_.empty());
-
-  // Put |kKnownFileSystems| in std::set to get O(log N) access time.
-  for (size_t i = 0; i < arraysize(kKnownFileSystems); ++i)
-    known_file_systems_.insert(kKnownFileSystems[i]);
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MediaDeviceNotificationsLinux::InitOnFileThread, this));
 }
 
 void MediaDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path,
@@ -211,10 +216,20 @@ void MediaDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path,
   UpdateMtab();
 }
 
+void MediaDeviceNotificationsLinux::Init() {
+  DCHECK(!mtab_path_.empty());
+
+  // Put |kKnownFileSystems| in std::set to get O(log N) access time.
+  for (size_t i = 0; i < arraysize(kKnownFileSystems); ++i)
+    known_file_systems_.insert(kKnownFileSystems[i]);
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&MediaDeviceNotificationsLinux::InitOnFileThread, this));
+}
+
 void MediaDeviceNotificationsLinux::InitOnFileThread() {
-  DCHECK(!initialized_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  initialized_ = true;
 
   // The callback passed to Watch() has to be unretained. Otherwise
   // MediaDeviceNotificationsLinux will live longer than expected, and
@@ -363,14 +378,12 @@ void MediaDeviceNotificationsLinux::CheckAndAddMediaDevice(
   mount_device_and_id.device_id = id;
   mount_info_map_[mount_point] = mount_device_and_id;
 
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  system_monitor->ProcessMediaDeviceAttached(id, name, mount_point);
+  SystemMonitor::Get()->ProcessMediaDeviceAttached(id, name, mount_point);
 }
 
 void MediaDeviceNotificationsLinux::RemoveOldDevice(
     const std::string& device_id) {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  system_monitor->ProcessMediaDeviceDetached(device_id);
+  SystemMonitor::Get()->ProcessMediaDeviceDetached(device_id);
 }
 
 }  // namespace chrome

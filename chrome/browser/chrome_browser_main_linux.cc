@@ -106,7 +106,6 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   const FilePath kDefaultMtabPath("/etc/mtab");
   media_device_notifications_linux_ =
       new chrome::MediaDeviceNotificationsLinux(kDefaultMtabPath);
-  media_device_notifications_linux_->Init();
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();

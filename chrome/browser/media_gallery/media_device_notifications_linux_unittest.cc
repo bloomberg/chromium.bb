@@ -143,7 +143,6 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     notifications_ =
         new MediaDeviceNotificationsLinuxTestWrapper(mtab_file_,
                                                      &message_loop_);
-    notifications_->Init();
     message_loop_.RunAllPending();
   }
 
