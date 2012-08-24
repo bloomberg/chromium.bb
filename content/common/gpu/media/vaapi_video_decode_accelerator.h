@@ -76,18 +76,17 @@ private:
   // sleep if no input buffers are available. Return true if a new buffer has
   // been set up, false if an early exit has been requested (due to initiated
   // reset/flush/destroy).
-  bool GetInputBuffer();
+  bool GetInputBuffer_Locked();
 
   // Signal the client that the current buffer has been read and can be
   // returned. Will also release the mapping.
-  void ReturnCurrInputBufferLocked();
-  void ReturnCurrInputBuffer();
+  void ReturnCurrInputBuffer_Locked();
 
   // Get and set up one or more output buffers in the decoder. This will sleep
   // if no buffers are available. Return true if buffers have been set up or
   // false if an early exit has been requested (due to initiated
   // reset/flush/destroy).
-  bool GetOutputBuffers();
+  bool GetOutputBuffers_Locked();
 
   // Initial decode task: get the decoder to the point in the stream from which
   // it can start/continue decoding. Does not require output buffers and does
