@@ -23,6 +23,7 @@ public class AwContents {
 
     private int mNativeAwContents;
     private ContentViewCore mContentViewCore;
+    private AwContentsClient mContentsClient;
 
     private static final class DestroyRunnable implements Runnable {
         private int mNativeAwContents;
@@ -46,21 +47,23 @@ public class AwContents {
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentViewCore requires an existing but not yet initialized instance. Will be
      *                         initialized on return.
-     * @param webContentsDelegate will receive API callbacks from the underlying WebContents
+     * @param contentsClient will receive API callbacks from this WebView Contents
      * @param privateBrowsing whether this is a private browsing instance of WebView.
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
      */
     public AwContents(ViewGroup containerView,
         ContentViewCore.InternalAccessDelegate internalAccessAdapter,
-        ContentViewCore contentViewCore, AwWebContentsDelegate webContentsDelegate,
+        ContentViewCore contentViewCore, AwContentsClient contentsClient,
         boolean privateBrowsing, boolean isAccessFromFileURLsGrantedByDefault) {
-      mNativeAwContents = nativeInit(webContentsDelegate, privateBrowsing);
+      mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
       mContentViewCore = contentViewCore;
+      mContentsClient = contentsClient;
       mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
       // TODO: upstream the needed ContentViewCore initialization method.
       // mContentViewCore.initialize(containerView, internalAccessAdapter, false,
       //     nativeGetWebContents(mNativeAwContents), isAccessFromFileURLsGrantedByDefault);
+      mContentViewCore.setContentViewClient(contentsClient);
     }
 
     public ContentViewCore getContentViewCore() {
@@ -80,4 +83,12 @@ public class AwContents {
     private static native void nativeDestroy(int nativeAwContents);
 
     private native int nativeGetWebContents(int nativeAwContents);
+
+    /**
+     * @return load progress of the WebContents
+     */
+    public int getMostRecentProgress() {
+        // WebContentsDelegateAndroid conveniently caches the most recent notified value for us.
+        return mContentsClient.getWebContentsDelegate().getMostRecentProgress();
+    }
 }

@@ -8,12 +8,14 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.widget.GridLayout;
 
 import org.chromium.android_webview.AndroidWebViewUtil;
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwWebContentsDelegate;
+import org.chromium.android_webview.AwContentsClient;
 import org.chromium.base.test.Feature;
 import org.chromium.content.browser.ContentViewCore;
 
@@ -24,8 +26,7 @@ import java.util.concurrent.TimeUnit;
  * AwContents tests.
  */
 public class AwContentsTest extends AndroidWebViewTestBase {
-    private AwWebContentsDelegate mAwWebContentsDelegate =
-            new AwWebContentsDelegate();
+    private AwContentsClient mContentsClient = new NullContentsClient();
 
     private AwContents createContents(Context context) {
         GridLayout viewGroup = new GridLayout(context);
@@ -33,7 +34,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         ContentViewCore contentViewCore = new ContentViewCore(
                 context, viewGroup, null, 0, ContentViewCore.PERSONALITY_VIEW);
         AwContents awContents = new AwContents(viewGroup, null, contentViewCore,
-                mAwWebContentsDelegate, false, false);
+                mContentsClient, false, false);
         return awContents;
     }
 
