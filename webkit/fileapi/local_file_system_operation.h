@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/fileapi_export.h"
@@ -44,7 +44,7 @@ class FileWriterDelegate;
 
 // FileSystemOperation implementation for local file systems.
 class FILEAPI_EXPORT LocalFileSystemOperation
-    : public NON_EXPORTED_BASE(FileSystemOperationInterface) {
+    : public NON_EXPORTED_BASE(FileSystemOperation) {
  public:
   virtual ~LocalFileSystemOperation();
 

@@ -40,7 +40,7 @@ using content::UserMetricsAction;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
-using fileapi::FileSystemOperationInterface;
+using fileapi::FileSystemOperation;
 using fileapi::LocalFileSystemOperation;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
@@ -136,8 +136,7 @@ void FileAPIMessageFilter::OnChannelClosing() {
        open_filesystem_urls_.begin();
        iter != open_filesystem_urls_.end(); ++iter) {
     FileSystemURL url(*iter);
-    FileSystemOperationInterface* operation =
-        context_->CreateFileSystemOperation(url);
+    FileSystemOperation* operation = context_->CreateFileSystemOperation(url);
     operation->NotifyCloseFile(url);
   }
 }
@@ -407,8 +406,7 @@ void FileAPIMessageFilter::OnCancel(
     int request_id,
     int request_id_to_cancel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  FileSystemOperationInterface* write = operations_.Lookup(
-      request_id_to_cancel);
+  FileSystemOperation* write = operations_.Lookup(request_id_to_cancel);
   if (write) {
     // The cancel will eventually send both the write failure and the cancel
     // success.
@@ -451,8 +449,7 @@ void FileAPIMessageFilter::OnNotifyCloseFile(const GURL& path) {
 
   // Do not use GetNewOperation() here, because NotifyCloseFile is a one-way
   // operation that does not have request_id by which we respond back.
-  FileSystemOperationInterface* operation =
-      context_->CreateFileSystemOperation(url);
+  FileSystemOperation* operation = context_->CreateFileSystemOperation(url);
   if (operation)
     operation->NotifyCloseFile(url);
 }
@@ -790,11 +787,10 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
   return success;
 }
 
-
-FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
+FileSystemOperation* FileAPIMessageFilter::GetNewOperation(
     const FileSystemURL& target_url,
     int request_id) {
-  FileSystemOperationInterface* operation =
+  FileSystemOperation* operation =
       context_->CreateFileSystemOperation(target_url);
   DCHECK(operation);
   operations_.AddWithID(operation, request_id);

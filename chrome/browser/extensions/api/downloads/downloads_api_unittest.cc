@@ -49,7 +49,7 @@
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_url.h"
 
 using content::BrowserContext;
@@ -720,7 +720,7 @@ class HTML5FileWriter {
         &HTML5FileWriter::CreateFile, base::Unretained(this))));
   }
 
-  fileapi::FileSystemOperationInterface* operation() {
+  fileapi::FileSystemOperation* operation() {
     return fs_->CreateFileSystemOperation(fileapi::FileSystemURL(GURL(root_)));
   }
 

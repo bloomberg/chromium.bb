@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
@@ -67,7 +67,7 @@ int SandboxFileStreamWriter::Write(
   if (local_file_writer_.get())
     return WriteInternal(buf, buf_len, callback);
 
-  FileSystemOperationInterface* operation =
+  FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url_);
   DCHECK(operation);
   net::CompletionCallback write_task =

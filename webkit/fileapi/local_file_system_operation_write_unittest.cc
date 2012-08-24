@@ -99,12 +99,12 @@ class LocalFileSystemOperationWriteTest
   }
 
   // Callback function for recording test results.
-  FileSystemOperationInterface::WriteCallback RecordWriteCallback() {
+  FileSystemOperation::WriteCallback RecordWriteCallback() {
     return base::Bind(&LocalFileSystemOperationWriteTest::DidWrite,
                       AsWeakPtr());
   }
 
-  FileSystemOperationInterface::StatusCallback RecordCancelCallback() {
+  FileSystemOperation::StatusCallback RecordCancelCallback() {
     return base::Bind(&LocalFileSystemOperationWriteTest::DidCancel,
                       AsWeakPtr());
   }
@@ -357,7 +357,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  FileSystemOperationInterface* write_operation = operation();
+  FileSystemOperation* write_operation = operation();
   write_operation->Write(&url_request_context, URLForPath(virtual_path_),
                          blob_url, 0, RecordWriteCallback());
   write_operation->Cancel(RecordCancelCallback());
@@ -385,7 +385,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  FileSystemOperationInterface* write_operation = operation();
+  FileSystemOperation* write_operation = operation();
   write_operation->Write(&url_request_context,
                          URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
                          blob_url, 0, RecordWriteCallback());

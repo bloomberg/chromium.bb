@@ -215,8 +215,7 @@ FilePath CrosMountPointProvider::GetPathForPermissionsCheck(
   return virtual_path;
 }
 
-fileapi::FileSystemOperationInterface*
-CrosMountPointProvider::CreateFileSystemOperation(
+fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context) const {
   if (url.type() == fileapi::kFileSystemTypeDrive) {

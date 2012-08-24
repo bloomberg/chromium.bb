@@ -52,7 +52,7 @@ class FILEAPI_EXPORT_PRIVATE TestMountPointProvider
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
-  virtual FileSystemOperationInterface* CreateFileSystemOperation(
+  virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(

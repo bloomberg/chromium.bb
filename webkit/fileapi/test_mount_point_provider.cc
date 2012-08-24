@@ -133,8 +133,7 @@ FilePath TestMountPointProvider::GetPathForPermissionsCheck(
   return base_path_.Append(virtual_path);
 }
 
-FileSystemOperationInterface*
-TestMountPointProvider::CreateFileSystemOperation(
+FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
   scoped_ptr<FileSystemOperationContext> operation_context(

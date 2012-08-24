@@ -262,23 +262,22 @@ class LocalFileSystemOperationTest
   LocalFileSystemTestOriginHelper test_helper_;
 
   // Callbacks for recording test results.
-  FileSystemOperationInterface::StatusCallback RecordStatusCallback() {
+  FileSystemOperation::StatusCallback RecordStatusCallback() {
     return base::Bind(&LocalFileSystemOperationTest::DidFinish, AsWeakPtr());
   }
 
-  FileSystemOperationInterface::ReadDirectoryCallback
+  FileSystemOperation::ReadDirectoryCallback
   RecordReadDirectoryCallback() {
     return base::Bind(&LocalFileSystemOperationTest::DidReadDirectory,
                       AsWeakPtr());
   }
 
-  FileSystemOperationInterface::GetMetadataCallback RecordMetadataCallback() {
+  FileSystemOperation::GetMetadataCallback RecordMetadataCallback() {
     return base::Bind(&LocalFileSystemOperationTest::DidGetMetadata,
                       AsWeakPtr());
   }
 
-  FileSystemOperationInterface::SnapshotFileCallback
-      RecordSnapshotFileCallback() {
+  FileSystemOperation::SnapshotFileCallback RecordSnapshotFileCallback() {
     return base::Bind(&LocalFileSystemOperationTest::DidCreateSnapshotFile,
                       AsWeakPtr());
   }

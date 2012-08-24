@@ -29,43 +29,43 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // fileapi::RemoteFileSystemProxyInterface overrides.
   virtual void GetFileInfo(
       const fileapi::FileSystemURL& url,
-      const fileapi::FileSystemOperationInterface::GetMetadataCallback&
+      const fileapi::FileSystemOperation::GetMetadataCallback&
           callback) OVERRIDE;
   virtual void Copy(
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+      const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
   virtual void Move(
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+      const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
   virtual void ReadDirectory(const fileapi::FileSystemURL& url,
-     const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
+     const fileapi::FileSystemOperation::ReadDirectoryCallback&
          callback) OVERRIDE;
   virtual void Remove(
       const fileapi::FileSystemURL& url, bool recursive,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+      const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
   virtual void CreateDirectory(
       const fileapi::FileSystemURL& file_url,
       bool exclusive,
       bool recursive,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+      const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
   virtual void CreateFile(
       const fileapi::FileSystemURL& file_url,
       bool exclusive,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+      const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
   virtual void Truncate(
       const fileapi::FileSystemURL& file_url, int64 length,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+      const fileapi::FileSystemOperation::StatusCallback& callback)
           OVERRIDE;
   virtual void CreateSnapshotFile(
       const fileapi::FileSystemURL& url,
-      const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
+      const fileapi::FileSystemOperation::SnapshotFileCallback&
       callback) OVERRIDE;
   virtual void CreateWritableSnapshotFile(
       const fileapi::FileSystemURL& url,
@@ -74,7 +74,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemURL& url,
       int file_flags,
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperationInterface::OpenFileCallback&
+      const fileapi::FileSystemOperation::OpenFileCallback&
           callback) OVERRIDE;
   virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
@@ -92,14 +92,14 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Helper callback for relaying reply for status callbacks to the
   // calling thread.
   void OnStatusCallback(
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+      const fileapi::FileSystemOperation::StatusCallback& callback,
       DriveFileError error);
 
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
   void OnGetMetadata(
       const FilePath& file_path,
-      const fileapi::FileSystemOperationInterface::GetMetadataCallback&
+      const fileapi::FileSystemOperation::GetMetadataCallback&
           callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
@@ -108,7 +108,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // calling thread.
   void OnGetEntryInfoByPath(
       const FilePath& entry_path,
-      const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
+      const fileapi::FileSystemOperation::SnapshotFileCallback&
           callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
@@ -116,7 +116,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Helper callback for relaying reply for ReadDirectory() to the calling
   // thread.
   void OnReadDirectory(
-      const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
+      const fileapi::FileSystemOperation::ReadDirectoryCallback&
           callback,
       DriveFileError error,
       bool hide_hosted_documents,
@@ -142,7 +142,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnFileOpenedForTruncate(
       const FilePath& virtual_path,
       int64 length,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+      const fileapi::FileSystemOperation::StatusCallback& callback,
       DriveFileError open_result,
       const FilePath& local_cache_path);
 
@@ -150,7 +150,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // a local cache file is finished on FILE thread.
   void DidTruncate(
       const FilePath& virtual_path,
-      const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+      const fileapi::FileSystemOperation::StatusCallback& callback,
       base::PlatformFileError* truncate_result);
 
   // Invoked during OpenFile() operation when truncate or write flags are set.
@@ -159,7 +159,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnOpenFileForWriting(
       int file_flags,
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
+      const fileapi::FileSystemOperation::OpenFileCallback& callback,
       DriveFileError file_error,
       const FilePath& local_cache_path);
 
@@ -168,7 +168,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& file_path,
       int file_flags,
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
+      const fileapi::FileSystemOperation::OpenFileCallback& callback,
       DriveFileError file_error);
 
   // Invoked during OpenFile() operation when base::PLATFORM_FILE_OPEN_TRUNCATED
@@ -176,7 +176,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // finished on FILE thread.
   void OnOpenAndTruncate(
       base::ProcessHandle peer_handle,
-      const fileapi::FileSystemOperationInterface::OpenFileCallback& callback,
+      const fileapi::FileSystemOperation::OpenFileCallback& callback,
       base::PlatformFile* platform_file,
       base::PlatformFileError* truncate_result);
 

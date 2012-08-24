@@ -63,7 +63,7 @@ class FILEAPI_EXPORT CrosMountPointProvider
       fileapi::FileSystemType type) OVERRIDE;
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
       const OVERRIDE;
-  virtual fileapi::FileSystemOperationInterface* CreateFileSystemOperation(
+  virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(

@@ -10,7 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/media/native_media_file_util.h"
@@ -24,7 +24,7 @@ using namespace fileapi;
 
 namespace {
 
-typedef FileSystemOperationInterface::FileEntryList FileEntryList;
+typedef FileSystemOperation::FileEntryList FileEntryList;
 
 struct FilteringTestCase {
   const FilePath::CharType* path;
@@ -139,7 +139,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     return kFileSystemTypeNativeMedia;
   }
 
-  FileSystemOperationInterface* NewOperation(const FileSystemURL& url) {
+  FileSystemOperation* NewOperation(const FileSystemURL& url) {
     return file_system_context_->CreateFileSystemOperation(url);
   }
 
@@ -163,7 +163,7 @@ TEST_F(NativeMediaFileUtilTest, DirectoryExistsAndFileExistsFiltering) {
   for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
     FilePath path = root_path().Append(kFilteringTestCases[i].path);
     FileSystemURL url(origin(), type(), path);
-    FileSystemOperationInterface* operation = NewOperation(url);
+    FileSystemOperation* operation = NewOperation(url);
 
     base::PlatformFileError expectation =
         kFilteringTestCases[i].visible ?

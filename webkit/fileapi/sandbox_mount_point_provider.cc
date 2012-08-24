@@ -426,8 +426,7 @@ FilePath SandboxMountPointProvider::GetPathForPermissionsCheck(
   return new_base_path();
 }
 
-FileSystemOperationInterface*
-SandboxMountPointProvider::CreateFileSystemOperation(
+FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
   scoped_ptr<FileSystemOperationContext> operation_context(

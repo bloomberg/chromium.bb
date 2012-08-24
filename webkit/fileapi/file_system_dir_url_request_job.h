@@ -19,7 +19,7 @@
 
 namespace fileapi {
 class FileSystemContext;
-class FileSystemOperationInterface;
+class FileSystemOperation;
 
 // A request job that handles reading filesystem: URLs for directories.
 class FILEAPI_EXPORT_PRIVATE FileSystemDirURLRequestJob
@@ -52,7 +52,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemDirURLRequestJob
   void DidReadDirectory(base::PlatformFileError result,
                         const std::vector<base::FileUtilProxy::Entry>& entries,
                         bool has_more);
-  FileSystemOperationInterface* GetNewOperation();
+  FileSystemOperation* GetNewOperation();
 
   std::string data_;
   FileSystemURL url_;

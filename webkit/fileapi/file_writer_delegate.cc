@@ -38,7 +38,7 @@ base::PlatformFileError NetErrorToPlatformFileError(int error) {
 }  // namespace
 
 FileWriterDelegate::FileWriterDelegate(
-    const FileSystemOperationInterface::WriteCallback& write_callback,
+    const FileSystemOperation::WriteCallback& write_callback,
     scoped_ptr<FileStreamWriter> file_stream_writer)
     : write_callback_(write_callback),
       file_stream_writer_(file_stream_writer.Pass()),

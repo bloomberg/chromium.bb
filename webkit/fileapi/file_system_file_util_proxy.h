@@ -14,7 +14,7 @@
 #include "base/platform_file.h"
 #include "base/tracked_objects.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 namespace fileapi {
 
@@ -39,9 +39,8 @@ class FileSystemFileUtilProxy {
   typedef base::Callback<void(PlatformFileError status)> StatusCallback;
   typedef base::Callback<void(PlatformFileError status,
                               bool created)> EnsureFileExistsCallback;
-  typedef FileSystemOperationInterface::GetMetadataCallback GetFileInfoCallback;
-  typedef FileSystemOperationInterface::ReadDirectoryCallback
-      ReadDirectoryCallback;
+  typedef FileSystemOperation::GetMetadataCallback GetFileInfoCallback;
+  typedef FileSystemOperation::ReadDirectoryCallback ReadDirectoryCallback;
 
   typedef base::Callback<
       void(base::PlatformFileError result,

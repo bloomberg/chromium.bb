@@ -14,7 +14,7 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/fileapi_export.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 namespace fileapi {
 
@@ -26,7 +26,7 @@ class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
     : public net::URLRequest::Delegate {
  public:
   FileWriterDelegate(
-      const FileSystemOperationInterface::WriteCallback& write_callback,
+      const FileSystemOperation::WriteCallback& write_callback,
       scoped_ptr<FileStreamWriter> file_writer);
   virtual ~FileWriterDelegate();
 
@@ -68,7 +68,7 @@ class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
 
   FileSystemQuotaUtil* quota_util() const;
 
-  FileSystemOperationInterface::WriteCallback write_callback_;
+  FileSystemOperation::WriteCallback write_callback_;
   scoped_ptr<FileStreamWriter> file_stream_writer_;
   base::Time last_progress_event_time_;
   int bytes_written_backlog_;

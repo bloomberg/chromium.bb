@@ -24,7 +24,7 @@ class FileSystemURL;
 class FileStreamWriter;
 class FileSystemContext;
 class FileSystemFileUtil;
-class FileSystemOperationInterface;
+class FileSystemOperation;
 class FileSystemQuotaUtil;
 class RemoteFileSystemProxyInterface;
 
@@ -82,7 +82,7 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
   // and |virtual_path|.
   // This method is usually dispatched by
   // FileSystemContext::CreateFileSystemOperation.
-  virtual FileSystemOperationInterface* CreateFileSystemOperation(
+  virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context) const = 0;
 

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_INTERFACE_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_INTERFACE_H_
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
 
 #include <vector>
 
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "webkit/blob/shareable_file_reference.h"
 
 namespace base {
 class Time;
@@ -53,9 +52,9 @@ class LocalFileSystemOperation;
 // 3) Deliver the results of operations to the client via the callback function
 // passed as the last parameter of the method.
 //
-class FileSystemOperationInterface {
+class FileSystemOperation {
  public:
-  virtual ~FileSystemOperationInterface() {}
+  virtual ~FileSystemOperation() {}
 
   // Used for CreateFile(), etc. |result| is the return code of the operation.
   typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
@@ -278,4 +277,4 @@ class FileSystemOperationInterface {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_INTERFACE_H_
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_

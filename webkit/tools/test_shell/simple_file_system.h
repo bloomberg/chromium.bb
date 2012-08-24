@@ -11,7 +11,7 @@
 #include "base/scoped_temp_dir.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
 #include <vector>
 
@@ -106,21 +106,21 @@ class SimpleFileSystem
   // Helpers.
   bool HasFilePermission(const fileapi::FileSystemURL& url,
                          FilePermission permission);
-  fileapi::FileSystemOperationInterface* GetNewOperation(
+  fileapi::FileSystemOperation* GetNewOperation(
       const fileapi::FileSystemURL& url);
 
   // Callback Handlers
-  fileapi::FileSystemOperationInterface::StatusCallback FinishHandler(
+  fileapi::FileSystemOperation::StatusCallback FinishHandler(
       WebKit::WebFileSystemCallbacks* callbacks);
-  fileapi::FileSystemOperationInterface::GetMetadataCallback GetMetadataHandler(
+  fileapi::FileSystemOperation::GetMetadataCallback GetMetadataHandler(
       WebKit::WebFileSystemCallbacks* callbacks);
-  fileapi::FileSystemOperationInterface::ReadDirectoryCallback
+  fileapi::FileSystemOperation::ReadDirectoryCallback
       ReadDirectoryHandler(WebKit::WebFileSystemCallbacks* callbacks);
   fileapi::FileSystemContext::OpenFileSystemCallback OpenFileSystemHandler(
       WebKit::WebFileSystemCallbacks* callbacks);
   fileapi::FileSystemContext::DeleteFileSystemCallback DeleteFileSystemHandler(
       WebKit::WebFileSystemCallbacks* callbacks);
-  fileapi::FileSystemOperationInterface::SnapshotFileCallback
+  fileapi::FileSystemOperation::SnapshotFileCallback
       SnapshotFileHandler(const GURL& blob_url,
                           WebKit::WebFileSystemCallbacks* callbacks);
   void DidFinish(WebKit::WebFileSystemCallbacks* callbacks,

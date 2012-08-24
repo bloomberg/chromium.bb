@@ -12,7 +12,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 
 using webkit_blob::LocalFileStreamReader;
@@ -53,7 +53,7 @@ int FileSystemFileStreamReader::Read(
   if (local_file_reader_.get())
     return local_file_reader_->Read(buf, buf_len, callback);
   DCHECK(!has_pending_create_snapshot_);
-  FileSystemOperationInterface* operation =
+  FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url_);
   if (!operation)
     return net::ERR_INVALID_URL;

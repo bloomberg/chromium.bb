@@ -21,7 +21,7 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_url.h"
 
 using net::NetworkDelegate;
@@ -80,7 +80,7 @@ void FileSystemDirURLRequestJob::StartAsync() {
   if (!request_)
     return;
   url_ = FileSystemURL(request_->url());
-  FileSystemOperationInterface* operation = GetNewOperation();
+  FileSystemOperation* operation = GetNewOperation();
   if (!operation) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
                                 net::ERR_INVALID_URL));
@@ -133,8 +133,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 }
 
-FileSystemOperationInterface*
-FileSystemDirURLRequestJob::GetNewOperation() {
+FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation() {
   return file_system_context_->CreateFileSystemOperation(url_);
 }
 

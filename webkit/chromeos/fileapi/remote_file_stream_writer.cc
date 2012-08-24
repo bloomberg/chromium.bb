@@ -7,6 +7,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "webkit/blob/local_file_stream_reader.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 

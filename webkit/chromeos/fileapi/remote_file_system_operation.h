@@ -6,7 +6,7 @@
 #define WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 namespace base {
 class Value;
@@ -20,11 +20,11 @@ class LocalFileSystemOperation;
 namespace chromeos {
 
 // FileSystemOperation implementation for local file systems.
-class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
+class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
  public:
   virtual ~RemoteFileSystemOperation();
 
-  // FileSystemOperationInterface overrides.
+  // FileSystemOperation overrides.
   virtual void CreateFile(const fileapi::FileSystemURL& url,
                           bool exclusive,
                           const StatusCallback& callback) OVERRIDE;

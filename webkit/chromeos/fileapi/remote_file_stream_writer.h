@@ -11,11 +11,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/fileapi/file_stream_writer.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_url.h"
 
 namespace net {
 class IOBuffer;
+}
+
+namespace webkit_blob {
+class ShareableFileReference;
 }
 
 namespace fileapi {

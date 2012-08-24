@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_client.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -182,7 +182,7 @@ void FileSystemContext::DeleteFileSystem(
   mount_point_provider->DeleteFileSystem(origin_url, type, this, callback);
 }
 
-FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
+FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
     const FileSystemURL& url) {
   if (!url.is_valid())
     return NULL;

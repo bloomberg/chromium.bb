@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_operation.h"
 
 namespace fileapi {
 
@@ -23,7 +23,7 @@ class RemoteFileSystemProxyInterface :
  public:
   // Gets the file or directory info for given|path|.
   virtual void GetFileInfo(const FileSystemURL& url,
-      const FileSystemOperationInterface::GetMetadataCallback& callback) = 0;
+      const FileSystemOperation::GetMetadataCallback& callback) = 0;
 
   // Copies a file or directory from |src_url| to |dest_url|. If
   // |src_url| is a directory, the contents of |src_url| are copied to
@@ -32,23 +32,23 @@ class RemoteFileSystemProxyInterface :
   virtual void Copy(
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
-      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
   // Moves a file or directory from |src_url| to |dest_url|. A new file
   // or directory is created at |dest_url| as needed.
   virtual void Move(
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
-      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
   // Reads contents of a directory at |url|.
   virtual void ReadDirectory(const FileSystemURL& url,
-      const FileSystemOperationInterface::ReadDirectoryCallback& callback) = 0;
+      const FileSystemOperation::ReadDirectoryCallback& callback) = 0;
 
   // Removes a file or directory at |url|. If |recursive| is true, remove
   // all files and directories under the directory at |url| recursively.
   virtual void Remove(const FileSystemURL& url, bool recursive,
-      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
   // Creates a directory at |url|. If |exclusive| is true, an error is
   // raised in case a directory is already present at the URL. If
@@ -58,7 +58,7 @@ class RemoteFileSystemProxyInterface :
       const FileSystemURL& url,
       bool exclusive,
       bool recursive,
-      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
   // Creates a file at |url|. If the flag |is_exclusive| is true, an
   // error is raised when a file already exists at the path. It is
@@ -67,7 +67,7 @@ class RemoteFileSystemProxyInterface :
   virtual void CreateFile(
       const FileSystemURL& url,
       bool exclusive,
-      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
   // Changes the length of an existing file at |url| to |length|. If |length|
   // is negative, an error is raised. If |length| is more than the current size
@@ -75,14 +75,14 @@ class RemoteFileSystemProxyInterface :
   virtual void Truncate(
       const FileSystemURL& url,
       int64 length,
-      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
   // Creates a local snapshot file for a given |url| and returns the
   // metadata and platform path of the snapshot file via |callback|.
-  // See also FileSystemOperationInterface::CreateSnapshotFile().
+  // See also FileSystemOperation::CreateSnapshotFile().
   virtual void CreateSnapshotFile(
       const FileSystemURL& url,
-      const FileSystemOperationInterface::SnapshotFileCallback& callback) = 0;
+      const FileSystemOperation::SnapshotFileCallback& callback) = 0;
 
   // Creates a local snapshot file for a given |url| and marks it for
   // modification. A webkit_blob::ShareableFileReference is passed to
@@ -98,7 +98,7 @@ class RemoteFileSystemProxyInterface :
       const FileSystemURL& url,
       int flags,
       base::ProcessHandle peer_handle,
-      const FileSystemOperationInterface::OpenFileCallback& callback) = 0;
+      const FileSystemOperation::OpenFileCallback& callback) = 0;
 
   // Notifies that a file opened by OpenFile (at |path|) is closed.
   virtual void NotifyCloseFile(const FileSystemURL& url) = 0;

@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/blob/file_stream_reader.h"
+#include "webkit/blob/shareable_file_reference.h"
 
 class FilePath;
 
@@ -19,7 +20,6 @@ class SequencedTaskRunner;
 
 namespace webkit_blob {
 class LocalFileStreamReader;
-class ShareableFileReference;
 }
 
 namespace fileapi {

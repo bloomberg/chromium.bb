@@ -157,7 +157,7 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   DCHECK(!reader_.get());
   url_ = FileSystemURL(request_->url());
-  FileSystemOperationInterface* operation =
+  FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url_);
   if (!operation) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,

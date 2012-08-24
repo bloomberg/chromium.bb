@@ -29,7 +29,7 @@ class Time;
 namespace fileapi {
 class FileSystemURL;
 class FileSystemContext;
-class FileSystemOperationInterface;
+class FileSystemOperation;
 }
 
 namespace net {
@@ -170,8 +170,8 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
                              int permissions,
                              base::PlatformFileError* error);
 
-  // Creates a new FileSystemOperationInterface based on |target_url|.
-  fileapi::FileSystemOperationInterface* GetNewOperation(
+  // Creates a new FileSystemOperation based on |target_url|.
+  fileapi::FileSystemOperation* GetNewOperation(
       const fileapi::FileSystemURL& target_url,
       int request_id);
 
@@ -180,7 +180,7 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
   fileapi::FileSystemContext* context_;
 
   // Keeps ongoing file system operations.
-  typedef IDMap<fileapi::FileSystemOperationInterface> OperationsMap;
+  typedef IDMap<fileapi::FileSystemOperation> OperationsMap;
   OperationsMap operations_;
 
   // The getter holds the context until Init() can be called from the

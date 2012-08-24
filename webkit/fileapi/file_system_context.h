@@ -32,7 +32,7 @@ namespace fileapi {
 class ExternalFileSystemMountPointProvider;
 class FileSystemFileUtil;
 class FileSystemMountPointProvider;
-class FileSystemOperationInterface;
+class FileSystemOperation;
 class FileSystemOptions;
 class FileSystemQuotaUtil;
 class FileSystemTaskRunners;
@@ -125,8 +125,7 @@ class FILEAPI_EXPORT FileSystemContext
   // and calling the provider's corresponding CreateFileSystemOperation method.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
-  FileSystemOperationInterface* CreateFileSystemOperation(
-      const FileSystemURL& url);
+  FileSystemOperation* CreateFileSystemOperation(const FileSystemURL& url);
 
   // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|.

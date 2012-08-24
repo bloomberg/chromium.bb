@@ -45,7 +45,7 @@ using WebKit::WebVector;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
 using fileapi::FileSystemContext;
-using fileapi::FileSystemOperationInterface;
+using fileapi::FileSystemOperation;
 using fileapi::FileSystemTaskRunners;
 using fileapi::FileSystemURL;
 
@@ -269,24 +269,24 @@ bool SimpleFileSystem::HasFilePermission(
           permission == FILE_PERMISSION_READ);
 }
 
-FileSystemOperationInterface* SimpleFileSystem::GetNewOperation(
+FileSystemOperation* SimpleFileSystem::GetNewOperation(
     const fileapi::FileSystemURL& url) {
   return file_system_context_->CreateFileSystemOperation(url);
 }
 
-FileSystemOperationInterface::StatusCallback
+FileSystemOperation::StatusCallback
 SimpleFileSystem::FinishHandler(WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidFinish,
                     AsWeakPtr(), base::Unretained(callbacks));
 }
 
-FileSystemOperationInterface::ReadDirectoryCallback
+FileSystemOperation::ReadDirectoryCallback
 SimpleFileSystem::ReadDirectoryHandler(WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidReadDirectory,
                     AsWeakPtr(), base::Unretained(callbacks));
 }
 
-FileSystemOperationInterface::GetMetadataCallback
+FileSystemOperation::GetMetadataCallback
 SimpleFileSystem::GetMetadataHandler(WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidGetMetadata,
                     AsWeakPtr(), base::Unretained(callbacks));
@@ -304,7 +304,7 @@ SimpleFileSystem::DeleteFileSystemHandler(WebFileSystemCallbacks* callbacks) {
                     AsWeakPtr(), callbacks);
 }
 
-FileSystemOperationInterface::SnapshotFileCallback
+FileSystemOperation::SnapshotFileCallback
 SimpleFileSystem::SnapshotFileHandler(const GURL& blob_url,
                                       WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile,

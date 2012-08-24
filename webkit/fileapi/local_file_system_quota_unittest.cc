@@ -152,7 +152,7 @@ class LocalFileSystemQuotaTest
 
  protected:
   // Callback for recording test results.
-  FileSystemOperationInterface::StatusCallback RecordStatusCallback() {
+  FileSystemOperation::StatusCallback RecordStatusCallback() {
     return base::Bind(&LocalFileSystemQuotaTest::DidFinish, AsWeakPtr());
   }
 

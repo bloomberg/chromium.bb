@@ -126,8 +126,7 @@ FilePath IsolatedMountPointProvider::GetPathForPermissionsCheck(
   return FilePath();
 }
 
-FileSystemOperationInterface*
-IsolatedMountPointProvider::CreateFileSystemOperation(
+FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
