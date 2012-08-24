@@ -100,6 +100,24 @@ void EventGenerator::DoubleClickLeftButton() {
   ReleaseLeftButton();
 }
 
+void EventGenerator::PressRightButton() {
+  if ((flags_ & ui::EF_RIGHT_MOUSE_BUTTON) == 0) {
+    flags_ |= ui::EF_RIGHT_MOUSE_BUTTON;
+    ui::MouseEvent mouseev(ui::ET_MOUSE_PRESSED, current_location_,
+                           current_location_, flags_);
+    Dispatch(mouseev);
+  }
+}
+
+void EventGenerator::ReleaseRightButton() {
+  if (flags_ & ui::EF_RIGHT_MOUSE_BUTTON) {
+    ui::MouseEvent mouseev(ui::ET_MOUSE_RELEASED, current_location_,
+                           current_location_, flags_);
+    Dispatch(mouseev);
+    flags_ ^= ui::EF_RIGHT_MOUSE_BUTTON;
+  }
+}
+
 void EventGenerator::MoveMouseTo(const gfx::Point& point, int count) {
   DCHECK_GT(count, 0);
   const ui::EventType event_type = (flags_ & ui::EF_LEFT_MOUSE_BUTTON) ?

@@ -397,5 +397,62 @@ TEST_F(CustomFrameViewAshTest, MaximizeKeepFocus) {
   EXPECT_EQ(active, window->GetFocusManager()->GetFocusedWindow());
 }
 
+// Test that only the left button will activate the maximize button.
+TEST_F(CustomFrameViewAshTest, OnlyLeftButtonMaximizes) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
+  maximize_button->set_bubble_appearance_delay_ms(0);
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
+
+  aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
+  EXPECT_FALSE(maximize_button->maximizer());
+  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+
+  // Move the mouse cursor over the button.
+  generator.MoveMouseTo(button_pos);
+  EXPECT_TRUE(maximize_button->maximizer());
+  EXPECT_FALSE(maximize_button->phantom_window_open());
+
+  // After pressing the left button the button should get triggered.
+  generator.PressLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(maximize_button->is_snap_enabled());
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+
+  // Pressing the right button then should cancel the operation.
+  generator.PressRightButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(maximize_button->maximizer());
+
+  // After releasing the second button the window shouldn't be maximized.
+  generator.ReleaseRightButton();
+  generator.ReleaseLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+
+  // Second experiment: Starting with right should also not trigger.
+  generator.MoveMouseTo(off_pos);
+  generator.MoveMouseTo(button_pos);
+  EXPECT_TRUE(maximize_button->maximizer());
+
+  // Pressing first the right button should not activate.
+  generator.PressRightButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(maximize_button->is_snap_enabled());
+
+  // Pressing then additionally the left button shouldn't activate either.
+  generator.PressLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(maximize_button->is_snap_enabled());
+  generator.ReleaseRightButton();
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+}
+
 }  // namespace internal
 }  // namespace ash

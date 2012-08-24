@@ -189,9 +189,15 @@ void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
 }
 
 bool FrameMaximizeButton::OnMousePressed(const ui::MouseEvent& event) {
-  is_snap_enabled_ = event.IsLeftMouseButton();
-  if (is_snap_enabled_)
-    ProcessStartEvent(event);
+  // If we are already in a mouse click / drag operation, a second button down
+  // call will cancel (this addresses crbug.com/143755).
+  if (is_snap_enabled_) {
+    Cancel(false);
+  } else {
+    is_snap_enabled_ = event.IsOnlyLeftMouseButton();
+    if (is_snap_enabled_)
+      ProcessStartEvent(event);
+  }
   ImageButton::OnMousePressed(event);
   return true;
 }
@@ -240,7 +246,8 @@ bool FrameMaximizeButton::OnMouseDragged(const ui::MouseEvent& event) {
 
 void FrameMaximizeButton::OnMouseReleased(const ui::MouseEvent& event) {
   maximizer_.reset();
-  if (!ProcessEndEvent(event))
+  bool snap_was_enabled = is_snap_enabled_;
+  if (!ProcessEndEvent(event) && snap_was_enabled)
     ImageButton::OnMouseReleased(event);
   // At this point |this| might be already destroyed.
 }

@@ -62,6 +62,12 @@ class EventGenerator {
   // Generates a double click event using the left button.
   void DoubleClickLeftButton();
 
+  // Generates a right button press event.
+  void PressRightButton();
+
+  // Generates a right button release event.
+  void ReleaseRightButton();
+
   // Generates events to move mouse to be the given |point|.
   void MoveMouseTo(const gfx::Point& point, int count);
   void MoveMouseTo(const gfx::Point& point) {
