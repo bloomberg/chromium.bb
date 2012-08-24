@@ -9,17 +9,13 @@
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
-#include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 namespace {
-
-using ::testing::_;
-using ::testing::Mock;
-using ::testing::StrictMock;
 
 class P2PNotifierTest : public testing::Test {
  protected:
@@ -29,11 +25,11 @@ class P2PNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(fake_push_client_),
             NOTIFY_OTHERS),
         next_sent_notification_to_reflect_(0) {
-    p2p_notifier_.RegisterHandler(&mock_observer_);
+    p2p_notifier_.RegisterHandler(&fake_observer_);
   }
 
   virtual ~P2PNotifierTest() {
-    p2p_notifier_.UnregisterHandler(&mock_observer_);
+    p2p_notifier_.UnregisterHandler(&fake_observer_);
   }
 
   ModelTypeStateMap MakeStateMap(ModelTypeSet types) {
@@ -55,7 +51,7 @@ class P2PNotifierTest : public testing::Test {
   // Owned by |p2p_notifier_|.
   notifier::FakePushClient* fake_push_client_;
   P2PNotifier p2p_notifier_;
-  StrictMock<MockSyncNotifierObserver> mock_observer_;
+  FakeSyncNotifierObserver fake_observer_;
 
  private:
   size_t next_sent_notification_to_reflect_;
@@ -144,13 +140,7 @@ TEST_F(P2PNotifierTest, P2PNotificationDataNonDefault) {
 TEST_F(P2PNotifierTest, NotificationsBasic) {
   const ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES);
 
-  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypeStateMapToObjectIdStateMap(MakeStateMap(
-          enabled_types)),
-      REMOTE_NOTIFICATION));
-
-  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
+  p2p_notifier_.UpdateRegisteredIds(&fake_observer_,
                                     ModelTypeSetToObjectIdSet(enabled_types));
 
   p2p_notifier_.SetUniqueId("sender");
@@ -171,15 +161,25 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
 
   ReflectSentNotifications();
   fake_push_client_->EnableNotifications();
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            fake_observer_.GetNotificationsDisabledReason());
+
+  ReflectSentNotifications();
+  EXPECT_EQ(1, fake_observer_.GetNotificationCount());
+  EXPECT_THAT(
+      ModelTypeStateMapToObjectIdStateMap(MakeStateMap(enabled_types)),
+      Eq(fake_observer_.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(REMOTE_NOTIFICATION, fake_observer_.GetLastNotificationSource());
 
   // Sent with target NOTIFY_OTHERS so should not be propagated to
-  // |mock_observer_|.
+  // |fake_observer_|.
   {
     ModelTypeSet changed_types(THEMES, APPS);
     p2p_notifier_.SendNotification(changed_types);
   }
 
   ReflectSentNotifications();
+  EXPECT_EQ(1, fake_observer_.GetNotificationCount());
 }
 
 // Set up the P2PNotifier and send out notifications with various
@@ -190,106 +190,97 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   const ModelTypeSet changed_types(THEMES, APPS);
   const ModelTypeSet expected_types(THEMES);
 
-  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_observer_,
-              OnIncomingNotification(
-                  ModelTypeStateMapToObjectIdStateMap(
-                      MakeStateMap(enabled_types)),
-                  REMOTE_NOTIFICATION));
-
-  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
+  p2p_notifier_.UpdateRegisteredIds(&fake_observer_,
                                     ModelTypeSetToObjectIdSet(enabled_types));
-
-  const ModelTypeStateMap& expected_state_map =
-      MakeStateMap(expected_types);
 
   p2p_notifier_.SetUniqueId("sender");
   p2p_notifier_.UpdateCredentials("foo@bar.com", "fake_token");
 
   ReflectSentNotifications();
   fake_push_client_->EnableNotifications();
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            fake_observer_.GetNotificationsDisabledReason());
 
   ReflectSentNotifications();
+  EXPECT_EQ(1, fake_observer_.GetNotificationCount());
+  EXPECT_THAT(
+      ModelTypeStateMapToObjectIdStateMap(MakeStateMap(enabled_types)),
+      Eq(fake_observer_.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(REMOTE_NOTIFICATION, fake_observer_.GetLastNotificationSource());
 
   // Should be dropped.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_.SendNotificationDataForTest(P2PNotificationData());
-
   ReflectSentNotifications();
+  EXPECT_EQ(1, fake_observer_.GetNotificationCount());
+
+  const ObjectIdStateMap& expected_ids =
+      ModelTypeStateMapToObjectIdStateMap(MakeStateMap(expected_types));
 
   // Should be propagated.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypeStateMapToObjectIdStateMap(expected_state_map),
-      REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_SELF, changed_types));
-
   ReflectSentNotifications();
+  EXPECT_EQ(2, fake_observer_.GetNotificationCount());
+  EXPECT_THAT(
+      expected_ids,
+      Eq(fake_observer_.GetLastNotificationIdStateMap()));
 
   // Should be dropped.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_SELF, changed_types));
-
   ReflectSentNotifications();
+  EXPECT_EQ(2, fake_observer_.GetNotificationCount());
 
   // Should be dropped.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_SELF, ModelTypeSet()));
-
   ReflectSentNotifications();
+  EXPECT_EQ(2, fake_observer_.GetNotificationCount());
 
   // Should be dropped.
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_OTHERS, changed_types));
-
   ReflectSentNotifications();
+  EXPECT_EQ(2, fake_observer_.GetNotificationCount());
 
   // Should be propagated.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypeStateMapToObjectIdStateMap(expected_state_map),
-      REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_OTHERS, changed_types));
-
   ReflectSentNotifications();
+  EXPECT_EQ(3, fake_observer_.GetNotificationCount());
+  EXPECT_THAT(
+      expected_ids,
+      Eq(fake_observer_.GetLastNotificationIdStateMap()));
 
   // Should be dropped.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_OTHERS, ModelTypeSet()));
-
   ReflectSentNotifications();
+  EXPECT_EQ(3, fake_observer_.GetNotificationCount());
 
   // Should be propagated.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypeStateMapToObjectIdStateMap(expected_state_map),
-      REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_ALL, changed_types));
-
   ReflectSentNotifications();
+  EXPECT_EQ(4, fake_observer_.GetNotificationCount());
+  EXPECT_THAT(
+      expected_ids,
+      Eq(fake_observer_.GetLastNotificationIdStateMap()));
 
   // Should be propagated.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
-  EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypeStateMapToObjectIdStateMap(expected_state_map),
-      REMOTE_NOTIFICATION));
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_ALL, changed_types));
-
   ReflectSentNotifications();
+  EXPECT_EQ(5, fake_observer_.GetNotificationCount());
+  EXPECT_THAT(
+      expected_ids,
+      Eq(fake_observer_.GetLastNotificationIdStateMap()));
 
   // Should be dropped.
-  Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_.SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_ALL, ModelTypeSet()));
-
   ReflectSentNotifications();
+  EXPECT_EQ(5, fake_observer_.GetNotificationCount());
 }
 
 }  // namespace

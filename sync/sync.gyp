@@ -480,8 +480,10 @@
       'sources': [
         'notifier/fake_invalidation_state_tracker.cc',
         'notifier/fake_invalidation_state_tracker.h',
-        'notifier/mock_sync_notifier_observer.cc',
-        'notifier/mock_sync_notifier_observer.h',
+        'notifier/fake_sync_notifier.cc',
+        'notifier/fake_sync_notifier.h',
+        'notifier/fake_sync_notifier_observer.cc',
+        'notifier/fake_sync_notifier_observer.h',
         'notifier/object_id_state_map_test_util.cc',
         'notifier/object_id_state_map_test_util.h',
       ],

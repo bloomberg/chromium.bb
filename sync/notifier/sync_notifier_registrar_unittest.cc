@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "sync/notifier/sync_notifier_registrar.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,10 +11,6 @@
 namespace syncer {
 
 namespace {
-
-using testing::InSequence;
-using testing::Mock;
-using testing::StrictMock;
 
 class SyncNotifierRegistrarTest : public testing::Test {
  protected:
@@ -35,7 +31,7 @@ class SyncNotifierRegistrarTest : public testing::Test {
 // the handler, dispatching invalidations in between.  The handler should only
 // see invalidations when its registered and its IDs are registered.
 TEST_F(SyncNotifierRegistrarTest, Basic) {
-  StrictMock<MockSyncNotifierObserver> handler;
+  FakeSyncNotifierObserver handler;
 
   SyncNotifierRegistrar registrar;
 
@@ -48,47 +44,44 @@ TEST_F(SyncNotifierRegistrarTest, Basic) {
 
   // Should be ignored since no IDs are registered to |handler|.
   registrar.DispatchInvalidationsToHandlers(states, REMOTE_NOTIFICATION);
-
-  Mock::VerifyAndClearExpectations(&handler);
+  EXPECT_EQ(0, handler.GetNotificationCount());
 
   ObjectIdSet ids;
   ids.insert(kObjectId1);
   ids.insert(kObjectId2);
   registrar.UpdateRegisteredIds(&handler, ids);
 
-  {
-    ObjectIdStateMap expected_states;
-    expected_states[kObjectId1].payload = "1";
-    expected_states[kObjectId2].payload = "2";
-    EXPECT_CALL(handler, OnIncomingNotification(
-        expected_states, REMOTE_NOTIFICATION));
-  }
+  ObjectIdStateMap expected_states;
+  expected_states[kObjectId1].payload = "1";
+  expected_states[kObjectId2].payload = "2";
 
   registrar.DispatchInvalidationsToHandlers(states, REMOTE_NOTIFICATION);
-
-  Mock::VerifyAndClearExpectations(&handler);
+  EXPECT_EQ(1, handler.GetNotificationCount());
+  EXPECT_THAT(
+      expected_states,
+      Eq(handler.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(REMOTE_NOTIFICATION, handler.GetLastNotificationSource());
 
   ids.erase(kObjectId1);
   ids.insert(kObjectId3);
   registrar.UpdateRegisteredIds(&handler, ids);
 
-  {
-    ObjectIdStateMap expected_states;
-    expected_states[kObjectId2].payload = "2";
-    expected_states[kObjectId3].payload = "3";
-    EXPECT_CALL(handler, OnIncomingNotification(
-        expected_states, REMOTE_NOTIFICATION));
-  }
+  expected_states.erase(kObjectId1);
+  expected_states[kObjectId3].payload = "3";
 
   // Removed object IDs should not be notified, newly-added ones should.
   registrar.DispatchInvalidationsToHandlers(states, REMOTE_NOTIFICATION);
-
-  Mock::VerifyAndClearExpectations(&handler);
+  EXPECT_EQ(2, handler.GetNotificationCount());
+  EXPECT_THAT(
+      expected_states,
+      Eq(handler.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(REMOTE_NOTIFICATION, handler.GetLastNotificationSource());
 
   registrar.UnregisterHandler(&handler);
 
   // Should be ignored since |handler| isn't registered anymore.
   registrar.DispatchInvalidationsToHandlers(states, REMOTE_NOTIFICATION);
+  EXPECT_EQ(2, handler.GetNotificationCount());
 }
 
 // Register handlers and some IDs for those handlers, register a handler with
@@ -97,35 +90,10 @@ TEST_F(SyncNotifierRegistrarTest, Basic) {
 // should get notifications, and the ones that have registered IDs should
 // receive invalidations for those IDs.
 TEST_F(SyncNotifierRegistrarTest, MultipleHandlers) {
-  StrictMock<MockSyncNotifierObserver> handler1;
-  EXPECT_CALL(handler1, OnNotificationsEnabled());
-  {
-    ObjectIdStateMap expected_states;
-    expected_states[kObjectId1].payload = "1";
-    expected_states[kObjectId2].payload = "2";
-    EXPECT_CALL(handler1, OnIncomingNotification(
-        expected_states, REMOTE_NOTIFICATION));
-  }
-  EXPECT_CALL(handler1,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-
-  StrictMock<MockSyncNotifierObserver> handler2;
-  EXPECT_CALL(handler2, OnNotificationsEnabled());
-  {
-    ObjectIdStateMap expected_states;
-    expected_states[kObjectId3].payload = "3";
-    EXPECT_CALL(handler2, OnIncomingNotification(
-        expected_states, REMOTE_NOTIFICATION));
-  }
-  EXPECT_CALL(handler2,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-
-  StrictMock<MockSyncNotifierObserver> handler3;
-  EXPECT_CALL(handler3, OnNotificationsEnabled());
-  EXPECT_CALL(handler3,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-
-  StrictMock<MockSyncNotifierObserver> handler4;
+  FakeSyncNotifierObserver handler1;
+  FakeSyncNotifierObserver handler2;
+  FakeSyncNotifierObserver handler3;
+  FakeSyncNotifierObserver handler4;
 
   SyncNotifierRegistrar registrar;
 
@@ -158,6 +126,15 @@ TEST_F(SyncNotifierRegistrarTest, MultipleHandlers) {
   registrar.UnregisterHandler(&handler4);
 
   registrar.EmitOnNotificationsEnabled();
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            handler1.GetNotificationsDisabledReason());
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            handler2.GetNotificationsDisabledReason());
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            handler3.GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler4.GetNotificationsDisabledReason());
+
   {
     ObjectIdStateMap states;
     states[kObjectId1].payload = "1";
@@ -165,8 +142,39 @@ TEST_F(SyncNotifierRegistrarTest, MultipleHandlers) {
     states[kObjectId3].payload = "3";
     states[kObjectId4].payload = "4";
     registrar.DispatchInvalidationsToHandlers(states, REMOTE_NOTIFICATION);
+
+    ObjectIdStateMap expected_states;
+    expected_states[kObjectId1].payload = "1";
+    expected_states[kObjectId2].payload = "2";
+
+    EXPECT_EQ(1, handler1.GetNotificationCount());
+    EXPECT_THAT(
+        expected_states,
+        Eq(handler1.GetLastNotificationIdStateMap()));
+    EXPECT_EQ(REMOTE_NOTIFICATION, handler1.GetLastNotificationSource());
+
+    expected_states.clear();
+    expected_states[kObjectId3].payload = "3";
+
+    EXPECT_EQ(1, handler2.GetNotificationCount());
+    EXPECT_THAT(
+        expected_states,
+        Eq(handler2.GetLastNotificationIdStateMap()));
+    EXPECT_EQ(REMOTE_NOTIFICATION, handler2.GetLastNotificationSource());
+
+    EXPECT_EQ(0, handler3.GetNotificationCount());
+    EXPECT_EQ(0, handler4.GetNotificationCount());
   }
+
   registrar.EmitOnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler1.GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler2.GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler3.GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler4.GetNotificationsDisabledReason());
 }
 
 // Multiple registrations by different handlers on the same object ID should
@@ -174,10 +182,10 @@ TEST_F(SyncNotifierRegistrarTest, MultipleHandlers) {
 TEST_F(SyncNotifierRegistrarTest, MultipleRegistration) {
   SyncNotifierRegistrar registrar;
 
-  StrictMock<MockSyncNotifierObserver> handler1;
+  FakeSyncNotifierObserver handler1;
   registrar.RegisterHandler(&handler1);
 
-  MockSyncNotifierObserver handler2;
+  FakeSyncNotifierObserver handler2;
   registrar.RegisterHandler(&handler2);
 
   ObjectIdSet ids;
@@ -194,22 +202,10 @@ TEST_F(SyncNotifierRegistrarTest, MultipleRegistration) {
 // Make sure that passing an empty set to UpdateRegisteredIds clears the
 // corresponding entries for the handler.
 TEST_F(SyncNotifierRegistrarTest, EmptySetUnregisters) {
-  StrictMock<MockSyncNotifierObserver> handler1;
-  EXPECT_CALL(handler1, OnNotificationsEnabled());
-  EXPECT_CALL(handler1,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  FakeSyncNotifierObserver handler1;
 
   // Control observer.
-  StrictMock<MockSyncNotifierObserver> handler2;
-  EXPECT_CALL(handler2, OnNotificationsEnabled());
-  {
-    ObjectIdStateMap expected_states;
-    expected_states[kObjectId3].payload = "3";
-    EXPECT_CALL(handler2, OnIncomingNotification(
-        expected_states, REMOTE_NOTIFICATION));
-  }
-  EXPECT_CALL(handler2,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  FakeSyncNotifierObserver handler2;
 
   SyncNotifierRegistrar registrar;
 
@@ -234,14 +230,27 @@ TEST_F(SyncNotifierRegistrarTest, EmptySetUnregisters) {
   registrar.UpdateRegisteredIds(&handler1, ObjectIdSet());
 
   registrar.EmitOnNotificationsEnabled();
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            handler1.GetNotificationsDisabledReason());
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            handler2.GetNotificationsDisabledReason());
+
   {
     ObjectIdStateMap states;
     states[kObjectId1].payload = "1";
     states[kObjectId2].payload = "2";
     states[kObjectId3].payload = "3";
-    registrar.DispatchInvalidationsToHandlers(states, REMOTE_NOTIFICATION);
+    registrar.DispatchInvalidationsToHandlers(states,
+                                              REMOTE_NOTIFICATION);
+    EXPECT_EQ(0, handler1.GetNotificationCount());
+    EXPECT_EQ(1, handler2.GetNotificationCount());
   }
+
   registrar.EmitOnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler1.GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            handler2.GetNotificationsDisabledReason());
 }
 
 }  // namespace

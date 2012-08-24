@@ -60,6 +60,9 @@ class SyncNotifierRegistrar {
   void EmitOnNotificationsEnabled();
   void EmitOnNotificationsDisabled(NotificationsDisabledReason reason);
 
+  bool IsHandlerRegisteredForTest(SyncNotifierObserver* handler) const;
+  ObjectIdSet GetRegisteredIdsForTest(SyncNotifierObserver* handler) const;
+
   // Needed for death tests.
   void DetachFromThreadForTest();
 

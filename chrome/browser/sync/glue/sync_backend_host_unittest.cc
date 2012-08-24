@@ -23,7 +23,6 @@
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
-#include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "sync/protocol/encryption.pb.h"

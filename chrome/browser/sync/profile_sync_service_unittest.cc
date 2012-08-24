@@ -25,7 +25,7 @@
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
-#include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -383,12 +383,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
   const syncer::ObjectIdStateMap& states =
       syncer::ObjectIdSetToStateMap(ids, "payload");
 
-  StrictMock<syncer::MockSyncNotifierObserver> observer;
-  EXPECT_CALL(observer, OnNotificationsEnabled());
-  EXPECT_CALL(observer, OnIncomingNotification(
-      states, syncer::REMOTE_NOTIFICATION));
-  EXPECT_CALL(observer, OnNotificationsDisabled(
-      syncer::TRANSIENT_NOTIFICATION_ERROR));
+  syncer::FakeSyncNotifierObserver observer;
 
   service_->RegisterInvalidationHandler(&observer);
   service_->UpdateRegisteredInvalidationIds(&observer, ids);
@@ -397,8 +392,16 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
       service_->GetBackendForTest();
 
   backend->EmitOnNotificationsEnabled();
+  EXPECT_EQ(syncer::NO_NOTIFICATION_ERROR,
+            observer.GetNotificationsDisabledReason());
+
   backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
+  EXPECT_THAT(states, Eq(observer.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(syncer::REMOTE_NOTIFICATION, observer.GetLastNotificationSource());
+
   backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
+  EXPECT_EQ(syncer::TRANSIENT_NOTIFICATION_ERROR,
+            observer.GetNotificationsDisabledReason());
 
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -420,14 +423,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
   const syncer::ObjectIdStateMap& states =
       syncer::ObjectIdSetToStateMap(ids, "payload");
 
-  StrictMock<syncer::MockSyncNotifierObserver> observer;
-  EXPECT_CALL(observer, OnNotificationsEnabled());
-  EXPECT_CALL(observer, OnIncomingNotification(
-      states, syncer::REMOTE_NOTIFICATION));
-  // This may get called more than once, as a real notifier is
-  // created.
-  EXPECT_CALL(observer, OnNotificationsDisabled(
-      syncer::TRANSIENT_NOTIFICATION_ERROR)).Times(AtLeast(1));
+  syncer::FakeSyncNotifierObserver observer;
 
   service_->RegisterInvalidationHandler(&observer);
   service_->UpdateRegisteredInvalidationIds(&observer, ids);
@@ -439,8 +435,16 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
       service_->GetBackendForTest();
 
   backend->EmitOnNotificationsEnabled();
+  EXPECT_EQ(syncer::NO_NOTIFICATION_ERROR,
+            observer.GetNotificationsDisabledReason());
+
   backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
+  EXPECT_THAT(states, Eq(observer.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(syncer::REMOTE_NOTIFICATION, observer.GetLastNotificationSource());
+
   backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
+  EXPECT_EQ(syncer::TRANSIENT_NOTIFICATION_ERROR,
+            observer.GetNotificationsDisabledReason());
 }
 
 }  // namespace

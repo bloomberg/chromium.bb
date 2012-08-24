@@ -44,6 +44,8 @@
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/js/js_test_util.h"
+#include "sync/notifier/fake_sync_notifier.h"
+#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -73,12 +75,8 @@
 
 using base::ExpectDictStringValue;
 using testing::_;
-using testing::AnyNumber;
-using testing::AtLeast;
 using testing::DoAll;
 using testing::InSequence;
-using testing::Invoke;
-using testing::NiceMock;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
@@ -712,19 +710,6 @@ class SyncEncryptionHandlerObserverMock
   MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));  // NOLINT
 };
 
-class SyncNotifierMock : public SyncNotifier {
- public:
-  MOCK_METHOD1(RegisterHandler, void(SyncNotifierObserver*));
-  MOCK_METHOD2(UpdateRegisteredIds,
-               void(SyncNotifierObserver*, const ObjectIdSet&));
-  MOCK_METHOD1(UnregisterHandler, void(SyncNotifierObserver*));
-  MOCK_METHOD1(SetUniqueId, void(const std::string&));
-  MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
-  MOCK_METHOD2(UpdateCredentials,
-               void(const std::string&, const std::string&));
-  MOCK_METHOD1(SendNotification, void(ModelTypeSet));
-};
-
 }  // namespace
 
 class SyncManagerTest : public testing::Test,
@@ -742,14 +727,14 @@ class SyncManagerTest : public testing::Test,
   };
 
   SyncManagerTest()
-      : sync_notifier_mock_(NULL),
+      : fake_notifier_(NULL),
         sync_manager_("Test sync manager") {
     switches_.encryption_method =
         InternalComponentsFactory::ENCRYPTION_KEYSTORE;
   }
 
   virtual ~SyncManagerTest() {
-    EXPECT_FALSE(sync_notifier_mock_);
+    EXPECT_FALSE(fake_notifier_);
   }
 
   // Test implementation.
@@ -760,15 +745,7 @@ class SyncManagerTest : public testing::Test,
     credentials.email = "foo@bar.com";
     credentials.sync_token = "sometoken";
 
-    sync_notifier_mock_ = new StrictMock<SyncNotifierMock>();
-    EXPECT_CALL(*sync_notifier_mock_, SetUniqueId(_));
-    EXPECT_CALL(*sync_notifier_mock_, SetStateDeprecated(""));
-    EXPECT_CALL(*sync_notifier_mock_,
-                UpdateCredentials(credentials.email, credentials.sync_token));
-    EXPECT_CALL(*sync_notifier_mock_, RegisterHandler(_));
-
-    // Called by ShutdownOnSyncThread().
-    EXPECT_CALL(*sync_notifier_mock_, UnregisterHandler(_));
+    fake_notifier_ = new FakeSyncNotifier();
 
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _)).
@@ -780,7 +757,7 @@ class SyncManagerTest : public testing::Test,
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
-    // Takes ownership of |sync_notifier_mock_|.
+    // Takes ownership of |fake_notifier_|.
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
@@ -789,7 +766,7 @@ class SyncManagerTest : public testing::Test,
                            new TestHttpPostProviderFactory()),
                        workers, &extensions_activity_monitor_, this,
                        credentials,
-                       scoped_ptr<SyncNotifier>(sync_notifier_mock_),
+                       scoped_ptr<SyncNotifier>(fake_notifier_),
                        "", "",  // bootstrap tokens
                        scoped_ptr<InternalComponentsFactory>(GetFactory()),
                        &encryptor_,
@@ -806,14 +783,17 @@ class SyncManagerTest : public testing::Test,
           sync_manager_.GetUserShare(), i->first);
     }
     PumpLoop();
+
+    EXPECT_TRUE(fake_notifier_->IsHandlerRegistered(&sync_manager_));
   }
 
   void TearDown() {
     sync_manager_.RemoveObserver(&manager_observer_);
-    // |sync_notifier_mock_| is strict, which ensures we don't do anything but
-    // unregister |sync_manager_| as a handler on shutdown.
     sync_manager_.ShutdownOnSyncThread();
-    sync_notifier_mock_ = NULL;
+    // We can't assert that |sync_manager_| isn't registered with
+    // |fake_notifier_| anymore because |fake_notifier_| is now
+    // destroyed.
+    fake_notifier_ = NULL;
     PumpLoop();
   }
 
@@ -981,7 +961,7 @@ class SyncManagerTest : public testing::Test,
  protected:
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
-  StrictMock<SyncNotifierMock>* sync_notifier_mock_;
+  FakeSyncNotifier* fake_notifier_;
   SyncManagerImpl sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> manager_observer_;
@@ -993,26 +973,23 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
   ModelSafeRoutingInfo routes;
   GetModelSafeRoutingInfo(&routes);
   const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
-  EXPECT_CALL(*sync_notifier_mock_,
-              UpdateRegisteredIds(
-                  _, ModelTypeSetToObjectIdSet(enabled_types)));
-
   sync_manager_.UpdateEnabledTypes(enabled_types);
+  EXPECT_EQ(ModelTypeSetToObjectIdSet(enabled_types),
+            fake_notifier_->GetRegisteredIds(&sync_manager_));
 }
 
 TEST_F(SyncManagerTest, RegisterInvalidationHandler) {
-  EXPECT_CALL(*sync_notifier_mock_, RegisterHandler(NULL));
-  sync_manager_.RegisterInvalidationHandler(NULL);
-}
+  FakeSyncNotifierObserver fake_observer;
+  sync_manager_.RegisterInvalidationHandler(&fake_observer);
+  EXPECT_TRUE(fake_notifier_->IsHandlerRegistered(&fake_observer));
 
-TEST_F(SyncManagerTest, UpdateRegisteredInvalidationIds) {
-  EXPECT_CALL(*sync_notifier_mock_, UpdateRegisteredIds(NULL, ObjectIdSet()));
-  sync_manager_.UpdateRegisteredInvalidationIds(NULL, ObjectIdSet());
-}
+  const ObjectIdSet& ids =
+      ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  sync_manager_.UpdateRegisteredInvalidationIds(&fake_observer, ids);
+  EXPECT_EQ(ids, fake_notifier_->GetRegisteredIds(&fake_observer));
 
-TEST_F(SyncManagerTest, UnregisterInvalidationHandler) {
-  EXPECT_CALL(*sync_notifier_mock_, UnregisterHandler(NULL));
-  sync_manager_.UnregisterInvalidationHandler(NULL);
+  sync_manager_.UnregisterInvalidationHandler(&fake_observer);
+  EXPECT_FALSE(fake_notifier_->IsHandlerRegistered(&fake_observer));
 }
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {

@@ -15,18 +15,13 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 namespace {
-
-using ::testing::Mock;
-using ::testing::NiceMock;
-using ::testing::StrictMock;
 
 class SyncNotifierFactoryTest : public testing::Test {
  protected:
@@ -37,12 +32,12 @@ class SyncNotifierFactoryTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    Mock::VerifyAndClearExpectations(&mock_observer_);
     message_loop_.RunAllPending();
+    EXPECT_EQ(0, fake_observer_.GetNotificationCount());
   }
 
   MessageLoop message_loop_;
-  StrictMock<MockSyncNotifierObserver> mock_observer_;
+  FakeSyncNotifierObserver fake_observer_;
   notifier::NotifierOptions notifier_options_;
   scoped_ptr<SyncNotifierFactory> factory_;
 };
@@ -60,9 +55,9 @@ TEST_F(SyncNotifierFactoryTest, Basic) {
 #else
   ASSERT_TRUE(notifier.get());
   ObjectIdSet ids = ModelTypeSetToObjectIdSet(ModelTypeSet(syncer::BOOKMARKS));
-  notifier->RegisterHandler(&mock_observer_);
-  notifier->UpdateRegisteredIds(&mock_observer_, ids);
-  notifier->UnregisterHandler(&mock_observer_);
+  notifier->RegisterHandler(&fake_observer_);
+  notifier->UpdateRegisteredIds(&fake_observer_, ids);
+  notifier->UnregisterHandler(&fake_observer_);
 #endif
 }
 
@@ -79,9 +74,9 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
 #else
   ASSERT_TRUE(notifier.get());
   ObjectIdSet ids = ModelTypeSetToObjectIdSet(ModelTypeSet(syncer::BOOKMARKS));
-  notifier->RegisterHandler(&mock_observer_);
-  notifier->UpdateRegisteredIds(&mock_observer_, ids);
-  notifier->UnregisterHandler(&mock_observer_);
+  notifier->RegisterHandler(&fake_observer_);
+  notifier->UpdateRegisteredIds(&fake_observer_, ids);
+  notifier->UnregisterHandler(&fake_observer_);
 #endif
 }
 

@@ -14,7 +14,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
-#include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/fake_sync_notifier.h"
+#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,22 +43,6 @@ class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
   MOCK_METHOD1(UnregisterHandler, void(syncer::SyncNotifierObserver*));
 };
 
-class MockSyncNotifier : public syncer::SyncNotifier {
- public:
-  MockSyncNotifier() {}
-  virtual ~MockSyncNotifier() {}
-
-  MOCK_METHOD1(RegisterHandler, void(syncer::SyncNotifierObserver*));
-  MOCK_METHOD2(UpdateRegisteredIds,
-               void(syncer::SyncNotifierObserver*,
-                    const syncer::ObjectIdSet&));
-  MOCK_METHOD1(UnregisterHandler, void(syncer::SyncNotifierObserver*));
-  MOCK_METHOD1(SetUniqueId, void(const std::string&));
-  MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
-  MOCK_METHOD2(UpdateCredentials, void(const std::string&, const std::string&));
-  MOCK_METHOD1(SendNotification, void(syncer::ModelTypeSet));
-};
-
 // All tests just verify that each call is passed through to the delegate, with
 // the exception of RegisterHandler, UnregisterHandler, and
 // UpdateRegisteredIds, which also verifies the call is forwarded to the
@@ -67,8 +52,9 @@ class BridgedSyncNotifierTest : public testing::Test {
   BridgedSyncNotifierTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
         mock_bridge_(&mock_profile_, ui_loop_.message_loop_proxy()),
-        mock_delegate_(new MockSyncNotifier),  // Owned by bridged_notifier_.
-        bridged_notifier_(&mock_bridge_, mock_delegate_) {}
+        // Owned by bridged_notifier_.
+        fake_delegate_(new syncer::FakeSyncNotifier()),
+        bridged_notifier_(&mock_bridge_, fake_delegate_) {}
   virtual ~BridgedSyncNotifierTest() {}
 
  protected:
@@ -76,55 +62,55 @@ class BridgedSyncNotifierTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   NiceMock<ProfileMock> mock_profile_;
   StrictMock<MockChromeSyncNotificationBridge> mock_bridge_;
-  MockSyncNotifier* mock_delegate_;
+  syncer::FakeSyncNotifier* fake_delegate_;
   BridgedSyncNotifier bridged_notifier_;
 };
 
 TEST_F(BridgedSyncNotifierTest, RegisterHandler) {
-  syncer::MockSyncNotifierObserver observer;
+  const syncer::ObjectIdSet& ids =
+      syncer::ModelTypeSetToObjectIdSet(
+          syncer::ModelTypeSet(syncer::APPS, syncer::PREFERENCES));
+
+  syncer::FakeSyncNotifierObserver observer;
   EXPECT_CALL(mock_bridge_, RegisterHandler(&observer));
-  EXPECT_CALL(*mock_delegate_, RegisterHandler(&observer));
-  bridged_notifier_.RegisterHandler(&observer);
-}
-
-TEST_F(BridgedSyncNotifierTest, UpdateRegisteredIds) {
-  EXPECT_CALL(mock_bridge_, UpdateRegisteredIds(
-      NULL, syncer::ObjectIdSet()));
-  EXPECT_CALL(*mock_delegate_, UpdateRegisteredIds(
-      NULL, syncer::ObjectIdSet()));
-  bridged_notifier_.UpdateRegisteredIds(NULL, syncer::ObjectIdSet());
-}
-
-TEST_F(BridgedSyncNotifierTest, UnregisterHandler) {
-  syncer::MockSyncNotifierObserver observer;
+  EXPECT_CALL(mock_bridge_, UpdateRegisteredIds(&observer, ids));
   EXPECT_CALL(mock_bridge_, UnregisterHandler(&observer));
-  EXPECT_CALL(*mock_delegate_, UnregisterHandler(&observer));
+
+  bridged_notifier_.RegisterHandler(&observer);
+  EXPECT_TRUE(fake_delegate_->IsHandlerRegistered(&observer));
+
+  bridged_notifier_.UpdateRegisteredIds(&observer, ids);
+  EXPECT_EQ(ids, fake_delegate_->GetRegisteredIds(&observer));
+
   bridged_notifier_.UnregisterHandler(&observer);
+  EXPECT_FALSE(fake_delegate_->IsHandlerRegistered(&observer));
 }
 
 TEST_F(BridgedSyncNotifierTest, SetUniqueId) {
-  std::string unique_id = "unique id";
-  EXPECT_CALL(*mock_delegate_, SetUniqueId(unique_id));
+  const std::string& unique_id = "unique id";
   bridged_notifier_.SetUniqueId(unique_id);
+  EXPECT_EQ(unique_id, fake_delegate_->GetUniqueId());
 }
 
 TEST_F(BridgedSyncNotifierTest, SetStateDeprecated) {
-  std::string state = "state";
-  EXPECT_CALL(*mock_delegate_, SetStateDeprecated(state));
+  const std::string& state = "state";
   bridged_notifier_.SetStateDeprecated(state);
+  EXPECT_EQ(state, fake_delegate_->GetStateDeprecated());
 }
 
 TEST_F(BridgedSyncNotifierTest, UpdateCredentials) {
-  std::string email = "email";
-  std::string token = "token";
-  EXPECT_CALL(*mock_delegate_, UpdateCredentials(email, token));
+  const std::string& email = "email";
+  const std::string& token = "token";
   bridged_notifier_.UpdateCredentials(email, token);
+  EXPECT_EQ(email, fake_delegate_->GetCredentialsEmail());
+  EXPECT_EQ(token, fake_delegate_->GetCredentialsToken());
 }
 
 TEST_F(BridgedSyncNotifierTest, SendNotification) {
-  syncer::ModelTypeSet changed_types(syncer::SESSIONS, syncer::EXTENSIONS);
-  EXPECT_CALL(*mock_delegate_, SendNotification(HasModelTypes(changed_types)));
+  const syncer::ModelTypeSet changed_types(
+      syncer::SESSIONS, syncer::EXTENSIONS);
   bridged_notifier_.SendNotification(changed_types);
+  EXPECT_TRUE(fake_delegate_->GetLastChangedTypes().Equals(changed_types));
 }
 
 }  // namespace

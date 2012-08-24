@@ -114,6 +114,25 @@ void SyncNotifierRegistrar::EmitOnNotificationsDisabled(
                     OnNotificationsDisabled(reason));
 }
 
+bool SyncNotifierRegistrar::IsHandlerRegisteredForTest(
+    SyncNotifierObserver* handler) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return handlers_.HasObserver(handler);
+}
+
+ObjectIdSet SyncNotifierRegistrar::GetRegisteredIdsForTest(
+    SyncNotifierObserver* handler) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ObjectIdSet registered_ids;
+  for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
+       it != id_to_handler_map_.end(); ++it) {
+    if (it->second == handler) {
+      registered_ids.insert(it->first);
+    }
+  }
+  return registered_ids;
+}
+
 void SyncNotifierRegistrar::DetachFromThreadForTest() {
   DCHECK(thread_checker_.CalledOnValidThread());
   thread_checker_.DetachFromThread();
