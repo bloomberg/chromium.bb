@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_LIST_EXTENSION_APP_ITEM_H_
-#define CHROME_BROWSER_UI_ASH_APP_LIST_EXTENSION_APP_ITEM_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_ITEM_H_
+#define CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_ITEM_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/ash/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class AppListController;
@@ -76,4 +76,4 @@ class ExtensionAppItem : public ChromeAppListItem,
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_LIST_EXTENSION_APP_ITEM_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_EXTENSION_APP_ITEM_H_

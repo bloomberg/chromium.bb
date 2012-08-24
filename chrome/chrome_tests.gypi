@@ -1657,7 +1657,6 @@
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
-        'browser/ui/ash/app_list/apps_model_builder_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/ash/launcher/browser_launcher_item_controller_unittest.cc',
@@ -2124,6 +2123,11 @@
           'sources/': [
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc'],
+          ],
+        }],
+        ['use_ash==1', {
+          'sources': [
+            'browser/ui/app_list/apps_model_builder_unittest.cc',
           ],
         }],
         ['use_aura==1', {

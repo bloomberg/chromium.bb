@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/ash/app_list/app_list_controller.h"
+#include "chrome/browser/ui/app_list/app_list_controller.h"
 
 class AppListControllerAsh : public AppListController {
  public:

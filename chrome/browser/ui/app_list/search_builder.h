@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_LIST_SEARCH_BUILDER_H_
-#define CHROME_BROWSER_UI_ASH_APP_LIST_SEARCH_BUILDER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_BUILDER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_BUILDER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -63,4 +63,4 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(SearchBuilder);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_LIST_SEARCH_BUILDER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_BUILDER_H_

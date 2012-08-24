@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/app_list/apps_model_builder.h"
-#include "chrome/browser/ui/ash/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/ash/app_list/search_builder.h"
+#include "chrome/browser/ui/app_list/apps_model_builder.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/search_builder.h"
 #include "content/public/browser/user_metrics.h"
 
 AppListViewDelegate::AppListViewDelegate(AppListController* controller)

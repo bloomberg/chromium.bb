@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_
-#define CHROME_BROWSER_UI_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_ITEM_H_
+#define CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_ITEM_H_
 
 #include "ui/app_list/app_list_item_model.h"
 
@@ -33,4 +33,4 @@ class ChromeAppListItem : public app_list::AppListItemModel {
   DISALLOW_COPY_AND_ASSIGN(ChromeAppListItem);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_CHROME_APP_LIST_ITEM_H_
