@@ -44,7 +44,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncer::ObjectIdPayloadMap& id_payloads,
+      const syncer::ObjectIdStateMap& id_state_map,
       syncer::IncomingNotificationSource source) OVERRIDE;
 
   const std::set<std::string>& GetRegisteredExtensionsForTest() const {

@@ -21,7 +21,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
@@ -1017,7 +1017,7 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
     if (is_notifiable_commit) {
       if (sync_notifier_.get()) {
         const ModelTypeSet changed_types =
-            ModelTypePayloadMapToEnumSet(event.snapshot.source().types);
+            ModelTypeStateMapToSet(event.snapshot.source().types);
         sync_notifier_->SendNotification(changed_types);
       } else {
         DVLOG(1) << "Not sending notification: sync_notifier_ is NULL";
@@ -1259,12 +1259,12 @@ JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
 }
 
 void SyncManagerImpl::UpdateNotificationInfo(
-    const ModelTypePayloadMap& type_payloads) {
-  for (ModelTypePayloadMap::const_iterator it = type_payloads.begin();
-       it != type_payloads.end(); ++it) {
+    const ModelTypeStateMap& type_state_map) {
+  for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
+       it != type_state_map.end(); ++it) {
     NotificationInfo* info = &notification_info_map_[it->first];
     info->total_count++;
-    info->payload = it->second;
+    info->payload = it->second.payload;
   }
 }
 
@@ -1278,24 +1278,24 @@ void SyncManagerImpl::OnNotificationsDisabled(
 }
 
 void SyncManagerImpl::OnIncomingNotification(
-    const ObjectIdPayloadMap& id_payloads,
+    const ObjectIdStateMap& id_state_map,
     IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const ModelTypePayloadMap& type_payloads =
-      ObjectIdPayloadMapToModelTypePayloadMap(id_payloads);
+  const ModelTypeStateMap& type_state_map =
+      ObjectIdStateMapToModelTypeStateMap(id_state_map);
   if (source == LOCAL_NOTIFICATION) {
-    scheduler_->ScheduleNudgeWithPayloadsAsync(
+    scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
         NUDGE_SOURCE_LOCAL_REFRESH,
-        type_payloads, FROM_HERE);
-  } else if (!type_payloads.empty()) {
-    scheduler_->ScheduleNudgeWithPayloadsAsync(
+        type_state_map, FROM_HERE);
+  } else if (!type_state_map.empty()) {
+    scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
         NUDGE_SOURCE_NOTIFICATION,
-        type_payloads, FROM_HERE);
+        type_state_map, FROM_HERE);
     allstatus_.IncrementNotificationsReceived();
-    UpdateNotificationInfo(type_payloads);
-    debug_info_event_listener_.OnIncomingNotification(type_payloads);
+    UpdateNotificationInfo(type_state_map);
+    debug_info_event_listener_.OnIncomingNotification(type_state_map);
   } else {
     LOG(WARNING) << "Sync received notification without any type information.";
   }
@@ -1304,8 +1304,8 @@ void SyncManagerImpl::OnIncomingNotification(
     DictionaryValue details;
     ListValue* changed_types = new ListValue();
     details.Set("changedTypes", changed_types);
-    for (ModelTypePayloadMap::const_iterator it = type_payloads.begin();
-         it != type_payloads.end(); ++it) {
+    for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
+         it != type_state_map.end(); ++it) {
       const std::string& model_type_str =
           ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));

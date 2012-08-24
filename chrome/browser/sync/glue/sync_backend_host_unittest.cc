@@ -25,6 +25,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/object_id_state_map_test_util.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
@@ -62,7 +63,7 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD1(OnNotificationsDisabled,
                void(syncer::NotificationsDisabledReason));
   MOCK_METHOD2(OnIncomingNotification,
-               void(const syncer::ObjectIdPayloadMap&,
+               void(const syncer::ObjectIdStateMap&,
                     syncer::IncomingNotificationSource));
   MOCK_METHOD2(OnBackendInitialized,
                void(const syncer::WeakHandle<syncer::JsBackend>&, bool));
@@ -571,16 +572,16 @@ TEST_F(SyncBackendHostTest, Invalidate) {
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(1, "id1"));
   ids.insert(invalidation::ObjectId(2, "id2"));
-  const syncer::ObjectIdPayloadMap& id_payloads =
-      syncer::ObjectIdSetToPayloadMap(ids, "payload");
+  const syncer::ObjectIdStateMap& id_state_map =
+      syncer::ObjectIdSetToStateMap(ids, "payload");
 
   EXPECT_CALL(
       mock_frontend_,
-      OnIncomingNotification(id_payloads, syncer::REMOTE_NOTIFICATION))
+      OnIncomingNotification(id_state_map, syncer::REMOTE_NOTIFICATION))
       .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
   backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->Invalidate(id_payloads, syncer::REMOTE_NOTIFICATION);
+  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_NOTIFICATION);
   ui_loop_.PostDelayedTask(
       FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
   ui_loop_.Run();
@@ -636,9 +637,9 @@ TEST_F(SyncBackendHostTest, NotificationsAfterStopSyncingForShutdown) {
   // Should not trigger anything.
   fake_manager_->DisableNotifications(syncer::TRANSIENT_NOTIFICATION_ERROR);
   fake_manager_->EnableNotifications();
-  const syncer::ObjectIdPayloadMap& id_payloads =
-      syncer::ObjectIdSetToPayloadMap(ids, "payload");
-  fake_manager_->Invalidate(id_payloads, syncer::REMOTE_NOTIFICATION);
+  const syncer::ObjectIdStateMap& id_state_map =
+      syncer::ObjectIdSetToStateMap(ids, "payload");
+  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_NOTIFICATION);
 
   // Make sure the above calls take effect before we continue.
   fake_manager_->WaitForSyncThread();

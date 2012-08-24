@@ -26,6 +26,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
@@ -379,13 +380,13 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(1, "id1"));
   ids.insert(invalidation::ObjectId(2, "id2"));
-  const syncer::ObjectIdPayloadMap& payloads =
-      syncer::ObjectIdSetToPayloadMap(ids, "payload");
+  const syncer::ObjectIdStateMap& states =
+      syncer::ObjectIdSetToStateMap(ids, "payload");
 
   StrictMock<syncer::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer, OnNotificationsEnabled());
   EXPECT_CALL(observer, OnIncomingNotification(
-      payloads, syncer::REMOTE_NOTIFICATION));
+      states, syncer::REMOTE_NOTIFICATION));
   EXPECT_CALL(observer, OnNotificationsDisabled(
       syncer::TRANSIENT_NOTIFICATION_ERROR));
 
@@ -396,7 +397,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
       service_->GetBackendForTest();
 
   backend->EmitOnNotificationsEnabled();
-  backend->EmitOnIncomingNotification(payloads, syncer::REMOTE_NOTIFICATION);
+  backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
   backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
 
   Mock::VerifyAndClearExpectations(&observer);
@@ -404,7 +405,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
   service_->UnregisterInvalidationHandler(&observer);
 
   backend->EmitOnNotificationsEnabled();
-  backend->EmitOnIncomingNotification(payloads, syncer::REMOTE_NOTIFICATION);
+  backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
   backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
 }
 
@@ -416,13 +417,13 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
 
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(3, "id3"));
-  const syncer::ObjectIdPayloadMap& payloads =
-      syncer::ObjectIdSetToPayloadMap(ids, "payload");
+  const syncer::ObjectIdStateMap& states =
+      syncer::ObjectIdSetToStateMap(ids, "payload");
 
   StrictMock<syncer::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer, OnNotificationsEnabled());
   EXPECT_CALL(observer, OnIncomingNotification(
-      payloads, syncer::REMOTE_NOTIFICATION));
+      states, syncer::REMOTE_NOTIFICATION));
   // This may get called more than once, as a real notifier is
   // created.
   EXPECT_CALL(observer, OnNotificationsDisabled(
@@ -438,7 +439,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
       service_->GetBackendForTest();
 
   backend->EmitOnNotificationsEnabled();
-  backend->EmitOnIncomingNotification(payloads, syncer::REMOTE_NOTIFICATION);
+  backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
   backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
 }
 

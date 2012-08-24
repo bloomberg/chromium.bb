@@ -48,19 +48,19 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
   EXPECT_TRUE(GetRoutingInfoTypes(routing_info).Equals(expected_types));
 }
 
-TEST_F(ModelSafeWorkerTest, ModelSafeRoutingInfoToPayloadMap) {
+TEST_F(ModelSafeWorkerTest, ModelSafeRoutingInfoToStateMap) {
   std::string payload = "test";
   ModelSafeRoutingInfo routing_info;
   routing_info[BOOKMARKS] = GROUP_PASSIVE;
   routing_info[NIGORI] = GROUP_UI;
   routing_info[PREFERENCES] = GROUP_DB;
-  ModelTypePayloadMap types_with_payloads =
-      ModelSafeRoutingInfoToPayloadMap(routing_info, payload);
-  ASSERT_EQ(routing_info.size(), types_with_payloads.size());
+  ModelTypeStateMap type_state_map =
+      ModelSafeRoutingInfoToStateMap(routing_info, payload);
+  ASSERT_EQ(routing_info.size(), type_state_map.size());
   for (ModelSafeRoutingInfo::iterator iter = routing_info.begin();
        iter != routing_info.end();
        ++iter) {
-    EXPECT_EQ(payload, types_with_payloads[iter->first]);
+    EXPECT_EQ(payload, type_state_map[iter->first].payload);
   }
 }
 

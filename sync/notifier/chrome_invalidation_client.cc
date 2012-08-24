@@ -162,9 +162,9 @@ void ChromeInvalidationClient::Invalidate(
   if (invalidation.has_payload())
     payload = invalidation.payload();
 
-  ObjectIdPayloadMap id_payloads;
-  id_payloads[id] = payload;
-  EmitInvalidation(id_payloads);
+  ObjectIdStateMap id_state_map;
+  id_state_map[id].payload = payload;
+  EmitInvalidation(id_state_map);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -178,9 +178,9 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateUnknownVersion";
 
-  ObjectIdPayloadMap id_payloads;
-  id_payloads[object_id] = std::string();
-  EmitInvalidation(id_payloads);
+  ObjectIdStateMap id_state_map;
+  id_state_map[object_id].payload = std::string();
+  EmitInvalidation(id_state_map);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/78462).
   client->Acknowledge(ack_handle);
@@ -195,21 +195,21 @@ void ChromeInvalidationClient::InvalidateAll(
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateAll";
 
-  ObjectIdPayloadMap id_payloads;
+  ObjectIdStateMap id_state_map;
   for (ObjectIdSet::const_iterator it = registered_ids_.begin();
        it != registered_ids_.end(); ++it) {
-    id_payloads[*it] = std::string();
+    id_state_map[*it].payload = std::string();
   }
-  EmitInvalidation(id_payloads);
+  EmitInvalidation(id_state_map);
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/76482).
   client->Acknowledge(ack_handle);
 }
 
 void ChromeInvalidationClient::EmitInvalidation(
-    const ObjectIdPayloadMap& id_payloads) {
+    const ObjectIdStateMap& id_state_map) {
   DCHECK(CalledOnValidThread());
-  listener_->OnInvalidate(id_payloads);
+  listener_->OnInvalidate(id_state_map);
 }
 
 void ChromeInvalidationClient::InformRegistrationStatus(

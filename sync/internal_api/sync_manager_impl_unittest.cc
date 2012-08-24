@@ -942,10 +942,10 @@ class SyncManagerTest : public testing::Test,
 
   void TriggerOnIncomingNotificationForTest(ModelTypeSet model_types) {
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
-    ModelTypePayloadMap model_types_with_payloads =
-        ModelTypePayloadMapFromEnumSet(model_types, std::string());
+    ModelTypeStateMap type_state_map =
+        ModelTypeSetToStateMap(model_types, std::string());
     sync_manager_.OnIncomingNotification(
-        ModelTypePayloadMapToObjectIdPayloadMap(model_types_with_payloads),
+        ModelTypeStateMapToObjectIdStateMap(type_state_map),
         REMOTE_NOTIFICATION);
   }
 

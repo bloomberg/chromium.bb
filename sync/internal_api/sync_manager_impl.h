@@ -171,7 +171,7 @@ class SyncManagerImpl : public SyncManager,
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ObjectIdStateMap& id_state_map,
       IncomingNotificationSource source) OVERRIDE;
 
   // Called only by our NetworkChangeNotifier.
@@ -255,7 +255,7 @@ class SyncManagerImpl : public SyncManager,
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
   void UpdateNotificationInfo(
-      const ModelTypePayloadMap& type_payloads);
+      const ModelTypeStateMap& type_state_map);
 
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();

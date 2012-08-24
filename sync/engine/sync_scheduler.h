@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "sync/engine/nudge_source.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/sessions/sync_session.h"
 
 class MessageLoop;
@@ -90,9 +90,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
       NudgeSource source,
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) = 0;
-  virtual void ScheduleNudgeWithPayloadsAsync(
+  virtual void ScheduleNudgeWithStatesAsync(
       const base::TimeDelta& delay, NudgeSource source,
-      const ModelTypePayloadMap& types_with_payloads,
+      const ModelTypeStateMap& type_state_map,
       const tracked_objects::Location& nudge_location) = 0;
 
   // Change status of notifications in the SyncSessionContext.

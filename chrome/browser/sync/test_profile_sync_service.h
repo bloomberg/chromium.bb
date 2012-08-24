@@ -68,7 +68,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   void EmitOnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason);
   void EmitOnIncomingNotification(
-      const syncer::ObjectIdPayloadMap& id_payloads,
+      const syncer::ObjectIdStateMap& id_state_map,
       const syncer::IncomingNotificationSource source);
 
  protected:

@@ -140,8 +140,8 @@ class FakeListener : public ChromeInvalidationClient::Listener {
   }
 
   std::string GetPayload(const ObjectId& id) const {
-    ObjectIdPayloadMap::const_iterator it = payloads_.find(id);
-    return (it == payloads_.end()) ? "" : it->second;
+    ObjectIdStateMap::const_iterator it = states_.find(id);
+    return (it == states_.end()) ? "" : it->second.payload;
   }
 
   // NO_NOTIFICATION_ERROR is the enabled state.
@@ -151,11 +151,11 @@ class FakeListener : public ChromeInvalidationClient::Listener {
 
   // ChromeInvalidationClient::Listener implementation.
 
-  virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) OVERRIDE {
-    for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
-         it != id_payloads.end(); ++it) {
+  virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE {
+    for (ObjectIdStateMap::const_iterator it = id_state_map.begin();
+         it != id_state_map.end(); ++it) {
       ++invalidation_counts_[it->first];
-      payloads_[it->first] = it->second;
+      states_[it->first] = it->second;
     }
   }
 
@@ -170,7 +170,7 @@ class FakeListener : public ChromeInvalidationClient::Listener {
  private:
   typedef std::map<ObjectId, int, ObjectIdLessThan> ObjectIdCountMap;
   ObjectIdCountMap invalidation_counts_;
-  ObjectIdPayloadMap payloads_;
+  ObjectIdStateMap states_;
   NotificationsDisabledReason reason_;
 };
 

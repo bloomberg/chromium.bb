@@ -24,7 +24,7 @@
 #include "net/base/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/sync_notifier.h"
@@ -65,16 +65,16 @@ class NotificationPrinter : public SyncNotifierObserver {
   }
 
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ObjectIdStateMap& id_state_map,
       IncomingNotificationSource source) OVERRIDE {
-    const ModelTypePayloadMap& type_payloads =
-        ObjectIdPayloadMapToModelTypePayloadMap(id_payloads);
-    for (ModelTypePayloadMap::const_iterator it =
-             type_payloads.begin(); it != type_payloads.end(); ++it) {
+    const ModelTypeStateMap& type_state_map =
+        ObjectIdStateMapToModelTypeStateMap(id_state_map);
+    for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
+         it != type_state_map.end(); ++it) {
       LOG(INFO) << (source == REMOTE_NOTIFICATION ? "Remote" : "Local")
                 << " Notification: type = "
                 << ModelTypeToString(it->first)
-                << ", payload = " << it->second;
+                << ", payload = " << it->second.payload;
     }
   }
 

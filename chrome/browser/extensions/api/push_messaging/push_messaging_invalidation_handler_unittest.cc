@@ -159,7 +159,7 @@ TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
               OnMessage("dddddddddddddddddddddddddddddddd", 0, "payload"));
   EXPECT_CALL(delegate_,
               OnMessage("dddddddddddddddddddddddddddddddd", 3, "payload"));
-  handler_->OnIncomingNotification(ObjectIdSetToPayloadMap(ids, "payload"),
+  handler_->OnIncomingNotification(ObjectIdSetToStateMap(ids, "payload"),
                                    syncer::REMOTE_NOTIFICATION);
 }
 
@@ -190,7 +190,7 @@ TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
   ids.insert(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
       "U/dddddddddddddddddddddddddddddddd/4"));
-  handler_->OnIncomingNotification(ObjectIdSetToPayloadMap(ids, "payload"),
+  handler_->OnIncomingNotification(ObjectIdSetToStateMap(ids, "payload"),
                                    syncer::REMOTE_NOTIFICATION);
 }
 

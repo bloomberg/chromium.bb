@@ -121,7 +121,7 @@ class SyncBackendHost::Core
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncer::ObjectIdPayloadMap& id_payloads,
+      const syncer::ObjectIdStateMap& id_state_map,
       syncer::IncomingNotificationSource source) OVERRIDE;
 
   // Note:
@@ -1055,14 +1055,14 @@ void SyncBackendHost::Core::OnNotificationsDisabled(
 }
 
 void SyncBackendHost::Core::OnIncomingNotification(
-    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::ObjectIdStateMap& id_state_map,
     syncer::IncomingNotificationSource source) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::HandleIncomingNotificationOnFrontendLoop,
-             id_payloads, source);
+             id_state_map, source);
 }
 
 void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
@@ -1446,12 +1446,12 @@ void SyncBackendHost::HandleNotificationsDisabledOnFrontendLoop(
 }
 
 void SyncBackendHost::HandleIncomingNotificationOnFrontendLoop(
-    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::ObjectIdStateMap& id_state_map,
     syncer::IncomingNotificationSource source) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  frontend_->OnIncomingNotification(id_payloads, source);
+  frontend_->OnIncomingNotification(id_state_map, source);
 }
 
 bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(

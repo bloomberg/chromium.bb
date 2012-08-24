@@ -22,7 +22,7 @@
 #include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/notifications_disabled_reason.h"
-#include "sync/notifier/object_id_payload_map.h"
+#include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/state_writer.h"
 
 namespace buzz {
@@ -56,7 +56,7 @@ class ChromeInvalidationClient
    public:
     virtual ~Listener();
 
-    virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) = 0;
+    virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) = 0;
 
     virtual void OnNotificationsEnabled() = 0;
 
@@ -137,7 +137,7 @@ class ChromeInvalidationClient
 
   void EmitStateChange();
 
-  void EmitInvalidation(const ObjectIdPayloadMap& id_payloads);
+  void EmitInvalidation(const ObjectIdStateMap& id_state_map);
 
   // Owned by |chrome_system_resources_|.
   notifier::PushClient* const push_client_;

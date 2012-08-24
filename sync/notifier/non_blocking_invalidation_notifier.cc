@@ -46,7 +46,7 @@ class NonBlockingInvalidationNotifier::Core
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ObjectIdStateMap& id_state_map,
       IncomingNotificationSource source) OVERRIDE;
 
  private:
@@ -139,11 +139,11 @@ void NonBlockingInvalidationNotifier::Core::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
-    const ObjectIdPayloadMap& id_payloads, IncomingNotificationSource source) {
+    const ObjectIdStateMap& id_state_map, IncomingNotificationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &SyncNotifierObserver::OnIncomingNotification,
-                          id_payloads,
+                          id_state_map,
                           source);
 }
 
@@ -265,10 +265,10 @@ void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
 }
 
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
-        const ObjectIdPayloadMap& id_payloads,
+        const ObjectIdStateMap& id_state_map,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(id_payloads, source);
+  registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
 }
 
 }  // namespace syncer

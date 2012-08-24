@@ -109,9 +109,9 @@ void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
 }
 
 void DebugInfoEventListener::OnIncomingNotification(
-     const ModelTypePayloadMap& type_payloads) {
+     const ModelTypeStateMap& type_state_map) {
   sync_pb::DebugEventInfo event_info;
-  ModelTypeSet types = ModelTypePayloadMapToEnumSet(type_payloads);
+  ModelTypeSet types = ModelTypeStateMapToSet(type_state_map);
 
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     event_info.add_datatypes_notified_from_server(

@@ -48,17 +48,17 @@ std::set<ModelSafeGroup> ComputeEnabledGroups(
   return enabled_groups;
 }
 
-void PurgeStalePayload(ModelTypePayloadMap* original,
-                       const ModelSafeRoutingInfo& routing_info) {
-  std::vector<ModelTypePayloadMap::iterator> iterators_to_delete;
-  for (ModelTypePayloadMap::iterator i = original->begin();
+void PurgeStaleStates(ModelTypeStateMap* original,
+                      const ModelSafeRoutingInfo& routing_info) {
+  std::vector<ModelTypeStateMap::iterator> iterators_to_delete;
+  for (ModelTypeStateMap::iterator i = original->begin();
        i != original->end(); ++i) {
     if (routing_info.end() == routing_info.find(i->first)) {
       iterators_to_delete.push_back(i);
     }
   }
 
-  for (std::vector<ModelTypePayloadMap::iterator>::iterator
+  for (std::vector<ModelTypeStateMap::iterator>::iterator
        it = iterators_to_delete.begin(); it != iterators_to_delete.end();
        ++it) {
     original->erase(*it);
@@ -92,8 +92,8 @@ void SyncSession::Coalesce(const SyncSession& session) {
   }
 
   // When we coalesce sessions, the sync update source gets overwritten with the
-  // most recent, while the type/payload map gets merged.
-  CoalescePayloads(&source_.types, session.source_.types);
+  // most recent, while the type/state map gets merged.
+  CoalesceStates(&source_.types, session.source_.types);
   source_.updates_source = session.source_.updates_source;
 
   std::vector<ModelSafeWorker*> temp;
@@ -132,7 +132,7 @@ void SyncSession::RebaseRoutingInfoWithLatest(const SyncSession& session) {
   routing_info_.swap(temp_routing_info);
 
   // Now update the payload map.
-  PurgeStalePayload(&source_.types, session.routing_info_);
+  PurgeStaleStates(&source_.types, session.routing_info_);
 
   // Now update the workers.
   std::vector<ModelSafeWorker*> temp;
@@ -157,7 +157,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   bool is_share_useable = true;
   ModelTypeSet initial_sync_ended;
-  ModelTypePayloadMap download_progress_markers;
+  ModelTypeStateMap download_progress_markers;
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType type(ModelTypeFromInt(i));
     if (routing_info_.count(type) != 0) {
@@ -166,7 +166,10 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       else
         is_share_useable = false;
     }
-    dir->GetDownloadProgressAsString(type, &download_progress_markers[type]);
+    // TODO(dcheng): Is this correct? I'm guessing GetDownloadProgressAsString()
+    // shouldn't care about the ack handle...
+    dir->GetDownloadProgressAsString(type,
+                                     &download_progress_markers[type].payload);
   }
 
   return SyncSessionSnapshot(

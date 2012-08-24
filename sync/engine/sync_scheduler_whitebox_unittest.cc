@@ -155,10 +155,10 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
   context()->throttled_data_type_tracker()->SetUnthrottleTime(
       types, base::TimeTicks::Now() + base::TimeDelta::FromHours(2));
 
-  ModelTypePayloadMap types_with_payload;
-  types_with_payload[BOOKMARKS] = "";
+  ModelTypeStateMap type_state_map;
+  type_state_map.insert(std::make_pair(BOOKMARKS, InvalidationState()));
 
-  SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, types_with_payload);
+  SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, type_state_map);
   SyncSession* s = scheduler_->CreateSyncSession(info);
 
   // Now schedule a nudge with just bookmarks and the change is local.

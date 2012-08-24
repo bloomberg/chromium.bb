@@ -39,22 +39,22 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommandTest);
 };
 
-TEST_F(DownloadUpdatesCommandTest, ExecuteNoPayloads) {
+TEST_F(DownloadUpdatesCommandTest, ExecuteNoStates) {
   ConfigureMockServerConnection();
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
   command_.ExecuteImpl(session());
 }
 
-TEST_F(DownloadUpdatesCommandTest, ExecuteWithPayloads) {
+TEST_F(DownloadUpdatesCommandTest, ExecuteWithStates) {
   ConfigureMockServerConnection();
   sessions::SyncSourceInfo source;
-  source.types[AUTOFILL] = "autofill_payload";
-  source.types[BOOKMARKS] = "bookmark_payload";
-  source.types[PREFERENCES] = "preferences_payload";
+  source.types[AUTOFILL].payload = "autofill_payload";
+  source.types[BOOKMARKS].payload = "bookmark_payload";
+  source.types[PREFERENCES].payload = "preferences_payload";
   mock_server()->ExpectGetUpdatesRequestTypes(
       GetRoutingInfoTypes(routing_info()));
-  mock_server()->ExpectGetUpdatesRequestPayloads(source.types);
+  mock_server()->ExpectGetUpdatesRequestStates(source.types);
   command_.ExecuteImpl(session(source));
 }
 

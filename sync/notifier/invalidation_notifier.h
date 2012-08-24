@@ -60,7 +60,7 @@ class InvalidationNotifier
   virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
-  virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) OVERRIDE;
+  virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE;
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;

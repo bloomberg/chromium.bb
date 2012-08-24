@@ -376,12 +376,12 @@ void ChromeToMobileService::OnNotificationsDisabled(
 }
 
 void ChromeToMobileService::OnIncomingNotification(
-    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::ObjectIdStateMap& id_state_map,
     syncer::IncomingNotificationSource source) {
-  DCHECK_EQ(id_payloads.size(), 1U);
-  DCHECK_EQ(id_payloads.count(invalidation::ObjectId(
+  DCHECK_EQ(1U, id_state_map.size());
+  DCHECK_EQ(1U, id_state_map.count(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
-      kSyncInvalidationObjectIdChromeToMobileDeviceList)), 1U);
+      kSyncInvalidationObjectIdChromeToMobileDeviceList)));
   RequestDeviceSearch();
 }
 

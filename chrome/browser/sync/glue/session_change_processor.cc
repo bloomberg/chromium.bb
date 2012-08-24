@@ -24,7 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/protocol/session_specifics.pb.h"
@@ -214,12 +214,12 @@ void SessionChangeProcessor::Observe(
         entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
       DVLOG(1) << "Triggering sync refresh for sessions datatype.";
       const syncer::ModelType type = syncer::SESSIONS;
-      syncer::ModelTypePayloadMap payload_map;
-      payload_map[type] = "";
+      syncer::ModelTypeStateMap state_map;
+      state_map.insert(std::make_pair(type, syncer::InvalidationState()));
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
           content::Source<Profile>(profile_),
-          content::Details<const syncer::ModelTypePayloadMap>(&payload_map));
+          content::Details<const syncer::ModelTypeStateMap>(&state_map));
     }
   }
 

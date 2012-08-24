@@ -7,6 +7,7 @@
 #ifndef SYNC_NOTIFIER_INVALIDATION_UTIL_H_
 #define SYNC_NOTIFIER_INVALIDATION_UTIL_H_
 
+#include <iosfwd>
 #include <set>
 #include <string>
 
@@ -16,6 +17,9 @@ namespace invalidation {
 
 class Invalidation;
 class ObjectId;
+
+// Gmock print helper
+void PrintTo(const invalidation::ObjectId& id, std::ostream* os);
 
 }  // namespace invalidation
 

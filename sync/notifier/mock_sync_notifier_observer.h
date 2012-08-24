@@ -20,7 +20,7 @@ class MockSyncNotifierObserver : public SyncNotifierObserver {
   MOCK_METHOD0(OnNotificationsEnabled, void());
   MOCK_METHOD1(OnNotificationsDisabled, void(NotificationsDisabledReason));
   MOCK_METHOD2(OnIncomingNotification,
-               void(const ObjectIdPayloadMap&, IncomingNotificationSource));
+               void(const ObjectIdStateMap&, IncomingNotificationSource));
 };
 
 }  // namespace syncer

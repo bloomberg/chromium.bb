@@ -178,8 +178,8 @@ class SyncerTest : public testing::Test,
     std::vector<ModelSafeWorker*> workers;
     GetModelSafeRoutingInfo(&info);
     GetWorkers(&workers);
-    ModelTypePayloadMap types =
-        ModelSafeRoutingInfoToPayloadMap(info, std::string());
+    ModelTypeStateMap types =
+        ModelSafeRoutingInfoToStateMap(info, std::string());
     return new SyncSession(context_.get(), this,
         sessions::SyncSourceInfo(sync_pb::GetUpdatesCallerInfo::UNKNOWN, types),
         info, workers);

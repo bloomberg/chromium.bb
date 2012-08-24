@@ -4,10 +4,17 @@
 
 #include "sync/notifier/invalidation_util.h"
 
+#include <ostream>
 #include <sstream>
 
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
+
+namespace invalidation {
+void PrintTo(const invalidation::ObjectId& id, std::ostream* os) {
+  *os << syncer::ObjectIdToString(id);
+}
+}  // namespace invalidation
 
 namespace syncer {
 

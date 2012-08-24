@@ -11,11 +11,12 @@
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
+#include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,11 +85,11 @@ TEST_F(InvalidationNotifierTest, Basic) {
   CreateNotifier("fake_state");
 
   const ModelTypeSet models(PREFERENCES, BOOKMARKS, AUTOFILL);
-  const ModelTypePayloadMap& type_payloads =
-      ModelTypePayloadMapFromEnumSet(models, "payload");
+  const ModelTypeStateMap& type_state_map =
+      ModelTypeSetToStateMap(models, "payload");
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_, OnIncomingNotification(
-      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
+      ModelTypeStateMapToObjectIdStateMap(type_state_map),
       REMOTE_NOTIFICATION));
   EXPECT_CALL(mock_observer_,
               OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
@@ -110,7 +111,7 @@ TEST_F(InvalidationNotifierTest, Basic) {
   invalidation_notifier_->OnNotificationsEnabled();
 
   invalidation_notifier_->OnInvalidate(
-      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads));
+      ModelTypeStateMapToObjectIdStateMap(type_state_map));
 
   invalidation_notifier_->OnNotificationsDisabled(
       TRANSIENT_NOTIFICATION_ERROR);

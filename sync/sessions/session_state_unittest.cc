@@ -30,11 +30,11 @@ class SessionStateTest : public testing::Test {};
 TEST_F(SessionStateTest, SyncSourceInfoToValue) {
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source =
       sync_pb::GetUpdatesCallerInfo::PERIODIC;
-  ModelTypePayloadMap types;
-  types[PREFERENCES] = "preferencespayload";
-  types[EXTENSIONS] = "";
+  ModelTypeStateMap types;
+  types[PREFERENCES].payload = "preferencespayload";
+  types[EXTENSIONS].payload = "";
   scoped_ptr<DictionaryValue> expected_types_value(
-      ModelTypePayloadMapToValue(types));
+      ModelTypeStateMapToValue(types));
 
   SyncSourceInfo source_info(updates_source, types);
 
@@ -61,11 +61,11 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   scoped_ptr<ListValue> expected_initial_sync_ended_value(
       ModelTypeSetToValue(initial_sync_ended));
 
-  ModelTypePayloadMap download_progress_markers;
-  download_progress_markers[BOOKMARKS] = "test";
-  download_progress_markers[APPS] = "apps";
+  ModelTypeStateMap download_progress_markers;
+  download_progress_markers[BOOKMARKS].payload = "test";
+  download_progress_markers[APPS].payload = "apps";
   scoped_ptr<DictionaryValue> expected_download_progress_markers_value(
-      ModelTypePayloadMapToValue(download_progress_markers));
+      ModelTypeStateMapToValue(download_progress_markers));
 
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;

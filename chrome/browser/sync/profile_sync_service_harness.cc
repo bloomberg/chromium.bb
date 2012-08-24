@@ -986,7 +986,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
 std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
     syncer::ModelType model_type) {
   const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  return snap.download_progress_markers()[model_type];
+  return snap.download_progress_markers()[model_type].payload;
 }
 
 std::string ProfileSyncServiceHarness::GetClientInfoString(

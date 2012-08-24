@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/sync_notifier_observer.h"
 
@@ -268,10 +268,10 @@ void P2PNotifier::OnIncomingNotification(
     DVLOG(1) << "No enabled and changed types -- not emitting notification";
     return;
   }
-  const ModelTypePayloadMap& type_payloads = ModelTypePayloadMapFromEnumSet(
+  const ModelTypeStateMap& type_state_map = ModelTypeSetToStateMap(
       notification_data.GetChangedTypes(), std::string());
   registrar_.DispatchInvalidationsToHandlers(
-      ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
+      ModelTypeStateMapToObjectIdStateMap(type_state_map),
       REMOTE_NOTIFICATION);
 }
 

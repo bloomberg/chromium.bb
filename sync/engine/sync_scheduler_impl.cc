@@ -351,7 +351,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
         session_context_,
         this,
         SyncSourceInfo(params.source,
-                       ModelSafeRoutingInfoToPayloadMap(
+                       ModelSafeRoutingInfoToStateMap(
                            restricted_routes,
                            std::string())),
         restricted_routes,
@@ -423,7 +423,7 @@ SyncSchedulerImpl::JobProcessDecision SyncSchedulerImpl::DecideOnJob(
   if (job.purpose == SyncSessionJob::NUDGE &&
       job.session->source().updates_source == GetUpdatesCallerInfo::LOCAL) {
     ModelTypeSet requested_types;
-    for (ModelTypePayloadMap::const_iterator i =
+    for (ModelTypeStateMap::const_iterator i =
          job.session->source().types.begin();
          i != job.session->source().types.end();
          ++i) {
@@ -554,29 +554,29 @@ void SyncSchedulerImpl::ScheduleNudgeAsync(
       << "source " << GetNudgeSourceString(source) << ", "
       << "types " << ModelTypeSetToString(types);
 
-  ModelTypePayloadMap types_with_payloads =
-      ModelTypePayloadMapFromEnumSet(types, std::string());
+  ModelTypeStateMap type_state_map =
+      ModelTypeSetToStateMap(types, std::string());
   SyncSchedulerImpl::ScheduleNudgeImpl(delay,
                                        GetUpdatesFromNudgeSource(source),
-                                       types_with_payloads,
+                                       type_state_map,
                                        false,
                                        nudge_location);
 }
 
-void SyncSchedulerImpl::ScheduleNudgeWithPayloadsAsync(
+void SyncSchedulerImpl::ScheduleNudgeWithStatesAsync(
     const TimeDelta& delay,
-    NudgeSource source, const ModelTypePayloadMap& types_with_payloads,
+    NudgeSource source, const ModelTypeStateMap& type_state_map,
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG_LOC(nudge_location, 2)
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
       << "payloads "
-      << ModelTypePayloadMapToString(types_with_payloads);
+      << ModelTypeStateMapToString(type_state_map);
 
   SyncSchedulerImpl::ScheduleNudgeImpl(delay,
                                        GetUpdatesFromNudgeSource(source),
-                                       types_with_payloads,
+                                       type_state_map,
                                        false,
                                        nudge_location);
 }
@@ -584,7 +584,7 @@ void SyncSchedulerImpl::ScheduleNudgeWithPayloadsAsync(
 void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
     GetUpdatesCallerInfo::GetUpdatesSource source,
-    const ModelTypePayloadMap& types_with_payloads,
+    const ModelTypeStateMap& type_state_map,
     bool is_canary_job, const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
@@ -593,10 +593,10 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
       << delay.InMilliseconds() << " ms, "
       << "source " << GetUpdatesSourceString(source) << ", "
       << "payloads "
-      << ModelTypePayloadMapToString(types_with_payloads)
+      << ModelTypeStateMapToString(type_state_map)
       << (is_canary_job ? " (canary)" : "");
 
-  SyncSourceInfo info(source, types_with_payloads);
+  SyncSourceInfo info(source, type_state_map);
 
   SyncSession* session(CreateSyncSession(info));
   SyncSessionJob job(SyncSessionJob::NUDGE, TimeTicks::Now() + delay,
@@ -774,7 +774,7 @@ void SyncSchedulerImpl::FinishSyncSessionJob(const SyncSessionJob& job) {
   // Update timing information for how often datatypes are triggering nudges.
   base::TimeTicks now = TimeTicks::Now();
   if (!last_sync_session_end_time_.is_null()) {
-    ModelTypePayloadMap::const_iterator iter;
+    ModelTypeStateMap::const_iterator iter;
     for (iter = job.session->source().types.begin();
          iter != job.session->source().types.end();
          ++iter) {
@@ -1013,9 +1013,9 @@ SyncSession* SyncSchedulerImpl::CreateSyncSession(
 void SyncSchedulerImpl::PollTimerCallback() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   ModelSafeRoutingInfo r;
-  ModelTypePayloadMap types_with_payloads =
-      ModelSafeRoutingInfoToPayloadMap(r, std::string());
-  SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, types_with_payloads);
+  ModelTypeStateMap type_state_map =
+      ModelSafeRoutingInfoToStateMap(r, std::string());
+  SyncSourceInfo info(GetUpdatesCallerInfo::PERIODIC, type_state_map);
   SyncSession* s = CreateSyncSession(info);
 
   SyncSessionJob job(SyncSessionJob::POLL, TimeTicks::Now(),

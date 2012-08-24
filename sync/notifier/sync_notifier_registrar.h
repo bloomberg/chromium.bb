@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_payload_map.h"
+#include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/sync_notifier_observer.h"
 
 namespace invalidation {
@@ -53,7 +53,7 @@ class SyncNotifierRegistrar {
   // dispatches the batched invalidations to the corresponding handler.
   // Invalidations for IDs with no corresponding handler are dropped, as are
   // invalidations for handlers that are not added.
-  void DispatchInvalidationsToHandlers(const ObjectIdPayloadMap& id_payloads,
+  void DispatchInvalidationsToHandlers(const ObjectIdStateMap& id_state_map,
                                        IncomingNotificationSource source);
 
   // Calls the given handler method for each handler that has registered IDs.

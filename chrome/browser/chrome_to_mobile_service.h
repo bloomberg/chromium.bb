@@ -160,7 +160,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
-      const syncer::ObjectIdPayloadMap& id_payloads,
+      const syncer::ObjectIdStateMap& id_state_map,
       syncer::IncomingNotificationSource source) OVERRIDE;
 
   // Expose access token accessors for test purposes.

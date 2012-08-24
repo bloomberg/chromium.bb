@@ -74,7 +74,7 @@ ObjectIdSet SyncNotifierRegistrar::GetAllRegisteredIds() const {
 }
 
 void SyncNotifierRegistrar::DispatchInvalidationsToHandlers(
-    const ObjectIdPayloadMap& id_payloads,
+    const ObjectIdStateMap& id_state_map,
     IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we have no handlers, there's nothing to do.
@@ -82,10 +82,10 @@ void SyncNotifierRegistrar::DispatchInvalidationsToHandlers(
     return;
   }
 
-  typedef std::map<SyncNotifierObserver*, ObjectIdPayloadMap> DispatchMap;
+  typedef std::map<SyncNotifierObserver*, ObjectIdStateMap> DispatchMap;
   DispatchMap dispatch_map;
-  for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
-       it != id_payloads.end(); ++it) {
+  for (ObjectIdStateMap::const_iterator it = id_state_map.begin();
+       it != id_state_map.end(); ++it) {
     SyncNotifierObserver* const handler = ObjectIdToHandler(it->first);
     // Filter out invalidations for IDs with no handler.
     if (handler)

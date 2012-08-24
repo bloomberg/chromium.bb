@@ -54,7 +54,7 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet GetAndResetEnabledTypes();
 
   // Posts a method to invalidate the given IDs on the sync thread.
-  void Invalidate(const ObjectIdPayloadMap& id_payloads,
+  void Invalidate(const ObjectIdStateMap& id_state_map,
                   IncomingNotificationSource source);
 
   // Posts a method to enable notifications on the sync thread.
@@ -125,7 +125,7 @@ class FakeSyncManager : public SyncManager {
 
  private:
   void InvalidateOnSyncThread(
-      const ObjectIdPayloadMap& id_payloads,
+      const ObjectIdStateMap& id_state_map,
       IncomingNotificationSource source);
   void EnableNotificationsOnSyncThread();
   void DisableNotificationsOnSyncThread(NotificationsDisabledReason reason);

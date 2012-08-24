@@ -12,6 +12,7 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/base/model_type_state_map_test_util.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_id.h"
@@ -272,12 +273,12 @@ TEST_F(SyncSessionTest, ResetTransientState) {
 TEST_F(SyncSessionTest, Coalesce) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
-  ModelTypePayloadMap one_type =
-      ModelTypePayloadMapFromEnumSet(
+  ModelTypeStateMap one_type =
+      ModelTypeSetToStateMap(
           ParamsMeaningJustOneEnabledType(),
           std::string());
-  ModelTypePayloadMap all_types =
-      ModelTypePayloadMapFromEnumSet(
+  ModelTypeStateMap all_types =
+      ModelTypeSetToStateMap(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
@@ -316,7 +317,7 @@ TEST_F(SyncSessionTest, Coalesce) {
   EXPECT_EQ(expected_enabled_groups_two, two.GetEnabledGroups());
 
   EXPECT_EQ(two.source().updates_source, one.source().updates_source);
-  EXPECT_EQ(all_types, one.source().types);
+  EXPECT_THAT(all_types, Eq(one.source().types));
   std::vector<ModelSafeWorker*>::const_iterator it_db =
       std::find(one.workers().begin(), one.workers().end(), db_worker);
   std::vector<ModelSafeWorker*>::const_iterator it_ui =
@@ -329,12 +330,12 @@ TEST_F(SyncSessionTest, Coalesce) {
 TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   std::vector<ModelSafeWorker*> workers_one, workers_two;
   ModelSafeRoutingInfo routes_one, routes_two;
-  ModelTypePayloadMap one_type =
-      ModelTypePayloadMapFromEnumSet(
+  ModelTypeStateMap one_type =
+      ModelTypeSetToStateMap(
           ParamsMeaningJustOneEnabledType(),
           std::string());
-  ModelTypePayloadMap all_types =
-      ModelTypePayloadMapFromEnumSet(
+  ModelTypeStateMap all_types =
+      ModelTypeSetToStateMap(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
@@ -377,7 +378,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
       sync_pb::GetUpdatesCallerInfo::LOCAL);
 
   // Make sure the payload is reduced to one.
-  EXPECT_EQ(one_type, two.source().types);
+  EXPECT_THAT(one_type, Eq(two.source().types));
 
   // Make sure the workers are udpated.
   std::vector<ModelSafeWorker*>::const_iterator it_db =
@@ -401,8 +402,8 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
 TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   std::vector<ModelSafeWorker*> workers_first, workers_second;
   ModelSafeRoutingInfo routes_first, routes_second;
-  ModelTypePayloadMap all_types =
-      ModelTypePayloadMapFromEnumSet(
+  ModelTypeStateMap all_types =
+      ModelTypeSetToStateMap(
           ParamsMeaningAllEnabledTypes(),
           std::string());
   SyncSourceInfo source_first(sync_pb::GetUpdatesCallerInfo::PERIODIC,
@@ -447,7 +448,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
       sync_pb::GetUpdatesCallerInfo::LOCAL);
 
   // Make sure our payload is still the same.
-  EXPECT_EQ(all_types, second.source().types);
+  EXPECT_THAT(all_types, Eq(second.source().types));
 
   // Make sure the workers are still the same.
   std::vector<ModelSafeWorker*>::const_iterator it_passive =
@@ -481,23 +482,23 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
 }
 
 
-TEST_F(SyncSessionTest, MakeTypePayloadMapFromBitSet) {
+TEST_F(SyncSessionTest, MakeTypeStateMapFromBitSet) {
   ModelTypeSet types;
   std::string payload = "test";
-  ModelTypePayloadMap types_with_payloads =
-      ModelTypePayloadMapFromEnumSet(types, payload);
-  EXPECT_TRUE(types_with_payloads.empty());
+  ModelTypeStateMap type_state_map =
+      ModelTypeSetToStateMap(types, payload);
+  EXPECT_TRUE(type_state_map.empty());
 
   types.Put(BOOKMARKS);
   types.Put(PASSWORDS);
   types.Put(AUTOFILL);
   payload = "test2";
-  types_with_payloads = ModelTypePayloadMapFromEnumSet(types, payload);
+  type_state_map = ModelTypeSetToStateMap(types, payload);
 
-  ASSERT_EQ(3U, types_with_payloads.size());
-  EXPECT_EQ(types_with_payloads[BOOKMARKS], payload);
-  EXPECT_EQ(types_with_payloads[PASSWORDS], payload);
-  EXPECT_EQ(types_with_payloads[AUTOFILL], payload);
+  ASSERT_EQ(3U, type_state_map.size());
+  EXPECT_EQ(type_state_map[BOOKMARKS].payload, payload);
+  EXPECT_EQ(type_state_map[PASSWORDS].payload, payload);
+  EXPECT_EQ(type_state_map[AUTOFILL].payload, payload);
 }
 
 }  // namespace

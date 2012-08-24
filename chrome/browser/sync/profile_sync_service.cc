@@ -669,9 +669,9 @@ void ProfileSyncService::OnNotificationsDisabled(
 }
 
 void ProfileSyncService::OnIncomingNotification(
-    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::ObjectIdStateMap& id_state_map,
     syncer::IncomingNotificationSource source) {
-  notifier_registrar_.DispatchInvalidationsToHandlers(id_payloads, source);
+  notifier_registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
 }
 
 void ProfileSyncService::OnBackendInitialized(

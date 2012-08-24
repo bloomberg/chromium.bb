@@ -25,9 +25,9 @@ void FakeSyncScheduler::ScheduleNudgeAsync(
      const tracked_objects::Location& nudge_location) {
 }
 
-void FakeSyncScheduler::ScheduleNudgeWithPayloadsAsync(
+void FakeSyncScheduler::ScheduleNudgeWithStatesAsync(
      const base::TimeDelta& delay, NudgeSource source,
-     const ModelTypePayloadMap& types_with_payloads,
+     const ModelTypeStateMap& types_with_payloads,
      const tracked_objects::Location& nudge_location) {
 }
 

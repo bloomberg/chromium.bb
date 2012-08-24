@@ -471,7 +471,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleNotificationsDisabledOnFrontendLoop(
       syncer::NotificationsDisabledReason reason);
   void HandleIncomingNotificationOnFrontendLoop(
-      const syncer::ObjectIdPayloadMap& id_payloads,
+      const syncer::ObjectIdStateMap& id_state_map,
       syncer::IncomingNotificationSource source);
 
   // Handles stopping the core's SyncManager, accounting for whether

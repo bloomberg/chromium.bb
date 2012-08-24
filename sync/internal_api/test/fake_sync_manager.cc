@@ -17,7 +17,7 @@
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/notifications_disabled_reason.h"
-#include "sync/notifier/object_id_payload_map.h"
+#include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
@@ -52,12 +52,12 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
   return enabled_types;
 }
 
-void FakeSyncManager::Invalidate(const ObjectIdPayloadMap& id_payloads,
+void FakeSyncManager::Invalidate(const ObjectIdStateMap& id_state_map,
                                  IncomingNotificationSource source) {
   if (!sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeSyncManager::InvalidateOnSyncThread,
-                 base::Unretained(this), id_payloads, source))) {
+                 base::Unretained(this), id_state_map, source))) {
     NOTREACHED();
   }
 }
@@ -265,10 +265,10 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
 }
 
 void FakeSyncManager::InvalidateOnSyncThread(
-    const ObjectIdPayloadMap& id_payloads,
+    const ObjectIdStateMap& id_state_map,
     IncomingNotificationSource source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  registrar_.DispatchInvalidationsToHandlers(id_payloads, source);
+  registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
 }
 
 void FakeSyncManager::EnableNotificationsOnSyncThread() {

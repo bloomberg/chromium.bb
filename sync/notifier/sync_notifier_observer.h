@@ -5,7 +5,7 @@
 #ifndef SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
 #define SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
 
-#include "sync/notifier/object_id_payload_map.h"
+#include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 
 namespace syncer {
@@ -27,10 +27,10 @@ class SyncNotifierObserver {
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) = 0;
 
-  // Called when a notification is received.  The per-id payloads
-  // are in |type_payloads| and the source is in |source|.
+  // Called when a notification is received.  The per-id states
+  // are in |id_state_map| and the source is in |source|.
   virtual void OnIncomingNotification(
-      const ObjectIdPayloadMap& id_payloads,
+      const ObjectIdStateMap& id_state_map,
       IncomingNotificationSource source) = 0;
 
  protected:

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
+#include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/internal_api/public/sessions/sync_source_info.h"
 
@@ -33,7 +33,7 @@ class SyncSessionSnapshot {
       const ModelNeutralState& model_neutral_state,
       bool is_share_usable,
       ModelTypeSet initial_sync_ended,
-      const ModelTypePayloadMap& download_progress_markers,
+      const ModelTypeStateMap& download_progress_markers,
       bool more_to_sync,
       bool is_silenced,
       int num_encryption_conflicts,
@@ -58,7 +58,7 @@ class SyncSessionSnapshot {
   int64 num_server_changes_remaining() const;
   bool is_share_usable() const;
   ModelTypeSet initial_sync_ended() const;
-  ModelTypePayloadMap download_progress_markers() const;
+  ModelTypeStateMap download_progress_markers() const;
   bool has_more_to_sync() const;
   bool is_silenced() const;
   int num_encryption_conflicts() const;
@@ -78,7 +78,7 @@ class SyncSessionSnapshot {
   ModelNeutralState model_neutral_state_;
   bool is_share_usable_;
   ModelTypeSet initial_sync_ended_;
-  ModelTypePayloadMap download_progress_markers_;
+  ModelTypeStateMap download_progress_markers_;
   bool has_more_to_sync_;
   bool is_silenced_;
   int num_encryption_conflicts_;

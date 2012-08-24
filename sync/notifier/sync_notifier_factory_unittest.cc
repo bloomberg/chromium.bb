@@ -15,7 +15,6 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier.h"

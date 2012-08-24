@@ -98,10 +98,10 @@ class SyncerCommandTestBase : public testing::Test,
   sessions::SyncSessionContext* context() const { return context_.get(); }
   sessions::SyncSession::Delegate* delegate() { return this; }
 
-  // Lazily create a session requesting all datatypes with no payload.
+  // Lazily create a session requesting all datatypes with no state.
   sessions::SyncSession* session() {
-    ModelTypePayloadMap types =
-        ModelSafeRoutingInfoToPayloadMap(routing_info_, std::string());
+    ModelTypeStateMap types =
+        ModelSafeRoutingInfoToStateMap(routing_info_, std::string());
     return session(sessions::SyncSourceInfo(types));
   }
 

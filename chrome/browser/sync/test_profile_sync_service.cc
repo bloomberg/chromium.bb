@@ -156,9 +156,9 @@ void SyncBackendHostForProfileSyncTest::EmitOnNotificationsDisabled(
 }
 
 void SyncBackendHostForProfileSyncTest::EmitOnIncomingNotification(
-    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::ObjectIdStateMap& id_state_map,
     const syncer::IncomingNotificationSource source) {
-  frontend()->OnIncomingNotification(id_payloads, source);
+  frontend()->OnIncomingNotification(id_state_map, source);
 }
 
 }  // namespace browser_sync

@@ -126,17 +126,17 @@ void PushMessagingInvalidationHandler::OnNotificationsDisabled(
 }
 
 void PushMessagingInvalidationHandler::OnIncomingNotification(
-    const syncer::ObjectIdPayloadMap& id_payloads,
+    const syncer::ObjectIdStateMap& id_state_map,
     syncer::IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (syncer::ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
-       it != id_payloads.end(); ++it) {
+  for (syncer::ObjectIdStateMap::const_iterator it = id_state_map.begin();
+       it != id_state_map.end(); ++it) {
     std::string extension_id;
     int subchannel;
     if (ObjectIdToExtensionAndSubchannel(it->first,
                                          &extension_id,
                                          &subchannel)) {
-      delegate_->OnMessage(extension_id, subchannel, it->second);
+      delegate_->OnMessage(extension_id, subchannel, it->second.payload);
     }
   }
 }

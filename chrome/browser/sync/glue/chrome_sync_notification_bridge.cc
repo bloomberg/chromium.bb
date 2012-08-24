@@ -37,7 +37,7 @@ class ChromeSyncNotificationBridge::Core
   void UnregisterHandler(syncer::SyncNotifierObserver* handler);
 
   void EmitNotification(
-      const syncer::ModelTypePayloadMap& payload_map,
+      const syncer::ModelTypeStateMap& state_map,
       syncer::IncomingNotificationSource notification_source);
 
  private:
@@ -100,16 +100,16 @@ void ChromeSyncNotificationBridge::Core::UnregisterHandler(
 }
 
 void ChromeSyncNotificationBridge::Core::EmitNotification(
-    const syncer::ModelTypePayloadMap& payload_map,
+    const syncer::ModelTypeStateMap& state_map,
     syncer::IncomingNotificationSource notification_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  const syncer::ModelTypePayloadMap& effective_payload_map =
-      payload_map.empty() ?
-      syncer::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string()) :
-      payload_map;
+  const syncer::ModelTypeStateMap& effective_state_map =
+      state_map.empty() ?
+      syncer::ModelTypeSetToStateMap(enabled_types_, std::string()) :
+      state_map;
 
   notifier_registrar_->DispatchInvalidationsToHandlers(
-      ModelTypePayloadMapToObjectIdPayloadMap(effective_payload_map),
+      ModelTypeStateMapToObjectIdStateMap(effective_state_map),
       notification_source);
 }
 
@@ -181,13 +181,13 @@ void ChromeSyncNotificationBridge::Observe(
     return;
   }
 
-  content::Details<const syncer::ModelTypePayloadMap>
-      payload_details(details);
-  const syncer::ModelTypePayloadMap& payload_map = *(payload_details.ptr());
+  content::Details<const syncer::ModelTypeStateMap>
+      state_details(details);
+  const syncer::ModelTypeStateMap& state_map = *(state_details.ptr());
   if (!sync_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&Core::EmitNotification,
-                     core_, payload_map, notification_source))) {
+                     core_, state_map, notification_source))) {
     NOTREACHED();
   }
 }

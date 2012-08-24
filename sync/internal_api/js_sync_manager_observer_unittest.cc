@@ -72,7 +72,7 @@ TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  ModelTypePayloadMap download_progress_markers;
+  ModelTypeStateMap download_progress_markers;
   sessions::SyncSessionSnapshot snapshot(sessions::ModelNeutralState(),
                                          false,
                                          ModelTypeSet(),
