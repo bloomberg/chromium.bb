@@ -233,7 +233,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
       LOG(ERROR) << "Deleted entry.";
     } else {
       syncer::Cryptographer* crypto = trans.GetCryptographer();
-      syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+      syncer::ModelTypeSet encrypted_types(trans.GetEncryptedTypes());
       const sync_pb::EntitySpecifics& specifics =
           sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
       CHECK(specifics.has_encrypted());

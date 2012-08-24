@@ -6,7 +6,6 @@
 
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/syncable/nigori_util.h"
-#include "sync/util/cryptographer.h"
 
 namespace syncer {
 
@@ -14,7 +13,7 @@ FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false),
       explicit_passphrase_(false),
-      cryptographer_(NULL) {
+      cryptographer_(&encryptor_) {
 }
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
 
@@ -30,21 +29,18 @@ void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
   if (nigori.using_explicit_passphrase())
     explicit_passphrase_ = true;
 
-  if (!cryptographer_)
-    return;
+  if (cryptographer_.CanDecrypt(nigori.encrypted()))
+    cryptographer_.InstallKeys(nigori.encrypted());
+  else if (nigori.has_encrypted())
+    cryptographer_.SetPendingKeys(nigori.encrypted());
 
-  if (cryptographer_->CanDecrypt(nigori.encrypted()))
-    cryptographer_->InstallKeys(nigori.encrypted());
-  else
-    cryptographer_->SetPendingKeys(nigori.encrypted());
-
-  if (cryptographer_->has_pending_keys()) {
+  if (cryptographer_.has_pending_keys()) {
     DVLOG(1) << "OnPassPhraseRequired Sent";
-    sync_pb::EncryptedData pending_keys = cryptographer_->GetPendingKeys();
+    sync_pb::EncryptedData pending_keys = cryptographer_.GetPendingKeys();
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                       OnPassphraseRequired(REASON_DECRYPTION,
                                            pending_keys));
-  } else if (!cryptographer_->is_ready()) {
+  } else if (!cryptographer_.is_ready()) {
     DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
              << "ready";
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
@@ -59,6 +55,11 @@ void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(
   syncable::UpdateNigoriFromEncryptedTypes(encrypted_types_,
                                            encrypt_everything_,
                                            nigori);
+}
+
+ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
+    syncable::BaseTransaction* const trans) const {
+  return encrypted_types_;
 }
 
 void FakeSyncEncryptionHandler::AddObserver(Observer* observer) {
@@ -93,10 +94,6 @@ void FakeSyncEncryptionHandler::EnableEncryptEverything() {
 
 bool FakeSyncEncryptionHandler::EncryptEverythingEnabled() const {
   return encrypt_everything_;
-}
-
-ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes() const {
-  return encrypted_types_;
 }
 
 bool FakeSyncEncryptionHandler::IsUsingExplicitPassphrase() const {

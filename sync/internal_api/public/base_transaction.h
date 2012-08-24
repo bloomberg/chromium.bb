@@ -7,6 +7,7 @@
 
 #include "sync/internal_api/public/user_share.h"
 
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/cryptographer.h"
 
 namespace syncer {
@@ -28,6 +29,7 @@ class BaseTransaction {
   // Provide access to the underlying syncable objects from BaseNode.
   virtual syncable::BaseTransaction* GetWrappedTrans() const = 0;
   Cryptographer* GetCryptographer() const;
+  ModelTypeSet GetEncryptedTypes() const;
 
   syncable::Directory* GetDirectory() const {
     return directory_;
@@ -44,8 +46,6 @@ class BaseTransaction {
 
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
-
-ModelTypeSet GetEncryptedTypes(const BaseTransaction* trans);
 
 }  // namespace syncer
 

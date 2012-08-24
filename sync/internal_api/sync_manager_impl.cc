@@ -383,6 +383,13 @@ void SyncManagerImpl::Init(
   unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 
+  sync_encryption_handler_.reset(new SyncEncryptionHandlerImpl(
+      &share_,
+      encryptor));
+  sync_encryption_handler_->AddObserver(this);
+  sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
+  sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
+
   FilePath absolute_db_path(database_path_);
   file_util::AbsolutePath(&absolute_db_path);
   scoped_ptr<syncable::DirectoryBackingStore> backing_store =
@@ -392,10 +399,12 @@ void SyncManagerImpl::Init(
   DCHECK(backing_store.get());
   share_.name = credentials.email;
   share_.directory.reset(
-      new syncable::Directory(encryptor_,
-                              unrecoverable_error_handler_,
-                              report_unrecoverable_error_function_,
-                              backing_store.release()));
+      new syncable::Directory(
+          backing_store.release(),
+          unrecoverable_error_handler_,
+          report_unrecoverable_error_function_,
+          sync_encryption_handler_.get(),
+          sync_encryption_handler_->GetCryptographerUnsafe()));
 
   DVLOG(1) << "Username: " << username_for_share();
   if (!OpenDirectory()) {
@@ -464,15 +473,6 @@ void SyncManagerImpl::Init(
   trans.GetCryptographer()->Bootstrap(restored_key_for_bootstrapping);
   trans.GetCryptographer()->BootstrapKeystoreKey(
       restored_keystore_key_for_bootstrapping);
-
-  sync_encryption_handler_.reset(new SyncEncryptionHandlerImpl(
-      &share_,
-      trans.GetCryptographer()));
-  sync_encryption_handler_->AddObserver(this);
-  sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
-  sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
-  trans.GetCryptographer()->SetNigoriHandler(
-      sync_encryption_handler_.get());
 
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(

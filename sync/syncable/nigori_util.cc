@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
@@ -20,9 +21,12 @@ namespace syncer {
 namespace syncable {
 
 bool ProcessUnsyncedChangesForEncryption(
-    WriteTransaction* const trans,
-    Cryptographer* cryptographer) {
+    WriteTransaction* const trans) {
+  NigoriHandler* nigori_handler = trans->directory()->GetNigoriHandler();
+  ModelTypeSet encrypted_types = nigori_handler->GetEncryptedTypes(trans);
+  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
   DCHECK(cryptographer->is_ready());
+
   // Get list of all datatypes with unsynced changes. It's possible that our
   // local changes need to be encrypted if encryption for that datatype was
   // just turned on (and vice versa).
@@ -36,14 +40,10 @@ bool ProcessUnsyncedChangesForEncryption(
     const sync_pb::EntitySpecifics& specifics = entry.Get(SPECIFICS);
     // Ignore types that don't need encryption or entries that are already
     // encrypted.
-    if (!SpecificsNeedsEncryption(cryptographer->GetEncryptedTypes(),
-                                  specifics)) {
+    if (!SpecificsNeedsEncryption(encrypted_types, specifics))
       continue;
-    }
-    if (!UpdateEntryWithEncryption(cryptographer, specifics, &entry)) {
-      NOTREACHED();
+    if (!UpdateEntryWithEncryption(trans, specifics, &entry))
       return false;
-    }
   }
   return true;
 }
@@ -93,9 +93,9 @@ bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
 // Mainly for testing.
 bool VerifyDataTypeEncryptionForTest(
     BaseTransaction* const trans,
-    Cryptographer* cryptographer,
     ModelType type,
     bool is_encrypted) {
+  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
   if (type == PASSWORDS || type == NIGORI) {
     NOTREACHED();
     return true;
@@ -157,13 +157,15 @@ bool VerifyDataTypeEncryptionForTest(
 }
 
 bool UpdateEntryWithEncryption(
-    Cryptographer* cryptographer,
+    BaseTransaction* const trans,
     const sync_pb::EntitySpecifics& new_specifics,
     syncable::MutableEntry* entry) {
+  NigoriHandler* nigori_handler = trans->directory()->GetNigoriHandler();
+  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
   ModelType type = GetModelTypeFromSpecifics(new_specifics);
   DCHECK_GE(type, FIRST_REAL_MODEL_TYPE);
   const sync_pb::EntitySpecifics& old_specifics = entry->Get(SPECIFICS);
-  const ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
+  const ModelTypeSet encrypted_types = nigori_handler->GetEncryptedTypes(trans);
   // It's possible the nigori lost the set of encrypted types. If the current
   // specifics are already encrypted, we want to ensure we continue encrypting.
   bool was_encrypted = old_specifics.has_encrypted();

@@ -5,6 +5,7 @@
 #include "sync/internal_api/public/base_transaction.h"
 
 #include "sync/syncable/directory.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/util/cryptographer.h"
 
 namespace syncer {
@@ -22,8 +23,9 @@ Cryptographer* BaseTransaction::GetCryptographer() const {
   return directory_->GetCryptographer(this->GetWrappedTrans());
 }
 
-ModelTypeSet GetEncryptedTypes(const BaseTransaction* trans) {
-  return trans->GetCryptographer()->GetEncryptedTypes();
+ModelTypeSet BaseTransaction::GetEncryptedTypes() const {
+  return directory_->GetNigoriHandler()->GetEncryptedTypes(
+      this->GetWrappedTrans());
 }
 
 }  // namespace syncer

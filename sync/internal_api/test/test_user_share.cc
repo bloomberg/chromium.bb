@@ -39,4 +39,8 @@ UserShare* TestUserShare::user_share() {
   return user_share_.get();
 }
 
+SyncEncryptionHandler* TestUserShare::encryption_handler() {
+  return dir_maker_->encryption_handler();
+}
+
 }  // namespace syncer

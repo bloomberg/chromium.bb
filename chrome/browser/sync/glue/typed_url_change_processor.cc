@@ -137,7 +137,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   } else if (result == syncer::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
     // TODO(tim): Investigating bug 121587.
     syncer::Cryptographer* crypto = trans->GetCryptographer();
-    syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+    syncer::ModelTypeSet encrypted_types(trans->GetEncryptedTypes());
     const sync_pb::EntitySpecifics& specifics =
         update_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
     CHECK(specifics.has_encrypted());

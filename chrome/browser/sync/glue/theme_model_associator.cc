@@ -109,8 +109,7 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 bool ThemeModelAssociator::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  const syncer::ModelTypeSet encrypted_types =
-      syncer::GetEncryptedTypes(&trans);
+  const syncer::ModelTypeSet encrypted_types = trans.GetEncryptedTypes();
   return !encrypted_types.Has(syncer::THEMES) ||
          sync_service_->IsCryptographerReady(&trans);
 }

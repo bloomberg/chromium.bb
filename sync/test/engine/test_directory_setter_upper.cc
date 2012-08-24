@@ -23,8 +23,12 @@ TestDirectorySetterUpper::TestDirectorySetterUpper() : name_("Test") {}
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::SetUp() {
-  directory_.reset(new syncable::Directory(&encryptor_, &handler_, NULL,
-      new syncable::InMemoryDirectoryBackingStore(name_)));
+  directory_.reset(new syncable::Directory(
+      new syncable::InMemoryDirectoryBackingStore(name_),
+      &handler_,
+      NULL,
+      &encryption_handler_,
+      encryption_handler_.cryptographer()));
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ASSERT_EQ(syncable::OPENED, directory_->Open(
           name_, &delegate_, NullTransactionObserver()));

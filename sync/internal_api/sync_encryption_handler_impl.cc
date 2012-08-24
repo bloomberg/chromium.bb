@@ -19,6 +19,7 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/syncable/base_transaction.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
@@ -36,13 +37,22 @@ namespace {
 static const int kNigoriOverwriteLimit = 10;
 }
 
+SyncEncryptionHandlerImpl::Vault::Vault(
+    Encryptor* encryptor,
+    ModelTypeSet encrypted_types)
+  : cryptographer(encryptor),
+    encrypted_types(encrypted_types) {
+}
+
+SyncEncryptionHandlerImpl::Vault::~Vault() {
+}
+
 SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     UserShare* user_share,
-    Cryptographer* cryptographer)
+    Encryptor* encryptor)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       user_share_(user_share),
-      cryptographer_(cryptographer),
-      encrypted_types_(SensitiveTypes()),
+      vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
       explicit_passphrase_(false),
       nigori_overwrite_count_(0) {
@@ -51,20 +61,21 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
 SyncEncryptionHandlerImpl::~SyncEncryptionHandlerImpl() {}
 
 void SyncEncryptionHandlerImpl::AddObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!observers_.HasObserver(observer));
   observers_.AddObserver(observer);
 }
 
 void SyncEncryptionHandlerImpl::RemoveObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
 }
 
 void SyncEncryptionHandlerImpl::Init() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteNode node(&trans);
-  Cryptographer* cryptographer = trans.GetCryptographer();
-  cryptographer_ = cryptographer;
 
   if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
     return;
@@ -73,44 +84,31 @@ void SyncEncryptionHandlerImpl::Init() {
     WriteEncryptionStateToNigori(&trans);
   }
 
-  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                    OnCryptographerStateChanged(cryptographer));
+  // Always trigger an encrypted types and cryptographer state change event at
+  // init time so observers get the initial values.
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnEncryptedTypesChanged(
+          UnlockVault(trans.GetWrappedTrans()).encrypted_types,
+          encrypt_everything_));
+  FOR_EACH_OBSERVER(
+      SyncEncryptionHandler::Observer,
+      observers_,
+      OnCryptographerStateChanged(
+          &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer));
 
   // If the cryptographer is not ready (either it has pending keys or we
   // failed to initialize it), we don't want to try and re-encrypt the data.
   // If we had encrypted types, the DataTypeManager will block, preventing
   // sync from happening until the the passphrase is provided.
-  if (cryptographer->is_ready())
+  if (UnlockVault(trans.GetWrappedTrans()).cryptographer.is_ready())
     ReEncryptEverything(&trans);
-}
-
-// Note: this is called from within a syncable transaction, so we need to post
-// tasks if we want to do any work that creates a new sync_api transaction.
-void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
-    const sync_pb::NigoriSpecifics& nigori,
-    syncable::BaseTransaction* const trans) {
-  DCHECK(trans);
-  if (!ApplyNigoriUpdateImpl(nigori, trans)) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                    OnCryptographerStateChanged(cryptographer_));
-}
-
-// Note: this is always called via the Cryptographer interface right now,
-// so a transaction is already held. Once we remove that interface, we'll
-// need to enforce holding a transaction when calling this method.
-ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes() const {
-  return encrypted_types_;
 }
 
 void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
     NOTREACHED() << "Cannot encrypt with an empty passphrase.";
@@ -119,7 +117,6 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
 
   // All accesses to the cryptographer are protected by a transaction.
   WriteTransaction trans(FROM_HERE, user_share_);
-  Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
   if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK) {
@@ -131,10 +128,11 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
       node.GetNigoriSpecifics().using_explicit_passphrase();
   std::string bootstrap_token;
   sync_pb::EncryptedData pending_keys;
+  Cryptographer* cryptographer =
+      &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer;
   if (cryptographer->has_pending_keys())
     pending_keys = cryptographer->GetPendingKeys();
   bool success = false;
-
 
   // There are six cases to handle here:
   // 1. The user has no pending keys and is setting their current GAIA password
@@ -224,6 +222,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
 
 void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
     NOTREACHED() << "Cannot decrypt with an empty passphrase.";
@@ -232,7 +231,6 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
 
   // All accesses to the cryptographer are protected by a transaction.
   WriteTransaction trans(FROM_HERE, user_share_);
-  Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
   if (node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK) {
@@ -240,6 +238,8 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
     return;
   }
 
+  Cryptographer* cryptographer =
+      &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer;
   if (!cryptographer->has_pending_keys()) {
     // Note that this *can* happen in a rare situation where data is
     // re-encrypted on another client while a SetDecryptionPassphrase() call is
@@ -364,30 +364,82 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
 }
 
 void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  WriteTransaction trans(FROM_HERE, user_share_);
+  ModelTypeSet* encrypted_types =
+      &UnlockVaultMutable(trans.GetWrappedTrans())->encrypted_types;
   if (encrypt_everything_) {
-    DCHECK(encrypted_types_.Equals(ModelTypeSet::All()));
+    DCHECK(encrypted_types->Equals(ModelTypeSet::All()));
     return;
   }
-  WriteTransaction trans(FROM_HERE, user_share_);
+  DVLOG(1) << "Enabling encrypt everything.";
   encrypt_everything_ = true;
   // Change |encrypted_types_| directly to avoid sending more than one
   // notification.
-  encrypted_types_ = ModelTypeSet::All();
+  *encrypted_types = ModelTypeSet::All();
   FOR_EACH_OBSERVER(
       Observer, observers_,
-      OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
+      OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
   WriteEncryptionStateToNigori(&trans);
-  ReEncryptEverything(&trans);
+  if (UnlockVault(trans.GetWrappedTrans()).cryptographer.is_ready())
+    ReEncryptEverything(&trans);
 }
 
 bool SyncEncryptionHandlerImpl::EncryptEverythingEnabled() const {
-  ReadTransaction trans(FROM_HERE, user_share_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return encrypt_everything_;
 }
 
 bool SyncEncryptionHandlerImpl::IsUsingExplicitPassphrase() const {
+  // TODO(zea): this is called from the UI thread, so we have to have a
+  // transaction while accessing it. Add an OnPassphraseTypeChanged observer
+  // and have the SBH cache the value on the UI thread.
   ReadTransaction trans(FROM_HERE, user_share_);
   return explicit_passphrase_;
+}
+
+// Note: this is called from within a syncable transaction, so we need to post
+// tasks if we want to do any work that creates a new sync_api transaction.
+void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
+    const sync_pb::NigoriSpecifics& nigori,
+    syncable::BaseTransaction* const trans) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(trans);
+  if (!ApplyNigoriUpdateImpl(nigori, trans)) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  FOR_EACH_OBSERVER(
+      SyncEncryptionHandler::Observer,
+      observers_,
+      OnCryptographerStateChanged(
+          &UnlockVaultMutable(trans)->cryptographer));
+}
+
+void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
+    sync_pb::NigoriSpecifics* nigori,
+    syncable::BaseTransaction* const trans) const {
+  syncable::UpdateNigoriFromEncryptedTypes(UnlockVault(trans).encrypted_types,
+                                           encrypt_everything_,
+                                           nigori);
+}
+
+ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes(
+    syncable::BaseTransaction* const trans) const {
+  return UnlockVault(trans).encrypted_types;
+}
+
+Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return &vault_unsafe_.cryptographer;
+}
+
+ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypesUnsafe() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return vault_unsafe_.encrypted_types;
 }
 
 // This function iterates over all encrypted types.  There are many scenarios in
@@ -396,11 +448,10 @@ bool SyncEncryptionHandlerImpl::IsUsingExplicitPassphrase() const {
 // type.
 void SyncEncryptionHandlerImpl::ReEncryptEverything(
     WriteTransaction* trans) {
-  Cryptographer* cryptographer = trans->GetCryptographer();
-  if (!cryptographer->is_ready())
-    return;
-  ModelTypeSet encrypted_types = GetEncryptedTypes();
-  for (ModelTypeSet::Iterator iter = encrypted_types.First();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(UnlockVault(trans->GetWrappedTrans()).cryptographer.is_ready());
+  for (ModelTypeSet::Iterator iter =
+           UnlockVault(trans->GetWrappedTrans()).encrypted_types.First();
        iter.Good(); iter.Inc()) {
     if (iter.Get() == PASSWORDS || iter.Get() == NIGORI)
       continue; // These types handle encryption differently.
@@ -455,6 +506,8 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
     }
   }
 
+  DVLOG(1) << "Re-encrypt everything complete.";
+
   // NOTE: We notify from within a transaction.
   FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                     OnEncryptionComplete());
@@ -463,11 +516,13 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
 bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
-  Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
-  bool nigori_types_need_update = !UpdateEncryptedTypesFromNigori(nigori);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool nigori_types_need_update = !UpdateEncryptedTypesFromNigori(nigori,
+                                                                  trans);
   if (nigori.using_explicit_passphrase())
     explicit_passphrase_ = true;
 
+  Cryptographer* cryptographer = &UnlockVaultMutable(trans)->cryptographer;
   bool nigori_needs_new_keys = false;
   if (!nigori.encrypted().blob().empty()) {
     if (cryptographer->CanDecrypt(nigori.encrypted())) {
@@ -522,24 +577,28 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
 }
 
 void SyncEncryptionHandlerImpl::RewriteNigori() {
+  DVLOG(1) << "Overwriting stale nigori node.";
+  DCHECK(thread_checker_.CalledOnValidThread());
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteEncryptionStateToNigori(&trans);
 }
 
 void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
     WriteTransaction* trans) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   WriteNode nigori_node(trans);
   // This can happen in tests that don't have nigori nodes.
-  if (!nigori_node.InitByTagLookup(kNigoriTag) == BaseNode::INIT_OK)
+  if (nigori_node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
     return;
   sync_pb::NigoriSpecifics nigori = nigori_node.GetNigoriSpecifics();
-  Cryptographer* cryptographer = trans->GetCryptographer();
-  if (cryptographer->is_ready() &&
+  const Cryptographer& cryptographer =
+      UnlockVault(trans->GetWrappedTrans()).cryptographer;
+  if (cryptographer.is_ready() &&
       nigori_overwrite_count_ < kNigoriOverwriteLimit) {
     // Does not modify the encrypted blob if the unencrypted data already
     // matches what is about to be written.
     sync_pb::EncryptedData original_keys = nigori.encrypted();
-    if (!cryptographer->GetKeys(nigori.mutable_encrypted()))
+    if (!cryptographer.GetKeys(nigori.mutable_encrypted()))
       NOTREACHED();
 
     if (nigori.encrypted().SerializeAsString() !=
@@ -556,58 +615,55 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
     // is lost the user can always set it again. The main point is to preserve
     // the encryption keys so all data remains decryptable.
   }
-  syncable::UpdateNigoriFromEncryptedTypes(encrypted_types_,
-                                           encrypt_everything_,
-                                           &nigori);
+  syncable::UpdateNigoriFromEncryptedTypes(
+      UnlockVault(trans->GetWrappedTrans()).encrypted_types,
+      encrypt_everything_,
+      &nigori);
 
   // If nothing has changed, this is a no-op.
   nigori_node.SetNigoriSpecifics(nigori);
 }
 
 bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
-    const sync_pb::NigoriSpecifics& nigori) {
+    const sync_pb::NigoriSpecifics& nigori,
+    syncable::BaseTransaction* const trans) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (nigori.encrypt_everything()) {
     if (!encrypt_everything_) {
       encrypt_everything_ = true;
-      encrypted_types_ = ModelTypeSet::All();
+      *encrypted_types = ModelTypeSet::All();
+      DVLOG(1) << "Enabling encrypt everything via nigori node update";
       FOR_EACH_OBSERVER(
           Observer, observers_,
-          OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
+          OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
     }
-    DCHECK(encrypted_types_.Equals(ModelTypeSet::All()));
+    DCHECK(encrypted_types->Equals(ModelTypeSet::All()));
     return true;
   }
 
-  ModelTypeSet encrypted_types;
-  encrypted_types = syncable::GetEncryptedTypesFromNigori(nigori);
-  encrypted_types.PutAll(SensitiveTypes());
+  ModelTypeSet nigori_encrypted_types;
+  nigori_encrypted_types = syncable::GetEncryptedTypesFromNigori(nigori);
+  nigori_encrypted_types.PutAll(SensitiveTypes());
 
   // If anything more than the sensitive types were encrypted, and
   // encrypt_everything is not explicitly set to false, we assume it means
   // a client intended to enable encrypt everything.
   if (!nigori.has_encrypt_everything() &&
-      !Difference(encrypted_types, SensitiveTypes()).Empty()) {
+      !Difference(nigori_encrypted_types, SensitiveTypes()).Empty()) {
     if (!encrypt_everything_) {
       encrypt_everything_ = true;
-      encrypted_types_ = ModelTypeSet::All();
+      *encrypted_types = ModelTypeSet::All();
       FOR_EACH_OBSERVER(
           Observer, observers_,
-          OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
+          OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
     }
-    DCHECK(encrypted_types_.Equals(ModelTypeSet::All()));
+    DCHECK(encrypted_types->Equals(ModelTypeSet::All()));
     return false;
   }
 
-  MergeEncryptedTypes(encrypted_types);
-  return encrypted_types_.Equals(encrypted_types);
-}
-
-void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
-    sync_pb::NigoriSpecifics* nigori,
-    syncable::BaseTransaction* const trans) const {
-  syncable::UpdateNigoriFromEncryptedTypes(encrypted_types_,
-                                           encrypt_everything_,
-                                           nigori);
+  MergeEncryptedTypes(nigori_encrypted_types, trans);
+  return encrypted_types->Equals(nigori_encrypted_types);
 }
 
 void SyncEncryptionHandlerImpl::FinishSetPassphrase(
@@ -616,9 +672,12 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     bool is_explicit,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
-  Cryptographer* cryptographer = trans->GetCryptographer();
-  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                    OnCryptographerStateChanged(cryptographer));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(
+      SyncEncryptionHandler::Observer,
+      observers_,
+      OnCryptographerStateChanged(
+          &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer));
 
   // It's possible we need to change the bootstrap token even if we failed to
   // set the passphrase (for example if we need to preserve the new GAIA
@@ -629,14 +688,16 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
                       OnBootstrapTokenUpdated(bootstrap_token));
   }
 
+  const Cryptographer& cryptographer =
+      UnlockVault(trans->GetWrappedTrans()).cryptographer;
   if (!success) {
-    if (cryptographer->is_ready()) {
+    if (cryptographer.is_ready()) {
       LOG(ERROR) << "Attempt to change passphrase failed while cryptographer "
                  << "was ready.";
-    } else if (cryptographer->has_pending_keys()) {
+    } else if (cryptographer.has_pending_keys()) {
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                         OnPassphraseRequired(REASON_DECRYPTION,
-                                             cryptographer->GetPendingKeys()));
+                                             cryptographer.GetPendingKeys()));
     } else {
       FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                         OnPassphraseRequired(REASON_ENCRYPTION,
@@ -647,32 +708,44 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
 
   FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                     OnPassphraseAccepted());
-  DCHECK(cryptographer->is_ready());
+  DCHECK(cryptographer.is_ready());
 
   sync_pb::NigoriSpecifics specifics(nigori_node->GetNigoriSpecifics());
   // Does not modify specifics.encrypted() if the original decrypted data was
   // the same.
-  if (!cryptographer->GetKeys(specifics.mutable_encrypted())) {
+  if (!cryptographer.GetKeys(specifics.mutable_encrypted()))
     NOTREACHED();
-    return;
-  }
   explicit_passphrase_ = is_explicit;
   specifics.set_using_explicit_passphrase(is_explicit);
   nigori_node->SetNigoriSpecifics(specifics);
 
-  // Does nothing if everything is already encrypted or the cryptographer has
-  // pending keys.
+  // Does nothing if everything is already encrypted.
   ReEncryptEverything(trans);
 }
 
 void SyncEncryptionHandlerImpl::MergeEncryptedTypes(
-    ModelTypeSet encrypted_types) {
-  if (!encrypted_types_.HasAll(encrypted_types)) {
-    encrypted_types_ = encrypted_types;
+    ModelTypeSet new_encrypted_types,
+    syncable::BaseTransaction* const trans) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
+  if (!encrypted_types->HasAll(new_encrypted_types)) {
+    *encrypted_types = new_encrypted_types;
     FOR_EACH_OBSERVER(
         Observer, observers_,
-        OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
+        OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
   }
+}
+
+SyncEncryptionHandlerImpl::Vault* SyncEncryptionHandlerImpl::UnlockVaultMutable(
+    syncable::BaseTransaction* const trans) {
+  DCHECK_EQ(user_share_->directory.get(), trans->directory());
+  return &vault_unsafe_;
+}
+
+const SyncEncryptionHandlerImpl::Vault& SyncEncryptionHandlerImpl::UnlockVault(
+    syncable::BaseTransaction* const trans) const {
+  DCHECK_EQ(user_share_->directory.get(), trans->directory());
+  return vault_unsafe_;
 }
 
 }  // namespace browser_sync

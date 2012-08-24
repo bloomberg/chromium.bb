@@ -65,22 +65,14 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     SyncerCommandTest::SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
     ExpectNoGroupsToChange(apply_updates_command_);
-
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    directory()->GetCryptographer(&trans)->SetNigoriHandler(
-        &fake_encryption_handler_);
-    fake_encryption_handler_.set_cryptographer(
-        directory()->GetCryptographer(&trans));
   }
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
 
   ApplyUpdatesCommand apply_updates_command_;
-  FakeEncryptor encryptor_;
   TestIdFactory id_factory_;
   scoped_ptr<TestEntryFactory> entry_factory_;
-  FakeSyncEncryptionHandler fake_encryption_handler_;
 };
 
 TEST_F(ApplyUpdatesCommandTest, Simple) {
@@ -466,6 +458,7 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
 }
 
 TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
+  Cryptographer* cryptographer;
   // Only decryptable password updates should be applied.
   {
     sync_pb::EntitySpecifics specifics;
@@ -473,7 +466,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     data.set_origin("http://example.com/1");
     {
       syncable::ReadTransaction trans(FROM_HERE, directory());
-      Cryptographer* cryptographer = directory()->GetCryptographer(&trans);
+      cryptographer = directory()->GetCryptographer(&trans);
 
       KeyParams params = {"localhost", "dummy", "foobar"};
       cryptographer->AddKey(params);
@@ -485,15 +478,15 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
   }
   {
     // Create a new cryptographer, independent of the one in the session.
-    Cryptographer cryptographer(&encryptor_);
+    Cryptographer other_cryptographer(cryptographer->encryptor());
     KeyParams params = {"localhost", "dummy", "bazqux"};
-    cryptographer.AddKey(params);
+    other_cryptographer.AddKey(params);
 
     sync_pb::EntitySpecifics specifics;
     sync_pb::PasswordSpecificsData data;
     data.set_origin("http://example.com/2");
 
-    cryptographer.Encrypt(data,
+    other_cryptographer.Encrypt(data,
         specifics.mutable_password()->mutable_encrypted());
     entry_factory_->CreateUnappliedNewItem("item2", specifics, false);
   }
@@ -532,11 +525,12 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(encrypted_types));
   }
 
   // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer(cryptographer->encryptor());
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
 
@@ -564,7 +558,11 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-  EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+  }
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
@@ -577,11 +575,12 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(encrypted_types));
   }
 
   // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer(cryptographer->encryptor());
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
 
@@ -609,7 +608,11 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-  EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
+  }
 }
 
 // Create some local unsynced and unencrypted data. Apply a nigori update that
@@ -627,7 +630,8 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(encrypted_types));
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -704,8 +708,8 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
-    EXPECT_TRUE(ModelTypeSet::All().Equals(
-        cryptographer->GetEncryptedTypes()));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -744,8 +748,8 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
 
     // All our changes should still be encrypted.
-    EXPECT_TRUE(ModelTypeSet::All().Equals(
-        cryptographer->GetEncryptedTypes()));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -764,7 +768,8 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(encrypted_types));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(encrypted_types));
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -798,7 +803,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
 
   // We encrypt with new keys, triggering the local cryptographer to be unready
   // and unable to decrypt data (once updated).
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer(cryptographer->encryptor());
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
   sync_pb::EntitySpecifics specifics;
@@ -844,8 +849,8 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     // Since we have pending keys, we would have failed to encrypt, but the
     // cryptographer should be updated.
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-    EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(
-        ModelTypeSet().All()));
+    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
+        .Equals(ModelTypeSet::All()));
     EXPECT_FALSE(cryptographer->is_ready());
     EXPECT_TRUE(cryptographer->has_pending_keys());
 

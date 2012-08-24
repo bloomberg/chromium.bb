@@ -35,7 +35,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "sync/test/fake_encryptor.h"
+#include "sync/test/fake_sync_encryption_handler.h"
 #include "sync/test/null_directory_change_delegate.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,6 +61,8 @@ class TestDirectorySetterUpper {
 
   syncable::Directory* directory() { return directory_.get(); }
 
+  SyncEncryptionHandler* encryption_handler() { return &encryption_handler_; }
+
  private:
   syncable::NullDirectoryChangeDelegate delegate_;
   TestUnrecoverableErrorHandler handler_;
@@ -68,7 +70,7 @@ class TestDirectorySetterUpper {
   void RunInvariantCheck();
 
   ScopedTempDir temp_dir_;
-  FakeEncryptor encryptor_;
+  FakeSyncEncryptionHandler encryption_handler_;
   scoped_ptr<syncable::Directory> directory_;
   std::string name_;
 

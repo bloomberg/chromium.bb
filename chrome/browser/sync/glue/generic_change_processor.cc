@@ -376,7 +376,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
           return error;
         } else {
           syncer::Cryptographer* crypto = trans.GetCryptographer();
-          syncer::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+          syncer::ModelTypeSet encrypted_types(trans.GetEncryptedTypes());
           const sync_pb::EntitySpecifics& specifics =
               sync_node.GetEntry()->Get(syncer::syncable::SPECIFICS);
           CHECK(specifics.has_encrypted());
@@ -475,7 +475,7 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncer::ModelType type) {
   DCHECK_NE(type, syncer::UNSPECIFIED);
   // We only access the cryptographer while holding a transaction.
   syncer::ReadTransaction trans(FROM_HERE, share_handle());
-  const syncer::ModelTypeSet encrypted_types = GetEncryptedTypes(&trans);
+  const syncer::ModelTypeSet encrypted_types = trans.GetEncryptedTypes();
   return !encrypted_types.Has(type) ||
          trans.GetCryptographer()->is_ready();
 }

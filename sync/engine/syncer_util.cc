@@ -22,6 +22,7 @@
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/nigori_util.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_changes_version.h"
@@ -217,7 +218,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
   // the nigori node (e.g. on restart), they will commit without issue.
   if (specifics.has_nigori()) {
     const sync_pb::NigoriSpecifics& nigori = specifics.nigori();
-    cryptographer->ApplyNigoriUpdate(nigori, trans);
+    trans->directory()->GetNigoriHandler()->ApplyNigoriUpdate(nigori, trans);
 
     // Make sure any unsynced changes are properly encrypted as necessary.
     // We only perform this if the cryptographer is ready. If not, these are
@@ -235,7 +236,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
       // If this fails, something is wrong with the cryptographer, but there's
       // nothing we can do about it here.
       DVLOG(1) << "Received new nigori, encrypting unsynced changes.";
-      syncable::ProcessUnsyncedChangesForEncryption(trans, cryptographer);
+      syncable::ProcessUnsyncedChangesForEncryption(trans);
     }
   }
 

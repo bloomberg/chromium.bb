@@ -40,8 +40,7 @@ bool VerifyUnsyncedChangesAreEncrypted(
 // Processes all unsynced changes and ensures they are appropriately encrypted
 // or unencrypted, based on |encrypted_types|.
 bool ProcessUnsyncedChangesForEncryption(
-    WriteTransaction* const trans,
-    Cryptographer* cryptographer);
+    WriteTransaction* const trans);
 
 // Returns true if the entry requires encryption but is not encrypted, false
 // otherwise. Note: this does not check that already encrypted entries are
@@ -56,7 +55,6 @@ bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
 // Verifies all data of type |type| is encrypted appropriately.
 bool VerifyDataTypeEncryptionForTest(
     BaseTransaction* const trans,
-    Cryptographer* cryptographer,
     ModelType type,
     bool is_encrypted) WARN_UNUSED_RESULT;
 
@@ -64,7 +62,7 @@ bool VerifyDataTypeEncryptionForTest(
 // Returns false if an error encrypting occurred (does not modify |entry|).
 // Note: gracefully handles new_specifics aliasing with entry->Get(SPECIFICS).
 bool UpdateEntryWithEncryption(
-    Cryptographer* cryptographer,
+    BaseTransaction* const trans,
     const sync_pb::EntitySpecifics& new_specifics,
     MutableEntry* entry);
 

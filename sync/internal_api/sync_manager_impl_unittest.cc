@@ -225,35 +225,25 @@ class SyncApiTest : public testing::Test {
  public:
   virtual void SetUp() {
     test_user_share_.SetUp();
-    SetUpEncryption();
   }
 
   virtual void TearDown() {
     test_user_share_.TearDown();
   }
 
-  void SetUpEncryption() {
-    ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    encryption_handler_.reset(
-        new SyncEncryptionHandlerImpl(test_user_share_.user_share(),
-                                      trans.GetCryptographer()));
-    trans.GetCryptographer()->SetNigoriHandler(encryption_handler_.get());
-  }
-
  protected:
   MessageLoop message_loop_;
   TestUserShare test_user_share_;
-  scoped_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
 };
 
 TEST_F(SyncApiTest, SanityCheckTest) {
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
-    EXPECT_TRUE(trans.GetWrappedTrans() != NULL);
+    EXPECT_TRUE(trans.GetWrappedTrans());
   }
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
-    EXPECT_TRUE(trans.GetWrappedTrans() != NULL);
+    EXPECT_TRUE(trans.GetWrappedTrans());
   }
   {
     // No entries but root should exist
@@ -483,7 +473,7 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     trans.GetCryptographer()->AddKey(params);
   }
-  encryption_handler_->EnableEncryptEverything();
+  test_user_share_.encryption_handler()->EnableEncryptEverything();
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode root_node(&trans);
@@ -841,7 +831,7 @@ class SyncManagerTest : public testing::Test,
     if (nigori_status == WRITE_TO_NIGORI) {
       sync_pb::NigoriSpecifics nigori;
       cryptographer->GetKeys(nigori.mutable_encrypted());
-      cryptographer->UpdateNigoriFromEncryptedTypes(
+      share->directory->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
           &nigori,
           trans.GetWrappedTrans());
       WriteNode node(&trans);
@@ -904,9 +894,14 @@ class SyncManagerTest : public testing::Test,
 
   // Gets the set of encrypted types from the cryptographer
   // Note: opens a transaction.  May be called from any thread.
-  syncer::ModelTypeSet GetEncryptedDataTypesForTest() {
+  ModelTypeSet GetEncryptedTypes() {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    return GetEncryptedTypes(&trans);
+    return GetEncryptedTypesWithTrans(&trans);
+  }
+
+  ModelTypeSet GetEncryptedTypesWithTrans(BaseTransaction* trans) {
+    return trans->GetDirectory()->GetNigoriHandler()->
+        GetEncryptedTypes(trans->GetWrappedTrans());
   }
 
   void SimulateEnableNotificationsForTest() {
@@ -1356,11 +1351,12 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
 
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
 
-  const ModelTypeSet encrypted_types = GetEncryptedDataTypesForTest();
+  const ModelTypeSet encrypted_types = GetEncryptedTypes();
   EXPECT_TRUE(encrypted_types.Has(PASSWORDS));
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
 
@@ -1385,10 +1381,11 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   // is not ready.
   EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _)).Times(1);
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
 
-  const ModelTypeSet encrypted_types = GetEncryptedDataTypesForTest();
+  const ModelTypeSet encrypted_types = GetEncryptedTypes();
   EXPECT_TRUE(encrypted_types.Has(PASSWORDS));  // Hardcoded.
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
 }
@@ -1398,12 +1395,13 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   EXPECT_TRUE(SetUpEncryption(DONT_WRITE_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete()).Times(1);
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
 
   // Should write to nigori.
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
 
-  const ModelTypeSet encrypted_types = GetEncryptedDataTypesForTest();
+  const ModelTypeSet encrypted_types = GetEncryptedTypes();
   EXPECT_TRUE(encrypted_types.Has(PASSWORDS));  // Hardcoded.
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
 
@@ -1460,21 +1458,18 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(
+    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
         SyncEncryptionHandler::SensitiveTypes()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         BOOKMARKS,
         false /* not encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         SESSIONS,
         false /* not encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         THEMES,
         false /* not encrypted */));
   }
@@ -1487,21 +1482,18 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(
+    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
         ModelTypeSet::All()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         BOOKMARKS,
         true /* is encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         SESSIONS,
         true /* is encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         THEMES,
         true /* is encrypted */));
   }
@@ -1517,20 +1509,17 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(ModelTypeSet::All()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         BOOKMARKS,
         true /* is encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         SESSIONS,
         true /* is encrypted */));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         THEMES,
         true /* is encrypted */));
   }
@@ -1991,7 +1980,6 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         BOOKMARKS,
         false /* not encrypted */));
   }
@@ -2005,10 +1993,9 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypes(&trans).Equals(ModelTypeSet::All()));
+    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(ModelTypeSet::All()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
-        trans.GetCryptographer(),
         BOOKMARKS,
         true /* is encrypted */));
 
@@ -2091,6 +2078,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
 
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   {
@@ -2138,6 +2126,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
 
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
@@ -2344,6 +2333,7 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_FALSE(ResetUnsyncedEntry(PASSWORDS, client_tag));
@@ -2406,6 +2396,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(BOOKMARKS, client_tag));
@@ -2502,6 +2493,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, true));
   sync_manager_.GetEncryptionHandler()->Init();
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(PREFERENCES, client_tag));

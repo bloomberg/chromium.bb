@@ -9,14 +9,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/threading/thread_checker.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/syncable/nigori_handler.h"
+#include "sync/util/cryptographer.h"
 
 namespace syncer {
 
+class Encryptor;
 struct UserShare;
 class WriteNode;
 class WriteTransaction;
@@ -35,16 +38,14 @@ class WriteTransaction;
 // Note: See sync_encryption_handler.h for a description of the chrome visible
 // methods and what they do, and nigori_handler.h for a description of the
 // sync methods.
-//
-// TODO(zea): Make this class explicitly non-thread safe and ensure its only
-// accessed from the sync thread, with the possible exception of
-// GetEncryptedTypes. Need to cache explicit passphrase state on the UI thread.
+// All methods are non-thread-safe and should only be called from the sync
+// thread unless explicitly noted otherwise.
 class SyncEncryptionHandlerImpl
     : public SyncEncryptionHandler,
       public syncable::NigoriHandler {
  public:
   SyncEncryptionHandlerImpl(UserShare* user_share,
-                            Cryptographer* cryptographer);
+                            Encryptor* encryptor);
   virtual ~SyncEncryptionHandlerImpl();
 
   // SyncEncryptionHandler implementation.
@@ -56,6 +57,8 @@ class SyncEncryptionHandlerImpl
   virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void EnableEncryptEverything() OVERRIDE;
   virtual bool EncryptEverythingEnabled() const OVERRIDE;
+  // Can be called from any thread.
+  // TODO(zea): enforce this is only called on sync thread.
   virtual bool IsUsingExplicitPassphrase() const OVERRIDE;
 
   // NigoriHandler implementation.
@@ -66,7 +69,14 @@ class SyncEncryptionHandlerImpl
   virtual void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const OVERRIDE;
-  virtual ModelTypeSet GetEncryptedTypes() const OVERRIDE;
+  // Can be called from any thread.
+  virtual ModelTypeSet GetEncryptedTypes(
+      syncable::BaseTransaction* const trans) const OVERRIDE;
+
+  // Unsafe getters. Use only if sync is not up and running and there is no risk
+  // of other threads calling this.
+  Cryptographer* GetCryptographerUnsafe();
+  ModelTypeSet GetEncryptedTypesUnsafe();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
@@ -77,6 +87,23 @@ class SyncEncryptionHandlerImpl
                            EncryptEverythingImplicit);
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
                            UnknownSensitiveTypes);
+
+  // Container for members that require thread safety protection.  All members
+  // that can be accessed from more than one thread should be held here and
+  // accessed via UnlockVault(..) and UnlockVaultMutable(..), which enforce
+  // that a transaction is held.
+  struct Vault {
+    Vault(Encryptor* encryptor, ModelTypeSet encrypted_types);
+    ~Vault();
+
+    // Sync's cryptographer. Used for encrypting and decrypting sync data.
+    Cryptographer cryptographer;
+    // The set of types that require encryption.
+    ModelTypeSet encrypted_types;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Vault);
+  };
 
   // Iterate over all encrypted types ensuring each entry is properly encrypted.
   void ReEncryptEverything(WriteTransaction* trans);
@@ -103,7 +130,9 @@ class SyncEncryptionHandlerImpl
   // had stricter encryption than |nigori|, and the nigori node needs to be
   // updated with the newer encryption state.
   // Note: must be called from within a transaction.
-  bool UpdateEncryptedTypesFromNigori(const sync_pb::NigoriSpecifics& nigori);
+  bool UpdateEncryptedTypesFromNigori(
+      const sync_pb::NigoriSpecifics& nigori,
+      syncable::BaseTransaction* const trans);
 
   // The final step of SetEncryptionPassphrase and SetDecryptionPassphrase that
   // notifies observers of the result of the set passphrase operation, updates
@@ -125,7 +154,15 @@ class SyncEncryptionHandlerImpl
   // Merges the given set of encrypted types with the existing set and emits a
   // notification if necessary.
   // Note: must be called from within a transaction.
-  void MergeEncryptedTypes(ModelTypeSet encrypted_types);
+  void MergeEncryptedTypes(ModelTypeSet new_encrypted_types,
+                           syncable::BaseTransaction* const trans);
+
+  // Helper methods for ensuring transactions are held when accessing
+  // |vault_unsafe_|.
+  Vault* UnlockVaultMutable(syncable::BaseTransaction* const trans);
+  const Vault& UnlockVault(syncable::BaseTransaction* const trans) const;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 
@@ -134,18 +171,16 @@ class SyncEncryptionHandlerImpl
   // The current user share (for creating transactions).
   UserShare* user_share_;
 
-  // TODO(zea): have the sync encryption handler own the cryptographer, and live
-  // in the directory.
-  Cryptographer* cryptographer_;
+  // Container for all data that can be accessed from multiple threads. Do not
+  // access this object directly. Instead access it via UnlockVault(..) and
+  // UnlockVaultMutable(..).
+  Vault vault_unsafe_;
 
-  // The set of types that require encryption. This is accessed on all sync
-  // datatype threads when we write to a node, so we must hold a transaction
-  // whenever we touch/read it.
-  ModelTypeSet encrypted_types_;
-
-  // Sync encryption state. These are only modified and accessed from the sync
+  // Sync encryption state that is only modified and accessed from the sync
   // thread.
+  // Whether all current and future types should be encrypted.
   bool encrypt_everything_;
+  // Whether the user is using a custom passphrase for encryption.
   bool explicit_passphrase_;
 
   // The number of times we've automatically (i.e. not via SetPassphrase or

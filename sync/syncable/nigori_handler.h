@@ -36,8 +36,8 @@ class NigoriHandler {
       syncable::BaseTransaction* const trans) const = 0;
 
   // Returns the set of currently encrypted types.
-  // TODO(zea): force callers to pass their syncable trans here.
-  virtual ModelTypeSet GetEncryptedTypes() const = 0;
+  virtual ModelTypeSet GetEncryptedTypes(
+      syncable::BaseTransaction* const trans) const = 0;
 };
 
 }  // namespace syncable

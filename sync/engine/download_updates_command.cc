@@ -12,6 +12,7 @@
 #include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/read_transaction.h"
+#include "sync/util/cryptographer.h"
 
 using sync_pb::DebugInfo;
 

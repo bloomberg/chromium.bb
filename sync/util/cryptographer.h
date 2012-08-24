@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/util/nigori.h"
 
@@ -23,11 +22,6 @@ class NigoriSpecifics;
 namespace syncer {
 
 class Encryptor;
-
-namespace syncable {
-class BaseTransaction;
-class NigoriHandler;
-}
 
 extern const char kNigoriTag[];
 
@@ -57,19 +51,6 @@ class Cryptographer {
   // Does not take ownership of |encryptor|.
   explicit Cryptographer(Encryptor* encryptor);
   ~Cryptographer();
-
-  // Set the sync nigori node handler.
-  // TODO(zea): refactor so that Cryptographer doesn't need any connection
-  // to a NigoriHandler. crbug.com/139848
-  void SetNigoriHandler(syncable::NigoriHandler* delegate);
-
-  // NigoriHandler delegator methods (passes through to delegate).
-  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
-                         syncable::BaseTransaction* const trans);
-  void UpdateNigoriFromEncryptedTypes(
-      sync_pb::NigoriSpecifics* nigori,
-      syncable::BaseTransaction* const trans) const;
-  ModelTypeSet GetEncryptedTypes() const;
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).
@@ -208,10 +189,6 @@ class Cryptographer {
   NigoriMap::value_type* keystore_nigori_; // Nigori generated from keystore.
 
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
-
-  // The sync nigori node handler. Necessary until we decouple the encrypted
-  // types from the cryptographer.
-  syncable::NigoriHandler* nigori_node_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Cryptographer);
 };

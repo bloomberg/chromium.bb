@@ -136,17 +136,19 @@ Directory::Kernel::~Kernel() {
 }
 
 Directory::Directory(
-    Encryptor* encryptor,
+    DirectoryBackingStore* store,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-    DirectoryBackingStore* store)
-    : cryptographer_(encryptor),
-      kernel_(NULL),
+    NigoriHandler* nigori_handler,
+    Cryptographer* cryptographer)
+    : kernel_(NULL),
       store_(store),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(
           report_unrecoverable_error_function),
       unrecoverable_error_set_(false),
+      nigori_handler_(nigori_handler),
+      cryptographer_(cryptographer),
       invariant_check_level_(VERIFY_CHANGES) {
 }
 
@@ -724,9 +726,13 @@ string Directory::cache_guid() const {
   return kernel_->cache_guid;
 }
 
+NigoriHandler* Directory::GetNigoriHandler() {
+  return nigori_handler_;
+}
+
 Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
   DCHECK_EQ(this, trans->directory());
-  return &cryptographer_;
+  return cryptographer_;
 }
 
 void Directory::GetAllMetaHandles(BaseTransaction* trans,

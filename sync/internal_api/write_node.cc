@@ -42,10 +42,9 @@ void WriteNode::SetIsFolder(bool folder) {
 void WriteNode::SetTitle(const std::wstring& title) {
   DCHECK_NE(GetModelType(), UNSPECIFIED);
   ModelType type = GetModelType();
-  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
   // It's possible the nigori lost the set of encrypted types. If the current
   // specifics are already encrypted, we want to ensure we continue encrypting.
-  bool needs_encryption = cryptographer->GetEncryptedTypes().Has(type) ||
+  bool needs_encryption = GetTransaction()->GetEncryptedTypes().Has(type) ||
                           entry_->Get(SPECIFICS).has_encrypted();
 
   // If this datatype is encrypted and is not a bookmark, we disregard the
@@ -203,7 +202,6 @@ void WriteNode::SetEntitySpecifics(
   if (GetModelType() != UNSPECIFIED) {
     DCHECK_EQ(new_specifics_type, GetModelType());
   }
-  Cryptographer* cryptographer = GetTransaction()->GetCryptographer();
 
   // Preserve unknown fields.
   const sync_pb::EntitySpecifics& old_specifics = entry_->Get(SPECIFICS);
@@ -213,7 +211,9 @@ void WriteNode::SetEntitySpecifics(
       old_specifics.unknown_fields());
 
   // Will update the entry if encryption was necessary.
-  if (!UpdateEntryWithEncryption(cryptographer, new_specifics, entry_)) {
+  if (!UpdateEntryWithEncryption(GetTransaction()->GetWrappedTrans(),
+                                 new_specifics,
+                                 entry_)) {
     return;
   }
   if (entry_->Get(SPECIFICS).has_encrypted()) {

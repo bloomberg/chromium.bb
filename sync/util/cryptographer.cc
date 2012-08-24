@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "sync/protocol/nigori_specifics.pb.h"
-#include "sync/syncable/nigori_handler.h"
 #include "sync/util/encryptor.h"
 
 namespace syncer {
@@ -25,32 +24,11 @@ const char kNigoriKeyName[] = "nigori-key";
 Cryptographer::Cryptographer(Encryptor* encryptor)
     : encryptor_(encryptor),
       default_nigori_(NULL),
-      keystore_nigori_(NULL),
-      nigori_node_handler_(NULL) {
+      keystore_nigori_(NULL) {
   DCHECK(encryptor);
 }
 
 Cryptographer::~Cryptographer() {}
-
-void Cryptographer::SetNigoriHandler(syncable::NigoriHandler* delegate) {
-  nigori_node_handler_ = delegate;
-}
-
-void Cryptographer::ApplyNigoriUpdate(
-    const sync_pb::NigoriSpecifics& nigori,
-    syncable::BaseTransaction* const trans) {
-  nigori_node_handler_->ApplyNigoriUpdate(nigori, trans);
-}
-
-ModelTypeSet Cryptographer::GetEncryptedTypes() const {
-  return nigori_node_handler_->GetEncryptedTypes();
-}
-
-void Cryptographer::UpdateNigoriFromEncryptedTypes(
-    sync_pb::NigoriSpecifics* nigori,
-    syncable::BaseTransaction* const trans) const {
-  nigori_node_handler_->UpdateNigoriFromEncryptedTypes(nigori, trans);
-}
 
 
 void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
@@ -213,6 +191,7 @@ void Cryptographer::SetDefaultKey(const std::string& key_name) {
 
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
   DCHECK(!CanDecrypt(encrypted));
+  DCHECK(!encrypted.blob().empty());
   pending_keys_.reset(new sync_pb::EncryptedData(encrypted));
 }
 

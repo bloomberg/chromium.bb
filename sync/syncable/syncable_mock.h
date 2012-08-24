@@ -9,7 +9,6 @@
 
 #include "sync/syncable/directory.h"
 #include "sync/syncable/write_transaction.h"
-#include "sync/test/fake_encryptor.h"
 #include "sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +31,6 @@ class MockDirectory : public Directory {
   MOCK_METHOD1(PurgeEntriesWithTypeIn, bool(ModelTypeSet));
 
  private:
-  FakeEncryptor encryptor_;
   syncable::NullDirectoryChangeDelegate delegate_;
 };
 

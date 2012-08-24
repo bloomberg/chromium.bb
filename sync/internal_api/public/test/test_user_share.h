@@ -35,6 +35,8 @@
 
 namespace syncer {
 
+class SyncEncryptionHandler;
+
 class TestDirectorySetterUpper;
 
 class TestUserShare {
@@ -54,6 +56,10 @@ class TestUserShare {
 
   // Non-NULL iff called between a call to SetUp() and TearDown().
   UserShare* user_share();
+
+  // Sync's encryption handler. Used by tests to invoke the sync encryption
+  // methods normally handled via the SyncBackendHost
+  SyncEncryptionHandler* encryption_handler();
 
  private:
   scoped_ptr<TestDirectorySetterUpper> dir_maker_;

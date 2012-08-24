@@ -12,6 +12,7 @@
 #include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/nigori_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/syncable/write_transaction.h"
@@ -49,7 +50,8 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
       session->context()->
       directory()->GetCryptographer(session->write_transaction());
   if (cryptographer) {
-    encrypted_types = cryptographer->GetEncryptedTypes();
+    encrypted_types = session->context()->directory()->GetNigoriHandler()->
+        GetEncryptedTypes(session->write_transaction());
     passphrase_missing = cryptographer->has_pending_keys();
   };
 

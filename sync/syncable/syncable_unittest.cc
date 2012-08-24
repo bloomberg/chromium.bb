@@ -106,8 +106,12 @@ class SyncableGeneralTest : public testing::Test {
 const char SyncableGeneralTest::kIndexTestName[] = "IndexTest";
 
 TEST_F(SyncableGeneralTest, General) {
-  Directory dir(&encryptor_, &handler_, NULL,
-                new InMemoryDirectoryBackingStore("SimpleTest"));
+  Directory dir(new InMemoryDirectoryBackingStore("SimpleTest"),
+                &handler_,
+                NULL,
+                NULL,
+                NULL);
+
   ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
@@ -207,8 +211,11 @@ TEST_F(SyncableGeneralTest, General) {
 }
 
 TEST_F(SyncableGeneralTest, ChildrenOps) {
-  Directory dir(&encryptor_, &handler_, NULL,
-                new InMemoryDirectoryBackingStore("SimpleTest"));
+  Directory dir(new InMemoryDirectoryBackingStore("SimpleTest"),
+                &handler_,
+                NULL,
+                NULL,
+                NULL);
   ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
@@ -281,8 +288,11 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 
   // Test creating a new meta entry.
   {
-    Directory dir(&encryptor_, &handler_, NULL,
-        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    Directory dir(new OnDiskDirectoryBackingStore(kIndexTestName, db_path_),
+                  &handler_,
+                  NULL,
+                  NULL,
+                  NULL);
     ASSERT_EQ(OPENED, dir.Open(kIndexTestName, &delegate_,
                                NullTransactionObserver()));
     {
@@ -299,8 +309,11 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 
   // The DB was closed. Now reopen it. This will cause index regeneration.
   {
-    Directory dir(&encryptor_, &handler_, NULL,
-        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    Directory dir(new OnDiskDirectoryBackingStore(kIndexTestName, db_path_),
+                  &handler_,
+                  NULL,
+                  NULL,
+                  NULL);
     ASSERT_EQ(OPENED, dir.Open(kIndexTestName,
                                &delegate_, NullTransactionObserver()));
 
@@ -321,8 +334,11 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 
   // Test creating a deleted, unsynced, server meta entry.
   {
-    Directory dir(&encryptor_, &handler_, NULL,
-        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    Directory dir(new OnDiskDirectoryBackingStore(kIndexTestName, db_path_),
+                  &handler_,
+                  NULL,
+                  NULL,
+                  NULL);
     ASSERT_EQ(OPENED, dir.Open(kIndexTestName, &delegate_,
                                 NullTransactionObserver()));
     {
@@ -341,8 +357,11 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   // The DB was closed. Now reopen it. This will cause index regeneration.
   // Should still be present and valid in the client tag index.
   {
-    Directory dir(&encryptor_, &handler_, NULL,
-        new OnDiskDirectoryBackingStore(kIndexTestName, db_path_));
+    Directory dir(new OnDiskDirectoryBackingStore(kIndexTestName, db_path_),
+                  &handler_,
+                  NULL,
+                  NULL,
+                  NULL);
     ASSERT_EQ(OPENED, dir.Open(kIndexTestName, &delegate_,
                                NullTransactionObserver()));
 
@@ -357,8 +376,11 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 }
 
 TEST_F(SyncableGeneralTest, ToValue) {
-  Directory dir(&encryptor_, &handler_, NULL,
-                new InMemoryDirectoryBackingStore("SimpleTest"));
+  Directory dir(new InMemoryDirectoryBackingStore("SimpleTest"),
+                &handler_,
+                NULL,
+                NULL,
+                NULL);
   ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
@@ -400,8 +422,11 @@ class SyncableDirectoryTest : public testing::Test {
   static const char kName[];
 
   virtual void SetUp() {
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL,
-                             new InMemoryDirectoryBackingStore(kName)));
+    dir_.reset(new Directory(new InMemoryDirectoryBackingStore(kName),
+                             &handler_,
+                             NULL,
+                             NULL,
+                             NULL));
     ASSERT_TRUE(dir_.get());
     ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_,
                                  NullTransactionObserver()));
@@ -1414,7 +1439,7 @@ TestDirectory* TestDirectory::Create(
 TestDirectory::TestDirectory(Encryptor* encryptor,
                              UnrecoverableErrorHandler* handler,
                              TestBackingStore* backing_store)
-    : Directory(encryptor, handler, NULL, backing_store),
+    : Directory(backing_store, handler, NULL, NULL, NULL),
       backing_store_(backing_store) {
 }
 
@@ -1610,8 +1635,12 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
 
   dir_->SaveChanges();
-  dir_.reset(new Directory(&encryptor_, &handler_, NULL,
-      new OnDiskDirectoryBackingStore(kName, file_path_)));
+  dir_.reset(new Directory(new OnDiskDirectoryBackingStore(kName, file_path_),
+                           &handler_,
+                           NULL,
+                           NULL,
+                           NULL));
+
   ASSERT_TRUE(dir_.get());
   ASSERT_EQ(OPENED, dir_->Open(kName, &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
@@ -1827,7 +1856,11 @@ DirOpenResult SyncableDirectoryTest::ReloadDirImpl() {
   dir_->Close();
   dir_.reset();
 
-  dir_.reset(new Directory(&encryptor_, &handler_, NULL, saved_store));
+  dir_.reset(new Directory(saved_store,
+                           &handler_,
+                           NULL,
+                           NULL,
+                           NULL));
   DirOpenResult result = dir_->OpenImpl(kName, &delegate_,
                                         NullTransactionObserver());
 
@@ -1861,8 +1894,11 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   FilePath path = temp_dir_.path().Append(
       Directory::kSyncDatabaseFilename);
 
-  syncable::Directory dir(&encryptor_, &handler_, NULL,
-      new OnDiskDirectoryBackingStore("ScopeTest", path));
+  syncable::Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path),
+                          &handler_,
+                          NULL,
+                          NULL,
+                          NULL);
   DirOpenResult result =
       dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
   ASSERT_EQ(result, OPENED);
@@ -1923,8 +1959,11 @@ TEST(SyncableDirectory, StressTransactions) {
   TestUnrecoverableErrorHandler handler;
   NullDirectoryChangeDelegate delegate;
   std::string dirname = "stress";
-  Directory dir(&encryptor, &handler, NULL,
-                new InMemoryDirectoryBackingStore(dirname));
+  Directory dir(new InMemoryDirectoryBackingStore(dirname),
+                &handler,
+                NULL,
+                NULL,
+                NULL);
   dir.Open(dirname, &delegate, NullTransactionObserver());
 
   const int kThreadCount = 7;

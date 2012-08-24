@@ -11,10 +11,10 @@
 #include "base/observer_list.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/syncable/nigori_handler.h"
+#include "sync/test/fake_encryptor.h"
+#include "sync/util/cryptographer.h"
 
 namespace syncer {
-
-class Cryptographer;
 
 // A fake sync encryption handler capable of keeping track of the encryption
 // state without opening any transactions or interacting with the nigori node.
@@ -27,10 +27,6 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
  public:
   FakeSyncEncryptionHandler();
   virtual ~FakeSyncEncryptionHandler();
-
-  void set_cryptographer(Cryptographer* cryptographer) {
-    cryptographer_ = cryptographer;
-  }
 
   // SyncEncryptionHandler implementation.
   virtual void AddObserver(Observer* observer) OVERRIDE;
@@ -47,10 +43,13 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   virtual void ApplyNigoriUpdate(
       const sync_pb::NigoriSpecifics& nigori,
       syncable::BaseTransaction* const trans) OVERRIDE;
-  virtual ModelTypeSet GetEncryptedTypes() const OVERRIDE;
   virtual void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const OVERRIDE;
+  virtual ModelTypeSet GetEncryptedTypes(
+      syncable::BaseTransaction* const trans) const OVERRIDE;
+
+  Cryptographer* cryptographer() { return &cryptographer_; }
 
  private:
   ObserverList<SyncEncryptionHandler::Observer> observers_;
@@ -58,7 +57,8 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   bool encrypt_everything_;
   bool explicit_passphrase_;
 
-  Cryptographer* cryptographer_;
+  FakeEncryptor encryptor_;
+  Cryptographer cryptographer_;
 };
 
 }  // namespace syncer
