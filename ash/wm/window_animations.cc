@@ -50,6 +50,7 @@ namespace internal {
 namespace {
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
 
+bool delayed_old_layer_deletion_in_cross_fade_for_test_ = false;
 }
 
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationType,
@@ -663,7 +664,13 @@ class CrossFadeObserver : public ui::CompositorObserver,
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    delete this;
+    // ImplicitAnimationObserver's base class uses the object after
+    // calling this function, so we cannot delete |this|. The |layer_|
+    // may be gone by the next message loop run when shutting down, so
+    // clean them up now.
+    if (!delayed_old_layer_deletion_in_cross_fade_for_test_)
+      Cleanup();
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
  private:
@@ -973,6 +980,10 @@ bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
     return window->layer()->GetTargetOpacity() != 0.0f &&
         AnimateHideWindow(window);
   }
+}
+
+void SetDelayedOldLayerDeletionInCrossFadeForTest(bool value) {
+  delayed_old_layer_deletion_in_cross_fade_for_test_ = value;
 }
 
 }  // namespace internal

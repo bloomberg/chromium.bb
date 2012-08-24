@@ -43,16 +43,13 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       transition_duration_(transition_duration),
       tween_type_(Tween::LINEAR),
       is_started_(false),
-      disable_timer_for_test_(false),
-      destroyed_(NULL) {
+      disable_timer_for_test_(false) {
 }
 
 LayerAnimator::~LayerAnimator() {
   for (size_t i = 0; i < running_animations_.size(); ++i)
     running_animations_[i].sequence->OnAnimatorDestroyed();
   ClearAnimations();
-  if (destroyed_)
-    *destroyed_ = true;
 }
 
 // static
@@ -283,8 +280,6 @@ bool LayerAnimator::HasAnimation(LayerAnimationSequence* sequence) const {
 void LayerAnimator::Step(base::TimeTicks now) {
   TRACE_EVENT0("ui", "LayerAnimator::Step");
 
-  bool destroyed = false;
-  destroyed_ = &destroyed;
   last_step_time_ = now;
   // We need to make a copy of the running animations because progressing them
   // and finishing them may indirectly affect the collection of running
@@ -299,15 +294,11 @@ void LayerAnimator::Step(base::TimeTicks now) {
     if (delta >= running_animations_copy[i].sequence->duration() &&
         !running_animations_copy[i].sequence->is_cyclic()) {
       FinishAnimation(running_animations_copy[i].sequence);
-      if (destroyed)
-        return;
       needs_redraw = true;
-    } else if (ProgressAnimation(running_animations_copy[i].sequence, delta)) {
+    } else if (ProgressAnimation(running_animations_copy[i].sequence, delta))
       needs_redraw = true;
-    }
   }
 
-  destroyed_ = NULL;
   if (needs_redraw && delegate())
     delegate()->ScheduleDrawForAnimation();
 }

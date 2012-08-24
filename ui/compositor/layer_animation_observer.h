@@ -113,10 +113,6 @@ class COMPOSITOR_EXPORT ImplicitAnimationObserver
   void CheckCompleted();
 
   bool active_;
-
-  // Set to true in the destructor (if non-NULL). Used to detect deletion while
-  // calling out.
-  bool* destroyed_;
 };
 
 }  // namespace ui
