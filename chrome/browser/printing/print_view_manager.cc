@@ -126,10 +126,12 @@ bool PrintViewManager::PrintToDestination() {
 }
 
 bool PrintViewManager::PrintPreviewNow() {
-  if (print_preview_state_ != NOT_PREVIEWING) {
-    NOTREACHED();
+  // Users can send print commands all they want and it is beyond
+  // PrintViewManager's control. Just ignore the extra commands.
+  // See http://crbug.com/136842 for example.
+  if (print_preview_state_ != NOT_PREVIEWING)
     return false;
-  }
+
   if (!PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id())))
     return false;
 
