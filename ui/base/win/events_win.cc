@@ -16,8 +16,10 @@ namespace ui {
 
 namespace {
 
-// From MSDN.
-#define MOUSEEVENTF_FROMTOUCH 0xFF515700
+// From MSDN: "Mouse" events are flagged with 0xFF515700 if they come
+// from a touch or stylus device.  In Vista or later, they are also flagged
+// with 0x80 if they come from touch.
+#define MOUSEEVENTF_FROMTOUCH (0xFF515700 | 0x80)
 
 // Get the native mouse key state from the native event message type.
 int GetNativeMouseKey(const base::NativeEvent& native_event) {
