@@ -929,7 +929,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Starts a local HTTPS TestServer serving files from |data_dir|.
 
     Args:
-      cert_type: An instance of HTTPSOptions.ServerCertificate for three
+      cert_type: An instance of SSLOptions.ServerCertificate for three
                  certificate types: ok, expired, or mismatch.
       data_dir: The path where TestServer should serve files from. This is
                 appended to the source dir to get the final document root.
@@ -938,7 +938,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       Handle to the HTTPS TestServer
     """
     https_server = pyautolib.TestServer(
-        pyautolib.HTTPSOptions(cert_type), pyautolib.FilePath(data_dir))
+        pyautolib.TestServer.TYPE_HTTPS,
+        pyautolib.SSLOptions(cert_type),
+        pyautolib.FilePath(data_dir))
     assert https_server.Start(), 'Could not start HTTPS server.'
     logging.debug('Start HTTPS server at "%s".' % data_dir)
     return https_server

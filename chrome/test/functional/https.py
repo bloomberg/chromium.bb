@@ -38,15 +38,15 @@ class SSLTest(pyauto.PyUITest):
 
   def setUp(self):
     self._https_server_ok = self.StartHttpsServer(
-        pyauto.HTTPSOptions.CERT_OK,
+        pyauto.SSLOptions.CERT_OK,
         os.path.relpath(os.path.join(self.DataDir(), 'ssl'),
                         pyauto_paths.GetSourceDir()))
     self._https_server_expired = self.StartHttpsServer(
-        pyauto.HTTPSOptions.CERT_EXPIRED,
+        pyauto.SSLOptions.CERT_EXPIRED,
         os.path.relpath(os.path.join(self.DataDir(), 'ssl'),
                         pyauto_paths.GetSourceDir()))
     self._https_server_mismatched = self.StartHttpsServer(
-        pyauto.HTTPSOptions.CERT_MISMATCHED_NAME,
+        pyauto.SSLOptions.CERT_MISMATCHED_NAME,
         os.path.relpath(os.path.join(self.DataDir(), 'ssl'),
                         pyauto_paths.GetSourceDir()))
     pyauto.PyUITest.setUp(self)
