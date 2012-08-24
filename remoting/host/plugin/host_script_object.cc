@@ -576,15 +576,22 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   signal_strategy_.reset(signal_strategy.release());
   register_request_.reset(register_request.release());
 
-  // Create the Host.
+  // If NAT traversal is off then limit port range to allow firewall pin-holing.
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
+  NetworkSettings network_settings(
+     nat_traversal_enabled_ ?
+     NetworkSettings::NAT_TRAVERSAL_ENABLED :
+     NetworkSettings::NAT_TRAVERSAL_DISABLED);
+  if (!nat_traversal_enabled_) {
+    network_settings.min_port = NetworkSettings::kDefaultMinPort;
+    network_settings.max_port = NetworkSettings::kDefaultMaxPort;
+  }
+
+  // Create the Host.
   host_ = new ChromotingHost(
       host_context_.get(), signal_strategy_.get(), desktop_environment_.get(),
-      CreateHostSessionManager(
-          NetworkSettings(nat_traversal_enabled_ ?
-                          NetworkSettings::NAT_TRAVERSAL_ENABLED :
-                          NetworkSettings::NAT_TRAVERSAL_DISABLED),
-          host_context_->url_request_context_getter()));
+      CreateHostSessionManager(network_settings,
+                               host_context_->url_request_context_getter()));
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));

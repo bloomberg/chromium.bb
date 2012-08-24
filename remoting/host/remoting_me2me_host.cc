@@ -86,9 +86,6 @@ const char kHostConfigSwitchName[] = "host-config";
 const FilePath::CharType kDefaultHostConfigFile[] =
     FILE_PATH_LITERAL("host.json");
 
-const int kMinPortNumber = 12400;
-const int kMaxPortNumber = 12409;
-
 const char kUnofficialOAuth2ClientId[] =
     "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com";
 const char kUnofficialOAuth2ClientSecret[] = "W2ieEsG-R1gIA4MMurGrgMc_";
@@ -498,8 +495,8 @@ class HostProcess
         NetworkSettings::NAT_TRAVERSAL_ENABLED :
         NetworkSettings::NAT_TRAVERSAL_DISABLED);
     if (!allow_nat_traversal_) {
-      network_settings.min_port = kMinPortNumber;
-      network_settings.max_port = kMaxPortNumber;
+      network_settings.min_port = NetworkSettings::kDefaultMinPort;
+      network_settings.max_port = NetworkSettings::kDefaultMaxPort;
     }
 
     host_ = new ChromotingHost(

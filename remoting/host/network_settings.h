@@ -8,6 +8,13 @@
 namespace remoting {
 
 struct NetworkSettings {
+
+  // When hosts are configured with NAT traversal disabled they will
+  // typically also limit their P2P ports to this range, so that
+  // sessions may be blocked or un-blocked via firewall rules.
+  static const int kDefaultMinPort = 12400;
+  static const int kDefaultMaxPort = 12409;
+
   enum NatTraversalMode {
     // Active NAT traversal using STUN and relay servers.
     NAT_TRAVERSAL_ENABLED,
