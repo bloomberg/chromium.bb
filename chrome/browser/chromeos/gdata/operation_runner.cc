@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/gdata/operation_runner.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/gdata/gdata_operations.h"
+#include "chrome/browser/chromeos/gdata/operations_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -43,7 +43,7 @@ void OperationRunner::Authenticate(const AuthStatusCallback& callback) {
 }
 
 void OperationRunner::StartOperationWithRetry(
-    GDataOperationInterface* operation) {
+    AuthenticatedOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The re-authenticatation callback will run on UI thread.
@@ -53,7 +53,8 @@ void OperationRunner::StartOperationWithRetry(
   StartOperation(operation);
 }
 
-void OperationRunner::StartOperation(GDataOperationInterface* operation) {
+void OperationRunner::StartOperation(
+    AuthenticatedOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!auth_service_->HasAccessToken()) {
@@ -70,7 +71,7 @@ void OperationRunner::StartOperation(GDataOperationInterface* operation) {
 }
 
 void OperationRunner::OnOperationAuthRefresh(
-    GDataOperationInterface* operation,
+    AuthenticatedOperationInterface* operation,
     GDataErrorCode code,
     const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -83,7 +84,8 @@ void OperationRunner::OnOperationAuthRefresh(
   }
 }
 
-void OperationRunner::RetryOperation(GDataOperationInterface* operation) {
+void OperationRunner::RetryOperation(
+    AuthenticatedOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   auth_service_->ClearAccessToken();

@@ -17,11 +17,11 @@ class Profile;
 
 namespace gdata {
 
-class GDataOperationInterface;
+class AuthenticatedOperationInterface;
 class OperationRegistry;
 
-// Helper class that runs GDataOperationInterface objects, handling retries and
-// authentication.
+// Helper class that runs AuthenticatedOperationInterface objects, handling
+// retries and authentication.
 class OperationRunner : public AuthService::Observer {
  public:
   explicit OperationRunner(Profile* profile);
@@ -43,22 +43,23 @@ class OperationRunner : public AuthService::Observer {
   // function is run.
   void Authenticate(const AuthStatusCallback& callback);
 
-  // Starts an operation implementing the GDataOperationInterface interface, and
-  // makes the operation retry upon authentication failures by calling back to
-  // RetryOperation.
-  void StartOperationWithRetry(GDataOperationInterface* operation);
+  // Starts an operation implementing the AuthenticatedOperationInterface
+  // interface, and makes the operation retry upon authentication failures by
+  // calling back to RetryOperation.
+  void StartOperationWithRetry(AuthenticatedOperationInterface* operation);
 
-  // Starts an operation implementing the GDataOperationInterface interface.
-  void StartOperation(GDataOperationInterface* operation);
+  // Starts an operation implementing the AuthenticatedOperationInterface
+  // interface.
+  void StartOperation(AuthenticatedOperationInterface* operation);
 
   // Called when the authentication token is refreshed.
-  void OnOperationAuthRefresh(GDataOperationInterface* operation,
+  void OnOperationAuthRefresh(AuthenticatedOperationInterface* operation,
                               GDataErrorCode error,
                               const std::string& auth_token);
 
   // Clears any authentication token and retries the operation, which
   // forces an authentication token refresh.
-  void RetryOperation(GDataOperationInterface* operation);
+  void RetryOperation(AuthenticatedOperationInterface* operation);
 
  private:
   // AuthService::Observer override.

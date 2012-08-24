@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/browser/chromeos/gdata/gdata_operations.h"
+#include "chrome/browser/chromeos/gdata/operations_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"

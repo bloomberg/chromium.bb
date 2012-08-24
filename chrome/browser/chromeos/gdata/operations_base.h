@@ -53,16 +53,16 @@ class AuthOperation : public OperationRegistry::Operation,
   DISALLOW_COPY_AND_ASSIGN(AuthOperation);
 };
 
-//=========================== GDataOperationInterface ==========================
+//======================= AuthenticatedOperationInterface ======================
 
 // An interface for implementing an operation used by DriveServiceInterface.
-class GDataOperationInterface {
+class AuthenticatedOperationInterface {
  public:
   // Callback to DriveServiceInterface upon for re-authentication.
-  typedef base::Callback<void(GDataOperationInterface* operation)>
+  typedef base::Callback<void(AuthenticatedOperationInterface* operation)>
       ReAuthenticateCallback;
 
-  virtual ~GDataOperationInterface() {}
+  virtual ~AuthenticatedOperationInterface() {}
 
   // Starts the actual operation after obtaining an authentication token
   // |auth_token|.
@@ -85,14 +85,14 @@ typedef base::Callback<void(
     scoped_ptr<std::string> content)> GetContentCallback;
 
 // Base class for operations that are fetching URLs.
-class UrlFetchOperationBase : public GDataOperationInterface,
+class UrlFetchOperationBase : public AuthenticatedOperationInterface,
                               public OperationRegistry::Operation,
                               public net::URLFetcherDelegate {
  public:
-  // Overridden from GDataOperationInterface.
+  // Overridden from AuthenticatedOperationInterface.
   virtual void Start(const std::string& auth_token) OVERRIDE;
 
-  // Overridden from GDataOperationInterface.
+  // Overridden from AuthenticatedOperationInterface.
   virtual void SetReAuthenticateCallback(
       const ReAuthenticateCallback& callback) OVERRIDE;
 
@@ -137,7 +137,7 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   // Overridden from URLFetcherDelegate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Overridden from GDataOperationInterface.
+  // Overridden from AuthenticatedOperationInterface.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
 
   // Invoked when ProcessURLFetchResults() is completed.
