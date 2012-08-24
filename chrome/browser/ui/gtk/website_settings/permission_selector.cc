@@ -48,8 +48,11 @@ GtkWidget* PermissionSelector::CreateUI() {
   GtkWidget* hbox = gtk_hbox_new(FALSE, kChildSpacing);
 
   // Add permission type icon.
+  ContentSetting effective_setting = setting_;
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
+    effective_setting = default_setting_;
   GdkPixbuf* pixbuf = WebsiteSettingsUI::GetPermissionIcon(
-      type_, setting_).ToGdkPixbuf();
+      type_, effective_setting).ToGdkPixbuf();
   icon_ = gtk_image_new_from_pixbuf(pixbuf);
   gtk_box_pack_start(GTK_BOX(hbox), icon_, FALSE, FALSE, 0);
 
@@ -142,8 +145,11 @@ void PermissionSelector::OnPermissionChanged(GtkWidget* widget) {
   setting_ = ContentSetting(value);
 
   // Change the permission icon according the the selected setting.
+  ContentSetting effective_setting = setting_;
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
+    effective_setting = default_setting_;
   GdkPixbuf* pixbuf = WebsiteSettingsUI::GetPermissionIcon(
-      type_, setting_).ToGdkPixbuf();
+      type_, effective_setting).ToGdkPixbuf();
   gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
 
   FOR_EACH_OBSERVER(PermissionSelectorObserver,
