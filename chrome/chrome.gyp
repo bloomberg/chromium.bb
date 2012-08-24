@@ -1071,13 +1071,11 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java',
-            '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
             '../net/net.gyp:net_java',
           ],
           'export_dependent_settings': [
             '../base/base.gyp:base_java',
-            '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
             '../net/net.gyp:net_java',
           ],
