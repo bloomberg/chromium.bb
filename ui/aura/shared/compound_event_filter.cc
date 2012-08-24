@@ -148,6 +148,7 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
 
   if (event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1 &&
+      status != ui::GESTURE_STATUS_CONSUMED &&
       target->GetRootWindow() &&
       GetActiveWindow(target) != target) {
     target->GetFocusManager()->SetFocusedWindow(
