@@ -423,37 +423,6 @@ hg-assert-safe-to-update() {
   exit -1
 }
 
-svn-assert-safe-to-update() {
-  local name="$1"
-  local dir="$2"
-  local rev="$3"
-  local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
-
-  if ! svn-has-changes "${dir}"; then
-    return 0
-  fi
-
-  if svn-at-revision "${dir}" "${rev}" ; then
-    return 0
-  fi
-
-  Banner \
-    "                         ERROR                          " \
-    "                                                        " \
-    " Repository '${name}' needs to be updated to the stable " \
-    " revision but has local modifications.                  " \
-    "                                                        " \
-    " If your repository is behind stable, update it using:  " \
-    "                                                        " \
-    "   cd pnacl/src/${name}; svn update -r ${rev}           " \
-    "   (you may need to resolve conflicts)                  " \
-    "                                                        " \
-    " If your repository is ahead of stable, then modify:    " \
-    "   ${defstr}_REV   (in pnacl/build.sh)                  " \
-    " to suppress this error message.                        "
-  exit -1
-}
-
 hg-bot-sanity() {
   local name="$1"
   local dir="$2"
@@ -464,18 +433,6 @@ hg-bot-sanity() {
            "         Wiping and trying again."
     rm -rf "${dir}"
     hg-checkout-${name}
-  fi
-}
-
-svn-bot-sanity() {
-  local name="$1"
-  local dir="$2"
-
-  if svn-has-changes "${dir}" ; then
-    Banner "WARNING: ${name} repository is in an illegal state." \
-           "         Wiping and trying again."
-    rm -rf "${dir}"
-    svn-checkout-${name}
   fi
 }
 
@@ -498,28 +455,6 @@ hg-update-common() {
     StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
     hg-pull "${dir}"
     hg-update "${dir}" ${rev}
-  fi
-}
-
-# NOTE: this is used by merge-tool.sh
-# TODO(dschuff) move to common-tools.sh or replace with git
-svn-update-common() {
-  local name="$1"
-  local rev="$2"
-  local dir="$3"
-
-  if ${PNACL_BUILDBOT} ; then
-      svn-bot-sanity "${name}" "${dir}"
-  fi
-
-  # Make sure it is safe to update
-  svn-assert-safe-to-update "${name}" "${dir}" "${rev}"
-
-  if svn-at-revision "${dir}" "${rev}" ; then
-    StepBanner "SVN-UPDATE" "Repo ${name} already at ${rev}"
-  else
-    StepBanner "SVN-UPDATE" "Updating ${name} to ${rev}"
-    svn-update "${dir}" ${rev}
   fi
 }
 
