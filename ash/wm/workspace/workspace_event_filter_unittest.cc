@@ -114,6 +114,26 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_EQ("1,2 3x4", window->bounds().ToString());
 }
 
+TEST_F(WorkspaceEventFilterTest, DoubleTapCaptionTogglesMaximize) {
+  aura::test::TestWindowDelegate wd;
+  gfx::Rect bounds(10, 20, 30, 40);
+  scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
+  wd.set_window_component(HTCAPTION);
+  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                       window.get());
+  generator.GestureTapAt(gfx::Point(25, 25));
+  generator.GestureTapAt(gfx::Point(25, 25));
+  RunAllPendingInMessageLoop();
+  EXPECT_NE(bounds.ToString(), window->bounds().ToString());
+  EXPECT_TRUE(wm::IsWindowMaximized(window.get()));
+
+  generator.GestureTapAt(gfx::Point(5, 5));
+  generator.GestureTapAt(gfx::Point(10, 10));
+
+  EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
+  EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
+}
 
 }  // namespace internal
 }  // namespace ash

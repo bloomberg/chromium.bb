@@ -101,6 +101,18 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
   return ToplevelWindowEventFilter::PreHandleMouseEvent(target, event);
 }
 
+ui::GestureStatus WorkspaceEventFilter::PreHandleGestureEvent(
+    aura::Window* target,
+    ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
+      target->delegate()->GetNonClientComponent(event->location()) ==
+      HTCAPTION) {
+    ToggleMaximizedState(target);  // |this| may be destroyed from here.
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+  return ToplevelWindowEventFilter::PreHandleGestureEvent(target, event);
+}
+
 WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
