@@ -8,9 +8,8 @@ function setupTests(tester, plugin) {
   //////////////////////////////////////////////////////////////////////////////
 
   // These are the coordinates of the upper-left corner of the nacl plugin
-  // TODO(mball): Avoid hardcoding this location by querying the location
-  // of the plugin.
-  var leftCorner = 8, topCorner = 79
+  var leftCorner = plugin.offsetLeft;
+  var topCorner = plugin.offsetTop;
 
   function simulateMouseEvent(eventName) {
     var event = document.createEvent('MouseEvents');
