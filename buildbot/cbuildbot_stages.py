@@ -299,6 +299,12 @@ class BootstrapStage(PatchChangesStage):
         tracking_branch=self._target_manifest_branch)
 
     self._ApplyPatchSeries(patch_series, patch_pool)
+    # Create the branch that 'repo init -b <target_branch> -u <patched_repo>'
+    # will look for.
+    cros_build_lib.RunGitCommand(
+        checkout_dir,
+        ['branch', '-f', self._target_manifest_branch, constants.PATCH_BRANCH])
+
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
     # TODO(rcui): Do validation on other manifests if we start relying on them.
