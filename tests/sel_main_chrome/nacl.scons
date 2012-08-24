@@ -20,9 +20,8 @@ sel_main_chrome_test = trusted_env.ComponentProgram(
 
 env_vars = []
 # The check for no-execute page protection does not work under
-# qemu-arm (which does not implement no-execute page protection) or
-# under ASAN.
-if env.Bit('asan') or (env.Bit('target_arm') and env.UsingEmulator()):
+# qemu-arm (which does not implement no-execute page protection).
+if env.Bit('target_arm') and env.UsingEmulator():
   env_vars.append('NACL_DANGEROUS_SKIP_QUALIFICATION_TEST=1')
 
 test_command_args = [env.GetIrtNexe(),

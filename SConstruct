@@ -1485,7 +1485,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     sel_ldr_flags += ['-cc']
 
   # Skip platform qualification checks on configurations with known issues.
-  if env.GetEmulator() or env.IsRunningUnderValgrind() or env.Bit('asan'):
+  if env.GetEmulator() or env.IsRunningUnderValgrind():
     sel_ldr_flags += ['-Q']
 
   # Skip validation if we are using the x86-64 zero-based sandbox.
@@ -1615,6 +1615,17 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
        bool(int(extra.get('declares_exit_status', 0))))):
     print 'Skipping death test "%s" under %s' % (name, skip)
     return []
+
+  if env.Bit('asan'):
+    extra.setdefault('osenv', [])
+    # Ensure that 'osenv' is a list.
+    if isinstance(extra['osenv'], str):
+      extra['osenv'] = [extra['osenv']]
+    # ASan normally intercepts SIGSEGV and disables our SIGSEGV signal
+    # handler, which interferes with various NaCl tests, including the
+    # platform qualification test built into sel_ldr.  We fix this by
+    # telling ASan not to mess with SIGSEGV.
+    extra['osenv'] = extra['osenv'] + ['ASAN_OPTIONS=handle_segv=0']
 
   name = '${TARGET_ROOT}/test_results/' + name
   # NOTE: using the long version of 'name' helps distinguish opt vs dbg

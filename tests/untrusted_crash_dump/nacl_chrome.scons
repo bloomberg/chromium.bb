@@ -8,8 +8,7 @@ Import('env')
 # TODO(bradnelson): Enable for PNaCl (figure out a way to get full frames
 # with PNaCl).
 is_broken = (env.Bit('bitcode') or
-             env.Bit('running_on_valgrind') or
-             env.Bit('asan'))
+             env.Bit('running_on_valgrind'))
 
 # Keep frame pointers so we get a nice stack trace.
 # Set -O0 as otherwise some of the layers in the test case get optimized away.

@@ -62,7 +62,7 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   node = env.CommandTest('platform_qual_test.out', [platform_qual_test])
   env.AddNodeToTestSuite(
       node, ['small_tests'], 'run_platform_qual_test',
-      is_broken=env.IsRunningUnderValgrind() or env.Bit('asan'))
+      is_broken=env.IsRunningUnderValgrind())
 
   cpuwhitelist_test = env.ComponentProgram(
       'cpuwhitelist_test', 'arch/x86/nacl_cpuwhitelist_test.c')

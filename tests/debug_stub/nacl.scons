@@ -37,13 +37,8 @@ else:
   # natively on Windows and Mac.
   nm_tool = '${NM}'
 
-env_vars = []
-if env.Bit('asan'):
-  env_vars.append('ASAN_OPTIONS=handle_segv=0')
-
 node = env.CommandTest(
     'debug_stub_test.out',
-    osenv=env_vars,
     command=(['${PYTHON}', env.File('debug_stub_test.py'), '-v']
              + extra_test_args
              + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command))

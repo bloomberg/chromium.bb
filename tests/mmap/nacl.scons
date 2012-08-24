@@ -8,8 +8,6 @@ Import('env')
 extra_flags = []
 if env.IsRunningUnderValgrind():
   extra_flags.extend(['-E', 'RUNNING_ON_VALGRIND=1'])
-if env.Bit('asan'):
-  extra_flags.extend(['-E', 'RUNNING_ON_ASAN=1'])
 mmap_test_nexe = env.ComponentProgram('mmap_test',
                                       'mmap_test.cc',
                                       EXTRA_LIBS=['${NONIRT_LIBS}'])

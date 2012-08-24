@@ -26,8 +26,6 @@ env_vars = [
     'NACL_IRT=%s' % irt,
     'NACL_GDB=%s' % env['GDB'],
     ]
-if env.Bit('asan'):
-  env_vars += ['ASAN_OPTIONS=handle_segv=0']
 if not env.Bit('nacl_static_link'):
   env_vars += ['NACL_LD_SO=%s' % env.subst('${NACL_SDK_LIB}/runnable-ld.so'),
                'NACL_LIBS=%s' % env['NACL_SDK_LIB']]

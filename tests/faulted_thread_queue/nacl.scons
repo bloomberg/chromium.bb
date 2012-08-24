@@ -24,8 +24,7 @@ test_host = trusted_env.ComponentProgram(
 # recognise the HLT instruction and produces SIGILL for it rather than
 # the SIGSEGV that this test expects.
 is_broken = (not env.Bit('nacl_static_link') or
-             env.IsRunningUnderValgrind() or
-             env.Bit('asan'))
+             env.IsRunningUnderValgrind())
 
 node = env.CommandTest('faulted_thread_queue_test.out',
                        env.AddBootstrap(test_host, [test_guest]))
