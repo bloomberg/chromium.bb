@@ -16,7 +16,7 @@
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_destination_observer.h"
 #include "content/browser/download/download_stats.h"
 #include "net/base/io_buffer.h"
 
@@ -27,57 +27,72 @@ using content::DownloadManager;
 const int kUpdatePeriodMs = 500;
 const int kMaxTimeBlockingFileThreadMs = 1000;
 
+int content::DownloadFile::number_active_objects_ = 0;
+
 DownloadFileImpl::DownloadFileImpl(
-    const DownloadCreateInfo* info,
-    scoped_ptr<content::ByteStreamReader> stream,
-    DownloadRequestHandleInterface* request_handle,
-    scoped_refptr<DownloadManager> download_manager,
+    const content::DownloadSaveInfo& save_info,
+    const GURL& url,
+    const GURL& referrer_url,
+    int64 received_bytes,
     bool calculate_hash,
+    scoped_ptr<content::ByteStreamReader> stream,
+    const net::BoundNetLog& bound_net_log,
     scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-    const net::BoundNetLog& bound_net_log)
-        : file_(info->save_info.file_path,
-                info->url(),
-                info->referrer_url,
-                info->received_bytes,
+    base::WeakPtr<content::DownloadDestinationObserver> observer)
+        : file_(save_info.file_path,
+                url,
+                referrer_url,
+                received_bytes,
                 calculate_hash,
-                info->save_info.hash_state,
-                info->save_info.file_stream,
+                save_info.hash_state,
+                save_info.file_stream,
                 bound_net_log),
           stream_reader_(stream.Pass()),
-          id_(info->download_id),
-          request_handle_(request_handle),
-          download_manager_(download_manager),
           bytes_seen_(0),
           bound_net_log_(bound_net_log),
+          observer_(observer),
           weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
           power_save_blocker_(power_save_blocker.Pass()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(download_manager.get());
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  --number_active_objects_;
 }
 
-content::DownloadInterruptReason DownloadFileImpl::Initialize() {
+void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
-  net::Error result = file_.Initialize();
-  if (result != net::OK) {
-    return content::ConvertNetErrorToInterruptReason(
-        result, content::DOWNLOAD_INTERRUPT_FROM_DISK);
+
+  net::Error net_result = file_.Initialize();
+  if (net_result != net::OK) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(
+            callback, content::ConvertNetErrorToInterruptReason(
+                net_result, content::DOWNLOAD_INTERRUPT_FROM_DISK)));
+    return;
   }
 
   stream_reader_->RegisterCallback(
       base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr()));
 
   download_start_ = base::TimeTicks::Now();
+
   // Initial pull from the straw.
   StreamActive();
 
-  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(
+          callback, content::DOWNLOAD_INTERRUPT_REASON_NONE));
+
+  ++number_active_objects_;
 }
 
 content::DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
     const char* data, size_t data_len) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   if (!update_timer_->IsRunning()) {
     update_timer_->Start(FROM_HERE,
                          base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
@@ -91,6 +106,8 @@ content::DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
 void DownloadFileImpl::Rename(const FilePath& full_path,
                               bool overwrite_existing_file,
                               const RenameCompletionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   FilePath new_path(full_path);
   if (!overwrite_existing_file) {
     // Make the file unique if requested.
@@ -126,6 +143,14 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
 }
 
 void DownloadFileImpl::Detach() {
+  // Done here on Windows so that anti-virus scanners invoked by
+  // the attachment service actually see the data; see
+  // http://crbug.com/127999.
+  // Done here for mac because we only want to do this once; see
+  // http://crbug.com/13120 for details.
+  // Other platforms don't currently do source annotation.
+  AnnotateWithSourceInformation();
+
   file_.Detach();
 }
 
@@ -161,36 +186,6 @@ bool DownloadFileImpl::GetHash(std::string* hash) {
 
 std::string DownloadFileImpl::GetHashState() {
   return file_.GetHashState();
-}
-
-// DownloadFileInterface implementation.
-void DownloadFileImpl::CancelDownloadRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  request_handle_->CancelRequest();
-}
-
-int DownloadFileImpl::Id() const {
-  return id_.local();
-}
-
-DownloadManager* DownloadFileImpl::GetDownloadManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return download_manager_.get();
-}
-
-const DownloadId& DownloadFileImpl::GlobalId() const {
-  return id_;
-}
-
-std::string DownloadFileImpl::DebugString() const {
-  return base::StringPrintf("{"
-                            " id_ = " "%d"
-                            " request_handle = %s"
-                            " Base File = %s"
-                            " }",
-                            id_.local(),
-                            request_handle_->DebugString().c_str(),
-                            file_.DebugString().c_str());
 }
 
 void DownloadFileImpl::StreamActive() {
@@ -261,18 +256,18 @@ void DownloadFileImpl::StreamActive() {
 
   download_stats::RecordContiguousWriteTime(now - start);
 
-  // Take care of communication with our controller.
+  // Take care of communication with our observer.
   if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Error case for both upstream source and file write.
-    // Shut down processing and signal an error to our controller.
-    // Our controller will clean us up.
+    // Shut down processing and signal an error to our observer.
+    // Our observer will clean us up.
     stream_reader_->RegisterCallback(base::Closure());
     weak_factory_.InvalidateWeakPtrs();
     SendUpdate();                       // Make info up to date before error.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManager::OnDownloadInterrupted,
-                   download_manager_, id_.local(), reason));
+        base::Bind(&content::DownloadDestinationObserver::DestinationError,
+                   observer_, reason));
   } else if (state == content::ByteStreamReader::STREAM_COMPLETE) {
     // Signal successful completion and shut down processing.
     stream_reader_->RegisterCallback(base::Closure());
@@ -280,11 +275,12 @@ void DownloadFileImpl::StreamActive() {
     std::string hash;
     if (!GetHash(&hash) || file_.IsEmptyHash(hash))
       hash.clear();
+    SendUpdate();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&DownloadManager::OnResponseCompleted,
-                   download_manager_, id_.local(),
-                   BytesSoFar(), hash));
+        base::Bind(
+            &content::DownloadDestinationObserver::DestinationCompleted,
+            observer_, hash));
   }
   if (bound_net_log_.IsLoggingAllEvents()) {
     bound_net_log_.AddEvent(
@@ -297,7 +293,12 @@ void DownloadFileImpl::StreamActive() {
 void DownloadFileImpl::SendUpdate() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadManager::UpdateDownload,
-                 download_manager_, id_.local(),
-                 BytesSoFar(), CurrentSpeed(), GetHashState()));
+      base::Bind(&content::DownloadDestinationObserver::DestinationUpdate,
+                 observer_, BytesSoFar(), CurrentSpeed(), GetHashState()));
 }
+
+// static
+int content::DownloadFile::GetNumberOfDownloadFiles() {
+  return number_active_objects_;
+}
+

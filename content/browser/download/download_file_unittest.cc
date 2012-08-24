@@ -12,6 +12,7 @@
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/power_save_blocker.h"
+#include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
@@ -25,7 +26,6 @@ using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::DownloadFile;
 using content::DownloadId;
-using content::DownloadManager;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -48,13 +48,20 @@ class MockByteStreamReader : public content::ByteStreamReader {
   MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
 };
 
-class LocalMockDownloadManager : public content::MockDownloadManager {
+class MockDownloadDestinationObserver
+    : public content::DownloadDestinationObserver {
  public:
-  MOCK_METHOD4(CurrentUpdateStatus,
-               void(int32, int64, int64, const std::string&));
- protected:
-  virtual ~LocalMockDownloadManager() {}
+  MOCK_METHOD3(DestinationUpdate, void(int64, int64, const std::string&));
+  MOCK_METHOD1(DestinationError, void(content::DownloadInterruptReason));
+  MOCK_METHOD1(DestinationCompleted, void(const std::string&));
+
+  // Doesn't override any methods in the base class.  Used to make sure
+  // that the last DestinationUpdate before a Destination{Completed,Error}
+  // had the right values.
+  MOCK_METHOD3(CurrentUpdateStatus,
+               void(int64, int64, const std::string&));
 };
+
 
 MATCHER(IsNullCallback, "") { return (arg.is_null()); }
 
@@ -73,12 +80,9 @@ class DownloadFileTest : public testing::Test {
   static const int kDummyChildId;
   static const int kDummyRequestId;
 
-  // We need a UI |BrowserThread| in order to destruct |download_manager_|,
-  // which has trait |BrowserThread::DeleteOnUIThread|.  Without this,
-  // calling Release() on |download_manager_| won't ever result in its
-  // destructor being called and we get a leak.
   DownloadFileTest() :
-      update_download_id_(-1),
+      observer_(new StrictMock<MockDownloadDestinationObserver>),
+      observer_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(observer_.get())),
       bytes_(-1),
       bytes_per_sec_(-1),
       hash_state_("xyzzy"),
@@ -89,42 +93,33 @@ class DownloadFileTest : public testing::Test {
   ~DownloadFileTest() {
   }
 
-  void SetUpdateDownloadInfo(int32 id, int64 bytes, int64 bytes_per_sec,
+  void SetUpdateDownloadInfo(int64 bytes, int64 bytes_per_sec,
                              const std::string& hash_state) {
-    update_download_id_ = id;
     bytes_ = bytes;
     bytes_per_sec_ = bytes_per_sec;
     hash_state_ = hash_state;
   }
 
   void ConfirmUpdateDownloadInfo() {
-    download_manager_->CurrentUpdateStatus(
-        update_download_id_, bytes_, bytes_per_sec_, hash_state_);
+    observer_->CurrentUpdateStatus(bytes_, bytes_per_sec_, hash_state_);
   }
 
   virtual void SetUp() {
-    download_manager_ = new StrictMock<LocalMockDownloadManager>;
-    EXPECT_CALL(*(download_manager_.get()),
-                UpdateDownload(
-                    DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
-                    _, _, _))
+    EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &DownloadFileTest::SetUpdateDownloadInfo));
-  }
-
-  virtual void TearDown() {
-    // When a DownloadManager's reference count drops to 0, it is not
-    // deleted immediately. Instead, a task is posted to the UI thread's
-    // message loop to delete it.
-    // So, drop the reference count to 0 and run the message loop once
-    // to ensure that all resources are cleaned up before the test exits.
-    download_manager_ = NULL;
-    ui_thread_.message_loop()->RunAllPending();
   }
 
   // Mock calls to this function are forwarded here.
   void RegisterCallback(base::Closure sink_callback) {
     sink_callback_ = sink_callback;
+  }
+
+  void SetInterruptReasonCallback(bool* was_called,
+                                  content::DownloadInterruptReason* reason_p,
+                                  content::DownloadInterruptReason reason) {
+    *was_called = true;
+    *reason_p = reason;
   }
 
   virtual bool CreateDownloadFile(int offset, bool calculate_hash) {
@@ -139,30 +134,36 @@ class DownloadFileTest : public testing::Test {
         .WillOnce(Invoke(this, &DownloadFileTest::RegisterCallback))
         .RetiresOnSaturation();
 
-    DownloadCreateInfo info;
-    // info.request_handle default constructed to null.
-    info.download_id = DownloadId(kValidIdDomain, kDummyDownloadId + offset);
-    info.save_info.file_stream = file_stream_;
     download_file_.reset(
         new DownloadFileImpl(
-            &info,
-            scoped_ptr<content::ByteStreamReader>(input_stream_).Pass(),
-            new DownloadRequestHandle(),
-            download_manager_, calculate_hash,
+            content::DownloadSaveInfo(),
+            GURL(),                     // Source
+            GURL(),                     // Referrer
+            0,                          // Received bytes
+            calculate_hash,
+            scoped_ptr<content::ByteStreamReader>(input_stream_),
+            net::BoundNetLog(),
             scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
-            net::BoundNetLog()));
+            observer_factory_.GetWeakPtr()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(content::ByteStreamReader::STREAM_EMPTY))
         .RetiresOnSaturation();
-    content::DownloadInterruptReason result = download_file_->Initialize();
+
+    base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
+    bool called = false;
+    content::DownloadInterruptReason result;
+    download_file_->Initialize(base::Bind(
+        &DownloadFileTest::SetInterruptReasonCallback,
+        weak_ptr_factory.GetWeakPtr(), &called, &result));
+    loop_.RunAllPending();
+    EXPECT_TRUE(called);
+
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);
     return result == content::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
   virtual void DestroyDownloadFile(int offset) {
-    EXPECT_EQ(kDummyDownloadId + offset, download_file_->Id());
-    EXPECT_EQ(download_manager_, download_file_->GetDownloadManager());
     EXPECT_FALSE(download_file_->InProgress());
     EXPECT_EQ(static_cast<int64>(expected_data_.size()),
               download_file_->BytesSoFar());
@@ -232,19 +233,16 @@ class DownloadFileTest : public testing::Test {
   }
 
   void FinishStream(content::DownloadInterruptReason interrupt_reason,
-                  bool check_download_manager) {
+                  bool check_observer) {
     ::testing::Sequence s1;
     SetupFinishStream(interrupt_reason, s1);
     sink_callback_.Run();
     VerifyStreamAndSize();
-    if (check_download_manager) {
-      EXPECT_CALL(*download_manager_, OnResponseCompleted(_, _, _));
+    if (check_observer) {
+      EXPECT_CALL(*(observer_.get()), DestinationCompleted(_));
       loop_.RunAllPending();
-      ::testing::Mock::VerifyAndClearExpectations(download_manager_.get());
-      EXPECT_CALL(*(download_manager_.get()),
-                  UpdateDownload(
-                      DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
-                      _, _, _))
+      ::testing::Mock::VerifyAndClearExpectations(observer_.get());
+      EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
           .Times(AnyNumber())
           .WillRepeatedly(Invoke(this,
                                  &DownloadFileTest::SetUpdateDownloadInfo));
@@ -272,7 +270,9 @@ class DownloadFileTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<StrictMock<LocalMockDownloadManager> > download_manager_;
+  scoped_ptr<StrictMock<MockDownloadDestinationObserver> > observer_;
+  base::WeakPtrFactory<content::DownloadDestinationObserver>
+      observer_factory_;
 
   linked_ptr<net::FileStream> file_stream_;
 
@@ -286,8 +286,7 @@ class DownloadFileTest : public testing::Test {
   // Sink callback data for stream.
   base::Closure sink_callback_;
 
-  // Latest update sent to the download manager.
-  int32 update_download_id_;
+  // Latest update sent to the observer.
   int64 bytes_;
   int64 bytes_per_sec_;
   std::string hash_state_;
@@ -488,21 +487,12 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
   // Test that calling the sink_callback_ on an empty stream shouldn't
   // do anything.
   AppendDataToFile(NULL, 0);
-  ::testing::Mock::VerifyAndClearExpectations(download_manager_.get());
-  EXPECT_CALL(*(download_manager_.get()),
-              UpdateDownload(
-                  DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
-                  _, _, _))
-      .Times(AnyNumber())
-      .WillRepeatedly(Invoke(this, &DownloadFileTest::SetUpdateDownloadInfo));
 
   // Finish the download this way and make sure we see it on the
-  // DownloadManager.
-  EXPECT_CALL(*(download_manager_.get()),
-              OnResponseCompleted(DownloadId(kValidIdDomain,
-                                             kDummyDownloadId + 0).local(),
-                                  0, _));
+  // observer.
+  EXPECT_CALL(*(observer_.get()), DestinationCompleted(_));
   FinishStream(content::DOWNLOAD_INTERRUPT_REASON_NONE, false);
+  loop_.RunAllPending();
 
   DestroyDownloadFile(0);
 }
@@ -513,10 +503,9 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
   EXPECT_TRUE(file_util::PathExists(initial_path));
 
   // Finish the download in error and make sure we see it on the
-  // DownloadManager.
-  EXPECT_CALL(*(download_manager_.get()),
-              OnDownloadInterrupted(
-                  DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
+  // observer.
+  EXPECT_CALL(*(observer_.get()),
+              DestinationError(
                   content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED))
       .WillOnce(InvokeWithoutArgs(
           this, &DownloadFileTest::ConfirmUpdateDownloadInfo));
@@ -526,8 +515,7 @@ TEST_F(DownloadFileTest, StreamEmptyError) {
   // the last one may have the correct information even if the failure
   // doesn't produce an update, as the timer update may have triggered at the
   // same time.
-  EXPECT_CALL(*(download_manager_.get()),
-              CurrentUpdateStatus(kDummyDownloadId + 0, 0, _, _));
+  EXPECT_CALL(*(observer_.get()), CurrentUpdateStatus(0, _, _));
 
   FinishStream(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED, false);
 
@@ -545,13 +533,10 @@ TEST_F(DownloadFileTest, StreamNonEmptySuccess) {
   ::testing::Sequence s1;
   SetupDataAppend(chunks1, 2, s1);
   SetupFinishStream(content::DOWNLOAD_INTERRUPT_REASON_NONE, s1);
-  EXPECT_CALL(*(download_manager_.get()),
-              OnResponseCompleted(DownloadId(kValidIdDomain,
-                                             kDummyDownloadId + 0).local(),
-                                  strlen(kTestData1) + strlen(kTestData2),
-                                  _));
+  EXPECT_CALL(*(observer_.get()), DestinationCompleted(_));
   sink_callback_.Run();
   VerifyStreamAndSize();
+  loop_.RunAllPending();
   DestroyDownloadFile(0);
 }
 
@@ -566,9 +551,8 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
   SetupFinishStream(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
                     s1);
 
-  EXPECT_CALL(*(download_manager_.get()),
-              OnDownloadInterrupted(
-                  DownloadId(kValidIdDomain, kDummyDownloadId + 0).local(),
+  EXPECT_CALL(*(observer_.get()),
+              DestinationError(
                   content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED))
       .WillOnce(InvokeWithoutArgs(
           this, &DownloadFileTest::ConfirmUpdateDownloadInfo));
@@ -578,9 +562,8 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
   // the last one may have the correct information even if the failure
   // doesn't produce an update, as the timer update may have triggered at the
   // same time.
-  EXPECT_CALL(*(download_manager_.get()),
-              CurrentUpdateStatus(kDummyDownloadId + 0,
-                                  strlen(kTestData1) + strlen(kTestData2),
+  EXPECT_CALL(*(observer_.get()),
+              CurrentUpdateStatus(strlen(kTestData1) + strlen(kTestData2),
                                   _, _));
 
   sink_callback_.Run();
@@ -590,7 +573,7 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
 }
 
 // Send some data, wait 3/4s of a second, run the message loop, and
-// confirm the values the DownloadManager received are correct.
+// confirm the values the observer received are correct.
 TEST_F(DownloadFileTest, ConfirmUpdate) {
   CreateDownloadFile(0, true);
 

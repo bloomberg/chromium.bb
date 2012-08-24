@@ -778,7 +778,8 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Set up file failures.
     scoped_refptr<content::TestFileErrorInjector> injector(
-        content::TestFileErrorInjector::Create());
+        content::TestFileErrorInjector::Create(
+            DownloadManagerForBrowser(browser())));
 
     for (size_t i = 0; i < count; ++i) {
       // Set up the full URL, for download file tracking.
