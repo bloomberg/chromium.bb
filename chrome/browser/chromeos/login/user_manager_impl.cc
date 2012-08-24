@@ -48,6 +48,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
@@ -1325,6 +1326,14 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
   DictionaryPrefUpdate prefs_wallpapers_update(prefs,
                                                kUserWallpapersProperties);
   prefs_wallpapers_update->RemoveWithoutPathExpansion(email, NULL);
+
+  bool new_wallpaper_ui_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableNewWallpaperUI);
+  if (new_wallpaper_ui_enabled) {
+    DictionaryPrefUpdate prefs_wallpapers_info_update(prefs,
+        prefs::kUsersWallpaperInfo);
+    prefs_wallpapers_info_update->RemoveWithoutPathExpansion(email, NULL);
+  }
 
   // Remove user wallpaper thumbnail
   FilePath wallpaper_thumb_path = WallpaperManager::Get()->

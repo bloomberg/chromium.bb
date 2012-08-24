@@ -222,6 +222,19 @@ void DesktopBackgroundController::CreateEmptyWallpaper() {
   SetDesktopBackgroundImageMode();
 }
 
+WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
+  WallpaperResolution resolution = SMALL;
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    gfx::Size root_window_size = (*iter)->GetHostSize();
+    if (root_window_size.width() > kSmallWallpaperMaximalWidth ||
+        root_window_size.height() > kSmallWallpaperMaximalHeight)
+      resolution = LARGE;
+  }
+  return resolution;
+}
+
 void DesktopBackgroundController::MoveDesktopToLockedContainer() {
   if (locked_)
     return;
@@ -347,19 +360,6 @@ void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
 int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
   return locked ? internal::kShellWindowId_LockScreenBackgroundContainer :
                   internal::kShellWindowId_DesktopBackgroundContainer;
-}
-
-WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
-  WallpaperResolution resolution = SMALL;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    gfx::Size root_window_size = (*iter)->GetHostSize();
-    if (root_window_size.width() > kSmallWallpaperMaximalWidth ||
-        root_window_size.height() > kSmallWallpaperMaximalHeight)
-      resolution = LARGE;
-  }
-  return resolution;
 }
 
 }  // namespace ash

@@ -23,7 +23,7 @@ void OpenWallpaperManager() {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   // Hides the new UI container behind a flag.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kExperimentalWallpaperUI)) {
+      switches::kEnableNewWallpaperUI)) {
     std::string url = chrome::kChromeUIWallpaperURL;
     ExtensionService* service = profile->GetExtensionService();
     if (!service)

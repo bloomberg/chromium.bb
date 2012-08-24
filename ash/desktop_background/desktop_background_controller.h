@@ -107,6 +107,9 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
+  // Returns the appropriate wallpaper resolution for all root windows.
+  WallpaperResolution GetAppropriateResolution();
+
   // Move all desktop widgets to locked container.
   void MoveDesktopToLockedContainer();
 
@@ -149,9 +152,6 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
   // Returns id for background container for unlocked and locked states.
   int GetBackgroundContainerId(bool locked);
-
-  // Returns the appropriate wallpaper resolution for all root windows.
-  WallpaperResolution GetAppropriateResolution();
 
   // Send notification that background animation finished.
   void NotifyAnimationFinished();

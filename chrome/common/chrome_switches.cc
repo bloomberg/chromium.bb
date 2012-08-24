@@ -1441,6 +1441,9 @@ const char kEnableGView[]                   = "enable-gview";
 // Enable Kiosk mode for ChromeOS
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
+// Enables the new wallpaper picker UI.
+const char kEnableNewWallpaperUI[]          = "enable-new-wallpaper-ui";
+
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
@@ -1449,9 +1452,6 @@ const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 // supported by ChromeOS.
 const char kEnableUnsupportedBluetoothDevices[] =
     "enable-unsupported-bluetooth-devices";
-
-// Enables the experimental wallpaper picker UI.
-const char kExperimentalWallpaperUI[] = "experimental-wallpaper-ui";
 
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[] = "first-boot";

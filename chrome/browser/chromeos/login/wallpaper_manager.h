@@ -26,6 +26,17 @@ class PrefService;
 
 namespace chromeos {
 
+struct WallpaperInfo {
+  std::string file_name;
+  ash::WallpaperLayout layout;
+  User::WallpaperType type;
+  base::Time date;
+  bool operator==(const WallpaperInfo& other) {
+    return (file_name == other.file_name) && (layout == other.layout) &&
+        (type == other.type);
+  }
+};
+
 class UserImage;
 
 // This class maintains wallpapers for users who have logged into this Chrome
@@ -63,11 +74,13 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Gets the thumbnail of custom wallpaper from cache.
   gfx::ImageSkia GetCustomWallpaperThumbnail(const std::string& email);
 
-  // Sets |type| and |index| to the value saved in local state for logged in
-  // user.
+  // Gets wallpaper properties of logged in user.
   void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
                                           int* index,
                                           base::Time* last_modification_date);
+
+  // Gets wallpaper information of logged in user.
+  bool GetLoggedInUserWallpaperInfo(WallpaperInfo* info);
 
   // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
   // in, uses a solid color wallpaper. If logged in as a stub user, uses an
@@ -90,8 +103,8 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                 ash::WallpaperLayout layout,
                                 base::WeakPtr<WallpaperDelegate> delegate);
 
-  // Set |email|'s wallpaper |type|, |index| and local date to local state.
-  // When |is_persistent| is false, changes are kept in memory only.
+  // Sets selected wallpaper properties for |username| and saves it to Local
+  // State if |is_persistent| is true.
   void SetUserWallpaperProperties(const std::string& email,
                                   User::WallpaperType type,
                                   int index,
@@ -101,11 +114,11 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // settings in local state.
   void SetInitialUserWallpaper(const std::string& username, bool is_persistent);
 
-  // Saves |username| selected wallpaper information to local state.
-  void SaveUserWallpaperInfo(const std::string& username,
-                             const std::string& file_name,
-                             ash::WallpaperLayout layout,
-                             User::WallpaperType type);
+  // Sets selected wallpaper information for |username| and saves it to Local
+  // State if |is_persistent| is true.
+  void SetUserWallpaperInfo(const std::string& username,
+                            const WallpaperInfo& info,
+                            bool is_persistent);
 
   // Sets last selected user on user pod row.
   void SetLastSelectedUser(const std::string& last_selected_user);
@@ -155,6 +168,10 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   void CacheThumbnail(const std::string& email,
                       const gfx::ImageSkia& wallpaper);
 
+  // Loads wallpaper downloaded from server or converted from built-in
+  // wallpaper.
+  void LoadWallpaper(const std::string& email, const WallpaperInfo& info);
+
   // Sets wallpaper to the decoded wallpaper.
   void FetchWallpaper(const std::string& email,
                       ash::WallpaperLayout layout,
@@ -166,18 +183,30 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                       base::WeakPtr<WallpaperDelegate> delegate,
                                       const gfx::ImageSkia& wallpaper);
 
-  // Get wallpaper |type|, |index| and |last_modification_date| of |email|
+  // Gets wallpaper information of |email| from Local State or memory. Returns
+  // false if wallpaper information is not found.
+  bool GetUserWallpaperInfo(const std::string& email, WallpaperInfo* info);
+
+  // Gets wallpaper |type|, |index| and |last_modification_date| of |email|
   // from local state.
   void GetUserWallpaperProperties(const std::string& email,
                                   User::WallpaperType* type,
                                   int* index,
                                   base::Time* last_modification_date);
 
+  // Copy |email| selected built-in wallpapers (high and low resolution) in
+  // ChromeOS image binary to local files on disk. Also converts the wallpaper
+  // properties correspond to the built-in wallpapers to the new wallpaper info.
+  void MigrateBuiltInWallpaper(const std::string& email);
+
   // Updates the custom wallpaper thumbnail in wallpaper picker UI.
   void OnThumbnailUpdated(base::WeakPtr<WallpaperDelegate> delegate);
 
-  // Saves wallpaper to |path|.
-  void SaveWallpaper(const std::string& path, const UserImage& wallpaper);
+  // Saves wallpaper to |path| (absolute path) in file system.
+  void SaveWallpaper(const FilePath& path, const UserImage& wallpaper);
+
+  // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
+  void SaveWallpaperInternal(const FilePath& path, const char* data, int size);
 
   // Saves wallpaper to file, post task to generate thumbnail and updates local
   // state preferences.
@@ -211,8 +240,11 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Logged-in user wallpaper index.
   int current_user_wallpaper_index_;
 
-  // Caches custom wallpapers of users. Accessed only on UI thread.
-  CustomWallpaperMap custom_wallpaper_cache_;
+  // Logged-in user wallpaper information.
+  WallpaperInfo current_user_wallpaper_info_;
+
+  // Caches wallpapers of users. Accessed only on UI thread.
+  CustomWallpaperMap wallpaper_cache_;
 
   CustomWallpaperMap custom_wallpaper_thumbnail_cache_;
 

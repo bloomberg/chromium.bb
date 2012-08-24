@@ -183,8 +183,15 @@ void WallpaperSetWallpaperFunction::SetDecodedWallpaper() {
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   wallpaper_manager->SetWallpaperFromImageSkia(wallpaper_, layout_);
-  wallpaper_manager->SaveUserWallpaperInfo(email_, file_name_, layout_,
-                                           chromeos::User::DEFAULT);
+  bool is_persistent =
+      !chromeos::UserManager::Get()->IsCurrentUserEphemeral();
+  chromeos::WallpaperInfo info = {
+      file_name_,
+      layout_,
+      chromeos::User::ONLINE,
+      base::Time::Now().LocalMidnight()
+  };
+  wallpaper_manager->SetUserWallpaperInfo(email_, info, is_persistent);
   wallpaper_decoder_ = NULL;
   SendResponse(true);
 }
