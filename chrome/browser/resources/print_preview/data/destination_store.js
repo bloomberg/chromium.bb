@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
     this.destinations_ = [];
 
     /**
-     * Cache used for constant lookup of printers.
+     * Cache used for constant lookup of destinations.
      * @type {object.<string, !print_preview.Destination>}
      * @private
      */
@@ -52,6 +52,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.initialDestinationId_ = null;
+
+    /**
+     * Whether the initial destination is a local one or not.
+     * @type {boolean}
+     * @private
+     */
+    this.isInitialDestinationLocal_ = true;
 
     /**
      * Whether the destination store will auto select the destination that
@@ -169,12 +176,16 @@ cr.define('print_preview', function() {
      * match this ID, that destination will be automatically selected. This
      * occurs only once for every time this setter is called or if the store is
      * cleared.
-     * @param {?string} ID of the destination that should be selected
-     *     automatically when added to the store or {@code null} if the first
-     *     destination that is inserted should be selected.
+     * @param {?string} initialDestinationId ID of the destination that should
+     *     be selected automatically when added to the store or {@code null} if
+     *     the first destination that is inserted should be selected.
+     * @param {boolean} isLocalDestination Whether the initial destination is
+     *     local.
      */
-    setInitialDestinationId: function(initialDestinationId) {
+    setInitialDestinationId: function(
+        initialDestinationId, isLocalDestination) {
       this.initialDestinationId_ = initialDestinationId;
+      this.isInitialDestinationLocal_ = isLocalDestination;
       this.isInAutoSelectMode_ = true;
       if (this.initialDestinationId_ == null) {
         assert(this.destinations_.length > 0,
@@ -184,17 +195,9 @@ cr.define('print_preview', function() {
         var candidate = this.destinationMap_[this.initialDestinationId_];
         if (candidate != null) {
           this.selectDestination(candidate);
-        } else {
-          // Try and fetch the destination
-          // TODO(rltoscano): Since we don't know if the initialDestinationId is
-          // a local printer or a cloud printer, we are going to assume based on
-          // platform. The C++ layer should be modified to return more
-          // information about the initially selected printer so this assumption
-          // does not have to be made. See http://crbug.com/132831.
-          if (!cr.isChromeOS) {
-            this.nativeLayer_.startGetLocalDestinationCapabilities(
-                initialDestinationId);
-          }
+        } else if (!cr.isChromeOS && isLocalDestination) {
+          this.nativeLayer_.startGetLocalDestinationCapabilities(
+              initialDestinationId);
         }
       }
     },
@@ -214,6 +217,14 @@ cr.define('print_preview', function() {
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.PRINTER_DONE,
           this.onCloudPrintPrinterDone_.bind(this));
+      this.tracker_.add(
+          this.cloudPrintInterface_,
+          cloudprint.CloudPrintInterface.EventType.PRINTER_FAILED,
+          this.onPrinterFailed_.bind(this));
+      // Fetch initial destination if its a cloud destination.
+      if (this.isInAutoSelectMode_ && !this.isInitialDestinationLocal_) {
+        this.cloudPrintInterface_.printer(this.initialDestinationId_);
+      }
     },
 
     /** @param {!print_preview.Destination} Destination to select. */
@@ -378,6 +389,10 @@ cr.define('print_preview', function() {
           this.onLocalDestinationCapabilitiesSet_.bind(this));
       this.tracker_.add(
           this.nativeLayer_,
+          print_preview.NativeLayer.EventType.GET_CAPABILITIES_FAIL,
+          this.onGetCapabilitiesFail_.bind(this));
+      this.tracker_.add(
+          this.nativeLayer_,
           print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
           this.onDestinationsReload_.bind(this));
     },
@@ -444,9 +459,28 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when the /search call completes. Adds the fetched printers to the
-     * destination store.
-     * @param {cr.Event} event Contains the fetched printers.
+     * Called when a request to get a local destination's print capabilities
+     * fails. If the destination is the initial destination, auto-select another
+     * destination instead.
+     * @param {cr.Event} event Contains the destination ID that failed.
+     * @private
+     */
+    onGetCapabilitiesFail_: function(event) {
+      console.error('Failed to get print capabilities for printer ' +
+                    event.destinationId);
+      if (this.isInAutoSelectMode_ &&
+          this.initialDestinationId_ == event.destinationId) {
+        assert(this.destinations_.length > 0,
+               'No destinations were loaded when failed to get initial ' +
+               'destination');
+        this.selectDestination(this.destinations_[0]);
+      }
+    },
+
+    /**
+     * Called when the /search call completes. Adds the fetched destinations to
+     * the destination store.
+     * @param {cr.Event} event Contains the fetched destinations.
      * @private
      */
     onCloudPrintSearchDone_: function(event) {
@@ -492,6 +526,26 @@ cr.define('print_preview', function() {
       assert(this.destinations_.length > 0,
              'No destinations were loaded before auto-select timeout expired');
       this.selectDestination(this.destinations_[0]);
+    },
+
+    /**
+     * Called when the Google Cloud Print interface fails to lookup a
+     * destination. Selects another destination if the failed destination was
+     * the initial destination.
+     * @param {object} event Contains the ID of the destination that was failed
+     *     to be looked up.
+     * @private
+     */
+    onPrinterFailed_: function(event) {
+      if (event.errorCode == '111' &&
+          this.isInAutoSelectMode_ &&
+          this.initialDestinationId_ == event.destinationId) {
+        console.error('Could not find initial printer: ' + event.destinationId);
+        assert(this.destinations_.length > 0,
+               'No destinations were loaded when failed to get initial ' +
+               'destination');
+        this.selectDestination(this.destinations_[0]);
+      }
     }
   };
 

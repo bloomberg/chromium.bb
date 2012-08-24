@@ -444,7 +444,8 @@ cr.define('print_preview', function() {
       this.isInKioskAutoPrintMode_ =
           event.initialSettings.isInKioskAutoPrintMode;
       this.destinationStore_.setInitialDestinationId(
-          event.initialSettings.initialDestinationId);
+          event.initialSettings.initialDestinationId,
+          event.initialSettings.isLocalDestination);
       document.title = event.initialSettings.documentTitle;
       this.printTicketStore_.initialize(
           event.initialSettings.isDocumentModifiable,

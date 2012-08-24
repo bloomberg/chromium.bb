@@ -54,6 +54,7 @@ cr.define('print_preview', function() {
     FILE_SELECTION_CANCEL: 'print_preview.NativeLayer.FILE_SELECTION_CANCEL',
     FILE_SELECTION_COMPLETE:
         'print_preview.NativeLayer.FILE_SELECTION_COMPLETE',
+    GET_CAPABILITIES_FAIL: 'print_preview.NativeLayer.GET_CAPABILITIES_FAIL',
     INITIAL_SETTINGS_SET: 'print_preview.NativeLayer.INITIAL_SETTINGS_SET',
     LOCAL_DESTINATIONS_SET: 'print_preview.NativeLayer.LOCAL_DESTINATIONS_SET',
     PAGE_COUNT_READY: 'print_preview.NativeLayer.PAGE_COUNT_READY',
@@ -87,6 +88,14 @@ cr.define('print_preview', function() {
     GRAY: 1,
     COLOR: 2
   };
+
+  /**
+   * Version of the serialized state of the print preview.
+   * @type {number}
+   * @const
+   * @private
+   */
+  NativeLayer.SERIALIZED_STATE_VERSION_ = 1;
 
   NativeLayer.prototype = {
     __proto__: cr.EventTarget.prototype,
@@ -196,7 +205,15 @@ cr.define('print_preview', function() {
      *     generating the serialized print ticket to persist.
      */
     startSaveDestinationAndTicket: function(destination, printTicketStore) {
-      chrome.send('saveLastPrinter', [destination.id, '' /*TODO(rltoscano)*/]);
+      // TODO(rltoscano): Implement a comprehensive serialization process.
+      var printPreviewSerializedState = {
+        'version': print_preview.NativeLayer.SERIALIZED_STATE_VERSION_,
+        'isLocalDestination':
+            destination.type == print_preview.Destination.Type.LOCAL
+      };
+      chrome.send(
+          'saveLastPrinter',
+          [destination.id, JSON.stringify(printPreviewSerializedState)]);
     },
 
     /**
@@ -354,6 +371,16 @@ cr.define('print_preview', function() {
         marginsType = initialSettings['marginsType'];
       }
 
+      // TODO(rltoscano): Replace this loading of serialized state with a
+      // comprehensive version.
+      var serializedPrintPreviewState =
+          JSON.parse(initialSettings['cloudPrintData'] || '{}');
+      var isLocalDestination = true;
+      if (serializedPrintPreviewState &&
+          serializedPrintPreviewState.version == 1) {
+        isLocalDestination = serializedPrintPreviewState.isLocalDestination;
+      }
+
       var nativeInitialSettings = new print_preview.NativeInitialSettings(
           initialSettings['printAutomaticallyInKioskMode'] || false,
           numberFormatSymbols[0] || ',',
@@ -365,7 +392,8 @@ cr.define('print_preview', function() {
           customMargins,
           initialSettings['duplex'] || false,
           initialSettings['headerFooterEnabled'] || false,
-          initialSettings['printerName'] || null);
+          initialSettings['printerName'] || null,
+          isLocalDestination);
 
       var initialSettingsSetEvent = new cr.Event(
           NativeLayer.EventType.INITIAL_SETTINGS_SET);
@@ -413,12 +441,14 @@ cr.define('print_preview', function() {
     /**
      * Called when native layer gets settings information for a requested local
      * destination.
-     * @param {Object} printer_name printer affected by error.
+     * @param {string} printerId printer affected by error.
      * @private
      */
-    onFailedToGetPrinterCapabilities_: function(printer_name) {
-      // TODO(rltoscano): Switch to the next printer.
-      console.log('onFailedToGetPrinterCapabilities: ' + printer_name);
+    onFailedToGetPrinterCapabilities_: function(destinationId) {
+      var getCapsFailEvent = new cr.Event(
+          NativeLayer.EventType.GET_CAPABILITIES_FAIL);
+      getCapsFailEvent.destinationId = destinationId;
+      this.dispatchEvent(getCapsFailEvent);
     },
 
     /** Reloads the printer list. */
@@ -597,6 +627,8 @@ cr.define('print_preview', function() {
    *     initially enabled.
    * @param {?string} initialDestinationId ID of the destination to initially
    *     select.
+   * @param {boolean} isLocalDestination Whether the initial destination is
+   *     local.
    * @constructor
    */
   function NativeInitialSettings(
@@ -610,7 +642,8 @@ cr.define('print_preview', function() {
       customMargins,
       isDuplexEnabled,
       isHeaderFooterEnabled,
-      initialDestinationId) {
+      initialDestinationId,
+      isLocalDestination) {
 
     /**
      * Whether the print preview should be in auto-print mode.
@@ -688,6 +721,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.initialDestinationId_ = initialDestinationId;
+
+    /**
+     * Whether the initial destination is local.
+     * @type {boolean}
+     * @private
+     */
+    this.isLocalDestination_ = isLocalDestination;
   };
 
   NativeInitialSettings.prototype = {
@@ -752,6 +792,11 @@ cr.define('print_preview', function() {
     /** @return {?string} ID of the initially selected destination. */
     get initialDestinationId() {
       return this.initialDestinationId_;
+    },
+
+    /** @return {boolean} Whether the initial destination is local. */
+    get isLocalDestination() {
+      return this.isLocalDestination_;
     }
   };
 

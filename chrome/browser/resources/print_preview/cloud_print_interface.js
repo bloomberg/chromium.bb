@@ -36,6 +36,7 @@ cr.define('cloudprint', function() {
   CloudPrintInterface.EventType = {
     ERROR: 'cloudprint.CloudPrintInterface.ERROR',
     PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
+    PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
     SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
     SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE'
   };
@@ -80,7 +81,8 @@ cr.define('cloudprint', function() {
       }
       params['connection_status'] = 'ALL';
       params['client'] = 'chrome';
-      this.sendRequest_('GET', 'search', params, null, this.onSearchDone_);
+      this.sendRequest_(
+          'GET', 'search', params, null, this.onSearchDone_.bind(this));
     },
 
     /**
@@ -88,7 +90,8 @@ cr.define('cloudprint', function() {
      * @param {string} body Body of the HTTP post request to send.
      */
     submit: function(body) {
-      this.sendRequest_('POST', 'submit', null, body, this.onSubmitDone_);
+      this.sendRequest_(
+          'POST', 'submit', null, body, this.onSubmitDone_.bind(this));
     },
 
     /**
@@ -97,7 +100,10 @@ cr.define('cloudprint', function() {
      */
     printer: function(printerId) {
       var params = {'printerid': printerId};
-      this.sendRequest_('GET', 'printer', params, null, this.onPrinterDone_);
+      this.sendRequest_(
+        'GET', 'printer', params, null,
+        this.onPrinterDone_.bind(this),
+        this.onPrinterFailed_.bind(this, printerId));
     },
 
     /**
@@ -190,8 +196,11 @@ cr.define('cloudprint', function() {
      * @param {string} body HTTP multi-part encoded body.
      * @param {function(Object)} successCallback Callback to invoke when request
      *     completes successfully.
+     * @param {function(Object)=} opt_failureCallback Callback to call if the
+     *     request failed.
      */
-    sendRequest_: function(method, action, params, body, successCallback) {
+    sendRequest_: function(method, action, params, body, successCallback,
+                           opt_failureCallback) {
       if (!this.xsrfToken_) {
         // TODO(rltoscano): Should throw an error if not a read-only action or
         // issue an xsrf token request.
@@ -214,7 +223,7 @@ cr.define('cloudprint', function() {
 
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = this.onReadyStateChange_.bind(
-          this, xhr, successCallback.bind(this));
+          this, xhr, successCallback, opt_failureCallback);
       xhr.open(method, url, true);
       xhr.withCredentials = true;
       for (var header in headers) {
@@ -240,15 +249,19 @@ cr.define('cloudprint', function() {
      * @param {XMLHttpRequest} xhr XML http request that changed.
      * @param {function(Object)} successCallback Callback to call if the request
      *     was successful.
+     * @param {function(Object)=} opt_failureCallback Callback to call if the
+     *     request failed.
      * @private
      */
-    onReadyStateChange_: function(xhr, successCallback) {
+    onReadyStateChange_: function(xhr, successCallback, opt_failureCallback) {
       if (xhr.readyState == 4) {
         if (xhr.status == 200) {
           var result = JSON.parse(xhr.responseText);
           if (result['success']) {
             this.xsrfToken_ = result['xsrf_token'];
             successCallback(result);
+          } else if (opt_failureCallback) {
+            opt_failureCallback(result);
           } else {
             this.dispatchErrorEvent_(result['message']);
           }
@@ -315,6 +328,20 @@ cr.define('cloudprint', function() {
           new cr.Event(CloudPrintInterface.EventType.PRINTER_DONE);
       printerDoneEvent.printer = printer;
       this.dispatchEvent(printerDoneEvent);
+    },
+
+    /**
+     * Called when the printer request fails.
+     * @param {string} ID of the destination that failed to be looked up.
+     * @param {object} Contains the JSON response.
+     * @private
+     */
+    onPrinterFailed_: function(destinationId, result) {
+      var printerFailedEvent = new cr.Event(
+          CloudPrintInterface.EventType.PRINTER_FAILED);
+      printerFailedEvent.destinationId = destinationId;
+      printerFailedEvent.errorCode = result['errorCode'];
+      this.dispatchEvent(printerFailedEvent);
     },
 
     /**
