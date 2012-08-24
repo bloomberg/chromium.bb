@@ -63,6 +63,21 @@ bool GetMonitorAndRects(const RECT& rect,
   return true;
 }
 
+struct FindOwnedWindowsData {
+  HWND window;
+  std::vector<Widget*> owned_widgets;
+};
+
+BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
+  FindOwnedWindowsData* data = reinterpret_cast<FindOwnedWindowsData*>(param);
+  if (GetWindow(hwnd, GW_OWNER) == data->window) {
+    Widget* widget = Widget::GetWidgetForNativeView(hwnd);
+    if (widget)
+      data->owned_widgets.push_back(widget);
+  }
+  return TRUE;
+}
+
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
 const int kCustomObjectID = 1;
@@ -98,6 +113,43 @@ void HWNDMessageHandler::Init(const gfx::Rect& bounds) {
   GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
                      &last_work_area_);
 }
+
+void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
+  if (modal_type == ui::MODAL_TYPE_NONE)
+    return;
+  // We implement modality by crawling up the hierarchy of windows starting
+  // at the owner, disabling all of them so that they don't receive input
+  // messages.
+  HWND start = ::GetWindow(hwnd(), GW_OWNER);
+  while (start) {
+    ::EnableWindow(start, FALSE);
+    start = ::GetParent(start);
+  }
+}
+
+void HWNDMessageHandler::CloseNow() {
+  // We may already have been destroyed if the selection resulted in a tab
+  // switch which will have reactivated the browser window and closed us, so
+  // we need to check to see if we're still a window before trying to destroy
+  // ourself.
+  if (IsWindow(hwnd()))
+    DestroyWindow(hwnd());
+}
+
+gfx::Rect HWNDMessageHandler::GetWindowBoundsInScreen() const {
+  RECT r;
+  GetWindowRect(hwnd(), &r);
+  return gfx::Rect(r);
+}
+
+gfx::Rect HWNDMessageHandler::GetClientAreaBoundsInScreen() const {
+  RECT r;
+  GetClientRect(hwnd(), &r);
+  POINT point = { r.left, r.top };
+  ClientToScreen(hwnd(), &point);
+  return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
+}
+
 
 gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
   // If we're in fullscreen mode, we've changed the normal bounds to the monitor
@@ -140,6 +192,86 @@ void HWNDMessageHandler::GetWindowPlacement(
   }
 }
 
+void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds) {
+  LONG style = GetWindowLong(hwnd(), GWL_STYLE);
+  if (style & WS_MAXIMIZE)
+    SetWindowLong(hwnd(), GWL_STYLE, style & ~WS_MAXIMIZE);
+  SetWindowPos(hwnd(), NULL, bounds.x(), bounds.y(), bounds.width(),
+               bounds.height(), SWP_NOACTIVATE | SWP_NOZORDER);
+}
+
+void HWNDMessageHandler::SetSize(const gfx::Size& size) {
+  SetWindowPos(hwnd(), NULL, 0, 0, size.width(), size.height(),
+               SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+}
+
+void HWNDMessageHandler::SetRegion(HRGN region) {
+  SetWindowRgn(hwnd(), region, TRUE);
+}
+
+void HWNDMessageHandler::StackAbove(HWND other_hwnd) {
+  SetWindowPos(hwnd(), other_hwnd, 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+}
+
+void HWNDMessageHandler::StackAtTop() {
+  SetWindowPos(hwnd(), HWND_TOP, 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+}
+
+void HWNDMessageHandler::ShowMaximizedWithBounds(const gfx::Rect& bounds) {
+  WINDOWPLACEMENT placement = { 0 };
+  placement.length = sizeof(WINDOWPLACEMENT);
+  placement.showCmd = SW_SHOWMAXIMIZED;
+  placement.rcNormalPosition = bounds.ToRECT();
+  SetWindowPlacement(hwnd(), &placement);
+}
+
+void HWNDMessageHandler::Hide() {
+  if (IsWindow(hwnd())) {
+    // NOTE: Be careful not to activate any windows here (for example, calling
+    // ShowWindow(SW_HIDE) will automatically activate another window).  This
+    // code can be called while a window is being deactivated, and activating
+    // another window will screw up the activation that is already in progress.
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
+                 SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
+                 SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
+
+    if (!GetParent(hwnd()))
+      NotifyOwnedWindowsParentClosing();
+  }
+}
+
+void HWNDMessageHandler::Maximize() {
+  ExecuteSystemMenuCommand(SC_MAXIMIZE);
+}
+
+void HWNDMessageHandler::Minimize() {
+  ExecuteSystemMenuCommand(SC_MINIMIZE);
+  delegate_->HandleNativeBlur(NULL);
+}
+
+void HWNDMessageHandler::Restore() {
+  ExecuteSystemMenuCommand(SC_RESTORE);
+}
+
+void HWNDMessageHandler::Activate() {
+  if (IsMinimized())
+    ::ShowWindow(hwnd(), SW_RESTORE);
+  ::SetWindowPos(hwnd(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+  SetForegroundWindow(hwnd());
+}
+
+void HWNDMessageHandler::Deactivate() {
+  HWND next_hwnd = ::GetNextWindow(hwnd(), GW_HWNDNEXT);
+  if (next_hwnd)
+    ::SetForegroundWindow(next_hwnd);
+}
+
+void HWNDMessageHandler::SetAlwaysOnTop(bool on_top) {
+  ::SetWindowPos(hwnd(), on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
+                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+}
 
 bool HWNDMessageHandler::IsVisible() const {
   return !!::IsWindowVisible(hwnd());
@@ -164,6 +296,30 @@ void HWNDMessageHandler::SendFrameChanged() {
       SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER);
 }
 
+void HWNDMessageHandler::FlashFrame(bool flash) {
+  FLASHWINFO fwi;
+  fwi.cbSize = sizeof(fwi);
+  fwi.hwnd = hwnd();
+  if (flash) {
+    fwi.dwFlags = FLASHW_ALL;
+    fwi.uCount = 4;
+    fwi.dwTimeout = 0;
+  } else {
+    fwi.dwFlags = FLASHW_STOP;
+  }
+  FlashWindowEx(&fwi);
+}
+
+void HWNDMessageHandler::ClearNativeFocus() {
+  ::SetFocus(hwnd());
+}
+
+void HWNDMessageHandler::FocusHWND(HWND hwnd) {
+  // Only reset focus if hwnd is not already focused.
+  if (hwnd && ::GetFocus() != hwnd)
+    ::SetFocus(hwnd);
+}
+
 void HWNDMessageHandler::SetCapture() {
   DCHECK(!HasCapture());
   ::SetCapture(hwnd());
@@ -175,6 +331,14 @@ void HWNDMessageHandler::ReleaseCapture() {
 
 bool HWNDMessageHandler::HasCapture() const {
   return ::GetCapture() == hwnd();
+}
+
+void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    int dwm_value = enabled ? FALSE : TRUE;
+    DwmSetWindowAttribute(
+        hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value, sizeof(dwm_value));
+  }
 }
 
 InputMethod* HWNDMessageHandler::CreateInputMethod() {
@@ -1041,6 +1205,11 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
 
+void HWNDMessageHandler::ExecuteSystemMenuCommand(int command) {
+  if (command)
+    SendMessage(hwnd(), WM_SYSCOMMAND, command, 0);
+}
+
 void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
   // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
   // when the user moves the mouse outside this HWND's bounds.
@@ -1197,6 +1366,15 @@ LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
   else
     destroyed_ = NULL;
   return result;
+}
+
+void HWNDMessageHandler::NotifyOwnedWindowsParentClosing() {
+  FindOwnedWindowsData data;
+  data.window = hwnd();
+  EnumThreadWindows(GetCurrentThreadId(), FindOwnedWindowsCallback,
+                    reinterpret_cast<LPARAM>(&data));
+  for (size_t i = 0; i < data.owned_widgets.size(); ++i)
+    data.owned_widgets[i]->OnOwnerClosing();
 }
 
 void HWNDMessageHandler::LockUpdates(bool force) {

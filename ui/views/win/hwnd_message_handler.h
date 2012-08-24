@@ -45,10 +45,35 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   ~HWNDMessageHandler();
 
   void Init(const gfx::Rect& bounds);
+  void InitModalType(ui::ModalType modal_type);
 
+  void CloseNow();
+
+  gfx::Rect GetWindowBoundsInScreen() const;
+  gfx::Rect GetClientAreaBoundsInScreen() const;
   gfx::Rect GetRestoredBounds() const;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const;
+
+  void SetBounds(const gfx::Rect& bounds);
+  void SetSize(const gfx::Size& size);
+
+  void SetRegion(HRGN rgn);
+
+  void StackAbove(HWND other_hwnd);
+  void StackAtTop();
+
+  void ShowMaximizedWithBounds(const gfx::Rect& bounds);
+  void Hide();
+
+  void Maximize();
+  void Minimize();
+  void Restore();
+
+  void Activate();
+  void Deactivate();
+
+  void SetAlwaysOnTop(bool on_top);
 
   bool IsVisible() const;
   bool IsActive() const;
@@ -58,11 +83,18 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // Tells the HWND its client area has changed.
   void SendFrameChanged();
 
+  void FlashFrame(bool flash);
+
+  void ClearNativeFocus();
+  void FocusHWND(HWND hwnd);
+
   void SetCapture();
   void ReleaseCapture();
   bool HasCapture() const;
 
   FullscreenHandler* fullscreen_handler() { return fullscreen_handler_.get(); }
+
+  void SetVisibilityChangedAnimationsEnabled(bool enabled);
 
   InputMethod* CreateInputMethod();
 
@@ -141,6 +173,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
+  // Executes the specified SC_command.
+  void ExecuteSystemMenuCommand(int command);
+
   // Start tracking all mouse events so that this window gets sent mouse leave
   // messages too.
   void TrackMouseEvents(DWORD mouse_tracking_flags);
@@ -159,6 +194,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   LRESULT DefWindowProcWithRedrawLock(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param);
+
+  // Notifies any owned windows that we're closing.
+  void NotifyOwnedWindowsParentClosing();
 
   // Lock or unlock the window from being able to redraw itself in response to
   // updates to its invalid region.

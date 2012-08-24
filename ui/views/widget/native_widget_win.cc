@@ -279,21 +279,6 @@ const char* const kNativeWidgetKey = "__VIEWS_NATIVE_WIDGET__";
 
 const int kDragFrameWindowAlpha = 200;
 
-struct FindOwnedWindowsData {
-  HWND window;
-  std::vector<Widget*> owned_widgets;
-};
-
-BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
-  FindOwnedWindowsData* data = reinterpret_cast<FindOwnedWindowsData*>(param);
-  if (GetWindow(hwnd, GW_OWNER) == data->window) {
-    Widget* widget = Widget::GetWidgetForNativeView(hwnd);
-    if (widget)
-      data->owned_widgets.push_back(widget);
-  }
-  return TRUE;
-}
-
 }  // namespace
 
 // static
@@ -622,30 +607,15 @@ void NativeWidgetWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
 }
 
 void NativeWidgetWin::InitModalType(ui::ModalType modal_type) {
-  if (modal_type == ui::MODAL_TYPE_NONE)
-    return;
-  // We implement modality by crawling up the hierarchy of windows starting
-  // at the owner, disabling all of them so that they don't receive input
-  // messages.
-  HWND start = ::GetWindow(GetNativeView(), GW_OWNER);
-  while (start) {
-    ::EnableWindow(start, FALSE);
-    start = ::GetParent(start);
-  }
+  message_handler_->InitModalType(modal_type);
 }
 
 gfx::Rect NativeWidgetWin::GetWindowBoundsInScreen() const {
-  RECT r;
-  GetWindowRect(&r);
-  return gfx::Rect(r);
+  return message_handler_->GetWindowBoundsInScreen();
 }
 
 gfx::Rect NativeWidgetWin::GetClientAreaBoundsInScreen() const {
-  RECT r;
-  GetClientRect(&r);
-  POINT point = { r.left, r.top };
-  ClientToScreen(hwnd(), &point);
-  return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
+  return message_handler_->GetClientAreaBoundsInScreen();
 }
 
 gfx::Rect NativeWidgetWin::GetRestoredBounds() const {
@@ -653,26 +623,19 @@ gfx::Rect NativeWidgetWin::GetRestoredBounds() const {
 }
 
 void NativeWidgetWin::SetBounds(const gfx::Rect& bounds) {
-  LONG style = GetWindowLong(GWL_STYLE);
-  if (style & WS_MAXIMIZE)
-    SetWindowLong(GWL_STYLE, style & ~WS_MAXIMIZE);
-  SetWindowPos(NULL, bounds.x(), bounds.y(), bounds.width(), bounds.height(),
-               SWP_NOACTIVATE | SWP_NOZORDER);
+  message_handler_->SetBounds(bounds);
 }
 
 void NativeWidgetWin::SetSize(const gfx::Size& size) {
-  SetWindowPos(NULL, 0, 0, size.width(), size.height(),
-               SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+  message_handler_->SetSize(size);
 }
 
 void NativeWidgetWin::StackAbove(gfx::NativeView native_view) {
-  SetWindowPos(native_view, 0, 0, 0, 0,
-               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+  message_handler_->StackAbove(native_view);
 }
 
 void NativeWidgetWin::StackAtTop() {
-  SetWindowPos(HWND_TOP, 0, 0, 0, 0,
-               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+  message_handler_->StackAtTop();
 }
 
 void NativeWidgetWin::StackBelow(gfx::NativeView native_view) {
@@ -680,7 +643,7 @@ void NativeWidgetWin::StackBelow(gfx::NativeView native_view) {
 }
 
 void NativeWidgetWin::SetShape(gfx::NativeRegion region) {
-  SetWindowRgn(region, TRUE);
+  message_handler_->SetRegion(region);
 }
 
 void NativeWidgetWin::Close() {
@@ -707,12 +670,7 @@ void NativeWidgetWin::Close() {
 }
 
 void NativeWidgetWin::CloseNow() {
-  // We may already have been destroyed if the selection resulted in a tab
-  // switch which will have reactivated the browser window and closed us, so
-  // we need to check to see if we're still a window before trying to destroy
-  // ourself.
-  if (IsWindow())
-    DestroyWindow(hwnd());
+  message_handler_->CloseNow();
 }
 
 void NativeWidgetWin::Show() {
@@ -724,27 +682,12 @@ void NativeWidgetWin::Show() {
 }
 
 void NativeWidgetWin::Hide() {
-  if (IsWindow()) {
-    // NOTE: Be careful not to activate any windows here (for example, calling
-    // ShowWindow(SW_HIDE) will automatically activate another window).  This
-    // code can be called while a window is being deactivated, and activating
-    // another window will screw up the activation that is already in progress.
-    SetWindowPos(NULL, 0, 0, 0, 0,
-                 SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
-                 SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
-
-    if (!GetParent())
-      NotifyOwnedWindowsParentClosing();
-  }
+  message_handler_->Hide();
 }
 
 void NativeWidgetWin::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  WINDOWPLACEMENT placement = { 0 };
-  placement.length = sizeof(WINDOWPLACEMENT);
-  placement.showCmd = SW_SHOWMAXIMIZED;
-  placement.rcNormalPosition = restored_bounds.ToRECT();
-  SetWindowPlacement(hwnd(), &placement);
+  message_handler_->ShowMaximizedWithBounds(restored_bounds);
 }
 
 void NativeWidgetWin::ShowWithWindowState(ui::WindowShowState show_state) {
@@ -771,17 +714,11 @@ bool NativeWidgetWin::IsVisible() const {
 }
 
 void NativeWidgetWin::Activate() {
-  if (IsMinimized())
-    ::ShowWindow(GetNativeView(), SW_RESTORE);
-  ::SetWindowPos(GetNativeView(), HWND_TOP, 0, 0, 0, 0,
-                 SWP_NOSIZE | SWP_NOMOVE);
-  SetForegroundWindow(GetNativeView());
+  message_handler_->Activate();
 }
 
 void NativeWidgetWin::Deactivate() {
-  HWND hwnd = ::GetNextWindow(GetNativeView(), GW_HWNDNEXT);
-  if (hwnd)
-    ::SetForegroundWindow(hwnd);
+  message_handler_->Deactivate();
 }
 
 bool NativeWidgetWin::IsActive() const {
@@ -789,18 +726,15 @@ bool NativeWidgetWin::IsActive() const {
 }
 
 void NativeWidgetWin::SetAlwaysOnTop(bool on_top) {
-  ::SetWindowPos(GetNativeView(), on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
-                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+  message_handler_->SetAlwaysOnTop(on_top);
 }
 
 void NativeWidgetWin::Maximize() {
-  ExecuteSystemMenuCommand(SC_MAXIMIZE);
+  message_handler_->Maximize();
 }
 
 void NativeWidgetWin::Minimize() {
-  ExecuteSystemMenuCommand(SC_MINIMIZE);
-
-  delegate_->OnNativeBlur(NULL);
+  message_handler_->Minimize();
 }
 
 bool NativeWidgetWin::IsMaximized() const {
@@ -812,7 +746,7 @@ bool NativeWidgetWin::IsMinimized() const {
 }
 
 void NativeWidgetWin::Restore() {
-  ExecuteSystemMenuCommand(SC_RESTORE);
+  message_handler_->Restore();
 }
 
 void NativeWidgetWin::SetFullscreen(bool fullscreen) {
@@ -855,17 +789,7 @@ void NativeWidgetWin::SetUseDragFrame(bool use_drag_frame) {
 }
 
 void NativeWidgetWin::FlashFrame(bool flash) {
-  FLASHWINFO fwi;
-  fwi.cbSize = sizeof(fwi);
-  fwi.hwnd = hwnd();
-  if (flash) {
-    fwi.dwFlags = FLASHW_ALL;
-    fwi.uCount = 4;
-    fwi.dwTimeout = 0;
-  } else {
-    fwi.dwFlags = FLASHW_STOP;
-  }
-  FlashWindowEx(&fwi);
+  message_handler_->FlashFrame(flash);
 }
 
 bool NativeWidgetWin::IsAccessibleWidget() const {
@@ -913,13 +837,11 @@ void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
 }
 
 void NativeWidgetWin::ClearNativeFocus() {
-  ::SetFocus(GetNativeView());
+  message_handler_->ClearNativeFocus();
 }
 
 void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
-  // Only reset focus if hwnd is not already focused.
-  if (native_view && ::GetFocus() != native_view)
-    ::SetFocus(native_view);
+  message_handler_->FocusHWND(native_view);
 }
 
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
@@ -946,11 +868,7 @@ void NativeWidgetWin::EndMoveLoop() {
 }
 
 void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    int dwm_value = value ? FALSE : TRUE;
-    DwmSetWindowAttribute(
-        hwnd(), DWMWA_TRANSITIONS_FORCEDISABLED, &dwm_value, sizeof(dwm_value));
-  }
+  message_handler_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1376,11 +1294,6 @@ void NativeWidgetWin::SetInitialFocus() {
   }
 }
 
-void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {
-  if (command)
-    SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, HWNDMessageHandlerDelegate implementation:
 
@@ -1799,15 +1712,6 @@ void NativeWidgetWin::RestoreEnabledIfNecessary() {
       start = ::GetParent(start);
     }
   }
-}
-
-void NativeWidgetWin::NotifyOwnedWindowsParentClosing() {
-  FindOwnedWindowsData data;
-  data.window = hwnd();
-  EnumThreadWindows(GetCurrentThreadId(), FindOwnedWindowsCallback,
-                    reinterpret_cast<LPARAM>(&data));
-  for (size_t i = 0; i < data.owned_widgets.size(); ++i)
-    data.owned_widgets[i]->OnOwnerClosing();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

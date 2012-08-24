@@ -437,9 +437,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
-  // Executes the specified SC_command.
-  void ExecuteSystemMenuCommand(int command);
-
   // The TooltipManager. This is NULL if there is a problem creating the
   // underlying tooltip window.
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
@@ -525,9 +522,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   void RestoreEnabledIfNecessary();
 
   void SetInitialFocus();
-
-  // Notifies any owned windows that we're closing.
-  void NotifyOwnedWindowsParentClosing();
 
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.
