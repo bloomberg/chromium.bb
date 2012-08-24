@@ -95,11 +95,11 @@
     }
 
     function seeked() {
-      delta = timer.stop() / 1000;
+      delta = timer.stop();
       switch (seekState) {
         case SeekTestCase.SHORT_SEEK:
           seekRecords[cacheState][SeekTestCase.SHORT_SEEK].push(delta);
-          log ("short seek in " + delta + "sec.")
+          log ("short seek in " + delta + "ms.")
           seekState = SeekTestCase.LONG_SEEK;
           timer.start();
           video.currentTime = video.duration - 1;
@@ -107,14 +107,14 @@
         // Seek to almost end of file (unbuffered area).
         case SeekTestCase.LONG_SEEK:
           seekRecords[cacheState][SeekTestCase.LONG_SEEK].push(delta);
-          log("long seek in " + delta + "sec.")
+          log("long seek in " + delta + "ms.")
           seekState = SeekTestCase.BUFFERED_SEEK;
           timer.start();
           video.currentTime = 1;
           break;
         case SeekTestCase.BUFFERED_SEEK:
           seekRecords[cacheState][SeekTestCase.BUFFERED_SEEK].push(delta);
-          log("buffered seek in " + delta + "sec.")
+          log("buffered seek in " + delta + "ms.")
           IterationTest();
           break;
         default:

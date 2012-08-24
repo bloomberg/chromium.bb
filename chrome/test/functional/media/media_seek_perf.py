@@ -89,7 +89,7 @@ class SeekWorkerThread(worker_thread.WorkerThread):
           results = []
         pyauto_utils.PrintPerfResult('seek', '%s_%s_%s' %
                                      (state, seek_case, graph_name),
-                                     results, 'sec')
+                                     results, 'ms')
 
     if error_msg:
       logging.error('Error while running %s: %s.', graph_name, error_msg)
