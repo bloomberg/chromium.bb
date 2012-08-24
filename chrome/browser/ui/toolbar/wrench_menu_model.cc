@@ -457,8 +457,11 @@ void WrenchMenuModel::Build() {
 #else
   bool is_new_menu = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
 #endif
+
+#if defined(USE_AURA)
   if (is_new_menu)
     AddSeparator(ui::SPACING_SEPARATOR);
+#endif
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
 #if defined(OS_WIN)
@@ -588,8 +591,10 @@ void WrenchMenuModel::Build() {
     }
   }
 
+#if defined(USE_AURA)
   if (is_new_menu)
     AddSeparator(ui::SPACING_SEPARATOR);
+#endif
 }
 
 void WrenchMenuModel::AddGlobalErrorMenuItems() {
