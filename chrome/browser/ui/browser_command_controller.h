@@ -161,6 +161,9 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
   inline BrowserWindow* window();
   inline Profile* profile();
 
+  // Check if any window is open in full screen mode.
+  bool IsFullScreenWindowOpen();
+
   Browser* browser_;
 
   // The CommandUpdater that manages the browser window commands.
