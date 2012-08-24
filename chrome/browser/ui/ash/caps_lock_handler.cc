@@ -10,10 +10,7 @@
 // TODO(yusukes): Support Ash on Windows.
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -43,11 +40,7 @@ CapsLockHandler::~CapsLockHandler() {
 bool CapsLockHandler::HandleToggleCapsLock() {
 #if defined(OS_CHROMEOS)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (is_running_on_chromeos_ &&
-      // When spoken feedback is enabled, the Search key is used as an
-      // accessibility modifier key.
-      !g_browser_process->local_state()->GetBoolean(
-          prefs::kSpokenFeedbackEnabled)) {
+  if (is_running_on_chromeos_) {
     xkeyboard_->SetCapsLockEnabled(!caps_lock_is_on_);
     return true;  // consume the shortcut key.
   }
