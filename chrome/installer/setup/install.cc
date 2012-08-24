@@ -220,7 +220,7 @@ bool CreateVisualElementsManifest(const FilePath& src_path,
         "      Logo='%2$ls\\Logo.png'\r\n"
         "      SmallLogo='%2$ls\\SmallLogo.png'\r\n"
         "      ForegroundText='light'\r\n"
-        "      BackgroundColor='white'>\r\n"
+        "      BackgroundColor='#323232'>\r\n"
         "    <DefaultTile ShowName='allLogos'/>\r\n"
         "    <SplashScreen Image='%2$ls\\splash-620x300.png'/>\r\n"
         "  </VisualElements>\r\n"
