@@ -327,8 +327,8 @@
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="maximize.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="maximize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="maximize_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_MENU_ARROW" file="menu_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="menu_check.png" />
+        <structure type="chrome_scaled_image" name="IDR_MENU_ARROW" file="cros/menu_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
         <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_LEFT" file="slider_left_active.png" />
         <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_RIGHT" file="slider_right_active.png" />
         <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_CENTER" file="slider_center_active.png" />
@@ -341,7 +341,7 @@
         <structure type="chrome_scaled_image" name="IDR_SLIDER_ACTIVE_THUMB" file="slider_thumb.png" />
         <structure type="chrome_scaled_image" name="IDR_SLIDER_DISABLED_THUMB" file="slider_thumb_disabled.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="menu_droparrow.png" />
+      <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="cros/menu_droparrow.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux_minimize.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux_minimize_hover.png" />
