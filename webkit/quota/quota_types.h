@@ -39,20 +39,25 @@ struct UsageInfo;
 typedef std::vector<UsageInfo> UsageInfoEntries;
 
 // Common callback types that are used throughout in the quota module.
-typedef base::Callback<void(StorageType, int64)> UsageCallback;
-typedef base::Callback<void(StorageType, int64, int64)> GlobalUsageCallback;
-typedef base::Callback<void(QuotaStatusCode, StorageType, int64)>
-    QuotaCallback;
-typedef base::Callback<void(const std::string&, StorageType, int64)>
-    HostUsageCallback;
-typedef base::Callback<void(QuotaStatusCode,
-                            const std::string&,
-                            StorageType,
-                            int64)> HostQuotaCallback;
+typedef base::Callback<void(StorageType status,
+                            int64 usage,
+                            int64 unlimited_usage)> GlobalUsageCallback;
+typedef base::Callback<void(QuotaStatusCode status,
+                            StorageType type,
+                            int64 quota)> QuotaCallback;
+// TODO(kinuko,nhiroki): HostUsageCallback could be probably replaced with
+// simple Callback<void(int64)> callback by binding host and type with Bind.
+typedef base::Callback<void(const std::string& host,
+                            StorageType type,
+                            int64 host_usage)> HostUsageCallback;
+typedef base::Callback<void(QuotaStatusCode status,
+                            const std::string& host,
+                            StorageType type,
+                            int64 quota)> HostQuotaCallback;
 typedef base::Callback<void(QuotaStatusCode, int64)> AvailableSpaceCallback;
 typedef base::Callback<void(QuotaStatusCode)> StatusCallback;
-typedef base::Callback<void(const std::set<GURL>&, StorageType)>
-    GetOriginsCallback;
+typedef base::Callback<void(const std::set<GURL>& origins,
+                            StorageType type)> GetOriginsCallback;
 typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;
 
 // Simple template wrapper for a callback queue.
@@ -121,28 +126,8 @@ class CallbackQueue3 : public CallbackQueueBase<CallbackType3> {
   }
 };
 
-template <typename CallbackType4,
-          typename A1, typename A2, typename A3, typename A4>
-class CallbackQueue4 : public CallbackQueueBase<CallbackType4> {
- public:
-  typedef typename CallbackQueueBase<CallbackType4>::Queue Queue;
-  // Runs the callbacks added to the queue and clears the queue.
-  void Run(A1 arg1, A2 arg2, A3 arg3, A4 arg4) {
-    for (typename Queue::iterator iter = this->callbacks_.begin();
-         iter != this->callbacks_.end(); ++iter) {
-      iter->Run(arg1, arg2, arg3, arg4);
-    }
-    this->callbacks_.clear();
-  }
-};
-
-typedef CallbackQueue2<UsageCallback,
-                       StorageType, int64> UsageCallbackQueue;
 typedef CallbackQueue3<GlobalUsageCallback,
                        StorageType, int64, int64> GlobalUsageCallbackQueue;
-typedef CallbackQueue3<QuotaCallback,
-                       QuotaStatusCode,
-                       StorageType, int64> QuotaCallbackQueue;
 
 template <typename CallbackType, typename CallbackQueueType, typename KEY>
 class CallbackQueueMapBase {
@@ -242,39 +227,9 @@ class CallbackQueueMap3
   }
 };
 
-template <typename CallbackType4, typename KEY,
-          typename ARG1, typename ARG2, typename ARG3, typename ARG4>
-class CallbackQueueMap4
-    : public CallbackQueueMapBase<CallbackType4,
-                                  CallbackQueue4<CallbackType4,
-                                                 ARG1, ARG2, ARG3, ARG4>,
-                                  KEY> {
- public:
-  typedef typename CallbackQueueMapBase<
-      CallbackType4,
-      CallbackQueue4<CallbackType4, ARG1, ARG2, ARG3, ARG4>,
-      KEY>::iterator iterator;
-  typedef CallbackQueue4<CallbackType4, ARG1, ARG2, ARG3, ARG4> Queue;
-
-  // Runs the callbacks added for the given |key| and clears the key
-  // from the map.
-  void Run(const KEY& key, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4) {
-    if (!this->HasCallbacks(key))
-      return;
-    Queue& queue = this->callback_map_[key];
-    queue.Run(arg1, arg2, arg3, arg4);
-    this->callback_map_.erase(key);
-  }
-};
-
-typedef CallbackQueueMap1<UsageCallback, GURL, int64> OriginUsageCallbackMap;
 typedef CallbackQueueMap3<HostUsageCallback, std::string,
                           const std::string&,
                           StorageType, int64> HostUsageCallbackMap;
-typedef CallbackQueueMap4<HostQuotaCallback, std::string,
-                          QuotaStatusCode,
-                          const std::string&,
-                          StorageType, int64> HostQuotaCallbackMap;
 
 }  // namespace quota
 

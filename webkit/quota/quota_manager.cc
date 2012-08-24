@@ -126,6 +126,8 @@ class QuotaManager::UsageAndQuotaDispatcherTask : public QuotaTask {
   void DidGetHostUsage(const std::string& host, StorageType type, int64 usage) {
     DCHECK_EQ(this->host(), host);
     DCHECK_EQ(this->type(), type);
+    if (quota_status_ == kQuotaStatusUnknown)
+      quota_status_ = kQuotaStatusOk;
     host_usage_ = usage;
     CheckCompleted();
   }
@@ -368,9 +370,9 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporary
 
  protected:
   virtual void RunBody() OVERRIDE {
-    manager()->temporary_usage_tracker_->GetGlobalUsage(
+    manager()->GetUsageTracker(type())->GetGlobalUsage(
         NewWaitableGlobalUsageCallback());
-    manager()->temporary_usage_tracker_->GetHostUsage(
+    manager()->GetUsageTracker(type())->GetHostUsage(
         host(), NewWaitableHostUsageCallback());
     manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
   }
@@ -402,7 +404,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
 
  protected:
   virtual void RunBody() OVERRIDE {
-    manager()->persistent_usage_tracker_->GetHostUsage(
+    manager()->GetUsageTracker(type())->GetHostUsage(
         host(), NewWaitableHostUsageCallback());
     manager()->GetPersistentHostQuota(
         host(), NewWaitableHostQuotaCallback());
@@ -424,7 +426,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporaryGlobal
 
  protected:
   virtual void RunBody() OVERRIDE {
-    manager()->temporary_usage_tracker_->GetGlobalUsage(
+    manager()->GetUsageTracker(type())->GetGlobalUsage(
         NewWaitableGlobalUsageCallback());
     manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
   }
@@ -1432,17 +1434,16 @@ void QuotaManager::DeleteHostData(const std::string& host,
 }
 
 bool QuotaManager::ResetUsageTracker(StorageType type) {
+  DCHECK(GetUsageTracker(type));
+  if (GetUsageTracker(type)->IsWorking())
+    return false;
   switch (type) {
     case kStorageTypeTemporary:
-      if (temporary_usage_tracker_->IsWorking())
-        return false;
       temporary_usage_tracker_.reset(
           new UsageTracker(clients_, kStorageTypeTemporary,
                            special_storage_policy_));
       return true;
     case kStorageTypePersistent:
-      if (persistent_usage_tracker_->IsWorking())
-        return false;
       persistent_usage_tracker_.reset(
           new UsageTracker(clients_, kStorageTypePersistent,
                            special_storage_policy_));
@@ -1469,18 +1470,8 @@ void QuotaManager::GetCachedOrigins(
     StorageType type, std::set<GURL>* origins) {
   DCHECK(origins);
   LazyInitialize();
-  switch (type) {
-    case kStorageTypeTemporary:
-      DCHECK(temporary_usage_tracker_.get());
-      temporary_usage_tracker_->GetCachedOrigins(origins);
-      return;
-    case kStorageTypePersistent:
-      DCHECK(persistent_usage_tracker_.get());
-      persistent_usage_tracker_->GetCachedOrigins(origins);
-      return;
-    default:
-      NOTREACHED();
-  }
+  DCHECK(GetUsageTracker(type));
+  GetUsageTracker(type)->GetCachedOrigins(origins);
 }
 
 void QuotaManager::NotifyStorageAccessedInternal(
