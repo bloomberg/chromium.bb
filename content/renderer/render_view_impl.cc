@@ -2404,15 +2404,8 @@ WebSharedWorker* RenderViewImpl::createSharedWorker(
   }
 }
 
-// TODO(wjia): remove the version without url when WebKit change is done.
-// http://webk.it/91301.
 WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     WebFrame* frame, const WebKit::WebURL& url, WebMediaPlayerClient* client) {
-  return createMediaPlayer(frame, client);
-}
-
-WebMediaPlayer* RenderViewImpl::createMediaPlayer(
-    WebFrame* frame, WebMediaPlayerClient* client) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 

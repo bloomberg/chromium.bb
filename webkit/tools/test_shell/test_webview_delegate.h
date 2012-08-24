@@ -165,8 +165,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame*, const WebKit::WebPluginParams&);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame*, const WebKit::WebURL&, WebKit::WebMediaPlayerClient*);
-  virtual WebKit::WebMediaPlayer* createMediaPlayer(
-      WebKit::WebFrame*, WebKit::WebMediaPlayerClient*);
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebFrame*, WebKit::WebApplicationCacheHostClient*);
   virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);

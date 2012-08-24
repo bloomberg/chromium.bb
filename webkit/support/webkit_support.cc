@@ -386,13 +386,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     const WebURL& url,
     WebMediaPlayerClient* client,
     webkit_media::MediaStreamClient* media_stream_client) {
-  return CreateMediaPlayer(frame, client, media_stream_client);
-}
-
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebFrame* frame,
-    WebMediaPlayerClient* client,
-    webkit_media::MediaStreamClient* media_stream_client) {
 #if defined(OS_ANDROID)
   return new webkit_media::WebMediaPlayerAndroid(
       frame,
@@ -418,12 +411,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
       media_stream_client,
       new media::MediaLog());
 #endif
-}
-
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebFrame* frame,
-    WebMediaPlayerClient* client) {
-  return CreateMediaPlayer(frame, client, NULL);
 }
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(
