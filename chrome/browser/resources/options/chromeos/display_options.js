@@ -30,7 +30,7 @@ cr.define('options', function() {
   function DisplayOptions() {
     OptionsPage.call(this, 'display',
                      loadTimeData.getString('displayOptionsPageTabTitle'),
-                     'display-options');
+                     'display-options-page');
     this.mirroring_ = false;
     this.focusedIndex_ = null;
     this.displays_ = [];

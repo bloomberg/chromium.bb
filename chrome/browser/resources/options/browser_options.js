@@ -450,11 +450,11 @@ cr.define('options', function() {
 
       // Display management section (CrOS only).
       if (cr.isChromeOS) {
-        $('display-options-button').onclick = function(event) {
+        $('display-options').onclick = function(event) {
           OptionsPage.navigateToPage('display');
           chrome.send('coreOptionsUserMetricsAction',
                       ['Options_Display']);
-        }
+        };
       }
 
       // Background mode section.

@@ -98,6 +98,12 @@
         <button id="keyboard-settings-button"
             i18n-content="keyboardSettingsButtonTitle">
         </button>
+        <!-- By default, the display settings are hidden.  They are only visible
+             if more than one display is found. -->
+        <span id="display-options-section" hidden>
+          <button id="display-options" i18n-content="displayOptions">
+          </button>
+        </span>
       </div>
     </div>
   </section>
@@ -265,16 +271,6 @@
     </div>
   </section>
 <if expr="pp_ifdef('chromeos')">
-  <!-- By default, the display section is hidden.  It is only visible if
-       more than one display is found. -->
-  <section id="display-options-section" hidden>
-    <h3 i18n-content="displayOptionsTitle"></h3>
-    <div class="settings-row">
-      <button id="display-options-button"
-          i18n-content="displayOptionsButton">
-      </button>
-    </div>
-  </section>
   <!-- By default, the bluetooth section is hidden.  It is only visible if a
        bluetooth adapter is discovered -->
   <section id="bluetooth-devices" hidden>
