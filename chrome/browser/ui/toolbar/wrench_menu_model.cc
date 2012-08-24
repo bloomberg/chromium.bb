@@ -27,6 +27,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -460,6 +461,24 @@ void WrenchMenuModel::Build() {
     AddSeparator(ui::SPACING_SEPARATOR);
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
+#if defined(OS_WIN)
+  if (base::win::IsMetroProcess()) {
+    // In Metro, we only show the New Window options if there isn't already
+    // a the window of the requested type (incognito or not) that is available.
+    if (browser_->profile()->IsOffTheRecord()) {
+      if (browser::FindBrowserWithProfile(
+              browser_->profile()->GetOriginalProfile(),
+              browser_->host_desktop_type()) == NULL) {
+        AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
+      }
+    } else if (!browser_->profile()->HasOffTheRecordProfile()) {
+      AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+    }
+  } else {
+    AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
+    AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+  }
+#else  // defined(OS_WIN)
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
@@ -467,6 +486,8 @@ void WrenchMenuModel::Build() {
 #else
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 #endif
+
+#endif  // else of defined(OS_WIN)
 
   AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
