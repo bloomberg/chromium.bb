@@ -23,7 +23,7 @@ class PowerStatusView : public views::View {
     VIEW_NOTIFICATION
   };
 
-  explicit PowerStatusView(ViewType view_type);
+  PowerStatusView(ViewType view_type, bool default_view_right_align);
   virtual ~PowerStatusView() {}
 
   void UpdatePowerStatus(const PowerSupplyStatus& status);
@@ -42,6 +42,10 @@ class PowerStatusView : public views::View {
 
   // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+
+  // Layout default view UI items on the right side of system tray pop up item
+  // if true; otherwise, layout the UI items on the left side.
+  bool default_view_right_align_;
 
   // labels used only for VIEW_NOTIFICATION.
   views::Label* status_label_;
