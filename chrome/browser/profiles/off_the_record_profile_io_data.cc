@@ -32,7 +32,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/database/database_tracker.h"
 
 using content::BrowserThread;
@@ -252,8 +252,8 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
 
-  main_job_factory_.reset(new net::URLRequestJobFactory);
-  extensions_job_factory_.reset(new net::URLRequestJobFactory);
+  main_job_factory_.reset(new net::URLRequestJobFactoryImpl);
+  extensions_job_factory_.reset(new net::URLRequestJobFactoryImpl);
 
   int set_protocol = main_job_factory_->SetProtocolHandler(
       chrome::kFileScheme, new net::FileProtocolHandler());

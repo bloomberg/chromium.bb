@@ -22,7 +22,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -120,7 +120,7 @@ void TestShellRequestContext::Init(
   file_system_context_ = static_cast<SimpleFileSystem*>(
       WebKit::webKitPlatformSupport()->fileSystem())->file_system_context();
 
-  net::URLRequestJobFactory* job_factory = new net::URLRequestJobFactory;
+  net::URLRequestJobFactory* job_factory = new net::URLRequestJobFactoryImpl();
   job_factory->SetProtocolHandler(
       "blob",
       new webkit_blob::BlobProtocolHandler(

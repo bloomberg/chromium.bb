@@ -37,7 +37,7 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "webkit/quota/special_storage_policy.h"
 
 using content::BrowserThread;
@@ -451,9 +451,9 @@ void ProfileImplIOData::LazyInitializeInternal(
   // media cache.
   media_request_context_.reset(InitializeMediaRequestContext(main_context, ""));
 
-  main_job_factory_.reset(new net::URLRequestJobFactory);
-  media_request_job_factory_.reset(new net::URLRequestJobFactory);
-  extensions_job_factory_.reset(new net::URLRequestJobFactory);
+  main_job_factory_.reset(new net::URLRequestJobFactoryImpl);
+  media_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
+  extensions_job_factory_.reset(new net::URLRequestJobFactoryImpl);
 
   int set_protocol = main_job_factory_->SetProtocolHandler(
       chrome::kFileScheme, new net::FileProtocolHandler());

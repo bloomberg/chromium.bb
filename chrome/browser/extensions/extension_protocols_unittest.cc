@@ -13,6 +13,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,7 +83,7 @@ class ExtensionProtocolTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  net::URLRequestJobFactory job_factory_;
+  net::URLRequestJobFactoryImpl job_factory_;
   const net::URLRequestJobFactory* old_factory_;
   TestDelegate test_delegate_;
   content::MockResourceContext resource_context_;

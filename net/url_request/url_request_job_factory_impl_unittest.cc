@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -108,7 +108,7 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
 
 TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   TestDelegate delegate;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
@@ -121,7 +121,7 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
 }
 
 TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
@@ -130,7 +130,7 @@ TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
 
 TEST(URLRequestJobFactoryTest, BasicInterceptor) {
   TestDelegate delegate;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.AddInterceptor(new DummyInterceptor);
@@ -144,7 +144,7 @@ TEST(URLRequestJobFactoryTest, BasicInterceptor) {
 
 TEST(URLRequestJobFactoryTest, InterceptorNeedsValidSchemeStill) {
   TestDelegate delegate;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.AddInterceptor(new DummyInterceptor);
@@ -158,7 +158,7 @@ TEST(URLRequestJobFactoryTest, InterceptorNeedsValidSchemeStill) {
 
 TEST(URLRequestJobFactoryTest, InterceptorOverridesProtocolHandler) {
   TestDelegate delegate;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
@@ -173,7 +173,7 @@ TEST(URLRequestJobFactoryTest, InterceptorOverridesProtocolHandler) {
 
 TEST(URLRequestJobFactoryTest, InterceptorDoesntInterceptUnknownProtocols) {
   TestDelegate delegate;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   DummyInterceptor* interceptor = new DummyInterceptor;
@@ -187,7 +187,7 @@ TEST(URLRequestJobFactoryTest, InterceptorDoesntInterceptUnknownProtocols) {
 
 TEST(URLRequestJobFactoryTest, InterceptorInterceptsHandledUnknownProtocols) {
   TestDelegate delegate;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
   DummyInterceptor* interceptor = new DummyInterceptor;
@@ -204,7 +204,7 @@ TEST(URLRequestJobFactoryTest, InterceptorInterceptsHandledUnknownProtocols) {
 
 TEST(URLRequestJobFactoryTest, InterceptorAffectsIsHandledProtocol) {
   DummyInterceptor* interceptor = new DummyInterceptor;
-  URLRequestJobFactory job_factory;
+  URLRequestJobFactoryImpl job_factory;
   job_factory.AddInterceptor(interceptor);
   EXPECT_FALSE(interceptor->WillHandleProtocol("anything"));
   EXPECT_FALSE(job_factory.IsHandledProtocol("anything"));

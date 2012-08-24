@@ -21,6 +21,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -175,7 +176,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   webkit::npapi::MockPluginList plugin_list_;
   TestingPrefService prefs_;
   scoped_refptr<PluginPrefs> plugin_prefs_;
-  net::URLRequestJobFactory job_factory_;
+  net::URLRequestJobFactoryImpl job_factory_;
   const net::URLRequestJobFactory* old_factory_;
   TestDelegate test_delegate_;
   FilePath pdf_path_;

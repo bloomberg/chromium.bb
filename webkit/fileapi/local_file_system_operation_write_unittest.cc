@@ -13,7 +13,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
+#include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -192,7 +192,7 @@ class TestURLRequestContext : public net::URLRequestContext {
   }
 
  private:
-  net::URLRequestJobFactory job_factory_;
+  net::URLRequestJobFactoryImpl job_factory_;
   scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLRequestContext);
