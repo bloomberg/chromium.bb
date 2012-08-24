@@ -336,7 +336,6 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
 // The view for a notification entry (icon + message + buttons).
 class WebNotificationView : public views::View,
                             public views::ButtonListener,
-                            public views::MenuButtonListener,
                             public ui::ImplicitAnimationObserver {
  public:
   WebNotificationView(WebNotificationTray* tray,
@@ -344,7 +343,6 @@ class WebNotificationView : public views::View,
       : tray_(tray),
         notification_(notification),
         icon_(NULL),
-        menu_button_(NULL),
         close_button_(NULL),
         scroller_(NULL),
         gesture_scroll_amount_(0.f) {
@@ -386,12 +384,6 @@ class WebNotificationView : public views::View,
     close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                      views::ImageButton::ALIGN_MIDDLE);
 
-    if (!notification.extension_id.empty() ||
-        !notification.display_source.empty()) {
-      menu_button_ = new views::MenuButton(NULL, string16(), this, true);
-      menu_button_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 2));
-    }
-
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
 
@@ -417,7 +409,7 @@ class WebNotificationView : public views::View,
 
     columns->AddPaddingColumn(0, padding_width);
 
-    // Close and menu buttons.
+    // Close button.
     columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
                        0, /* resize percent */
                        views::GridLayout::FIXED,
@@ -435,13 +427,15 @@ class WebNotificationView : public views::View,
     layout->StartRow(0, 0);
     layout->SkipColumns(2);
     layout->AddView(message, 1, 1);
-    if (menu_button_)
-      layout->AddView(menu_button_, 1, 1);
     layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
   }
 
   // views::View overrides.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    if (event.flags() & ui::EF_RIGHT_MOUSE_BUTTON) {
+      ShowMenu(event.location());
+      return true;
+    }
     tray_->OnClicked(notification_.id);
     return true;
   }
@@ -454,7 +448,7 @@ class WebNotificationView : public views::View,
     }
 
     if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
-      ShowMenu();
+      ShowMenu(event.location());
       return ui::GESTURE_STATUS_CONSUMED;
     }
 
@@ -508,14 +502,6 @@ class WebNotificationView : public views::View,
       tray_->SendRemoveNotification(notification_.id);
   }
 
-  // Overridden from MenuButtonListener.
-  virtual void OnMenuButtonClicked(View* source,
-                                   const gfx::Point& point) OVERRIDE {
-    if (source != menu_button_)
-      return;
-    ShowMenu();
-  }
-
   // Overridden from ImplicitAnimationObserver.
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     tray_->SendRemoveNotification(notification_.id);
@@ -527,20 +513,20 @@ class WebNotificationView : public views::View,
     SLIDE_RIGHT
   };
 
-  // Shows the menu (if there is one) for the notification.
-  void ShowMenu() {
-    if (!menu_button_)
-      return;
+  // Shows the menu for the notification.
+  void ShowMenu(gfx::Point screen_location) {
     WebNotificationMenuModel menu_model(tray_, notification_);
+    if (menu_model.GetItemCount() == 0)
+      return;
+
     views::MenuModelAdapter menu_model_adapter(&menu_model);
     views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
 
-    gfx::Point screen_location;
-    views::View::ConvertPointToScreen(menu_button_, &screen_location);
+    views::View::ConvertPointToScreen(this, &screen_location);
     ignore_result(menu_runner.RunMenuAt(
-        menu_button_->GetWidget()->GetTopLevelWidget(),
-        menu_button_,
-        gfx::Rect(screen_location, menu_button_->size()),
+        GetWidget()->GetTopLevelWidget(),
+        NULL,
+        gfx::Rect(screen_location, gfx::Size()),
         views::MenuItemView::TOPRIGHT,
         views::MenuRunner::HAS_MNEMONICS));
   }
@@ -574,7 +560,6 @@ class WebNotificationView : public views::View,
   WebNotificationTray* tray_;
   WebNotification notification_;
   views::ImageView* icon_;
-  views::MenuButton* menu_button_;
   views::ImageButton* close_button_;
 
   views::ScrollView* scroller_;
