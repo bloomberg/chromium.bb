@@ -14,7 +14,8 @@ namespace content {
 
 class HistogramInternalsRequestJob : public net::URLRequestSimpleJob {
  public:
-  explicit HistogramInternalsRequestJob(net::URLRequest* request);
+  HistogramInternalsRequestJob(net::URLRequest* request,
+                               net::NetworkDelegate* network_delegate);
 
   virtual int GetData(std::string* mime_type,
                       std::string* charset,

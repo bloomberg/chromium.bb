@@ -90,7 +90,8 @@ class ProtocolHandlerRegistry::Core
 
   // Creates a URL request job for the given request if there is a matching
   // protocol handler, returns NULL otherwise.
-  net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const;
+  net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) const;
 
   // Indicate that the registry has been enabled in the IO thread's
   // copy of the data.
@@ -137,7 +138,7 @@ void ProtocolHandlerRegistry::Core::SetDefault(const ProtocolHandler& handler) {
 // is registered and the associated handler is able to interpret
 // the url from |request|.
 net::URLRequestJob* ProtocolHandlerRegistry::Core::MaybeCreateJob(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ProtocolHandler handler = LookupHandler(default_handlers_,
@@ -149,7 +150,8 @@ net::URLRequestJob* ProtocolHandlerRegistry::Core::MaybeCreateJob(
   if (!translated_url.is_valid())
     return NULL;
 
-  return new net::URLRequestRedirectJob(request, translated_url);
+  return new net::URLRequestRedirectJob(
+      request, network_delegate, translated_url);
 }
 
 // URLInterceptor ------------------------------------------------------------
@@ -165,17 +167,21 @@ class ProtocolHandlerRegistry::URLInterceptor
   virtual ~URLInterceptor();
 
   virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 
   virtual bool WillHandleProtocol(const std::string& protocol) const OVERRIDE;
 
   virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& url, net::URLRequest* request) const OVERRIDE {
+      const GURL& url,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
     return NULL;
   }
 
   virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) const OVERRIDE {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
     return NULL;
   }
 
@@ -193,10 +199,10 @@ ProtocolHandlerRegistry::URLInterceptor::~URLInterceptor() {
 }
 
 net::URLRequestJob* ProtocolHandlerRegistry::URLInterceptor::MaybeIntercept(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  return core_->MaybeCreateJob(request);
+  return core_->MaybeCreateJob(request, network_delegate);
 }
 
 bool ProtocolHandlerRegistry::URLInterceptor::WillHandleProtocol(

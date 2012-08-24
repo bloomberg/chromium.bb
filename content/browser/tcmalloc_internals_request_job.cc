@@ -57,7 +57,8 @@ void AboutTcmallocOutputs::DumpToHTMLTable(std::string* data) {
 }
 
 TcmallocInternalsRequestJob::TcmallocInternalsRequestJob(
-    net::URLRequest* request) : net::URLRequestSimpleJob(request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate)
+    : net::URLRequestSimpleJob(request, network_delegate) {
 }
 
 #if defined(USE_TCMALLOC)

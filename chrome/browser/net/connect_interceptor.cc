@@ -28,7 +28,7 @@ ConnectInterceptor::~ConnectInterceptor() {
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   GURL request_scheme_host(Predictor::CanonicalizeUrl(request->url()));
   if (request_scheme_host == GURL::EmptyGURL())
     return NULL;
@@ -88,13 +88,14 @@ net::URLRequestJob* ConnectInterceptor::MaybeIntercept(
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   return NULL;
 }
 
 net::URLRequestJob* ConnectInterceptor::MaybeInterceptRedirect(
     const GURL& location,
-    net::URLRequest* request) const {
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
   return NULL;
 }
 

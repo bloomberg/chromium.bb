@@ -58,8 +58,13 @@ class ThrottleController : public base::SupportsUserData::Data,
 // whether it starts and finishes.
 class SimpleTestJob : public net::URLRequestTestJob {
  public:
-  explicit SimpleTestJob(net::URLRequest* request)
-    : net::URLRequestTestJob(request, test_headers(), kTestData, true) {}
+  SimpleTestJob(net::URLRequest* request,
+                net::NetworkDelegate* network_delegate)
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               test_headers(),
+                               kTestData,
+                               true) {}
  private:
   ~SimpleTestJob() {}
 };
@@ -116,8 +121,9 @@ class UserScriptListenerTest
   }
 
   // net::URLRequest::Interceptor
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) {
-    return new SimpleTestJob(request);
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
+    return new SimpleTestJob(request, network_delegate);
   }
 
  protected:

@@ -28,11 +28,15 @@ class ConnectInterceptor : public net::URLRequestJobFactory::Interceptor {
   // Overridden from net::URLRequest::Interceptor:
   // Learn about referrers, and optionally preconnect based on history.
   virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
   virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
   virtual net::URLRequestJob* MaybeInterceptRedirect(
-      const GURL& location, net::URLRequest* request) const OVERRIDE;
+      const GURL& location,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   // Provide access to local class TimedCache for testing.

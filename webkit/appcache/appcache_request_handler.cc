@@ -43,7 +43,7 @@ void AppCacheRequestHandler::GetExtraResponseInfo(
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
-    net::URLRequest* request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
 
@@ -73,9 +73,9 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   found_network_namespace_ = false;
 
   if (is_main_resource())
-    MaybeLoadMainResource(request);
+    MaybeLoadMainResource(request, network_delegate);
   else
-    MaybeLoadSubResource(request);
+    MaybeLoadSubResource(request, network_delegate);
 
   // If its been setup to deliver a network response, we can just delete
   // it now and return NULL instead to achieve that since it couldn't
@@ -89,7 +89,9 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
-    net::URLRequest* request, const GURL& location) {
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const GURL& location) {
   if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
   if (is_main_resource())
@@ -102,13 +104,13 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
   if (found_fallback_entry_.has_response_id()) {
     // 6.9.6, step 4: If this results in a redirect to another origin,
     // get the resource of the fallback entry.
-    job_ = new AppCacheURLRequestJob(request, storage());
+    job_ = new AppCacheURLRequestJob(request, network_delegate, storage());
     DeliverAppCachedResponse(
         found_fallback_entry_, found_cache_id_, found_group_id_,
         found_manifest_url_,  true, found_namespace_entry_url_);
   } else if (!found_network_namespace_) {
     // 6.9.6, step 6: Fail the resource load.
-    job_ = new AppCacheURLRequestJob(request, storage());
+    job_ = new AppCacheURLRequestJob(request, network_delegate, storage());
     DeliverErrorResponse();
   } else {
     // 6.9.6 step 3 and 5: Fetch the resource normally.
@@ -118,7 +120,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
-    net::URLRequest* request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   if (!host_ || !IsSchemeAndMethodSupported(request) || cache_entry_not_found_)
     return NULL;
   if (!found_fallback_entry_.has_response_id())
@@ -154,7 +156,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
 
   // 6.9.6, step 4: If this results in a 4xx or 5xx status code
   // or there were network errors, get the resource of the fallback entry.
-  job_ = new AppCacheURLRequestJob(request, storage());
+  job_ = new AppCacheURLRequestJob(request, network_delegate, storage());
   DeliverAppCachedResponse(
       found_fallback_entry_, found_cache_id_, found_group_id_,
       found_manifest_url_, true, found_namespace_entry_url_);
@@ -199,7 +201,8 @@ void AppCacheRequestHandler::DeliverNetworkResponse() {
 
 // Main-resource handling ----------------------------------------------
 
-void AppCacheRequestHandler::MaybeLoadMainResource(net::URLRequest* request) {
+void AppCacheRequestHandler::MaybeLoadMainResource(
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   DCHECK(!job_);
   DCHECK(host_);
 
@@ -211,7 +214,7 @@ void AppCacheRequestHandler::MaybeLoadMainResource(net::URLRequest* request) {
 
   // We may have to wait for our storage query to complete, but
   // this query can also complete syncrhonously.
-  job_ = new AppCacheURLRequestJob(request, storage());
+  job_ = new AppCacheURLRequestJob(request, network_delegate, storage());
   storage()->FindResponseForMainRequest(
       request->url(), preferred_manifest_url, this);
 }
@@ -277,14 +280,14 @@ void AppCacheRequestHandler::OnMainResponseFound(
 // Sub-resource handling ----------------------------------------------
 
 void AppCacheRequestHandler::MaybeLoadSubResource(
-    net::URLRequest* request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   DCHECK(!job_);
 
   if (host_->is_selection_pending()) {
     // We have to wait until cache selection is complete and the
     // selected cache is loaded.
     is_waiting_for_cache_selection_ = true;
-    job_ = new AppCacheURLRequestJob(request, storage());
+    job_ = new AppCacheURLRequestJob(request, network_delegate, storage());
     return;
   }
 
@@ -293,7 +296,7 @@ void AppCacheRequestHandler::MaybeLoadSubResource(
     return;
   }
 
-  job_ = new AppCacheURLRequestJob(request, storage());
+  job_ = new AppCacheURLRequestJob(request, network_delegate, storage());
   ContinueMaybeLoadSubResource();
 }
 

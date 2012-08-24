@@ -34,7 +34,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 
 using content::BrowserThread;
@@ -130,7 +129,8 @@ void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
 // formatted as drive://<resource-id>.
 class GDataURLRequestJob : public net::URLRequestJob {
  public:
-  explicit GDataURLRequestJob(net::URLRequest* request);
+  GDataURLRequestJob(net::URLRequest* request,
+                     net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob overrides:
   virtual void Start() OVERRIDE;
@@ -224,8 +224,9 @@ class GDataURLRequestJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(GDataURLRequestJob);
 };
 
-GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request)
-    : net::URLRequestJob(request, request->context()->network_delegate()),
+GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request,
+                                       net::NetworkDelegate* network_delegate)
+    : net::URLRequestJob(request, network_delegate),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataURLRequestJob>(this))),
       file_system_(NULL),
@@ -934,9 +935,9 @@ GDataProtocolHandler::~GDataProtocolHandler() {
 }
 
 net::URLRequestJob* GDataProtocolHandler::MaybeCreateJob(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DVLOG(1) << "Handling url: " << request->url().spec();
-  return new GDataURLRequestJob(request);
+  return new GDataURLRequestJob(request, network_delegate);
 }
 
 }  // namespace gdata

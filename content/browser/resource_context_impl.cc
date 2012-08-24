@@ -94,36 +94,38 @@ class DeveloperProtocolHandler
   virtual ~DeveloperProtocolHandler() {}
 
   virtual net::URLRequestJob* MaybeIntercept(
-        net::URLRequest* request) const OVERRIDE {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
     // Check for chrome://view-http-cache/*, which uses its own job type.
     if (ViewHttpCacheJobFactory::IsSupportedURL(request->url()))
-      return ViewHttpCacheJobFactory::CreateJobForRequest(request);
+      return ViewHttpCacheJobFactory::CreateJobForRequest(request,
+                                                          network_delegate);
 
     // Next check for chrome://appcache-internals/, which uses its own job type.
     if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
         request->url().host() == chrome::kChromeUIAppCacheInternalsHost) {
       return appcache::ViewAppCacheInternalsJobFactory::CreateJobForRequest(
-          request, appcache_service_);
+          request, network_delegate, appcache_service_);
     }
 
     // Next check for chrome://blob-internals/, which uses its own job type.
     if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url())) {
       return ViewBlobInternalsJobFactory::CreateJobForRequest(
-          request, blob_storage_controller_);
+          request, network_delegate, blob_storage_controller_);
     }
 
 #if defined(USE_TCMALLOC)
     // Next check for chrome://tcmalloc/, which uses its own job type.
     if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
         request->url().host() == chrome::kChromeUITcmallocHost) {
-      return new TcmallocInternalsRequestJob(request);
+      return new TcmallocInternalsRequestJob(request, network_delegate);
     }
 #endif
 
     // Next check for chrome://histograms/, which uses its own job type.
     if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
         request->url().host() == chrome::kChromeUIHistogramHost) {
-      return new HistogramInternalsRequestJob(request);
+      return new HistogramInternalsRequestJob(request, network_delegate);
     }
 
     return NULL;
@@ -131,12 +133,14 @@ class DeveloperProtocolHandler
 
   virtual net::URLRequestJob* MaybeInterceptRedirect(
         const GURL& location,
-        net::URLRequest* request) const OVERRIDE {
+        net::URLRequest* request,
+        net::NetworkDelegate* network_delegate) const OVERRIDE {
     return NULL;
   }
 
   virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) const OVERRIDE {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
     return NULL;
   }
 

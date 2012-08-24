@@ -40,6 +40,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
                            int *bytes_read) OVERRIDE;
 
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
 
   // Returns the current number of URLRequestSlowDownloadJobs that have
@@ -50,7 +51,8 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   static void AddUrlHandler();
 
  private:
-  explicit URLRequestSlowDownloadJob(net::URLRequest* request);
+  URLRequestSlowDownloadJob(net::URLRequest* request,
+                            net::NetworkDelegate* network_delegate);
   virtual ~URLRequestSlowDownloadJob();
 
   // Enum indicating where we are in the read after a call to

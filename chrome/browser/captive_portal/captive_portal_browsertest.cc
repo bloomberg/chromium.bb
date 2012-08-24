@@ -134,7 +134,8 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
     ABANDON_JOBS,
   };
 
-  explicit URLRequestTimeoutOnDemandJob(net::URLRequest* request);
+  URLRequestTimeoutOnDemandJob(net::URLRequest* request,
+                               net::NetworkDelegate* network_delegate);
   virtual ~URLRequestTimeoutOnDemandJob();
 
   // Attempts to removes |this| from |jobs_|.  Returns true if it was removed
@@ -226,8 +227,8 @@ void URLRequestTimeoutOnDemandJob::AbandonJobs(int expected_num_jobs) {
 }
 
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
-    net::URLRequest* request)
-    : net::URLRequestJob(request, request->context()->network_delegate()),
+    net::URLRequest* request, net::NetworkDelegate* network_delegate)
+    : net::URLRequestJob(request, network_delegate),
       next_job_(NULL) {
 }
 
@@ -343,6 +344,7 @@ class URLRequestMockCaptivePortalJobFactory {
   // kMockHttpsQuickTimeoutUrl.  See documentation of individual URLs for
   // actual behavior.
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
 
   static bool behind_captive_portal_;
@@ -398,6 +400,7 @@ void URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortalOnIOThread(
 // static
 net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -408,19 +411,22 @@ net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
   if (request->url() == GURL(kMockHttpsUrl) ||
       request->url() == GURL(kMockHttpsUrl2)) {
     if (behind_captive_portal_)
-      return new URLRequestTimeoutOnDemandJob(request);
+      return new URLRequestTimeoutOnDemandJob(request, network_delegate);
     // Once logged in to the portal, HTTPS requests return the page that was
     // actually requested.
     return new URLRequestMockHTTPJob(
         request,
+        network_delegate,
         root_http.Append(FILE_PATH_LITERAL("title2.html")));
   } else if (request->url() == GURL(kMockHttpsQuickTimeoutUrl)) {
     if (behind_captive_portal_)
-      return new URLRequestFailedJob(request, net::ERR_CONNECTION_TIMED_OUT);
+      return new URLRequestFailedJob(
+          request, network_delegate, net::ERR_CONNECTION_TIMED_OUT);
     // Once logged in to the portal, HTTPS requests return the page that was
     // actually requested.
     return new URLRequestMockHTTPJob(
         request,
+        network_delegate,
         root_http.Append(FILE_PATH_LITERAL("title2.html")));
   } else {
     // The URL should be the captive portal test URL.
@@ -430,12 +436,14 @@ net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
       // Prior to logging in to the portal, HTTP requests go to the login page.
       return new URLRequestMockHTTPJob(
           request,
+          network_delegate,
           root_http.Append(FILE_PATH_LITERAL("captive_portal/login.html")));
     }
 
     // After logging in to the portal, the test URL returns a 204 response.
     return new URLRequestMockHTTPJob(
         request,
+        network_delegate,
         root_http.Append(FILE_PATH_LITERAL("captive_portal/page204.html")));
   }
 }

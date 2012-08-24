@@ -52,11 +52,12 @@ net::URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
 
 URLRequestAutomationJob::URLRequestAutomationJob(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     int tab,
     int request_id,
     AutomationResourceMessageFilter* filter,
     bool is_pending)
-    : net::URLRequestJob(request, request->context()->network_delegate()),
+    : net::URLRequestJob(request, network_delegate),
       id_(0),
       tab_(tab),
       message_filter_(filter),
@@ -95,6 +96,7 @@ void URLRequestAutomationJob::EnsureProtocolFactoryRegistered() {
 
 net::URLRequestJob* URLRequestAutomationJob::Factory(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
   bool scheme_is_http = request->url().SchemeIs("http");
   bool scheme_is_https = request->url().SchemeIs("https");
@@ -108,7 +110,8 @@ net::URLRequestJob* URLRequestAutomationJob::Factory(
       AutomationResourceMessageFilter::AutomationDetails details;
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
               child_id, route_id, &details)) {
-        URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
+        URLRequestAutomationJob* job = new URLRequestAutomationJob(
+            request, network_delegate,
             details.tab_handle, info->GetRequestID(), details.filter,
             details.is_pending_render_view);
         return job;
@@ -116,9 +119,9 @@ net::URLRequestJob* URLRequestAutomationJob::Factory(
     }
 
     if (scheme_is_http && old_http_factory_)
-      return old_http_factory_(request, scheme);
+      return old_http_factory_(request, network_delegate, scheme);
     else if (scheme_is_https && old_https_factory_)
-      return old_https_factory_(request, scheme);
+      return old_https_factory_(request, network_delegate, scheme);
   }
   return NULL;
 }

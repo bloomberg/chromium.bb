@@ -144,6 +144,7 @@ class BlobURLRequestJobTest : public testing::Test {
 
   static net::URLRequestJob* BlobURLRequestJobFactory(
       net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
       const std::string& scheme) {
     BlobURLRequestJob* temp = blob_url_request_job_;
     blob_url_request_job_ = NULL;
@@ -248,6 +249,7 @@ class BlobURLRequestJobTest : public testing::Test {
     request_->set_method(method);
     blob_url_request_job_ = new BlobURLRequestJob(
         request_.get(),
+        empty_context_.network_delegate(),
         blob_data,
         base::MessageLoopProxy::current());
 

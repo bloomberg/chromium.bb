@@ -20,11 +20,11 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_url.h"
 
+using net::NetworkDelegate;
 using net::URLRequest;
 using net::URLRequestJob;
 using net::URLRequestStatus;
@@ -32,8 +32,10 @@ using net::URLRequestStatus;
 namespace fileapi {
 
 FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
-    URLRequest* request, FileSystemContext* file_system_context)
-    : URLRequestJob(request, request->context()->network_delegate()),
+    URLRequest* request,
+    NetworkDelegate* network_delegate,
+    FileSystemContext* file_system_context)
+    : URLRequestJob(request, network_delegate),
       file_system_context_(file_system_context),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }

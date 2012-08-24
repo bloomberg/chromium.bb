@@ -9,6 +9,7 @@
 #include "webkit/appcache/appcache_export.h"
 
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }
@@ -20,7 +21,9 @@ class AppCacheService;
 class APPCACHE_EXPORT ViewAppCacheInternalsJobFactory {
  public:
   static net::URLRequestJob* CreateJobForRequest(
-      net::URLRequest* request, AppCacheService* service);
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      AppCacheService* service);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ViewAppCacheInternalsJobFactory);

@@ -22,7 +22,9 @@ namespace appcache {
 class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
                                               public AppCacheStorage::Delegate {
  public:
-  AppCacheURLRequestJob(net::URLRequest* request, AppCacheStorage* storage);
+  AppCacheURLRequestJob(net::URLRequest* request,
+                        net::NetworkDelegate* network_delegate,
+                        AppCacheStorage* storage);
 
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and

@@ -44,11 +44,15 @@ class APPCACHE_EXPORT AppCacheInterceptor
 
  protected:
   // Override from net::URLRequest::Interceptor:
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) OVERRIDE;
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) OVERRIDE;
   virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) OVERRIDE;
   virtual net::URLRequestJob* MaybeInterceptRedirect(
       net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
       const GURL& location) OVERRIDE;
 
  private:

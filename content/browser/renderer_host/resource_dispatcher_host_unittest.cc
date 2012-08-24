@@ -209,20 +209,27 @@ class ForwardingFilter : public ResourceMessageFilter {
 // not complete start upon entry, only when specifically told to.
 class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
  public:
-  URLRequestTestDelayedStartJob(net::URLRequest* request)
-      : net::URLRequestTestJob(request) {
-    Init();
-  }
-  URLRequestTestDelayedStartJob(net::URLRequest* request, bool auto_advance)
-      : net::URLRequestTestJob(request, auto_advance) {
+  URLRequestTestDelayedStartJob(net::URLRequest* request,
+                                net::NetworkDelegate* network_delegate)
+      : net::URLRequestTestJob(request, network_delegate) {
     Init();
   }
   URLRequestTestDelayedStartJob(net::URLRequest* request,
+                                net::NetworkDelegate* network_delegate,
+                                bool auto_advance)
+      : net::URLRequestTestJob(request, network_delegate, auto_advance) {
+    Init();
+  }
+  URLRequestTestDelayedStartJob(net::URLRequest* request,
+                                net::NetworkDelegate* network_delegate,
                                 const std::string& response_headers,
                                 const std::string& response_data,
                                 bool auto_advance)
-      : net::URLRequestTestJob(
-          request, response_headers, response_data, auto_advance) {
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               response_headers,
+                               response_data,
+                               auto_advance) {
     Init();
   }
 
@@ -286,17 +293,23 @@ URLRequestTestDelayedStartJob::list_head_ = NULL;
 // returns IO_pending errors before every read, not just the first one.
 class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
  public:
-  explicit URLRequestTestDelayedCompletionJob(net::URLRequest* request)
-      : net::URLRequestTestJob(request) {}
   URLRequestTestDelayedCompletionJob(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate)
+      : net::URLRequestTestJob(request, network_delegate) {}
+  URLRequestTestDelayedCompletionJob(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      bool auto_advance)
-      : net::URLRequestTestJob(request, auto_advance) {}
+      : net::URLRequestTestJob(request, network_delegate, auto_advance) {}
   URLRequestTestDelayedCompletionJob(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& response_headers,
                                      const std::string& response_data,
                                      bool auto_advance)
-      : net::URLRequestTestJob(request, response_headers,
-                               response_data, auto_advance) {}
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               response_headers,
+                               response_data,
+                               auto_advance) {}
 
  protected:
   ~URLRequestTestDelayedCompletionJob() {}
@@ -307,8 +320,9 @@ class URLRequestTestDelayedCompletionJob : public net::URLRequestTestJob {
 
 class URLRequestBigJob : public net::URLRequestSimpleJob {
  public:
-  URLRequestBigJob(net::URLRequest* request)
-      : net::URLRequestSimpleJob(request) {
+  URLRequestBigJob(net::URLRequest* request,
+                   net::NetworkDelegate* network_delegate)
+      : net::URLRequestSimpleJob(request, network_delegate) {
   }
 
   virtual int GetData(std::string* mime_type,
@@ -564,31 +578,35 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   // Our own net::URLRequestJob factory.
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme) {
     if (test_fixture_->response_headers_.empty()) {
       if (delay_start_) {
-        return new URLRequestTestDelayedStartJob(request);
+        return new URLRequestTestDelayedStartJob(request, network_delegate);
       } else if (delay_complete_) {
-        return new URLRequestTestDelayedCompletionJob(request);
+        return new URLRequestTestDelayedCompletionJob(request,
+                                                      network_delegate);
       } else if (scheme == "big-job") {
-        return new URLRequestBigJob(request);
+        return new URLRequestBigJob(request, network_delegate);
       } else {
-        return new net::URLRequestTestJob(request);
+        return new net::URLRequestTestJob(request, network_delegate);
       }
     } else {
       if (delay_start_) {
         return new URLRequestTestDelayedStartJob(
-            request, test_fixture_->response_headers_,
-            test_fixture_->response_data_, false);
+            request, network_delegate,
+            test_fixture_->response_headers_, test_fixture_->response_data_,
+            false);
       } else if (delay_complete_) {
         return new URLRequestTestDelayedCompletionJob(
-            request, test_fixture_->response_headers_,
-            test_fixture_->response_data_, false);
+            request, network_delegate,
+            test_fixture_->response_headers_, test_fixture_->response_data_,
+            false);
       } else {
-        return new net::URLRequestTestJob(request,
-                                          test_fixture_->response_headers_,
-                                          test_fixture_->response_data_,
-                                          false);
+        return new net::URLRequestTestJob(
+            request, network_delegate,
+            test_fixture_->response_headers_, test_fixture_->response_data_,
+            false);
       }
     }
   }

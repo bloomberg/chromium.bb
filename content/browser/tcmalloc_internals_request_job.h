@@ -48,7 +48,8 @@ class AboutTcmallocOutputs {
 
 class TcmallocInternalsRequestJob : public net::URLRequestSimpleJob {
  public:
-  explicit TcmallocInternalsRequestJob(net::URLRequest* request);
+  TcmallocInternalsRequestJob(net::URLRequest* request,
+                              net::NetworkDelegate* network_delegate);
 
   virtual int GetData(std::string* mime_type,
                       std::string* charset,

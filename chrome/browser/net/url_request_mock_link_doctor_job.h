@@ -11,7 +11,8 @@
 
 class URLRequestMockLinkDoctorJob : public URLRequestMockHTTPJob {
  public:
-  explicit URLRequestMockLinkDoctorJob(net::URLRequest* request);
+  URLRequestMockLinkDoctorJob(net::URLRequest* request,
+                              net::NetworkDelegate* network_delegate);
 
   static net::URLRequest::ProtocolFactory Factory;
 

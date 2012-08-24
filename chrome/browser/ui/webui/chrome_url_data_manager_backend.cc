@@ -162,6 +162,7 @@ class URLRequestChromeJob : public net::URLRequestJob,
                             public base::SupportsWeakPtr<URLRequestChromeJob> {
  public:
   URLRequestChromeJob(net::URLRequest* request,
+                      net::NetworkDelegate* network_delegate,
                       ChromeURLDataManagerBackend* backend);
 
   // net::URLRequestJob implementation.
@@ -223,8 +224,9 @@ class URLRequestChromeJob : public net::URLRequestJob,
 };
 
 URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
+                                         net::NetworkDelegate* network_delegate,
                                          ChromeURLDataManagerBackend* backend)
-    : net::URLRequestJob(request, request->context()->network_delegate()),
+    : net::URLRequestJob(request, network_delegate),
       data_offset_(0),
       pending_buf_size_(0),
       allow_caching_(true),
@@ -361,7 +363,8 @@ class ChromeProtocolHandler
   ~ChromeProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
@@ -377,11 +380,11 @@ ChromeProtocolHandler::ChromeProtocolHandler(
 ChromeProtocolHandler::~ChromeProtocolHandler() {}
 
 net::URLRequestJob* ChromeProtocolHandler::MaybeCreateJob(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DCHECK(request);
 
   // Fall back to using a custom handler
-  return new URLRequestChromeJob(request, backend_);
+  return new URLRequestChromeJob(request, network_delegate, backend_);
 }
 
 }  // namespace
@@ -573,7 +576,8 @@ class DevToolsJobFactory
   virtual ~DevToolsJobFactory();
 
   virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   // |backend_| and |network_delegate_| are owned by ProfileIOData, which owns
@@ -594,14 +598,15 @@ DevToolsJobFactory::DevToolsJobFactory(ChromeURLDataManagerBackend* backend,
 DevToolsJobFactory::~DevToolsJobFactory() {}
 
 net::URLRequestJob*
-DevToolsJobFactory::MaybeCreateJob(net::URLRequest* request) const {
+DevToolsJobFactory::MaybeCreateJob(
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   if (ShouldLoadFromDisk()) {
     FilePath path;
     if (IsSupportedURL(request->url(), &path))
-      return new net::URLRequestFileJob(request, path, network_delegate_);
+      return new net::URLRequestFileJob(request, network_delegate, path);
   }
 
-  return new URLRequestChromeJob(request, backend_);
+  return new URLRequestChromeJob(request, network_delegate, backend_);
 }
 
 }  // namespace

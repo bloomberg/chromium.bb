@@ -160,9 +160,11 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   virtual ~TestProtocolHandler() {}
 
   virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
     return new webkit_blob::BlobURLRequestJob(
         request,
+        network_delegate,
         blob_storage_controller_->GetBlobDataFromUrl(request->url()),
         base::MessageLoopProxy::current());
   }

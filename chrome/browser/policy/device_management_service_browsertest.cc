@@ -42,7 +42,8 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
 
   // net::URLRequest::Interceptor overrides.
   virtual net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request) OVERRIDE {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) OVERRIDE {
     em::DeviceManagementRequest dm_request;
     net::UploadData* upload = request->get_upload_mutable();
     if (request->url().GetOrigin() == service_url_.GetOrigin() &&
@@ -54,6 +55,7 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
                         upload->elements()->at(0).bytes_length(),
                         &response_data);
       return new net::URLRequestTestJob(request,
+                                        network_delegate,
                                         net::URLRequestTestJob::test_headers(),
                                         response_data,
                                         true);

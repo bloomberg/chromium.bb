@@ -16,7 +16,9 @@
 // trying to connect.
 class URLRequestFailedJob : public net::URLRequestJob {
  public:
-  URLRequestFailedJob(net::URLRequest* request, int net_error);
+  URLRequestFailedJob(net::URLRequest* request,
+                      net::NetworkDelegate* network_delegate,
+                      int net_error);
 
   virtual void Start() OVERRIDE;
 
@@ -31,6 +33,7 @@ class URLRequestFailedJob : public net::URLRequestJob {
 
  private:
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
 
   virtual ~URLRequestFailedJob();

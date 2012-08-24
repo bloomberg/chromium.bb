@@ -15,7 +15,6 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/view_cache_helper.h"
 
@@ -24,8 +23,9 @@ namespace {
 // A job subclass that dumps an HTTP cache entry.
 class ViewHttpCacheJob : public net::URLRequestJob {
  public:
-  explicit ViewHttpCacheJob(net::URLRequest* request)
-      : net::URLRequestJob(request, request->context()->network_delegate()),
+  ViewHttpCacheJob(net::URLRequest* request,
+                   net::NetworkDelegate* network_delegate)
+      : net::URLRequestJob(request, network_delegate),
         core_(new Core),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -197,6 +197,6 @@ bool ViewHttpCacheJobFactory::IsSupportedURL(const GURL& url) {
 
 // Static.
 net::URLRequestJob* ViewHttpCacheJobFactory::CreateJobForRequest(
-    net::URLRequest* request) {
-  return new ViewHttpCacheJob(request);
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
+  return new ViewHttpCacheJob(request, network_delegate);
 }

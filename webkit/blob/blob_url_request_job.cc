@@ -48,9 +48,10 @@ const char kHTTPInternalErrorText[] = "Internal Server Error";
 
 BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     BlobData* blob_data,
     base::MessageLoopProxy* file_thread_proxy)
-    : net::URLRequestJob(request, request->context()->network_delegate()),
+    : net::URLRequestJob(request, network_delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),

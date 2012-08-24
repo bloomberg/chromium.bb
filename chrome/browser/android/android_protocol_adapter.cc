@@ -74,7 +74,9 @@ static bool InitJNIBindings(JNIEnv* env) {
 
 // static
 net::URLRequestJob* AndroidProtocolAdapter::Factory(
-    net::URLRequest* request, const std::string& scheme) {
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const std::string& scheme) {
   DCHECK(scheme == chrome::kFileScheme ||
          scheme == chrome::kContentScheme);
   JNIEnv* env = AttachCurrentThread();
@@ -90,11 +92,12 @@ net::URLRequestJob* AndroidProtocolAdapter::Factory(
   if (scheme == chrome::kFileScheme &&
       !StartsWithASCII(url, assetPrefix, /*case_sensitive=*/ true) &&
       !StartsWithASCII(url, resourcePrefix,  /*case_sensitive=*/ true)) {
-    return net::URLRequestFileJob::Factory(request, scheme);
+    return net::URLRequestFileJob::Factory(request, network_delegate, scheme);
   }
 
   return new AndroidStreamReaderURLRequestJob(
       request,
+      network_delegate,
       scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>(
           new AndroidStreamReaderURLRequestJobDelegateImpl()));
 }

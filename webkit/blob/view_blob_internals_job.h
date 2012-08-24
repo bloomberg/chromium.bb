@@ -25,6 +25,7 @@ class BlobStorageController;
 class BLOB_EXPORT ViewBlobInternalsJob : public net::URLRequestSimpleJob {
  public:
   ViewBlobInternalsJob(net::URLRequest* request,
+                       net::NetworkDelegate* network_delegate,
                        BlobStorageController* blob_storage_controller);
 
   virtual void Start() OVERRIDE;

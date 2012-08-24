@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NET_VIEW_BLOB_INTERNALS_JOB_FACTORY_H_
 
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }  // namespace net
@@ -20,6 +21,7 @@ class ViewBlobInternalsJobFactory {
   static bool IsSupportedURL(const GURL& url);
   static net::URLRequestJob* CreateJobForRequest(
       net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
       webkit_blob::BlobStorageController* blob_storage_controller);
 };
 

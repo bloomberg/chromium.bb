@@ -45,8 +45,9 @@ const char kPptUrlIntercepted[] =
 
 class GViewURLRequestTestJob : public net::URLRequestTestJob {
  public:
-  explicit GViewURLRequestTestJob(net::URLRequest* request)
-      : net::URLRequestTestJob(request, true) {
+  GViewURLRequestTestJob(net::URLRequest* request,
+                         net::NetworkDelegate* network_delegate)
+      : net::URLRequestTestJob(request, network_delegate, true) {
   }
 
   virtual bool GetMimeType(std::string* mime_type) const {
@@ -79,8 +80,9 @@ class GViewRequestProtocolFactory
   GViewRequestProtocolFactory() {}
   virtual ~GViewRequestProtocolFactory() {}
 
-  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
-    return new GViewURLRequestTestJob(request);
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+    return new GViewURLRequestTestJob(request, network_delegate);
   }
 };
 

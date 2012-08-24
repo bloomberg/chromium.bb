@@ -51,7 +51,7 @@ GViewRequestInterceptor::~GViewRequestInterceptor() {
 }
 
 net::URLRequestJob* GViewRequestInterceptor::MaybeIntercept(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   // Don't attempt to intercept here as we want to wait until the mime
   // type is fully determined.
   return NULL;
@@ -59,7 +59,8 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeIntercept(
 
 net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptRedirect(
     const GURL& location,
-    net::URLRequest* request) const {
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
   return NULL;
 }
 
@@ -87,7 +88,7 @@ bool GViewRequestInterceptor::ShouldInterceptScheme(
 }
 
 net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   // Do not intercept this request if it is a download.
   if (request->load_flags() & net::LOAD_IS_DOWNLOAD) {
     return NULL;
@@ -112,7 +113,7 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   if (supported_mime_types_.count(mime_type) > 0) {
     std::string url(kGViewUrlPrefix);
     url += net::EscapePath(request->url().spec());
-    return new net::URLRequestRedirectJob(request, GURL(url));
+    return new net::URLRequestRedirectJob(request, network_delegate, GURL(url));
   }
   return NULL;
 }

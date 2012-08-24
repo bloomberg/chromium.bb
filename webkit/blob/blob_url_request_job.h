@@ -31,6 +31,7 @@ class LocalFileStreamReader;
 class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
  public:
   BlobURLRequestJob(net::URLRequest* request,
+                    net::NetworkDelegate* network_delegate,
                     BlobData* blob_data,
                     base::MessageLoopProxy* resolving_message_loop_proxy);
 

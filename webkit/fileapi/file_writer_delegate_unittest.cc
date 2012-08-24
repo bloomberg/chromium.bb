@@ -143,8 +143,9 @@ static std::string g_content;
 class FileWriterDelegateTestJob : public net::URLRequestJob {
  public:
   FileWriterDelegateTestJob(net::URLRequest* request,
+                            net::NetworkDelegate* network_delegate,
                             const std::string& content)
-      : net::URLRequestJob(request, request->context()->network_delegate()),
+      : net::URLRequestJob(request, network_delegate),
         content_(content),
         remaining_bytes_(content.length()),
         cursor_(0) {
@@ -189,9 +190,10 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
 // static
 net::URLRequestJob* FileWriterDelegateTest::Factory(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
   return new FileWriterDelegateTestJob(
-      request, FileWriterDelegateTest::content_);
+      request, network_delegate, FileWriterDelegateTest::content_);
 }
 
 void FileWriterDelegateTest::SetUp() {

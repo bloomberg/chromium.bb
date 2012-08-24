@@ -10,7 +10,6 @@
 #include "base/string_number_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 
 namespace {
@@ -42,8 +41,9 @@ GURL GetMockUrl(const std::string& scheme, int net_error) {
 }  // namespace
 
 URLRequestFailedJob::URLRequestFailedJob(net::URLRequest* request,
+                                         net::NetworkDelegate* network_delegate,
                                          int net_error)
-    : net::URLRequestJob(request, request->context()->network_delegate()),
+    : net::URLRequestJob(request, network_delegate),
       net_error_(net_error),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
@@ -77,9 +77,12 @@ GURL URLRequestFailedJob::GetMockHttpsUrl(int net_error) {
 }
 
 // static
-net::URLRequestJob* URLRequestFailedJob::Factory(net::URLRequest* request,
+net::URLRequestJob* URLRequestFailedJob::Factory(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
-  return new URLRequestFailedJob(request, GetErrorCode(request));
+  return new URLRequestFailedJob(
+      request, network_delegate, GetErrorCode(request));
 }
 
 void URLRequestFailedJob::StartAsync() {

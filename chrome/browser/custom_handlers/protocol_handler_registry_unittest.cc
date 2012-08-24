@@ -34,7 +34,8 @@ void AssertInterceptedIO(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::URLRequestContext context;
   net::URLRequest request(url, NULL, &context);
-  scoped_refptr<net::URLRequestJob> job = interceptor->MaybeIntercept(&request);
+  scoped_refptr<net::URLRequestJob> job = interceptor->MaybeIntercept(
+      &request, context.network_delegate());
   ASSERT_TRUE(job.get() != NULL);
 }
 

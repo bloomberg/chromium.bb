@@ -71,28 +71,30 @@ AppCacheInterceptor::~AppCacheInterceptor() {
 }
 
 net::URLRequestJob* AppCacheInterceptor::MaybeIntercept(
-    net::URLRequest* request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
-  return handler->MaybeLoadResource(request);
+  return handler->MaybeLoadResource(request, network_delegate);
 }
 
 net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const GURL& location) {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
-  return handler->MaybeLoadFallbackForRedirect(request, location);
+  return handler->MaybeLoadFallbackForRedirect(
+      request, network_delegate, location);
 }
 
 net::URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
     return NULL;
-  return handler->MaybeLoadFallbackForResponse(request);
+  return handler->MaybeLoadFallbackForResponse(request, network_delegate);
 }
 
 }  // namespace appcache

@@ -74,14 +74,15 @@ class AppCacheRequestHandlerTest : public testing::Test {
   class MockURLRequestJob : public net::URLRequestJob {
    public:
     MockURLRequestJob(net::URLRequest* request,
+                      net::NetworkDelegate* network_delegate,
                       int response_code)
-        : net::URLRequestJob(request, request->context()->network_delegate()),
+        : net::URLRequestJob(request, network_delegate),
           response_code_(response_code),
           has_response_info_(false) {}
     MockURLRequestJob(net::URLRequest* request,
+                      net::NetworkDelegate* network_delegate,
                       const net::HttpResponseInfo& info)
-        : net::URLRequestJob(request,
-                             request->context()->network_delegate()),
+        : net::URLRequestJob(request, network_delegate),
           response_code_(info.headers->response_code()),
           has_response_info_(true),
           response_info_(info) {}
@@ -114,7 +115,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     }
 
     void SimulateResponseCode(int http_response_code) {
-      mock_factory_job_ = new MockURLRequestJob(this, http_response_code);
+      mock_factory_job_ = new MockURLRequestJob(
+          this, context()->network_delegate(), http_response_code);
       Start();
       DCHECK(!mock_factory_job_);
       // All our simulation needs  to satisfy are the following two DCHECKs
@@ -123,7 +125,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     }
 
     void SimulateResponseInfo(const net::HttpResponseInfo& info) {
-      mock_factory_job_ = new MockURLRequestJob(this, info);
+      mock_factory_job_ = new MockURLRequestJob(
+          this, context()->network_delegate(), info);
       set_delegate(&delegate_);  // needed to get the info back out
       Start();
       DCHECK(!mock_factory_job_);
@@ -132,8 +135,10 @@ class AppCacheRequestHandlerTest : public testing::Test {
     MockURLRequestDelegate delegate_;
   };
 
-  static net::URLRequestJob* MockHttpJobFactory(net::URLRequest* request,
-                                                const std::string& scheme) {
+  static net::URLRequestJob* MockHttpJobFactory(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const std::string& scheme) {
     if (mock_factory_job_) {
       net::URLRequestJob* temp = mock_factory_job_;
       mock_factory_job_ = NULL;
@@ -142,6 +147,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
       // Some of these tests trigger UpdateJobs which start URLRequests.
       // We short circuit those be returning error jobs.
       return new net::URLRequestErrorJob(request,
+                                         network_delegate,
                                          net::ERR_INTERNET_DISCONNECTED);
     }
   }
@@ -246,7 +252,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
                                                ResourceType::MAIN_FRAME));
     EXPECT_TRUE(handler_.get());
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
@@ -267,9 +274,12 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect"));
+        request_.get(),
+        request_->context()->network_delegate(),
+        GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), request_->context()->network_delegate());
     EXPECT_FALSE(fallback_job);
 
     EXPECT_TRUE(host_->preferred_manifest_url().is_empty());
@@ -294,7 +304,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         GURL(), AppCacheEntry(),
         1, 2, GURL("http://blah/manifest/"));
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
@@ -314,7 +325,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_EQ(2, handler_->found_group_id_);
 
     AppCacheURLRequestJob* fallback_job;
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), request_->context()->network_delegate());
     EXPECT_FALSE(fallback_job);
 
     EXPECT_EQ(GURL("http://blah/manifest/"),
@@ -341,7 +353,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
         1, 2, GURL("http://blah/manifest/"));
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
@@ -356,13 +369,15 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // When the request is restarted, the existing job is dropped so a
     // real network job gets created. We expect NULL here which will cause
     // the net library to create a real job.
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_FALSE(job_);
 
     // Simulate an http error of the real network job.
     request_->SimulateResponseCode(500);
 
-    job_ = handler_->MaybeLoadFallbackForResponse(request_.get());
+    job_ = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), request_->context()->network_delegate());
     EXPECT_TRUE(job_);
     EXPECT_TRUE(job_->is_delivering_appcache_response());
 
@@ -399,7 +414,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
         1, 2, GURL("http://blah/manifest/"));
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
@@ -414,7 +430,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // When the request is restarted, the existing job is dropped so a
     // real network job gets created. We expect NULL here which will cause
     // the net library to create a real job.
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_FALSE(job_);
 
     // Simulate an http error of the real network job, but with custom
@@ -428,7 +445,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         std::string(kOverrideHeaders, arraysize(kOverrideHeaders)));
     request_->SimulateResponseInfo(info);
 
-    job_ = handler_->MaybeLoadFallbackForResponse(request_.get());
+    job_ = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), request_->context()->network_delegate());
     EXPECT_FALSE(job_);
 
     TestFinished();
@@ -460,15 +478,19 @@ class AppCacheRequestHandlerTest : public testing::Test {
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_delivering_error_response());
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect"));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_FALSE(fallback_job);
 
     TestFinished();
@@ -486,7 +508,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
@@ -496,9 +519,12 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect"));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_FALSE(fallback_job);
 
     TestFinished();
@@ -516,15 +542,19 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_delivering_appcache_response());
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect"));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_FALSE(fallback_job);
 
     TestFinished();
@@ -544,16 +574,20 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_FALSE(job_.get());
 
     job_ = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://not_blah/redirect"));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://not_blah/redirect"));
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_delivering_appcache_response());
 
     AppCacheURLRequestJob* fallback_job;
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_FALSE(fallback_job);
 
     TestFinished();
@@ -573,16 +607,20 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_FALSE(job_.get());
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect"));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
 
     request_->SimulateResponseCode(200);
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_FALSE(fallback_job);
 
     TestFinished();
@@ -603,14 +641,18 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_FALSE(job_.get());
 
     AppCacheURLRequestJob* fallback_job;
     fallback_job = handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect"));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect"));
     EXPECT_FALSE(fallback_job);
-    fallback_job = handler_->MaybeLoadFallbackForResponse(request_.get());
+    fallback_job = handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_FALSE(fallback_job);
 
     TestFinished();
@@ -632,10 +674,14 @@ class AppCacheRequestHandlerTest : public testing::Test {
     backend_impl_->UnregisterHost(1);
     host_ = NULL;
 
-    EXPECT_FALSE(handler_->MaybeLoadResource(request_.get()));
+    EXPECT_FALSE(handler_->MaybeLoadResource(
+        request_.get(), empty_context_.network_delegate()));
     EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect")));
-    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(request_.get()));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect")));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate()));
 
     TestFinished();
   }
@@ -651,7 +697,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(
+        request_.get(), empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 
@@ -659,10 +706,14 @@ class AppCacheRequestHandlerTest : public testing::Test {
     host_ = NULL;
     EXPECT_TRUE(job_->has_been_killed());
 
-    EXPECT_FALSE(handler_->MaybeLoadResource(request_.get()));
+    EXPECT_FALSE(handler_->MaybeLoadResource(
+        request_.get(), empty_context_.network_delegate()));
     EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("http://blah/redirect")));
-    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(request_.get()));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("http://blah/redirect")));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate()));
 
     TestFinished();
   }
@@ -678,10 +729,14 @@ class AppCacheRequestHandlerTest : public testing::Test {
                                                ResourceType::SUB_RESOURCE));
     EXPECT_TRUE(handler_.get());  // we could redirect to http (conceivably)
 
-    EXPECT_FALSE(handler_->MaybeLoadResource(request_.get()));
+    EXPECT_FALSE(handler_->MaybeLoadResource(
+        request_.get(), empty_context_.network_delegate()));
     EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
-        request_.get(), GURL("ftp://blah/redirect")));
-    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(request_.get()));
+        request_.get(),
+        empty_context_.network_delegate(),
+        GURL("ftp://blah/redirect")));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate()));
 
     TestFinished();
   }
@@ -694,7 +749,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
                                                ResourceType::MAIN_FRAME));
     EXPECT_TRUE(handler_.get());
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
     EXPECT_FALSE(job_->has_been_started());
@@ -706,7 +762,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     request_->Cancel();
     EXPECT_TRUE(job_->has_been_killed());
 
-    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(request_.get()));
+    EXPECT_FALSE(handler_->MaybeLoadFallbackForResponse(
+        request_.get(), empty_context_.network_delegate()));
 
     TestFinished();
   }
@@ -771,7 +828,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         GURL(), AppCacheEntry(),
         1, 2, GURL("http://blah/manifest/"));
 
-    job_ = handler_->MaybeLoadResource(request_.get());
+    job_ = handler_->MaybeLoadResource(request_.get(),
+                                       empty_context_.network_delegate());
     EXPECT_TRUE(job_.get());
     EXPECT_TRUE(job_->is_waiting());
 

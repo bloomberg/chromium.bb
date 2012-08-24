@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,8 +17,10 @@ namespace {
 
 class MockURLRequestJob : public URLRequestJob {
  public:
-  MockURLRequestJob(URLRequest* request, const URLRequestStatus& status)
-      : URLRequestJob(request, request->context()->network_delegate()),
+  MockURLRequestJob(URLRequest* request,
+                    NetworkDelegate* network_delegate,
+                    const URLRequestStatus& status)
+      : URLRequestJob(request, network_delegate),
         status_(status),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
@@ -47,9 +48,12 @@ class MockURLRequestJob : public URLRequestJob {
 
 class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual URLRequestJob* MaybeCreateJob(URLRequest* request) const OVERRIDE {
+  virtual URLRequestJob* MaybeCreateJob(
+      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
     return new MockURLRequestJob(
-        request, URLRequestStatus(URLRequestStatus::SUCCESS, OK));
+        request,
+        network_delegate,
+        URLRequestStatus(URLRequestStatus::SUCCESS, OK));
   }
 };
 
@@ -60,21 +64,25 @@ class DummyInterceptor : public URLRequestJobFactory::Interceptor {
         handle_all_protocols_(false) {
   }
 
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request) const OVERRIDE {
+  virtual URLRequestJob* MaybeIntercept(
+      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
     did_intercept_ = true;
     return new MockURLRequestJob(
         request,
+        network_delegate,
         URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
   }
 
   virtual URLRequestJob* MaybeInterceptRedirect(
-      const GURL& /* location */,
-      URLRequest* /* request */) const OVERRIDE {
+      const GURL&                       /* location */,
+      URLRequest*                       /* request */,
+      NetworkDelegate* network_delegate /* network delegate */) const OVERRIDE {
     return NULL;
   }
 
   virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* /* request */) const OVERRIDE {
+      URLRequest*                       /* request */,
+      NetworkDelegate* network_delegate /* network delegate */) const OVERRIDE {
     return NULL;
   }
 

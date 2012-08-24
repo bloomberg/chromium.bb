@@ -15,7 +15,8 @@ class GDataProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   virtual ~GDataProtocolHandler();
   // Creates URLRequestJobs for drive:// URLs.
   virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 };
 
 }  // namespace gdata

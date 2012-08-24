@@ -15,7 +15,8 @@
 namespace content {
 
 HistogramInternalsRequestJob::HistogramInternalsRequestJob(
-    net::URLRequest* request) : net::URLRequestSimpleJob(request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate)
+    : net::URLRequestSimpleJob(request, network_delegate) {
   const std::string& spec = request->url().possibly_invalid_spec();
   const url_parse::Parsed& parsed =
       request->url().parsed_for_possibly_invalid_spec();

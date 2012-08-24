@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NET_VIEW_HTTP_CACHE_JOB_FACTORY_H_
 
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }  // namespace net
@@ -15,7 +16,8 @@ class GURL;
 class ViewHttpCacheJobFactory {
  public:
   static bool IsSupportedURL(const GURL& url);
-  static net::URLRequestJob* CreateJobForRequest(net::URLRequest* request);
+  static net::URLRequestJob* CreateJobForRequest(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate);
 };
 
 #endif  // CONTENT_BROWSER_NET_VIEW_HTTP_CACHE_JOB_FACTORY_H_

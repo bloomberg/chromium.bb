@@ -15,7 +15,9 @@ class FilePath;
 
 class URLRequestMockHTTPJob : public net::URLRequestFileJob {
  public:
-  URLRequestMockHTTPJob(net::URLRequest* request, const FilePath& file_path);
+  URLRequestMockHTTPJob(net::URLRequest* request,
+                        net::NetworkDelegate* network_delegate,
+                        const FilePath& file_path);
 
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;

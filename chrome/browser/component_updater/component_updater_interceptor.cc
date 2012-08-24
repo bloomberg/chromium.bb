@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +22,7 @@ ComponentUpdateInterceptor::~ComponentUpdateInterceptor() {
 }
 
 net::URLRequestJob* ComponentUpdateInterceptor::MaybeIntercept(
-    net::URLRequest* request) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (request->url().scheme() != "http" ||
       request->url().host() != "localhost") {
@@ -43,6 +44,7 @@ net::URLRequestJob* ComponentUpdateInterceptor::MaybeIntercept(
   EXPECT_TRUE(file_util::ReadFileToString(response.data_path, &contents));
 
   return new net::URLRequestTestJob(request,
+                                    network_delegate,
                                     response.headers,
                                     contents,
                                     true);

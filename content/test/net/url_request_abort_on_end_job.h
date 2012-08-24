@@ -29,12 +29,14 @@ class URLRequestAbortOnEndJob : public net::URLRequestJob {
                            int* bytes_read) OVERRIDE;
 
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
 
   static void AddUrlHandler();
 
  private:
-  explicit URLRequestAbortOnEndJob(net::URLRequest* request);
+  URLRequestAbortOnEndJob(net::URLRequest* request,
+                          net::NetworkDelegate* network_delegate);
   virtual ~URLRequestAbortOnEndJob();
 
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;

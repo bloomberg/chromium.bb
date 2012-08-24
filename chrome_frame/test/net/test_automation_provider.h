@@ -8,6 +8,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }  // namespace net
@@ -42,6 +43,7 @@ class TestAutomationProvider
 
   // Protocol factory for handling http/https requests over automation.
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
 
   // Call to instantiate and initialize a new instance of

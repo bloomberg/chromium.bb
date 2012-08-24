@@ -12,7 +12,9 @@
 
 class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
  public:
-  URLRequestSlowHTTPJob(net::URLRequest* request, const FilePath& file_path);
+  URLRequestSlowHTTPJob(net::URLRequest* request,
+                        net::NetworkDelegate* network_delegate,
+                        const FilePath& file_path);
 
   static const int kDelayMs;
 

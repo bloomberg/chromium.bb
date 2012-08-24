@@ -98,8 +98,10 @@ void AddHTMLButton(const std::string& title,
 namespace webkit_blob {
 
 ViewBlobInternalsJob::ViewBlobInternalsJob(
-    net::URLRequest* request, BlobStorageController* blob_storage_controller)
-    : net::URLRequestSimpleJob(request),
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    BlobStorageController* blob_storage_controller)
+    : net::URLRequestSimpleJob(request, network_delegate),
       blob_storage_controller_(blob_storage_controller),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }

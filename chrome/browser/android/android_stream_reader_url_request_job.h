@@ -43,8 +43,10 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
     virtual ~Delegate() {}
   };
 
-  explicit AndroidStreamReaderURLRequestJob(net::URLRequest* request,
-                                            scoped_ptr<Delegate> delegate);
+  explicit AndroidStreamReaderURLRequestJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      scoped_ptr<Delegate> delegate);
 
   // Register JNI methods.
   static bool InitJNIBindings(JNIEnv* env);

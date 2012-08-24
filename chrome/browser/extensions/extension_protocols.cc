@@ -31,7 +31,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
@@ -69,10 +68,13 @@ void ReadMimeTypeFromFile(const FilePath& filename,
 
 class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
  public:
-  URLRequestResourceBundleJob(
-      net::URLRequest* request, const FilePath& filename, int resource_id,
-      const std::string& content_security_policy, bool send_cors_header)
-      : net::URLRequestSimpleJob(request),
+  URLRequestResourceBundleJob(net::URLRequest* request,
+                              net::NetworkDelegate* network_delegate,
+                              const FilePath& filename,
+                              int resource_id,
+                              const std::string& content_security_policy,
+                              bool send_cors_header)
+      : net::URLRequestSimpleJob(request, network_delegate),
         filename_(filename),
         resource_id_(resource_id),
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -146,9 +148,10 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
  public:
   GeneratedBackgroundPageJob(net::URLRequest* request,
+                             net::NetworkDelegate* network_delegate,
                              const scoped_refptr<const Extension> extension,
                              const std::string& content_security_policy)
-      : net::URLRequestSimpleJob(request),
+      : net::URLRequestSimpleJob(request, network_delegate),
         extension_(extension) {
     const bool send_cors_headers = false;
     response_info_.headers = BuildHttpHeaders(content_security_policy,
@@ -192,13 +195,12 @@ void ReadResourceFilePath(const ExtensionResource& resource,
 class URLRequestExtensionJob : public net::URLRequestFileJob {
  public:
   URLRequestExtensionJob(net::URLRequest* request,
+                         net::NetworkDelegate* network_delegate,
                          const std::string& extension_id,
                          const FilePath& directory_path,
                          const std::string& content_security_policy,
                          bool send_cors_header)
-    : net::URLRequestFileJob(request,
-                             FilePath(),
-                             request->context()->network_delegate()),
+    : net::URLRequestFileJob(request, network_delegate, FilePath()),
       // TODO(tc): Move all of these files into resources.pak so we don't break
       // when updating on Linux.
       resource_(extension_id, directory_path,
@@ -306,7 +308,8 @@ class ExtensionProtocolHandler
   virtual ~ExtensionProtocolHandler() {}
 
   virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   const bool is_incognito_;
@@ -316,11 +319,13 @@ class ExtensionProtocolHandler
 
 // Creates URLRequestJobs for extension:// URLs.
 net::URLRequestJob*
-ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
+ExtensionProtocolHandler::MaybeCreateJob(
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   // TODO(mpcomplete): better error code.
   if (!AllowExtensionResourceLoad(
            request, is_incognito_, extension_info_map_)) {
-    return new net::URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
+    return new net::URLRequestErrorJob(
+        request, network_delegate, net::ERR_ADDRESS_UNREACHABLE);
   }
 
   // chrome-extension://extension-id/resource/path.js
@@ -357,7 +362,7 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
   if (path.size() > 1 &&
       path.substr(1) == extension_filenames::kGeneratedBackgroundPageFilename) {
     return new GeneratedBackgroundPageJob(
-        request, extension, content_security_policy);
+        request, network_delegate, extension, content_security_policy);
   }
 
   FilePath resources_path;
@@ -382,15 +387,23 @@ ExtensionProtocolHandler::MaybeCreateJob(net::URLRequest* request) const {
           FilePath().AppendASCII(kComponentExtensionResources[i].name);
       bm_resource_path = bm_resource_path.NormalizePathSeparators();
       if (relative_path == bm_resource_path) {
-        return new URLRequestResourceBundleJob(request, relative_path,
-            kComponentExtensionResources[i].value, content_security_policy,
+        return new URLRequestResourceBundleJob(
+            request,
+            network_delegate,
+            relative_path,
+            kComponentExtensionResources[i].value,
+            content_security_policy,
             send_cors_header);
       }
     }
   }
 
-  return new URLRequestExtensionJob(request, extension_id, directory_path,
-                                    content_security_policy, send_cors_header);
+  return new URLRequestExtensionJob(request,
+                                    network_delegate,
+                                    extension_id,
+                                    directory_path,
+                                    content_security_policy,
+                                    send_cors_header);
 }
 
 }  // namespace

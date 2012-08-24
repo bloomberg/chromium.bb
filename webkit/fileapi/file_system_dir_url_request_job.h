@@ -27,6 +27,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemDirURLRequestJob
  public:
   FileSystemDirURLRequestJob(
       net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
       FileSystemContext* file_system_context);
 
   // URLRequestJob methods:

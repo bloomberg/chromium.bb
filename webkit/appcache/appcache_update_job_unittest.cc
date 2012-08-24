@@ -51,14 +51,16 @@ class MockHttpServer {
     return GURL("https://cross_origin_host/" + path);
   }
 
-  static net::URLRequestJob* JobFactory(net::URLRequest* request) {
+  static net::URLRequestJob* JobFactory(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
     if (request->url().host() != "mockhost" &&
         request->url().host() != "cross_origin_host")
-      return new net::URLRequestErrorJob(request, -100);
+      return new net::URLRequestErrorJob(request, network_delegate, -100);
 
     std::string headers, body;
     GetMockResponse(request->url().path(), &headers, &body);
-    return new net::URLRequestTestJob(request, headers, body, true);
+    return new net::URLRequestTestJob(
+        request, network_delegate, headers, body, true);
   }
 
  private:
@@ -194,8 +196,9 @@ class MockHttpServer {
 class MockHttpServerJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
-    return MockHttpServer::JobFactory(request);
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+    return MockHttpServer::JobFactory(request, network_delegate);
   }
 };
 
@@ -336,9 +339,11 @@ class MockFrontend : public AppCacheFrontend {
 // Helper factories to simulate redirected URL responses for tests.
 class RedirectFactory : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
     return new net::URLRequestTestJob(
         request,
+        network_delegate,
         net::URLRequestTestJob::test_redirect_headers(),
         net::URLRequestTestJob::test_data_1(),
         true);
@@ -372,15 +377,18 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
     expected_requests_ = 0;
   }
 
-  static net::URLRequestJob* RetryFactory(net::URLRequest* request) {
+  static net::URLRequestJob* RetryFactory(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
     ++num_requests_;
     if (num_retries_ > 0 && request->original_url() == kRetryUrl) {
       --num_retries_;
       return new RetryRequestTestJob(
-          request, RetryRequestTestJob::retry_headers(), 503);
+          request, network_delegate, RetryRequestTestJob::retry_headers(), 503);
     } else {
       return new RetryRequestTestJob(
-          request, RetryRequestTestJob::manifest_headers(), 200);
+          request,
+          network_delegate,
+          RetryRequestTestJob::manifest_headers(), 200);
     }
   }
 
@@ -427,9 +435,11 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
   }
 
   RetryRequestTestJob(net::URLRequest* request,
+                      net::NetworkDelegate* network_delegate,
                       const std::string& headers,
                       int response_code)
-      : net::URLRequestTestJob(request, headers, data(), true),
+      : net::URLRequestTestJob(
+            request, network_delegate, headers, data(), true),
         response_code_(response_code) {
   }
 
@@ -444,8 +454,9 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 class RetryRequestTestJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
-    return RetryRequestTestJob::RetryFactory(request);
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+    return RetryRequestTestJob::RetryFactory(request, network_delegate);
   }
 };
 
@@ -481,7 +492,8 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
     already_checked_ = false;
   }
 
-  static net::URLRequestJob* IfModifiedSinceFactory(net::URLRequest* request) {
+  static net::URLRequestJob* IfModifiedSinceFactory(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
     if (!already_checked_) {
       already_checked_ = true;  // only check once for a test
       const net::HttpRequestHeaders& extra_headers =
@@ -497,7 +509,7 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
               net::HttpRequestHeaders::kIfNoneMatch, &header_value) &&
           header_value == expect_if_none_match_;
     }
-    return MockHttpServer::JobFactory(request);
+    return MockHttpServer::JobFactory(request, network_delegate);
   }
 
  protected:
@@ -521,8 +533,10 @@ bool HttpHeadersRequestTestJob::already_checked_ = false;
 class IfModifiedSinceJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual net::URLRequestJob* MaybeCreateJob(net::URLRequest* request) const {
-    return HttpHeadersRequestTestJob::IfModifiedSinceFactory(request);
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+    return HttpHeadersRequestTestJob::IfModifiedSinceFactory(
+        request, network_delegate);
   }
 };
 

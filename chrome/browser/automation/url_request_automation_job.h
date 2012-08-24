@@ -28,7 +28,10 @@ class Message;
 // automation.
 class URLRequestAutomationJob : public net::URLRequestJob {
  public:
-  URLRequestAutomationJob(net::URLRequest* request, int tab, int request_id,
+  URLRequestAutomationJob(net::URLRequest* request,
+                          net::NetworkDelegate* network_delegate,
+                          int tab,
+                          int request_id,
                           AutomationResourceMessageFilter* filter,
                           bool is_pending);
 

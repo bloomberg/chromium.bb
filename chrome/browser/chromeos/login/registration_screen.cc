@@ -138,10 +138,12 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
 }
 
 // static
-net::URLRequestJob* RegistrationScreen::Factory(net::URLRequest* request,
-                                                const std::string& scheme) {
+net::URLRequestJob* RegistrationScreen::Factory(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const std::string& scheme) {
   VLOG(1) << "Handling url: " << request->url().spec().c_str();
-  return new net::URLRequestAboutJob(request);
+  return new net::URLRequestAboutJob(request, network_delegate);
 }
 
 }  // namespace chromeos

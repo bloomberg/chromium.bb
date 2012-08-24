@@ -24,8 +24,9 @@ FilePath GetMockFilePath() {
 // static
 net::URLRequestJob* URLRequestMockLinkDoctorJob::Factory(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
-  return new URLRequestMockLinkDoctorJob(request);
+  return new URLRequestMockLinkDoctorJob(request, network_delegate);
 }
 
 // static
@@ -37,6 +38,6 @@ void URLRequestMockLinkDoctorJob::AddUrlHandler() {
 }
 
 URLRequestMockLinkDoctorJob::URLRequestMockLinkDoctorJob(
-    net::URLRequest* request)
-    : URLRequestMockHTTPJob(request, GetMockFilePath()) {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate)
+    : URLRequestMockHTTPJob(request, network_delegate, GetMockFilePath()) {
 }

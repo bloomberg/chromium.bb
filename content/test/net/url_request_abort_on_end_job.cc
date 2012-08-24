@@ -14,7 +14,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -35,9 +34,10 @@ void URLRequestAbortOnEndJob::AddUrlHandler() {
 // static
 net::URLRequestJob* URLRequestAbortOnEndJob::Factory(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return new URLRequestAbortOnEndJob(request);
+  return new URLRequestAbortOnEndJob(request, network_delegate);
 }
 
 // Private const version.
@@ -58,8 +58,9 @@ void URLRequestAbortOnEndJob::GetResponseInfoConst(
   info->headers = new net::HttpResponseHeaders(raw_headers);
 }
 
-URLRequestAbortOnEndJob::URLRequestAbortOnEndJob(net::URLRequest* request)
-    : URLRequestJob(request, request->context()->network_delegate()),
+URLRequestAbortOnEndJob::URLRequestAbortOnEndJob(
+    net::URLRequest* request, net::NetworkDelegate* network_delegate)
+    : URLRequestJob(request, network_delegate),
       sent_data_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }

@@ -256,14 +256,15 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   extensions_job_factory_.reset(new net::URLRequestJobFactory);
 
   int set_protocol = main_job_factory_->SetProtocolHandler(
-      chrome::kFileScheme, new net::FileProtocolHandler(network_delegate()));
+      chrome::kFileScheme, new net::FileProtocolHandler());
   DCHECK(set_protocol);
-  // TODO(shalev): Without a network_delegate this protocol handler will never
+  // TODO(shalev): The extension_job_factory_ has a NULL NetworkDelegate.
+  // Without a network_delegate, this protocol handler will never
   // handle file: requests, but as a side effect it makes
   // job_factory::IsHandledProtocol return true, which prevents attempts to
   // handle the protocol externally.
   set_protocol = extensions_job_factory_->SetProtocolHandler(
-      chrome::kFileScheme, new net::FileProtocolHandler(NULL));
+      chrome::kFileScheme, new net::FileProtocolHandler());
   DCHECK(set_protocol);
 
   set_protocol = main_job_factory_->SetProtocolHandler(
@@ -359,8 +360,7 @@ void OffTheRecordProfileIOData::CreateFtpProtocolHandler(
     net::FtpAuthCache* ftp_auth_cache) const {
   job_factory->SetProtocolHandler(
       chrome::kFtpScheme,
-      new net::FtpProtocolHandler(
-          network_delegate(), ftp_factory_.get(), ftp_auth_cache));
+      new net::FtpProtocolHandler(ftp_factory_.get(), ftp_auth_cache));
 }
 
 chrome_browser_net::LoadTimeStats* OffTheRecordProfileIOData::GetLoadTimeStats(

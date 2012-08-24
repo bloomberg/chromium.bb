@@ -23,7 +23,8 @@ class FileSystemProtocolHandler
   virtual ~FileSystemProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request) const OVERRIDE;
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   // No scoped_refptr because |file_system_context_| is owned by the
@@ -42,16 +43,18 @@ FileSystemProtocolHandler::FileSystemProtocolHandler(
 FileSystemProtocolHandler::~FileSystemProtocolHandler() {}
 
 net::URLRequestJob* FileSystemProtocolHandler::MaybeCreateJob(
-    net::URLRequest* request) const {
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   const std::string path = request->url().path();
 
   // If the path ends with a /, we know it's a directory. If the path refers
   // to a directory and gets dispatched to FileSystemURLRequestJob, that class
   // redirects back here, by adding a / to the URL.
   if (!path.empty() && path[path.size() - 1] == '/') {
-    return new FileSystemDirURLRequestJob(request, file_system_context_);
+    return new FileSystemDirURLRequestJob(
+        request, network_delegate, file_system_context_);
   }
-  return new FileSystemURLRequestJob(request, file_system_context_);
+  return new FileSystemURLRequestJob(
+      request, network_delegate, file_system_context_);
 }
 
 }  // anonymous namespace

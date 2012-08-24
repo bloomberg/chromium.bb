@@ -18,6 +18,7 @@ class GURL;
 class Profile;
 
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
 }  // namespace net
@@ -57,6 +58,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
 
   // Handler factory for net::URLRequestFilter::AddHostnameHandler.
   static net::URLRequestJob* Factory(net::URLRequest* request,
+                                     net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
 
  private:

@@ -12,7 +12,6 @@
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job_manager.h"
@@ -41,8 +40,9 @@ const int kBufferSize = 4096;
 
 AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
     scoped_ptr<Delegate> delegate)
-    : URLRequestJob(request, request->context()->network_delegate()),
+    : URLRequestJob(request, network_delegate),
       delegate_(delegate.Pass()) {
   DCHECK(delegate_.get());
 }

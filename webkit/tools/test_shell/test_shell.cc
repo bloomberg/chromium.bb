@@ -22,6 +22,7 @@
 #include "grit/webkit_strings.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "skia/ext/bitmap_platform_device.h"
@@ -82,21 +83,23 @@ const int kSVGTestWindowHeight = 360;
 // URLRequestTestShellFileJob is used to serve the inspector
 class URLRequestTestShellFileJob : public net::URLRequestFileJob {
  public:
-  static net::URLRequestJob* InspectorFactory(net::URLRequest* request,
-                                              const std::string& scheme) {
+  static net::URLRequestJob* InspectorFactory(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const std::string& scheme) {
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII("resources");
     path = path.AppendASCII("inspector");
     path = path.AppendASCII(request->url().path().substr(1));
-    return new URLRequestTestShellFileJob(request, path);
+    return new URLRequestTestShellFileJob(request, network_delegate, path);
   }
 
  private:
-  URLRequestTestShellFileJob(net::URLRequest* request, const FilePath& path)
-      : net::URLRequestFileJob(request,
-                               path,
-                               request->context()->network_delegate()) {
+  URLRequestTestShellFileJob(net::URLRequest* request,
+                             net::NetworkDelegate* network_delegate,
+                             const FilePath& path)
+      : net::URLRequestFileJob(request, network_delegate, path) {
   }
   virtual ~URLRequestTestShellFileJob() { }
 

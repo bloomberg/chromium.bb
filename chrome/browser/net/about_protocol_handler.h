@@ -17,7 +17,8 @@ class URLRequestJob;
 class AboutProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
   AboutProtocolHandler();
-  virtual URLRequestJob* MaybeCreateJob(URLRequest* request) const OVERRIDE;
+  virtual URLRequestJob* MaybeCreateJob(
+      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AboutProtocolHandler);
