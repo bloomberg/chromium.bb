@@ -46,3 +46,4 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchRemainingRegsViaECX):
 
         /* Jump to springboard, restoring %cs. */
         ljmp *8(%ecx)
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitchRemainingRegsAsmEnd):

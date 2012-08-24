@@ -109,8 +109,10 @@ void NaClAppThreadSetSuspendedRegistersInternal(
   kern_return_t result;
   mach_msg_type_number_t size;
   struct NaClAppThreadSuspendedRegisters *state = natp->suspended_registers;
+  x86_thread_state_t context_copy;
 
   NaClSignalContextToMacThreadState(&state->context, regs);
+  context_copy = state->context;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /*
@@ -122,19 +124,19 @@ void NaClAppThreadSetSuspendedRegistersInternal(
    * We reset %cs here in case the Mac kernel is ever fixed to not
    * ignore the supplied %cs value.
    */
-  state->context.uts.ts32.__cs = NaClGetGlobalCs();
-  state->context.uts.ts32.__ds = NaClGetGlobalDs();
+  context_copy.uts.ts32.__cs = NaClGetGlobalCs();
+  context_copy.uts.ts32.__ds = NaClGetGlobalDs();
   /* Reset these too just in case. */
-  state->context.uts.ts32.__es = NaClGetGlobalDs();
-  state->context.uts.ts32.__ss = NaClGetGlobalDs();
-  state->context.uts.ts32.__ecx = (uintptr_t) &state->switch_state;
-  state->context.uts.ts32.__eip = (uintptr_t) NaClSwitchRemainingRegsViaECX;
+  context_copy.uts.ts32.__es = NaClGetGlobalDs();
+  context_copy.uts.ts32.__ss = NaClGetGlobalDs();
+  context_copy.uts.ts32.__ecx = (uintptr_t) &state->switch_state;
+  context_copy.uts.ts32.__eip = (uintptr_t) NaClSwitchRemainingRegsViaECX;
   NaClSwitchAllRegsSetup(&state->switch_state, natp, regs);
 #endif
 
-  size = sizeof(state->context) / sizeof(natural_t);
+  size = sizeof(context_copy) / sizeof(natural_t);
   result = thread_set_state(thread_port, x86_THREAD_STATE,
-                            (void *) &state->context, size);
+                            (void *) &context_copy, size);
   if (result != KERN_SUCCESS) {
     NaClLog(LOG_FATAL, "NaClAppThreadSetSuspendedRegistersInternal: "
             "thread_set_state() call failed\n");
@@ -142,9 +144,22 @@ void NaClAppThreadSetSuspendedRegistersInternal(
 }
 
 int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
-  UNREFERENCED_PARAMETER(natp);
-  UNREFERENCED_PARAMETER(signal);
-
-  NaClLog(LOG_FATAL, "NaClAppThreadUnblockIfFaulted: Not implemented on Mac\n");
-  return 0;
+  mach_port_t thread_port;
+  if (natp->fault_signal == 0) {
+    return 0;
+  }
+  *signal = natp->fault_signal;
+  natp->fault_signal = 0;
+  AtomicIncrement(&natp->nap->faulted_thread_count, -1);
+  /*
+   * Decrement the kernel's suspension count for the thread.  This
+   * undoes the effect of mach_exception_handler.c's thread_suspend()
+   * call.
+   */
+  thread_port = pthread_mach_thread_np(natp->thread.tid);
+  if (thread_resume(thread_port) != KERN_SUCCESS) {
+    NaClLog(LOG_FATAL, "NaClAppThreadUnblockIfFaulted: "
+            "thread_resume() call failed\n");
+  }
+  return 1;
 }

@@ -39,6 +39,7 @@
 #define NACL_HALT_LEN       1           /* length of halt instruction */
 #define NACL_HALT_WORD      0xf4f4f4f4U
 
+#define NACL_X86_TRAP_FLAG      (1 << 8)
 #define NACL_X86_DIRECTION_FLAG (1 << 10)
 
 #endif /* SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ */

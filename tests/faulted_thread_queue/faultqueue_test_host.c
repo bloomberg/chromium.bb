@@ -11,6 +11,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
@@ -30,8 +31,6 @@
  * This test program checks that we get notification of a fault that
  * happens in untrusted code in faultqueue_test_guest.c.
  */
-
-static const int kX86TrapFlag = 1 << 8;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 static const int kBreakInstructionSize = 1;
@@ -84,7 +83,7 @@ void TestSingleStepping(struct NaClAppThread *natp) {
 
   /* Set the trap flag to enable single-stepping. */
   NaClAppThreadGetSuspendedRegisters(natp, &regs);
-  regs.flags |= kX86TrapFlag;
+  regs.flags |= NACL_X86_TRAP_FLAG;
   expected_regs = regs;
   NaClAppThreadSetSuspendedRegisters(natp, &regs);
 
@@ -115,14 +114,14 @@ void TestSingleStepping(struct NaClAppThread *natp) {
        * On Windows, but not elsewhere, the trap flag gets unset after
        * each instruction, so we must set it again.
        */
-      regs.flags |= kX86TrapFlag;
+      regs.flags |= NACL_X86_TRAP_FLAG;
       NaClAppThreadSetSuspendedRegisters(natp, &regs);
     }
     RegsAssertEqual(&regs, &expected_regs);
   }
 
   /* Unset the trap flag so that the thread can continue. */
-  regs.flags &= ~kX86TrapFlag;
+  regs.flags &= ~NACL_X86_TRAP_FLAG;
   NaClAppThreadSetSuspendedRegisters(natp, &regs);
 }
 

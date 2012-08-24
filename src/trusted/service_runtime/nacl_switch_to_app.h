@@ -36,6 +36,7 @@ extern NORETURN void NaClSwitchSavingStackPtr(
 extern NORETURN void NaClSwitchNoSSEViaECX();
 /* Similar to NaClSwitchAllRegs but context in %ecx */
 extern NORETURN void NaClSwitchRemainingRegsViaECX();
+extern NORETURN void NaClSwitchRemainingRegsAsmEnd();
 #endif
 #else
 extern NORETURN void NaClSwitch(struct NaClThreadContext *context);

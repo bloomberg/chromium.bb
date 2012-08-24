@@ -234,6 +234,7 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
   struct SuspendTestShm *test_shm;
   struct NaClAppThread *natp;
   struct NaClSignalContext regs;
+  struct NaClSignalContext regs_copy;
 
   test_shm = StartGuestWithSharedMemory(nap, "RegisterSetterThread");
   /*
@@ -319,6 +320,16 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
 
   NaClAppThreadSetSuspendedRegisters(natp, &regs);
   test_shm->expected_regs = regs;
+
+  /*
+   * Sanity check: After setting registers, getting registers should
+   * read back what we just set.  (We have to be careful to ensure
+   * this on x86-32 Mac, where we modify the register values that are
+   * really set.)
+   */
+  NaClAppThreadGetSuspendedRegisters(natp, &regs_copy);
+  RegsAssertEqual(&regs_copy, &regs);
+
   NaClUntrustedThreadsResumeAll(nap);
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
 }

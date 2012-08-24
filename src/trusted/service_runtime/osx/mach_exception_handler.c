@@ -43,13 +43,11 @@ boolean_t nacl_exc_server(
 
 
 /* Exception types to intercept. */
-#define NACL_MACH_EXCEPTION_MASK EXC_MASK_BAD_ACCESS
-/*
- * TODO(bradnelson): eventually consider these too:
- *     EXC_MASK_BAD_INSTRUCTION
- *     EXC_MASK_ARITHMETIC
- *     EXC_MASK_BREAKPOINT
- */
+#define NACL_MACH_EXCEPTION_MASK \
+    (EXC_MASK_BAD_ACCESS | \
+     EXC_MASK_BAD_INSTRUCTION | \
+     EXC_MASK_ARITHMETIC | \
+     EXC_MASK_BREAKPOINT)
 
 struct MachExceptionParameters {
   mach_msg_type_number_t count;
@@ -72,6 +70,15 @@ struct MachExceptionHandlerData {
  */
 static struct MachExceptionHandlerData *g_MachExceptionHandlerData = 0;
 
+
+static int ExceptionCodeToNaClSignalNumber(exception_type_t exception) {
+  switch (exception) {
+    case EXC_BREAKPOINT:
+      return NACL_ABI_SIGTRAP;
+    default:
+      return NACL_ABI_SIGSEGV;
+  }
+}
 
 static int HandleException(mach_port_t thread_port,
                            exception_type_t exception, int *is_untrusted) {
@@ -116,12 +123,17 @@ static int HandleException(mach_port_t thread_port,
    *     tests to vet this.
    */
   if (regs.uts.ts32.__cs == trusted_cs) {
+    /*
+     * If we are single-stepping, allow NaClSwitchRemainingRegsViaECX()
+     * to continue in order to restore control to untrusted code.
+     */
+    if (exception == EXC_BREAKPOINT &&
+        (regs.uts.ts32.__eflags & NACL_X86_TRAP_FLAG) != 0 &&
+        regs.uts.ts32.__eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
+        regs.uts.ts32.__eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
+      return 1;
+    }
     *is_untrusted = FALSE;
-    return 0;
-  }
-
-  /* Ignore all but bad accesses for now. */
-  if (exception != EXC_BAD_ACCESS) {
     return 0;
   }
 
@@ -133,6 +145,50 @@ static int HandleException(mach_port_t thread_port,
   nacl_thread_index = regs.uts.ts32.__gs >> 3;
   natp = nacl_thread[nacl_thread_index];
   nap = natp->nap;
+
+  if (nap->enable_faulted_thread_queue) {
+    /*
+     * If we are single-stepping, step through until we reach untrusted code.
+     */
+    if (exception == EXC_BREAKPOINT &&
+        (regs.uts.ts32.__eflags & NACL_X86_TRAP_FLAG) != 0) {
+      if (regs.uts.ts32.__eip >= nap->springboard_all_regs_addr &&
+          regs.uts.ts32.__eip < (nap->springboard_all_regs_addr
+                                 + nap->bundle_size)) {
+        return 1;
+      }
+      /*
+       * Step through the instruction we have been asked to restore
+       * control to.
+       */
+      if (regs.uts.ts32.__eip == natp->tls_values.new_prog_ctr) {
+        return 1;
+      }
+    }
+
+    natp->fault_signal = ExceptionCodeToNaClSignalNumber(exception);
+    AtomicIncrement(&nap->faulted_thread_count, 1);
+    /*
+     * Increment the kernel's thread suspension count so that the
+     * thread remains suspended after we return.
+     */
+    result = thread_suspend(thread_port);
+    if (result != KERN_SUCCESS) {
+      NaClLog(LOG_FATAL, "HandleException: thread_suspend() call failed\n");
+    }
+    return 1;
+  }
+
+  /*
+   * Ignore all but bad accesses for now.
+   * TODO(bradnelson): eventually consider these too:
+   *     EXC_BAD_INSTRUCTION
+   *     EXC_ARITHMETIC
+   *     EXC_BREAKPOINT
+   */
+  if (exception != EXC_BAD_ACCESS) {
+    return 0;
+  }
 
   /* Don't handle it if the exception flag is set. */
   if (natp->exception_flag) {
