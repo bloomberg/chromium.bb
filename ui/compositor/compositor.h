@@ -240,11 +240,7 @@ class COMPOSITOR_EXPORT Compositor
   ObserverList<CompositorObserver> observer_list_;
 
   gfx::AcceleratedWidget widget_;
-#if defined(WEBLAYER_IS_PURE_VIRTUAL)
   scoped_ptr<WebKit::WebLayer> root_web_layer_;
-#else
-  WebKit::WebLayer root_web_layer_;
-#endif
   WebKit::WebLayerTreeView host_;
 
   // This is set to true when the swap buffers has been posted and we're waiting
