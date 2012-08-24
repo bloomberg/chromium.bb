@@ -9,8 +9,14 @@
 
 namespace extensions {
 
-typedef SystemInfoProvider<api::experimental_system_info_cpu::CpuInfo>
-    CpuInfoProvider;
+class CpuInfoProvider
+    : public SystemInfoProvider<api::experimental_system_info_cpu::CpuInfo> {
+ public:
+  virtual ~CpuInfoProvider() {}
+
+  // Return the single shared instance of CpuInfoProvider.
+  static CpuInfoProvider* Get();
+};
 
 }  // namespace extensions
 

@@ -6,6 +6,8 @@
 
 namespace extensions {
 
+namespace {
+
 using api::experimental_system_info_cpu::CpuInfo;
 
 // CpuInfoProvider implementation on Mac OS.
@@ -21,8 +23,9 @@ bool CpuInfoProviderMac::QueryInfo(CpuInfo* info) {
   return false;
 }
 
+}  // namespace
+
 // static
-template<>
 CpuInfoProvider* CpuInfoProvider::Get() {
   return CpuInfoProvider::GetInstance<CpuInfoProviderMac>();
 }

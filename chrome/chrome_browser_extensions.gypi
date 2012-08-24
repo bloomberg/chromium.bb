@@ -250,6 +250,8 @@
         'browser/extensions/api/system_info_storage/system_info_storage_api.h',
         'browser/extensions/api/system_info_storage/storage_info_provider.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider.h',
+        'browser/extensions/api/system_info_storage/storage_info_provider_linux.cc',
+        'browser/extensions/api/system_info_storage/storage_info_provider_mac.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_win.cc',
         'browser/extensions/api/tabs/execute_code_in_tab_function.cc',
         'browser/extensions/api/tabs/execute_code_in_tab_function.h',

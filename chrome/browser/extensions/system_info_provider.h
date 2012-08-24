@@ -47,10 +47,6 @@ class SystemInfoProvider {
 
   virtual ~SystemInfoProvider() {}
 
-  // Static method to get the single shared instance. Should be implemented
-  // in the impl file for each kind of provider.
-  static SystemInfoProvider<T>* Get();
-
   // For testing
   static void InitializeForTesting(SystemInfoProvider<T>* provider) {
     DCHECK(provider != NULL);
@@ -113,12 +109,12 @@ class SystemInfoProvider {
   // Template function for creating the single shared provider instance.
   // Template paramter I is the type of SystemInfoProvider implementation.
   template<class I>
-  static SystemInfoProvider<T>* GetInstance() {
+  static I* GetInstance() {
     if (!single_shared_provider_.Get().get()) {
       I* impl = new I();
       single_shared_provider_.Get().reset(impl);
     }
-    return single_shared_provider_.Get().get();
+    return static_cast<I*>(single_shared_provider_.Get().get());
   }
 
   // The latest information filled up by QueryInfo implementation. Here we

@@ -6,6 +6,8 @@
 
 namespace extensions {
 
+namespace {
+
 using api::experimental_system_info_cpu::CpuInfo;
 
 // CpuInfoProvider implementation for Linux platform.
@@ -21,8 +23,9 @@ bool CpuInfoProviderLinux::QueryInfo(CpuInfo* info) {
   return false;
 }
 
+}  // namespace
+
 // static
-template<>
 CpuInfoProvider* CpuInfoProvider::Get() {
   return CpuInfoProvider::GetInstance<CpuInfoProviderLinux>();
 }

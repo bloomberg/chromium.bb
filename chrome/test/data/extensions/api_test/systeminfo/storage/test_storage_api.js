@@ -9,8 +9,12 @@ chrome.systemInfo = chrome.experimental.systemInfo;
 chrome.test.runTests([
   function testGet() {
     chrome.systemInfo.storage.get(chrome.test.callbackPass(function(info) {
-      // TODO(hmin): Need to check the value from Mock implementation
-      chrome.test.assertTrue(info.units.length > 0);
+      chrome.test.assertTrue(info.units.length == 1);
+      var unit = info.units[0];
+      chrome.test.assertTrue(unit.id == "0xbeaf");
+      chrome.test.assertTrue(unit.type == "unknown");
+      chrome.test.assertTrue(unit.capacity == 4098);
+      chrome.test.assertTrue(unit.availableCapacity == 1024);
     }));
   }
 ]);

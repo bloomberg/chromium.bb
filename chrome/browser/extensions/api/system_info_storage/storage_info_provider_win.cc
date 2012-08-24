@@ -5,10 +5,12 @@
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 
 #include "base/string_util.h"
-
+#include "base/utf_string_conversions.h"
 #include <windows.h>
 
 namespace extensions {
+
+namespace {
 
 using api::experimental_system_info_storage::StorageInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
@@ -20,26 +22,16 @@ const unsigned long kMaxLogicalDriveString = 4 * 26;
 // StorageInfoProvider implementation on Windows platform.
 class StorageInfoProviderWin : public StorageInfoProvider {
  public:
-  StorageInfoProviderWin();
-  virtual ~StorageInfoProviderWin();
+  StorageInfoProviderWin() {}
+  virtual ~StorageInfoProviderWin() {}
 
-  virtual bool GetStorageInfo(StorageInfo* info) OVERRIDE;
+  virtual bool QueryInfo(StorageInfo* info) OVERRIDE;
+  virtual bool QueryUnitInfo(const std::string& id,
+                             StorageUnitInfo* info) OVERRIDE;
 };
 
-// static
-StorageInfoProvider* StorageInfoProvider::Create() {
-  return new StorageInfoProviderWin();
-}
-
-// StorageInfoProviderWin implementation.
-StorageInfoProviderWin::StorageInfoProviderWin() {
-}
-
-StorageInfoProviderWin::~StorageInfoProviderWin() {
-}
-
-bool StorageInfoProviderWin::GetStorageInfo(StorageInfo* info) {
-  if (info == NULL) return false;
+bool StorageInfoProviderWin::QueryInfo(StorageInfo* info) {
+  info->units.clear();
 
   WCHAR logical_drive_strings[kMaxLogicalDriveString];
 
@@ -54,41 +46,57 @@ bool StorageInfoProviderWin::GetStorageInfo(StorageInfo* info) {
 
   // Iterate the drive string by 4 wchars each step
   for (unsigned int i = 0; i < string_length; i += 4) {
-    std::string type;
-    DWORD ret = GetDriveType(&logical_drive_strings[i]);
-    switch (ret) {
-      case DRIVE_FIXED:
-        type = systeminfo::kStorageTypeHardDisk;
-        break;
-      case DRIVE_REMOVABLE:
-        type = systeminfo::kStorageTypeRemovable;
-        break;
-      case DRIVE_UNKNOWN:
-        type = systeminfo::kStorageTypeUnknown;
-        break;
-      case DRIVE_CDROM:       // CD ROM
-      case DRIVE_REMOTE:      // Remote network drive
-      case DRIVE_NO_ROOT_DIR: // Invalid root path
-      case DRIVE_RAMDISK:     // RAM disk
-        // TODO(hmin): Do we need to care about these drive types?
-        continue;
-    }
-
-    ULARGE_INTEGER available_bytes;
-    ULARGE_INTEGER free_bytes;
-    BOOL status = GetDiskFreeSpaceEx(&logical_drive_strings[i], NULL,
-                                     &available_bytes,
-                                     &free_bytes);
-    if (status) {
-      linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-      unit->id = WideToASCII(string16(&logical_drive_strings[i]));
-      unit->type = type;
-      unit->capacity = static_cast<double>(available_bytes.QuadPart);
-      unit->available_capacity = static_cast<double>(free_bytes.QuadPart);
+    linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
+    if (QueryUnitInfo(WideToUTF8(&logical_drive_strings[i]), unit.get())) {
       info->units.push_back(unit);
     }
   }
   return true;
+}
+
+bool StorageInfoProviderWin::QueryUnitInfo(const std::string& id,
+                                           StorageUnitInfo* info) {
+  DCHECK(info);
+  string16 drive = UTF8ToUTF16(id);
+
+  std::string type;
+  DWORD ret = GetDriveType(drive.c_str());
+  switch (ret) {
+    case DRIVE_FIXED:
+      type = systeminfo::kStorageTypeHardDisk;
+      break;
+    case DRIVE_REMOVABLE:
+      type = systeminfo::kStorageTypeRemovable;
+      break;
+    case DRIVE_UNKNOWN:
+      type = systeminfo::kStorageTypeUnknown;
+      break;
+    case DRIVE_CDROM:       // CD ROM
+    case DRIVE_REMOTE:      // Remote network drive
+    case DRIVE_NO_ROOT_DIR: // Invalid root path
+    case DRIVE_RAMDISK:     // RAM disk
+      // TODO(hmin): Do we need to care about these drive types?
+      return false;
+  }
+
+  ULARGE_INTEGER total_bytes;
+  ULARGE_INTEGER free_bytes;
+
+  if (GetDiskFreeSpaceEx(drive.c_str(), NULL, &total_bytes, &free_bytes)) {
+    info->id = id;
+    info->type = type;
+    info->capacity = static_cast<double>(total_bytes.QuadPart);
+    info->available_capacity = static_cast<double>(free_bytes.QuadPart);
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
+
+// static
+StorageInfoProvider* StorageInfoProvider::Get() {
+  return StorageInfoProvider::GetInstance<StorageInfoProviderWin>();
 }
 
 }  // namespace extensions
