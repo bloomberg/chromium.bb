@@ -123,6 +123,12 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
     LOG(ERROR) << "bad linear histogram request: " << histogram_data;
     return;
   }
+
+  if (!SystemHistogram::CheckValues(name, 1, max, max + 1)) {
+    LOG(ERROR) << "Invalid linear histogram " << name
+               << ", max=" << max;
+    return;
+  }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
   base::Histogram* counter = base::LinearHistogram::FactoryGet(
