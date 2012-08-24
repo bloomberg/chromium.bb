@@ -11,6 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/test/logging/win/test_log_collector.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
 
   // Set up a FieldTrialList to keep any field trials we have going in
   // Chrome Frame happy.
-  base::FieldTrialList field_trial_list("42");
+  base::FieldTrialList field_trial_list(new metrics::SHA1EntropyProvider("42"));
 
   base::TestSuite test_suite(argc, argv);
 

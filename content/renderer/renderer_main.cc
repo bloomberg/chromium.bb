@@ -185,10 +185,10 @@ int RendererMain(const content::MainFunctionParams& parameters) {
   // Initialize histogram statistics gathering system.
   base::StatisticsRecorder::Initialize();
 
-  // Initialize statistical testing infrastructure.  We set client_id to the
-  // empty string to disallow the renderer process from creating its own
-  // one-time randomized trials; they should be created in the browser process.
-  base::FieldTrialList field_trial(EmptyString());
+  // Initialize statistical testing infrastructure.  We set the entropy provider
+  // to NULL to disallow the renderer process from creating its own one-time
+  // randomized trials; they should be created in the browser process.
+  base::FieldTrialList field_trial_list(NULL);
   // Ensure any field trials in browser are reflected into renderer.
   if (parsed_command_line.HasSwitch(switches::kForceFieldTrials)) {
     std::string persistent = parsed_command_line.GetSwitchValueASCII(

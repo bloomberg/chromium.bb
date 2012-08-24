@@ -28,6 +28,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/chrome_active_document.h"
@@ -860,7 +861,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     // Initialize the field test infrastructure. Must be done somewhere that
     // can only get called once. For Chrome Frame, that is here.
     g_field_trial_list = new base::FieldTrialList(
-        MetricsService::GetClientID());
+        new metrics::SHA1EntropyProvider(MetricsService::GetClientID()));
   } else if (reason == DLL_PROCESS_DETACH) {
     delete g_field_trial_list;
     g_field_trial_list = NULL;

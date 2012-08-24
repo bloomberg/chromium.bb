@@ -30,7 +30,7 @@ chrome_variations::VariationID GetIDForTrial(base::FieldTrial* trial) {
 
 class VariationsHelperTest : public ::testing::Test {
  public:
-  VariationsHelperTest() {
+  VariationsHelperTest() : field_trial_list_(NULL) {
     // Since the API can only be called on the UI thread, we have to fake that
     // we're on it.
     ui_thread_.reset(new content::TestBrowserThread(
@@ -49,6 +49,7 @@ class VariationsHelperTest : public ::testing::Test {
   int next_year_;
 
  private:
+  base::FieldTrialList field_trial_list_;
   MessageLoop message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 };

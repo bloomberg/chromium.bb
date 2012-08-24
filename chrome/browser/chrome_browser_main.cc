@@ -547,7 +547,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     metrics->ForceClientIdCreation();  // Needed below.
   field_trial_list_.reset(
       new base::FieldTrialList(
-          metrics->GetEntropySource(metrics_reporting_enabled)));
+          metrics->CreateEntropyProvider(metrics_reporting_enabled).release()));
 
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.

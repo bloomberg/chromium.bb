@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/process_util.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
@@ -86,16 +87,21 @@ class MetricsService
   // recording is not currently running.
   std::string GetClientId();
 
-  // Returns the preferred entropy source used to seed persistent activities
-  // based on whether or not metrics reporting will permitted on this client.
+  // Returns the preferred entropy provider used to seed persistent activities
+  // based on whether or not metrics reporting will be permitted on this client.
   // The caller must determine if metrics reporting will be enabled for this
-  // client and pass that state in as |reporting_will_be_enabled|. If
-  // |reporting_will_be_enabled| is true, this method returns the client ID
-  // concatenated with the low entropy source. Otherwise, this method just
-  // returns the low entropy source. Note that this reporting state can not be
-  // checked by reporting_active() because this method may need to be called
-  // before the MetricsService needs to be started.
-  std::string GetEntropySource(bool reporting_will_be_enabled);
+  // client and pass that state in as |reporting_will_be_enabled|.
+  //
+  // If |reporting_will_be_enabled| is true, this method returns an entropy
+  // provider that has a high source of entropy, partially based on the client
+  // ID. Otherwise, an entropy provider that is based on a low entropy source
+  // is returned.
+  //
+  // Note that this reporting state can not be checked by reporting_active()
+  // because this method may need to be called before the MetricsService needs
+  // to be started.
+  scoped_ptr<const base::FieldTrial::EntropyProvider> CreateEntropyProvider(
+      bool reporting_will_be_enabled);
 
   // Force the client ID to be generated. This is useful in case it's needed
   // before recording.
