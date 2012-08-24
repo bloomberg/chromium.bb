@@ -420,7 +420,8 @@ class MaskedBinary2RegisterImmediateOp : public Binary2RegisterImmediateOp {
 //    CMN(immediate) A1 A8-74
 //    CMP(immediate) A1 A8-80
 //    TEQ(immediate) A1 A8-448
-//    TST(immediate) A1 A8-454 - Note: See class TestImmediate.
+//    TST(immediate) A1 A8-454 - Note: See
+//                               class MaskedBinaryRegisterImmediateTest.
 class BinaryRegisterImmediateTest : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
@@ -1988,6 +1989,6 @@ class DuplicateToVfpRegisters : public CondVfpOp {
   }
 };
 
-}  // namespace
+}  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_BASELINE_CLASSES_H_

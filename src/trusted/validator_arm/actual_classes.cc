@@ -294,6 +294,14 @@ SafetyLevel LoadBasedMemoryWithWriteBack::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
+  // Above implies literal loads can't writeback, the following checks the
+  // ARM restriction that literal loads can't have P == W.
+  // This should always decode to another instruction, but checking it is good.
+  if (n.reg(i).Equals(kRegisterPc) &&
+      (indexing.IsDefined(i) == writes.IsDefined(i))) {
+    return UNPREDICTABLE;
+  }
+
   // Don't let addressing writeback alter PC (NaCl constraint).
   if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
 

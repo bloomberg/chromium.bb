@@ -369,7 +369,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_immediat
 
   if ((insn.Bits() & 0x01F00000) == 0x00500000 /* op(24:20) == 00101 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Binary2RegisterImmediateOp_Sub_Rule_212_A1_P420_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x00800000 /* op(24:20) == 01000 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
@@ -377,7 +377,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_immediat
 
   if ((insn.Bits() & 0x01F00000) == 0x00900000 /* op(24:20) == 01001 */ &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Binary2RegisterImmediateOp_Add_Rule_5_A1_P22_instance_;
+    return Forbidden_None_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */ &&
       (insn.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
@@ -810,13 +810,15 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_halfword_multiply_and_mu
     return Binary4RegisterDualOp_Smlawx_Rule_171_A1_340_instance_;
 
   if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:21) == 01 */ &&
-      (insn.Bits() & 0x00000020) == 0x00000020 /* op(5:5) == 1 */)
+      (insn.Bits() & 0x00000020) == 0x00000020 /* op(5:5) == 1 */ &&
+      (insn.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
     return Binary3RegisterOpAltA_Smulwx_Rule_180_A1_P358_instance_;
 
   if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */)
     return Binary4RegisterDualResult_Smlalxx_Rule_169_A1_P336_instance_;
 
-  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */)
+  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */ &&
+      (insn.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
     return Binary3RegisterOpAltA_Smulxx_Rule_178_P354_instance_;
 
   // Catch any attempt to fall through...

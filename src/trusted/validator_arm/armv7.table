@@ -296,37 +296,35 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0000x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            And_Rule_13_A1_P38
-                           cccc0000000unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0000000snnnnddddssss0tt1mmmm RegsNotPc
 | 0001x      -        = Binary4RegisterShiftedOp
                            => Defs12To15CondsDontCareRdRnRsRmNotPc
                            Eor_Rule_46_A1_P98
-                           cccc0000001unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0000001snnnnddddssss0tt1mmmm RegsNotPc
 | 0010x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Sub_Rule_214_A1_P424
-                           cccc0000010unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0000010snnnnddddssss0tt1mmmm RegsNotPc
 | 0011x      -        = Binary4RegisterShiftedOp
                             => Defs12To15RdRnRsRmNotPc
                            Rsb_Rule_144_A1_P288
-                           cccc0000011snnnnddddssss0tt1mmmm
-                           RegsNotPc
+                           cccc0000011snnnnddddssss0tt1mmmm RegsNotPc
 | 0100x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Add_Rule_7_A1_P26 
-                           cccc0000100snnnnddddssss0tt1mmmm
-                           RegsNotPc
+                           cccc0000100snnnnddddssss0tt1mmmm RegsNotPc
 | 0101x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Adc_Rule_3_A1_P18
-                           cccc0000101unnnnddddssss0tt1mmmm RegsNotPc      
+                           cccc0000101snnnnddddssss0tt1mmmm RegsNotPc      
 | 0110x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Sbc_Rule_153_A1_P306
-                           cccc0000110unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0000110snnnnddddssss0tt1mmmm RegsNotPc
 | 0111x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Rsc_Rule_147_A1_P294
-                           cccc0000111unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0000111snnnnddddssss0tt1mmmm RegsNotPc
 # TODO(jfb) op==10xx0 should be unreachable from here:
 #           the previous table should handle it.
 | 10001      -        = Binary3RegisterShiftedTest
@@ -348,31 +346,31 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 1100x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Orr_Rule_115_A1_P212
-                           cccc0001100unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0001100snnnnddddssss0tt1mmmm RegsNotPc
 | 1101x      00       = Binary3RegisterOp
                            => Defs12To15RdRmRnNotPc
                            Lsl_Rule_89_A1_P180
-                           cccc0001101u0000ddddmmmm0001nnnn RegsNotPc
+                           cccc0001101s0000ddddmmmm0001nnnn RegsNotPc
 | "          01       = Binary3RegisterOp
                            => Defs12To15RdRmRnNotPc
                            Lsr_Rule_91_A1_P184
-                           cccc0001101u0000ddddmmmm0011nnnn RegsNotPc
+                           cccc0001101s0000ddddmmmm0011nnnn RegsNotPc
 | "          10       = Binary3RegisterOp
                            => Defs12To15RdRmRnNotPc
                            Asr_Rule_15_A1_P42
-                           cccc0001101u0000ddddmmmm0101nnnn RegsNotPc
+                           cccc0001101s0000ddddmmmm0101nnnn RegsNotPc
 | "          11       = Binary3RegisterOp
                            => Defs12To15RdRmRnNotPc
                            Ror_Rule_140_A1_P280
-                           cccc0001101u0000ddddmmmm0111nnnn RegsNotPc
+                           cccc0001101s0000ddddmmmm0111nnnn RegsNotPc
 | 1110x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Bic_Rule_21_A1_P54
-                           cccc0001110unnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0001110snnnnddddssss0tt1mmmm RegsNotPc
 | 1111x      -        = Unary3RegisterShiftedOp
                            => Defs12To15RdRmRnNotPc
                            Mvn_Rule_108_A1_P218
-                           cccc0001111u0000ddddssss0tt1mmmm RegsNotPc
+                           cccc0001111s0000ddddssss0tt1mmmm RegsNotPc
 +--
 
 +-- data_processing_immediate (See Section A5.2.3)
@@ -384,15 +382,15 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0000x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            And_Rule_11_A1_P34
-                           cccc0010000unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0010000snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0001x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Eor_Rule_44_A1_P94
-                           cccc0010001unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0010001snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0010x      ~1111    = Binary2RegisterImmediateOp
                            => Defs12To15
                            Sub_Rule_212_A1_P420
-                           cccc0010010unnnnddddiiiiiiiiiiii
+                           cccc0010010snnnnddddiiiiiiiiiiii
                            NeitherRdIsPcAndSNorRnIsPcAndNotS
                         # Note: Table says that op=0010x for ADR, but
                         # patterns for ADR do not match (page A8-32).
@@ -406,24 +404,15 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Adr_Rule_10_A2_P32
                            cccc001001001111ddddiiiiiiiiiiii
-                        # Note: Table says that op=0010x should be ADR,
-                        # but patterns for ADR do not match (page A8-32).
-                        # Causes conflicts with SUB (two rows up). However,
-                        # this case matches the patterns for SUB in A8.6.212
-                        # (page A8-420). Assuming SUB should be recognized.
-| 00101      1111     = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Sub_Rule_212_A1_P420
-                           cccc001001011111ddddiiiiiiiiiiii
-                           NeitherRdIsPcAndSNorRnIsPcAndNotS
+| 00101      1111     = Forbidden # SUBS PC, LR and related instructions
 | 0011x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Rsb_Rule_142_A1_P284
-                           cccc0010011unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0010011snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0100x      ~1111    = Binary2RegisterImmediateOp
                            => Defs12To15
                            Add_Rule_5_A1_P22
-                           cccc0010100unnnnddddiiiiiiiiiiii 
+                           cccc0010100snnnnddddiiiiiiiiiiii 
                            NeitherRdIsPcAndSNorRnIsPcAndNotS
                         # Note: Table says that op=0100x for ADR, but
                         # patterns for ADR do not match (page A8-32).
@@ -437,28 +426,19 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Adr_Rule_10_A1_P32
                            cccc001010001111ddddiiiiiiiiiiii
-                        # Note: Table says that op=0100x should be ADR,
-                        # but patterns for ADR do not match (page A8-32).
-                        # Causes conflicts with Add (two rows up). However,
-                        # this case matches the patterns for ADD in A8.6.5
-                        # (page A8-22). Assuming ADD should be recognized.
-| 01001      1111     = Binary2RegisterImmediateOp
-                           => Defs12To15
-                           Add_Rule_5_A1_P22
-                           cccc001010011111ddddiiiiiiiiiiii 
-                           NeitherRdIsPcAndSNorRnIsPcAndNotS
+| 01001      1111     = Forbidden # SUBS PC, LR and related instructions
 | 0101x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Adc_Rule_6_A1_P14
-                           cccc0010101unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0010101snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0110x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Sbc_Rule_151_A1_P302
-                           cccc0010110unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0010110snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0111x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Rsc_Rule_145_A1_P290
-                           cccc0010111unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0010111snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 # TODO(jfb) op==10xx0 should be unreachable from here:
 #           the previous table should handle it.
                         # Note: Following instruction is used to test
@@ -483,35 +463,38 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 1100x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Orr_Rule_113_A1_P228
-                           cccc0011100unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0011100snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 1101x      -        = Unary1RegisterImmediateOp
                            => Defs12To15
                            Mov_Rule_96_A1_P194
-                           cccc0011101u0000ddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0011101s0000ddddiiiiiiiiiiii NotRdIsPcAndS
                         # Note: The following instruction is used to mask
                         # memory addresses.
 | 1110x      -        = MaskedBinary2RegisterImmediateOp
                            => MaskAddress
                            Bic_Rule_19_A1_P50
-                           cccc0011110unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0011110snnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 1111x      -        = Unary1RegisterImmediateOp
                            => Defs12To15
                            Mvn_Rule_106_A1_P214
-                           cccc0011111u0000ddddiiiiiiiiiiii NotRdIsPcAndS
+                           cccc0011111s0000ddddiiiiiiiiiiii NotRdIsPcAndS
 +--
 
+# Note: in all of these cases there's a currently unhandled restriction:
+#         if ArchVersion() < 6 && d == n then Unpredictable.
+#       And for long versions:
+#         if ArchVersion() < 6 && ((dhi == n) || (dlo == n)) then Unpredictable.
+#       Revisit if we want to support chips before v6.
 +-- multiply_and_multiply_accumulate (See Section A5.2.5)
 | op(23:20)
 | 000x      = Binary3RegisterOpAltA
                  => Defs16To19CondsDontCareRdRmRnNotPc
                  Mul_Rule_105_A1_P212
-                 cccc0000000udddd0000mmmm1001nnnn RegsNotPc
+                 cccc0000000sdddd0000mmmm1001nnnn RegsNotPc
 | 001x      = Binary4RegisterDualOp
                  => Defs16To19CondsDontCareRdRaRmRnNotPc
                  Mla_Rule_94_A1_P190
-                 # Note: doesn't handle:
-                 # if ArchVersion() < 6 && d == n then Unpredictable.
-                 cccc0000001uddddaaaammmm1001nnnn RegsNotPc
+                 cccc0000001sddddaaaammmm1001nnnn RegsNotPc
 | 0100      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umaal_Rule_244_A1_P482
@@ -525,31 +508,19 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 100x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umull_Rule_246_A1_P486
-                 # Note: doesn't handle:
-                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
-                 #   then unpredictable.
-                 cccc0000100uhhhhllllmmmm1001nnnn RegsNotPc                 
+                 cccc0000100shhhhllllmmmm1001nnnn RegsNotPc                 
 | 101x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umlal_Rule_245_A1_P484
-                 # Note: doesn't handle:
-                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
-                 #   then unpredictable.
-                 cccc0000101uhhhhllllmmmm1001nnnn RegsNotPc
+                 cccc0000101shhhhllllmmmm1001nnnn RegsNotPc
 | 110x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Smull_Rule_179_A1_P356
-                 # Note: doesn't handle:
-                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
-                 #   then unpredictable.
-                 cccc0000110uhhhhllllmmmm1001nnnn RegsNotPc   
+                 cccc0000110shhhhllllmmmm1001nnnn RegsNotPc   
 | 111x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Smlal_Rule_168_A1_P334
-                 # Note: doesn't handle:
-                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
-                 #   then unpredictable.
-                 cccc0000111uhhhhllllmmmm1001nnnn RegsNotPc
+                 cccc0000111shhhhllllmmmm1001nnnn RegsNotPc
 +--
 
 +-- saturating_addition_and_subtraction (See Section A5.2.6)
@@ -588,20 +559,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                         cccc00010010ddddaaaammmm1x00nnnn RegsNotPc (v5TE)
                      # Implements Smulwb and Smulwt where the t/b (x)
                      # bit is in bit 6.
-                     # Note: don't know what the value for bits 12:15
-                     # should be! It uses a corrected value for SBZ
-                     # (I think it means reserved, but do not know).
-                     # Implements Smulwb and Smulwt where the t/b (x)
-                     # bit is in bit 6.
-                     # Note: don't know what the value for bits 12:15
-                     # should be! It uses a corrected value for SBZ
-                     # (I think it means reserved, but do not know).
 | 01         1     = Binary3RegisterOpAltA
                         => Defs16To19CondsDontCareRdRmRnNotPc
                         Smulwx_Rule_180_A1_P358
-                        cccc00010010ddddzzzzmmmm1x10nnnn RegsNotPc (v5TE) 
-                     # Implements Smlalbb, Smlalbt, Smlaltb, and Smlaltt
-                     # where the t/b bits (xx) are in bits 5:6.
+                        cccc00010010dddd0000mmmm1x10nnnn RegsNotPc (v5TE) 
                      # Implements Smlalbb, Smlalbt, Smlaltb, and Smlaltt
                      # where the t/b bits (xx) are in bits 5:6.
 | 10         -     = Binary4RegisterDualResult
@@ -610,78 +571,81 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                         cccc00010100hhhhllllmmmm1xx0nnnn RegsNotPc (v5TE)
                      # Implements Smulbb, Smulbt, Smultb, and Smultt
                      # where the t/b bits (xx) are in bits 5:6.
-                     # Note: don't know what the value for bits 12:15
-                     # should be! It uses a corrected value for SBZ
-                     # (I think it means reserved, but do not know).
 | 11         -     = Binary3RegisterOpAltA
                         => Defs16To19CondsDontCareRdRmRnNotPc
                         Smulxx_Rule_178_P354
-                        cccc00010110ddddzzzzmmmm1xx0nnnn RegsNotPc (v5TE)
+                        cccc00010110dddd0000mmmm1xx0nnnn RegsNotPc (v5TE)
 +--
 
 +-- extra_load_store_instructions (See Section A5.2.8)
 | op2(6:5) op1(24:20) Rn(19:16)
+# Note the following encodings which lead to a different table and aren't
+# handled in this table.
+# TODO(jfb) Should we make them Forbidden?
+# 00       -          -         ->data_processing_and_miscellaneous_instructions
+# -        0xx11      -         "
+# 0x       0xx10      -         "
+#
 | 01       xx0x0      -         = Store3RegisterOp => StoreBasedOffsetMemory
                                   Strh_Rule_208_A1_P412
-                                  cccc000pd0w0nnnntttt00001011mmmm
+                                  cccc000pu0w0nnnntttt00001011mmmm
 | "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
                                   Ldrh_Rule_76_A1_P156
-                                  cccc000pd0w1nnnntttt00001011mmmm
+                                  cccc000pu0w1nnnntttt00001011mmmm
 | "        xx1x0      -         = Store2RegisterImm8Op
                                   => StoreBasedImmedMemory
                                   Strh_Rule_207_A1_P410
-                                  cccc000pd1w0nnnnttttiiii1011iiii
+                                  cccc000pu1w0nnnnttttiiii1011iiii
 | "        xx1x1      ~1111     = Load2RegisterImm8Op 
                                   => LoadBasedImmedMemory
                                   Ldrh_Rule_74_A1_P152
-                                  cccc000pd1w1nnnnttttiiii1011iiii
+                                  cccc000pu1w1nnnnttttiiii1011iiii
 | "        "          1111      = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrh_Rule_75_A1_P154
-                                  cccc0001d1011111ttttiiii1011iiii
+                                  cccc0001u1011111ttttiiii1011iiii
 | 10       xx0x0      -         = Load3RegisterDoubleOp
                                   => LoadBasedOffsetMemoryDouble
                                   Ldrd_Rule_68_A1_P140
-                                  cccc000pd0w0nnnntttt00001101mmmm (v5TE)
+                                  cccc000pu0w0nnnntttt00001101mmmm (v5TE)
 | "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
                                   Ldrsb_Rule_80_A1_P164
-                                  cccc000pd0w1nnnntttt00001101mmmm
+                                  cccc000pu0w1nnnntttt00001101mmmm
 | "        xx1x0      ~1111     = Load2RegisterImm8DoubleOp
                                   => LoadBasedImmedMemoryDouble
                                   Ldrd_Rule_66_A1_P136
-                                  cccc000pd1w0nnnnttttiiii1101iiii
-                                  (v5TE)
+                                  cccc000pu1w0nnnnttttiiii1101iiii (v5TE)
 | "        "          1111      = Load2RegisterImm8DoubleOp
                                   => LoadBasedImmedMemoryDouble 
                                   Ldrd_Rule_67_A1_P138
-                                  cccc0001d1001111ttttiiii1101iiii (v5TE)
+                                  cccc0001u1001111ttttiiii1101iiii (v5TE)
 | "        xx1x1      ~1111     = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrsb_Rule_78_A1_P160
-                                  cccc000pd1w1nnnnttttiiii1101iiii
+                                  cccc000pu1w1nnnnttttiiii1101iiii
 | "        "          1111      = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   ldrsb_Rule_79_A1_162
-                                  cccc0001d1011111ttttiiii1101iiii
+                                  cccc0001u1011111ttttiiii1101iiii
 | 11       xx0x0      -         = Store3RegisterDoubleOp
                                   => StoreBasedOffsetMemoryDouble
                                   Strd_Rule_201_A1_P398
-                                  cccc000pd0w0nnnntttt00001111mmmm
+                                  cccc000pu0w0nnnntttt00001111mmmm
 | "        xx0x1      -         = Load3RegisterOp => LoadBasedOffsetMemory
                                   Ldrsh_Rule_84_A1_P172
-                                  cccc000pd0w1nnnntttt00001111mmmm
+                                  cccc000pu0w1nnnntttt00001111mmmm
 | "        xx1x0      -         = Store2RegisterImm8DoubleOp
                                   => StoreBasedImmedMemoryDouble
                                   Strd_Rule_200_A1_P396
-                                  cccc000pd1w0nnnnttttiiii1111iiii
+                                  cccc000pu1w0nnnnttttiiii1111iiii
 | "        xx1x1      ~1111     = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrsh_Rule_82_A1_P168
-                                  cccc000pd1w1nnnnttttiiii1111iiii
+                                  cccc000pu1w1nnnnttttiiii1111iiii
 | "        "          1111      = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrsh_Rule_83_A1_P170
-                                  cccc0001d1011111ttttiiii1111iiii
+                                  cccc0001u1011111ttttiiii1111iiii
 +--
 
 # extra_load_store_instructions_unpriviledged (See section A5.2.9)
