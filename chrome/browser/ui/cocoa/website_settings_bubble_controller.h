@@ -110,6 +110,7 @@ class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
   virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
+  virtual void SetSelectedTab(TabId tab_id) OVERRIDE;
 
  private:
   // The Cocoa controller for the bubble UI.

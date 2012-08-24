@@ -359,15 +359,16 @@ NSColor* IdentityVerifiedTextColor() {
   // Create the "Permissions" tab.
   NSString* label = l10n_util::GetNSString(
       IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS);
+  [segmentedControl_ setLabel:label
+                   forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
   NSSize textSize = [label sizeWithAttributes:textAttributes];
   CGFloat tabWidth = textSize.width + 2 * kTabLabelXPadding;
-  [segmentedControl_ setLabel:label forSegment:0];
-  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding forSegment:0];
 
   // Create the "Connection" tab.
   label = l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION);
   textSize = [label sizeWithAttributes:textAttributes];
-  [segmentedControl_ setLabel:label forSegment:1];
+  [segmentedControl_ setLabel:label
+                   forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
 
   // Make both tabs the width of the widest. The first segment has some
   // additional padding that is not part of the tab, which is used for drawing
@@ -378,7 +379,6 @@ NSColor* IdentityVerifiedTextColor() {
   [segmentedControl_ setWidth:tabWidth forSegment:1];
 
   [segmentedControl_ setFont:smallSystemFont];
-  [segmentedControl_ setSelectedSegment:0];
   [contentView_ addSubview:segmentedControl_];
 
   NSRect tabFrame = NSMakeRect(0, 0, kWindowWidth, 300);
@@ -390,6 +390,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   permissionsTabContentView_ = [self addPermissionsTabToTabView:tabView_];
   connectionTabContentView_ = [self addConnectionTabToTabView:tabView_];
+  [self setSelectedTab:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
 
   [self performLayout];
 }
@@ -398,7 +399,8 @@ NSColor* IdentityVerifiedTextColor() {
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addPermissionsTabToTabView:(NSTabView*)tabView {
   scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  [tabView_ addTabViewItem:item.get()];
+  [tabView_ insertTabViewItem:item.get()
+                      atIndex:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
   scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
       initWithFrame:[tabView_ contentRect]]);
   [item setView:contentView.get()];
@@ -494,7 +496,8 @@ NSColor* IdentityVerifiedTextColor() {
             atPoint:textPosition];
 
   [item setView:contentView.get()];
-  [tabView_ addTabViewItem:item.get()];
+  [tabView_ insertTabViewItem:item.get()
+                      atIndex:WebsiteSettingsUI::TAB_ID_CONNECTION];
 
   return contentView.get();
 }
@@ -779,6 +782,7 @@ NSColor* IdentityVerifiedTextColor() {
   return button.get();
 }
 
+// Called when the user changes the selected segment in the segmented control.
 - (void)tabSelected:(id)sender {
   [tabView_ selectTabViewItemAtIndex:[segmentedControl_ selectedSegment]];
 }
@@ -999,6 +1003,12 @@ NSColor* IdentityVerifiedTextColor() {
   [self performLayout];
 }
 
+- (void)setSelectedTab:(WebsiteSettingsUI::TabId)tabId {
+  NSInteger index = static_cast<NSInteger>(tabId);
+  [segmentedControl_ setSelectedSegment:index];
+  [tabView_ selectTabViewItemAtIndex:index];
+}
+
 @end
 
 WebsiteSettingsUIBridge::WebsiteSettingsUIBridge()
@@ -1065,4 +1075,8 @@ void WebsiteSettingsUIBridge::SetPermissionInfo(
 
 void WebsiteSettingsUIBridge::SetFirstVisit(const string16& first_visit) {
   [bubble_controller_ setFirstVisit:first_visit];
+}
+
+void WebsiteSettingsUIBridge::SetSelectedTab(TabId tab_id) {
+  [bubble_controller_ setSelectedTab:tab_id];
 }

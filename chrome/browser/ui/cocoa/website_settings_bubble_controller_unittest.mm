@@ -9,6 +9,8 @@
 #include "testing/gtest_mac.h"
 
 @interface WebsiteSettingsBubbleController (ExposedForTesting)
+- (NSSegmentedControl*)segmentedControl;
+- (NSTabView*)tabView;
 - (NSView*)permissionsView;
 - (NSView*)connectionTabContentView;
 - (NSImageView*)identityStatusIcon;
@@ -19,6 +21,12 @@
 @end
 
 @implementation WebsiteSettingsBubbleController (ExposedForTesting)
+- (NSSegmentedControl*)segmentedControl {
+  return segmentedControl_.get();
+}
+- (NSTabView*)tabView {
+  return tabView_.get();
+}
 - (NSView*)permissionsView {
   return permissionsView_;
 }
@@ -299,6 +307,22 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
     }
   }
   EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
+}
+
+TEST_F(WebsiteSettingsBubbleControllerTest, SetSelectedTab) {
+  CreateBubble();
+  NSSegmentedControl* segmentedControl = [controller_ segmentedControl];
+  NSTabView* tabView = [controller_ tabView];
+
+  // Test whether SetSelectedTab properly changes both the segmented control
+  // (which implements the tabs) as well as the visible tab contents.
+  // NOTE: This implicitly (and deliberately) tests that the tabs appear in a
+  // specific order: Permissions, Connection.
+  EXPECT_EQ(0, [segmentedControl selectedSegment]);
+  EXPECT_EQ(0, [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
+  bridge_->SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION);
+  EXPECT_EQ(1, [segmentedControl selectedSegment]);
+  EXPECT_EQ(1, [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
 }
 
 }  // namespace
