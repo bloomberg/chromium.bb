@@ -469,6 +469,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_Initialized, OnInitialized)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
@@ -558,6 +559,10 @@ void GpuProcessHost::CreateViewCommandBuffer(
   } else {
     CreateCommandBufferError(callback, MSG_ROUTING_NONE);
   }
+}
+
+void GpuProcessHost::OnInitialized(bool result) {
+  UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
 }
 
 void GpuProcessHost::OnChannelEstablished(

@@ -278,6 +278,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuHostMsg_CreateViewCommandBuffer,
                             GPUCreateCommandBufferConfig, /* init_params */
                             int32 /* route_id */)
 
+// Response from GPU to a GputMsg_Initialize message.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_Initialized,
+                     bool /* result */)
+
 // Response from GPU to a GpuHostMsg_EstablishChannel message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
                      IPC::ChannelHandle /* channel_handle */)

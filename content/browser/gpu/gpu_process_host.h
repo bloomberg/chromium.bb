@@ -116,6 +116,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   // Message handlers.
+  void OnInitialized(bool result);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(int32 surface_id);

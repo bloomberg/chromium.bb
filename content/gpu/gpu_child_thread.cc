@@ -114,6 +114,8 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void GpuChildThread::OnInitialize() {
+  Send(new GpuHostMsg_Initialized(!dead_on_arrival_));
+
   if (dead_on_arrival_) {
     VLOG(1) << "Exiting GPU process due to errors during initialization";
     MessageLoop::current()->Quit();
