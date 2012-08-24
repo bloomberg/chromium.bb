@@ -8386,6 +8386,51 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         won't use insecure connections in order to protect your privacy.
       </message>
 
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Mobile: Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          has detected that an ESET product is intercepting secure connections.
+          This is typically not a security issue as the ESET software is
+          usually running on the same mobile device. However, due to an intolerance
+          to specific aspects of
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+          secure connections, ESET products have to be configured to not
+          perform this interception. Click the 'Learn more' link for
+          instructions.
+        </message>
+
+        <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Mobile: Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+          NetNanny is intercepting secure connections. This is typically
+          not a security issue as the NetNanny software is usually running on the
+          same mobile device. However, due to an intolerance to specific aspects of
+          Chrome's secure connections, NetNanny has to be configured to not
+          perform this interception. Click the 'Learn more' link for instructions.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+          has detected that an ESET product is intercepting secure connections.
+          This is typically not a security issue as the ESET software is
+          usually running on the same computer. However, due to an intolerance
+          to specific aspects of
+          <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
+          secure connections, ESET products have to be configured to not
+          perform this interception. Click the 'Learn more' link for
+          instructions.
+        </message>
+
+        <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_LEARN_MORE.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+          NetNanny is intercepting secure connections. This is typically
+          not a security issue as the NetNanny software is usually running on the
+          same computer. However, due to an intolerance to specific aspects of
+          Chrome's secure connections, NetNanny has to be configured to not
+          perform this interception. Click the 'Learn more' link for instructions.
+        </message>
+      </if>
+
       <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
         Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
       </message>

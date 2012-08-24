@@ -35,6 +35,8 @@ static const char kRedirectLoopLearnMoreUrl[] =
 static const char kWeakDHKeyLearnMoreUrl[] =
     "http://sites.google.com/a/chromium.org/dev/"
     "err_ssl_weak_server_ephemeral_dh_key";
+static const char kESETLearnMoreUrl[] =
+    "http://kb.eset.com/esetkb/index?page=content&id=SOLN2588";
 #if defined(OS_CHROMEOS)
 static const char kAppWarningLearnMoreUrl[] =
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"
@@ -247,6 +249,13 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY,
    IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY,
+   IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
+   SUGGEST_LEARNMORE,
+  },
+  {net::ERR_ESET_ANTI_VIRUS_SSL_INTERCEPTION,
+   IDS_ERRORPAGES_TITLE_LOAD_FAILED,
+   IDS_ERRORPAGES_HEADING_ESET_ANTI_VIRUS_SSL_INTERCEPTION,
+   IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
    SUGGEST_LEARNMORE,
   },
@@ -493,6 +502,8 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   //           displayed.
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", failed_url.host());
+  summary->SetString("productName",
+                     l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   error_strings->Set("summary", summary);
 
   string16 details = l10n_util::GetStringUTF16(options.details_resource_id);
@@ -583,6 +594,8 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     DictionaryValue* suggest_firewall_config = new DictionaryValue;
     suggest_firewall_config->SetString("msg",
         l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG));
+    suggest_firewall_config->SetString("productName",
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     error_strings->Set("suggestionsFirewallConfig", suggest_firewall_config);
   }
 
@@ -631,6 +644,9 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         break;
       case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
         learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
+        break;
+      case net::ERR_ESET_ANTI_VIRUS_SSL_INTERCEPTION:
+        learn_more_url = GURL(kESETLearnMoreUrl);
         break;
       default:
         break;
