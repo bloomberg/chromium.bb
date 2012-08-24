@@ -412,7 +412,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum total amount (in bytes) of data that can be stored in sync storage. Updates that would cause this limit to be exceeded fail immediately and set chrome.extension.lastError.</dd>
+          <dd>The maximum total amount (in bytes) of data that can be stored in sync storage, as measured by the JSON stringification of every value plus every key's length. Updates that would cause this limit to be exceeded fail immediately and set <a href="runtime.html#property-lastError">chrome.runtime.lastError</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -433,7 +433,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum size (in bytes) of each individual item in sync storage. Updates containing items larger than this limit will fail.</dd>
+          <dd>The maximum size (in bytes) of each individual item in sync storage, as measured by the JSON stringification of its value plus its key length. Updates containing items larger than this limit will fail immediately and set <a href="runtime.html#property-lastError">chrome.runtime.lastError</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -454,7 +454,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail</dd>
+          <dd>The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail immediately and set <a href="runtime.html#property-lastError">chrome.runtime.lastError</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -475,7 +475,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail.</dd>
+          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail immediately and set <a href="runtime.html#property-lastError">chrome.runtime.lastError</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -496,7 +496,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail.</dd>
+          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail immediately and set <a href="runtime.html#property-lastError">chrome.runtime.lastError</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -551,7 +551,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail.</dd>
+          <dd>The maximum amount (in bytes) of data that can be stored in local storage, as measured by the JSON stringification of every value plus every key's length. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail immediately and set <a href="runtime.html#property-lastError">chrome.runtime.lastError</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -785,7 +785,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback on success, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Callback on success, or on failure (in which case <a href="runtime.html#property-lastError">chrome.runtime.lastError</a> will be set).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -853,7 +853,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback with storage items, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Callback with storage items, or on failure (in which case <a href="runtime.html#property-lastError">chrome.runtime.lastError</a> will be set).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -921,7 +921,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback with the amount of space being used by storage, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Callback with the amount of space being used by storage, or on failure (in which case <a href="runtime.html#property-lastError">chrome.runtime.lastError</a> will be set).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -989,7 +989,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback on success, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Callback on success, or on failure (in which case <a href="runtime.html#property-lastError">chrome.runtime.lastError</a> will be set).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1057,7 +1057,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback on success, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Callback on success, or on failure (in which case <a href="runtime.html#property-lastError">chrome.runtime.lastError</a> will be set).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
