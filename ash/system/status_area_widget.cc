@@ -383,9 +383,9 @@ void StatusAreaWidget::SetPaintsBackground(
     web_notification_tray_->SetPaintsBackground(value, change_type);
 }
 
-void StatusAreaWidget::HideNonSystemNotifications() {
+void StatusAreaWidget::SetHideWebNotifications(bool hide) {
   if (web_notification_tray_)
-    web_notification_tray_->HideNotificationBubble();
+    web_notification_tray_->SetHidePopupBubble(hide);
 }
 
 void StatusAreaWidget::SetHideSystemNotifications(bool hide) {
@@ -393,7 +393,7 @@ void StatusAreaWidget::SetHideSystemNotifications(bool hide) {
     system_tray_->SetHideNotifications(hide);
 }
 
-bool StatusAreaWidget::ShouldShowNonSystemNotifications() {
+bool StatusAreaWidget::ShouldShowWebNotifications() {
   return !(system_tray_ && system_tray_->IsAnyBubbleVisible());
 }
 

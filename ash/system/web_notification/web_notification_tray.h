@@ -101,8 +101,8 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   void SetNotificationImage(const std::string& id,
                             const gfx::ImageSkia& image);
 
-  // Hide the single notification bubble if visible.
-  void HideNotificationBubble();
+  // Set whether or not the popup notifications should be hidden.
+  void SetHidePopupBubble(bool hide);
 
   // Updates tray visibility login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
@@ -121,6 +121,10 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
+  // Constants exposed for unit tests:
+  static const size_t kMaxVisibleTrayNotifications;
+  static const size_t kMaxVisiblePopupNotifications;
+
  private:
   class Bubble;
   class MessageCenterBubble;
@@ -130,7 +134,10 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   friend class internal::WebNotificationList;
   friend class internal::WebNotificationView;
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationBubble);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationPopupBubble);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest,
+                           ManyMessageCenterNotifications);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
 
   // Sends a remove request to the delegate.
   void SendRemoveNotification(const std::string& id);
@@ -172,8 +179,11 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   // Testing accessors.
   size_t GetNotificationCountForTest() const;
   bool HasNotificationForTest(const std::string& id) const;
+  void RemoveAllNotificationsForTest();
+  size_t GetMessageCenterNotificationCountForTest() const;
+  size_t GetPopupNotificationCountForTest() const;
 
-  const internal::WebNotificationList* notification_list() const {
+  internal::WebNotificationList* notification_list() {
     return notification_list_.get();
   }
   MessageCenterBubble* message_center_bubble() const {

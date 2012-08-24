@@ -51,12 +51,10 @@ const int kTraySideHeight = 24;
 
 // Web Notification Bubble constants
 const int kWebNotificationBubbleMinHeight = 80;
-const int kWebNotificationBubbleMaxHeight = 480;
+const int kWebNotificationBubbleMaxHeight = 400;
 // Delay laying out the Bubble until all notifications have been added and icons
 // have had a chance to load.
 const int kUpdateDelayMs = 50;
-// Limit the number of visible notifications.
-const int kMaxVisibleNotifications = 100;
 const int kAutocloseDelaySeconds = 5;
 const SkColor kMessageCountColor = SkColorSetARGB(0xff, 0xff, 0xff, 0xff);
 const SkColor kNotificationColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
@@ -83,17 +81,27 @@ std::string GetNotificationText(int notification_count) {
 
 namespace ash {
 
+// WebNotificationTray statics (for unit tests)
+
+// Limit the number of visible notifications.
+const size_t WebNotificationTray::kMaxVisibleTrayNotifications = 100;
+const size_t WebNotificationTray::kMaxVisiblePopupNotifications = 5;
+
 namespace internal {
 
 struct WebNotification {
-  WebNotification() : is_read(false) {}
+  WebNotification()
+      : is_read(false),
+        shown_as_popup(false) {
+  }
   std::string id;
   string16 title;
   string16 message;
   string16 display_source;
   std::string extension_id;
   gfx::ImageSkia image;
-  bool is_read;
+  bool is_read;  // True if this has been seen in the message center
+  bool shown_as_popup;  // True if this has been shown as a popup notification
 };
 
 // Web Notification List -------------------------------------------------------
@@ -116,10 +124,11 @@ class WebNotificationList {
       // Clear the unread count when the list is shown.
       unread_count_ = 0;
     } else {
-      // Mark all notifications as read when the list is hidden.
+      // Mark all notifications as read and shown when the list is hidden.
       for (Notifications::iterator iter = notifications_.begin();
            iter != notifications_.end(); ++iter) {
         iter->is_read = true;
+        iter->shown_as_popup = true;
       }
     }
   }
@@ -135,7 +144,6 @@ class WebNotificationList {
     notification.message = message;
     notification.display_source = display_source;
     notification.extension_id = extension_id;
-    notification.is_read = false;
     PushNotification(notification);
   }
 
@@ -151,7 +159,6 @@ class WebNotificationList {
     notification.id = new_id;
     notification.title = title;
     notification.message = message;
-    notification.is_read = false;
     EraseNotification(iter);
     PushNotification(notification);
   }
@@ -207,14 +214,32 @@ class WebNotificationList {
     return true;
   }
 
-  std::string GetFirstId() {
-    if (notifications_.empty())
-      return std::string();
-    return notifications_.front().id;
-  }
-
   bool HasNotification(const std::string& id) {
     return GetNotification(id) != notifications_.end();
+  }
+
+  // Returns false if the first notification has been shown as a popup (which
+  // means that all notifications have been shown).
+  bool HasPopupNotifications() {
+    return !notifications_.empty() && !notifications_.front().shown_as_popup;
+  }
+
+  // Modifies |notifications| to contain the |kMaxVisiblePopupNotifications|
+  // least recent notifications that have not been shown as a popup.
+  void GetPopupNotifications(Notifications* notifications) {
+    Notifications::iterator first, last;
+    GetPopupIterators(first, last);
+    notifications->clear();
+    for (Notifications::iterator iter = first; iter != last; ++iter)
+      notifications->push_back(*iter);
+  }
+
+  // Marks the popups returned by GetPopupNotifications() as shown.
+  void MarkPopupsAsShown() {
+    Notifications::iterator first, last;
+    GetPopupIterators(first, last);
+    for (Notifications::iterator iter = first; iter != last; ++iter)
+      iter->shown_as_popup = true;
   }
 
   const Notifications& notifications() const { return notifications_; }
@@ -238,16 +263,38 @@ class WebNotificationList {
     notifications_.erase(iter);
   }
 
-  void PushNotification(const WebNotification& notification) {
+  void PushNotification(WebNotification& notification) {
     // Ensure that notification.id is unique by erasing any existing
     // notification with the same id (shouldn't normally happen).
     Notifications::iterator iter = GetNotification(notification.id);
     if (iter != notifications_.end())
       EraseNotification(iter);
-    // Add the notification to the front (top) of the list.
-    if (!message_center_visible_)
+    // Add the notification to the front (top) of the list and mark it
+    // unread and unshown.
+    if (!message_center_visible_) {
       ++unread_count_;
+      notification.is_read = false;
+      notification.shown_as_popup = false;
+    }
     notifications_.push_front(notification);
+  }
+
+  // Returns the |kMaxVisiblePopupNotifications| least recent notifications that
+  // have not been shown as a popup.
+  void GetPopupIterators(Notifications::iterator& first,
+                         Notifications::iterator& last) {
+    size_t popup_count = 0;
+    first = notifications_.begin();
+    last = first;
+    while (last != notifications_.end()) {
+      if (last->shown_as_popup)
+        break;
+      ++last;
+      if (popup_count < WebNotificationTray::kMaxVisiblePopupNotifications)
+        ++popup_count;
+      else
+        ++first;
+    }
   }
 
   Notifications notifications_;
@@ -648,9 +695,6 @@ class WebContentsView : public views::View {
   }
   virtual ~WebContentsView() {}
 
-  virtual void Update(
-      const WebNotificationList::Notifications& notifications) = 0;
-
  protected:
   WebNotificationTray* tray_;
 
@@ -702,21 +746,18 @@ class MessageCenterContentsView : public WebContentsView {
 
     button_view_ = new internal::WebNotificationButtonView(tray);
     AddChildView(button_view_);
-
-    // Build initial view with no notifications.
-    Update(WebNotificationList::Notifications());
   }
 
   void Update(const WebNotificationList::Notifications& notifications) {
     scroll_content_->RemoveAllChildViews(true);
     scroll_content_->set_preferred_size(gfx::Size());
-    int num_children = 0;
+    size_t num_children = 0;
     for (WebNotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
       WebNotificationView* view = new WebNotificationView(tray_, *iter);
       view->set_scroller(scroller_);
       scroll_content_->AddChildView(view);
-      if (++num_children >= kMaxVisibleNotifications)
+      if (++num_children >= WebNotificationTray::kMaxVisibleTrayNotifications)
         break;
     }
     if (num_children == 0) {
@@ -734,6 +775,10 @@ class MessageCenterContentsView : public WebContentsView {
     Layout();
     if (GetWidget())
       GetWidget()->GetRootView()->SchedulePaint();
+  }
+
+  size_t MessageViewsForTest() const {
+    return scroll_content_->child_count();
   }
 
  private:
@@ -777,22 +822,24 @@ class PopupBubbleContentsView : public WebContentsView {
     content_->SetPaintToLayer(true);
     content_->SetFillsBoundsOpaquely(false);
     content_->layer()->SetMasksToBounds(true);
-
-    // Build initial view with no notification.
-    Update(WebNotificationList::Notifications());
   }
 
-  void Update(
-      const WebNotificationList::Notifications& notifications) OVERRIDE {
+  void Update(const WebNotificationList::Notifications& popup_notifications) {
     content_->RemoveAllChildViews(true);
-    const WebNotification& notification = (notifications.size() > 0) ?
-        notifications.front() : WebNotification();
-    WebNotificationView* view = new WebNotificationView(tray_, notification);
-    content_->AddChildView(view);
+    for (WebNotificationList::Notifications::const_iterator iter =
+             popup_notifications.begin();
+         iter != popup_notifications.end(); ++iter) {
+      WebNotificationView* view = new WebNotificationView(tray_, *iter);
+      content_->AddChildView(view);
+    }
     content_->SizeToPreferredSize();
     Layout();
     if (GetWidget())
       GetWidget()->GetRootView()->SchedulePaint();
+  }
+
+  size_t MessageViewsForTest() const {
+    return content_->child_count();
   }
 
  private:
@@ -930,6 +977,10 @@ class WebNotificationTray::MessageCenterBubble :
 
   virtual ~MessageCenterBubble() {}
 
+  size_t MessageViewsForTest() const {
+    return contents_view_->MessageViewsForTest();
+  }
+
   // Overridden from TrayBubbleView::Host.
   virtual void BubbleViewDestroyed() OVERRIDE {
     contents_view_ = NULL;
@@ -954,7 +1005,8 @@ class WebNotificationTray::PopupBubble : public WebNotificationTray::Bubble {
  public:
   explicit PopupBubble(WebNotificationTray* tray) :
       WebNotificationTray::Bubble(tray),
-      contents_view_(NULL) {
+      contents_view_(NULL),
+      num_popups_(0) {
     TrayBubbleView::InitParams init_params = GetInitParams();
     init_params.arrow_color = kBackgroundColor;
     init_params.close_on_deactivate = false;
@@ -966,6 +1018,10 @@ class WebNotificationTray::PopupBubble : public WebNotificationTray::Bubble {
   }
 
   virtual ~PopupBubble() {}
+
+  size_t MessageViewsForTest() const {
+    return contents_view_->MessageViewsForTest();
+  }
 
   // Overridden from TrayBubbleView::Host.
   virtual void BubbleViewDestroyed() OVERRIDE {
@@ -986,12 +1042,21 @@ class WebNotificationTray::PopupBubble : public WebNotificationTray::Bubble {
  private:
   // Overridden from Bubble.
   virtual void UpdateBubbleView() OVERRIDE {
-    const WebNotificationList::Notifications& notifications =
-        tray_->notification_list()->notifications();
-    contents_view_->Update(notifications);
-    bubble_view_->Show();
-    bubble_view_->UpdateBubble();
-    StartAutoCloseTimer();
+    WebNotificationList::Notifications popup_notifications;
+    tray_->notification_list()->GetPopupNotifications(&popup_notifications);
+    if (popup_notifications.size() == 0) {
+      tray_->HideBubble(this);  // deletes |this|!
+      return;
+    }
+    // Only update the popup tray if the number of visible popup notifications
+    // has changed.
+    if (popup_notifications.size() != num_popups_) {
+      num_popups_ = popup_notifications.size();
+      contents_view_->Update(popup_notifications);
+      bubble_view_->Show();
+      bubble_view_->UpdateBubble();
+      StartAutoCloseTimer();
+    }
   }
 
   void StartAutoCloseTimer() {
@@ -1005,11 +1070,14 @@ class WebNotificationTray::PopupBubble : public WebNotificationTray::Bubble {
   }
 
   void OnAutoClose() {
-    tray_->HideBubble(this);  // deletes |this|!
+    tray_->notification_list()->MarkPopupsAsShown();
+    num_popups_ = 0;
+    UpdateBubbleView();
   }
 
   base::OneShotTimer<PopupBubble> autoclose_;
   internal::PopupBubbleContentsView* contents_view_;
+  size_t num_popups_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubble);
 };
@@ -1072,10 +1140,10 @@ void WebNotificationTray::UpdateNotification(const std::string& old_id,
 }
 
 void WebNotificationTray::RemoveNotification(const std::string& id) {
-  if (id == notification_list_->GetFirstId())
-    HidePopupBubble();
   if (!notification_list_->RemoveNotification(id))
     return;
+  if (!notification_list_->HasPopupNotifications())
+    HidePopupBubble();
   UpdateTrayAndBubble();
 }
 
@@ -1084,8 +1152,7 @@ void WebNotificationTray::SetNotificationImage(const std::string& id,
   if (!notification_list_->SetNotificationImage(id, image))
     return;
   UpdateTrayAndBubble();
-  if (popup_bubble() && id == notification_list_->GetFirstId())
-    ShowPopupBubble();
+  ShowPopupBubble();
 }
 
 void WebNotificationTray::ShowMessageCenterBubble() {
@@ -1114,8 +1181,11 @@ void WebNotificationTray::HideMessageCenterBubble() {
   UpdateShouldShowLauncher();
 }
 
-void WebNotificationTray::HideNotificationBubble() {
-  HidePopupBubble();
+void WebNotificationTray::SetHidePopupBubble(bool hide) {
+  if (hide)
+    HidePopupBubble();
+  else
+    ShowPopupBubble();
 }
 
 void WebNotificationTray::ShowPopupBubble() {
@@ -1123,12 +1193,12 @@ void WebNotificationTray::ShowPopupBubble() {
     return;
   if (message_center_bubble())
     return;
-  if (!status_area_widget()->ShouldShowNonSystemNotifications())
+  if (!status_area_widget()->ShouldShowWebNotifications())
     return;
   UpdateTray();
   if (popup_bubble()) {
     popup_bubble()->ScheduleUpdate();
-  } else {
+  } else if (notification_list_->HasPopupNotifications()) {
     popup_bubble_.reset(new PopupBubble(this));
   }
 }
@@ -1197,7 +1267,7 @@ string16 WebNotificationTray::GetAccessibleName() {
 void WebNotificationTray::SendRemoveNotification(const std::string& id) {
   // If this is the only notification in the list, close the bubble.
   if (notification_list_->notifications().size() == 1 &&
-      id == notification_list_->GetFirstId()) {
+      notification_list_->HasNotification(id)) {
     HideMessageCenterBubble();
   }
   if (delegate_)
@@ -1298,6 +1368,22 @@ size_t WebNotificationTray::GetNotificationCountForTest() const {
 
 bool WebNotificationTray::HasNotificationForTest(const std::string& id) const {
   return notification_list_->HasNotification(id);
+}
+
+void WebNotificationTray::RemoveAllNotificationsForTest() {
+  notification_list_->RemoveAllNotifications();
+}
+
+size_t WebNotificationTray::GetMessageCenterNotificationCountForTest() const {
+  if (!message_center_bubble())
+    return 0;
+  return message_center_bubble()->MessageViewsForTest();
+}
+
+size_t WebNotificationTray::GetPopupNotificationCountForTest() const {
+  if (!popup_bubble())
+    return 0;
+  return popup_bubble()->MessageViewsForTest();
 }
 
 }  // namespace ash

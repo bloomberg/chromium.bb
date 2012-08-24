@@ -267,6 +267,7 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
     UpdateShouldShowLauncher();
   } else if (bubble == notification_bubble_) {
     notification_bubble_.reset();
+    status_area_widget()->SetHideWebNotifications(false);
   } else {
     NOTREACHED();
   }
@@ -342,7 +343,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     detailed_item_ = NULL;
 
   UpdateNotificationBubble();  // State changed, re-create notifications.
-  status_area_widget()->HideNonSystemNotifications();
+  status_area_widget()->SetHideWebNotifications(true);
   UpdateShouldShowLauncher();
 }
 
@@ -353,6 +354,7 @@ void SystemTray::UpdateNotificationBubble() {
       (bubble_.get() &&
        bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
     notification_bubble_.reset();
+    status_area_widget()->SetHideWebNotifications(false);
     return;
   }
   if (bubble_.get() &&
@@ -390,7 +392,7 @@ void SystemTray::UpdateNotificationBubble() {
   if (hide_notifications_)
     notification_bubble_->SetVisible(false);
   else
-    status_area_widget()->HideNonSystemNotifications();
+    status_area_widget()->SetHideWebNotifications(true);
 }
 
 void SystemTray::Initialize() {
