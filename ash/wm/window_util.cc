@@ -13,7 +13,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -63,10 +62,11 @@ bool CanActivateWindow(aura::Window* window) {
 }
 
 bool IsWindowNormal(aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-          ui::SHOW_STATE_NORMAL ||
-      window->GetProperty(aura::client::kShowStateKey) ==
-          ui::SHOW_STATE_DEFAULT;
+  return IsWindowStateNormal(window->GetProperty(aura::client::kShowStateKey));
+}
+
+bool IsWindowStateNormal(ui::WindowShowState state) {
+  return state == ui::SHOW_STATE_NORMAL || state == ui::SHOW_STATE_DEFAULT;
 }
 
 bool IsWindowMaximized(aura::Window* window) {

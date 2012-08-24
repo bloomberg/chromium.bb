@@ -351,6 +351,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
+#ifndef NDEBUG
+  // These methods are useful when debugging.
+  std::string GetDebugInfo() const;
+  void PrintWindowHierarchy(int depth) const;
+#endif
+
  private:
   friend class LayoutManager;
 
@@ -429,12 +435,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns true if the mouse is currently within our bounds.
   bool ContainsMouse();
-
-#ifndef NDEBUG
-  // These methods are useful when debugging.
-  std::string GetDebugInfo() const;
-  void PrintWindowHierarchy(int depth) const;
-#endif
 
   client::WindowType type_;
 

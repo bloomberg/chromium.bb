@@ -239,6 +239,16 @@ void Layer::SetOpacity(float opacity) {
   GetAnimator()->SetOpacity(opacity);
 }
 
+float Layer::GetCombinedOpacity() const {
+  float opacity = opacity_;
+  Layer* current = this->parent_;
+  while (current) {
+    opacity *= current->opacity_;
+    current = current->parent_;
+  }
+  return opacity;
+}
+
 void Layer::SetBackgroundBlur(int blur_radius) {
   background_blur_radius_ = blur_radius;
 
@@ -605,16 +615,6 @@ void Layer::SetForceRenderSurface(bool force) {
 #else
   web_layer_.setForceRenderSurface(force_render_surface_);
 #endif
-}
-
-float Layer::GetCombinedOpacity() const {
-  float opacity = opacity_;
-  Layer* current = this->parent_;
-  while (current) {
-    opacity *= current->opacity_;
-    current = current->parent_;
-  }
-  return opacity;
 }
 
 void Layer::StackRelativeTo(Layer* child, Layer* other, bool above) {

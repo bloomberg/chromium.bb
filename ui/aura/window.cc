@@ -613,6 +613,27 @@ void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
+#ifndef NDEBUG
+std::string Window::GetDebugInfo() const {
+  return StringPrintf(
+      "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f",
+      name().empty() ? "Unknown" : name().c_str(), id(),
+      bounds().x(), bounds().y(), bounds().width(), bounds().height(),
+      visible_ ? "WindowVisible" : "WindowHidden",
+      layer_->GetTargetVisibility() ? "LayerVisible" : "LayerHidden",
+      layer_->opacity());
+}
+
+void Window::PrintWindowHierarchy(int depth) const {
+  printf("%*s%s\n", depth * 2, "", GetDebugInfo().c_str());
+  for (Windows::const_iterator it = children_.begin();
+       it != children_.end(); ++it) {
+    Window* child = *it;
+    child->PrintWindowHierarchy(depth + 1);
+  }
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Window, private:
 
@@ -940,25 +961,5 @@ bool Window::ContainsMouse() {
   }
   return contains_mouse;
 }
-
-#ifndef NDEBUG
-std::string Window::GetDebugInfo() const {
-  return StringPrintf(
-      "%s<%d> bounds(%d, %d, %d, %d) %s",
-      name().empty() ? "Unknown" : name().c_str(), id(),
-      bounds().x(), bounds().y(), bounds().width(), bounds().height(),
-      IsVisible() ? "Visible" : "Hidden");
-}
-
-void Window::PrintWindowHierarchy(int depth) const {
-  printf("%*s%s\n", depth * 2, "", GetDebugInfo().c_str());
-  for (Windows::const_reverse_iterator it = children_.rbegin(),
-           rend = children_.rend();
-       it != rend; ++it) {
-    Window* child = *it;
-    child->PrintWindowHierarchy(depth + 1);
-  }
-}
-#endif
 
 }  // namespace aura

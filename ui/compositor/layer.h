@@ -131,6 +131,10 @@ class COMPOSITOR_EXPORT Layer
   float opacity() const { return opacity_; }
   void SetOpacity(float opacity);
 
+  // Returns the actual opacity, which the opacity of this layer multipled by
+  // the combined opacity of the parent.
+  float GetCombinedOpacity() const;
+
   // Blur pixels by this amount in anything below the layer and visible through
   // the layer.
   int background_blur() const { return background_blur_radius_; }
@@ -275,12 +279,6 @@ class COMPOSITOR_EXPORT Layer
   bool force_render_surface() const { return force_render_surface_; }
 
  private:
-  // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
-  // 1.0, we'll render to a separate texture, and then apply the alpha.
-  // Currently, we multiply our opacity by all our ancestor's opacities and
-  // use the combined result, but this is only temporary.
-  float GetCombinedOpacity() const;
-
   // Stacks |child| above or below |other|.  Helper method for StackAbove() and
   // StackBelow().
   void StackRelativeTo(Layer* child, Layer* other, bool above);

@@ -6,6 +6,8 @@
 #define ASH_WM_WINDOW_UTIL_H_
 
 #include "ash/ash_export.h"
+#include "base/compiler_specific.h"
+#include "ui/base/ui_base_types.h"
 
 namespace aura {
 class RootWindow;
@@ -36,6 +38,9 @@ ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 // Returns true if |window| is normal or default.
 ASH_EXPORT bool IsWindowNormal(aura::Window* window);
 
+// Returns true if |state| is normal or default.
+ASH_EXPORT bool IsWindowStateNormal(ui::WindowShowState state);
+
 // Returns true if |window| is in the maximized state.
 ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
 
@@ -57,10 +62,12 @@ ASH_EXPORT void RestoreWindow(aura::Window* window);
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 
-// Recreates a fresh layer for |window| and all its child windows. Does not
-// recreate shadows or other non-window layers. Returns the old layer and its
-// children, maintaining the hierarchy.
-ASH_EXPORT ui::Layer* RecreateWindowLayers(aura::Window* window);
+// Returns the existing Layer for |window| (and all its descendants) and creates
+// a new layer for |window| and all its descendants. This is intended for
+// animations that want to animate between the existing visuals and a new window
+// state. The caller owns the return value.
+ASH_EXPORT ui::Layer* RecreateWindowLayers(
+    aura::Window* window) WARN_UNUSED_RESULT;
 
 // Deletes |layer| and all its child layers.
 ASH_EXPORT void DeepDeleteLayers(ui::Layer* layer);

@@ -312,6 +312,8 @@
         'wm/video_detector.h',
         'wm/visibility_controller.cc',
         'wm/visibility_controller.h',
+        'wm/window_animation_delegate.cc',
+        'wm/window_animation_delegate.h',
         'wm/window_animations.cc',
         'wm/window_animations.h',
         'wm/window_cycle_controller.cc',

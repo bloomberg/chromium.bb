@@ -4,6 +4,8 @@
 
 #include "ash/shell/content_client/shell_browser_main_parts.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/shell.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
 #include "base/bind.h"
@@ -99,6 +101,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   delegate->SetWatcher(window_watcher_.get());
 
   ash::shell::InitWindowTypeLauncher();
+
+  Shell::GetInstance()->desktop_background_controller()->
+      SetDefaultWallpaper(0, false);
 
   ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
 }
