@@ -164,7 +164,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   };
 
   // Creates encoder for the specified configuration.
-  static Encoder* CreateEncoder(const protocol::SessionConfig& config);
+  static VideoEncoder* CreateVideoEncoder(
+      const protocol::SessionConfig& config);
 
   // Creates an audio encoder for the specified configuration.
   static scoped_ptr<AudioEncoder> CreateAudioEncoder(

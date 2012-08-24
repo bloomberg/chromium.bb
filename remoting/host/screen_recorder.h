@@ -82,7 +82,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       VideoFrameCapturer* capturer,
-      Encoder* encoder);
+      VideoEncoder* encoder);
 
   // Start recording.
   void Start();
@@ -109,7 +109,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // Getters for capturer and encoder.
   VideoFrameCapturer* capturer();
-  Encoder* encoder();
+  VideoEncoder* encoder();
 
   bool is_recording();
 
@@ -166,7 +166,7 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
 
   // Reference to the encoder. This member is always accessed on the encode
   // thread.
-  scoped_ptr<Encoder> encoder_;
+  scoped_ptr<VideoEncoder> encoder_;
 
   // A list of clients connected to this hosts.
   // This member is always accessed on the network thread.

@@ -23,12 +23,12 @@ const int kIntMax = std::numeric_limits<int>::max();
 
 namespace remoting {
 
-TEST(EncoderVp8Test, TestEncoder) {
-  EncoderVp8 encoder;
-  TestEncoder(&encoder, false);
+TEST(VideoEncoderVp8Test, TestVideoEncoder) {
+  VideoEncoderVp8 encoder;
+  TestVideoEncoder(&encoder, false);
 }
 
-class EncoderCallback {
+class VideoEncoderCallback {
  public:
   void DataAvailable(scoped_ptr<VideoPacket> packet) {
   }
@@ -36,13 +36,13 @@ class EncoderCallback {
 
 // Test that calling Encode with a differently-sized CaptureData does not
 // leak memory.
-TEST(EncoderVp8Test, TestSizeChangeNoLeak) {
+TEST(VideoEncoderVp8Test, TestSizeChangeNoLeak) {
   int height = 1000;
   int width = 1000;
   const int kBytesPerPixel = 4;
 
-  EncoderVp8 encoder;
-  EncoderCallback callback;
+  VideoEncoderVp8 encoder;
+  VideoEncoderCallback callback;
 
   std::vector<uint8> buffer(width * height * kBytesPerPixel);
   DataPlanes planes;
@@ -52,18 +52,18 @@ TEST(EncoderVp8Test, TestSizeChangeNoLeak) {
   scoped_refptr<CaptureData> capture_data(new CaptureData(
       planes, SkISize::Make(width, height), media::VideoFrame::RGB32));
   encoder.Encode(capture_data, false,
-                 base::Bind(&EncoderCallback::DataAvailable,
+                 base::Bind(&VideoEncoderCallback::DataAvailable,
                             base::Unretained(&callback)));
 
   height /= 2;
   capture_data = new CaptureData(planes, SkISize::Make(width, height),
                                  media::VideoFrame::RGB32);
   encoder.Encode(capture_data, false,
-                 base::Bind(&EncoderCallback::DataAvailable,
+                 base::Bind(&VideoEncoderCallback::DataAvailable,
                             base::Unretained(&callback)));
 }
 
-class EncoderDpiCallback {
+class VideoEncoderDpiCallback {
  public:
   void DataAvailable(scoped_ptr<VideoPacket> packet) {
     EXPECT_EQ(packet->format().x_dpi(), 96);
@@ -73,13 +73,13 @@ class EncoderDpiCallback {
 
 // Test that the DPI information is correctly propagated from the CaptureData
 // to the VideoPacket.
-TEST(EncoderVp8Test, TestDpiPropagation) {
+TEST(VideoEncoderVp8Test, TestDpiPropagation) {
   int height = 32;
   int width = 32;
   const int kBytesPerPixel = 4;
 
-  EncoderVp8 encoder;
-  EncoderDpiCallback callback;
+  VideoEncoderVp8 encoder;
+  VideoEncoderDpiCallback callback;
 
   std::vector<uint8> buffer(width * height * kBytesPerPixel);
   DataPlanes planes;
@@ -90,7 +90,7 @@ TEST(EncoderVp8Test, TestDpiPropagation) {
       planes, SkISize::Make(width, height), media::VideoFrame::RGB32));
   capture_data->set_dpi(SkIPoint::Make(96, 97));
   encoder.Encode(capture_data, false,
-                 base::Bind(&EncoderDpiCallback::DataAvailable,
+                 base::Bind(&VideoEncoderDpiCallback::DataAvailable,
                             base::Unretained(&callback)));
 }
 

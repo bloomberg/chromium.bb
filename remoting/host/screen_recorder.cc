@@ -37,7 +37,7 @@ ScreenRecorder::ScreenRecorder(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     VideoFrameCapturer* capturer,
-    Encoder* encoder)
+    VideoEncoder* encoder)
     : capture_task_runner_(capture_task_runner),
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
@@ -123,7 +123,7 @@ VideoFrameCapturer* ScreenRecorder::capturer() {
   return capturer_;
 }
 
-Encoder* ScreenRecorder::encoder() {
+VideoEncoder* ScreenRecorder::encoder() {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
   DCHECK(encoder_.get());
   return encoder_.get();

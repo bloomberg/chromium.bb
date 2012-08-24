@@ -69,10 +69,10 @@ static const media::VideoFrame::Format kFormat = media::VideoFrame::RGB32;
 static const VideoPacketFormat::Encoding kEncoding =
     VideoPacketFormat::ENCODING_VERBATIM;
 
-class MockEncoder : public Encoder {
+class MockVideoEncoder : public VideoEncoder {
  public:
-  MockEncoder();
-  virtual ~MockEncoder();
+  MockVideoEncoder();
+  virtual ~MockVideoEncoder();
 
   MOCK_METHOD3(Encode, void(
       scoped_refptr<CaptureData> capture_data,
@@ -80,12 +80,12 @@ class MockEncoder : public Encoder {
       const DataAvailableCallback& data_available_callback));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockEncoder);
+  DISALLOW_COPY_AND_ASSIGN(MockVideoEncoder);
 };
 
-MockEncoder::MockEncoder() {}
+MockVideoEncoder::MockVideoEncoder() {}
 
-MockEncoder::~MockEncoder() {}
+MockVideoEncoder::~MockVideoEncoder() {}
 
 class ScreenRecorderTest : public testing::Test {
  public:
@@ -93,8 +93,8 @@ class ScreenRecorderTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    // VideoFrameCapturer and Encoder are owned by ScreenRecorder.
-    encoder_ = new MockEncoder();
+    // VideoFrameCapturer and VideoEncoder are owned by ScreenRecorder.
+    encoder_ = new MockVideoEncoder();
 
     session_ = new MockSession();
     EXPECT_CALL(*session_, SetEventHandler(_));
@@ -128,7 +128,7 @@ class ScreenRecorderTest : public testing::Test {
 
   // The following mock objects are owned by ScreenRecorder.
   MockVideoFrameCapturer capturer_;
-  MockEncoder* encoder_;
+  MockVideoEncoder* encoder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenRecorderTest);

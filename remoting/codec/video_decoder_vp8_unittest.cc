@@ -13,21 +13,21 @@ namespace remoting {
 
 class VideoDecoderVp8Test : public testing::Test {
  protected:
-  EncoderVp8 encoder_;
+  VideoEncoderVp8 encoder_;
   VideoDecoderVp8 decoder_;
 
   void TestGradient(int screen_width, int screen_height,
                     int view_width, int view_height,
                     double max_error_limit, double mean_error_limit) {
-    TestEncoderDecoderGradient(&encoder_, &decoder_,
-                               SkISize::Make(screen_width, screen_height),
-                               SkISize::Make(view_width, view_height),
-                               max_error_limit, mean_error_limit);
+    TestVideoEncoderDecoderGradient(&encoder_, &decoder_,
+                                    SkISize::Make(screen_width, screen_height),
+                                    SkISize::Make(view_width, view_height),
+                                    max_error_limit, mean_error_limit);
   }
 };
 
-TEST_F(VideoDecoderVp8Test, EncodeAndDecode) {
-  TestEncoderDecoder(&encoder_, &decoder_, false);
+TEST_F(VideoDecoderVp8Test, VideoEncodeAndDecode) {
+  TestVideoEncoderDecoder(&encoder_, &decoder_, false);
 }
 
 // Check that encoding and decoding a particular frame doesn't change the

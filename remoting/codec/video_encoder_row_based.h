@@ -13,21 +13,21 @@ namespace remoting {
 
 class Compressor;
 
-// EncoderRowBased implements an Encoder using zlib or verbatim
+// VideoEncoderRowBased implements a VideoEncoder using zlib or verbatim
 // compression. Zlib-based encoder must be created using
 // CreateZlibEncoder(), verbatim encoder is created with
 // CreateVerbatimEncoder().
 //
 // Compressor is reset before encoding each rectangle, so that each
 // rectangle can be decoded independently.
-class EncoderRowBased : public Encoder {
+class VideoEncoderRowBased : public VideoEncoder {
  public:
-  static EncoderRowBased* CreateZlibEncoder();
-  static EncoderRowBased* CreateZlibEncoder(int packet_size);
-  static EncoderRowBased* CreateVerbatimEncoder();
-  static EncoderRowBased* CreateVerbatimEncoder(int packet_size);
+  static VideoEncoderRowBased* CreateZlibEncoder();
+  static VideoEncoderRowBased* CreateZlibEncoder(int packet_size);
+  static VideoEncoderRowBased* CreateVerbatimEncoder();
+  static VideoEncoderRowBased* CreateVerbatimEncoder(int packet_size);
 
-  virtual ~EncoderRowBased();
+  virtual ~VideoEncoderRowBased();
 
   virtual void Encode(
       scoped_refptr<CaptureData> capture_data,
@@ -35,9 +35,11 @@ class EncoderRowBased : public Encoder {
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
-  EncoderRowBased(Compressor* compressor, VideoPacketFormat::Encoding encoding);
-  EncoderRowBased(Compressor* compressor, VideoPacketFormat::Encoding encoding,
-                  int packet_size);
+  VideoEncoderRowBased(Compressor* compressor,
+                       VideoPacketFormat::Encoding encoding);
+  VideoEncoderRowBased(Compressor* compressor,
+                       VideoPacketFormat::Encoding encoding,
+                       int packet_size);
 
   // Encode a single dirty rect using compressor.
   void EncodeRect(const SkIRect& rect, bool last);

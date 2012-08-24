@@ -21,7 +21,7 @@ class VideoPacket;
 // A class to perform the task of encoding a continous stream of
 // images.
 // This class operates asynchronously to enable maximum throughput.
-class Encoder {
+class VideoEncoder {
  public:
 
   // DataAvailableCallback is called as blocks of data are made available
@@ -29,7 +29,7 @@ class Encoder {
   // of HostMessage to reduce the amount of memory copies.
   typedef base::Callback<void(scoped_ptr<VideoPacket>)> DataAvailableCallback;
 
-  virtual ~Encoder() {}
+  virtual ~VideoEncoder() {}
 
   // Encode an image stored in |capture_data|.
   //

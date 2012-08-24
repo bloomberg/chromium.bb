@@ -15,10 +15,10 @@ typedef struct vpx_image vpx_image_t;
 namespace remoting {
 
 // A class that uses VP8 to perform encoding.
-class EncoderVp8 : public Encoder {
+class VideoEncoderVp8 : public VideoEncoder {
  public:
-  EncoderVp8();
-  virtual ~EncoderVp8();
+  VideoEncoderVp8();
+  virtual ~VideoEncoderVp8();
 
   virtual void Encode(
       scoped_refptr<CaptureData> capture_data,
@@ -26,7 +26,7 @@ class EncoderVp8 : public Encoder {
       const DataAvailableCallback& data_available_callback) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EncoderVp8Test, AlignAndClipRect);
+  FRIEND_TEST_ALL_PREFIXES(VideoEncoderVp8Test, AlignAndClipRect);
 
   // Initialize the encoder. Returns true if successful.
   bool Init(const SkISize& size);
@@ -56,7 +56,7 @@ class EncoderVp8 : public Encoder {
   // Buffer for storing the yuv image.
   scoped_array<uint8> yuv_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(EncoderVp8);
+  DISALLOW_COPY_AND_ASSIGN(VideoEncoderVp8);
 };
 
 }  // namespace remoting

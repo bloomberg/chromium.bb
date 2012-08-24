@@ -26,7 +26,7 @@ const int kMacroBlockSize = 16;
 
 namespace remoting {
 
-EncoderVp8::EncoderVp8()
+VideoEncoderVp8::VideoEncoderVp8()
     : initialized_(false),
       codec_(NULL),
       image_(NULL),
@@ -35,11 +35,11 @@ EncoderVp8::EncoderVp8()
       last_timestamp_(0) {
 }
 
-EncoderVp8::~EncoderVp8() {
+VideoEncoderVp8::~VideoEncoderVp8() {
   Destroy();
 }
 
-void EncoderVp8::Destroy() {
+void VideoEncoderVp8::Destroy() {
   if (initialized_) {
     vpx_codec_err_t ret = vpx_codec_destroy(codec_.get());
     DCHECK(ret == VPX_CODEC_OK) << "Failed to destroy codec";
@@ -47,7 +47,7 @@ void EncoderVp8::Destroy() {
   }
 }
 
-bool EncoderVp8::Init(const SkISize& size) {
+bool VideoEncoderVp8::Init(const SkISize& size) {
   Destroy();
   codec_.reset(new vpx_codec_ctx_t());
   image_.reset(new vpx_image_t());
@@ -144,8 +144,8 @@ bool EncoderVp8::Init(const SkISize& size) {
   return true;
 }
 
-void EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
-                              SkRegion* updated_region) {
+void VideoEncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
+                                   SkRegion* updated_region) {
   // Perform RGB->YUV conversion.
   CHECK_EQ(capture_data->pixel_format(), media::VideoFrame::RGB32)
     << "Only RGB32 is supported";
@@ -190,7 +190,7 @@ void EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
   }
 }
 
-void EncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
+void VideoEncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
   // Clear active map first.
   memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
 
@@ -213,9 +213,10 @@ void EncoderVp8::PrepareActiveMap(const SkRegion& updated_region) {
   }
 }
 
-void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
-                        bool key_frame,
-                        const DataAvailableCallback& data_available_callback) {
+void VideoEncoderVp8::Encode(
+    scoped_refptr<CaptureData> capture_data,
+    bool key_frame,
+    const DataAvailableCallback& data_available_callback) {
   DCHECK_LE(32, capture_data->size().width());
   DCHECK_LE(32, capture_data->size().height());
 

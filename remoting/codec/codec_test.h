@@ -12,28 +12,31 @@
 namespace remoting {
 
 class VideoDecoder;
-class Encoder;
+class VideoEncoder;
 
 // Generate test data and test the encoder for a regular encoding sequence.
 // This will test encoder test and the sequence of messages sent.
 //
 // If |strict| is set to true then this routine will make sure the updated
 // rects match dirty rects.
-void TestEncoder(Encoder* encoder, bool strict);
+void TestVideoEncoder(VideoEncoder* encoder, bool strict);
 
 // Generate test data and test the encoder and decoder pair.
 //
 // If |strict| is set to true, this routine will make sure the updated rects
 // are correct.
-void TestEncoderDecoder(Encoder* encoder, VideoDecoder* decoder, bool strict);
+void TestVideoEncoderDecoder(VideoEncoder* encoder,
+                             VideoDecoder* decoder,
+                             bool strict);
 
 // Generate a frame containing a gradient, and test the encoder and decoder
 // pair.
-void TestEncoderDecoderGradient(Encoder* encoder, VideoDecoder* decoder,
-                                const SkISize& screen_size,
-                                const SkISize& view_size,
-                                double max_error_limit,
-                                double mean_error_limit);
+void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
+                                     VideoDecoder* decoder,
+                                     const SkISize& screen_size,
+                                     const SkISize& view_size,
+                                     double max_error_limit,
+                                     double mean_error_limit);
 
 }  // namespace remoting
 

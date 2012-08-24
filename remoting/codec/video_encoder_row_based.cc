@@ -15,53 +15,54 @@ namespace remoting {
 
 static const int kPacketSize = 1024 * 1024;
 
-EncoderRowBased* EncoderRowBased::CreateZlibEncoder() {
-  return new EncoderRowBased(new CompressorZlib(),
-                             VideoPacketFormat::ENCODING_ZLIB);
+VideoEncoderRowBased* VideoEncoderRowBased::CreateZlibEncoder() {
+  return new VideoEncoderRowBased(new CompressorZlib(),
+                                  VideoPacketFormat::ENCODING_ZLIB);
 }
 
-EncoderRowBased* EncoderRowBased::CreateZlibEncoder(int packet_size) {
-  return new EncoderRowBased(new CompressorZlib(),
-                             VideoPacketFormat::ENCODING_ZLIB,
-                             packet_size);
+VideoEncoderRowBased* VideoEncoderRowBased::CreateZlibEncoder(int packet_size) {
+  return new VideoEncoderRowBased(new CompressorZlib(),
+                                  VideoPacketFormat::ENCODING_ZLIB,
+                                  packet_size);
 }
 
-EncoderRowBased* EncoderRowBased::CreateVerbatimEncoder() {
-  return new EncoderRowBased(new CompressorVerbatim(),
-                             VideoPacketFormat::ENCODING_VERBATIM);
+VideoEncoderRowBased* VideoEncoderRowBased::CreateVerbatimEncoder() {
+  return new VideoEncoderRowBased(new CompressorVerbatim(),
+                                  VideoPacketFormat::ENCODING_VERBATIM);
 }
 
-EncoderRowBased* EncoderRowBased::CreateVerbatimEncoder(int packet_size) {
-  return new EncoderRowBased(new CompressorVerbatim(),
-                             VideoPacketFormat::ENCODING_VERBATIM,
-                             packet_size);
+VideoEncoderRowBased* VideoEncoderRowBased::CreateVerbatimEncoder(
+    int packet_size) {
+  return new VideoEncoderRowBased(new CompressorVerbatim(),
+                                  VideoPacketFormat::ENCODING_VERBATIM,
+                                  packet_size);
 }
 
-EncoderRowBased::EncoderRowBased(Compressor* compressor,
-                                 VideoPacketFormat::Encoding encoding)
+VideoEncoderRowBased::VideoEncoderRowBased(Compressor* compressor,
+                                           VideoPacketFormat::Encoding encoding)
     : encoding_(encoding),
       compressor_(compressor),
       screen_size_(SkISize::Make(0,0)),
       packet_size_(kPacketSize) {
 }
 
-EncoderRowBased::EncoderRowBased(Compressor* compressor,
-                                 VideoPacketFormat::Encoding encoding,
-                                 int packet_size)
+VideoEncoderRowBased::VideoEncoderRowBased(Compressor* compressor,
+                                           VideoPacketFormat::Encoding encoding,
+                                           int packet_size)
     : encoding_(encoding),
       compressor_(compressor),
       screen_size_(SkISize::Make(0,0)),
       packet_size_(packet_size) {
 }
 
-EncoderRowBased::~EncoderRowBased() {}
+VideoEncoderRowBased::~VideoEncoderRowBased() {}
 
-void EncoderRowBased::Encode(
+void VideoEncoderRowBased::Encode(
     scoped_refptr<CaptureData> capture_data,
     bool key_frame,
     const DataAvailableCallback& data_available_callback) {
   CHECK(capture_data->pixel_format() == media::VideoFrame::RGB32)
-      << "RowBased Encoder only works with RGB32. Got "
+      << "RowBased VideoEncoder only works with RGB32. Got "
       << capture_data->pixel_format();
   capture_data_ = capture_data;
   callback_ = data_available_callback;
@@ -78,7 +79,7 @@ void EncoderRowBased::Encode(
   callback_.Reset();
 }
 
-void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
+void VideoEncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
   CHECK(capture_data_->data_planes().data[0]);
   CHECK_EQ(capture_data_->pixel_format(), media::VideoFrame::RGB32);
   const int strides = capture_data_->data_planes().strides[0];
@@ -150,8 +151,8 @@ void EncoderRowBased::EncodeRect(const SkIRect& rect, bool last) {
   }
 }
 
-void EncoderRowBased::PrepareUpdateStart(const SkIRect& rect,
-                                         VideoPacket* packet) {
+void VideoEncoderRowBased::PrepareUpdateStart(const SkIRect& rect,
+                                              VideoPacket* packet) {
   packet->set_flags(packet->flags() | VideoPacket::FIRST_PACKET);
 
   VideoPacketFormat* format = packet->mutable_format();
@@ -167,7 +168,7 @@ void EncoderRowBased::PrepareUpdateStart(const SkIRect& rect,
   }
 }
 
-uint8* EncoderRowBased::GetOutputBuffer(VideoPacket* packet, size_t size) {
+uint8* VideoEncoderRowBased::GetOutputBuffer(VideoPacket* packet, size_t size) {
   packet->mutable_data()->resize(size);
   // TODO(ajwong): Is there a better way to do this at all???
   return const_cast<uint8*>(reinterpret_cast<const uint8*>(

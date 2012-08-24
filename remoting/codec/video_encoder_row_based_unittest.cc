@@ -9,14 +9,16 @@
 
 namespace remoting {
 
-TEST(EncoderZlibTest, TestEncoder) {
-  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder());
-  TestEncoder(encoder.get(), true);
+TEST(VideoEncoderZlibTest, TestVideoEncoder) {
+  scoped_ptr<VideoEncoderRowBased> encoder(
+      VideoEncoderRowBased::CreateZlibEncoder());
+  TestVideoEncoder(encoder.get(), true);
 }
 
-TEST(EncoderZlibTest, TestEncoderSmallOutputBuffer) {
-  scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder(16));
-  TestEncoder(encoder.get(), true);
+TEST(VideoEncoderZlibTest, TestVideoEncoderSmallOutputBuffer) {
+  scoped_ptr<VideoEncoderRowBased> encoder(
+      VideoEncoderRowBased::CreateZlibEncoder(16));
+  TestVideoEncoder(encoder.get(), true);
 }
 
 }  // namespace remoting

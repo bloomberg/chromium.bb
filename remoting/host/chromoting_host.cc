@@ -223,13 +223,14 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
 
   // Then we create a ScreenRecorder passing the message loops that
   // it should run on.
-  Encoder* encoder = CreateEncoder(client->connection()->session()->config());
+  VideoEncoder* video_encoder =
+      CreateVideoEncoder(client->connection()->session()->config());
 
   recorder_ = new ScreenRecorder(context_->capture_task_runner(),
                                  context_->encode_task_runner(),
                                  context_->network_task_runner(),
                                  desktop_environment_->capturer(),
-                                 encoder);
+                                 video_encoder);
   if (client->connection()->session()->config().is_audio_enabled()) {
     scoped_ptr<AudioEncoder> audio_encoder =
         CreateAudioEncoder(client->connection()->session()->config());
@@ -421,15 +422,16 @@ void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
 
 // TODO(sergeyu): Move this to SessionManager?
 // static
-Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig& config) {
+VideoEncoder* ChromotingHost::CreateVideoEncoder(
+    const protocol::SessionConfig& config) {
   const protocol::ChannelConfig& video_config = config.video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return EncoderRowBased::CreateVerbatimEncoder();
+    return VideoEncoderRowBased::CreateVerbatimEncoder();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
-    return EncoderRowBased::CreateZlibEncoder();
+    return VideoEncoderRowBased::CreateZlibEncoder();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return new remoting::EncoderVp8();
+    return new remoting::VideoEncoderVp8();
   }
 
   return NULL;
