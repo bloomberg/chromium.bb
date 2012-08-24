@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -24,16 +23,30 @@ using remoting::protocol::SessionConfig;
 
 namespace remoting {
 
+RectangleUpdateDecoder::QueuedVideoPacket::QueuedVideoPacket(
+    scoped_ptr<VideoPacket> packet,
+    const base::Closure& done)
+    : packet(packet.release()),
+      done(done) {
+}
+
+RectangleUpdateDecoder::QueuedVideoPacket::~QueuedVideoPacket() {
+}
+
 RectangleUpdateDecoder::RectangleUpdateDecoder(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
     scoped_refptr<FrameConsumerProxy> consumer)
-    : task_runner_(task_runner),
+    : main_task_runner_(main_task_runner),
+      decode_task_runner_(decode_task_runner),
       consumer_(consumer),
       source_size_(SkISize::Make(0, 0)),
       source_dpi_(SkIPoint::Make(0, 0)),
       view_size_(SkISize::Make(0, 0)),
       clip_area_(SkIRect::MakeEmpty()),
-      paint_scheduled_(false) {
+      paint_scheduled_(false),
+      packet_being_processed_(false),
+      latest_sequence_number_(0) {
 }
 
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
@@ -55,12 +68,7 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
 
 void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
                                           const base::Closure& done) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::DecodePacket,
-                              this, base::Passed(&packet), done));
-    return;
-  }
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   base::ScopedClosureRunner done_runner(done);
   bool decoder_needs_reset = false;
@@ -109,7 +117,7 @@ void RectangleUpdateDecoder::SchedulePaint() {
   if (paint_scheduled_)
     return;
   paint_scheduled_ = true;
-  task_runner_->PostTask(
+  decode_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RectangleUpdateDecoder::DoPaint, this));
 }
 
@@ -141,8 +149,8 @@ void RectangleUpdateDecoder::DoPaint() {
 }
 
 void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!decode_task_runner_->BelongsToCurrentThread()) {
+    decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::RequestReturnBuffers,
         this, done));
     return;
@@ -158,8 +166,8 @@ void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
 }
 
 void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!decode_task_runner_->BelongsToCurrentThread()) {
+    decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::DrawBuffer,
                               this, buffer));
     return;
@@ -173,8 +181,8 @@ void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
 }
 
 void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!decode_task_runner_->BelongsToCurrentThread()) {
+    decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::InvalidateRegion,
                               this, region));
     return;
@@ -188,8 +196,8 @@ void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
 
 void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
                                                   const SkIRect& clip_area) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
+  if (!decode_task_runner_->BelongsToCurrentThread()) {
+    decode_task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSizeAndClip,
                               this, view_size, clip_area));
     return;
@@ -223,6 +231,114 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
 
     SchedulePaint();
   }
+}
+
+void RectangleUpdateDecoder::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+                                                const base::Closure& done) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  // If the video packet is empty then drop it. Empty packets are used to
+  // maintain activity on the network.
+  if (!packet->has_data() || packet->data().size() == 0) {
+    done.Run();
+    return;
+  }
+
+  // Add one frame to the counter.
+  stats_.video_frame_rate()->Record(1);
+
+  // Record other statistics received from host.
+  stats_.video_bandwidth()->Record(packet->data().size());
+  if (packet->has_capture_time_ms())
+    stats_.video_capture_ms()->Record(packet->capture_time_ms());
+  if (packet->has_encode_time_ms())
+    stats_.video_encode_ms()->Record(packet->encode_time_ms());
+  if (packet->has_client_sequence_number() &&
+      packet->client_sequence_number() > latest_sequence_number_) {
+    latest_sequence_number_ = packet->client_sequence_number();
+    base::TimeDelta round_trip_latency =
+        base::Time::Now() -
+        base::Time::FromInternalValue(packet->client_sequence_number());
+    stats_.round_trip_ms()->Record(round_trip_latency.InMilliseconds());
+  }
+
+  received_packets_.push_back(QueuedVideoPacket(packet.Pass(), done));
+  if (!packet_being_processed_)
+    ProcessNextPacket();
+}
+
+int RectangleUpdateDecoder::GetPendingVideoPackets() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return received_packets_.size();
+}
+
+void RectangleUpdateDecoder::DropAllPackets() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  while(!received_packets_.empty()) {
+    delete received_packets_.front().packet;
+    received_packets_.front().done.Run();
+    received_packets_.pop_front();
+  }
+}
+
+void RectangleUpdateDecoder::ProcessNextPacket() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  CHECK(!packet_being_processed_);
+
+  if (received_packets_.empty()) {
+    // Nothing to do!
+    return;
+  }
+
+  scoped_ptr<VideoPacket> packet(received_packets_.front().packet);
+  received_packets_.front().packet = NULL;
+  packet_being_processed_ = true;
+
+  // Measure the latency between the last packet being received and presented.
+  bool last_packet = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
+  base::Time decode_start;
+  if (last_packet)
+    decode_start = base::Time::Now();
+
+  base::Closure callback = base::Bind(&RectangleUpdateDecoder::OnPacketDone,
+                                      this,
+                                      last_packet,
+                                      decode_start);
+
+  decode_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &RectangleUpdateDecoder::DecodePacket, this,
+      base::Passed(&packet), callback));
+}
+
+void RectangleUpdateDecoder::OnPacketDone(bool last_packet,
+                                          base::Time decode_start) {
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &RectangleUpdateDecoder::OnPacketDone, this,
+        last_packet, decode_start));
+    return;
+  }
+
+  // Record the latency between the final packet being received and
+  // presented.
+  if (last_packet) {
+    stats_.video_decode_ms()->Record(
+        (base::Time::Now() - decode_start).InMilliseconds());
+  }
+
+  received_packets_.front().done.Run();
+  received_packets_.pop_front();
+
+  packet_being_processed_ = false;
+
+  // Process the next video packet.
+  ProcessNextPacket();
+}
+
+ChromotingStats* RectangleUpdateDecoder::GetStats() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return &stats_;
 }
 
 }  // namespace remoting

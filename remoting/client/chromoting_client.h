@@ -38,10 +38,8 @@ class ClientContext;
 class ClientUserInterface;
 class RectangleUpdateDecoder;
 
-// TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
-                         public protocol::ClientStub,
-                         public protocol::VideoStub {
+                         public protocol::ClientStub {
  public:
   // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
@@ -75,31 +73,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
       protocol::ErrorCode error) OVERRIDE;
   virtual void OnConnectionReady(bool ready) OVERRIDE;
 
-  // VideoStub implementation.
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                  const base::Closure& done) OVERRIDE;
-  virtual int GetPendingVideoPackets() OVERRIDE;
-
  private:
-  struct QueuedVideoPacket {
-    QueuedVideoPacket(scoped_ptr<VideoPacket> packet,
-                      const base::Closure& done);
-    ~QueuedVideoPacket();
-    VideoPacket* packet;
-    base::Closure done;
-  };
-
   // Initializes connection.
   void Initialize();
-
-  // If a packet is not being processed, dispatches a single message from the
-  // |received_packets_| queue.
-  void DispatchPacket();
-
-  // Callback method when a VideoPacket is processed.
-  // If |last_packet| is true then |decode_start| contains the timestamp when
-  // the packet will start to be processed.
-  void OnPacketDone(bool last_packet, base::Time decode_start);
 
   void OnDisconnected(const base::Closure& shutdown_task);
 
@@ -116,21 +92,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // If non-NULL, this is called when the client is done.
   base::Closure client_done_;
 
-  // Contains all video packets that have been received, but have not yet been
-  // processed.
-  //
-  // Used to serialize sending of messages to the client.
-  std::list<QueuedVideoPacket> received_packets_;
-
-  // True if a message is being processed. Can be used to determine if it is
-  // safe to dispatch another message.
-  bool packet_being_processed_;
-
   // Record the statistics of the connection.
   ChromotingStats stats_;
-
-  // Keep track of the last sequence number bounced back from the host.
-  int64 last_sequence_number_;
 
   // WeakPtr used to avoid tasks accessing the client after it is deleted.
   base::WeakPtrFactory<ChromotingClient> weak_factory_;

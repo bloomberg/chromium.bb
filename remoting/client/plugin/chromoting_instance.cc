@@ -232,8 +232,9 @@ bool ChromotingInstance::Init(uint32_t argc,
   // PepperView with a ref-counted proxy object.
   scoped_refptr<FrameConsumerProxy> consumer_proxy =
       new FrameConsumerProxy(plugin_task_runner_);
-  rectangle_decoder_ = new RectangleUpdateDecoder(
-      context_.decode_task_runner(), consumer_proxy);
+  rectangle_decoder_ = new RectangleUpdateDecoder(context_.main_task_runner(),
+                                                  context_.decode_task_runner(),
+                                                  consumer_proxy);
   view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
   consumer_proxy->Attach(view_->AsWeakPtr());
 
