@@ -75,6 +75,11 @@ alkalmazásszerver
 testmode: backtranslate
 alkalmazásszerver
 
+alkalmazásszintű
+
+testmode: backtranslate
+alkalmazásszintű
+
 állásszög
 
 testmode: backtranslate
@@ -330,6 +335,11 @@ chipseszacskó
 testmode: backtranslate
 chipseszacskó
 
+curiosity
+
+testmode: backtranslate
+curiosity
+
 csapásszám
 
 testmode: backtranslate
@@ -354,6 +364,11 @@ csikósszámadó
 
 testmode: backtranslate
 csikósszámadó
+
+csillaggyárnak
+
+testmode: backtranslate
+csillaggyárnak
 
 csipkésszélű
 
@@ -454,6 +469,11 @@ testmode: backtranslate
 
 testmode: backtranslate
 égésszigetelés
+
+edzésszámot
+
+testmode: backtranslate
+edzésszámot
 
 egyenesszálú
 
@@ -720,6 +740,11 @@ filccsizma
 testmode: backtranslate
 filccsizma
 
+Fifty-Fifty
+
+testmode: backtranslate
+Fifty-Fifty
+
 filigránnyelű
 
 testmode: backtranslate
@@ -964,6 +989,11 @@ hajósszemélyzet
 
 testmode: backtranslate
 hajósszemélyzet
+
+hamisszínes
+
+testmode: backtranslate
+hamisszínes
 
 hallászavar
 

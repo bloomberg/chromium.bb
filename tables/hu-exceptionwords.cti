@@ -189,6 +189,7 @@ partword üveggy 12356-1236-15-1245-1456	For example üveggyűrű word
 partword vendéggy 1236-15-1345-145-16-1245-1456	For example vendéggyermek, vendéggyülekezet word
 partword világossággy 1236-24-123-4-1245-135-234-234-4-1245-1456	For example világossággyújtásra word
 partword virággy 1236-24-1235-4-1245-1456	For example virággyapjaikat word
+partword csillaggy 146-24-123-123-1-1245-1456	For example csillaggyárnak word
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -508,7 +509,7 @@ always tipusszám 2345-24-1234-136-234-156-4-134	For example tipusszám word
 partword alvásszeg 1-123-1236-4-234-156-15-1245	For example alvásszegény word
 always lakosszám 123-1-13-135-234-156-4-134	For example lakosszám word
 partword adósszám 1-145-246-234-156-4-134	For example adósszámla word
-begword alkalmazásszer 1-123-13-1-123-134-1-126-4-234-156-15-1235	For example alkalmazásszerver word
+begword alkalmazássz 1-123-13-1-123-134-1-126-4-234-156	For example alkalmazásszerver, alkalmazásszint words
 begword autósszem 1-136-2345-246-234-156-15-134	For example autósszemüveg word
 begword béléssz 12-16-123-16-234-156	For example bélésszövet word
 begword bőgésszer 12-12456-1245-16-234-156-15-1235	For example bőgésszerű word
@@ -740,20 +741,26 @@ partword vírussz 1236-34-1235-136-234-156	For example vírusszűrés word
 partword stílussz 234-2345-34-123-136-234-156	For example stílusszerű, stílusszerkesztő words
 partword hármassz 125-4-1235-134-1-234-156	For example hármasszak, hármassziget word
 begword hússzöv 125-346-234-156-12345-1236	For example Hússzövetség company name or normal hússzövet words need this exception
+partword edzéssz 15-145-126-16-234-156	For example edzésszám word
+begword hamissz 125-1-134-24-234-156	For example hamisszínes word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
-partword okréty 135-13-1235-16-2345-13456
-always iberty 24-12-15-1235-2345-13456	For example liberty word
-always city 14-24-2345-13456
-partword gettysbur 1245-15-2345-2345-13456-234-12-136-1235
-always party 1234-1-1235-2345-13456
-always amnesty 1-134-1345-15-234-2345-13456
-partword curity 14-136-1235-24-2345-13456
-partword niversity 1345-24-1236-15-1235-234-24-2345-13456	For example university word
-partword tyard 2345-13456-1-1235-145	For example négyzetyardnyi
-always piccadilly 1234-24-14-14-1-145-24-123-123-13456
-always dactylus 145-1-14-2345-13456-123-136-234
+partword okréty =	For example Zsámbokrétyvel word
+always iberty =
+always city =
+partword gettysbur =
+always party =
+always amnesty =
+partword curity =
+partword niversity =
+partword tyard =	For example négyzetyardnyi
+always piccadilly =
+always dactylus =
+always curiosity =
+always unity =
+always fifty =
+begword stylis =
 
 #zs, zzs related exceptions
 partword ínházsi 34-1345-125-4-345-24

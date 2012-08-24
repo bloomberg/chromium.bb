@@ -68,6 +68,10 @@
           "output": "al-kal-ma-zás-szer-ver"
         }, 
         {
+          "input": "alkalmazásszintű", 
+          "output": "al-kal-ma-zás-szin-tű"
+        }, 
+        {
           "input": "állásszög", 
           "output": "ál-lás-szög"
         }, 
@@ -272,6 +276,10 @@
           "output": "ch-ip-seszacs-kó"
         }, 
         {
+          "input": "curiosity", 
+          "output": "cu-ri-o-sity"
+        }, 
+        {
           "input": "csapásszám", 
           "output": "csa-pás-szám"
         }, 
@@ -290,6 +298,10 @@
         {
           "input": "csikósszámadó", 
           "output": "csi-kósszám-adó"
+        }, 
+        {
+          "input": "csillaggyárnak", 
+          "output": "csil-lag-gyár-nak"
         }, 
         {
           "input": "csipkésszélű", 
@@ -370,6 +382,10 @@
         {
           "input": "égésszigetelés", 
           "output": "égés-szi-ge-te-lés"
+        }, 
+        {
+          "input": "edzésszámot", 
+          "output": "edzés-szá-mot"
         }, 
         {
           "input": "egyenesszálú", 
@@ -798,6 +814,10 @@
         {
           "input": "hajósszemélyzet", 
           "output": "ha-jós-sze-mély-zet"
+        }, 
+        {
+          "input": "hamisszínes", 
+          "output": "ha-mis-szí-nes"
         }, 
         {
           "input": "hallászavar", 

@@ -46,6 +46,9 @@ testmode: hyphenate
 alkalmazásszerver
 
 testmode: hyphenate
+alkalmazásszintű
+
+testmode: hyphenate
 állásszög
 
 testmode: hyphenate
@@ -199,6 +202,9 @@ testmode: hyphenate
 chipseszacskó
 
 testmode: hyphenate
+curiosity
+
+testmode: hyphenate
 csapásszám
 
 testmode: hyphenate
@@ -212,6 +218,9 @@ csavarásszerű
 
 testmode: hyphenate
 csikósszámadó
+
+testmode: hyphenate
+csillaggyárnak
 
 testmode: hyphenate
 csipkésszélű
@@ -272,6 +281,9 @@ testmode: hyphenate
 
 testmode: hyphenate
 égésszigetelés
+
+testmode: hyphenate
+edzésszámot
 
 testmode: hyphenate
 egyenesszálú
@@ -593,6 +605,9 @@ hajósszekerce
 
 testmode: hyphenate
 hajósszemélyzet
+
+testmode: hyphenate
+hamisszínes
 
 testmode: hyphenate
 hallászavar

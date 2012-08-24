@@ -67,6 +67,10 @@
           "output": "alkalmazásszerver"
         }, 
         {
+          "input": "⠁⠇⠅⠁⠇⠍⠁⠣⠈⠎⠱⠊⠝⠞⠾", 
+          "output": "alkalmazásszintű"
+        }, 
+        {
           "input": "⠈⠇⠇⠈⠎⠱⠟⠛", 
           "output": "állásszög"
         }, 
@@ -271,6 +275,10 @@
           "output": "chipseszacskó"
         }, 
         {
+          "input": "⠉⠥⠗⠊⠕⠎⠊⠞⠽", 
+          "output": "curiosity"
+        }, 
+        {
           "input": "⠩⠁⠏⠈⠎⠱⠈⠍", 
           "output": "csapásszám"
         }, 
@@ -289,6 +297,10 @@
         {
           "input": "⠩⠊⠅⠪⠎⠱⠈⠍⠁⠙⠪", 
           "output": "csikósszámadó"
+        }, 
+        {
+          "input": "⠩⠊⠇⠇⠁⠛⠹⠈⠗⠝⠁⠅", 
+          "output": "csillaggyárnak"
         }, 
         {
           "input": "⠩⠊⠏⠅⠡⠎⠱⠡⠇⠾", 
@@ -369,6 +381,10 @@
         {
           "input": "⠡⠛⠡⠎⠱⠊⠛⠑⠞⠑⠇⠡⠎", 
           "output": "égésszigetelés"
+        }, 
+        {
+          "input": "⠑⠙⠣⠡⠎⠱⠈⠍⠕⠞", 
+          "output": "edzésszámot"
         }, 
         {
           "input": "⠑⠹⠑⠝⠑⠎⠱⠈⠇⠬", 
@@ -583,6 +599,10 @@
           "output": "filccsizma"
         }, 
         {
+          "input": "⠨⠋⠊⠋⠞⠽⠤⠨⠋⠊⠋⠞⠽", 
+          "output": "Fifty-Fifty"
+        }, 
+        {
           "input": "⠋⠊⠇⠊⠛⠗⠈⠝⠫⠑⠇⠾", 
           "output": "filigránnyelű"
         }, 
@@ -777,6 +797,10 @@
         {
           "input": "⠓⠁⠚⠪⠎⠱⠑⠍⠡⠸⠣⠑⠞", 
           "output": "hajósszemélyzet"
+        }, 
+        {
+          "input": "⠓⠁⠍⠊⠎⠱⠌⠝⠑⠎", 
+          "output": "hamisszínes"
         }, 
         {
           "input": "⠓⠁⠇⠇⠈⠎⠣⠁⠧⠁⠗", 
@@ -3239,6 +3263,10 @@
           "output": "⠁⠇⠅⠁⠇⠍⠁⠣⠈⠎⠱⠑⠗⠧⠑⠗"
         }, 
         {
+          "input": "alkalmazásszintű", 
+          "output": "⠁⠇⠅⠁⠇⠍⠁⠣⠈⠎⠱⠊⠝⠞⠾"
+        }, 
+        {
           "input": "állásszög", 
           "output": "⠈⠇⠇⠈⠎⠱⠟⠛"
         }, 
@@ -3443,6 +3471,10 @@
           "output": "⠉⠓⠊⠏⠎⠑⠎⠣⠁⠩⠅⠪"
         }, 
         {
+          "input": "curiosity", 
+          "output": "⠉⠥⠗⠊⠕⠎⠊⠞⠽"
+        }, 
+        {
           "input": "csapásszám", 
           "output": "⠩⠁⠏⠈⠎⠱⠈⠍"
         }, 
@@ -3461,6 +3493,10 @@
         {
           "input": "csikósszámadó", 
           "output": "⠩⠊⠅⠪⠎⠱⠈⠍⠁⠙⠪"
+        }, 
+        {
+          "input": "csillaggyárnak", 
+          "output": "⠩⠊⠇⠇⠁⠛⠹⠈⠗⠝⠁⠅"
         }, 
         {
           "input": "csipkésszélű", 
@@ -3541,6 +3577,10 @@
         {
           "input": "égésszigetelés", 
           "output": "⠡⠛⠡⠎⠱⠊⠛⠑⠞⠑⠇⠡⠎"
+        }, 
+        {
+          "input": "edzésszámot", 
+          "output": "⠑⠙⠣⠡⠎⠱⠈⠍⠕⠞"
         }, 
         {
           "input": "egyenesszálú", 
@@ -3755,6 +3795,10 @@
           "output": "⠋⠊⠇⠉⠩⠊⠣⠍⠁"
         }, 
         {
+          "input": "Fifty-Fifty", 
+          "output": "⠨⠋⠊⠋⠞⠽⠤⠨⠋⠊⠋⠞⠽"
+        }, 
+        {
           "input": "filigránnyelű", 
           "output": "⠋⠊⠇⠊⠛⠗⠈⠝⠫⠑⠇⠾"
         }, 
@@ -3949,6 +3993,10 @@
         {
           "input": "hajósszemélyzet", 
           "output": "⠓⠁⠚⠪⠎⠱⠑⠍⠡⠸⠣⠑⠞"
+        }, 
+        {
+          "input": "hamisszínes", 
+          "output": "⠓⠁⠍⠊⠎⠱⠌⠝⠑⠎"
         }, 
         {
           "input": "hallászavar", 
