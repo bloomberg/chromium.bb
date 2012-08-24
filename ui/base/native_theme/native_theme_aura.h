@@ -30,10 +30,6 @@ class NativeThemeAura : public NativeThemeBase {
       State state,
       const ScrollbarTrackExtraParams& extra_params,
       const gfx::Rect& rect) const OVERRIDE;
-  virtual void PaintArrowButton(SkCanvas* canvas,
-                                const gfx::Rect& rect,
-                                Part direction,
-                                State state) const OVERRIDE;
   virtual void PaintScrollbarThumb(SkCanvas* canvas,
                                    Part part,
                                    State state,
