@@ -52,8 +52,6 @@ def LaunchSelLdr(program, name):
   sel_ldr = os.environ['NACL_SEL_LDR']
   irt = os.environ['NACL_IRT']
   args = [sel_ldr, '-g', '-B', irt]
-  if os.environ.has_key('NACL_ASAN'):
-    args += ['-Q']
   if os.environ.has_key('NACL_LD_SO'):
     args += ['-a', '--', os.environ['NACL_LD_SO'],
              '--library-path', os.environ['NACL_LIBS']]
