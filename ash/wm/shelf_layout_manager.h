@@ -140,6 +140,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
   void SetWindowOverlapsShelf(bool value);
+  bool window_overlaps_shelf() const { return window_overlaps_shelf_; }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

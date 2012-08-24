@@ -13,6 +13,7 @@
 #include "ash/wm/workspace/base_workspace_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/timer.h"
 #include "ui/base/ui_base_types.h"
 
 namespace aura {
@@ -22,6 +23,10 @@ class Window;
 namespace gfx {
 class Point;
 class Rect;
+}
+
+namespace ui {
+class Layer;
 }
 
 namespace ash {
@@ -46,6 +51,7 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // Returns true if |window| is considered maximized and should exist in its
   // own workspace.
   static bool IsMaximized(aura::Window* window);
+  static bool IsMaximizedState(ui::WindowShowState state);
 
   // Returns true if |window| is minimized and will restore to a maximized
   // window.
@@ -68,6 +74,18 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
 
   typedef std::vector<Workspace2*> Workspaces;
 
+  // Describes which, if any, of the workspaces should animate. NEW is the
+  // workspace that is becoming active, and OLD the current workspace.
+  enum AnimateType {
+    ANIMATE_NONE,
+
+    // Animates only the new workspace in.
+    ANIMATE_NEW,
+
+    // Animates both the old and new workspaces.
+    ANIMATE_OLD_AND_NEW,
+  };
+
   // Updates the visibility and whether any windows overlap the shelf.
   void UpdateShelfVisibility();
 
@@ -75,7 +93,7 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   Workspace2* FindBy(aura::Window* window) const;
 
   // Sets the active workspace.
-  void SetActiveWorkspace(Workspace2* workspace);
+  void SetActiveWorkspace(Workspace2* workspace, AnimateType animate_type);
 
   // Returns the bounds of the work area.
   gfx::Rect GetWorkAreaBounds() const;
@@ -95,10 +113,19 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // if |workspace| contains no children it is deleted, otherwise it it moved to
   // |pending_workspaces_|.
   void MoveWorkspaceToPendingOrDelete(Workspace2* workspace,
-                                      aura::Window* stack_beneath);
+                                      aura::Window* stack_beneath,
+                                      AnimateType animate_type);
 
   // Selects the next workspace.
-  void SelectNextWorkspace();
+  void SelectNextWorkspace(AnimateType animate_type);
+
+  // Schedules |workspace| for deletion when it no longer contains any layers.
+  // See comments above |to_delete_| as to why we do this.
+  void ScheduleDelete(Workspace2* workspace);
+
+  // Deletes any workspaces scheduled via ScheduleDelete() that don't contain
+  // any layers.
+  void ProcessDeletion();
 
   // These methods are forwarded from the LayoutManager installed on the
   // Workspace's window.
@@ -112,7 +139,8 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
                                            aura::Window* child);
   void OnWorkspaceWindowShowStateChanged(Workspace2* workspace,
                                          aura::Window* child,
-                                         ui::WindowShowState last_show_state);
+                                         ui::WindowShowState last_show_state,
+                                         ui::Layer* old_layer);
 
   aura::Window* contents_view_;
 
@@ -142,6 +170,13 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // MoveWorkspaceToPendingOrDelete() we use this to avoid doing anything if
   // already in MoveWorkspaceToPendingOrDelete().
   bool in_move_;
+
+  // Ideally we would delete workspaces when not needed. Unfortunately doing so
+  // would effectively cancel animations. Instead when a workspace is no longer
+  // needed we add it here and start a timer. When the timer fires any windows
+  // no longer contain layers are deleted.
+  std::set<Workspace2*> to_delete_;
+  base::OneShotTimer<WorkspaceManager2> delete_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2);
 };

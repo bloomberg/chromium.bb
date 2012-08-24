@@ -22,10 +22,12 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
       workspace_manager_(manager),
       window_(new aura::Window(NULL)),
       event_filter_(new WorkspaceEventFilter(window_)) {
+  window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
+                       true);
   window_->set_id(kShellWindowId_WorkspaceContainer);
   window_->SetName("WorkspaceContainer");
   window_->Init(ui::LAYER_NOT_DRAWN);
-  window_->Show();
+  window_->Hide();
   window_->SetParent(parent);
   window_->SetEventFilter(event_filter_);
   window_->SetProperty(internal::kUsesScreenCoordinatesKey, true);
