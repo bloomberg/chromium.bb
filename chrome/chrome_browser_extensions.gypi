@@ -38,6 +38,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libusb/libusb.gyp:libusb',
+	'../third_party/re2/re2.gyp:re2',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',

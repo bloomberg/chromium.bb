@@ -5,8 +5,6 @@
 #ifndef RE2_RE2_H
 #define RE2_RE2_H
 
-#define kDefaultMaxMem (8<<20)
-
 // C++ interface to the re2 regular-expression library.
 // RE2 supports Perl-style regular expressions (with extensions like
 // \d, \w, \s, ...).
@@ -189,11 +187,27 @@
 #include "re2/variadic_function.h"
 
 namespace re2 {
+
 using std::string;
 using std::map;
 class Mutex;
 class Prog;
 class Regexp;
+
+// The following enum should be used only as a constructor argument to indicate
+// that the variable has static storage class, and that the constructor should
+// do nothing to its state.  It indicates to the reader that it is legal to
+// declare a static instance of the class, provided the constructor is given
+// the LINKER_INITIALIZED argument.  Normally, it is unsafe to declare a
+// static variable that has a constructor or a destructor because invocation
+// order is undefined.  However, IF the type can be initialized by filling with
+// zeroes (which the loader does for static variables), AND the type's
+// destructor does nothing to the storage, then a constructor for static
+// initialization can be declared as
+//       explicit MyClass(LinkerInitialized x) {}
+// and invoked as
+//       static MyClass my_variable_name(LINKER_INITIALIZED);
+enum LinkerInitialized { LINKER_INITIALIZED };
 
 // Interface for regular expression matching.  Also corresponds to a
 // pre-compiled regular expression.  An "RE2" object is safe for
@@ -231,12 +245,15 @@ class RE2 {
 
   // Predefined common options.
   // If you need more complicated things, instantiate
-  // an Option class, change the settings, and pass it to the
-  // RE2 constructor.
-  static const Options DefaultOptions;
-  static const Options Latin1; // treat input as Latin-1 (default UTF-8)
-  //static const Options POSIX;  // POSIX syntax, leftmost-longest match
-  static const Options Quiet;  // do not log about regexp parse errors
+  // an Option class, possibly passing one of these to
+  // the Option constructor, change the settings, and pass that
+  // Option class to the RE2 constructor.
+  enum CannedOptions {
+    DefaultOptions = 0,
+    Latin1, // treat input as Latin-1 (default UTF-8)
+    POSIX_SYNTAX, // POSIX syntax, leftmost-longest match
+    Quiet // do not log about regexp parse errors
+  };
 
   // Need to have the const char* and const string& forms for implicit
   // conversions when passing string literals to FullMatch and PartialMatch.
@@ -469,6 +486,20 @@ class RE2 {
   // fail because of a bad rewrite string.
   bool CheckRewriteString(const StringPiece& rewrite, string* error) const;
 
+  // Returns the maximum submatch needed for the rewrite to be done by
+  // Replace(). E.g. if rewrite == "foo \\2,\\1", returns 2.
+  static int MaxSubmatch(const StringPiece& rewrite);
+
+  // Append the "rewrite" string, with backslash subsitutions from "vec",
+  // to string "out".
+  // Returns true on success.  This method can fail because of a malformed
+  // rewrite string.  CheckRewriteString guarantees that the rewrite will
+  // be sucessful.
+  bool Rewrite(string *out,
+               const StringPiece &rewrite,
+               const StringPiece* vec,
+               int veclen) const;
+
   // Constructor options
   class Options {
    public:
@@ -481,6 +512,7 @@ class RE2 {
     //   max_mem          (see below)  approx. max memory footprint of RE2
     //   literal          (false) interpret string as literal, not regexp
     //   never_nl         (false) never match \n, even if it is in regexp
+    //   never_capture    (false) parse all parens as non-capturing
     //   case_sensitive   (true)  match is case-sensitive (regexp can override
     //                              with (?i) unless in posix_syntax mode)
     //
@@ -519,24 +551,18 @@ class RE2 {
     // Once a DFA fills its budget, it flushes its cache and starts over.
     // If this happens too often, RE2 falls back on the NFA implementation.
 
+    // For now, make the default budget something close to Code Search.
+#ifndef WIN32
+    static const int kDefaultMaxMem = 8<<20;
+#endif
+
     enum Encoding {
       EncodingUTF8 = 1,
       EncodingLatin1
     };
 
-    Options() :
-      encoding_(EncodingUTF8),
-      posix_syntax_(false),
-      longest_match_(false),
-      log_errors_(true),
-      max_mem_(kDefaultMaxMem),
-      literal_(false),
-      never_nl_(false),
-      case_sensitive_(true),
-      perl_classes_(false),
-      word_boundary_(false),
-      one_line_(false) {
-    }
+    Options();
+    /*implicit*/ Options(CannedOptions);
 
     Encoding encoding() const { return encoding_; }
     void set_encoding(Encoding encoding) { encoding_ = encoding; }
@@ -570,6 +596,9 @@ class RE2 {
     bool never_nl() const { return never_nl_; }
     void set_never_nl(bool b) { never_nl_ = b; }
 
+    bool never_capture() const { return never_capture_; }
+    void set_never_capture(bool b) { never_capture_ = b; }
+
     bool case_sensitive() const { return case_sensitive_; }
     void set_case_sensitive(bool b) { case_sensitive_ = b; }
 
@@ -590,6 +619,7 @@ class RE2 {
       max_mem_ = src.max_mem_;
       literal_ = src.literal_;
       never_nl_ = src.never_nl_;
+      never_capture_ = src.never_capture_;
       case_sensitive_ = src.case_sensitive_;
       perl_classes_ = src.perl_classes_;
       word_boundary_ = src.word_boundary_;
@@ -599,25 +629,6 @@ class RE2 {
     int ParseFlags() const;
 
    private:
-    // Private constructor for defining constants like RE2::Latin1.
-    friend class RE2;
-    Options(Encoding encoding,
-            bool posix_syntax,
-            bool longest_match,
-            bool log_errors) :
-      encoding_(encoding),
-      posix_syntax_(posix_syntax),
-      longest_match_(longest_match),
-      log_errors_(log_errors),
-      max_mem_(kDefaultMaxMem),
-      literal_(false),
-      never_nl_(false),
-      case_sensitive_(true),
-      perl_classes_(false),
-      word_boundary_(false),
-      one_line_(false) {
-    }
-
     Encoding encoding_;
     bool posix_syntax_;
     bool longest_match_;
@@ -625,6 +636,7 @@ class RE2 {
     int64_t max_mem_;
     bool literal_;
     bool never_nl_;
+    bool never_capture_;
     bool case_sensitive_;
     bool perl_classes_;
     bool word_boundary_;
@@ -668,11 +680,6 @@ class RE2 {
 
  private:
   void Init(const StringPiece& pattern, const Options& options);
-
-  bool Rewrite(string *out,
-               const StringPiece &rewrite,
-               const StringPiece* vec,
-               int veclen) const;
 
   bool DoMatch(const StringPiece& text,
                    Anchor anchor,

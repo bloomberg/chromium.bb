@@ -110,7 +110,9 @@ struct Frag {
   Frag(uint32 begin, PatchList end) : begin(begin), end(end) {}
 };
 
-static Frag kNullFrag;
+static Frag NullFrag() {
+  return Frag();
+}
 
 // Input encodings.
 enum Encoding {
@@ -588,7 +590,7 @@ static struct ByteRangeProg {
 };
 
 void Compiler::Add_80_10ffff() {
-  int inst[arraysize(prog_80_10ffff)];
+  int inst[arraysize(prog_80_10ffff)] = { 0 }; // does not need to be initialized; silences gcc warning
   for (int i = 0; i < arraysize(prog_80_10ffff); i++) {
     const ByteRangeProg& p = prog_80_10ffff[i];
     int next = 0;
@@ -683,13 +685,13 @@ Frag Compiler::PreVisit(Regexp* re, Frag, bool* stop) {
   if (failed_)
     *stop = true;
 
-  return kNullFrag;  // not used by caller
+  return NullFrag();  // not used by caller
 }
 
 Frag Compiler::Literal(Rune r, bool foldcase) {
   switch (encoding_) {
     default:
-      return kNullFrag;
+      return NullFrag();
 
     case kEncodingLatin1:
       return ByteRange(r, r, foldcase);
@@ -732,7 +734,7 @@ Frag Compiler::PostVisit(Regexp* re, Frag, Frag, Frag* child_frags,
       Frag f = Match(re->match_id());
       // Remember unanchored match to end of string.
       if (anchor_ != RE2::ANCHOR_BOTH)
-        f = Cat(DotStar(), f);
+        f = Cat(DotStar(), Cat(EmptyWidth(kEmptyEndText), f));
       return f;
     }
 
@@ -1005,7 +1007,7 @@ Prog* Compiler::Compile(Regexp* re, bool reversed, int64 max_mem) {
   bool is_anchor_end = IsAnchorEnd(&sre, 0);
 
   // Generate fragment for entire regexp.
-  Frag f = c.WalkExponential(sre, kNullFrag, 2*c.max_inst_);
+  Frag f = c.WalkExponential(sre, NullFrag(), 2*c.max_inst_);
   sre->Decref();
   if (c.failed_)
     return NULL;
@@ -1096,7 +1098,7 @@ Prog* Compiler::CompileSet(const RE2::Options& options, RE2::Anchor anchor,
   c.Setup(pf, options.max_mem(), anchor);
 
   // Compile alternation of fragments.
-  Frag all = c.WalkExponential(re, kNullFrag, 2*c.max_inst_);
+  Frag all = c.WalkExponential(re, NullFrag(), 2*c.max_inst_);
   re->Decref();
   if (c.failed_)
     return NULL;
