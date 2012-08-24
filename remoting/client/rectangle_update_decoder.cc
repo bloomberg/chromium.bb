@@ -43,11 +43,11 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
-    decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());
+    decoder_.reset(VideoDecoderRowBased::CreateVerbatimDecoder());
   } else if (codec == ChannelConfig::CODEC_ZIP) {
-    decoder_.reset(DecoderRowBased::CreateZlibDecoder());
+    decoder_.reset(VideoDecoderRowBased::CreateZlibDecoder());
   } else if (codec == ChannelConfig::CODEC_VP8) {
-    decoder_.reset(new DecoderVp8());
+    decoder_.reset(new VideoDecoderVp8());
   } else {
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }
@@ -101,7 +101,7 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
     return;
   }
 
-  if (decoder_->DecodePacket(packet.get()) == Decoder::DECODE_DONE)
+  if (decoder_->DecodePacket(packet.get()) == VideoDecoder::DECODE_DONE)
     SchedulePaint();
 }
 

@@ -13,19 +13,22 @@ namespace remoting {
 
 TEST(EncodeDecodeTest, EncodeAndDecodeZlib) {
   scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder());
-  scoped_ptr<DecoderRowBased> decoder(DecoderRowBased::CreateZlibDecoder());
+  scoped_ptr<VideoDecoderRowBased> decoder(
+      VideoDecoderRowBased::CreateZlibDecoder());
   TestEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
 TEST(EncodeDecodeTest, EncodeAndDecodeSmallOutputBufferZlib) {
   scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder(64));
-  scoped_ptr<DecoderRowBased> decoder(DecoderRowBased::CreateZlibDecoder());
+  scoped_ptr<VideoDecoderRowBased> decoder(
+      VideoDecoderRowBased::CreateZlibDecoder());
   TestEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
 TEST(EncodeDecodeTest, EncodeAndDecodeNoneStrictZlib) {
   scoped_ptr<EncoderRowBased> encoder(EncoderRowBased::CreateZlibEncoder());
-  scoped_ptr<DecoderRowBased> decoder(DecoderRowBased::CreateZlibDecoder());
+  scoped_ptr<VideoDecoderRowBased> decoder(
+      VideoDecoderRowBased::CreateZlibDecoder());
   TestEncoderDecoder(encoder.get(), decoder.get(), false);
 }
 

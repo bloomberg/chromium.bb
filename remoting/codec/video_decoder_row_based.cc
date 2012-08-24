@@ -17,18 +17,18 @@ namespace {
 const int kBytesPerPixel = 4;
 }
 
-DecoderRowBased* DecoderRowBased::CreateZlibDecoder() {
-  return new DecoderRowBased(new DecompressorZlib(),
-                             VideoPacketFormat::ENCODING_ZLIB);
+VideoDecoderRowBased* VideoDecoderRowBased::CreateZlibDecoder() {
+  return new VideoDecoderRowBased(new DecompressorZlib(),
+                                  VideoPacketFormat::ENCODING_ZLIB);
 }
 
-DecoderRowBased* DecoderRowBased::CreateVerbatimDecoder() {
-  return new DecoderRowBased(new DecompressorVerbatim(),
-                             VideoPacketFormat::ENCODING_VERBATIM);
+VideoDecoderRowBased* VideoDecoderRowBased::CreateVerbatimDecoder() {
+  return new VideoDecoderRowBased(new DecompressorVerbatim(),
+                                  VideoPacketFormat::ENCODING_VERBATIM);
 }
 
-DecoderRowBased::DecoderRowBased(Decompressor* decompressor,
-                                 VideoPacketFormat::Encoding encoding)
+VideoDecoderRowBased::VideoDecoderRowBased(Decompressor* decompressor,
+                                           VideoPacketFormat::Encoding encoding)
     : state_(kUninitialized),
       clip_(SkIRect::MakeEmpty()),
       decompressor_(decompressor),
@@ -38,10 +38,10 @@ DecoderRowBased::DecoderRowBased(Decompressor* decompressor,
       screen_size_(SkISize::Make(0, 0)) {
 }
 
-DecoderRowBased::~DecoderRowBased() {
+VideoDecoderRowBased::~VideoDecoderRowBased() {
 }
 
-bool DecoderRowBased::IsReadyForData() {
+bool VideoDecoderRowBased::IsReadyForData() {
   switch (state_) {
     case kUninitialized:
     case kError:
@@ -56,7 +56,7 @@ bool DecoderRowBased::IsReadyForData() {
   return false;
 }
 
-void DecoderRowBased::Initialize(const SkISize& screen_size) {
+void VideoDecoderRowBased::Initialize(const SkISize& screen_size) {
   decompressor_->Reset();
   updated_region_.setEmpty();
   screen_buffer_.reset(NULL);
@@ -71,7 +71,8 @@ void DecoderRowBased::Initialize(const SkISize& screen_size) {
   state_ = kReady;
 }
 
-Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
+VideoDecoder::DecodeResult VideoDecoderRowBased::DecodePacket(
+    const VideoPacket* packet) {
   UpdateStateForPacket(packet);
 
   if (state_ == kError) {
@@ -130,7 +131,7 @@ Decoder::DecodeResult DecoderRowBased::DecodePacket(const VideoPacket* packet) {
   }
 }
 
-void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
+void VideoDecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
   if (state_ == kError) {
     return;
   }
@@ -183,20 +184,20 @@ void DecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
   return;
 }
 
-VideoPacketFormat::Encoding DecoderRowBased::Encoding() {
+VideoPacketFormat::Encoding VideoDecoderRowBased::Encoding() {
   return encoding_;
 }
 
-void DecoderRowBased::Invalidate(const SkISize& view_size,
-                                 const SkRegion& region) {
+void VideoDecoderRowBased::Invalidate(const SkISize& view_size,
+                                      const SkRegion& region) {
   updated_region_.op(region, SkRegion::kUnion_Op);
 }
 
-void DecoderRowBased::RenderFrame(const SkISize& view_size,
-                                  const SkIRect& clip_area,
-                                  uint8* image_buffer,
-                                  int image_stride,
-                                  SkRegion* output_region) {
+void VideoDecoderRowBased::RenderFrame(const SkISize& view_size,
+                                       const SkIRect& clip_area,
+                                       uint8* image_buffer,
+                                       int image_stride,
+                                       SkRegion* output_region) {
   output_region->setEmpty();
 
   // TODO(alexeypa): scaling is not implemented.

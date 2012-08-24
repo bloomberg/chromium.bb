@@ -130,10 +130,10 @@ class EncoderMessageTester {
   DISALLOW_COPY_AND_ASSIGN(EncoderMessageTester);
 };
 
-class DecoderTester {
+class VideoDecoderTester {
  public:
-  DecoderTester(Decoder* decoder, const SkISize& screen_size,
-                const SkISize& view_size)
+  VideoDecoderTester(VideoDecoder* decoder, const SkISize& screen_size,
+                     const SkISize& view_size)
       : screen_size_(screen_size),
         view_size_(view_size),
         strict_(false),
@@ -155,11 +155,11 @@ class DecoderTester {
   }
 
   void ReceivedPacket(VideoPacket* packet) {
-    Decoder::DecodeResult result = decoder_->DecodePacket(packet);
+    VideoDecoder::DecodeResult result = decoder_->DecodePacket(packet);
 
-    ASSERT_NE(Decoder::DECODE_ERROR, result);
+    ASSERT_NE(VideoDecoder::DECODE_ERROR, result);
 
-    if (result == Decoder::DECODE_DONE) {
+    if (result == VideoDecoder::DECODE_DONE) {
       RenderFrame();
     }
   }
@@ -270,11 +270,11 @@ void VerifyResultsApprox(const uint8* expected_view_data,
   bool strict_;
   SkRegion expected_region_;
   SkRegion update_region_;
-  Decoder* decoder_;
+  VideoDecoder* decoder_;
   scoped_array<uint8> image_data_;
   scoped_refptr<CaptureData> capture_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecoderTester);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderTester);
 };
 
 // The EncoderTester provides a hook for retrieving the data, and passing the
@@ -295,7 +295,7 @@ class EncoderTester {
     ++data_available_;
     message_tester_->ReceivedPacket(packet.get());
 
-    // Send the message to the DecoderTester.
+    // Send the message to the VideoDecoderTester.
     if (decoder_tester_) {
       decoder_tester_->ReceivedPacket(packet.get());
     }
@@ -305,13 +305,13 @@ class EncoderTester {
     message_tester_->AddRects(rects, count);
   }
 
-  void set_decoder_tester(DecoderTester* decoder_tester) {
+  void set_decoder_tester(VideoDecoderTester* decoder_tester) {
     decoder_tester_ = decoder_tester;
   }
 
  private:
   EncoderMessageTester* message_tester_;
-  DecoderTester* decoder_tester_;
+  VideoDecoderTester* decoder_tester_;
   int data_available_;
 
   DISALLOW_COPY_AND_ASSIGN(EncoderTester);
@@ -378,7 +378,7 @@ void TestEncoder(Encoder* encoder, bool strict) {
 
 static void TestEncodeDecodeRects(Encoder* encoder,
                                   EncoderTester* encoder_tester,
-                                  DecoderTester* decoder_tester,
+                                  VideoDecoderTester* decoder_tester,
                                   scoped_refptr<CaptureData> data,
                                   const SkIRect* rects, int count) {
   data->mutable_dirty_region().setRects(rects, count);
@@ -407,7 +407,7 @@ static void TestEncodeDecodeRects(Encoder* encoder,
   decoder_tester->Reset();
 }
 
-void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
+void TestEncoderDecoder(Encoder* encoder, VideoDecoder* decoder, bool strict) {
   SkISize kSize = SkISize::Make(320, 240);
 
   EncoderMessageTester message_tester;
@@ -420,7 +420,7 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
       PrepareEncodeData(kSize, media::VideoFrame::RGB32, &memory);
   scoped_array<uint8> memory_wrapper(memory);
 
-  DecoderTester decoder_tester(decoder, kSize, kSize);
+  VideoDecoderTester decoder_tester(decoder, kSize, kSize);
   decoder_tester.set_strict(strict);
   decoder_tester.set_capture_data(data);
   encoder_tester.set_decoder_tester(&decoder_tester);
@@ -448,7 +448,7 @@ static void FillWithGradient(uint8* memory, const SkISize& frame_size,
 }
 
 void TestEncoderDecoderGradient(Encoder* encoder,
-                                Decoder* decoder,
+                                VideoDecoder* decoder,
                                 const SkISize& screen_size,
                                 const SkISize& view_size,
                                 double max_error_limit,
@@ -473,12 +473,12 @@ void TestEncoderDecoderGradient(Encoder* encoder,
       new CaptureData(planes, screen_size, media::VideoFrame::RGB32);
   capture_data->mutable_dirty_region().op(screen_rect, SkRegion::kUnion_Op);
 
-  DecoderTester decoder_tester(decoder, screen_size, view_size);
+  VideoDecoderTester decoder_tester(decoder, screen_size, view_size);
   decoder_tester.set_capture_data(capture_data);
   decoder_tester.AddRegion(capture_data->dirty_region());
 
   encoder->Encode(capture_data, true,
-                  base::Bind(&DecoderTester::ReceivedScopedPacket,
+                  base::Bind(&VideoDecoderTester::ReceivedScopedPacket,
                              base::Unretained(&decoder_tester)));
 
   decoder_tester.VerifyResultsApprox(expected_view_data.get(),

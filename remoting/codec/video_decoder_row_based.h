@@ -13,14 +13,14 @@ namespace remoting {
 
 class Decompressor;
 
-class DecoderRowBased : public Decoder {
+class VideoDecoderRowBased : public VideoDecoder {
  public:
-  virtual ~DecoderRowBased();
+  virtual ~VideoDecoderRowBased();
 
-  static DecoderRowBased* CreateZlibDecoder();
-  static DecoderRowBased* CreateVerbatimDecoder();
+  static VideoDecoderRowBased* CreateZlibDecoder();
+  static VideoDecoderRowBased* CreateVerbatimDecoder();
 
-  // Decoder implementation.
+  // VideoDecoder implementation.
   virtual bool IsReadyForData() OVERRIDE;
   virtual void Initialize(const SkISize& screen_size) OVERRIDE;
   virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
@@ -43,8 +43,8 @@ class DecoderRowBased : public Decoder {
     kError,
   };
 
-  DecoderRowBased(Decompressor* decompressor,
-                  VideoPacketFormat::Encoding encoding);
+  VideoDecoderRowBased(Decompressor* decompressor,
+                       VideoPacketFormat::Encoding encoding);
 
   // Helper method. Called from DecodePacket to updated state of the decoder.
   void UpdateStateForPacket(const VideoPacket* packet);
@@ -76,7 +76,7 @@ class DecoderRowBased : public Decoder {
   // The bitmap holding the remote screen bits.
   scoped_array<uint8> screen_buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecoderRowBased);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderRowBased);
 };
 
 }  // namespace remoting

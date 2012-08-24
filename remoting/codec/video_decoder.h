@@ -17,7 +17,7 @@ namespace remoting {
 // outputs frames of data.
 //
 // TODO(ajwong): Beef up this documentation once the API stablizes.
-class Decoder {
+class VideoDecoder {
  public:
   // DecodeResult is returned from DecodePacket() and indicates current state
   // of the decoder. DECODE_DONE means that last packet for the frame was
@@ -30,8 +30,8 @@ class Decoder {
     DECODE_DONE,
   };
 
-  Decoder() {}
-  virtual ~Decoder() {}
+  VideoDecoder() {}
+  virtual ~VideoDecoder() {}
 
   // Initializes the decoder and sets the output dimensions.
   // |screen size| must not be empty.

@@ -13,12 +13,12 @@ typedef struct vpx_image vpx_image_t;
 
 namespace remoting {
 
-class DecoderVp8 : public Decoder {
+class VideoDecoderVp8 : public VideoDecoder {
  public:
-  DecoderVp8();
-  virtual ~DecoderVp8();
+  VideoDecoderVp8();
+  virtual ~VideoDecoderVp8();
 
-  // Decoder implementations.
+  // VideoDecoder implementations.
   virtual void Initialize(const SkISize& screen_size) OVERRIDE;
   virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
   virtual bool IsReadyForData() OVERRIDE;
@@ -52,7 +52,7 @@ class DecoderVp8 : public Decoder {
   // Output dimensions.
   SkISize screen_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecoderVp8);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderVp8);
 };
 
 }  // namespace remoting

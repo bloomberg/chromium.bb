@@ -70,7 +70,7 @@ class RectangleUpdateDecoder
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<FrameConsumerProxy> consumer_;
-  scoped_ptr<Decoder> decoder_;
+  scoped_ptr<VideoDecoder> decoder_;
 
   // Remote screen size in pixels.
   SkISize source_size_;

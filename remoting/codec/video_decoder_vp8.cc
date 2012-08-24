@@ -18,14 +18,14 @@ extern "C" {
 
 namespace remoting {
 
-DecoderVp8::DecoderVp8()
+VideoDecoderVp8::VideoDecoderVp8()
     : state_(kUninitialized),
       codec_(NULL),
       last_image_(NULL),
       screen_size_(SkISize::Make(0, 0)) {
 }
 
-DecoderVp8::~DecoderVp8() {
+VideoDecoderVp8::~VideoDecoderVp8() {
   if (codec_) {
     vpx_codec_err_t ret = vpx_codec_destroy(codec_);
     CHECK(ret == VPX_CODEC_OK) << "Failed to destroy codec";
@@ -33,14 +33,15 @@ DecoderVp8::~DecoderVp8() {
   delete codec_;
 }
 
-void DecoderVp8::Initialize(const SkISize& screen_size) {
+void VideoDecoderVp8::Initialize(const SkISize& screen_size) {
   DCHECK(!screen_size.isEmpty());
 
   screen_size_ = screen_size;
   state_ = kReady;
 }
 
-Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
+VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
+    const VideoPacket* packet) {
   DCHECK_EQ(kReady, state_);
 
   // Initialize the codec as needed.
@@ -99,16 +100,16 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   return DECODE_DONE;
 }
 
-bool DecoderVp8::IsReadyForData() {
+bool VideoDecoderVp8::IsReadyForData() {
   return state_ == kReady;
 }
 
-VideoPacketFormat::Encoding DecoderVp8::Encoding() {
+VideoPacketFormat::Encoding VideoDecoderVp8::Encoding() {
   return VideoPacketFormat::ENCODING_VP8;
 }
 
-void DecoderVp8::Invalidate(const SkISize& view_size,
-                            const SkRegion& region) {
+void VideoDecoderVp8::Invalidate(const SkISize& view_size,
+                                 const SkRegion& region) {
   DCHECK_EQ(kReady, state_);
   DCHECK(!view_size.isEmpty());
 
@@ -119,11 +120,11 @@ void DecoderVp8::Invalidate(const SkISize& view_size,
   }
 }
 
-void DecoderVp8::RenderFrame(const SkISize& view_size,
-                             const SkIRect& clip_area,
-                             uint8* image_buffer,
-                             int image_stride,
-                             SkRegion* output_region) {
+void VideoDecoderVp8::RenderFrame(const SkISize& view_size,
+                                  const SkIRect& clip_area,
+                                  uint8* image_buffer,
+                                  int image_stride,
+                                  SkRegion* output_region) {
   DCHECK_EQ(kReady, state_);
   DCHECK(!view_size.isEmpty());
 
