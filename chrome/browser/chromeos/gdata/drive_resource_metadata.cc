@@ -262,16 +262,41 @@ void DriveResourceMetadata::MoveEntryToDirectory(
 }
 
 void DriveResourceMetadata::RemoveEntryFromParent(
-    DriveEntry* entry,
+    const std::string& resource_id,
     const FileMoveCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // Disallow deletion of root.
+  if (resource_id == kDriveRootDirectoryResourceId) {
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+        base::Bind(callback, DRIVE_FILE_ERROR_ACCESS_DENIED, FilePath()));
+    return;
+  }
+
+  GetEntryByResourceIdAsync(resource_id,
+      base::Bind(&DriveResourceMetadata::RemoveEntryFromParentInternal,
+                 callback));
+}
+
+// static
+void DriveResourceMetadata::RemoveEntryFromParentInternal(
+    const FileMoveCallback& callback,
+    DriveEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!entry) {
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
+    return;
+  }
+
   DriveDirectory* parent = entry->parent();
   DCHECK(parent);
-  DCHECK(!callback.is_null());
-  DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
 
+  DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
   parent->RemoveEntry(entry);
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK, parent->GetFilePath()));
+  callback.Run(DRIVE_FILE_OK, parent->GetFilePath());
 }
 
 void DriveResourceMetadata::AddEntryToResourceMap(DriveEntry* entry) {

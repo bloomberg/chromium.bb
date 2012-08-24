@@ -183,9 +183,9 @@ class DriveResourceMetadata {
                             DriveEntry* entry,
                             const FileMoveCallback& callback);
 
-  // Removes |entry| from its parent. Calls |callback| with the path of the
-  // parent directory. |callback| may not be null.
-  void RemoveEntryFromParent(DriveEntry* entry,
+  // Removes entry with |resource_id| from its parent. Calls |callback| with the
+  // path of the parent directory. |callback| may not be null.
+  void RemoveEntryFromParent(const std::string& resource_id,
                              const FileMoveCallback& callback);
 
   // Adds the entry to resource map.
@@ -306,6 +306,11 @@ class DriveResourceMetadata {
   static void RefreshDirectoryInternal(const ResourceMap& file_map,
                                        const FileMoveCallback& callback,
                                        DriveEntry* directory_entry);
+
+  // Removes |entry| from its parent and calls |callback|.
+  // |callback| may not be null.
+  static void RemoveEntryFromParentInternal(const FileMoveCallback& callback,
+                                            DriveEntry* entry);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

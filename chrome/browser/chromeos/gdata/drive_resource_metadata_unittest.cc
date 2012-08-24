@@ -532,4 +532,91 @@ TEST(DriveResourceMetadataTest, DBTest) {
   VerifyDirectoryService(&resource_metadata2);
 }
 
+TEST(DriveResourceMetadataTest, RemoveEntryFromParent) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  DriveResourceMetadata resource_metadata;
+  InitDirectoryService(&resource_metadata);
+
+  // Make sure file9 is found.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath drive_file_path;
+  const std::string file9_resource_id = "file_resource_id:file9";
+  scoped_ptr<DriveEntryProto> entry_proto;
+  resource_metadata.GetEntryInfoByResourceId(
+      file9_resource_id,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
+                 &error, &drive_file_path, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3/file9"), drive_file_path);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file9", entry_proto->base_name());
+
+  // Remove file9 using RemoveEntryFromParent.
+  resource_metadata.RemoveEntryFromParent(
+      file9_resource_id,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+          &error, &drive_file_path));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
+
+  // file9 should no longer exist.
+  resource_metadata.GetEntryInfoByResourceId(
+      file9_resource_id,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
+                 &error, &drive_file_path, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entry_proto.get());
+
+  // Look for dir3.
+  const std::string dir3_resource_id = "dir_resource_id:dir3";
+  resource_metadata.GetEntryInfoByResourceId(
+      dir3_resource_id,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
+                 &error, &drive_file_path, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/dir3"), drive_file_path);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("dir3", entry_proto->base_name());
+
+  // Remove dir3 using RemoveEntryFromParent.
+  resource_metadata.RemoveEntryFromParent(
+      dir3_resource_id,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+          &error, &drive_file_path));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1"), drive_file_path);
+
+  // dir3 should no longer exist.
+  resource_metadata.GetEntryInfoByResourceId(
+      dir3_resource_id,
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoWithFilePathCallback,
+                 &error, &drive_file_path, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entry_proto.get());
+
+  // Remove unknown resource_id using RemoveEntryFromParent.
+  resource_metadata.RemoveEntryFromParent(
+      "foo",
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+          &error, &drive_file_path));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+
+  // Try removing root. This should fail.
+  resource_metadata.RemoveEntryFromParent(
+      kDriveRootDirectoryResourceId,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+          &error, &drive_file_path));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_ERROR_ACCESS_DENIED, error);
+}
+
 }  // namespace gdata

@@ -1230,13 +1230,11 @@ void DriveFileSystem::Remove(const FilePath& file_path,
   RunTaskOnUIThread(base::Bind(&DriveFileSystem::RemoveOnUIThread,
                                ui_weak_ptr_,
                                file_path,
-                               is_recursive,
                                CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::RemoveOnUIThread(
     const FilePath& file_path,
-    bool is_recursive,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1246,14 +1244,10 @@ void DriveFileSystem::RemoveOnUIThread(
       base::Bind(
           &DriveFileSystem::RemoveOnUIThreadAfterGetEntryInfo,
           ui_weak_ptr_,
-          file_path,
-          is_recursive,
           callback));
 }
 
 void DriveFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
-    const FilePath& file_path,
-    bool /* is_recursive */,
     const FileOperationCallback& callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -1270,10 +1264,10 @@ void DriveFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
   DCHECK(entry_proto.get());
   drive_service_->DeleteDocument(
       GURL(entry_proto->edit_url()),
-      base::Bind(&DriveFileSystem::OnRemovedDocument,
+      base::Bind(&DriveFileSystem::RemoveResourceLocally,
                  ui_weak_ptr_,
                  callback,
-                 file_path));
+                 entry_proto->resource_id()));
 }
 
 void DriveFileSystem::CreateDirectory(
@@ -1938,7 +1932,8 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
       params->directory_resource_id,
       file_map,
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
-                 ui_weak_ptr_));
+                 ui_weak_ptr_,
+                 FileOperationCallback()));
 }
 
 void DriveFileSystem::UpdateFileByResourceId(
@@ -2438,21 +2433,27 @@ void DriveFileSystem::OnMoveEntryFromRootDirectoryCompleted(
   callback.Run(error);
 }
 
-void DriveFileSystem::OnRemovedDocument(
+void DriveFileSystem::RemoveResourceLocally(
     const FileOperationCallback& callback,
-    const FilePath& file_path,
+    const std::string& resource_id,
     GDataErrorCode status,
-    const GURL& document_url) {
+    const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveFileError error = util::GDataToDriveFileError(status);
-
-  if (error == DRIVE_FILE_OK)
-    error = RemoveEntryAndCacheLocally(file_path);
-
-  if (!callback.is_null()) {
-    callback.Run(error);
+  if (error != DRIVE_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+    return;
   }
+
+  resource_metadata_->RemoveEntryFromParent(
+      resource_id,
+      base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
+                 ui_weak_ptr_,
+                 callback));
+
+  cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
 }
 
 void DriveFileSystem::OnFileDownloaded(
@@ -2656,41 +2657,14 @@ void DriveFileSystem::NotifyAndRunFileOperationCallback(
 }
 
 void DriveFileSystem::OnDirectoryChangeFileMoveCallback(
+    const FileOperationCallback& callback,
     DriveFileError error,
     const FilePath& directory_path) {
   if (error == DRIVE_FILE_OK)
     OnDirectoryChanged(directory_path);
-}
 
-DriveFileError DriveFileSystem::RemoveEntryAndCacheLocally(
-    const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  std::string resource_id;
-  DriveFileError error = RemoveEntryLocally(file_path, &resource_id);
-  if (error != DRIVE_FILE_OK)
-    return error;
-
-  // If resource_id is not empty, remove its corresponding file from cache.
-  if (!resource_id.empty())
-    cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
-
-  return DRIVE_FILE_OK;
-}
-
-void DriveFileSystem::RemoveStaleEntryOnUpload(
-    const std::string& resource_id,
-    DriveDirectory* parent_dir,
-    const FileMoveCallback& callback,
-    DriveEntry* existing_entry) {
-  if (existing_entry &&
-      // This should always match, but just in case.
-      existing_entry->parent() == parent_dir) {
-    resource_metadata_->RemoveEntryFromParent(existing_entry, callback);
-  } else {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
-    LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
-  }
+  if (!callback.is_null())
+    callback.Run(error);
 }
 
 void DriveFileSystem::NotifyFileSystemMounted() {
@@ -2795,34 +2769,6 @@ DriveFileSystem::FindFirstMissingParentDirectory(
   return DIRECTORY_ALREADY_PRESENT;
 }
 
-DriveFileError DriveFileSystem::RemoveEntryLocally(
-    const FilePath& file_path, std::string* resource_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  resource_id->clear();
-
-  // Find directory element within the cached file system snapshot.
-  DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
-
-  if (!entry)
-    return DRIVE_FILE_ERROR_NOT_FOUND;
-
-  // You can't remove root element.
-  if (!entry->parent())
-    return DRIVE_FILE_ERROR_ACCESS_DENIED;
-
-  // If it's a file (only files have resource id), get its resource id so that
-  // we can remove it after releasing the auto lock.
-  if (entry->AsDriveFile())
-    *resource_id = entry->AsDriveFile()->resource_id();
-
-  resource_metadata_->RemoveEntryFromParent(
-      entry,
-      base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
-                 ui_weak_ptr_));
-  return DRIVE_FILE_OK;
-}
-
 void DriveFileSystem::AddUploadedFile(
     UploadMode upload_mode,
     const FilePath& virtual_dir_path,
@@ -2892,14 +2838,8 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
                  ui_weak_ptr_, params);
 
   if (upload_mode == UPLOAD_EXISTING_FILE) {
-    // Remove an existing entry, which should be present.
-    resource_metadata_->GetEntryByResourceIdAsync(
-        resource_id,
-        base::Bind(&DriveFileSystem::RemoveStaleEntryOnUpload,
-                   ui_weak_ptr_,
-                   resource_id,
-                   parent_dir,
-                   file_move_callback));
+    // Remove the existing entry.
+    resource_metadata_->RemoveEntryFromParent(resource_id, file_move_callback);
   } else {
     file_move_callback.Run(DRIVE_FILE_OK, FilePath());
   }

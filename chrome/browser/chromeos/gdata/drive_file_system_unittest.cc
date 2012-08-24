@@ -343,8 +343,23 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   bool RemoveEntry(const FilePath& file_path) {
-    return file_system_->RemoveEntryAndCacheLocally(file_path) ==
-        DRIVE_FILE_OK;
+    file_system_->GetEntryInfoByPath(
+        file_path,
+        base::Bind(&CallbackHelper::GetEntryInfoCallback,
+                   callback_helper_.get()));
+    test_util::RunBlockingPoolTask();
+
+    if (callback_helper_->last_error_ != DRIVE_FILE_OK)
+      return false;
+
+    DriveFileError error;
+    file_system_->RemoveResourceLocally(
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error),
+        callback_helper_->entry_proto_->resource_id(),
+        HTTP_SUCCESS,
+        GURL());
+    test_util::RunBlockingPoolTask();
+    return error == DRIVE_FILE_OK;
   }
 
   FilePath GetCachePathForFile(const std::string& resource_id,

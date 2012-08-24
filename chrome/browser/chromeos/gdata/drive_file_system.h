@@ -390,13 +390,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                        DriveFileError error,
                                        const FilePath& file_path);
 
-  // Removes file under |file_path| on the client side.
-  // |resource_id| contains the resource id of the removed file if it was a
-  // file.
-  // Return PLATFORM_FILE_OK if successful.
-  DriveFileError RemoveEntryLocally(const FilePath& file_path,
-                                    std::string* resource_id);
-
   // A pass-through callback used for bridging from
   // FileMoveCallback to FileOperationCallback.
   void OnFilePathUpdated(const FileOperationCallback& cllback,
@@ -443,12 +436,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnGetAboutResource(const GetAvailableSpaceCallback& callback,
                           GDataErrorCode status,
                           scoped_ptr<base::Value> data);
-
-  // Callback for handling document remove attempt.
-  void OnRemovedDocument(const FileOperationCallback& callback,
-                         const FilePath& file_path,
-                         GDataErrorCode status,
-                         const GURL& document_url);
 
   // Callback for handling directory create requests.
   void OnCreateDirectoryCompleted(const CreateDirectoryParams& params,
@@ -500,10 +487,13 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                        GDataErrorCode status,
                                        const GURL& document_url);
 
-  // Removes a file or directory under |file_path| on the client side and the
-  // corresponding file from cache if it exists.  Returns PLATFORM_FILE_OK if
-  // successful.
-  DriveFileError RemoveEntryAndCacheLocally(const FilePath& file_path);
+  // Callback for DriveServiceInterface::DeleteDocument. Removes the entry with
+  // |resource_id| from the local snapshot of the filesystem and the cache.
+  // |document_url| is unused. |callback| may be null.
+  void RemoveResourceLocally(const FileOperationCallback& callback,
+                             const std::string& resource_id,
+                             GDataErrorCode status,
+                             const GURL& document_url);
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.
@@ -521,17 +511,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       const FilePath& moved_file_path);
 
-  // FileMoveCallback for directory changes.
+  // FileMoveCallback for directory changes. Notifies of directory changes,
+  // and runs |callback| with |error|. |callback| may be null.
   void OnDirectoryChangeFileMoveCallback(
+      const FileOperationCallback& callback,
       DriveFileError error,
       const FilePath& directory_path);
-
-  // Callback for GetEntryByResourceIdAsync.
-  // Removes stale entry upon upload of file.
-  void RemoveStaleEntryOnUpload(const std::string& resource_id,
-                                DriveDirectory* parent_dir,
-                                const FileMoveCallback& callback,
-                                DriveEntry* existing_entry);
 
   // Continues to add an uploaded file after existing entry has been deleted.
   void ContinueAddUploadedFile(AddUploadedFileParams* params,
@@ -729,7 +714,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                       const FilePath& dest_file_path,
                       const FileOperationCallback& callback);
   void RemoveOnUIThread(const FilePath& file_path,
-                        bool is_recursive,
                         const FileOperationCallback& callback);
   void CreateDirectoryOnUIThread(const FilePath& directory_path,
                                  bool is_exclusive,
@@ -797,8 +781,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Part of RemoveOnUIThread(). Called after GetEntryInfoByPath() is
   // complete.
   void RemoveOnUIThreadAfterGetEntryInfo(
-      const FilePath& file_path,
-      bool is_recursive,
       const FileOperationCallback& callback,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
