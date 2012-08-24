@@ -5017,6 +5017,8 @@
           'sources': [
             'browser/ui/webui/ntp/android/bookmarks_handler.cc',
             'browser/ui/webui/ntp/android/bookmarks_handler.h',
+            'browser/ui/webui/ntp/android/context_menu_handler.cc',
+            'browser/ui/webui/ntp/android/context_menu_handler.h',
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.cc',
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.h',
           ],

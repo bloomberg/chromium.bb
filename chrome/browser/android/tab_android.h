@@ -9,10 +9,10 @@
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/callback_forward.h"
 #include "base/string16.h"
 
 class GURL;
-class OnContextMenuItemSelectedCallBack;
 class SkBitmap;
 
 namespace browser_sync {
@@ -50,7 +50,7 @@ class TabAndroid {
   // Called to show a custom context menu. Used by the NTP.
   virtual void ShowCustomContextMenu(
       const content::ContextMenuParams& params,
-      OnContextMenuItemSelectedCallBack* callback) = 0;
+      const base::Callback<void(int)>& callback) = 0;
 
   virtual void ShowSelectFileDialog(
       const base::android::ScopedJavaLocalRef<jobject>& select_file) = 0;
