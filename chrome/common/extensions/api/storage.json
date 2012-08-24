@@ -179,7 +179,7 @@
             "description": "The maximum total amount (in bytes) of data that can be stored in sync storage. Updates that would cause this limit to be exceeded fail immediately and set chrome.extension.lastError."
           },
           "QUOTA_BYTES_PER_ITEM": {
-            "value": 2048,
+            "value": 4096,
             "description": "The maximum size (in bytes) of each individual item in sync storage. Updates containing items larger than this limit will fail."
           },
           "MAX_ITEMS": {
