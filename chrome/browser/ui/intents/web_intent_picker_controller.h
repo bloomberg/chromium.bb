@@ -76,10 +76,13 @@ class WebIntentPickerController
   void ShowDialog(const string16& action,
                   const string16& type);
 
-  // Called by the location bar to see whether the web intents picker affordance
-  // should be shown. TODO(gbillock): refactor this into a
-  // LocationBarPageToolModel.
+  // Called by the location bar to see whether the web intents picker button
+  // should be shown.
   bool ShowLocationBarPickerTool();
+
+  // Called by the location bar to notify picker that the button was clicked.
+  // Called in the controller of the tab which is displaying the service.
+  void LocationBarPickerToolClicked();
 
   // Called to notify a controller for a page hosting a web intents service
   // that the source WebContents has been destroyed.

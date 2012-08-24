@@ -358,7 +358,11 @@ void WebIntentsButtonViewGtk::Update(
 }
 
 void WebIntentsButtonViewGtk::OnClick(GtkWidget* sender) {
-  // TODO(gbillock): implement
+  TabContents* tab_contents = parent_->GetTabContents();
+  if (!tab_contents)
+    return;
+
+  tab_contents->web_intent_picker_controller()->LocationBarPickerToolClicked();
 }
 
 GdkColor WebIntentsButtonViewGtk::button_border_color() const {

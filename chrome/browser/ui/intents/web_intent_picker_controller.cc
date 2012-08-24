@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
@@ -413,9 +414,8 @@ void WebIntentPickerController::OnPickerClosed() {
 
 void WebIntentPickerController::OnChooseAnotherService() {
   DCHECK(intents_dispatcher_);
-  DCHECK(!service_tab_);  // Can only be invoked from inline disposition.
 
- intents_dispatcher_->ResetDispatch();
+  intents_dispatcher_->ResetDispatch();
 }
 
 void WebIntentPickerController::OnClosing() {
@@ -754,6 +754,8 @@ void WebIntentPickerController::OnExtensionIconUnavailable(
 void WebIntentPickerController::SetWindowDispositionSource(
     content::WebContents* source,
     content::WebIntentsDispatcher* dispatcher) {
+  DCHECK(source);
+  DCHECK(dispatcher);
   window_disposition_source_ = source;
   if (window_disposition_source_) {
     // This object is self-deleting when the source WebContents is destroyed.
@@ -772,11 +774,13 @@ void WebIntentPickerController::SetWindowDispositionSource(
 void WebIntentPickerController::SourceWebContentsDestroyed(
     content::WebContents* source) {
   window_disposition_source_ = NULL;
+  // TODO(gbillock): redraw location bar to kill button
 }
 
 void WebIntentPickerController::SourceDispatcherReplied(
     webkit_glue::WebIntentReplyType reply_type) {
   source_intents_dispatcher_ = NULL;
+  // TODO(gbillock): redraw location bar to kill button
 }
 
 bool WebIntentPickerController::ShowLocationBarPickerTool() {
@@ -823,6 +827,37 @@ void WebIntentPickerController::OnPickerEvent(WebIntentPickerEvent event) {
       NOTREACHED();
       break;
   }
+}
+
+void WebIntentPickerController::LocationBarPickerToolClicked() {
+  DCHECK(tab_contents_);
+  if (window_disposition_source_ && source_intents_dispatcher_) {
+    Browser* service_browser =
+        browser::FindBrowserWithWebContents(tab_contents_->web_contents());
+    if (!service_browser) return;
+
+    TabContents* client_tab =
+        TabContents::FromWebContents(window_disposition_source_);
+    Browser* client_browser =
+        browser::FindBrowserWithWebContents(window_disposition_source_);
+    if (!client_browser || !client_tab) return;
+    int client_index =
+        client_browser->tab_strip_model()->GetIndexOfTabContents(client_tab);
+    DCHECK(client_index != TabStripModel::kNoTab);
+
+    source_intents_dispatcher_->ResetDispatch();
+
+    chrome::CloseWebContents(service_browser, tab_contents_->web_contents());
+
+    // Re-open the other tab and activate the picker.
+    client_browser->window()->Activate();
+    client_browser->tab_strip_model()->ActivateTabAt(client_index, true);
+    // TODO(gbillock): better call? we want to re-activate the picker, which was
+    // potentially just open.
+    client_tab->web_intent_picker_controller()->CreatePicker();
+  }
+  // TODO(gbillock): figure out what we ought to do in this case. Probably
+  // nothing? Refresh the location bar?
 }
 
 void WebIntentPickerController::AsyncOperationFinished() {
