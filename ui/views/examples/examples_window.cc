@@ -184,7 +184,6 @@ class ExamplesWindowContents : public WidgetDelegateView,
   View* example_shown_;
   Label* status_label_;
   const Operation operation_;
-  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
 };
