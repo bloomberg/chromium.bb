@@ -267,6 +267,10 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
 
   if (event.type() == ui::ET_GESTURE_TAP ||
       event.type() == ui::ET_GESTURE_SCROLL_END) {
+    // The position of the event may have changed from the previous event (both
+    // for TAP and SCROLL_END). So it is necessary to update the snap-state for
+    // the current event.
+    ProcessUpdateEvent(event);
     if (event.type() == ui::ET_GESTURE_TAP)
       snap_type_ = SnapTypeForLocation(event.location());
     ProcessEndEvent(event);
@@ -276,6 +280,9 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
   if (is_snap_enabled_) {
     if (event.type() == ui::ET_GESTURE_END &&
         event.details().touch_points() == 1) {
+      // The position of the event may have changed from the previous event. So
+      // it is necessary to update the snap-state for the current event.
+      ProcessUpdateEvent(event);
       snap_type_ = SnapTypeForLocation(event.location());
       ProcessEndEvent(event);
       return ui::GESTURE_STATUS_CONSUMED;

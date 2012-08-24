@@ -14,7 +14,9 @@
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -395,6 +397,33 @@ TEST_F(CustomFrameViewAshTest, MaximizeKeepFocus) {
 
   // Check that the focused window is still the same.
   EXPECT_EQ(active, window->GetFocusManager()->GetFocusedWindow());
+}
+
+TEST_F(CustomFrameViewAshTest, MaximizeTap) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  aura::RootWindow* root_window = window->GetRootWindow();
+  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+
+  const int touch_default_radius =
+      ui::GestureConfiguration::default_radius();
+  ui::GestureConfiguration::set_default_radius(0);
+
+  const int kTouchId = 2;
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, button_pos, kTouchId,
+      base::Time::NowFromSystemTime() - base::Time());
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+
+  button_pos.Offset(9, 8);
+  ui::TouchEvent release(
+      ui::ET_TOUCH_RELEASED, button_pos, kTouchId,
+      press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
+  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+
+  ui::GestureConfiguration::set_default_radius(touch_default_radius);
 }
 
 // Test that only the left button will activate the maximize button.
