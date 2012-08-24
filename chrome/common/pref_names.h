@@ -527,26 +527,6 @@ extern const char kNtpCustomLogoStart[];
 extern const char kNtpCustomLogoEnd[];
 extern const char kNtpPromoVersion[];
 extern const char kNtpPromoLocale[];
-extern const char kNtpPromoStart[];
-extern const char kNtpPromoEnd[];
-extern const char kNtpPromoLine[];
-#if defined(OS_ANDROID)
-extern const char kNtpPromoLineLong[];
-extern const char kNtpPromoActionType[];
-extern const char kNtpPromoActionArgs[];
-#endif  // defined(OS_ANDROID)
-extern const char kNtpPromoClosed[];
-extern const char kNtpPromoGroup[];
-extern const char kNtpPromoNumGroups[];
-extern const char kNtpPromoInitialSegment[];
-extern const char kNtpPromoIncrement[];
-extern const char kNtpPromoGroupTimeSlice[];
-extern const char kNtpPromoGroupMax[];
-extern const char kNtpPromoViews[];
-extern const char kNtpPromoViewsMax[];
-extern const char kNtpPromoPlatform[];
-extern const char kNtpPromoBuild[];
-extern const char kNtpPromoGplusRequired[];
 extern const char kNtpWebStoreEnabled[];
 extern const char kNtpAppPageNames[];
 

@@ -5023,6 +5023,8 @@
             'browser/ui/webui/ntp/android/context_menu_handler.h',
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.cc',
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.h',
+            'browser/web_resource/notification_promo_mobile_ntp.cc',
+            'browser/web_resource/notification_promo_mobile_ntp.h',
           ],
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',

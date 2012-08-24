@@ -35,13 +35,12 @@ const int kDefaultGroupSize = 100;
 
 const char promo_server_url[] = "https://clients3.google.com/crsignal/client";
 
+// The name of the preference that stores the promotion object.
 const char kPrefPromoObject[] = "promo";
+
+// Keys in the kPrefPromoObject dictionary; used only here.
 const char kPrefPromoText[] = "text";
-#if defined(OS_ANDROID)
-const char kPrefPromoTextLong[] = "text_long";
-const char kPrefPromoActionType[] = "action_type";
-const char kPrefPromoActionArgs[] = "action_args";
-#endif
+const char kPrefPromoPayload[] = "payload";
 const char kPrefPromoStart[] = "start";
 const char kPrefPromoEnd[] = "end";
 const char kPrefPromoNumGroups[] = "num_groups";
@@ -54,10 +53,6 @@ const char kPrefPromoGroup[] = "group";
 const char kPrefPromoViews[] = "views";
 const char kPrefPromoClosed[] = "closed";
 const char kPrefPromoGPlusRequired[] = "gplus_required";
-
-#if defined(OS_ANDROID)
-const int kCurrentMobilePayloadFormatVersion = 3;
-#endif  // defined(OS_ANDROID)
 
 // Returns a string suitable for the Promo Server URL 'osname' value.
 std::string PlatformString() {
@@ -127,80 +122,151 @@ const char* PromoTypeToString(NotificationPromo::PromoType promo_type) {
   return "";
 }
 
-// TODO(achuith): remove this in m23.
+// TODO(achuith): http://crbug.com/143773 remove this by m24
 void ClearDeprecatedPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kNtpPromoLine,
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  const char kNtpPromoLineLong[] = "ntp.promo_line_long";
+  const char kNtpPromoActionType[] = "ntp.promo_action_type";
+  const char kNtpPromoActionArgs[] = "ntp.promo_action_args";
+  prefs->RegisterStringPref(kNtpPromoLineLong,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
-  prefs->ClearPref(prefs::kNtpPromoLine);
-#if defined(OS_ANDROID)
-  prefs->RegisterStringPref(prefs::kNtpPromoLineLong,
+  prefs->RegisterStringPref(kNtpPromoActionType,
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kNtpPromoActionType,
-                            std::string(),
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterListPref(prefs::kNtpPromoActionArgs,
+  prefs->RegisterListPref(kNtpPromoActionArgs,
                           new base::ListValue,
                           PrefService::UNSYNCABLE_PREF);
-  prefs->ClearPref(prefs::kNtpPromoLineLong);
-  prefs->ClearPref(prefs::kNtpPromoActionType);
-  prefs->ClearPref(prefs::kNtpPromoActionArgs);
-#endif  // defined(OS_ANDROID)
+  prefs->ClearPref(kNtpPromoLineLong);
+  prefs->ClearPref(kNtpPromoActionType);
+  prefs->ClearPref(kNtpPromoActionArgs);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-  prefs->RegisterDoublePref(prefs::kNtpPromoStart,
+  const char kNtpPromoLine[] = "ntp.promo_line";
+  const char kNtpPromoStart[] = "ntp.promo_start";
+  const char kNtpPromoEnd[] = "ntp.promo_end";
+  const char kNtpPromoNumGroups[] = "ntp.promo_num_groups";
+  const char kNtpPromoInitialSegment[] = "ntp.promo_initial_segment";
+  const char kNtpPromoIncrement[] = "ntp.promo_increment";
+  const char kNtpPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
+  const char kNtpPromoGroupMax[] = "ntp.promo_group_max";
+  const char kNtpPromoClosed[] = "ntp.promo_closed";
+  const char kNtpPromoGroup[] = "ntp.promo_group";
+  const char kNtpPromoViews[] = "ntp.promo_views";
+  const char kNtpPromoViewsMax[] = "ntp.promo_views_max";
+  const char kNtpPromoGplusRequired[] = "ntp.gplus_required";
+
+  prefs->RegisterStringPref(kNtpPromoLine,
+                            std::string(),
+                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(kNtpPromoStart,
                             0,
                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kNtpPromoEnd,
+  prefs->RegisterDoublePref(kNtpPromoEnd,
                             0,
                             PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterIntegerPref(prefs::kNtpPromoNumGroups,
+  prefs->RegisterIntegerPref(kNtpPromoNumGroups,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoInitialSegment,
+  prefs->RegisterIntegerPref(kNtpPromoInitialSegment,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoIncrement,
+  prefs->RegisterIntegerPref(kNtpPromoIncrement,
                              1,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupTimeSlice,
+  prefs->RegisterIntegerPref(kNtpPromoGroupTimeSlice,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoGroupMax,
+  prefs->RegisterIntegerPref(kNtpPromoGroupMax,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterIntegerPref(prefs::kNtpPromoViewsMax,
+  prefs->RegisterIntegerPref(kNtpPromoViewsMax,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-
-  prefs->RegisterIntegerPref(prefs::kNtpPromoGroup,
+  prefs->RegisterIntegerPref(kNtpPromoGroup,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kNtpPromoViews,
+  prefs->RegisterIntegerPref(kNtpPromoViews,
                              0,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kNtpPromoClosed,
+  prefs->RegisterBooleanPref(kNtpPromoClosed,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(kNtpPromoGplusRequired,
                              false,
                              PrefService::UNSYNCABLE_PREF);
 
-  prefs->RegisterBooleanPref(prefs::kNtpPromoGplusRequired,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
+  prefs->ClearPref(kNtpPromoLine);
+  prefs->ClearPref(kNtpPromoStart);
+  prefs->ClearPref(kNtpPromoEnd);
+  prefs->ClearPref(kNtpPromoNumGroups);
+  prefs->ClearPref(kNtpPromoInitialSegment);
+  prefs->ClearPref(kNtpPromoIncrement);
+  prefs->ClearPref(kNtpPromoGroupTimeSlice);
+  prefs->ClearPref(kNtpPromoGroupMax);
+  prefs->ClearPref(kNtpPromoViewsMax);
+  prefs->ClearPref(kNtpPromoGroup);
+  prefs->ClearPref(kNtpPromoViews);
+  prefs->ClearPref(kNtpPromoClosed);
+  prefs->ClearPref(kNtpPromoGplusRequired);
+}
 
-  prefs->ClearPref(prefs::kNtpPromoStart);
-  prefs->ClearPref(prefs::kNtpPromoEnd);
-  prefs->ClearPref(prefs::kNtpPromoNumGroups);
-  prefs->ClearPref(prefs::kNtpPromoInitialSegment);
-  prefs->ClearPref(prefs::kNtpPromoIncrement);
-  prefs->ClearPref(prefs::kNtpPromoGroupTimeSlice);
-  prefs->ClearPref(prefs::kNtpPromoGroupMax);
-  prefs->ClearPref(prefs::kNtpPromoViewsMax);
-  prefs->ClearPref(prefs::kNtpPromoGroup);
-  prefs->ClearPref(prefs::kNtpPromoViews);
-  prefs->ClearPref(prefs::kNtpPromoClosed);
-  prefs->ClearPref(prefs::kNtpPromoGplusRequired);
+// Deep-copies a node, replacing any "value" that is a key
+// into "strings" dictionary with its value from "strings".
+// E.g. for
+//   {promo_action_args:['MSG_SHORT']} + strings:{MSG_SHORT:'yes'}
+// it will return
+//   {promo_action_args:['yes']}
+// |node| - a value to be deep copied and resolved.
+// |strings| - a dictionary of strings to be used for resolution.
+// Returns a _new_ object that is a deep copy with replacements.
+// TODO(aruslan): http://crbug.com/144320 Consider moving it to values.cc/h.
+base::Value* DeepCopyAndResolveStrings(
+    const base::Value* node,
+    const base::DictionaryValue* strings) {
+  switch (node->GetType()) {
+    case base::Value::TYPE_LIST: {
+      const base::ListValue* list = static_cast<const base::ListValue*>(node);
+      base::ListValue* copy = new base::ListValue;
+      for (base::ListValue::const_iterator it = list->begin();
+           it != list->end(); ++it) {
+        base::Value* child_copy = DeepCopyAndResolveStrings(*it, strings);
+        copy->Append(child_copy);
+      }
+      return copy;
+    }
+
+    case Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* dict =
+          static_cast<const base::DictionaryValue*>(node);
+      base::DictionaryValue* copy = new base::DictionaryValue;
+      for (base::DictionaryValue::key_iterator it = dict->begin_keys();
+           it != dict->end_keys(); ++it) {
+        const base::Value* child = NULL;
+        bool rv = dict->GetWithoutPathExpansion(*it, &child);
+        DCHECK(rv);
+        base::Value* child_copy = DeepCopyAndResolveStrings(child, strings);
+        copy->SetWithoutPathExpansion(*it, child_copy);
+      }
+      return copy;
+    }
+
+    case Value::TYPE_STRING: {
+      const base::StringValue* str =
+          static_cast<const base::StringValue*>(node);
+      std::string value;
+      bool rv = str->GetAsString(&value);
+      DCHECK(rv);
+      std::string actual_value;
+      if (!strings || !strings->GetString(value, &actual_value))
+        actual_value = value;
+      return new base::StringValue(actual_value);
+    }
+
+    default:
+      // For everything else, just make a copy.
+      return node->DeepCopy();
+  }
 }
 
 }  // namespace
@@ -209,9 +275,7 @@ NotificationPromo::NotificationPromo(Profile* profile)
     : profile_(profile),
       prefs_(profile_->GetPrefs()),
       promo_type_(NO_PROMO),
-#if defined(OS_ANDROID)
-      promo_action_args_(new base::ListValue),
-#endif
+      promo_payload_(new base::DictionaryValue()),
       start_(0.0),
       end_(0.0),
       num_groups_(kDefaultGroupSize),
@@ -244,16 +308,6 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
   const DictionaryValue* promo = NULL;
   if (!promo_list->GetDictionary(0, &promo))
     return;
-
-  // Strings. Assume the first one is the promo text.
-  const DictionaryValue* strings = NULL;
-  if (promo->GetDictionary("strings", &strings)) {
-#if !defined(OS_ANDROID)
-    DictionaryValue::Iterator iter(*strings);
-    iter.value().GetAsString(&promo_text_);
-    DVLOG(1) << "promo_text_=" << promo_text_;
-#endif  // defined(OS_ANDROID)
-  }
 
   // Date.
   const ListValue* date_list = NULL;
@@ -293,65 +347,33 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
              << ", max_group_ = " << max_group_;
   }
 
+  // Strings.
+  const DictionaryValue* strings = NULL;
+  promo->GetDictionary("strings", &strings);
+
   // Payload.
   const DictionaryValue* payload = NULL;
   if (promo->GetDictionary("payload", &payload)) {
     payload->GetBoolean("gplus_required", &gplus_required_);
-
     DVLOG(1) << "gplus_required_ = " << gplus_required_;
+
+    base::Value* ppcopy = DeepCopyAndResolveStrings(payload, strings);
+    DCHECK(ppcopy && ppcopy->IsType(base::Value::TYPE_DICTIONARY));
+    promo_payload_.reset(static_cast<base::DictionaryValue*>(ppcopy));
   }
+
+  if (!promo_payload_->GetString("promo_message_short", &promo_text_) &&
+      strings) {
+    // For compatibility with the legacy desktop version,
+    // if no |payload.promo_message_short| is specified,
+    // the first string in |strings| is used.
+    DictionaryValue::Iterator iter(*strings);
+    iter.value().GetAsString(&promo_text_);
+  }
+  DVLOG(1) << "promo_text_=" << promo_text_;
 
   promo->GetInteger("max_views", &max_views_);
   DVLOG(1) << "max_views_ " << max_views_;
-
-#if defined(OS_ANDROID)
-  int payload_version = 0;
-  if (!payload) {
-    LOG(ERROR) << "Malformed JSON: no payload";
-    return;
-  }
-  if (!strings) {
-    LOG(ERROR) << "Malformed JSON: no strings";
-    return;
-  }
-  if (!payload->GetInteger("payload_format_version", &payload_version) ||
-      payload_version != kCurrentMobilePayloadFormatVersion) {
-    LOG(ERROR) << "Unsupported promo payload_format_version " << payload_version
-               << "; expected " << kCurrentMobilePayloadFormatVersion;
-    return;
-  }
-  std::string promo_key_short;
-  std::string promo_key_long;
-  if (!payload->GetString("promo_message_short", &promo_key_short) ||
-      !payload->GetString("promo_message_long", &promo_key_long) ||
-      !strings->GetString(promo_key_short, &promo_text_) ||
-      !strings->GetString(promo_key_long, &promo_text_long_)) {
-    LOG(ERROR) << "Malformed JSON: no promo_message_short or _long";
-    return;
-  }
-  payload->GetString("promo_action_type", &promo_action_type_);
-  // We need to be idempotent as the tests call us more than once.
-  promo_action_args_.reset(new base::ListValue);
-  const ListValue* args;
-  if (payload->GetList("promo_action_args", &args)) {
-    // JSON format for args: "promo_action_args" : [ "<arg1>", "<arg2>"... ]
-    // Every value comes from "strings" dictionary, either directly or not.
-    // Every arg is either directly a key into "strings" dictionary,
-    // or a key into "payload" dictionary with the value that is a key into
-    // "strings" dictionary.
-    for (std::size_t i = 0; i < args->GetSize(); ++i) {
-      std::string name, key, value;
-      if (!args->GetString(i, &name) ||
-          !(strings->GetString(name, &value) ||
-          (payload->GetString(name, &key) &&
-              strings->GetString(key, &value)))) {
-        LOG(ERROR) << "Malformed JSON: failed to parse promo_action_args";
-        return;
-      }
-      promo_action_args_->Append(base::Value::CreateStringValue(value));
-    }
-  }
-#endif  // defined(OS_ANDROID)
 
   CheckForNewNotification();
 }
@@ -379,7 +401,7 @@ void NotificationPromo::OnNewNotification() {
 // static
 void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
   ClearDeprecatedPrefs(prefs);
-  prefs->RegisterDictionaryPref("promo",
+  prefs->RegisterDictionaryPref(kPrefPromoObject,
                                 new base::DictionaryValue,
                                 PrefService::UNSYNCABLE_PREF);
 }
@@ -388,12 +410,7 @@ void NotificationPromo::WritePrefs() {
   DVLOG(1) << "WritePrefs";
   base::DictionaryValue* ntp_promo = new base::DictionaryValue;
   ntp_promo->SetString(kPrefPromoText, promo_text_);
-#if defined(OS_ANDROID)
-  ntp_promo->SetString(kPrefPromoTextLong, promo_text_long_);
-  ntp_promo->SetString(kPrefPromoActionType, promo_action_type_);
-  DCHECK(promo_action_args_.get());
-  ntp_promo->Set(kPrefPromoActionArgs, promo_action_args_->DeepCopy());
-#endif  // defined(OS_ANDROID)
+  ntp_promo->Set(kPrefPromoPayload, promo_payload_->DeepCopy());
   ntp_promo->SetDouble(kPrefPromoStart, start_);
   ntp_promo->SetDouble(kPrefPromoEnd, end_);
 
@@ -426,25 +443,20 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
   if (!promo_dict)
     return;
 
-  const base::ListValue* promo_list(NULL);
+  const base::ListValue* promo_list = NULL;
   promo_dict->GetList(PromoTypeToString(promo_type_), &promo_list);
   if (!promo_list)
     return;
 
-  const base::DictionaryValue* ntp_promo(NULL);
+  const base::DictionaryValue* ntp_promo = NULL;
   promo_list->GetDictionary(0, &ntp_promo);
   if (!ntp_promo)
     return;
 
   ntp_promo->GetString(kPrefPromoText, &promo_text_);
-#if defined(OS_ANDROID)
-  ntp_promo->GetString(kPrefPromoTextLong, &promo_text_long_);
-  ntp_promo->GetString(kPrefPromoActionType, &promo_action_type_);
-  const base::ListValue* lv(NULL);
-  ntp_promo->GetList(kPrefPromoActionArgs, &lv);
-  DCHECK(lv != NULL);
-  promo_action_args_.reset(lv->DeepCopy());
-#endif  // defined(OS_ANDROID)
+  const base::DictionaryValue* promo_payload = NULL;
+  if (ntp_promo->GetDictionary(kPrefPromoPayload, &promo_payload))
+    promo_payload_.reset(promo_payload->DeepCopy());
 
   ntp_promo->GetDouble(kPrefPromoStart, &start_);
   ntp_promo->GetDouble(kPrefPromoEnd, &end_);

@@ -59,13 +59,10 @@ class NotificationPromo {
   bool new_notification() const { return new_notification_; }
 
   const std::string& promo_text() const { return promo_text_; }
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string& promo_text_long() const { return promo_text_long_; }
-  const std::string& promo_action_type() const { return promo_action_type_; }
-  const base::ListValue* promo_action_args() const {
-    return promo_action_args_.get();
+  PromoType promo_type() const { return promo_type_; }
+  const base::DictionaryValue* promo_payload() const {
+    return promo_payload_.get();
   }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   // Register preferences.
   static void RegisterUserPrefs(PrefService* prefs);
@@ -100,11 +97,9 @@ class NotificationPromo {
 
   PromoType promo_type_;
   std::string promo_text_;
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  std::string promo_text_long_;
-  std::string promo_action_type_;
-  scoped_ptr<base::ListValue> promo_action_args_;
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+  // Note that promo_payload_ isn't currently used for desktop promos.
+  scoped_ptr<const base::DictionaryValue> promo_payload_;
 
   double start_;
   double end_;

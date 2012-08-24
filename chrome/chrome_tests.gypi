@@ -2438,6 +2438,9 @@
           ],
         }],
         ['OS=="android"', {
+          'sources': [
+            'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
+          ],
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.

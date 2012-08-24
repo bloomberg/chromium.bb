@@ -60,12 +60,6 @@ class NotificationPromoTest {
 
   void Init(const std::string& json,
             const std::string& promo_text,
-#if defined(OS_ANDROID)
-            const std::string& promo_text_long,
-            const std::string& promo_action_type,
-            const std::string& promo_action_arg0,
-            const std::string& promo_action_arg1,
-#endif  // defined(OS_ANDROID)
             double start, double end,
             int num_groups, int initial_segment, int increment,
             int time_slice, int max_group, int max_views,
@@ -77,21 +71,8 @@ class NotificationPromoTest {
     ASSERT_TRUE(dict);
     test_json_.reset(dict);
 
-    promo_type_ =
-#if !defined(OS_ANDROID)
-        NotificationPromo::NTP_NOTIFICATION_PROMO;
-#else
-        NotificationPromo::MOBILE_NTP_SYNC_PROMO;
-#endif
-
+    promo_type_ = NotificationPromo::NTP_NOTIFICATION_PROMO;
     promo_text_ = promo_text;
-
-#if defined(OS_ANDROID)
-    promo_text_long_ = promo_text_long;
-    promo_action_type_ = promo_action_type;
-    promo_action_args_.push_back(promo_action_arg0);
-    promo_action_args_.push_back(promo_action_arg1);
-#endif  // defined(OS_ANDROID)
 
     start_ = start;
     end_ = end;
@@ -122,20 +103,6 @@ class NotificationPromoTest {
   void TestNotification() {
     // Check values.
     EXPECT_EQ(notification_promo_.promo_text_, promo_text_);
-
-#if defined(OS_ANDROID)
-    EXPECT_EQ(notification_promo_.promo_text_long_, promo_text_long_);
-    EXPECT_EQ(notification_promo_.promo_action_type_, promo_action_type_);
-    EXPECT_TRUE(notification_promo_.promo_action_args_.get() != NULL);
-    EXPECT_EQ(std::size_t(2), promo_action_args_.size());
-    EXPECT_EQ(notification_promo_.promo_action_args_->GetSize(),
-              promo_action_args_.size());
-    for (std::size_t i = 0; i < promo_action_args_.size(); ++i) {
-      std::string value;
-      EXPECT_TRUE(notification_promo_.promo_action_args_->GetString(i, &value));
-      EXPECT_EQ(value, promo_action_args_[i]);
-    }
-#endif  // defined(OS_ANDROID)
 
     EXPECT_EQ(notification_promo_.start_, start_);
     EXPECT_EQ(notification_promo_.end_, end_);
@@ -169,27 +136,6 @@ class NotificationPromoTest {
               prefs_notification_promo.prefs_);
     EXPECT_EQ(notification_promo_.promo_text_,
               prefs_notification_promo.promo_text_);
-#if defined(OS_ANDROID)
-    EXPECT_EQ(notification_promo_.promo_text_long_,
-              prefs_notification_promo.promo_text_long_);
-    EXPECT_EQ(notification_promo_.promo_action_type_,
-              prefs_notification_promo.promo_action_type_);
-    EXPECT_TRUE(prefs_notification_promo.promo_action_args_.get() != NULL);
-    EXPECT_EQ(notification_promo_.promo_action_args_->GetSize(),
-              prefs_notification_promo.promo_action_args_->GetSize());
-    for (std::size_t i = 0;
-         i < notification_promo_.promo_action_args_->GetSize();
-         ++i) {
-      std::string promo_value;
-      std::string prefs_value;
-      EXPECT_TRUE(
-          notification_promo_.promo_action_args_->GetString(i, &promo_value));
-      EXPECT_TRUE(
-          prefs_notification_promo.promo_action_args_->GetString(
-              i, &prefs_value));
-      EXPECT_EQ(promo_value, prefs_value);
-    }
-#endif  // defined(OS_ANDROID)
     EXPECT_EQ(notification_promo_.start_,
               prefs_notification_promo.start_);
     EXPECT_EQ(notification_promo_.end_,
@@ -387,11 +333,6 @@ class NotificationPromoTest {
 
   NotificationPromo::PromoType promo_type_;
   std::string promo_text_;
-#if defined(OS_ANDROID)
-  std::string promo_text_long_;
-  std::string promo_action_type_;
-  std::vector<std::string> promo_action_args_;
-#endif  // defined(OS_ANDROID)
 
   double start_;
   double end_;
@@ -409,6 +350,10 @@ class NotificationPromoTest {
   bool gplus_required_;
 };
 
+// Test that everything gets parsed correctly, notifications are sent,
+// and CanShow() is handled correctly under variety of conditions.
+// Additionally, test that the first string in |strings| is used if
+// no payload.promo_short_message is specified in the JSON response.
 TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   // Check that prefs are set correctly.
   PrefService* prefs = profile_.GetPrefs();
@@ -418,21 +363,20 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
-#if !defined(OS_ANDROID)
   promo_test.Init("{"
                   "  \"ntp_notification_promo\": ["
                   "    {"
                   "      \"date\":"
                   "        ["
                   "          {"
-                  "            \"start\":\"15 Jan 2012 10:50:85 PST\","
+                  "            \"start\":\"3 Aug 1999 9:26:06 GMT\","
                   "            \"end\":\"7 Jan 2013 5:40:75 PST\""
                   "          }"
                   "        ],"
                   "      \"strings\":"
                   "        {"
                   "          \"NTP4_HOW_DO_YOU_FEEL_ABOUT_CHROME\":"
-                  "          \"What do you think of Chrome?\""
+                  "              \"What do you think of Chrome?\""
                   "        },"
                   "      \"grouping\":"
                   "        {"
@@ -453,64 +397,11 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                   "  ]"
                   "}",
                   "What do you think of Chrome?",
-                  1326653485,  // unix epoch for 15 Jan 2012 10:50:85 PST.
-                  1357566075,  // unix epoch for 7 Jan 2013 5:40:75 PST.
+                  // The starting date is in 1999 to make tests pass
+                  // on Android devices with incorrect or unset date/time.
+                  933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
+                  1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
                   1000, 200, 100, 3600, 400, 30, false);
-#else
-  promo_test.Init(
-      "{"
-      "  \"mobile_ntp_sync_promo\": ["
-      "    {"
-      "      \"date\":"
-      "        ["
-      "          {"
-      "            \"start\":\"3 Aug 1999 9:26:06 GMT\","
-      "            \"end\":\"7 Jan 2013 5:40:75 PST\""
-      "          }"
-      "        ],"
-      "      \"strings\":"
-      "        {"
-      "          \"MOBILE_PROMO_CHROME_SHORT_TEXT\":"
-      "          \"Like Chrome? Go http://www.google.com/chrome/\","
-      "          \"MOBILE_PROMO_CHROME_LONG_TEXT\":"
-      "          \"It\'s simple. Go http://www.google.com/chrome/\","
-      "          \"MOBILE_PROMO_EMAIL_BODY\":\"This is the body.\","
-      "          \"XXX_VALUE\":\"XXX value\""
-      "        },"
-      "      \"grouping\":"
-      "        {"
-      "          \"buckets\":1000,"
-      "          \"segment\":200,"
-      "          \"increment\":100,"
-      "          \"increment_frequency\":3600,"
-      "          \"increment_max\":400"
-      "        },"
-      "      \"payload\":"
-      "        {"
-      "          \"payload_format_version\":3,"
-      "          \"gplus_required\":false,"
-      "          \"promo_message_long\":"
-      "              \"MOBILE_PROMO_CHROME_LONG_TEXT\","
-      "          \"promo_message_short\":"
-      "              \"MOBILE_PROMO_CHROME_SHORT_TEXT\","
-      "          \"promo_action_type\":\"ACTION_EMAIL\","
-      "          \"promo_action_args\":[\"MOBILE_PROMO_EMAIL_BODY\",\"XXX\"],"
-      "          \"XXX\":\"XXX_VALUE\""
-      "        },"
-      "      \"max_views\":30"
-      "    }"
-      "  ]"
-      "}",
-      "Like Chrome? Go http://www.google.com/chrome/",
-      "It\'s simple. Go http://www.google.com/chrome/",
-      "ACTION_EMAIL", "This is the body.", "XXX value",
-      // We hardcode the unix epoch time to make sure our parsing works.
-      // The starting date is in 1999 to make tests pass on Android devices
-      // with incorrect or unset date/time.
-      933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
-      1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
-      1000, 200, 100, 3600, 400, 30, false);
-#endif  // !defined(OS_ANDROID)
 
   promo_test.InitPromoFromJson(true);
 
@@ -528,6 +419,118 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   promo_test.TestTime();
   promo_test.TestIncrement();
   promo_test.TestGplus();
+}
+
+// Test that payload.promo_message_short is used if present.
+TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
+  // Check that prefs are set correctly.
+  PrefService* prefs = profile_.GetPrefs();
+  ASSERT_TRUE(prefs != NULL);
+
+  NotificationPromoTest promo_test(&profile_);
+
+  // Set up start and end dates and promo line in a Dictionary as if parsed
+  // from the service.
+  promo_test.Init("{"
+                  "  \"ntp_notification_promo\": ["
+                  "    {"
+                  "      \"date\":"
+                  "        ["
+                  "          {"
+                  "            \"start\":\"3 Aug 1999 9:26:06 GMT\","
+                  "            \"end\":\"7 Jan 2013 5:40:75 PST\""
+                  "          }"
+                  "        ],"
+                  "      \"grouping\":"
+                  "        {"
+                  "          \"buckets\":1000,"
+                  "          \"segment\":200,"
+                  "          \"increment\":100,"
+                  "          \"increment_frequency\":3600,"
+                  "          \"increment_max\":400"
+                  "        },"
+                  "      \"payload\":"
+                  "        {"
+                  "          \"promo_message_short\":"
+                  "              \"What do you think of Chrome?\","
+                  "          \"days_active\":7,"
+                  "          \"install_age_days\":21,"
+                  "          \"gplus_required\":false"
+                  "        },"
+                  "      \"max_views\":30"
+                  "    }"
+                  "  ]"
+                  "}",
+                  "What do you think of Chrome?",
+                  // The starting date is in 1999 to make tests pass
+                  // on Android devices with incorrect or unset date/time.
+                  933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
+                  1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
+                  1000, 200, 100, 3600, 400, 30, false);
+
+  promo_test.InitPromoFromJson(true);
+  // Second time should not trigger a notification.
+  promo_test.InitPromoFromJson(false);
+  promo_test.TestInitFromPrefs();
+}
+
+// Test that strings.|payload.promo_message_short| is used if present.
+TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
+  // Check that prefs are set correctly.
+  PrefService* prefs = profile_.GetPrefs();
+  ASSERT_TRUE(prefs != NULL);
+
+  NotificationPromoTest promo_test(&profile_);
+
+  // Set up start and end dates and promo line in a Dictionary as if parsed
+  // from the service.
+  promo_test.Init("{"
+                  "  \"ntp_notification_promo\": ["
+                  "    {"
+                  "      \"date\":"
+                  "        ["
+                  "          {"
+                  "            \"start\":\"3 Aug 1999 9:26:06 GMT\","
+                  "            \"end\":\"7 Jan 2013 5:40:75 PST\""
+                  "          }"
+                  "        ],"
+                  "      \"grouping\":"
+                  "        {"
+                  "          \"buckets\":1000,"
+                  "          \"segment\":200,"
+                  "          \"increment\":100,"
+                  "          \"increment_frequency\":3600,"
+                  "          \"increment_max\":400"
+                  "        },"
+                  "      \"strings\":"
+                  "        {"
+                  "          \"bogus\":\"string\","
+                  "          \"GOOD_STRING\":"
+                  "              \"What do you think of Chrome?\""
+                  "        },"
+                  "      \"payload\":"
+                  "        {"
+                  "          \"promo_message_short\":"
+                  "              \"GOOD_STRING\","
+                  "          \"days_active\":7,"
+                  "          \"install_age_days\":21,"
+                  "          \"gplus_required\":false"
+                  "        },"
+                  "      \"max_views\":30"
+                  "    }"
+                  "  ]"
+                  "}",
+                  "What do you think of Chrome?",
+                  // The starting date is in 1999 to make tests pass
+                  // on Android devices with incorrect or unset date/time.
+                  933672366,  // unix epoch for 3 Aug 1999 9:26:06 GMT.
+                  1357566075, // unix epoch for 7 Jan 2013 5:40:75 PST.
+                  1000, 200, 100, 3600, 400, 30, false);
+
+  promo_test.InitPromoFromJson(true);
+  // Second time should not trigger a notification.
+  promo_test.InitPromoFromJson(false);
+  promo_test.TestInitFromPrefs();
 }
 
 TEST_F(PromoResourceServiceTest, PromoServerURLTest) {
