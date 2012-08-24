@@ -208,12 +208,7 @@ class DebugStubTest(unittest.TestCase):
     # testing that we get a breakpoint at the _start entry point.
     with LaunchDebugStub('test_getting_registers') as connection:
       reply = connection.RspRequest('?')
-      if sys.platform == 'darwin':
-        # TODO(mseaborn): Fix the debug stub on Mac OS X to report
-        # NACL_SIGTRAP here.
-        self.assertEqual(reply, 'T00')
-      else:
-        AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGTRAP)
 
   # Test that we can fetch register values.
   # This check corresponds to the last instruction of debugger_test.c

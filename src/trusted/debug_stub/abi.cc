@@ -84,18 +84,29 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, pc, GENERAL),
 };
 
-static uint8_t breakpoint_code_x86[] = { 0xcc };
+// Although INT3 is the traditional instruction for a debugger to use
+// as a breakpoint instruction on x86, we use HLT.  This is for two
+// reasons:
+//  1) Mac OS X has a kernel bug in which Mach exception handling will
+//     not always report INT3s that occur in x86-32 untrusted code.
+//     See http://code.google.com/p/nativeclient/issues/detail?id=2879
+//     for more details.
+//  2) HLT leaves %eip/%rip pointing to the HLT instruction itself,
+//     which makes it easy to determine whether a breakpoint produced
+//     a fault.  INT3 leaves %eip/%rip pointing to the address after
+//     the INT3 instruction, which makes it harder to tell
+//     unambiguously whether a fault was produced by an INT3 or the
+//     instruction after it.
+static uint8_t breakpoint_code_x86[] = { 0xf4 /* HLT */ };
 static Abi::BPDef breakpoint_x86 = {
   sizeof(breakpoint_code_x86),
-  breakpoint_code_x86,
-  true
+  breakpoint_code_x86
 };
 
 static uint32_t breakpoint_code_arm[] = { 0xe1277777 /* bkpt 0x7777 */ };
 static Abi::BPDef breakpoint_arm = {
   sizeof(breakpoint_code_arm),
-  (uint8_t *) breakpoint_code_arm,
-  false
+  (uint8_t *) breakpoint_code_arm
 };
 
 static AbiMap_t *GetAbis() {

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 // This module provides an interface for performing ABI specific
@@ -50,12 +50,9 @@ class Abi {
   // code_ points to a series of bytes which will be placed in the code to
   // create the breakpoint.  size_ is the size of that array.  We use a 32b
   // size since the memory modification API only supports a 32b size.
-  // after_ is true if, when a breakpoint trap is raised, the instruction
-  // pointer points to the instruction after the breakpoint.
   struct BPDef {
     uint32_t size_;
     uint8_t *code_;
-    bool after_;
   };
 
   // Returns the registered name of this ABI.

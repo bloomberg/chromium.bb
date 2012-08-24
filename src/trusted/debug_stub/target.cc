@@ -108,21 +108,11 @@ bool Target::AddTemporaryBreakpoint(uint64_t address) {
 
 bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
   const Abi::BPDef *bp_def = abi_->GetBreakpointDef();
-  const Abi::RegDef *ip_def = abi_->GetInstPtrDef();
-  uint64_t new_ip = 0;
+  uintptr_t prog_ctr = thread->GetContext()->prog_ctr;
 
   // If this ABI does not support breakpoints then fail.
   if (!bp_def) {
     return false;
-  }
-
-  if (bp_def->after_) {
-    // Instruction pointer needs adjustment.
-    // WARNING! Little-endian only, as we are fetching a potentially 32-bit
-    // value into uint64_t! Do we need to worry about big-endian?
-    // TODO(eaeltsin): fix register access functions to avoid this problem!
-    thread->GetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
-    new_ip -= bp_def->size_;
   }
 
   // Iterate through the map, removing breakpoints
@@ -140,27 +130,16 @@ bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
       NaClLog(LOG_ERROR, "Failed to undo breakpoint.\n");
     delete[] data;
 
-    if (bp_def->after_) {
-      // Adjust thread instruction pointer.
-      // WARNING:
-      // - addr contains trusted address
-      if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
-          NACL_BUILD_SUBARCH == 64) {
-        // - rip contains trusted address
-        if (addr == new_ip) {
-          thread->SetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
-        }
-      } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
-                 NACL_BUILD_SUBARCH == 32) {
-        // - eip contains untrusted address
-        if (addr == NaClUserToSysAddr(nap_, (uintptr_t) new_ip)) {
-          thread->SetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
-        }
-      } else {
-        NaClLog(
-            LOG_FATAL,
-            "Target::RemoveTemporaryBreakpoints: Unknown CPU architecture\n");
-      }
+    uintptr_t sys_prog_ctr;
+    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32) {
+      sys_prog_ctr = NaClUserToSysAddr(nap_, prog_ctr);
+    } else {
+      sys_prog_ctr = prog_ctr;
+    }
+    // If we hit the breakpoint, ensure that it is reported as SIGTRAP
+    // rather than SIGSEGV.
+    if (addr == sys_prog_ctr && cur_signal_ == NACL_ABI_SIGSEGV) {
+      cur_signal_ = NACL_ABI_SIGTRAP;
     }
   }
 
