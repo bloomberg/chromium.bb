@@ -20,6 +20,7 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
   virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
   virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
+  virtual bool IsInstalledApp(const GURL& origin) OVERRIDE;
   virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
   virtual bool HasSessionOnlyOrigins() OVERRIDE;
 
@@ -35,6 +36,12 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     session_only_.insert(origin);
   }
 
+  void AddInstalledApp(const GURL& origin) {
+    // Installed implies unlimited.
+    unlimited_.insert(origin);
+    installed_.insert(origin);
+  }
+
   void AddFileHandler(const std::string& id) {
     file_handlers_.insert(id);
   }
@@ -47,6 +54,7 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     protected_.clear();
     unlimited_.clear();
     session_only_.clear();
+    installed_.clear();
     file_handlers_.clear();
     all_unlimited_ = false;
   }
@@ -62,6 +70,7 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   std::set<GURL> protected_;
   std::set<GURL> unlimited_;
   std::set<GURL> session_only_;
+  std::set<GURL> installed_;
   std::set<std::string> file_handlers_;
 
   bool all_unlimited_;

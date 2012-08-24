@@ -33,6 +33,11 @@ const StorageType kPerm = kStorageTypePersistent;
 
 const int kAllClients = QuotaClient::kAllClientsMask;
 
+// Returns a deterministic value for the amount of available disk space.
+int64 GetAvailableDiskSpaceForTest(const FilePath&) {
+  return 13377331;
+}
+
 class QuotaManagerTest : public testing::Test {
  protected:
   typedef QuotaManager::QuotaTableEntry QuotaTableEntry;
@@ -56,6 +61,8 @@ class QuotaManagerTest : public testing::Test {
         mock_special_storage_policy_);
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;
+    // Don't query the hard disk for remaining capacity.
+    quota_manager_->get_disk_space_fn_ = &GetAvailableDiskSpaceForTest;
     additional_callback_count_ = 0;
   }
 
@@ -85,14 +92,14 @@ class QuotaManagerTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void GetUsageAndQuota(const GURL& origin, StorageType type) {
+  void GetUsageAndQuota(const GURL& origin,
+                        StorageType type) {
     quota_status_ = kQuotaStatusUnknown;
     usage_ = -1;
     quota_ = -1;
     quota_manager_->GetUsageAndQuota(
-        origin, type,
-        base::Bind(&QuotaManagerTest::DidGetUsageAndQuota,
-                   weak_factory_.GetWeakPtr()));
+        origin, type, base::Bind(&QuotaManagerTest::DidGetUsageAndQuota,
+                                 weak_factory_.GetWeakPtr()));
   }
 
   void GetTemporaryGlobalQuota() {
@@ -162,8 +169,8 @@ class QuotaManagerTest : public testing::Test {
   }
 
   void DeleteClientOriginData(QuotaClient* client,
-                        const GURL& origin,
-                        StorageType type) {
+                              const GURL& origin,
+                              StorageType type) {
     DCHECK(client);
     quota_status_ = kQuotaStatusUnknown;
     client->DeleteOriginData(
@@ -595,17 +602,20 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
 
 TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   static const MockOriginData kData1[] = {
-    { "http://foo.com/",     kTemp,  10 },
-    { "http://bar.com/",     kTemp,  20 },
+    { "http://foo.com/",     kTemp, 10 },
+    { "http://bar.com/",     kTemp, 20 },
     { "http://bar.com/",     kPerm, 50 },
-    { "http://unlimited/",   kPerm,  1 },
+    { "http://unlimited/",   kPerm, 1 },
+    { "http://installed/",   kPerm, 1 },
   };
   static const MockOriginData kData2[] = {
-    { "https://foo.com/",    kTemp,  30 },
+    { "https://foo.com/",    kTemp, 30 },
     { "http://example.com/", kPerm, 40 },
-    { "http://unlimited/",   kTemp,   1 },
+    { "http://unlimited/",   kTemp, 1 },
+    { "http://installed/",   kTemp, 1 },
   };
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
+  mock_special_storage_policy()->AddInstalledApp(GURL("http://installed/"));
   RegisterClient(CreateClient(kData1, ARRAYSIZE_UNSAFE(kData1),
       QuotaClient::kFileSystem));
   RegisterClient(CreateClient(kData2, ARRAYSIZE_UNSAFE(kData2),
@@ -625,25 +635,42 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1, usage());
-  EXPECT_EQ(kint64max, quota());
+  EXPECT_EQ(QuotaManager::kNoLimit, quota());
 
   GetUsageAndQuota(GURL("http://unlimited/"), kPerm);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(1, usage());
-  EXPECT_EQ(kint64max, quota());
+  EXPECT_EQ(QuotaManager::kNoLimit, quota());
+
+  GetAvailableSpace();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_LE(0, available_space());
+
+  GetUsageAndQuota(GURL("http://installed/"), kTemp);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(1, usage());
+  EXPECT_EQ(available_space(), quota());
+
+  GetUsageAndQuota(GURL("http://installed/"), kPerm);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kQuotaStatusOk, status());
+  EXPECT_EQ(1, usage());
+  EXPECT_EQ(available_space(), quota());
 
   GetGlobalUsage(kTemp);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(10 + 20 + 30 + 1, usage());
-  EXPECT_EQ(1, unlimited_usage());
+  EXPECT_EQ(10 + 20 + 30 + 1 + 1, usage());
+  EXPECT_EQ(2, unlimited_usage());
 
   GetGlobalUsage(kPerm);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
-  EXPECT_EQ(40 + 50 + 1, usage());
-  EXPECT_EQ(1, unlimited_usage());
+  EXPECT_EQ(40 + 50 + 1 + 1, usage());
+  EXPECT_EQ(2, unlimited_usage());
 }
 
 void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
@@ -712,8 +739,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   RunAdditionalUsageAndQuotaTask(GURL("http://foo.com/"),
                                  kTemp);
   GetUsageAndQuota(GURL("http://foo.com/"), kTemp);
-  RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"),
-                                 kTemp);
+  RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"), kTemp);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
@@ -820,7 +846,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
-  EXPECT_EQ(kint64max, quota());
+  EXPECT_EQ(QuotaManager::kNoLimit, quota());
 
   // Test when overbugdet.
   SetTemporaryGlobalQuota(100);
@@ -845,7 +871,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(4000, usage());
-  EXPECT_EQ(kint64max, quota());
+  EXPECT_EQ(QuotaManager::kNoLimit, quota());
 
   // Revoke the unlimited rights and make sure the change is noticed.
   mock_special_storage_policy()->Reset();
@@ -985,8 +1011,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {
   RunAdditionalUsageAndQuotaTask(GURL("http://foo.com/"),
                                  kPerm);
   GetUsageAndQuota(GURL("http://foo.com/"), kPerm);
-  RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"),
-                                 kPerm);
+  RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"), kPerm);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kQuotaStatusOk, status());
   EXPECT_EQ(10 + 20, usage());
@@ -1006,10 +1031,8 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_NukeManager) {
 
   set_additional_callback_count(0);
   GetUsageAndQuota(GURL("http://foo.com/"), kPerm);
-  RunAdditionalUsageAndQuotaTask(GURL("http://foo.com/"),
-                                 kPerm);
-  RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"),
-                                 kPerm);
+  RunAdditionalUsageAndQuotaTask(GURL("http://foo.com/"), kPerm);
+  RunAdditionalUsageAndQuotaTask(GURL("http://bar.com/"), kPerm);
 
   // Nuke before waiting for callbacks.
   set_quota_manager(NULL);

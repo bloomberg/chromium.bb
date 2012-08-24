@@ -39,13 +39,13 @@ class QuotaInternalsProxy;
 
 namespace quota {
 
-struct QuotaManagerDeleter;
-
+class MockQuotaManager;
 class QuotaDatabase;
 class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
 class UsageTracker;
-class MockQuotaManager;
+
+struct QuotaManagerDeleter;
 
 struct QuotaAndUsage {
   int64 usage;
@@ -188,6 +188,11 @@ class QuotaManager : public QuotaTaskObserver,
            special_storage_policy_->IsStorageUnlimited(origin);
   }
 
+  bool IsInstalledApp(const GURL& origin) const {
+    return special_storage_policy_.get() &&
+           special_storage_policy_->IsInstalledApp(origin);
+  }
+
   virtual void GetOriginsModifiedSince(StorageType type,
                                        base::Time modified_since,
                                        const GetOriginsCallback& callback);
@@ -246,6 +251,10 @@ class QuotaManager : public QuotaTaskObserver,
   typedef QuotaDatabase::OriginInfoTableEntry OriginInfoTableEntry;
   typedef std::vector<QuotaTableEntry> QuotaTableEntries;
   typedef std::vector<OriginInfoTableEntry> OriginInfoTableEntries;
+
+  // Function pointer type used to store the function which returns the
+  // available disk space for the disk containing the given FilePath.
+  typedef int64 (*GetAvailableDiskSpaceFn)(const FilePath&);
 
   typedef base::Callback<void(const QuotaTableEntries&)>
       DumpQuotaTableCallback;
@@ -386,6 +395,11 @@ class QuotaManager : public QuotaTaskObserver,
 
   base::WeakPtrFactory<QuotaManager> weak_factory_;
   base::RepeatingTimer<QuotaManager> histogram_timer_;
+
+  // Pointer to the function used to get the available disk space. This is
+  // overwritten by QuotaManagerTest in order to attain a deterministic reported
+  // value. The default value points to base::SysInfo::AmountOfFreeDiskSpace.
+  GetAvailableDiskSpaceFn get_disk_space_fn_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
 };

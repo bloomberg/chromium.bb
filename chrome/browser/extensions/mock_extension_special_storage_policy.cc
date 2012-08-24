@@ -12,21 +12,25 @@ bool MockExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
 }
 
 bool MockExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
-  return unlimited_.find(origin) != unlimited_.end();
+  return false;
 }
 
 bool MockExtensionSpecialStoragePolicy::IsStorageSessionOnly(
     const GURL& origin) {
-  return session_only_.find(origin) != session_only_.end();
+  return false;
+}
+
+bool MockExtensionSpecialStoragePolicy::IsInstalledApp(const GURL& origin) {
+  return false;
 }
 
 bool MockExtensionSpecialStoragePolicy::IsFileHandler(
     const std::string& extension_id) {
-  return file_handlers_.find(extension_id) != file_handlers_.end();
+  return false;
 }
 
 bool MockExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
-  return !session_only_.empty();
+  return false;
 }
 
 MockExtensionSpecialStoragePolicy::~MockExtensionSpecialStoragePolicy() {}

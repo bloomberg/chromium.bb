@@ -24,6 +24,10 @@ bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return session_only_.find(origin) != session_only_.end();
 }
 
+bool MockSpecialStoragePolicy::IsInstalledApp(const GURL& origin) {
+  return installed_.find(origin) != installed_.end();
+}
+
 bool MockSpecialStoragePolicy::IsFileHandler(const std::string& extension_id) {
   return file_handlers_.find(extension_id) != file_handlers_.end();
 }

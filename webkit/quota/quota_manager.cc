@@ -77,11 +77,21 @@ const int QuotaManager::kEvictionIntervalInMilliSeconds =
 void CallGetUsageAndQuotaCallback(
     const QuotaManager::GetUsageAndQuotaCallback& callback,
     bool unlimited,
+    bool is_installed_app,
     QuotaStatusCode status,
     const QuotaAndUsage& quota_and_usage) {
-  int64 usage =
-      unlimited ? quota_and_usage.unlimited_usage : quota_and_usage.usage;
-  int64 quota = unlimited ? QuotaManager::kNoLimit : quota_and_usage.quota;
+  int64 usage;
+  int64 quota;
+
+  if (unlimited) {
+    usage = quota_and_usage.unlimited_usage;
+    quota = is_installed_app ? quota_and_usage.available_disk_space :
+        QuotaManager::kNoLimit;
+  } else {
+    usage = quota_and_usage.usage;
+    quota = quota_and_usage.quota;
+  }
+
   callback.Run(status, usage, quota);
 }
 
@@ -408,6 +418,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
         host(), NewWaitableHostUsageCallback());
     manager()->GetPersistentHostQuota(
         host(), NewWaitableHostQuotaCallback());
+    manager()->GetAvailableSpace(NewWaitableAvailableSpaceCallback());
   }
 
   virtual void DispatchCallbacks() OVERRIDE {
@@ -959,7 +970,9 @@ class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
       : QuotaThreadTask(manager, manager->db_thread_),
         profile_path_(manager->profile_path_),
         space_(-1),
+        get_disk_space_fn_(manager->get_disk_space_fn_),
         callback_(callback) {
+    DCHECK(get_disk_space_fn_);
   }
 
  protected:
@@ -967,7 +980,7 @@ class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
 
   // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {
-    space_ = base::SysInfo::AmountOfFreeDiskSpace(profile_path_);
+    space_ = get_disk_space_fn_(profile_path_);
   }
 
   virtual void Aborted() OVERRIDE {
@@ -981,6 +994,7 @@ class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
  private:
   FilePath profile_path_;
   int64 space_;
+  GetAvailableDiskSpaceFn get_disk_space_fn_;
   AvailableSpaceCallback callback_;
 };
 
@@ -1202,7 +1216,8 @@ QuotaManager::QuotaManager(bool is_incognito,
     temporary_quota_override_(-1),
     desired_available_space_(-1),
     special_storage_policy_(special_storage_policy),
-    weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+    get_disk_space_fn_(&base::SysInfo::AmountOfFreeDiskSpace) {
 }
 
 void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
@@ -1214,9 +1229,10 @@ void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
 void QuotaManager::GetUsageAndQuota(
     const GURL& origin, StorageType type,
     const GetUsageAndQuotaCallback& callback) {
-  GetUsageAndQuotaInternal(origin, type, false /* global */,
-                           base::Bind(&CallGetUsageAndQuotaCallback,
-                                      callback, IsStorageUnlimited(origin)));
+  GetUsageAndQuotaInternal(
+      origin, type, false /* global */,
+      base::Bind(&CallGetUsageAndQuotaCallback, callback,
+                 IsStorageUnlimited(origin), IsInstalledApp(origin)));
 }
 
 void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {

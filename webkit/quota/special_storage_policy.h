@@ -38,6 +38,9 @@ class SpecialStoragePolicy
   // Unlimited storage is not subject to 'quotas'.
   virtual bool IsStorageUnlimited(const GURL& origin) = 0;
 
+  // Installed apps have access to the size of the remaining disk capacity.
+  virtual bool IsInstalledApp(const GURL& origin) = 0;
+
   // Checks if extension identified with |extension_id| is registered as
   // file handler.
   virtual bool IsFileHandler(const std::string& extension_id) = 0;
