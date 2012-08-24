@@ -39,14 +39,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
@@ -87,8 +84,6 @@ using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
 using WebKit::WebIDBFactory;
-using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyPath;
 using WebKit::WebKitPlatformSupport;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
@@ -96,7 +91,6 @@ using WebKit::WebPeerConnection00Handler;
 using WebKit::WebPeerConnection00HandlerClient;
 using WebKit::WebPeerConnectionHandler;
 using WebKit::WebPeerConnectionHandlerClient;
-using WebKit::WebSerializedScriptValue;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -343,29 +337,6 @@ WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
       web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
   }
   return web_idb_factory_.get();
-}
-
-void RendererWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
-    const WebVector<WebSerializedScriptValue>& values,
-    const WebIDBKeyPath& keyPath,
-    WebVector<WebIDBKey>& keys_out) {
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
-  WebVector<WebIDBKey> keys(values.size());
-  for (size_t i = 0; i < values.size(); ++i) {
-    keys[i] = WebIDBKey::createFromValueAndKeyPath(
-        values[i], keyPath);
-  }
-  keys_out.swap(keys);
-}
-
-WebSerializedScriptValue
-RendererWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
-    const WebIDBKey& key,
-    const WebSerializedScriptValue& value,
-    const WebIDBKeyPath& keyPath) {
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
-  return WebIDBKey::injectIDBKeyIntoSerializedValue(
-      key, value, keyPath);
 }
 
 //------------------------------------------------------------------------------
