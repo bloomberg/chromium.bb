@@ -427,6 +427,9 @@ const char kDisableTranslate[]              = "disable-translate";
 // Disables the backend service for web resources.
 const char kDisableWebResources[]           = "disable-web-resources";
 
+// Disables the website settings UI.
+const char kDisableWebsiteSettings[]         = "disable-website-settings";
+
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".
@@ -667,10 +670,6 @@ const char kEnableTextServiceFramework[] = "enable-text-service-framework";
 //
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
-
-// Enable Website Settings. The Website Settings UI will replace the Page Info
-// Bubble.
-const char kEnableWebsiteSettings[]         = "enable-website-settings";
 
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";

@@ -930,11 +930,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-website-settings",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME,
-    IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION,
+    "disable-website-settings",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_NAME,
+    IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableWebsiteSettings),
+    SINGLE_VALUE_TYPE(switches::kDisableWebsiteSettings),
   },
 };
 

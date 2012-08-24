@@ -5790,11 +5790,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION" desc="Description for the flag to enable the mouse lock feature.">
         Web pages may capture the mouse pointer and remove it from the user's control. The mouse movement data is directed solely to the web application. Users can escape by pressing the 'Esc' key.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_NAME" desc="Title for the flag to enable the website settings feature.">
-        Website Settings UI
+      <message name="IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_NAME" desc="Title for the flag to enable the website settings feature.">
+        Disable the Website Settings UI
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBSITE_SETTINGS_DESCRIPTION" desc="Title for the flag to enable the website settings feature.">
-        Enables the Website Settings UI. The Website Settings UI replaces the page info bubble and provides an easy way to configure site-specific settings.
+      <message name="IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_DESCRIPTION" desc="Title for the flag to enable the website settings feature.">
+        Disables the Website Settings UI that replaces the page info bubble and provides an easy way to configure site-specific settings.
       </message>
       
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT" desc="Generic 'Default' experiment choice option name. E.G. shown in multi value options in about:flags.">
