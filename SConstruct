@@ -2744,6 +2744,7 @@ irt_variant_tests = [
     'tests/mmap_race_protect/nacl.scons',
     'tests/nacl_log/nacl.scons',
     'tests/nameservice/nacl.scons',
+    'tests/nameservice/nacl_chrome.scons',
     'tests/nanosleep/nacl.scons',
     'tests/noop/nacl.scons',
     'tests/nrd_xfer/nacl.scons',
