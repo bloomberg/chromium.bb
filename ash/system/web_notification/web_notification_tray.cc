@@ -96,20 +96,22 @@ struct WebNotification {
   bool is_read;
 };
 
+// Web Notification List -------------------------------------------------------
+
 // A helper class to manage the list of notifications.
 class WebNotificationList {
  public:
   typedef std::list<WebNotification> Notifications;
 
   WebNotificationList()
-      : is_visible_(false),
+      : message_center_visible_(false),
         unread_count_(0) {
   }
 
-  void SetIsVisible(bool visible) {
-    if (is_visible_ == visible)
+  void SetMessageCenterVisible(bool visible) {
+    if (message_center_visible_ == visible)
       return;
-    is_visible_ = visible;
+    message_center_visible_ = visible;
     if (visible) {
       // Clear the unread count when the list is shown.
       unread_count_ = 0;
@@ -154,6 +156,7 @@ class WebNotificationList {
     PushNotification(notification);
   }
 
+  // Returns true if the notification was removed.
   bool RemoveNotification(const std::string& id) {
     Notifications::iterator iter = GetNotification(id);
     if (iter == notifications_.end())
@@ -194,6 +197,7 @@ class WebNotificationList {
     }
   }
 
+  // Returns true if the notification exists and was updated.
   bool SetNotificationImage(const std::string& id,
                             const gfx::ImageSkia& image) {
     Notifications::iterator iter = GetNotification(id);
@@ -217,6 +221,8 @@ class WebNotificationList {
   int unread_count() const { return unread_count_; }
 
  private:
+  // Iterates through the list and returns the first notification matching |id|
+  // (should always be unique).
   Notifications::iterator GetNotification(const std::string& id) {
     for (Notifications::iterator iter = notifications_.begin();
          iter != notifications_.end(); ++iter) {
@@ -227,7 +233,7 @@ class WebNotificationList {
   }
 
   void EraseNotification(Notifications::iterator iter) {
-    if (!is_visible_ && !iter->is_read)
+    if (!message_center_visible_ && !iter->is_read)
       --unread_count_;
     notifications_.erase(iter);
   }
@@ -239,17 +245,19 @@ class WebNotificationList {
     if (iter != notifications_.end())
       EraseNotification(iter);
     // Add the notification to the front (top) of the list.
-    if (!is_visible_)
+    if (!message_center_visible_)
       ++unread_count_;
     notifications_.push_front(notification);
   }
 
   Notifications notifications_;
-  bool is_visible_;
+  bool message_center_visible_;
   int unread_count_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationList);
 };
+
+// Web notification view -------------------------------------------------------
 
 // A dropdown menu for notifications.
 class WebNotificationMenuModel : public ui::SimpleMenuModel,
@@ -622,6 +630,9 @@ class WebNotificationButtonView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView);
 };
 
+// Web notification bubble contents --------------------------------------------
+
+// Base class for the contents of a web notification bubble.
 class WebContentsView : public views::View {
  public:
   explicit WebContentsView(WebNotificationTray* tray)
@@ -647,6 +658,7 @@ class WebContentsView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(WebContentsView);
 };
 
+// Message Center contents.
 class MessageCenterContentsView : public WebContentsView {
  public:
   class ScrollContentView : public views::View {
@@ -748,9 +760,10 @@ class MessageCenterContentsView : public WebContentsView {
   DISALLOW_COPY_AND_ASSIGN(MessageCenterContentsView);
 };
 
-class WebNotificationContentsView : public WebContentsView {
+// Popup notifications contents.
+class PopupBubbleContentsView : public WebContentsView {
  public:
-  explicit WebNotificationContentsView(WebNotificationTray* tray)
+  explicit PopupBubbleContentsView(WebNotificationTray* tray)
       : WebContentsView(tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
@@ -785,7 +798,7 @@ class WebNotificationContentsView : public WebContentsView {
  private:
   views::View* content_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationContentsView);
+  DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
 };
 
 }  // namespace internal
@@ -794,51 +807,28 @@ using internal::TrayBubbleView;
 using internal::WebNotificationList;
 using internal::WebContentsView;
 
+// Web notification bubbles ----------------------------------------------------
+
 class WebNotificationTray::Bubble : public TrayBubbleView::Host,
                                     public views::WidgetObserver {
  public:
-  enum BubbleType {
-    BUBBLE_TYPE_MESAGE_CENTER,
-    BUBBLE_TYPE_NOTIFICATION
-  };
-
-  Bubble(WebNotificationTray* tray, BubbleType bubble_type)
+  explicit Bubble(WebNotificationTray* tray)
       : tray_(tray),
-        bubble_type_(bubble_type),
         bubble_view_(NULL),
         bubble_widget_(NULL),
-        contents_view_(NULL),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-    views::View* anchor = tray->tray_container();
-    TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
-                                           tray->shelf_alignment());
-    init_params.bubble_width = kWebNotificationWidth;
-    if (bubble_type == BUBBLE_TYPE_MESAGE_CENTER) {
-      init_params.max_height = kWebNotificationBubbleMaxHeight;
-      init_params.can_activate = true;
-    } else {
-      init_params.arrow_color = kBackgroundColor;
-      init_params.close_on_deactivate = false;
-    }
-    if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      gfx::Point bounds(anchor->width() / 2, 0);
-      ConvertPointToWidget(anchor, &bounds);
-      init_params.arrow_offset = bounds.x();
-    }
-    bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
+  }
 
-    if (bubble_type == BUBBLE_TYPE_MESAGE_CENTER)
-      contents_view_ = new internal::MessageCenterContentsView(tray);
-    else
-      contents_view_ = new internal::WebNotificationContentsView(tray);
-    bubble_view_->AddChildView(contents_view_);
+  void Initialize(WebContentsView* contents_view) {
+    DCHECK(bubble_view_);
+
+    bubble_view_->AddChildView(contents_view);
 
     bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
     bubble_widget_->AddObserver(this);
 
     InitializeAndShowBubble(bubble_widget_, bubble_view_, tray_);
-
-    ScheduleUpdate();
+    UpdateBubbleView();
   }
 
   virtual ~Bubble() {
@@ -851,8 +841,6 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
   }
 
   void ScheduleUpdate() {
-    StartAutoCloseTimer();
-
     weak_ptr_factory_.InvalidateWeakPtrs();  // Cancel any pending update.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -860,6 +848,9 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
                    weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kUpdateDelayMs));
   }
+
+  // Updates the bubble; implementation dependent.
+  virtual void UpdateBubbleView() = 0;
 
   bool IsVisible() const {
     return bubble_widget_ && bubble_widget_->IsVisible();
@@ -871,16 +862,13 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
   // Overridden from TrayBubbleView::Host.
   virtual void BubbleViewDestroyed() OVERRIDE {
     bubble_view_ = NULL;
-    contents_view_ = NULL;
   }
 
   virtual void OnMouseEnteredView() OVERRIDE {
-    StopAutoCloseTimer();
     tray_->UpdateShouldShowLauncher();
   }
 
   virtual void OnMouseExitedView() OVERRIDE {
-    StartAutoCloseTimer();
     tray_->UpdateShouldShowLauncher();
   }
 
@@ -900,21 +888,116 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
     tray_->HideBubble(this);  // Will destroy |this|.
   }
 
+ protected:
+  TrayBubbleView::InitParams GetInitParams() {
+    TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
+                                           tray_->shelf_alignment());
+    init_params.bubble_width = kWebNotificationWidth;
+    if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      views::View* anchor = tray_->tray_container();
+      gfx::Point bounds(anchor->width() / 2, 0);
+      ConvertPointToWidget(anchor, &bounds);
+      init_params.arrow_offset = bounds.x();
+    }
+    return init_params;
+  }
+
+ protected:
+  WebNotificationTray* tray_;
+  TrayBubbleView* bubble_view_;
+  views::Widget* bubble_widget_;
+  base::WeakPtrFactory<Bubble> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Bubble);
+};
+
+// Bubble for message center.
+class WebNotificationTray::MessageCenterBubble :
+      public WebNotificationTray::Bubble {
+ public:
+  explicit MessageCenterBubble(WebNotificationTray* tray) :
+      WebNotificationTray::Bubble(tray),
+      contents_view_(NULL) {
+    TrayBubbleView::InitParams init_params = GetInitParams();
+    init_params.max_height = kWebNotificationBubbleMaxHeight;
+    init_params.can_activate = true;
+    views::View* anchor = tray_->tray_container();
+    bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
+    contents_view_ = new internal::MessageCenterContentsView(tray);
+
+    Initialize(contents_view_);
+  }
+
+  virtual ~MessageCenterBubble() {}
+
+  // Overridden from TrayBubbleView::Host.
+  virtual void BubbleViewDestroyed() OVERRIDE {
+    contents_view_ = NULL;
+    WebNotificationTray::Bubble::BubbleViewDestroyed();
+  }
+
  private:
-  void UpdateBubbleView() {
+  // Overridden from Bubble.
+  virtual void UpdateBubbleView() OVERRIDE {
+    contents_view_->Update(tray_->notification_list()->notifications());
+    bubble_view_->Show();
+    bubble_view_->UpdateBubble();
+  }
+
+  internal::MessageCenterContentsView* contents_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageCenterBubble);
+};
+
+// Bubble for popup notifications.
+class WebNotificationTray::PopupBubble : public WebNotificationTray::Bubble {
+ public:
+  explicit PopupBubble(WebNotificationTray* tray) :
+      WebNotificationTray::Bubble(tray),
+      contents_view_(NULL) {
+    TrayBubbleView::InitParams init_params = GetInitParams();
+    init_params.arrow_color = kBackgroundColor;
+    init_params.close_on_deactivate = false;
+    views::View* anchor = tray_->tray_container();
+    bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
+    contents_view_ = new internal::PopupBubbleContentsView(tray);
+
+    Initialize(contents_view_);
+  }
+
+  virtual ~PopupBubble() {}
+
+  // Overridden from TrayBubbleView::Host.
+  virtual void BubbleViewDestroyed() OVERRIDE {
+    contents_view_ = NULL;
+    WebNotificationTray::Bubble::BubbleViewDestroyed();
+  }
+
+  virtual void OnMouseEnteredView() OVERRIDE {
+    StopAutoCloseTimer();
+    WebNotificationTray::Bubble::OnMouseEnteredView();
+  }
+
+  virtual void OnMouseExitedView() OVERRIDE {
+    StartAutoCloseTimer();
+    WebNotificationTray::Bubble::OnMouseExitedView();
+  }
+
+ private:
+  // Overridden from Bubble.
+  virtual void UpdateBubbleView() OVERRIDE {
     const WebNotificationList::Notifications& notifications =
         tray_->notification_list()->notifications();
     contents_view_->Update(notifications);
     bubble_view_->Show();
     bubble_view_->UpdateBubble();
+    StartAutoCloseTimer();
   }
 
   void StartAutoCloseTimer() {
-    if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
-      return;
     autoclose_.Start(FROM_HERE,
                      base::TimeDelta::FromSeconds(kAutocloseDelaySeconds),
-                     this, &Bubble::OnAutoClose);
+                     this, &PopupBubble::OnAutoClose);
   }
 
   void StopAutoCloseTimer() {
@@ -925,16 +1008,13 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
     tray_->HideBubble(this);  // deletes |this|!
   }
 
-  WebNotificationTray* tray_;
-  BubbleType bubble_type_;
-  TrayBubbleView* bubble_view_;
-  views::Widget* bubble_widget_;
-  WebContentsView* contents_view_;
-  base::OneShotTimer<Bubble> autoclose_;
-  base::WeakPtrFactory<Bubble> weak_ptr_factory_;
+  base::OneShotTimer<PopupBubble> autoclose_;
+  internal::PopupBubbleContentsView* contents_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(Bubble);
+  DISALLOW_COPY_AND_ASSIGN(PopupBubble);
 };
+
+// WebNotificationTray ---------------------------------------------------------
 
 WebNotificationTray::WebNotificationTray(
     internal::StatusAreaWidget* status_area_widget)
@@ -960,7 +1040,7 @@ WebNotificationTray::~WebNotificationTray() {
   // Release any child views that might have back pointers before ~View().
   notification_list_.reset();
   message_center_bubble_.reset();
-  notification_bubble_.reset();
+  popup_bubble_.reset();
 }
 
 void WebNotificationTray::SetDelegate(Delegate* delegate) {
@@ -979,7 +1059,7 @@ void WebNotificationTray::AddNotification(const std::string& id,
   notification_list_->AddNotification(
       id, title, message, display_source, extension_id);
   UpdateTrayAndBubble();
-  ShowNotificationBubble();
+  ShowPopupBubble();
 }
 
 void WebNotificationTray::UpdateNotification(const std::string& old_id,
@@ -988,12 +1068,12 @@ void WebNotificationTray::UpdateNotification(const std::string& old_id,
                                              const string16& message) {
   notification_list_->UpdateNotificationMessage(old_id, new_id, title, message);
   UpdateTrayAndBubble();
-  ShowNotificationBubble();
+  ShowPopupBubble();
 }
 
 void WebNotificationTray::RemoveNotification(const std::string& id) {
   if (id == notification_list_->GetFirstId())
-    HideNotificationBubble();
+    HidePopupBubble();
   if (!notification_list_->RemoveNotification(id))
     return;
   UpdateTrayAndBubble();
@@ -1004,8 +1084,8 @@ void WebNotificationTray::SetNotificationImage(const std::string& id,
   if (!notification_list_->SetNotificationImage(id, image))
     return;
   UpdateTrayAndBubble();
-  if (notification_bubble() && id == notification_list_->GetFirstId())
-    ShowNotificationBubble();
+  if (popup_bubble() && id == notification_list_->GetFirstId())
+    ShowPopupBubble();
 }
 
 void WebNotificationTray::ShowMessageCenterBubble() {
@@ -1015,11 +1095,11 @@ void WebNotificationTray::ShowMessageCenterBubble() {
     UpdateTray();
     return;
   }
-  notification_list_->SetIsVisible(true);  // clears notification count
+  // Indicate that the message center is visible. Clears the unread count.
+  notification_list_->SetMessageCenterVisible(true);
   UpdateTray();
-  HideNotificationBubble();
-  message_center_bubble_.reset(
-      new Bubble(this, Bubble::BUBBLE_TYPE_MESAGE_CENTER));
+  HidePopupBubble();
+  message_center_bubble_.reset(new MessageCenterBubble(this));
   status_area_widget()->SetHideSystemNotifications(true);
   UpdateShouldShowLauncher();
 }
@@ -1029,12 +1109,16 @@ void WebNotificationTray::HideMessageCenterBubble() {
     return;
   message_center_bubble_.reset();
   show_message_center_on_unlock_ = false;
-  notification_list_->SetIsVisible(false);
+  notification_list_->SetMessageCenterVisible(false);
   status_area_widget()->SetHideSystemNotifications(false);
   UpdateShouldShowLauncher();
 }
 
-void WebNotificationTray::ShowNotificationBubble() {
+void WebNotificationTray::HideNotificationBubble() {
+  HidePopupBubble();
+}
+
+void WebNotificationTray::ShowPopupBubble() {
   if (status_area_widget()->login_status() == user::LOGGED_IN_LOCKED)
     return;
   if (message_center_bubble())
@@ -1042,16 +1126,15 @@ void WebNotificationTray::ShowNotificationBubble() {
   if (!status_area_widget()->ShouldShowNonSystemNotifications())
     return;
   UpdateTray();
-  if (notification_bubble()) {
-    notification_bubble()->ScheduleUpdate();
+  if (popup_bubble()) {
+    popup_bubble()->ScheduleUpdate();
   } else {
-    notification_bubble_.reset(
-        new Bubble(this, Bubble::BUBBLE_TYPE_NOTIFICATION));
+    popup_bubble_.reset(new PopupBubble(this));
   }
 }
 
-void WebNotificationTray::HideNotificationBubble() {
-  notification_bubble_.reset();
+void WebNotificationTray::HidePopupBubble() {
+  popup_bubble_.reset();
 }
 
 void WebNotificationTray::UpdateAfterLoginStatusChange(
@@ -1061,7 +1144,7 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
       message_center_bubble_.reset();
       show_message_center_on_unlock_ = true;
     }
-    HideNotificationBubble();
+    HidePopupBubble();
   } else {
     if (show_message_center_on_unlock_)
       ShowMessageCenterBubble();
@@ -1075,9 +1158,9 @@ bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
 }
 
 bool WebNotificationTray::IsMouseInNotificationBubble() const {
-  if (!notification_bubble())
+  if (!popup_bubble())
     return false;
-  return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
+  return popup_bubble_->bubble_view()->GetBoundsInScreen().Contains(
       gfx::Screen::GetCursorScreenPoint());
 }
 
@@ -1091,14 +1174,14 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
     tray_container()->set_size(gfx::Size(kTraySideWidth, kTraySideHeight));
   // Destroy any existing bubble so that it will be rebuilt correctly.
   HideMessageCenterBubble();
-  HideNotificationBubble();
+  HidePopupBubble();
 }
 
 void WebNotificationTray::AnchorUpdated() {
-  if (notification_bubble_.get()) {
-    notification_bubble_->bubble_view()->UpdateBubble();
+  if (popup_bubble_.get()) {
+    popup_bubble_->bubble_view()->UpdateBubble();
     // Ensure that the notification buble is above the launcher/status area.
-    notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
+    popup_bubble_->bubble_view()->GetWidget()->StackAtTop();
   }
   if (message_center_bubble_.get())
     message_center_bubble_->bubble_view()->UpdateBubble();
@@ -1109,7 +1192,7 @@ string16 WebNotificationTray::GetAccessibleName() {
       IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME);
 }
 
-// Protected methods (invoked only from Bubble and its child classes)
+// Private methods invoked by Bubble and its child classes
 
 void WebNotificationTray::SendRemoveNotification(const std::string& id) {
   // If this is the only notification in the list, close the bubble.
@@ -1161,10 +1244,6 @@ bool WebNotificationTray::PerformAction(const ui::Event& event) {
   return true;
 }
 
-int WebNotificationTray::GetNotificationCount() const {
-  return notification_list()->notifications().size();
-}
-
 void WebNotificationTray::ShowSettings(const std::string& id) {
   if (delegate_)
     delegate_->ShowSettings(id);
@@ -1175,7 +1254,7 @@ void WebNotificationTray::OnClicked(const std::string& id) {
     delegate_->OnClicked(id);
 }
 
-// Private methods
+// Other private methods
 
 void WebNotificationTray::UpdateTray() {
   count_label_->SetText(UTF8ToUTF16(
@@ -1195,20 +1274,26 @@ void WebNotificationTray::UpdateTrayAndBubble() {
   if (message_center_bubble())
     message_center_bubble()->ScheduleUpdate();
 
-  if (notification_bubble()) {
-    if (GetNotificationCount() == 0)
-      HideNotificationBubble();
+  if (popup_bubble()) {
+    if (notification_list_->notifications().size() == 0)
+      HidePopupBubble();
     else
-      notification_bubble()->ScheduleUpdate();
+      popup_bubble()->ScheduleUpdate();
   }
 }
 
 void WebNotificationTray::HideBubble(Bubble* bubble) {
   if (bubble == message_center_bubble()) {
     HideMessageCenterBubble();
-  } else if (bubble == notification_bubble()) {
-    HideNotificationBubble();
+  } else if (bubble == popup_bubble()) {
+    HidePopupBubble();
   }
+}
+
+// Methods for testing
+
+size_t WebNotificationTray::GetNotificationCountForTest() const {
+  return notification_list_->notifications().size();
 }
 
 bool WebNotificationTray::HasNotificationForTest(const std::string& id) const {

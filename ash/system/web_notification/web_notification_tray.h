@@ -101,15 +101,6 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   void SetNotificationImage(const std::string& id,
                             const gfx::ImageSkia& image);
 
-  // Show the message center bubble. Should only be called by StatusAreaWidget.
-  void ShowMessageCenterBubble();
-
-  // Hide the message center bubble. Should only be called by StatusAreaWidget.
-  void HideMessageCenterBubble();
-
-  // Show a single notification bubble for the most recent notification.
-  void ShowNotificationBubble();
-
   // Hide the single notification bubble if visible.
   void HideNotificationBubble();
 
@@ -130,25 +121,10 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
- protected:
-  // Send a remove request to the delegate.
-  void SendRemoveNotification(const std::string& id);
-
-  // Send a remove request for all notifications to the delegate.
-  void SendRemoveAllNotifications();
-
-  // Disable all notifications matching notification |id|.
-  void DisableByExtension(const std::string& id);
-  void DisableByUrl(const std::string& id);
-
-  // Request the Delegate to the settings dialog.
-  void ShowSettings(const std::string& id);
-
-  // Called when a notification is clicked on. Event is passed to the Delegate.
-  void OnClicked(const std::string& id);
-
  private:
   class Bubble;
+  class MessageCenterBubble;
+  class PopupBubble;
   friend class internal::WebNotificationButtonView;
   friend class internal::WebNotificationMenuModel;
   friend class internal::WebNotificationList;
@@ -156,21 +132,58 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationBubble);
 
-  int GetNotificationCount() const;
+  // Sends a remove request to the delegate.
+  void SendRemoveNotification(const std::string& id);
+
+  // Sends a remove request for all notifications to the delegate.
+  void SendRemoveAllNotifications();
+
+  // Disables all notifications matching notification |id|.
+  void DisableByExtension(const std::string& id);
+  void DisableByUrl(const std::string& id);
+
+  // Requests the Delegate to the settings dialog.
+  void ShowSettings(const std::string& id);
+
+  // Called when a notification is clicked on. Event is passed to the Delegate.
+  void OnClicked(const std::string& id);
+
+  // Shows or updates the message center bubble and hides the popup bubble.
+  void ShowMessageCenterBubble();
+
+  // Hides the message center bubble if visible.
+  void HideMessageCenterBubble();
+
+  // Shows or updates the popup notification bubble if appropriate.
+  void ShowPopupBubble();
+
+  // Hides the notification bubble if visible.
+  void HidePopupBubble();
+
+  // Updates the tray icon and visibility.
   void UpdateTray();
+
+  // As above but also updates any visible bubble.
   void UpdateTrayAndBubble();
+
+  // Hides the specified bubble (called when |bubble| is closed from Views).
   void HideBubble(Bubble* bubble);
+
+  // Testing accessors.
+  size_t GetNotificationCountForTest() const;
   bool HasNotificationForTest(const std::string& id) const;
 
   const internal::WebNotificationList* notification_list() const {
     return notification_list_.get();
   }
-  Bubble* message_center_bubble() const { return message_center_bubble_.get(); }
-  Bubble* notification_bubble() const { return notification_bubble_.get(); }
+  MessageCenterBubble* message_center_bubble() const {
+    return message_center_bubble_.get();
+  }
+  PopupBubble* popup_bubble() const { return popup_bubble_.get(); }
 
   scoped_ptr<internal::WebNotificationList> notification_list_;
-  scoped_ptr<Bubble> message_center_bubble_;
-  scoped_ptr<Bubble> notification_bubble_;
+  scoped_ptr<MessageCenterBubble> message_center_bubble_;
+  scoped_ptr<PopupBubble> popup_bubble_;
   views::Label* count_label_;
   Delegate* delegate_;
   bool show_message_center_on_unlock_;

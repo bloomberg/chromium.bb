@@ -93,17 +93,17 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
 
   // Add a notification.
   delegate->AddNotification(tray, "test_id1");
-  EXPECT_EQ(1, tray->GetNotificationCount());
+  EXPECT_EQ(1u, tray->GetNotificationCountForTest());
   EXPECT_TRUE(tray->HasNotificationForTest("test_id1"));
   delegate->AddNotification(tray, "test_id2");
   delegate->AddNotification(tray, "test_id2");
-  EXPECT_EQ(2, tray->GetNotificationCount());
+  EXPECT_EQ(2u, tray->GetNotificationCountForTest());
   EXPECT_TRUE(tray->HasNotificationForTest("test_id2"));
 
   // Ensure that updating a notification does not affect the count.
   delegate->UpdateNotification(tray, "test_id2", "test_id3");
   delegate->UpdateNotification(tray, "test_id3", "test_id3");
-  EXPECT_EQ(2, tray->GetNotificationCount());
+  EXPECT_EQ(2u, tray->GetNotificationCountForTest());
   EXPECT_FALSE(delegate->HasNotificationId("test_id2"));
   EXPECT_FALSE(tray->HasNotificationForTest("test_id2"));
   EXPECT_TRUE(delegate->HasNotificationId("test_id3"));
@@ -112,11 +112,11 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
   delegate->RemoveNotification(tray, "test_id1");
   EXPECT_FALSE(delegate->HasNotificationId("test_id1"));
   EXPECT_FALSE(tray->HasNotificationForTest("test_id1"));
-  EXPECT_EQ(1, tray->GetNotificationCount());
+  EXPECT_EQ(1u, tray->GetNotificationCountForTest());
 
   // Remove the remianing notification.
   delegate->RemoveNotification(tray, "test_id3");
-  EXPECT_EQ(0, tray->GetNotificationCount());
+  EXPECT_EQ(0u, tray->GetNotificationCountForTest());
   EXPECT_FALSE(tray->HasNotificationForTest("test_id3"));
 }
 
@@ -129,20 +129,20 @@ TEST_F(WebNotificationTrayTest, WebNotificationBubble) {
 
   // Adding a notification should show the bubble.
   delegate->AddNotification(tray, "test_id1");
-  EXPECT_TRUE(tray->notification_bubble() != NULL);
+  EXPECT_TRUE(tray->popup_bubble() != NULL);
 
   // Updating a notification should not hide the bubble.
   delegate->AddNotification(tray, "test_id2");
   delegate->UpdateNotification(tray, "test_id2", "test_id3");
-  EXPECT_TRUE(tray->notification_bubble() != NULL);
+  EXPECT_TRUE(tray->popup_bubble() != NULL);
 
   // Removing the first notification should not hide the bubble.
   delegate->RemoveNotification(tray, "test_id1");
-  EXPECT_TRUE(tray->notification_bubble() != NULL);
+  EXPECT_TRUE(tray->popup_bubble() != NULL);
 
   // Removing the visible notification should hide the bubble.
   delegate->RemoveNotification(tray, "test_id3");
-  EXPECT_TRUE(tray->notification_bubble() == NULL);
+  EXPECT_TRUE(tray->popup_bubble() == NULL);
 }
 
 }  // namespace ash
