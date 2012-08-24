@@ -1074,6 +1074,31 @@ void UrlmonUrlRequestManager::StartRequestHelper(
     new_request = created_request;
   }
 
+  // Format upload data if it's chunked.
+  if (request_info.upload_data && request_info.upload_data->is_chunked()) {
+    std::vector<net::UploadElement>* elements =
+        request_info.upload_data->elements_mutable();
+    for (size_t i = 0; i < elements->size(); ++i) {
+      net::UploadElement* element = &(*elements)[i];
+      DCHECK(element->type() == net::UploadElement::TYPE_BYTES);
+      std::string chunk_length = StringPrintf(
+          "%X\r\n", static_cast<unsigned int>(element->bytes_length()));
+      std::vector<char> bytes;
+      bytes.insert(bytes.end(), chunk_length.data(),
+                   chunk_length.data() + chunk_length.length());
+      const char* data = element->bytes();
+      bytes.insert(bytes.end(), data, data + element->bytes_length());
+      const char* crlf = "\r\n";
+      bytes.insert(bytes.end(), crlf, crlf + strlen(crlf));
+      if (i == elements->size() - 1) {
+        const char* end_of_data = "0\r\n\r\n";
+        bytes.insert(bytes.end(), end_of_data,
+                     end_of_data + strlen(end_of_data));
+      }
+      element->SetToBytes(&bytes[0], static_cast<int>(bytes.size()));
+    }
+  }
+
   new_request->Initialize(static_cast<PluginUrlRequestDelegate*>(this),
       request_id,
       request_info.url,

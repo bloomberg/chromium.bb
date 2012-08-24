@@ -137,27 +137,6 @@ struct ParamTraits<net::UploadElement> {
         m->WriteData(p.bytes(), static_cast<int>(p.bytes_length()));
         break;
       }
-      case net::UploadElement::TYPE_CHUNK: {
-        std::string chunk_length = StringPrintf(
-            "%X\r\n", static_cast<unsigned int>(p.bytes_length()));
-        std::vector<char> bytes;
-        bytes.insert(bytes.end(), chunk_length.data(),
-                     chunk_length.data() + chunk_length.length());
-        const char* data = p.bytes();
-        bytes.insert(bytes.end(), data, data + p.bytes_length());
-        const char* crlf = "\r\n";
-        bytes.insert(bytes.end(), crlf, crlf + strlen(crlf));
-        if (p.is_last_chunk()) {
-          const char* end_of_data = "0\r\n\r\n";
-          bytes.insert(bytes.end(), end_of_data,
-                       end_of_data + strlen(end_of_data));
-        }
-        m->WriteData(&bytes[0], static_cast<int>(bytes.size()));
-        // If this element is part of a chunk upload then send over information
-        // indicating if this is the last chunk.
-        WriteParam(m, p.is_last_chunk());
-        break;
-      }
       default: {
         DCHECK(p.type() == net::UploadElement::TYPE_FILE);
         WriteParam(m, p.file_path());
@@ -179,21 +158,6 @@ struct ParamTraits<net::UploadElement> {
         if (!m->ReadData(iter, &data, &len))
           return false;
         r->SetToBytes(data, len);
-        break;
-      }
-      case net::UploadElement::TYPE_CHUNK: {
-        const char* data;
-        int len;
-        if (!m->ReadData(iter, &data, &len))
-          return false;
-        r->SetToBytes(data, len);
-        // If this element is part of a chunk upload then we need to explicitly
-        // set the type of the element and whether it is the last chunk.
-        bool is_last_chunk = false;
-        if (!ReadParam(m, iter, &is_last_chunk))
-          return false;
-        r->set_type(net::UploadElement::TYPE_CHUNK);
-        r->set_is_last_chunk(is_last_chunk);
         break;
       }
       default: {
@@ -228,6 +192,7 @@ void ParamTraits<scoped_refptr<net::UploadData> >::Write(Message* m,
     WriteParam(m, *p->elements());
     WriteParam(m, p->identifier());
     WriteParam(m, p->is_chunked());
+    WriteParam(m, p->last_chunk_appended());
   }
 }
 
@@ -248,10 +213,14 @@ bool ParamTraits<scoped_refptr<net::UploadData> >::Read(const Message* m,
   bool is_chunked = false;
   if (!ReadParam(m, iter, &is_chunked))
     return false;
+  bool last_chunk_appended = false;
+  if (!ReadParam(m, iter, &last_chunk_appended))
+    return false;
   *r = new net::UploadData;
   (*r)->swap_elements(&elements);
   (*r)->set_identifier(identifier);
   (*r)->set_is_chunked(is_chunked);
+  (*r)->set_last_chunk_appended(last_chunk_appended);
   return true;
 }
 
