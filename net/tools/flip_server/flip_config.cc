@@ -4,6 +4,8 @@
 
 #include "net/tools/flip_server/flip_config.h"
 
+#include <unistd.h>
+
 namespace net {
 
 FlipAcceptor::FlipAcceptor(enum FlipHandlerType flip_handler_type,
