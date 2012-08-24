@@ -19,6 +19,8 @@ deps = {
         Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@2765c22a732ea18fe1a6cd3d2e29c9f3224438aa',
     'gpu':
         Var('git_url') + '/chromium/src/gpu.git@b66d14e4340be9e843eea450c13baa7682bb70db',
+    'media':
+        Var('git_url') + '/chromium/src/media.git@4a3b612ece2fcc5a788f539d955c67cf5cfe74e7',
     'native_client/tools/perf_expectations':
         Var('git_url') + '/chromium/src/tools/perf_expectations.git@5a2630c1fc344fe96931d1e4d8dd758ec7970da0',
     'net/tools/testserver':
