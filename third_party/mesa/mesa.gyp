@@ -4,9 +4,6 @@
 
 {
   'variables': {
-    # Disable warnings as errors for mesa until they're fixed or disabled.
-    # http://crbug.com/143877
-    'win_third_party_warn_as_error': 'false',
   },
   'target_defaults': {
     'conditions': [
