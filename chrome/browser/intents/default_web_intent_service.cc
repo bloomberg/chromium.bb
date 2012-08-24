@@ -17,12 +17,20 @@ DefaultWebIntentService::DefaultWebIntentService(
       url_pattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern),
       user_date(-1), suppression(0), service_url(srv_service_url) {}
 
+DefaultWebIntentService::DefaultWebIntentService(
+    const string16& srv_scheme,
+    const std::string& srv_service_url)
+    : scheme(srv_scheme),
+      url_pattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern),
+      user_date(-1), suppression(0), service_url(srv_service_url) {}
+
 DefaultWebIntentService::~DefaultWebIntentService() {}
 
 bool DefaultWebIntentService::operator==(
     const DefaultWebIntentService& other) const {
   return action == other.action &&
          type == other.type &&
+         scheme == other.scheme &&
          url_pattern == other.url_pattern &&
          user_date == other.user_date &&
          suppression == other.suppression &&

@@ -1362,6 +1362,7 @@
         'browser/importer/safari_importer_unittest.mm',
         'browser/importer/toolbar_importer_unittest.cc',
         'browser/intents/cws_intents_registry_unittest.cc',
+        'browser/intents/default_web_intent_service_unittest.cc',
         'browser/intents/register_intent_handler_infobar_delegate_unittest.cc',
         'browser/intents/web_intents_registry_unittest.cc',
         'browser/internal_auth_unittest.cc',

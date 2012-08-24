@@ -20,8 +20,18 @@
 // and |suppression| fields are provided for more intricate post-fetch
 // decisions about whether to use a particular default service.
 struct DefaultWebIntentService {
+
+  // Intents are matched to services using two defferent matching
+  // strategies.
+  // 1) |action| + |type|. Examples:
+  //    action = "webintents.org/share", type = "mydomain.com/mytype"
+  //    action = "intents.w3c.org/action/view", type = "image/png"
+  // 2) |scheme| e.g., "mailto", or "web+poodle".
+  // Type for intent service matching. This can be any arbitray type,
+  // including commonly recognized types such as mime-types.
   string16 action;
   string16 type;
+  string16 scheme;
 
   URLPattern url_pattern;
 
@@ -37,9 +47,12 @@ struct DefaultWebIntentService {
 
   DefaultWebIntentService();
   DefaultWebIntentService(
-      const string16& srv_action,
-      const string16& srv_type,
-      const std::string& srv_service_url);
+      const string16& action,
+      const string16& type,
+      const std::string& service_url);
+  DefaultWebIntentService(
+      const string16& scheme,
+      const std::string& service_url);
   ~DefaultWebIntentService();
 
   bool operator==(const DefaultWebIntentService& other) const;
