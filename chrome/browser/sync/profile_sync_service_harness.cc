@@ -196,6 +196,9 @@ bool ProfileSyncServiceHarness::SetupSync(
       synced_datatypes.Equals(syncer::ModelTypeSet::All());
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
+  // Notify ProfileSyncService that we are done with configuration.
+  service_->SetSetupInProgress(false);
+
   // Subscribe sync client to notifications from the backend migrator
   // (possible only after choosing data types).
   if (!TryListeningToMigrationEvents()) {
@@ -237,9 +240,6 @@ bool ProfileSyncServiceHarness::SetupSync(
                   " until SetDecryptionPassphrase is called.";
     return false;
   }
-
-  // Notify ProfileSyncService that we are done with configuration.
-  service_->SetSetupInProgress(false);
 
   // Indicate to the browser that sync setup is complete.
   service()->SetSyncSetupCompleted();

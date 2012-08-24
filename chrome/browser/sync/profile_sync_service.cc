@@ -1331,6 +1331,14 @@ SyncBackendHost* ProfileSyncService::GetBackendForTest() {
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
+  // Don't configure datatypes if the setup UI is still on the screen - this
+  // is to help multi-screen setting UIs (like iOS) where they don't want to
+  // start syncing data until the user is done configuring encryption options,
+  // etc. ReconfigureDatatypeManager() will get called again once the UI calls
+  // SetSetupInProgress(false).
+  if (setup_in_progress_)
+    return;
+
   bool restart = false;
   if (!data_type_manager_.get()) {
     restart = true;
