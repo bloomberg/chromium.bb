@@ -25,11 +25,11 @@
 namespace em = enterprise_management;
 namespace chromeos {
 
-using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::_;
 
 class DeviceSettingsProviderTest: public testing::Test {
 public:
@@ -50,9 +50,6 @@ protected:
   virtual void SetUp() OVERRIDE {
     PrepareEmptyPolicy();
 
-    EXPECT_CALL(*this, SettingChanged(_))
-        .Times(AnyNumber());
-
     EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_))
         .WillRepeatedly(
             MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
@@ -65,15 +62,18 @@ protected:
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserOwner())
         .WillRepeatedly(Return(true));
 
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
     provider_.reset(
         new DeviceSettingsProvider(
             base::Bind(&DeviceSettingsProviderTest::SettingChanged,
                        base::Unretained(this)),
             &signed_settings_helper_));
     provider_->set_ownership_status(OwnershipService::OWNERSHIP_TAKEN);
+
     // To prevent flooding the logs.
     provider_->set_retries_left(1);
     provider_->Reload();
+    Mock::VerifyAndClearExpectations(this);
   }
 
   void PrepareEmptyPolicy() {
@@ -138,6 +138,7 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   EXPECT_TRUE(string_value.empty());
 
   // Sets should succeed though and be readable from the cache.
+  EXPECT_CALL(*this, SettingChanged(kReleaseChannel)).Times(1);
   base::StringValue new_value("stable-channel");
   provider_->Set(kReleaseChannel, new_value);
   // Do one more reload here to make sure we don't flip randomly between stores.
@@ -147,9 +148,11 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   ASSERT_TRUE(saved_value);
   EXPECT_TRUE(saved_value->GetAsString(&string_value));
   ASSERT_EQ("stable-channel", string_value);
+  Mock::VerifyAndClearExpectations(this);
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
+  EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
   // If we are not the owner no sets should work.
   EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserOwner())
       .WillOnce(Return(false));
@@ -164,6 +167,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
+  EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
   base::FundamentalValue value(true);
   provider_->Set(kStatsReportingPref, value);
   // Verify the change has not been applied.

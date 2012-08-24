@@ -43,10 +43,6 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
   void NotifySettingsChanged(const std::string* setting_name);
   void NotifyProxyPrefsChanged();
 
-  // Keeps the track of change caused by the handler to make sure
-  // it does not signal itself again.
-  bool handling_change_;
-
   scoped_ptr<PrefSetObserver> proxy_prefs_;
   base::WeakPtrFactory<CoreChromeOSOptionsHandler> pointer_factory_;
 };

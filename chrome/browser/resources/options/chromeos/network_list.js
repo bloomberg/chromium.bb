@@ -453,12 +453,13 @@ cr.define('options.network', function() {
           entry.tooltip =
               loadTimeData.getString('dataRoamingDisableToggleTooltip');
         } else {
+          var self = this;
           entry.command = function() {
             options.Preferences.setBooleanPref(
                 'cros.signed.data_roaming_enabled',
                 !enableDataRoaming_);
             // Force revalidation of the menu the next time it is displayed.
-            this.menu_ = null;
+            self.menu_ = null;
           };
         }
         addendum.push(entry);
