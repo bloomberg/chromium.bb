@@ -32,8 +32,7 @@ made in recent releases.
     <li>The <a href="manifest.html#sandbox">sandbox manifest entry</a> allows
       you to define some pages within your extension that are automatically run
       in a low-privilege sandbox. This sandbox is not bound by the
-      <a href="manifest.html#content_security_policy"
-      >content_security_policy</a>.
+      <a href="contentSecurityPolicy.html">content_security_policy</a>.
     <li>The <a href="input.ime.html">IME</a> API allows extensions to implement
       <a href="http://en.wikipedia.org/wiki/Input_method">input method
       editors</a> on Chrome OS.
@@ -55,18 +54,18 @@ made in recent releases.
       IDs for each item. This is intended to be used with the new
       <a href="contextMenus.html#event-onClicked"
       >contextMenus.onClicked</a> event, to distinguish the clicked item.
-    <li>The a href="browserAction.html#method-setIcon"
+    <li>The <a href="browserAction.html#method-setIcon"
       >browserAction.setIcon()</a> and
       <a href="pageAction.html#method-setIcon"
       >pageAction.setIcon()</a> methods now accept optional callbacks.
     <li>The <a href="privacy.html#property-websites"
-      >privacy.website</a> namespace now has a <code
+      >privacy.websites</a> namespace now has a <code
       >protectedContentEnabled</code> property.
     <li>The <code>index</code> parameter to the <a href="tabs.html#method-move"
       >tabs.move()</a> method now accepts <code>-1</code> to indicate
       that the tab should be placed at the end.
     <li>The <code>windowId</code> parameter to the
-      <a href="tabs.html#method-highlight">tabs.highlight()</a><
+      <a href="tabs.html#method-highlight">tabs.highlight()</a>
       method is now optional.
     <li><a href="manifest.html#intents">Web intents</a> can now be used to
       register content-type viewers.
@@ -625,4 +624,3 @@ No API or manifest changes worth noting.
       security warning, but now requires user opt-in from the extensions
       management page.
   </ul>
-
