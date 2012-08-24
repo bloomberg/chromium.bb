@@ -386,6 +386,10 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
   gesture_event.globalX = screen_point.x;
   gesture_event.globalY = screen_point.y;
   gesture_event.boundingBox = gesture.details().bounding_box();
+  gesture_event.modifiers =
+      (base::win::IsShiftPressed() ? WebKit::WebGestureEvent::ShiftKey : 0)
+      | (base::win::IsCtrlPressed() ? WebKit::WebGestureEvent::ControlKey : 0)
+      | (base::win::IsAltPressed() ? WebKit::WebGestureEvent::AltKey : 0);
 
   // Copy any event-type specific data.
   switch (gesture.type()) {
@@ -2288,6 +2292,8 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnGestureEvent");
 
+  // Note that as of M22, touch events are enabled by default on Windows.
+  // This code should not be reachable.
   DCHECK(!touch_events_enabled_);
   handled = FALSE;
 
