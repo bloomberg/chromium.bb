@@ -19,18 +19,20 @@ if not env.Bit('bitcode'):
 # ${LIB_DIR} are bitcode and we don't want to pollute the CRX with those.
 arch = env['TARGET_FULLARCH']
 lib_override = ''
+lib_dep = []
 if arch == 'x86-64':
   lib_override = ('--lib_override=%s,${LIB_DIR}/libpnacl_irt_shim.a ' % arch)
+  lib_dep = [env.File('${LIB_DIR}/libpnacl_irt_shim.a')]
 
 output_dir = env.GetPnaclExtensionRootNode().abspath
 
 generated_crx = env.Command(
     # Output (a directory with a bunch of files, like manifest.json)
     env.GetPnaclExtensionNode(),
-    # Inputs -- just the command.  We don't model dependencies here, since they
-    # don't seem to work.
-    ('${SOURCE_ROOT}/native_client/pnacl/' +
-     'pnacl_packaging/pnacl_component_crx_gen.py'),
+    # Inputs -- just the command and any scons files.  We don't model
+    # deps to files in the toolchain dir, since that doesn't seem to work.
+    ['${SOURCE_ROOT}/native_client/pnacl/' +
+     'pnacl_packaging/pnacl_component_crx_gen.py'] + lib_dep,
     # Command.
     ('${PYTHON} ${SOURCES[0]} ' +
      '--dest=' + output_dir + ' ' +
