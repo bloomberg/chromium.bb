@@ -13693,6 +13693,9 @@ Press any key to continue exploring.
       <message name="IDS_LOGIN_REMOVE">
         Remove
       </message>
+      <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
+        Owner has restricted sign-in to the users listed on this screen
+      </message>
       <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
         Click to start
       </message>

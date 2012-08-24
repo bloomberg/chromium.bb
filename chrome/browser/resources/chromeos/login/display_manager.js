@@ -260,6 +260,9 @@ cr.define('cr.ui.login', function() {
      *     e.g. {id: screenId, data: data}.
      */
     showScreen: function(screen) {
+      if (typeof(screen.data) != 'undefined' && screen.data.disableAddUser)
+        DisplayManager.updateAddUserButtonStatus(true);
+
       var screenId = screen.id;
 
       // Show sign-in screen instead of account picker if pod row is empty.
@@ -553,6 +556,16 @@ cr.define('cr.ui.login', function() {
       }
     }
   };
+
+  /**
+   * Disable Add users button if said.
+   * @param {boolean} disable true to disable
+   */
+  DisplayManager.updateAddUserButtonStatus = function(disable) {
+    $('add-user-button').disabled = disable;
+    $('add-user-button').title = disable ?
+        localStrings.getString('disabledAddUserTooltip') : '';
+  }
 
   // Export
   return {

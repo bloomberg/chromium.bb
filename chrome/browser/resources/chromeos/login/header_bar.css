@@ -102,3 +102,7 @@ html[oobe=new] #login-header-bar #add-user-button {
       url('chrome://theme/IDR_ICON_ADD_USER_WHITE') 1x,
       url('chrome://theme/IDR_ICON_ADD_USER_WHITE@2x') 2x);
 }
+
+html[oobe=new] #login-header-bar #add-user-button:disabled {
+  opacity: 0.4;
+}

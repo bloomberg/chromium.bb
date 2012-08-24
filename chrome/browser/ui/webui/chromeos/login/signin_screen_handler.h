@@ -189,6 +189,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Updates authentication extension. Called when device settings that affect
   // sign-in (allow BWSI and allow whitelist) are changed.
   void UpdateAuthExtension();
+  void UpdateAddButtonStatus();
 
   // WebUI message handlers.
   void HandleCompleteLogin(const base::ListValue* args);
@@ -234,6 +235,12 @@ class SigninScreenHandler : public BaseScreenHandler,
   // Decides whether an auth extension should be pre-loaded. If it should,
   // pre-loads it.
   void MaybePreloadAuthExtension();
+
+  // Returns true iff
+  // (i)   log in is restricted to some user list,
+  // (ii)  existing users fit login screen and
+  // (iii) existing users match to restricted list.
+  bool DoRestrictedUsersMatchExistingOnScreen();
 
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_;
