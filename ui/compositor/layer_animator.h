@@ -306,6 +306,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // aborted.
   ObserverList<LayerAnimationObserver> observers_;
 
+  // Set to true in the destructor (if non-NULL). Used to detect deletion while
+  // calling out.
+  bool* destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };
 

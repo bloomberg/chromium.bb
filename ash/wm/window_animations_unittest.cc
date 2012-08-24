@@ -19,7 +19,18 @@ using ui::Layer;
 namespace ash {
 namespace internal {
 
-typedef ash::test::AshTestBase WindowAnimationsTest;
+class WindowAnimationsTest : public ash::test::AshTestBase {
+ public:
+  WindowAnimationsTest() {}
+
+  virtual void TearDown() OVERRIDE {
+    ui::LayerAnimator::set_disable_animations_for_test(true);
+    AshTestBase::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
+};
 
 TEST_F(WindowAnimationsTest, HideShow) {
   scoped_ptr<aura::Window> window(
@@ -140,7 +151,7 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 }
 
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
-  internal::SetDelayedOldLayerDeletionInCrossFadeForTest(true);
+  ui::LayerAnimator::set_disable_animations_for_test(false);
 
   scoped_ptr<Window> window(
       aura::test::CreateTestWindowWithId(0, NULL));
@@ -165,8 +176,9 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
 
-  // Allow the animation observer to delete itself.
-  RunAllPendingInMessageLoop();
+  // Run the animations to completion.
+  old_layer->GetAnimator()->StopAnimating();
+  window->layer()->GetAnimator()->StopAnimating();
 
   // Cross fade to a smaller size, as in a restore animation.
   old_layer = window->layer();
@@ -184,8 +196,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(ui::Transform(), window->layer()->GetTargetTransform());
 
-  RunAllPendingInMessageLoop();
-  internal::SetDelayedOldLayerDeletionInCrossFadeForTest(false);
+  old_layer->GetAnimator()->StopAnimating();
+  window->layer()->GetAnimator()->StopAnimating();
 }
 
 TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {
