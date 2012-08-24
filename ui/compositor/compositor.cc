@@ -153,9 +153,15 @@ Compositor::Compositor(CompositorDelegate* delegate,
   settings.refreshRate =
       test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
 
-  host_.initialize(this, *root_web_layer_, settings);
   root_web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
+#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
+  host_.reset(WebKit::WebLayerTreeView::create(this, *root_web_layer_,
+                                               settings));
+  host_->setSurfaceReady();
+#else
+  host_.initialize(this, *root_web_layer_, settings);
   host_.setSurfaceReady();
+#endif
 }
 
 Compositor::~Compositor() {
@@ -197,7 +203,11 @@ void Compositor::ScheduleDraw() {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
     layout();
+#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
+    host_->composite();
+#else
     host_.composite();
+#endif
   } else if (delegate_) {
     delegate_->ScheduleDraw();
   }
@@ -229,13 +239,21 @@ void Compositor::Draw(bool force_clear) {
   // TODO(nduca): Temporary while compositor calls
   // compositeImmediately() directly.
   layout();
+#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
+  host_->composite();
+#else
   host_.composite();
+#endif
   if (!g_compositor_thread && !swap_posted_)
     NotifyEnd();
 }
 
 void Compositor::ScheduleFullDraw() {
+#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
+  host_->setNeedsRedraw();
+#else
   host_.setNeedsRedraw();
+#endif
 }
 
 bool Compositor::ReadPixels(SkBitmap* bitmap,
@@ -253,7 +271,11 @@ bool Compositor::ReadPixels(SkBitmap* bitmap,
   bitmap->allocPixels();
   SkAutoLockPixels lock_image(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
+#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
+  if (host_->compositeAndReadback(
+#else
   if (host_.compositeAndReadback(
+#endif
           pixels, gfx::Rect(new_origin, bounds_in_pixel.size()))) {
     SwizzleRGBAToBGRAAndFlip(pixels, bounds_in_pixel.size());
     return true;
@@ -266,7 +288,11 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   if (size_in_pixel.IsEmpty() || scale <= 0)
     return;
   size_ = size_in_pixel;
+#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
+  host_->setViewportSize(size_in_pixel);
+#else
   host_.setViewportSize(size_in_pixel);
+#endif
   root_web_layer_->setBounds(size_in_pixel);
 
   if (device_scale_factor_ != scale) {
