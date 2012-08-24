@@ -13,8 +13,6 @@ import shutil
 import subprocess
 import sys
 
-import chromebinaries
-
 
 # Copied from buildbot/buildbot_lib.py
 def TryToCleanContents(path, file_name_filter=lambda fn: True):
@@ -108,6 +106,13 @@ def RunCommand(cmd, cwd, env):
   if retcode != 0:
     sys.stdout.write('\nFailed: %s\n\n' % ' '.join(cmd))
     sys.exit(retcode)
+
+
+def RunTests(name, cmd, nacl_dir, env):
+  sys.stdout.write('\n\nBuilding files needed for %s testing...\n\n' % name)
+  RunCommand(cmd + ['do_not_run_tests=1', '-j8'], nacl_dir, env)
+  sys.stdout.write('\n\nRunning %s tests...\n\n' % name)
+  RunCommand(cmd, nacl_dir, env)
 
 
 def BuildAndTest(options):
@@ -211,21 +216,12 @@ def BuildAndTest(options):
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=%s' % chrome_filename,
   ]
-  if not options.integration_bot:
+  if not options.integration_bot and not options.morenacl_bot:
     cmd.append('disable_flaky_tests=1')
   cmd.append('chrome_browser_tests')
-  # TODO(dschuff): remove this when we pass pyauto tests
-  pnacl_cmd = cmd[:]
-  if options.integration_bot:
-    cmd.append('pyauto_tests')
-
-
-  # Load the nacl DEPS file.
-  # TODO(ncbray): move this out of chromebinaries into a common library?
-  deps = chromebinaries.EvalDepsFile(os.path.join(nacl_dir, 'DEPS'))
 
   # Download the toolchain(s).
-  if options.integration_bot:
+  if options.enable_pnacl:
     pnacl_toolchain = []
   else:
     pnacl_toolchain = ['--no-pnacl']
@@ -236,30 +232,16 @@ def BuildAndTest(options):
 
   CleanTempDir()
 
-  if not options.disable_newlib:
-    sys.stdout.write('\n\nBuilding files needed for nacl-newlib testing...\n\n')
-    RunCommand(cmd + ['do_not_run_tests=1', '-j8'], nacl_dir, env)
-    sys.stdout.write('\n\nRunning nacl-newlib tests...\n\n')
-    RunCommand(cmd, nacl_dir, env)
+  if options.enable_newlib:
+    RunTests('nacl-newlib', cmd, nacl_dir, env)
 
-  if not options.disable_glibc:
-    sys.stdout.write('\n\nBuilding files needed for nacl-glibc testing...\n\n')
-    RunCommand(cmd + ['--nacl_glibc', 'do_not_run_tests=1', '-j8'], nacl_dir,
-               env)
-    sys.stdout.write('\n\nRunning nacl-glibc tests...\n\n')
-    RunCommand(cmd + ['--nacl_glibc'], nacl_dir, env)
+  if options.enable_glibc:
+    RunTests('nacl-glibc', cmd + ['--nacl_glibc'], nacl_dir, env)
 
-  # The chromium bots don't get the pnacl compiler, but the integration
-  # bots do. So, only run pnacl tests on the integration bot.
-  if (not options.disable_pnacl and options.integration_bot):
+  if options.enable_pnacl:
     # TODO(dschuff): remove this when streaming is the default
     os.environ['NACL_STREAMING_TRANSLATION'] = 'true'
-
-    sys.stdout.write('\n\nBuilding files needed for pnacl testing...\n\n')
-    RunCommand(pnacl_cmd + ['bitcode=1', 'do_not_run_tests=1', '-j8'],
-               nacl_dir, env)
-    sys.stdout.write('\n\nRunning pnacl tests...\n\n')
-    RunCommand(pnacl_cmd + ['bitcode=1'], nacl_dir, env)
+    RunTests('pnacl', cmd + ['bitcode=1'], nacl_dir, env)
 
 
 def MakeCommandLineParser():
@@ -268,15 +250,21 @@ def MakeCommandLineParser():
                     help='Debug/Release mode')
   parser.add_option('-j', dest='jobs', default=1, type='int',
                     help='Number of parallel jobs')
+
+  parser.add_option('--enable_newlib', dest='enable_newlib', default=-1,
+                    type='int', help='Run newlib tests?')
+  parser.add_option('--enable_glibc', dest='enable_glibc', default=-1,
+                    type='int', help='Run glibc tests?')
+  parser.add_option('--enable_pnacl', dest='enable_pnacl', default=-1,
+                    type='int', help='Run pnacl tests?')
+
+
+  # Deprecated, but passed to us by a script in the Chrome repo.
+  # Replaced by --enable_glibc=0
   parser.add_option('--disable_glibc', dest='disable_glibc',
                     action='store_true', default=False,
                     help='Do not test using glibc.')
-  parser.add_option('--disable_newlib', dest='disable_newlib',
-                    action='store_true', default=False,
-                    help='Do not test using newlib.')
-  parser.add_option('--disable_pnacl', dest='disable_pnacl',
-                    action='store_true', default=False,
-                    help='Do not test using pnacl.')
+
   parser.add_option('--disable_tests', dest='disable_tests',
                     type='string', default='',
                     help='Comma-separated list of tests to omit')
@@ -286,6 +274,10 @@ def MakeCommandLineParser():
   parser.add_option('--integration_bot', dest='integration_bot',
                     type='int', default=int(is_integration_bot),
                     help='Is this an integration bot?')
+  is_morenacl_bot = 'morenacl' in pwd
+  parser.add_option('--morenacl_bot', dest='morenacl_bot',
+                    type='int', default=int(is_morenacl_bot),
+                    help='Is this a morenacl bot?')
 
   # Not used on the bots, but handy for running the script manually.
   parser.add_option('--bits', dest='bits', action='store',
@@ -303,6 +295,27 @@ def MakeCommandLineParser():
 def Main():
   parser = MakeCommandLineParser()
   options, args = parser.parse_args()
+  if options.integration_bot and options.morenacl_bot:
+    parser.error('ERROR: cannot be both an integration bot and a morenacl bot')
+
+  # Set defaults for enabling newlib.
+  if options.enable_newlib == -1:
+    options.enable_newlib = 1
+
+  # Set defaults for enabling glibc.
+  if options.enable_glibc == -1:
+    if options.integration_bot or options.morenacl_bot:
+      options.enable_glibc = 1
+    else:
+      options.enable_glibc = 0
+
+  # Set defaults for enabling pnacl.
+  if options.enable_pnacl == -1:
+    if options.integration_bot or options.morenacl_bot:
+      options.enable_pnacl = 1
+    else:
+      options.enable_pnacl = 0
+
   if args:
     parser.error('ERROR: invalid argument')
   BuildAndTest(options)
