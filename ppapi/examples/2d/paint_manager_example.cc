@@ -78,9 +78,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
   // PaintManager::Client implementation.
   virtual bool OnPaint(pp::Graphics2D& graphics_2d,
                        const std::vector<pp::Rect>& paint_rects,
-                       const pp::Rect& paint_bounds_unused) {
-    pp::Rect paint_bounds(paint_manager_.GetEffectiveSize());
-
+                       const pp::Rect& paint_bounds) {
     // Make an image just large enough to hold all dirty rects. We won't
     // actually paint all of these pixels below, but rather just the dirty
     // ones. Since image allocation can be somewhat heavyweight, we wouldn't
@@ -98,7 +96,6 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
     // Note that the aggregator used by the paint manager won't give us
     // multiple regions that overlap, so we don't have to worry about double
     // painting in this code.
-/*
     for (size_t i = 0; i < paint_rects.size(); i++) {
       // Since our image is just the invalid region, we need to offset the
       // areas we paint by that much. This is just a light blue background.
@@ -109,7 +106,6 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
                paint_rects[i].height(),
                0xFFAAAAFF);
     }
-    */
 
     // Paint the square black. Because we're lazy, we do this outside of the
     // loop above.
@@ -121,7 +117,7 @@ class MyInstance : public pp::Instance, public pp::PaintManager::Client {
              square.height(),
              0xFF000000);
 
-    graphics_2d.ReplaceContents(&updated_image);
+    graphics_2d.PaintImageData(updated_image, paint_bounds.point());
     return true;
   }
 
