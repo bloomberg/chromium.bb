@@ -252,6 +252,7 @@
         'browser/device_orientation/provider_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/byte_stream_unittest.cc',
+        'browser/download/download_file_manager_unittest.cc',
         'browser/download/download_file_unittest.cc',
         'browser/download/download_id_unittest.cc',
         'browser/download/download_item_impl_unittest.cc',

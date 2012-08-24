@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_item_impl_delegate.h"
-
 #include "base/logging.h"
-#include "content/browser/download/download_file_factory.h"
+#include "content/browser/download/download_item_impl_delegate.h"
 
 class DownloadItemImpl;
 
@@ -27,15 +25,12 @@ void DownloadItemImplDelegate::Detach() {
   --count_;
 }
 
-void DownloadItemImplDelegate::DelegateStart(
-    DownloadItemImpl* download_item) {}
-
-bool DownloadItemImplDelegate::ShouldOpenDownload(DownloadItemImpl* download) {
+bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
+    const FilePath& path) {
   return false;
 }
 
-bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) {
+bool DownloadItemImplDelegate::ShouldOpenDownload(DownloadItemImpl* download) {
   return false;
 }
 

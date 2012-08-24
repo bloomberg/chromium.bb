@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -565,8 +566,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
         // Clean up state that lives on or uses the file_thread_ before
         // it goes away.
-        if (resource_dispatcher_host_.get())
+        if (resource_dispatcher_host_.get()) {
+          resource_dispatcher_host_.get()->download_file_manager()->Shutdown();
           resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
+        }
         break;
       case BrowserThread::PROCESS_LAUNCHER:
         thread_to_stop = &process_launcher_thread_;

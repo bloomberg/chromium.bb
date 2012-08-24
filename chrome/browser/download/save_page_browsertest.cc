@@ -124,60 +124,6 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(DownloadItemCreatedObserver);
 };
 
-class DownloadPersistedObserver : public DownloadItem::Observer {
- public:
-  explicit DownloadPersistedObserver(DownloadItem* item)
-      : waiting_(false), item_(item) {
-    item->AddObserver(this);
-  }
-
-  ~DownloadPersistedObserver() {
-    if (item_)
-      item_->RemoveObserver(this);
-  }
-
-  // Wait for download item to get the persisted bit set.
-  // Note that this class provides no protection against the download
-  // being destroyed between creation and return of WaitForPersisted();
-  // the caller must guarantee that in some other fashion.
-  void WaitForPersisted() {
-    // In combination with OnDownloadDestroyed() below, verify the
-    // above interface contract.
-    DCHECK(item_);
-
-    if (item_->IsPersisted())
-      return;
-
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
-
-    return;
-  }
-
- private:
-  // DownloadItem::Observer
-  void OnDownloadUpdated(DownloadItem* item) {
-    DCHECK_EQ(item, item_);
-
-    if (waiting_ && item->IsPersisted())
-      MessageLoopForUI::current()->Quit();
-  }
-
-  void OnDownloadDestroyed(DownloadItem* item) {
-    if (item != item_)
-      return;
-
-    item_->RemoveObserver(this);
-    item_ = NULL;
-  }
-
-  bool waiting_;
-  DownloadItem* item_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadPersistedObserver);
-};
-
 class SavePageBrowserTest : public InProcessBrowserTest {
  public:
   SavePageBrowserTest() {}
@@ -263,12 +209,11 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
     DownloadPersistentStoreInfoMatch(const GURL& url,
                                      const FilePath& path,
-                                     int64 num_files,
-                                     DownloadItem::DownloadState state)
+                                     int64 num_files)
       : url_(url),
         path_(path),
-        num_files_(num_files),
-        state_(state) {}
+        num_files_(num_files) {
+    }
 
     bool operator() (const DownloadPersistentStoreInfo& info) const {
       return info.url == url_ &&
@@ -278,25 +223,22 @@ class SavePageBrowserTest : public InProcessBrowserTest {
              ((num_files_ < 0) ||
               (info.received_bytes == num_files_)) &&
              info.total_bytes == 0 &&
-             info.state == state_;
+             info.state == DownloadItem::COMPLETE;
     }
 
     GURL url_;
     FilePath path_;
     int64 num_files_;
-    DownloadItem::DownloadState state_;
   };
 
   void CheckDownloadHistory(const GURL& url,
                             const FilePath& path,
-                            int64 num_files,
-                            DownloadItem::DownloadState state) {
+                            int64 num_files) {
     QueryDownloadHistory();
 
     std::vector<DownloadPersistentStoreInfo>::iterator found =
       std::find_if(history_entries_.begin(), history_entries_.end(),
-                   DownloadPersistentStoreInfoMatch(url, path, num_files,
-                                                    state));
+                   DownloadPersistentStoreInfoMatch(url, path, num_files));
 
     if (found == history_entries_.end()) {
       LOG(ERROR) << "Missing url=" << url.spec()
@@ -340,8 +282,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  // a.htm is 1 file.
-  CheckDownloadHistory(url, full_file_name, 1, DownloadItem::COMPLETE);
+  CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -368,13 +309,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   // TODO(rdsmith): Fix DII::Cancel() to actually cancel the save package.
   // Currently it's ignored.
   EXPECT_EQ(url, WaitForSavePackageToFinish());
-  DownloadPersistedObserver(item).WaitForPersisted();
-  // -1 to disable number of files check; we don't update after cancel, and
-  // we don't know when the single file completed in relationship to
-  // the cancel.
-  CheckDownloadHistory(url, full_file_name, -1, DownloadItem::CANCELLED);
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+  CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -421,9 +358,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
   EXPECT_EQ(actual_page_url, WaitForSavePackageToFinish());
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  // a.htm is 1 file.
-  CheckDownloadHistory(actual_page_url, full_file_name, 1,
-                       DownloadItem::COMPLETE);
+  CheckDownloadHistory(actual_page_url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
@@ -443,8 +378,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  // b.htm is 3 files.
-  CheckDownloadHistory(url, full_file_name, 3, DownloadItem::COMPLETE);
+  CheckDownloadHistory(url, full_file_name, 3);  // b.htm is 3 files.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
@@ -477,8 +411,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  // b.htm is 3 files.
-  CheckDownloadHistory(url, full_file_name, 3, DownloadItem::COMPLETE);
+  CheckDownloadHistory(url, full_file_name, 3);  // b.htm is 3 files.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
@@ -504,16 +437,14 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  // a.htm is 1 file.
-  CheckDownloadHistory(url, full_file_name, 1, DownloadItem::COMPLETE);
+  CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_EQ(GetDownloadManager()->RemoveAllDownloads(), 1);
 
   // Should not be in history.
   QueryDownloadHistory();
   EXPECT_EQ(std::find_if(history_entries_.begin(), history_entries_.end(),
-                         DownloadPersistentStoreInfoMatch(
-                             url, full_file_name, 1, DownloadItem::COMPLETE)),
+      DownloadPersistentStoreInfoMatch(url, full_file_name, 1)),
       history_entries_.end());
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -587,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
         content::NotificationService::AllSources());
   chrome::SavePage(browser());
   observer.Wait();
-  CheckDownloadHistory(url, full_file_name, -1, DownloadItem::COMPLETE);
+  CheckDownloadHistory(url, full_file_name, -1);
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   int64 actual_file_size = -1;

@@ -18,6 +18,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_stats.h"
@@ -34,8 +35,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -334,19 +333,12 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
     return;
   }
   wrote_to_completed_file_ = true;
-
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_->IsInProgress()) {
-    download_->SetTotalBytes(size);
-    download_->UpdateProgress(size, size, DownloadItem::kEmptyFileHash);
-    // Must call OnAllDataSaved here in order for
-    // GDataDownloadObserver::ShouldUpload() to return true.
-    // ShouldCompleteDownload() may depend on the gdata uploader to finish.
-    download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
-  }
-
+  download_->SetTotalBytes(size);
+  download_->UpdateProgress(size, size, DownloadItem::kEmptyFileHash);
+  // Must call OnAllDataSaved here in order for
+  // GDataDownloadObserver::ShouldUpload() to return true.
+  // ShouldCompleteDownload() may depend on the gdata uploader to finish.
+  download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
   if (!download_manager_->GetDelegate() ||
       download_manager_->GetDelegate()->ShouldCompleteDownload(
           download_, base::Bind(&SavePackage::Finish, this))) {
@@ -748,17 +740,13 @@ void SavePackage::Finish() {
                  file_manager_,
                  save_ids));
 
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && download_->IsInProgress()) {
-    if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML) {
-      download_->UpdateProgress(all_save_items_count_, CurrentSpeed(), "");
-      download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
-    }
+  if (download_) {
+    if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML)
+      download_->OnAllDataSaved(all_save_items_count_,
+                                DownloadItem::kEmptyFileHash);
     download_->MarkAsComplete();
+    FinalizeDownloadEntry();
   }
-  FinalizeDownloadEntry();
 }
 
 // Called for updating end state.
@@ -778,10 +766,7 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
 
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && download_->IsInProgress())
+  if (download_)
     download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&
@@ -823,10 +808,7 @@ void SavePackage::SaveFailed(const GURL& save_url) {
 
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && download_->IsInProgress())
+  if (download_)
     download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
   if ((save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
@@ -1114,10 +1096,7 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
                            static_cast<int>(frames_list.size());
 
   // We use total bytes as the total number of files we want to save.
-  // Hack to avoid touching download_ after user cancel.
-  // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
-  // with SavePackage flow.
-  if (download_ && download_->IsInProgress())
+  if (download_)
     download_->SetTotalBytes(all_save_items_count_);
 
   if (all_save_items_count_) {
@@ -1386,16 +1365,6 @@ void SavePackage::FinalizeDownloadEntry() {
   DCHECK(download_);
   DCHECK(download_manager_);
 
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-      // We use the DownloadManager as the source as that's a
-      // central SavePackage related location that observers can
-      // get to if they want to wait for notifications for a
-      // particular BrowserContext.  Alternatively, we could make
-      // it come from the WebContents, which would be more specific
-      // but less useful to (current) customers.
-      content::Source<content::DownloadManager>(download_manager_),
-      content::Details<content::DownloadItem>(download_));
   download_manager_->SavePageDownloadFinished(download_);
   StopObservation();
 }
