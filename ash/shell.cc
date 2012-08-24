@@ -683,10 +683,10 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
     CreateSecondaryDisplayWidget(container);
     container->Show();
     root->layout_manager()->OnWindowResized();
-    root->ShowRootWindow();
     aura::client::SetCaptureClient(root, capture_controller_.get());
     aura::client::SetScreenPositionClient(
         root, screen_position_controller_.get());
+    root->ShowRootWindow();
   }
 }
 
