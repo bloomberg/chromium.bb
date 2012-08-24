@@ -75,8 +75,8 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
-ExamplesWindowContents(Operation operation,
-                       content::BrowserContext* browser_context)
+  ExamplesWindowContents(Operation operation,
+                         content::BrowserContext* browser_context)
       : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),

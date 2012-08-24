@@ -5,10 +5,6 @@
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 
-namespace content {
-class BrowserContext;
-}
-
 namespace views {
 namespace examples {
 
@@ -18,8 +14,7 @@ enum Operation {
 };
 
 // Shows a window with the views examples in it.
-void ShowExamplesWindow(Operation operation,
-                        content::BrowserContext* browser_context);
+void ShowExamplesWindow(Operation operation);
 
 }  // namespace examples
 }  // namespace views
