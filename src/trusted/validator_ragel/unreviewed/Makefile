@@ -43,8 +43,11 @@ $(OUT_DIRS):
 $(OBJD)/%.o: $(OBJD)/%.c
 	$(CC) $(CFLAGS) -I. -I$(OBJD) -c $< -o $@
 
-$(OBJD)/%.c: %.rl
+$(OBJD)/%.c: %.rl $(OBJD)/byte_machines.rl
 	$(RAGEL) -G2 -I$(OBJD) $< -o $@
+
+$(OBJD)/byte_machines.rl: byte_machines.py
+	./byte_machines.py -o $@
 
 # Decoder, validator, etc.
 $(OBJD)/decoder_test: \

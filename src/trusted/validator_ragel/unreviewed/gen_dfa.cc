@@ -482,59 +482,6 @@ namespace {
     }
   }
 
-  std::string chartest(std::vector<bool> v) {
-    std::string result;
-    auto delimiter = "( ";
-    for (int c = 0x00; c <= 0xff; ++c) {
-      if (v[c]) {
-        char buf[10];
-        snprintf(buf, sizeof(buf), "%s0x%02x", delimiter, c);
-        result += buf;
-        delimiter = " | ";
-      }
-    }
-    return result + " )";
-  }
-  struct comparator {
-    const std::vector<bool> &v;
-    const int n;
-    comparator(const std::vector<bool> &v_, const int n_) : v(v_), n(n_) { }
-    #define DECLARE_OPERATOR(x) \
-      const std::vector<bool> operator x (int m) { \
-        std::vector<bool> r(256, false); \
-        for (int c = 0x00; c <= 0xff; ++c) { \
-          if (v[c]) { \
-            r[c] = (c & n) x m; \
-          } \
-        } \
-        return r; \
-      }
-    DECLARE_OPERATOR(==)
-    DECLARE_OPERATOR(!=)
-    DECLARE_OPERATOR(<=)
-    DECLARE_OPERATOR(>=)
-    DECLARE_OPERATOR(<)
-    DECLARE_OPERATOR(>)
-    #undef DECLARE_OPERATOR
-  };
-  comparator operator& (const std::vector<bool> &v, int n) {
-    return comparator(v, n);
-  }
-  #define DECLARE_OPERATOR(x) \
-    const std::vector<bool> operator x (const std::vector<bool> &v1, \
-                                        const std::vector<bool> &v2) { \
-      std::vector<bool> r(256); \
-      for (int c = 0x00; c <= 0xff; ++c) { \
-        r[c] = (v1[c] x v2[c]); \
-      } \
-      return r; \
-    }
-  DECLARE_OPERATOR(&&)
-  DECLARE_OPERATOR(||)
-  #undef DECLARE_OPERATOR
-  #define chartest(x) (chartest(x).c_str())
-  std::vector<bool> c(256, true);
-
   const std::string& select_name(
       const std::map<std::string, size_t>::value_type& p) {
     return p.first;
@@ -629,6 +576,8 @@ namespace {
   }
 
   void print_common_decoding(void) {
+    fprintf(out_file,
+      "  include byte_machine \"byte_machines.rl\";\n");
     if (enabled(Actions::kRelOperandAction)) {
       fprintf(out_file, "  action rel8_operand {\n"
 "    SET_OPERAND_NAME(0, JMP_TO);\n"
@@ -843,7 +792,7 @@ namespace {
     fprintf(out_file, "\n"
 "  # Immediates.\n"
 "  imm2 = %s @imm2_operand;\n"
-"", ia32_mode ? chartest((c & 0x8c) == 0x00) : chartest((c & 0x0c) == 0x00));
+"", ia32_mode ? "b_0xxx_00xx" : "b_xxxx_00xx");
     fprintf(out_file, "  imm8 = any %s;\n"
 "  imm16 = any{2} %s;\n"
 "  imm32 = any{4} %s;\n"
@@ -874,35 +823,34 @@ namespace {
 "                          (%4$s . any%1$s . disp8) |\n"
 "                          (%5$s . any%1$s . disp32);\n"
 "", enabled(Actions::kParseOperands) ? " @modrm_parse_sib" : "",
-       chartest((c & 0xC0) == 0    && (c & 0x07) == 0x04),
-       chartest((c & 0x07) != 0x05),
-       chartest((c & 0xC0) == 0x40 && (c & 0x07) == 0x04),
-       chartest((c & 0xC0) == 0x80 && (c & 0x07) == 0x04));
+       "b_00_xxx_100",
+       "(any - b_xx_xxx_101)",
+       "b_01_xxx_100",
+       "b_10_xxx_100");
     fprintf(out_file, "  operand_sib_pure_index = %2$s . %3$s%1$s . disp32;\n"
 "", enabled(Actions::kParseOperands) ? " @modrm_pure_index" : "",
-       chartest((c & 0xC0) == 0    && (c & 0x07) == 0x04),
-       chartest((c & 0x07) == 0x05));
+       "b_00_xxx_100",
+       "b_xx_xxx_101");
     fprintf(out_file, "  operand_disp  = (%2$s%1$s . disp8) |\n"
 "                 (%3$s%1$s . disp32);\n"
 "", enabled(Actions::kParseOperands) ? " @modrm_base_disp" : "",
-       chartest((c & 0xC0) == 0x40 && (c & 0x07) != 0x04),
-       chartest((c & 0xC0) == 0x80 && (c & 0x07) != 0x04));
+       "(b_01_xxx_xxx - b_xx_xxx_100)",
+       "(b_10_xxx_xxx - b_xx_xxx_100)");
     fprintf(out_file, "  # It's pure disp32 in IA32 case, "
             "but offset(%%rip) in x86-64 case.\n"
 "  operand_rip = %2$s%1$s . disp32;\n"
 "", enabled(Actions::kParseOperands) ?
                            ia32_mode ? " @modrm_pure_disp" : " @modrm_rip" : "",
-       chartest((c & 0xC0) == 0   && (c & 0x07) == 0x05));
+       "b_00_xxx_101");
     fprintf(out_file, "  single_register_memory = %2$s%1$s;\n"
 "", enabled(Actions::kParseOperands) ? " @modrm_only_base" : "",
-       chartest((c & 0xC0) == 0   && (c & 0x07) != 0x04 &&
-                                     (c & 0x07) != 0x05));
+       "(b_00_xxx_xxx - b_xx_xxx_100 - b_xx_xxx_101)");
     fprintf(out_file, "  modrm_memory = (operand_disp | operand_rip |\n"
 "                 operand_sib_base_index | operand_sib_pure_index |\n"
 "                 single_register_memory)%1$s;\n"
 "  modrm_registers = %2$s;\n"
 "", enabled(Actions::kCheckAccess) ? " @check_access" : "",
-       chartest((c & 0xC0) == 0xC0));
+       "b_11_xxx_xxx");
     fprintf(out_file, "\n"
 "  # Operations selected using opcode in ModR/M.\n"
 "  opcode_0 = %s;\n"
@@ -918,17 +866,17 @@ namespace {
 "  # This is used to move operand name detection after first byte of ModRM.\n"
 "  opcode_m = %s;\n"
 "  opcode_r = %s;\n"
-"", chartest((c & 0x38) == 0x00),
-       chartest((c & 0x38) == 0x08),
-       chartest((c & 0x38) == 0x10),
-       chartest((c & 0x38) == 0x18),
-       chartest((c & 0x38) == 0x20),
-       chartest((c & 0x38) == 0x28),
-       chartest((c & 0x38) == 0x30),
-       chartest((c & 0x38) == 0x38),
-       chartest((c & 0x38) < 0x30),
-       chartest((c & 0xc0) != 0xc0),
-       chartest((c & 0xc0) == 0xc0));
+"", "b_xx_000_xxx",
+    "b_xx_001_xxx",
+    "b_xx_010_xxx",
+    "b_xx_011_xxx",
+    "b_xx_100_xxx",
+    "b_xx_101_xxx",
+    "b_xx_110_xxx",
+    "b_xx_111_xxx",
+    "(any - b_xx_110_xxx - b_xx_111_xxx)",
+    "(any - b_11_xxx_xxx)",
+    "b_11_xxx_xxx");
     fprintf(out_file, "\n"
 "  # Prefixes.\n"
 "  data16 = 0x66 @data16_prefix;\n"
@@ -964,21 +912,21 @@ namespace {
 "  REX_RXB  = %15$s%1$s;\n"
 "  REX_WRXB = %16$s%1$s;\n"
 "", enabled(Actions::kRexPrefix) ? " @rex_prefix" : "",
-       chartest((c & 0xf7) == 0x40),
-       chartest((c & 0xfb) == 0x40),
-       chartest((c & 0xfd) == 0x40),
-       chartest((c & 0xfe) == 0x40),
-       chartest((c & 0xf3) == 0x40),
-       chartest((c & 0xf5) == 0x40),
-       chartest((c & 0xf6) == 0x40),
-       chartest((c & 0xf9) == 0x40),
-       chartest((c & 0xfa) == 0x40),
-       chartest((c & 0xfc) == 0x40),
-       chartest((c & 0xf1) == 0x40),
-       chartest((c & 0xf2) == 0x40),
-       chartest((c & 0xf4) == 0x40),
-       chartest((c & 0xf8) == 0x40),
-       chartest((c & 0xf0) == 0x40));
+       "b_0100_x000",
+       "b_0100_0x00",
+       "b_0100_00x0",
+       "b_0100_000x",
+       "b_0100_xx00",
+       "b_0100_x0x0",
+       "b_0100_x00x",
+       "b_0100_0xx0",
+       "b_0100_0x0x",
+       "b_0100_00xx",
+       "b_0100_xxx0",
+       "b_0100_xx0x",
+       "b_0100_x0xx",
+       "b_0100_0xxx",
+       "b_0100_xxxx");
     fprintf(out_file, "\n"
 "  rex_w    = REX_W    - REX_NONE;\n"
 "  rex_r    = REX_R    - REX_NONE;\n"
@@ -995,22 +943,23 @@ namespace {
 "  rex_wxb  = REX_WXB  - REX_NONE;\n"
 "  rex_rxb  = REX_RXB  - REX_NONE;\n"
 "  rex_wrxb = REX_WRXB - REX_NONE;\n"
-"  REXW_NONE= 0x48%1$s;\n"
-"  REXW_R   = %2$s%1$s;\n"
-"  REXW_X   = %3$s%1$s;\n"
-"  REXW_B   = %4$s%1$s;\n"
-"  REXW_RX  = %5$s%1$s;\n"
-"  REXW_RB  = %6$s%1$s;\n"
-"  REXW_XB  = %7$s%1$s;\n"
-"  REXW_RXB = %8$s%1$s;\n"
+"  REXW_NONE= %2$s%1$s;\n"
+"  REXW_R   = %3$s%1$s;\n"
+"  REXW_X   = %4$s%1$s;\n"
+"  REXW_B   = %5$s%1$s;\n"
+"  REXW_RX  = %6$s%1$s;\n"
+"  REXW_RB  = %7$s%1$s;\n"
+"  REXW_XB  = %8$s%1$s;\n"
+"  REXW_RXB = %9$s%1$s;\n"
 "", enabled(Actions::kRexPrefix) ? " @rex_prefix" : "",
-       chartest((c & 0xfb) == 0x48),
-       chartest((c & 0xfd) == 0x48),
-       chartest((c & 0xfe) == 0x48),
-       chartest((c & 0xf9) == 0x48),
-       chartest((c & 0xfa) == 0x48),
-       chartest((c & 0xfc) == 0x48),
-       chartest((c & 0xf8) == 0x48));
+       "b_0100_1000",
+       "b_0100_1x00",
+       "b_0100_10x0",
+       "b_0100_100x",
+       "b_0100_1xx0",
+       "b_0100_1x0x",
+       "b_0100_10xx",
+       "b_0100_1xxx");
     if (enabled(Actions::kVexPrefix)) {
       if (ia32_mode) {
         fprintf(out_file, "\n"
@@ -1043,41 +992,41 @@ namespace {
 "");
       }
     }
-    typedef std::pair<const char *, int> T;
+    typedef std::pair<const char *, const char*> T;
     static const T vex_fields[] = {
-      T { "NONE",       0xe0 },
-      T { "R",          0x60 },
-      T { "X",          0xa0 },
-      T { "B",          0xc0 },
-      T { "RX",         0x20 },
-      T { "RB",         0x40 },
-      T { "XB",         0x80 },
-      T { "RXB",        0x00 }
+      T { "NONE",       "b_111_xxxxx" },
+      T { "R",          "b_x11_xxxxx" },
+      T { "X",          "b_1x1_xxxxx" },
+      T { "B",          "b_11x_xxxxx" },
+      T { "RX",         "b_xx1_xxxxx" },
+      T { "RB",         "b_x1x_xxxxx" },
+      T { "XB",         "b_1xx_xxxxx" },
+      T { "RXB",        "b_xxx_xxxxx" }
     };
     for (size_t vex_it = 0; vex_it < arraysize(vex_fields); ++vex_it) {
       auto vex = vex_fields[vex_it];
       fprintf(out_file, "  VEX_%2$s = %3$s%1$s;\n"
 "", enabled(Actions::kVexPrefix) && !ia32_mode ? " @vex_prefix2" : "",
-       vex.first, chartest((c & vex.second) == vex.second));
+       vex.first, vex.second);
     }
     static const T vex_map[] = {
-      T { "01",         1       },
-      T { "02",         2       },
-      T { "03",         3       },
-      T { "08",         8       },
-      T { "09",         9       },
-      T { "0A",         10      },
-      T { "00001",      1       },
-      T { "00010",      2       },
-      T { "00011",      3       },
-      T { "01000",      8       },
-      T { "01001",      9       },
-      T { "01010",      10      },
+      T { "01",         "b_xxx_00001" },
+      T { "02",         "b_xxx_00010" },
+      T { "03",         "b_xxx_00011" },
+      T { "08",         "b_xxx_01000" },
+      T { "09",         "b_xxx_01001" },
+      T { "0A",         "b_xxx_01010" },
+      T { "00001",      "b_xxx_00001" },
+      T { "00010",      "b_xxx_00010" },
+      T { "00011",      "b_xxx_00011" },
+      T { "01000",      "b_xxx_01000" },
+      T { "01001",      "b_xxx_01001" },
+      T { "01010",      "b_xxx_01010" },
     };
     for (size_t vex_it = 0; vex_it < arraysize(vex_map); ++vex_it) {
       auto vex = vex_map[vex_it];
       fprintf(out_file, "  VEX_map%1$s = %2$s;\n"
-"", vex.first, chartest((c & 0x1f) == vex.second));
+"", vex.first, vex.second);
     }
     if (enabled(Actions::kOpcode)) {
       fprintf(out_file, "\n"
@@ -2619,9 +2568,9 @@ namespace {
         if (operand->source == 'L') {
           if (operands.size() == 4) {
             if (ia32_mode) {
-              fprintf(out_file, " %s", chartest((c & 0x8f) == 0x00));
+              fprintf(out_file, " b_0xxx_0000");
             } else {
-              fprintf(out_file, " %s", chartest((c & 0x0f) == 0x00));
+              fprintf(out_file, " b_xxxx_0000");
             }
           }
           if (operand->enabled && enabled(Actions::kParseOperands)) {

@@ -144,7 +144,9 @@ if generate:
     c_full_filename = '%s/%s' % (val_src_dir, c_file)
     env.Command(
         target=c_file,
-        source=['unreviewed/%s_x86_%s.rl' % (automaton, bits), rl_file],
+        source=['unreviewed/%s_x86_%s.rl' % (automaton, bits),
+                '%s/byte_machines.rl' % rl_src_dir,
+                rl_file],
         action=['%s %s -LL -I%s ${SOURCES[0]} -o ${TARGET}' % (
             ragel_binary, ragel_flags, rl_src_dir)]
     )
@@ -203,6 +205,13 @@ if generate:
       '-GT2')
 
   automata = list(decoder32 + validator32 + decoder64 + validator64)
+
+  # Gnerate byte_machines.rl from byte_machines.py
+  env.Command(
+      target='byte_machines.rl',
+      source=['unreviewed/byte_machines.py'],
+      action=('${PYTHON} ${SOURCES[0]} -o ${TARGET}')
+  )
 
   # Prepair 'dfacheckdecoder' test.
   #
