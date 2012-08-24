@@ -339,12 +339,6 @@ WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
   return SimpleDomStorageSystem::instance().CreateSessionStorageNamespace();
 }
 
-WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
-    const WebGraphicsContext3D::Attributes& attributes) {
-  return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-      attributes, true);
-}
-
 void TestWebViewDelegate::didAddMessageToConsole(
     const WebConsoleMessage& message, const WebString& source_name,
     unsigned source_line) {

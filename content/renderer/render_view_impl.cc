@@ -3629,7 +3629,7 @@ WebGraphicsContext3D* RenderViewImpl::CreateGraphicsContext3D(
     if (webview()->mainFrame())
       url = GURL(webview()->mainFrame()->document().url());
     else
-      url = GURL("chrome://gpu/RenderViewImpl::createGraphicsContext3D");
+      url = GURL("chrome://gpu/RenderViewImpl::CreateGraphicsContext3D");
 
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
@@ -5344,7 +5344,7 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
 
 bool RenderViewImpl::SupportsAsynchronousSwapBuffers() {
   // Contexts using the command buffer support asynchronous swapbuffers.
-  // See RenderViewImpl::createGraphicsContext3D().
+  // See RenderViewImpl::createOutputSurface().
   if (WebWidgetHandlesCompositorScheduling() ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL))
     return false;

@@ -88,8 +88,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       const WebKit::WebPopupMenuInfo& info);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
-  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);

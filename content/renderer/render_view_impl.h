@@ -1468,7 +1468,7 @@ class RenderViewImpl : public RenderWidget,
   // This graphics context is initialized once GuestReady() is called.
   WebGraphicsContext3DCommandBufferImpl* guest_uninitialized_context_;
 
-  // These are the attributes originally passed into createGraphicsContext3D
+  // These are the attributes originally passed into createOutputSurface
   // before the guest_to_embedder_channel was ready.
   WebKit::WebGraphicsContext3D::Attributes guest_attributes_;
 
