@@ -22,8 +22,14 @@
 # define FORCEINLINE __inline __attribute__ ((always_inline))
 #endif
 
+/* Maximum set of R-DFA allowable CPUID features.  */
+extern const NaClCPUFeaturesX86 validator_cpuid_features;
+
 /* Macroses to suppport CPUID handling.  */
 #define SET_CPU_FEATURE(F) \
+  if (!(F##_Allowed)) { \
+    instruction_info_collected |= UNRECOGNIZED_INSTRUCTION; \
+  } \
   if (!(F)) { \
     instruction_info_collected |= CPUID_UNSUPPORTED_INSTRUCTION; \
   }
@@ -82,6 +88,102 @@
 #define CPUFeature_TZCNT    TRUE
 #define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
 #define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
+
+#define CPUFeature_3DNOW_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_3DNOW]
+/*
+ * AMD documentation claims it's always available if CPUFeature_LM is present,
+ * But Intel documentation does not even mention it!
+ * Keep it as 3DNow! instruction.
+ */
+#define CPUFeature_3DPRFTCH_Allowed \
+  CPUFeature_3DNOW_Allowed || CPUFeature_PRE_Allowed
+#define CPUFeature_AES_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_AES]
+#define CPUFeature_AESAVX_Allowed \
+  CPUFeature_AES_Allowed && CPUFeature_AVX_Allowed
+#define CPUFeature_AVX_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_AVX]
+#define CPUFeature_BMI1_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_BMI1]
+#define CPUFeature_CLFLUSH_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_CLFLUSH]
+#define CPUFeature_CLMUL_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_CLMUL]
+#define CPUFeature_CLMULAVX_Allowed \
+  CPUFeature_CLMUL_Allowed && CPUFeature_AVX_Allowed
+#define CPUFeature_CMOV_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_CMOV]
+#define CPUFeature_CMOVx87_Allowed \
+  CPUFeature_CMOV_Allowed && CPUFeature_x87_Allowed
+#define CPUFeature_CX16_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_CX16]
+#define CPUFeature_CX8_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_CX8]
+#define CPUFeature_E3DNOW_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_E3DNOW]
+#define CPUFeature_EMMX_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_EMMX]
+#define CPUFeature_EMMXSSE_Allowed \
+  CPUFeature_EMMX_Allowed || CPUFeature_SSE_Allowed
+#define CPUFeature_F16C_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_F16C]
+#define CPUFeature_FMA_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_FMA]
+#define CPUFeature_FMA4_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_FMA4]
+#define CPUFeature_FXSR_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_FXSR]
+#define CPUFeature_LAHF_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_LAHF]
+#define CPUFeature_LM_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_LM]
+#define CPUFeature_LWP_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_LWP]
+/*
+ * We allow lzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_LZCNT_Allowed TRUE
+#define CPUFeature_MMX_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_MMX]
+#define CPUFeature_MON_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_MON]
+#define CPUFeature_MOVBE_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_MOVBE]
+#define CPUFeature_OSXSAVE_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_OSXSAVE]
+#define CPUFeature_POPCNT_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_POPCNT]
+#define CPUFeature_PRE_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_PRE]
+#define CPUFeature_SSE_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSE]
+#define CPUFeature_SSE2_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSE2]
+#define CPUFeature_SSE3_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSE3]
+#define CPUFeature_SSE41_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSE41]
+#define CPUFeature_SSE42_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSE42]
+#define CPUFeature_SSE4A_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSE4A]
+#define CPUFeature_SSSE3_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_SSSE3]
+#define CPUFeature_TBM_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_TBM]
+#define CPUFeature_TSC_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_TSC]
+/*
+ * We allow tzcnt unconditionally
+ * See http://code.google.com/p/nativeclient/issues/detail?id=2869
+ */
+#define CPUFeature_TZCNT_Allowed TRUE
+#define CPUFeature_x87_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_x87]
+#define CPUFeature_XOP_Allowed \
+  validator_cpuid_features.data[NaClCPUFeature_XOP]
 
 /* Remember some information about instruction for further processing.  */
 #define GET_REX_PREFIX() rex_prefix

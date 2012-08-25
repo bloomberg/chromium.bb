@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -424,8 +425,10 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
     valid_targets = BitmapAllocate(size);
     jump_dests = BitmapAllocate(size);
     if (!valid_targets || !jump_dests) {
-      result = FALSE;
-      goto error_detected;
+      free(jump_dests);
+      free(valid_targets);
+      errno = ENOMEM;
+      return FALSE;
     }
   }
 
@@ -471,11 +474,11 @@ Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
   result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
                                       user_callback, callback_data);
 
-error_detected:
   /* We only use malloc for a large code sequences  */
   if (size > sizeof(bitmap_word)) {
     free(jump_dests);
     free(valid_targets);
   }
+  if (!result) errno = EINVAL;
   return result;
 }

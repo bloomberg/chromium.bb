@@ -33,10 +33,14 @@ INST_DEFS = [
 # Generate 32 and 64 bit versions of decoders and validators.  Both libraries
 # are used for command-line decoder and validator those detect specific
 # architecture of the ELF file provided.
+glue_files = ['unreviewed/validator_features_all.c',
+              'unreviewed/validator_features_validator.c']
 env.ComponentLibrary('dfa_validate_x86_32',
-                     ['gen/validator_x86_32.c'])
+                     ['gen/validator_x86_32.c'] +
+                      (glue_files if env.get('TARGET_SUBARCH') == '32' else []))
 env.ComponentLibrary('dfa_validate_x86_64',
-                     ['gen/validator_x86_64.c'])
+                     ['gen/validator_x86_64.c'] +
+                      (glue_files if env.get('TARGET_SUBARCH') == '64' else []))
 env.ComponentLibrary('dfa_decode_x86_32',
                      ['gen/decoder_x86_32.c'])
 env.ComponentLibrary('dfa_decode_x86_64',

@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,7 +14,7 @@
 #include "native_client/src/include/elf64.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
+#include "native_client/src/trusted/validator_ragel/unreviewed/validator_internal.h"
 
 /* This is a copy of NaClLog from shared/platform/nacl_log.c to avoid
  * linking in code in NaCl shared code in the unreviewed/Makefile and be able to
@@ -30,86 +31,6 @@ void NaClLog(int detail_level, char const  *fmt, ...) {
   vfprintf(stderr, fmt, ap);
   exit(1);
 }
-
-/* Emulate features of old validator to simplify testing */
-NaClCPUFeaturesX86 old_validator_features = { { 1, 1 }, {
-  1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
-  0, /* NaClCPUFeature_AES */
-  0, /* NaClCPUFeature_AVX */
-  0, /* NaClCPUFeature_BMI1 */
-  1, /* NaClCPUFeature_CLFLUSH */
-  0, /* NaClCPUFeature_CLMUL */
-  1, /* NaClCPUFeature_CMOV */
-  1, /* NaClCPUFeature_CX16 */
-  1, /* NaClCPUFeature_CX8 */
-  1, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
-  1, /* NaClCPUFeature_EMMX */   /* AMD-specific */
-  0, /* NaClCPUFeature_F16C */
-  0, /* NaClCPUFeature_FMA */
-  0, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
-  1, /* NaClCPUFeature_FXSR */
-  0, /* NaClCPUFeature_LAHF */
-  0, /* NaClCPUFeature_LM */
-  0, /* NaClCPUFeature_LWP */ /* AMD-specific */
-  1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
-  1, /* NaClCPUFeature_MMX */
-  1, /* NaClCPUFeature_MON */
-  1, /* NaClCPUFeature_MOVBE */
-  1, /* NaClCPUFeature_OSXSAVE */
-  1, /* NaClCPUFeature_POPCNT */
-  0, /* NaClCPUFeature_PRE */ /* AMD-specific */
-  1, /* NaClCPUFeature_SSE */
-  1, /* NaClCPUFeature_SSE2 */
-  1, /* NaClCPUFeature_SSE3 */
-  1, /* NaClCPUFeature_SSE41 */
-  1, /* NaClCPUFeature_SSE42 */
-  1, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
-  1, /* NaClCPUFeature_SSSE3 */
-  0, /* NaClCPUFeature_TBM */ /* AMD-specific */
-  1, /* NaClCPUFeature_TSC */
-  1, /* NaClCPUFeature_x87 */
-  0  /* NaClCPUFeature_XOP */ /* AMD-specific */
-} };
-
-/* All supported features are enabled */
-NaClCPUFeaturesX86 full_validator_features = { { 1, 1 }, {
-  1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
-  1, /* NaClCPUFeature_AES */
-  1, /* NaClCPUFeature_AVX */
-  1, /* NaClCPUFeature_BMI1 */
-  1, /* NaClCPUFeature_CLFLUSH */
-  1, /* NaClCPUFeature_CLMUL */
-  1, /* NaClCPUFeature_CMOV */
-  1, /* NaClCPUFeature_CX16 */
-  1, /* NaClCPUFeature_CX8 */
-  1, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
-  1, /* NaClCPUFeature_EMMX */   /* AMD-specific */
-  1, /* NaClCPUFeature_F16C */
-  1, /* NaClCPUFeature_FMA */
-  1, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
-  1, /* NaClCPUFeature_FXSR */
-  1, /* NaClCPUFeature_LAHF */
-  1, /* NaClCPUFeature_LM */
-  1, /* NaClCPUFeature_LWP */ /* AMD-specific */
-  1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
-  1, /* NaClCPUFeature_MMX */
-  1, /* NaClCPUFeature_MON */
-  1, /* NaClCPUFeature_MOVBE */
-  1, /* NaClCPUFeature_OSXSAVE */
-  1, /* NaClCPUFeature_POPCNT */
-  1, /* NaClCPUFeature_PRE */ /* AMD-specific */
-  1, /* NaClCPUFeature_SSE */
-  1, /* NaClCPUFeature_SSE2 */
-  1, /* NaClCPUFeature_SSE3 */
-  1, /* NaClCPUFeature_SSE41 */
-  1, /* NaClCPUFeature_SSE42 */
-  1, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
-  1, /* NaClCPUFeature_SSSE3 */
-  1, /* NaClCPUFeature_TBM */ /* AMD-specific */
-  1, /* NaClCPUFeature_TSC */
-  1, /* NaClCPUFeature_x87 */
-  1  /* NaClCPUFeature_XOP */ /* AMD-specific */
-} };
 
 static void CheckBounds(unsigned char *data, size_t data_size,
                         void *ptr, size_t inside_size) {
@@ -322,8 +243,8 @@ int main(int argc, char **argv) {
     const char *filename = argv[index];
     Bool rc = ValidateFile(filename, repeat_count,
                           options,
-                          use_old_features ? &old_validator_features :
-                                             &full_validator_features);
+                          use_old_features ? &validator_cpuid_features :
+                                             &full_cpuid_features);
     if (!rc) {
       printf("file '%s' can not be fully validated\n", filename);
       return 1;

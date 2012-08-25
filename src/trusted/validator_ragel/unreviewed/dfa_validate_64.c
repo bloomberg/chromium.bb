@@ -6,6 +6,7 @@
 
 /* Implement the Validator API for the x86-64 architecture. */
 #include <assert.h>
+#include <errno.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -31,7 +32,12 @@ static Bool ProcessError(const uint8_t *begin, const uint8_t *end,
   UNREFERENCED_PARAMETER(begin);
   UNREFERENCED_PARAMETER(end);
   UNREFERENCED_PARAMETER(info);
-  UNREFERENCED_PARAMETER(callback_data);
+
+  /* Instruction is unsupported by CPU, but otherwise valid.  */
+  if ((info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION) {
+    *((enum NaClValidationStatus*)callback_data) =
+                                            NaClValidationFailedCpuNotSupported;
+  }
   return FALSE;
 }
 
@@ -39,7 +45,8 @@ static Bool StubOutCPUUnsupportedInstruction(const uint8_t *begin,
     const uint8_t *end, uint32_t info, void *callback_data) {
   UNREFERENCED_PARAMETER(callback_data);
 
-  if (info & CPUID_UNSUPPORTED_INSTRUCTION) {
+  /* Stubout unsupported by CPU, but otherwise valid instructions.  */
+  if ((info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION) {
     memset((uint8_t *)begin, NACL_HALT_OPCODE, end - begin + 1);
     return TRUE;
   } else {
@@ -55,6 +62,7 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
     int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidationCache *cache) {
+  enum NaClValidationStatus status = NaClValidationFailed;
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(cache);
 
@@ -69,10 +77,12 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
                          readonly_text ?
                            ProcessError :
                            StubOutCPUUnsupportedInstruction,
-                         NULL))
+                         &status))
     return NaClValidationSucceeded;
+  else if (errno == ENOMEM)
+    return NaClValidationFailedOutOfMemory;
   else
-    return NaClValidationFailed;
+    return status;
 }
 
 
@@ -99,11 +109,12 @@ static Bool ProcessCodeCopyInstruction(const uint8_t *begin_new,
   /* Sanity check: instruction must be shorter then 15 bytes.  */
   CHECK(end_new - begin_new < MAX_INSTRUCTION_LENGTH);
 
-  return data->copy_func((uint8_t *)begin_new + data->delta,
-                         info & CPUID_UNSUPPORTED_INSTRUCTION ?
-                           (uint8_t *)kStubOutMem :
-                           (uint8_t *)begin_new,
-                         (uint8_t)(end_new - begin_new + 1));
+  return data->copy_func(
+      (uint8_t *)begin_new + data->delta,
+      (info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION ?
+        (uint8_t *)kStubOutMem :
+        (uint8_t *)begin_new,
+      (uint8_t)(end_new - begin_new + 1));
 }
 
 static NaClValidationStatus ValidatorCodeCopy_x86_64(
@@ -128,6 +139,8 @@ static NaClValidationStatus ValidatorCodeCopy_x86_64(
                          cpu_features, ProcessCodeCopyInstruction,
                          &callback_data))
     return NaClValidationSucceeded;
+  else if (errno == ENOMEM)
+    return NaClValidationFailedOutOfMemory;
   else
     return NaClValidationFailed;
 }
@@ -144,7 +157,7 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
   CHECK(instruction_length <= MAX_INSTRUCTION_LENGTH);
 
   /* Unsupported instruction must have been replaced with HLTs.  */
-  if (info & CPUID_UNSUPPORTED_INSTRUCTION) {
+  if ((info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION) {
     if (memcmp(kStubOutMem, begin_old, instruction_length) == 0) {
       return TRUE;
     } else {
@@ -201,6 +214,8 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_64(
                          cpu_features, ProcessCodeReplacementInstruction,
                          (void *)(data_old - data_new)))
     return NaClValidationSucceeded;
+  else if (errno == ENOMEM)
+    return NaClValidationFailedOutOfMemory;
   else
     return NaClValidationFailed;
 }

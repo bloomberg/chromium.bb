@@ -134,6 +134,9 @@ typedef void (*process_instruction_func) (const uint8_t *begin,
 typedef void (*process_decoding_error_func) (const uint8_t *ptr,
                                              void *userdata);
 
+/* All possible CPUID features enabled.  */
+extern const NaClCPUFeaturesX86 full_cpuid_features;
+
 int DecodeChunkAMD64(const uint8_t *data, size_t size,
                      process_instruction_func process_instruction,
                      process_decoding_error_func process_error, void *userdata);
