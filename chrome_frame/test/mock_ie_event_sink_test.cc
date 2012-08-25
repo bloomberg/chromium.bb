@@ -178,8 +178,9 @@ void MockIEEventSink::ExpectDocumentReadystate(int ready_state) {
 }
 
 // MockIEEventSinkTest methods
-MockIEEventSinkTest::MockIEEventSinkTest() : server_mock_(1337, L"127.0.0.1",
-                                                          GetTestDataFolder()) {
+MockIEEventSinkTest::MockIEEventSinkTest()
+    : server_mock_(1337, ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
+                   GetTestDataFolder()) {
   loop_.set_snapshot_on_timeout(true);
   EXPECT_CALL(server_mock_, Get(_, StrCaseEq(L"/favicon.ico"), _))
       .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));

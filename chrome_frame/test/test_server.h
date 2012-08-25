@@ -15,7 +15,7 @@
 // all derived from the Response interface.
 //
 // Here's a simple example that starts a web server that can serve up
-// a single document (http://localhost:1337/foo).
+// a single document (http://<server.host()>:1337/foo).
 // All other requests will get a 404.
 //
 //  MessageLoopForUI loop;
@@ -24,7 +24,7 @@
 //  test_server.AddResponse(&document);
 //  loop.MessageLoop::Run();
 //
-// To close the web server, just go to http://localhost:1337/quit.
+// To close the web server, just go to http://<server.host()>:1337/quit.
 //
 // All Response classes count how many times they have been accessed.  Just
 // call Response::accessed().
@@ -282,7 +282,12 @@ typedef std::list<Connection*> ConnectionList;
 // has a message loop.
 class SimpleWebServer : public net::StreamListenSocket::Delegate {
  public:
+  // Constructs a server listening at the given port on a local IPv4 address.
+  // An address on a NIC is preferred over the loopback address.
   explicit SimpleWebServer(int port);
+
+  // Constructs a server listening at the given address:port.
+  SimpleWebServer(const std::string& address, int port);
   virtual ~SimpleWebServer();
 
   void AddResponse(Response* response);
@@ -302,6 +307,12 @@ class SimpleWebServer : public net::StreamListenSocket::Delegate {
                        const char* data,
                        int len);
   virtual void DidClose(net::StreamListenSocket* sock);
+
+  // Returns the host on which the server is listening.  This is suitable for
+  // use in URLs for resources served by this instance.
+  const std::string& host() const {
+    return host_;
+  }
 
   const ConnectionList& connections() const {
     return connections_;
@@ -323,13 +334,14 @@ class SimpleWebServer : public net::StreamListenSocket::Delegate {
   Response* FindResponse(const Request& request) const;
   Connection* FindConnection(const net::StreamListenSocket* socket) const;
 
- protected:
+  std::string host_;
   scoped_refptr<net::StreamListenSocket> server_;
   ConnectionList connections_;
   std::list<Response*> responses_;
   QuitResponse quit_;
 
  private:
+  void Construct(const std::string& address, int port);
   DISALLOW_COPY_AND_ASSIGN(SimpleWebServer);
 };
 

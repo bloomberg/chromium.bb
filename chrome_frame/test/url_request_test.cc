@@ -67,7 +67,8 @@ TEST(UrlmonUrlRequestTest, Simple1) {
   MockUrlDelegate mock;
   chrome_frame_test::TimedMsgLoop loop;
 
-  testing::StrictMock<MockWebServer> mock_server(1337, L"127.0.0.1",
+  testing::StrictMock<MockWebServer> mock_server(1337,
+      ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
@@ -125,7 +126,7 @@ TEST(UrlmonUrlRequestTest, Head) {
 
   request.AddRef();
   request.Initialize(&mock, 1,  // request_id
-      "http://localhost:13337/head",
+      base::StringPrintf("http://%s:13337/head", server.host().c_str()),
       "head",
       "",      // referrer
       "",      // extra request
@@ -160,7 +161,8 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
   base::win::ScopedCOMInitializer init_com;
   CComObjectStackEx<UrlmonUrlRequest> request;
 
-  testing::StrictMock<MockWebServer> mock_server(1337, L"127.0.0.1",
+  testing::StrictMock<MockWebServer> mock_server(1337,
+      ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
@@ -199,7 +201,8 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
   MockUrlDelegate mock;
   chrome_frame_test::TimedMsgLoop loop;
 
-  testing::StrictMock<MockWebServer> mock_server(1337, L"127.0.0.1",
+  testing::StrictMock<MockWebServer> mock_server(1337,
+      ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
@@ -255,7 +258,8 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
   MockUrlDelegate mock;
   chrome_frame_test::TimedMsgLoop loop;
 
-  testing::StrictMock<MockWebServer> mock_server(1337, L"127.0.0.1",
+  testing::StrictMock<MockWebServer> mock_server(1337,
+      ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
@@ -290,7 +294,8 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
   MockUrlDelegate mock;
   chrome_frame_test::TimedMsgLoop loop;
 
-  testing::StrictMock<MockWebServer> mock_server(1337, L"127.0.0.1",
+  testing::StrictMock<MockWebServer> mock_server(1337,
+      ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 

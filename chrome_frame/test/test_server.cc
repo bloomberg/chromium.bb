@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_server.h"
 #include "net/base/tcp_listen_socket.h"
 #include "net/base/winsock_init.h"
@@ -136,11 +137,11 @@ bool RedirectResponse::GetCustomHeaders(std::string* headers) const {
 }
 
 SimpleWebServer::SimpleWebServer(int port) {
-  CHECK(MessageLoop::current()) << "SimpleWebServer requires a message loop";
-  net::EnsureWinsockInit();
-  AddResponse(&quit_);
-  server_ = net::TCPListenSocket::CreateAndListen("127.0.0.1", port, this);
-  DCHECK(server_.get() != NULL);
+  Construct(chrome_frame_test::GetLocalIPv4Address(), port);
+}
+
+SimpleWebServer::SimpleWebServer(const std::string& address, int port) {
+  Construct(address, port);
 }
 
 SimpleWebServer::~SimpleWebServer() {
@@ -148,6 +149,16 @@ SimpleWebServer::~SimpleWebServer() {
   for (it = connections_.begin(); it != connections_.end(); ++it)
     delete (*it);
   connections_.clear();
+}
+
+void SimpleWebServer::Construct(const std::string& address, int port) {
+  CHECK(MessageLoop::current()) << "SimpleWebServer requires a message loop";
+  net::EnsureWinsockInit();
+  AddResponse(&quit_);
+  host_ = address;
+  server_ = net::TCPListenSocket::CreateAndListen(address, port, this);
+  LOG_IF(DFATAL, !server_.get())
+      << "Failed to create listener socket at " << address << ":" << port;
 }
 
 void SimpleWebServer::AddResponse(Response* response) {

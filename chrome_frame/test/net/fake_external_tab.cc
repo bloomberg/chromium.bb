@@ -528,10 +528,11 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
     ie_configurator_->ApplySettings();
   }
 
-  test_http_server_.reset(new test_server::SimpleWebServer(kTestServerPort));
+  test_http_server_.reset(new test_server::SimpleWebServer("127.0.0.1",
+                                                           kTestServerPort));
   test_http_server_->AddResponse(&chrome_frame_html_);
   std::wstring url(base::StringPrintf(L"http://localhost:%i/chrome_frame",
-                                      kTestServerPort).c_str());
+                                      kTestServerPort));
 
   // Launch IE.  This launches IE correctly on Vista too.
   base::win::ScopedHandle ie_process(chrome_frame_test::LaunchIE(url));

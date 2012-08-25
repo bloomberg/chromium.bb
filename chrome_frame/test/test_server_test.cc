@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "chrome_frame/test/test_server.h"
 #include "net/base/host_resolver_proc.h"
@@ -71,7 +72,7 @@ class TestURLRequest : public net::URLRequest {
 
 class UrlTaskChain {
  public:
-  UrlTaskChain(const char* url, UrlTaskChain* next)
+  UrlTaskChain(const std::string& url, UrlTaskChain* next)
       : url_(url), next_(next) {
   }
 
@@ -137,15 +138,18 @@ TEST_F(TestServerTest, TestServer) {
   MessageLoopForUI loop;
 
   test_server::SimpleWebServer server(1337);
+  test_server::SimpleWebServer redirected_server(server.host(), 1338);
   test_server::SimpleResponse person("/person", "Guthrie Govan!");
   server.AddResponse(&person);
   test_server::FileResponse file("/file", source_path().Append(
       FILE_PATH_LITERAL("CFInstance.js")));
   server.AddResponse(&file);
-  test_server::RedirectResponse redir("/redir", "http://localhost:1338/dest");
+  test_server::RedirectResponse redir(
+      "/redir",
+      base::StringPrintf("http://%s:1338/dest",
+                         redirected_server.host().c_str()));
   server.AddResponse(&redir);
 
-  test_server::SimpleWebServer redirected_server(1338);
   test_server::SimpleResponse dest("/dest", "Destination");
   redirected_server.AddResponse(&dest);
 
@@ -155,11 +159,20 @@ TEST_F(TestServerTest, TestServer) {
   loop.PostDelayedTask(FROM_HERE, base::Bind(QuitMessageLoop, &quit_msg),
                        base::TimeDelta::FromSeconds(10));
 
-  UrlTaskChain quit_task("http://localhost:1337/quit", NULL);
-  UrlTaskChain fnf_task("http://localhost:1337/404", &quit_task);
-  UrlTaskChain person_task("http://localhost:1337/person", &fnf_task);
-  UrlTaskChain file_task("http://localhost:1337/file", &person_task);
-  UrlTaskChain redir_task("http://localhost:1337/redir", &file_task);
+  UrlTaskChain quit_task(
+      base::StringPrintf("http://%s:1337/quit", server.host().c_str()), NULL);
+  UrlTaskChain fnf_task(
+      base::StringPrintf("http://%s:1337/404", server.host().c_str()),
+      &quit_task);
+  UrlTaskChain person_task(
+      base::StringPrintf("http://%s:1337/person", server.host().c_str()),
+      &fnf_task);
+  UrlTaskChain file_task(
+      base::StringPrintf("http://%s:1337/file", server.host().c_str()),
+      &person_task);
+  UrlTaskChain redir_task(
+      base::StringPrintf("http://%s:1337/redir", server.host().c_str()),
+      &file_task);
 
   DWORD tid = 0;
   base::win::ScopedHandle worker(::CreateThread(
