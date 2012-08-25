@@ -14,7 +14,6 @@ IDropTargetHelper* DropTarget::cached_drop_target_helper_ = NULL;
 
 DropTarget::DropTarget(HWND hwnd)
     : hwnd_(hwnd),
-      suspended_(false),
       ref_count_(0) {
   DCHECK(hwnd);
   HRESULT result = RegisterDragDrop(hwnd, this);
@@ -48,12 +47,6 @@ HRESULT DropTarget::DragEnter(IDataObject* data_object,
                            reinterpret_cast<POINT*>(&cursor_position), *effect);
   }
 
-  // You can't drag and drop within the same HWND.
-  if (suspended_) {
-    *effect = DROPEFFECT_NONE;
-    return S_OK;
-  }
-
   current_data_object_ = data_object;
   POINT screen_pt = { cursor_position.x, cursor_position.y };
   *effect = OnDragEnter(current_data_object_, key_state, screen_pt, *effect);
@@ -68,11 +61,6 @@ HRESULT DropTarget::DragOver(DWORD key_state,
   if (drop_helper)
     drop_helper->DragOver(reinterpret_cast<POINT*>(&cursor_position), *effect);
 
-  if (suspended_) {
-    *effect = DROPEFFECT_NONE;
-    return S_OK;
-  }
-
   POINT screen_pt = { cursor_position.x, cursor_position.y };
   *effect = OnDragOver(current_data_object_, key_state, screen_pt, *effect);
   return S_OK;
@@ -83,9 +71,6 @@ HRESULT DropTarget::DragLeave() {
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper)
     drop_helper->DragLeave();
-
-  if (suspended_)
-    return S_OK;
 
   OnDragLeave(current_data_object_);
 
@@ -102,11 +87,6 @@ HRESULT DropTarget::Drop(IDataObject* data_object,
   if (drop_helper) {
     drop_helper->Drop(current_data_object_,
                       reinterpret_cast<POINT*>(&cursor_position), *effect);
-  }
-
-  if (suspended_) {
-    *effect = DROPEFFECT_NONE;
-    return S_OK;
   }
 
   POINT screen_pt = { cursor_position.x, cursor_position.y };

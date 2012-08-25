@@ -30,11 +30,6 @@ class UI_EXPORT DropTarget : public IDropTarget {
   explicit DropTarget(HWND hwnd);
   virtual ~DropTarget();
 
-  // When suspended is set to |true|, the drop target does not receive drops
-  // from drags initiated within the owning HWND.
-  bool suspended() const { return suspended_; }
-  void set_suspended(bool suspended) { suspended_ = suspended; }
-
   // IDropTarget implementation:
   HRESULT __stdcall DragEnter(IDataObject* data_object,
                               DWORD key_state,
@@ -108,10 +103,6 @@ class UI_EXPORT DropTarget : public IDropTarget {
   // The HWND of the source. This HWND is used to determine coordinates for
   // mouse events that are sent to the renderer notifying various drag states.
   HWND hwnd_;
-
-  // Whether or not we are currently processing drag notifications for drags
-  // initiated in this window.
-  bool suspended_;
 
   LONG ref_count_;
 

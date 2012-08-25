@@ -113,7 +113,6 @@ WebContentsDragWin::WebContentsDragWin(
       web_contents_(web_contents),
       drag_dest_(drag_dest),
       drag_ended_(false),
-      old_drop_target_suspended_state_(false),
       drag_end_callback_(drag_end_callback) {
 }
 
@@ -136,13 +135,9 @@ void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
   if (drop_data.download_metadata.empty()) {
     DoDragging(drop_data, ops, page_url, page_encoding, image, image_offset);
-    EndDragging(false);
+    EndDragging();
     return;
   }
-
-  // We do not want to drag and drop the download to itself.
-  old_drop_target_suspended_state_ = drag_dest_->suspended();
-  drag_dest_->set_suspended(true);
 
   // Start a background thread to do the drag-and-drop.
   DCHECK(!drag_drop_thread_.get());
@@ -190,7 +185,7 @@ void WebContentsDragWin::StartBackgroundDragging(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WebContentsDragWin::EndDragging, this, true));
+      base::Bind(&WebContentsDragWin::EndDragging, this));
 }
 
 void WebContentsDragWin::PrepareDragForDownload(
@@ -277,32 +272,31 @@ void WebContentsDragWin::DoDragging(const WebDropData& drop_data,
                                     const gfx::Point& image_offset) {
   ui::OSExchangeData data;
 
-  // TODO(dcheng): Figure out why this is mutually exclusive.
   if (!drop_data.download_metadata.empty()) {
     PrepareDragForDownload(drop_data, &data, page_url, page_encoding);
 
     // Set the observer.
     ui::OSExchangeDataProviderWin::GetDataObjectImpl(data)->set_observer(this);
-  } else {
-    // We set the file contents before the URL because the URL also sets file
-    // contents (to a .URL shortcut).  We want to prefer file content data over
-    // a shortcut so we add it first.
-    if (!drop_data.file_contents.empty())
-      PrepareDragForFileContents(drop_data, &data);
-    if (!drop_data.html.string().empty())
-      data.SetHtml(drop_data.html.string(), drop_data.html_base_url);
-    // We set the text contents before the URL because the URL also sets text
-    // content.
-    if (!drop_data.text.string().empty())
-      data.SetString(drop_data.text.string());
-    if (drop_data.url.is_valid())
-      PrepareDragForUrl(drop_data, &data);
-    if (!drop_data.custom_data.empty()) {
-      Pickle pickle;
-      ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
-      data.SetPickledData(ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat,
-                          pickle);
-    }
+  }
+
+  // We set the file contents before the URL because the URL also sets file
+  // contents (to a .URL shortcut).  We want to prefer file content data over
+  // a shortcut so we add it first.
+  if (!drop_data.file_contents.empty())
+    PrepareDragForFileContents(drop_data, &data);
+  if (!drop_data.html.string().empty())
+    data.SetHtml(drop_data.html.string(), drop_data.html_base_url);
+  // We set the text contents before the URL because the URL also sets text
+  // content.
+  if (!drop_data.text.string().empty())
+    data.SetString(drop_data.text.string());
+  if (drop_data.url.is_valid())
+    PrepareDragForUrl(drop_data, &data);
+  if (!drop_data.custom_data.empty()) {
+    Pickle pickle;
+    ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
+    data.SetPickledData(ui::ClipboardUtil::GetWebCustomDataFormat()->cfFormat,
+                        pickle);
   }
 
   // Set drag image.
@@ -322,20 +316,21 @@ void WebContentsDragWin::DoDragging(const WebDropData& drop_data,
                &effect);
   }
 
-  // This works because WebDragSource::OnDragSourceDrop uses PostTask to
-  // dispatch the actual event.
+  // Normally, the drop and dragend events get dispatched in the system
+  // DoDragDrop message loop so it'd be too late to set the effect to send back
+  // to the renderer here. However, we use PostTask to delay the execution of
+  // WebDragSource::OnDragSourceDrop, which means that the delayed dragend
+  // callback to the renderer doesn't run until this has been set to the correct
+  // value.
   drag_source_->set_effect(effect);
 }
 
-void WebContentsDragWin::EndDragging(bool restore_suspended_state) {
+void WebContentsDragWin::EndDragging() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (drag_ended_)
     return;
   drag_ended_ = true;
-
-  if (restore_suspended_state)
-    drag_dest_->set_suspended(old_drop_target_suspended_state_);
 
   if (msg_hook) {
     AttachThreadInput(drag_out_thread_id, GetCurrentThreadId(), FALSE);
@@ -367,7 +362,7 @@ void WebContentsDragWin::OnWaitForData() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WebContentsDragWin::EndDragging, this, true));
+      base::Bind(&WebContentsDragWin::EndDragging, this));
 }
 
 void WebContentsDragWin::OnDataObjectDisposed() {
