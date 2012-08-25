@@ -44,7 +44,7 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
       const Extension* extension,
       const std::string& command_name) = 0;
   // Remove extension bindings for |extension|. |command_name| is optional,
-  // but if not blank then only the command specified will be added.
+  // but if not blank then only the command specified will be removed.
   virtual void RemoveExtensionKeybinding(
       const Extension* extension,
       const std::string& command_name) = 0;
