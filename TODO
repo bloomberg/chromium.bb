@@ -27,8 +27,9 @@ file, with a bit of extra info.
 ** fix bug described by squash_space.c
 
 ** Fix cursor position problems when capsigns are used.
-   also see:  https://bugzilla.gnome.org/show_bug.cgi?id=651217
-   @attila: can you please provide a patch to en-gb harness files that reproduce the problem?
+   Originally reported at:  https://bugzilla.gnome.org/show_bug.cgi?id=651217
+   testcase added in en-GB-g2_harness.txt, search for 651217
+   The bug can be seen with other tables too.
 
 ** [mh] Add Ethiopic table and harness data, as corrected by Dr. Tamru E. Belay
 

@@ -62,6 +62,19 @@
           "input": "you went to", 
           "mode": "compbrlAtCursor", 
           "output": "⠽ ⠺⠑⠝⠞ ⠞⠕"
+        }, 
+        {
+          "brlCursorPos": 15, 
+          "comment": [
+            "An example to reproduce:", 
+            "https://bugzilla.gnome.org/show_bug.cgi?id=651217", 
+            "note that the braille cursor is very squeued.", 
+            "computer cursor is at pos 13, expected braille cursor at 15, but actually at 17."
+          ], 
+          "cursorPos": 13, 
+          "input": "Pappa Pappa help me.", 
+          "mode": "compbrlAtCursor", 
+          "output": "⠠⠏⠁⠏⠏⠁ ⠠⠏⠁⠏⠏⠁ ⠓⠑⠇⠏ ⠍⠑⠲"
         }
       ], 
       "flags": {
