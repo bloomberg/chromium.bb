@@ -100,6 +100,7 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   void set_texture_id(unsigned int id) { texture_id_ = id; }
   bool flipped() const { return flipped_; }
   gfx::Size size() const { return size_; }
+  virtual WebKit::WebGraphicsContext3D* HostContext3D() = 0;
 
  protected:
   virtual ~Texture();

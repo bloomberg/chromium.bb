@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
@@ -46,7 +47,8 @@ class Texture;
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer
     : public LayerAnimationDelegate,
-      NON_EXPORTED_BASE(public WebKit::WebContentLayerClient) {
+      NON_EXPORTED_BASE(public WebKit::WebContentLayerClient),
+      NON_EXPORTED_BASE(public WebKit::WebExternalTextureLayerClient) {
  public:
   Layer();
   explicit Layer(LayerType type);
@@ -262,6 +264,11 @@ class COMPOSITOR_EXPORT Layer
                              WebKit::WebFloatRect& opaque);
 
   WebKit::WebLayer* web_layer() { return web_layer_; }
+
+  // WebExternalTextureLayerClient
+  virtual unsigned prepareTexture(
+      WebKit::WebTextureUpdater& /* updater */) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* context() OVERRIDE;
 
   float device_scale_factor() const { return device_scale_factor_; }
 

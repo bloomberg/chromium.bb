@@ -147,6 +147,10 @@ class WebGLTexture : public ui::Texture {
                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
 
+  virtual WebGraphicsContext3D* HostContext3D() OVERRIDE {
+    return context_;
+  }
+
  private:
   virtual ~WebGLTexture() {
     context_->deleteTexture(texture_id());

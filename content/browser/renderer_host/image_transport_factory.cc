@@ -84,16 +84,27 @@ class DefaultTransportFactory
 class ImageTransportClientTexture : public ui::Texture {
  public:
   ImageTransportClientTexture(
+      WebKit::WebGraphicsContext3D* host_context,
       const gfx::Size& size,
       uint64 surface_id)
-          : ui::Texture(true, size) {
+          : ui::Texture(true, size),
+            host_context_(host_context) {
     set_texture_id(surface_id);
+  }
+
+  virtual WebKit::WebGraphicsContext3D* HostContext3D() {
+    return host_context_;
   }
 
  protected:
   virtual ~ImageTransportClientTexture() {}
 
  private:
+  // A raw pointer. This |ImageTransportClientTexture| will be destroyed
+  // before the |host_context_| via
+  // |ImageTransportFactoryObserver::OnLostContext()| handlers.
+  WebKit::WebGraphicsContext3D* host_context_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 
@@ -217,8 +228,11 @@ class GpuProcessTransportFactory :
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       const gfx::Size& size,
       uint64 transport_handle) {
+    if (!shared_context_.get())
+        return NULL;
     scoped_refptr<ImageTransportClientTexture> image(
-        new ImageTransportClientTexture(size, transport_handle));
+        new ImageTransportClientTexture(shared_context_.get(),
+                                        size, transport_handle));
     return image;
   }
 

@@ -387,10 +387,11 @@ void Layer::SetExternalTexture(Texture* texture) {
         texture_layer_.release());
     WebKit::WebLayer* new_layer = NULL;
     if (layer_updated_externally_) {
-      texture_layer_.reset(WebKit::WebExternalTextureLayer::create());
+      texture_layer_.reset(WebKit::WebExternalTextureLayer::create(this));
       texture_layer_->setFlipped(texture_->flipped());
       new_layer = texture_layer_->layer();
     } else {
+      old_texture_layer->willModifyTexture();
       content_layer_.reset(WebKit::WebContentLayer::create(this));
       new_layer = content_layer_->layer();
     }
@@ -509,6 +510,16 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
     delegate_->OnPaintLayer(canvas.get());
   if (scale_content_)
     canvas->Restore();
+}
+
+unsigned Layer::prepareTexture(WebKit::WebTextureUpdater& /* updater */) {
+  DCHECK(layer_updated_externally_);
+  return texture_->texture_id();
+}
+
+WebKit::WebGraphicsContext3D* Layer::context() {
+  DCHECK(layer_updated_externally_);
+  return texture_->HostContext3D();
 }
 
 void Layer::SetForceRenderSurface(bool force) {
@@ -729,8 +740,6 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     web_layer_->setBounds(ConvertSizeToPixel(this, bounds_.size()));
   } else {
     DCHECK(texture_);
-    unsigned int texture_id = texture_->texture_id();
-    texture_layer_->setTextureId(should_draw ? texture_id : 0);
 
     gfx::Size texture_size;
     if (scale_content_)
