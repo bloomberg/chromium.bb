@@ -11,6 +11,7 @@ file, with a bit of extra info.
 
 * near term
 ** (google issue 9) bindings should provide variable to pick up table location at runtime.
+
 ** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
    Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
 
@@ -23,9 +24,11 @@ file, with a bit of extra info.
    Once corrected, consider merging compBrlLeftCursor and compBrlAtCursor, since neither provide the needed behaviour, but the corrected version should.
    also see https://bugzilla.gnome.org/show_bug.cgi?id=592421
 
-** [mh] test case for non-null terminated string when chars are undefined.
-
 ** fix bug described by squash_space.c
+
+** Fix cursor position problems when capsigns are used.
+   also see:  https://bugzilla.gnome.org/show_bug.cgi?id=651217
+   @attila: can you please provide a patch to en-gb harness files that reproduce the problem?
 
 ** [mh] Add Ethiopic table and harness data, as corrected by Dr. Tamru E. Belay
 
@@ -74,6 +77,12 @@ to get rid of the windows #ifdefs
   has been defined as two or more braille representations.
   Could we have these as warnings, not errors please.
 
+** followup to above enhancement, either at the terminal or when called by 
+   bindings, we should be able to give 
+   more useful feedback, i.e. could not translate because table not found, or table found but 
+   has errors, or characters undefined, etc.
+   also see: http://www.nvda-project.org/ticket/2448
+
 ** Optimize for use with large tables
 When used with dictionary based tables liblouis is very slow. The
 issue is probably that the hash key is not very well suited for this
@@ -82,6 +91,3 @@ essentially linear.
 
 mh: if a braille table is declared as a dictionary, it sounds like the table is wrongly written, and should be a candidate for rewriting.
     Braille contractions are defined as rules, not as instances. The dictionary data should be pulled out to provide test data.
-
-    
-
