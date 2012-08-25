@@ -422,8 +422,7 @@ GLES2Implementation::GLES2Implementation(
       debug_(false),
       use_count_(0),
       current_query_(NULL),
-      error_message_callback_(NULL),
-      context_lost_(false) {
+      error_message_callback_(NULL) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
 
@@ -1097,12 +1096,13 @@ void GLES2Implementation::Finish() {
 }
 
 bool GLES2Implementation::MustBeContextLost() {
-  if (!context_lost_) {
+  bool context_lost = helper_->IsContextLost();
+  if (!context_lost) {
     FinishHelper();
-    context_lost_ = error::IsError(helper_->command_buffer()->GetLastError());
+    context_lost = helper_->IsContextLost();
   }
-  GPU_CHECK(context_lost_);
-  return context_lost_;
+  GPU_CHECK(context_lost);
+  return context_lost;
 }
 
 void GLES2Implementation::FinishHelper() {
@@ -3088,7 +3088,7 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
         MustBeContextLost();
       }
     }
-    query_tracker_->RemoveQuery(queries[ii], context_lost_);
+    query_tracker_->RemoveQuery(queries[ii], helper_->IsContextLost());
   }
   helper_->DeleteQueriesEXTImmediate(n, queries);
 }
@@ -3153,7 +3153,7 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] EndQueryEXT("
                  << GLES2Util::GetStringQueryTarget(target) << ")");
   // Don't do anything if the context is lost.
-  if (context_lost_) {
+  if (helper_->IsContextLost()) {
     return;
   }
 
@@ -3195,11 +3195,6 @@ void GLES2Implementation::GetQueryObjectuivEXT(
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] GetQueryivEXT(" << id << ", "
                  << GLES2Util::GetStringQueryObjectParameter(pname) << ", "
                  << static_cast<const void*>(params) << ")");
-
-  // exit if the context is lost.
-  if (context_lost_) {
-    return;
-  }
 
   QueryTracker::Query* query = query_tracker_->GetQuery(id);
   if (!query) {

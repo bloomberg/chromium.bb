@@ -22,7 +22,15 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       last_put_sent_(0),
       commands_issued_(0),
       usable_(true),
+      context_lost_(false),
       last_flush_time_(0) {
+}
+
+bool CommandBufferHelper::IsContextLost() {
+  if (!context_lost_) {
+    context_lost_ = error::IsError(command_buffer()->GetLastError());
+  }
+  return context_lost_;
 }
 
 bool CommandBufferHelper::AllocateRingBuffer() {

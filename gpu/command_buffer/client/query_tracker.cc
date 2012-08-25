@@ -109,7 +109,8 @@ void QueryTracker::Query::End(GLES2Implementation* gl) {
 bool QueryTracker::Query::CheckResultsAvailable(
     CommandBufferHelper* helper) {
   if (Pending()) {
-    if (info_.sync->process_count == submit_count_) {
+    if (info_.sync->process_count == submit_count_ ||
+        helper->IsContextLost()) {
       // Need a MemoryBarrier here so that sync->result read after
       // sync->process_count.
       gpu::MemoryBarrier();

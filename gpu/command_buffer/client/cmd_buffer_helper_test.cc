@@ -352,4 +352,10 @@ TEST_F(CommandBufferHelperTest, Noop) {
   }
 }
 
+TEST_F(CommandBufferHelperTest, IsContextLost) {
+  EXPECT_FALSE(helper_->IsContextLost());
+  command_buffer_->SetParseError(error::kGenericError);
+  EXPECT_TRUE(helper_->IsContextLost());
+}
+
 }  // namespace gpu
