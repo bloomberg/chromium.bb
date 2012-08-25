@@ -319,12 +319,13 @@ class VideoEncoderTester {
 
 scoped_refptr<CaptureData> PrepareEncodeData(const SkISize& size,
                                              media::VideoFrame::Format format,
-                                             uint8** memory) {
+                                             scoped_array<uint8>* memory) {
   // TODO(hclam): Support also YUV format.
   CHECK_EQ(format, media::VideoFrame::RGB32);
   int memory_size = size.width() * size.height() * kBytesPerPixel;
 
-  *memory = new uint8[memory_size];
+  memory->reset(new uint8[memory_size]);
+
   srand(0);
   for (int i = 0; i < memory_size; ++i) {
     (*memory)[i] = rand() % 256;
@@ -333,7 +334,7 @@ scoped_refptr<CaptureData> PrepareEncodeData(const SkISize& size,
   DataPlanes planes;
   memset(planes.data, 0, sizeof(planes.data));
   memset(planes.strides, 0, sizeof(planes.strides));
-  planes.data[0] = *memory;
+  planes.data[0] = memory->get();
   planes.strides[0] = size.width() * kBytesPerPixel;
 
   scoped_refptr<CaptureData> data =
@@ -363,10 +364,9 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
 
   VideoEncoderTester tester(&message_tester);
 
-  uint8* memory;
+  scoped_array<uint8> memory;
   scoped_refptr<CaptureData> data =
       PrepareEncodeData(kSize, media::VideoFrame::RGB32, &memory);
-  scoped_array<uint8> memory_wrapper(memory);
 
   std::vector<std::vector<SkIRect> > test_rect_lists = MakeTestRectLists(kSize);
   for (size_t i = 0; i < test_rect_lists.size(); ++i) {
@@ -416,10 +416,9 @@ void TestVideoEncoderDecoder(
 
   VideoEncoderTester encoder_tester(&message_tester);
 
-  uint8* memory;
+  scoped_array<uint8> memory;
   scoped_refptr<CaptureData> data =
       PrepareEncodeData(kSize, media::VideoFrame::RGB32, &memory);
-  scoped_array<uint8> memory_wrapper(memory);
 
   VideoDecoderTester decoder_tester(decoder, kSize, kSize);
   decoder_tester.set_strict(strict);
