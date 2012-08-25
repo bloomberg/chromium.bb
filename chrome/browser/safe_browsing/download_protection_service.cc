@@ -849,7 +849,8 @@ bool DownloadProtectionService::IsSupportedDownload(
   return (CheckClientDownloadRequest::IsSupportedDownload(info,
                                                           &reason,
                                                           &type) &&
-          (ClientDownloadRequest::WIN_EXECUTABLE == type ||
+          (ClientDownloadRequest::ANDROID_APK == type ||
+           ClientDownloadRequest::WIN_EXECUTABLE == type ||
            ClientDownloadRequest::ZIPPED_EXECUTABLE == type));
 #else
   return false;
