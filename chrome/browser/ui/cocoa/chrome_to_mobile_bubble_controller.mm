@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
@@ -143,12 +144,27 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   // Get the anchor point for the bubble in screen coordinates.
   BrowserWindowController* controller = [BrowserWindowController
       browserWindowControllerForWindow:self.parentWindow];
-  if ([controller isKindOfClass:[BrowserWindowController class]]) {
+  if (controller != nil) {
     LocationBarViewMac* locationBar = [controller locationBarBridge];
-    NSPoint bubblePoint = locationBar->GetChromeToMobileBubblePoint();
-    [self setAnchorPoint:[self.parentWindow convertBaseToScreen:bubblePoint]];
+    NSPoint bubblePoint;
+    if (extensions::switch_utils::IsExtensionsInActionBoxEnabled()) {
+      bubblePoint = locationBar->GetActionBoxAnchorPoint();
+      bubblePoint = [self.parentWindow convertBaseToScreen:bubblePoint];
+      // Without an arrow, the anchor point of a bubble is the top left corner,
+      // but GetActionBoxAnchorPoint returns the top right corner.
+      bubblePoint.x -= self.bubble.frame.size.width;
+      [self.bubble setArrowLocation:info_bubble::kNoArrow];
+      [self.bubble setCornerFlags:info_bubble::kRoundedBottomCorners];
+      [self.bubble setAlignment:info_bubble::kAlignEdgeToAnchorEdge];
+      [window setContentSize:self.bubble.frame.size];
+      [window setContentView:self.bubble];
+    } else {
+      bubblePoint = locationBar->GetChromeToMobileBubblePoint();
+      bubblePoint = [self.parentWindow convertBaseToScreen:bubblePoint];
+      [self.bubble setArrowLocation:info_bubble::kTopRight];
+    }
+    [self setAnchorPoint:bubblePoint];
   }
-  [self.bubble setArrowLocation:info_bubble::kTopRight];
 
   // Initialize the checkbox to send an offline copy.
   NSString* sendCopyString =

@@ -20,7 +20,8 @@
 namespace {
 // The offset to apply to the menu so that it clears the bottom border of the
 // omnibox.
-const CGFloat kOmniboxYOffset = 7.0;
+const CGFloat kAnchorPointYOffset = 4.0;
+const CGFloat kAnchorPointFrameHeight = 23.0;
 }  // namespace
 
 PlusDecoration::PlusDecoration(LocationBarViewMac* owner,
@@ -58,14 +59,9 @@ bool PlusDecoration::OnMousePressed(NSRect frame) {
   // Align the menu popup to that its top-right corner matches the bottom-right
   // corner of the omnibox.
   AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-
-  NSRect popUpFrame = [field bounds];
-  popUpFrame.origin.x = NSMaxX([field bounds]) - menu.size.width;
-  popUpFrame.size.width = menu.size.width;
-
-  // Attach the menu to a slightly higher box, to clear the omnibox border.
-  popUpFrame.size.height += kOmniboxYOffset;
-
+  NSPoint point = GetActionBoxAnchorPoint();
+  NSRect popUpFrame = NSMakeRect(point.x - menu.size.width,
+      kAnchorPointYOffset, menu.size.width, kAnchorPointFrameHeight);
   scoped_nsobject<NSPopUpButtonCell> pop_up_cell(
       [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:YES]);
   DCHECK(pop_up_cell.get());
@@ -79,4 +75,10 @@ bool PlusDecoration::OnMousePressed(NSRect frame) {
 
 NSString* PlusDecoration::GetToolTip() {
   return tooltip_.get();
+}
+
+NSPoint PlusDecoration::GetActionBoxAnchorPoint() {
+  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
+  NSRect bounds = [field bounds];
+  return NSMakePoint(NSMaxX(bounds), NSMaxY(bounds));
 }

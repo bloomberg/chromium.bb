@@ -515,6 +515,11 @@ void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
   // decoration is showing, and the wrench menu isn't showing.
 }
 
+NSPoint LocationBarViewMac::GetActionBoxAnchorPoint() const {
+  NSPoint point = plus_decoration_->GetActionBoxAnchorPoint();
+  return [field_ convertPoint:point toView:nil];
+}
+
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect frame = [cell frameForDecoration:star_decoration_.get()

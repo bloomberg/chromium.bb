@@ -15,6 +15,13 @@ const CGFloat kBubbleArrowWidth = 15.0;
 const CGFloat kBubbleCornerRadius = 2.0;
 const CGFloat kBubbleArrowXOffset = kBubbleArrowWidth + kBubbleCornerRadius;
 
+// Constants that define where the bubble will have rounded corners.
+enum CornerFlags {
+  kRoundedTopCorners = 1,
+  kRoundedBottomCorners = 1 << 1,
+  kRoundedAllCorners = kRoundedTopCorners | kRoundedBottomCorners,
+};
+
 enum BubbleArrowLocation {
   kTopLeft,
   kTopRight,
@@ -36,10 +43,12 @@ enum BubbleAlignment {
  @private
   info_bubble::BubbleArrowLocation arrowLocation_;
   info_bubble::BubbleAlignment alignment_;
+  info_bubble::CornerFlags cornerFlags_;
 }
 
 @property(assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
 @property(assign, nonatomic) info_bubble::BubbleAlignment alignment;
+@property(assign, nonatomic) info_bubble::CornerFlags cornerFlags;
 
 // Returns the point location in view coordinates of the tip of the arrow.
 - (NSPoint)arrowTip;

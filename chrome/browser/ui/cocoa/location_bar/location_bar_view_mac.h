@@ -104,6 +104,10 @@ class LocationBarViewMac : public LocationBar,
   // aim at.
   NSPoint GetBookmarkBubblePoint() const;
 
+  // Get the point in window coordinates on the Action Box icon for
+  // anchoring its bubbles.
+  NSPoint GetActionBoxAnchorPoint() const;
+
   // Get the point in window coordinates on the Chrome To Mobile icon for
   // anchoring its bubble.
   NSPoint GetChromeToMobileBubblePoint() const;

@@ -24,6 +24,10 @@ class PlusDecoration : public ImageDecoration {
       Browser* browser);
   virtual ~PlusDecoration();
 
+  // Helper to get where the action box menu and bubble point should be
+  // anchored. Similar to |PageActionDecoration| or |StarDecoration|.
+  NSPoint GetActionBoxAnchorPoint();
+
   // Implement |LocationBarDecoration|.
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool OnMousePressed(NSRect frame) OVERRIDE;

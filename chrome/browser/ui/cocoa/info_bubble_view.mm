@@ -6,16 +6,19 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
+#import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 @implementation InfoBubbleView
 
 @synthesize arrowLocation = arrowLocation_;
 @synthesize alignment = alignment_;
+@synthesize cornerFlags = cornerFlags_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     arrowLocation_ = info_bubble::kTopLeft;
     alignment_ = info_bubble::kAlignArrowToAnchor;
+    cornerFlags_ = info_bubble::kRoundedAllCorners;
   }
   return self;
 }
@@ -26,13 +29,19 @@
   if (arrowLocation_ != info_bubble::kNoArrow) {
     bounds.size.height -= info_bubble::kBubbleArrowHeight;
   }
-  NSBezierPath* bezier = [NSBezierPath bezierPath];
   rect.size.height -= info_bubble::kBubbleArrowHeight;
 
-  // Start with a rounded rectangle.
-  [bezier appendBezierPathWithRoundedRect:bounds
-                                  xRadius:info_bubble::kBubbleCornerRadius
-                                  yRadius:info_bubble::kBubbleCornerRadius];
+  float topRadius = cornerFlags_ & info_bubble::kRoundedTopCorners ?
+      info_bubble::kBubbleCornerRadius : 0;
+  float bottomRadius = cornerFlags_ & info_bubble::kRoundedBottomCorners ?
+      info_bubble::kBubbleCornerRadius : 0;
+
+  NSBezierPath* bezier =
+      [NSBezierPath gtm_bezierPathWithRoundRect:bounds
+                            topLeftCornerRadius:topRadius
+                           topRightCornerRadius:topRadius
+                         bottomLeftCornerRadius:bottomRadius
+                        bottomRightCornerRadius:bottomRadius];
 
   // Add the bubble arrow.
   CGFloat dX = 0;
