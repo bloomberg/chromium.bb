@@ -8,8 +8,7 @@ namespace ui {
 
 TestLayerAnimationDelegate::TestLayerAnimationDelegate()
     : opacity_(1.0f),
-      visibility_(true),
-      scheduledDraws_(0) {
+      visibility_(true) {
 }
 
 TestLayerAnimationDelegate::TestLayerAnimationDelegate(
@@ -50,7 +49,6 @@ void TestLayerAnimationDelegate::SetGrayscaleFromAnimation(float grayscale) {
 }
 
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
-  scheduledDraws_++;
 }
 
 const gfx::Rect& TestLayerAnimationDelegate::GetBoundsForAnimation() const {

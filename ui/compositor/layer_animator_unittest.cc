@@ -1160,36 +1160,4 @@ TEST(LayerAnimatorTest, GetTargetGrayscale) {
   }
 }
 
-TEST(LayerAnimatorTest, ScheduleDrawAfterFinalFrame) {
-  LayerAnimator::set_disable_animations_for_test(false);
-  scoped_ptr<LayerAnimator> animator(new TestLayerAnimator());
-  AnimationContainerElement* element(animator.get());
-  animator->set_disable_timer_for_test(true);
-  TestLayerAnimationDelegate delegate;
-  animator->SetDelegate(&delegate);
-
-  double start_opacity(0.0);
-  double target_opacity(1.0);
-
-  delegate.SetOpacityFromAnimation(start_opacity);
-
-  base::TimeDelta delta(base::TimeDelta::FromSeconds(3));
-
-  animator->StartAnimation(
-      new LayerAnimationSequence(
-          LayerAnimationElement::CreateOpacityElement(target_opacity, delta)));
-
-  EXPECT_EQ(1, delegate.GetNumberOfScheduledDraws());
-
-  base::TimeTicks start_time(animator->last_step_time());
-
-  element->Step(start_time);
-
-  EXPECT_EQ(2, delegate.GetNumberOfScheduledDraws());
-
-  element->Step(start_time + base::TimeDelta::FromSeconds(4));
-
-  EXPECT_EQ(3, delegate.GetNumberOfScheduledDraws());
-}
-
 }  // namespace ui

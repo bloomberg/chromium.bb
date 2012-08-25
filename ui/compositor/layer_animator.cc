@@ -294,7 +294,6 @@ void LayerAnimator::Step(base::TimeTicks now) {
     if (delta >= running_animations_copy[i].sequence->duration() &&
         !running_animations_copy[i].sequence->is_cyclic()) {
       FinishAnimation(running_animations_copy[i].sequence);
-      needs_redraw = true;
     } else if (ProgressAnimation(running_animations_copy[i].sequence, delta))
       needs_redraw = true;
   }

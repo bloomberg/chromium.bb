@@ -33,8 +33,6 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   virtual float GetBrightnessForAnimation() const OVERRIDE;
   virtual float GetGrayscaleForAnimation() const OVERRIDE;
 
-  int GetNumberOfScheduledDraws() const { return scheduledDraws_; }
-
  private:
   gfx::Rect bounds_;
   Transform transform_;
@@ -42,7 +40,6 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   bool visibility_;
   float brightness_;
   float grayscale_;
-  int scheduledDraws_;
 
   // Allow copy and assign.
 };
