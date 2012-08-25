@@ -1,0 +1,44 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "WebScrollbarLayerImpl.h"
+
+#include "ScrollbarLayerChromium.h"
+#include "WebLayerImpl.h"
+
+using WebCore::Scrollbar;
+using WebCore::ScrollbarLayerChromium;
+
+namespace WebKit {
+
+WebScrollbarLayer* WebScrollbarLayer::create(WebCore::Scrollbar* scrollbar, WebScrollbarThemePainter painter, PassOwnPtr<WebScrollbarThemeGeometry> geometry)
+{
+    return new WebScrollbarLayerImpl(ScrollbarLayerChromium::create(WebScrollbar::create(scrollbar), painter, geometry, 0));
+}
+
+
+WebScrollbarLayerImpl::WebScrollbarLayerImpl(PassRefPtr<WebCore::ScrollbarLayerChromium> layer)
+    : m_layer(adoptPtr(new WebLayerImpl(layer)))
+{
+}
+
+WebScrollbarLayerImpl::~WebScrollbarLayerImpl()
+{
+}
+
+WebLayer* WebScrollbarLayerImpl::layer()
+{
+    return m_layer.get();
+}
+
+void WebScrollbarLayerImpl::setScrollLayer(WebLayer* layer)
+{
+    int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
+    static_cast<ScrollbarLayerChromium*>(m_layer->layer())->setScrollLayerId(id);
+}
+
+
+
+} // namespace WebKit

@@ -1,2 +1,17 @@
-The chromium compositor code will go here. For now, this directory is just a
-placeholder to make gclient happy.
+This is the chromium compositor implementation. Currently it's in state of
+transition from the WebKit repository to chromium, so there are only stubs
+here that are not compiled in by default.
+
+To try this out, do the following:
+
+0.) Run the 'copyfiles.py' script in this directory to sync the cc files from
+    their current location in WebKit into this directory.
+1.) Set the gyp variable 'use_libcc_for_compositor=1' and run gyp:
+    ./build/gyp_chromium -Duse_libcc_for_compositor=1
+2.) Build the 'cc' target to build just the compositor library, or build
+    'cc_unittests' for the unit tests.
+
+Notes about the component=shared_library build:
+Because the compositor currently depends on non-exported symbols from inside
+WebKit, in the shared library build the cc library links into WebKit.dll.
+The unit tests don't currently work at all in the component build.

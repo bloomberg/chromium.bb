@@ -22,6 +22,7 @@ _EXCLUDED_PATHS = (
     r"^v8[\\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
+    r"^cc[\\\/].*",
 )
 
 
