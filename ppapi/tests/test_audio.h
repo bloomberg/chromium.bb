@@ -27,6 +27,7 @@ class TestAudio : public TestCase {
   std::string TestFailures();
   std::string TestAudioCallback1();
   std::string TestAudioCallback2();
+  std::string TestAudioCallback3();
 
   // Calls |audio_callback_method_| (where |user_data| is "this").
   static void AudioCallbackTrampoline(void* sample_buffer,

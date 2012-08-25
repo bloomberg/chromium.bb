@@ -46,6 +46,7 @@ void TestAudio::RunTests(const std::string& filter) {
   RUN_TEST(Failures, filter);
   RUN_TEST(AudioCallback1, filter);
   RUN_TEST(AudioCallback2, filter);
+  RUN_TEST(AudioCallback3, filter);
 }
 
 // Test creating audio resources for all guaranteed sample rates and various
@@ -285,6 +286,74 @@ std::string TestAudio::TestAudioCallback2() {
 
   PASS();
 }
+
+// This is the same as |TestAudioCallback1()|, except that it attempts a second
+// round of |StartPlayback| and |StopPlayback| to make sure the callback
+// function still responds when using the same audio resource.
+std::string TestAudio::TestAudioCallback3() {
+  const PP_AudioSampleRate kSampleRate = PP_AUDIOSAMPLERATE_44100;
+  const uint32_t kRequestFrameCount = 1024;
+
+  uint32_t frame_count = audio_config_interface_->RecommendSampleFrameCount(
+      instance_->pp_instance(), kSampleRate, kRequestFrameCount);
+  PP_Resource ac = audio_config_interface_->CreateStereo16Bit(
+      instance_->pp_instance(), kSampleRate, frame_count);
+  ASSERT_TRUE(ac);
+  audio_callback_method_ = NULL;
+  PP_Resource audio = audio_interface_->Create(
+      instance_->pp_instance(), ac, AudioCallbackTrampoline, this);
+  core_interface_->ReleaseResource(ac);
+  ac = 0;
+
+  // |AudioCallbackTest()| calls |test_callback_|, sleeps a bit, then sets
+  // |test_done_|.
+  TestCompletionCallback test_callback_1(instance_->pp_instance());
+  test_callback_ = static_cast<pp::CompletionCallback>(
+      test_callback_1).pp_completion_callback();
+  test_done_ = false;
+  callback_fired_ = false;
+
+  audio_callback_method_ = &TestAudio::AudioCallbackTest;
+  ASSERT_TRUE(audio_interface_->StartPlayback(audio));
+
+  // Wait for the audio callback to be called.
+  test_callback_1.WaitForResult();
+  ASSERT_EQ(kMagicValue, test_callback_1.result());
+
+  ASSERT_TRUE(audio_interface_->StopPlayback(audio));
+
+  // |StopPlayback()| should wait for the audio callback to finish.
+  ASSERT_TRUE(callback_fired_);
+
+  TestCompletionCallback test_callback_2(instance_->pp_instance());
+  test_callback_ = static_cast<pp::CompletionCallback>(
+      test_callback_2).pp_completion_callback();
+
+  // Repeat one more |StartPlayback| & |StopPlayback| cycle, and verify again
+  // that the callback function was invoked.
+  callback_fired_ = false;
+  ASSERT_TRUE(audio_interface_->StartPlayback(audio));
+
+  // Wait for the audio callback to be called.
+  test_callback_2.WaitForResult();
+  ASSERT_EQ(kMagicValue, test_callback_2.result());
+
+  ASSERT_TRUE(audio_interface_->StopPlayback(audio));
+
+  // |StopPlayback()| should wait for the audio callback to finish.
+  ASSERT_TRUE(callback_fired_);
+
+  test_done_ = true;
+
+  // If any more audio callbacks are generated, we should crash (which is good).
+  audio_callback_method_ = NULL;
+  test_callback_ = PP_CompletionCallback();
+
+  core_interface_->ReleaseResource(audio);
+
+  PASS();
+}
+
 
 // TODO(raymes): Test that actually playback happens correctly, etc.
 

@@ -29,6 +29,9 @@ PPB_Audio_Shared::PPB_Audio_Shared()
 }
 
 PPB_Audio_Shared::~PPB_Audio_Shared() {
+  // Shut down the socket to escape any hanging |Receive|s.
+  if (socket_.get())
+    socket_->Shutdown();
   StopThread();
 }
 
@@ -105,10 +108,7 @@ void PPB_Audio_Shared::StartThread() {
 }
 
 void PPB_Audio_Shared::StopThread() {
-  // Shut down the socket to escape any hanging |Receive|s.
-  if (socket_.get())
-    socket_->Shutdown();
-  #if !defined(OS_NACL)
+#if !defined(OS_NACL)
   if (audio_thread_.get()) {
     audio_thread_->Join();
     audio_thread_.reset();
