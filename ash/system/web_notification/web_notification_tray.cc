@@ -1341,9 +1341,12 @@ void WebNotificationTray::UpdateTray() {
 void WebNotificationTray::UpdateTrayAndBubble() {
   UpdateTray();
 
-  if (message_center_bubble())
-    message_center_bubble()->ScheduleUpdate();
-
+  if (message_center_bubble()) {
+    if (notification_list_->notifications().size() == 0)
+      HideMessageCenterBubble();
+    else
+      message_center_bubble()->ScheduleUpdate();
+  }
   if (popup_bubble()) {
     if (notification_list_->notifications().size() == 0)
       HidePopupBubble();
