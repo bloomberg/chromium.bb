@@ -69,7 +69,6 @@
                 '../webkit/support/webkit_support.gyp:webkit_resources',
               ],
               'sources': [
-                'app/chrome.manifest',
                 'app/chrome_command_ids.h',
                 'app/chrome_dll.rc',
                 'app/chrome_dll_resource.h',
@@ -159,7 +158,7 @@
                   ],
                 },
                 'VCManifestTool': {
-                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.manifest',
+                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
                 },
               },
             }],  # OS=="win"

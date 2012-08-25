@@ -79,6 +79,11 @@
               }],
             ],
           },
+          'VCManifestTool': {
+            'AdditionalManifestFiles': [
+              '$(ProjectDir)\\mini_installer\\mini_installer.exe.manifest',
+            ],
+          },
         },
         'configurations': {
           'Debug_Base': {
@@ -180,17 +185,9 @@
           'msvs_precompiled_source': '',
 
           'sources': [
-            '../app/additional.manifest',
             'mini_installer/chrome.release',
             'mini_installer/chrome_appid.cc',
           ],
-          'msvs_settings': {
-            'VCManifestTool': {
-              'AdditionalManifestFiles': [
-                '$(ProjectDir)\\..\\app\\additional.manifest',
-              ],
-            },
-          },
           'rules': [
             {
               'rule_name': 'installer_archive',
