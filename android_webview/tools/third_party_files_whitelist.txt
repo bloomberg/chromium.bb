@@ -333,3 +333,6 @@ webkit/tools/test_shell/mac/English.lproj/InfoPlist.strings
 webkit/tools/test_shell/resources/README.txt
 # String 'copyright' used in resources.
 webkit/tools/test_shell/resources/test_shell.rc
+# String "Copyright" used in comments.
+cc/copyfiles.py
+webkit/compositor/copyfiles.py
