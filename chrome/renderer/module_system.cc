@@ -175,8 +175,8 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
   v8::Handle<v8::Object> module;
   {
     NativesEnabledScope scope(module_system);
-    module = module_system->RequireForJsInner(
-        parameters->Get(v8::String::New(kModuleName))->ToString())->ToObject();
+    module = v8::Handle<v8::Object>::Cast(module_system->RequireForJsInner(
+        parameters->Get(v8::String::New(kModuleName))->ToString()));
   }
   if (module.IsEmpty())
     return handle_scope.Close(v8::Handle<v8::Value>());
