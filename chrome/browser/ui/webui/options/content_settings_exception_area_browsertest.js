@@ -18,9 +18,16 @@ ContentSettingsExceptionAreaWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/contentExceptions',
 };
 
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#define MAYBE_testOpenContentSettingsExceptionArea ' +
+        'DISABLED_testOpenContentSettingsExceptionArea');
+GEN('#else');
+GEN('#define MAYBE_testOpenContentSettingsExceptionArea ' +
+        'testOpenContentSettingsExceptionArea');
+GEN('#endif  // defined(OS_CHROMEOS)');
 // Test opening the content settings exception area has correct location.
 TEST_F('ContentSettingsExceptionAreaWebUITest',
-       'testOpenContentSettingsExceptionArea',
+       'MAYBE_testOpenContentSettingsExceptionArea',
        function() {
          assertEquals(this.browsePreload, document.location.href);
        });
