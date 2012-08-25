@@ -1262,6 +1262,8 @@
         'host/local_input_monitor_win.cc',
         'host/log_to_server.cc',
         'host/log_to_server.h',
+        'host/mac/scoped_pixel_buffer_object.cc',
+        'host/mac/scoped_pixel_buffer_object.h',
         'host/mouse_clamping_filter.cc',
         'host/mouse_clamping_filter.h',
         'host/mouse_move_observer.h',

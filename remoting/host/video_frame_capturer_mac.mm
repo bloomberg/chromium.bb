@@ -20,6 +20,7 @@
 #include "base/time.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
+#include "remoting/host/mac/scoped_pixel_buffer_object.h"
 #include "remoting/host/video_frame_capturer_helper.h"
 #include "remoting/proto/control.pb.h"
 
@@ -39,61 +40,6 @@ SkIRect CGRectToSkIRect(const CGRect& rect) {
 
 // The amount of time allowed for displays to reconfigure.
 const int64 kDisplayReconfigurationTimeoutInSeconds = 10;
-
-class scoped_pixel_buffer_object {
- public:
-  scoped_pixel_buffer_object();
-  ~scoped_pixel_buffer_object();
-
-  bool Init(CGLContextObj cgl_context, int size_in_bytes);
-  void Release();
-
-  GLuint get() const { return pixel_buffer_object_; }
-
- private:
-  CGLContextObj cgl_context_;
-  GLuint pixel_buffer_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(scoped_pixel_buffer_object);
-};
-
-scoped_pixel_buffer_object::scoped_pixel_buffer_object()
-    : cgl_context_(NULL),
-      pixel_buffer_object_(0) {
-}
-
-scoped_pixel_buffer_object::~scoped_pixel_buffer_object() {
-  Release();
-}
-
-bool scoped_pixel_buffer_object::Init(CGLContextObj cgl_context,
-                                      int size_in_bytes) {
-  cgl_context_ = cgl_context;
-  CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
-  glGenBuffersARB(1, &pixel_buffer_object_);
-  if (glGetError() == GL_NO_ERROR) {
-    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, pixel_buffer_object_);
-    glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB, size_in_bytes, NULL,
-                    GL_STREAM_READ_ARB);
-    glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
-    if (glGetError() != GL_NO_ERROR) {
-      Release();
-    }
-  } else {
-    cgl_context_ = NULL;
-    pixel_buffer_object_ = 0;
-  }
-  return pixel_buffer_object_ != 0;
-}
-
-void scoped_pixel_buffer_object::Release() {
-  if (pixel_buffer_object_) {
-    CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
-    glDeleteBuffersARB(1, &pixel_buffer_object_);
-    cgl_context_ = NULL;
-    pixel_buffer_object_ = 0;
-  }
-}
 
 // A class representing a full-frame pixel buffer.
 class VideoFrameBuffer {
@@ -195,7 +141,7 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
 
   CGLContextObj cgl_context_;
   static const int kNumBuffers = 2;
-  scoped_pixel_buffer_object pixel_buffer_object_;
+  ScopedPixelBufferObject pixel_buffer_object_;
   VideoFrameBuffer buffers_[kNumBuffers];
 
   // A thread-safe list of invalid rectangles, and the size of the most
@@ -357,7 +303,7 @@ void VideoFrameCapturerMac::CaptureInvalidRegion(
     if (pixel_buffer_object_.get() != 0) {
       GlBlitFast(current_buffer, region);
     } else {
-      // See comment in scoped_pixel_buffer_object::Init about why the slow
+      // See comment in ScopedPixelBufferObject::Init about why the slow
       // path is always used on 10.5.
       GlBlitSlow(current_buffer);
     }
