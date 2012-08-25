@@ -40,6 +40,14 @@ MANIFEST_INT_URL = '%s/%s' % (GERRIT_INT_SSH_URL, MANIFEST_INT_PROJECT)
 
 DEFAULT_MANIFEST = 'default.xml'
 
+# CrOS remotes specified in the manifests.
+EXTERNAL_REMOTE = 'cros'
+INTERNAL_REMOTE = 'cros-internal'
+CROS_REMOTES = {
+    EXTERNAL_REMOTE : GERRIT_SSH_URL,
+    INTERNAL_REMOTE : GERRIT_INT_SSH_URL
+}
+
 # TODO(sosa): Move to manifest-versions-external once its created
 MANIFEST_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
 MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
@@ -148,6 +156,7 @@ LOGGER_DATE_FMT = '%H:%M:%S'
 # Used by remote patch serialization/deserialzation.
 INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
+PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
 # Default gerrit query used to find changes for CQ.
 DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '

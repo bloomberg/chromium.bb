@@ -126,12 +126,14 @@ class RemoteTryJob(object):
       local_branch = cros_build_lib.StripLeadingRefsHeads(patch.ref, False)
       ref_final = os.path.join(ref_base, local_branch, patch.sha1)
 
+      self.manifest.AssertProjectIsPushable(patch.project)
       data = self.manifest.projects[patch.project]
-
       patch.Upload(data['push_url'], ref_final, dryrun=dryrun)
 
-      tag = (constants.INTERNAL_PATCH_TAG if data['internal']
-             else constants.EXTERNAL_PATCH_TAG)
+      # TODO(rcui): Pass in the remote instead of tag. http://crosbug.com/33937.
+      tag = constants.EXTERNAL_PATCH_TAG
+      if data['remote'] == constants.INTERNAL_REMOTE:
+        tag = constants.INTERNAL_PATCH_TAG
 
       self.extra_args.append('--remote-patches=%s:%s:%s:%s:%s'
                              % (patch.project, local_branch, ref_final,

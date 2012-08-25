@@ -83,7 +83,7 @@ class base_mixin(object):
     self.build_root = 'fakebuildroot'
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
-                project='chromiumos/chromite', internal=False,
+                project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
                 tracking_branch='refs/heads/master', approval_timestamp=0):
     # pylint: disable=W0201
     # We have to use a custom mock class to fix some brain behaviour of
@@ -92,7 +92,8 @@ class base_mixin(object):
     patch = MockPatch(cros_patch.GerritPatch)
     self.mox._mock_objects.append(patch)
 
-    patch.internal = internal
+    patch.remote = remote
+    patch.internal = (remote == constants.INTERNAL_REMOTE)
     if change_id is None:
       change_id = self._patch_counter()
     patch.gerrit_number = str(change_id)
@@ -121,16 +122,17 @@ class base_mixin(object):
       return l[0]
     return l
 
-  def MakeHelper(self, internal=None, external=None):
-    if internal:
-      internal = self.mox.CreateMock(gerrit_helper.GerritHelper)
-      internal.version = '2.1'
-      internal.internal = True
-    if external:
-      external = self.mox.CreateMock(gerrit_helper.GerritHelper)
-      external.internal = False
-      external.version = '2.1'
-    return validation_pool.HelperPool(internal=internal, external=external)
+  def MakeHelper(self, cros_internal=None, cros=None):
+    if cros_internal:
+      cros_internal = self.mox.CreateMock(gerrit_helper.GerritHelper)
+      cros_internal.version = '2.1'
+      cros_internal.remote = constants.INTERNAL_REMOTE
+    if cros:
+      cros = self.mox.CreateMock(gerrit_helper.GerritHelper)
+      cros.remote = constants.EXTERNAL_REMOTE
+      cros.version = '2.1'
+    return validation_pool.HelperPool(cros_internal=cros_internal,
+                                      cros=cros)
 
 
 # pylint: disable=W0212,R0904
@@ -147,8 +149,9 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
                              'FindContentMergingProjects')
 
   @staticmethod
-  def SetContentMergingProjects(series, projects=(), internal=False):
-    helper = series._helper_pool.GetHelper(internal)
+  def SetContentMergingProjects(series, projects=(),
+                                remote=constants.EXTERNAL_REMOTE):
+    helper = series._helper_pool.GetHelper(remote)
     series._content_merging_projects[helper] = frozenset(projects)
 
   @contextlib.contextmanager
@@ -157,7 +160,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
 
   def GetPatchSeries(self, helper_pool=None, force_content_merging=False):
     if helper_pool is None:
-      helper_pool = self.MakeHelper(internal=True, external=True)
+      helper_pool = self.MakeHelper(cros_internal=True, cros=True)
     series = validation_pool.PatchSeries(self.build_root, helper_pool,
                                          force_content_merging)
 
@@ -199,8 +202,8 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
   def assertResults(self, series, changes, applied=(), failed_tot=(),
                     failed_inflight=(), frozen=True, dryrun=False):
     # Convenience; set the content pool as necessary.
-    for internal in set(x.internal for x in changes):
-      helper = series._helper_pool.GetHelper(internal)
+    for remote in set(x.remote for x in changes):
+      helper = series._helper_pool.GetHelper(remote)
       series._content_merging_projects.setdefault(helper, frozenset())
 
     manifest = MockManifest(self.build_root)
@@ -254,7 +257,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     patch1, patch2, patch3 = patches = self.GetPatches(3)
     patch2.change_id = patch2.id = patch2.sha1
     patch3.change_id = patch3.id = '*' + patch3.sha1
-    patch3.internal = True
+    patch3.remote = constants.INTERNAL_REMOTE
 
     self.SetPatchDeps(patch1, [patch2.sha1])
     self.SetPatchDeps(patch2, ['*%s' % patch3.sha1])
@@ -300,9 +303,9 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     """
     series = self.GetPatchSeries()
 
-    patch1 = self.MockPatch(internal=False)
-    patch2 = self.MockPatch(internal=True)
-    patch3 = self.MockPatch(internal=False)
+    patch1 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
+    patch2 = self.MockPatch(remote=constants.INTERNAL_REMOTE)
+    patch3 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
     patches = [patch3, patch2, patch1]
 
     self.SetPatchDeps(patch1)
@@ -319,7 +322,7 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
 
   @staticmethod
   def _SetQuery(series, change, is_parent=False):
-    helper = series._helper_pool.GetHelper(change.internal)
+    helper = series._helper_pool.GetHelper(change.remote)
     query = change.id
     if is_parent:
       query = "project:%s AND branch:%s AND %s" % (
@@ -912,12 +915,26 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     self._CheckTestData(ret.output)
 
   @staticmethod
-  def _GetTestData():
+  def _GetCrosInternalPatch(patch_info):
+    return cros_patch.GerritPatch(
+        patch_info,
+        constants.INTERNAL_REMOTE,
+        constants.GERRIT_INT_SSH_URL)
+
+  @staticmethod
+  def _GetCrosPatch(patch_info):
+    return cros_patch.GerritPatch(
+        patch_info,
+        constants.EXTERNAL_REMOTE,
+        constants.GERRIT_SSH_URL)
+
+  @classmethod
+  def _GetTestData(cls):
     ids = [cros_patch.MakeChangeId() for _ in xrange(3)]
-    changes = [cros_patch.GerritPatch(GetTestJson(ids[0]), True)]
-    non_os = [cros_patch.GerritPatch(GetTestJson(ids[1]), False)]
-    conflicting = [cros_patch.GerritPatch(GetTestJson(ids[2]), True)]
-    conflicting = [cros_patch.PatchException(x) for x in conflicting]
+    changes = [cls._GetCrosInternalPatch(GetTestJson(ids[0]))]
+    non_os = [cls._GetCrosPatch(GetTestJson(ids[1]))]
+    conflicting = [cls._GetCrosInternalPatch(GetTestJson(ids[2]))]
+    conflicting = [cros_patch.PatchException(x)for x in conflicting]
     pool = validation_pool.ValidationPool(
         constants.PUBLIC_OVERLAYS,
         '/fake/pathway', 1,
@@ -934,7 +951,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
       assert len(source) == len(value)
       for s_item, v_item in zip(source, value):
         assert getter(s_item).id == getter(v_item).id
-        assert getter(s_item).internal == getter(v_item).internal
+        assert getter(s_item).remote == getter(v_item).remote
     _f(pool.changes, changes)
     _f(pool.non_manifest_changes, non_os)
     _f(pool.changes_that_failed_to_apply_earlier, conflicting,
@@ -956,7 +973,8 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
     self.kernel_pkg = 'sys-kernel/chromeos-kernel'
     self.kernel_patch = self.GetPatches(project=self.kernel)
     self.secret = 'chromeos/secret'
-    self.secret_patch = self.GetPatches(project=self.secret, internal=True)
+    self.secret_patch = self.GetPatches(project=self.secret,
+                                        remote=constants.INTERNAL_REMOTE)
 
   @staticmethod
   def _GetBuildFailure(pkg):
@@ -977,7 +995,7 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
       suspects: Expected list of suspects returned by _FindSuspects.
       pkgs: List of packages that failed with exceptions in the build.
       exceptions: List of other exceptions that occurred during the build.
-      internal: Whether the failures occurred on an internal bot.
+      remote: Whether the failures occurred on an internal bot.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
     tracebacks = []
@@ -1035,6 +1053,7 @@ class TestFindSuspects(base_mixin, mox.MoxTestBase):
 
 class SimplePatch(object):
 
+  remote = constants.EXTERNAL_REMOTE
   internal = False
 
   def __init__(self):

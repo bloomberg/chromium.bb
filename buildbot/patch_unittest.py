@@ -142,9 +142,10 @@ I am the first commit.
     cros_test_lib.TempDirMixin.tearDown(self)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
-    internal = kwds.pop('internal', False)
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          'origin/master', internal, sha1=sha1, **kwds)
+                          'origin/master',
+                          kwds.pop('remote', constants.EXTERNAL_REMOTE),
+                          sha1=sha1, **kwds)
 
   def _run(self, cmd, cwd=None):
     # Note that cwd is intentionally set to a location the user can't write
@@ -314,11 +315,10 @@ I am the first commit.
     # And this should apply without issue, despite the differing history.
     patch6.Apply(git2, self.DEFAULT_TRACKING, trivial=True)
 
-  def _assertLookupAliases(self, internal):
+  def _assertLookupAliases(self, remote):
     git1 = self._MakeRepo('git1', self.source)
-    patch = self.CommitChangeIdFile(git1)
-    patch.internal = internal
-    prefix = '*' if internal else ''
+    patch = self.CommitChangeIdFile(git1, remote=remote)
+    prefix = '*' if patch.internal else ''
     vals = [patch.change_id, patch.sha1, getattr(patch, 'gerrit_number', None),
             getattr(patch, 'original_sha1', None)]
     vals = [x for x in vals if x is not None]
@@ -326,10 +326,10 @@ I am the first commit.
                      set(patch.LookupAliases()))
 
   def testExternalLookupAliases(self):
-    self._assertLookupAliases(False)
+    self._assertLookupAliases(constants.EXTERNAL_REMOTE)
 
   def testInternalLookupAliases(self):
-    self._assertLookupAliases(True)
+    self._assertLookupAliases(constants.INTERNAL_REMOTE)
 
   def MakeChangeId(self, how_many=1):
     l = [cros_patch.MakeChangeId() for _ in xrange(how_many)]
@@ -352,32 +352,32 @@ I am the first commit.
     return self.CommitFile(repo, filename, content, commit=commit,
                            ChangeId=changeid, **kwargs)
 
-  def _assertGerritDependencies(self, internal=False):
+  def _assertGerritDependencies(self, remote=constants.EXTERNAL_REMOTE):
     convert = str
-    if internal:
+    if remote == constants.INTERNAL_REMOTE:
       convert = lambda val: '*%s' % (val,)
     git1 = self._MakeRepo('git1', self.source)
     # Check that we handle the edge case of the first commit in a
     # repo...
-    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), internal=internal)
+    patch = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'), remote=remote)
     self.assertEqual(
         patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
         [])
     cid1, cid2, cid3 = self.MakeChangeId(3)
-    patch = self.CommitChangeIdFile(git1, cid1, internal=internal)
+    patch = self.CommitChangeIdFile(git1, cid1, remote=remote)
     # Since its parent is ToT, there are no deps.
     self.assertEqual(
         patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
         [])
     patch = self.CommitChangeIdFile(git1, cid2, content='monkeys',
-                                    internal=internal)
+                                    remote=remote)
     self.assertEqual(
         patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
         [convert(cid1)])
 
     # Check the behaviour for missing ChangeId in a parent next.
     patch = self.CommitChangeIdFile(git1, cid1, content='fling poo',
-                                    raw_changeid_text='', internal=internal)
+                                    raw_changeid_text='', remote=remote)
 
     # Verify it returns just the parrent, rather than all parents.
     self.assertEqual(
@@ -389,7 +389,7 @@ I am the first commit.
     for content in ('asdfg', '%sg' % ('0' * 39)):
       patch = self.CommitChangeIdFile(git1, content='thus %s' % content,
                                       raw_changeid_text='Change-Id: I%s'
-                                      % content, internal=internal)
+                                      % content, remote=remote)
       patch = self.CommitChangeIdFile(git1, cid3, content='update')
       self.assertRaises2(cros_patch.BrokenChangeID,
                          patch.GerritDependencies, git1,
@@ -404,7 +404,7 @@ I am the first commit.
     # ids.
     patch = self.CommitChangeIdFile(git1, raw_changeid_text='',
                                     content='the glass walls.',
-                                    internal=internal)
+                                    remote=remote)
     self.assertEqual(
         patch.GerritDependencies(git1, 'refs/remotes/origin/master'),
         map(convert, [parent_sha1]))
@@ -413,7 +413,7 @@ I am the first commit.
     self._assertGerritDependencies()
 
   def testInternalGerritDependencies(self):
-    self._assertGerritDependencies(True)
+    self._assertGerritDependencies(constants.INTERNAL_REMOTE)
 
   def _CheckPaladin(self, repo, master_id, ids, extra):
     patch = self.CommitChangeIdFile(
@@ -492,7 +492,8 @@ class TestLocalPatchGit(TestGitRepoPatch):
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          'origin/master', kwds.pop('internal', False),
+                          'origin/master',
+                          kwds.pop('remote', constants.EXTERNAL_REMOTE),
                           sha1, **kwds)
 
   def testUpload(self):
@@ -546,7 +547,8 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, self.PROJECT, ref,
                           'origin/master', self.ORIGINAL_BRANCH,
-                          self.ORIGINAL_SHA1, kwds.pop('internal', False),
+                          self.ORIGINAL_SHA1,
+                          kwds.pop('remote', constants.EXTERNAL_REMOTE),
                           carbon_copy_sha1=sha1, **kwds)
 
   def testStringRepresentation(self):
@@ -564,20 +566,10 @@ class TestGerritPatch(TestGitRepoPatch):
   class patch_kls(cros_patch.GerritPatch):
     # Suppress the behaviour pointing the project url at actual gerrit,
     # instead slaving it back to a local repo for tests.
-    def _GetProjectUrl(self, project, internal):
+    def __init__(self, *args, **kwargs):
+      cros_patch.GerritPatch.__init__(self, *args, **kwargs)
       assert hasattr(self, 'patch_dict')
-      return self.patch_dict['_unittest_url_bypass']
-
-  def test_GetProjectUrl(self):
-    # We test this since we explicitly override the behaviour
-    # for all other usage.
-    kls = cros_patch.GerritPatch
-    self.assertEqual(
-        kls._GetProjectUrl('monkeys', False),
-        os.path.join(constants.GERRIT_SSH_URL, 'monkeys'))
-    self.assertEqual(
-        kls._GetProjectUrl('monkeys', True),
-        os.path.join(constants.GERRIT_INT_SSH_URL, 'monkeys'))
+      self.project_url = self.patch_dict['_unittest_url_bypass']
 
   @property
   def test_json(self):
@@ -585,7 +577,8 @@ class TestGerritPatch(TestGitRepoPatch):
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     json = self.test_json
-    internal = kwds.pop('internal', False)
+    remote = kwds.pop('remote', constants.EXTERNAL_REMOTE)
+    url_prefix = kwds.pop('url_prefix', constants.GERRIT_SSH_URL)
     suppress_branch = kwds.pop('suppress_branch', False)
     change_id = kwds.pop('ChangeId', None)
     if change_id is None:
@@ -602,14 +595,16 @@ class TestGerritPatch(TestGitRepoPatch):
     json['_unittest_url_bypass'] = source
     json['id'] = change_id
 
-    obj = self.patch_kls(json.copy(), internal)
+    obj = self.patch_kls(json.copy(), remote, url_prefix)
     self.assertEqual(obj.patch_dict, json)
-    self.assertEqual(obj.internal, internal)
+    self.assertEqual(obj.remote, remote)
+    self.assertEqual(obj.url_prefix, url_prefix)
     self.assertEqual(obj.project, json['project'])
     self.assertEqual(obj.ref, refspec)
     self.assertEqual(obj.change_id, change_id)
     self.assertEqual(
-        obj.id, cros_patch.FormatChangeId(change_id, force_internal=internal))
+        obj.id,
+        cros_patch.FormatChangeId(change_id, force_internal=obj.internal))
     # Now make the fetching actually work, if desired.
     if not suppress_branch:
       # Note that a push is needed here, rather than a branch; branch
@@ -645,10 +640,6 @@ class TestGerritPatch(TestGitRepoPatch):
       msg = 'Expected %r, but got %r (approvals=%r)' % (
           expected, patch.approval_timestamp, approvals)
       self.assertEqual(patch.approval_timestamp, expected, msg)
-
-  @property
-  def test_json(self):
-    return copy.deepcopy(FAKE_PATCH_JSON)
 
 
 class PrepareRemotePatchesTest(unittest.TestCase):
@@ -721,7 +712,8 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     output_obj.output = '12345'.rjust(40, '0')
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
-    self.manifest.ProjectIsInternal('my/project').AndReturn(False)
+    self.manifest.GetAttributeForProject('my/project',
+                                         'remote').AndReturn('cros')
     cros_build_lib.RunGitCommand(
         'mydir', mox.In('m/kernel..mybranch')).AndReturn(output_obj)
 
@@ -741,7 +733,8 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     output_obj.output = ''
     self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
     self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/master')
-    self.manifest.ProjectIsInternal('my/project').AndReturn(False)
+    self.manifest.GetAttributeForProject('my/project',
+                                         'remote').AndReturn('cros')
     cros_build_lib.RunGitCommand(
         'mydir', mox.In('m/master..mybranch')).AndReturn(output_obj)
     self.mox.ReplayAll()

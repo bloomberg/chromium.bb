@@ -745,10 +745,6 @@ class Manifest(object):
       KeyError if the project isn't known."""
     return self.projects[os.path.normpath(project)]['path']
 
-  def ProjectIsInternal(self, project):
-    """Returns True if the given project is internal."""
-    return self.projects[project]['internal']
-
   def _FinalizeProjectData(self, attrs):
     for key in ('remote', 'revision'):
       attrs.setdefault(key, self.default.get(key))
@@ -762,25 +758,25 @@ class Manifest(object):
 
     attrs['local_revision'] = local_rev
 
-    internal = False
-    if remote == 'cros':
-      attrs['push_remote'] = EXTERNAL_GERRIT_SSH_REMOTE
-      attrs['push_remote_url'] = constants.GERRIT_SSH_URL
-      if rev.startswith('refs/heads/'):
-        attrs['push_remote_local'] = 'refs/remotes/%s/%s' % (
-            EXTERNAL_GERRIT_SSH_REMOTE, StripLeadingRefsHeads(rev))
-      else:
-        attrs['push_remote_local'] = rev
-    elif remote == 'cros-internal':
-      # For cros-internal, it's already accessing gerrit directly; thus
-      # just use that.
-      attrs['push_remote'] = attrs['remote']
-      attrs['push_remote_url'] = constants.GERRIT_INT_SSH_URL
-      attrs['push_remote_local'] = attrs['local_revision']
-      internal = True
+    attrs['pushable'] = remote in constants.CROS_REMOTES
+    if attrs['pushable']:
+      if remote == constants.EXTERNAL_REMOTE:
+        attrs['push_remote'] = EXTERNAL_GERRIT_SSH_REMOTE
+        attrs['push_remote_url'] = constants.GERRIT_SSH_URL
+        if rev.startswith('refs/heads/'):
+          attrs['push_remote_local'] = 'refs/remotes/%s/%s' % (
+              EXTERNAL_GERRIT_SSH_REMOTE, StripLeadingRefsHeads(rev))
+        else:
+          attrs['push_remote_local'] = rev
+      elif remote == constants.INTERNAL_REMOTE:
+        # For cros-internal, it's already accessing gerrit directly; thus
+        # just use that.
+        attrs['push_remote'] = attrs['remote']
+        attrs['push_remote_url'] = constants.GERRIT_INT_SSH_URL
+        attrs['push_remote_local'] = attrs['local_revision']
 
-    attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
-    attrs['internal'] = internal
+      attrs['push_remote_url'] = constants.CROS_REMOTES[remote]
+      attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
 
     # Compute the local ref space.
     # Sanitize a couple path fragments to simplify assumptions in this
@@ -800,6 +796,12 @@ class Manifest(object):
       project: Which project we're looking at.
     """
     return self.GetAttributeForProject(project, 'local_revision')
+
+  def AssertProjectIsPushable(self, project):
+    """Verify that the project has push_* attributes populated."""
+    data = self.projects[project]
+    if not data['pushable']:
+      raise AssertionError('Remote %s is not pushable.' % data['remote'])
 
   @staticmethod
   def _GetManifestHash(source):
@@ -897,6 +899,7 @@ class ManifestCheckout(Manifest):
         or a mirror that has refs/meta/config stripped from it."""
     result = self._content_merging.get(project)
     if result is None:
+      self.AssertProjectIsPushable(project)
       data = self.projects[project]
       self._content_merging[project] = result = _GitRepoIsContentMerging(
           data['local_path'], data['push_remote'])
@@ -1178,15 +1181,19 @@ def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
     if project is None:
       return None
 
+    if for_push:
+      manifest.AssertProjectIsPushable(project)
+
     data = manifest.projects[project]
     if for_push:
-      remote = data.get('push_remote', EXTERNAL_GERRIT_SSH_REMOTE)
+      remote = data['push_remote']
     else:
       remote = data['remote']
 
     if for_checkout:
-      revision = (data['push_remote_local'] if for_push
-                  else data['local_revision'])
+      revision = data['local_revision']
+      if for_push:
+        revision = data['push_remote_local']
     else:
       revision = data['revision']
       if not revision.startswith("refs/heads/"):

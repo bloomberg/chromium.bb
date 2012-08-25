@@ -36,18 +36,19 @@ class GerritHelper():
 
   _GERRIT_MAX_QUERY_RETURN = 500
 
-  def __init__(self, internal):
+  def __init__(self, remote):
     """Initializes variables for interaction with a gerrit server."""
-    if internal:
+    if remote == constants.INTERNAL_REMOTE:
       self.ssh_port = constants.GERRIT_INT_PORT
       self.ssh_host = constants.GERRIT_INT_HOST
-      self.ssh_url = constants.GERRIT_INT_SSH_URL
-    else:
+    elif remote == constants.EXTERNAL_REMOTE:
       self.ssh_port = constants.GERRIT_PORT
       self.ssh_host = constants.GERRIT_HOST
-      self.ssh_url = constants.GERRIT_SSH_URL
+    else:
+      raise Exception('Remote %s not supported.' % remote)
 
-    self.internal = internal
+    self.ssh_url = constants.CROS_REMOTES[remote]
+    self.remote = remote
     self._version = None
 
   @property
@@ -203,7 +204,8 @@ class GerritHelper():
     if sort:
       result = sorted(result, key=operator.itemgetter(sort))
     if not raw:
-      return [cros_patch.GerritPatch(x, self.internal) for x in result]
+      return [cros_patch.GerritPatch(x, self.remote, self.ssh_url)
+              for x in result]
 
     return result
 
@@ -408,13 +410,13 @@ def GetGerritPatchInfo(patches):
     # while this may seem silly, we do this to preclude the potential
     # of a conflict between gerrit instances.  Since change-id is
     # effectively user controlled, better safe than sorry.
-    helper = GerritHelper(True)
+    helper = GerritHelper(constants.INTERNAL_REMOTE)
     raw_ids = [x[1:] for x in internal_patches]
     parsed_patches.update(('*' + k, v) for k, v in
         helper.QueryMultipleCurrentPatchset(raw_ids))
 
   if external_patches:
-    helper = GerritHelper(False)
+    helper = GerritHelper(constants.EXTERNAL_REMOTE)
     parsed_patches.update(
         helper.QueryMultipleCurrentPatchset(external_patches))
 
@@ -438,4 +440,4 @@ def GetGerritHelperForChange(change):
   If you need a GerritHelper for a specific change, get it via this
   function.
   """
-  return GerritHelper(change.internal)
+  return GerritHelper(change.remote)

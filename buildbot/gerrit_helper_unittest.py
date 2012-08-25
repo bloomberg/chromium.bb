@@ -94,7 +94,7 @@ class GerritHelperTest(mox.MoxTestBase):
     cros_build_lib.RunCommand(mox.In('resume_sortkey:00166e8700001052'),
                               redirect_stdout=True).AndReturn(query2)
     self.mox.ReplayAll()
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     changes = helper.Query('monkeys')
     self.assertEqual(len(changes), 813)
 
@@ -106,7 +106,7 @@ class GerritHelperTest(mox.MoxTestBase):
     cros_build_lib.RunCommand(mox.In('gerrit.chromium.org'),
                               redirect_stdout=True).AndReturn(fake_result)
     self.mox.ReplayAll()
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     changes = helper.Query("monkey")
     self.assertEqual(set(x.change_id for x in changes),
                      set(['Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
@@ -122,7 +122,7 @@ class GerritHelperTest(mox.MoxTestBase):
     cros_build_lib.RunCommand(mox.In('gerrit-int.chromium.org'),
                               redirect_stdout=True).AndReturn(fake_result)
     self.mox.ReplayAll()
-    helper = gerrit_helper.GerritHelper(True)
+    helper = gerrit_helper.GerritHelper(constants.INTERNAL_REMOTE)
     changes = helper.Query("monkeys")
     self.assertEqual(set(x.change_id for x in changes),
                      set(['Iee5c89d929f1850d7d4e1a4ff5f21adda800025f',
@@ -140,7 +140,7 @@ class GerritHelperTest(mox.MoxTestBase):
 
     Runs the command and prints out the changes.  Should not throw an exception.
     """
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     change = helper.QuerySingleRecord('2')
     self.assertEqual(change.gerrit_number, '2')
     self.assertEqual(change.change_id,
@@ -152,7 +152,7 @@ class GerritHelperTest(mox.MoxTestBase):
 
     Runs the command and prints out the changes.  Should not throw an exception.
     """
-    helper = gerrit_helper.GerritHelper(True)
+    helper = gerrit_helper.GerritHelper(constants.INTERNAL_REMOTE)
     change = helper.QuerySingleRecord('1')
     self.assertEqual(change.gerrit_number, '1')
     self.assertEqual(change.change_id,
@@ -176,7 +176,7 @@ class GerritHelperTest(mox.MoxTestBase):
                               redirect_stdout=True).AndReturn(
                                   fake_bad_result_from_gerrit)
     self.mox.ReplayAll()
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     self.assertTrue(helper.IsChangeCommitted(changeid))
     self.assertFalse(helper.IsChangeCommitted(changeid_bad, must_match=False))
     self.mox.VerifyAll()
@@ -184,7 +184,7 @@ class GerritHelperTest(mox.MoxTestBase):
   def testCanRunIsChangeCommand(self):
     """Sanity test for IsChangeCommitted to make sure it works."""
     changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     self.assertTrue(helper.IsChangeCommitted(changeid))
 
   def testGetLatestSHA1ForBranch(self):
@@ -201,14 +201,14 @@ class GerritHelperTest(mox.MoxTestBase):
             'refs/heads/master'],
         redirect_stdout=True, print_cmd=True).AndReturn(result)
     self.mox.ReplayAll()
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     self.assertEqual(helper.GetLatestSHA1ForBranch('tacos/chromite',
                                                    my_branch), my_hash)
     self.mox.VerifyAll()
 
   def testGetLatestSHA1ForProject4Realz(self):
     """Verify we can check the latest hash from chromite."""
-    helper = gerrit_helper.GerritHelper(False)
+    helper = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
     cros_build_lib.Info('The current sha1 on master for chromite is: %s' %
                         helper.GetLatestSHA1ForBranch('chromiumos/chromite',
                                                       'master'))
@@ -292,7 +292,7 @@ class GerritQueryTests(mox.MoxTestBase):
     self._test_missing(['21445', '2144'])
 
   def _common_test(self, patches, server='gerrit.chromium.org',
-    internal=False, calls_allowed=1):
+    remote=constants.EXTERNAL_REMOTE, calls_allowed=1):
 
     output_obj = cros_build_lib.CommandResult()
     output_obj.returncode = 0
@@ -305,12 +305,13 @@ class GerritQueryTests(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     patch_info = gerrit_helper.GetGerritPatchInfo(patches)
-    self.assertEquals(patch_info[0].internal, internal)
+    self.assertEquals(patch_info[0].remote, remote)
     self.mox.VerifyAll()
     return patch_info
 
   def testInternalID(self):
-    self._common_test(['*Icb8e1d'], 'gerrit-int.chromium.org', True)
+    self._common_test(['*Icb8e1d'], 'gerrit-int.chromium.org',
+                      constants.INTERNAL_REMOTE)
 
   def testExternalID(self):
     self._common_test(['Icb8e1d'])
@@ -319,11 +320,12 @@ class GerritQueryTests(mox.MoxTestBase):
     self._common_test(['2144'])
 
   def testInternallNumeric(self):
-    self._common_test(['*2144'], 'gerrit-int.chromium.org', True)
+    self._common_test(['*2144'], 'gerrit-int.chromium.org',
+                      constants.INTERNAL_REMOTE)
 
   def testInternalUnique(self):
-    self._common_test(['*2144', '*Icb8e1'], 'gerrit-int.chromium.org', True,
-                      calls_allowed=2)
+    self._common_test(['*2144', '*Icb8e1'], 'gerrit-int.chromium.org',
+                      constants.INTERNAL_REMOTE, calls_allowed=2)
 
   def testExternalUnique(self):
     """ensure that if two unique queries that point to the same cl, just one

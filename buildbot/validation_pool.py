@@ -92,23 +92,23 @@ def _RunCommand(cmd, dryrun):
 class GerritHelperNotAvailable(gerrit_helper.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
-  def __init__(self, internal=False):
+  def __init__(self, remote=constants.EXTERNAL_REMOTE):
     gerrit_helper.GerritException.__init__()
     # Stringify the pool so that serialization doesn't try serializing
     # the actual HelperPool.
-    self.internal = internal
-    self.args = (internal,)
+    self.remote = remote
+    self.args = (remote,)
 
   def __str__(self):
     return (
-        "Needed a internal=%s gerrit_helper, but one isn't allowed by this"
-        "HelperPool instance.") % (self.internal,)
+        "Needed a remote=%s gerrit_helper, but one isn't allowed by this"
+        "HelperPool instance.") % (self.remote,)
 
 
 class HelperPool(object):
   """Pool of allowed GerritHelpers to be used by CQ/PatchSeries."""
 
-  def __init__(self, internal=None, external=None):
+  def __init__(self, cros_internal=None, cros=None):
     """Initialize this instance with the given handlers.
 
     Most likely you want the classmethod SimpleCreate which takes boolean
@@ -116,13 +116,14 @@ class HelperPool(object):
 
     If a given handler is None, then it's disabled; else the passed in
     object is used.
-
     """
-    self.external = external
-    self.internal = internal
+    self.pool = {
+        constants.EXTERNAL_REMOTE : cros,
+        constants.INTERNAL_REMOTE : cros_internal
+    }
 
   @classmethod
-  def SimpleCreate(cls, internal=True, external=True):
+  def SimpleCreate(cls, cros_internal=True, cros=True):
     """Classmethod helper for creating a HelperPool from boolean options.
 
     Args:
@@ -131,33 +132,38 @@ class HelperPool(object):
     Returns:
       An appropriately configured HelperPool instance.
     """
+    if cros:
+      cros = gerrit_helper.GerritHelper(constants.EXTERNAL_REMOTE)
+    else:
+      cros = None
 
-    external = gerrit_helper.GerritHelper(internal=False) if external else None
-    internal = gerrit_helper.GerritHelper(internal=True) if internal else None
-    return cls(internal=internal, external=external)
+    if cros_internal:
+      cros_internal = gerrit_helper.GerritHelper(constants.INTERNAL_REMOTE)
+    else:
+      cros_internal = None
+
+    return cls(cros_internal=cros_internal, cros=cros)
 
   def ForChange(self, change):
     """Return the helper to use for a particular change.
 
     If no helper is configured, an Exception is raised.
     """
-    return self.GetHelper(change.internal)
+    return self.GetHelper(change.remote)
 
-  def GetHelper(self, internal=False):
-    """Return the helper to use for internal versus external.
+  def GetHelper(self, remote):
+    """Return the helper to use for a given remote.
 
     If no helper is configured, an Exception is raised.
     """
-    if internal:
-      if self.internal:
-        return self.internal
-    elif self.external:
-      return self.external
+    helper = self.pool.get(remote)
+    if not helper:
+      raise GerritHelperNotAvailable(remote)
 
-    raise GerritHelperNotAvailable(internal)
+    return helper
 
   def __iter__(self):
-    for helper in (self.external, self.internal):
+    for helper in self.pool.itervalues():
       if helper:
         yield helper
 
@@ -199,7 +205,7 @@ class PatchSeries(object):
     self.force_content_merging = force_content_merging
 
     if helper_pool is None:
-      helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
+      helper_pool = HelperPool.SimpleCreate(cros_internal=True, cros=True)
     self._helper_pool = helper_pool
     self._path = path
     if deps_filter_fn is None:
@@ -276,8 +282,10 @@ class PatchSeries(object):
         of the given change- as such limit the query purely to that
         project/branch.
     """
-    is_internal = query.startswith('*')
-    helper = self._helper_pool.GetHelper(is_internal)
+    remote = constants.EXTERNAL_REMOTE
+    if query.startswith('*'):
+      remote = constants.INTERNAL_REMOTE
+    helper = self._helper_pool.GetHelper(remote)
 
     # TODO(ferringb, sosa): Update this for gerrit number support.
     # Note this forces FormatChangeId to 1) ensure that the query
@@ -895,14 +903,14 @@ class ValidationPool(object):
   def GetGerritHelpersForOverlays(overlays):
     """Discern the allowed GerritHelpers to use based on the given overlay."""
     # TODO(sosa): Remove False case once overlays logic has stabilized on TOT.
-    internal = external = False
+    cros_internal = cros = False
     if overlays in [constants.PUBLIC_OVERLAYS, constants.BOTH_OVERLAYS, False]:
-      external = True
+      cros = True
 
     if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
-      internal = True
+      cros_internal = True
 
-    return HelperPool.SimpleCreate(internal=internal, external=external)
+    return HelperPool.SimpleCreate(cros_internal=cros_internal, cros=cros)
 
   def __reduce__(self):
     """Used for pickling to re-create validation pool."""

@@ -421,7 +421,7 @@ class GitRepoPatch(object):
                                  re.I|re.MULTILINE)
   _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
 
-  def __init__(self, project_url, project, ref, tracking_branch, internal,
+  def __init__(self, project_url, project, ref, tracking_branch, remote,
                sha1=None, change_id=None):
     """Initialization of abstract Patch class.
 
@@ -442,7 +442,7 @@ class GitRepoPatch(object):
     self.project = project
     self.ref = ref
     self.tracking_branch = os.path.basename(tracking_branch)
-    self.internal = internal
+    self.remote = remote
     if sha1 is not None:
       sha1 = FormatSha1(sha1, strict=True)
     self.sha1 = sha1
@@ -455,6 +455,11 @@ class GitRepoPatch(object):
     # Do the ChangeId setting now that we have a fully setup instance.
     if change_id:
       self._SetChangeId(change_id)
+
+  @property
+  def internal(self):
+    """Whether patch is to an internal cros project."""
+    return self.remote == constants.INTERNAL_REMOTE
 
   def LookupAliases(self):
     """Return the list of lookup keys this change is known by."""
@@ -911,10 +916,10 @@ class GitRepoPatch(object):
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
 
-  def __init__(self, project_url, project, ref, tracking_branch, internal,
+  def __init__(self, project_url, project, ref, tracking_branch, remote,
                sha1):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
-                          internal, sha1=sha1)
+                          remote, sha1=sha1)
     # Initialize our commit message/ChangeId now, since we know we have
     # access to the data right now.
     self.Fetch(project_url)
@@ -997,10 +1002,9 @@ class LocalPatch(GitRepoPatch):
 class UploadedLocalPatch(GitRepoPatch):
   """Represents an uploaded local patch passed in using --remote-patch."""
   def __init__(self, project_url, project, ref, tracking_branch,
-               original_branch, original_sha1, internal,
-               carbon_copy_sha1=None):
+               original_branch, original_sha1, remote, carbon_copy_sha1=None):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
-                          internal, sha1=carbon_copy_sha1)
+                          remote, sha1=carbon_copy_sha1)
     self.original_branch = original_branch
 
     self._original_sha1_valid = True
@@ -1032,7 +1036,7 @@ class UploadedLocalPatch(GitRepoPatch):
 class GerritPatch(GitRepoPatch):
   """Object that represents a Gerrit CL."""
 
-  def __init__(self, patch_dict, internal):
+  def __init__(self, patch_dict, remote, url_prefix):
     """Construct a GerritPatch object from Gerrit query results.
 
     Gerrit query JSON fields are documented at:
@@ -1040,15 +1044,18 @@ class GerritPatch(GitRepoPatch):
 
     Args:
       patch_dict: A dictionary containing the parsed JSON gerrit query results.
-      internal: Whether the CL is an internal CL.
+      remote: The manifest remote the patched project uses.
+      url_prefix: The project name will be appended to this to get the full
+                  repository URL.
     """
     self.patch_dict = patch_dict
+    self.url_prefix = url_prefix
     super(GerritPatch, self).__init__(
-        self._GetProjectUrl(patch_dict['project'], internal),
+        os.path.join(url_prefix, patch_dict['project']),
         patch_dict['project'],
         patch_dict['currentPatchSet']['ref'],
         patch_dict['branch'],
-        internal,
+        remote,
         sha1=patch_dict['currentPatchSet']['revision'],
         change_id=patch_dict['id'])
 
@@ -1070,7 +1077,8 @@ class GerritPatch(GitRepoPatch):
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""
-    return self.__class__, (self.patch_dict.copy(), self.internal)
+    return self.__class__, (self.patch_dict.copy(), self.remote,
+                            self.url_prefix)
 
   def LookupAliases(self):
     """Return the list of lookup keys this change is known by."""
@@ -1082,16 +1090,6 @@ class GerritPatch(GitRepoPatch):
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
     return self.status == 'MERGED'
-
-  @classmethod
-  def _GetProjectUrl(cls, project, internal):
-    """Returns the url to the gerrit project."""
-    if internal:
-      url_prefix = constants.GERRIT_INT_SSH_URL
-    else:
-      url_prefix = constants.GERRIT_SSH_URL
-
-    return os.path.join(url_prefix, project)
 
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id, validating what we received
@@ -1146,7 +1144,7 @@ class GerritPatch(GitRepoPatch):
 
 
 def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch,
-                            is_internal, allow_empty=False, starting_ref=None):
+                            remote, allow_empty=False, starting_ref=None):
   if starting_ref is None:
     starting_ref = branch
 
@@ -1162,7 +1160,7 @@ def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch,
   for sha1 in sha1s:
     yield LocalPatch(os.path.join(git_repo, '.git'),
                      project, branch, tracking_branch,
-                     is_internal, sha1)
+                     remote, sha1)
 
 
 def PrepareLocalPatches(manifest, patches):
@@ -1177,10 +1175,10 @@ def PrepareLocalPatches(manifest, patches):
     project, branch = patch.split(':')
     project_dir = manifest.GetProjectPath(project, True)
     tracking_branch = manifest.GetProjectsLocalRevision(project)
+    remote = manifest.GetAttributeForProject(project, 'remote')
 
     patch_info.extend(GeneratePatchesFromRepo(
-        project_dir, project, tracking_branch, branch,
-        manifest.ProjectIsInternal(project)))
+        project_dir, project, tracking_branch, branch, remote))
 
   return patch_info
 
@@ -1213,18 +1211,17 @@ def PrepareRemotePatches(patches):
           "older version of chromite.  Run 'repo sync "
           "chromiumos/chromite'.  Error was %s" % e)
 
-    internal = False
-    if tag == constants.EXTERNAL_PATCH_TAG:
-      push_url = constants.GERRIT_SSH_URL
-    elif tag == constants.INTERNAL_PATCH_TAG:
-      push_url = constants.GERRIT_INT_SSH_URL
-      internal = True
-    else:
+    if tag not in constants.PATCH_TAGS:
       raise ValueError('Bad remote patch format.  Unknown tag %s' % tag)
 
+    remote = constants.EXTERNAL_REMOTE
+    if tag == constants.INTERNAL_PATCH_TAG:
+      remote = constants.INTERNAL_REMOTE
+
+    push_url = constants.CROS_REMOTES[remote]
     patch_info.append(UploadedLocalPatch(os.path.join(push_url, project),
                                          project, ref, tracking_branch,
                                          original_branch,
-                                         os.path.basename(ref), internal))
+                                         os.path.basename(ref), remote))
 
   return patch_info
