@@ -10,7 +10,7 @@ file, with a bit of extra info.
    a try except in the python script. Need to be added to configure.ac so that debian packages can automatically pick up dependancies.
 
 * near term
-** [mh] (google issue 9) bindings should provide variable to pick up table location at runtime.
+** (google issue 9) bindings should provide variable to pick up table location at runtime.
 ** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
    Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.
 
@@ -21,10 +21,18 @@ file, with a bit of extra info.
 
 ** [mh] compBrlLeftCursor is wrong, provide test case for correct behaviour
    Once corrected, consider merging compBrlLeftCursor and compBrlAtCursor, since neither provide the needed behaviour, but the corrected version should.
+   also see https://bugzilla.gnome.org/show_bug.cgi?id=592421
 
 ** [mh] test case for non-null terminated string when chars are undefined.
 
 ** fix bug described by squash_space.c
+
+** [mh] Add Ethiopic table and harness data, as corrected by Dr. Tamru E. Belay
+
+** Esperanto table should not be blacklisted, work out whats wrong and make sure it is usable.
+
+** [mh] According to the harness, Danish table isn't producing correct output.
+   From memory of Swedish, the actual output is correct, but the harness might be wrong, best to check with Danish users.
 
 * unallocated
 ** (google issue 16) infinite loop in lou_backtranslate.
