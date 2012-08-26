@@ -154,5 +154,19 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
   PumpLoop();
 }
 
+TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseStateChanged) {
+  InSequence dummy;
+
+  DictionaryValue passphrase_state_details;
+  passphrase_state_details.SetString("passphraseState", "IMPLICIT_PASSPHRASE");
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onPassphraseStateChanged",
+                            HasDetailsAsDictionary(passphrase_state_details)));
+
+  js_sync_encryption_handler_observer_.OnPassphraseStateChanged(
+      IMPLICIT_PASSPHRASE);
+  PumpLoop();
+}
+
 }  // namespace
 }  // namespace syncer

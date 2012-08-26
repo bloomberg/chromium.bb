@@ -57,9 +57,7 @@ class SyncEncryptionHandlerImpl
   virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void EnableEncryptEverything() OVERRIDE;
   virtual bool EncryptEverythingEnabled() const OVERRIDE;
-  // Can be called from any thread.
-  // TODO(zea): enforce this is only called on sync thread.
-  virtual bool IsUsingExplicitPassphrase() const OVERRIDE;
+  virtual PassphraseState GetPassphraseState() const OVERRIDE;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
@@ -180,8 +178,9 @@ class SyncEncryptionHandlerImpl
   // thread.
   // Whether all current and future types should be encrypted.
   bool encrypt_everything_;
-  // Whether the user is using a custom passphrase for encryption.
-  bool explicit_passphrase_;
+  // The current state of the passphrase required to decrypt the encryption
+  // keys stored in the nigori node.
+  PassphraseState passphrase_state_;
 
   // The number of times we've automatically (i.e. not via SetPassphrase or
   // conflict resolver) updated the nigori's encryption keys in this chrome

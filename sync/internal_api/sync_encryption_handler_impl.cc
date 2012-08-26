@@ -40,8 +40,8 @@ static const int kNigoriOverwriteLimit = 10;
 SyncEncryptionHandlerImpl::Vault::Vault(
     Encryptor* encryptor,
     ModelTypeSet encrypted_types)
-  : cryptographer(encryptor),
-    encrypted_types(encrypted_types) {
+    : cryptographer(encryptor),
+      encrypted_types(encrypted_types) {
 }
 
 SyncEncryptionHandlerImpl::Vault::~Vault() {
@@ -54,7 +54,7 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
       user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
-      explicit_passphrase_(false),
+      passphrase_state_(IMPLICIT_PASSPHRASE),
       nigori_overwrite_count_(0) {
 }
 
@@ -390,12 +390,9 @@ bool SyncEncryptionHandlerImpl::EncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
-bool SyncEncryptionHandlerImpl::IsUsingExplicitPassphrase() const {
-  // TODO(zea): this is called from the UI thread, so we have to have a
-  // transaction while accessing it. Add an OnPassphraseTypeChanged observer
-  // and have the SBH cache the value on the UI thread.
-  ReadTransaction trans(FROM_HERE, user_share_);
-  return explicit_passphrase_;
+PassphraseState SyncEncryptionHandlerImpl::GetPassphraseState() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return passphrase_state_;
 }
 
 // Note: this is called from within a syncable transaction, so we need to post
@@ -517,10 +514,15 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Applying nigori node update.";
   bool nigori_types_need_update = !UpdateEncryptedTypesFromNigori(nigori,
                                                                   trans);
-  if (nigori.using_explicit_passphrase())
-    explicit_passphrase_ = true;
+  if (nigori.using_explicit_passphrase() &&
+      passphrase_state_ != CUSTOM_PASSPHRASE) {
+    passphrase_state_ = CUSTOM_PASSPHRASE;
+    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                      OnPassphraseStateChanged(passphrase_state_));
+  }
 
   Cryptographer* cryptographer = &UnlockVaultMutable(trans)->cryptographer;
   bool nigori_needs_new_keys = false;
@@ -567,7 +569,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   // Check if the current local encryption state is stricter/newer than the
   // nigori state. If so, we need to overwrite the nigori node with the local
   // state.
-  if (nigori.using_explicit_passphrase() != explicit_passphrase_ ||
+  bool explicit_passphrase = passphrase_state_ == CUSTOM_PASSPHRASE;
+  if (nigori.using_explicit_passphrase() != explicit_passphrase ||
       nigori.encrypt_everything() != encrypt_everything_ ||
       nigori_types_need_update ||
       nigori_needs_new_keys) {
@@ -683,7 +686,7 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
   // set the passphrase (for example if we need to preserve the new GAIA
   // passphrase).
   if (!bootstrap_token.empty()) {
-    DVLOG(1) << "Bootstrap token updated.";
+    DVLOG(1) << "Passphrase bootstrap token updated.";
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                       OnBootstrapTokenUpdated(bootstrap_token));
   }
@@ -706,8 +709,6 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     return;
   }
 
-  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                    OnPassphraseAccepted());
   DCHECK(cryptographer.is_ready());
 
   sync_pb::NigoriSpecifics specifics(nigori_node->GetNigoriSpecifics());
@@ -715,9 +716,18 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
   // the same.
   if (!cryptographer.GetKeys(specifics.mutable_encrypted()))
     NOTREACHED();
-  explicit_passphrase_ = is_explicit;
+  if (is_explicit && passphrase_state_ != CUSTOM_PASSPHRASE) {
+    passphrase_state_ = CUSTOM_PASSPHRASE;
+    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                      OnPassphraseStateChanged(passphrase_state_));
+  }
   specifics.set_using_explicit_passphrase(is_explicit);
   nigori_node->SetNigoriSpecifics(specifics);
+
+  // Must do this after OnPassphraseStateChanged, in order to ensure the PSS
+  // checks the passphrase state after it has been set.
+  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                    OnPassphraseAccepted());
 
   // Does nothing if everything is already encrypted.
   ReEncryptEverything(trans);

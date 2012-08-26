@@ -698,6 +698,7 @@ class SyncEncryptionHandlerObserverMock
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));  // NOLINT
+  MOCK_METHOD1(OnPassphraseStateChanged, void(PassphraseState));  // NOLINT
 };
 
 }  // namespace
@@ -1504,6 +1505,8 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase", true);
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
@@ -1544,8 +1547,8 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       false);
-  EXPECT_FALSE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1578,8 +1581,8 @@ TEST_F(SyncManagerTest, UpdateGaiaPass) {
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       false);
-  EXPECT_FALSE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1622,11 +1625,13 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
-  EXPECT_TRUE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(CUSTOM_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1678,8 +1683,8 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("passphrase2");
-  EXPECT_FALSE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1734,8 +1739,8 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_gaia",
       false);
-  EXPECT_FALSE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
   {
@@ -1756,8 +1761,8 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "old_gaia",
       false);
-  EXPECT_FALSE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1806,9 +1811,11 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("explicit");
-  EXPECT_TRUE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(CUSTOM_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1850,8 +1857,8 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "passphrase",
       false);
-  EXPECT_FALSE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(IMPLICIT_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1879,11 +1886,13 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
-  EXPECT_TRUE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(CUSTOM_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -2103,6 +2112,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
@@ -2299,11 +2310,13 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
-  EXPECT_TRUE(
-      sync_manager_.GetEncryptionHandler()->IsUsingExplicitPassphrase());
+  EXPECT_EQ(CUSTOM_PASSPHRASE,
+            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
   EXPECT_TRUE(ResetUnsyncedEntry(PASSWORDS, client_tag));
 }
 

@@ -454,6 +454,11 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Invoked when sync finishes encrypting new datatypes.
   void NotifyEncryptionComplete();
 
+  // Invoked when the passphrase state has changed. Caches the passphrase state
+  // for later use on the UI thread.
+  void HandlePassphraseStateChangedOnFrontendLoop(
+      syncer::PassphraseState state);
+
   void HandleStopSyncingPermanentlyOnFrontendLoop();
 
   // Dispatched to from OnConnectionStatusChange to handle updating
@@ -521,6 +526,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // successfully decrypted if the pending keys have changed since the time they
   // were cached.
   sync_pb::EncryptedData cached_pending_keys_;
+
+  // The state of the passphrase required to decrypt the bag of encryption keys
+  // in the nigori node. Updated whenever a new nigori node arrives or the user
+  // manually changes their passphrase state. Cached so we can synchronously
+  // check it from the UI thread.
+  syncer::PassphraseState cached_passphrase_state_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   syncer::sessions::SyncSessionSnapshot last_snapshot_;

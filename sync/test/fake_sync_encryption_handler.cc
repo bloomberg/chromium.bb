@@ -12,7 +12,7 @@ namespace syncer {
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false),
-      explicit_passphrase_(false),
+      passphrase_state_(IMPLICIT_PASSPHRASE),
       cryptographer_(&encryptor_) {
 }
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
@@ -27,7 +27,7 @@ void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
   if (nigori.encrypt_everything())
     EnableEncryptEverything();
   if (nigori.using_explicit_passphrase())
-    explicit_passphrase_ = true;
+    passphrase_state_ = CUSTOM_PASSPHRASE;
 
   if (cryptographer_.CanDecrypt(nigori.encrypted()))
     cryptographer_.InstallKeys(nigori.encrypted());
@@ -74,7 +74,7 @@ void FakeSyncEncryptionHandler::SetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
   if (is_explicit)
-    explicit_passphrase_ = true;
+    passphrase_state_ = CUSTOM_PASSPHRASE;
 }
 
 void FakeSyncEncryptionHandler::SetDecryptionPassphrase(
@@ -96,8 +96,8 @@ bool FakeSyncEncryptionHandler::EncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
-bool FakeSyncEncryptionHandler::IsUsingExplicitPassphrase() const {
-  return explicit_passphrase_;
+PassphraseState FakeSyncEncryptionHandler::GetPassphraseState() const {
+  return passphrase_state_;
 }
 
 }  // namespace syncer

@@ -96,6 +96,10 @@ void DebugInfoEventListener::OnCryptographerStateChanged(
   cryptographer_ready_ = cryptographer->is_ready();
 }
 
+void DebugInfoEventListener::OnPassphraseStateChanged(PassphraseState state) {
+  CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_STATE_CHANGED);
+}
+
 void DebugInfoEventListener::OnActionableError(
     const SyncProtocolError& sync_error) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);

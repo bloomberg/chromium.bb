@@ -558,6 +558,10 @@ void SyncManagerImpl::OnCryptographerStateChanged(
   allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
 }
 
+void SyncManagerImpl::OnPassphraseStateChanged(PassphraseState state) {
+  // Does nothing.
+}
+
 void SyncManagerImpl::StartSyncingNormally(
     const ModelSafeRoutingInfo& routing_info) {
   // Start the sync scheduler.

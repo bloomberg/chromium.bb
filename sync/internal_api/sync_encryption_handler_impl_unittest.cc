@@ -45,6 +45,7 @@ class SyncEncryptionHandlerObserverMock
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));  // NOLINT
+  MOCK_METHOD1(OnPassphraseStateChanged, void(PassphraseState));  // NOLINT
 };
 
 }  // namespace

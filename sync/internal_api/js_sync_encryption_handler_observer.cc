@@ -95,6 +95,19 @@ void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(
                 JsEventDetails(&details));
 }
 
+void JsSyncEncryptionHandlerObserver::OnPassphraseStateChanged(
+    PassphraseState state) {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  DictionaryValue details;
+  details.SetString("passphraseState",
+                    PassphraseStateToString(state));
+  HandleJsEvent(FROM_HERE,
+                "onPassphraseStateChanged",
+                JsEventDetails(&details));
+}
+
 void JsSyncEncryptionHandlerObserver::HandleJsEvent(
     const tracked_objects::Location& from_here,
     const std::string& name, const JsEventDetails& details) {

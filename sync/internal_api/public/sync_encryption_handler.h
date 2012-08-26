@@ -29,9 +29,20 @@ enum PassphraseRequiredReason {
                                        // decryption.
 };
 
+// The different states for the encryption passphrase. These control if and how
+// the user should be prompted for a decryption passphrase.
+enum PassphraseState {
+  IMPLICIT_PASSPHRASE = 0,             // GAIA-based passphrase (deprecated).
+  KEYSTORE_PASSPHRASE = 1,             // Keystore passphrase.
+  FROZEN_IMPLICIT_PASSPHRASE = 2,      // Frozen GAIA passphrase.
+  CUSTOM_PASSPHRASE = 3,               // User-provided passphrase.
+};
+
 // Sync's encryption handler. Handles tracking encrypted types, ensuring the
 // cryptographer encrypts with the proper key and has the most recent keybag,
 // and keeps the nigori node up to date.
+// Implementations of this class must be assumed to be non-thread-safe. All
+// methods must be invoked on the sync thread.
 class SyncEncryptionHandler {
  public:
   // All Observer methods are done synchronously from within a transaction and
@@ -93,6 +104,9 @@ class SyncEncryptionHandler {
     // Used primarily for debugging.
     virtual void OnCryptographerStateChanged(Cryptographer* cryptographer) = 0;
 
+    // The passprhase state has changed.
+    virtual void OnPassphraseStateChanged(PassphraseState state) = 0;
+
    protected:
     virtual ~Observer();
   };
@@ -100,8 +114,7 @@ class SyncEncryptionHandler {
   SyncEncryptionHandler();
   virtual ~SyncEncryptionHandler();
 
-  // Add/Remove SyncEncryptionHandler::Observer's.
-  // Must be called from sync thread.
+  // Add/Remove SyncEncryptionHandler::Observers.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
@@ -138,9 +151,9 @@ class SyncEncryptionHandler {
   // types are encrypted.
   virtual bool EncryptEverythingEnabled() const = 0;
 
-  // Whether the account requires a user-provided passphrase to decrypt
-  // encrypted data.
-  virtual bool IsUsingExplicitPassphrase() const = 0;
+  // Returns the current state of the passphrase needed to decrypt the
+  // bag of encryption keys in the nigori node.
+  virtual PassphraseState GetPassphraseState() const = 0;
 
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();

@@ -62,17 +62,18 @@ message DebugEventInfo {
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
     BOOTSTRAP_TOKEN_UPDATED = 9;  // A new cryptographer bootstrap token was
                                   // generated.
+    PASSPHRASE_STATE_CHANGED = 10;  // The encryption passphrase state changed.
   }
   // In a given |DebugEventInfo| only one of the following would be set.
   optional EventType type = 1;
 
   optional SyncCycleCompletedEventInfo sync_cycle_completed_event_info = 2;
 
-   // Datatype that caused the nudge.
-   optional int32 nudging_datatype = 3;
+  // Datatype that caused the nudge.
+  optional int32 nudging_datatype = 3;
 
-   // Datatypes that were notified from server.
-   repeated int32 datatypes_notified_from_server = 4;
+  // Datatypes that were notified from server.
+  repeated int32 datatypes_notified_from_server = 4;
 }
 
 message DebugInfo {
