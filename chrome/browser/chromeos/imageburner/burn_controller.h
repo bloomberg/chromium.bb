@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/disk_mount_manager.h"
 
 class FilePath;
 

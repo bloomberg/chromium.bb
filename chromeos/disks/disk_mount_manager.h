@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
+#ifndef CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
+#define CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
 
 #include <map>
 
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cros_disks_client.h"
 
 namespace chromeos {
@@ -35,7 +36,7 @@ enum MountCondition {
 
 // This class handles the interaction with cros-disks.
 // Other classes can add themselves as observers.
-class DiskMountManager {
+class CHROMEOS_EXPORT DiskMountManager {
  public:
   // Event type given to observers' MountCompleted method.
   enum MountEvent {
@@ -217,10 +218,6 @@ class DiskMountManager {
   // Unmounts a mounted disk.
   virtual void UnmountPath(const std::string& mount_path) = 0;
 
-  // Retrieves total and remaining available size on |mount_path|.
-  virtual void GetSizeStatsOnFileThread(const std::string& mount_path,
-                                        size_t* total_size_kb,
-                                        size_t* remaining_size_kb) = 0;
   // Formats device given its file path.
   // Example: file_path: /dev/sdb1
   virtual void FormatUnmountedDevice(const std::string& file_path) = 0;
@@ -267,4 +264,4 @@ class DiskMountManager {
 }  // namespace disks
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_
+#endif  // CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_

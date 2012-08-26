@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
+#ifndef CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
+#define CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
 
 #include <string>
 
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,8 +34,6 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_METHOD4(MountPath, void(const std::string&, const std::string&,
                                const std::string&, MountType));
   MOCK_METHOD1(UnmountPath, void(const std::string&));
-  MOCK_METHOD3(GetSizeStatsOnFileThread, void(const std::string&, size_t*,
-                                              size_t*));
   MOCK_METHOD1(FormatUnmountedDevice, void(const std::string&));
   MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
   MOCK_METHOD3(UnmountDeviceRecursive, void(const std::string&,
@@ -100,4 +98,4 @@ class MockDiskMountManager : public DiskMountManager {
 }  // namespace disks
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_
+#endif  // CHROMEOS_DISKS_MOCK_DISK_MOUNT_MANAGER_H_

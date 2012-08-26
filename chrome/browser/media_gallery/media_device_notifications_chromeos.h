@@ -19,7 +19,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/disk_mount_manager.h"
 
 namespace chromeos {
 

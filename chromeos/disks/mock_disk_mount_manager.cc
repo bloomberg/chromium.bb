@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/disks/mock_disk_mount_manager.h"
+#include "chromeos/disks/mock_disk_mount_manager.h"
 
 #include <utility>
 
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
@@ -217,17 +215,11 @@ MockDiskMountManager::FindDiskBySourcePathInternal(
 void MockDiskMountManager::NotifyDiskChanged(
     DiskMountManagerEventType event,
     const DiskMountManager::Disk* disk) {
-  // Make sure we run on UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   FOR_EACH_OBSERVER(Observer, observers_, DiskChanged(event, disk));
 }
 
 void MockDiskMountManager::NotifyDeviceChanged(DiskMountManagerEventType event,
                                                const std::string& path) {
-  // Make sure we run on UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   FOR_EACH_OBSERVER(Observer, observers_, DeviceChanged(event, path));
 }
 

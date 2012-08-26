@@ -348,7 +348,7 @@ VolumeManager.prototype.isUnreadable = function(mountPath) {
 /**
  * @param {string} mountPath Volume mounted path.
  * @return {string} Device type ('usb'|'sd'|'optical'|'mobile'|'unknown')
- *   (as defined in chrome/browser/chromeos/disks/disk_mount_manager.cc).
+ *   (as defined in chromeos/disks/disk_mount_manager.cc).
  */
 VolumeManager.prototype.getDeviceType = function(mountPath) {
   return this.getVolumeInfo_(mountPath).deviceType;

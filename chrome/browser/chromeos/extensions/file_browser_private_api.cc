@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 
+#include <sys/statvfs.h>
 #include <utility>
 
 #include "base/base64.h"
@@ -18,7 +19,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
@@ -45,6 +45,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -251,6 +252,26 @@ GURL FindPreferredIcon(const InstalledApp::IconList& icons,
         result = iter->second;
   }
   return result;
+}
+
+// Retrieves total and remaining available size on |mount_path|.
+void GetSizeStatsOnFileThread(const std::string& mount_path,
+                              size_t* total_size_kb,
+                              size_t* remaining_size_kb) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  uint64_t total_size_in_bytes = 0;
+  uint64_t remaining_size_in_bytes = 0;
+
+  struct statvfs stat = {};  // Zero-clear
+  if (statvfs(mount_path.c_str(), &stat) == 0) {
+    total_size_in_bytes =
+        static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
+    remaining_size_in_bytes =
+        static_cast<uint64_t>(stat.f_bfree) * stat.f_frsize;
+  }
+  *total_size_kb = static_cast<size_t>(total_size_in_bytes / 1024);
+  *remaining_size_kb = static_cast<size_t>(remaining_size_in_bytes / 1024);
 }
 
 }  // namespace
@@ -1268,8 +1289,7 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
 
   size_t total_size_kb = 0;
   size_t remaining_size_kb = 0;
-  DiskMountManager::GetInstance()->
-      GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
+  GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

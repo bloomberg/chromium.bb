@@ -5,11 +5,11 @@
 #include <stdio.h>
 
 #include "base/stl_util.h"
-#include "chrome/browser/chromeos/disks/mock_disk_mount_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"

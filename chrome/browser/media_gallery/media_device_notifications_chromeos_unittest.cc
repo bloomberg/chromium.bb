@@ -14,8 +14,8 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/disks/mock_disk_mount_manager.h"
 #include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

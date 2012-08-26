@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
-
-#include <sys/statvfs.h>
+#include "chromeos/disks/disk_mount_manager.h"
 
 #include <map>
 #include <set>
@@ -14,9 +12,6 @@
 #include "base/observer_list.h"
 #include "base/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace disks {
@@ -69,7 +64,6 @@ class DiskMountManagerImpl : public DiskMountManager {
         return;
       }
     }
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     cros_disks_client_->Mount(
         source_path,
         source_format,
@@ -88,7 +82,6 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   // DiskMountManager override.
   virtual void UnmountPath(const std::string& mount_path) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     cros_disks_client_->Unmount(mount_path,
                                 base::Bind(&DiskMountManagerImpl::OnUnmountPath,
                                            weak_ptr_factory_.GetWeakPtr()),
@@ -96,28 +89,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  virtual void GetSizeStatsOnFileThread(const std::string& mount_path,
-                                        size_t* total_size_kb,
-                                        size_t* remaining_size_kb) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-    uint64_t total_size_in_bytes = 0;
-    uint64_t remaining_size_in_bytes = 0;
-
-    struct statvfs stat = {};  // Zero-clear
-    if (statvfs(mount_path.c_str(), &stat) == 0) {
-      total_size_in_bytes =
-          static_cast<uint64_t>(stat.f_blocks) * stat.f_frsize;
-      remaining_size_in_bytes =
-          static_cast<uint64_t>(stat.f_bfree) * stat.f_frsize;
-    }
-    *total_size_kb = static_cast<size_t>(total_size_in_bytes / 1024);
-    *remaining_size_kb = static_cast<size_t>(remaining_size_in_bytes / 1024);
-  }
-
-  // DiskMountManager override.
   virtual void FormatUnmountedDevice(const std::string& file_path) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     for (DiskMountManager::DiskMap::iterator it = disks_.begin();
          it != disks_.end(); ++it) {
       if (it->second->file_path() == file_path &&
@@ -220,7 +192,6 @@ class DiskMountManagerImpl : public DiskMountManager {
 
   // DiskMountManager override.
   virtual void RequestMountInfoRefresh() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     cros_disks_client_->EnumerateAutoMountableDevices(
         base::Bind(&DiskMountManagerImpl::OnRequestMountInfo,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -486,14 +457,12 @@ class DiskMountManagerImpl : public DiskMountManager {
   // Notifies all observers about disk status update.
   void NotifyDiskStatusUpdate(DiskMountManagerEventType event,
                               const Disk* disk) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     FOR_EACH_OBSERVER(Observer, observers_, DiskChanged(event, disk));
   }
 
   // Notifies all observers about device status update.
   void NotifyDeviceStatusUpdate(DiskMountManagerEventType event,
                                 const std::string& device_path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     FOR_EACH_OBSERVER(Observer, observers_, DeviceChanged(event, device_path));
   }
 
@@ -501,7 +470,6 @@ class DiskMountManagerImpl : public DiskMountManager {
   void NotifyMountCompleted(MountEvent event_type,
                             MountError error_code,
                             const MountPointInfo& mount_info) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     FOR_EACH_OBSERVER(Observer, observers_,
                       MountCompleted(event_type, error_code, mount_info));
   }

@@ -540,8 +540,6 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
         'browser/chromeos/device_hierarchy_observer.h',
-        'browser/chromeos/disks/disk_mount_manager.cc',
-        'browser/chromeos/disks/disk_mount_manager.h',
         'browser/chromeos/enrollment_dialog_view.cc',
         'browser/chromeos/enrollment_dialog_view.h',
         'browser/chromeos/enterprise_extension_observer.cc',

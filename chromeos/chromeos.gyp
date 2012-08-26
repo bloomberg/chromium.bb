@@ -111,6 +111,8 @@
         'dbus/sms_client.h',
         'dbus/update_engine_client.cc',
         'dbus/update_engine_client.h',
+        'disks/disk_mount_manager.cc',
+        'disks/disk_mount_manager.h',
         'display/output_configurator.cc',
         'display/output_configurator.h',
         'network/network_sms_handler.cc',
@@ -186,6 +188,8 @@
         'dbus/mock_speech_synthesizer_client.h',
         'dbus/mock_update_engine_client.cc',
         'dbus/mock_update_engine_client.h',
+        'disks/mock_disk_mount_manager.cc',
+        'disks/mock_disk_mount_manager.h',
       ],
       'include_dirs': [
         '..',
