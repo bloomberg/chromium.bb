@@ -5,6 +5,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 
 #include "ash/wm/shadow_types.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -23,6 +24,7 @@ Widget* CreateDragWidget() {
   params.transparent = true;
   drag_widget->Init(params);
   drag_widget->SetOpacity(0xFF);
+  drag_widget->GetNativeWindow()->set_owned_by_parent(false);
   SetShadowType(drag_widget->GetNativeView(), SHADOW_TYPE_NONE);
   return drag_widget;
 }

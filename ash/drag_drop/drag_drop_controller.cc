@@ -4,6 +4,7 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -44,7 +45,6 @@ DragDropController::DragDropController()
       drag_data_(NULL),
       drag_operation_(0),
       drag_window_(NULL),
-      drag_drop_in_progress_(false),
       should_block_during_drag_drop_(true) {
   Shell::GetInstance()->AddEnvEventFilter(this);
 }
@@ -57,16 +57,13 @@ DragDropController::~DragDropController() {
 }
 
 int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
+                                         aura::RootWindow* root_window,
                                          const gfx::Point& root_location,
                                          int operation) {
-  DCHECK(!drag_drop_in_progress_);
-  // TODO(oshima): Add CaptureClient client API.
-  aura::Window* capture_window =
-      aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow());
-  if (capture_window)
-    capture_window->ReleaseCapture();
-  drag_drop_in_progress_ = true;
+  DCHECK(!IsDragDropInProgress());
+
   drag_cursor_ = ui::kCursorPointer;
+  drag_drop_tracker_.reset(new DragDropTracker(root_window));
 
   drag_data_ = &data;
   drag_operation_ = operation;
@@ -197,7 +194,7 @@ void DragDropController::DragCancel() {
 }
 
 bool DragDropController::IsDragDropInProgress() {
-  return drag_drop_in_progress_;
+  return !!drag_drop_tracker_.get();
 }
 
 gfx::NativeCursor DragDropController::GetDragCursor() {
@@ -206,7 +203,7 @@ gfx::NativeCursor DragDropController::GetDragCursor() {
 
 bool DragDropController::PreHandleKeyEvent(aura::Window* target,
                                            ui::KeyEvent* event) {
-  if (drag_drop_in_progress_ && event->key_code() == ui::VKEY_ESCAPE) {
+  if (IsDragDropInProgress() && event->key_code() == ui::VKEY_ESCAPE) {
     DragCancel();
     return true;
   }
@@ -215,17 +212,23 @@ bool DragDropController::PreHandleKeyEvent(aura::Window* target,
 
 bool DragDropController::PreHandleMouseEvent(aura::Window* target,
                                              ui::MouseEvent* event) {
-  if (!drag_drop_in_progress_)
+  if (!IsDragDropInProgress())
     return false;
-  switch (event->type()) {
+  aura::Window* translated_target = drag_drop_tracker_->GetTarget(*event);
+  if (!translated_target) {
+    DragCancel();
+    return true;
+  }
+  scoped_ptr<ui::MouseEvent> translated_event(
+      drag_drop_tracker_->ConvertMouseEvent(translated_target, *event));
+  switch (translated_event->type()) {
     case ui::ET_MOUSE_DRAGGED:
-      DragUpdate(target, *event);
+      DragUpdate(translated_target, *translated_event.get());
       break;
     case ui::ET_MOUSE_RELEASED:
-      Drop(target, *event);
+      Drop(translated_target, *translated_event.get());
       break;
     default:
-      // We could reach here if the user drops outside the root window.
       // We could also reach here because RootWindow may sometimes generate a
       // bunch of fake mouse events
       // (aura::RootWindow::PostMouseMoveEventAfterWindowChange).
@@ -238,7 +241,9 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   // TODO(sad): Also check for the touch-id.
-  if (!drag_drop_in_progress_)
+  // TODO(varunjain): Add code for supporting drag-and-drop across displays
+  // (http://crbug.com/114755).
+  if (!IsDragDropInProgress())
     return ui::TOUCH_STATUS_UNKNOWN;
   switch (event->type()) {
     case ui::ET_TOUCH_MOVED:
@@ -277,7 +282,7 @@ void DragDropController::OnImplicitAnimationsCompleted() {
 
   // By the time we finish animation, another drag/drop session may have
   // started. We do not want to destroy the drag image in that case.
-  if (!drag_drop_in_progress_)
+  if (!IsDragDropInProgress())
     drag_image_.reset();
 }
 
@@ -301,7 +306,9 @@ void DragDropController::Cleanup() {
     drag_window_->RemoveObserver(this);
   drag_window_ = NULL;
   drag_data_ = NULL;
-  drag_drop_in_progress_ = false;
+  // Cleanup can be called again while deleting DragDropTracker, so use Pass
+  // instead of reset to avoid double free.
+  drag_drop_tracker_.Pass();
 }
 
 }  // namespace internal

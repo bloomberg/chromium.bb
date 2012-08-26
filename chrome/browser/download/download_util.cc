@@ -364,7 +364,10 @@ void DragDownload(const DownloadItem* download,
     return;
 
   gfx::Point location = gfx::Screen::GetCursorScreenPoint();
-  aura::client::GetDragDropClient(root_window)->StartDragAndDrop(data, location,
+  aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
+      data,
+      root_window,
+      location,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 #else  // We are on WIN without AURA
   // We cannot use Widget::RunShellDrag on WIN since the |view| is backed by a

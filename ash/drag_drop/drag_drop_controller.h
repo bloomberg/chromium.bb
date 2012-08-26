@@ -16,6 +16,7 @@
 #include "ui/gfx/point.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 
@@ -31,6 +32,7 @@ class DragDropControllerTest;
 
 namespace internal {
 
+class DragDropTracker;
 class DragImageView;
 
 class ASH_EXPORT DragDropController
@@ -48,6 +50,7 @@ class ASH_EXPORT DragDropController
 
   // Overridden from aura::client::DragDropClient:
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
+                               aura::RootWindow* root_window,
                                const gfx::Point& root_location,
                                int operation) OVERRIDE;
   virtual void DragUpdate(aura::Window* target,
@@ -95,14 +98,14 @@ class ASH_EXPORT DragDropController
   aura::Window* drag_window_;
   gfx::Point drag_start_location_;
 
-  bool drag_drop_in_progress_;
-
   // Indicates whether the caller should be blocked on a drag/drop session.
   // Only be used for tests.
   bool should_block_during_drag_drop_;
 
   // Closure for quitting nested message loop.
   base::Closure quit_closure_;
+
+  scoped_ptr<ash::internal::DragDropTracker> drag_drop_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropController);
 };

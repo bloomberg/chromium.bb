@@ -421,6 +421,12 @@ void Shell::Init() {
     AddEnvEventFilter(touch_observer_hud_.get());
   }
 
+  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
+    mouse_cursor_filter_.reset(
+        new internal::MouseCursorEventFilter(display_controller_.get()));
+    AddEnvEventFilter(mouse_cursor_filter_.get());
+  }
+
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
   // RootWindowController as possible.
@@ -434,12 +440,6 @@ void Shell::Init() {
 
   magnification_controller_.reset(
       internal::MagnificationController::CreateInstance());
-
-  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
-    mouse_cursor_filter_.reset(
-        new internal::MouseCursorEventFilter(display_controller_.get()));
-    AddEnvEventFilter(mouse_cursor_filter_.get());
-  }
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);

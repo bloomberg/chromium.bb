@@ -50,7 +50,7 @@ void RunShellDrag(gfx::NativeView view,
   aura::Window::ConvertPointToTarget(view, root_window, &root_location);
   if (aura::client::GetDragDropClient(root_window)) {
     aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, root_location, operation);
+        data, root_window, root_location, operation);
   }
 #elif defined(OS_WIN)
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);

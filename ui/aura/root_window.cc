@@ -1019,7 +1019,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
     default:
       break;
   }
-  if (target && target->delegate()) {
+  if (target) {
     int flags = event->flags();
     gfx::Point location_in_window = event->location();
     Window::ConvertPointToTarget(this, target, &location_in_window);

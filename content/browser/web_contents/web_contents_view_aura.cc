@@ -452,7 +452,7 @@ void WebContentsViewAura::StartDragging(
     gfx::Point location(gfx::Screen::GetCursorScreenPoint());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
-        data, location, ConvertFromWeb(operations));
+        data, root_window, location, ConvertFromWeb(operations));
   }
 
   EndDrag(ConvertToWeb(result_op));

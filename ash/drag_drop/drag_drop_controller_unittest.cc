@@ -127,11 +127,13 @@ class TestDragDropController : public internal::DragDropController {
 
  private:
   int StartDragAndDrop(const ui::OSExchangeData& data,
+                       aura::RootWindow* root_window,
                        const gfx::Point& location,
                        int operation) OVERRIDE {
     drag_start_received_ = true;
     data.GetString(&drag_string_);
-    return DragDropController::StartDragAndDrop(data, location, operation);
+    return DragDropController::StartDragAndDrop(
+        data, root_window, location, operation);
   }
 
   void DragUpdate(aura::Window* target,

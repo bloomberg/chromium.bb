@@ -31,6 +31,7 @@ class AURA_EXPORT DragDropClient {
   // applied at the end of the drag drop session. |root_location| is in the
   // RootWindow's coordinate system.
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
+                               aura::RootWindow* root_window,
                                const gfx::Point& root_location,
                                int operation) = 0;
 
