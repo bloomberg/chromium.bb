@@ -6,8 +6,6 @@
 
 #include "ui/aura/window_property.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, bool)
-
 namespace ash {
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kConstrainedWindowKey, false);

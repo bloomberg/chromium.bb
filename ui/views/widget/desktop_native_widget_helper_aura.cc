@@ -26,8 +26,6 @@
 #include "ui/views/widget/x11_window_event_filter.h"
 #endif
 
-DECLARE_WINDOW_PROPERTY_TYPE(aura::Window*);
-
 namespace views {
 
 DEFINE_WINDOW_PROPERTY_KEY(

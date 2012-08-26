@@ -9,7 +9,6 @@
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
 DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationClient*)
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, bool);
 
 namespace aura {
 namespace client {
