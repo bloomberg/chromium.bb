@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
-#include "chrome/browser/ui/views/tabs/tab.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 
 #if defined(USE_AURA) || defined(USE_ASH) || defined(OS_CHROMEOS)
 // static

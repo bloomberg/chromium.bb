@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_CONTAINER_H_
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/view.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
+#include "ui/views/view.h"
 
 class LocationBarView;
 

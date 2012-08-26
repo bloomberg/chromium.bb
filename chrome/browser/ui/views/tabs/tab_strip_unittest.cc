@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabStripTest : public testing::Test {

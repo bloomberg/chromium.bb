@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/fill_layout.h"

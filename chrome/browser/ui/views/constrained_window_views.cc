@@ -46,8 +46,8 @@
 #include "ui/views/window/window_shape.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
 #include "ui/base/win/shell.h"
+#include "ui/views/widget/native_widget_win.h"
 #endif
 
 #if defined(USE_ASH)
