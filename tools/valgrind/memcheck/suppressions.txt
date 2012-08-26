@@ -5780,6 +5780,12 @@
    fun:_ZN8appcache15AppCacheService10InitializeERK8FilePathPN4base16MessageLoopProxyES6_
    fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadERK8FilePathPN7content15ResourceContextE13scoped_refptrIN5quota20SpecialStoragePolicyEE
 }
+{
+   bug_144898
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN50PrintSystemTaskProxyTest_DetectDuplexModeCUPS_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
