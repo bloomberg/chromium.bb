@@ -92,14 +92,6 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
   return host;
 }
 
-// Returns true if |url| is just a host (e.g. "http://www.google.com/") and not
-// some other subpage (e.g. "http://www.google.com/foo.html").
-bool IsHostOnly(const GURL& url) {
-  DCHECK(url.is_valid());
-  return (!url.has_path() || (url.path() == "/")) && !url.has_query() &&
-      !url.has_ref();
-}
-
 // Acts like the > operator for URLInfo classes.
 bool CompareHistoryMatch(const history::HistoryMatch& a,
                          const history::HistoryMatch& b) {
@@ -119,11 +111,8 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
 
   // For URLs that have each been typed once, a host (alone) is better than a
   // page inside.
-  if (a.url_info.typed_count() == 1) {
-    const bool a_is_host_only = IsHostOnly(a.url_info.url());
-    if (a_is_host_only != IsHostOnly(b.url_info.url()))
-      return a_is_host_only;
-  }
+  if ((a.url_info.typed_count() == 1) && (a.IsHostOnly() != b.IsHostOnly()))
+    return a.IsHostOnly();
 
   // URLs that have been visited more often are better.
   if (a.url_info.visit_count() != b.url_info.visit_count())
@@ -674,7 +663,7 @@ bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
   // hand, we wouldn't want to immediately start autocompleting it.
   if (!match.url_info.typed_count() ||
       ((match.url_info.typed_count() == 1) &&
-       !IsHostOnly(match.url_info.url())))
+       !match.IsHostOnly()))
     return false;
 
   // In the case where the user has typed "foo.com" and visited (but not typed)

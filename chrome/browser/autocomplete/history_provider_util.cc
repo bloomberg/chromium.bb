@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/history_provider_util.h"
 
+#include "base/logging.h"
+
 namespace history {
 
 HistoryMatch::HistoryMatch()
@@ -25,6 +27,13 @@ HistoryMatch::HistoryMatch(const URLRow& url_info,
 
 bool HistoryMatch::EqualsGURL(const HistoryMatch& h, const GURL& url) {
   return h.url_info.url() == url;
+}
+
+bool HistoryMatch::IsHostOnly() const {
+  const GURL& gurl = url_info.url();
+  DCHECK(gurl.is_valid());
+  return (!gurl.has_path() || (gurl.path() == "/")) && !gurl.has_query() &&
+      !gurl.has_ref();
 }
 
 }  // namespace history
