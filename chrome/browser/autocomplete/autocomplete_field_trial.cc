@@ -21,11 +21,11 @@ static const char kHQPNewScoringFieldTrialName[] = "OmniboxHQPNewScoring";
 
 // Field trial experiment probabilities.
 
-// For inline History Quick Provider field trial, put 10% ( = 10/100 )
+// For inline History Quick Provider field trial, put 0% ( = 0/100 )
 // of the users in the disallow-inline experiment group.
 const base::FieldTrial::Probability kDisallowInlineHQPFieldTrialDivisor = 100;
 const base::FieldTrial::Probability
-    kDisallowInlineHQPFieldTrialExperimentFraction = 10;
+    kDisallowInlineHQPFieldTrialExperimentFraction = 0;
 
 // For the search suggestion field trial, divide the people in the
 // trial into 20 equally-sized buckets.  The suggest provider backend
