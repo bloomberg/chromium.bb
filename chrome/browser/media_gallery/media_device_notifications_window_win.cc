@@ -17,6 +17,7 @@
 #include "chrome/browser/media_gallery/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
+using base::SystemMonitor;
 using content::BrowserThread;
 
 namespace {
@@ -122,8 +123,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
           std::string device_id = MediaStorageUtil::MakeDeviceId(
               MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM,
               base::IntToString(i));
-          base::SystemMonitor* monitor = base::SystemMonitor::Get();
-          monitor->ProcessMediaDeviceDetached(device_id);
+          SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id);
         }
       }
       break;
@@ -154,10 +154,9 @@ void MediaDeviceNotificationsWindowWin::ProcessMediaDeviceAttachedOnUIThread(
     const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  monitor->ProcessMediaDeviceAttached(id,
-                                      device_name,
-                                      path.value());
+  SystemMonitor::Get()->ProcessRemovableStorageAttached(id,
+                                                        device_name,
+                                                        path.value());
 }
 
 LRESULT CALLBACK MediaDeviceNotificationsWindowWin::WndProc(

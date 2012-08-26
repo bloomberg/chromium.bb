@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_INTENTS_DEVICE_ATTACHED_INTENT_SOURCE_H_
 #define CHROME_BROWSER_INTENTS_DEVICE_ATTACHED_INTENT_SOURCE_H_
 
+#include <map>
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "base/system_monitor/system_monitor.h"
 
@@ -30,19 +33,19 @@ class DeviceAttachedIntentSource
   virtual ~DeviceAttachedIntentSource();
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
-  virtual void OnMediaDeviceAttached(
+  virtual void OnRemovableStorageAttached(
       const std::string& id,
       const string16& name,
       const FilePath::StringType& location) OVERRIDE;
-  virtual void OnMediaDeviceDetached(const std::string& id) OVERRIDE;
+  virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
   // Dispatches web intents for the attached media device specified by
   // |device_info|.
   void DispatchIntentsForService(
-      const base::SystemMonitor::MediaDeviceInfo& device_info);
+      const base::SystemMonitor::RemovableStorageInfo& device_info);
 
  private:
-  typedef std::map<std::string, base::SystemMonitor::MediaDeviceInfo>
+  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
       DeviceIdToInfoMap;
 
   // Weak pointer to browser to which intents will be dispatched.

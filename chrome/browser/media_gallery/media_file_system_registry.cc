@@ -89,15 +89,15 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
 
   // TODO(thestig) Handle overlap between devices and media directories.
   SystemMonitor* monitor = SystemMonitor::Get();
-  const std::vector<SystemMonitor::MediaDeviceInfo> media_devices =
-      monitor->GetAttachedMediaDevices();
+  const std::vector<SystemMonitor::RemovableStorageInfo> media_devices =
+      monitor->GetAttachedRemovableStorage();
   for (size_t i = 0; i < media_devices.size(); ++i) {
     MediaStorageUtil::Type type;
-    MediaStorageUtil::CrackDeviceId(media_devices[i].unique_id, &type, NULL);
+    MediaStorageUtil::CrackDeviceId(media_devices[i].device_id, &type, NULL);
     // TODO(vandebo) Handle MTP devices.
     if (type != MediaStorageUtil::USB_MTP &&
         IsGalleryPermittedForExtension(extension, media_devices[i].location)) {
-      device_id_map_.insert(std::make_pair(media_devices[i].unique_id,
+      device_id_map_.insert(std::make_pair(media_devices[i].device_id,
                                            media_devices[i]));
       FilePath path(media_devices[i].location);
       const std::string fsid = RegisterPathAsFileSystem(path);
@@ -119,7 +119,8 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
   return results;
 }
 
-void MediaFileSystemRegistry::OnMediaDeviceDetached(const std::string& id) {
+void MediaFileSystemRegistry::OnRemovableStorageDetached(
+    const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DeviceIdToInfoMap::iterator it = device_id_map_.find(id);

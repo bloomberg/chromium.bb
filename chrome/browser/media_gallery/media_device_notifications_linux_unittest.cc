@@ -272,14 +272,15 @@ TEST_F(MediaDeviceNotificationsLinuxTest, BasicAttachDetach) {
   };
   // Only |kDevice2| should be attached, since |kDevice1| has a bad path.
   EXPECT_CALL(observer(),
-              OnMediaDeviceAttached(GetDCIMDeviceId(kDeviceId2),
-                                    ASCIIToUTF16(kDeviceLabel2),
-                                    test_path.value()))
+              OnRemovableStorageAttached(GetDCIMDeviceId(kDeviceId2),
+                                         ASCIIToUTF16(kDeviceLabel2),
+                                         test_path.value()))
       .InSequence(mock_sequence);
   AppendToMtabAndRunLoop(test_data, arraysize(test_data));
 
   // |kDevice2| should be detached here.
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(GetDCIMDeviceId(kDeviceId2)))
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kDeviceId2)))
       .InSequence(mock_sequence);
   WriteEmptyMtabAndRunLoop();
 }
@@ -294,9 +295,9 @@ TEST_F(MediaDeviceNotificationsLinuxTest, DCIM) {
   };
   // |kDevice1| should be attached as expected.
   EXPECT_CALL(observer(),
-              OnMediaDeviceAttached(GetDCIMDeviceId(kDeviceId1),
-                                    ASCIIToUTF16(kDeviceLabel1),
-                                    test_path_a.value()))
+              OnRemovableStorageAttached(GetDCIMDeviceId(kDeviceId1),
+                                         ASCIIToUTF16(kDeviceLabel1),
+                                         test_path_a.value()))
       .InSequence(mock_sequence);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
@@ -309,7 +310,8 @@ TEST_F(MediaDeviceNotificationsLinuxTest, DCIM) {
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   // |kDevice1| should be detached as expected.
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(GetDCIMDeviceId(kDeviceId1)))
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kDeviceId1)))
       .InSequence(mock_sequence);
   WriteEmptyMtabAndRunLoop();
 }
@@ -328,8 +330,8 @@ TEST_F(MediaDeviceNotificationsLinuxTest, SwapMountPoints) {
     MtabTestData(kDevice1, test_path_a.value(), kValidFS),
     MtabTestData(kDevice2, test_path_b.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(2);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Detach two devices from old mount points and attach the devices at new
@@ -340,13 +342,13 @@ TEST_F(MediaDeviceNotificationsLinuxTest, SwapMountPoints) {
     MtabTestData(kDevice1, test_path_b.value(), kValidFS),
     MtabTestData(kDevice2, test_path_a.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(2);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(2);
   OverwriteMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   // Detach all devices.
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(2);
   WriteEmptyMtabAndRunLoop();
 }
 
@@ -364,8 +366,8 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
     MtabTestData(kDevice1, test_path_a.value(), kValidFS),
     MtabTestData(kDevice2, test_path_b.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(2);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Attach |kDevice1| to |kMountPointB|.
@@ -377,8 +379,8 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
   MtabTestData test_data2[] = {
     MtabTestData(kDevice1, test_path_b.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(1);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(2);
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   // Attach |kDevice2| to |kMountPointA|.
@@ -389,8 +391,8 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
   MtabTestData test_data3[] = {
     MtabTestData(kDevice2, test_path_a.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(1);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data3, arraysize(test_data3));
 
   // Detach |kDevice2| from |kMountPointA|.
@@ -402,20 +404,20 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
     MtabTestData(kDevice2, test_path_b.value(), kValidFS),
     MtabTestData(kDevice1, test_path_b.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(1);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   OverwriteMtabAndRunLoop(test_data4, arraysize(test_data4));
 
   // Detach |kDevice1| from |kMountPointB|.
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(2);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(1);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   OverwriteMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Detach all devices.
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(2);
   WriteEmptyMtabAndRunLoop();
 }
 
@@ -436,11 +438,11 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesOneMountPoint) {
     MtabTestData(kDevice1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(),
-              OnMediaDeviceAttached(GetDCIMDeviceId(kDeviceId1),
-                                    ASCIIToUTF16(kDeviceLabel1),
-                                    test_path_b.value()))
+              OnRemovableStorageAttached(GetDCIMDeviceId(kDeviceId1),
+                                         ASCIIToUTF16(kDeviceLabel1),
+                                         test_path_b.value()))
       .Times(1);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   OverwriteMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Attach |kDevice3| to |kMountPointB|.
@@ -454,18 +456,20 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesOneMountPoint) {
   MtabTestData test_data2[] = {
     MtabTestData(kDevice3, test_path_b.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(GetDCIMDeviceId(kDeviceId1)))
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kDeviceId1)))
       .Times(1);
   EXPECT_CALL(observer(),
-              OnMediaDeviceAttached(GetDCIMDeviceId(kDeviceId3),
-                                    ASCIIToUTF16(kDeviceLabel3),
-                                    test_path_b.value()))
+              OnRemovableStorageAttached(GetDCIMDeviceId(kDeviceId3),
+                                         ASCIIToUTF16(kDeviceLabel3),
+                                         test_path_b.value()))
       .Times(1);
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   // Detach all devices.
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
-  EXPECT_CALL(observer(), OnMediaDeviceDetached(GetDCIMDeviceId(kDeviceId3)))
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDCIMDeviceId(kDeviceId3)))
       .Times(1);
   WriteEmptyMtabAndRunLoop();
 }

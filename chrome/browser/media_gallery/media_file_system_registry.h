@@ -55,7 +55,7 @@ class MediaFileSystemRegistry
       const extensions::Extension& extension);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
-  virtual void OnMediaDeviceDetached(const std::string& id) OVERRIDE;
+  virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -75,7 +75,7 @@ class MediaFileSystemRegistry
                    MediaPathToFSIDMap> ChildIdToMediaFSMap;
 
   // Mapping of device id to media device info.
-  typedef std::map<std::string, base::SystemMonitor::MediaDeviceInfo>
+  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
       DeviceIdToInfoMap;
 
   // Obtain an instance of this class via GetInstance().

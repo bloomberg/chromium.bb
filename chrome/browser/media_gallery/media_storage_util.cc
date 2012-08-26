@@ -21,7 +21,7 @@ namespace chrome {
 
 namespace {
 
-typedef std::vector<SystemMonitor::MediaDeviceInfo> MediaDevicesInfo;
+typedef std::vector<SystemMonitor::RemovableStorageInfo> RemovableStorageInfo;
 
 // Prefix constants for different device id spaces.
 const char kUsbMassStorageWithDCIMPrefix[] = "dcim:";
@@ -44,13 +44,14 @@ void ValidatePathOnFileThread(
                           base::Bind(callback, path));
 }
 
-FilePath::StringType FindMediaDeviceLocationById(const std::string& device_id) {
-  MediaDevicesInfo media_devices =
-      SystemMonitor::Get()->GetAttachedMediaDevices();
-  for (MediaDevicesInfo::const_iterator it = media_devices.begin();
+FilePath::StringType FindRemovableStorageLocationById(
+    const std::string& device_id) {
+  RemovableStorageInfo media_devices =
+      SystemMonitor::Get()->GetAttachedRemovableStorage();
+  for (RemovableStorageInfo::const_iterator it = media_devices.begin();
        it != media_devices.end();
        ++it) {
-    if (it->unique_id == device_id)
+    if (it->device_id == device_id)
       return it->location;
   }
   return FilePath::StringType();
@@ -151,7 +152,7 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
     case USB_MTP:  // Fall through
     case USB_MASS_STORAGE_WITH_DCIM:
       // We should be able to find media devices in SystemMonitor.
-      callback.Run(!FindMediaDeviceLocationById(device_id).empty());
+      callback.Run(!FindRemovableStorageLocationById(device_id).empty());
       break;
     case USB_MASS_STORAGE_NO_DCIM:
       FindUSBDeviceById(unique_id,
@@ -210,7 +211,7 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
                      FilePath::FromUTF8Unsafe(unique_id), callback));
       break;
     case USB_MASS_STORAGE_WITH_DCIM:
-      callback.Run(FilePath(FindMediaDeviceLocationById(device_id)));
+      callback.Run(FilePath(FindRemovableStorageLocationById(device_id)));
       break;
   }
   NOTREACHED();

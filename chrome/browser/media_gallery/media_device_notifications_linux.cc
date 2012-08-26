@@ -357,7 +357,7 @@ void MediaDeviceNotificationsLinux::CheckAndAddMediaDevice(
 
   std::string id;
   string16 name;
-  bool result = (*get_device_info_func_)(mount_device, &id, &name);
+  bool result = get_device_info_func_(mount_device, &id, &name);
 
   // Keep track of GetDeviceInfo result, to see how often we fail to get device
   // details.
@@ -380,12 +380,12 @@ void MediaDeviceNotificationsLinux::CheckAndAddMediaDevice(
   mount_device_and_id.device_id = id;
   mount_info_map_[mount_point] = mount_device_and_id;
 
-  SystemMonitor::Get()->ProcessMediaDeviceAttached(id, name, mount_point);
+  SystemMonitor::Get()->ProcessRemovableStorageAttached(id, name, mount_point);
 }
 
 void MediaDeviceNotificationsLinux::RemoveOldDevice(
     const std::string& device_id) {
-  SystemMonitor::Get()->ProcessMediaDeviceDetached(device_id);
+  SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id);
 }
 
 }  // namespace chrome

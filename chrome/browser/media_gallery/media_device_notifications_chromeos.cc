@@ -110,7 +110,7 @@ void MediaDeviceNotifications::MountCompleted(
       MountMap::iterator it = mount_map_.find(mount_info.mount_path);
       if (it == mount_map_.end())
         return;
-      base::SystemMonitor::Get()->ProcessMediaDeviceDetached(it->second);
+      base::SystemMonitor::Get()->ProcessRemovableStorageDetached(it->second);
       mount_map_.erase(it);
       break;
     }
@@ -154,9 +154,10 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
   std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
       chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
   mount_map_.insert(std::make_pair(mount_info.mount_path, device_id));
-  base::SystemMonitor::Get()->ProcessMediaDeviceAttached(device_id,
-                                                         device_label,
-                                                         mount_info.mount_path);
+  base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
+      device_id,
+      device_label,
+      mount_info.mount_path);
 }
 
 }  // namespace chrome
