@@ -51,7 +51,7 @@ namespace experimental.bluetooth {
 
   callback AddressCallback = void (DOMString result);
   callback BooleanCallback = void (boolean result);
-  callback DataCallback = void (ArrayBuffer result);
+  callback DataCallback = void (optional ArrayBuffer result);
   callback DeviceCallback = void (Device device);
   callback DevicesCallback = void (Device[] result);
   callback NameCallback = void (DOMString result);
