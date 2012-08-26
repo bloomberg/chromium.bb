@@ -506,12 +506,6 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
     return;
 
-  // We'll have at least one pending fetch. Set it to 1 now, but the value is
-  // correctly set in Run. As Run isn't invoked immediately we need to set this
-  // now, else we won't think we're waiting on results from the server when we
-  // really are.
-  suggest_results_pending_ = 1;
-
   // Kick off a timer that will start the URL fetch if it completes before
   // the user types another character.  Requests may be delayed to avoid
   // flooding the server with requests that are likely to be thrown away later
@@ -1244,8 +1238,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
 }
 
 void SearchProvider::UpdateDone() {
-  // We're done when there are no more suggest queries pending (this is set to 1
-  // when the timer is started) and we're not waiting on instant.
-  done_ = ((suggest_results_pending_ == 0) &&
+  // We're done when the timer isn't running, there are no suggest queries
+  // pending, and we're not waiting on instant.
+  done_ = (!timer_.IsRunning() && (suggest_results_pending_ == 0) &&
            (instant_finalized_ || !InstantController::IsEnabled(profile_)));
 }

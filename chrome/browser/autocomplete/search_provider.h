@@ -336,7 +336,7 @@ class SearchProvider : public AutocompleteProvider,
   HistoryResults default_history_results_;
 
   // Number of suggest results that haven't yet arrived. If greater than 0 it
-  // indicates either |timer_| or one of the URLFetchers is still running.
+  // indicates one of the URLFetchers is still running.
   int suggest_results_pending_;
 
   // A timer to start a query to the suggest server after the user has stopped
