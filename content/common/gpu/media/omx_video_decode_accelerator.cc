@@ -880,6 +880,7 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
           return;
         default:
           NOTREACHED() << "Unexpected state in INITIALIZING: " << reached;
+          return;
       }
     case RESETTING:
       switch (reached) {
@@ -891,6 +892,7 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
           return;
         default:
           NOTREACHED() << "Unexpected state in RESETTING: " << reached;
+          return;
       }
     case DESTROYING:
       switch (reached) {
@@ -910,6 +912,7 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
           return;
         default:
           NOTREACHED() << "Unexpected state in DESTROYING: " << reached;
+          return;
       }
     case ERRORING:
       switch (reached) {
@@ -918,6 +921,7 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
           return;
         default:
           NOTREACHED() << "Unexpected state in ERRORING: " << reached;
+          return;
       }
     default:
       NOTREACHED() << "Unexpected state in " << current_state_change_
