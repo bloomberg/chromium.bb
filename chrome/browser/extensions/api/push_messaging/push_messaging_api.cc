@@ -34,6 +34,10 @@
 
 using content::BrowserThread;
 
+namespace {
+static const char kChannelIdSeparator[] = "/";
+}
+
 namespace extensions {
 
 namespace glue = api::experimental_push_messaging;
@@ -165,7 +169,7 @@ void PushMessagingGetChannelIdFunction::ReportResult(
   // channel ID here.
   std::string channel_id(gaia_id);
   if (!gaia_id.empty()) {
-    channel_id += ".";
+    channel_id += kChannelIdSeparator;
     channel_id += extension_id();
   }
 
