@@ -974,3 +974,17 @@
    fun:browser_sync::NewNonFrontendDataTypeController::StartAssociationWithSharedChangeProcessor
    fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_144894
+  ThreadSanitizer:Race
+  fun:av_parser_close
+  fun:avcodec_open2
+  fun:avformat_find_stream_info
+  fun:media::FFmpegConfigHelper::SetupStreamConfigs
+  fun:media::FFmpegConfigHelper::Parse
+  fun:media::WebMStreamParser::ParseInfoAndTracks
+  fun:media::WebMStreamParser::Parse
+  fun:media::ChunkDemuxer::AppendData
+  fun:media::MockMediaSource::AppendAtTime
+  fun:media::PipelineIntegrationTest_MediaSource_ConfigChange_WebM_Test::TestBody
+}
