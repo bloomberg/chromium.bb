@@ -465,6 +465,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconMapping);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddOrUpdateIconMapping);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetSameFaviconURLForTwoPages);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetMostRecentVisits);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconForURL);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,

@@ -1899,10 +1899,10 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
             icon_url, icon_types, &favicon.icon_type);
     if (favicon_id) {
       scoped_refptr<base::RefCountedMemory> data;
-      favicon.known_icon = true;
       Time last_updated;
       if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data,
                                     NULL, NULL)) {
+        favicon.known_icon = true;
         favicon.expired = (Time::Now() - last_updated) >
             TimeDelta::FromDays(kFaviconRefetchDays);
         favicon.image_data = data;
@@ -1953,15 +1953,17 @@ void HistoryBackend::SetFavicon(
 
   FaviconID id = thumbnail_db_->GetFaviconIDForFaviconURL(
       icon_url, icon_type, NULL);
-  if (id)
+  if (!id) {
+    id = thumbnail_db_->AddFavicon(icon_url,
+                                   icon_type,
+                                   "0 0",
+                                   data,
+                                   Time::Now(),
+                                   gfx::Size());
+  } else {
     thumbnail_db_->DeleteFaviconBitmapsForFavicon(id);
-
-  id = thumbnail_db_->AddFavicon(icon_url,
-                                 icon_type,
-                                 "0 0",
-                                 data,
-                                 Time::Now(),
-                                 gfx::Size());
+    thumbnail_db_->AddFaviconBitmap(id, data, Time::Now(), gfx::Size());
+  }
 
   SetFaviconMapping(page_url, id, icon_type);
 }

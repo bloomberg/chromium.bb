@@ -123,6 +123,11 @@ class HistoryBackendTest : public testing::Test {
     filtered_list_ = data;
   }
 
+  // Callback for UpdateFaviconMappingsAndFetch.
+  void OnFaviconData(FaviconService::Handle handle,
+                     history::FaviconData favicon_data) {
+  }
+
   const history::MostVisitedURLList& get_most_visited_list() const {
     return most_visited_list_;
   }
@@ -1205,6 +1210,61 @@ TEST_F(HistoryBackendTest, AddOrUpdateIconMapping) {
   EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url, &icon_mapping));
   EXPECT_EQ(1u, icon_mapping.size());
+}
+
+// Test that SetFavicon for a page which shares a FaviconID with another does
+// the right thing.
+TEST_F(HistoryBackendTest, SetSameFaviconURLForTwoPages) {
+  GURL favicon_url("http://www.google.com/favicon.ico");
+  GURL page_url1("http://www.google.com");
+  GURL page_url2("http://www.google.ca");
+
+  scoped_refptr<base::RefCountedMemory> bitmap_data(
+      new base::RefCountedBytes());
+  backend_->SetFavicon(page_url1, favicon_url, bitmap_data, FAVICON);
+
+  scoped_refptr<GetFaviconRequest> request(new GetFaviconRequest(
+      base::Bind(&HistoryBackendTest::OnFaviconData, base::Unretained(this))));
+  HistoryBackendCancelableRequest cancellable_request;
+  cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request);
+  backend_->UpdateFaviconMappingAndFetch(request, page_url2, favicon_url,
+                                         FAVICON);
+
+  // Check that the same FaviconID is mapped to both page URLs.
+  std::vector<IconMapping> icon_mappings1;
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
+      page_url1, &icon_mappings1));
+  EXPECT_EQ(1u, icon_mappings1.size());
+  FaviconID favicon_id = icon_mappings1[0].icon_id;
+  EXPECT_NE(0, favicon_id);
+
+  std::vector<IconMapping> icon_mappings2;
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
+      page_url2, &icon_mappings2));
+  EXPECT_EQ(1u, icon_mappings2.size());
+  EXPECT_EQ(favicon_id, icon_mappings2[0].icon_id);
+
+  // Update the bitmap data.
+  backend_->SetFavicon(page_url1, favicon_url, bitmap_data, FAVICON);
+
+  // |page_url1| and |page_url2| should still map to the same FaviconID
+  // and have valid bitmap data.
+  icon_mappings1.clear();
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
+      page_url1, &icon_mappings1));
+  EXPECT_EQ(1u, icon_mappings1.size());
+  EXPECT_EQ(favicon_id, icon_mappings1[0].icon_id);
+
+  icon_mappings2.clear();
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
+      page_url2, &icon_mappings2));
+  EXPECT_EQ(1u, icon_mappings2.size());
+  EXPECT_EQ(favicon_id, icon_mappings2[0].icon_id);
+
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  EXPECT_TRUE(backend_->thumbnail_db_->GetFaviconBitmaps(favicon_id,
+                                                         &favicon_bitmaps));
+  EXPECT_EQ(1u, favicon_bitmaps.size());
 }
 
 TEST_F(HistoryBackendTest, GetFaviconForURL) {

@@ -489,7 +489,7 @@ FaviconBitmapID ThumbnailDatabase::AddFaviconBitmap(
       "INSERT INTO favicon_bitmaps (icon_id, image_data, last_updated, width, "
       "height) VALUES (?, ?, ?, ?, ?)"));
   statement.BindInt64(0, icon_id);
-  if (icon_data->size()) {
+  if (icon_data.get() && icon_data->size()) {
     statement.BindBlob(1, icon_data->front(),
                        static_cast<int>(icon_data->size()));
   } else {
