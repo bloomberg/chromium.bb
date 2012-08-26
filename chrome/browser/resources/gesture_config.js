@@ -129,7 +129,7 @@ var gesture_config = (function() {
       key: 'touchscreen_fling_acceleration_adjustment',
       label: 'Touchscreen Fling Acceleration Adjustment',
       units: 'pixels/sec.',
-      default: 1 / 900
+      default: 1
     }
   ];
 

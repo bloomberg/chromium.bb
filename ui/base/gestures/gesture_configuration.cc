@@ -38,6 +38,6 @@ double GestureConfiguration::rail_start_proportion_ = 2;
 
 // The additional acceleration to apply to touchscreen flings.
 double GestureConfiguration::touchscreen_fling_acceleration_adjustment_
-    = 1.f / 900.f;
+    = 1;
 
 }  // namespace ui

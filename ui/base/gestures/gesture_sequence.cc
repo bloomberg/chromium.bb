@@ -280,7 +280,7 @@ float CalibrateFlingVelocity(float velocity) {
   // http://crbug.com/120154
   const float velocity_scaling  =
       GestureConfiguration::touchscreen_fling_acceleration_adjustment();
-  return velocity_scaling * velocity * fabsf(velocity);
+  return velocity_scaling * velocity;
 }
 
 }  // namespace
