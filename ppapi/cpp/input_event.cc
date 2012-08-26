@@ -31,6 +31,10 @@ template <> const char* interface_name<PPB_WheelInputEvent_1_0>() {
   return PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0;
 }
 
+template <> const char* interface_name<PPB_TouchInputEvent_1_0>() {
+  return PPB_TOUCH_INPUT_EVENT_INTERFACE_1_0;
+}
+
 }  // namespace
 
 // InputEvent ------------------------------------------------------------------
