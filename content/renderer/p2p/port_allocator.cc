@@ -141,7 +141,8 @@ void P2PPortAllocatorSession::didFail(WebKit::WebURLLoader* loader,
 void P2PPortAllocatorSession::GetPortConfigurations() {
   // Add an empty configuration synchronously, so a local connection
   // can be started immediately.
-  ConfigReady(new cricket::PortConfiguration(talk_base::SocketAddress()));
+  ConfigReady(new cricket::PortConfiguration(talk_base::SocketAddress(),
+                                             "", ""));
 
   if (stun_server_address_.IsNil()) {
     ResolveStunServerAddress();
@@ -290,7 +291,7 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
 
 void P2PPortAllocatorSession::AddConfig() {
   cricket::PortConfiguration* config =
-      new cricket::PortConfiguration(stun_server_address_);
+      new cricket::PortConfiguration(stun_server_address_, "", "");
 
   if (relay_ip_.ip() != 0) {
     cricket::PortConfiguration::PortList ports;

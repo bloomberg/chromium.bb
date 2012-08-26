@@ -128,7 +128,8 @@ void PepperPortAllocatorSession::ConfigReady(
 void PepperPortAllocatorSession::GetPortConfigurations() {
   // Add an empty configuration synchronously, so a local connection
   // can be started immediately.
-  ConfigReady(new cricket::PortConfiguration(talk_base::SocketAddress()));
+  ConfigReady(new cricket::PortConfiguration(
+      talk_base::SocketAddress(), "", ""));
 
   ResolveStunServerAddress();
   TryCreateRelaySession();
@@ -191,7 +192,7 @@ void PepperPortAllocatorSession::OnStunAddressResolved(int32_t result) {
     ReceiveSessionResponse(std::string(relay_response_body_.begin(),
                                        relay_response_body_.end()));
   } else {
-    ConfigReady(new cricket::PortConfiguration(stun_address_));
+    ConfigReady(new cricket::PortConfiguration(stun_address_, "", ""));
   }
 }
 
