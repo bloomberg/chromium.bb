@@ -95,8 +95,6 @@
         'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
-        'browser/chromeos/cryptohome/mock_async_method_caller.cc',
-        'browser/chromeos/cryptohome/mock_async_method_caller.h',
         'browser/chromeos/input_method/mock_candidate_window.cc',
         'browser/chromeos/input_method/mock_candidate_window.h',
         'browser/chromeos/input_method/mock_input_method_manager.cc',

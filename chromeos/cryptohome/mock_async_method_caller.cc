@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/mock_async_method_caller.h"
 
 using ::testing::Invoke;
 using ::testing::WithArgs;
@@ -39,6 +39,5 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
 void MockAsyncMethodCaller::DoCallback(Callback callback) {
   callback.Run(success_, return_code_);
 }
-
 
 }  // namespace cryptohome

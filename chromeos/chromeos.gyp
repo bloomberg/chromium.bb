@@ -26,6 +26,8 @@
         'chromeos_export.h',
         'chromeos_switches.cc',
         'chromeos_switches.h',
+        'cryptohome/async_method_caller.cc',
+        'cryptohome/async_method_caller.h',
         'dbus/blocking_method_caller.cc',
         'dbus/blocking_method_caller.h',
         'dbus/bluetooth_adapter_client.cc',
@@ -134,6 +136,8 @@
         'chromeos',
       ],
       'sources': [
+        'cryptohome/mock_async_method_caller.cc',
+        'cryptohome/mock_async_method_caller.h',
         'dbus/mock_bluetooth_adapter_client.cc',
         'dbus/mock_bluetooth_adapter_client.h',
         'dbus/mock_bluetooth_device_client.cc',

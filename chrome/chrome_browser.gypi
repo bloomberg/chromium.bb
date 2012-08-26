@@ -531,8 +531,6 @@
         'browser/chromeos/cros/onc_network_parser.h',
         'browser/chromeos/cros/sms_watcher.cc',
         'browser/chromeos/cros/sms_watcher.h',
-        'browser/chromeos/cryptohome/async_method_caller.cc',
-        'browser/chromeos/cryptohome/async_method_caller.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
         'browser/chromeos/dbus/cros_dbus_service.cc',

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CRYPTOHOME_ASYNC_METHOD_CALLER_H_
-#define CHROME_BROWSER_CHROMEOS_CRYPTOHOME_ASYNC_METHOD_CALLER_H_
+#ifndef CHROMEOS_CRYPTOHOME_ASYNC_METHOD_CALLER_H_
+#define CHROMEOS_CRYPTOHOME_ASYNC_METHOD_CALLER_H_
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "chromeos/chromeos_export.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {
@@ -17,7 +18,7 @@ namespace cryptohome {
 // since there is already a namespace ::cryptohome which holds the error code
 // enum (MountError) and referencing ::chromeos::cryptohome and ::cryptohome
 // within the same code is confusing.
-class AsyncMethodCaller {
+class CHROMEOS_EXPORT AsyncMethodCaller {
  public:
   // A callback type which is called back on the UI thread when the results of
   // method calls are ready.
@@ -83,4 +84,4 @@ class AsyncMethodCaller {
 
 }  // namespace cryptohome
 
-#endif  // CHROME_BROWSER_CHROMEOS_CRYPTOHOME_ASYNC_METHOD_CALLER_H_
+#endif  // CHROMEOS_CRYPTOHOME_ASYNC_METHOD_CALLER_H_

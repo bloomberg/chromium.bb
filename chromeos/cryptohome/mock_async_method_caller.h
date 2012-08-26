@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CRYPTOHOME_MOCK_ASYNC_METHOD_CALLER_H_
-#define CHROME_BROWSER_CHROMEOS_CRYPTOHOME_MOCK_ASYNC_METHOD_CALLER_H_
+#ifndef CHROMEOS_CRYPTOHOME_MOCK_ASYNC_METHOD_CALLER_H_
+#define CHROMEOS_CRYPTOHOME_MOCK_ASYNC_METHOD_CALLER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
+#include "base/callback.h"
+#include "chromeos/cryptohome/async_method_caller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cryptohome {
@@ -46,4 +47,4 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
 
 }  // namespace cryptohome
 
-#endif  // CHROME_BROWSER_CHROMEOS_CRYPTOHOME_MOCK_ASYNC_METHOD_CALLER_H_
+#endif  // CHROMEOS_CRYPTOHOME_MOCK_ASYNC_METHOD_CALLER_H_
