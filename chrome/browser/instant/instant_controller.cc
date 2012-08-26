@@ -144,9 +144,8 @@ bool InstantController::IsEnabled(Profile* profile) {
 
 bool InstantController::Update(const AutocompleteMatch& match,
                                const string16& user_text,
-                               bool verbatim,
-                               string16* suggested_text,
-                               InstantCompleteBehavior* complete_behavior) {
+                               const string16& full_text,
+                               bool verbatim) {
   const TabContents* active_tab = delegate_->GetActiveTabContents();
 
   // We could get here with no active tab if the Browser is closing.
@@ -164,16 +163,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  string16 full_text = user_text + *suggested_text;
-
   if (full_text.empty()) {
     Hide();
     return false;
   }
-
-  // The presence of any suggested_text implies verbatim.
-  DCHECK(suggested_text->empty() || verbatim)
-      << user_text << "|" << *suggested_text;
 
   ResetLoader(instant_url, active_tab);
   last_active_tab_ = active_tab;
@@ -182,17 +175,19 @@ bool InstantController::Update(const AutocompleteMatch& match,
   url_for_history_ = match.destination_url;
   last_transition_type_ = match.transition;
 
+  // In EXTENDED mode, we send only |user_text| as the query text. In all other
+  // modes, we use the entire |full_text|.
+  const string16& query_text = mode_ == EXTENDED ? user_text : full_text;
+  string16 last_query_text =
+      mode_ == EXTENDED ? last_user_text_ : last_full_text_;
   last_user_text_ = user_text;
+  last_full_text_ = full_text;
 
   // Don't send an update to the loader if the query text hasn't changed.
-  if (full_text == last_full_text_ && verbatim == last_verbatim_) {
-    // Since we are updating |suggested_text|, shouldn't we also update
-    // |last_full_text_|? No. There's no guarantee that our suggestion will
-    // actually be inline autocompleted. For example, it may get trumped by
-    // a history suggestion. If our suggestion does make it, the omnibox will
-    // call Update() again, at which time we'll update |last_full_text_|.
-    *suggested_text = last_suggestion_.text;
-    *complete_behavior = last_suggestion_.behavior;
+  if (query_text == last_query_text && verbatim == last_verbatim_) {
+    // Reuse the last suggestion, as it's still valid.
+    delegate_->SetSuggestedText(last_suggestion_.text,
+                                last_suggestion_.behavior);
 
     // We need to call Show() here because of this:
     // 1. User has typed a query (say Q). Instant overlay is showing results.
@@ -207,23 +202,21 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return true;
   }
 
-  last_full_text_ = full_text;
   last_verbatim_ = verbatim;
   loader_processed_last_update_ = false;
-
-  // Reset the last suggestion, as it's no longer valid.
-  suggested_text->clear();
   last_suggestion_ = InstantSuggestion();
-  *complete_behavior = INSTANT_COMPLETE_NOW;
 
   if (mode_ != SILENT) {
-    loader_->Update(last_full_text_, last_verbatim_);
+    loader_->Update(query_text, verbatim);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
         content::Source<InstantController>(this),
         content::NotificationService::NoDetails());
   }
+
+  // We don't have suggestions yet, but need to reset any existing "gray text".
+  delegate_->SetSuggestedText(string16(), INSTANT_COMPLETE_NOW);
 
   return true;
 }

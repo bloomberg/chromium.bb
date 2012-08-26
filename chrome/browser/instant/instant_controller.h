@@ -76,16 +76,15 @@ class InstantController : public InstantLoaderDelegate {
   static bool IsEnabled(Profile* profile);
 
   // Invoked as the user types into the omnibox. |user_text| is what the user
-  // has typed. |suggested_text| is the current inline autocomplete text. It
-  // may be replaced by Instant's autocomplete suggestion, if any. If |verbatim|
-  // is true, search results are shown for |user_text| rather than the best
-  // guess as to what Instant thinks the user means. Returns true if the update
-  // is processed by Instant (i.e., if |match| is a search rather than a URL).
+  // has typed. |full_text| is what the omnibox is showing. These may differ if
+  // the user typed only some text, and the rest was inline autocompleted. If
+  // |verbatim| is true, search results are shown for the exact omnibox text,
+  // rather than the best guess as to what the user means. Returns true if the
+  // update is accepted (i.e., if |match| is a search rather than a URL).
   bool Update(const AutocompleteMatch& match,
               const string16& user_text,
-              bool verbatim,
-              string16* suggested_text,
-              InstantCompleteBehavior* complete_behavior);
+              const string16& full_text,
+              bool verbatim);
 
   // Sets the bounds of the omnibox dropdown, in screen coordinates.
   void SetOmniboxBounds(const gfx::Rect& bounds);
@@ -191,9 +190,7 @@ class InstantController : public InstantLoaderDelegate {
   // pointer comparisons.
   const void* last_active_tab_;
 
-  // The most recent full omnibox query text known to us. If this is empty, it
-  // could also mean that the omnibox text was a URL (or something else that
-  // we shouldn't be processing).
+  // The most recent full_text passed to Update().
   string16 last_full_text_;
 
   // The most recent user_text passed to Update().

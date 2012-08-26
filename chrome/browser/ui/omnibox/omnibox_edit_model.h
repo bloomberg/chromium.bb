@@ -367,12 +367,8 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   void NotifySearchTabHelper();
 
   // Tries to start an Instant preview for |match|. Returns true if Instant
-  // processed the match. |suggested_text| should initially contain the current
-  // inline autocomplete text. Instant will replace it with new suggested text
-  // and set |complete_behavior| accordingly.
-  bool DoInstant(const AutocompleteMatch& match,
-                 string16* suggested_text,
-                 InstantCompleteBehavior* complete_behavior);
+  // processed the match.
+  bool DoInstant(const AutocompleteMatch& match);
 
   // Starts a prerender for the given |match|.
   void DoPrerender(const AutocompleteMatch& match);

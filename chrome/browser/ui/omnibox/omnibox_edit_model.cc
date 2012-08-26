@@ -243,12 +243,7 @@ void OmniboxEditModel::OnChanged() {
                             recommended_action,
                             AutocompleteActionPredictor::LAST_PREDICT_ACTION);
 
-  string16 suggested_text;
-  InstantCompleteBehavior complete_behavior = INSTANT_COMPLETE_NOW;
-
-  if (DoInstant(current_match, &suggested_text, &complete_behavior)) {
-    SetSuggestedText(suggested_text, complete_behavior);
-  } else {
+  if (!DoInstant(current_match)) {
     switch (recommended_action) {
       case AutocompleteActionPredictor::ACTION_PRERENDER:
         DoPrerender(current_match);
@@ -1109,13 +1104,7 @@ void OmniboxEditModel::NotifySearchTabHelper() {
   }
 }
 
-bool OmniboxEditModel::DoInstant(
-    const AutocompleteMatch& match,
-    string16* suggested_text,
-    InstantCompleteBehavior* complete_behavior) {
-  DCHECK(suggested_text);
-  DCHECK(complete_behavior);
-
+bool OmniboxEditModel::DoInstant(const AutocompleteMatch& match) {
   if (in_revert_)
     return false;
 
@@ -1126,24 +1115,26 @@ bool OmniboxEditModel::DoInstant(
 
   if (user_input_in_progress_ && popup_->IsOpen()) {
     // The two pieces of text we want to send Instant, viz., what the user has
-    // typed, and any inline autocomplete suggestion.
+    // typed, and the full omnibox text including any inline autocompletion.
     string16 user_text = user_text_;
-    *suggested_text = inline_autocomplete_text_;
+    string16 full_text = user_text_ + inline_autocomplete_text_;
 
     // If there's temporary text, that overrides the user_text. In this case, we
     // should ignore any inline_autocomplete_text_, because it won't be visible.
-    if (has_temporary_text_) {
-      user_text = CurrentMatch().fill_into_edit;
-      suggested_text->clear();
-    }
+    if (has_temporary_text_)
+      user_text = full_text = CurrentMatch().fill_into_edit;
 
-    // Remove any keywords and "?" prefix.
+    // Remove keyword if we're in keyword mode.
     user_text = DisplayTextFromUserText(user_text);
+    full_text = DisplayTextFromUserText(full_text);
+
+    // Remove "?" if we're in forced query mode.
     AutocompleteInput::RemoveForcedQueryStringIfNecessary(
         autocomplete_controller_->input().type(), &user_text);
+    AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+        autocomplete_controller_->input().type(), &full_text);
 
-    return instant->Update(match, user_text, UseVerbatimInstant(),
-                           suggested_text, complete_behavior);
+    return instant->Update(match, user_text, full_text, UseVerbatimInstant());
   }
 
   // It's possible DoInstant() was called due to an OnChanged() event from the
