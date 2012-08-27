@@ -62,12 +62,9 @@ def run_all(result, shard_index, shard_count):
   env['GTEST_SHARD_INDEX'] = str(shard_index)
   env['GTEST_TOTAL_SHARDS'] = str(shard_count)
   cmd = [sys.executable, 'isolate.py', 'run', '-r', result]
-  return_code = subprocess.call(cmd, env=env)
+  subprocess.call(cmd, env=env)
   if not os.path.isfile(result_file):
     print >> sys.stderr, 'Failed to find %s' % result_file
-    return None
-  if return_code:
-    print >> sys.stderr, 'Failed to run isolate.py run'
     return None
   with open(result_file) as f:
     try:
@@ -168,15 +165,18 @@ def fix_all(result, shard_index, shard_count):
 def main():
   parser = run_test_cases.OptionParserWithTestSharding(
       usage='%prog <option> [test]')
+  parser.add_option('-d', '--dir', default='../../out/Release',
+                    help='The directory containing the the test executable and '
+                    'result file. Defaults to %default')
   options, args = parser.parse_args()
 
   if len(args) != 1:
-    parser.error('Use with the name of the test only, e.g. "unit_tests"')
+    parser.error('Use with the name of the test only, e.g. unit_tests')
 
   basename = args[0]
-  executable = '../../out/Release/%s' % basename
+  executable = os.path.join(options.dir, basename)
   result = '%s.results' % executable
-  if sys.platform == 'win32':
+  if sys.platform in('win32', 'cygwin'):
     executable += '.exe'
   if not os.path.isfile(executable):
     print >> sys.stderr, (
