@@ -203,7 +203,7 @@ class PlatformAppCommandLineLauncher
         fileapi::IsolatedContext::GetInstance();
     DCHECK(isolated_context);
     std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeIsolated, file_path, &registered_name);
+        fileapi::kFileSystemTypeNativeLocal, file_path, &registered_name);
     // Granting read file system permission as well to allow file-system
     // read operations.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);

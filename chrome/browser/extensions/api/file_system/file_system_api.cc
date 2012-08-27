@@ -258,7 +258,7 @@ void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
 
   std::string registered_name;
   std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeIsolated, path, &registered_name);
+      fileapi::kFileSystemTypeNativeLocal, path, &registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();

@@ -66,6 +66,8 @@ class FILEAPI_EXPORT VirtualPath {
 //
 // For Isolated filesystem this returns the 'common' root part, e.g.
 // returns URL without the filesystem ID.
+//
+// |type| needs to be public type as the returned URI is given to the renderer.
 FILEAPI_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
                                          FileSystemType type);
 
@@ -74,6 +76,8 @@ FILEAPI_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
 // (The name itself is neither really significant nor a formal identifier
 // but can be read as the .name field of the returned FileSystem object
 // as a user-friendly name in the javascript layer).
+//
+// |type| needs to be public type as the returned name is given to the renderer.
 //
 // Example:
 //   The name for a TEMPORARY filesystem of "http://www.example.com:80/"

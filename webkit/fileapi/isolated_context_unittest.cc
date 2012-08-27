@@ -114,7 +114,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   isolated_context()->RemoveReference(id_);
 
   std::string id2 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeIsolated, FilePath(DRIVE FPL("/foo")), NULL);
+      kFileSystemTypeNativeLocal, FilePath(DRIVE FPL("/foo")), NULL);
 
   // Make sure the GetDraggedFileInfo returns false for both ones.
   ASSERT_FALSE(isolated_context()->GetDraggedFileInfo(id2, &toplevels));
@@ -126,11 +126,11 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
 
   // Try registering three more file systems for the same path as id2.
   std::string id3 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeIsolated, path, NULL);
+      kFileSystemTypeNativeLocal, path, NULL);
   std::string id4 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeIsolated, path, NULL);
+      kFileSystemTypeNativeLocal, path, NULL);
   std::string id5 = isolated_context()->RegisterFileSystemForPath(
-      kFileSystemTypeIsolated, path, NULL);
+      kFileSystemTypeNativeLocal, path, NULL);
 
   // Remove file system for id4.
   isolated_context()->AddReference(id4);

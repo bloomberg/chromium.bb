@@ -107,7 +107,7 @@ bool IsolatedContext::FileInfoSet::AddPathWithName(
 
 class IsolatedContext::Instance {
  public:
-  typedef FileSystemMountType MountType;
+  typedef FileSystemType MountType;
 
   // For a single-path isolated file system, which could be registered by
   // IsolatedContext::RegisterFileSystemForPath().
@@ -157,7 +157,7 @@ class IsolatedContext::Instance {
 
 IsolatedContext::Instance::Instance(FileSystemType type,
                                     const FileInfo& file_info)
-    : mount_type_(kFileSystemMountTypeIsolated),
+    : mount_type_(kFileSystemTypeIsolated),
       type_(type),
       file_info_(file_info),
       ref_counts_(0) {
@@ -166,7 +166,7 @@ IsolatedContext::Instance::Instance(FileSystemType type,
 
 IsolatedContext::Instance::Instance(FileSystemType type,
                                     const std::set<FileInfo>& files)
-    : mount_type_(kFileSystemMountTypeIsolated),
+    : mount_type_(kFileSystemTypeIsolated),
       type_(type),
       files_(files),
       ref_counts_(0) {
@@ -175,7 +175,7 @@ IsolatedContext::Instance::Instance(FileSystemType type,
 
 IsolatedContext::Instance::Instance(FileSystemType type,
                                     const FilePath& path)
-    : mount_type_(kFileSystemMountTypeExternal),
+    : mount_type_(kFileSystemTypeExternal),
       type_(type),
       file_info_(FileInfo("", path)),
       ref_counts_(0) {
@@ -265,7 +265,7 @@ IsolatedContext::GetExternalMountPoints() const {
   for (IDToInstance::const_iterator iter = instance_map_.begin();
        iter != instance_map_.end();
        ++iter) {
-    if (iter->second->mount_type() == kFileSystemMountTypeExternal)
+    if (iter->second->mount_type() == kFileSystemTypeExternal)
       files.push_back(FileInfo(iter->first, iter->second->file_info().path));
   }
   return files;
@@ -312,7 +312,7 @@ void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
   DCHECK(instance->ref_counts() > 0);
   instance->RemoveRef();
   if (instance->ref_counts() == 0 &&
-      instance->mount_type() != kFileSystemMountTypeExternal) {
+      instance->mount_type() != kFileSystemTypeExternal) {
     bool deleted = UnregisterFileSystem(filesystem_id);
     DCHECK(deleted);
   }
@@ -351,7 +351,7 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
     if (type)
       *type = instance->type();
     switch (instance->mount_type()) {
-      case kFileSystemMountTypeIsolated: {
+      case kFileSystemTypeIsolated: {
         if (component_iter == components.end()) {
           // The virtual root case.
           path->clear();
@@ -363,10 +363,10 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
           return false;
         break;
       }
-      case kFileSystemMountTypeExternal:
+      case kFileSystemTypeExternal:
         cracked_path = instance->file_info().path;
         break;
-      case kFileSystemMountTypeUnknown:
+      default:
         NOTREACHED();
         break;
     }

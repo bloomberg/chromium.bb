@@ -34,8 +34,9 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
   std::string name(fileapi::GetIsolatedFileSystemName(context_url.GetOrigin(),
                                                       file_system_id));
 
-  std::string root(fileapi::GetFileSystemRootURI(context_url.GetOrigin(),
-      fileapi::kFileSystemTypeIsolated).spec());
+  std::string root(fileapi::GetFileSystemRootURI(
+          context_url.GetOrigin(),
+          fileapi::kFileSystemTypeIsolated).spec());
   root.append(file_system_id);
   root.append("/");
 

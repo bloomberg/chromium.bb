@@ -264,8 +264,8 @@ void SimpleFileSystem::CleanupOnIOThread() {
 
 bool SimpleFileSystem::HasFilePermission(
     const fileapi::FileSystemURL& url, FilePermission permission) {
-  // Disallow writing on isolated file system, otherwise return ok.
-  return (url.type() != fileapi::kFileSystemTypeIsolated ||
+  // Disallow writing on dragged file system, otherwise return ok.
+  return (url.type() != fileapi::kFileSystemTypeDragged ||
           permission == FILE_PERMISSION_READ);
 }
 

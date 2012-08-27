@@ -101,7 +101,6 @@ bool IsolatedMountPointProvider::IsRestrictedFileName(
 FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
     FileSystemType type) {
   switch (type) {
-    case kFileSystemTypeIsolated:
     case kFileSystemTypeNativeLocal:
       return isolated_file_util_.get();
     case kFileSystemTypeDragged:

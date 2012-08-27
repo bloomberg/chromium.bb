@@ -23,7 +23,7 @@ namespace fileapi {
 //
 // Example: For a URL 'filesystem:http://foo.com/temporary/foo/bar':
 //   origin() returns 'http://foo.com',
-//   type() returns kFileSystemTypeTemporary,
+//   type() and mount_type() return kFileSystemTypeTemporary,
 //   path() and virtual_path() return 'foo/bar', and
 //   filesystem_id() returns an empty string.
 //
@@ -40,7 +40,7 @@ namespace fileapi {
 //   path() returns '/media/removable/foo/bar',
 //   virtual_path() returns 'mount_name/foo/bar',
 //   filesystem_id() returns 'mount_name', and
-//   mount_type() returns kFileSystemMountTypeExternal.
+//   mount_type() returns kFileSystemTypeExternal.
 //
 class FILEAPI_EXPORT FileSystemURL {
  public:
@@ -73,8 +73,9 @@ class FILEAPI_EXPORT FileSystemURL {
   // See the class comment for details.
   const std::string& filesystem_id() const { return filesystem_id_; }
 
-  // Returns the mount type of this URL for isolated/external file system URLs.
-  FileSystemMountType mount_type() const { return mount_type_; }
+  // Returns the public file system type of this URL.
+  // See the class comment for details.
+  FileSystemType mount_type() const { return mount_type_; }
 
   std::string spec() const;
 
@@ -94,7 +95,7 @@ class FILEAPI_EXPORT FileSystemURL {
   // For isolated filesystem.
   std::string filesystem_id_;
   FilePath virtual_path_;
-  FileSystemMountType mount_type_;
+  FileSystemType mount_type_;
 
   bool is_valid_;
 };

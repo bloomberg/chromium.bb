@@ -98,7 +98,7 @@ class SimpleFileWriter::IOThreadProxy
 
   // Returns true if it is not writable.
   bool FailIfNotWritable(const FileSystemURL& url) {
-    if (url.type() == fileapi::kFileSystemTypeIsolated) {
+    if (url.type() == fileapi::kFileSystemTypeDragged) {
       // Write is not allowed in isolate file system in SimpleFileWriter.
       DidFailOnMainThread(base::PLATFORM_FILE_ERROR_SECURITY);
       return true;

@@ -755,7 +755,7 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
   // Special handling for filesystems whose mount type is isolated.
   // (See ChildProcessSecurityPolicy::GrantReadFileSystem for more
   // details about access permission for isolated filesystem.)
-  if (url.mount_type() == fileapi::kFileSystemMountTypeIsolated) {
+  if (url.mount_type() == fileapi::kFileSystemTypeIsolated) {
     // The root directory of the dragged filesystem is read-only.
     if (url.type() == fileapi::kFileSystemTypeDragged && url.path().empty()) {
       if (permissions != kReadFilePermissions) {

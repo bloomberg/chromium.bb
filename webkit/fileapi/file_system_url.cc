@@ -12,12 +12,10 @@ namespace fileapi {
 
 FileSystemURL::FileSystemURL()
     : type_(kFileSystemTypeUnknown),
-      mount_type_(kFileSystemMountTypeUnknown),
       is_valid_(false) {}
 
 FileSystemURL::FileSystemURL(const GURL& url)
-    : type_(kFileSystemTypeUnknown),
-      mount_type_(kFileSystemMountTypeUnknown) {
+    : type_(kFileSystemTypeUnknown) {
   is_valid_ = CrackFileSystemURL(url, &origin_, &type_, &virtual_path_);
   MayCrackIsolatedPath();
 }
@@ -57,8 +55,8 @@ bool FileSystemURL::operator==(const FileSystemURL& that) const {
 
 void FileSystemURL::MayCrackIsolatedPath() {
   path_ = virtual_path_;
+  mount_type_ = type_;
   if (is_valid_ && IsolatedContext::IsIsolatedType(type_)) {
-    mount_type_ = static_cast<FileSystemMountType>(type_);
     // If the type is isolated, crack the path further to get the 'real'
     // filesystem type and path.
     is_valid_ = IsolatedContext::GetInstance()->CrackIsolatedPath(
