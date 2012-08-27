@@ -420,7 +420,7 @@ NativePanelTesting* OldBasePanelBrowserTest::CreateNativePanelTesting(
 }
 
 void OldBasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
-  TabContents* tab_contents = new TabContents(
+  TabContents* tab_contents = TabContents::Factory::CreateTabContents(
       WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
   chrome::AddTab(browser, tab_contents, content::PAGE_TRANSITION_LINK);
 }

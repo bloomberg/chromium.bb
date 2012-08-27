@@ -324,7 +324,8 @@ void PrerenderContents::StartPrerendering(
   prerendering_has_started_ = true;
 
   WebContents* new_contents = CreateWebContents(session_storage_namespace);
-  prerender_contents_.reset(new TabContents(new_contents));
+  prerender_contents_.reset(
+      TabContents::Factory::CreateTabContents(new_contents));
   content::WebContentsObserver::Observe(new_contents);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));

@@ -82,6 +82,16 @@ class TabContentsUserData : public base::SupportsUserData::Data {
 ////////////////////////////////////////////////////////////////////////////////
 // TabContents, public:
 
+// static
+TabContents* TabContents::Factory::CreateTabContents(WebContents* contents) {
+  return new TabContents(contents);
+}
+
+// static
+TabContents* TabContents::Factory::CloneTabContents(TabContents* contents) {
+  return contents->Clone();
+}
+
 TabContents::TabContents(WebContents* contents)
     : content::WebContentsObserver(contents),
       in_destructor_(false),

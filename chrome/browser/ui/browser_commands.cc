@@ -84,6 +84,17 @@ using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 
+// TODO(avi): Kill this when TabContents goes away.
+class BrowserCommandsTabContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+  static TabContents* CloneTabContents(TabContents* contents) {
+    return TabContents::Factory::CloneTabContents(contents);
+  }
+};
+
 namespace chrome {
 namespace {
 
@@ -93,7 +104,8 @@ WebContents* GetOrCloneTabForDisposition(Browser* browser,
   switch (disposition) {
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB: {
-      current_tab = current_tab->Clone();
+      current_tab =
+          BrowserCommandsTabContentsCreator::CloneTabContents(current_tab);
       browser->tab_strip_model()->AddTabContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
           disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_ACTIVE :
@@ -101,7 +113,8 @@ WebContents* GetOrCloneTabForDisposition(Browser* browser,
       break;
     }
     case NEW_WINDOW: {
-      current_tab = current_tab->Clone();
+      current_tab =
+          BrowserCommandsTabContentsCreator::CloneTabContents(current_tab);
       Browser* b = new Browser(Browser::CreateParams(browser->profile()));
       b->tab_strip_model()->AddTabContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
@@ -490,7 +503,8 @@ bool CanDuplicateTab(const Browser* browser) {
 void DuplicateTabAt(Browser* browser, int index) {
   TabContents* contents = GetTabContentsAt(browser, index);
   CHECK(contents);
-  TabContents* contents_dupe = contents->Clone();
+  TabContents* contents_dupe =
+      BrowserCommandsTabContentsCreator::CloneTabContents(contents);
 
   bool pinned = false;
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
@@ -895,7 +909,8 @@ void ViewSource(Browser* browser,
 
   // Note that Clone does not copy the pending or transient entries, so the
   // active entry in view_source_contents will be the last committed entry.
-  TabContents* view_source_contents = contents->Clone();
+  TabContents* view_source_contents =
+      BrowserCommandsTabContentsCreator::CloneTabContents(contents);
   view_source_contents->web_contents()->GetController().PruneAllButActive();
   NavigationEntry* active_entry =
       view_source_contents->web_contents()->GetController().GetActiveEntry();
@@ -979,8 +994,10 @@ void ConvertTabToAppWindow(Browser* browser,
       Browser::CreateParams::CreateForApp(
           Browser::TYPE_POPUP, app_name, gfx::Rect(), browser->profile()));
   TabContents* tab_contents = TabContents::FromWebContents(contents);
-  if (!tab_contents)
-    tab_contents = new TabContents(contents);
+  if (!tab_contents) {
+    tab_contents =
+        BrowserCommandsTabContentsCreator::CreateTabContents(contents);
+  }
   app_browser->tab_strip_model()->AppendTabContents(tab_contents, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;

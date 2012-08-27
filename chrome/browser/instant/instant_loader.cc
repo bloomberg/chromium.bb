@@ -264,10 +264,11 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
                              const TabContents* tab_contents)
     : loader_delegate_(delegate),
       preview_contents_(
-          new TabContents(content::WebContents::CreateWithSessionStorage(
-            tab_contents->profile(), NULL, MSG_ROUTING_NONE,
-            tab_contents->web_contents(),
-            tab_contents->web_contents()->GetController().
+          TabContents::Factory::CreateTabContents(
+              content::WebContents::CreateWithSessionStorage(
+                  tab_contents->profile(), NULL, MSG_ROUTING_NONE,
+                  tab_contents->web_contents(),
+                  tab_contents->web_contents()->GetController().
                                           GetSessionStorageNamespaceMap()))),
       supports_instant_(false),
       instant_url_(instant_url) {

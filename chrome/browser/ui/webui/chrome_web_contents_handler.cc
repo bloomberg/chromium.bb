@@ -82,7 +82,8 @@ void ChromeWebContentsHandler::AddNewContents(
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile));
-  TabContents* tab_contents = new TabContents(new_contents);
+  TabContents* tab_contents =
+      TabContents::Factory::CreateTabContents(new_contents);
   chrome::NavigateParams params(browser, tab_contents);
   // TODO(pinkerton): no way to get a TabContents for this.
   // params.source_contents = source;

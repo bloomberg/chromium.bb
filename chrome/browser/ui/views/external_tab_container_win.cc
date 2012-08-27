@@ -194,7 +194,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   } else {
     WebContents* new_contents = WebContents::Create(
         profile, NULL, MSG_ROUTING_NONE, NULL);
-    tab_contents_.reset(new TabContents(new_contents));
+    tab_contents_.reset(TabContents::Factory::CreateTabContents(new_contents));
   }
 
   if (!infobars_enabled)
@@ -489,7 +489,8 @@ void ExternalTabContainerWin::AddNewContents(WebContents* source,
 
   // Make sure that ExternalTabContainer instance is initialized with
   // an unwrapped Profile.
-  scoped_ptr<TabContents> tab_contents(new TabContents(new_contents));
+  scoped_ptr<TabContents> tab_contents(
+      TabContents::Factory::CreateTabContents(new_contents));
   bool result = new_container->Init(
       tab_contents->profile()->GetOriginalProfile(),
       NULL,

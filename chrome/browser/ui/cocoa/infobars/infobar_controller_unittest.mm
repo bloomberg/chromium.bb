@@ -23,6 +23,14 @@
 
 using content::WebContents;
 
+// TODO(avi): Kill this when TabContents goes away.
+class InfoBarControllerContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 @interface InfoBarController (ExposedForTesting)
 - (NSString*)labelString;
 - (NSRect)labelFrame;
@@ -100,8 +108,8 @@ class LinkInfoBarControllerTest : public CocoaProfileTest,
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContents(WebContents::Create(
-        profile(), NULL, MSG_ROUTING_NONE, NULL)));
+    tab_contents_.reset(InfoBarControllerContentsCreator::CreateTabContents(
+        WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL)));
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
     delegate_ = new MockLinkInfoBarDelegate(this);
@@ -144,8 +152,8 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContents(WebContents::Create(
-        profile(), NULL, MSG_ROUTING_NONE, NULL)));
+    tab_contents_.reset(InfoBarControllerContentsCreator::CreateTabContents(
+        WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL)));
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
     delegate_ = new MockConfirmInfoBarDelegate(this);

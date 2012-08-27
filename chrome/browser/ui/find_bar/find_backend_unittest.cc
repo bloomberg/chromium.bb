@@ -20,6 +20,14 @@ using content::BrowserThread;
 using content::WebContents;
 using content::WebContentsTester;
 
+// TODO(avi): Kill this when TabContents goes away.
+class FindBackendTestContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 class FindBackendTest : public TabContentsTestHarness {
  public:
   FindBackendTest()
@@ -50,8 +58,9 @@ TEST_F(FindBackendTest, InternalState) {
   // Get another WebContents object ready.
   WebContents* contents2 =
       WebContentsTester::CreateTestWebContents(profile(), NULL);
-  TabContents tab_contents(contents2);
-  FindTabHelper* find_tab_helper2 = tab_contents.find_tab_helper();
+  scoped_ptr<TabContents> tab_contents(
+      FindBackendTestContentsCreator::CreateTabContents(contents2));
+  FindTabHelper* find_tab_helper2 = tab_contents->find_tab_helper();
 
   // No search has still been issued, strings should be blank.
   EXPECT_EQ(string16(), FindPrepopulateText(contents()));

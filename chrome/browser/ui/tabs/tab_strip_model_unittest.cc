@@ -48,6 +48,14 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 
+// TODO(avi): Kill this when TabContents goes away.
+class TabStripModelContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 namespace {
 
 // Class used to delete a TabContents when another TabContents is destroyed.
@@ -1466,8 +1474,9 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   WebContents* fake_destinations_tab =
       WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL);
-  TabContents tab_contents(fake_destinations_tab);
-  TabStripDummyDelegate delegate(&tab_contents);
+  scoped_ptr<TabContents> tab_contents(
+      TabStripModelContentsCreator::CreateTabContents(fake_destinations_tab));
+  TabStripDummyDelegate delegate(tab_contents.get());
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 

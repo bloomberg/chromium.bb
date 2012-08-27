@@ -27,6 +27,14 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/event.h"
 
+// TODO(avi): Kill this when TabContents goes away.
+class BrowserLauncherItemControllerContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 namespace {
 
 // Test implementation of AppTabHelper
@@ -215,7 +223,9 @@ class BrowserLauncherItemControllerTest :
 TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
   size_t initial_size = launcher_model_->items().size();
   {
-    TabContents tab_contents(CreateTestWebContents());
+    scoped_ptr<TabContents> tab_contents(
+        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
+            CreateTestWebContents()));
     State state(this, std::string(),
                 BrowserLauncherItemController::TYPE_TABBED);
 
@@ -230,11 +240,15 @@ TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
 
   // Do the same, but this time add the tab first.
   {
-    TabContents tab_contents(CreateTestWebContents());
+    scoped_ptr<TabContents> tab_contents(
+        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
+            CreateTestWebContents()));
 
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
-    tab_strip.InsertTabContentsAt(0, &tab_contents, TabStripModel::ADD_ACTIVE);
+    tab_strip.InsertTabContentsAt(0,
+                                  tab_contents.get(),
+                                  TabStripModel::ADD_ACTIVE);
     aura::Window window(NULL);
     window.Init(ui::LAYER_NOT_DRAWN);
     root_window()->AddChild(&window);
@@ -260,9 +274,13 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     aura::Window window(NULL);
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
-    TabContents panel_tab(CreateTestWebContents());
-    app_tab_helper_->SetAppID(&panel_tab, "1");  // Panels are apps.
-    tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+    scoped_ptr<TabContents> panel_tab(
+        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
+            CreateTestWebContents()));
+    app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
+    tab_strip.InsertTabContentsAt(0,
+                                  panel_tab.get(),
+                                  TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
         LauncherItemController::TYPE_APP_PANEL,
         &window, &tab_strip, launcher_delegate_.get(),
@@ -278,9 +296,13 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
     aura::Window window(NULL);
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip(&tab_strip_delegate, profile());
-    TabContents panel_tab(CreateTestWebContents());
-    app_tab_helper_->SetAppID(&panel_tab, "1");  // Panels are apps.
-    tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
+    scoped_ptr<TabContents> panel_tab(
+        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
+            CreateTestWebContents()));
+    app_tab_helper_->SetAppID(panel_tab.get(), "1");  // Panels are apps.
+    tab_strip.InsertTabContentsAt(0,
+                                  panel_tab.get(),
+                                  TabStripModel::ADD_ACTIVE);
     BrowserLauncherItemController updater(
         LauncherItemController::TYPE_EXTENSION_PANEL,
         &window, &tab_strip, launcher_delegate_.get(),
@@ -295,9 +317,11 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
 // Verifies pinned apps are persisted and restored.
 TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();
-  TabContents tab1(CreateTestWebContents());
+    scoped_ptr<TabContents> tab1(
+        BrowserLauncherItemControllerContentsCreator::CreateTabContents(
+            CreateTestWebContents()));
 
-  app_tab_helper_->SetAppID(&tab1, "1");
+  app_tab_helper_->SetAppID(tab1.get(), "1");
 
   app_icon_loader_->GetAndClearFetchCount();
   launcher_delegate_->PinAppWithID("1");
@@ -311,7 +335,7 @@ TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   launcher_delegate_.reset(
       new ChromeLauncherController(profile(), launcher_model_.get()));
   app_tab_helper_ = new AppTabHelperImpl;
-  app_tab_helper_->SetAppID(&tab1, "1");
+  app_tab_helper_->SetAppID(tab1.get(), "1");
   ResetAppTabHelper();
   app_icon_loader_ = new AppIconLoaderImpl;
   ResetAppIconLoader();

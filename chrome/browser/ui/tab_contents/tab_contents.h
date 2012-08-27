@@ -16,18 +16,33 @@ class AutocompleteHistoryManager;
 class AutofillManager;
 class AutofillExternalDelegate;
 class AutomationTabHelper;
+class BasePanelBrowserTest;
 class BlockedContentTabHelper;
 class BookmarkTabHelper;
+class Browser;
+class BrowserCommandsTabContentsCreator;
+class BrowserLauncherItemControllerContentsCreator;
+class BrowserTabstripTabContentsCreator;
+class ChromeWebContentsHandler;
+class ConstrainedWebDialogDelegateBase;
 class ConstrainedWindowTabHelper;
 class CoreTabHelper;
+class ExtensionTabUtil;
 class ExternalProtocolObserver;
+class ExternalTabContainerWin;
 class FaviconTabHelper;
+class FindBackendTestContentsCreator;
 class FindTabHelper;
+class GeolocationPermissionContextTests;
 class HistoryTabHelper;
 class HungPluginTabHelper;
+class InfoBarControllerContentsCreator;
 class InfoBarTabHelper;
+class InstantLoader;
 class MetroPinTabHelper;
 class NavigationMetricsRecorder;
+class OffscreenTabContentsCreator;
+class OldBasePanelBrowserTest;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
@@ -38,12 +53,23 @@ class Profile;
 class RestoreTabHelper;
 class SadTabHelper;
 class SearchEngineTabHelper;
+class ShellWindow;
 class SnapshotTabHelper;
 class TabContentsSSLHelper;
+class TabContentsTestHarness;
 class TabSpecificContentSettings;
+class TabStripModel;
+class TabStripModelContentsCreator;
 class ThumbnailGenerator;
 class TranslateTabHelper;
+class TranslationInfoBarTestContentsCreator;
+class WebDialogGtk;
+class WebDialogWindowControllerTabContentsCreator;
+class WebIntentInlineDispositionBrowserTest;
+class WebIntentPickerCocoa;
 class WebIntentPickerController;
+class WebIntentPickerGtk;
+class WebUITestContentsCreator;
 class ZoomController;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
@@ -68,12 +94,19 @@ namespace chrome_browser_net {
 class LoadTimeStatsTabHelper;
 }
 
+namespace chromeos {
+class SimpleWebViewDialog;
+class WebUILoginView;
+}
+
 namespace extensions {
 class TabHelper;
+class WebAuthFlow;
 class WebNavigationTabObserver;
 }
 
 namespace prerender {
+class PrerenderContents;
 class PrerenderTabHelper;
 }
 
@@ -103,14 +136,48 @@ class SafeBrowsingTabObserver;
 // least to make easy for other WebContents hosts to include and support.
 class TabContents : public content::WebContentsObserver {
  public:
-  // Takes ownership of |contents|, which must be heap-allocated (as it lives
-  // in a scoped_ptr) and can not be NULL.
-  explicit TabContents(content::WebContents* contents);
-  virtual ~TabContents();
+  class Factory {
+   private:
+    // TabContents is going away <http://crbug.com/107201> so don't allow any
+    // more code to construct instances. Explicitly befriend those who currently
+    // do so.
 
-  // Create a TabContents with the same state as this one. The returned
-  // heap-allocated pointer is owned by the caller.
-  TabContents* Clone();
+    friend class BasePanelBrowserTest;
+    friend class Browser;
+    friend class BrowserCommandsTabContentsCreator;
+    friend class BrowserLauncherItemControllerContentsCreator;
+    friend class BrowserTabstripTabContentsCreator;
+    friend class chromeos::SimpleWebViewDialog;
+    friend class chromeos::WebUILoginView;
+    friend class ChromeWebContentsHandler;
+    friend class ConstrainedWebDialogDelegateBase;
+    friend class extensions::WebAuthFlow;
+    friend class ExtensionTabUtil;
+    friend class ExternalTabContainerWin;
+    friend class FindBackendTestContentsCreator;
+    friend class GeolocationPermissionContextTests;
+    friend class InfoBarControllerContentsCreator;
+    friend class InstantLoader;
+    friend class OldBasePanelBrowserTest;
+    friend class OffscreenTabContentsCreator;
+    friend class prerender::PrerenderContents;
+    friend class ShellWindow;
+    friend class TabContentsTestHarness;
+    friend class TabStripModel;
+    friend class TabStripModelContentsCreator;
+    friend class TranslationInfoBarTestContentsCreator;
+    friend class WebDialogGtk;
+    friend class WebDialogWindowControllerTabContentsCreator;
+    friend class WebIntentInlineDispositionBrowserTest;
+    friend class WebIntentPickerCocoa;
+    friend class WebIntentPickerGtk;
+    friend class WebUITestContentsCreator;
+
+    static TabContents* CreateTabContents(content::WebContents* contents);
+    static TabContents* CloneTabContents(TabContents* contents);
+  };
+
+  virtual ~TabContents();
 
   // Helper to retrieve the existing instance that owns a given WebContents.
   // Returns NULL if there is no such existing instance.
@@ -257,6 +324,16 @@ class TabContents : public content::WebContentsObserver {
   virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
 
  private:
+  friend class TabContentsFactory;
+
+  // Takes ownership of |contents|, which must be heap-allocated (as it lives
+  // in a scoped_ptr) and can not be NULL.
+  explicit TabContents(content::WebContents* contents);
+
+  // Create a TabContents with the same state as this one. The returned
+  // heap-allocated pointer is owned by the caller.
+  TabContents* Clone();
+
   // Tab Helpers ---------------------------------------------------------------
   // (These provide API for callers and have a getter function listed in the
   // "Tab Helpers" section in the member functions area, above.)

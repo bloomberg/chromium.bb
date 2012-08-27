@@ -1516,7 +1516,7 @@ void Browser::WebContentsCreated(WebContents* source_contents,
   // will later be inserted into this browser using Browser::Navigate via
   // AddNewContents. The latter will retrieve the newly created TabContents from
   // WebContents object.
-  new TabContents(new_contents);
+  TabContents::Factory::CreateTabContents(new_contents);
 
   // Notify.
   RetargetingDetails details;

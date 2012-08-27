@@ -206,7 +206,7 @@ void TabStripModel::ReplaceNavigationControllerAt(
 
 TabContents* TabStripModel::DiscardTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
-  TabContents* null_contents = new TabContents(
+  TabContents* null_contents = TabContents::Factory::CreateTabContents(
       WebContents::Create(profile(),
                           NULL /* site_instance */,
                           MSG_ROUTING_NONE,

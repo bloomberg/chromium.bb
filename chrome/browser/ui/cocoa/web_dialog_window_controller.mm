@@ -27,6 +27,14 @@ using ui::WebDialogDelegate;
 using ui::WebDialogUI;
 using ui::WebDialogWebContentsDelegate;
 
+// TODO(avi): Kill this when TabContents goes away.
+class WebDialogWindowControllerTabContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 // Thin bridge that routes notifications to
 // WebDialogWindowController's member variables.
 class WebDialogWindowDelegateBridge
@@ -337,8 +345,10 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (void)loadDialogContents {
-  tabContents_.reset(new TabContents(WebContents::Create(
-      delegate_->browser_context(), NULL, MSG_ROUTING_NONE, NULL)));
+  tabContents_.reset(
+      WebDialogWindowControllerTabContentsCreator::CreateTabContents(
+          WebContents::Create(
+              delegate_->browser_context(), NULL, MSG_ROUTING_NONE, NULL)));
   [[self window]
       setContentView:tabContents_->web_contents()->GetNativeView()];
   tabContents_->web_contents()->SetDelegate(delegate_.get());

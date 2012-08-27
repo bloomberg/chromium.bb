@@ -26,7 +26,8 @@ TabContents* TabContentsTestHarness::tab_contents() {
 }
 
 void TabContentsTestHarness::SetContents(WebContents* contents) {
-  tab_contents_.reset(contents ? new TabContents(contents) : NULL);
+  tab_contents_.reset(
+      contents ? TabContents::Factory::CreateTabContents(contents) : NULL);
 }
 
 void TabContentsTestHarness::SetUp() {

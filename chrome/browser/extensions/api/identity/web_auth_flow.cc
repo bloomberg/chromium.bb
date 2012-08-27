@@ -108,7 +108,7 @@ WebContents* WebAuthFlow::CreateWebContents() {
 
 void WebAuthFlow::ShowAuthFlowPopup() {
   // Pass ownership of WebContents to TabContents.
-  tab_contents_ = new TabContents(contents_);
+  tab_contents_ = TabContents::Factory::CreateTabContents(contents_);
   contents_ = NULL;
   Browser* browser = new Browser(Browser::CreateParams(
       Browser::TYPE_POPUP, profile_));

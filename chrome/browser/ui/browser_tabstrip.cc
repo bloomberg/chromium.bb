@@ -18,6 +18,14 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+// TODO(avi): Kill this when TabContents goes away.
+class BrowserTabstripTabContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 namespace chrome {
 
 int GetIndexOfTab(const Browser* browser,
@@ -100,8 +108,10 @@ void AddWebContents(Browser* browser,
   TabContents* source_tab_contents = NULL;
   BlockedContentTabHelper* source_blocked_content = NULL;
   TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
-  if (!new_tab_contents)
-    new_tab_contents = new TabContents(new_contents);
+  if (!new_tab_contents) {
+    new_tab_contents =
+        BrowserTabstripTabContentsCreator::CreateTabContents(new_contents);
+  }
   if (source_contents) {
     source_tab_contents = TabContents::FromWebContents(source_contents);
     source_blocked_content = source_tab_contents->blocked_content_tab_helper();
@@ -161,10 +171,11 @@ TabContents* TabContentsFactory(
     content::SiteInstance* site_instance,
     int routing_id,
     const content::WebContents* base_web_contents) {
-  return new TabContents(content::WebContents::Create(profile,
-                                                      site_instance,
-                                                      routing_id,
-                                                      base_web_contents));
+  return BrowserTabstripTabContentsCreator::CreateTabContents(
+      content::WebContents::Create(profile,
+      site_instance,
+      routing_id,
+      base_web_contents));
 }
 
 TabContents* TabContentsWithSessionStorageFactory(
@@ -173,7 +184,7 @@ TabContents* TabContentsWithSessionStorageFactory(
     int routing_id,
     const content::WebContents* base_web_contents,
     const content::SessionStorageNamespaceMap& session_storage_namespace_map) {
-  return new TabContents(
+  return BrowserTabstripTabContentsCreator::CreateTabContents(
       content::WebContents::CreateWithSessionStorage(
           profile,
           site_instance,

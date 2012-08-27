@@ -151,7 +151,7 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
                           NULL,
                           MSG_ROUTING_NONE,
                           NULL);
-  tab_contents_.reset(new TabContents(web_contents));
+  tab_contents_.reset(TabContents::Factory::CreateTabContents(web_contents));
   web_view_->SetWebContents(web_contents);
   web_contents->SetDelegate(this);
   web_view_->LoadInitialURL(url);

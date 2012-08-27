@@ -26,6 +26,14 @@ using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsTester;
 
+// TODO(avi): Kill this when TabContents goes away.
+class WebUITestContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 class WebUITest : public TabContentsTestHarness {
  public:
   WebUITest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
@@ -109,9 +117,10 @@ TEST_F(WebUITest, WebUIToStandard) {
   // alive), which will trigger different behavior in RenderViewHostManager.
   WebContents* contents2 =
       WebContentsTester::CreateTestWebContents(profile(), NULL);
-  TabContents tab_contents2(contents2);
+  scoped_ptr<TabContents> tab_contents2(
+      WebUITestContentsCreator::CreateTabContents(contents2));
 
-  DoNavigationTest(&tab_contents2, 101);
+  DoNavigationTest(tab_contents2.get(), 101);
 }
 
 TEST_F(WebUITest, WebUIToWebUI) {

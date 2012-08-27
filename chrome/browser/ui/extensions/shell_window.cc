@@ -91,7 +91,7 @@ void ShellWindow::Init(const GURL& url,
   web_contents_ = WebContents::Create(
       profile(), SiteInstance::CreateForURL(profile(), url), MSG_ROUTING_NONE,
       NULL);
-  contents_.reset(new TabContents(web_contents_));
+  contents_.reset(TabContents::Factory::CreateTabContents(web_contents_));
   content::WebContentsObserver::Observe(web_contents_);
   web_contents_->SetDelegate(this);
   chrome::SetViewType(web_contents_, chrome::VIEW_TYPE_APP_SHELL);

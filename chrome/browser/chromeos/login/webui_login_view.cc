@@ -154,7 +154,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
                           NULL,
                           MSG_ROUTING_NONE,
                           NULL);
-  tab_contents_.reset(new TabContents(web_contents));
+  tab_contents_.reset(TabContents::Factory::CreateTabContents(web_contents));
   webui_login_->SetWebContents(web_contents);
 
   web_contents->SetDelegate(this);

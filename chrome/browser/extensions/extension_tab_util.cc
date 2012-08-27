@@ -232,7 +232,8 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile));
-  TabContents* tab_contents = new TabContents(web_contents);
+  TabContents* tab_contents =
+      TabContents::Factory::CreateTabContents(web_contents);
   chrome::NavigateParams params(browser, tab_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser

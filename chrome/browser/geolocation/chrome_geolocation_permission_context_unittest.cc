@@ -216,7 +216,7 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   RenderViewHostTester::For(new_tab->GetRenderViewHost())->
       SendNavigate(extra_tabs_.size() + 1, url);
-  extra_tabs_.push_back(new TabContents(new_tab));
+  extra_tabs_.push_back(TabContents::Factory::CreateTabContents(new_tab));
 }
 
 void GeolocationPermissionContextTests::CheckTabContentsState(

@@ -52,6 +52,14 @@ namespace keys = extensions::offscreen_tabs_constants;
 namespace tabs_keys = extensions::tabs_constants;
 namespace events = extensions::event_names;
 
+// TODO(avi): Kill this when TabContents goes away.
+class OffscreenTabContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 namespace {
 
 class ParentTab;
@@ -228,7 +236,8 @@ void OffscreenTab::Init(const GURL& url,
   // Create the offscreen tab.
   WebContents* web_contents = WebContents::Create(
       profile, NULL, MSG_ROUTING_NONE, NULL);
-  tab_contents_.reset(new TabContents(web_contents));
+  tab_contents_.reset(
+      OffscreenTabContentsCreator::CreateTabContents(web_contents));
 
   // Setting the size starts the renderer.
   SetSize(width, height);

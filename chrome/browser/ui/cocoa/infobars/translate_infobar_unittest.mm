@@ -23,6 +23,14 @@
 
 using content::WebContents;
 
+// TODO(avi): Kill this when TabContents goes away.
+class TranslationInfoBarTestContentsCreator {
+ public:
+  static TabContents* CreateTabContents(content::WebContents* contents) {
+    return TabContents::Factory::CreateTabContents(contents);
+  }
+};
+
 namespace {
 
 // All states the translate toolbar can assume.
@@ -76,8 +84,9 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   // the test.
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContents(WebContents::Create(
-       profile(), NULL, MSG_ROUTING_NONE, NULL)));
+    tab_contents_.reset(
+        TranslationInfoBarTestContentsCreator::CreateTabContents(
+            WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL)));
     CreateInfoBar();
   }
 
