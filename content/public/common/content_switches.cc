@@ -107,6 +107,9 @@ const char kDisableFileSystem[]             = "disable-file-system";
 // Disable 3D inside of flapper.
 const char kDisableFlash3d[]                = "disable-flash-3d";
 
+// Disable using 3D to present fullscreen flash
+const char kDisableFlashFullscreen3d[]      = "disable-flash-fullscreen-3d";
+
 // Disable Stage3D inside of flapper.
 const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 

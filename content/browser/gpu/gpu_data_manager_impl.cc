@@ -194,6 +194,8 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
   if ((flags & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+  if (ShouldUseSoftwareRendering())
+    command_line->AppendSwitch(switches::kDisableFlashFullscreen3d);
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(
