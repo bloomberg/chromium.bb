@@ -853,5 +853,32 @@ TEST_F(WorkspaceManager2Test, VisibilityTests) {
   EXPECT_TRUE(w1->IsVisible());
 }
 
+// Verifies windows that are offscreen don't move when switching workspaces.
+TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
+  scoped_ptr<Window> w1(CreateTestWindow());
+  const gfx::Rect w1_bounds(0, 1, 101, 102);
+  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  const gfx::Rect touches_shelf_bounds(
+      0, shelf->GetIdealBounds().y() - 10, 101, 102);
+  // Move |w1| to overlap the shelf.
+  w1->SetBounds(touches_shelf_bounds);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+
+  // Create another window and maximize it.
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w2->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+
+  // Switch to w1.
+  wm::ActivateWindow(w1.get());
+  EXPECT_EQ(touches_shelf_bounds.ToString(), w1->bounds().ToString());
+}
 }  // namespace internal
 }  // namespace ash

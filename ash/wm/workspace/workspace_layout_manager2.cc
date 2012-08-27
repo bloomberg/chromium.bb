@@ -21,7 +21,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/event.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/rect.h"
 
 using aura::Window;
 
@@ -49,7 +48,9 @@ gfx::Rect BoundsWithScreenEdgeVisible(
 
 WorkspaceLayoutManager2::WorkspaceLayoutManager2(Workspace2* workspace)
     : root_window_(workspace->window()->GetRootWindow()),
-      workspace_(workspace) {
+      workspace_(workspace),
+      work_area_(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                     workspace->window()->parent())) {
   Shell::GetInstance()->AddShellObserver(this);
   root_window_->AddRootWindowObserver(this);
   root_window_->AddObserver(this);
@@ -115,8 +116,12 @@ void WorkspaceLayoutManager2::OnRootWindowResized(const aura::RootWindow* root,
 }
 
 void WorkspaceLayoutManager2::OnDisplayWorkAreaInsetsChanged() {
-  if (workspace_manager()->active_workspace_ == workspace_)
-    AdjustWindowSizesForScreenChange();
+  if (workspace_manager()->active_workspace_ == workspace_) {
+    const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                                  workspace_->window()->parent()));
+    if (work_area != work_area_)
+      AdjustWindowSizesForScreenChange();
+  }
 }
 
 void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
@@ -198,6 +203,8 @@ void WorkspaceLayoutManager2::ShowStateChanged(
 }
 
 void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange() {
+  work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      workspace_->window()->parent());
   // If a user plugs an external display into a laptop running Aura the
   // display size will change.  Maximized windows need to resize to match.
   // We also do this when developers running Aura on a desktop manually resize
@@ -212,11 +219,9 @@ void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange() {
 
 void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(Window* window) {
   if (!SetMaximizedOrFullscreenBounds(window)) {
-    // The work area may be smaller than the full screen.
-    gfx::Rect display_rect =
-        ScreenAsh::GetDisplayWorkAreaBoundsInParent(window->parent()->parent());
-    // Put as much of the window as possible within the display area.
-    window->SetBounds(window->bounds().AdjustToFit(display_rect));
+    // The work area may be smaller than the full screen.  Put as much of the
+    // window as possible within the display area.
+    window->SetBounds(window->bounds().AdjustToFit(work_area_));
   }
 }
 

@@ -15,6 +15,7 @@
 #include "ui/aura/root_window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/rect.h"
 
 namespace aura {
 class RootWindow;
@@ -100,6 +101,10 @@ class ASH_EXPORT WorkspaceLayoutManager2
 
   // Set of windows we're listening to.
   WindowSet windows_;
+
+  // The work area. Cached to avoid unnecessarily moving windows during a
+  // workspace switch.
+  gfx::Rect work_area_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager2);
 };
