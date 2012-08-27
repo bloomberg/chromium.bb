@@ -36,7 +36,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -76,8 +76,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using gdata::GDataSystemService;
-using gdata::GDataSystemServiceFactory;
+using gdata::DriveSystemService;
+using gdata::DriveSystemServiceFactory;
 using gdata::OperationRegistry;
 
 namespace chromeos {
@@ -239,8 +239,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // Stop observing gdata operations.
     Profile* profile = ProfileManager::GetDefaultProfile();
     if (gdata::util::IsGDataAvailable(profile)) {
-      GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+      DriveSystemService* system_service =
+          DriveSystemServiceFactory::FindForProfile(profile);
       if (system_service) {
         system_service->drive_service()->operation_registry()->
             RemoveObserver(this);
@@ -457,8 +457,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!gdata::util::IsGDataAvailable(profile))
       return;
 
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+    DriveSystemService* system_service =
+          DriveSystemServiceFactory::FindForProfile(profile);
     if (!system_service)
       return;
 
@@ -472,8 +472,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!gdata::util::IsGDataAvailable(profile))
       return;
 
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+    DriveSystemService* system_service =
+          DriveSystemServiceFactory::FindForProfile(profile);
     if (!system_service)
       return;
 
@@ -738,8 +738,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         profile->GetPrefs()->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
 
     if (gdata::util::IsGDataAvailable(profile)) {
-      GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+      DriveSystemService* system_service =
+          DriveSystemServiceFactory::FindForProfile(profile);
       if (!system_service)
         return;
 
@@ -1134,8 +1134,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!gdata::util::IsGDataAvailable(profile))
       return;
 
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+    DriveSystemService* system_service =
+          DriveSystemServiceFactory::FindForProfile(profile);
     if (!system_service)
       return;
 

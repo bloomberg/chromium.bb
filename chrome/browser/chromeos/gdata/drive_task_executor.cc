@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -59,8 +59,8 @@ bool DriveTaskExecutor::ExecuteAndNotify(
     raw_paths.push_back(url.virtual_path());
   }
 
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile());
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile());
   DCHECK(current_index_ == 0);
   if (!system_service || !system_service->file_system())
     return false;
@@ -85,8 +85,8 @@ void DriveTaskExecutor::OnFileEntryFetched(
   if (!current_index_)
     return;
 
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile());
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile());
 
   // Here, we are only insterested in files.
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
@@ -121,8 +121,8 @@ void DriveTaskExecutor::OnAppAuthorized(
   if (!current_index_)
     return;
 
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile());
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile());
 
   if (!system_service || error != HTTP_SUCCESS) {
     Done(false);

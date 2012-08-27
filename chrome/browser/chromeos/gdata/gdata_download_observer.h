@@ -150,9 +150,9 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   void MoveFileToDriveCache(content::DownloadItem* download);
 
   // Private data.
-  // The uploader owned by GDataSystemService. Used to trigger file uploads.
+  // The uploader owned by DriveSystemService. Used to trigger file uploads.
   GDataUploader* gdata_uploader_;
-  // The file system owned by GDataSystemService.
+  // The file system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.
   content::DownloadManager* download_manager_;

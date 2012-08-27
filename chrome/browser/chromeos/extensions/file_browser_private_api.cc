@@ -23,8 +23,8 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/chromeos/gdata/operation_registry.h"
@@ -200,8 +200,8 @@ void AddGDataMountPoint(
                              file_handler_util::GetReadWritePermissions());
 
   // Grant R/W permission for tmp and pinned cache folder.
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile);
   // |system_service| is NULL if incognito window / guest login.
   if (!system_service || !system_service->file_system())
     return;
@@ -613,8 +613,8 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   if (file_info_list.empty())
     return true;
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if incognito window / guest login. We return true
   // in this case because there might be other extension tasks, even if we don't
   // have any to add.
@@ -1117,8 +1117,8 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   const FilePath& source_path = files[0].local_path;
   const FilePath::StringType& display_name = files[0].display_name;
   // Check if the source path is under GData cache directory.
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   gdata::DriveCache* cache = system_service ? system_service->cache() : NULL;
   if (cache && cache->IsUnderDriveCacheDirectory(source_path)) {
     cache->SetMountedStateOnUIThread(
@@ -1247,8 +1247,8 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
   }
 
   if (files[0].file_path == gdata::util::GetGDataMountPointPath()) {
-    gdata::GDataSystemService* system_service =
-        gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+    gdata::DriveSystemService* system_service =
+        gdata::DriveSystemServiceFactory::GetForProfile(profile_);
 
     gdata::DriveFileSystemInterface* file_system =
         system_service->file_system();
@@ -1788,8 +1788,8 @@ void GetGDataFilePropertiesFunction::GetNextFileProperties() {
   file_properties_->Append(property_dict);
 
   // Start getting the file info.
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   system_service->file_system()->GetEntryInfoByPath(
       file_path,
       base::Bind(&GetGDataFilePropertiesFunction::OnGetFileInfo,
@@ -1853,8 +1853,8 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
   property_dict->SetString("contentMimeType",
                            file_specific_info.content_mime_type());
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
 
   // Get drive WebApps that can accept this file.
   ScopedVector<gdata::DriveWebAppInfo> web_apps;
@@ -1937,8 +1937,8 @@ void PinGDataFileFunction::DoOperation(
     scoped_ptr<gdata::DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   // This is subtle but we should take references of resource_id and md5
   // before |file_info| is passed to |callback| by base::Passed(). Otherwise,
   // file_info->whatever() crashes.
@@ -2063,8 +2063,8 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
     return;
   }
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   DCHECK(system_service);
 
   // Get the file on the top of the queue.
@@ -2109,8 +2109,8 @@ GetFileTransfersFunction::GetFileTransfersFunction() {}
 GetFileTransfersFunction::~GetFileTransfersFunction() {}
 
 ListValue* GetFileTransfersFunction::GetFileTransfersList() {
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service)
     return NULL;
 
@@ -2164,8 +2164,8 @@ bool CancelFileTransfersFunction::RunImpl() {
 void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     const SelectedFileInfoList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service) {
     SendResponse(false);
     return;
@@ -2227,8 +2227,8 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service) {
     SendResponse(false);
     return;
@@ -2349,8 +2349,8 @@ void SearchDriveFunction::OnFileSystemOpened(
   file_system_name_ = file_system_name;
   file_system_url_ = file_system_url;
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service || !system_service->file_system()) {
     SendResponse(false);
     return;
@@ -2393,8 +2393,8 @@ void SearchDriveFunction::OnSearch(
 }
 
 bool ClearDriveCacheFunction::RunImpl() {
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if incognito window / guest login.
   if (!system_service || !system_service->file_system())
     return false;
@@ -2437,8 +2437,8 @@ bool RequestDirectoryRefreshFunction::RunImpl() {
   if (!args_->GetString(0, &file_url_as_string))
     return false;
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::DriveSystemService* system_service =
+      gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service || !system_service->file_system())
     return false;
 

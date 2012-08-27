@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/chromeos/media/media_player.h"
@@ -625,8 +625,8 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
     // Override gdata resource to point to internal handler instead of file:
     // URL.
     if (gdata::util::GetSpecialRemoteRootPath().IsParent(path)) {
-      gdata::GDataSystemService* system_service =
-          gdata::GDataSystemServiceFactory::GetForProfile(profile);
+      gdata::DriveSystemService* system_service =
+          gdata::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
 
@@ -643,8 +643,8 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
   if (IsSupportedGDocsExtension(file_extension.data())) {
     if (gdata::util::GetSpecialRemoteRootPath().IsParent(path)) {
       // The file is on Google Docs. Get the Docs from the GData service.
-      gdata::GDataSystemService* system_service =
-          gdata::GDataSystemServiceFactory::GetForProfile(profile);
+      gdata::DriveSystemService* system_service =
+          gdata::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
 

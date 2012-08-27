@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -103,9 +103,9 @@ void RunSubstituteGDataDownloadCallback(
   callback.Run(*file_path);
 }
 
-GDataSystemService* GetSystemService(Profile* profile) {
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(
+DriveSystemService* GetSystemService(Profile* profile) {
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(
         profile ? profile : ProfileManager::GetDefaultProfile());
   DCHECK(system_service);
   return system_service;

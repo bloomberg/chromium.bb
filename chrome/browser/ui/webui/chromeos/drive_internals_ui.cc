@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -168,8 +168,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler override.
   virtual void RegisterMessages() OVERRIDE;
 
-  // Returns a GDataSystemService.
-  gdata::GDataSystemService* GetSystemService();
+  // Returns a DriveSystemService.
+  gdata::DriveSystemService* GetSystemService();
 
   // Called when the page is first loaded.
   void OnPageLoaded(const base::ListValue* args);
@@ -209,15 +209,15 @@ void DriveInternalsWebUIHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-gdata::GDataSystemService* DriveInternalsWebUIHandler::GetSystemService() {
+gdata::DriveSystemService* DriveInternalsWebUIHandler::GetSystemService() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  return gdata::GDataSystemServiceFactory::GetForProfile(profile);
+  return gdata::DriveSystemServiceFactory::GetForProfile(profile);
 }
 
 void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::GDataSystemService* system_service = GetSystemService();
+  gdata::DriveSystemService* system_service = GetSystemService();
   // |system_service| may be NULL in the guest/incognito mode.
   if (!system_service)
     return;
@@ -275,7 +275,7 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
                                    *gcache_summary);
 
   // Start updating the file system tree section, if we have access token.
-  gdata::GDataSystemService* system_service = GetSystemService();
+  gdata::DriveSystemService* system_service = GetSystemService();
   if (!system_service->drive_service()->HasAccessToken())
     return;
 

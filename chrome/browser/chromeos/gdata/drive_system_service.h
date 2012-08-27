@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SYSTEM_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SYSTEM_SERVICE_H_
 
 #include <string>
 
@@ -28,13 +28,13 @@ class GDataDownloadObserver;
 class GDataSyncClient;
 class GDataUploader;
 
-// GDataSystemService runs the GData system, including the Drive file system
+// DriveSystemService runs the Drive system, including the Drive file system
 // implementation for the file manager, and some other sub systems.
 //
 // The class is essentially a container that manages lifetime of the objects
-// that are used to run the GData system. The GDataSystemService object is
+// that are used to run the Drive system. The DriveSystemService object is
 // created per-profile.
-class GDataSystemService : public ProfileKeyedService  {
+class DriveSystemService : public ProfileKeyedService  {
  public:
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
   DriveCache* cache() { return cache_; }
@@ -52,8 +52,8 @@ class GDataSystemService : public ProfileKeyedService  {
   virtual void Shutdown() OVERRIDE;
 
  private:
-  explicit GDataSystemService(Profile* profile);
-  virtual ~GDataSystemService();
+  explicit DriveSystemService(Profile* profile);
+  virtual ~DriveSystemService();
 
   // Initializes the object. This function should be called before any
   // other functions.
@@ -70,7 +70,7 @@ class GDataSystemService : public ProfileKeyedService  {
                               DriveFileError error,
                               const FilePath& file_path);
 
-  friend class GDataSystemServiceFactory;
+  friend class DriveSystemServiceFactory;
 
   Profile* profile_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -82,24 +82,24 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
-  base::WeakPtrFactory<GDataSystemService> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveSystemService> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataSystemService);
+  DISALLOW_COPY_AND_ASSIGN(DriveSystemService);
 };
 
-// Singleton that owns all GDataSystemServices and associates them with
+// Singleton that owns all DriveSystemServices and associates them with
 // Profiles.
-class GDataSystemServiceFactory : public ProfileKeyedServiceFactory {
+class DriveSystemServiceFactory : public ProfileKeyedServiceFactory {
  public:
-  // Returns the GDataSystemService for |profile|, creating it if it is not
+  // Returns the DriveSystemService for |profile|, creating it if it is not
   // yet created.
-  static GDataSystemService* GetForProfile(Profile* profile);
-  // Returns the GDataSystemService that is already associated with |profile|,
+  static DriveSystemService* GetForProfile(Profile* profile);
+  // Returns the DriveSystemService that is already associated with |profile|,
   // if it is not yet created it will return NULL.
-  static GDataSystemService* FindForProfile(Profile* profile);
+  static DriveSystemService* FindForProfile(Profile* profile);
 
-  // Returns the GDataSystemServiceFactory instance.
-  static GDataSystemServiceFactory* GetInstance();
+  // Returns the DriveSystemServiceFactory instance.
+  static DriveSystemServiceFactory* GetInstance();
 
   // Sets drive service that should be used to initialize file system in test.
   // Should be called before the service is created.
@@ -115,10 +115,10 @@ class GDataSystemServiceFactory : public ProfileKeyedServiceFactory {
   static void set_cache_root_for_test(const std::string& cache_root);
 
  private:
-  friend struct DefaultSingletonTraits<GDataSystemServiceFactory>;
+  friend struct DefaultSingletonTraits<DriveSystemServiceFactory>;
 
-  GDataSystemServiceFactory();
-  virtual ~GDataSystemServiceFactory();
+  DriveSystemServiceFactory();
+  virtual ~DriveSystemServiceFactory();
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
@@ -127,4 +127,4 @@ class GDataSystemServiceFactory : public ProfileKeyedServiceFactory {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYSTEM_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SYSTEM_SERVICE_H_

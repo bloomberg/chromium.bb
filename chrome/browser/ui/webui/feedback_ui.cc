@@ -61,7 +61,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
@@ -585,7 +585,7 @@ void FeedbackHandler::GetMostRecentScreenshotsGData(
     const FilePath& filepath, std::vector<std::string>* saved_screenshots,
     size_t max_saved, base::Closure callback) {
   gdata::DriveFileSystemInterface* file_system =
-      gdata::GDataSystemServiceFactory::GetForProfile(
+      gdata::DriveSystemServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui()))->file_system();
   file_system->ReadDirectoryByPath(
       gdata::util::ExtractGDataPath(filepath),

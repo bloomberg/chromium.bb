@@ -132,7 +132,7 @@ class GDataUploader : public GDataUploaderInterface {
   // ID assigned to |upload_file_info|.
   int StartUploadFile(scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Pointers to DriveServiceInterface object owned by GDataSystemService.
+  // Pointers to DriveServiceInterface object owned by DriveSystemService.
   // The lifetime of this object is guaranteed to exceed that of the
   // GDataUploader instance.
   DriveServiceInterface* drive_service_;

@@ -23,7 +23,7 @@ typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 // Implementation of File API's remote file system proxy for Drive file system.
 class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
-  // |file_system| is the DriveFileSystem instance owned by GDataSystemService.
+  // |file_system| is the DriveFileSystem instance owned by DriveSystemService.
   explicit DriveFileSystemProxy(DriveFileSystemInterface* file_system);
 
   // fileapi::RemoteFileSystemProxyInterface overrides.

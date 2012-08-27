@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -38,7 +38,7 @@ const std::string* g_test_cache_root = NULL;
 
 }  // namespace
 
-GDataSystemService::GDataSystemService(Profile* profile)
+DriveSystemService::DriveSystemService(Profile* profile)
     : profile_(profile),
       cache_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -48,12 +48,12 @@ GDataSystemService::GDataSystemService(Profile* profile)
       blocking_pool->GetSequenceToken());
 }
 
-GDataSystemService::~GDataSystemService() {
+DriveSystemService::~DriveSystemService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cache_->DestroyOnUIThread();
 }
 
-void GDataSystemService::Initialize(
+void DriveSystemService::Initialize(
     DriveServiceInterface* drive_service,
     const FilePath& cache_root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -90,7 +90,7 @@ void GDataSystemService::Initialize(
   AddDriveMountPoint();
 }
 
-void GDataSystemService::Shutdown() {
+void DriveSystemService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RemoveDriveMountPoint();
 
@@ -104,19 +104,19 @@ void GDataSystemService::Shutdown() {
   drive_service_.reset();
 }
 
-void GDataSystemService::ClearCacheAndRemountFileSystem(
+void DriveSystemService::ClearCacheAndRemountFileSystem(
     const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RemoveDriveMountPoint();
   drive_service()->CancelAll();
   cache_->ClearAllOnUIThread(
-      base::Bind(&GDataSystemService::AddBackDriveMountPoint,
+      base::Bind(&DriveSystemService::AddBackDriveMountPoint,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void GDataSystemService::AddBackDriveMountPoint(
+void DriveSystemService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
     DriveFileError error,
     const FilePath& file_path) {
@@ -128,7 +128,7 @@ void GDataSystemService::AddBackDriveMountPoint(
     callback.Run(error == DRIVE_FILE_OK);
 }
 
-void GDataSystemService::AddDriveMountPoint() {
+void DriveSystemService::AddDriveMountPoint() {
   if (!gdata::util::IsGDataAvailable(profile_))
     return;
 
@@ -145,7 +145,7 @@ void GDataSystemService::AddDriveMountPoint() {
   file_system_->NotifyFileSystemMounted();
 }
 
-void GDataSystemService::RemoveDriveMountPoint() {
+void DriveSystemService::RemoveDriveMountPoint() {
   file_system_->NotifyFileSystemToBeUnmounted();
   file_system_->StopUpdates();
 
@@ -156,38 +156,38 @@ void GDataSystemService::RemoveDriveMountPoint() {
     provider->RemoveMountPoint(mount_point);
 }
 
-//===================== GDataSystemServiceFactory =============================
+//===================== DriveSystemServiceFactory =============================
 
 // static
-GDataSystemService* GDataSystemServiceFactory::GetForProfile(
+DriveSystemService* DriveSystemServiceFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<GDataSystemService*>(
+  return static_cast<DriveSystemService*>(
       GetInstance()->GetServiceForProfile(profile, true));
 }
 
 // static
-GDataSystemService* GDataSystemServiceFactory::FindForProfile(
+DriveSystemService* DriveSystemServiceFactory::FindForProfile(
     Profile* profile) {
-  return static_cast<GDataSystemService*>(
+  return static_cast<DriveSystemService*>(
       GetInstance()->GetServiceForProfile(profile, false));
 }
 
 // static
-GDataSystemServiceFactory* GDataSystemServiceFactory::GetInstance() {
-  return Singleton<GDataSystemServiceFactory>::get();
+DriveSystemServiceFactory* DriveSystemServiceFactory::GetInstance() {
+  return Singleton<DriveSystemServiceFactory>::get();
 }
 
-GDataSystemServiceFactory::GDataSystemServiceFactory()
-    : ProfileKeyedServiceFactory("GDataSystemService",
+DriveSystemServiceFactory::DriveSystemServiceFactory()
+    : ProfileKeyedServiceFactory("DriveSystemService",
                                  ProfileDependencyManager::GetInstance()) {
   DependsOn(DownloadServiceFactory::GetInstance());
 }
 
-GDataSystemServiceFactory::~GDataSystemServiceFactory() {
+DriveSystemServiceFactory::~DriveSystemServiceFactory() {
 }
 
 // static
-void GDataSystemServiceFactory::set_drive_service_for_test(
+void DriveSystemServiceFactory::set_drive_service_for_test(
     DriveServiceInterface* drive_service) {
   if (g_test_drive_service)
     delete g_test_drive_service;
@@ -195,16 +195,16 @@ void GDataSystemServiceFactory::set_drive_service_for_test(
 }
 
 // static
-void GDataSystemServiceFactory::set_cache_root_for_test(
+void DriveSystemServiceFactory::set_cache_root_for_test(
     const std::string& cache_root) {
   if (g_test_cache_root)
     delete g_test_cache_root;
   g_test_cache_root = !cache_root.empty() ? new std::string(cache_root) : NULL;
 }
 
-ProfileKeyedService* GDataSystemServiceFactory::BuildServiceInstanceFor(
+ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  GDataSystemService* service = new GDataSystemService(profile);
+  DriveSystemService* service = new DriveSystemService(profile);
 
   DriveServiceInterface* drive_service = g_test_drive_service;
   g_test_drive_service = NULL;

@@ -20,10 +20,10 @@
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/task_util.h"
@@ -474,7 +474,7 @@ void DriveFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
 }
 
 DriveFileSystem::~DriveFileSystem() {
-  // This should be called from UI thread, from GDataSystemService shutdown.
+  // This should be called from UI thread, from DriveSystemService shutdown.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   feed_loader_->RemoveObserver(this);
@@ -511,7 +511,7 @@ void DriveFileSystem::StopUpdates() {
   // If unmount request comes from filesystem side, this method may be called
   // twice. First is just after unmounting on filesystem, second is after
   // unmounting on filemanager on JS. In other words, if this is called from
-  // GDataSystemService::RemoveDriveMountPoint(), this will be called again from
+  // DriveSystemService::RemoveDriveMountPoint(), this will be called again from
   // FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread().
   // We choose to stopping updates asynchronous without waiting for filemanager,
   // rather than waiting for completion of unmounting on filemanager.

@@ -13,7 +13,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
@@ -200,7 +200,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
     FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
-    gdata::GDataSystemServiceFactory::set_cache_root_for_test(
+    gdata::DriveSystemServiceFactory::set_cache_root_for_test(
         test_cache_root_.path().value());
 
     mock_drive_service_ = new gdata::MockDriveService();
@@ -212,7 +212,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
         WillRepeatedly(Return(operation_registry_.get()));
 
     // |mock_drive_service_| will eventually get owned by a system service.
-    gdata::GDataSystemServiceFactory::set_drive_service_for_test(
+    gdata::DriveSystemServiceFactory::set_drive_service_for_test(
         mock_drive_service_);
 
     ExtensionApiTest::SetUp();
@@ -220,8 +220,8 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
 
   virtual void TearDown() OVERRIDE {
     // Let's make sure we don't leak documents service.
-    gdata::GDataSystemServiceFactory::set_drive_service_for_test(NULL);
-    gdata::GDataSystemServiceFactory::set_cache_root_for_test(std::string());
+    gdata::DriveSystemServiceFactory::set_drive_service_for_test(NULL);
+    gdata::DriveSystemServiceFactory::set_cache_root_for_test(std::string());
     ExtensionApiTest::TearDown();
   }
 

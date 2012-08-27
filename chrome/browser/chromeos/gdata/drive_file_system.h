@@ -820,19 +820,19 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // other threads with base::Unretained(this).
   scoped_ptr<DriveResourceMetadata> resource_metadata_;
 
-  // The profile hosts the DriveFileSystem via GDataSystemService.
+  // The profile hosts the DriveFileSystem via DriveSystemService.
   Profile* profile_;
 
-  // The cache owned by GDataSystemService.
+  // The cache owned by DriveSystemService.
   DriveCache* cache_;
 
-  // The uploader owned by GDataSystemService.
+  // The uploader owned by DriveSystemService.
   GDataUploaderInterface* uploader_;
 
-  // The document service owned by GDataSystemService.
+  // The document service owned by DriveSystemService.
   DriveServiceInterface* drive_service_;
 
-  // The webapps registry owned by GDataSystemService.
+  // The webapps registry owned by DriveSystemService.
   DriveWebAppsRegistryInterface* webapps_registry_;
 
   // Periodic timer for checking updates.

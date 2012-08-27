@@ -183,8 +183,8 @@ class GDataSyncClient : public DriveFileSystemInterface::Observer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
   Profile* profile_;
-  DriveFileSystemInterface* file_system_;  // Owned by GDataSystemService.
-  DriveCache* cache_;  // Owned by GDataSystemService.
+  DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
+  DriveCache* cache_;  // Owned by DriveSystemService.
   scoped_ptr<PrefChangeRegistrar> registrar_;
 
   // The queue of tasks used to fetch/upload files in the background

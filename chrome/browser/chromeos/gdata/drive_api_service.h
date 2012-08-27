@@ -26,7 +26,7 @@ class OperationRunner;
 // works as a thin wrapper for the API.
 class DriveAPIService : public DriveServiceInterface {
  public:
-  // Instance is usually created by GDataSystemServiceFactory and owned by
+  // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
   DriveAPIService();
   virtual ~DriveAPIService();

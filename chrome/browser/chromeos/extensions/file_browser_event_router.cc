@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -36,8 +36,8 @@
 using chromeos::disks::DiskMountManager;
 using chromeos::disks::DiskMountManagerEventType;
 using content::BrowserThread;
-using gdata::GDataSystemService;
-using gdata::GDataSystemServiceFactory;
+using gdata::DriveSystemService;
+using gdata::DriveSystemServiceFactory;
 
 namespace {
   const char kDiskAddedEventType[] = "added";
@@ -109,8 +109,8 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
   }
   DiskMountManager::GetInstance()->RemoveObserver(this);
 
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::FindForProfile(profile_);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::FindForProfile(profile_);
   if (system_service) {
     system_service->file_system()->RemoveObserver(this);
     system_service->drive_service()->operation_registry()->RemoveObserver(this);
@@ -137,8 +137,8 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   disk_mount_manager->AddObserver(this);
   disk_mount_manager->RequestMountInfoRefresh();
 
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile_);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service) {
     NOTREACHED();
     return;
@@ -229,8 +229,8 @@ void FileBrowserEventRouter::MountDrive(
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile_);
   if (system_service) {
     system_service->drive_service()->Authenticate(
         base::Bind(&FileBrowserEventRouter::OnAuthenticated,
@@ -354,8 +354,8 @@ void FileBrowserEventRouter::MountCompleted(
     if ((event_type == DiskMountManager::MOUNTING) !=
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
       FilePath source_path(mount_info.source_path);
-      gdata::GDataSystemService* system_service =
-          gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+      DriveSystemService* system_service =
+          DriveSystemServiceFactory::GetForProfile(profile_);
       gdata::DriveCache* cache =
           system_service ? system_service->cache() : NULL;
       if (cache) {
@@ -820,8 +820,8 @@ FileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
 gdata::DriveFileSystemInterface*
 FileBrowserEventRouter::GetRemoteFileSystem() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile_);
   return (system_service ? system_service->file_system() : NULL);
 }
 
@@ -849,7 +849,7 @@ FileBrowserEventRouterFactory::GetInstance() {
 FileBrowserEventRouterFactory::FileBrowserEventRouterFactory()
     : RefcountedProfileKeyedServiceFactory("FileBrowserEventRouter",
           ProfileDependencyManager::GetInstance()) {
-  DependsOn(GDataSystemServiceFactory::GetInstance());
+  DependsOn(DriveSystemServiceFactory::GetInstance());
 }
 
 FileBrowserEventRouterFactory::~FileBrowserEventRouterFactory() {

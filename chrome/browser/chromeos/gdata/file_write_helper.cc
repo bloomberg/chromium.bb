@@ -14,12 +14,12 @@ namespace gdata {
 FileWriteHelper::FileWriteHelper(DriveFileSystemInterface* file_system)
     : file_system_(file_system),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  // Must be created in GDataSystemService.
+  // Must be created in DriveSystemService.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 FileWriteHelper::~FileWriteHelper() {
-  // Must be destroyed in GDataSystemService.
+  // Must be destroyed in DriveSystemService.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

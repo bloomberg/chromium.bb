@@ -20,8 +20,8 @@
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -104,21 +104,21 @@ bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
   return resource_id->size();
 }
 
-// Helper function to get GDataSystemService from Profile.
-GDataSystemService* GetSystemService() {
-  return GDataSystemServiceFactory::GetForProfile(
+// Helper function to get DriveSystemService from Profile.
+DriveSystemService* GetSystemService() {
+  return DriveSystemServiceFactory::GetForProfile(
       ProfileManager::GetDefaultProfile());
 }
 
 // Helper function to get DriveFileSystem from Profile on UI thread.
 void GetFileSystemOnUIThread(DriveFileSystemInterface** file_system) {
-  GDataSystemService* system_service = GetSystemService();
+  DriveSystemService* system_service = GetSystemService();
   *file_system = system_service ? system_service->file_system() : NULL;
 }
 
 // Helper function to cancel GData download operation on UI thread.
 void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
-  GDataSystemService* system_service = GetSystemService();
+  DriveSystemService* system_service = GetSystemService();
   if (system_service)
     system_service->drive_service()->operation_registry()->CancelForFilePath(
         gdata_file_path);

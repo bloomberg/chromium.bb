@@ -29,7 +29,7 @@
 #include "content/public/browser/save_page_type.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #endif
 
@@ -127,11 +127,11 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
 
 FilePath DownloadPrefs::DownloadPath() const {
 #if defined(OS_CHROMEOS)
-  // If the download path is under /drive, and GDataSystemService isn't
+  // If the download path is under /drive, and DriveSystemService isn't
   // available (which it isn't for incognito mode, for instance), use the
   // default download directory (/Downloads).
   if (gdata::util::IsUnderGDataMountPoint(*download_path_) &&
-      !gdata::GDataSystemServiceFactory::GetForProfile(profile_))
+      !gdata::DriveSystemServiceFactory::GetForProfile(profile_))
     return download_util::GetDefaultDownloadDirectory();
 #endif
   return *download_path_;

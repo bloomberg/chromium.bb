@@ -22,7 +22,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 #endif
@@ -96,7 +96,7 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
     FilePath download_path = download_prefs->DownloadPath();
     if (gdata::util::IsUnderGDataMountPoint(download_path)) {
       gdata::DriveFileSystemInterface* file_system =
-          gdata::GDataSystemServiceFactory::GetForProfile(
+          gdata::DriveSystemServiceFactory::GetForProfile(
               profile_)->file_system();
       file_system->GetFileByResourceId(
           decoded_filename,

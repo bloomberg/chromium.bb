@@ -24,8 +24,8 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -62,20 +62,20 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_ASYNC;
 
 DriveFileSystemInterface* GetDriveFileSystem(Profile* profile) {
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->file_system() : NULL;
 }
 
 DriveCache* GetDriveCache(Profile* profile) {
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->cache() : NULL;
 }
 
 FileWriteHelper* GetFileWriteHelper(Profile* profile) {
-  GDataSystemService* system_service =
-      GDataSystemServiceFactory::GetForProfile(profile);
+  DriveSystemService* system_service =
+      DriveSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->file_write_helper() : NULL;
 }
 

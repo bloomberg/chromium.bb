@@ -44,7 +44,7 @@ class FileWriteHelper {
       const FilePath& local_cache_path);
   void PrepareWritableFileAndRunAfterCallback(const FilePath& file_path);
 
-  // File system owned by GDataSystemService.
+  // File system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
 
   // WeakPtrFactory bound to the UI thread.
