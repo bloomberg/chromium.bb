@@ -181,6 +181,7 @@ const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
+const char kSetIsFullscreenMethod[] = "SetIsFullscreen";
 // DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
@@ -211,8 +212,6 @@ const char kSoftwareScreenDimmingRequestedSignal[] =
 // lands.
 const char kUseNewMonitorConfigSignal[] = "UseNewMonitorConfigSignal";
 const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
-const char kFullscreenOn[] = "FullscreenOn";
-const char kFullscreenOff[] = "FullscreenOff";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
