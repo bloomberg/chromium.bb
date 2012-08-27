@@ -25,7 +25,10 @@ SensorJumpFilterInterpreter::SensorJumpFilterInterpreter(PropRegistry* prop_reg,
       max_warp_dist_move_(prop_reg, "Sensor Jump Max Dist Move", 7.5),
       similar_multiplier_move_(prop_reg,
                                "Sensor Jump Similar Multiplier Move",
-                               0.9) {
+                               0.9),
+      no_warp_min_dist_move_(prop_reg,
+                             "Sensor Jump No Warp Min Dist Move",
+                             0.21) {
   InitName();
 }
 
@@ -92,7 +95,10 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       bool should_store_flag = false;
       if (delta[0] * delta[1] < 0.0) {
         // switched direction
-        should_store_flag = should_warp = true;
+        // Don't mark direction change with small delta with WARP_*_MOVE.
+        if (!warp_move || !(fabsf(delta[0]) < no_warp_min_dist_move_.val_ &&
+                            fabsf(delta[1]) < no_warp_min_dist_move_.val_))
+          should_store_flag = should_warp = true;
       } else if (fabsf(delta[0]) < min_warp_dist ||
                  fabsf(delta[0]) > max_warp_dist) {
         // acceptable movement

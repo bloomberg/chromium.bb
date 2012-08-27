@@ -58,6 +58,16 @@ class SensorJumpFilterInterpreter : public FilterInterpreter,
   DoubleProperty max_warp_dist_move_;
   DoubleProperty similar_multiplier_move_;
 
+  // Considering the following X position sequence:
+  // 8,  9, 10,  9, 10, 11, 12  (1F move)
+  // In case of 1F move, we don't want to marke the second 10 as WARP due
+  // to the direction change in  10->9->10 since in Box Filter the second
+  // 10 will be re-set to box center and the following 11, 12 won't cause
+  // movement since they are within the new box. So we use
+  // no_warp_min_dist_move_ to filter out really small direction change to
+  // not be marked as WARP.
+  DoubleProperty no_warp_min_dist_move_;
+
   // Fingers from the previous two SyncInterpret calls. previous_input_[0]
   // is the more recent.
   map<short, FingerState, kMaxFingers> previous_input_[2];
