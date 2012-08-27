@@ -101,6 +101,18 @@ enum FirstPotentialEngineCaller {
   FIRST_POTENTIAL_CALLSITE_MAX,
 };
 
+const char kDeleteSyncedEngineHistogramName[] =
+    "Search.DeleteSyncedSearchEngine";
+
+// Values for an enumerated histogram used to track whenever an ACTION_DELETE is
+// sent to the server for search engines.
+enum DeleteSyncedSearchEngineEvent {
+  DELETE_ENGINE_USER_ACTION,
+  DELETE_ENGINE_PRE_SYNC,
+  DELETE_ENGINE_EMPTY_FIELD,
+  DELETE_ENGINE_MAX,
+};
+
 TemplateURL* FirstPotentialDefaultEngine(
     const TemplateURLService::TemplateURLVector& template_urls) {
   for (TemplateURLService::TemplateURLVector::const_iterator i(
@@ -1152,6 +1164,8 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
           syncer::SyncChange(FROM_HERE,
                              syncer::SyncChange::ACTION_DELETE,
                              iter->second));
+      UMA_HISTOGRAM_ENUMERATION(kDeleteSyncedEngineHistogramName,
+          DELETE_ENGINE_PRE_SYNC, DELETE_ENGINE_MAX);
       continue;
     }
 
@@ -1309,6 +1323,8 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_DELETE,
                            sync_data));
+    UMA_HISTOGRAM_ENUMERATION(kDeleteSyncedEngineHistogramName,
+        DELETE_ENGINE_EMPTY_FIELD, DELETE_ENGINE_MAX);
     return NULL;
   }
 
@@ -2228,6 +2244,8 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   ProcessTemplateURLChange(FROM_HERE,
                            template_url,
                            syncer::SyncChange::ACTION_DELETE);
+  UMA_HISTOGRAM_ENUMERATION(kDeleteSyncedEngineHistogramName,
+      DELETE_ENGINE_USER_ACTION, DELETE_ENGINE_MAX);
 
   if (profile_) {
     content::Source<Profile> source(profile_);
