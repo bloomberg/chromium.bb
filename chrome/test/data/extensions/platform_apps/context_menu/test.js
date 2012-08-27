@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
-  chrome.contextMenus.create({
-        id: 'id1',
-        title: 'Extension Item 1',
-      },
-      function() {
-        chrome.app.window.create('main.html', {}, function() {});
-      });
+  chrome.contextMenus.create({title: 'Extension Item 1',
+                             id: 'id1'}, function() {
+    chrome.contextMenus.create({title: 'Extension Item 2',
+                               id: 'id2'}, function() {
+      chrome.app.window.create('main.html', {}, function() {});
+    });
+  });
 });

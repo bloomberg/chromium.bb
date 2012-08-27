@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   // launched a window.
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  // The context_menu app has one context menu item. This, along with a
+  // The context_menu app has two context menu items. These, along with a
   // separator and the developer tools, is all that should be in the menu.
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
@@ -105,6 +105,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
       params);
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));

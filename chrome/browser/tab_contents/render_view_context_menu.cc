@@ -392,36 +392,42 @@ void RenderViewContextMenu::AppendExtensionItems(
   if (*index == 0 && menu_model_.GetItemCount())
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
-  int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
-
-  // Extensions are only allowed one top-level slot (and it can't be a radio or
-  // checkbox item because we are going to put the extension icon next to it).
+  // Extensions (other than platform apps) are only allowed one top-level slot
+  // (and it can't be a radio or checkbox item because we are going to put the
+  // extension icon next to it).
   // If they have more than that, we automatically push them into a submenu.
-  string16 title;
-  MenuItem::List submenu_items;
-  if (items.size() > 1 || items[0]->type() != MenuItem::NORMAL) {
-    title = UTF8ToUTF16(extension->name());
-    submenu_items = items;
-  } else {
-    MenuItem* item = items[0];
-    extension_item_map_[menu_id] = item->id();
-    title = item->TitleWithReplacement(PrintableSelectionText(),
-                                       kMaxExtensionItemTitleLength);
-    submenu_items = GetRelevantExtensionItems(item->children(), params_,
-                                              profile_, can_cross_incognito);
-  }
-
-  // Now add our item(s) to the menu_model_.
-  if (submenu_items.empty()) {
-    menu_model_.AddItem(menu_id, title);
-  } else {
-    ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
-    extension_menu_models_.push_back(submenu);
-    menu_model_.AddSubMenu(menu_id, title, submenu);
-    RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito, submenu,
+  if (extension->is_platform_app()) {
+    RecursivelyAppendExtensionItems(items, can_cross_incognito, &menu_model_,
                                     index);
+  } else {
+    int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
+    string16 title;
+    MenuItem::List submenu_items;
+
+    if (items.size() > 1 || items[0]->type() != MenuItem::NORMAL) {
+      title = UTF8ToUTF16(extension->name());
+      submenu_items = items;
+    } else {
+      MenuItem* item = items[0];
+      extension_item_map_[menu_id] = item->id();
+      title = item->TitleWithReplacement(PrintableSelectionText(),
+                                       kMaxExtensionItemTitleLength);
+      submenu_items = GetRelevantExtensionItems(item->children(), params_,
+                                              profile_, can_cross_incognito);
+    }
+
+    // Now add our item(s) to the menu_model_.
+    if (submenu_items.empty()) {
+      menu_model_.AddItem(menu_id, title);
+    } else {
+      ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(this);
+      extension_menu_models_.push_back(submenu);
+      menu_model_.AddSubMenu(menu_id, title, submenu);
+      RecursivelyAppendExtensionItems(submenu_items, can_cross_incognito,
+                                      submenu, index);
+    }
+    SetExtensionIcon(extension_id);
   }
-  SetExtensionIcon(extension_id);
 }
 
 void RenderViewContextMenu::RecursivelyAppendExtensionItems(
