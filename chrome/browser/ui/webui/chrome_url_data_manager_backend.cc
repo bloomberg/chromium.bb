@@ -149,6 +149,32 @@ void AddContentSecurityPolicyHeader(
   }
 }
 
+const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
+
+// It is OK to add exceptions to this set as needed.
+class ChromeURLXFrameOptionsExceptionSet
+    : public std::set<std::string> {
+ public:
+  ChromeURLXFrameOptionsExceptionSet() : std::set<std::string>() {
+    insert(chrome::kChromeUIExtensionsFrameHost);
+    insert(chrome::kChromeUIHelpFrameHost);
+    insert(chrome::kChromeUIHistoryFrameHost);
+    insert(chrome::kChromeUISettingsFrameHost);
+    insert(chrome::kChromeUIUberFrameHost);
+  }
+};
+
+base::LazyInstance<ChromeURLXFrameOptionsExceptionSet>
+    g_chrome_url_x_frame_options_exception_set = LAZY_INSTANCE_INITIALIZER;
+
+void AddXFrameOptionsHeader(
+    const GURL& url, net::HttpResponseHeaders* headers) {
+  ChromeURLXFrameOptionsExceptionSet* exceptions =
+      g_chrome_url_x_frame_options_exception_set.Pointer();
+  if (exceptions->find(url.host()) == exceptions->end())
+    headers->AddHeader(kChromeURLXFrameOptionsHeader);
+}
+
 // Parse a URL into the components used to resolve its request. |source_name|
 // is the hostname and |path| is the remaining portion of the URL.
 void URLToRequest(const GURL& url, std::string* source_name,
@@ -290,6 +316,7 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // indistiguishable from other error types. Instant relies on getting a 200.
   info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
   AddContentSecurityPolicyHeader(request_->url(), info->headers);
+  AddXFrameOptionsHeader(request_->url(), info->headers);
   if (!allow_caching_)
     info->headers->AddHeader("Cache-Control: no-cache");
 }
