@@ -62,7 +62,7 @@
   <div id="searchbox" class="controlbox">
     <strong>Filter by keyword:</strong>
     <input autofocus type="search" type="text" id="searchinput" placeholder="Type to search" onkeyup="filterSamples();" />
-    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;">clear</a>
+    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;" volatile>clear</a>
   </div>
 
   <div id="filterbox" class="controlbox">
@@ -112,6 +112,6 @@
   </div>
 </div>
 
-<div id="noresults" style="display:none">
+<div id="noresults" style="display:none" volatile>
   Sorry, no results were found.
 </div>

@@ -276,6 +276,7 @@
   <div id="searchbox" class="controlbox">
     <strong>Filter by keyword:</strong>
     <input autofocus="" type="search" id="searchinput" placeholder="Type to search" onkeyup="filterSamples();">
+    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;">clear</a>
   </div>
   <div id="filterbox" class="controlbox">
     <strong>Filter by API:</strong>
@@ -4024,6 +4025,9 @@
     <a href="../examples/api/extension/isAllowedAccess.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
+</div>
+<div id="noresults" style="display:none">
+  Sorry, no results were found.
 </div>
 </div>
         <!-- API PAGE -->

@@ -422,9 +422,11 @@ function cleanupJstemplateMess(root) {
 
     // Delete nodes which are hidden. There are lots of these since jsdisplay
     // just hides nodes, not deletes them.
-    if (n.style && n.style.display === 'none') {
+    if (!n.hasAttribute('volatile') && n.style && n.style.display === 'none') {
       displayNone.push(n);
       continue;
+    } else {
+      n.removeAttribute('volatile');
     }
 
     // Delete empty style attributes (this can happen when jsdisplay causes
