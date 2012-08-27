@@ -64,7 +64,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // Returns a PortProvider used to get process metrics for child processes.
   static base::ProcessMetrics::PortProvider* GetPortProvider();
 #endif
