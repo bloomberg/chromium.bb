@@ -158,7 +158,7 @@ void BrowserFrameWin::CloseImmersiveFrame() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, views::NativeWidgetWin overrides:
 
-int BrowserFrameWin::GetShowState() const {
+int BrowserFrameWin::GetInitialShowState() const {
   if (explicit_show_state != -1)
     return explicit_show_state;
 

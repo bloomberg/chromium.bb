@@ -37,6 +37,20 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual bool CanMaximize() const = 0;
   virtual bool CanActivate() const = 0;
 
+  // Returns true if the delegate has a focus saving mechanism that should be
+  // used when the window is activated and deactivated.
+  virtual bool CanSaveFocus() const = 0;
+  virtual void SaveFocusOnDeactivate() = 0;
+  virtual void RestoreFocusOnActivate() = 0;
+  virtual void RestoreFocusOnEnable() = 0;
+
+  // Returns true if the delegate represents a modal window.
+  virtual bool IsModal() const = 0;
+
+  // Returns the show state that should be used for the application's first
+  // window.
+  virtual int GetInitialShowState() const = 0;
+
   virtual bool WillProcessWorkAreaChange() const = 0;
 
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
@@ -94,8 +108,18 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the HWND is created.
   virtual void HandleCreate() = 0;
 
-  // Called when the HWND is destroyed.
-  virtual void HandleDestroy() = 0;
+  // Called when the HWND is being destroyed, before any child HWNDs are
+  // destroyed.
+  virtual void HandleDestroying() = 0;
+
+  // Called after the HWND is destroyed, after all child HWNDs have been
+  // destroyed.
+  virtual void HandleDestroyed() = 0;
+
+  // Called when the HWND is to be focused for the first time. This is called
+  // when the window is shown for the first time. Returns true if the delegate
+  // set focus and no default processing should be done by the message handler.
+  virtual bool HandleInitialFocus() = 0;
 
   // Called when display settings are adjusted on the system.
   virtual void HandleDisplayChange() = 0;

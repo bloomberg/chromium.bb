@@ -19,11 +19,14 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_paint.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/icon_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "ui/views/ime/input_method_win.h"
+#include "ui/views/views_delegate.h"
+#include "ui/views/widget/child_window_message_processor.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
@@ -236,6 +239,50 @@ static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
   return TRUE;
 }
 
+// Get the source HWND of the specified message. Depending on the message, the
+// source HWND is encoded in either the WPARAM or the LPARAM value.
+HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
+  // Each of the following messages can be sent by a child HWND and must be
+  // forwarded to its associated NativeControlWin for handling.
+  switch (message) {
+    case WM_NOTIFY:
+      return reinterpret_cast<NMHDR*>(l_param)->hwndFrom;
+    case WM_COMMAND:
+      return reinterpret_cast<HWND>(l_param);
+    case WM_CONTEXTMENU:
+      return reinterpret_cast<HWND>(w_param);
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORSTATIC:
+      return reinterpret_cast<HWND>(l_param);
+  }
+  return NULL;
+}
+
+// Some messages may be sent to us by a child HWND. If this is the case, this
+// function will forward those messages on to the object associated with the
+// source HWND and return true, in which case the window procedure must not do
+// any further processing of the message. If there is no associated
+// ChildWindowMessageProcessor, the return value will be false and the WndProc
+// can continue processing the message normally.  |l_result| contains the result
+// of the message processing by the control and must be returned by the WndProc
+// if the return value is true.
+bool ProcessChildWindowMessage(UINT message,
+                               WPARAM w_param,
+                               LPARAM l_param,
+                               LRESULT* l_result) {
+  *l_result = 0;
+
+  HWND control_hwnd = GetControlHWNDForMessage(message, w_param, l_param);
+  if (IsWindow(control_hwnd)) {
+    ChildWindowMessageProcessor* processor =
+        ChildWindowMessageProcessor::Get(control_hwnd);
+    if (processor)
+      return processor->ProcessMessage(message, w_param, l_param, l_result);
+  }
+
+  return false;
+}
+
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
 const int kCustomObjectID = 1;
@@ -316,7 +363,10 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(fullscreen_handler_(new FullscreenHandler(
           delegate->AsNativeWidgetWin()->GetWidget()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       remove_standard_frame_(false),
+      restore_focus_when_enabled_(false),
+      restored_enabled_(false),
       previous_cursor_(NULL),
       active_mouse_tracking_flags_(0),
       is_right_mouse_pressed_on_caption_(false),
@@ -351,6 +401,29 @@ void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
   while (start) {
     ::EnableWindow(start, FALSE);
     start = ::GetParent(start);
+  }
+}
+
+void HWNDMessageHandler::Close() {
+  if (!IsWindow(hwnd()))
+    return;  // No need to do anything.
+
+  // Let's hide ourselves right away.
+  Hide();
+
+  // Modal dialog windows disable their owner windows; re-enable them now so
+  // they can activate as foreground windows upon this window's destruction.
+  RestoreEnabledIfNecessary();
+
+  if (!close_widget_factory_.HasWeakPtrs()) {
+    // And we delay the close so that if we are called from an ATL callback,
+    // we don't destroy the window before the callback returned (as the caller
+    // may delete ourselves on destroy and the ATL callback would still
+    // dereference us when the callback returns).
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&HWNDMessageHandler::CloseNow,
+                   close_widget_factory_.GetWeakPtr()));
   }
 }
 
@@ -457,6 +530,59 @@ void HWNDMessageHandler::StackAtTop() {
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
+void HWNDMessageHandler::Show() {
+  // TODO(beng): Seems like this could just be rewritten as
+  //             ShowWindowWithState(SW_SHOWNOACTIVATE).
+  if (!IsWindow(hwnd()))
+    return;
+
+  ShowWindow(hwnd(), SW_SHOWNOACTIVATE);
+  SetInitialFocus();
+}
+
+void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {
+  DWORD native_show_state;
+  switch (show_state) {
+    case ui::SHOW_STATE_INACTIVE:
+      native_show_state = SW_SHOWNOACTIVATE;
+      break;
+    case ui::SHOW_STATE_MAXIMIZED:
+      native_show_state = SW_SHOWMAXIMIZED;
+      break;
+    case ui::SHOW_STATE_MINIMIZED:
+      native_show_state = SW_SHOWMINIMIZED;
+      break;
+    default:
+      native_show_state = delegate_->GetInitialShowState();
+      break;
+  }
+  Show(native_show_state);
+}
+
+void HWNDMessageHandler::Show(int show_state) {
+  ShowWindow(hwnd(), show_state);
+  // When launched from certain programs like bash and Windows Live Messenger,
+  // show_state is set to SW_HIDE, so we need to correct that condition. We
+  // don't just change show_state to SW_SHOWNORMAL because MSDN says we must
+  // always first call ShowWindow with the specified value from STARTUPINFO,
+  // otherwise all future ShowWindow calls will be ignored (!!#@@#!). Instead,
+  // we call ShowWindow again in this case.
+  if (show_state == SW_HIDE) {
+    show_state = SW_SHOWNORMAL;
+    ShowWindow(hwnd(), show_state);
+  }
+
+  // We need to explicitly activate the window if we've been shown with a state
+  // that should activate, because if we're opened from a desktop shortcut while
+  // an existing window is already running it doesn't seem to be enough to use
+  // one of these flags to activate the window.
+  if (show_state == SW_SHOWNORMAL || show_state == SW_SHOWMAXIMIZED)
+    Activate();
+
+  if (!delegate_->HandleInitialFocus())
+    SetInitialFocus();
+}
+
 void HWNDMessageHandler::ShowMaximizedWithBounds(const gfx::Rect& bounds) {
   WINDOWPLACEMENT placement = { 0 };
   placement.length = sizeof(WINDOWPLACEMENT);
@@ -537,6 +663,10 @@ bool HWNDMessageHandler::RunMoveLoop(const gfx::Point& drag_offset) {
   return watcher.got_mouse_up();
 }
 
+void HWNDMessageHandler::EndMoveLoop() {
+  SendMessage(hwnd(), WM_CANCELMODE, 0, 0);
+}
+
 void HWNDMessageHandler::SendFrameChanged() {
   SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
       SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOCOPYBITS |
@@ -596,6 +726,51 @@ InputMethod* HWNDMessageHandler::CreateInputMethod() {
     return NULL;
 #endif
   return new InputMethodWin(this);
+}
+
+void HWNDMessageHandler::SetTitle(const string16& title) {
+  SetWindowText(hwnd(), title.c_str());
+  SetAccessibleName(title);
+}
+
+void HWNDMessageHandler::SetAccessibleName(const string16& name) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr))
+    hr = pAccPropServices->SetHwndPropStr(hwnd(), OBJID_CLIENT, CHILDID_SELF,
+                                          PROPID_ACC_NAME, name.c_str());
+}
+
+void HWNDMessageHandler::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    if (role) {
+      var.vt = VT_I4;
+      var.lVal = NativeViewAccessibilityWin::MSAARole(role);
+      hr = pAccPropServices->SetHwndProp(hwnd(), OBJID_CLIENT, CHILDID_SELF,
+                                         PROPID_ACC_ROLE, var);
+    }
+  }
+}
+
+void HWNDMessageHandler::SetAccessibleState(
+    ui::AccessibilityTypes::State state) {
+  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
+  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+  if (SUCCEEDED(hr)) {
+    VARIANT var;
+    if (state) {
+      var.vt = VT_I4;
+      var.lVal = NativeViewAccessibilityWin::MSAAState(state);
+      hr = pAccPropServices->SetHwndProp(hwnd(), OBJID_CLIENT, CHILDID_SELF,
+                                         PROPID_ACC_STATE, var);
+    }
+  }
 }
 
 void HWNDMessageHandler::SendNativeAccessibilityEvent(
@@ -674,6 +849,28 @@ void HWNDMessageHandler::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void HWNDMessageHandler::SetOpacity(BYTE opacity) {
   layered_alpha_ = opacity;
+}
+
+void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                        const gfx::ImageSkia& app_icon) {
+  if (!window_icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(window_icon);
+    // We need to make sure to destroy the previous icon, otherwise we'll leak
+    // these GDI objects until we crash!
+    HICON old_icon = reinterpret_cast<HICON>(
+        SendMessage(hwnd(), WM_SETICON, ICON_SMALL,
+                    reinterpret_cast<LPARAM>(windows_icon)));
+    if (old_icon)
+      DestroyIcon(old_icon);
+  }
+  if (!app_icon.isNull()) {
+    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(app_icon);
+    HICON old_icon = reinterpret_cast<HICON>(
+        SendMessage(hwnd(), WM_SETICON, ICON_BIG,
+                    reinterpret_cast<LPARAM>(windows_icon)));
+    if (old_icon)
+      DestroyIcon(old_icon);
+  }
 }
 
 void HWNDMessageHandler::OnActivate(UINT action, BOOL minimized, HWND window) {
@@ -765,7 +962,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 }
 
 void HWNDMessageHandler::OnDestroy() {
-  delegate_->HandleDestroy();
+  delegate_->HandleDestroying();
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
@@ -1642,7 +1839,95 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// HWNDMessageHandler, ui::WindowImpl overrides:
+
+HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
+  return ViewsDelegate::views_delegate ?
+      ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
+}
+
+LRESULT HWNDMessageHandler::OnWndProc(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
+  HWND window = hwnd();
+  LRESULT result = 0;
+
+  // First allow messages sent by child controls to be processed directly by
+  // their associated views. If such a view is present, it will handle the
+  // message *instead of* this NativeWidgetWin.
+  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
+    return result;
+
+  // Otherwise we handle everything else.
+  if (!delegate_->AsNativeWidgetWin()->ProcessWindowMessage(
+      window, message, w_param, l_param, result)) {
+    result = DefWindowProc(window, message, w_param, l_param);
+  }
+  if (message == WM_NCDESTROY)
+    delegate_->HandleDestroyed();
+
+  // Only top level widget should store/restore focus.
+  if (message == WM_ACTIVATE && delegate_->CanSaveFocus())
+    PostProcessActivateMessage(LOWORD(w_param));
+  if (message == WM_ENABLE && restore_focus_when_enabled_) {
+    // This path should be executed only for top level as
+    // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
+    DCHECK(delegate_->CanSaveFocus());
+    restore_focus_when_enabled_ = false;
+    delegate_->RestoreFocusOnEnable();
+  }
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
+
+void HWNDMessageHandler::SetInitialFocus() {
+  if (!(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
+      !(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
+    // The window does not get keyboard messages unless we focus it.
+    SetFocus(hwnd());
+  }
+}
+
+void HWNDMessageHandler::PostProcessActivateMessage(int activation_state) {
+  DCHECK(delegate_->CanSaveFocus());
+  if (WA_INACTIVE == activation_state) {
+    // We might get activated/inactivated without being enabled, so we need to
+    // clear restore_focus_when_enabled_.
+    restore_focus_when_enabled_ = false;
+    delegate_->SaveFocusOnDeactivate();
+  } else {
+    // We must restore the focus after the message has been DefProc'ed as it
+    // does set the focus to the last focused HWND.
+    // Note that if the window is not enabled, we cannot restore the focus as
+    // calling ::SetFocus on a child of the non-enabled top-window would fail.
+    // This is the case when showing a modal dialog (such as 'open file',
+    // 'print'...) from a different thread.
+    // In that case we delay the focus restoration to when the window is enabled
+    // again.
+    if (!IsWindowEnabled(hwnd())) {
+      DCHECK(!restore_focus_when_enabled_);
+      restore_focus_when_enabled_ = true;
+      return;
+    }
+    delegate_->RestoreFocusOnActivate();
+  }
+}
+
+void HWNDMessageHandler::RestoreEnabledIfNecessary() {
+  if (delegate_->IsModal() && !restored_enabled_) {
+    restored_enabled_ = true;
+    // If we were run modally, we need to undo the disabled-ness we inflicted on
+    // the owner's parent hierarchy.
+    HWND start = ::GetWindow(hwnd(), GW_OWNER);
+    while (start) {
+      ::EnableWindow(start, TRUE);
+      start = ::GetParent(start);
+    }
+  }
+}
 
 void HWNDMessageHandler::ExecuteSystemMenuCommand(int command) {
   if (command)

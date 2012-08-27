@@ -29,7 +29,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_paint.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/icon_util.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
@@ -40,9 +39,7 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/ime/input_method_win.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/aero_tooltip_manager.h"
-#include "ui/views/widget/child_window_message_processor.h"
 #include "ui/views/widget/drop_target_win.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -66,50 +63,6 @@ namespace views {
 
 namespace {
 
-// Get the source HWND of the specified message. Depending on the message, the
-// source HWND is encoded in either the WPARAM or the LPARAM value.
-HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
-  // Each of the following messages can be sent by a child HWND and must be
-  // forwarded to its associated NativeControlWin for handling.
-  switch (message) {
-    case WM_NOTIFY:
-      return reinterpret_cast<NMHDR*>(l_param)->hwndFrom;
-    case WM_COMMAND:
-      return reinterpret_cast<HWND>(l_param);
-    case WM_CONTEXTMENU:
-      return reinterpret_cast<HWND>(w_param);
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLORSTATIC:
-      return reinterpret_cast<HWND>(l_param);
-  }
-  return NULL;
-}
-
-// Some messages may be sent to us by a child HWND. If this is the case, this
-// function will forward those messages on to the object associated with the
-// source HWND and return true, in which case the window procedure must not do
-// any further processing of the message. If there is no associated
-// ChildWindowMessageProcessor, the return value will be false and the WndProc
-// can continue processing the message normally.  |l_result| contains the result
-// of the message processing by the control and must be returned by the WndProc
-// if the return value is true.
-bool ProcessChildWindowMessage(UINT message,
-                               WPARAM w_param,
-                               LPARAM l_param,
-                               LRESULT* l_result) {
-  *l_result = 0;
-
-  HWND control_hwnd = GetControlHWNDForMessage(message, w_param, l_param);
-  if (IsWindow(control_hwnd)) {
-    ChildWindowMessageProcessor* processor =
-        ChildWindowMessageProcessor::Get(control_hwnd);
-    if (processor)
-      return processor->ProcessMessage(message, w_param, l_param, l_result);
-  }
-
-  return false;
-}
-
 // Enumeration callback for NativeWidget::GetAllChildWidgets(). Called for each
 // child HWND beneath the original HWND.
 BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
@@ -119,12 +72,6 @@ BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
     widgets->insert(widget);
   }
   return TRUE;
-}
-
-// Enables or disables the menu item for the specified command and menu.
-void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
-  UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
-  EnableMenuItem(menu, command, flags);
 }
 
 // Links the HWND to its NativeWidget.
@@ -142,12 +89,9 @@ bool NativeWidgetWin::screen_reader_active_ = false;
 
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
-      restored_enabled_(false),
       has_non_client_view_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           message_handler_(new HWNDMessageHandler(this))) {
@@ -170,26 +114,7 @@ gfx::Font NativeWidgetWin::GetWindowTitleFont() {
 }
 
 void NativeWidgetWin::Show(int show_state) {
-  ShowWindow(show_state);
-  // When launched from certain programs like bash and Windows Live Messenger,
-  // show_state is set to SW_HIDE, so we need to correct that condition. We
-  // don't just change show_state to SW_SHOWNORMAL because MSDN says we must
-  // always first call ShowWindow with the specified value from STARTUPINFO,
-  // otherwise all future ShowWindow calls will be ignored (!!#@@#!). Instead,
-  // we call ShowWindow again in this case.
-  if (show_state == SW_HIDE) {
-    show_state = SW_SHOWNORMAL;
-    ShowWindow(show_state);
-  }
-
-  // We need to explicitly activate the window if we've been shown with a state
-  // that should activate, because if we're opened from a desktop shortcut while
-  // an existing window is already running it doesn't seem to be enough to use
-  // one of these flags to activate the window.
-  if (show_state == SW_SHOWNORMAL || show_state == SW_SHOWMAXIMIZED)
-    Activate();
-
-  SetInitialFocus();
+  message_handler_->Show(show_state);
 }
 
 View* NativeWidgetWin::GetAccessibilityViewEventAt(int id) {
@@ -216,9 +141,6 @@ void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
       *it = NULL;
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetWin, CompositorDelegate implementation:
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, NativeWidget implementation:
@@ -319,8 +241,8 @@ bool NativeWidgetWin::IsScreenReaderActive() const {
 void NativeWidgetWin::SendNativeAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type) {
-  int child_id = AddAccessibilityViewEvent(view);
-  message_handler_->SendNativeAccessibilityEvent(child_id, event_type);
+  message_handler_->SendNativeAccessibilityEvent(
+      AddAccessibilityViewEvent(view), event_type);
 }
 
 void NativeWidgetWin::SetCapture() {
@@ -354,70 +276,24 @@ void NativeWidgetWin::GetWindowPlacement(
 }
 
 void NativeWidgetWin::SetWindowTitle(const string16& title) {
-  SetWindowText(GetNativeView(), title.c_str());
-  SetAccessibleName(title);
+  message_handler_->SetTitle(title);
 }
 
 void NativeWidgetWin::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon) {
-  if (!window_icon.isNull()) {
-    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(window_icon);
-    // We need to make sure to destroy the previous icon, otherwise we'll leak
-    // these GDI objects until we crash!
-    HICON old_icon = reinterpret_cast<HICON>(
-        SendMessage(GetNativeView(), WM_SETICON, ICON_SMALL,
-                    reinterpret_cast<LPARAM>(windows_icon)));
-    if (old_icon)
-      DestroyIcon(old_icon);
-  }
-  if (!app_icon.isNull()) {
-    HICON windows_icon = IconUtil::CreateHICONFromSkBitmap(app_icon);
-    HICON old_icon = reinterpret_cast<HICON>(
-        SendMessage(GetNativeView(), WM_SETICON, ICON_BIG,
-                    reinterpret_cast<LPARAM>(windows_icon)));
-    if (old_icon)
-      DestroyIcon(old_icon);
-  }
+  message_handler_->SetWindowIcons(window_icon, app_icon);
 }
 
 void NativeWidgetWin::SetAccessibleName(const string16& name) {
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr))
-    hr = pAccPropServices->SetHwndPropStr(GetNativeView(), OBJID_CLIENT,
-                                          CHILDID_SELF, PROPID_ACC_NAME,
-                                          name.c_str());
+  message_handler_->SetAccessibleName(name);
 }
 
 void NativeWidgetWin::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    if (role) {
-      var.vt = VT_I4;
-      var.lVal = NativeViewAccessibilityWin::MSAARole(role);
-      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-                                         CHILDID_SELF, PROPID_ACC_ROLE, var);
-    }
-  }
+  message_handler_->SetAccessibleRole(role);
 }
 
 void NativeWidgetWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
-  base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
-  HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    if (state) {
-      var.vt = VT_I4;
-      var.lVal = NativeViewAccessibilityWin::MSAAState(state);
-      hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-                                         CHILDID_SELF, PROPID_ACC_STATE, var);
-    }
-  }
+  message_handler_->SetAccessibleState(state);
 }
 
 void NativeWidgetWin::InitModalType(ui::ModalType modal_type) {
@@ -461,26 +337,7 @@ void NativeWidgetWin::SetShape(gfx::NativeRegion region) {
 }
 
 void NativeWidgetWin::Close() {
-  if (!IsWindow())
-    return;  // No need to do anything.
-
-  // Let's hide ourselves right away.
-  Hide();
-
-  // Modal dialog windows disable their owner windows; re-enable them now so
-  // they can activate as foreground windows upon this window's destruction.
-  RestoreEnabledIfNecessary();
-
-  if (!close_widget_factory_.HasWeakPtrs()) {
-    // And we delay the close so that if we are called from an ATL callback,
-    // we don't destroy the window before the callback returned (as the caller
-    // may delete ourselves on destroy and the ATL callback would still
-    // dereference us when the callback returns).
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&NativeWidgetWin::CloseNow,
-                   close_widget_factory_.GetWeakPtr()));
-  }
+  message_handler_->Close();
 }
 
 void NativeWidgetWin::CloseNow() {
@@ -488,11 +345,7 @@ void NativeWidgetWin::CloseNow() {
 }
 
 void NativeWidgetWin::Show() {
-  if (!IsWindow())
-    return;
-
-  ShowWindow(SW_SHOWNOACTIVATE);
-  SetInitialFocus();
+  message_handler_->Show();
 }
 
 void NativeWidgetWin::Hide() {
@@ -505,22 +358,7 @@ void NativeWidgetWin::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetWin::ShowWithWindowState(ui::WindowShowState show_state) {
-  DWORD native_show_state;
-  switch (show_state) {
-    case ui::SHOW_STATE_INACTIVE:
-      native_show_state = SW_SHOWNOACTIVATE;
-      break;
-    case ui::SHOW_STATE_MAXIMIZED:
-      native_show_state = SW_SHOWMAXIMIZED;
-      break;
-    case ui::SHOW_STATE_MINIMIZED:
-      native_show_state = SW_SHOWMINIMIZED;
-      break;
-    default:
-      native_show_state = GetShowState();
-      break;
-  }
-  Show(native_show_state);
+  message_handler_->ShowWindowWithState(show_state);
 }
 
 bool NativeWidgetWin::IsVisible() const {
@@ -651,7 +489,7 @@ Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop(
 }
 
 void NativeWidgetWin::EndMoveLoop() {
-  SendMessage(hwnd(), WM_CANCELMODE, 0, 0);
+  message_handler_->EndMoveLoop();
 }
 
 void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
@@ -674,42 +512,13 @@ void NativeWidgetWin::DidProcessEvent(const base::NativeEvent& event) {
 // NativeWidgetWin, WindowImpl overrides:
 
 HICON NativeWidgetWin::GetDefaultWindowIcon() const {
-  if (ViewsDelegate::views_delegate)
-    return ViewsDelegate::views_delegate->GetDefaultWindowIcon();
-  return NULL;
+  return message_handler_->GetDefaultWindowIcon();
 }
 
 LRESULT NativeWidgetWin::OnWndProc(UINT message,
                                    WPARAM w_param,
                                    LPARAM l_param) {
-  HWND window = hwnd();
-  LRESULT result = 0;
-
-  // First allow messages sent by child controls to be processed directly by
-  // their associated views. If such a view is present, it will handle the
-  // message *instead of* this NativeWidgetWin.
-  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
-    return result;
-
-  // Otherwise we handle everything else.
-  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
-    result = DefWindowProc(window, message, w_param, l_param);
-  if (message == WM_NCDESTROY) {
-    MessageLoopForUI::current()->RemoveObserver(this);
-    OnFinalMessage(window);
-  }
-
-  // Only top level widget should store/restore focus.
-  if (message == WM_ACTIVATE && GetWidget()->is_top_level())
-    PostProcessActivateMessage(this, LOWORD(w_param));
-  if (message == WM_ENABLE && restore_focus_when_enabled_) {
-    // This path should be executed only for top level as
-    // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
-    DCHECK(GetWidget()->is_top_level());
-    restore_focus_when_enabled_ = false;
-    GetWidget()->GetFocusManager()->RestoreFocusedView();
-  }
-  return result;
+  return message_handler_->OnWndProc(message, w_param, l_param);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -967,21 +776,8 @@ void NativeWidgetWin::OnFinalMessage(HWND window) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, protected:
 
-int NativeWidgetWin::GetShowState() const {
-  return SW_SHOWNORMAL;
-}
-
 void NativeWidgetWin::OnScreenReaderDetected() {
   screen_reader_active_ = true;
-}
-
-void NativeWidgetWin::SetInitialFocus() {
-  if (!GetWidget()->SetInitialFocus() &&
-      !(GetWindowLong(GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
-      !(GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
-    // The window does not get keyboard messages unless we focus it.
-    SetFocus(GetNativeView());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1019,6 +815,40 @@ bool NativeWidgetWin::CanMaximize() const {
 
 bool NativeWidgetWin::CanActivate() const {
   return delegate_->CanActivate();
+}
+
+bool NativeWidgetWin::CanSaveFocus() const {
+  return GetWidget()->is_top_level();
+}
+
+void NativeWidgetWin::SaveFocusOnDeactivate() {
+  GetWidget()->GetFocusManager()->StoreFocusedView();
+}
+
+void NativeWidgetWin::RestoreFocusOnActivate() {
+  // Mysteriously, this only appears to be needed support restoration of focus
+  // to a child hwnd when restoring its top level window from the minimized
+  // state. If we don't do this, then ::SetFocus() to that child HWND returns
+  // ERROR_INVALID_PARAMETER, despite both HWNDs being of the same thread.
+  // See http://crbug.com/125976
+  {
+    // Since this is a synthetic reset, we don't need to tell anyone about it.
+    AutoNativeNotificationDisabler disabler;
+    GetWidget()->GetFocusManager()->ClearFocus();
+  }
+  RestoreFocusOnEnable();
+}
+
+void NativeWidgetWin::RestoreFocusOnEnable() {
+  GetWidget()->GetFocusManager()->RestoreFocusedView();
+}
+
+bool NativeWidgetWin::IsModal() const {
+  return delegate_->IsModal();
+}
+
+int NativeWidgetWin::GetInitialShowState() const {
+  return SW_SHOWNORMAL;
 }
 
 bool NativeWidgetWin::WillProcessWorkAreaChange() const {
@@ -1137,12 +967,21 @@ void NativeWidgetWin::HandleCreate() {
   delegate_->OnNativeWidgetCreated();
 }
 
-void NativeWidgetWin::HandleDestroy() {
+void NativeWidgetWin::HandleDestroying() {
   delegate_->OnNativeWidgetDestroying();
   if (drop_target_.get()) {
     RevokeDragDrop(hwnd());
     drop_target_ = NULL;
   }
+}
+
+void NativeWidgetWin::HandleDestroyed() {
+  MessageLoopForUI::current()->RemoveObserver(this);
+  OnFinalMessage(hwnd());
+}
+
+bool NativeWidgetWin::HandleInitialFocus() {
+  return GetWidget()->SetInitialFocus();
 }
 
 void NativeWidgetWin::HandleDisplayChange() {
@@ -1240,46 +1079,6 @@ NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, private:
 
-// static
-void NativeWidgetWin::PostProcessActivateMessage(NativeWidgetWin* widget,
-                                                 int activation_state) {
-  DCHECK(widget->GetWidget()->is_top_level());
-  FocusManager* focus_manager = widget->GetWidget()->GetFocusManager();
-  if (WA_INACTIVE == activation_state) {
-    // We might get activated/inactivated without being enabled, so we need to
-    // clear restore_focus_when_enabled_.
-    widget->restore_focus_when_enabled_ = false;
-    focus_manager->StoreFocusedView();
-  } else {
-    // We must restore the focus after the message has been DefProc'ed as it
-    // does set the focus to the last focused HWND.
-    // Note that if the window is not enabled, we cannot restore the focus as
-    // calling ::SetFocus on a child of the non-enabled top-window would fail.
-    // This is the case when showing a modal dialog (such as 'open file',
-    // 'print'...) from a different thread.
-    // In that case we delay the focus restoration to when the window is enabled
-    // again.
-    if (!IsWindowEnabled(widget->GetNativeView())) {
-      DCHECK(!widget->restore_focus_when_enabled_);
-      widget->restore_focus_when_enabled_ = true;
-      return;
-    }
-
-    // Mysteriously, this only appears to be needed support restoration of focus
-    // to a child hwnd when restoring its top level window from the minimized
-    // state. If we don't do this, then ::SetFocus() to that child HWND returns
-    // ERROR_INVALID_PARAMETER, despite both HWNDs being of the same thread.
-    // See http://crbug.com/125976
-    {
-      // Since this is a synthetic reset, we don't need to tell anyone about it.
-      AutoNativeNotificationDisabler disabler;
-      focus_manager->ClearFocus();
-    }
-
-    focus_manager->RestoreFocusedView();
-  }
-}
-
 void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set non-style attributes.
   ownership_ = params.ownership;
@@ -1372,19 +1171,6 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 bool NativeWidgetWin::WidgetSizeIsClientSize() const {
   const Widget* widget = GetWidget()->GetTopLevelWidget();
   return IsZoomed() || (widget && widget->ShouldUseNativeFrame());
-}
-
-void NativeWidgetWin::RestoreEnabledIfNecessary() {
-  if (delegate_->IsModal() && !restored_enabled_) {
-    restored_enabled_ = true;
-    // If we were run modally, we need to undo the disabled-ness we inflicted on
-    // the owner's parent hierarchy.
-    HWND start = ::GetWindow(GetNativeView(), GW_OWNER);
-    while (start) {
-      ::EnableWindow(start, TRUE);
-      start = ::GetParent(start);
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

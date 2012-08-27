@@ -424,13 +424,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // behavior.
   virtual void OnFinalMessage(HWND window);
 
-  // Retrieve the show state of the window. This is one of the SW_SHOW* flags
-  // passed into Windows' ShowWindow method. For normal windows this defaults
-  // to SW_SHOWNORMAL, however windows (e.g. the main window) can override this
-  // method to provide different values (e.g. retrieve the user's specified
-  // show state from the shortcut starutp info).
-  virtual int GetShowState() const;
-
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
@@ -451,6 +444,12 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
+  virtual bool CanSaveFocus() const OVERRIDE;
+  virtual void SaveFocusOnDeactivate() OVERRIDE;
+  virtual void RestoreFocusOnActivate() OVERRIDE;
+  virtual void RestoreFocusOnEnable() OVERRIDE;
+  virtual bool IsModal() const OVERRIDE;
+  virtual int GetInitialShowState() const OVERRIDE;
   virtual bool WillProcessWorkAreaChange() const OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* path) OVERRIDE;
@@ -471,7 +470,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool HandleCommand(int command) OVERRIDE;
   virtual void HandleAccelerator(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void HandleCreate() OVERRIDE;
-  virtual void HandleDestroy() OVERRIDE;
+  virtual void HandleDestroying() OVERRIDE;
+  virtual void HandleDestroyed() OVERRIDE;
+  virtual bool HandleInitialFocus() OVERRIDE;
   virtual void HandleDisplayChange() OVERRIDE;
   virtual void HandleGlassModeChange() OVERRIDE;
   virtual void HandleBeginWMSizeMove() OVERRIDE;
@@ -502,34 +503,17 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   //             this object being a WindowImpl are moved to HWNDMessageHandler.
   friend HWNDMessageHandler;
 
-  // Called after the WM_ACTIVATE message has been processed by the default
-  // windows procedure.
-  static void PostProcessActivateMessage(NativeWidgetWin* widget,
-                                         int activation_state);
-
   void SetInitParams(const Widget::InitParams& params);
 
   // Determines whether the delegate expects the client size or the window size.
   bool WidgetSizeIsClientSize() const;
 
-  void RestoreEnabledIfNecessary();
-
-  void SetInitialFocus();
-
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.
   internal::NativeWidgetDelegate* delegate_;
 
-  // The following factory is used for calls to close the NativeWidgetWin
-  // instance.
-  base::WeakPtrFactory<NativeWidgetWin> close_widget_factory_;
-
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
-
-  // Whether the focus should be restored next time we get enabled.  Needed to
-  // restore focus correctly when Windows modal dialogs are displayed.
-  bool restore_focus_when_enabled_;
 
   // Instance of accessibility information and handling for MSAA root
   base::win::ScopedComPtr<IAccessible> accessibility_root_;
@@ -553,10 +537,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // The window styles before we modified them for the drag frame appearance.
   DWORD drag_frame_saved_window_style_;
   DWORD drag_frame_saved_window_ex_style_;
-
-  // Whether all ancestors have been enabled. This is only used if is_modal_ is
-  // true.
-  bool restored_enabled_;
 
   // True if the widget is going to have a non_client_view. We cache this value
   // rather than asking the Widget for the non_client_view so that we know at

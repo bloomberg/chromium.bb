@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -24,6 +25,7 @@
 
 namespace gfx {
 class Canvas;
+class ImageSkia;
 class Insets;
 }
 
@@ -49,6 +51,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   void Init(const gfx::Rect& bounds);
   void InitModalType(ui::ModalType modal_type);
 
+  void Close();
   void CloseNow();
 
   gfx::Rect GetWindowBoundsInScreen() const;
@@ -67,6 +70,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   void StackAbove(HWND other_hwnd);
   void StackAtTop();
 
+  void Show();
+  void ShowWindowWithState(ui::WindowShowState show_state);
+  // TODO(beng): distinguish from ShowWindowWithState().
+  void Show(int show_state);
   void ShowMaximizedWithBounds(const gfx::Rect& bounds);
   void Hide();
 
@@ -85,6 +92,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   bool IsMaximized() const;
 
   bool RunMoveLoop(const gfx::Point& drag_offset);
+  void EndMoveLoop();
 
   // Tells the HWND its client area has changed.
   void SendFrameChanged();
@@ -104,6 +112,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
 
   InputMethod* CreateInputMethod();
 
+  void SetTitle(const string16& title);
+
+  void SetAccessibleName(const string16& name);
+  void SetAccessibleRole(ui::AccessibilityTypes::Role role);
+  void SetAccessibleState(ui::AccessibilityTypes::State state);
   void SendNativeAccessibilityEvent(int id,
                                     ui::AccessibilityTypes::Event event_type);
 
@@ -117,6 +130,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   }
   void SchedulePaintInRect(const gfx::Rect& rect);
   void SetOpacity(BYTE opacity);
+
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon);
 
   // Message Handlers.
   void OnActivate(UINT action, BOOL minimized, HWND window);
@@ -197,8 +213,24 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // TODO(beng): remove once this is the WindowImpl.
   friend class NativeWidgetWin;
 
-  // Overridden from internal::InputMethodDelegate
+  // Overridden from internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
+
+  // Overridden from WindowImpl:
+  virtual HICON GetDefaultWindowIcon() const;
+  virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
+
+  // Can be called after the delegate has had the opportunity to set focus and
+  // did not do so.
+  void SetInitialFocus();
+
+  // Called after the WM_ACTIVATE message has been processed by the default
+  // windows procedure.
+  void PostProcessActivateMessage(int activation_state);
+
+  // Enables disabled owner windows that may have been disabled due to this
+  // window's modality.
+  void RestoreEnabledIfNecessary();
 
   // Executes the specified SC_command.
   void ExecuteSystemMenuCommand(int command);
@@ -248,7 +280,19 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;
 
+  // The following factory is used for calls to close the NativeWidgetWin
+  // instance.
+  base::WeakPtrFactory<HWNDMessageHandler> close_widget_factory_;
+
   bool remove_standard_frame_;
+
+  // Whether the focus should be restored next time we get enabled.  Needed to
+  // restore focus correctly when Windows modal dialogs are displayed.
+  bool restore_focus_when_enabled_;
+
+  // Whether all ancestors have been enabled. This is only used if is_modal_ is
+  // true.
+  bool restored_enabled_;
 
   // The last cursor that was active before the current one was selected. Saved
   // so that we can restore it.
