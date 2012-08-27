@@ -849,6 +849,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     }
   }
 
+  // Disable call to DwmGetCompositionTimingInfo until we figure out why it
+  // causes a flicker of the last software window during tab switch and
+  // navigate. crbug.com/143854
+#if 0
   {
     TRACE_EVENT0("gpu", "GetPresentationStats");
     base::TimeTicks timebase;
@@ -866,6 +870,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
                  "timebase", timebase.ToInternalValue(),
                  "interval", interval.ToInternalValue());
   }
+#endif
 
   hidden_ = false;
 }
