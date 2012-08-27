@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -361,7 +362,10 @@ void SigninScreenHandler::GetLocalizedStrings(
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
   localized_strings->SetString("disabledAddUserTooltip",
-      l10n_util::GetStringUTF16(IDS_DISABLED_ADD_USER_TOOLTIP));
+      l10n_util::GetStringUTF16(
+          g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
+            IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
+            IDS_DISABLED_ADD_USER_TOOLTIP));
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     localized_strings->SetString("demoLoginMessage",
@@ -846,6 +850,7 @@ void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   }
 
   delegate_->RemoveUser(email);
+  UpdateAddButtonStatus();
 }
 
 void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {

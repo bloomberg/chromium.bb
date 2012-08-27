@@ -13714,7 +13714,10 @@ Press any key to continue exploring.
         Remove
       </message>
       <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
-        Owner has restricted sign-in to the users listed on this screen
+        The owner of this device has disabled new users from being added
+      </message>
+      <message name="IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE" desc="Tooltip over disabled Add user button">
+        The administrator of this device has disabled new users from being added
       </message>
       <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
         Click to start
