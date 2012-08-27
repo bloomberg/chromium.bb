@@ -1284,8 +1284,10 @@ void WebContentsImpl::CreateNewWindow(
     // When the opener is suppressed, the original renderer cannot access the
     // new window.  As a result, we need to show and navigate the window here.
     gfx::Rect initial_pos;
+    // TODO(cdn) Fix popup white-listing for links that open in a new process.
     AddNewContents(
-        new_contents, params.disposition, initial_pos, params.user_gesture);
+        new_contents, params.user_gesture ? params.disposition : NEW_POPUP,
+        initial_pos, params.user_gesture);
 
     content::OpenURLParams open_params(params.target_url, content::Referrer(),
                                        CURRENT_TAB,
