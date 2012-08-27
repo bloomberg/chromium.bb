@@ -223,25 +223,15 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   ResetWebPreferences();
 
   // Load the Ahem font, which is used by layout tests.
-  const char* ahem_path_c;
   NSString* ahem_path = [[base::mac::FrameworkBundle() resourcePath]
       stringByAppendingPathComponent:@"AHEM____.TTF"];
-  ahem_path_c = [ahem_path fileSystemRepresentation];
-  FSRef ahem_fsref;
-  if (!base::mac::FSRefFromPath(ahem_path_c, &ahem_fsref)) {
-    DLOG(FATAL) << "FSRefFromPath " << ahem_path_c;
-  } else {
-    // The last argument is an ATSFontContainerRef that can be passed to
-    // ATSFontDeactivate to unload the font.  Since the font is only loaded
-    // for this process, and it's always wanted, don't keep track of it.
-    if (ATSFontActivateFromFileReference(&ahem_fsref,
-                                         kATSFontContextLocal,
-                                         kATSFontFormatUnspecified,
-                                         NULL,
-                                         kATSOptionFlagsDefault,
-                                         NULL) != noErr) {
-      DLOG(FATAL) << "ATSFontActivateFromFileReference " << ahem_path_c;
-    }
+  NSURL* ahem_path_url = [NSURL fileURLWithPath:ahem_path];
+  CFErrorRef error;
+  if (!CTFontManagerRegisterFontsForURL((CFURLRef)ahem_path_url,
+                                        kCTFontManagerScopeProcess, &error)) {
+    DLOG(FATAL) << "CTFontManagerRegisterFontsForURL "
+                << [ahem_path fileSystemRepresentation]
+                << [[(NSError*)error description] UTF8String];
   }
 
   // Add <app bundle's parent dir>/plugins to the plugin path so we can load
