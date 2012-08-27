@@ -194,10 +194,6 @@ void WebIntentPickerController::SetIntentsDispatcher(
 void WebIntentPickerController::ShowDialog(const string16& action,
                                            const string16& type) {
 
-  // As soon as the dialog is requested, block all input events
-  // on the original tab.
-  tab_contents_->constrained_window_tab_helper()->BlockTabContent(true);
-
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
   // in-flight dispatches since we don't create the picker
@@ -251,6 +247,9 @@ void WebIntentPickerController::ShowDialog(const string16& action,
     }
   }
 
+  // As soon as the dialog is requested, block all input events
+  // on the original tab.
+  tab_contents_->constrained_window_tab_helper()->BlockTabContent(true);
   SetDialogState(kPickerSetup);
 
   pending_async_count_++;
