@@ -29,7 +29,6 @@
   }
 
   action rel8_operand {
-    instruction_info_collected |= RELATIVE_8BIT;
     rel8_operand(current_position + 1, data, jump_dests, size,
                  &instruction_info_collected);
   }
@@ -37,14 +36,14 @@
     #error rel16_operand should never be used in nacl
   }
   action rel32_operand {
-    instruction_info_collected |= RELATIVE_32BIT;
     rel32_operand(current_position + 1, data, jump_dests, size,
                   &instruction_info_collected);
   }
 
-  action opcode_in_imm {
+  action last_byte_is_not_immediate {
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
+
   action modifiable_instruction {
     instruction_info_collected |= MODIFIABLE_INSTRUCTION;
   }
@@ -372,8 +371,8 @@
        BitmapSetBit(valid_targets, current_position - data);
      }
      @{
-       if (instruction_info_collected & VALIDATION_ERRORS ||
-           options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION) {
+       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+           (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
              instruction_info_collected |

@@ -34,7 +34,7 @@ static Bool ProcessError(const uint8_t *begin, const uint8_t *end,
   UNREFERENCED_PARAMETER(info);
 
   /* Instruction is unsupported by CPU, but otherwise valid.  */
-  if ((info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION) {
+  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
     *((enum NaClValidationStatus*)callback_data) =
                                             NaClValidationFailedCpuNotSupported;
   }
@@ -46,7 +46,7 @@ static Bool StubOutCPUUnsupportedInstruction(const uint8_t *begin,
   UNREFERENCED_PARAMETER(callback_data);
 
   /* Stubout unsupported by CPU, but otherwise valid instructions.  */
-  if ((info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION) {
+  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
     memset((uint8_t *)begin, NACL_HALT_OPCODE, end - begin + 1);
     return TRUE;
   } else {
@@ -110,7 +110,7 @@ static Bool ProcessCodeCopyInstruction(const uint8_t *begin_new,
 
   return data->copy_func(
       (uint8_t *)begin_new + data->delta,
-      (info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION ?
+      (info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION ?
         (uint8_t *)kStubOutMem :
         (uint8_t *)begin_new,
       (uint8_t)(end_new - begin_new + 1));
@@ -163,7 +163,7 @@ static Bool ProcessOriginalCodeInstruction(const uint8_t *begin_old,
   CHECK(end_old - begin_old < MAX_INSTRUCTION_LENGTH);
 
   /* Sanity check: old code must be valid... except for jumps.  */
-  CHECK(!(info & (VALIDATION_ERRORS & ~DIRECT_JUMP_OUT_OF_RANGE)));
+  CHECK(!(info & (VALIDATION_ERRORS_MASK & ~DIRECT_JUMP_OUT_OF_RANGE)));
 
   /* Don't mask the end of bundle: may lead to overflow  */
   if (end_old - data->data_old == kBundleMask)
@@ -184,7 +184,7 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
   CHECK(instruction_length <= MAX_INSTRUCTION_LENGTH);
 
   /* Unsupported instruction must have been replaced with HLTs.  */
-  if ((info & VALIDATION_ERRORS) == CPUID_UNSUPPORTED_INSTRUCTION) {
+  if ((info & VALIDATION_ERRORS_MASK) == CPUID_UNSUPPORTED_INSTRUCTION) {
     if (memcmp(kStubOutMem, begin_old, instruction_length) == 0) {
       BitmapSetBits(&(data->instruction_boundaries_new),
                     (begin_new - data->data_new) & kBundleMask,
@@ -195,11 +195,11 @@ static Bool ProcessCodeReplacementInstruction(const uint8_t *begin_new,
   /* If we have jump which jumps out of it's range...  */
   } else if (info & DIRECT_JUMP_OUT_OF_RANGE) {
     /* then everything is fine if it's the only error and jump is unchanged!  */
-    if ((info & (VALIDATION_ERRORS & ~DIRECT_JUMP_OUT_OF_RANGE)) ||
+    if ((info & (VALIDATION_ERRORS_MASK & ~DIRECT_JUMP_OUT_OF_RANGE)) ||
         memcmp(begin_new, begin_old, instruction_length) != 0)
       return FALSE;
   /* If instruction is not accepted then we have nothing to do here.  */
-  } else if (info & (VALIDATION_ERRORS | BAD_JUMP_TARGET)) {
+  } else if (info & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET)) {
     return FALSE;
   /* Instruction is untouched: we are done.  */
   } if (memcmp(begin_new, begin_old, instruction_length) == 0) {

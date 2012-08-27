@@ -2240,7 +2240,7 @@ namespace {
       if (enabled(Actions::kInstructionName)) {
         fprintf(out_file, " @instruction_%s", c_identifier(name).c_str());
       } else if (opcode_in_imm) {
-        fprintf(out_file, " @opcode_in_imm");
+        fprintf(out_file, " @last_byte_is_not_immediate");
       } else if (has_flag("nacl-amd64-modifiable") &&
                  enabled(Actions::kParseOperands) &&
                  !enabled(Actions::kParseOperandPositions)) {
@@ -2433,12 +2433,12 @@ namespace {
           static std::map<char, const char*> operand_type {
             { '1', "one"                },
             { 'a', "rax"                },
-            { 'b', "ds_rbx"             },
             { 'c', "rcx"                },
             { 'd', "rdx"                },
             { 'i', "second_immediate"   },
             { 'o', "port_dx"            },
             { 't', "st"                 },
+            { 'x', "ds_rbx"             },
             { 'B', "from_vex"           },
             { 'H', "from_vex"           },
             { 'I', "immediate"          },
@@ -2572,6 +2572,8 @@ namespace {
             } else {
               fprintf(out_file, " b_xxxx_0000");
             }
+            if (!enabled(Actions::kInstructionName))
+              fprintf(out_file, " @last_byte_is_not_immediate");
           }
           if (operand->enabled && enabled(Actions::kParseOperands)) {
             fprintf(out_file, " @operand%zd_from_is4", operand_index - 1);

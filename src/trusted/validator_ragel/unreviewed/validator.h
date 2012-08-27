@@ -12,9 +12,10 @@
 EXTERN_C_BEGIN
 
 enum validation_callback_info {
-  /* validation_error & IMMEDIATES_INFO will give you immediates size.  */
-  IMMEDIATES_SIZE               = 0x0000000f,
+  /* Anyfield info mask: you can use to parse information about anyfields.  */
+  ANYFIELD_INFO_MASK            = 0x000000ff,
   /* Immediate sizes (immediates always come at the end of instruction).  */
+  IMMEDIATES_SIZE_MASK          = 0x0000000f,
   IMMEDIATE_8BIT                = 0x00000001,
   IMMEDIATE_16BIT               = 0x00000002,
   IMMEDIATE_32BIT               = 0x00000004,
@@ -24,6 +25,7 @@ enum validation_callback_info {
   /* Second 16bit immediate is only used in "enter" instruction.  */
   SECOND_IMMEDIATE_16BIT        = 0x00000012,
   /* Displacement sizes (displacements come at the end - before immediates).  */
+  DISPLACEMENT_SIZE_MASK        = 0x00000060,
   DISPLACEMENT_8BIT             = 0x00000021,
   DISPLACEMENT_16BIT            = 0x00000042,
   DISPLACEMENT_32BIT            = 0x00000064,
@@ -39,7 +41,7 @@ enum validation_callback_info {
   /* Was restricted from previous instruction used in the current one?  */
   RESTRICTED_REGISTER_USED      = 0x00002000,
   /* Mask to select all validation errors.  */
-  VALIDATION_ERRORS             = 0x03ffc000,
+  VALIDATION_ERRORS_MASK        = 0x03ffc000,
   /* Unrecognized instruction: fatal error, processing stops here.  */
   UNRECOGNIZED_INSTRUCTION      = 0x00004000,
   /* Direct jump to unaligned address outside of given region.  */

@@ -113,7 +113,7 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
     printf("offset 0x%"NACL_PRIxS": warning - bad call alignment\n", offset);
   if (validation_error & BAD_JUMP_TARGET)
     printf("bad jump to around 0x%"NACL_PRIxS"\n", offset);
-  if (validation_error & (VALIDATION_ERRORS | BAD_JUMP_TARGET))
+  if (validation_error & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
     return FALSE;
   else
     return TRUE;
