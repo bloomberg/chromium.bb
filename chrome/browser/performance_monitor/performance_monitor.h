@@ -28,11 +28,35 @@ namespace extensions {
 class Extension;
 }
 
+namespace net {
+class URLRequest;
+}
+
 namespace performance_monitor {
 class Database;
 
+// PerformanceMonitor is a tool which will allow the user to view information
+// about Chrome's performance over a period of time. It will gather statistics
+// pertaining to performance-oriented areas (e.g. CPU usage, memory usage, and
+// network usage) and will also store information about significant events which
+// are related to performance, either being indicative (e.g. crashes) or
+// potentially causal (e.g. extension installation/uninstallation).
+//
+// Thread Safety: PerformanceMonitor lives on multiple threads. When interacting
+// with the Database, PerformanceMonitor acts on a background thread (which has
+// the sequence guaranteed by a token, Database::kDatabaseSequenceToken). At
+// other times, the PerformanceMonitor will act on the appropriate thread for
+// the task (for instance, gathering statistics about CPU and memory usage
+// is done on the background thread, but most notifications occur on the UI
+// thread).
 class PerformanceMonitor : public content::NotificationObserver {
  public:
+  struct PerformanceDataForIOThread {
+    PerformanceDataForIOThread();
+
+    uint64 network_bytes_read;
+  };
+
   typedef std::map<base::ProcessHandle,
                    linked_ptr<base::ProcessMetrics> > MetricsMap;
 
@@ -51,6 +75,11 @@ class PerformanceMonitor : public content::NotificationObserver {
   // start collecting data.
   void Start();
 
+  // Inform PerformanceMonitor that bytes have been read; if these came across
+  // the network (and PerformanceMonitor is initialized), then increment the
+  // count accordingly.
+  void BytesReadOnIOThread(const net::URLRequest& request, const int bytes);
+
   // content::NotificationObserver
   // Wait for various notifications; insert events into the database upon
   // occurance.
@@ -60,6 +89,7 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   Database* database() { return database_.get(); }
   FilePath database_path() { return database_path_; }
+  static bool initialized() { return initialized_; }
 
  private:
   friend struct DefaultSingletonTraits<PerformanceMonitor>;
@@ -68,6 +98,7 @@ class PerformanceMonitor : public content::NotificationObserver {
                            OneProfileUncleanExit);
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorUncleanExitBrowserTest,
                            TwoProfileUncleanExit);
+  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorBrowserTest, NetworkBytesRead);
 
   PerformanceMonitor();
   virtual ~PerformanceMonitor();
@@ -138,6 +169,19 @@ class PerformanceMonitor : public content::NotificationObserver {
   void AddCrashEvent(
       const content::RenderProcessHost::RendererClosedDetails& details);
 
+  // Called on the IO thread, this will call InsertIOData on the background
+  // thread with a copy of the PerformanceDataForIOThread object to prevent
+  // any possible race conditions.
+  void CallInsertIOData();
+
+  // Insert the collected IO data into the database (deliberately not const & so
+  // we create a copy and it becomes thread-safe).
+  void InsertIOData(PerformanceDataForIOThread performance_data_for_io_thread);
+
+  // The store for all performance data that must be gathered from the IO
+  // thread.
+  PerformanceDataForIOThread performance_data_for_io_thread_;
+
   // The location at which the database files are stored; if empty, the database
   // will default to '<user_data_dir>/performance_monitor_dbs'.
   FilePath database_path_;
@@ -151,6 +195,12 @@ class PerformanceMonitor : public content::NotificationObserver {
   base::RepeatingTimer<PerformanceMonitor> timer_;
 
   content::NotificationRegistrar registrar_;
+
+  // A flag indicating whether or not PerformanceMonitor is initialized. Any
+  // external sources accessing PerformanceMonitor should either wait for
+  // the PERFORMANCE_MONITOR_INITIALIZED notification or should check this
+  // flag.
+  static bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
 };

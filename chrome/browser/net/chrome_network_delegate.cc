@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/net/load_time_stats.h"
+#include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -248,6 +249,9 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
+  performance_monitor::PerformanceMonitor::GetInstance()->BytesReadOnIOThread(
+      request, bytes_read);
+
 #if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
 #endif  // defined(ENABLE_TASK_MANAGER)

@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -60,6 +61,12 @@ bool StringToTime(std::string time, base::Time* output) {
 }  // namespace
 
 namespace performance_monitor {
+
+bool PerformanceMonitor::initialized_ = false;
+
+PerformanceMonitor::PerformanceDataForIOThread::PerformanceDataForIOThread()
+    : network_bytes_read(0) {
+}
 
 PerformanceMonitor::PerformanceMonitor() : database_(NULL) {
 }
@@ -94,6 +101,14 @@ void PerformanceMonitor::Start() {
 void PerformanceMonitor::InitOnBackgroundThread() {
   CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   database_ = Database::Create(database_path_);
+
+  // Initialize the io thread's performance data to the value in the database;
+  // if there isn't a recording in the database, the value stays at 0.
+  Metric metric;
+  if (database_->GetRecentStatsForActivityAndMetric(METRIC_NETWORK_BYTES_READ,
+                                                    &metric)) {
+    performance_data_for_io_thread_.network_bytes_read = metric.value;
+  }
 }
 
 void PerformanceMonitor::FinishInit() {
@@ -244,6 +259,8 @@ void PerformanceMonitor::NotifyInitialized() {
       chrome::NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED,
       content::Source<PerformanceMonitor>(this),
       content::NotificationService::NoDetails());
+
+  initialized_ = true;
 }
 
 void PerformanceMonitor::GatherStatisticsOnBackgroundThread() {
@@ -362,6 +379,45 @@ void PerformanceMonitor::UpdateLiveProfilesHelper(
 
 void PerformanceMonitor::DoTimedCollections() {
   UpdateLiveProfiles();
+
+  BrowserThread::PostBlockingPoolSequencedTask(
+      Database::kDatabaseSequenceToken,
+      FROM_HERE,
+      base::Bind(&PerformanceMonitor::GatherStatisticsOnBackgroundThread,
+                 base::Unretained(this)));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PerformanceMonitor::CallInsertIOData,
+                 base::Unretained(this)));
+}
+
+void PerformanceMonitor::CallInsertIOData() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostBlockingPoolSequencedTask(
+      Database::kDatabaseSequenceToken,
+      FROM_HERE,
+      base::Bind(&PerformanceMonitor::InsertIOData,
+                 base::Unretained(this),
+                 performance_data_for_io_thread_));
+}
+
+void PerformanceMonitor::InsertIOData(
+    PerformanceDataForIOThread performance_data_for_io_thread) {
+  CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  database_->AddMetric(
+      METRIC_NETWORK_BYTES_READ,
+      base::Uint64ToString(performance_data_for_io_thread.network_bytes_read));
+}
+
+void PerformanceMonitor::BytesReadOnIOThread(const net::URLRequest& request,
+                                             const int bytes_read) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (initialized_ && !request.url().SchemeIsFile())
+    performance_data_for_io_thread_.network_bytes_read += bytes_read;
 }
 
 void PerformanceMonitor::Observe(int type,

@@ -159,6 +159,10 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     performance_monitor_->Start();
 
     windowed_observer.Wait();
+
+    // We stop the timer in charge of doing timed collections so that we can
+    // enforce when, and how many times, we do these collections.
+    performance_monitor_->timer_.Stop();
   }
 
   // A handle for gathering statistics from the database, which must be done on
@@ -712,13 +716,55 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, PageLoadTime) {
   ui_test_utils::NavigateToURL(
       browser(),
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
-                                FilePath(FILE_PATH_LITERAL("title2.html"))));
+                                FilePath(FILE_PATH_LITERAL("title1.html"))));
 
   Database::MetricVector metrics = GetStats(METRIC_PAGE_LOAD_TIME);
 
   ASSERT_EQ(2u, metrics.size());
   ASSERT_LT(metrics[0].value, kMaxLoadTime.ToInternalValue());
   ASSERT_LT(metrics[1].value, kMaxLoadTime.ToInternalValue());
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NetworkBytesRead) {
+  FilePath test_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+
+  int64 page1_size = 0;
+  ASSERT_TRUE(file_util::GetFileSize(test_dir.AppendASCII("title1.html"),
+                                     &page1_size));
+
+  int64 page2_size = 0;
+  ASSERT_TRUE(file_util::GetFileSize(test_dir.AppendASCII("title2.html"),
+                                     &page2_size));
+
+  ASSERT_TRUE(test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      test_server()->GetURL(std::string("files/").append("title1.html")));
+
+  performance_monitor()->DoTimedCollections();
+
+  // Since network bytes are read and set on the IO thread, we must flush this
+  // additional thread to be sure that all messages are run.
+  RunAllPendingInMessageLoop(content::BrowserThread::IO);
+
+  Database::MetricVector metrics = GetStats(METRIC_NETWORK_BYTES_READ);
+  ASSERT_EQ(1u, metrics.size());
+  // Since these pages are read over the "network" (actually the test_server),
+  // some extraneous information is carried along, and the best check we can do
+  // is for greater than or equal to.
+  EXPECT_GE(metrics[0].value, page1_size);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      test_server()->GetURL(std::string("files/").append("title2.html")));
+
+  performance_monitor()->DoTimedCollections();
+
+  metrics = GetStats(METRIC_NETWORK_BYTES_READ);
+  ASSERT_EQ(2u, metrics.size());
+  EXPECT_GE(metrics[1].value, page1_size + page2_size);
 }
 
 }  // namespace performance_monitor

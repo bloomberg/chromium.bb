@@ -65,6 +65,13 @@ const char kMetricPageLoadTimeDescription[] =
 const char kMetricPageLoadTimeUnits[] = "microseconds";
 const double kMetricPageLoadTimeTickSize = 30000000.0;
 
+// Network Bytes Read
+const char kMetricNetworkBytesReadName[] = "Network Bytes Read";
+const char kMetricNetworkBytesReadDescription[] =
+    "The number of bytes read across the network.";
+const char kMetricNetworkBytesReadUnits[] = "bytes";
+const double kMetricNetworkBytesReadTickSize = 2000000.0;
+
 // Keep this array synced with MetricTypes in the header file.
 // TODO(mtytel): i18n.
 const MetricDetails kMetricDetailsList[] = {
@@ -109,6 +116,12 @@ const MetricDetails kMetricDetailsList[] = {
     kMetricPageLoadTimeDescription,
     kMetricPageLoadTimeUnits,
     kMetricPageLoadTimeTickSize
+  },
+  {
+    kMetricNetworkBytesReadName,
+    kMetricNetworkBytesReadDescription,
+    kMetricNetworkBytesReadUnits,
+    kMetricNetworkBytesReadTickSize
   }
 };
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricDetailsList) == METRIC_NUMBER_OF_METRICS,
