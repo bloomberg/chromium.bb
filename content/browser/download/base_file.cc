@@ -220,7 +220,6 @@ BaseFile::BaseFile(const FilePath& full_path,
       calculate_hash_(calculate_hash),
       detached_(false),
       bound_net_log_(bound_net_log) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
   if (file_stream_.get()) {
     file_stream_->SetBoundNetLogSource(bound_net_log_);

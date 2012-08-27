@@ -39,19 +39,9 @@ class MockDownloadManager : public DownloadManager {
       scoped_ptr<ByteStreamReader> stream) OVERRIDE;
 
   MOCK_METHOD2(MockStartDownload,
-               DownloadId(DownloadCreateInfo*,
-                          ByteStreamReader*));
-  MOCK_METHOD4(UpdateDownload, void(int32 download_id,
-                                    int64 bytes_so_far,
-                                    int64 bytes_per_sec,
-                                    const std::string& hash_state));
-  MOCK_METHOD3(OnResponseCompleted, void(int32 download_id,
-                                         int64 size,
-                                         const std::string& hash));
+               content::DownloadId(DownloadCreateInfo*,
+                                   ByteStreamReader*));
   MOCK_METHOD1(CancelDownload, void(int32 download_id));
-  MOCK_METHOD2(OnDownloadInterrupted,
-               void(int32 download_id,
-                    DownloadInterruptReason reason));
   MOCK_METHOD2(RemoveDownloadsBetween, int(base::Time remove_begin,
                                            base::Time remove_end));
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));

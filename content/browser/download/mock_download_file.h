@@ -24,7 +24,7 @@ class MockDownloadFile : virtual public content::DownloadFile {
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
-  MOCK_METHOD0(Initialize, content::DownloadInterruptReason());
+  MOCK_METHOD1(Initialize, void(const InitializeCallback&));
   MOCK_METHOD2(AppendDataToFile, content::DownloadInterruptReason(
       const char* data, size_t data_len));
   MOCK_METHOD1(Rename, content::DownloadInterruptReason(
@@ -42,7 +42,6 @@ class MockDownloadFile : virtual public content::DownloadFile {
   MOCK_CONST_METHOD0(CurrentSpeed, int64());
   MOCK_METHOD1(GetHash, bool(std::string* hash));
   MOCK_METHOD0(GetHashState, std::string());
-  MOCK_METHOD0(CancelDownloadRequest, void());
   MOCK_METHOD0(SendUpdate, void());
   MOCK_CONST_METHOD0(Id, int());
   MOCK_METHOD0(GetDownloadManager, content::DownloadManager*());
