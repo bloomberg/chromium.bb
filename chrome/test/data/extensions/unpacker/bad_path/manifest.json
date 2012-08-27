@@ -1,0 +1,6 @@
+{
+  "name": "Bad Path",
+  "version": "1.0",
+  "description": "Package with an invalid path to be used for unit testing. The path below is carefully chosen so: 1) it contains '..'; and 2) it resolves to a valid file at package installation time so no invalid-image-error is raised before the invalid-image-path-error one is. Because of the invalid path, this package needs to be packaged with bad_path.sh rather than Chromium.",
+  "theme": {"images" : {"bad_path" : "../CRX_INSTALL/product_logo_128.png"}}
+}

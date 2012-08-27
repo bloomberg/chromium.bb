@@ -1,0 +1,6 @@
+{
+  "name": "Bad Image",
+  "version": "1.0",
+  "description": "Package with a bad image to be used for unit testing.",
+  "theme": {"images" : {"bad" : "not_really_an_image.png"}}
+}

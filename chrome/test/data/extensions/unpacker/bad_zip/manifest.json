@@ -1,0 +1,6 @@
+{
+  "name": "Bad ZIP",
+  "version": "1.0",
+  "description": "Good package to be mangled by bad_zip.sh for unit testing.",
+  "theme": {"images" : {"logo" : "product_logo_128.png"}}
+}

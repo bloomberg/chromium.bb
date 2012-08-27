@@ -1,0 +1,6 @@
+{
+  "name": "Good Package",
+  "version": "1.0",
+  "description": "Good (valid) package to be used for unit testing.",
+  "theme": {"images" : {"logo" : "product_logo_128.png"}}
+}
