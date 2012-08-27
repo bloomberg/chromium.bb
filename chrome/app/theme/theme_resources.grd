@@ -655,35 +655,32 @@
       <structure type="chrome_scaled_image" name="IDR_STAR" file="star.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="star_lit.png" />
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X" file="statusbar_network_1x.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="statusbar_network_1x_error.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="statusbar_network_1x_unknown.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X" file="cros/statusbar_network_1x.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="cros/statusbar_network_1x_error.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="cros/statusbar_network_1x_unknown.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_DARK" file="cros/statusbar_network_3g_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_ERROR" file="statusbar_network_3g_error.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_ERROR" file="cros/statusbar_network_3g_error.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_LIGHT" file="cros/statusbar_network_3g_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_UNKNOWN" file="statusbar_network_3g_unknown.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_WARN" file="statusbar_network_3g_warn.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_UNKNOWN" file="cros/statusbar_network_3g_unknown.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_DARK" file="cros/statusbar_network_4g_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_LIGHT" file="cros/statusbar_network_4g_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS" file="statusbar_network_arcs.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="statusbar_network_arcs_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="cros/statusbar_network_arcs_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="cros/statusbar_network_arcs_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS" file="statusbar_network_bars.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="cros/statusbar_network_bars_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="cros/statusbar_network_bars_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_EDGE_DARK" file="cros/statusbar_network_edge_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_EDGE_LIGHT" file="cros/statusbar_network_edge_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_GPRS" file="statusbar_network_gprs.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_HSPA" file="statusbar_network_hspa.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="statusbar_network_hspa_plus.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_LTE" file="statusbar_network_lte.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="statusbar_network_lte_advanced.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_GPRS" file="cros/statusbar_network_gprs.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_HSPA" file="cros/statusbar_network_hspa.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_HSPA_PLUS" file="cros/statusbar_network_hspa_plus.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_LTE" file="cros/statusbar_network_lte.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="cros/statusbar_network_lte_advanced.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_DARK" file="cros/statusbar_network_roaming_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ROAMING_LIGHT" file="cros/statusbar_network_roaming_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE_DARK" file="cros/statusbar_network_secure_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE_LIGHT" file="cros/statusbar_network_secure_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN" file="statusbar_vpn_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN_BADGE" file="statusbar_network_vpn_badge.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN" file="cros/statusbar_vpn_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN_BADGE" file="cros/statusbar_network_vpn_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_WIRED" file="cros/statusbar_wired.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
