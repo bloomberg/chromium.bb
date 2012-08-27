@@ -514,7 +514,7 @@ content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
   if (!ExtractIntegerValue(args, &id))
     return NULL;
   content::DownloadItem* download_item = download_manager_->GetDownload(id);
-  if (download_item == NULL)
+  if (!download_item && original_profile_download_manager_)
     download_item = original_profile_download_manager_->GetDownload(id);
   return download_item;
 }
