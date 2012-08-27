@@ -11,8 +11,20 @@
 //<include src="../metrics.js">
 
 //<include src="../../../shared/js/cr.js">
-//<include src="../../../shared/js/cr/event_target.js">
+//<include src="../../../shared/js/event_tracker.js">
 //<include src="../../../shared/js/load_time_data.js">
+
+//<include src="../../../shared/js/cr/ui.js">
+//<include src="../../../shared/js/cr/event_target.js">
+//<include src="../../../shared/js/cr/ui/touch_handler.js">
+//<include src="../../../shared/js/cr/ui/array_data_model.js">
+//<include src="../../../shared/js/cr/ui/dialogs.js">
+//<include src="../../../shared/js/cr/ui/list_item.js">
+//<include src="../../../shared/js/cr/ui/list_selection_model.js">
+//<include src="../../../shared/js/cr/ui/list_single_selection_model.js">
+//<include src="../../../shared/js/cr/ui/list_selection_controller.js">
+//<include src="../../../shared/js/cr/ui/list.js">
+//<include src="../../../shared/js/cr/ui/grid.js">
 
 //<include src="../file_type.js">
 //<include src="../util.js">

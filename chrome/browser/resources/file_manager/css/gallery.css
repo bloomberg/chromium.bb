@@ -437,7 +437,7 @@ body {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: margin-left 180ms linear;
+  -webkit-transition: all 180ms linear;
   border: 2px solid rgba(255, 255, 255, 0);  /* transparent white */
   cursor: pointer;
   display: -webkit-box;
@@ -445,6 +445,14 @@ body {
   margin: 2px;
   overflow: hidden;
   width: 47px;
+}
+
+.ribbon-image[vanishing='smooth'] {
+  border-left-width: 0;
+  border-right-width: 0;
+  margin-left: 0;
+  margin-right: 0;
+  width: 0;
 }
 
 .gallery .ribbon-image[selected] {
@@ -540,11 +548,8 @@ body {
   color: white;
 }
 
-.gallery > .toolbar .button[pressed] {
-  background-color: rgba(240, 240, 240, 1);
-  color: black;
-}
-
+.gallery > .toolbar .button:active,
+.gallery > .toolbar .button[pressed],
 .gallery > .toolbar .button[pressed]:hover {
   background-color: rgba(240, 240, 240, 1);
   color: black;
@@ -633,20 +638,52 @@ body {
 }
 
 .gallery > .toolbar > .button {
+  background-position: center;
+  padding: 0;
   position: relative;
+  width: 40px;
   z-index: 10;
 }
 
-.gallery > .toolbar > .button.grid {
+.gallery[mode='slide'] > .toolbar > .button.mode {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_edit.png') 1x,
-    url('../images/gallery/2x/icon_edit.png') 2x);
+    url('../images/gallery/icon_mosaic.png') 1x);
 }
 
-.gallery > .toolbar > .button.grid[pressed] {
+.gallery[mode='slide'] > .toolbar > .button.mode:active {
   background-image: -webkit-image-set(
-    url('../images/gallery/icon_edit_selected.png') 1x,
-    url('../images/gallery/2x/icon_edit_selected.png') 2x);
+    url('../images/gallery/icon_mosaic_selected.png') 1x);
+}
+
+.gallery[mode='grid'] > .toolbar > .button.mode {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_1up.png') 1x);
+}
+
+.gallery[mode='grid'] > .toolbar > .button.mode:active {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_1up_selected.png') 1x);
+}
+
+.gallery > .toolbar > .button.slideshow {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_slideshow.png') 1x);
+}
+
+.gallery > .toolbar > .button.slideshow:active,
+.gallery > .toolbar > .button.slideshow[pressed] {
+    background-image: -webkit-image-set(
+        url('../images/gallery/icon_slideshow_selected.png') 1x);
+}
+
+.gallery > .toolbar > .button.delete {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_delete.png') 1x);
+}
+
+.gallery > .toolbar > .button.delete:active {
+  background-image: -webkit-image-set(
+    url('../images/gallery/icon_delete_selected.png') 1x);
 }
 
 .gallery > .toolbar > .button.edit {
@@ -655,6 +692,7 @@ body {
     url('../images/gallery/2x/icon_edit.png') 2x);
 }
 
+.gallery > .toolbar > .button.edit:active,
 .gallery > .toolbar > .button.edit[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_edit_selected.png') 1x,
@@ -667,10 +705,8 @@ body {
     url('../images/gallery/2x/icon_share.png') 2x);
 }
 
-.gallery > .toolbar > .button.share[pressed] {
-  background-image: -webkit-image-set(
-    url('../images/gallery/icon_share_selected.png') 1x,
-    url('../images/gallery/2x/icon_share_selected.png') 2x);
+.gallery > .toolbar > .button.share:hover {
+  background-color: rgba(31, 31, 31, 1);
 }
 
 .gallery[error] > .toolbar .button.edit,
@@ -1045,21 +1081,77 @@ body {
   display: -webkit-box;
 }
 
-.gallery[video] > .toolbar .button.edit,
 .gallery[video] > .toolbar .edit-bar {
   display: none;
 }
 
-@media print {
-  .image-container > .image {
-    left: 0 !important;
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
-    top: 0 !important;
-  }
+.thumbnail-grid {
+  bottom: 56px;  /* Avoid overlapping with the toolbar. */
+  left: 0;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 56px;  /* Same as bottom. */
+}
 
-  .gallery .tool {
-    opacity: 0 !important;
-  }
+.thumbnail-grid::-webkit-scrollbar {
+  background: black;
+}
+
+.thumbnail-grid::-webkit-scrollbar-thumb {
+  background: rgb(31, 31, 31);
+}
+
+.thumbnail-item {
+  background-color: rgba(0, 0, 0, 0) !important;
+  background-image: none !important;
+  border: none !important;
+  height: 184px;
+  margin-left: 8px;
+  margin-top: 7px;
+  overflow: hidden;
+  padding: 0;
+  width: 244px;
+}
+
+.thumbnail-item .img-container {
+  border: 2px solid transparent;  /* Make room for the img border */
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/* Smaller box around the generic icon. */
+.thumbnail-item .img-container[generic-thumbnail] {
+  bottom: 25px;
+  left: 55px;
+  right: 55px;
+  top: 25px;
+}
+
+.thumbnail-item[selected] .img-container[generic-thumbnail],
+.thumbnail-item:hover .img-container[generic-thumbnail] {
+  border-color: rgb(51, 153, 255);
+}
+
+.thumbnail-item img {
+  -webkit-user-drag: none;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+.thumbnail-item[selected] img,
+.thumbnail-item:hover img {
+  outline: 2px solid rgb(51, 153, 255);
+}
+
+.gallery:not([mode='grid']) .thumbnail-grid,
+.gallery:not([mode='slide']) .image-container,
+.gallery:not([mode='slide']) .ribbon,
+.gallery:not([mode='slide']) .arrow-box {
+  opacity: 0;
+  pointer-events: none;
 }

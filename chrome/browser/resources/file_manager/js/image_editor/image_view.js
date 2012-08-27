@@ -495,6 +495,7 @@ ImageView.prototype.changeUrl = function(newUrl) {
  */
 ImageView.prototype.unload = function() {
   this.container_.textContent = '';
+  this.contentCanvas_ = null;
   this.screenImage_ = null;
   this.videoElement_ = null;
 };

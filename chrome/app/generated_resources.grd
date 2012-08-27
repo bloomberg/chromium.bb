@@ -11227,6 +11227,26 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Open
       </message>
 
+      <message name="IDS_FILE_BROWSER_GALLERY_NO_IMAGES" desc="In the Gallery, the message that there are no images in this directory.">
+        No images in this directory.
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_ITEMS_SELECTED" desc="In the Gallery, the message showing the selected item count.">
+        <ph name="COUNT">$1<ex>3</ex></ph> items selected
+      </message>
+
+      <message name="IDS_FILE_BROWSER_GALLERY_MOSAIC" desc="In the Gallery, the title on the button that switches to the mosaic view.">
+        Mosaic view
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_SLIDE" desc="In the Gallery, the title on the button that switches to the slide view.">
+        Slide view
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_SLIDESHOW" desc="In the Gallery, the title on the button that starts the slide show.">
+        Slide show
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_DELETE" desc="In the Gallery, the title on the button that deletes selected images.">
+        Delete
+      </message>
+
       <message name="IDS_FILE_BROWSER_GALLERY_EDIT" desc="In the Gallery, the title on the button shows/hides editing buttons.">
         Edit
       </message>

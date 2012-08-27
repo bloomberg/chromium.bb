@@ -6,22 +6,35 @@
  * Slide mode displays a single image and has a set of controls to navigate
  * between the images and to edit an image.
  *
- * @param {Element} container Container element.
+ * TODO(kaznacheev): Introduce a parameter object.
+ *
+ * @param {Element} container Main container element.
+ * @param {Element} content Content container element.
  * @param {Element} toolbar Toolbar element.
  * @param {ImageEditor.Prompt} prompt Prompt.
+ * @param {cr.ui.ArrayDataModel} dataModel Data model.
+ * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {Object} context Context.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
  * @constructor
  */
-function SlideMode(container, toolbar, prompt, context, displayStringFunction) {
+function SlideMode(container, content, toolbar, prompt,
+                   dataModel, selectionModel,
+                   context, displayStringFunction) {
   this.container_ = container;
-  this.toolbar_ = toolbar;
   this.document_ = container.ownerDocument;
+  this.content = content;
+  this.toolbar_ = toolbar;
   this.prompt_ = prompt;
+  this.dataModel_ = dataModel;
+  this.selectionModel_ = selectionModel;
   this.context_ = context;
   this.metadataCache_ = context.metadataCache;
   this.displayStringFunction_ = displayStringFunction;
+
+  this.onSelectionBound_ = this.onSelection_.bind(this);
+  this.onSpliceBound_ = this.onSplice_.bind(this);
 
   this.initListeners_();
   this.initDom_();
@@ -136,6 +149,9 @@ SlideMode.prototype.initDom_ = function() {
   util.createChild(this.arrowRight_);
 
   this.ribbonSpacer_ = util.createChild(this.toolbar_, 'ribbon-spacer');
+  this.ribbon_ = new Ribbon(this.document_,
+      this.metadataCache_, this.dataModel_, this.selectionModel_);
+  this.ribbonSpacer_.appendChild(this.ribbon_);
 
   // Error indicator.
   var errorWrapper = util.createChild(this.container_, 'prompt-wrapper');
@@ -145,12 +161,16 @@ SlideMode.prototype.initDom_ = function() {
 
   util.createChild(this.container_, 'spinner');
 
+  this.slideShowButton_ = util.createChild(this.toolbar_, 'button slideshow');
+  this.slideShowButton_.title = this.displayStringFunction_('slideshow');
+  this.slideShowButton_.addEventListener('click',
+      this.toggleSlideshow_.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+
+  // Editor.
 
   this.editButton_ = util.createChild(this.toolbar_, 'button edit');
-  this.editButton_.textContent = this.displayStringFunction_('edit');
-  this.editButton_.addEventListener('click', this.onEdit_.bind(this));
-
-  // Editor toolbar.
+  this.editButton_.title = this.displayStringFunction_('edit');
+  this.editButton_.addEventListener('click', this.toggleEditor_.bind(this));
 
   this.editBar_ = util.createChild(this.toolbar_, 'edit-bar');
   this.editBarMain_ = util.createChild(this.editBar_, 'edit-main');
@@ -167,8 +187,6 @@ SlideMode.prototype.initDom_ = function() {
       this.imageContainer_,
       this.viewport_,
       this.metadataCache_);
-
-  this.imageView_.addContentCallback(this.onImageContentChanged_.bind(this));
 
   this.editor_ = new ImageEditor(
       this.viewport_,
@@ -190,109 +208,164 @@ SlideMode.prototype.initDom_ = function() {
 /**
  * Load items, display the selected item.
  *
- * @param {Array.<Gallery.Item>} items Array of items.
- * @param {number} selectedIndex Selected index.
- * @param {function} callback Callback.
+ * @param {function} opt_callback Callback.
  */
-SlideMode.prototype.load = function(items, selectedIndex, callback) {
-  var selectedItem = items[selectedIndex];
-  if (!selectedItem) {
-    this.showErrorBanner_('IMAGE_ERROR');
-    return;
-  }
+SlideMode.prototype.enter = function(opt_callback) {
+  this.container_.setAttribute('mode', 'slide');
 
-  var loadDone = function() {
-    this.items_ = items;
-    this.setSelectedIndex_(selectedIndex);
-    this.setupNavigation_();
-    setTimeout(this.requestPrefetch.bind(this, 1 /* Next item */), 1000);
-    callback();
-  }.bind(this);
-
-  var selectedUrl = selectedItem.getUrl();
-  // Show the selected item ASAP, then complete the initialization
-  // (loading the ribbon thumbnails can take some time).
-  this.metadataCache_.get(selectedUrl, Gallery.METADATA_TYPE,
-      function(metadata) {
-        this.loadItem_(selectedUrl, metadata, 0, loadDone);
-      }.bind(this));
-};
-
-/**
- * Setup navigation controls.
- * @private
- */
-SlideMode.prototype.setupNavigation_ = function() {
   this.sequenceDirection_ = 0;
   this.sequenceLength_ = 0;
 
-  ImageUtil.setAttribute(this.arrowLeft_, 'active', this.items_.length > 1);
-  ImageUtil.setAttribute(this.arrowRight_, 'active', this.items_.length > 1);
+  var loadDone = function() {
+    this.active_ = true;
 
-  this.ribbon_ = new Ribbon(
-      this.document_, this.metadataCache_, this.select.bind(this));
-  this.ribbonSpacer_.appendChild(this.ribbon_);
-  this.ribbon_.update(this.items_, this.selectedIndex_);
+    this.selectionModel_.addEventListener('change', this.onSelectionBound_);
+    this.dataModel_.addEventListener('splice', this.onSpliceBound_);
+
+    this.ribbon_.enable();
+
+    this.prefetchTimer_ = setTimeout(function() {
+      this.prefetchTimer_ = null;
+      this.requestPrefetch(1);   // Prefetch the next image.
+    }.bind(this), 1000);
+    if (opt_callback) opt_callback();
+  }.bind(this);
+
+  if (this.getItemCount_() == 0) {
+    this.displayedIndex_ = -1;
+    //TODO(kaznacheev) Show this message in the grid mode too.
+    this.showErrorBanner_('NO_IMAGES');
+    loadDone();
+  } else {
+    // Ensure valid single selection.
+    // Note that the SlideMode object is not listening to selection change yet.
+    this.select(Math.max(0, this.getSelectedIndex()));
+    cr.dispatchSimpleEvent(this, 'namechange');  // Update name in the UI.
+    this.displayedIndex_ = this.getSelectedIndex();
+
+    var selectedItem = this.getSelectedItem();
+    var selectedUrl = selectedItem.getUrl();
+    // Show the selected item ASAP, then complete the initialization
+    // (loading the ribbon thumbnails can take some time).
+    this.metadataCache_.get(selectedUrl, Gallery.METADATA_TYPE,
+        function(metadata) {
+          this.loadItem_(selectedUrl, metadata, 0, loadDone);
+        }.bind(this));
+
+  }
+};
+
+/**
+ * Leave the mode.
+ * @param {function} opt_callback Callback.
+ */
+SlideMode.prototype.leave = function(opt_callback) {
+  if (this.prefetchTimer_) {
+    clearTimeout(this.prefetchTimer_);
+    this.prefetchTimer_ = null;
+  }
+
+  var commitDone = function() {
+      this.stopEditing_();
+      this.stopSlideshow_();
+      this.unloadImage_();
+      this.selectionModel_.removeEventListener(
+          'change', this.onSelectionBound_);
+      this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
+      this.ribbon_.disable();
+      this.active_ = false;
+      if (opt_callback) opt_callback();
+    }.bind(this);
+
+  if (this.getItemCount_() == 0) {
+    this.showErrorBanner_(false);
+    commitDone();
+  } else {
+    this.commitItem_(commitDone);
+  }
+};
+
+/**
+ * @return {boolean} True if the mode has active tools (that should not fade).
+ */
+SlideMode.prototype.hasActiveTool = function() {
+  return this.isEditing();
+};
+
+/**
+ * @return {number} Item count.
+ * @private
+ */
+SlideMode.prototype.getItemCount_ = function() {
+  return this.dataModel_.length;
+};
+
+/**
+ * @param {number} index Index.
+ * @return {Gallery.Item} Item.
+ */
+SlideMode.prototype.getItem = function(index) {
+  return this.dataModel_.item(index);
+};
+
+/**
+ * @return {Gallery.Item} Selected index.
+ */
+SlideMode.prototype.getSelectedIndex = function() {
+  return this.selectionModel_.selectedIndexes.length ?
+      this.selectionModel_.selectedIndexes[0] :
+      -1;
 };
 
 /**
  * @return {Gallery.Item} Selected item
  */
 SlideMode.prototype.getSelectedItem = function() {
-  return this.items_ && this.items_[this.selectedIndex_];
+  return this.getItem(this.getSelectedIndex());
+};
+
+/**
+ * Selection change handler.
+ *
+ * Commits the current image and displays the newly selected image.
+ * @private
+ */
+SlideMode.prototype.onSelection_ = function() {
+  if (this.selectionModel_.selectedIndexes.length == 0)
+    return;  // Temporary empty selection.
+
+  if (this.getSelectedIndex() == this.displayedIndex_)
+    return;  // Do not reselect.
+
+  this.commitItem_(this.loadSelectedItem_.bind(this));
 };
 
 /**
  * Change the selection.
  *
- * Commits the current image and changes the selection.
- *
  * @param {number} index New selected index.
- * @param {number} opt_slideDir Slide animation direction (-1|0|1).
- *   Derived from the new and the old selected indices if omitted.
- * @param {function} opt_callback Callback.
+ * @param {number} opt_slideHint Slide animation direction (-1|1).
  */
-SlideMode.prototype.select = function(index, opt_slideDir, opt_callback) {
-  if (!this.items_)
-    return;  // Not fully initialized, still loading the first image.
+SlideMode.prototype.select = function(index, opt_slideHint) {
+  this.slideHint_ = opt_slideHint;
+  this.selectionModel_.unselectAll();
+  this.selectionModel_.setIndexSelected(index, true);
+};
 
-  if (index == this.selectedIndex_)
+/**
+ * Load the selected item.
+ *
+ * @private
+ */
+SlideMode.prototype.loadSelectedItem_ = function() {
+  var slideHint = this.slideHint_;
+  this.slideHint_ = undefined;
+
+  var index = this.getSelectedIndex();
+  if (index == this.displayedIndex_)
     return;  // Do not reselect.
 
-  this.commitItem_(
-      this.doSelect_.bind(this, index, opt_slideDir, opt_callback));
-};
-
-/**
- * Set the new selected index value.
- * @param {number} index New selected index.
- * @private
- */
-SlideMode.prototype.setSelectedIndex_ = function(index) {
-  this.selectedIndex_ = index;
-  cr.dispatchSimpleEvent(this, 'selection');
-
-  // For once edited image, disallow the 'overwrite' setting change.
-  ImageUtil.setAttribute(this.options_, 'saved',
-      !this.getSelectedItem().isOriginal());
-};
-
-/**
- * Perform the actual selection change.
- *
- * @param {number} index New selected index.
- * @param {number} opt_slideDir Slide animation direction (-1|0|1).
- *   Derived from the new and the old selected indices if omitted.
- * @param {function} opt_callback Callback.
- * @private
- */
-SlideMode.prototype.doSelect_ = function(index, opt_slideDir, opt_callback) {
-  if (index == this.selectedIndex_)
-    return;  // Do not reselect
-
-  var step = opt_slideDir != undefined ?
-      opt_slideDir :
-      (index - this.selectedIndex_);
+  var step = slideHint || (index - this.displayedIndex_);
 
   if (Math.abs(step) != 1) {
     // Long leap, the sequence is broken, we have no good prefetch candidate.
@@ -310,13 +383,10 @@ SlideMode.prototype.doSelect_ = function(index, opt_slideDir, opt_callback) {
   if (this.sequenceLength_ <= 1) {
     // We have just broke the sequence. Touch the current image so that it stays
     // in the cache longer.
-    this.editor_.prefetchImage(this.getSelectedItem().getUrl());
+    this.imageView_.prefetch(this.imageView_.contentID_);
   }
 
-  this.setSelectedIndex_(index);
-
-  if (this.ribbon_)
-    this.ribbon_.update(this.items_, this.selectedIndex_);
+  this.displayedIndex_ = index;
 
   function shouldPrefetch(loadType, step, sequenceLength) {
     // Never prefetch when selecting out of sequence.
@@ -345,11 +415,56 @@ SlideMode.prototype.doSelect_ = function(index, opt_slideDir, opt_callback) {
           if (shouldPrefetch(loadType, step, this.sequenceLength_)) {
             this.requestPrefetch(step);
           }
-          if (opt_callback) opt_callback();
+          if (this.isSlideshowOn_())
+            this.scheduleNextSlide_();
         }.bind(this));
   }.bind(this);
   this.metadataCache_.get(
       selectedItem.getUrl(), Gallery.METADATA_TYPE, onMetadata);
+};
+
+/**
+ * Unload the current image.
+ * @private
+ */
+SlideMode.prototype.unloadImage_ = function() {
+  this.imageView_.unload();
+  this.container_.removeAttribute('video');
+};
+
+/**
+ * Data model 'splice' event handler.
+ * @param {Event} event Event.
+ * @private
+ */
+SlideMode.prototype.onSplice_ = function(event) {
+  ImageUtil.setAttribute(this.arrowLeft_, 'active', this.getItemCount_() > 1);
+  ImageUtil.setAttribute(this.arrowRight_, 'active', this.getItemCount_() > 1);
+
+  if (event.removed.length != 1)
+    return;
+
+  // Delay the selection to let the ribbon splice handler work first.
+  setTimeout(function() {
+    if (event.index < this.dataModel_.length) {
+      // There is the next item, select it.
+      // The next item is now at the same index as the removed one, so we need
+      // to correct displayIndex_ so that loadSelectedItem_ does not think
+      // we are re-selecting the same item (and does right-to-left slide-in
+      // animation).
+      this.displayedIndex_ = event.index - 1;
+      this.select(event.index);
+    } else if (this.dataModel_.length) {
+      // Removed item is the rightmost, but there are more items.
+      this.select(event.index - 1);  // Select the new last index.
+    } else {
+      // No items left. Unload the image and show the banner.
+      this.commitItem_(function() {
+        this.unloadImage_();
+        this.showErrorBanner_('NO_IMAGES');
+      }.bind(this));
+    }
+  }.bind(this), 0);
 };
 
 /**
@@ -358,19 +473,18 @@ SlideMode.prototype.doSelect_ = function(index, opt_slideDir, opt_callback) {
  * @private
  */
 SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
-  var index = this.selectedIndex_ + (direction > 0 ? 1 : -1);
-  if (index == -1) return this.items_.length - 1;
-  if (index == this.items_.length) return 0;
+  var index = this.getSelectedIndex() + (direction > 0 ? 1 : -1);
+  if (index == -1) return this.getItemCount_() - 1;
+  if (index == this.getItemCount_()) return 0;
   return index;
 };
 
 /**
  * Select the next item.
  * @param {number} direction -1 for left, 1 for right.
- * @param {function} opt_callback Callback.
  */
-SlideMode.prototype.selectNext = function(direction, opt_callback) {
-  this.select(this.getNextSelectedIndex_(direction), direction, opt_callback);
+SlideMode.prototype.selectNext = function(direction) {
+  this.select(this.getNextSelectedIndex_(direction), direction);
 };
 
 /**
@@ -384,7 +498,7 @@ SlideMode.prototype.selectFirst = function() {
  * Select the last item.
  */
 SlideMode.prototype.selectLast = function() {
-  this.select(this.items_.length - 1);
+  this.select(this.getItemCount_() - 1);
 };
 
 // Loading/unloading
@@ -415,10 +529,8 @@ SlideMode.prototype.loadItem_ = function(url, metadata, slide, callback) {
     }
 
     if (video) {
-      if (this.isEditing()) {
-        // The editor toolbar does not make sense for video, hide it.
-        this.onEdit_();
-      }
+      // The editor toolbar does not make sense for video, hide it.
+      this.stopEditing_();
       this.mediaControls_.attachMedia(this.imageView_.getVideo());
       //TODO(kaznacheev): Add metrics for video playback.
     } else {
@@ -438,6 +550,19 @@ SlideMode.prototype.loadItem_ = function(url, metadata, slide, callback) {
       if (ext == 'jpeg') ext = 'jpg';
       ImageUtil.metrics.recordEnum(
           ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
+    }
+
+    // For once edited image, disallow the 'overwrite' setting change.
+    ImageUtil.setAttribute(this.options_, 'saved',
+        !this.getSelectedItem().isOriginal());
+
+    var times = SlideMode.OVERWRITE_BUBBLE_KEY in localStorage ?
+        parseInt(localStorage[SlideMode.OVERWRITE_BUBBLE_KEY], 10) : 0;
+    if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
+      this.bubble_.hidden = false;
+      if (this.isEditing()) {
+        localStorage[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
+      }
     }
 
     callback(loadType);
@@ -470,10 +595,10 @@ SlideMode.prototype.commitItem_ = function(callback) {
  * @param {number} direction -1 or 1.
  */
 SlideMode.prototype.requestPrefetch = function(direction) {
-  if (this.items_.length <= 1) return;
+  if (this.getItemCount_() <= 1) return;
 
   var index = this.getNextSelectedIndex_(direction);
-  var nextItemUrl = this.items_[index].getUrl();
+  var nextItemUrl = this.getItem(index).getUrl();
 
   var selectedItem = this.getSelectedItem();
   this.metadataCache_.get(nextItemUrl, Gallery.METADATA_TYPE,
@@ -541,17 +666,17 @@ SlideMode.prototype.onKeyDown = function(event) {
       break;
 
     case 'U+0045':  // 'e' toggles the editor
-      this.onEdit_();
+      this.toggleEditor_();
       break;
 
     case 'U+001B':  // Escape
       if (!this.isEditing())
         return false;  // Not handled.
-      this.onEdit_();
+      this.toggleEditor_();
       break;
 
-    case 'Ctrl-U+00DD':  // Ctrl+] (cryptic on purpose).
-      this.toggleSlideshow_();
+    case 'Ctrl-U+00DD':  // Ctrl+]. TODO(kaznacheev): Find a non-cryptic key.
+      this.toggleSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
       break;
 
     case 'Home':
@@ -614,8 +739,24 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         this.flashSavedLabel_();
         var newUrl = item.getUrl();
         this.updateSelectedUrl_(oldUrl, newUrl);
-        this.ribbon_.updateThumbnail(
-            this.selectedIndex_, newUrl, this.selectedImageMetadata_);
+        this.ribbon_.updateThumbnail(newUrl, this.selectedImageMetadata_);
+        cr.dispatchSimpleEvent(this, 'content');
+
+        if (this.imageView_.getContentRevision() == 1) {  // First edit.
+          // Lock the 'Overwrite original' checkbox for this item.
+          ImageUtil.setAttribute(this.options_, 'saved', true);
+          ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
+        }
+
+        if (oldUrl != newUrl) {
+          this.displayedIndex_++;
+          // This splice call will change the selection change event. SlideMode
+          // will ignore it as the selected item is the same.
+          // The ribbon will redraw while being obscured by the Editor toolbar,
+          // so there is no need for nice animation here.
+          this.dataModel_.splice(
+              this.getSelectedIndex(), 0, new Gallery.Item(oldUrl));
+        }
         callback();
       }.bind(this));
 };
@@ -635,9 +776,6 @@ SlideMode.prototype.updateSelectedUrl_ = function(oldUrl, newUrl) {
 
   this.imageView_.changeUrl(newUrl);
   this.ribbon_.remapCache(oldUrl, newUrl);
-
-  // Let the gallery know that the selected item url has changed.
-  cr.dispatchSimpleEvent(this, 'selection');
 };
 
 /**
@@ -698,49 +836,82 @@ SlideMode.prototype.onCloseBubble_ = function() {
       SlideMode.OVERWRITE_BUBBLE_MAX_TIMES;
 };
 
+// Slideshow
+
 /**
- * Callback called when the image is edited.
+ * Slideshow interval in ms.
+ */
+SlideMode.SLIDESHOW_INTERVAL = 5000;
+
+/**
+ * First slideshow interval in ms. It should be shorter so that the user
+ * is not guessing whether the button worked.
+ */
+SlideMode.SLIDESHOW_INTERVAL_FIRST = 1000;
+
+/**
+ * @return {boolean} True if the slideshow is on.
  * @private
  */
-SlideMode.prototype.onImageContentChanged_ = function() {
-  var revision = this.imageView_.getContentRevision();
-  if (revision == 0) {
-    // Just loaded.
-    var times = SlideMode.OVERWRITE_BUBBLE_KEY in localStorage ?
-        parseInt(localStorage[SlideMode.OVERWRITE_BUBBLE_KEY], 10) : 0;
-    if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
-      this.bubble_.hidden = false;
-      if (this.isEditing()) {
-        localStorage[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
-      }
-    }
+SlideMode.prototype.isSlideshowOn_ = function() {
+  return this.container_.hasAttribute('slideshow');
+};
+
+/**
+ * Stop the slideshow if it is on.
+ * @private
+ */
+SlideMode.prototype.stopSlideshow_ = function() {
+  if (this.isSlideshowOn_())
+    this.toggleSlideshow_();
+};
+
+/**
+ * Start/stop the slideshow.
+ *
+ * @param {number} opt_interval First interval in ms.
+ * @param {Event} opt_event Event.
+ * @private
+ */
+
+SlideMode.prototype.toggleSlideshow_ = function(opt_interval, opt_event) {
+  if (opt_event)  // Caused by user action, notify the Gallery.
+    cr.dispatchSimpleEvent(this, 'useraction');
+
+  if (!this.active_) {
+    // Enter the slide mode. Show the first image for the full interval.
+    this.enter(this.toggleSlideshow_.bind(this, SlideMode.SLIDESHOW_INTERVAL));
+    return;
   }
 
-  if (revision == 1) {
-    // First edit.
-    ImageUtil.setAttribute(this.options_, 'saved', true);
-    ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
+  this.stopEditing_();
+  ImageUtil.setAttribute(this.container_, 'slideshow', !this.isSlideshowOn_());
+  ImageUtil.setAttribute(
+      this.slideShowButton_, 'pressed', this.isSlideshowOn_());
+
+  if (this.isSlideshowOn_()) {
+    this.scheduleNextSlide_(opt_interval);
+  } else {
+    if (this.slideShowTimeout_) {
+      clearInterval(this.slideShowTimeout_);
+      this.slideShowTimeout_ = null;
+    }
   }
 };
 
-// Misc
-
 /**
- * Start/stop the slide show.
+ * @param {number} opt_interval Slideshow interval in ms.
  * @private
  */
-SlideMode.prototype.toggleSlideshow_ = function() {
-  if (this.slideShowTimeout_) {
-    clearInterval(this.slideShowTimeout_);
-    this.slideShowTimeout_ = null;
-  } else {
-    var self = this;
-    function nextSlide() {
-      self.selectNext(1,
-          function() { self.slideShowTimeout_ = setTimeout(nextSlide, 5000) });
-    }
-    nextSlide();
-  }
+SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
+  if (this.slideShowTimeout_)
+    clearTimeout(this.slideShowTimeout_);
+
+  this.slideShowTimeout_ = setTimeout(function() {
+        this.slideShowTimeout_ = null;
+        this.selectNext(1);
+      }.bind(this),
+      opt_interval || SlideMode.SLIDESHOW_INTERVAL);
 };
 
 /**
@@ -751,10 +922,29 @@ SlideMode.prototype.isEditing = function() {
 };
 
 /**
- * Activate/deactivate editor.
+ * Stop editing.
  * @private
  */
-SlideMode.prototype.onEdit_ = function() {
+SlideMode.prototype.stopEditing_ = function() {
+  if (this.isEditing())
+    this.toggleEditor_();
+};
+
+/**
+ * Activate/deactivate editor.
+ * @param {Event} opt_event Event.
+ * @private
+ */
+SlideMode.prototype.toggleEditor_ = function(opt_event) {
+  if (opt_event)  // Caused by user action, notify the Gallery.
+    cr.dispatchSimpleEvent(this, 'useraction');
+
+  if (!this.active_) {
+    this.enter(this.toggleEditor_.bind(this));
+    return;
+  }
+
+  this.stopSlideshow_();
   if (!this.isEditing() && this.isShowingVideo_())
     return;  // No editing for videos.
 
@@ -770,8 +960,6 @@ SlideMode.prototype.onEdit_ = function() {
   }
 
   ImageUtil.setAttribute(this.editButton_, 'pressed', this.isEditing());
-
-  cr.dispatchSimpleEvent(this, 'edit');
 };
 
 /**

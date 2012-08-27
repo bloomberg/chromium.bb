@@ -28,6 +28,9 @@ function Gallery(context) {
   this.context_ = context;
   this.metadataCache_ = context.metadataCache;
 
+  this.dataModel_ = new cr.ui.ArrayDataModel([]);
+  this.selectionModel_ = new cr.ui.ListSelectionModel();
+
   var strf = context.displayStringFunction;
   this.displayStringFunction_ = function(id, formatArgs) {
     var args = Array.prototype.slice.call(arguments);
@@ -45,10 +48,11 @@ function Gallery(context) {
  * @param {Object} context Gallery context.
  * @param {Array.<string>} urls Array of image urls.
  * @param {string} selectedUrl Selected url.
+ * @param {boolean} opt_grid True if open in the grid view.
  */
-Gallery.open = function(context, urls, selectedUrl) {
+Gallery.open = function(context, urls, selectedUrl, opt_grid) {
   Gallery.instance = new Gallery(context);
-  Gallery.instance.load(urls, selectedUrl);
+  Gallery.instance.load(urls, selectedUrl, opt_grid);
 };
 
 /**
@@ -90,7 +94,7 @@ Gallery.openStandalone = function(path) {
   }
 
   function onNameChange(name) {
-    window.top.document.title = name;
+    window.top.document.title = name || currentDir.name;
 
     var newPath = currentDir.fullPath + '/' + name;
     var location = document.location.origin + document.location.pathname +
@@ -104,6 +108,7 @@ Gallery.openStandalone = function(path) {
   }
 
   function open() {
+    urls.sort();
     Gallery.getFileBrowserPrivate().getStrings(function(strings) {
       loadTimeData.data = strings;
       var context = {
@@ -114,7 +119,7 @@ Gallery.openStandalone = function(path) {
         onClose: onClose,
         displayStringFunction: strf
       };
-      Gallery.open(context, urls, selectedUrl || urls[0]);
+      Gallery.open(context, urls, selectedUrl, !selectedUrl);
     });
   }
 };
@@ -194,19 +199,41 @@ Gallery.prototype.initDom_ = function() {
   this.prompt_ = new ImageEditor.Prompt(
       this.container_, this.displayStringFunction_);
 
-  this.slideMode_ = new SlideMode(this.container_, this.toolbar_, this.prompt_,
-      this.context_, this.displayStringFunction_);
-  this.slideMode_.addEventListener('edit', this.onEdit_.bind(this));
-  this.slideMode_.addEventListener('selection', this.onSelection_.bind(this));
+  this.modeButton_ = util.createChild(this.toolbar_, 'button mode');
+  this.modeButton_.addEventListener('click', this.toggleMode_.bind(this, null));
 
-  this.shareMode_ = new ShareMode(
-      this.slideMode_.editor_, this.container_, this.toolbar_,
-      this.onShare_.bind(this), this.executeWhenReady.bind(this),
-      this.displayStringFunction_);
+  this.gridMode_ = new GridMode(this.container_, content,
+      this.dataModel_, this.selectionModel_, this.metadataCache_,
+      this.toggleMode_.bind(this, null));
+
+  this.slideMode_ = new SlideMode(this.container_, content,
+      this.toolbar_, this.prompt_,
+      this.dataModel_, this.selectionModel_,
+      this.context_, this.displayStringFunction_);
+
+  var deleteButton = this.document_.createElement('div');
+  deleteButton.className = 'button delete';
+  deleteButton.title = this.displayStringFunction_('delete');
+  deleteButton.addEventListener('click', this.onDelete_.bind(this));
+  this.toolbar_.insertBefore(
+      deleteButton, this.toolbar_.querySelector('.edit'));
+
+  this.shareButton_ = util.createChild(this.toolbar_, 'button share');
+  this.shareButton_.title = this.displayStringFunction_('share');
+  this.shareButton_.addEventListener('click', this.toggleShare_.bind(this));
+
+  this.shareMenu_ = util.createChild(this.container_, 'share-menu');
+  this.shareMenu_.hidden = true;
+  util.createChild(this.shareMenu_, 'bubble-point');
 
   Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
     this.originalFullscreen_ = fullscreen;
   }.bind(this));
+
+  this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
+  this.slideMode_.addEventListener('content', this.onContentChange_.bind(this));
+  this.slideMode_.addEventListener('namechange', this.onSelection_.bind(this));
+  this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
 };
 
 /**
@@ -214,19 +241,27 @@ Gallery.prototype.initDom_ = function() {
  *
  * @param {Array.<string>} urls Array of urls.
  * @param {string} selectedUrl Selected url.
+ * @param {boolean} opt_grid True if open in the grid view.
  */
-Gallery.prototype.load = function(urls, selectedUrl) {
-  this.items_ = [];
+Gallery.prototype.load = function(urls, selectedUrl, opt_grid) {
+  var items = [];
   for (var index = 0; index < urls.length; ++index) {
-    this.items_.push(new Gallery.Item(urls[index]));
+    items.push(new Gallery.Item(urls[index]));
   }
+  this.dataModel_.push.apply(this.dataModel_, items);
 
   var selectedIndex = urls.indexOf(selectedUrl);
-  this.slideMode_.load(this.items_, selectedIndex, function() {
-    // Flash the toolbar briefly to show it is there.
-    this.inactivityWatcher_.startActivity();
-    this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
-  }.bind(this));
+  if (selectedIndex >= 0)
+    this.selectionModel_.setIndexSelected(selectedIndex, true);
+  else
+    this.onSelection_();
+
+  this.currentMode_ = opt_grid ? this.gridMode_ : this.slideMode_;
+  this.currentMode_.enter(function() {
+      // Flash the toolbar briefly to show it is there.
+      this.inactivityWatcher_.startActivity();
+      this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
+    }.bind(this));
 };
 
 /**
@@ -255,8 +290,10 @@ Gallery.prototype.onClose_ = function() {
  * @param {function} callback Function to execute.
  */
 Gallery.prototype.executeWhenReady = function(callback) {
-  //TODO(kaznacheev): Execute directly when in grid mode.
-  this.slideMode_.editor_.executeWhenReady(callback);
+  if (this.currentMode_ == this.slideMode_)
+    this.slideMode_.editor_.executeWhenReady(callback);
+  else
+    callback();
 };
 
 /**
@@ -277,7 +314,8 @@ Gallery.toggleFullscreen = function() {
  * @return {boolean} True if some tool is currently active.
  */
 Gallery.prototype.hasActiveTool = function() {
-  return this.slideMode_.isEditing() || this.isSharing_() || this.isRenaming_();
+  return this.currentMode_.hasActiveTool() ||
+      this.isSharing_() || this.isRenaming_();
 };
 
 /**
@@ -292,22 +330,51 @@ Gallery.prototype.checkActivity_ = function() {
 };
 
 /**
-* Edit toggle event handler.
+* External user action event handler.
 * @private
 */
-Gallery.prototype.onEdit_ = function() {
-  // The user has just clicked on the Edit button. Dismiss the Share menu.
-  if (this.isSharing_())
-    this.onShare_();
+Gallery.prototype.onUserAction_ = function() {
+  this.closeShareMenu_();
   this.checkActivity_();
+};
+
+/**
+ * Mode toggle event handler.
+ * @param {function} opt_callback Callback.
+ * @private
+ */
+Gallery.prototype.toggleMode_ = function(opt_callback) {
+  this.currentMode_.leave(function() {
+    if (this.currentMode_ == this.gridMode_) {
+      this.currentMode_ = this.slideMode_;
+      this.modeButton_.title = this.displayStringFunction_('mosaic');
+    } else {
+      this.currentMode_ = this.gridMode_;
+      this.modeButton_.title = this.displayStringFunction_('slide');
+    }
+    this.currentMode_.enter(opt_callback);
+    this.updateFilename_();
+  }.bind(this));
+};
+
+/**
+ * Delete event handler.
+ * @private
+ */
+Gallery.prototype.onDelete_ = function() {
+  var indexes = this.selectionModel_.selectedIndexes;
+  for (var i = 0; i != indexes.length; i++)
+    this.dataModel_.splice(indexes[i], 1);
+
+  // TODO: delete actual files.
 };
 
 /**
  * @return {Array.<Gallery.Item>} Current selection.
  */
 Gallery.prototype.getSelectedItems = function() {
-  // TODO(kaznacheev) support multiple selection grid/mosaic mode.
-  return [this.slideMode_.getSelectedItem()];
+  return this.selectionModel_.selectedIndexes.map(
+      this.dataModel_.item.bind(this.dataModel_));
 };
 
 /**
@@ -326,8 +393,16 @@ Gallery.prototype.getSingleSelectedItem = function() {
 */
 Gallery.prototype.onSelection_ = function() {
   this.updateFilename_();
-  this.shareMode_.updateMenu(
-      this.getSelectedItems().map(function(item) { return item.getUrl() }));
+  this.updateShareMenu_();
+};
+
+/**
+* Content change event handler.
+* @private
+*/
+Gallery.prototype.onContentChange_ = function() {
+  this.updateFilename_();
+  this.gridMode_.updateThumbnail(this.getSingleSelectedItem());
 };
 
 /**
@@ -336,7 +411,10 @@ Gallery.prototype.onSelection_ = function() {
  * @private
  */
 Gallery.prototype.onKeyDown_ = function(event) {
-  if (this.slideMode_.onKeyDown(event))
+  var wasSharing = this.isSharing_();
+  this.closeShareMenu_();
+
+  if (this.currentMode_.onKeyDown(event))
     return;
 
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
@@ -346,9 +424,8 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
 
     case 'U+001B':  // Escape
-      if (this.isSharing_())
-        this.onShare_();
-      else
+      // Swallow Esc if it closed the Share menu, otherwise close the Gallery.
+      if (!wasSharing)
         this.onClose_();
       break;
   }
@@ -362,11 +439,21 @@ Gallery.prototype.onKeyDown_ = function(event) {
  * @private
  */
 Gallery.prototype.updateFilename_ = function() {
-  var fullName = this.getSingleSelectedItem().getFileName();
+  var displayName = '';
+  var fullName = '';
 
-  this.context_.onNameChange(fullName);
+  var selectedItems = this.getSelectedItems();
+  if (selectedItems.length == 1) {
+    fullName = selectedItems[0].getFileName();
+    displayName = ImageUtil.getFileNameFromFullName(fullName);
+  } else if (selectedItems.length > 1) {
+    displayName =
+        this.displayStringFunction_('ITEMS_SELECTED', selectedItems.length);
+  }
 
-  var displayName = ImageUtil.getFileNameFromFullName(fullName);
+  this.context_.onNameChange(
+      this.currentMode_ == this.slideMode_ ? fullName : '');
+
   this.filenameEdit_.value = displayName;
   this.filenameText_.textContent = displayName;
 };
@@ -378,6 +465,10 @@ Gallery.prototype.updateFilename_ = function() {
 Gallery.prototype.onFilenameClick_ = function() {
   // We can't rename files in readonly directory.
   if (this.context_.readonlyDirName)
+    return;
+
+  // We can only rename a single file.
+  if (this.getSelectedItems().length != 1)
     return;
 
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
@@ -407,6 +498,7 @@ Gallery.prototype.onFilenameEditBlur_ = function() {
 
   var onSuccess = function() {
     this.slideMode_.updateSelectedUrl_(oldUrl, item.getUrl());
+    this.updateFilename_();
   }.bind(this);
 
   if (this.filenameEdit_.value) {
@@ -449,130 +541,211 @@ Gallery.prototype.isRenaming_ = function() {
  * @private
  */
 Gallery.prototype.onContentClick_ = function() {
+  this.closeShareMenu_();
   this.filenameEdit_.blur();
 };
 
 // Share button support.
 
 /**
- * @return {boolean} True if the Share mode is active.
+ * @return {boolean} True if the Share menu is active.
  * @private
  */
 Gallery.prototype.isSharing_ = function() {
-  return this.shareMode_.isActive();
+  return !this.shareMenu_.hidden;
+};
+
+/**
+ * Close Share menu if it is open.
+ * @private
+ */
+Gallery.prototype.closeShareMenu_ = function() {
+  if (this.isSharing_())
+    this.toggleShare_();
 };
 
 /**
  * Share button handler.
- * @param {Event} event Event.
  * @private
  */
-Gallery.prototype.onShare_ = function(event) {
-  this.shareMode_.toggle(event);
+Gallery.prototype.toggleShare_ = function() {
+  if (!this.shareButton_.hasAttribute('disabled'))
+    this.shareMenu_.hidden = !this.shareMenu_.hidden;
   this.checkActivity_();
 };
 
 /**
- *
- * @param {ImageEditor} editor Editor.
- * @param {Element} container Container element.
- * @param {Element} toolbar Toolbar element.
- * @param {function} onClick Click handler.
- * @param {function(function())} actionCallback Function to execute the action.
- * @param {function(string):string} displayStringFunction String formatting
- *     function.
- * @constructor
- */
-function ShareMode(editor, container, toolbar,
-                   onClick, actionCallback, displayStringFunction) {
-  ImageEditor.Mode.call(this, 'share');
-
-  this.message_ = null;
-
-  var button = util.createChild(toolbar, 'button share');
-  button.textContent = displayStringFunction('share');
-  button.addEventListener('click', onClick);
-  this.bind(editor, button);
-
-  this.actionCallback_ = actionCallback;
-
-  this.menu_ = util.createChild(container, 'share-menu');
-  this.menu_.hidden = true;
-
-  util.createChild(this.menu_, 'bubble-point');
-}
-
-ShareMode.prototype = { __proto__: ImageEditor.Mode.prototype };
-
-/**
- * Shows share mode UI.
- */
-ShareMode.prototype.setUp = function() {
-  ImageEditor.Mode.prototype.setUp.apply(this, arguments);
-  this.menu_.hidden = false;
-  ImageUtil.setAttribute(this.button_, 'pressed', false);
-};
-
-/**
- * Hides share mode UI.
- */
-ShareMode.prototype.cleanUpUI = function() {
-  ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
-  this.menu_.hidden = true;
-};
-
-/**
- * @return {boolean} True if the menu is currently open.
- */
-ShareMode.prototype.isActive = function() {
-  return !this.menu_.hidden;
-};
-
-/**
- * Show/hide the menu.
- * @param {Event} event Event.
- */
-ShareMode.prototype.toggle = function(event) {
-  this.editor_.enterMode(this, event);
-};
-
-/**
  * Update available actions list based on the currently selected urls.
- *
- * @param {Array.<string>} urls Array of urls.
+ * @private.
  */
-ShareMode.prototype.updateMenu = function(urls) {
+Gallery.prototype.updateShareMenu_ = function() {
+  var urls =
+      this.getSelectedItems().map(function(item) { return item.getUrl() });
+
   var internalId = util.getExtensionId();
   function isShareAction(task) {
     var task_parts = task.taskId.split('|');
     return task_parts[0] != internalId;
   }
 
-  var items = this.menu_.querySelectorAll('.item');
-  for (var i = 0; i != items.length; i++) {
-    items[i].parentNode.removeChild(items[i]);
-  }
-
   var api = Gallery.getFileBrowserPrivate();
   var mimeTypes = [];  // TODO(kaznacheev) Collect mime types properly.
   api.getFileTasks(urls, mimeTypes, function(tasks) {
-    for (var i = 0; i != tasks.length; i++) {
-      var task = tasks[i];
-      if (!isShareAction(task)) continue;
-
-      var item = document.createElement('div');
-      item.className = 'item';
-      this.menu_.appendChild(item);
-
-      item.textContent = task.title;
-      item.style.backgroundImage = 'url(' + task.iconUrl + ')';
-      item.addEventListener('click', this.actionCallback_.bind(null,
-          api.executeTask.bind(api, task.taskId, urls)));
+    var wasHidden = this.shareMenu_.hidden;
+    this.shareMenu_.hidden = true;
+    var items = this.shareMenu_.querySelectorAll('.item');
+    for (var i = 0; i != items.length; i++) {
+      items[i].parentNode.removeChild(items[i]);
     }
 
-    if (this.menu_.firstChild)
-      this.button_.removeAttribute('disabled');
-    else
-      this.button_.setAttribute('disabled', 'true');
+    for (var t = 0; t != tasks.length; t++) {
+      var task = tasks[t];
+      if (!isShareAction(task)) continue;
+
+      var item = util.createChild(this.shareMenu_, 'item');
+      item.textContent = task.title;
+      item.style.backgroundImage = 'url(' + task.iconUrl + ')';
+      item.addEventListener('click', function(taskId) {
+        this.toggleShare_();  // Hide the menu.
+        this.executeWhenReady(api.executeTask.bind(api, taskId, urls));
+      }.bind(this, task.taskId));
+    }
+
+    var empty = this.shareMenu_.querySelector('.item') == null;
+    ImageUtil.setAttribute(this.shareButton_, 'disabled', empty);
+    this.shareMenu_.hidden = wasHidden || empty;
   }.bind(this));
+};
+
+/**
+ * @param {Element} container Main container.
+ * @param {Element} content Content container.
+ * @param {cr.ui.ArrayDataModel} dataModel Data model.
+ * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {function} openSelectedItem Function to open the selected item in the
+ *   slide mode.
+ * @constructor
+ */
+function GridMode(container, content, dataModel, selectionModel,
+                  metadataCache, openSelectedItem) {
+  this.container_ = container;
+  this.metadataCache_ = metadataCache;
+  this.grid_ = util.createChild(content, 'thumbnail-grid', 'grid');
+  cr.ui.Grid.decorate(this.grid_);
+
+  this.grid_.dataModel = dataModel;
+  this.grid_.selectionModel = selectionModel;
+  this.grid_.itemConstructor =
+      GridMode.Item.bind(null, container.ownerDocument, metadataCache);
+
+  this.container_.ownerDocument.defaultView.addEventListener(
+      'resize', this.redraw_.bind(this));
+
+  this.openSelectedItem_ = openSelectedItem;
+  this.grid_.addEventListener('dblclick', this.openSelectedItem_);
+}
+
+/**
+ * Enter the mode.
+ * @param {function} opt_callback Callback.
+ */
+GridMode.prototype.enter = function(opt_callback) {
+  this.container_.setAttribute('mode', 'grid');
+  this.redraw_();
+  if (opt_callback) opt_callback();
+};
+
+/**
+ * Leave the mode.
+ * @param {function} opt_callback Callback.
+ */
+GridMode.prototype.leave = function(opt_callback) {
+  if (opt_callback) opt_callback();
+};
+
+/**
+ * Redraw the grid.
+ * @private
+ */
+GridMode.prototype.redraw_ = function() {
+  this.grid_.startBatchUpdates();
+  setTimeout(function() {
+    this.grid_.columns = 0;
+    this.grid_.redraw();
+    this.grid_.endBatchUpdates();
+  }.bind(this), 0);
+};
+
+/**
+ * @param {Gallery.Item} item The updated item.
+ */
+GridMode.prototype.updateThumbnail = function(item) {
+  var listItems = this.grid_.querySelectorAll('li');
+  for (var i = 0; i != listItems.length; i++) {
+    GridMode.Item.updateThumbnail(listItems[i], this.metadataCache_, item);
+  }
+};
+
+/**
+ * @param {Event} event Event.
+ * @return {boolean} True if handled.
+ */
+GridMode.prototype.onKeyDown = function(event) {
+  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+    case 'Enter':
+      this.openSelectedItem_();
+      return true;
+  }
+
+  return false;
+};
+
+/**
+ * @return {boolean} Always true (no tools fading in the Grid mode).
+ */
+GridMode.prototype.hasActiveTool = function() {
+  return true;
+};
+
+/**
+ * @param {Document} document Document.
+ * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {Gallery.Item} item Item.
+ * @return {Element} Newly created grid item.
+ * @constructor
+ */
+GridMode.Item = function(document, metadataCache, item) {
+  var li = document.createElement('li');
+  li.__proto__ = GridMode.Item.prototype;
+  li.className = 'thumbnail-item';
+  li.item = item;
+
+  var box = util.createChild(li, 'img-container');
+
+  GridMode.Item.updateThumbnail(li, metadataCache, item);
+  return li;
+};
+
+/**
+ * @param {Element} li Grid item.
+ * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {Gallery.Item} item Gallery item.
+ */
+GridMode.Item.updateThumbnail = function(li, metadataCache, item) {
+  if (item != li.item)
+    return;
+
+  var box = li.querySelector('.img-container');
+  var url = item.getUrl();
+  metadataCache.get(url, Gallery.METADATA_TYPE,
+      function(metadata) {
+        new ThumbnailLoader(url, metadata).load(box, false /* fit */);
+      });
+};
+
+GridMode.Item.prototype = {
+  __proto__: cr.ui.ListItem.prototype,
+  get label() {},
+  set label(value) {}
 };

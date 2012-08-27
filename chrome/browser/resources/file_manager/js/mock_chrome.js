@@ -450,6 +450,7 @@ chrome.fileBrowserPrivate = {
       FILE_IS_DIRECTORY: 'Folder',
 
       CHROMEOS_RELEASE_BOARD: 'stumpy',
+      BROWSER_VERSION_MODIFIER: '',
 
       GDATA_DIRECTORY_LABEL: 'Google Drive',
       ENABLE_GDATA: true,
@@ -490,6 +491,7 @@ chrome.fileBrowserPrivate = {
 
       MOUNT_ARCHIVE: 'Open',
       FORMAT_DEVICE: 'Format device',
+      IMPORT_PHOTOS_BUTTON_LABEL: 'Import photos',
 
       ACTION_VIEW: 'View',
       ACTION_OPEN: 'Open',
@@ -524,6 +526,14 @@ chrome.fileBrowserPrivate = {
       GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be saved in the Downloads folder.',
       GALLERY_IMAGE_ERROR: 'This file could not be displayed',
       GALLERY_VIDEO_ERROR: 'This file could not be played',
+
+      GALLERY_ITEMS_SELECTED: '$1 items selected',
+      GALLERY_NO_IMAGES: 'No images in this directory.',
+      GALLERY_MOSAIC: 'Mosaic view',
+      GALLERY_SLIDE: 'Slide view',
+      GALLERY_SLIDESHOW: 'Slide show',
+      GALLERY_DELETE: 'Delete',
+
       AUDIO_ERROR: 'This file could not be played',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
