@@ -42,7 +42,7 @@ class ChromeContentClient : public content::ContentClient {
                              sandbox::TargetPolicy* policy) OVERRIDE;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   virtual bool GetSandboxProfileForSandboxType(
       int sandbox_type,
       int* sandbox_profile_resource_id) const OVERRIDE;

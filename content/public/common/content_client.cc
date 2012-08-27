@@ -79,7 +79,7 @@ bool ContentClient::SandboxPlugin(CommandLine* command_line,
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 bool ContentClient::GetSandboxProfileForSandboxType(
     int sandbox_type,
     int* sandbox_profile_resource_id) const {

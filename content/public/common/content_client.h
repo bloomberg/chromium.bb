@@ -128,7 +128,7 @@ class CONTENT_EXPORT ContentClient {
                              sandbox::TargetPolicy* policy);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // Allows the embedder to define a new |sandbox_type| by mapping it to the
   // resource ID corresponding to the sandbox profile to use. The legal values
   // for |sandbox_type| are defined by the embedder and should start with
