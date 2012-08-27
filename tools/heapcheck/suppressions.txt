@@ -1493,3 +1493,29 @@
    fun:chromeos::DBusThreadManager::Initialize
    fun:chromeos::KioskModeIdleLogoutTest::SetUp
 }
+{
+   bug_144913_b
+   Heapcheck:Leak
+   fun:chromeos::DBusThreadManager::Initialize
+   fun:chromeos::KioskModeIdleLogoutTest::SetUp
+}
+{
+   bug_144913_c
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:MessageLoopForUI::MessageLoopForUI
+   fun:AshTestBase
+   fun:KioskModeIdleLogoutTest
+   fun:KioskModeIdleLogoutTest_CheckObserversAfterUserLogin_Test
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
+{
+   bug_144913_d
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:MessageLoopForUI::MessageLoopForUI
+   fun:AshTestBase
+   fun:KioskModeIdleLogoutTest
+   fun:KioskModeIdleLogoutTest_CheckObserversBeforeUserLogin_Test
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
