@@ -237,10 +237,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   // Commit the search by pressing Enter.
   browser()->window()->GetLocationBar()->AcceptInput();
 
-  // After the commit, Instant should not be showing, or even have a preview.
-  EXPECT_FALSE(instant()->GetPreviewContents());
+  // After the commit, Instant should not be showing.
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
+
+  // The old loader is deleted and a new one is created.
+  EXPECT_TRUE(instant()->GetPreviewContents());
+  EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
   // Check that the current active tab is indeed what was once the preview.
   EXPECT_EQ(preview_tab, chrome::GetActiveTabContents(browser()));
@@ -295,10 +298,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
 
-  // After the commit, Instant should not be showing, or even have a preview.
-  EXPECT_FALSE(instant()->GetPreviewContents());
+  // After the commit, Instant should not be showing.
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
+
+  // The old loader is deleted and a new one is created.
+  EXPECT_TRUE(instant()->GetPreviewContents());
+  EXPECT_NE(instant()->GetPreviewContents(), preview_tab);
 
   // Check that the current active tab is indeed what was once the preview.
   EXPECT_EQ(preview_tab, chrome::GetActiveTabContents(browser()));
@@ -825,3 +831,34 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NewWindowDismissesInstant) {
   EXPECT_FALSE(instant()->is_showing());
 }
 #endif
+
+// Tests that:
+// - Instant loader is recreated on OnStaleLoader call when it is hidden.
+// - Instant loader is not recreated on OnStaleLoader call when it is visible.
+// - Instant loader will be recreated when omnibox loses focus after the timer
+//    has stopped.
+IN_PROC_BROWSER_TEST_F(InstantTest, InstantLoaderRefresh) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
+  instant()->OnAutocompleteGotFocus();
+  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+
+  // Instant is not showing, so a refresh should create a new preview contents.
+  EXPECT_TRUE(instant()->loader()->supports_instant());
+  instant()->OnStaleLoader();
+  EXPECT_FALSE(instant()->loader()->supports_instant());
+  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+
+  // Show Instant.
+  SetOmniboxText("query");
+  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+
+  // Refresh the loader, the preview contents should remain the same.
+  instant()->OnStaleLoader();
+  EXPECT_TRUE(instant()->is_showing());
+
+  instant()->stale_loader_timer_.Stop();
+  // The refresh should happen once the omnibox loses focus.
+  EXPECT_TRUE(instant()->loader()->supports_instant());
+  instant()->OnAutocompleteLostFocus(NULL);
+  EXPECT_FALSE(instant()->loader()->supports_instant());
+}

@@ -54,6 +54,10 @@ const int kUpdateBoundsDelayMS = 1000;
 // before we give up and blacklist it for the rest of the browsing session.
 const int kMaxInstantSupportFailures = 10;
 
+// If an Instant page has not been used in these many milliseconds, it is
+// reloaded so that the page does not become stale.
+const int kStaleLoaderTimeoutMS = 3 * 3600 * 1000;
+
 std::string ModeToString(InstantController::Mode mode) {
   switch (mode) {
     case InstantController::INSTANT:  return "_Instant";
@@ -289,6 +293,11 @@ TabContents* InstantController::CommitCurrentPreview(InstantCommitType type) {
   preview->web_contents()->GetController().CopyStateFromAndPrune(
       &active_tab->web_contents()->GetController());
   delegate_->CommitInstant(preview);
+
+  // Try to create another loader immediately so that it is ready for the next
+  // user interaction.
+  CreateDefaultLoader();
+
   return preview;
 }
 
@@ -349,24 +358,31 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   return preview;
 }
 
-// TODO(sreeram): Since we never delete the loader except when committing
-// Instant, the loader may have a very stale page. Reload it when stale.
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
   DCHECK(!is_showing_ || GetPreviewContents());
 
-  // If the preview is not showing, nothing to do.
-  if (!is_showing_ || !GetPreviewContents())
+  // If there is no preview, nothing to do.
+  if (!GetPreviewContents())
     return;
 
+  // If the preview is not showing, only need to check for loader staleness.
+  if (!is_showing_) {
+    MaybeOnStaleLoader();
+    return;
+  }
+
 #if defined(OS_MACOSX)
-  if (!loader_->IsPointerDownFromActivate())
+  if (!loader_->IsPointerDownFromActivate()) {
     Hide();
+    MaybeOnStaleLoader();
+  }
 #else
   content::RenderWidgetHostView* rwhv =
       GetPreviewContents()->web_contents()->GetRenderWidgetHostView();
   if (!view_gaining_focus || !rwhv) {
     Hide();
+    MaybeOnStaleLoader();
     return;
   }
 
@@ -396,8 +412,10 @@ void InstantController::OnAutocompleteLostFocus(
 
     // If the mouse is not down, focus is not going to the renderer. Someone
     // else moved focus and we shouldn't commit.
-    if (!loader_->IsPointerDownFromActivate())
+    if (!loader_->IsPointerDownFromActivate()) {
       Hide();
+      MaybeOnStaleLoader();
+    }
 
     return;
   }
@@ -419,27 +437,12 @@ void InstantController::OnAutocompleteLostFocus(
   }
 
   Hide();
+  MaybeOnStaleLoader();
 #endif
 }
 
 void InstantController::OnAutocompleteGotFocus() {
-  const TabContents* active_tab = delegate_->GetActiveTabContents();
-
-  // We could get here with no active tab if the Browser is closing.
-  if (!active_tab)
-    return;
-
-  // Since we don't have any autocomplete match to work with, we'll just use
-  // the default search provider's Instant URL.
-  const TemplateURL* template_url =
-      TemplateURLServiceFactory::GetForProfile(active_tab->profile())->
-                                 GetDefaultSearchProvider();
-
-  std::string instant_url;
-  if (!GetInstantURL(template_url, &instant_url))
-    return;
-
-  ResetLoader(instant_url, active_tab);
+  CreateDefaultLoader();
 }
 
 bool InstantController::commit_on_pointer_release() const {
@@ -537,10 +540,50 @@ void InstantController::ResetLoader(const std::string& instant_url,
     DeleteLoader();
 
   if (!GetPreviewContents()) {
+    DCHECK(!loader_.get());
     loader_.reset(new InstantLoader(this, instant_url, active_tab));
     loader_->Init();
     AddPreviewUsageForHistogram(mode_, PREVIEW_CREATED);
+
+    // Reset the loader timer.
+    stale_loader_timer_.Stop();
+    stale_loader_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kStaleLoaderTimeoutMS), this,
+        &InstantController::OnStaleLoader);
   }
+}
+
+void InstantController::CreateDefaultLoader() {
+  const TabContents* active_tab = delegate_->GetActiveTabContents();
+
+  // We could get here with no active tab if the Browser is closing.
+  if (!active_tab)
+    return;
+
+  const TemplateURL* template_url =
+      TemplateURLServiceFactory::GetForProfile(active_tab->profile())->
+                                 GetDefaultSearchProvider();
+  std::string instant_url;
+  if (!GetInstantURL(template_url, &instant_url))
+    return;
+
+  ResetLoader(instant_url, active_tab);
+}
+
+void InstantController::OnStaleLoader() {
+  // If the loader is showing, do not delete it. It will get deleted the next
+  // time the autocomplete loses focus.
+  if (is_showing_)
+    return;
+
+  DeleteLoader();
+  CreateDefaultLoader();
+}
+
+void InstantController::MaybeOnStaleLoader() {
+  if (!stale_loader_timer_.IsRunning())
+    OnStaleLoader();
 }
 
 void InstantController::DeleteLoader() {

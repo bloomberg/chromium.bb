@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -152,10 +153,24 @@ class InstantController : public InstantLoaderDelegate {
 #endif
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
+
   // Creates a new loader if necessary (for example, if the |instant_url| has
   // changed since the last time we created the loader).
   void ResetLoader(const std::string& instant_url,
                    const TabContents* active_tab);
+
+  // Ensures that the |loader_| uses the default Instant URL, recreating it if
+  // necessary. Will not do anything if the Instant URL could not be determined
+  // or the active tab is NULL (browser is shutting down).
+  void CreateDefaultLoader();
+
+  // If the |loader_| is not showing, it is deleted and recreated. Else the
+  // refresh is skipped and the next refresh is scheduled.
+  void OnStaleLoader();
+
+  // Calls OnStaleLoader if |stale_loader_timer_| is not running.
+  void MaybeOnStaleLoader();
 
   // Destroys the |loader_| and its preview contents.
   void DeleteLoader();
@@ -222,6 +237,9 @@ class InstantController : public InstantLoaderDelegate {
 
   // Timer used to update the bounds of the omnibox.
   base::OneShotTimer<InstantController> update_bounds_timer_;
+
+  // Timer used to ensure that the Instant page does not get too stale.
+  base::OneShotTimer<InstantController> stale_loader_timer_;
 
   // For each key K => value N, the map says that we found that the search
   // engine identified by Instant URL K didn't support the Instant API in each
