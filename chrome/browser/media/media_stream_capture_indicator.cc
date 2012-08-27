@@ -423,27 +423,27 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   CaptureDeviceTabs::iterator iter = std::find_if(
       tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
-  DCHECK(iter != tabs_.end());
 
-  content::MediaStreamDevices::const_iterator dev = devices.begin();
-  for (; dev != devices.end(); ++dev) {
-    DCHECK(dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
-           dev->type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-    if (dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
-      --iter->audio_ref_count;
-    else
-      --iter->video_ref_count;
+  if (iter != tabs_.end()) {
+    content::MediaStreamDevices::const_iterator dev = devices.begin();
+    for (; dev != devices.end(); ++dev) {
+      DCHECK(dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
+             dev->type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
+      if (dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
+        --iter->audio_ref_count;
+      else
+        --iter->video_ref_count;
 
-    DCHECK_GE(iter->audio_ref_count, 0);
-    DCHECK_GE(iter->video_ref_count, 0);
+      DCHECK_GE(iter->audio_ref_count, 0);
+      DCHECK_GE(iter->video_ref_count, 0);
+    }
+
+    // Remove the tab if all the devices have been closed.
+    if (iter->audio_ref_count == 0 && iter->video_ref_count == 0)
+      tabs_.erase(iter);
   }
-
-  // Remove the tab if all the devices have been closed.
-  if (iter->audio_ref_count == 0 && iter->video_ref_count == 0)
-    tabs_.erase(iter);
 
   UpdateStatusTrayIconContextMenu();
 }
