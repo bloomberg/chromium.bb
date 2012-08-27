@@ -53,13 +53,6 @@ class UI_EXPORT ImageSkia {
   // Copies a reference to |other|'s storage.
   ImageSkia& operator=(const ImageSkia& other);
 
-  // Converts from SkBitmap.
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  ImageSkia& operator=(const SkBitmap& other);
-
 #if defined(OS_WIN)
   // Converts to gfx::ImageSkiaRep and SkBitmap.
   // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is

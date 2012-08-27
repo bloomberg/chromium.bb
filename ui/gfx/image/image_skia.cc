@@ -160,11 +160,6 @@ ImageSkia& ImageSkia::operator=(const ImageSkia& other) {
   return *this;
 }
 
-ImageSkia& ImageSkia::operator=(const SkBitmap& other) {
-  Init(ImageSkiaRep(other, ui::SCALE_FACTOR_100P));
-  return *this;
-}
-
 ImageSkia::~ImageSkia() {
 }
 
