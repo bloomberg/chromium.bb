@@ -61,6 +61,8 @@ bool ModuleSystem::IsPresentInCurrentContext() {
 
 // static
 void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
+  v8::HandleScope handle_scope;
+
   v8::Handle<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
     LOG(ERROR) << "try_catch has no message";
@@ -78,8 +80,13 @@ void ModuleSystem::DumpException(const v8::TryCatch& try_catch) {
     error_message = *v8::String::Utf8Value(message->Get());
 
   std::string stack_trace = "<stack trace unavailable>";
-  if (!try_catch.StackTrace().IsEmpty())
-    stack_trace = *v8::String::Utf8Value(try_catch.StackTrace());
+  if (!try_catch.StackTrace().IsEmpty()) {
+    v8::String::Utf8Value stack_value(try_catch.StackTrace());
+    if (*stack_value)
+      stack_trace.assign(*stack_value, stack_value.length());
+    else
+      stack_trace = "<could not convert stack trace to string>";
+  }
 
   LOG(ERROR) << "[" << resource_name << "(" << message->GetLineNumber() << ")] "
              << error_message
