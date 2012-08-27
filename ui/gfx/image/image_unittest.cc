@@ -47,6 +47,28 @@ TEST_F(ImageTest, EmptyImage) {
   EXPECT_TRUE(image2.IsEmpty());
 }
 
+// Test constructing a gfx::Image from an empty PlatformImage.
+TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
+#if defined(OS_MACOSX) || defined(TOOLKIT_GTK)
+  gfx::Image image1(NULL);
+  EXPECT_TRUE(image1.IsEmpty());
+  EXPECT_EQ(0U, image1.RepresentationCount());
+#endif
+
+  // SkBitmap and gfx::ImageSkia are available on all platforms.
+  SkBitmap bitmap;
+  EXPECT_TRUE(bitmap.empty());
+  gfx::Image image2(bitmap);
+  EXPECT_TRUE(image2.IsEmpty());
+  EXPECT_EQ(0U, image2.RepresentationCount());
+
+  gfx::ImageSkia image_skia;
+  EXPECT_TRUE(image_skia.isNull());
+  gfx::Image image3(image_skia);
+  EXPECT_TRUE(image3.IsEmpty());
+  EXPECT_EQ(0U, image3.RepresentationCount());
+}
+
 TEST_F(ImageTest, SkiaToSkia) {
   gfx::Image image(gt::CreateBitmap(25, 25));
   const SkBitmap* bitmap = image.ToSkBitmap();

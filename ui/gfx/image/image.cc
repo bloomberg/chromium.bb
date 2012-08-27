@@ -315,33 +315,41 @@ Image::Image(const unsigned char* png, size_t input_size)
   AddRepresentation(rep);
 }
 
-Image::Image(const ImageSkia& image)
-    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
-  internal::ImageRepSkia* rep = new internal::ImageRepSkia(
-      new ImageSkia(image));
-  AddRepresentation(rep);
+Image::Image(const ImageSkia& image) {
+  if (!image.isNull()) {
+    storage_ = new internal::ImageStorage(Image::kImageRepSkia);
+    internal::ImageRepSkia* rep = new internal::ImageRepSkia(
+        new ImageSkia(image));
+    AddRepresentation(rep);
+  }
 }
 
-Image::Image(const SkBitmap& bitmap)
-    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
-  internal::ImageRepSkia* rep =
-      new internal::ImageRepSkia(new ImageSkia(bitmap));
-  AddRepresentation(rep);
+Image::Image(const SkBitmap& bitmap) {
+  if (!bitmap.empty()) {
+    storage_ = new internal::ImageStorage(Image::kImageRepSkia);
+    internal::ImageRepSkia* rep =
+        new internal::ImageRepSkia(new ImageSkia(bitmap));
+    AddRepresentation(rep);
+  }
 }
 
 #if defined(TOOLKIT_GTK)
-Image::Image(GdkPixbuf* pixbuf)
-    : storage_(new internal::ImageStorage(Image::kImageRepGdk)) {
-  internal::ImageRepGdk* rep = new internal::ImageRepGdk(pixbuf);
-  AddRepresentation(rep);
+Image::Image(GdkPixbuf* pixbuf) {
+  if (pixbuf) {
+    storage_ = new internal::ImageStorage(Image::kImageRepGdk);
+    internal::ImageRepGdk* rep = new internal::ImageRepGdk(pixbuf);
+    AddRepresentation(rep);
+  }
 }
 #endif
 
 #if defined(OS_MACOSX)
-Image::Image(NSImage* image)
-    : storage_(new internal::ImageStorage(Image::kImageRepCocoa)) {
-  internal::ImageRepCocoa* rep = new internal::ImageRepCocoa(image);
-  AddRepresentation(rep);
+Image::Image(NSImage* image) {
+  if (image) {
+    storage_ = new internal::ImageStorage(Image::kImageRepCocoa);
+    internal::ImageRepCocoa* rep = new internal::ImageRepCocoa(image);
+    AddRepresentation(rep);
+  }
 }
 #endif
 
