@@ -89,6 +89,9 @@ class ContentSettingsTest : public InProcessBrowserTest {
   net::TestServer https_server_;
 };
 
+// Timing out on Mac ASAN. http://crbug.com/145000
+#if !defined(OS_MACOSX) && !defined(ADDRESS_SANITIZER)
+
 // Sanity check on cookies before we do other tests. While these can be written
 // in content_browsertests, we want to verify Chrome's cookie storage and how it
 // handles incognito windows.
@@ -134,6 +137,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
       CookieSettings::Factory::GetForProfile(browser()->profile())->
           GetDefaultCookieSetting(NULL));
 }
+
+#endif  // !defined(OS_MACOSX) && !defined(ADDRESS_SANITIZER)
 
 // Verify that cookies can be allowed and set using exceptions for particular
 // website(s) when all others are blocked.
