@@ -49,7 +49,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
   container_->SetContentsView(this);
 #if defined(OS_WIN) && !defined(USE_AURA)
   static_cast<views::NativeWidgetWin*>(container_->native_widget())->
-      set_can_update_layered_window(false);
+      SetCanUpdateLayeredWindow(false);
 
   BOOL drag;
   if ((::SystemParametersInfo(SPI_GETDRAGFULLWINDOWS, 0, &drag, 0) != 0) &&

@@ -66,118 +66,6 @@ namespace views {
 
 namespace {
 
-// MoveLoopMouseWatcher is used to determine if the user canceled or completed a
-// move. win32 doesn't appear to offer a way to determine the result of a move,
-// so we install hooks to determine if we got a mouse up and assume the move
-// completed.
-class MoveLoopMouseWatcher {
- public:
-  explicit MoveLoopMouseWatcher(NativeWidgetWin* host);
-  ~MoveLoopMouseWatcher();
-
-  // Returns true if the mouse is up, or if we couldn't install the hook.
-  bool got_mouse_up() const { return got_mouse_up_; }
-
- private:
-  // Instance that owns the hook. We only allow one instance to hook the mouse
-  // at a time.
-  static MoveLoopMouseWatcher* instance_;
-
-  // Key and mouse callbacks from the hook.
-  static LRESULT CALLBACK MouseHook(int n_code, WPARAM w_param, LPARAM l_param);
-  static LRESULT CALLBACK KeyHook(int n_code, WPARAM w_param, LPARAM l_param);
-
-  void Unhook();
-
-  // NativeWidgetWin that created us.
-  NativeWidgetWin* host_;
-
-  // Did we get a mouse up?
-  bool got_mouse_up_;
-
-  // Hook identifiers.
-  HHOOK mouse_hook_;
-  HHOOK key_hook_;
-
-  DISALLOW_COPY_AND_ASSIGN(MoveLoopMouseWatcher);
-};
-
-// static
-MoveLoopMouseWatcher* MoveLoopMouseWatcher::instance_ = NULL;
-
-MoveLoopMouseWatcher::MoveLoopMouseWatcher(NativeWidgetWin* host)
-    : host_(host),
-      got_mouse_up_(false),
-      mouse_hook_(NULL),
-      key_hook_(NULL) {
-  // Only one instance can be active at a time.
-  if (instance_)
-    instance_->Unhook();
-
-  mouse_hook_ = SetWindowsHookEx(
-      WH_MOUSE, &MouseHook, NULL, GetCurrentThreadId());
-  if (mouse_hook_) {
-    instance_ = this;
-    // We don't care if setting the key hook succeeded.
-    key_hook_ = SetWindowsHookEx(
-        WH_KEYBOARD, &KeyHook, NULL, GetCurrentThreadId());
-  }
-  if (instance_ != this) {
-    // Failed installation. Assume we got a mouse up in this case, otherwise
-    // we'll think all drags were canceled.
-    got_mouse_up_ = true;
-  }
-}
-
-MoveLoopMouseWatcher::~MoveLoopMouseWatcher() {
-  Unhook();
-}
-
-void MoveLoopMouseWatcher::Unhook() {
-  if (instance_ != this)
-    return;
-
-  DCHECK(mouse_hook_);
-  UnhookWindowsHookEx(mouse_hook_);
-  if (key_hook_)
-    UnhookWindowsHookEx(key_hook_);
-  key_hook_ = NULL;
-  mouse_hook_ = NULL;
-  instance_ = NULL;
-}
-
-// static
-LRESULT CALLBACK MoveLoopMouseWatcher::MouseHook(int n_code,
-                                                 WPARAM w_param,
-                                                 LPARAM l_param) {
-  DCHECK(instance_);
-  if (n_code == HC_ACTION && w_param == WM_LBUTTONUP)
-    instance_->got_mouse_up_ = true;
-  return CallNextHookEx(instance_->mouse_hook_, n_code, w_param, l_param);
-}
-
-// static
-LRESULT CALLBACK MoveLoopMouseWatcher::KeyHook(int n_code,
-                                               WPARAM w_param,
-                                               LPARAM l_param) {
-  if (n_code == HC_ACTION && w_param == VK_ESCAPE) {
-    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-      int value = TRUE;
-      HRESULT result = DwmSetWindowAttribute(
-          instance_->host_->GetNativeView(),
-          DWMWA_TRANSITIONS_FORCEDISABLED,
-          &value,
-          sizeof(value));
-    }
-    // Hide the window on escape, otherwise the window is visibly going to snap
-    // back to the original location before we close it.
-    // This behavior is specific to tab dragging, in that we generally wouldn't
-    // want this functionality if we have other consumers using this API.
-    instance_->host_->Hide();
-  }
-  return CallNextHookEx(instance_->key_hook_, n_code, w_param, l_param);
-}
-
 // Get the source HWND of the specified message. Depending on the message, the
 // source HWND is encoded in either the WPARAM or the LPARAM value.
 HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
@@ -233,45 +121,10 @@ BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
   return TRUE;
 }
 
-// Callback used to notify child windows that the top level window received a
-// DWMCompositionChanged message.
-BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
-  SendMessage(window, WM_DWMCOMPOSITIONCHANGED, 0, 0);
-  return TRUE;
-}
-
 // Enables or disables the menu item for the specified command and menu.
 void EnableMenuItem(HMENU menu, UINT command, bool enabled) {
   UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
   EnableMenuItem(menu, command, flags);
-}
-
-// See comments in OnNCPaint() for details of this struct.
-struct ClipState {
-  // The window being painted.
-  HWND parent;
-
-  // DC painting to.
-  HDC dc;
-
-  // Origin of the window in terms of the screen.
-  int x;
-  int y;
-};
-
-// See comments in OnNCPaint() for details of this function.
-static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
-  ClipState* clip_state = reinterpret_cast<ClipState*>(param);
-  if (GetParent(window) == clip_state->parent && IsWindowVisible(window)) {
-    RECT bounds;
-    GetWindowRect(window, &bounds);
-    ExcludeClipRect(clip_state->dc,
-      bounds.left - clip_state->x,
-      bounds.top - clip_state->y,
-      bounds.right - clip_state->x,
-      bounds.bottom - clip_state->y);
-  }
-  return TRUE;
 }
 
 // Links the HWND to its NativeWidget.
@@ -290,15 +143,10 @@ bool NativeWidgetWin::screen_reader_active_ = false;
 NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
-      use_layered_buffer_(false),
-      layered_alpha_(255),
-      ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      can_update_layered_window_(true),
       restore_focus_when_enabled_(false),
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
-      previous_cursor_(NULL),
       restored_enabled_(false),
       has_non_client_view_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -399,32 +247,7 @@ bool NativeWidgetWin::ShouldUseNativeFrame() const {
 }
 
 void NativeWidgetWin::FrameTypeChanged() {
-  // Called when the frame type could possibly be changing (theme change or
-  // DWM composition change).
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    // We need to toggle the rendering policy of the DWM/glass frame as we
-    // change from opaque to glass. "Non client rendering enabled" means that
-    // the DWM's glass non-client rendering is enabled, which is why
-    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
-    // DWM doesn't render glass, and so is used in the custom frame case.
-    DWMNCRENDERINGPOLICY policy = GetWidget()->ShouldUseNativeFrame() ?
-        DWMNCRP_ENABLED : DWMNCRP_DISABLED;
-    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
-                          &policy, sizeof(DWMNCRENDERINGPOLICY));
-  }
-
-  // Send a frame change notification, since the non-client metrics have
-  // changed.
-  message_handler_->SendFrameChanged();
-
-  // Update the non-client view with the correct frame view for the active frame
-  // type.
-  GetWidget()->non_client_view()->UpdateFrame();
-
-  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
-  // to notify our children too, since we can have MDI child windows who need to
-  // update their appearance.
-  EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
+  message_handler_->FrameTypeChanged();
 }
 
 Widget* NativeWidgetWin::GetWidget() {
@@ -496,14 +319,8 @@ bool NativeWidgetWin::IsScreenReaderActive() const {
 void NativeWidgetWin::SendNativeAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type) {
-  // Now call the Windows-specific method to notify MSAA clients of this
-  // event.  The widget gives us a temporary unique child ID to associate
-  // with this view so that clients can call get_accChild in
-  // NativeViewAccessibilityWin to retrieve the IAccessible associated
-  // with this view.
   int child_id = AddAccessibilityViewEvent(view);
-  ::NotifyWinEvent(NativeViewAccessibilityWin::MSAAEvent(event_type),
-                   GetNativeView(), OBJID_CLIENT, child_id);
+  message_handler_->SendNativeAccessibilityEvent(child_id, event_type);
 }
 
 void NativeWidgetWin::SetCapture() {
@@ -527,10 +344,7 @@ internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
-  HWND parent = GetParent();
-  if (!IsWindow())
-    parent = ::GetWindow(GetNativeView(), GW_OWNER);
-  ui::CenterAndSizeWindow(parent, GetNativeView(), size);
+  message_handler_->CenterWindow(size);
 }
 
 void NativeWidgetWin::GetWindowPlacement(
@@ -765,8 +579,12 @@ bool NativeWidgetWin::IsInMetroSnapMode() const {
   return message_handler_->fullscreen_handler()->metro_snap();
 }
 
+void NativeWidgetWin::SetCanUpdateLayeredWindow(bool can_update) {
+  message_handler_->set_can_update_layered_window(can_update);
+}
+
 void NativeWidgetWin::SetOpacity(unsigned char opacity) {
-  layered_alpha_ = static_cast<BYTE>(opacity);
+  message_handler_->SetOpacity(static_cast<BYTE>(opacity));
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
@@ -804,36 +622,11 @@ void NativeWidgetWin::RunShellDrag(View* view,
 }
 
 void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (use_layered_buffer_) {
-    // We must update the back-buffer immediately, since Windows' handling of
-    // invalid rects is somewhat mysterious.
-    invalid_rect_ = invalid_rect_.Union(rect);
-
-    // In some situations, such as drag and drop, when Windows itself runs a
-    // nested message loop our message loop appears to be starved and we don't
-    // receive calls to DidProcessMessage(). This only seems to affect layered
-    // windows, so we schedule a redraw manually using a task, since those never
-    // seem to be starved. Also, wtf.
-    if (!paint_layered_window_factory_.HasWeakPtrs()) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&NativeWidgetWin::RedrawLayeredWindowContents,
-                     paint_layered_window_factory_.GetWeakPtr()));
-    }
-  } else {
-    // InvalidateRect() expects client coordinates.
-    RECT r = rect.ToRECT();
-    InvalidateRect(hwnd(), &r, FALSE);
-  }
+  message_handler_->SchedulePaintInRect(rect);
 }
 
 void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
-  if (cursor) {
-    previous_cursor_ = ::SetCursor(cursor);
-  } else if (previous_cursor_) {
-    ::SetCursor(previous_cursor_);
-    previous_cursor_ = NULL;
-  }
+  message_handler_->SetCursor(cursor);
 }
 
 void NativeWidgetWin::ClearNativeFocus() {
@@ -845,7 +638,7 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
 }
 
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
+  return message_handler_->GetWorkAreaBoundsInScreen();
 }
 
 void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
@@ -853,14 +646,8 @@ void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
 
 Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop(
     const gfx::Point& drag_offset) {
-  ReleaseCapture();
-  MoveLoopMouseWatcher watcher(this);
-  SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002, GetMessagePos());
-  // Windows doesn't appear to offer a way to determine whether the user
-  // canceled the move or not. We assume if the user released the mouse it was
-  // successful.
-  return watcher.got_mouse_up() ? Widget::MOVE_LOOP_SUCCESSFUL :
-      Widget::MOVE_LOOP_CANCELED;
+  return message_handler_->RunMoveLoop(drag_offset) ?
+      Widget::MOVE_LOOP_SUCCESSFUL : Widget::MOVE_LOOP_CANCELED;
 }
 
 void NativeWidgetWin::EndMoveLoop() {
@@ -880,7 +667,7 @@ base::EventStatus NativeWidgetWin::WillProcessEvent(
 }
 
 void NativeWidgetWin::DidProcessEvent(const base::NativeEvent& event) {
-  RedrawInvalidRect();
+  message_handler_->RedrawInvalidRect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -964,9 +751,6 @@ void NativeWidgetWin::OnCommand(UINT notification_code,
 }
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  // TODO(beng): move to message_handler_. Needed before
-  // ClientAreaSizeChanged().
-  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
   return message_handler_->OnCreate(create_struct);
 }
 
@@ -1084,85 +868,7 @@ LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
 }
 
 void NativeWidgetWin::OnNCPaint(HRGN rgn) {
-  // We only do non-client painting if we're not using the native frame.
-  // It's required to avoid some native painting artifacts from appearing when
-  // the window is resized.
-  if (!GetWidget()->non_client_view() || GetWidget()->ShouldUseNativeFrame()) {
-    SetMsgHandled(FALSE);
-    return;
-  }
-
-  // We have an NC region and need to paint it. We expand the NC region to
-  // include the dirty region of the root view. This is done to minimize
-  // paints.
-  CRect window_rect;
-  GetWindowRect(&window_rect);
-
-  if (window_rect.Width() != GetWidget()->GetRootView()->width() ||
-      window_rect.Height() != GetWidget()->GetRootView()->height()) {
-    // If the size of the window differs from the size of the root view it
-    // means we're being asked to paint before we've gotten a WM_SIZE. This can
-    // happen when the user is interactively resizing the window. To avoid
-    // mass flickering we don't do anything here. Once we get the WM_SIZE we'll
-    // reset the region of the window which triggers another WM_NCPAINT and
-    // all is well.
-    return;
-  }
-
-  CRect dirty_region;
-  // A value of 1 indicates paint all.
-  if (!rgn || rgn == reinterpret_cast<HRGN>(1)) {
-    dirty_region = CRect(0, 0, window_rect.Width(), window_rect.Height());
-  } else {
-    RECT rgn_bounding_box;
-    GetRgnBox(rgn, &rgn_bounding_box);
-    if (!IntersectRect(&dirty_region, &rgn_bounding_box, &window_rect))
-      return;  // Dirty region doesn't intersect window bounds, bale.
-
-    // rgn_bounding_box is in screen coordinates. Map it to window coordinates.
-    OffsetRect(&dirty_region, -window_rect.left, -window_rect.top);
-  }
-
-  // In theory GetDCEx should do what we want, but I couldn't get it to work.
-  // In particular the docs mentiond DCX_CLIPCHILDREN, but as far as I can tell
-  // it doesn't work at all. So, instead we get the DC for the window then
-  // manually clip out the children.
-  HDC dc = GetWindowDC(GetNativeView());
-  ClipState clip_state;
-  clip_state.x = window_rect.left;
-  clip_state.y = window_rect.top;
-  clip_state.parent = GetNativeView();
-  clip_state.dc = dc;
-  EnumChildWindows(GetNativeView(), &ClipDCToChild,
-                   reinterpret_cast<LPARAM>(&clip_state));
-
-  gfx::Rect old_paint_region = invalid_rect();
-
-  if (!old_paint_region.IsEmpty()) {
-    // The root view has a region that needs to be painted. Include it in the
-    // region we're going to paint.
-
-    CRect old_paint_region_crect = old_paint_region.ToRECT();
-    CRect tmp = dirty_region;
-    UnionRect(&dirty_region, &tmp, &old_paint_region_crect);
-  }
-
-  GetWidget()->GetRootView()->SchedulePaintInRect(gfx::Rect(dirty_region));
-
-  // gfx::CanvasSkiaPaint's destructor does the actual painting. As such, wrap
-  // the following in a block to force paint to occur so that we can release
-  // the dc.
-  {
-    gfx::CanvasSkiaPaint canvas(dc, true, dirty_region.left,
-                                dirty_region.top, dirty_region.Width(),
-                                dirty_region.Height());
-    delegate_->OnNativeWidgetPaint(&canvas);
-  }
-
-  ReleaseDC(GetNativeView(), dc);
-  // When using a custom frame, we want to avoid calling DefWindowProc() since
-  // that may render artifacts.
-  SetMsgHandled(!GetWidget()->ShouldUseNativeFrame());
+  message_handler_->OnNCPaint(rgn);
 }
 
 LRESULT NativeWidgetWin::OnNCUAHDrawCaption(UINT msg,
@@ -1182,23 +888,7 @@ LRESULT NativeWidgetWin::OnNotify(int w_param, NMHDR* l_param) {
 }
 
 void NativeWidgetWin::OnPaint(HDC dc) {
-  RECT dirty_rect;
-  // Try to paint accelerated first.
-  if (GetUpdateRect(hwnd(), &dirty_rect, FALSE) &&
-      !IsRectEmpty(&dirty_rect)) {
-    if (delegate_->OnNativeWidgetPaintAccelerated(
-        gfx::Rect(dirty_rect))) {
-      ValidateRect(hwnd(), NULL);
-    } else {
-      scoped_ptr<gfx::CanvasPaint> canvas(
-          gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
-      delegate_->OnNativeWidgetPaint(canvas->AsCanvas());
-    }
-  } else {
-    // TODO(msw): Find a better solution for this crbug.com/93530 workaround.
-    // Some scenarios otherwise fail to validate minimized app/popup windows.
-    ValidateRect(hwnd(), NULL);
-  }
+  message_handler_->OnPaint(dc);
 }
 
 LRESULT NativeWidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
@@ -1354,8 +1044,20 @@ void NativeWidgetWin::GetMinMaxSize(gfx::Size* min_size,
   *max_size = delegate_->GetMaximumSize();
 }
 
+gfx::Size NativeWidgetWin::GetRootViewSize() const {
+  return GetWidget()->GetRootView()->size();
+}
+
 void NativeWidgetWin::ResetWindowControls() {
   GetWidget()->non_client_view()->ResetWindowControls();
+}
+
+void NativeWidgetWin::UpdateFrame() {
+  GetWidget()->non_client_view()->UpdateFrame();
+}
+
+void NativeWidgetWin::PaintLayeredWindow(gfx::Canvas* canvas) {
+  GetWidget()->GetRootView()->Paint(canvas);
 }
 
 InputMethod* NativeWidgetWin::GetInputMethod() {
@@ -1479,10 +1181,6 @@ void NativeWidgetWin::HandleVisibilityChanged(bool visible) {
 
 void NativeWidgetWin::HandleClientSizeChanged(const gfx::Size& new_size) {
   delegate_->OnNativeWidgetSizeChanged(new_size);
-  if (use_layered_buffer_) {
-    layered_window_contents_.reset(
-        new gfx::Canvas(new_size, ui::SCALE_FACTOR_100P, false));
-  }
 }
 
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
@@ -1499,6 +1197,14 @@ bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
 
 bool NativeWidgetWin::HandleKeyEvent(const ui::KeyEvent& event) {
   return delegate_->OnKeyEvent(event);
+}
+
+bool NativeWidgetWin::HandlePaintAccelerated(const gfx::Rect& invalid_rect) {
+  return delegate_->OnNativeWidgetPaintAccelerated(gfx::Rect(invalid_rect));
+}
+
+void NativeWidgetWin::HandlePaint(gfx::Canvas* canvas) {
+  delegate_->OnNativeWidgetPaint(canvas);
 }
 
 void NativeWidgetWin::HandleScreenReaderDetected() {
@@ -1661,39 +1367,6 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
-}
-
-void NativeWidgetWin::RedrawInvalidRect() {
-  if (!use_layered_buffer_) {
-    RECT r = { 0, 0, 0, 0 };
-    if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
-      RedrawWindow(hwnd(), &r, NULL,
-                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
-    }
-  }
-}
-
-void NativeWidgetWin::RedrawLayeredWindowContents() {
-  if (invalid_rect_.IsEmpty())
-    return;
-
-  // We need to clip to the dirty rect ourselves.
-  layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
-  layered_window_contents_->ClipRect(invalid_rect_);
-  GetWidget()->GetRootView()->Paint(layered_window_contents_.get());
-  layered_window_contents_->sk_canvas()->restore();
-
-  RECT wr;
-  GetWindowRect(&wr);
-  SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
-  POINT position = {wr.left, wr.top};
-  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_->sk_canvas());
-  POINT zero = {0, 0};
-  BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-  UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
-                      RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-  invalid_rect_.SetRect(0, 0, 0, 0);
-  skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
 }
 
 bool NativeWidgetWin::WidgetSizeIsClientSize() const {

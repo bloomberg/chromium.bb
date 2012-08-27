@@ -84,11 +84,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Show the window with the specified show command.
   void Show(int show_state);
 
-  // Disable Layered Window updates by setting to false.
-  void set_can_update_layered_window(bool can_update_layered_window) {
-    can_update_layered_window_ = can_update_layered_window;
-  }
-
   // Obtain the view event with the given MSAA child id.  Used in
   // NativeViewAccessibilityWin::get_accChild to support requests for
   // children of windowless controls.  May return NULL
@@ -111,6 +106,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   void SetMetroSnapFullscreen(bool metro_snap);
 
   bool IsInMetroSnapMode() const;
+
+  void SetCanUpdateLayeredWindow(bool can_update);
 
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());
@@ -445,8 +442,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   scoped_refptr<DropTargetWin> drop_target_;
 
-  const gfx::Rect& invalid_rect() const { return invalid_rect_; }
-
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;
   virtual bool IsUsingCustomFrame() const OVERRIDE;
@@ -462,7 +457,10 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool GetClientAreaInsets(gfx::Insets* insets) const OVERRIDE;
   virtual void GetMinMaxSize(gfx::Size* min_size,
                              gfx::Size* max_size) const OVERRIDE;
+  virtual gfx::Size GetRootViewSize() const OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
+  virtual void UpdateFrame() OVERRIDE;
+  virtual void PaintLayeredWindow(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual InputMethod* GetInputMethod() OVERRIDE;
   virtual void HandleAppDeactivated() OVERRIDE;
@@ -486,6 +484,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void HandleNativeBlur(HWND focused_window) OVERRIDE;
   virtual bool HandleMouseEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual bool HandleKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool HandlePaintAccelerated(const gfx::Rect& invalid_rect) OVERRIDE;
+  virtual void HandlePaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void HandleScreenReaderDetected() OVERRIDE;
   virtual bool HandleTooltipNotify(int w_param,
                                    NMHDR* l_param,
@@ -509,13 +509,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   void SetInitParams(const Widget::InitParams& params);
 
-  // Synchronously paints the invalid contents of the Widget.
-  void RedrawInvalidRect();
-
-  // Synchronously updates the invalid contents of the Widget. Valid for
-  // layered windows only.
-  void RedrawLayeredWindowContents();
-
   // Determines whether the delegate expects the client size or the window size.
   bool WidgetSizeIsClientSize() const;
 
@@ -531,43 +524,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // instance.
   base::WeakPtrFactory<NativeWidgetWin> close_widget_factory_;
 
-  // Should we keep an off-screen buffer? This is false by default, set to true
-  // when WS_EX_LAYERED is specified before the native window is created.
-  //
-  // NOTE: this is intended to be used with a layered window (a window with an
-  // extended window style of WS_EX_LAYERED). If you are using a layered window
-  // and NOT changing the layered alpha or anything else, then leave this value
-  // alone. OTOH if you are invoking SetLayeredWindowAttributes then you'll
-  // most likely want to set this to false, or after changing the alpha toggle
-  // the extended style bit to false than back to true. See MSDN for more
-  // details.
-  bool use_layered_buffer_;
-
-  // The default alpha to be applied to the layered window.
-  BYTE layered_alpha_;
-
-  // A canvas that contains the window contents in the case of a layered
-  // window.
-  scoped_ptr<gfx::Canvas> layered_window_contents_;
-
-  // We must track the invalid rect ourselves, for two reasons:
-  // For layered windows, Windows will not do this properly with
-  // InvalidateRect()/GetUpdateRect(). (In fact, it'll return misleading
-  // information from GetUpdateRect()).
-  // We also need to keep track of the invalid rectangle for the RootView should
-  // we need to paint the non-client area. The data supplied to WM_NCPAINT seems
-  // to be insufficient.
-  gfx::Rect invalid_rect_;
-
-  // A factory that allows us to schedule a redraw for layered windows.
-  base::WeakPtrFactory<NativeWidgetWin> paint_layered_window_factory_;
-
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
-
-  // True if we are allowed to update the layered window from the DIB backing
-  // store if necessary.
-  bool can_update_layered_window_;
 
   // Whether the focus should be restored next time we get enabled.  Needed to
   // restore focus correctly when Windows modal dialogs are displayed.
@@ -589,10 +547,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // The current position of the view events vector.  When incrementing,
   // we always mod this value with the max view events above .
   int accessibility_view_events_index_;
-
-  // The last cursor that was active before the current one was selected. Saved
-  // so that we can restore it.
-  gfx::NativeCursor previous_cursor_;
 
   ViewProps props_;
 

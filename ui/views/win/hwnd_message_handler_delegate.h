@@ -52,7 +52,13 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual void GetMinMaxSize(gfx::Size* min_size,
                              gfx::Size* max_size) const = 0;
 
+  // Returns the current size of the RootView.
+  virtual gfx::Size GetRootViewSize() const = 0;
+
   virtual void ResetWindowControls() = 0;
+  virtual void UpdateFrame() = 0;
+
+  virtual void PaintLayeredWindow(gfx::Canvas* canvas) = 0;
 
   virtual InputMethod* GetInputMethod() = 0;
 
@@ -128,6 +134,13 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when a key event is received. Returns true if the event was handled
   // by the delegate.
   virtual bool HandleKeyEvent(const ui::KeyEvent& event) = 0;
+
+  // Called to compel the delegate to paint |invalid_rect| accelerated. Returns
+  // true if accelerated painting was performed.
+  virtual bool HandlePaintAccelerated(const gfx::Rect& invalid_rect) = 0;
+
+  // Called to compel the delegate to paint using the software path.
+  virtual void HandlePaint(gfx::Canvas* canvas) = 0;
 
   // Called when we have detected a screen reader.
   virtual void HandleScreenReaderDetected() = 0;
