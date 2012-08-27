@@ -88,12 +88,25 @@ class ChromeURLContentSecurityPolicyExceptionSet
   }
 };
 
-// It is OK to add URLs to this set which slightly reduces the CSP for them.
-class ChromeURLContentSecurityPolicyObjectTagSet
-    : public std::set<std::string> {
+// It is OK to add URLs to these maps which map specific URLs to custom CSP
+// directives thereby slightly reducing the protection applied to the page.
+class ChromeURLObjectSrcExceptionMap
+    : public std::map<std::string, std::string> {
  public:
-  ChromeURLContentSecurityPolicyObjectTagSet() : std::set<std::string>() {
-    insert(chrome::kChromeUIPrintHost);
+  ChromeURLObjectSrcExceptionMap() : std::map<std::string, std::string>() {
+    insert(std::pair<std::string, std::string>(
+        chrome::kChromeUIPrintHost, "object-src 'self';"));
+  }
+};
+
+class ChromeURLFrameSrcExceptionMap
+    : public std::map<std::string, std::string> {
+ public:
+  ChromeURLFrameSrcExceptionMap() : std::map<std::string, std::string>() {
+    insert(std::pair<std::string, std::string>(
+        chrome::kChromeUIUberHost, "frame-src chrome:;"));
+    insert(std::pair<std::string, std::string>(
+        chrome::kChromeUIUberFrameHost, "frame-src chrome:;"));
   }
 };
 
@@ -101,9 +114,11 @@ base::LazyInstance<ChromeURLContentSecurityPolicyExceptionSet>
     g_chrome_url_content_security_policy_exception_set =
         LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<ChromeURLContentSecurityPolicyObjectTagSet>
-    g_chrome_url_content_security_policy_object_tag_set =
-        LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ChromeURLObjectSrcExceptionMap>
+    g_chrome_url_object_src_exception_map = LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<ChromeURLFrameSrcExceptionMap>
+    g_chrome_url_frame_src_exception_map = LAZY_INSTANCE_INITIALIZER;
 
 // Determine the least-privileged content security policy header, if any,
 // that is compatible with a given WebUI URL, and append it to the existing
@@ -115,12 +130,20 @@ void AddContentSecurityPolicyHeader(
 
   if (exceptions->find(url.host()) == exceptions->end()) {
     std::string base = kChromeURLContentSecurityPolicyHeaderBase;
-    ChromeURLContentSecurityPolicyObjectTagSet* object_tag_set =
-        g_chrome_url_content_security_policy_object_tag_set.Pointer();
 
-    base.append(object_tag_set->find(url.host()) == object_tag_set->end() ?
-                "object-src 'none';" :
-                "object-src 'self';");
+    ChromeURLObjectSrcExceptionMap* object_map =
+        g_chrome_url_object_src_exception_map.Pointer();
+    ChromeURLObjectSrcExceptionMap::iterator object_iter =
+        object_map->find(url.host());
+    base.append(object_iter == object_map->end() ?
+                "object-src 'none';" : object_iter->second);
+
+    ChromeURLFrameSrcExceptionMap* frame_map =
+        g_chrome_url_frame_src_exception_map.Pointer();
+    ChromeURLFrameSrcExceptionMap::iterator frame_iter =
+        frame_map->find(url.host());
+    base.append(frame_iter == frame_map->end() ?
+                "frame-src 'none';" : frame_iter->second);
 
     headers->AddHeader(base);
   }
