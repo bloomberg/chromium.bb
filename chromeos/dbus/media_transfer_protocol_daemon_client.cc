@@ -545,6 +545,7 @@ void FileEntry::InitializeFromResponse(dbus::Response* response) {
       case FILE_TYPE_JPX:
       case FILE_TYPE_UNKNOWN:
         file_type_ = static_cast<FileType>(file_type);
+        break;
       default:
         file_type_ = FILE_TYPE_OTHER;
         break;
