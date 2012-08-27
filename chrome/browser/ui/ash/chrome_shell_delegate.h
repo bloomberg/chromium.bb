@@ -62,6 +62,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(ash::UserMetricsAction action) OVERRIDE;
+  virtual void HandleMediaNextTrack() OVERRIDE;
+  virtual void HandleMediaPlayPause() OVERRIDE;
+  virtual void HandleMediaPrevTrack() OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,

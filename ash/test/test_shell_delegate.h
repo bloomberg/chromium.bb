@@ -44,6 +44,9 @@ class TestShellDelegate : public ShellDelegate {
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual void OpenFeedbackPage() OVERRIDE;
   virtual void RecordUserMetricsAction(UserMetricsAction action) OVERRIDE;
+  virtual void HandleMediaNextTrack() OVERRIDE;
+  virtual void HandleMediaPlayPause() OVERRIDE;
+  virtual void HandleMediaPrevTrack() OVERRIDE;
 
  private:
   bool locked_;

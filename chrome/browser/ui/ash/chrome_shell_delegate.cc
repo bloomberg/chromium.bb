@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
@@ -364,6 +365,24 @@ void ChromeShellDelegate::RecordUserMetricsAction(
       content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
       break;
   }
+}
+
+void ChromeShellDelegate::HandleMediaNextTrack() {
+#if defined(OS_CHROMEOS)
+  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyNextTrack();
+#endif
+}
+
+void ChromeShellDelegate::HandleMediaPlayPause() {
+#if defined(OS_CHROMEOS)
+  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyTogglePlayState();
+#endif
+}
+
+void ChromeShellDelegate::HandleMediaPrevTrack() {
+#if defined(OS_CHROMEOS)
+  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyPrevTrack();
+#endif
 }
 
 void ChromeShellDelegate::Observe(int type,

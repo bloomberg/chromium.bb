@@ -137,6 +137,15 @@ class ASH_EXPORT ShellDelegate {
 
   // Records that the user performed an action.
   virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
+
+  // Handles the Next Track Media shortcut key.
+  virtual void HandleMediaNextTrack() = 0;
+
+  // Handles the Play/Pause Toggle Media shortcut key.
+  virtual void HandleMediaPlayPause() = 0;
+
+  // Handles the Previous Track Media shortcut key.
+  virtual void HandleMediaPrevTrack() = 0;
 };
 
 }  // namespace ash

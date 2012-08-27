@@ -21,10 +21,34 @@ void ExtensionMediaPlayerEventRouter::Init(Profile* profile) {
   profile_ = profile;
 }
 
+void ExtensionMediaPlayerEventRouter::NotifyNextTrack() {
+  if (profile_ && profile_->GetExtensionEventRouter()) {
+    scoped_ptr<ListValue> args(new ListValue());
+    profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+        "mediaPlayerPrivate.onNextTrack", args.Pass(), NULL, GURL());
+  }
+}
+
 void ExtensionMediaPlayerEventRouter::NotifyPlaylistChanged() {
   if (profile_ && profile_->GetExtensionEventRouter()) {
     scoped_ptr<ListValue> args(new ListValue());
     profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      "mediaPlayerPrivate.onPlaylistChanged", args.Pass(), NULL, GURL());
+        "mediaPlayerPrivate.onPlaylistChanged", args.Pass(), NULL, GURL());
+  }
+}
+
+void ExtensionMediaPlayerEventRouter::NotifyPrevTrack() {
+  if (profile_ && profile_->GetExtensionEventRouter()) {
+    scoped_ptr<ListValue> args(new ListValue());
+    profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+        "mediaPlayerPrivate.onPrevTrack", args.Pass(), NULL, GURL());
+  }
+}
+
+void ExtensionMediaPlayerEventRouter::NotifyTogglePlayState() {
+  if (profile_ && profile_->GetExtensionEventRouter()) {
+    scoped_ptr<ListValue> args(new ListValue());
+    profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+        "mediaPlayerPrivate.onTogglePlayState", args.Pass(), NULL, GURL());
   }
 }

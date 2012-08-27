@@ -81,9 +81,27 @@
     ],
     "events": [
       {
+        "name": "onNextTrack",
+        "type": "function",
+        "description": "Notifies that the next track was requested.",
+        "parameters": []
+      },
+      {
         "name": "onPlaylistChanged",
         "type": "function",
         "description": "Notifies that playlist content or state has been changed. Data could be retrieved via 'getPlaylist'.",
+        "parameters": []
+      },
+      {
+        "name": "onPrevTrack",
+        "type": "function",
+        "description": "Notifies that the previous tack was requested.",
+        "parameters": []
+      },
+      {
+        "name": "onTogglePlayState",
+        "type": "function",
+        "description": "Notifies that a play/pause toggle was requested.",
         "parameters": []
       }
     ]

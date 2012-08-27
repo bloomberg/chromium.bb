@@ -133,5 +133,14 @@ void ShellDelegateImpl::OpenFeedbackPage() {
 void ShellDelegateImpl::RecordUserMetricsAction(UserMetricsAction action) {
 }
 
+void ShellDelegateImpl::HandleMediaNextTrack() {
+}
+
+void ShellDelegateImpl::HandleMediaPlayPause() {
+}
+
+void ShellDelegateImpl::HandleMediaPrevTrack() {
+}
+
 }  // namespace shell
 }  // namespace ash

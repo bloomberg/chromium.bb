@@ -125,7 +125,12 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F2, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE },
   { true, ui::VKEY_F1, ui::EF_CONTROL_DOWN, FOCUS_PREVIOUS_PANE },
 
-  // TODO(yusukes): Handle VKEY_MEDIA_STOP, VKEY_MEDIA_PLAY_PAUSE, and
+  // Media Player shortcuts.
+  { true, ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE, MEDIA_NEXT_TRACK},
+  { true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
+  { true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
+
+  // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
   // VKEY_MEDIA_LAUNCH_MAIL.
 };
 

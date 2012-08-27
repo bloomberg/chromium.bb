@@ -118,5 +118,14 @@ void TestShellDelegate::OpenFeedbackPage() {
 void TestShellDelegate::RecordUserMetricsAction(UserMetricsAction action) {
 }
 
+void TestShellDelegate::HandleMediaNextTrack() {
+}
+
+void TestShellDelegate::HandleMediaPlayPause() {
+}
+
+void TestShellDelegate::HandleMediaPrevTrack() {
+}
+
 }  // namespace test
 }  // namespace ash

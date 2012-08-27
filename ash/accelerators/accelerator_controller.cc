@@ -241,6 +241,21 @@ bool HandleMagnifyScreen(int delta_index) {
   return true;
 }
 
+bool HandleMediaNextTrack() {
+  Shell::GetInstance()->delegate()->HandleMediaNextTrack();
+  return true;
+}
+
+bool HandleMediaPlayPause() {
+  Shell::GetInstance()->delegate()->HandleMediaPlayPause();
+  return true;
+}
+
+bool HandleMediaPrevTrack() {
+  Shell::GetInstance()->delegate()->HandleMediaPrevTrack();
+  return true;
+}
+
 #if !defined(NDEBUG)
 bool HandlePrintLayerHierarchy() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -663,6 +678,12 @@ bool AcceleratorController::PerformAction(int action,
       return HandleMagnifyScreen(1);
     case MAGNIFY_SCREEN_ZOOM_OUT:
       return HandleMagnifyScreen(-1);
+    case MEDIA_NEXT_TRACK:
+      return HandleMediaNextTrack();
+    case MEDIA_PLAY_PAUSE:
+       return HandleMediaPlayPause();
+    case MEDIA_PREV_TRACK:
+       return HandleMediaPrevTrack();
 #if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();

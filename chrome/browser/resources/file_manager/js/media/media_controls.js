@@ -858,6 +858,10 @@ function VideoControls(containerElement, onMediaError,
       'VideoResumePosition',
       VideoControls.RESUME_POSITIONS_CAPACITY,
       VideoControls.RESUME_POSITION_LIFETIME);
+
+  var video_controls = this;
+  chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
+      function() { video_controls.togglePlayStateWithFeedback(); });
 }
 
 /**
@@ -1139,6 +1143,14 @@ function AudioControls(container, advanceTrack, onError) {
   /* No volume controls */
   this.createButton('previous', this.onAdvanceClick_.bind(this, false));
   this.createButton('next', this.onAdvanceClick_.bind(this, true));
+
+  var audio_controls = this;
+  chrome.mediaPlayerPrivate.onNextTrack.addListener(
+      function() { audio_controls.onAdvanceClick_(true); });
+  chrome.mediaPlayerPrivate.onPrevTrack.addListener(
+      function() { audio_controls.onAdvanceClick_(false); });
+  chrome.mediaPlayerPrivate.onTogglePlayState.addListener(
+      function() { audio_controls.togglePlayState(); });
 }
 
 AudioControls.prototype = { __proto__: MediaControls.prototype };
