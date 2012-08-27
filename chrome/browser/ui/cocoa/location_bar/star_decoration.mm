@@ -31,6 +31,7 @@ StarDecoration::~StarDecoration() {
 }
 
 void StarDecoration::SetStarred(bool starred) {
+  starred_ = starred;
   const int image_id = starred ? IDR_STAR_LIT : IDR_STAR;
   const int tip_id = starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
   SetImage(OmniboxViewMac::ImageForResource(image_id));

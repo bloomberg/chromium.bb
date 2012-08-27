@@ -215,6 +215,9 @@ class LocationBarViewMac : public LocationBar,
   // Updates the zoom decoration in the omnibox with the current zoom level.
   void UpdateZoomDecoration();
 
+  // Ensures the star decoration is visible or hidden, as required.
+  void UpdateStarDecorationVisibility();
+
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
