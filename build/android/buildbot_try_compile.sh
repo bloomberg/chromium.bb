@@ -5,12 +5,13 @@
 #
 # Buildbot annotator script for trybots.  Compile only.
 
-ROOT=$(cd "$(dirname $0)"; pwd)
-. "${ROOT}"/buildbot_functions.sh
+BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
+. "${BB_SRC_ROOT}/build/android/buildbot_functions.sh"
 
 # SHERIFF: if you need to quickly turn "android" trybots green,
 # uncomment the next line (and send appropriate email out):
 ## bb_force_bot_green_and_exit
 
-bb_baseline_setup "${ROOT}"/../..
+bb_baseline_setup "$BB_SRC_ROOT" "$@"
+bb_check_webview_licenses
 bb_compile

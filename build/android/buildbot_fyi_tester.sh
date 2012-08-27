@@ -15,5 +15,5 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_extract_build
 bb_reboot_phones
-bb_run_tests
-bb_run_content_shell_instrumentation_test
+bb_run_unit_tests
+bb_run_instrumentation_tests

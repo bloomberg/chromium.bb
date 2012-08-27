@@ -159,6 +159,7 @@ function bb_goma_make {
     return
   fi
 
+  BUILDTYPE=$(bb_get_json_prop "$FACTORY_PROPERTIES" target)
   HOST_CC=$GOMA_DIR/gcc
   HOST_CXX=$GOMA_DIR/g++
   TARGET_CC=$(/bin/ls $ANDROID_TOOLCHAIN/*-gcc | head -n1)
@@ -181,6 +182,7 @@ function bb_goma_make {
     CXX.target="$TARGET_CXX" \
     LINK.target="$TARGET_CXX" \
     COMMON_JAVAC="$COMMON_JAVAC" \
+    BUILDTYPE="$BUILDTYPE" \
     "$@"
 
   local make_exit_code=$?
@@ -218,7 +220,7 @@ function bb_run_tests_emulator {
 }
 
 # Run tests on an actual device.  (Better have one plugged in!)
-function bb_run_tests {
+function bb_run_unit_tests {
   python build/android/device_status_check.py
   echo "@@@BUILD_STEP Run Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose
@@ -241,7 +243,7 @@ function bb_run_instrumentation_test {
 }
 
 # Run content shell instrumentation test on device.
-function bb_run_content_shell_instrumentation_test {
+function bb_run_instrumentation_tests {
   build/android/adb_install_content_shell
   local TEST_APK="content_shell_test/ContentShellTest-debug"
   # Use -I to install the test apk only on the first run.
@@ -318,4 +320,12 @@ function bb_check_webview_licenses {
   fi
   return $license_exit_code
   )
+}
+
+# Retrieve a packed json property using python
+function bb_get_json_prop {
+  local JSON="$1"
+  local PROP="$2"
+
+  python -c "import json; print json.loads('$JSON')['$PROP']"
 }

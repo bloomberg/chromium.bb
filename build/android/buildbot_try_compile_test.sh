@@ -5,15 +5,15 @@
 #
 # Buildbot annotator script for trybots.  Compile and test.
 
-ROOT=$(cd "$(dirname $0)"; pwd)
-. "${ROOT}"/buildbot_functions.sh
+BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
+. "${BB_SRC_ROOT}/build/android/buildbot_functions.sh"
 
 # SHERIFF: if you need to quickly turn "android_test" trybots green,
 # uncomment the next line (and send appropriate email out):
 ## bb_force_bot_green_and_exit
 
-bb_baseline_setup "${ROOT}"/../..
+bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_compile
 bb_reboot_phones
-bb_run_tests
-bb_run_content_shell_instrumentation_test
+bb_run_unit_tests
+bb_run_instrumentation_tests

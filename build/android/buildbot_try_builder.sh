@@ -14,5 +14,6 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 # You will also need to change buildbot_try_tester.sh
 
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
+bb_check_webview_licenses
 bb_compile
 bb_zip_build
