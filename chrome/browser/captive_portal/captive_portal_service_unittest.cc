@@ -163,9 +163,13 @@ class CaptivePortalServiceTest : public testing::Test {
     set_multiply_factor(2.0);
     set_maximum_backoff(base::TimeDelta::FromSeconds(1600));
 
-    // This means backoff starts after the first "failure", which is the second
-    // captive portal test in a row that ends up with the same result.
-    set_num_errors_to_ignore(0);
+    // This means backoff starts after the second "failure", which is the third
+    // captive portal test in a row that ends up with the same result.  Since
+    // the first request uses no delay, this means the delays will be in
+    // the pattern 0, 0, 100, 200, 400, etc.  There are two zeros because the
+    // first check never has a delay, and the first check to have a new result
+    // is followed by no delay.
+    set_num_errors_to_ignore(1);
 
     EnableCaptivePortalDetectionPreference(true);
   }
@@ -273,6 +277,7 @@ class CaptivePortalServiceTest : public testing::Test {
   // must be set to have a minimum time of 100 seconds, with 2 checks before
   // starting exponential backoff.
   void RunBackoffTest(Result expected_result, int net_error, int status_code) {
+    RunTest(expected_result, net_error, status_code, 0, NULL);
     RunTest(expected_result, net_error, status_code, 0, NULL);
     RunTest(expected_result, net_error, status_code, 100, NULL);
     RunTest(expected_result, net_error, status_code, 200, NULL);
@@ -402,7 +407,9 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckInternetConnected) {
 
   // Make sure that getting a new result resets the timer.
   RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 1600, NULL);
+  RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 0, NULL);
   RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 1, NULL);
+  RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 2, NULL);
 }
 
 // Checks exponential backoff when there's an HTTP error.
@@ -417,6 +424,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckError) {
 
   // Make sure that getting a new result resets the timer.
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 1600, NULL);
+  RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 100, NULL);
 }
 
@@ -432,6 +440,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRecheckBehindPortal) {
 
   // Make sure that getting a new result resets the timer.
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 1600, NULL);
+  RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 250, NULL);
 }
 
@@ -557,6 +566,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalJitter) {
   set_jitter_factor(0.3);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
+  RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
 
   for (int i = 0; i < 50; ++i) {
     int interval_sec = GetTimeUntilNextRequest().InSeconds();
@@ -570,17 +580,17 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalJitter) {
 TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSeconds) {
   Initialize(true);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
+  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 101\n\n";
 
-  RunTest(RESULT_NO_RESPONSE,
-          net::OK,
-          503,
-          0,
-          "HTTP/1.1 503 OK\nRetry-After: 101\n\n");
-
-  // Run another captive portal check to make sure the time until the next check
-  // is as expected.
+  // Check that Retry-After headers work both on the first request to return a
+  // result and on subsequent requests.
+  RunTest(RESULT_NO_RESPONSE, net::OK, 503, 0, retry_after);
+  RunTest(RESULT_NO_RESPONSE, net::OK, 503, 101, retry_after);
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 101, NULL);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(100), GetTimeUntilNextRequest());
+
+  // Make sure that there's no effect on the next captive portal check after
+  // login.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0), GetTimeUntilNextRequest());
 }
 
 // Check that the RecheckPolicy is still respected on 503 responses with
@@ -588,12 +598,11 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSeconds) {
 TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterSecondsTooShort) {
   Initialize(true);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
+  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: 99\n\n";
 
-  RunTest(RESULT_NO_RESPONSE,
-          net::OK,
-          503,
-          0,
-          "HTTP/1.1 503 OK\nRetry-After: 99\n\n");
+  RunTest(RESULT_NO_RESPONSE, net::OK, 503, 0, retry_after);
+  // Normally would be no delay on the first check with a new result.
+  RunTest(RESULT_NO_RESPONSE, net::OK, 503, 99, retry_after);
   EXPECT_EQ(base::TimeDelta::FromSeconds(100), GetTimeUntilNextRequest());
 }
 
@@ -621,12 +630,10 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterDate) {
 TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterInvalid) {
   Initialize(true);
   set_initial_backoff_no_portal(base::TimeDelta::FromSeconds(100));
+  const char* retry_after = "HTTP/1.1 503 OK\nRetry-After: Christmas\n\n";
 
-  RunTest(RESULT_NO_RESPONSE,
-          net::OK,
-          503,
-          0,
-          "HTTP/1.1 503 OK\nRetry-After: Christmas\n\n");
+  RunTest(RESULT_NO_RESPONSE, net::OK, 503, 0, retry_after);
+  RunTest(RESULT_NO_RESPONSE, net::OK, 503, 0, retry_after);
   EXPECT_EQ(base::TimeDelta::FromSeconds(100), GetTimeUntilNextRequest());
 }
 

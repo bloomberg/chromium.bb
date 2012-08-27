@@ -261,13 +261,17 @@ void CaptivePortalService::OnURLFetchComplete(const net::URLFetcher* source) {
     ResetBackoffEntry(new_result);
 
     backoff_entry_->SetCustomReleaseTime(now + retry_after_delta);
-    backoff_entry_->InformOfRequest(true);
+    // The BackoffEntry is not informed of this request, so there's no delay
+    // before the next request.  This allows for faster login when a captive
+    // portal is first detected.  It can also help when moving between captive
+    // portals.
   } else {
     DCHECK_LE(1, num_checks_with_same_result_);
     ++num_checks_with_same_result_;
 
     // Requests that have the same Result as the last one are considered
     // "failures", to trigger backoff.
+    backoff_entry_->SetCustomReleaseTime(now + retry_after_delta);
     backoff_entry_->InformOfRequest(false);
   }
 
