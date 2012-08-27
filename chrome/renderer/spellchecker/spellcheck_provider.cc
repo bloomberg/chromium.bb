@@ -334,7 +334,7 @@ bool SpellCheckProvider::HasWordCharacters(
     uint32 code = 0;
     U16_NEXT(data, index, length, code);
     UErrorCode error = U_ZERO_ERROR;
-    if (uscript_getScript(code, &error) == USCRIPT_LATIN)
+    if (uscript_getScript(code, &error) != USCRIPT_COMMON)
       return true;
   }
   return false;
