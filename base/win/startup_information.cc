@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/win/scoped_startup_info_ex.h"
+#include "base/win/startup_information.h"
 
 #include "base/logging.h"
 #include "base/win/windows_version.h"
@@ -36,7 +36,7 @@ static DeleteProcThreadAttributeListFunction delete_proc_thread_attribute_list;
 namespace base {
 namespace win {
 
-ScopedStartupInfoEx::ScopedStartupInfoEx() {
+StartupInformation::StartupInformation() {
   memset(&startup_info_, 0, sizeof(startup_info_));
 
   // Pre Windows Vista doesn't support STARTUPINFOEX.
@@ -64,14 +64,14 @@ ScopedStartupInfoEx::ScopedStartupInfoEx() {
   }
 }
 
-ScopedStartupInfoEx::~ScopedStartupInfoEx() {
+StartupInformation::~StartupInformation() {
   if (startup_info_.lpAttributeList) {
     delete_proc_thread_attribute_list(startup_info_.lpAttributeList);
     delete [] reinterpret_cast<BYTE*>(startup_info_.lpAttributeList);
   }
 }
 
-bool ScopedStartupInfoEx::InitializeProcThreadAttributeList(
+bool StartupInformation::InitializeProcThreadAttributeList(
     DWORD attribute_count) {
   if (startup_info_.StartupInfo.cb != sizeof(startup_info_) ||
       startup_info_.lpAttributeList)
@@ -94,7 +94,7 @@ bool ScopedStartupInfoEx::InitializeProcThreadAttributeList(
   return true;
 }
 
-bool ScopedStartupInfoEx::UpdateProcThreadAttribute(
+bool StartupInformation::UpdateProcThreadAttribute(
     DWORD_PTR attribute,
     void* value,
     size_t size) {

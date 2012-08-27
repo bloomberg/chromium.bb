@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WIN_SCOPED_STARTUP_INFO_EX_H_
-#define BASE_WIN_SCOPED_STARTUP_INFO_EX_H_
+#ifndef BASE_WIN_STARTUP_INFORMATION_H_
+#define BASE_WIN_STARTUP_INFORMATION_H_
 
 #include <windows.h>
 
@@ -14,11 +14,11 @@ namespace base {
 namespace win {
 
 // Manages the lifetime of additional attributes in STARTUPINFOEX.
-class BASE_EXPORT ScopedStartupInfoEx {
+class BASE_EXPORT StartupInformation {
  public:
-  ScopedStartupInfoEx();
+  StartupInformation();
 
-  ~ScopedStartupInfoEx();
+  ~StartupInformation();
 
   // Initialize the attribute list for the specified number of entries.
   bool InitializeProcThreadAttributeList(DWORD attribute_count);
@@ -28,11 +28,18 @@ class BASE_EXPORT ScopedStartupInfoEx {
                                  void* value,
                                  size_t size);
 
-  STARTUPINFO* startup_info() { return &startup_info_.StartupInfo; }
+  LPSTARTUPINFOW startup_info() { return &startup_info_.StartupInfo; }
+  const LPSTARTUPINFOW startup_info() const {
+    return const_cast<const LPSTARTUPINFOW>(&startup_info_.StartupInfo);
+  }
+
+  bool has_extended_startup_info() const {
+    return !!startup_info_.lpAttributeList;
+  }
 
  private:
-  STARTUPINFOEX startup_info_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedStartupInfoEx);
+  STARTUPINFOEXW startup_info_;
+  DISALLOW_COPY_AND_ASSIGN(StartupInformation);
 };
 
 }  // namespace win

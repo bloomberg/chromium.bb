@@ -10,7 +10,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
-#include "base/win/scoped_startup_info_ex.h"
+#include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -31,15 +31,15 @@ MULTIPROCESS_TEST_MAIN(FireInheritedEvents) {
   return 0;
 }
 
-class ScopedStartupInfoExTest : public base::MultiProcessTest {};
+class StartupInformationTest : public base::MultiProcessTest {};
 
 // Verify that only the explicitly specified event is inherited.
-TEST_F(ScopedStartupInfoExTest, InheritStdOut) {
+TEST_F(StartupInformationTest, InheritStdOut) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 
   base::win::ScopedProcessInformation process_info;
-  base::win::ScopedStartupInfoEx startup_info;
+  base::win::StartupInformation startup_info;
 
   HANDLE section = ::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
                                         PAGE_READWRITE, 0, kSectionSize,
