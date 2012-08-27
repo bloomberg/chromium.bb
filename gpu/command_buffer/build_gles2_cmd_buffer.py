@@ -4635,7 +4635,6 @@ class Argument(object):
     self.optional = type.endswith("Optional*")
     if self.optional:
       type = type[:-9] + "*"
-    print name, type
     self.type = type
 
     if type in self.cmd_type_map_:
