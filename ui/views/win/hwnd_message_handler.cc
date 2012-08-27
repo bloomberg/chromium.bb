@@ -78,6 +78,12 @@ BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
   return TRUE;
 }
 
+// Enables or disables the menu item for the specified command and menu.
+void EnableMenuItemByCommand(HMENU menu, UINT command, bool enabled) {
+  UINT flags = MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED);
+  EnableMenuItem(menu, command, flags);
+}
+
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
 const int kCustomObjectID = 1;
@@ -86,6 +92,70 @@ const int kCustomObjectID = 1;
 const int kAutoHideTaskbarThicknessPx = 2;
 
 }  // namespace
+
+// A scoping class that prevents a window from being able to redraw in response
+// to invalidations that may occur within it for the lifetime of the object.
+//
+// Why would we want such a thing? Well, it turns out Windows has some
+// "unorthodox" behavior when it comes to painting its non-client areas.
+// Occasionally, Windows will paint portions of the default non-client area
+// right over the top of the custom frame. This is not simply fixed by handling
+// WM_NCPAINT/WM_PAINT, with some investigation it turns out that this
+// rendering is being done *inside* the default implementation of some message
+// handlers and functions:
+//  . WM_SETTEXT
+//  . WM_SETICON
+//  . WM_NCLBUTTONDOWN
+//  . EnableMenuItem, called from our WM_INITMENU handler
+// The solution is to handle these messages and call DefWindowProc ourselves,
+// but prevent the window from being able to update itself for the duration of
+// the call. We do this with this class, which automatically calls its
+// associated Window's lock and unlock functions as it is created and destroyed.
+// See documentation in those methods for the technique used.
+//
+// The lock only has an effect if the window was visible upon lock creation, as
+// it doesn't guard against direct visiblility changes, and multiple locks may
+// exist simultaneously to handle certain nested Windows messages.
+//
+// IMPORTANT: Do not use this scoping object for large scopes or periods of
+//            time! IT WILL PREVENT THE WINDOW FROM BEING REDRAWN! (duh).
+//
+// I would love to hear Raymond Chen's explanation for all this. And maybe a
+// list of other messages that this applies to ;-)
+class HWNDMessageHandler::ScopedRedrawLock {
+ public:
+  explicit ScopedRedrawLock(HWNDMessageHandler* owner)
+    : owner_(owner),
+      hwnd_(owner_->hwnd()),
+      was_visible_(owner_->IsVisible()),
+      cancel_unlock_(false),
+      force_(!(GetWindowLong(hwnd_, GWL_STYLE) & WS_CAPTION)) {
+    if (was_visible_ && ::IsWindow(hwnd_))
+      owner_->LockUpdates(force_);
+  }
+
+  ~ScopedRedrawLock() {
+    if (!cancel_unlock_ && was_visible_ && ::IsWindow(hwnd_))
+      owner_->UnlockUpdates(force_);
+  }
+
+  // Cancel the unlock operation, call this if the Widget is being destroyed.
+  void CancelUnlockOperation() { cancel_unlock_ = true; }
+
+ private:
+  // The owner having its style changed.
+  HWNDMessageHandler* owner_;
+  // The owner's HWND, cached to avoid action after window destruction.
+  HWND hwnd_;
+  // Records the HWND visibility at the time of creation.
+  bool was_visible_;
+  // A flag indicating that the unlock operation was canceled.
+  bool cancel_unlock_;
+  // If true, perform the redraw lock regardless of Aero state.
+  bool force_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedRedrawLock);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, public:
@@ -563,12 +633,14 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
   bool is_maximized = IsMaximized();
   bool is_restored = !is_fullscreen && !is_minimized && !is_maximized;
 
-  EnableMenuItem(menu, SC_RESTORE, is_minimized || is_maximized);
-  EnableMenuItem(menu, SC_MOVE, is_restored);
-  EnableMenuItem(menu, SC_SIZE, delegate_->CanResize() && is_restored);
-  EnableMenuItem(menu, SC_MAXIMIZE, delegate_->CanMaximize() &&
-                 !is_fullscreen && !is_maximized);
-  EnableMenuItem(menu, SC_MINIMIZE, delegate_->CanMaximize() && !is_minimized);
+  ScopedRedrawLock lock(this);
+  EnableMenuItemByCommand(menu, SC_RESTORE, is_minimized || is_maximized);
+  EnableMenuItemByCommand(menu, SC_MOVE, is_restored);
+  EnableMenuItemByCommand(menu, SC_SIZE, delegate_->CanResize() && is_restored);
+  EnableMenuItemByCommand(menu, SC_MAXIMIZE, delegate_->CanMaximize() &&
+                          !is_fullscreen && !is_maximized);
+  EnableMenuItemByCommand(menu, SC_MINIMIZE, delegate_->CanMaximize() &&
+                          !is_minimized);
 }
 
 void HWNDMessageHandler::OnInitMenuPopup() {
@@ -1287,70 +1359,6 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
   // fullscreen windows are in restored state, not maximized.
   return gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
 }
-
-// A scoping class that prevents a window from being able to redraw in response
-// to invalidations that may occur within it for the lifetime of the object.
-//
-// Why would we want such a thing? Well, it turns out Windows has some
-// "unorthodox" behavior when it comes to painting its non-client areas.
-// Occasionally, Windows will paint portions of the default non-client area
-// right over the top of the custom frame. This is not simply fixed by handling
-// WM_NCPAINT/WM_PAINT, with some investigation it turns out that this
-// rendering is being done *inside* the default implementation of some message
-// handlers and functions:
-//  . WM_SETTEXT
-//  . WM_SETICON
-//  . WM_NCLBUTTONDOWN
-//  . EnableMenuItem, called from our WM_INITMENU handler
-// The solution is to handle these messages and call DefWindowProc ourselves,
-// but prevent the window from being able to update itself for the duration of
-// the call. We do this with this class, which automatically calls its
-// associated Window's lock and unlock functions as it is created and destroyed.
-// See documentation in those methods for the technique used.
-//
-// The lock only has an effect if the window was visible upon lock creation, as
-// it doesn't guard against direct visiblility changes, and multiple locks may
-// exist simultaneously to handle certain nested Windows messages.
-//
-// IMPORTANT: Do not use this scoping object for large scopes or periods of
-//            time! IT WILL PREVENT THE WINDOW FROM BEING REDRAWN! (duh).
-//
-// I would love to hear Raymond Chen's explanation for all this. And maybe a
-// list of other messages that this applies to ;-)
-class HWNDMessageHandler::ScopedRedrawLock {
- public:
-  explicit ScopedRedrawLock(HWNDMessageHandler* owner)
-    : owner_(owner),
-      hwnd_(owner_->hwnd()),
-      was_visible_(owner_->IsVisible()),
-      cancel_unlock_(false),
-      force_(!(GetWindowLong(hwnd_, GWL_STYLE) & WS_CAPTION)) {
-    if (was_visible_ && ::IsWindow(hwnd_))
-      owner_->LockUpdates(force_);
-  }
-
-  ~ScopedRedrawLock() {
-    if (!cancel_unlock_ && was_visible_ && ::IsWindow(hwnd_))
-      owner_->UnlockUpdates(force_);
-  }
-
-  // Cancel the unlock operation, call this if the Widget is being destroyed.
-  void CancelUnlockOperation() { cancel_unlock_ = true; }
-
- private:
-  // The owner having its style changed.
-  HWNDMessageHandler* owner_;
-  // The owner's HWND, cached to avoid action after window destruction.
-  HWND hwnd_;
-  // Records the HWND visibility at the time of creation.
-  bool was_visible_;
-  // A flag indicating that the unlock operation was canceled.
-  bool cancel_unlock_;
-  // If true, perform the redraw lock regardless of Aero state.
-  bool force_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedRedrawLock);
-};
 
 LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
                                                         WPARAM w_param,
