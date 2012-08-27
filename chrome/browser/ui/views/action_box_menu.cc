@@ -54,6 +54,7 @@ void ActionBoxMenu::RunMenu(views::MenuButton* menu_button) {
 }
 
 void ActionBoxMenu::ExecuteCommand(int id) {
+  model_->ExecuteCommand(id);
 }
 
 views::Border* ActionBoxMenu::CreateMenuBorder() {
@@ -127,7 +128,7 @@ void ActionBoxMenu::PopulateMenu() {
   for (int model_index = 0; model_index < model_->GetItemCount();
        ++model_index) {
     views::MenuItemView* menu_item = root_->AppendMenuItemFromModel(
-        model_, model_index, model_index + 1);
+        model_, model_index, model_->GetCommandIdAt(model_index));
     if (model_->GetTypeAt(model_index) == ui::MenuModel::TYPE_COMMAND) {
       menu_item->SetMargins(0, 0);
       if (model_->IsItemExtension(model_index)) {

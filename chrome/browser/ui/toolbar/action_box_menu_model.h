@@ -36,13 +36,6 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
   // or NULL if it is not an extension item.
   const extensions::Extension* GetExtensionAt(int index);
 
- private:
-  const extensions::ExtensionList& action_box_menu_items() {
-    return extension_service_->toolbar_model()->action_box_menu_items();
-  }
-
-  typedef std::map<int, std::string> IdToEntensionIdMap;
-
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -50,6 +43,13 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
+
+ private:
+  const extensions::ExtensionList& action_box_menu_items() {
+    return extension_service_->toolbar_model()->action_box_menu_items();
+  }
+
+  typedef std::map<int, std::string> IdToEntensionIdMap;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
