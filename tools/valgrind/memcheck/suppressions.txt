@@ -5809,6 +5809,15 @@
    fun:_ZN8chromeos17DBusThreadManager10InitializeEv
    fun:_ZN8chromeos23KioskModeIdleLogoutTest5SetUpEv
 }
+{
+   bug_144913_c
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN8chromeos21DBusThreadManagerImplC1ENS_28DBusClientImplementationTypeE
+   fun:_ZN8chromeos17DBusThreadManager10InitializeEv
+   fun:_ZN8chromeos23KioskModeIdleLogoutTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
