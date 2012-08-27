@@ -11,14 +11,17 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/printing/print_system_task_proxy.h"
+#include "content/public/test/test_browser_thread.h"
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_MACOSX)
 namespace {
+
+#if !defined(OS_MACOSX)
 
 // TestEntry stores the printer name and the expected number of options.
 struct TestEntry {
@@ -44,12 +47,35 @@ void verifyOptionValue(ppd_file_t* ppd,
   EXPECT_EQ(strcmp(option_choice->choice, expected_choice_value.c_str()), 0);
 }
 
+#endif  // !defined(OS_MACOSX)
+
+class PrintSystemTaskProxyTest : public testing::Test {
+ public:
+  PrintSystemTaskProxyTest()
+    : loop_(MessageLoop::TYPE_UI),
+      ui_thread_(content::BrowserThread::UI, &loop_) {
+  }
+
+ protected:
+  virtual void TearDown() OVERRIDE {
+    MessageLoop::current()->RunAllPending();
+  }
+
+ private:
+  MessageLoop loop_;
+  content::TestBrowserThread ui_thread_;
+};
+
 }  // namespace
+
+#if !defined(OS_MACOSX)
 
 using printing_internal::parse_lpoptions;
 
+
+
 // Test to verify that lpoption custom settings are marked on the ppd file.
-TEST(PrintSystemTaskProxyTest, MarkLpoptionsInPPD) {
+TEST_F(PrintSystemTaskProxyTest, MarkLpoptionsInPPD) {
   const std::string kColorModel = "ColorModel";
   const std::string kBlack = "Black";
   const std::string kGray = "Gray";
@@ -156,7 +182,7 @@ TEST(PrintSystemTaskProxyTest, MarkLpoptionsInPPD) {
 }
 
 // Test the lpoption parsing code.
-TEST(PrintSystemTaskProxyTest, ParseLpoptionData) {
+TEST_F(PrintSystemTaskProxyTest, ParseLpoptionData) {
   // Specifies the user lpoption data.
   std::string user_lpoptions;
 
@@ -227,7 +253,7 @@ TEST(PrintSystemTaskProxyTest, ParseLpoptionData) {
 #endif  // !defined(OS_MACOSX)
 
 // Test duplex detection code, which regressed in http://crbug.com/103999.
-TEST(PrintSystemTaskProxyTest, DetectDuplexModeCUPS) {
+TEST_F(PrintSystemTaskProxyTest, DetectDuplexModeCUPS) {
   // Specifies the test ppd data.
   printing::PrinterCapsAndDefaults printer_info;
   printer_info.printer_capabilities.append(
@@ -253,7 +279,6 @@ TEST(PrintSystemTaskProxyTest, DetectDuplexModeCUPS) {
   scoped_refptr<PrintSystemTaskProxy> proxy(
       new PrintSystemTaskProxy(base::WeakPtr<PrintPreviewHandler>(), NULL,
                                false));
-
   ASSERT_TRUE(proxy->ParsePrinterCapabilities(
       printer_info,
       "InvalidPrinter",
@@ -266,7 +291,7 @@ TEST(PrintSystemTaskProxyTest, DetectDuplexModeCUPS) {
   EXPECT_EQ(printing::SIMPLEX, default_duplex_setting_value);
 }
 
-TEST(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS) {
+TEST_F(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS) {
   // Specifies the test ppd data.
   printing::PrinterCapsAndDefaults printer_info;
   printer_info.printer_capabilities.append(
@@ -283,7 +308,6 @@ TEST(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS) {
   scoped_refptr<PrintSystemTaskProxy> proxy(
       new PrintSystemTaskProxy(base::WeakPtr<PrintPreviewHandler>(), NULL,
                                false));
-
   ASSERT_TRUE(proxy->ParsePrinterCapabilities(
       printer_info,
       "InvalidPrinter",

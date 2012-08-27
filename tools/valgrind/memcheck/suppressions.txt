@@ -5781,18 +5781,6 @@
    fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadERK8FilePathPN7content15ResourceContextE13scoped_refptrIN5quota20SpecialStoragePolicyEE
 }
 {
-   bug_144898
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN50PrintSystemTaskProxyTest_DetectDuplexModeCUPS_Test8TestBodyEv
-}
-{
-   bug_144898_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN52PrintSystemTaskProxyTest_DetectNoDuplexModeCUPS_Test8TestBodyEv
-}
-{
    bug_144913
    Memcheck:Leak
    fun:_Znw*

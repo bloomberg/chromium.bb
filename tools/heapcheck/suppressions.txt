@@ -1476,16 +1476,6 @@
    fun:ChromeAppCacheService::InitializeOnIOThread
 }
 {
-   bug_144898
-   Heapcheck:Leak
-   fun:PrintSystemTaskProxyTest_DetectNoDuplexModeCUPS_Test::TestBody
-}
-{
-   bug_144898_b
-   Heapcheck:Leak
-   fun:PrintSystemTaskProxyTest_DetectDuplexModeCUPS_Test::TestBody
-}
-{
    bug_144913
    Heapcheck:Leak
    ...
