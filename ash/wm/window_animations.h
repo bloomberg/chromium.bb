@@ -108,6 +108,9 @@ ASH_EXPORT void AnimateWorkspaceIn(aura::Window* window,
 ASH_EXPORT void AnimateWorkspaceOut(aura::Window* window,
                                     WorkspaceAnimationDirection direction);
 
+// Returns the amount of time before destroying the system background.
+ASH_EXPORT base::TimeDelta GetSystemBackgroundDestroyDuration();
+
 namespace internal {
 
 // Returns the duration of the cross-fade animation based on the |old_bounds|

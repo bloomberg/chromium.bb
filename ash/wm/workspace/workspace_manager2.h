@@ -33,6 +33,7 @@ namespace ash {
 namespace internal {
 
 class ShelfLayoutManager;
+class SystemBackgroundController;
 class WorkspaceLayoutManager2;
 class WorkspaceManagerTest2;
 class Workspace2;
@@ -127,6 +128,9 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // any layers.
   void ProcessDeletion();
 
+  // Deletes |background_controller_|. Called from |destroy_background_timer_|.
+  void DestroySystemBackground();
+
   // These methods are forwarded from the LayoutManager installed on the
   // Workspace's window.
   void OnWindowAddedToWorkspace(Workspace2* workspace, aura::Window* child);
@@ -177,6 +181,14 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // no longer contain layers are deleted.
   std::set<Workspace2*> to_delete_;
   base::OneShotTimer<WorkspaceManager2> delete_timer_;
+
+  // Used to show the system level background. Non-null when the background is
+  // visible.
+  scoped_ptr<SystemBackgroundController> background_controller_;
+
+  // Timer used to destroy the background. We wait to destroy until animations
+  // complete.
+  base::OneShotTimer<WorkspaceManager2> destroy_background_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManager2);
 };

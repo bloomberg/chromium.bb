@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -593,7 +594,7 @@ bool FramePainter::UseSoloWindowHeader() {
   if (!instances_)
     return false;  // Return value shouldn't matter.
 
-  int window_count = 0;
+  aura::Window* window = NULL;
   for (std::set<FramePainter*>::const_iterator it = instances_->begin();
        it != instances_->end();
        ++it) {
@@ -601,12 +602,15 @@ bool FramePainter::UseSoloWindowHeader() {
     // the existence of a layout manager gets additionally tested.
     if (IsVisibleNormalWindow((*it)->window_) &&
         (!(*it)->window_->GetProperty(ash::kConstrainedWindowKey))) {
-      window_count++;
-      if (window_count > 1)
+      if (window)
         return false;
+      window = (*it)->window_;
     }
   }
-  return window_count == 1;
+  // We don't use the translucent background when a window is maximized with
+  // workspace2 as otherwise the system background shows through the header.
+  return window && (!internal::WorkspaceController::IsWorkspace2Enabled() ||
+                    !wm::IsWindowMaximized(window));
 }
 
 // static

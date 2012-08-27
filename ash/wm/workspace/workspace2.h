@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef ASH_WM_WORKSPACE_WORKSPACE2_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_H_
+#define ASH_WM_WORKSPACE_WORKSPACE2_H_
 
 #include <vector>
 

@@ -941,6 +941,11 @@ void AnimateWorkspaceOut(aura::Window* window,
   }
 }
 
+base::TimeDelta GetSystemBackgroundDestroyDuration() {
+  return base::TimeDelta::FromMilliseconds(
+      std::max(kWorkspaceCrossFadeDurationMs, kWorkspaceSwitchTimeMS));
+}
+
 namespace internal {
 
 TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,

@@ -151,6 +151,9 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
                   "UnparentedControlContainer",
                   non_lock_screen_containers);
 
+  CreateContainer(internal::kShellWindowId_SystemBackgroundContainer,
+                  "SystemBackgroundContainer", non_lock_screen_containers);
+
   aura::Window* desktop_background_containers = CreateContainer(
       internal::kShellWindowId_DesktopBackgroundContainer,
       "DesktopBackgroundContainer",

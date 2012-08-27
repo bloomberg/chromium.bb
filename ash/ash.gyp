@@ -346,6 +346,8 @@
         'wm/workspace/snap_sizer.cc',
         'wm/workspace/snap_sizer.h',
         'wm/workspace/snap_types.h',
+        'wm/workspace/system_background_controller.cc',
+        'wm/workspace/system_background_controller.h',
         'wm/workspace/workspace.cc',
         'wm/workspace/workspace.h',
         'wm/workspace/workspace2.cc',
