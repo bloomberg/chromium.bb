@@ -41,18 +41,19 @@ class ChromeAboutPluginsUITest(pyauto.PyUITest):
     import pdb
     pdb.set_trace()
 
-  def _IsEnabled(self, plugin_name):
+  def _IsEnabled(self, driver, plugin_name):
     """Checks if plugin is enabled.
 
     Args:
+      driver: A Chrome driver object.
       plugin_name: Plugin name to verify.
 
     Returns:
       True, if plugin is enabled, or False otherwise.
     """
-    for plugin in self.GetPluginsInfo().Plugins():
-      if re.search(plugin_name, plugin['name']):
-        return plugin['enabled']
+    check_plugin_enabled_js = 'return navigator.plugins["%s"] != undefined' % \
+        plugin_name
+    return driver.execute_script(check_plugin_enabled_js)
 
   def _ExpandDetailInfoLink(self, driver):
     """Expand detail info link.
@@ -99,13 +100,13 @@ class ChromeAboutPluginsUITest(pyauto.PyUITest):
     # Disable PDF viewer plugin in about:plugins.
     pdf_disable_link.click()
     self.assertTrue(self.WaitUntil(lambda: not
-        self._IsEnabled('Chrome PDF Viewer')))
+        self._IsEnabled(driver, 'Chrome PDF Viewer')))
 
     # Re-enable PDF viewer plugin.
     pdf_enable_link = driver.find_element_by_xpath(pdf_enable_path)
     pdf_enable_link.click()
     self.assertTrue(self.WaitUntil(lambda:
-        self._IsEnabled('Chrome PDF Viewer')))
+        self._IsEnabled(driver, 'Chrome PDF Viewer')))
 
   def testEnableAndDisableFlashPlugin(self):
     """Verify enable and disable flash plugins from about:plugins page."""
@@ -123,14 +124,14 @@ class ChromeAboutPluginsUITest(pyauto.PyUITest):
         './/a[text()="Disable"]')
     flash_disable_link.click()
     self.assertTrue(self.WaitUntil(lambda: not
-        self._IsEnabled('Shockwave Flash')))
+        self._IsEnabled(driver, 'Shockwave Flash')))
 
     # Re-enable Flash plugin from flash detail info.
     flash_enable_link = flash_plugins_elem.find_element_by_xpath(
         './/a[text()="Enable"]')
     flash_enable_link.click()
     self.assertTrue(self.WaitUntil(lambda:
-        self._IsEnabled('Shockwave Flash')))
+        self._IsEnabled(driver, 'Shockwave Flash')))
 
 
 if __name__ == '__main__':
