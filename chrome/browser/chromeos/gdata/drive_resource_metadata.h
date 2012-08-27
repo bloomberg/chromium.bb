@@ -64,11 +64,6 @@ const char kDriveRootDirectoryResourceId[] = "folder:root";
 // drive.proto.
 const int32 kProtoVersion = 2;
 
-// Callback type used to get result of file search.
-// If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
-typedef base::Callback<void(DriveFileError error, DriveEntry* entry)>
-    FindEntryCallback;
-
 // Used for file operations like removing files.
 typedef base::Callback<void(DriveFileError error)>
     FileOperationCallback;
@@ -168,12 +163,11 @@ class DriveResourceMetadata {
   // Sets root directory resource id and initialize the root entry.
   void InitializeRootEntry(const std::string& root_id);
 
-  // Add |new entry| to |directory| and invoke the callback asynchronously.
+  // Add |doc entry| to directory with path |directory_path| and invoke the
+  // callback asynchronously.
   // |callback| may not be null.
-  // TODO(achuith,satorux): Use DriveEntryProto instead for new_entry.
-  // crbug.com/142048
-  void AddEntryToDirectory(DriveDirectory* directory,
-                           DriveEntry* new_entry,
+  void AddEntryToDirectory(const FilePath& directory_path,
+                           scoped_ptr<DocumentEntry> doc_entry,
                            const FileMoveCallback& callback);
 
   // Moves |entry| to |directory_path| asynchronously. Removes entry from

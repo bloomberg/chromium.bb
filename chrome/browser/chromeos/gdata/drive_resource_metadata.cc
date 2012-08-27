@@ -28,6 +28,12 @@ const char kDBKeyLargestChangestamp[] = "m:largest_changestamp";
 const char kDBKeyVersion[] = "m:version";
 const char kDBKeyResourceIdPrefix[] = "r:";
 
+// Posts |error| to |callback| asynchronously.
+void PostError(const FileMoveCallback& callback, DriveFileError error) {
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(callback, error, FilePath()));
+}
+
 }  // namespace
 
 EntryInfoResult::EntryInfoResult() : error(DRIVE_FILE_ERROR_FAILED) {
@@ -220,12 +226,34 @@ void DriveResourceMetadata::ClearRoot() {
 }
 
 void DriveResourceMetadata::AddEntryToDirectory(
-    DriveDirectory* directory,
-    DriveEntry* new_entry,
+    const FilePath& directory_path,
+    scoped_ptr<DocumentEntry> doc_entry,
     const FileMoveCallback& callback) {
-  DCHECK(directory);
-  DCHECK(new_entry);
+  DCHECK(!directory_path.empty());
   DCHECK(!callback.is_null());
+
+  if (!doc_entry.get()) {
+    PostError(callback, DRIVE_FILE_ERROR_FAILED);
+    return;
+  }
+
+  DriveEntry* new_entry = FromDocumentEntry(*doc_entry);
+  if (!new_entry) {
+    PostError(callback, DRIVE_FILE_ERROR_FAILED);
+    return;
+  }
+
+  DriveEntry* dir_entry = FindEntryByPathSync(directory_path);
+  if (!dir_entry) {
+    PostError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  DriveDirectory* directory = dir_entry->AsDriveDirectory();
+  if (!directory) {
+    PostError(callback, DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
+    return;
+  }
 
   directory->AddEntry(new_entry);
   DVLOG(1) << "AddEntryToDirectory " << new_entry->GetFilePath().value();

@@ -335,7 +335,7 @@ class DriveFileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
-  // Adds a file entry from |entry| under |virtual_dir_path|, and modifies
+  // Adds a file entry from |doc_entry| under |directory_path|, and modifies
   // the cache state.
   //
   // When uploading a new file, adds a new file entry, and store its content
@@ -346,8 +346,8 @@ class DriveFileSystemInterface {
   //
   // |callback| will be called on the UI thread upon completion of operation.
   virtual void AddUploadedFile(UploadMode upload_mode,
-                               const FilePath& virtual_dir_path,
-                               scoped_ptr<DocumentEntry> entry,
+                               const FilePath& directory_path,
+                               scoped_ptr<DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) = 0;

@@ -116,8 +116,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(UploadMode upload_mode,
-                               const FilePath& virtual_dir_path,
-                               scoped_ptr<DocumentEntry> entry,
+                               const FilePath& directory_path,
+                               scoped_ptr<DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) OVERRIDE;
@@ -165,7 +165,20 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Defines set of parameters passes to intermediate callbacks during
   // execution of CreateDirectory() method.
-  struct CreateDirectoryParams;
+  struct CreateDirectoryParams {
+    CreateDirectoryParams(const FilePath& created_directory_path,
+                          const FilePath& target_directory_path,
+                          bool is_exclusive,
+                          bool is_recursive,
+                          const FileOperationCallback& callback);
+    ~CreateDirectoryParams();
+
+    const FilePath created_directory_path;
+    const FilePath target_directory_path;
+    const bool is_exclusive;
+    const bool is_recursive;
+    FileOperationCallback callback;
+  };
 
   // Defines set of parameters passed to an intermediate callback
   // OnGetFileCompleteForOpen, during execution of OpenFile() method.
@@ -351,6 +364,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
               const FileMoveCallback& callback);
 
   // Part of Rename(). Called after GetEntryInfoByPath() is complete.
+  // |callback| must not be null.
   void RenameAfterGetEntryInfo(const FilePath& file_path,
                                const FilePath::StringType& new_name,
                                const FileMoveCallback& callback,
@@ -437,10 +451,18 @@ class DriveFileSystem : public DriveFileSystemInterface,
                           GDataErrorCode status,
                           scoped_ptr<base::Value> data);
 
-  // Callback for handling directory create requests.
-  void OnCreateDirectoryCompleted(const CreateDirectoryParams& params,
-                                  GDataErrorCode status,
-                                  scoped_ptr<base::Value> created_entry);
+  // Callback for handling directory create requests. Adds the directory
+  // represented by |created_entry| to the local filesystem.
+  void AddNewDirectory(const CreateDirectoryParams& params,
+                       GDataErrorCode status,
+                       scoped_ptr<base::Value> created_entry);
+
+  // Callback for DriveResourceMetadata::AddEntryToDirectory. Continues the
+  // recursive creation of a directory path by calling CreateDirectory again.
+  void ContinueCreateDirectory(
+      const CreateDirectoryParams& params,
+      DriveFileError error,
+      const FilePath& moved_file_path);
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
@@ -497,7 +519,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.
-  // |callback| may be null.
+  // |callback| must not be null.
   void NotifyAndRunFileMoveCallback(
       const FileMoveCallback& callback,
       DriveFileError error,
@@ -527,11 +549,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void AddUploadedFileToCache(AddUploadedFileParams* params,
                               DriveFileError error,
                               const FilePath& file_path);
-
-  // Converts |entry_value| into GFileDocument instance and adds it
-  // to virtual file system at |directory_path|.
-  DriveFileError AddNewDirectory(const FilePath& directory_path,
-                                 base::Value* entry_value);
 
   // Given non-existing |directory_path|, finds the first missing parent
   // directory of |directory_path|.
@@ -753,8 +770,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                  DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
-                                 const FilePath& virtual_dir_path,
-                                 scoped_ptr<DocumentEntry> entry,
+                                 const FilePath& directory_path,
+                                 scoped_ptr<DocumentEntry> doc_entry,
                                  const FilePath& file_content_path,
                                  DriveCache::FileOperationType cache_operation,
                                  const base::Closure& callback);

@@ -305,7 +305,6 @@ class DriveFileSystemTest : public testing::Test {
 
   void AddDirectoryFromFile(const FilePath& directory_path,
                             const std::string& filename) {
-    std::string error;
     scoped_ptr<Value> atom(LoadJSONFile(filename));
     ASSERT_TRUE(atom.get());
     ASSERT_TRUE(atom->GetType() == Value::TYPE_DICTIONARY);
@@ -324,11 +323,15 @@ class DriveFileSystemTest : public testing::Test {
     directory_path.GetComponents(&dir_parts);
     entry_dict->SetString("title.$t", dir_parts[dir_parts.size() - 1]);
 
-    ASSERT_EQ(file_system_->AddNewDirectory(directory_path.DirName(),
-                                            entry_value),
-              DRIVE_FILE_OK)
-        << "Failed adding "
-        << directory_path.DirName().value();
+    DriveFileError error;
+    DriveFileSystem::CreateDirectoryParams params(directory_path,
+                                                  directory_path,
+                                                  false,  // is_exclusive
+                                                  false,  // is_recursive
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+    file_system_->AddNewDirectory(params, HTTP_SUCCESS, atom.Pass());
+    test_util::RunBlockingPoolTask();
+    EXPECT_EQ(DRIVE_FILE_OK, error);
   }
 
   // Updates the content of directory under |directory_path| with parsed feed

@@ -273,21 +273,6 @@ void RunGetEntryInfoWithFilePathCallback(
 }  // namespace
 
 // DriveFileSystem::CreateDirectoryParams struct implementation.
-struct DriveFileSystem::CreateDirectoryParams {
-  CreateDirectoryParams(const FilePath& created_directory_path,
-                        const FilePath& target_directory_path,
-                        bool is_exclusive,
-                        bool is_recursive,
-                        const FileOperationCallback& callback);
-  ~CreateDirectoryParams();
-
-  const FilePath created_directory_path;
-  const FilePath target_directory_path;
-  const bool is_exclusive;
-  const bool is_recursive;
-  FileOperationCallback callback;
-};
-
 DriveFileSystem::CreateDirectoryParams::CreateDirectoryParams(
     const FilePath& created_directory_path,
     const FilePath& target_directory_path,
@@ -385,22 +370,22 @@ struct DriveFileSystem::StartFileUploadParams {
 // DriveFileSystem::AddUploadedFileParams implementation.
 struct DriveFileSystem::AddUploadedFileParams {
   AddUploadedFileParams(UploadMode upload_mode,
-                        DriveDirectory* parent_dir,
-                        scoped_ptr<DriveEntry> new_entry,
+                        const FilePath& directory_path,
+                        scoped_ptr<DocumentEntry> doc_entry,
                         const FilePath& file_content_path,
                         DriveCache::FileOperationType cache_operation,
                         const base::Closure& callback)
   : upload_mode(upload_mode),
-    parent_dir(parent_dir),
-    new_entry(new_entry.Pass()),
+    directory_path(directory_path),
+    doc_entry(doc_entry.Pass()),
     file_content_path(file_content_path),
     cache_operation(cache_operation),
     callback(callback) {
   }
 
   UploadMode upload_mode;
-  DriveDirectory* parent_dir;
-  scoped_ptr<DriveEntry> new_entry;
+  FilePath directory_path;
+  scoped_ptr<DocumentEntry> doc_entry;
   FilePath file_content_path;
   DriveCache::FileOperationType cache_operation;
   base::Closure callback;
@@ -984,10 +969,10 @@ void DriveFileSystem::RenameAfterGetEntryInfo(
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, file_path);
+    callback.Run(error, file_path);
     return;
   }
   DCHECK(entry_proto.get());
@@ -1342,7 +1327,7 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
   drive_service_->CreateDirectory(
       last_parent_dir_url,
       first_missing_path.BaseName().value(),
-      base::Bind(&DriveFileSystem::OnCreateDirectoryCompleted,
+      base::Bind(&DriveFileSystem::AddNewDirectory,
                  ui_weak_ptr_,
                  CreateDirectoryParams(
                      first_missing_path,
@@ -2181,7 +2166,7 @@ void DriveFileSystem::OnGetAboutResource(
                about->quota_bytes_used());
 }
 
-void DriveFileSystem::OnCreateDirectoryCompleted(
+void DriveFileSystem::AddNewDirectory(
     const CreateDirectoryParams& params,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
@@ -2191,23 +2176,30 @@ void DriveFileSystem::OnCreateDirectoryCompleted(
   if (error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
-
     return;
   }
 
-  base::DictionaryValue* dict_value = NULL;
-  base::Value* created_entry = NULL;
-  if (data.get() && data->GetAsDictionary(&dict_value) && dict_value)
-    dict_value->Get("entry", &created_entry);
-  error = AddNewDirectory(params.created_directory_path.DirName(),
-                          created_entry);
+  resource_metadata_->AddEntryToDirectory(
+      params.created_directory_path.DirName(),
+      scoped_ptr<DocumentEntry>(DocumentEntry::ExtractAndParse(*data)),
+      base::Bind(&DriveFileSystem::ContinueCreateDirectory,
+                 ui_weak_ptr_,
+                 params));
+}
+
+void DriveFileSystem::ContinueCreateDirectory(
+    const CreateDirectoryParams& params,
+    DriveFileError error,
+    const FilePath& moved_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != DRIVE_FILE_OK) {
     if (!params.callback.is_null())
       params.callback.Run(error);
-
     return;
   }
+
+  OnDirectoryChanged(moved_file_path.DirName());
 
   // Not done yet with recursive directory creation?
   if (params.target_directory_path != params.created_directory_path &&
@@ -2216,10 +2208,7 @@ void DriveFileSystem::OnCreateDirectoryCompleted(
                     params.is_exclusive,
                     params.is_recursive,
                     params.callback);
-    return;
-  }
-
-  if (!params.callback.is_null()) {
+  } else if (!params.callback.is_null()) {
     // Finally done with the create request.
     params.callback.Run(DRIVE_FILE_OK);
   }
@@ -2379,24 +2368,12 @@ void DriveFileSystem::OnCopyDocumentCompleted(
     return;
   }
 
-  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
-  if (!doc_entry.get()) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-
-  DriveEntry* entry = resource_metadata_->FromDocumentEntry(*doc_entry);
-  if (!entry) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-
   // |entry| was added in the root directory on the server, so we should
   // first add it to |root_| to mirror the state and then move it to the
   // destination directory by MoveEntryFromRootDirectory().
   resource_metadata_->AddEntryToDirectory(
-      resource_metadata_->root(),
-      entry,
+      resource_metadata_->root()->GetFilePath(),
+      scoped_ptr<DocumentEntry>(DocumentEntry::ExtractAndParse(*data)),
       base::Bind(&DriveFileSystem::MoveEntryFromRootDirectory,
                  ui_weak_ptr_,
                  dir_path,
@@ -2569,18 +2546,17 @@ void DriveFileSystem::RenameEntryLocally(
     GDataErrorCode status,
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   const DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, FilePath());
+    callback.Run(error, FilePath());
     return;
   }
 
   DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
   if (!entry) {
-    if (!callback.is_null())
-      callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
     return;
   }
 
@@ -2635,12 +2611,12 @@ void DriveFileSystem::NotifyAndRunFileMoveCallback(
     DriveFileError error,
     const FilePath& moved_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error == DRIVE_FILE_OK)
     OnDirectoryChanged(moved_file_path.DirName());
 
-  if (!callback.is_null())
-    callback.Run(error, moved_file_path);
+  callback.Run(error, moved_file_path);
 }
 
 void DriveFileSystem::NotifyAndRunFileOperationCallback(
@@ -2698,44 +2674,6 @@ void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
   callback.Run(error);
 }
 
-DriveFileError DriveFileSystem::AddNewDirectory(
-    const FilePath& directory_path, base::Value* entry_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!entry_value)
-    return DRIVE_FILE_ERROR_FAILED;
-
-  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(*entry_value));
-
-  if (!doc_entry.get())
-    return DRIVE_FILE_ERROR_FAILED;
-
-  // Find parent directory element within the cached file system snapshot.
-  DriveEntry* entry = resource_metadata_->FindEntryByPathSync(directory_path);
-  if (!entry)
-    return DRIVE_FILE_ERROR_FAILED;
-
-  // Check if parent is a directory since in theory since this is a callback
-  // something could in the meantime have nuked the parent dir and created a
-  // file with the exact same name.
-  DriveDirectory* parent_dir = entry->AsDriveDirectory();
-  if (!parent_dir)
-    return DRIVE_FILE_ERROR_FAILED;
-
-  DriveEntry* new_entry =
-      resource_metadata_->FromDocumentEntry(*doc_entry);
-  if (!new_entry)
-    return DRIVE_FILE_ERROR_FAILED;
-
-  resource_metadata_->AddEntryToDirectory(
-      parent_dir,
-      new_entry,
-      base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
-                 ui_weak_ptr_,
-                 FileMoveCallback()));
-  return DRIVE_FILE_OK;
-}
-
 DriveFileSystem::FindMissingDirectoryResult
 DriveFileSystem::FindFirstMissingParentDirectory(
     const FilePath& directory_path,
@@ -2771,7 +2709,7 @@ DriveFileSystem::FindFirstMissingParentDirectory(
 
 void DriveFileSystem::AddUploadedFile(
     UploadMode upload_mode,
-    const FilePath& virtual_dir_path,
+    const FilePath& directory_path,
     scoped_ptr<DocumentEntry> entry,
     const FilePath& file_content_path,
     DriveCache::FileOperationType cache_operation,
@@ -2785,7 +2723,7 @@ void DriveFileSystem::AddUploadedFile(
       base::Bind(&DriveFileSystem::AddUploadedFileOnUIThread,
                  ui_weak_ptr_,
                  upload_mode,
-                 virtual_dir_path,
+                 directory_path,
                  base::Passed(&entry),
                  file_content_path,
                  cache_operation,
@@ -2794,44 +2732,22 @@ void DriveFileSystem::AddUploadedFile(
 
 void DriveFileSystem::AddUploadedFileOnUIThread(
     UploadMode upload_mode,
-    const FilePath& virtual_dir_path,
-    scoped_ptr<DocumentEntry> entry,
+    const FilePath& directory_path,
+    scoped_ptr<DocumentEntry> doc_entry,
     const FilePath& file_content_path,
     DriveCache::FileOperationType cache_operation,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(doc_entry.get());
 
-  // ScopedClosureRunner ensures that the specified callback is always invoked
-  // upon return or passed on.
-  base::ScopedClosureRunner callback_runner(callback);
-
-  if (!entry.get()) {
-    NOTREACHED();
-    return;
-  }
-
-  DriveEntry* dir_entry = resource_metadata_->FindEntryByPathSync(
-      virtual_dir_path);
-  if (!dir_entry)
-    return;
-
-  DriveDirectory* parent_dir  = dir_entry->AsDriveDirectory();
-  if (!parent_dir)
-    return;
-
-  scoped_ptr<DriveEntry> new_entry(
-      resource_metadata_->FromDocumentEntry(*entry));
-  if (!new_entry.get())
-    return;
-
-  const std::string& resource_id = new_entry->resource_id();
+  const std::string& resource_id = doc_entry->resource_id();
   AddUploadedFileParams* params =
       new AddUploadedFileParams(upload_mode,
-                                parent_dir,
-                                new_entry.Pass(),
+                                directory_path,
+                                doc_entry.Pass(),
                                 file_content_path,
                                 cache_operation,
-                                callback_runner.Release());
+                                callback);
 
   const FileMoveCallback file_move_callback =
       base::Bind(&DriveFileSystem::ContinueAddUploadedFile,
@@ -2848,23 +2764,22 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
 void DriveFileSystem::ContinueAddUploadedFile(
     AddUploadedFileParams* params,
     DriveFileError error,
-    const FilePath& file_path) {
+    const FilePath& /* file_path */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(DRIVE_FILE_OK, error);
-  DCHECK(params->new_entry.get());
-  DriveFile* file = params->new_entry->AsDriveFile();
-  DCHECK(file);
+  DCHECK(params->doc_entry.get());
 
-  params->resource_id = file->resource_id();
-  params->md5 = file->file_md5();
+  params->resource_id = params->doc_entry->resource_id();
+  params->md5 = params->doc_entry->file_md5();
+  DCHECK(!params->resource_id.empty());
+  DCHECK(!params->md5.empty());
+
   resource_metadata_->AddEntryToDirectory(
-      params->parent_dir,
-      params->new_entry.release(),
-      base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
+      params->directory_path,
+      params->doc_entry.Pass(),
+      base::Bind(&DriveFileSystem::AddUploadedFileToCache,
                  ui_weak_ptr_,
-                 base::Bind(&DriveFileSystem::AddUploadedFileToCache,
-                            ui_weak_ptr_,
-                            base::Owned(params))));
+                 base::Owned(params)));
 }
 
 void DriveFileSystem::AddUploadedFileToCache(
@@ -2872,6 +2787,17 @@ void DriveFileSystem::AddUploadedFileToCache(
     DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params->resource_id.empty());
+  DCHECK(!params->md5.empty());
+  DCHECK(!params->resource_id.empty());
+  DCHECK(!params->callback.is_null());
+
+  if (error != DRIVE_FILE_OK) {
+    params->callback.Run();
+    return;
+  }
+
+  OnDirectoryChanged(file_path.DirName());
 
   if (params->upload_mode == UPLOAD_NEW_FILE) {
     // Add the file to the cache if we have uploaded a new file.
