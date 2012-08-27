@@ -54,7 +54,7 @@ views::View* SystemBackgroundController::View::GetContentsView() {
 
 void SystemBackgroundController::View::OnPaint(gfx::Canvas* canvas) {
   // TODO: get image!
-  canvas->DrawColor(SK_ColorRED);
+  canvas->DrawColor(SK_ColorBLACK);
 }
 
 SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root)
