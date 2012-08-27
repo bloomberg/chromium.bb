@@ -773,7 +773,8 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
+// See http://crbug.com/128961
 #define MAYBE_DNDToDifferentMenu DISABLED_DNDToDifferentMenu
 #else
 #define MAYBE_DNDToDifferentMenu DNDToDifferentMenu
