@@ -23,13 +23,6 @@
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_service_data.h"
-#include "webkit/fileapi/media/media_file_system_config.h"
-
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
-#include "webkit/fileapi/media/media_device_map_service.h"
-
-using fileapi::MediaDeviceMapService;
-#endif
 
 using base::SystemMonitor;
 using chrome::MediaStorageUtil;
@@ -139,6 +132,8 @@ void DeviceAttachedIntentSource::DispatchIntentsForService(
   const FilePath device_path(device_info.location);
 
   // TODO(kinuko, kmadhusu): Use a different file system type for MTP.
+  // TODO(kmadhusu): To manage the registered file systems efficiently, register
+  // the attached device media file system using MediaFileSystemRegistry.
   const std::string fs_id = fileapi::IsolatedContext::GetInstance()->
       RegisterFileSystemForPath(fileapi::kFileSystemTypeNativeMedia,
                                 device_path, &device_name);
@@ -157,19 +152,7 @@ void DeviceAttachedIntentSource::OnRemovableStorageDetached(
   if (it == device_id_map_.end())
     return;
 
-  // TODO(kmadhusu) This should be something like
-  // RevokeFileSystemByDevice(std::string)
   FilePath path(it->second.location);
   fileapi::IsolatedContext::GetInstance()->RevokeFileSystemByPath(path);
-
-#if defined(SUPPORT_MEDIA_FILESYSTEM)
-  // TODO(kmadhusu, vandebo): Clean up this code. http://crbug.com/140340.
-  MediaStorageUtil::Type type;
-  MediaStorageUtil::CrackDeviceId(it->second.device_id, &type, NULL);
-  if (type == MediaStorageUtil::USB_MTP) {
-    MediaDeviceMapService::GetInstance()->RemoveMediaDevice(
-        it->second.location);
-  }
-#endif
   device_id_map_.erase(it);
 }
