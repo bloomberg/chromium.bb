@@ -658,16 +658,16 @@
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X" file="statusbar_network_1x.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="statusbar_network_1x_error.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="statusbar_network_1x_unknown.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_DARK" file="statusbar_network_3g_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_DARK" file="cros/statusbar_network_3g_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_ERROR" file="statusbar_network_3g_error.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_LIGHT" file="statusbar_network_3g_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_LIGHT" file="cros/statusbar_network_3g_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_UNKNOWN" file="statusbar_network_3g_unknown.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_3G_WARN" file="statusbar_network_3g_warn.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_DARK" file="statusbar_network_4g_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_LIGHT" file="statusbar_network_4g_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_DARK" file="cros/statusbar_network_4g_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_4G_LIGHT" file="cros/statusbar_network_4g_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS" file="statusbar_network_arcs.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="statusbar_network_arcs_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="statusbar_network_arcs_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="cros/statusbar_network_arcs_light.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS" file="statusbar_network_bars.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="cros/statusbar_network_bars_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="cros/statusbar_network_bars_light.png" />
