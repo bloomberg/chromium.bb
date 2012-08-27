@@ -127,6 +127,8 @@ namespace chrome {
 void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
   local_state->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
+  local_state->RegisterListPref(prefs::kSessionRestoreFilesCycled,
+                                PrefService::UNSYNCABLE_PREF);
 
   browser_shutdown::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
