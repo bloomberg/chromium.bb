@@ -50,7 +50,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(pack_handler);
 
   extensions::CommandHandler* commands_handler =
-      new extensions::CommandHandler();
+      new extensions::CommandHandler(profile);
   commands_handler->GetLocalizedValues(source->localized_strings());
   web_ui->AddMessageHandler(commands_handler);
 

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_COMMAND_HANDLER_H_
 
 #include "base/compiler_specific.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -19,13 +21,15 @@ class CommandService;
 }
 
 class Extension;
+class Profile;
 
 namespace extensions {
 
 // The handler page for the Extension Commands UI overlay.
-class CommandHandler : public content::WebUIMessageHandler {
+class CommandHandler : public content::WebUIMessageHandler,
+                       public content::NotificationObserver {
  public:
-  CommandHandler();
+  explicit CommandHandler(Profile* profile);
   virtual ~CommandHandler();
 
   // Fetches the localized values for the page and deposits them into
@@ -34,6 +38,11 @@ class CommandHandler : public content::WebUIMessageHandler {
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
    // Update the list of extension commands in the config UI.
@@ -55,6 +64,10 @@ class CommandHandler : public content::WebUIMessageHandler {
   // Fetches all known commands, active and inactive and returns them through
   // |commands|.
   void GetAllCommands(base::DictionaryValue* commands);
+
+  content::NotificationRegistrar registrar_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandHandler);
 };
