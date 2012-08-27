@@ -499,32 +499,37 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
   child_process_logging::ScopedPrinterInfoSetter prn_info(
       print_backend_->GetPrinterDriverInfo(printer_name));
 
+  if (!print_backend_->IsValidPrinter(printer_name)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PrintSystemTaskProxy::SendFailedToGetPrinterCapabilities,
+        this, printer_name));
+    return;
+  }
+
   bool set_color_as_default = false;
   bool set_duplex_as_default = false;
   int printer_color_space_for_color = printing::UNKNOWN_COLOR_MODEL;
   int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
   int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
+  bool disable_color_options = false;
 
-  printing::PrinterCapsAndDefaults printer_info;
-  if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
-                                                 &printer_info) ||
-      !ParsePrinterCapabilities(printer_info,
-                                printer_name,
-                                &set_color_as_default,
-                                &printer_color_space_for_color,
-                                &printer_color_space_for_black,
-                                &set_duplex_as_default,
-                                &default_duplex_setting_value)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PrintSystemTaskProxy::SendFailedToGetPrinterCapabilities,
-                   this, printer_name));
-    return;
+  printing::PrinterCapsAndDefaults info;
+  if (print_backend_->GetPrinterCapsAndDefaults(printer_name, &info) &&
+      ParsePrinterCapabilities(info,
+                               printer_name,
+                               &set_color_as_default,
+                               &printer_color_space_for_color,
+                               &printer_color_space_for_black,
+                               &set_duplex_as_default,
+                               &default_duplex_setting_value)) {
+    disable_color_options = (!printer_color_space_for_color ||
+                             !printer_color_space_for_black ||
+                             (printer_color_space_for_color ==
+                              printer_color_space_for_black));
+  } else {
+    VLOG(1) << "Failed to get capabilities for " << printer_name;
   }
-  bool disable_color_options = (!printer_color_space_for_color ||
-                                !printer_color_space_for_black ||
-                                (printer_color_space_for_color ==
-                                 printer_color_space_for_black));
 
   DictionaryValue settings_info;
   settings_info.SetString(kPrinterId, printer_name);
