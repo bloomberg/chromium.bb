@@ -5824,6 +5824,12 @@
    fun:_Znw*
    fun:_ZL20cachedPaintLuminancef
 }
+{
+   bug_144930_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZL21cachedDeviceLuminancef
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
