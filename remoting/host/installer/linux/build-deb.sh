@@ -5,9 +5,22 @@
 # found in the LICENSE file.
 
 if [[ -z "$version_full" ]]; then
-  echo 'Error: $version_full not set'
+  src_root=./../../../..
+  version_helper=$src_root/chrome/tools/build/version.py
+  version_base=$($version_helper -f $src_root/remoting/VERSION \
+                 -t "@MAJOR@.@MINOR@")
+  version_build=$($version_helper -f $src_root/chrome/VERSION \
+                  -t "@BUILD@.@PATCH@")
+  version_full="$version_base.$version_build"
+fi
+
+if !(echo $version_full | grep -E \
+     "^[[:digit:]]+.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$" > /dev/null); then
+  echo "Error: Invalid \$version_full value: $version_full" >&2
   exit 1
 fi
+
+echo "Building version $version_full"
 
 # Create a fresh debian/changelog.
 export DEBEMAIL="The Chromium Authors <chromium-dev@chromium.org>"
