@@ -1651,6 +1651,7 @@
         'browser/sync/test_profile_sync_service.h',
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
+        'browser/tab_contents/web_contents_user_data_unittest.cc',
         'browser/task_manager/task_manager_unittest.cc',
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
