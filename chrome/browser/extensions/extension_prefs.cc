@@ -166,6 +166,10 @@ const char kPrefFromWebStore[] = "from_webstore";
 // mock App created from a bookmark.
 const char kPrefFromBookmark[] = "from_bookmark";
 
+// A prefrence that indicates whethere the extension was installed as
+// default apps.
+const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
+
 // A preference that contains any extension-controlled preferences.
 const char kPrefPreferences[] = "preferences";
 
@@ -1409,6 +1413,8 @@ void ExtensionPrefs::OnExtensionInstalled(
                       Value::CreateBooleanValue(from_webstore));
   extension_dict->Set(kPrefFromBookmark,
                       Value::CreateBooleanValue(extension->from_bookmark()));
+  extension_dict->Set(kPrefWasInstalledByDefault,
+      Value::CreateBooleanValue(extension->was_installed_by_default()));
   extension_dict->Set(kPrefInstallTime,
                       Value::CreateStringValue(
                           base::Int64ToString(install_time.ToInternalValue())));
@@ -1814,6 +1820,16 @@ bool ExtensionPrefs::IsFromBookmark(
   const DictionaryValue* dictionary = GetExtensionPref(extension_id);
   bool result = false;
   if (dictionary && dictionary->GetBoolean(kPrefFromBookmark, &result))
+    return result;
+  return false;
+}
+
+bool ExtensionPrefs::WasInstalledByDefault(
+    const std::string& extension_id) const {
+  const DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  bool result = false;
+  if (dictionary &&
+      dictionary->GetBoolean(kPrefWasInstalledByDefault, &result))
     return result;
   return false;
 }

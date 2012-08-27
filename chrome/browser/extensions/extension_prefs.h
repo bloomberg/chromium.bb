@@ -429,6 +429,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // bookmark.
   bool IsFromBookmark(const std::string& extension_id) const;
 
+  // Returns true if the extension was installed as a default app.
+  bool WasInstalledByDefault(const std::string& extension_id) const;
+
   // Helper method to acquire the installation time of an extension.
   // Returns base::Time() if the installation time could not be parsed or
   // found.

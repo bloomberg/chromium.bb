@@ -405,7 +405,8 @@ void ExternalProviderImpl::CreateExternalProviders(
                                      ExternalPrefLoader::NONE),
               Extension::INTERNAL,
               Extension::INVALID,
-              Extension::FROM_WEBSTORE)));
+              Extension::FROM_WEBSTORE |
+                  Extension::WAS_INSTALLED_BY_DEFAULT)));
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -1055,7 +1055,8 @@ static scoped_refptr<Extension> MakeSyncTestExtension(
     const GURL& launch_url,
     Extension::Location location,
     int num_plugins,
-    const FilePath& extension_path) {
+    const FilePath& extension_path,
+    int creation_flags) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName,
                    "PossiblySyncableExtension");
@@ -1086,7 +1087,7 @@ static scoped_refptr<Extension> MakeSyncTestExtension(
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, location, source, Extension::NO_FLAGS, &error);
+      extension_path, location, source, creation_flags, &error);
   EXPECT_TRUE(extension);
   EXPECT_EQ("", error);
   return extension;
@@ -1101,42 +1102,49 @@ static const char kValidUpdateUrl2[] =
 TEST(ExtensionTest, GetSyncTypeNormalExtensionNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST(ExtensionTest, GetSyncTypeUserScriptValidUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST(ExtensionTest, GetSyncTypeUserScriptNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST(ExtensionTest, GetSyncTypeThemeNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(THEME, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST(ExtensionTest, GetSyncTypeExtensionWithLaunchUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_NE(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST(ExtensionTest, GetSyncTypeExtensionExternal) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::EXTERNAL_PREF, 0, FilePath()));
+                            Extension::EXTERNAL_PREF, 0, FilePath(),
+                            Extension::NO_FLAGS));
+
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
@@ -1144,32 +1152,45 @@ TEST(ExtensionTest, GetSyncTypeUserScriptThirdPartyUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
-          Extension::INTERNAL, 0, FilePath()));
+          Extension::INTERNAL, 0, FilePath(), Extension::NO_FLAGS));
   EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 
 TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
+
   EXPECT_FALSE(extension->ShouldDisplayInLauncher());
 
   scoped_refptr<Extension> app(
       MakeSyncTestExtension(APP, GURL(), GURL("http://www.google.com"),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_TRUE(app->ShouldDisplayInLauncher());
 }
 
 TEST(ExtensionTest, OnlySyncInternal) {
   scoped_refptr<Extension> extension_internal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 0, FilePath()));
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_TRUE(extension_internal->IsSyncable());
 
   scoped_refptr<Extension> extension_noninternal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::COMPONENT, 0, FilePath()));
+                            Extension::COMPONENT, 0, FilePath(),
+                            Extension::NO_FLAGS));
   EXPECT_FALSE(extension_noninternal->IsSyncable());
+}
+
+TEST(ExtensionTest, DontSyncDefault) {
+  scoped_refptr<Extension> extension_default(
+      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
+                            Extension::INTERNAL, 0, FilePath(),
+                            Extension::WAS_INSTALLED_BY_DEFAULT));
+  EXPECT_FALSE(extension_default->IsSyncable());
 }
 
 // These last 2 tests don't make sense on Chrome OS, where extension plugins
@@ -1178,7 +1199,8 @@ TEST(ExtensionTest, OnlySyncInternal) {
 TEST(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 1, FilePath()));
+                            Extension::INTERNAL, 1, FilePath(),
+                            Extension::NO_FLAGS));
   if (extension)
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
@@ -1186,7 +1208,8 @@ TEST(ExtensionTest, GetSyncTypeExtensionWithPlugin) {
 TEST(ExtensionTest, GetSyncTypeExtensionWithTwoPlugins) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Extension::INTERNAL, 2, FilePath()));
+                            Extension::INTERNAL, 2, FilePath(),
+                            Extension::NO_FLAGS));
   if (extension)
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }

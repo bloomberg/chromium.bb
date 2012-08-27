@@ -3776,9 +3776,15 @@ Extension::SyncType Extension::GetSyncType() const {
 bool Extension::IsSyncable() const {
   // TODO(akalin): Figure out if we need to allow some other types.
 
-  // We want to sync any extensions that are internal and the chrome web store.
-  return location() == Extension::INTERNAL ||
-      id() == extension_misc::kWebStoreAppId;
+  // Default apps are not synced because otherwise they will pollute profiles
+  // that don't already have them. Specially, if a user doesn't have default
+  // apps, creates a new profile (which get default apps) and then enables sync
+  // for it, then their profile everywhere gets the default apps.
+  bool is_syncable = (location() == Extension::INTERNAL &&
+      !was_installed_by_default());
+  // Sync the chrome web store to maintain its position on the new tab page.
+  is_syncable |= (id() ==  extension_misc::kWebStoreAppId);
+  return is_syncable;
 }
 
 bool Extension::ShouldDisplayInLauncher() const {

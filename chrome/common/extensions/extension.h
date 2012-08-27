@@ -247,6 +247,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // |ERROR_ON_PRIVATE_KEY| means that private keys inside an
     // extension should be errors rather than warnings.
     ERROR_ON_PRIVATE_KEY = 1 << 6,
+
+    // |WAS_INSTALLED_BY_DEFAULT| installed by default when the profile was
+    // created.
+    WAS_INSTALLED_BY_DEFAULT = 1 << 7,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
@@ -695,6 +699,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
   bool from_bookmark() const { return (creation_flags_ & FROM_BOOKMARK) != 0; }
+  bool was_installed_by_default() const {
+    return (creation_flags_ & WAS_INSTALLED_BY_DEFAULT) != 0;
+  }
 
   // App-related.
   bool is_app() const {

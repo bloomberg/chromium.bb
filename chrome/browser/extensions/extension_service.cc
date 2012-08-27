@@ -625,6 +625,9 @@ bool ExtensionService::UpdateExtension(
   if (extension && extension->from_bookmark())
     creation_flags |= Extension::FROM_BOOKMARK;
 
+  if (extension && extension->was_installed_by_default())
+    creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
+
   installer->set_creation_flags(creation_flags);
 
   installer->set_delete_source(true);
