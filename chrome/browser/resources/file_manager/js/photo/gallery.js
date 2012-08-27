@@ -554,7 +554,8 @@ ShareMode.prototype.updateMenu = function(urls) {
   }
 
   var api = Gallery.getFileBrowserPrivate();
-  api.getFileTasks(urls, function(tasks) {
+  var mimeTypes = [];  // TODO(kaznacheev) Collect mime types properly.
+  api.getFileTasks(urls, mimeTypes, function(tasks) {
     for (var i = 0; i != tasks.length; i++) {
       var task = tasks[i];
       if (!isShareAction(task)) continue;
