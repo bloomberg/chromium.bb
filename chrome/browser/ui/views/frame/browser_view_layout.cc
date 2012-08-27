@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -320,11 +321,15 @@ int BrowserViewLayout::LayoutTabStripRegion() {
 
   // The metro window switcher sits at the far right edge of the tabstrip
   // a |kWindowSwitcherOffsetX| pixels from the right edge.
-  // Only visible if there is an incognito window because switching between
-  // regular and incognito windows is the only use case that works right now.
+  // Only visible if there is more than one type of window to switch between.
+  // TODO(mad): update this code when more window types than just incognito
+  // and regular are available.
   views::Button* switcher_button = browser_view_->window_switcher_button_;
   if (switcher_button) {
-    if (browser_view_->browser()->profile()->HasOffTheRecordProfile()) {
+    if (browser()->profile()->HasOffTheRecordProfile() &&
+        browser::FindBrowserWithProfile(
+            browser()->profile()->GetOriginalProfile(),
+            browser()->host_desktop_type()) != NULL) {
       switcher_button->SetVisible(true);
       int width = browser_view_->width();
       gfx::Size ps = switcher_button->GetPreferredSize();
