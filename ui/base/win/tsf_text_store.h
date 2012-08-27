@@ -6,20 +6,87 @@
 #define UI_BASE_WIN_TSF_TEXT_STORE_H_
 
 #include <msctf.h>
+#include <deque>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "base/win/scoped_comptr.h"
+#include "ui/base/ime/composition_underline.h"
+#include "ui/base/range/range.h"
+#include "ui/base/ui_export.h"
 
 namespace ui {
+class TextInputClient;
 
-// TsfTextStore is used to interact with the system input method via TSF.
-class TsfTextStore : public ITextStoreACP,
-                     public ITfContextOwnerCompositionSink,
-                     public ITfTextEditSink {
+// TsfTextStore is used to interact with the input method via TSF manager.
+// TsfTextStore have a string buffer which is manipulated by TSF manager through
+// ITextStoreACP interface methods such as SetText().
+// When the input method updates the composition, TsfTextStore calls
+// TextInputClient::SetCompositionText(). And when the input method finishes the
+// composition, TsfTextStore calls TextInputClient::InsertText() and clears the
+// buffer.
+//
+// How TsfTextStore works:
+//  - The user enters "a".
+//    - The input method set composition as "a".
+//    - TSF manager calls TsfTextStore::RequestLock().
+//    - TsfTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - In OnLockGranted(), TSF manager calls
+//      - TsfTextStore::OnStartComposition()
+//      - TsfTextStore::SetText()
+//        The string buffer is set as "a".
+//      - TsfTextStore::OnUpdateComposition()
+//      - TsfTextStore::OnEndEdit()
+//        TsfTextStore can get the composition information such as underlines.
+//   - TsfTextStore calls TextInputClient::SetCompositionText().
+//     "a" is shown with an underline as composition string.
+// - The user enters <space>.
+//    - The input method set composition as "A".
+//    - TSF manager calls TsfTextStore::RequestLock().
+//    - TsfTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - In OnLockGranted(), TSF manager calls
+//      - TsfTextStore::SetText()
+//        The string buffer is set as "A".
+//      - TsfTextStore::OnUpdateComposition()
+//      - TsfTextStore::OnEndEdit()
+//   - TsfTextStore calls TextInputClient::SetCompositionText().
+//     "A" is shown with an underline as composition string.
+// - The user enters <enter>.
+//    - The input method commits "A".
+//    - TSF manager calls TsfTextStore::RequestLock().
+//    - TsfTextStore callbacks ITextStoreACPSink::OnLockGranted().
+//    - In OnLockGranted(), TSF manager calls
+//      - TsfTextStore::OnEndComposition()
+//      - TsfTextStore::OnEndEdit()
+//        TsfTextStore knows "A" is committed.
+//   - TsfTextStore calls TextInputClient::InsertText().
+//     "A" is shown as committed string.
+//   - TsfTextStore clears the string buffer.
+//   - TsfTextStore calls OnSelectionChange(), OnLayoutChange() and
+//     OnTextChange() of ITextStoreACPSink to let TSF manager know that the
+//     string buffer has been changed.
+//
+// About the locking scheme:
+// When TSF manager manipulates the string buffer it calls RequestLock() to get
+// the lock of the document. If TsfTextStore can grant the lock request, it
+// callbacks ITextStoreACPSink::OnLockGranted().
+// RequestLock() is called from only one thread, but called recursively in
+// OnLockGranted() or OnSelectionChange() or OnLayoutChange() or OnTextChange().
+// If the document is locked and the lock request is asynchronous, TsfTextStore
+// queues the request. The queued requests will be handled after the current
+// lock is removed.
+// More information about document locks can be found here:
+//   http://msdn.microsoft.com/en-us/library/ms538064
+//
+// More information about TSF can be found here:
+//   http://msdn.microsoft.com/en-us/library/ms629032
+class UI_EXPORT TsfTextStore : public ITextStoreACP,
+                               public ITfContextOwnerCompositionSink,
+                               public ITfTextEditSink {
  public:
   TsfTextStore();
-  ~TsfTextStore();
+  virtual ~TsfTextStore();
 
   virtual ULONG STDMETHODCALLTYPE AddRef() OVERRIDE;
   virtual ULONG STDMETHODCALLTYPE Release() OVERRIDE;
@@ -144,7 +211,35 @@ class TsfTextStore : public ITextStoreACP,
                                  TfEditCookie read_only_edit_cookie,
                                  ITfEditRecord* edit_record) OVERRIDE;
 
+  // Sets currently focused TextInputClient.
+  void SetFocusedTextInputClient(HWND focused_window,
+                                 TextInputClient* text_input_client);
+  // Removes currently focused TextInputClient.
+  void RemoveFocusedTextInputClient(TextInputClient* text_input_client);
+
+  // Sends OnLayoutChange() via |text_store_acp_sink_|.
+  void SendOnLayoutChange();
+
  private:
+  friend class TsfTextStoreTest;
+  friend class TsfTextStoreTestCallback;
+
+  // Checks if the document has a read-only lock.
+  bool HasReadLock() const;
+
+  // Checks if the document has a read and write lock.
+  bool HasReadWriteLock() const;
+
+  // Gets the display attribute structure.
+  bool GetDisplayAttribute(TfGuidAtom guid_atom,
+                           TF_DISPLAYATTRIBUTE* attribute);
+
+  // Gets the committed string size and underline information of the context.
+  bool GetCompositionStatus(ITfContext* context,
+                            const TfEditCookie read_only_edit_cookie,
+                            size_t* committed_size,
+                            CompositionUnderlines* undelines);
+
   // The refrence count of this instance.
   volatile LONG ref_count_;
 
@@ -153,6 +248,55 @@ class TsfTextStore : public ITextStoreACP,
 
   // The current mask of |text_store_acp_sink_|.
   DWORD text_store_acp_sink_mask_;
+
+  // HWND of the current view window which is set in SetFocusedTextInputClient.
+  HWND window_handle_;
+
+  // Current TextInputClient which is set in SetFocusedTextInputClient.
+  TextInputClient* text_input_client_;
+
+  //  |string_buffer_| contains committed string and composition string.
+  //  Example: "aoi" is committed, and "umi" is under composition.
+  //    |string_buffer_|: "aoiumi"
+  //    |committed_size_|: 3
+  string16 string_buffer_;
+  size_t committed_size_;
+
+  //  |selection_start_| and |selection_end_| indicates the selection range.
+  //  Example: "iue" is selected
+  //    |string_buffer_|: "aiueo"
+  //    |selection_.start()|: 1
+  //    |selection_.end()|: 4
+  Range selection_;
+
+  //  |start_offset| and |end_offset| of |composition_undelines_| indicates
+  //  the offsets in |string_buffer_|.
+  //  Example: "aoi" is committed. There are two underlines in "umi" and "no".
+  //    |string_buffer_|: "aoiumino"
+  //    |committed_size_|: 3
+  //    composition_undelines_.underlines[0].start_offset: 3
+  //    composition_undelines_.underlines[0].end_offset: 6
+  //    composition_undelines_.underlines[1].start_offset: 6
+  //    composition_undelines_.underlines[1].end_offset: 8
+  CompositionUnderlines composition_undelines_;
+
+  // |edit_flag_| indicates that the status is edited during
+  // ITextStoreACPSink::OnLockGranted().
+  bool edit_flag_;
+
+  // The type of current lock.
+  //   0: No lock.
+  //   TS_LF_READ: read-only lock.
+  //   TS_LF_READWRITE: read/write lock.
+  DWORD current_lock_type_;
+
+  // Queue of the lock request used in RequestLock().
+  std::deque<DWORD> lock_queue_;
+
+  // Category manager and Display attribute manager are used to obtain the
+  // attributes of the composition string.
+  base::win::ScopedComPtr<ITfCategoryMgr> category_manager_;
+  base::win::ScopedComPtr<ITfDisplayAttributeMgr> display_attribute_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TsfTextStore);
 };
