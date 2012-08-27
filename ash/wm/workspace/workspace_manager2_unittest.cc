@@ -461,11 +461,21 @@ TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
 
   scoped_ptr<Window> w1(CreateTestWindow());
   const gfx::Rect w1_bounds(0, 1, 101, 102);
+  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  const gfx::Rect touches_shelf_bounds(
+      0, shelf->GetIdealBounds().y() - 10, 101, 102);
+  // Move |w1| to overlap the shelf.
+  w1->SetBounds(touches_shelf_bounds);
+  EXPECT_FALSE(GetWindowOverlapsShelf());
+
+  // Make it visible, since visible shelf overlaps should be true.
+  w1->Show();
+  EXPECT_TRUE(GetWindowOverlapsShelf());
+
+  wm::ActivateWindow(w1.get());
   w1->SetBounds(w1_bounds);
   w1->Show();
   wm::ActivateWindow(w1.get());
-
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
 
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 
@@ -490,8 +500,6 @@ TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
   EXPECT_FALSE(GetWindowOverlapsShelf());
 
   // Move window so it obscures shelf.
-  const gfx::Rect touches_shelf_bounds(
-      0, shelf->GetIdealBounds().y() - 10, 101, 102);
   w1->SetBounds(touches_shelf_bounds);
   EXPECT_TRUE(GetWindowOverlapsShelf());
 

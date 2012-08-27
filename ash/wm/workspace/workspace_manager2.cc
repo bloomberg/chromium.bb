@@ -170,8 +170,7 @@ WorkspaceWindowState WorkspaceManager2::GetWindowState() const {
   for (Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
     ui::Layer* layer = (*i)->layer();
-    if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f ||
-        (*i)->id() == kShellWindowId_DesktopBackgroundContainer)
+    if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
       continue;
     if (wm::IsWindowMaximized(*i)) {
       // An untracked window may still be fullscreen so we keep iterating when
@@ -428,6 +427,8 @@ void WorkspaceManager2::OnWorkspaceChildWindowVisibilityChanged(
     Window* child) {
   if (workspace->ShouldMoveToPending())
     MoveWorkspaceToPendingOrDelete(workspace, NULL, ANIMATE_NEW);
+  else if (workspace == active_workspace_)
+    UpdateShelfVisibility();
 }
 
 void WorkspaceManager2::OnWorkspaceWindowChildBoundsChanged(
