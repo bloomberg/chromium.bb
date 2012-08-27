@@ -5818,6 +5818,12 @@
    fun:_ZN8chromeos17DBusThreadManager10InitializeEv
    fun:_ZN8chromeos23KioskModeIdleLogoutTest5SetUpEv
 }
+{
+   bug_144930
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZL20cachedPaintLuminancef
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
