@@ -1485,3 +1485,11 @@
    Heapcheck:Leak
    fun:PrintSystemTaskProxyTest_DetectDuplexModeCUPS_Test::TestBody
 }
+{
+   bug_144913
+   Heapcheck:Leak
+   ...
+   fun:DBusThreadManagerImpl
+   fun:chromeos::DBusThreadManager::Initialize
+   fun:chromeos::KioskModeIdleLogoutTest::SetUp
+}
