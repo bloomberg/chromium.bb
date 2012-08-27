@@ -14,8 +14,7 @@ if [[ -z "$version_full" ]]; then
   version_full="$version_base.$version_build"
 fi
 
-if !(echo $version_full | grep -E \
-     "^[[:digit:]]+.[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$" > /dev/null); then
+if [[ ! "$version_full" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "Error: Invalid \$version_full value: $version_full" >&2
   exit 1
 fi
