@@ -44,7 +44,7 @@ deps = {
     (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1015",
 
   "src/googleurl":
-    (Var("googlecode_url") % "google-url") + "/trunk@175",
+    (Var("googlecode_url") % "google-url") + "/trunk@178",
 
   "src/sandbox/linux/seccomp-legacy":
     (Var("googlecode_url") % "seccompsandbox") + "/trunk@187",
