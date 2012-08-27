@@ -330,7 +330,7 @@ void ThumbnailLoader::LoadThumbnail() {
     rwh->CopyFromBackingStoreToCGContext(destRect, context);
   } else if (thumbnail_) {
     // No cache hit, but the renderer returned a thumbnail to us.
-    gfx::ScopedCGContextSaveGState CGContextSaveGState(context);
+    gfx::ScopedCGContextSaveGState save_gstate(context);
     CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
     CGContextDrawImage(context, destRect, thumbnail_.get());
   }

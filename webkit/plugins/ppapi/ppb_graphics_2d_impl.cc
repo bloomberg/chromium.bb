@@ -21,6 +21,7 @@
 #include "ui/gfx/blit.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/gfx_conversion.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -521,7 +522,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 
   // Flip the transform
-  CGContextSaveGState(canvas);
+  gfx::ScopedCGContextSaveGState save_gstate(canvas)
   float window_height = static_cast<float>(CGBitmapContextGetHeight(canvas));
   CGContextTranslateCTM(canvas, 0, window_height);
   CGContextScaleCTM(canvas, 1.0, -1.0);
@@ -554,7 +555,6 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   // if the is_always_opaque_ flag is set. Must ensure bitmap is still clipped.
 
   CGContextDrawImage(canvas, bitmap_rect, image);
-  CGContextRestoreGState(canvas);
 #else
   SkRect sk_plugin_rect = SkRect::MakeXYWH(
       SkIntToScalar(plugin_rect.origin().x()),

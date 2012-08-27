@@ -60,6 +60,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
@@ -1624,7 +1625,7 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   if (metafile.InitFromData(mapper.data(), mapper.size())) {
     // Flip the transform.
     CGContextRef cgContext = canvas;
-    CGContextSaveGState(cgContext);
+    gfx::ScopedCGContextSaveGState save_gstate(cgContext)
     CGContextTranslateCTM(cgContext, 0,
                           current_print_settings_.printable_area.size.height);
     CGContextScaleCTM(cgContext, 1.0, -1.0);
@@ -1635,7 +1636,6 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
     page_rect.size.height = current_print_settings_.printable_area.size.height;
 
     ret = metafile.RenderPage(1, cgContext, page_rect, true, false, true, true);
-    CGContextRestoreGState(cgContext);
   }
 #elif defined(OS_WIN)
   printing::Metafile* metafile =
