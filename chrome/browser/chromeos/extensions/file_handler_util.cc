@@ -573,14 +573,8 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
 
     fileapi::ExternalFileSystemMountPointProvider* external_provider =
         file_system_context_->external_provider();
-    if (!external_provider)
+    if (!external_provider || !external_provider->IsAccessAllowed(url))
       return false;
-
-    if (!external_provider->IsAccessAllowed(url.origin(),
-                                            url.type(),
-                                            url.virtual_path())) {
-      return false;
-    }
 
     // Make sure this url really being used by the right caller extension.
     if (source_url_.GetOrigin() != url.origin()) {

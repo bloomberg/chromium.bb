@@ -87,16 +87,16 @@ FilePath CrosMountPointProvider::GetFileSystemRootPathOnFileThread(
   return root_path.DirName();
 }
 
-bool CrosMountPointProvider::IsAccessAllowed(const GURL& origin_url,
-                                             fileapi::FileSystemType type,
-                                             const FilePath& virtual_path) {
+bool CrosMountPointProvider::IsAccessAllowed(
+    const fileapi::FileSystemURL& url) {
   // TODO(kinuko): this should call CanHandleURL() once
   // http://crbug.com/142267 is fixed.
-  if (type != fileapi::kFileSystemTypeNativeLocal &&
-      type != fileapi::kFileSystemTypeDrive)
+  if (url.type() != fileapi::kFileSystemTypeNativeLocal &&
+      url.type() != fileapi::kFileSystemTypeDrive)
     return false;
 
   // Permit access to mount points from internal WebUI.
+  const GURL& origin_url = url.origin();
   if (origin_url.SchemeIs(kChromeUIScheme))
     return true;
 
@@ -106,7 +106,7 @@ bool CrosMountPointProvider::IsAccessAllowed(const GURL& origin_url,
     return false;
 
   return file_access_permissions_->HasAccessPermission(extension_id,
-                                                       virtual_path);
+                                                       url.virtual_path());
 }
 
 // TODO(zelidrag): Share this code with SandboxMountPointProvider impl.

@@ -61,9 +61,7 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
       bool create) = 0;
 
   // Checks if access to |virtual_path| is allowed from |origin_url|.
-  virtual bool IsAccessAllowed(const GURL& origin_url,
-                               FileSystemType type,
-                               const FilePath& virtual_path) = 0;
+  virtual bool IsAccessAllowed(const FileSystemURL& url) = 0;
 
   // Checks if a given |name| contains any restricted names/chars in it.
   // Callable on any thread.

@@ -722,8 +722,7 @@ base::PlatformFileError LocalFileSystemOperation::SetUp(
     return base::PLATFORM_FILE_ERROR_INVALID_URL;
 
   if (!file_system_context()->GetMountPointProvider(
-          url.type())->IsAccessAllowed(url.origin(), url.type(),
-                                       url.virtual_path()))
+          url.type())->IsAccessAllowed(url))
     return base::PLATFORM_FILE_ERROR_SECURITY;
 
   DCHECK(file_util);

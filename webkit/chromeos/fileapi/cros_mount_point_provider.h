@@ -54,10 +54,7 @@ class FILEAPI_EXPORT CrosMountPointProvider
       fileapi::FileSystemType type,
       const FilePath& virtual_path,
       bool create) OVERRIDE;
-  virtual bool IsAccessAllowed(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      const FilePath& virtual_path) OVERRIDE;
+  virtual bool IsAccessAllowed(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;

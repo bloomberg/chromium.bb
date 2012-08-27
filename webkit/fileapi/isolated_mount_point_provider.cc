@@ -87,8 +87,7 @@ FilePath IsolatedMountPointProvider::GetFileSystemRootPathOnFileThread(
   return FilePath();
 }
 
-bool IsolatedMountPointProvider::IsAccessAllowed(
-    const GURL& origin_url, FileSystemType type, const FilePath& virtual_path) {
+bool IsolatedMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
   return true;
 }
 

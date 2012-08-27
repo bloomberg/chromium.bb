@@ -384,14 +384,13 @@ SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
   return GetBaseDirectoryForOriginAndType(origin_url, type, create);
 }
 
-bool SandboxMountPointProvider::IsAccessAllowed(const GURL& origin_url,
-                                                FileSystemType type,
-                                                const FilePath& unused) {
+bool SandboxMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
+  FileSystemType type = url.type();
   if (type != kFileSystemTypeTemporary && type != kFileSystemTypePersistent)
     return false;
   // We essentially depend on quota to do our access controls, so here
   // we only check if the requested scheme is allowed or not.
-  return IsAllowedScheme(origin_url);
+  return IsAllowedScheme(url.origin());
 }
 
 bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)

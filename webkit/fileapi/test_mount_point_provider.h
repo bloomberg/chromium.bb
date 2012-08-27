@@ -45,9 +45,7 @@ class FILEAPI_EXPORT_PRIVATE TestMountPointProvider
       FileSystemType type,
       const FilePath& virtual_path,
       bool create) OVERRIDE;
-  virtual bool IsAccessAllowed(const GURL& origin_url,
-                               FileSystemType type,
-                               const FilePath& virtual_path) OVERRIDE;
+  virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
