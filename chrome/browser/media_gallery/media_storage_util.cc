@@ -102,7 +102,8 @@ std::string MediaStorageUtil::MakeDeviceId(Type type,
 bool MediaStorageUtil::CrackDeviceId(const std::string& device_id,
                                      Type* type, std::string* unique_id) {
   size_t prefix_length = device_id.find_first_of(':');
-  std::string prefix = device_id.substr(0, prefix_length);
+  std::string prefix = prefix_length != std::string::npos ?
+                       device_id.substr(0, prefix_length + 1) : "";
 
   Type found_type;
   if (prefix == kUsbMassStorageWithDCIMPrefix) {
