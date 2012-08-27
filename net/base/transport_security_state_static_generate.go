@@ -116,6 +116,10 @@ func process(jsonFileName, certsFileName string) error {
 		return err
 	}
 
+	if err := checkDuplicateEntries(preloaded.Entries); err != nil {
+		return err
+	}
+
 	outFile, err := os.OpenFile("transport_security_state_static.h", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -406,6 +410,19 @@ func checkNoopEntries(entries []hsts) error {
 				return errors.New("Entry for " + e.Name + " has no mode and no pins")
 			}
 		}
+	}
+
+	return nil
+}
+
+func checkDuplicateEntries(entries []hsts) error {
+	seen := make(map[string]bool)
+
+	for _, e := range entries {
+		if _, ok := seen[e.Name]; ok {
+			return errors.New("Duplicate entry for " + e.Name)
+		}
+		seen[e.Name] = true
 	}
 
 	return nil
