@@ -4,7 +4,7 @@
 
 #include <ostream>
 
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +17,8 @@ const int kExpectedReturnValue = 42;
 const int kArmPublicSysnoCeiling = __NR_SYSCALL_BASE + 1024;
 #endif
 
+// This test should execute no matter whether we have kernel support. So,
+// we make it a TEST() instead of a BPF_TEST().
 TEST(SandboxBpf, CallSupports) {
   // We check that we don't crash, but it's ok if the kernel doesn't
   // support it.
@@ -31,81 +33,9 @@ TEST(SandboxBpf, CallSupports) {
             << "\n";
 }
 
-TEST(SandboxBpf, CallSupportsTwice) {
+SANDBOX_TEST(SandboxBpf, CallSupportsTwice) {
   Sandbox::supportsSeccompSandbox(-1);
   Sandbox::supportsSeccompSandbox(-1);
-}
-
-__attribute__((noreturn)) void DoCrash() {
-  // Cause a #PF. This only works if we assume that we have the default
-  // SIGSEGV handler.
-  *(reinterpret_cast<volatile char*>(NULL)) = '\0';
-  for (;;) {
-    // If we didn't manage to crash there is really nothing we can do reliably
-    // but spin.
-  }
-}
-
-__attribute__((noreturn)) void ExitGroup(int status) {
-  syscall(__NR_exit_group, status);
-  // If exit_group() failed, there is a high likelihood this
-  // happened due to a bug in the sandbox. We therefore cannot
-  // blindly assume that the failure happened because we are
-  // running on an old kernel that supports exit(), but not
-  // exit_group(). We cannot even trust "errno" returning
-  // "ENOSYS". So, calling exit() as the fallback for
-  // exit_group() would at this point almost certainly be a
-  // bug. Instead, try some more aggressive methods to make
-  // the program stop.
-  DoCrash();
-}
-
-// Helper function to start a sandbox with a policy specified in
-// evaluator
-void StartSandboxOrDie(Sandbox::EvaluateSyscall evaluator) {
-  int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
-  if (proc_fd < 0 || !evaluator) {
-    ExitGroup(1);
-  }
-  if (Sandbox::supportsSeccompSandbox(proc_fd) !=
-     Sandbox::STATUS_AVAILABLE) {
-    ExitGroup(1);
-  }
-  Sandbox::setProcFd(proc_fd);
-  Sandbox::setSandboxPolicy(evaluator, NULL);
-  Sandbox::startSandbox();
-}
-
-void RunInSandbox(Sandbox::EvaluateSyscall evaluator,
-                      void (*SandboxedCode)()) {
-  // TODO(markus): Implement IsEqual for ErrorCode
-  // IsEqual(evaluator(__NR_exit_group), Sandbox::SB_ALLOWED) <<
-  //    "You need to always allow exit_group() in your test policy";
-  StartSandboxOrDie(evaluator);
-  // TODO(jln): find a way to use the testing framework inside
-  // SandboxedCode() or at the very least to surface errors
-  SandboxedCode();
-  // SandboxedCode() should have exited, this is a failure
-  ExitGroup(1);
-}
-
-// evaluator should always allow ExitGroup
-// SandboxedCode should ExitGroup(kExpectedReturnValue) if and only if
-// things go as expected.
-void TryPolicyInProcess(Sandbox::EvaluateSyscall evaluator,
-                        void (*SandboxedCode)()) {
-  // TODO(jln) figure out a way to surface whether we're actually testing
-  // something or not.
-  if (Sandbox::supportsSeccompSandbox(-1) == Sandbox::STATUS_AVAILABLE) {
-    EXPECT_EXIT(RunInSandbox(evaluator, SandboxedCode),
-                ::testing::ExitedWithCode(kExpectedReturnValue),
-                "");
-  } else {
-    // The sandbox is not available. We should still try to exercise what we
-    // can.
-    // TODO(markus): (crbug.com/141545) let us call the compiler from here.
-    Sandbox::setSandboxPolicy(evaluator, NULL);
-  }
 }
 
 // A simple blacklist test
@@ -124,17 +54,12 @@ Sandbox::ErrorCode BlacklistNanosleepPolicy(int sysno) {
   }
 }
 
-void NanosleepProcess(void) {
+BPF_TEST(SandboxBpf, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
+  // nanosleep() should be denied
   const struct timespec ts = {0, 0};
   errno = 0;
-  if(syscall(__NR_nanosleep, &ts, NULL) != -1 || errno != EACCES) {
-    ExitGroup(1);
-  }
-  ExitGroup(kExpectedReturnValue);
-}
-
-TEST(SandboxBpf, ApplyBasicBlacklistPolicy) {
-  TryPolicyInProcess(BlacklistNanosleepPolicy, NanosleepProcess);
+  BPF_ASSERT(syscall(__NR_nanosleep, &ts, NULL) == -1);
+  BPF_ASSERT(errno == EACCES);
 }
 
 // Now do a simple whitelist test
@@ -149,19 +74,15 @@ Sandbox::ErrorCode WhitelistGetpidPolicy(int sysno) {
   }
 }
 
-void GetpidProcess(void) {
-  errno = 0;
+BPF_TEST(SandboxBpf, ApplyBasicWhitelistPolicy, WhitelistGetpidPolicy) {
   // getpid() should be allowed
-  if (syscall(__NR_getpid) < 0 || errno)
-    ExitGroup(1);
-  // getpgid() should be denied
-  if (getpgid(0) != -1 || errno != ENOMEM)
-    ExitGroup(1);
-  ExitGroup(kExpectedReturnValue);
-}
+  errno = 0;
+  BPF_ASSERT(syscall(__NR_getpid) > 0);
+  BPF_ASSERT(errno == 0);
 
-TEST(SandboxBpf, ApplyBasicWhitelistPolicy) {
-  TryPolicyInProcess(WhitelistGetpidPolicy, GetpidProcess);
+  // getpgid() should be denied
+  BPF_ASSERT(getpgid(0) == -1);
+  BPF_ASSERT(errno == ENOMEM);
 }
 
 // A simple blacklist policy, with a SIGSYS handler
@@ -173,8 +94,7 @@ static int BlacklistNanosleepPolicySigsysAuxData;
 
 intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
   // We also check that the auxiliary data is correct
-  if (!aux)
-    ExitGroup(1);
+  SANDBOX_ASSERT(aux);
   *(static_cast<int*>(aux)) = kExpectedReturnValue;
   return -ENOMEM;
 }
@@ -194,26 +114,22 @@ Sandbox::ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
   }
 }
 
-void NanosleepProcessSigsys(void) {
-  const struct timespec ts = {0, 0};
-  errno = 0;
+BPF_TEST(SandboxBpf, BasicBlacklistWithSigsys,
+         BlacklistNanosleepPolicySigsys) {
   // getpid() should work properly
-  if (syscall(__NR_getpid) < 0)
-    ExitGroup(1);
+  errno = 0;
+  BPF_ASSERT(syscall(__NR_getpid) > 0);
+  BPF_ASSERT(errno == 0);
+
   // Our Auxiliary Data, should be reset by the signal handler
   BlacklistNanosleepPolicySigsysAuxData = -1;
-  errno = 0;
-  if (syscall(__NR_nanosleep, &ts, NULL) != -1 || errno != ENOMEM)
-    ExitGroup(1);
-  // We expect the signal handler to modify AuxData
-  if (BlacklistNanosleepPolicySigsysAuxData != kExpectedReturnValue)
-    ExitGroup(1);
-  else
-    ExitGroup(kExpectedReturnValue);
-}
+  const struct timespec ts = {0, 0};
+  BPF_ASSERT(syscall(__NR_nanosleep, &ts, NULL) == -1);
+  BPF_ASSERT(errno == ENOMEM);
 
-TEST(SandboxBpf, BasicBlacklistWithSigsys) {
-  TryPolicyInProcess(BlacklistNanosleepPolicySigsys, NanosleepProcessSigsys);
+  // We expect the signal handler to modify AuxData
+  BPF_ASSERT(
+      BlacklistNanosleepPolicySigsysAuxData == kExpectedReturnValue);
 }
 
 // A more complex, but synthetic policy. This tests the correctness of the BPF
@@ -244,21 +160,24 @@ Sandbox::ErrorCode SyntheticPolicy(int sysno) {
     return ENOSYS;
 #endif
 
-  if (sysno == __NR_exit_group) {
+  // TODO(markus): allow calls to write(). This should start working as soon
+  //   as we switch to the new code generator. Currently we are blowing up,
+  //   because our jumptable is getting too big.
+  if (sysno == __NR_exit_group /* || sysno == __NR_write */) {
     // exit_group() is special, we really need it to work.
+    // write() is needed for BPF_ASSERT() to report a useful error message.
     return Sandbox::SB_ALLOWED;
   } else {
     return SysnoToRandomErrno(sysno);
   }
 }
 
-void SyntheticProcess(void) {
+BPF_TEST(SandboxBpf, SyntheticPolicy, SyntheticPolicy) {
   // Ensure that that kExpectedReturnValue + syscallnumber + 1 does not int
   // overflow.
-  if (std::numeric_limits<int>::max() - kExpectedReturnValue - 1 <
-      static_cast<int>(MAX_SYSCALL)) {
-    ExitGroup(1);
-  }
+  BPF_ASSERT(
+   std::numeric_limits<int>::max() - kExpectedReturnValue - 1 >=
+   static_cast<int>(MAX_SYSCALL));
 
   // TODO(jorgelo): remove this limit once crbug.com/141694 is fixed.
 #if defined(__arm__)
@@ -270,24 +189,15 @@ void SyntheticProcess(void) {
   for (int syscall_number =  static_cast<int>(MIN_SYSCALL);
            syscall_number <= sysno_ceiling;
          ++syscall_number) {
-    if (syscall_number == __NR_exit_group) {
+    if (syscall_number == __NR_exit_group ||
+        syscall_number == __NR_write) {
       // exit_group() is special
       continue;
     }
     errno = 0;
-    if (syscall(syscall_number) != -1 ||
-        errno != SysnoToRandomErrno(syscall_number)) {
-      // Exit with a return value that is different than kExpectedReturnValue
-      // to signal an error. Make it easy to see what syscall_number failed in
-      // the test report.
-      ExitGroup(kExpectedReturnValue + syscall_number + 1);
-    }
+    BPF_ASSERT(syscall(syscall_number) == -1);
+    BPF_ASSERT(errno == SysnoToRandomErrno(syscall_number));
   }
-  ExitGroup(kExpectedReturnValue);
-}
-
-TEST(SandboxBpf, SyntheticPolicy) {
-  TryPolicyInProcess(SyntheticPolicy, SyntheticProcess);
 }
 
 } // namespace

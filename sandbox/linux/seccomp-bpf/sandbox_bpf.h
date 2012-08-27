@@ -144,6 +144,9 @@
 
 #endif
 
+#include "sandbox/linux/seccomp-bpf/die.h"
+
+
 struct arch_seccomp_data {
   int      nr;
   uint32_t arch;
@@ -223,13 +226,13 @@ class Sandbox {
         err_ = SECCOMP_RET_ALLOW;
         break;
       case SB_INSPECT_ARG_1...SB_INSPECT_ARG_6:
-        die("Not implemented");
+        SANDBOX_DIE("Not implemented");
         break;
       case 1 ... 4095:
         err_ = SECCOMP_RET_ERRNO + err;
         break;
       default:
-        die("Invalid use of ErrorCode object");
+        SANDBOX_DIE("Invalid use of ErrorCode object");
       }
     }
 
@@ -311,48 +314,9 @@ class Sandbox {
   // This is the main public entry point. It finds all system calls that
   // need rewriting, sets up the resources needed by the sandbox, and
   // enters Seccomp mode.
-  static void startSandbox();
+  static void startSandbox() { startSandboxInternal(false); }
 
  protected:
-  // Print an error message and terminate the program. Used for fatal errors.
-  static void die(const char *msg) __attribute__((noreturn)) {
-    if (msg) {
-#ifndef SECCOMP_BPF_STANDALONE
-      if (!dryRun_) {
-        // LOG(FATAL) is not neccessarily async-signal safe. It would be
-        // better to always use the code for the SECCOMP_BPF_STANDALONE case.
-        // But that prevents the logging and reporting infrastructure from
-        // picking up sandbox related crashes.
-        // For now, in picking between two evils, we decided in favor of
-        // LOG(FATAL). In the long run, we probably want to rewrite this code
-        // to be async-signal safe.
-        LOG(FATAL) << msg;
-      } else
-#endif
-      {
-        // If there is no logging infrastructure in place, we just write error
-        // messages to stderr.
-        // We also write to stderr, if we are called in a child process from
-        // supportsSeccompSandbox(). This makes sure we can actually do the
-        // correct logging from the parent process, which is more likely to
-        // have access to logging infrastructure.
-        if (HANDLE_EINTR(write(2, msg, strlen(msg)))) { }
-        if (HANDLE_EINTR(write(2, "\n", 1))) { }
-      }
-    }
-    for (;;) {
-      // exit_group() should exit our program. After all, it is defined as a
-      // function that doesn't return. But things can theoretically go wrong.
-      // Especially, since we are dealing with system call filters. Continuing
-      // execution would be very bad in most cases where die() gets called.
-      // So, if there is no way for us to ask for the program to exit, the next
-      // best thing we can do is to loop indefinitely. Maybe, somebody will
-      // notice and file a bug...
-      syscall(__NR_exit_group, 1);
-      _exit(1);
-    }
-  }
-
   // Get a file descriptor pointing to "/proc", if currently available.
   static int getProcFd() { return proc_fd_; }
 
@@ -388,11 +352,12 @@ class Sandbox {
   static bool      RunFunctionInPolicy(void (*function)(),
                                        EvaluateSyscall syscallEvaluator,
                                        int proc_fd);
+  static void      startSandboxInternal(bool quiet);
   static bool      isSingleThreaded(int proc_fd);
   static bool      disableFilesystem();
   static void      policySanityChecks(EvaluateSyscall syscallEvaluator,
                                       EvaluateArguments argumentEvaluator);
-  static void      installFilter();
+  static void      installFilter(bool quiet);
   static void      findRanges(Ranges *ranges);
   static void      emitJumpStatements(Program *program, RetInsns *rets,
                                       Ranges::const_iterator start,
@@ -402,7 +367,6 @@ class Sandbox {
   static intptr_t  bpfFailure(const struct arch_seccomp_data& data, void *aux);
   static int       getTrapId(TrapFnc fnc, const void *aux);
 
-  static bool          dryRun_;
   static SandboxStatus status_;
   static int           proc_fd_;
   static Evaluators    evaluators_;

@@ -120,7 +120,7 @@ void Util::closeAllBut(int fd, ...) {
   int fdir;
   if ((proc_fd = Sandbox::getProcFd()) < 0 ||
       (fdir = openat(proc_fd, "self/fd", O_RDONLY|O_DIRECTORY)) < 0) {
-    Sandbox::die("Cannot access \"/proc/self/fd\"");
+    SANDBOX_DIE("Cannot access \"/proc/self/fd\"");
   }
   int dev_null = open("/dev/null", O_RDWR);
   DIR *dir = fdopendir(fdir);
@@ -140,7 +140,7 @@ void Util::closeAllBut(int fd, ...) {
             // then we are better off leaving the standard descriptors open.
             if (dev_null >= 0) {
               if (HANDLE_EINTR(dup2(dev_null, i))) {
-                Sandbox::die("Cannot dup2()");
+                SANDBOX_DIE("Cannot dup2()");
               }
             }
           } else {

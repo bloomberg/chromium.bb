@@ -60,11 +60,11 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
   sigset_t oldMask, newMask;
   if (sigfillset(&newMask) ||
       sigprocmask(SIG_BLOCK, &newMask, &oldMask)) {
-    die("sigprocmask() failed");
+    SANDBOX_DIE("sigprocmask() failed");
   }
   int fds[2];
   if (pipe2(fds, O_NONBLOCK|O_CLOEXEC)) {
-    die("pipe() failed");
+    SANDBOX_DIE("pipe() failed");
   }
 
   pid_t pid = fork();
@@ -76,14 +76,14 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
     // attacker might cause fork() to fail at will and could trick us
     // into running without a sandbox.
     sigprocmask(SIG_SETMASK, &oldMask, NULL);  // OK, if it fails
-    die("fork() failed unexpectedly");
+    SANDBOX_DIE("fork() failed unexpectedly");
   }
 
   // In the child process
   if (!pid) {
     // Test a very simple sandbox policy to verify that we can
     // successfully turn on sandboxing.
-    dryRun_ = true;
+    Die::EnableSimpleExit();
     if (HANDLE_EINTR(close(fds[0])) ||
         dup2(fds[1], 2) != 2 ||
         HANDLE_EINTR(close(fds[1]))) {
@@ -93,29 +93,34 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
       evaluators_.clear();
       setSandboxPolicy(syscallEvaluator, NULL);
       setProcFd(proc_fd);
-      startSandbox();
+
+      // By passing "quiet=true" to "startSandboxInternal()" we suppress
+      // messages for expected and benign failures (e.g. if the current
+      // kernel lacks support for BPF filters).
+      startSandboxInternal(true);
+
       // Run our code in the sandbox
       CodeInSandbox();
     }
-    die(NULL);
+    SANDBOX_DIE(NULL);
   }
 
   // In the parent process.
   if (HANDLE_EINTR(close(fds[1]))) {
-    die("close() failed");
+    SANDBOX_DIE("close() failed");
   }
   if (sigprocmask(SIG_SETMASK, &oldMask, NULL)) {
-    die("sigprocmask() failed");
+    SANDBOX_DIE("sigprocmask() failed");
   }
   int status;
   if (HANDLE_EINTR(waitpid(pid, &status, 0)) != pid) {
-    die("waitpid() failed unexpectedly");
+    SANDBOX_DIE("waitpid() failed unexpectedly");
   }
   bool rc = WIFEXITED(status) && WEXITSTATUS(status) == 100;
 
   // If we fail to support sandboxing, there might be an additional
   // error message. If so, this was an entirely unexpected and fatal
-  // failure. We should report the failure and somebody most fix
+  // failure. We should report the failure and somebody must fix
   // things. This is probably a security-critical bug in the sandboxing
   // code.
   if (!rc) {
@@ -126,11 +131,11 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
         --len;
       }
       buf[len] = '\000';
-      die(buf);
+      SANDBOX_DIE(buf);
     }
   }
   if (HANDLE_EINTR(close(fds[0]))) {
-    die("close() failed");
+    SANDBOX_DIE("close() failed");
   }
 
   return rc;
@@ -193,12 +198,13 @@ void Sandbox::setProcFd(int proc_fd) {
   proc_fd_ = proc_fd;
 }
 
-void Sandbox::startSandbox() {
+void Sandbox::startSandboxInternal(bool quiet) {
   if (status_ == STATUS_UNSUPPORTED || status_ == STATUS_UNAVAILABLE) {
-    die("Trying to start sandbox, even though it is known to be unavailable");
+    SANDBOX_DIE("Trying to start sandbox, even though it is known to be "
+                "unavailable");
   } else if (status_ == STATUS_ENABLED) {
-    die("Cannot start sandbox recursively. Use multiple calls to "
-        "setSandboxPolicy() to stack policies instead");
+    SANDBOX_DIE("Cannot start sandbox recursively. Use multiple calls to "
+                "setSandboxPolicy() to stack policies instead");
   }
   if (proc_fd_ < 0) {
     proc_fd_ = open("/proc", O_RDONLY|O_DIRECTORY);
@@ -208,7 +214,7 @@ void Sandbox::startSandbox() {
     // In the future, we might want to tighten this requirement.
   }
   if (!isSingleThreaded(proc_fd_)) {
-    die("Cannot start sandbox, if process is already multi-threaded");
+    SANDBOX_DIE("Cannot start sandbox, if process is already multi-threaded");
   }
 
   // We no longer need access to any files in /proc. We want to do this
@@ -216,13 +222,13 @@ void Sandbox::startSandbox() {
   // close().
   if (proc_fd_ >= 0) {
     if (HANDLE_EINTR(close(proc_fd_))) {
-      die("Failed to close file descriptor for /proc");
+      SANDBOX_DIE("Failed to close file descriptor for /proc");
     }
     proc_fd_ = -1;
   }
 
   // Install the filters.
-  installFilter();
+  installFilter(quiet);
 
   // We are now inside the sandbox.
   status_ = STATUS_ENABLED;
@@ -262,7 +268,7 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
   // We also have similar checks later, when we actually compile the BPF
   // program. That catches problems with incorrectly stacked evaluators.
   if (!isDenied(syscallEvaluator(-1))) {
-    die("Negative system calls should always be disallowed by policy");
+    SANDBOX_DIE("Negative system calls should always be disallowed by policy");
   }
 #ifndef NDEBUG
 #if defined(__i386__) || defined(__x86_64__)
@@ -271,7 +277,7 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
        sysnum <= (MAX_SYSCALL & ~0x40000000u);
        ++sysnum) {
     if (!isDenied(syscallEvaluator(sysnum))) {
-      die("In x32 mode, you should not allow any non-x32 system calls");
+      SANDBOX_DIE("In x32 mode, you should not allow any non-x32 system calls");
     }
   }
 #else
@@ -279,7 +285,7 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
        sysnum <= (MAX_SYSCALL | 0x40000000u);
        ++sysnum) {
     if (!isDenied(syscallEvaluator(sysnum))) {
-      die("x32 system calls should be explicitly disallowed");
+      SANDBOX_DIE("x32 system calls should be explicitly disallowed");
     }
   }
 #endif
@@ -293,8 +299,8 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
       !isDenied(syscallEvaluator(-1)) ||
       !isDenied(syscallEvaluator(static_cast<int>(MIN_SYSCALL) - 1)) ||
       !isDenied(syscallEvaluator(static_cast<int>(MAX_SYSCALL) + 1))) {
-    die("Even for default-allow policies, you must never allow system calls "
-        "outside of the standard system call range");
+    SANDBOX_DIE("Even for default-allow policies, you must never allow system "
+                "calls outside of the standard system call range");
   }
   return;
 }
@@ -302,17 +308,17 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
 void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator,
                                EvaluateArguments argumentEvaluator) {
   if (status_ == STATUS_ENABLED) {
-    die("Cannot change policy after sandbox has started");
+    SANDBOX_DIE("Cannot change policy after sandbox has started");
   }
   policySanityChecks(syscallEvaluator, argumentEvaluator);
   evaluators_.push_back(std::make_pair(syscallEvaluator, argumentEvaluator));
 }
 
-void Sandbox::installFilter() {
+void Sandbox::installFilter(bool quiet) {
   // Verify that the user pushed a policy.
   if (evaluators_.empty()) {
   filter_failed:
-    die("Failed to configure system call filters");
+    SANDBOX_DIE("Failed to configure system call filters");
   }
 
   // Set new SIGSYS handler
@@ -335,13 +341,13 @@ void Sandbox::installFilter() {
   // We can't handle stacked evaluators, yet. We'll get there eventually
   // though. Hang tight.
   if (evaluators_.size() != 1) {
-    die("Not implemented");
+    SANDBOX_DIE("Not implemented");
   }
 
   // Assemble the BPF filter program.
   Program *program = new Program();
   if (!program) {
-    die("Out of memory");
+    SANDBOX_DIE("Out of memory");
   }
 
   // If the architecture doesn't match SECCOMP_ARCH, disallow the
@@ -396,7 +402,7 @@ void Sandbox::installFilter() {
 #ifndef NDEBUG
   const char *err = NULL;
   if (!Verifier::verifyBPF(*program, evaluators_, &err)) {
-    die(err);
+    SANDBOX_DIE(err);
   }
 #endif
 
@@ -422,10 +428,12 @@ void Sandbox::installFilter() {
 
   // Install BPF filter program
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-    die(dryRun_ ? NULL : "Kernel refuses to enable no-new-privs");
+    SANDBOX_DIE(quiet
+                ? NULL : "Kernel refuses to enable no-new-privs");
   } else {
     if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
-      die(dryRun_ ? NULL : "Kernel refuses to turn on BPF filters");
+      SANDBOX_DIE(quiet
+                  ? NULL : "Kernel refuses to turn on BPF filters");
     }
   }
 
@@ -463,7 +471,7 @@ void Sandbox::findRanges(Ranges *ranges) {
   if (oldErr != evaluateSyscall(std::numeric_limits<int>::max()) ||
       oldErr != evaluateSyscall(std::numeric_limits<int>::min()) ||
       oldErr != evaluateSyscall(-1)) {
-    die("Invalid seccomp policy");
+    SANDBOX_DIE("Invalid seccomp policy");
   }
   ranges->push_back(
     Range(oldSysnum, std::numeric_limits<unsigned>::max(), oldErr));
@@ -477,7 +485,7 @@ void Sandbox::emitJumpStatements(Program *program, RetInsns *rets,
   // As a sanity check, we need to have at least two distinct ranges for us
   // to be able to build a jump table.
   if (stop - start <= 1) {
-    die("Invalid set of system call ranges");
+    SANDBOX_DIE("Invalid set of system call ranges");
   }
 
   // Pick the range object that is located at the mid point of our list.
@@ -488,7 +496,7 @@ void Sandbox::emitJumpStatements(Program *program, RetInsns *rets,
   Program::size_type jmp = program->size();
   if (jmp >= SECCOMP_MAX_PROGRAM_SIZE) {
   compiler_err:
-    die("Internal compiler error; failed to compile jump table");
+    SANDBOX_DIE("Internal compiler error; failed to compile jump table");
   }
   program->push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JGE+BPF_K, mid->from,
@@ -542,7 +550,7 @@ void Sandbox::emitReturnStatements(Program *program, const RetInsns& rets) {
        ++ret_iter) {
     Program::size_type ip = program->size();
     if (ip >= SECCOMP_MAX_PROGRAM_SIZE) {
-      die("Internal compiler error; failed to compile jump table");
+      SANDBOX_DIE("Internal compiler error; failed to compile jump table");
     }
     program->push_back((struct sock_filter)
       BPF_STMT(BPF_RET+BPF_K, ret_iter->first));
@@ -555,7 +563,7 @@ void Sandbox::emitReturnStatements(Program *program, const RetInsns& rets) {
       // Jumps are always relative and they are always forward.
       int distance = ip - insn_iter->addr - 1;
       if (distance < 0 || distance > 255) {
-        die("Internal compiler error; failed to compile jump table");
+        SANDBOX_DIE("Internal compiler error; failed to compile jump table");
       }
 
       // Decide whether we need to patch up the "true" or the "false" jump
@@ -576,7 +584,7 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
   if (nr != SIGSYS || info->si_code != SYS_SECCOMP || !void_context ||
       info->si_errno <= 0 ||
       static_cast<size_t>(info->si_errno) > trapArraySize_) {
-    // die() can call LOG(FATAL). This is not normally async-signal safe
+    // SANDBOX_DIE() can call LOG(FATAL). This is not normally async-signal safe
     // and can lead to bugs. We should eventually implement a different
     // logging and reporting mechanism that is safe to be called from
     // the sigSys() handler.
@@ -584,7 +592,7 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
     //       could actually make an argument that spurious SIGSYS should
     //       just get silently ignored. TBD
   sigsys_err:
-    die("Unexpected SIGSYS received");
+    SANDBOX_DIE("Unexpected SIGSYS received");
   }
 
   // Signal handlers should always preserve "errno". Otherwise, we could
@@ -640,7 +648,7 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
 }
 
 intptr_t Sandbox::bpfFailure(const struct arch_seccomp_data&, void *aux) {
-  die(static_cast<char *>(aux));
+  SANDBOX_DIE(static_cast<char *>(aux));
 }
 
 int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
@@ -665,7 +673,7 @@ int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
     if (id > SECCOMP_RET_DATA) {
       // In practice, this is pretty much impossible to trigger, as there
       // are other kernel limitations that restrict overall BPF program sizes.
-      die("Too many SECCOMP_RET_TRAP callback instances");
+      SANDBOX_DIE("Too many SECCOMP_RET_TRAP callback instances");
     }
 
     traps_->push_back(ErrorCode(fnc, aux, id));
@@ -683,7 +691,6 @@ int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
   }
 }
 
-bool Sandbox::dryRun_                   = false;
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int    Sandbox::proc_fd_                = -1;
 Sandbox::Evaluators Sandbox::evaluators_;

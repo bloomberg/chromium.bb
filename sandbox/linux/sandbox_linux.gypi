@@ -41,7 +41,9 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'tests/main.cc',
         'tests/unit_tests.cc',
+        'tests/unit_tests.h',
         'suid/client/setuid_sandbox_client_unittest.cc',
       ],
       'include_dirs': [
@@ -51,6 +53,8 @@
         [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64" '
                            'or target_arch=="arm")', {
           'sources': [
+            'seccomp-bpf/bpf_tests.cc',
+            'seccomp-bpf/bpf_tests.h',
             'seccomp-bpf/sandbox_bpf_unittest.cc',
           ],
         }],
@@ -60,6 +64,8 @@
       'target_name': 'seccomp_bpf',
       'type': 'static_library',
       'sources': [
+        'seccomp-bpf/die.cc',
+        'seccomp-bpf/die.h',
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
         'seccomp-bpf/verifier.cc',
