@@ -28,15 +28,18 @@
 #        three or more operands are assumed to read all operands except last one
 #        which is used to store the result of the execution.
 #      Possible argument types:
-#       a: Accumulator (%al/%ax/%eax/%rax depending on size).
-#       b: A memory operand addressed by the %ds:(%[er]bx). See “xlat”.
-#       c: Implicit %ecx/%rcx (depending on size).
-#       d: Implicit %edx/%rdx (depending on size).
+#       a: Accumulator: %al/%ax/%eax/%rax/%es (depending on size).
+#       b: Base register: %bl/%bx/%ebx/%rbx/%ds (depending on size).
+#       c: Counter register: %cl/%cx/%ecx/%rcx/%cs (depending on size).
+#       d: Data register: %dl/%dx/%edx/%rdx/%ss (depending on size).
+#       f: Stack pointer: %spl/%sp/%esp/%rsp/%fs (depending on size).
+#       g: Base pointer: %bpl/%bp/%ebp/%rbp/%gs (depending on size).
 #       i: Second immediate value encoded in the instruction.
 #       o: I/O port in %dx (used in “in”/“out” instructions).
 #       p: Accumulator pair (%dx:%ax/%edx:%eax/%rdx:%rax depending on size).
 #       r: Register in opcode (low 3 bits plus rex.B).
 #       t: Top of the x87 stack (%st).
+#       x: A memory operand addressed by the %ds:(%[er]bx). See “xlat”.
 #       B: General purpose register specified by the VEX/XOP.vvvv field.
 #       E: General purpose register or memory operand specified by the r/m
 #          field of the ModRM byte.  For memory operands, the ModRM byte may
@@ -1025,7 +1028,7 @@ xadd &Gq Eq, data16 rexw 0x0f 0xc1, lock amd64 nacl-forbidden
 xchg &av rv, 0x90, nacl-amd64-zero-extends
 xchg &G E, 0x86, lock nacl-amd64-zero-extends
 ######## XLAT ##################################################################
-xlat bb, 0xd7, nacl-forbidden
+xlat xb, 0xd7, nacl-forbidden
 ######## XOR ###################################################################
 xor I a, 0x34, nacl-amd64-zero-extends
 xor I E, 0x80 /6, lock nacl-amd64-zero-extends

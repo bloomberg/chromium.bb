@@ -32,6 +32,8 @@
   action rel32_operand_begin { }
   action rel32_operand_end { }
 
+  action last_byte_is_not_immediate { }
+
   include decode_x86_64 "one_valid_instruction_x86_64.rl";
 
   main := one_instruction;

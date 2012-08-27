@@ -13,7 +13,7 @@
 <div>
 <a name="TOC"></a>
 <ol style="clear:both;">
-<li><a href="#1">DFA, Ragel, macro and inline functions, oh my…</a></li>
+<li><a href="#1">DFA, Ragel, macros and inline functions, oh my…</a></li>
 <li><a href="#2">What is ragel and how it works.</a></li>
 <ol>
 <li><a href="#2-1">Ragel actions.</a></li>
@@ -42,7 +42,7 @@
 </ol>
 <li><a href="#7">Decoders.</a></li>
 </ol>
-<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="1">1. DFA, Ragel, macro and inline functions, oh my…</a></h2>
+<h2><div style="float:right"><a href="#TOC">▲</a></div><a name="1">1. DFA, Ragel, macros and inline functions, oh my…</a></h2>
 
 <p>Contemporary computer systems are extremely powerful and most complex components and libraries are built like a <a href="http://en.wikipedia.org/wiki/Luxury_vehicle">luxury car</a>: they include a lot of comfort and safety technologies which are designed to improve live of the user of said components. This also facilitates <a href="http://en.wikipedia.org/wiki/Code_reuse">code reuse</a> via <a href="http://en.wikipedia.org/wiki/Modular_programming">modular programming</a> and generally improves <a href="http://en.wikipedia.org/wiki/Maintainability">maintainability</a>.</p>
 
@@ -276,7 +276,7 @@ As you can see <code>check_access</code> is triggered after parsing ModRM/SIB by
 
 <p>Register names are defined in <code>register_name</code> enum: first 16 are identical to the AMD/Intel names (from <code>REG_RAX</code> to <code>REG_R15</code>) while other 16 are used (partially) to describe non-register operands (memory operand, immediate operand, <code>REG_RIP</code> and <code>REG_RIZ</code>, etc). This means that if operand's name is &gt;15 then it can be ignored. There are only four operand types: <code>OperandSandboxIrrelevant</code>, <code>OperandSandbox8bit</code>, <code>OperandSandboxRestricted</code>, and <code>OperandSandboxUnrestricted</code>. First type is something not related to general purpose register (x87, MMX, XMM, or YMM registers fall unto this category). We need to handle 8bit operands specially because they are finicky: if <code>REX</code> byte is used they access <code>%spl</code>, <code>%bps</code>, <code>%sil</code>, and <code>%dil</code>, but when <code>REX</code> byte is not used the same numbers are reused for <code>%ah</code>, <code>%ch</code>, <code>%dh</code>, and <code>%bh</code>! Last two types are the most important: these are 32bit operands (which will make the appropriate register “restricted”) or 16bit/64bit operands (these may affect register in question negatively if that's <code>%rbp</code>, <code>%rsp</code>, or <code>%r15</code>, but for other registers these are just ignored). Note that if you assign <code>0</code> to this variable then all operands will be of <code>OperandSandboxIrrelevant</code> type.</p>
 
-<p>Now the set of macro used to work with operands should look less mysterious:<hr />
+<p>Now the set of macros used to work with operands should look less mysterious:<hr />
 <code>#define&nbsp;SET_OPERAND_NAME(N,&nbsp;S)&nbsp;operand_states&nbsp;|=&nbsp;((S)&nbsp;&lt;&lt;&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
 <code>#define&nbsp;SET_OPERAND_TYPE(N,&nbsp;T)&nbsp;SET_OPERAND_TYPE_&nbsp;##&nbsp;T(N)</code><br />
 <code>#define&nbsp;SET_OPERAND_TYPE_OperandSize8bit(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandbox8bit&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
@@ -284,9 +284,9 @@ As you can see <code>check_access</code> is triggered after parsing ModRM/SIB by
 <code>#define&nbsp;SET_OPERAND_TYPE_OperandSize32bit(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandboxRestricted&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
 <code>#define&nbsp;SET_OPERAND_TYPE_OperandSize64bit(N)&nbsp;operand_states&nbsp;|=&nbsp;OperandSandboxUnrestricted&nbsp;&lt;&lt;&nbsp;(5&nbsp;+&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3))</code><br />
 <code>#define&nbsp;CHECK_OPERAND(N,&nbsp;S,&nbsp;T)&nbsp;((operand_states&nbsp;&&nbsp;(0xff&nbsp;&lt;&lt;&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3)))&nbsp;==&nbsp;((S&nbsp;|&nbsp;(T&nbsp;&lt;&lt;&nbsp;5))&nbsp;&lt;&lt;&nbsp;((N)&nbsp;&lt;&lt;&nbsp;3)))</code><hr />
-Calls like <code>SET_OPERAND_NAME(0, REG_RAX)</code> are used by actions to set name of the operand (this particular one is used by <code>operand0_rax</code> action) while calls like <code>SET_OPERAND_TYPE(0, OperandSize2bit)</code> are used by actions to set the type of operand (this particular one is used by <code>operand0_2bit</code> action). Note that we <b>don't</b> handle 2bit operands in the set of macro above. This is not a mistake: 2bit operands are only ever used as immediate operands (and then only in two instructions: <code>vpermil2pd</code> and <code>vpermil2ps</code>) and we don't process immediate operands here. If they will be by some reason left in the <code>validator_x86_64_instruction.rl</code> file this will lead to the compile-time error, not to some kind of weird overflow which may [potentially] produce security hole.</p>
+Calls like <code>SET_OPERAND_NAME(0, REG_RAX)</code> are used by actions to set name of the operand (this particular one is used by <code>operand0_rax</code> action) while calls like <code>SET_OPERAND_TYPE(0, OperandSize2bit)</code> are used by actions to set the type of operand (this particular one is used by <code>operand0_2bit</code> action). Note that we <b>don't</b> handle 2bit operands in the set of macros above. This is not a mistake: 2bit operands are only ever used as immediate operands (and then only in two instructions: <code>vpermil2pd</code> and <code>vpermil2ps</code>) and we don't process immediate operands here. If they will be by some reason left in the <code>validator_x86_64_instruction.rl</code> file this will lead to the compile-time error, not to some kind of weird overflow which may [potentially] produce security hole.</p>
 
-<p>Almost all manipulations with <code>operand_states</code> are done using macro described above, but there are one construct in <code>process_<i>N</i>_operands</code> function which accesses the <code>operand_states</code> direfctly:<hr />
+<p>Almost all manipulations with <code>operand_states</code> are done using macros described above, but there are one construct in <code>process_<i>N</i>_operands</code> function which accesses the <code>operand_states</code> direfctly:<hr />
 &nbsp;&nbsp;&nbsp;&nbsp;<code>/*&nbsp;Take&nbsp;2&nbsp;bits&nbsp;of&nbsp;operand&nbsp;type&nbsp;from&nbsp;operand_states&nbsp;as&nbsp;*restricted_register,</code><br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>*&nbsp;make&nbsp;sure&nbsp;operand_states&nbsp;denotes&nbsp;a&nbsp;register&nbsp;(4th&nbsp;bit&nbsp;==&nbsp;0).&nbsp;*/</code><br />
 &nbsp;&nbsp;&nbsp;&nbsp;<code>}&nbsp;else&nbsp;if&nbsp;((operand_states&nbsp;&&nbsp;0x70)&nbsp;==&nbsp;(OperandSandboxRestricted&nbsp;&lt;&lt;&nbsp;5))&nbsp;{</code><br />
