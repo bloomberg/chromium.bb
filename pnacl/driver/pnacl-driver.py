@@ -43,6 +43,8 @@ EXTRA_ENV = {
   'STATIC'      : '0',    # -static (default)
   'DYNAMIC'     : '0',    # -dynamic
   'PIC'         : '0',    # Generate PIC
+  # TODO(robertm): Switch the default to 1
+  'NO_ASM'      : '0',    # Disallow use of inline assembler
   'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
                           # type set (using -x) unless -E is specified.
 
@@ -59,6 +61,11 @@ EXTRA_ENV = {
   'OPT_LEVEL'   : '0',
   'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthread} ' +
                   '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
+                  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2345
+                  # it would be better to detect asm use inside clang
+                  # as some uses of asm are borderline legit, e.g.
+                  # <prototype> asm("<function-name>");
+                  '${NO_ASM ? -Dasm=ASM_FORBIDDEN -D__asm__=ASM_FORBIDDEN} ' +
                   '-ccc-host-triple le32-unknown-nacl',
 
 
@@ -207,6 +214,8 @@ GCCPatterns = [
   ( '-E',              "env.set('GCC_MODE', '-E')"),
   ( '-S',              "env.set('GCC_MODE', '-S')"),
   ( '-c',              "env.set('GCC_MODE', '-c')"),
+
+  ( '-allow-asm',       "env.set('NO_ASM', '0')"),
 
   ( '-nostdinc',       "env.set('STDINC', '0')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
