@@ -41,7 +41,7 @@ namespace {
 bool IsParentUnignoredOf(const WebAccessibilityObject& ancestor,
                          const WebAccessibilityObject& child) {
   WebAccessibilityObject parent = child.parentObject();
-  while (!parent.isNull() && parent.accessibilityIsIgnored())
+  while (!parent.isDetached() && parent.accessibilityIsIgnored())
     parent = parent.parentObject();
   return parent.equals(ancestor);
 }
@@ -360,7 +360,7 @@ void SerializeAccessibilityNode(
     dst->string_attributes[dst->ATTR_HELP] = src.helpText();
   if (src.keyboardShortcut().length())
     dst->string_attributes[dst->ATTR_SHORTCUT] = src.keyboardShortcut();
-  if (src.titleUIElement().isValid()) {
+  if (!src.titleUIElement().isDetached()) {
     dst->int_attributes[dst->ATTR_TITLE_UI_ELEMENT] =
         src.titleUIElement().axID();
   }
@@ -440,7 +440,7 @@ void SerializeAccessibilityNode(
   // Walk up the parent chain to set live region attributes of containers
 
   WebAccessibilityObject container_accessible = src;
-  while (!container_accessible.isNull()) {
+  while (!container_accessible.isDetached()) {
     WebNode container_node = container_accessible.node();
     if (!container_node.isNull() && container_node.isElementNode()) {
       WebElement container_elem =
@@ -526,7 +526,7 @@ void SerializeAccessibilityNode(
         WebAccessibilityObject cell = src.cellForColumnAndRow(
             i % column_count, i / column_count);
         int cell_id = -1;
-        if (!cell.isNull()) {
+        if (!cell.isDetached()) {
           cell_id = cell.axID();
           if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
             unique_cell_id_set.insert(cell_id);
@@ -561,7 +561,7 @@ void SerializeAccessibilityNode(
       // Don't add children that are invalid thus preventing a crash.
       // https://bugs.webkit.org/show_bug.cgi?id=44149
       // TODO(ctguil): We may want to remove this check as webkit stabilizes.
-      if (!child.isValid())
+      if (child.isDetached())
         continue;
 
       // Children may duplicated in the webkit accessibility tree. Only add a
