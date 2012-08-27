@@ -1,5 +1,16 @@
 # Model a case where an indirect jump is properly masked.
+# and %edx, 0xe0
 83 e2 e0
+# add %rdx, %r15
+4c 01 fa
+# jmp %rdx
+ff e2
+#
+# Model a case where an indirect jump is no longer properly masked.
+# and %edx, 0xe0
+83 e2 e0
+# lea %r9, [%r15+%rdx*1]
 4D 8D 0C 17
+# jmp %r9
 41 FF E1
 

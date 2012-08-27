@@ -1,4 +1,4 @@
 0000000000001000: eb 03                                        [P] dontcarejump %rip (s), 0x1005 (u)
 0000000000001002: 83 e2 e0                                     and %edx, 0xe0
-0000000000001005: 4d 8d 0c 17                                  lea %r9, [%r15+%rdx*1]
-0000000000001009: 41 ff e1                                     [P] dontcarejump %rip (s), %r9 (u)
+0000000000001005: 4c 01 fa                                     add %rdx, %r15
+0000000000001008: ff e2                                        [P] dontcarejump %rip (s), %rdx (u)

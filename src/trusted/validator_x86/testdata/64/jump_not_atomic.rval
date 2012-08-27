@@ -1,4 +1,4 @@
-VALIDATOR: Checking jump targets: 1000 to 100c
+VALIDATOR: Checking jump targets: 1000 to 100a
 VALIDATOR: ERROR: 1005: Bad jump target
 VALIDATOR: Checking that basic blocks are aligned
 *** <input> IS UNSAFE ***

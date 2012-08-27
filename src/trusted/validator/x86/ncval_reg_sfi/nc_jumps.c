@@ -128,35 +128,6 @@ static Bool NaClExtractBinaryOperandIndices(
   return FALSE;
 }
 
-/* Given the index of a memory offset in the given expression vector, returns
- * index iff the memory offset is of the form [base+index].
- *
- * Parameters:
- *   vector - The expression vector for the instruction being examined.
- *   memoffset_index - The index into the expression vector where the memory
- *            offset occurs.
- *   base_register - The base register expected in the memory offset.
- * Returns:
- *   index if of correct form, RegUnknown otherwise.
- */
-static NaClOpKind NaClMemOffsetMatchesBasePlusIndex(
-    NaClExpVector* vector,
-    int memoffset_index,
-    NaClOpKind base_register) {
-  int r1_index = memoffset_index + 1;
-  int r2_index = r1_index + NaClExpWidth(vector, r1_index);
-  int scale_index = r2_index + NaClExpWidth(vector, r2_index);
-  int disp_index = scale_index + NaClExpWidth(vector, scale_index);
-  NaClOpKind r1 = NaClGetExpVectorRegister(vector, r1_index);
-  NaClOpKind r2 = NaClGetExpVectorRegister(vector, r2_index);
-  uint64_t scale = NaClGetExprUnsignedValue(&vector->node[scale_index]);
-  uint64_t disp = NaClGetExprSignedValue(&vector->node[disp_index]);
-  assert(ExprMemOffset == vector->node[memoffset_index].kind);
-  return (r1 == base_register &&
-          1 == scale &&
-          0 == disp) ? r2 : RegUnknown;
-}
-
 /* Returns the 32-bit register for instructions of the form
  *
  *    and %reg32, MASK
@@ -216,49 +187,6 @@ static NaClOpKind NaClGetAndMaskReg32(NaClValidatorState* vstate,
   return reg32;
 }
 
-/* Returns the 64-bit index register reg_a of an lea instruction of the form
- *
- *    lea %reg_b, [%RBASE + %reg_a]
- *
- * given the 64-bit register reg_b. Returns RegUnknown if the lea doesn't
- * match the maksing form needed.
- */
-static NaClOpKind NaClGetLeaMask64(NaClValidatorState* vstate,
-                                   size_t distance,
-                                   NaClOpKind reg_b) {
-  NaClInstState* state;
-  const NaClInst* inst;
-  int op_1, op_2;
-  NaClExpVector* nodes;
-  NaClExp* node;
-  NaClInstIter* iter = vstate->cur_iter;
-
-  /* Get the corresponding lea instruction. */
-  if (!NaClInstIterHasLookbackStateInline(iter, distance)) return RegUnknown;
-  state = NaClInstIterGetLookbackStateInline(iter, distance);
-  inst = NaClInstStateInst(state);
-  if (InstLea != inst->name) return RegUnknown;
-  DEBUG(NaClLog(LOG_INFO, "inst(%d): lea mask: ", (int) distance);
-        NaClInstStateInstPrint(NaClLogGetGio(), state));
-
-  /* Extract the values of the two operands for the lea instruction. */
-  if (!NaClExtractBinaryOperandIndices(state, &op_1, &op_2)) return RegUnknown;
-  DEBUG(NaClLog(LOG_INFO, "op_1 index = %d, op_2 index = %d\n", op_1, op_2));
-
-  /* Extract the destination register of the lea/and, and verify that
-   * it is the register reg_b
-   */
-  nodes = NaClInstStateExpVector(state);
-  node = &nodes->node[op_1];
-  if (ExprRegister != node->kind) return RegUnknown;
-  if (reg_b != NaClGetExpRegisterInline(node)) return RegUnknown;
-
-  /* Check that we have [%RBASE + %reg_a] as second argument to lea */
-  node = &nodes->node[op_2];
-  if (ExprMemOffset != node->kind) return RegUnknown;
-  return NaClMemOffsetMatchesBasePlusIndex(nodes, op_2, vstate->base_register);
-}
-
 /* Returns true if the 64-bit register reg64 set by an instruction of the form
  *
  *    add %reg64 %RBASE
@@ -304,14 +232,10 @@ static Bool NaClIsAddRbaseToReg64(NaClValidatorState* vstate,
 /* Checks if an indirect jump (in 64-bit mode) is native client compliant.
  *
  * Expects pattern:
- *    and %REG32-A, MASK
- *    lea %REG64-B, [%RBASE + %REG64-A]
- *    jmp %REG64-B
  *
- * Or:
- *    and %REG32-A, MASK
- *    add %REG64-A, %RBASE
- *    jmp %REG64-A
+ *    and %REG32, MASK
+ *    add %REG64, %RBASE
+ *    jmp %REG64
  *
  * where MASK is all 1/s except for the alignment mask bits, which must be zero.
  *
@@ -352,11 +276,8 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* vstate,
     and_reg64 = NaClGet64For32BitReg(and_reg32);
     if (RegUnknown == and_reg64) break;
 
-    /* Check that the middle instruction is either an appropriate lea or
-     * add instruction.
-     */
-    if ((and_reg64 != NaClGetLeaMask64(vstate, 1, jump_reg)) &&
-        !NaClIsAddRbaseToReg64(vstate, 1, and_reg64)) break;
+    /* Check that the middle instruction is an appropriate add instruction. */
+    if (!NaClIsAddRbaseToReg64(vstate, 1, and_reg64)) break;
 
     /* If reached, indirect jump is properly masked. */
     DEBUG(NaClLog(LOG_INFO, "Protect indirect jump instructions\n"));
