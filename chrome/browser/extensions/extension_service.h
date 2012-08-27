@@ -711,6 +711,11 @@ class ExtensionService
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
+  // Enqueues a launch task in the lazy background page queue.
+  void QueueRestoreAppWindow(const extensions::Extension* extension);
+  // Launches the platform app associated with |extension_host|.
+  static void LaunchApplication(extensions::ExtensionHost* extension_host);
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
 
@@ -782,6 +787,10 @@ class ExtensionService
   // reloaded.
   typedef std::map<std::string, int> OrphanedDevTools;
   OrphanedDevTools orphaned_dev_tools_;
+
+  // A set of apps that had an open window the last time they were reloaded.
+  // A new window will be launched when the app is succesfully reloaded.
+  std::set<std::string> relaunch_app_ids_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
