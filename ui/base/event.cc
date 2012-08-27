@@ -122,14 +122,6 @@ LocatedEvent::LocatedEvent(EventType type,
       system_location_(0, 0) {
 }
 
-LocatedEvent::LocatedEvent(const LocatedEvent& model)
-    : Event(model),
-      location_(model.location_),
-      root_location_(model.root_location_),
-      valid_system_location_(model.valid_system_location_),
-      system_location_(model.system_location_) {
-}
-
 void LocatedEvent::UpdateForRootTransform(const Transform& root_transform) {
   // Transform has to be done at root level.
   DCHECK_EQ(root_location_.x(), location_.x());
@@ -245,20 +237,12 @@ void MouseEvent::SetClickCount(int click_count) {
   set_flags(f);
 }
 
-MouseEvent::MouseEvent(const MouseEvent& model) : LocatedEvent(model) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent
 
 MouseWheelEvent::MouseWheelEvent(const base::NativeEvent& native_event)
     : MouseEvent(native_event),
       offset_(GetMouseWheelOffset(native_event)) {
-}
-
-MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event)
-    : MouseEvent(mouse_event),
-      offset_(GetMouseWheelOffset(mouse_event.native_event())) {
 }
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)

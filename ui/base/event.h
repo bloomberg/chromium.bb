@@ -172,9 +172,6 @@ class UI_EXPORT LocatedEvent : public Event {
                const gfx::Point& root_location,
                int flags);
 
-  // Called from MouseEvent's copy ctor.
-  explicit LocatedEvent(const LocatedEvent& model);
-
   gfx::Point location_;
 
   // |location_| multiplied by an optional transformation matrix for
@@ -266,10 +263,6 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   // flags. Use this to determine the button that was pressed or released.
   int changed_button_flags() const { return changed_button_flags_; }
 
- protected:
-  // Called from MouseWheelEvent's ctor.
-  explicit MouseEvent(const MouseEvent& model);
-
  private:
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.
@@ -291,7 +284,6 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   static const int kWheelDelta;
 
   explicit MouseWheelEvent(const base::NativeEvent& native_event);
-  explicit MouseWheelEvent(const MouseEvent& mouse_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
 
   template <class T>

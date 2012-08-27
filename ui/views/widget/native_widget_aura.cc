@@ -797,10 +797,8 @@ bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
 
 bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
-  if (event->type() == ui::ET_MOUSEWHEEL) {
-    ui::MouseWheelEvent mwe(*event);
-    return delegate_->OnMouseEvent(mwe);
-  }
+  if (event->type() == ui::ET_MOUSEWHEEL)
+    return delegate_->OnMouseEvent(*event);
 
   if (event->type() == ui::ET_SCROLL) {
     if (delegate_->OnMouseEvent(*event))
