@@ -166,8 +166,26 @@ void GetCookiesOnIOThread(const GURL& url,
       context_getter->GetURLRequestContext()->cookie_store();
   cookie_store->GetCookiesWithOptionsAsync(
       url, net::CookieOptions(),
-      base::Bind(&GetCookiesCallback,
-                 base::Unretained(cookies), base::Unretained(event)));
+      base::Bind(&GetCookiesCallback, cookies, event));
+}
+
+void SetCookieCallback(bool* result,
+                       base::WaitableEvent* event,
+                       bool success) {
+  *result = success;
+  event->Signal();
+}
+
+void SetCookieOnIOThread(const GURL& url,
+                         const std::string& value,
+                         net::URLRequestContextGetter* context_getter,
+                         base::WaitableEvent* event,
+                         bool* result) {
+  net::CookieStore* cookie_store =
+      context_getter->GetURLRequestContext()->cookie_store();
+  cookie_store->SetCookieWithOptionsAsync(
+      url, value, net::CookieOptions(),
+      base::Bind(&SetCookieCallback, result, event));
 }
 
 }  // namespace
@@ -317,6 +335,22 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
                  make_scoped_refptr(context_getter), &event, &cookies));
   event.Wait();
   return cookies;
+}
+
+bool SetCookie(BrowserContext* browser_context,
+               const GURL& url,
+               const std::string& value) {
+  bool result = false;
+  base::WaitableEvent event(true, false);
+  net::URLRequestContextGetter* context_getter =
+      browser_context->GetRequestContext();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SetCookieOnIOThread, url, value,
+                 make_scoped_refptr(context_getter), &event, &result));
+  event.Wait();
+  return result;
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -101,8 +102,13 @@ bool ExecuteJavaScriptAndExtractString(
     const std::wstring& script,
     std::string* result) WARN_UNUSED_RESULT;
 
-// Returns the cookies for the given url. Runs a nested message loop.
+// Returns the cookies for the given url.
 std::string GetCookies(BrowserContext* browser_context, const GURL& url);
+
+// Sets a cookie for the given url. Returns true on success.
+bool SetCookie(BrowserContext* browser_context,
+               const GURL& url,
+               const std::string& value);
 
 // Watches title changes on a tab, blocking until an expected title is set.
 class TitleWatcher : public NotificationObserver {

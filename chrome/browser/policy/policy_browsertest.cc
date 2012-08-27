@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
@@ -13,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,6 +24,15 @@
 using testing::Return;
 
 namespace policy {
+
+namespace {
+
+const char kURL[] = "http://example.com";
+const char kCookieValue[] = "converted=true";
+// Assigned to Philip J. Fry to fix eventually.
+const char kCookieOptions[] = ";expires=Wed Jan 01 3000 00:00:00 GMT";
+
+}  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
  protected:
@@ -68,6 +80,33 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
   // The bookmark bar is shown detached in the NTP, when disabled by prefs only.
   EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_ClearSiteDataOnExit) {
+  Profile* profile = browser()->profile();
+  GURL url(kURL);
+  // No cookies at startup.
+  EXPECT_TRUE(content::GetCookies(profile, url).empty());
+  // Set a cookie now.
+  std::string value = std::string(kCookieValue) + std::string(kCookieOptions);
+  EXPECT_TRUE(content::SetCookie(profile, url, value));
+  // Verify it was set.
+  EXPECT_EQ(kCookieValue, GetCookies(profile, url));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_ClearSiteDataOnExit) {
+  // Verify that the cookie persists across restarts.
+  EXPECT_EQ(kCookieValue, GetCookies(browser()->profile(), GURL(kURL)));
+  // Now set the policy and the cookie should be gone after another restart.
+  PolicyMap policies;
+  policies.Set(key::kClearSiteDataOnExit, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
+  // Verify that the cookie is gone.
+  EXPECT_TRUE(GetCookies(browser()->profile(), GURL(kURL)).empty());
 }
 
 }  // namespace policy
