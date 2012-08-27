@@ -29,10 +29,11 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual void PrepareToShow() OVERRIDE;
   virtual void ShowManualRebootInfo() OVERRIDE;
   virtual void SetProgress(int progress) OVERRIDE;
-  virtual void ShowEstimatedTimeLeft(bool enable) OVERRIDE;
+  virtual void ShowEstimatedTimeLeft(bool visible) OVERRIDE;
   virtual void SetEstimatedTimeLeft(const base::TimeDelta& time) OVERRIDE;
-  virtual void ShowCurtain(bool enable) OVERRIDE;
-  virtual void ShowPreparingUpdatesInfo(bool visible) OVERRIDE;
+  virtual void ShowProgressMessage(bool visible) OVERRIDE;
+  virtual void SetProgressMessage(ProgressMessage message) OVERRIDE;
+  virtual void ShowCurtain(bool visible) OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;

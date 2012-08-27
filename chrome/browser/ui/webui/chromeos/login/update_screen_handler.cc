@@ -45,6 +45,8 @@ void UpdateScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES));
   localized_strings->SetString("installingUpdateDesc",
       l10n_util::GetStringFUTF16(IDS_UPDATE_MSG, short_product_name));
+  localized_strings->SetString("downloading",
+      l10n_util::GetStringUTF16(IDS_DOWNLOADING));
   localized_strings->SetString("downloadingTimeLeftLong",
       l10n_util::GetStringUTF16(IDS_DOWNLOADING_TIME_LEFT_LONG));
   localized_strings->SetString("downloadingTimeLeftStatusOneHour",
@@ -100,36 +102,57 @@ void UpdateScreenHandler::SetProgress(int progress) {
                                    progress_value);
 }
 
-void UpdateScreenHandler::ShowEstimatedTimeLeft(bool enable) {
-  base::FundamentalValue enable_value(enable);
+void UpdateScreenHandler::ShowEstimatedTimeLeft(bool visible) {
+  base::FundamentalValue visible_value(visible);
   web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.showUpdateEstimatedTimeLeft", enable_value);
+      "cr.ui.Oobe.showEstimatedTimeLeft", visible_value);
 }
 
 void UpdateScreenHandler::SetEstimatedTimeLeft(const base::TimeDelta& time) {
   base::FundamentalValue seconds_value(time.InSecondsF());
   web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.setUpdateEstimatedTimeLeft", seconds_value);
+      "cr.ui.Oobe.setEstimatedTimeLeft", seconds_value);
 }
 
-void UpdateScreenHandler::ShowCurtain(bool enable) {
-  base::FundamentalValue enable_value(enable);
+void UpdateScreenHandler::ShowProgressMessage(bool visible) {
+  base::FundamentalValue visible_value(visible);
   web_ui()->CallJavascriptFunction(
-      "cr.ui.Oobe.showUpdateCurtain", enable_value);
+      "cr.ui.Oobe.showProgressMessage", visible_value);
 }
 
-void UpdateScreenHandler::ShowPreparingUpdatesInfo(bool visible) {
-  scoped_ptr<StringValue> info_message;
-  if (visible) {
-    info_message.reset(Value::CreateStringValue(
-        l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE)));
-  } else {
-    info_message.reset(Value::CreateStringValue(
-        l10n_util::GetStringFUTF16(IDS_INSTALLING_UPDATE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))));
+void UpdateScreenHandler::SetProgressMessage(ProgressMessage message) {
+  scoped_ptr<StringValue> progress_message;
+  switch (message) {
+    case PROGRESS_MESSAGE_UPDATE_AVAILABLE:
+      progress_message.reset(Value::CreateStringValue(
+          l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE)));
+      break;
+    case PROGRESS_MESSAGE_INSTALLING_UPDATE:
+      progress_message.reset(Value::CreateStringValue(
+          l10n_util::GetStringFUTF16(IDS_INSTALLING_UPDATE,
+            l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))));
+      break;
+    case PROGRESS_MESSAGE_VERIFYING:
+      progress_message.reset(Value::CreateStringValue(
+          l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING)));
+      break;
+    case PROGRESS_MESSAGE_FINALIZING:
+      progress_message.reset(Value::CreateStringValue(
+          l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING)));
+      break;
+    default:
+      NOTREACHED();
+  };
+  if (progress_message.get()) {
+    web_ui()->CallJavascriptFunction(
+        "cr.ui.Oobe.setProgressMessage", *progress_message);
   }
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.setUpdateMessage",
-                                   *info_message);
+}
+
+void UpdateScreenHandler::ShowCurtain(bool visible) {
+  base::FundamentalValue visible_value(visible);
+  web_ui()->CallJavascriptFunction(
+      "cr.ui.Oobe.showUpdateCurtain", visible_value);
 }
 
 void UpdateScreenHandler::RegisterMessages() {

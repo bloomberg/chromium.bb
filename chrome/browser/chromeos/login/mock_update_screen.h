@@ -35,6 +35,8 @@ class MockUpdateScreenActor : public UpdateScreenActor {
   MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(ShowEstimatedTimeLeft, void(bool enable));
   MOCK_METHOD1(SetEstimatedTimeLeft, void(const base::TimeDelta& time));
+  MOCK_METHOD1(ShowProgressMessage, void(bool enable));
+  MOCK_METHOD1(SetProgressMessage, void(ProgressMessage message));
   MOCK_METHOD1(ShowCurtain, void(bool enable));
   MOCK_METHOD1(ShowPreparingUpdatesInfo, void(bool enable));
 

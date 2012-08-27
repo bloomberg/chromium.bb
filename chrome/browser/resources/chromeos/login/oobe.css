@@ -924,11 +924,8 @@ html[oobe=old] #update progress {
   width: 300px;
 }
 
-#update #update-estimated-time-left {
+#update .progress-message {
   -webkit-margin-before: 4px;
-}
-
-#update #update-estimated-time-left {
   color: #a3a3a3;
   font-size: 13px;
   text-align: center;

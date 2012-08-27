@@ -50,7 +50,8 @@ const double kMinProgressStep = 1e-3;
 
 // Smooth factor that is used for the average downloading speed
 // estimation.
-const double kDownloadSpeedSmoothFactor = 0.005;
+// avg_speed = smooth_factor * cur_speed + (1.0 - smooth_factor) * avg_speed.
+const double kDownloadSpeedSmoothFactor = 0.1;
 
 // Minumum allowed value for the average downloading speed.
 const double kDownloadAverageSpeedDropBound = 1e-8;
@@ -139,7 +140,9 @@ void UpdateScreen::UpdateStatusChanged(
       } else {
         LOG(INFO) << "Critical update available: "
                   << status.new_version;
-        actor_->ShowPreparingUpdatesInfo(true);
+        actor_->SetProgressMessage(
+            UpdateScreenActor::PROGRESS_MESSAGE_UPDATE_AVAILABLE);
+        actor_->ShowProgressMessage(true);
         actor_->ShowCurtain(false);
       }
       break;
@@ -162,7 +165,9 @@ void UpdateScreen::UpdateStatusChanged(
           } else {
             LOG(INFO) << "Critical update available: "
                       << status.new_version;
-            actor_->ShowPreparingUpdatesInfo(false);
+            actor_->SetProgressMessage(
+                UpdateScreenActor::PROGRESS_MESSAGE_INSTALLING_UPDATE);
+            actor_->ShowProgressMessage(true);
             actor_->ShowCurtain(false);
           }
         }
@@ -172,12 +177,15 @@ void UpdateScreen::UpdateStatusChanged(
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
       MakeSureScreenIsShown();
       actor_->SetProgress(kBeforeVerifyingProgress);
-      actor_->ShowEstimatedTimeLeft(false);
+      actor_->SetProgressMessage(UpdateScreenActor::PROGRESS_MESSAGE_VERIFYING);
+      actor_->ShowProgressMessage(true);
       break;
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       MakeSureScreenIsShown();
       actor_->SetProgress(kBeforeFinalizingProgress);
-      actor_->ShowEstimatedTimeLeft(false);
+      actor_->SetProgressMessage(
+          UpdateScreenActor::PROGRESS_MESSAGE_FINALIZING);
+      actor_->ShowProgressMessage(true);
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
@@ -321,9 +329,7 @@ void UpdateScreen::UpdateDownloadingStats(
   if (!actor_)
     return;
   base::Time download_current_time = base::Time::Now();
-  if (download_current_time >= download_last_time_ + kMinTimeStep &&
-      status.download_progress >=
-      download_last_progress_ + kMinProgressStep) {
+  if (download_current_time >= download_last_time_ + kMinTimeStep) {
     // Estimate downloading rate.
     double progress_delta =
         std::max(status.download_progress - download_last_progress_, 0.0);

@@ -13327,6 +13327,12 @@ Press any key to continue exploring.
       <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
         Checking for updates
       </message>
+      <message name="IDS_UPDATE_VERIFYING" desc="Message that the system is verifying an update">
+	Verifying...
+      </message>
+      <message name="IDS_UPDATE_FINALIZING" desc="Message that the system is finalizing an update">
+	Finalizing...
+      </message>
       <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning webpage ">
         Create OS Recovery Media
       </message>
@@ -13576,15 +13582,6 @@ Press any key to continue exploring.
       <message name="IDS_UPDATE_AVAILABLE" desc="Notification for available update">
         System update available. Preparing to download&#x2026;
       </message>
-      <message name="IDS_UPDATE_DOWNLOADING" desc="Notification for update download progress">
-        System update downloading: <ph name="PERCENT">$1<ex>10</ex></ph>&#37; complete.
-      </message>
-      <message name="IDS_UPDATE_VERIFYING" desc="Notification for update verifying">
-        Verifying system update&#x2026;
-      </message>
-      <message name="IDS_UPDATE_FINALIZING" desc="Notification for update finalizing">
-        Finalizing system update&#x2026;
-      </message>
       <message name="IDS_UPDATE_COMPLETED" desc="Notification for update completed">
         System update complete. Please restart the system.
       </message>
@@ -13593,6 +13590,9 @@ Press any key to continue exploring.
       </message>
       <message name="IDS_INSTALLING_UPDATE_DESC" desc="Additional info shown on the updates installation screen during OOBE">
         Your computer will restart when the update is complete.
+      </message>
+      <message name="IDS_DOWNLOADING" desc="The format for ETA during the update downloading stage">
+	Downloading: <ph name="STATUS">$1<ex>Less than 1 minute left</ex></ph>
       </message>
       <message name="IDS_DOWNLOADING_TIME_LEFT_LONG" desc="The status text for downloading estimated time left, when estimated time is more than one hour">
 	More than 1 hour left

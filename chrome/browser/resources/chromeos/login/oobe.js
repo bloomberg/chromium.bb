@@ -157,18 +157,19 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows estimated time left status.
-   * @param {boolean} enable Are time left status show?
+   * Shows or hides downloading ETA message.
+   * @param {boolean} visible Are ETA message visible?
    */
-  Oobe.showUpdateEstimatedTimeLeft = function(enable) {
-    $('update-estimated-time-left').hidden = !enable;
+  Oobe.showEstimatedTimeLeft = function(visible) {
+    $('progress-message').hidden = visible;
+    $('estimated-time-left').hidden = !visible;
   };
 
   /**
    * Sets estimated time left until download will complete.
    * @param {number} seconds Time left in seconds.
    */
-  Oobe.setUpdateEstimatedTimeLeft = function(seconds) {
+  Oobe.setEstimatedTimeLeft = function(seconds) {
     var minutes = Math.ceil(seconds / 60);
     var message = '';
     if (minutes > 60) {
@@ -184,7 +185,25 @@ cr.define('cr.ui', function() {
     } else {
       message = localStrings.getString('downloadingTimeLeftSmall');
     }
-    $('update-estimated-time-left').textContent = message;
+    $('estimated-time-left').textContent =
+      localStrings.getStringF('downloading', message);
+  };
+
+  /**
+   * Shows or hides info message below progress bar.
+   * @param {boolean} visible Are message visible?
+   */
+  Oobe.showProgressMessage = function(visible) {
+    $('estimated-time-left').hidden = visible;
+    $('progress-message').hidden = !visible;
+  };
+
+  /**
+   * Sets message below progress bar.
+   * @param {string} message Message that should be shown.
+   */
+  Oobe.setProgressMessage = function(message) {
+    $('progress-message').innerText = message;
   };
 
   /**
@@ -197,11 +216,11 @@ cr.define('cr.ui', function() {
 
   /**
    * Shows or hides update curtain.
-   * @param {boolean} enable Are curtains shown?
+   * @param {boolean} visible Are curtains visible?
    */
-  Oobe.showUpdateCurtain = function(enable) {
-    $('update-screen-curtain').hidden = !enable;
-    $('update-screen-main').hidden = enable;
+  Oobe.showUpdateCurtain = function(visible) {
+    $('update-screen-curtain').hidden = !visible;
+    $('update-screen-main').hidden = visible;
   };
 
   /**

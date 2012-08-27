@@ -11,6 +11,14 @@ namespace chromeos {
 
 class UpdateScreenActor {
  public:
+  // Indices for corresponding info messages during update stage.
+  enum ProgressMessage {
+    PROGRESS_MESSAGE_UPDATE_AVAILABLE = 0,
+    PROGRESS_MESSAGE_INSTALLING_UPDATE,
+    PROGRESS_MESSAGE_VERIFYING,
+    PROGRESS_MESSAGE_FINALIZING
+  };
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -39,16 +47,19 @@ class UpdateScreenActor {
   virtual void SetProgress(int progress) = 0;
 
   // Shows estimated time left message.
-  virtual void ShowEstimatedTimeLeft(bool enable) = 0;
+  virtual void ShowEstimatedTimeLeft(bool visible) = 0;
 
   // Sets current estimation for time left in the downloading stage.
   virtual void SetEstimatedTimeLeft(const base::TimeDelta& time) = 0;
 
-  // Shows screen curtains.
-  virtual void ShowCurtain(bool enable) = 0;
+  // Shows message under progress bar.
+  virtual void ShowProgressMessage(bool visible) = 0;
 
-  // Shows label for "Preparing updates" state.
-  virtual void ShowPreparingUpdatesInfo(bool visible) = 0;
+  // Sets message under progress bar.
+  virtual void SetProgressMessage(ProgressMessage message) = 0;
+
+  // Shows screen curtains.
+  virtual void ShowCurtain(bool visible) = 0;
 };
 
 }  // namespace chromeos
