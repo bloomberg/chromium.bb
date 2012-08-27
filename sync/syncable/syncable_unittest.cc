@@ -1449,6 +1449,7 @@ TEST(OnDiskSyncableDirectory, FailInitialWrite) {
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
   ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().Append(
       FILE_PATH_LITERAL("Test.sqlite3"));
   std::string name = "user@x.com";
