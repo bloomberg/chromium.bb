@@ -9,21 +9,209 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "net/test/test_server.h"
 
+using content::BrowserThread;
+
+class ContentSettingsTest : public InProcessBrowserTest {
+ public:
+  ContentSettingsTest()
+      : https_server_(
+            net::TestServer::TYPE_HTTPS,
+            net::TestServer::SSLOptions(net::TestServer::SSLOptions::CERT_OK),
+            FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+  }
+
+  // Check the cookie for the given URL in an incognito window.
+  void CookieCheckIncognitoWindow(const GURL& url, bool cookies_enabled) {
+    ASSERT_TRUE(content::GetCookies(browser()->profile(), url).empty());
+
+    Browser* incognito = CreateIncognitoBrowser();
+    ASSERT_TRUE(content::GetCookies(incognito->profile(), url).empty());
+    ui_test_utils::NavigateToURL(incognito, url);
+    ASSERT_EQ(cookies_enabled,
+              !content::GetCookies(incognito->profile(), url).empty());
+
+    // Ensure incognito cookies don't leak to regular profile.
+    ASSERT_TRUE(content::GetCookies(browser()->profile(), url).empty());
+
+    content::WindowedNotificationObserver signal(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::Source<Browser>(incognito));
+
+    chrome::CloseWindow(incognito);
+
+    signal.Wait();
+
+    incognito = CreateIncognitoBrowser();
+    ASSERT_TRUE(content::GetCookies(incognito->profile(), url).empty());
+    chrome::CloseWindow(incognito);
+  }
+
+  void PreBasic(const GURL& url) {
+    TabContents* tab = chrome::GetActiveTabContents(browser());
+    ASSERT_TRUE(GetCookies(tab->profile(), url).empty());
+
+    CookieCheckIncognitoWindow(url, true);
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_FALSE(GetCookies(tab->profile(), url).empty());
+  }
+
+  void Basic(const GURL& url) {
+    TabContents* tab = chrome::GetActiveTabContents(browser());
+    ASSERT_FALSE(GetCookies(tab->profile(), url).empty());
+  }
+
+  net::TestServer https_server_;
+};
+
+// Sanity check on cookies before we do other tests. While these can be written
+// in content_browsertests, we want to verify Chrome's cookie storage and how it
+// handles incognito windows.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BasicCookies) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL http_url = test_server()->GetURL("files/setcookie.html");
+  PreBasic(http_url);
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookies) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL http_url = test_server()->GetURL("files/setcookie.html");
+  Basic(http_url);
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BasicCookiesHttps) {
+  ASSERT_TRUE(https_server_.Start());
+  GURL https_url = https_server_.GetURL("files/setcookie.html");
+  PreBasic(https_url);
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookiesHttps) {
+  ASSERT_TRUE(https_server_.Start());
+  GURL https_url = https_server_.GetURL("files/setcookie.html");
+  Basic(https_url);
+}
+
+// Verify that cookies are being blocked.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BlockCookies) {
+  ASSERT_TRUE(test_server()->Start());
+  CookieSettings::Factory::GetForProfile(browser()->profile())->
+      SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  GURL url = test_server()->GetURL("files/setcookie.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+  CookieCheckIncognitoWindow(url, false);
+}
+
+// Ensure that the setting persists.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
+  ASSERT_EQ(
+      CONTENT_SETTING_BLOCK,
+      CookieSettings::Factory::GetForProfile(browser()->profile())->
+          GetDefaultCookieSetting(NULL));
+}
+
+// Verify that cookies can be allowed and set using exceptions for particular
+// website(s) when all others are blocked.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL("files/setcookie.html");
+  CookieSettings* settings =
+      CookieSettings::Factory::GetForProfile(browser()->profile());
+  settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+
+  settings->SetCookieSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_ALLOW);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
+}
+
+// Verify that cookies can be blocked for a specific website using exceptions.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL("files/setcookie.html");
+  CookieSettings* settings =
+      CookieSettings::Factory::GetForProfile(browser()->profile());
+  settings->SetCookieSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_BLOCK);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+
+  ASSERT_TRUE(https_server_.Start());
+  GURL unblocked_url = https_server_.GetURL("files/cookie1.html");
+
+  ui_test_utils::NavigateToURL(browser(), unblocked_url);
+  ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
+}
+
+// This fails on ChromeOS because kRestoreOnStartup is ignored and the startup
+// preference is always "continue where I left off.
+#if !defined(OS_CHROMEOS)
+
+// Verify that cookies can be allowed and set using exceptions for particular
+// website(s) only for a session when all others are blocked.
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
+                       PRE_AllowCookiesForASessionUsingExceptions) {
+  // NOTE: don't use test_server here, since we need the port to be the same
+  // across the restart.
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("setcookie.html")));
+  CookieSettings* settings =
+      CookieSettings::Factory::GetForProfile(browser()->profile());
+  settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+
+  settings->SetCookieSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_SESSION_ONLY);
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
+                       AllowCookiesForASessionUsingExceptions) {
+  GURL url = URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("setcookie.html")));
+  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+}
+
+#endif // !CHROME_OS
+
 // Regression test for http://crbug.com/63649.
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectLoopCookies) {
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL test_url = test_server()->GetURL("files/redirect-loop.html");
@@ -41,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectLoopCookies) {
       CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ContentSettingsBlockDataURLs) {
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
   GURL url("data:text/html,<title>Data URL</title><script>alert(1)</script>");
 
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
@@ -58,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ContentSettingsBlockDataURLs) {
 
 // Tests that if redirect across origins occurs, the new process still gets the
 // content settings before the resource headers.
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectCrossOrigin) {
+IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
   ASSERT_TRUE(test_server()->Start());
 
   net::HostPortPair host_port = test_server()->host_port_pair();
@@ -82,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, RedirectCrossOrigin) {
 
 #if !defined(USE_AURA)  // No NPAPI plugins with Aura.
 
-class ClickToPlayPluginTest : public InProcessBrowserTest {
+class ClickToPlayPluginTest : public ContentSettingsTest {
  public:
   ClickToPlayPluginTest() {}
 

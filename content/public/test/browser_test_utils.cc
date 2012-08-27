@@ -10,9 +10,11 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -21,7 +23,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
+#include "net/cookies/cookie_store.h"
 #include "net/test/python_utils.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const int kDefaultWsPort = 8880;
@@ -144,6 +149,25 @@ void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
 
   if (command)
     event->modifiers |= WebKit::WebInputEvent::MetaKey;
+}
+
+void GetCookiesCallback(std::string* cookies_out,
+                        base::WaitableEvent* event,
+                        const std::string& cookies) {
+  *cookies_out = cookies;
+  event->Signal();
+}
+
+void GetCookiesOnIOThread(const GURL& url,
+                          net::URLRequestContextGetter* context_getter,
+                          base::WaitableEvent* event,
+                          std::string* cookies) {
+  net::CookieStore* cookie_store =
+      context_getter->GetURLRequestContext()->cookie_store();
+  cookie_store->GetCookiesWithOptionsAsync(
+      url, net::CookieOptions(),
+      base::Bind(&GetCookiesCallback,
+                 base::Unretained(cookies), base::Unretained(event)));
 }
 
 }  // namespace
@@ -279,6 +303,20 @@ bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
     return false;
 
   return value->GetAsString(result);
+}
+
+std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
+  std::string cookies;
+  base::WaitableEvent event(true, false);
+  net::URLRequestContextGetter* context_getter =
+      browser_context->GetRequestContext();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetCookiesOnIOThread, url,
+                 make_scoped_refptr(context_getter), &event, &cookies));
+  event.Wait();
+  return cookies;
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

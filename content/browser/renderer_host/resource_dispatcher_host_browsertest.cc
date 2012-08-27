@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -22,35 +21,9 @@
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
-#include "net/cookies/cookie_store.h"
 #include "net/test/test_server.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
-
-namespace {
-
-void GetCookiesCallback(std::string* cookies_out,
-                        base::WaitableEvent* event,
-                        const std::string& cookies) {
-  *cookies_out = cookies;
-  event->Signal();
-}
-
-void GetCookiesOnIOThread(const GURL& url,
-                          net::URLRequestContextGetter* context_getter,
-                          base::WaitableEvent* event,
-                          std::string* cookies) {
-  net::CookieStore* cookie_store =
-      context_getter->GetURLRequestContext()->cookie_store();
-  cookie_store->GetCookiesWithOptionsAsync(
-      url, net::CookieOptions(),
-      base::Bind(&GetCookiesCallback,
-                 base::Unretained(cookies), base::Unretained(event)));
-}
-
-}  // namespace
 
 class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
                                           public DownloadManager::Observer {
@@ -104,17 +77,8 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
   }
 
   std::string GetCookies(const GURL& url) {
-    std::string cookies;
-    base::WaitableEvent event(true, false);
-    net::URLRequestContextGetter* context_getter =
-        shell()->web_contents()->GetBrowserContext()->GetRequestContext();
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&GetCookiesOnIOThread, url,
-                   make_scoped_refptr(context_getter), &event, &cookies));
-    event.Wait();
-    return cookies;
+    return content::GetCookies(
+        shell()->web_contents()->GetBrowserContext(), url);
   }
 
   bool got_downloads() const { return got_downloads_; }

@@ -42,6 +42,7 @@ class Point;
 
 namespace content {
 
+class BrowserContext;
 class MessageLoopRunner;
 class RenderViewHost;
 class WebContents;
@@ -99,6 +100,9 @@ bool ExecuteJavaScriptAndExtractString(
     const std::wstring& frame_xpath,
     const std::wstring& script,
     std::string* result) WARN_UNUSED_RESULT;
+
+// Returns the cookies for the given url. Runs a nested message loop.
+std::string GetCookies(BrowserContext* browser_context, const GURL& url);
 
 // Watches title changes on a tab, blocking until an expected title is set.
 class TitleWatcher : public NotificationObserver {
