@@ -315,7 +315,7 @@
         }],
         ['OS=="win" and use_aura==1', {
           'sources/': [
-            ['exclude', 'test/base/ui_test_utils_win.cc'],
+            ['exclude', 'browser/ui/views/test/ui_test_utils_win.cc'],
           ],
         }],
       ],
