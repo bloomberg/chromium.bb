@@ -89,45 +89,109 @@ void DeleteChannel(IPC::Channel* channel) {
   delete channel;
 }
 
-bool ReadHostResource(PickleIterator* it, int* instance_id, int* resource_id) {
-  return it->ReadInt(instance_id) &&
-         it->ReadInt(resource_id);
-}
+void WriteFileDescriptor(int handle_index,
+                         const ppapi::proxy::SerializedHandle& handle,
+                         IPC::Message* message) {
+  ppapi::proxy::SerializedHandle::WriteHeader(handle.header(), message);
 
-bool ReadFileDescriptor(const IPC::Message& message,
-                        PickleIterator* it,
-                        NaClHandle* handle) {
-#if defined(OS_POSIX)
-  bool valid;
-  base::FileDescriptor desc;
-  if (!it->ReadBool(&valid) ||
-      !valid ||
-      !message.ReadFileDescriptor(it, &desc))
-    return false;
-
-  *handle = desc.fd;
-  return true;
-#else
-  uint32 value;
-  if (!it->ReadUInt32(&value))
-    return false;
-
-  *handle = reinterpret_cast<NaClHandle>(value);
-  return true;
-#endif  // defined(OS_POSIX)
-}
-
-void WriteHostResource(IPC::Message* message,
-                       int instance_id,
-                       int resource_id) {
-  message->WriteInt(instance_id);
-  message->WriteInt(resource_id);
-}
-
-void WriteFileDescriptor(IPC::Message* message, int index) {
+  // Now write the handle itself in POSIX style.
   message->WriteBool(true);  // valid == true
-  message->WriteInt(index);
+  message->WriteInt(handle_index);
 }
+
+typedef std::vector<ppapi::proxy::SerializedHandle> Handles;
+
+// We define one overload for catching SerializedHandles, so that we can share
+// them correctly to the untrusted side, and another for handling all other
+// parameters. See ConvertHandlesImpl for how these get used.
+void ConvertHandle(const ppapi::proxy::SerializedHandle& handle,
+                   Handles* handles, IPC::Message* msg, int* handle_index) {
+  handles->push_back(handle);
+  if (msg)
+    WriteFileDescriptor((*handle_index)++, handle, msg);
+}
+
+// This overload is to catch all types other than SerializedHandle. On Windows,
+// |msg| will be a valid pointer, and we must write |param| to it
+template <class T>
+void ConvertHandle(const T& param, Handles* /* handles */, IPC::Message* msg,
+                   int* /* handle_index */) {
+  // It's not a handle, so just write to the output message, if necessary.
+  if (msg)
+    IPC::WriteParam(msg, param);
+}
+
+// These just break apart the given tuple and run ConvertHandle over each param.
+// The idea is to extract any handles in the tuple, while writing all data to
+// msg (if msg is valid). The msg will only be valid on Windows, where we need
+// to re-write all of the message parameters, writing the handles in POSIX style
+// for NaCl.
+template <class A>
+void ConvertHandlesImpl(const Tuple1<A>& t1, Handles* handles,
+                        IPC::Message* msg) {
+  int handle_index = 0;
+  ConvertHandle(t1.a, handles, msg, &handle_index);
+}
+template <class A, class B>
+void ConvertHandlesImpl(const Tuple2<A, B>& t1, Handles* handles,
+                        IPC::Message* msg) {
+  int handle_index = 0;
+  ConvertHandle(t1.a, handles, msg, &handle_index);
+  ConvertHandle(t1.b, handles, msg, &handle_index);
+}
+template <class A, class B, class C>
+void ConvertHandlesImpl(const Tuple3<A, B, C>& t1, Handles* handles,
+                        IPC::Message* msg) {
+  int handle_index = 0;
+  ConvertHandle(t1.a, handles, msg, &handle_index);
+  ConvertHandle(t1.b, handles, msg, &handle_index);
+  ConvertHandle(t1.c, handles, msg, &handle_index);
+}
+template <class A, class B, class C, class D>
+void ConvertHandlesImpl(const Tuple4<A, B, C, D>& t1, Handles* handles,
+                        IPC::Message* msg) {
+  int handle_index = 0;
+  ConvertHandle(t1.a, handles, msg, &handle_index);
+  ConvertHandle(t1.b, handles, msg, &handle_index);
+  ConvertHandle(t1.c, handles, msg, &handle_index);
+  ConvertHandle(t1.d, handles, msg, &handle_index);
+}
+
+template <class MessageType>
+class HandleConverter {
+ public:
+  explicit HandleConverter(const IPC::Message* msg)
+      : msg_(static_cast<const MessageType*>(msg)) {
+  }
+  bool ConvertMessage(Handles* handles, IPC::Message* out_msg) {
+    typename TupleTypes<typename MessageType::Schema::Param>::ValueTuple params;
+    if (!MessageType::Read(msg_, &params))
+      return false;
+    ConvertHandlesImpl(params, handles, out_msg);
+    return true;
+  }
+
+  bool ConvertReply(Handles* handles, IPC::SyncMessage* out_msg) {
+    typename TupleTypes<typename MessageType::Schema::ReplyParam>::ValueTuple
+        params;
+    if (!MessageType::ReadReplyParam(msg_, &params))
+      return false;
+    out_msg->set_reply();
+    // If we need to rewrite the message (i.e., on Windows), we need to make
+    // sure we write the message id first.
+    if (out_msg) {
+      int id = IPC::SyncMessage::GetMessageId(*msg_);
+      out_msg->WriteInt(id);
+    }
+    ConvertHandlesImpl(params, handles, out_msg);
+    return true;
+  }
+  // TODO(dmichael): Add ConvertSyncMessage for outgoing sync messages, if we
+  //                 ever pass handles in one of those.
+
+ private:
+  const MessageType* msg_;
+};
 
 }  // namespace
 
@@ -354,59 +418,104 @@ int NaClIPCAdapter::TakeClientFileDescriptor() {
 }
 #endif
 
+#define CASE_FOR_MESSAGE(MESSAGE_TYPE) \
+      case MESSAGE_TYPE::ID: { \
+        HandleConverter<MESSAGE_TYPE> extractor(&msg); \
+        if (!extractor.ConvertMessage(&handles, new_msg_ptr)) \
+          return false; \
+        break; \
+      }
+#define CASE_FOR_REPLY(MESSAGE_TYPE) \
+      case MESSAGE_TYPE::ID: { \
+        HandleConverter<MESSAGE_TYPE> extractor(&msg); \
+        if (!extractor.ConvertReply( \
+                &handles, \
+                static_cast<IPC::SyncMessage*>(new_msg_ptr))) \
+          return false; \
+        break; \
+      }
 bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   {
     base::AutoLock lock(lock_);
 
     scoped_refptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
 
-    PickleIterator it(msg);
-    switch (msg.type()) {
-      case PpapiMsg_PPBAudio_NotifyAudioStreamCreated::ID: {
-        int instance_id;
-        int resource_id;
-        int result_code;
-        NaClHandle sock_handle;
-        NaClHandle shm_handle;
-        uint32_t shm_length;
-        if (ReadHostResource(&it, &instance_id, &resource_id) &&
-            it.ReadInt(&result_code) &&
-            ReadFileDescriptor(msg, &it, &sock_handle) &&
-            ReadFileDescriptor(msg, &it, &shm_handle) &&
-            it.ReadUInt32(&shm_length)) {
-          // Import the sync socket.
-          nacl::DescWrapperFactory factory;
-          scoped_ptr<nacl::DescWrapper> socket_wrapper(
-              factory.ImportSyncSocketHandle(sock_handle));
-          // Import the shared memory handle and increase its size by 4 bytes to
-          // accommodate the length data we write at the end to signal the host.
-          scoped_ptr<nacl::DescWrapper> shm_wrapper(
-              factory.ImportShmHandle(shm_handle, shm_length + sizeof(uint32)));
-          if (shm_wrapper.get() && socket_wrapper.get()) {
-            rewritten_msg->AddDescriptor(socket_wrapper.release());
-            rewritten_msg->AddDescriptor(shm_wrapper.release());
-          }
-#if defined(OS_POSIX)
-          SaveMessage(msg, rewritten_msg.get());
-#else
-          // On Windows we must rewrite the message to match the POSIX form.
-          IPC::Message new_msg(msg.routing_id(),
-                               PpapiMsg_PPBAudio_NotifyAudioStreamCreated::ID,
-                               msg.priority());
-          WriteHostResource(&new_msg, instance_id, resource_id);
-          new_msg.WriteInt(result_code);
-          WriteFileDescriptor(&new_msg, 0);  // socket handle, index = 0
-          WriteFileDescriptor(&new_msg, 1);  // shm handle, index = 1
-          new_msg.WriteUInt32(shm_length);
-          SaveMessage(new_msg, rewritten_msg.get());
+    // Pointer to the "new" message we will rewrite on Windows. On posix, this
+    // isn't necessary, so it will stay NULL.
+    IPC::Message* new_msg_ptr = NULL;
+#if defined(OS_WIN)
+    IPC::Message new_msg(msg.routing_id(), msg.type(), msg.priority());
+    new_msg_ptr = &new_msg;
 #endif
+    Handles handles;
+    switch (msg.type()) {
+      CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
+      CASE_FOR_MESSAGE(PpapiMsg_PPBAudioInput_OpenACK)
+      case IPC_REPLY_ID: {
+        int id = IPC::SyncMessage::GetMessageId(msg);
+        LockedData::PendingSyncMsgMap::iterator iter(
+            locked_data_.pending_sync_msgs_.find(id));
+        if (iter == locked_data_.pending_sync_msgs_.end()) {
+          NOTREACHED();
+          return false;
+        }
+        uint32_t type = iter->second;
+        locked_data_.pending_sync_msgs_.erase(iter);
+        switch (type) {
+          CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer)
+          CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateNaCl)
+          default:
+            // Do nothing for messages we don't know.
+            break;
         }
         break;
       }
-      default: {
-        SaveMessage(msg, rewritten_msg.get());
-      }
+      default:
+        // Do nothing for messages we don't know.
+        break;
     }
+    // Now add any descriptors we found to rewritten_msg. |handles| is usually
+    // empty, unless we read a message containing a FD or handle.
+    nacl::DescWrapperFactory factory;
+    for (Handles::const_iterator iter = handles.begin();
+         iter != handles.end();
+         ++iter) {
+      scoped_ptr<nacl::DescWrapper> nacl_desc;
+      switch (iter->type()) {
+        case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
+          const base::SharedMemoryHandle& shm_handle = iter->shmem();
+          uint32_t size = iter->size();
+          nacl_desc.reset(factory.ImportShmHandle(
+#if defined(OS_WIN)
+              reinterpret_cast<const NaClHandle>(shm_handle),
+#else
+              shm_handle.fd,
+#endif
+              static_cast<size_t>(size)));
+          break;
+        }
+        case ppapi::proxy::SerializedHandle::SOCKET: {
+          nacl_desc.reset(factory.ImportSyncSocketHandle(
+#if defined(OS_WIN)
+              reinterpret_cast<const NaClHandle>(iter->descriptor())
+#else
+              iter->descriptor().fd
+#endif
+          ));
+        }
+        case ppapi::proxy::SerializedHandle::INVALID: {
+          // Nothing to do. TODO(dmichael): Should we log this? Or is it
+          // sometimes okay to pass an INVALID handle?
+        }
+        // No default, so the compiler will warn us if new types get added.
+      }
+      if (nacl_desc.get())
+        rewritten_msg->AddDescriptor(nacl_desc.release());
+    }
+    if (new_msg_ptr && !handles.empty())
+      SaveMessage(*new_msg_ptr, rewritten_msg.get());
+    else
+      SaveMessage(msg, rewritten_msg.get());
   }
   cond_var_.Signal();
   return true;
@@ -480,6 +589,12 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
   if (locked_data_.channel_closed_)
     return false;  // TODO(brettw) clean up handles here when we add support!
 
+  // Store the type of all sync messages so that later we can translate the
+  // reply if necessary.
+  if (msg->is_sync()) {
+    int id = IPC::SyncMessage::GetMessageId(*msg);
+    locked_data_.pending_sync_msgs_[id] = msg->type();
+  }
   // Actual send must be done on the I/O thread.
   task_runner_->PostTask(FROM_HERE,
       base::Bind(&NaClIPCAdapter::SendMessageOnIOThread, this,

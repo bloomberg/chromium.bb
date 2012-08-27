@@ -38,7 +38,7 @@
         '../crypto/crypto.gyp:crypto',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
-        '../ppapi/ppapi_internal.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
+        '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sync/protocol/sync_proto.gyp:sync_proto',

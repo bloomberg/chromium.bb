@@ -58,7 +58,8 @@ PP_Resource PPB_DeviceRef_Shared::CreateResourceArray(
     }
   }
   PPB_ResourceArray_Shared* array_object =
-      new PPB_ResourceArray_Shared(type, instance, elements.get(), size);
+      new PPB_ResourceArray_Shared(type, instance, elements.get(),
+                                   static_cast<uint32_t>(size));
 
   for (size_t index = 0; index < size; ++index)
     PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(elements[index]);

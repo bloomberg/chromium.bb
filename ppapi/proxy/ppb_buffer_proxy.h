@@ -8,6 +8,7 @@
 #include "base/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 
@@ -62,7 +63,7 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    uint32_t size,
                    HostResource* result_resource,
-                   base::SharedMemoryHandle* result_shm_handle);
+                   ppapi::proxy::SerializedHandle* result_shm_handle);
 };
 
 }  // namespace proxy

@@ -326,7 +326,7 @@ ImageData::ImageData(const HostResource& resource,
       map_count_(0),
       used_in_replace_contents_(false) {
 }
-#endif  // !defined(OS_NACL)
+#endif  // else, !defined(OS_NACL)
 
 ImageData::~ImageData() {
 }
@@ -465,10 +465,13 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
   HostResource result;
   std::string image_data_desc;
 #if defined(OS_NACL)
-  base::SharedMemoryHandle image_handle = base::SharedMemory::NULLHandle();
+  ppapi::proxy::SerializedHandle image_handle_wrapper;
   dispatcher->Send(new PpapiHostMsg_PPBImageData_CreateNaCl(
       kApiID, instance, format, size, init_to_zero,
-      &result, &image_data_desc, &image_handle));
+      &result, &image_data_desc, &image_handle_wrapper));
+  if (!image_handle_wrapper.is_shmem())
+    return 0;
+  base::SharedMemoryHandle image_handle = image_handle_wrapper.shmem();
 #else
   ImageHandle image_handle = ImageData::NullHandle();
   dispatcher->Send(new PpapiHostMsg_PPBImageData_Create(
@@ -554,13 +557,13 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
     PP_Bool init_to_zero,
     HostResource* result,
     std::string* image_data_desc,
-    base::SharedMemoryHandle* result_image_handle) {
+    ppapi::proxy::SerializedHandle* result_image_handle) {
 #if defined(OS_NACL)
   // This message should never be received in untrusted code. To minimize the
   // size of the IRT, we just don't handle it.
   return;
 #else
-  *result_image_handle = base::SharedMemory::NULLHandle();
+  result_image_handle->set_null_shmem();
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -588,7 +591,6 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
   uint32_t byte_count;
   if (enter_resource.object()->GetSharedMemory(&local_fd, &byte_count) != PP_OK)
     return;
-
   // TODO(dmichael): Change trusted interface to return a PP_FileHandle, those
   // casts are ugly.
   base::PlatformFile platform_file =
@@ -599,8 +601,9 @@ void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
 #else
   #error Not implemented.
 #endif  // defined(OS_WIN)
-  *result_image_handle =
-      dispatcher->ShareHandleWithRemote(platform_file, false);
+  result_image_handle->set_shmem(
+      dispatcher->ShareHandleWithRemote(platform_file, false),
+      byte_count);
 #endif  // defined(OS_NACL)
 }
 

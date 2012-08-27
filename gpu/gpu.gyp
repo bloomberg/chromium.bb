@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'nacl_win64_target': 0,
+  },
   'includes': [
     'gpu_common.gypi',
   ],
@@ -404,6 +407,33 @@
           'dependencies': [
             'gpu',
           ],
+        },
+      ],
+    }],
+    ['disable_nacl!=1' and 'OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'gpu_ipc_win64',
+          'type': 'static_library',
+          'variables': {
+            'nacl_win64_target': 1,
+          },
+          'includes': [
+            'gpu_ipc.gypi',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base_nacl_win64',
+            '../ipc/ipc.gyp:ipc_win64',
+          ],
+          'defines': [
+            '<@(nacl_win64_defines)',
+            'GPU_IMPLEMENTATION',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
         },
       ],
     }],

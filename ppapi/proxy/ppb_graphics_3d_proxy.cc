@@ -316,18 +316,17 @@ void PPB_Graphics3D_Proxy::OnMsgDestroyTransferBuffer(
 void PPB_Graphics3D_Proxy::OnMsgGetTransferBuffer(
     const HostResource& context,
     int32 id,
-    base::SharedMemoryHandle* transfer_buffer,
-    uint32* size) {
-  *transfer_buffer = base::SharedMemory::NULLHandle();
-  *size = 0;
+    ppapi::proxy::SerializedHandle* transfer_buffer) {
+  transfer_buffer->set_null_shmem();
 
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   int shm_handle = 0;
   uint32_t shm_size = 0;
   if (enter.succeeded() &&
       enter.object()->GetTransferBuffer(id, &shm_handle, &shm_size)) {
-    *transfer_buffer = TransportSHMHandleFromInt(dispatcher(), shm_handle);
-    *size = shm_size;
+    transfer_buffer->set_shmem(
+        TransportSHMHandleFromInt(dispatcher(), shm_handle),
+        shm_size);
   }
 }
 

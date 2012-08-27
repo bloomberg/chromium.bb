@@ -135,11 +135,16 @@ class GPU_EXPORT CommandBuffer {
   // call this first.
   virtual void SetContextLostReason(error::ContextLostReason) = 0;
 
+// The NaCl Win64 build only really needs the struct definitions above; having
+// GetLastError declared would mean we'd have to also define it, and pull more
+// of gpu in to the NaCl Win64 build.
+#if !defined(NACL_WIN64)
   // TODO(apatrick): this is a temporary optimization while skia is calling
   // RendererGLContext::MakeCurrent prior to every GL call. It saves returning 6
   // ints redundantly when only the error is needed for the CommandBufferProxy
   // implementation.
   virtual error::Error GetLastError();
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);

@@ -73,6 +73,8 @@
             '../base/base.gyp:base',
             '../ipc/ipc.gyp:ipc',
             '../ppapi/native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',
+            '../ppapi/ppapi_internal.gyp:ppapi_shared',
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
             '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
           ],
@@ -103,6 +105,11 @@
               'dependencies': [
                 '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel64',
                 '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
+                '../ppapi/ppapi_internal.gyp:ppapi_shared_win64',
+                '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
+              ],
+              'export_dependent_settings': [
+                '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
               ],
               'sources': [
                 'common/nacl_cmd_line.cc',

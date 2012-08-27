@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file is named ppapi_ipc_proxy_untrusted.gyp instead of
+# ppapi_proxy_untrusted.gyp, because there is already a file with that name in
+# ppapi/native_client/src/shared/ppapi_proxy. This causes problems on Mac when
+# generating for XCode. TODO(dmichael): This file should probably be renamed to
+# ppapi_proxy_untrusted.gyp when we remove the SRPC NaCl proxy.
 {
   'variables': {
     'chromium_code': 1,
@@ -41,6 +46,7 @@
             '../gpu/gpu_untrusted.gyp:gpu_ipc_untrusted',
             '../ipc/ipc_untrusted.gyp:ipc_untrusted',
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
+            '../ppapi/ppapi_ipc_untrusted.gyp:ppapi_ipc_untrusted',
           ],
         },
       ],

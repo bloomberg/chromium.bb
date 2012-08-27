@@ -20,8 +20,7 @@ namespace ppapi {
 // All HostResources respresent IDs valid in the host.
 class PPAPI_SHARED_EXPORT HostResource {
  public:
-  HostResource() : instance_(0), host_resource_(0) {
-  }
+  HostResource();
 
   bool is_null() const {
     return !host_resource_;
@@ -31,21 +30,14 @@ class PPAPI_SHARED_EXPORT HostResource {
   // resource in the host. Yet these resources still need an instance to be
   // associated with. This function creates a HostResource with the given
   // instances and a 0 host resource ID for these cases.
-  static HostResource MakeInstanceOnly(PP_Instance instance) {
-    HostResource resource;
-    resource.SetHostResource(instance, 0);
-    return resource;
-  }
+  static HostResource MakeInstanceOnly(PP_Instance instance);
 
   // Sets and retrieves the internal PP_Resource which is valid for the host
   // (a.k.a. renderer, as opposed to the plugin) process.
   //
   // DO NOT CALL THESE FUNCTIONS IN THE PLUGIN SIDE OF THE PROXY. The values
   // will be invalid. See the class comment above.
-  void SetHostResource(PP_Instance instance, PP_Resource resource) {
-    instance_ = instance;
-    host_resource_ = resource;
-  }
+  void SetHostResource(PP_Instance instance, PP_Resource resource);
   PP_Resource host_resource() const {
     return host_resource_;
   }

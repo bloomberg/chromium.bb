@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_PPAPI_PROXY_EXPORT_H_
 #define PPAPI_PROXY_PPAPI_PROXY_EXPORT_H_
 
-#if defined(COMPONENT_BUILD)
+#if defined(COMPONENT_BUILD) && !defined(NACL_WIN64)
 #if defined(WIN32)
 
 #if defined(PPAPI_PROXY_IMPLEMENTATION)
@@ -22,7 +22,7 @@
 #endif
 #endif
 
-#else  // defined(COMPONENT_BUILD)
+#else  // defined(COMPONENT_BUILD) && !defined(NACL_WIN64)
 #define PPAPI_PROXY_EXPORT
 #endif
 

@@ -75,14 +75,14 @@ PP_Resource PPB_Buffer_Proxy::CreateProxyResource(PP_Instance instance,
     return 0;
 
   HostResource result;
-  base::SharedMemoryHandle shm_handle = base::SharedMemory::NULLHandle();
+  ppapi::proxy::SerializedHandle shm_handle;
   dispatcher->Send(new PpapiHostMsg_PPBBuffer_Create(
-      API_ID_PPB_BUFFER, instance, size,
-      &result, &shm_handle));
-  if (result.is_null() || !base::SharedMemory::IsHandleValid(shm_handle))
+      API_ID_PPB_BUFFER, instance, size, &result, &shm_handle));
+  if (result.is_null() || !shm_handle.IsHandleValid() ||
+      !shm_handle.is_shmem())
     return 0;
 
-  return AddProxyResource(result, shm_handle, size);
+  return AddProxyResource(result, shm_handle.shmem(), size);
 }
 
 // static
@@ -107,9 +107,9 @@ void PPB_Buffer_Proxy::OnMsgCreate(
     PP_Instance instance,
     uint32_t size,
     HostResource* result_resource,
-    base::SharedMemoryHandle* result_shm_handle) {
+    ppapi::proxy::SerializedHandle* result_shm_handle) {
   // Overwritten below on success.
-  *result_shm_handle = base::SharedMemory::NULLHandle();
+  result_shm_handle->set_null_shmem();
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return;
@@ -142,7 +142,8 @@ void PPB_Buffer_Proxy::OnMsgCreate(
 #else
   #error Not implemented.
 #endif
-  *result_shm_handle = dispatcher->ShareHandleWithRemote(platform_file, false);
+  result_shm_handle->set_shmem(
+      dispatcher->ShareHandleWithRemote(platform_file, false), size);
 }
 
 }  // namespace proxy

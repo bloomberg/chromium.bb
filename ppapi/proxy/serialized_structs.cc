@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/proxy/serialized_structs.h"
 
+#include "base/pickle.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_rect.h"
@@ -77,6 +78,84 @@ PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
 }
 
 PPBFlash_DrawGlyphs_Params::~PPBFlash_DrawGlyphs_Params() {}
+
+SerializedHandle::SerializedHandle()
+    : type_(INVALID),
+      shm_handle_(base::SharedMemory::NULLHandle()),
+      size_(0),
+      descriptor_(IPC::InvalidPlatformFileForTransit()) {
+}
+
+SerializedHandle::SerializedHandle(Type type_param)
+    : type_(type_param),
+      shm_handle_(base::SharedMemory::NULLHandle()),
+      size_(0),
+      descriptor_(IPC::InvalidPlatformFileForTransit()) {
+}
+
+SerializedHandle::SerializedHandle(const base::SharedMemoryHandle& handle,
+                                   uint32_t size)
+    : type_(SHARED_MEMORY),
+      shm_handle_(handle),
+      size_(size),
+      descriptor_(IPC::InvalidPlatformFileForTransit()) {
+}
+
+SerializedHandle::SerializedHandle(
+    const IPC::PlatformFileForTransit& socket_descriptor)
+    : type_(SOCKET),
+      shm_handle_(base::SharedMemory::NULLHandle()),
+      size_(0),
+      descriptor_(socket_descriptor) {
+}
+
+bool SerializedHandle::IsHandleValid() const {
+  if (type_ == SHARED_MEMORY)
+    return base::SharedMemory::IsHandleValid(shm_handle_);
+  else if (type_ == SOCKET)
+    return (IPC::InvalidPlatformFileForTransit() == descriptor_);
+  return false;
+}
+
+// static
+bool SerializedHandle::WriteHeader(const Header& hdr, Pickle* pickle) {
+  if (!pickle->WriteInt(hdr.type))
+    return false;
+  if (hdr.type == SHARED_MEMORY) {
+    if (!pickle->WriteUInt32(hdr.size))
+      return false;
+  }
+  return true;
+}
+
+// static
+bool SerializedHandle::ReadHeader(PickleIterator* iter, Header* hdr) {
+  *hdr = Header(INVALID, 0);
+  int type = 0;
+  if (!iter->ReadInt(&type))
+    return false;
+  bool valid_type = false;
+  switch (type) {
+    case SHARED_MEMORY: {
+      uint32_t size = 0;
+      if (!iter->ReadUInt32(&size))
+        return false;
+      hdr->size = size;
+      valid_type = true;
+      break;
+    }
+    case SOCKET:
+      valid_type = true;
+      break;
+    case INVALID:
+      valid_type = true;
+      break;
+    // No default so the compiler will warn us if a new type is added.
+  }
+  if (valid_type)
+    hdr->type = Type(type);
+  return valid_type;
+}
 
 }  // namespace proxy
 }  // namespace ppapi

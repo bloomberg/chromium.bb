@@ -17,6 +17,7 @@
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',

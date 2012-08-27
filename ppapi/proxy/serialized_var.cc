@@ -249,7 +249,8 @@ void SerializedVar::Inner::ConvertRawVarData() {
     }
     case PP_VARTYPE_ARRAY_BUFFER: {
       var_ = PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          raw_var_data_->data.size(), raw_var_data_->data.data());
+          static_cast<uint32>(raw_var_data_->data.size()),
+          raw_var_data_->data.data());
       break;
     }
     default:

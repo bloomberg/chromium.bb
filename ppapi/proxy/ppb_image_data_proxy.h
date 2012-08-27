@@ -124,7 +124,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
                            PP_Bool init_to_zero,
                            HostResource* result,
                            std::string* image_data_desc,
-                           base::SharedMemoryHandle* result_image_handle);
+                           ppapi::proxy::SerializedHandle* result_image_handle);
 
   // Host->Plugin message handlers.
   void OnPluginMsgNotifyUnusedImageData(const HostResource& old_image_data);

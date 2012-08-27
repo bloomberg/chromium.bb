@@ -17,6 +17,7 @@
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
+#include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
@@ -63,9 +64,8 @@ class PPB_AudioInput_Proxy : public InterfaceProxy {
       const std::vector<ppapi::DeviceRefData>& devices);
   void OnMsgOpenACK(const ppapi::HostResource& audio_input,
                     int32_t result,
-                    IPC::PlatformFileForTransit socket_handle,
-                    base::SharedMemoryHandle handle,
-                    uint32_t length);
+                    const ppapi::proxy::SerializedHandle& socket_handle,
+                    const ppapi::proxy::SerializedHandle& handle);
 
   void EnumerateDevicesACKInHost(int32_t result,
                                  const ppapi::HostResource& audio_input);

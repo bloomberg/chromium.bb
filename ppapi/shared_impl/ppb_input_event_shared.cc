@@ -111,7 +111,7 @@ uint32_t PPB_InputEvent_Shared::GetUsbKeyCode() {
 uint32_t PPB_InputEvent_Shared::GetIMESegmentNumber() {
   if (data_.composition_segment_offsets.empty())
     return 0;
-  return data_.composition_segment_offsets.size() - 1;
+  return static_cast<uint32_t>(data_.composition_segment_offsets.size() - 1);
 }
 
 uint32_t PPB_InputEvent_Shared::GetIMESegmentOffset(uint32_t index) {
@@ -151,11 +151,11 @@ void PPB_InputEvent_Shared::AddTouchPoint(PP_TouchListType list,
 uint32_t PPB_InputEvent_Shared::GetTouchCount(PP_TouchListType list) {
   switch (list) {
     case PP_TOUCHLIST_TYPE_TOUCHES:
-      return data_.touches.size();
+      return static_cast<uint32_t>(data_.touches.size());
     case PP_TOUCHLIST_TYPE_CHANGEDTOUCHES:
-      return data_.changed_touches.size();
+      return static_cast<uint32_t>(data_.changed_touches.size());
     case PP_TOUCHLIST_TYPE_TARGETTOUCHES:
-      return data_.target_touches.size();
+      return static_cast<uint32_t>(data_.target_touches.size());
   }
 
   return 0;

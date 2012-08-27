@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
@@ -18,6 +19,7 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/host_resource.h"
 
+class Pickle;
 struct PP_FontDescription_Dev;
 
 namespace ppapi {
@@ -99,6 +101,96 @@ struct PPPVideoCapture_Buffer {
   ppapi::HostResource resource;
   uint32_t size;
   base::SharedMemoryHandle handle;
+};
+
+// We put all our handles in a unified structure to make it easy to translate
+// them in NaClIPCAdapter for use in NaCl.
+class PPAPI_PROXY_EXPORT SerializedHandle {
+ public:
+  enum Type { INVALID, SHARED_MEMORY, SOCKET };
+  struct Header {
+    Header() : type(INVALID), size(0) {}
+    Header(Type type_arg, uint32_t size_arg)
+        : type(type_arg), size(size_arg) {
+    }
+    Type type;
+    uint32_t size;
+  };
+
+  SerializedHandle();
+  // Create an invalid handle of the given type.
+  explicit SerializedHandle(Type type);
+
+  // Create a shared memory handle.
+  SerializedHandle(const base::SharedMemoryHandle& handle, uint32_t size);
+
+  // Create a socket handle.
+  // TODO(dmichael): If we have other ways to use FDs later, this would be
+  //                 ambiguous.
+  explicit SerializedHandle(
+      const IPC::PlatformFileForTransit& socket_descriptor);
+
+  Type type() const { return type_; }
+  bool is_shmem() const { return type_ == SHARED_MEMORY; }
+  bool is_socket() const { return type_ == SOCKET; }
+  const base::SharedMemoryHandle& shmem() const {
+    DCHECK(is_shmem());
+    return shm_handle_;
+  }
+  uint32_t size() const {
+    DCHECK(is_shmem());
+    return size_;
+  }
+  const IPC::PlatformFileForTransit& descriptor() const {
+    DCHECK(is_socket());
+    return descriptor_;
+  }
+  void set_shmem(const base::SharedMemoryHandle& handle, uint32_t size) {
+    type_ = SHARED_MEMORY;
+    shm_handle_ = handle;
+    size_ = size;
+
+    descriptor_ = IPC::InvalidPlatformFileForTransit();
+  }
+  void set_socket(const IPC::PlatformFileForTransit& socket) {
+    type_ = SOCKET;
+    descriptor_ = socket;
+
+    shm_handle_ = base::SharedMemory::NULLHandle();
+    size_ = 0;
+  }
+  void set_null_shmem() {
+    set_shmem(base::SharedMemory::NULLHandle(), 0);
+  }
+  void set_null_socket() {
+    set_socket(IPC::InvalidPlatformFileForTransit());
+  }
+  bool IsHandleValid() const;
+
+  Header header() const {
+    return Header(type_, size_);
+  }
+
+  // Write/Read a Header, which contains all the data except the handle. This
+  // allows us to write the handle in a platform-specific way, as is necessary
+  // in NaClIPCAdapter to share handles with NaCl from Windows.
+  static bool WriteHeader(const Header& hdr, Pickle* pickle);
+  static bool ReadHeader(PickleIterator* iter, Header* hdr);
+
+ private:
+  // The kind of handle we're holding.
+  Type type_;
+
+  // We hold more members than we really need; we can't easily use a union,
+  // because we hold non-POD types. But these types are pretty light-weight. If
+  // we add more complex things later, we should come up with a more memory-
+  // efficient strategy.
+  // These are valid if type == SHARED_MEMORY.
+  base::SharedMemoryHandle shm_handle_;
+  uint32_t size_;
+
+  // This is valid if type == SOCKET.
+  IPC::PlatformFileForTransit descriptor_;
 };
 
 // TODO(tomfinegan): This is identical to PPPVideoCapture_Buffer, maybe replace

@@ -5,6 +5,8 @@
 {
   'variables': {
     'chromium_code': 1,
+    # nacl_win64_target is for building the trusted Win64 NaCl broker.
+    'nacl_win64_target': 0,
   },
   'includes': [
     '../build/common_untrusted.gypi',

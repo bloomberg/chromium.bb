@@ -28,6 +28,7 @@
           'shared_impl/file_path.h',
           'shared_impl/file_type_conversion.cc',
           'shared_impl/file_type_conversion.h',
+          'shared_impl/host_resource.cc',
           'shared_impl/host_resource.h',
           'shared_impl/id_assignment.cc',
           'shared_impl/id_assignment.h',
@@ -244,7 +245,7 @@
           '..',
         ],
         'target_conditions': [
-          ['>(nacl_untrusted_build)==1', {
+          ['>(nacl_untrusted_build)==1 or >(nacl_win64_target)==1', {
             'sources!': [
               'shared_impl/ppb_audio_input_shared.cc',
               'shared_impl/ppb_url_util_shared.cc',
@@ -298,6 +299,15 @@
               'thunk/ppb_video_layer_thunk.cc',
               'thunk/ppb_websocket_thunk.cc',
               'thunk/ppb_x509_certificate_private_thunk.cc',
+            ],
+          }],
+          # We exclude a few more things for nacl_win64, to avoid pulling in more dependencies.
+          ['>(nacl_win64_target)==1', {
+            'sources!': [
+              'shared_impl/ppb_audio_shared.cc',
+              'shared_impl/ppb_graphics_3d_shared.cc',
+              'shared_impl/ppb_opengles2_shared.cc',
+              'thunk/ppb_graphics_3d_thunk.cc',
             ],
           }],
         ],

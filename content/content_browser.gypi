@@ -10,7 +10,7 @@
     '../crypto/crypto.gyp:crypto',
     '../net/net.gyp:http_server',
     '../net/net.gyp:net',
-    '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+    '../ppapi/ppapi_internal.gyp:ppapi_ipc',
     '../skia/skia.gyp:skia',
     '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../third_party/smhasher/smhasher.gyp:pmurhash',

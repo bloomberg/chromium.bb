@@ -137,7 +137,7 @@ PP_VarType StringVar::GetType() const {
 
 // static
 PP_Var StringVar::StringToPPVar(const std::string& var) {
-  return StringToPPVar(var.c_str(), var.size());
+  return StringToPPVar(var.c_str(), static_cast<uint32>(var.size()));
 }
 
 // static

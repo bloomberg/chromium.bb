@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_audio_input_proxy.h"
 
 #include "base/compiler_specific.h"
+#include "media/audio/shared_memory_util.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -286,21 +287,27 @@ void PPB_AudioInput_Proxy::OnMsgEnumerateDevicesACK(
 void PPB_AudioInput_Proxy::OnMsgOpenACK(
     const HostResource& audio_input,
     int32_t result,
-    IPC::PlatformFileForTransit socket_handle,
-    base::SharedMemoryHandle handle,
-    uint32_t length) {
+    const ppapi::proxy::SerializedHandle& socket_handle,
+    const ppapi::proxy::SerializedHandle& handle) {
+  CHECK(socket_handle.is_socket());
+  CHECK(handle.is_shmem());
   EnterPluginFromHostResource<PPB_AudioInput_API> enter(audio_input);
   if (enter.failed()) {
     // The caller may still have given us these handles in the failure case.
     // The easiest way to clean these up is to just put them in the objects
     // and then close them. This failure case is not performance critical.
     base::SyncSocket temp_socket(
-        IPC::PlatformFileForTransitToPlatformFile(socket_handle));
-    base::SharedMemory temp_mem(handle, false);
+        IPC::PlatformFileForTransitToPlatformFile(
+            socket_handle.descriptor()));
+    base::SharedMemory temp_mem(handle.shmem(), false);
   } else {
+    // See the comment above about how we must call
+    // TotalSharedMemorySizeInBytes to get the actual size of the buffer. Here,
+    // we must call PacketSizeInBytes to get back the size of the audio buffer,
+    // excluding the bytes that audio uses for book-keeping.
     static_cast<AudioInput*>(enter.object())->OnOpenComplete(
-        result, handle, length,
-        IPC::PlatformFileForTransitToPlatformFile(socket_handle));
+        result, handle.shmem(), media::PacketSizeInBytes(handle.size()),
+        IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()));
   }
 }
 
@@ -316,15 +323,28 @@ void PPB_AudioInput_Proxy::EnumerateDevicesACKInHost(
 
 void PPB_AudioInput_Proxy::OpenACKInHost(int32_t result,
                                          const HostResource& audio_input) {
-  IPC::PlatformFileForTransit socket_handle =
-      IPC::InvalidPlatformFileForTransit();
-  base::SharedMemoryHandle shared_memory = IPC::InvalidPlatformFileForTransit();
-  uint32_t shared_memory_length = 0;
+  ppapi::proxy::SerializedHandle socket_handle(
+      ppapi::proxy::SerializedHandle::SOCKET);
+  ppapi::proxy::SerializedHandle shared_memory(
+      ppapi::proxy::SerializedHandle::SHARED_MEMORY);
 
   if (result == PP_OK) {
-    result = GetAudioInputConnectedHandles(audio_input, &socket_handle,
-                                           &shared_memory,
-                                           &shared_memory_length);
+    IPC::PlatformFileForTransit temp_socket;
+    base::SharedMemoryHandle temp_shmem;
+    uint32_t audio_buffer_size;
+    result = GetAudioInputConnectedHandles(audio_input, &temp_socket,
+                                           &temp_shmem, &audio_buffer_size);
+    if (result == PP_OK) {
+      socket_handle.set_socket(temp_socket);
+      // Note that we must call TotalSharedMemorySizeInBytes because
+      // Audio allocates extra space in shared memory for book-keeping, so the
+      // actual size of the shared memory buffer is larger than
+      // audio_buffer_length. When sending to NaCl, NaClIPCAdapter expects this
+      // size to match the size of the full shared memory buffer.
+      shared_memory.set_shmem(
+          temp_shmem,
+          media::TotalSharedMemorySizeInBytes(audio_buffer_size));
+    }
   }
 
   // Send all the values, even on error. This simplifies some of our cleanup
@@ -334,7 +354,7 @@ void PPB_AudioInput_Proxy::OpenACKInHost(int32_t result,
   // (in OnMsgOpenACK), even in the failure case.
   dispatcher()->Send(new PpapiMsg_PPBAudioInput_OpenACK(
       API_ID_PPB_AUDIO_INPUT_DEV, audio_input, result, socket_handle,
-      shared_memory, shared_memory_length));
+      shared_memory));
 }
 
 int32_t PPB_AudioInput_Proxy::GetAudioInputConnectedHandles(

@@ -215,6 +215,7 @@
               '-Wl,--start-group',
               '-lirt_browser',
               '-lppapi_proxy_untrusted',
+              '-lppapi_ipc_untrusted',
               '-lppapi_shared_untrusted',
               '-lgles2_implementation_untrusted',
               '-lgles2_cmd_helper_untrusted',
@@ -265,6 +266,7 @@
             # once native_client/build/untrusted.gypi no longer needs them.
             'extra_deps64': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libcommand_buffer_client_untrusted.a',
@@ -283,6 +285,7 @@
             ],
             'extra_deps32': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libcommand_buffer_client_untrusted.a',
@@ -301,6 +304,7 @@
             ],
             'extra_deps_newlib64': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libcommand_buffer_client_untrusted.a',
@@ -319,6 +323,7 @@
             ],
             'extra_deps_newlib32': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libcommand_buffer_client_untrusted.a',
@@ -337,6 +342,7 @@
             ],
             'extra_deps_glibc64': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libcommand_buffer_client_untrusted.a',
@@ -355,6 +361,7 @@
             ],
             'extra_deps_glibc32': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libcommand_buffer_client_untrusted.a',
@@ -373,6 +380,7 @@
             ],
             'extra_deps_arm': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_proxy_untrusted.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_ipc_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_shared_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libgles2_implementation_untrusted.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libcommand_buffer_client_untrusted.a',
@@ -392,6 +400,7 @@
           },
           'dependencies': [
             '../ppapi_ipc_proxy_untrusted.gyp:ppapi_proxy_untrusted',
+            '../ppapi_ipc_untrusted.gyp:ppapi_ipc_untrusted',
             '../ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../../gpu/command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
             '../../gpu/gpu_untrusted.gyp:command_buffer_client_untrusted',

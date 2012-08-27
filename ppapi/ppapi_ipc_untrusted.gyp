@@ -7,20 +7,20 @@
     'chromium_code': 1,
   },
   'includes': [
-    '../build/common_untrusted.gypi',
-    'ppapi_shared.gypi',
+    '../native_client/build/untrusted.gypi',
+    'ppapi_ipc.gypi',
   ],
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'ppapi_shared_untrusted',
+          'target_name': 'ppapi_ipc_untrusted',
           'type': 'none',
           'variables': {
-            'ppapi_shared_target': 1,
+            'ppapi_ipc_target': 1,
             'nacl_win64_target': 0,
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libppapi_shared_untrusted.a',
+            'nlib_target': 'libppapi_ipc_untrusted.a',
             'build_glibc': 0,
             'build_newlib': 1,
           },
@@ -29,15 +29,13 @@
           ],
           'include_dirs': [
             '..',
-            '../third_party/khronos',
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            '../gpu/command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
-            '../gpu/gpu_untrusted.gyp:command_buffer_client_untrusted',
-            '../gpu/gpu_untrusted.gyp:gles2_implementation_untrusted',
-            '../media/media_untrusted.gyp:shared_memory_support_untrusted',
+            '../gpu/gpu_untrusted.gyp:gpu_ipc_untrusted',
+            '../ipc/ipc_untrusted.gyp:ipc_untrusted',
+            '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
           ],
         },
       ],

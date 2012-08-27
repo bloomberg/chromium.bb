@@ -28,7 +28,7 @@ void PluginArrayBufferVar::Unmap() {
 }
 
 uint32 PluginArrayBufferVar::ByteLength() {
-  return buffer_.size();
+  return static_cast<uint32>(buffer_.size());
 }
 
 }  // namespace ppapi

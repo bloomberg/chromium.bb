@@ -5,6 +5,7 @@
 #ifndef CHROME_NACL_NACL_IPC_ADAPTER_H_
 #define CHROME_NACL_NACL_IPC_ADAPTER_H_
 
+#include <map>
 #include <queue>
 #include <string>
 
@@ -116,6 +117,12 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     // Messages that we have read off of the Chrome IPC channel that are waiting
     // to be received by the plugin.
     std::queue< scoped_refptr<RewrittenMessage> > to_be_received_;
+
+    // When we send a synchronous message (from untrusted to trusted), we store
+    // its type here, so that later we can associate the reply with its type
+    // and potentially translate handles in the message.
+    typedef std::map<int, uint32> PendingSyncMsgMap;
+    PendingSyncMsgMap pending_sync_msgs_;
 
     // Data that we've queued from the plugin to send, but doesn't consist of a
     // full message yet. The calling code can break apart the message into

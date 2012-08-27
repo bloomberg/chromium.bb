@@ -544,6 +544,7 @@
         '../net/net.gyp:net_test_support',
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
         '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
         '../skia/skia.gyp:skia',

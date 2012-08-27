@@ -225,27 +225,29 @@ gpu::Buffer PpapiCommandBufferProxy::GetTransferBuffer(int32 id) {
 
   // Assuming we are in the renderer process, the service is responsible for
   // duplicating the handle. This might not be true for NaCl.
-  base::SharedMemoryHandle handle;
-  uint32 size;
+  ppapi::proxy::SerializedHandle handle(
+      ppapi::proxy::SerializedHandle::SHARED_MEMORY);
   if (!Send(new PpapiHostMsg_PPBGraphics3D_GetTransferBuffer(
-            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id, &handle, &size))) {
+            ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id, &handle))) {
     return gpu::Buffer();
   }
+  if (!handle.is_shmem())
+    return gpu::Buffer();
 
   // Cache the transfer buffer shared memory object client side.
   scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(handle, false));
+      new base::SharedMemory(handle.shmem(), false));
 
   // Map the shared memory on demand.
   if (!shared_memory->memory()) {
-    if (!shared_memory->Map(size)) {
+    if (!shared_memory->Map(handle.size())) {
       return gpu::Buffer();
     }
   }
 
   gpu::Buffer buffer;
   buffer.ptr = shared_memory->memory();
-  buffer.size = size;
+  buffer.size = handle.size();
   buffer.shared_memory = shared_memory.release();
   transfer_buffers_[id] = buffer;
 

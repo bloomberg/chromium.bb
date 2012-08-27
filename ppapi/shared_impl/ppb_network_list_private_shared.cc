@@ -58,7 +58,7 @@ const NetworkList& PPB_NetworkList_Private_Shared::GetNetworkListData() const {
 }
 
 uint32_t PPB_NetworkList_Private_Shared::GetCount() {
-  return list_->list().size();
+  return static_cast<uint32_t>(list_->list().size());
 }
 
 PP_Var PPB_NetworkList_Private_Shared::GetName(uint32_t index) {
@@ -91,7 +91,7 @@ int32_t PPB_NetworkList_Private_Shared::GetIpAddresses(
       count, static_cast<uint32_t>(list_->list().at(index).addresses.size()));
   memcpy(addresses, &(list_->list().at(index).addresses[0]),
          sizeof(PP_NetAddress_Private) * count);
-  return list_->list().at(index).addresses.size();
+  return static_cast<int32_t>(list_->list().at(index).addresses.size());
 }
 
 PP_Var PPB_NetworkList_Private_Shared::GetDisplayName(uint32_t index) {

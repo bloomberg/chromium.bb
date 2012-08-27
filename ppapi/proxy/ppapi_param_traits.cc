@@ -312,7 +312,62 @@ void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Log(
     std::string* l) {
 }
 
-#if !defined(OS_NACL)
+// SerializedHandle ------------------------------------------------------------
+
+// static
+void ParamTraits<ppapi::proxy::SerializedHandle>::Write(Message* m,
+                                                        const param_type& p) {
+  ppapi::proxy::SerializedHandle::WriteHeader(p.header(), m);
+  switch (p.type()) {
+    case ppapi::proxy::SerializedHandle::SHARED_MEMORY:
+      ParamTraits<base::SharedMemoryHandle>::Write(m, p.shmem());
+      break;
+    case ppapi::proxy::SerializedHandle::SOCKET:
+      ParamTraits<IPC::PlatformFileForTransit>::Write(m, p.descriptor());
+      break;
+    case ppapi::proxy::SerializedHandle::INVALID:
+      break;
+    // No default so the compiler will warn on new types.
+  }
+}
+
+// static
+bool ParamTraits<ppapi::proxy::SerializedHandle>::Read(const Message* m,
+                                                       PickleIterator* iter,
+                                                       param_type* r) {
+  ppapi::proxy::SerializedHandle::Header header;
+  if (!ppapi::proxy::SerializedHandle::ReadHeader(iter, &header))
+    return false;
+  switch (header.type) {
+    case ppapi::proxy::SerializedHandle::SHARED_MEMORY: {
+      base::SharedMemoryHandle handle;
+      if (ParamTraits<base::SharedMemoryHandle>::Read(m, iter, &handle)) {
+        r->set_shmem(handle, header.size);
+        return true;
+      }
+      break;
+    }
+    case ppapi::proxy::SerializedHandle::SOCKET: {
+      IPC::PlatformFileForTransit socket;
+      if (ParamTraits<IPC::PlatformFileForTransit>::Read(m, iter, &socket)) {
+        r->set_socket(socket);
+        return true;
+      }
+      break;
+    }
+    case ppapi::proxy::SerializedHandle::INVALID:
+      return true;
+    // No default so the compiler will warn us if a new type is added.
+  }
+  return false;
+}
+
+// static
+void ParamTraits<ppapi::proxy::SerializedHandle>::Log(const param_type& p,
+                                                      std::string* l) {
+}
+
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPBFlash_DrawGlyphs_Params --------------------------------------------------
 // static
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Write(
@@ -507,6 +562,6 @@ bool ParamTraits<ppapi::PPB_X509Certificate_Fields>::Read(const Message* m,
 void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Log(const param_type& p,
                                                          std::string* l) {
 }
-#endif  // !defined(OS_NACL)
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 }  // namespace IPC

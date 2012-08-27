@@ -60,6 +60,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // into user code.
   static void SetThreadFunctions(const struct PP_ThreadFunctions* functions);
 #endif
+
  private:
   // Starts execution of the audio thread.
   void StartThread();

@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
+#include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -96,8 +97,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                                   int32 id);
   void OnMsgGetTransferBuffer(const HostResource& context,
                               int32 id,
-                              base::SharedMemoryHandle* transfer_buffer,
-                              uint32* size);
+                              ppapi::proxy::SerializedHandle* transfer_buffer);
   void OnMsgSwapBuffers(const HostResource& context);
   // Renderer->plugin message handlers.
   void OnMsgSwapBuffersACK(const HostResource& context,
