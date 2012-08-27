@@ -444,6 +444,11 @@ class Table(object):
         """
         self._rows.append(Row(patterns, action, arch))
 
+    def remove_table(self, name):
+      """Removes method calls to the given table name from the table"""
+      for row in self._rows:
+        row.remove_table(name)
+
     def define_pattern(self, pattern, column):
         """Converts the given input pattern (for the given column) to the
            internal form. Returns None if pattern is bad.
@@ -606,6 +611,15 @@ class Row(object):
         """Adds a pattern to the row."""
         self.patterns.append(pattern)
 
+    def remove_table(self, name):
+      """Removes method call to the given table name from the row,
+         if applicable.
+         """
+      if (isinstance(self.action, DecoderMethod) and
+          self.action.name == name):
+        self.action = DecoderAction('NotImplemented', 'NotImplemented', None,
+                                    None, None)
+
     def strictly_overlaps_bits(self, bitpat):
       """Checks if bitpat strictly overlaps a bit pattern in the row."""
       for p in self.patterns:
@@ -696,6 +710,15 @@ class Decoder(object):
       if tbl.name == name:
         return tbl
     return None
+
+  def remove_table(self, name):
+    """Removes the given table from the decoder"""
+    new_tables = []
+    for table in self._tables:
+      if table.name != name:
+        new_tables = new_tables + [table]
+        table.remove_table(name)
+    self._tables = new_tables
 
   def get_class_defs(self):
     return self._class_defs

@@ -819,6 +819,10 @@ class MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646
     : public MoveVfpRegisterOpWithTypeSel {
 };
 
+class NotImplemented_None
+    : public NotImplemented {
+};
+
 class Roadblock_None
     : public Roadblock {
 };
@@ -1037,26 +1041,6 @@ class Undefined_None
 
 class Unpredictable_None
     : public Unpredictable {
-};
-
-class VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
-    : public VectorBinary3RegisterImmOp {
-};
-
-class VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798
-    : public VectorBinary3RegisterLookupOp {
-};
-
-class VectorLoad_None
-    : public VectorLoad {
-};
-
-class VectorStore_None
-    : public VectorStore {
-};
-
-class VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
-    : public VectorUnary2RegisterDup {
 };
 
 class VfpMrsOp_Vmrs_Rule_335_A1_P658
@@ -4378,6 +4362,18 @@ class NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646);
 };
 
+class NamedNotImplemented_None
+    : public NamedClassDecoder {
+ public:
+  NamedNotImplemented_None()
+    : NamedClassDecoder(decoder_, "NotImplemented None")
+  {}
+
+ private:
+  nacl_arm_dec::NotImplemented_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedNotImplemented_None);
+};
+
 class NamedRoadblock_None
     : public NamedClassDecoder {
  public:
@@ -5036,66 +5032,6 @@ class NamedUnpredictable_None
  private:
   nacl_arm_dec::Unpredictable_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictable_None);
-};
-
-class NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
-    : public NamedClassDecoder {
- public:
-  NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598()
-    : NamedClassDecoder(decoder_, "VectorBinary3RegisterImmOp Vext_Rule_305_A1_P598")
-  {}
-
- private:
-  nacl_arm_dec::VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598);
-};
-
-class NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798
-    : public NamedClassDecoder {
- public:
-  NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798()
-    : NamedClassDecoder(decoder_, "VectorBinary3RegisterLookupOp Vtbl_Vtbx_Rule_406_A1_P798")
-  {}
-
- private:
-  nacl_arm_dec::VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798);
-};
-
-class NamedVectorLoad_None
-    : public NamedClassDecoder {
- public:
-  NamedVectorLoad_None()
-    : NamedClassDecoder(decoder_, "VectorLoad None")
-  {}
-
- private:
-  nacl_arm_dec::VectorLoad_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoad_None);
-};
-
-class NamedVectorStore_None
-    : public NamedClassDecoder {
- public:
-  NamedVectorStore_None()
-    : NamedClassDecoder(decoder_, "VectorStore None")
-  {}
-
- private:
-  nacl_arm_dec::VectorStore_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStore_None);
-};
-
-class NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592
-    : public NamedClassDecoder {
- public:
-  NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592()
-    : NamedClassDecoder(decoder_, "VectorUnary2RegisterDup Vdup_Rule_302_A1_P592")
-  {}
-
- private:
-  nacl_arm_dec::VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592);
 };
 
 class NamedVfpMrsOp_Vmrs_Rule_335_A1_P658

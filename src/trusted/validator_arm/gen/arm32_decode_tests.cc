@@ -25,86 +25,6 @@ namespace nacl_arm_test {
 // corresponding pattern is not tested for cases that would be excluded
 //  due to row checks, or restrictions specified by the row restrictions.
 
-class VectorBinary3RegisterImmOpTesterU_24Is0_A_23To19Is1x11x_C_7To4Isxxx0
-    : public VectorBinary3RegisterImmOpTester {
- public:
-  VectorBinary3RegisterImmOpTesterU_24Is0_A_23To19Is1x11x_C_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterImmOpTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool VectorBinary3RegisterImmOpTesterU_24Is0_A_23To19Is1x11x_C_7To4Isxxx0
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01000000) != 0x00000000 /* U(24:24) == ~0 */) return false;
-  if ((inst.Bits() & 0x00B00000) != 0x00B00000 /* A(23:19) == ~1x11x */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* C(7:4) == ~xxx0 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterImmOpTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class VectorBinary3RegisterLookupOpTesterU_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0
-    : public VectorBinary3RegisterLookupOpTester {
- public:
-  VectorBinary3RegisterLookupOpTesterU_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : VectorBinary3RegisterLookupOpTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool VectorBinary3RegisterLookupOpTesterU_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01000000) != 0x01000000 /* U(24:24) == ~1 */) return false;
-  if ((inst.Bits() & 0x00B00000) != 0x00B00000 /* A(23:19) == ~1x11x */) return false;
-  if ((inst.Bits() & 0x00000C00) != 0x00000800 /* B(11:8) == ~10xx */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* C(7:4) == ~xxx0 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return VectorBinary3RegisterLookupOpTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class VectorUnary2RegisterDupTesterU_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0
-    : public VectorUnary2RegisterDupTester {
- public:
-  VectorUnary2RegisterDupTesterU_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0(const NamedClassDecoder& decoder)
-    : VectorUnary2RegisterDupTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool VectorUnary2RegisterDupTesterU_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01000000) != 0x01000000 /* U(24:24) == ~1 */) return false;
-  if ((inst.Bits() & 0x00B00000) != 0x00B00000 /* A(23:19) == ~1x11x */) return false;
-  if ((inst.Bits() & 0x00000F00) != 0x00000C00 /* B(11:8) == ~1100 */) return false;
-  if ((inst.Bits() & 0x00000090) != 0x00000000 /* C(7:4) == ~0xx0 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return VectorUnary2RegisterDupTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
 class LoadStoreRegisterListTesterop_25To20Is0000x0
     : public LoadStoreRegisterListTester {
  public:
@@ -6013,33 +5933,6 @@ bool UnsafeUncondNopTesterop1_27To20Is101xxxxx
 // a default constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
-class VectorBinary3RegisterImmOpTester_U_24Is0_A_23To19Is1x11x_C_7To4Isxxx0_Vext_Rule_305_A1_P598
-    : public VectorBinary3RegisterImmOpTesterU_24Is0_A_23To19Is1x11x_C_7To4Isxxx0 {
- public:
-  VectorBinary3RegisterImmOpTester_U_24Is0_A_23To19Is1x11x_C_7To4Isxxx0_Vext_Rule_305_A1_P598()
-    : VectorBinary3RegisterImmOpTesterU_24Is0_A_23To19Is1x11x_C_7To4Isxxx0(
-      state_.VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598_instance_)
-  {}
-};
-
-class VectorBinary3RegisterLookupOpTester_U_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0_Vtbl_Vtbx_Rule_406_A1_P798
-    : public VectorBinary3RegisterLookupOpTesterU_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0 {
- public:
-  VectorBinary3RegisterLookupOpTester_U_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0_Vtbl_Vtbx_Rule_406_A1_P798()
-    : VectorBinary3RegisterLookupOpTesterU_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0(
-      state_.VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798_instance_)
-  {}
-};
-
-class VectorUnary2RegisterDupTester_U_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0_Vdup_Rule_302_A1_P592
-    : public VectorUnary2RegisterDupTesterU_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0 {
- public:
-  VectorUnary2RegisterDupTester_U_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0_Vdup_Rule_302_A1_P592()
-    : VectorUnary2RegisterDupTesterU_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0(
-      state_.VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592_instance_)
-  {}
-};
-
 class StoreRegisterListTester_op_25To20Is0000x0_Stmda_Stmed_Rule_190_A1_P376
     : public LoadStoreRegisterListTesterop_25To20Is0000x0 {
  public:
@@ -8181,24 +8074,6 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // The following functions test each pattern specified in parse
 // decoder tables.
-
-TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterImmOpTester_U_24Is0_A_23To19Is1x11x_C_7To4Isxxx0_Vext_Rule_305_A1_P598_111100101d11nnnnddddiiiinqm0mmmm_Test) {
-  VectorBinary3RegisterImmOpTester_U_24Is0_A_23To19Is1x11x_C_7To4Isxxx0_Vext_Rule_305_A1_P598 tester;
-  tester.Test("111100101d11nnnnddddiiiinqm0mmmm");
-}
-
-TEST_F(Arm32DecoderStateTests,
-       VectorBinary3RegisterLookupOpTester_U_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0_Vtbl_Vtbx_Rule_406_A1_P798_111100111d11nnnndddd10ccnpm0mmmm_Test) {
-  VectorBinary3RegisterLookupOpTester_U_24Is1_A_23To19Is1x11x_B_11To8Is10xx_C_7To4Isxxx0_Vtbl_Vtbx_Rule_406_A1_P798 tester;
-  tester.Test("111100111d11nnnndddd10ccnpm0mmmm");
-}
-
-TEST_F(Arm32DecoderStateTests,
-       VectorUnary2RegisterDupTester_U_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0_Vdup_Rule_302_A1_P592_111100111d11iiiidddd11000qm0mmmm_Test) {
-  VectorUnary2RegisterDupTester_U_24Is1_A_23To19Is1x11x_B_11To8Is1100_C_7To4Is0xx0_Vdup_Rule_302_A1_P592 tester;
-  tester.Test("111100111d11iiiidddd11000qm0mmmm");
-}
 
 TEST_F(Arm32DecoderStateTests,
        StoreRegisterListTester_op_25To20Is0000x0_Stmda_Stmed_Rule_190_A1_P376_cccc100000w0nnnnrrrrrrrrrrrrrrrr_Test) {

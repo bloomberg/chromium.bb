@@ -37,12 +37,6 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_ARMv7(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_advanced_simd_data_processing_instructions(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_advanced_simd_element_or_structure_load_store_instructions(
-      const Instruction insn) const;
-
   inline const ClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
       const Instruction insn) const;
 
@@ -112,30 +106,6 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_simd_dp_1imm(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_dp_2misc(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_dp_2scalar(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_dp_2shift(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_dp_3diff(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_dp_3same(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_load_store_l0(
-      const Instruction insn) const;
-
-  inline const ClassDecoder& decode_simd_load_store_l1(
-      const Instruction insn) const;
-
   inline const ClassDecoder& decode_synchronization_primitives(
       const Instruction insn) const;
 
@@ -189,6 +159,7 @@ class Arm32DecoderState : DecoderState {
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
+  const NotImplemented NotImplemented_instance_;
   const Roadblock Roadblock_instance_;
   const Store2RegisterImm12OpRnNotRtOnWriteback Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
@@ -206,11 +177,6 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
-  const VectorBinary3RegisterImmOp VectorBinary3RegisterImmOp_instance_;
-  const VectorBinary3RegisterLookupOp VectorBinary3RegisterLookupOp_instance_;
-  const VectorLoad VectorLoad_instance_;
-  const VectorStore VectorStore_instance_;
-  const VectorUnary2RegisterDup VectorUnary2RegisterDup_instance_;
   const VfpMrsOp VfpMrsOp_instance_;
   const VfpOp VfpOp_instance_;
   const NotImplemented not_implemented_;

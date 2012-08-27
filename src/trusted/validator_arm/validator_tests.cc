@@ -448,6 +448,7 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
   }
 }
 
+/* TODO(karl): Add these back once simd instructions are turned back on.
 // These stores can't be predicated, so we must use a different, simpler
 // fixture generator.
 static const AnnotatedInstruction examples_of_safe_unconditional_stores[] = {
@@ -486,6 +487,7 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
     }
   }
 }
+*/
 
 TEST_F(ValidatorTests, SafeConditionalStores) {
   // Produces many examples of conditional stores using the safe store table

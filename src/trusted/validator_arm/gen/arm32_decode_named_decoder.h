@@ -240,6 +240,7 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedMoveVfpRegisterOp_Vmov_Rule_330_A1_P648 MoveVfpRegisterOp_Vmov_Rule_330_A1_P648_instance_;
   const NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644 MoveVfpRegisterOpWithTypeSel_Vmov_Rule_328_A1_P644_instance_;
   const NamedMoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646 MoveVfpRegisterOpWithTypeSel_Vmov_Rule_329_A1_P646_instance_;
+  const NamedNotImplemented_None NotImplemented_None_instance_;
   const NamedRoadblock_None Roadblock_None_instance_;
   const NamedStore2RegisterImm12Op_Str_Rule_194_A1_P384 Store2RegisterImm12Op_Str_Rule_194_A1_P384_instance_;
   const NamedStore2RegisterImm12Op_Strb_Rule_197_A1_P390 Store2RegisterImm12Op_Strb_Rule_197_A1_P390_instance_;
@@ -295,11 +296,6 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedUnary3RegisterShiftedOp_Mvn_Rule_108_A1_P218 Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218_instance_;
   const NamedUndefined_None Undefined_None_instance_;
   const NamedUnpredictable_None Unpredictable_None_instance_;
-  const NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598 VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598_instance_;
-  const NamedVectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798 VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798_instance_;
-  const NamedVectorLoad_None VectorLoad_None_instance_;
-  const NamedVectorStore_None VectorStore_None_instance_;
-  const NamedVectorUnary2RegisterDup_Vdup_Rule_302_A1_P592 VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592_instance_;
   const NamedVfpMrsOp_Vmrs_Rule_335_A1_P658 VfpMrsOp_Vmrs_Rule_335_A1_P658_instance_;
   const NamedVfpUsesRegOp_Vmsr_Rule_336_A1_P660 VfpUsesRegOp_Vmsr_Rule_336_A1_P660_instance_;
   const NamedBranch_B_Rule_16_A1_P44 Branch_B_Rule_16_A1_P44_instance_;
@@ -540,10 +536,6 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   // instruction.
   inline const NamedClassDecoder& decode_ARMv7(
       const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_advanced_simd_data_processing_instructions(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_advanced_simd_element_or_structure_load_store_instructions(
-      const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_coprocessor_instructions_and_supervisor_call(
@@ -589,22 +581,6 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   inline const NamedClassDecoder& decode_saturating_addition_and_subtraction(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_dp_1imm(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_dp_2misc(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_dp_2scalar(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_dp_2shift(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_dp_3diff(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_dp_3same(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_load_store_l0(
-      const nacl_arm_dec::Instruction insn) const;
-  inline const NamedClassDecoder& decode_simd_load_store_l1(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_synchronization_primitives(
       const nacl_arm_dec::Instruction insn) const;

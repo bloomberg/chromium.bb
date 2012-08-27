@@ -49,6 +49,28 @@ GEN_LIST = [_gen_file(x) for x in
 # The list of command line arguments to be passed to the code generators.
 GEN_CL_ARGS=""
 
+# The list of (NEON) tables that we have turned off. That is, no instructions
+# in the corresponding table will be accepted by the NACL ARM validator.
+# TODO(karl): Remove this list when NEON tables are ready.
+TURNED_OFF_TABLES = [
+    'advanced_simd_data_processing_instructions',
+    'simd_dp_3same',
+    'simd_dp_3diff',
+    'simd_dp_2scalar',
+    'simd_dp_2shift',
+    'simd_dp_2misc',
+    'simd_dp_1imm',
+    'advanced_simd_element_or_structure_load_store_instructions',
+    'simd_load_store_l0',
+    'simd_load_store_l1',
+    ]
+
+# Adds the (NEON) turned off tables to the list of generator command
+# line arguments.
+if TURNED_OFF_TABLES:
+  GEN_CL_ARGS += GEN_CL_ARGS + ''.join(
+      [' --table_remove=' + tbl for tbl in TURNED_OFF_TABLES])
+
 # If non-empty, it should include the list of table names (in
 # armv7.table) that valgen should generate tests for. Allows testing
 # of a small number of tables without the overhead of running tests
@@ -132,9 +154,13 @@ validator_tests = {
   'test_internal_jumps': 1,
   'test_sp_updates': 1,
   'test_stores': 1,
-  'test_vector_stores': 1,
+  # Removed test because these are simd vector stores.
+  # TODO(karl): Turn back on when NEON tables are ready.
+  # 'test_vector_stores': 1,
   'test_loads': 1,
-  'test_vector_loads': 1,
+  # Removed test because these are simd vector loads.
+  # TODO(karl): Turn back on when NEON tables are ready.
+  # 'test_vector_loads': 1,
 }
 
 for test, exit_status in validator_tests.iteritems():

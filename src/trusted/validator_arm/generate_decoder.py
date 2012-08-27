@@ -7,7 +7,17 @@
 
 """Decoder Generator script.
 
-Usage: generate-decoder.py <table-file> <output-cc-file> <decoder-name>
+Usage: generate-decoder.py <table-file> <output-cc-file> <decoder-name> \
+       <options>
+
+Options include:
+
+  --add_rule_patterns=bool - If bool='True', rule patterns are added (default).
+        If =bool is omitted, 'True' is assumped. Legal values for bool is
+        'True' and 'False'.
+  --table_remove=name - Remove table 'name' from decoder. May be repeated.
+
+  name - Only generate tests for table 'name'. May be repeated.
 
 Note: If the file ends with named.{h,cc}, it is assumed that one should
 build the corresponding source file for named classes, so that testing
@@ -41,7 +51,9 @@ def main(argv):
     tables = None
 
     # Define default command line arguments.
-    cl_args = {'add-rule-patterns': 'True'}
+    cl_args = {'add-rule-patterns': 'True',
+               'table_remove': [],
+               }
 
     # Strip off remaining command line arguments and add.
     remaining_args = argv[4:]
@@ -52,7 +64,15 @@ def main(argv):
       if index == -1:
         cl_args[arg] = 'True'
       else:
-        cl_args[arg[0:index]] = arg[index+1:]
+        cl_name = arg[0:index]
+        cl_value = arg[index+1:]
+        if (cl_name in cl_args.keys() and
+            isinstance(cl_args[cl_name], list)):
+          # Repeatable CL argument, add value to list.
+          cl_args[cl_name] = cl_args[cl_name] + [cl_value]
+        else:
+          # Single valued CL arugment, update to hold value.
+          cl_args[cl_name] = cl_value
 
     print "cl args = %s" % cl_args
 
@@ -60,9 +80,17 @@ def main(argv):
     if remaining_args:
       tables = remaining_args
 
+    # Read in the decoder tables.
     print "Decoder Generator reading ", table_filename
     f = open(table_filename, 'r')
     decoder = dgen_input.parse_tables(f)
+
+    # Remove tables specified on command line.
+    for table in cl_args['table_remove']:
+      print 'Removing table %s' % table
+      decoder.remove_table(table)
+
+    # Add pattern constraints if specified on the command line.
     if cl_args.get('add-rule-patterns') == 'True':
       decoder = dgen_add_patterns.add_rule_pattern_constraints(decoder)
     f.close()
