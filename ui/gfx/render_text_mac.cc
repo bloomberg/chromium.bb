@@ -14,71 +14,6 @@
 #include "base/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 
-namespace {
-
-// Returns the pixel height of |ct_font|.
-CGFloat GetCTFontPixelSize(CTFontRef ct_font) {
-  return CTFontGetAscent(ct_font) + CTFontGetDescent(ct_font);
-}
-
-// Creates a CTFont with the given font name and pixel size. Ownership is
-// transferred to the caller.
-//
-// Note: This code makes use of pixel sizes (rather than view coordinate sizes)
-// because it draws to an underlying Skia canvas, which is normally pixel based.
-CTFontRef CreateCTFontWithPixelSize(const std::string& font_name,
-                                    const int target_pixel_size) {
-  // Epsilon value used for comparing font sizes.
-  const CGFloat kEpsilon = 0.001;
-  // The observed pixel to points ratio for Lucida Grande on 10.6. Other fonts
-  // have other ratios and the documentation doesn't provide a guarantee that
-  // the relation is linear. So this ratio is used as a first try before
-  // falling back to the bisection method.
-  const CGFloat kPixelsToPointsRatio = 0.849088;
-
-  base::mac::ScopedCFTypeRef<CFStringRef> font_name_cf_string(
-      base::SysUTF8ToCFStringRef(font_name));
-
-  // First, try using |kPixelsToPointsRatio|.
-  CGFloat point_size = target_pixel_size * kPixelsToPointsRatio;
-  base::mac::ScopedCFTypeRef<CTFontRef> ct_font(
-      CTFontCreateWithName(font_name_cf_string, point_size, NULL));
-  CGFloat actual_pixel_size = GetCTFontPixelSize(ct_font);
-  if (std::fabs(actual_pixel_size - target_pixel_size) < kEpsilon)
-    return ct_font.release();
-
-  // |kPixelsToPointsRatio| wasn't correct. Use the bisection method to find the
-  // right size.
-
-  // First, find the initial bisection range, so that the point size that
-  // corresponds to |target_pixel_size| is between |lo| and |hi|.
-  CGFloat lo = 0;
-  CGFloat hi = point_size;
-  while (actual_pixel_size < target_pixel_size) {
-    lo = hi;
-    hi *= 2;
-    ct_font.reset(CTFontCreateWithName(font_name_cf_string, hi, NULL));
-    actual_pixel_size = GetCTFontPixelSize(ct_font);
-  }
-
-  // Now, bisect to find the right size.
-  while (lo < hi) {
-    point_size = (hi - lo) * 0.5 + lo;
-    ct_font.reset(CTFontCreateWithName(font_name_cf_string, point_size, NULL));
-    actual_pixel_size = GetCTFontPixelSize(ct_font);
-    if (std::fabs(actual_pixel_size - target_pixel_size) < kEpsilon)
-      break;
-    if (target_pixel_size > actual_pixel_size)
-      lo = point_size;
-    else
-      hi = point_size;
-  }
-
-  return ct_font.release();
-}
-
-}  // namespace
-
 namespace gfx {
 
 RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {
@@ -163,8 +98,10 @@ void RenderTextMac::EnsureLayout() {
   runs_valid_ = false;
 
   const Font& font = GetFont();
+  base::mac::ScopedCFTypeRef<CFStringRef> font_name_cf_string(
+      base::SysUTF8ToCFStringRef(font.GetFontName()));
   base::mac::ScopedCFTypeRef<CTFontRef> ct_font(
-      CreateCTFontWithPixelSize(font.GetFontName(), font.GetFontSize()));
+      CTFontCreateWithName(font_name_cf_string, font.GetFontSize(), NULL));
 
   const void* keys[] = { kCTFontAttributeName };
   const void* values[] = { ct_font };
@@ -344,7 +281,7 @@ void RenderTextMac::ComputeRuns() {
     base::mac::ScopedCFTypeRef<CFStringRef> font_name_ref(
         CTFontCopyFamilyName(ct_font));
     run->font_name = base::SysCFStringRefToUTF8(font_name_ref);
-    run->text_size = GetCTFontPixelSize(ct_font);
+    run->text_size = CTFontGetSize(ct_font);
 
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ct_font);
     if (traits & kCTFontBoldTrait)
