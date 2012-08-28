@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -319,4 +320,54 @@ TEST(GoogleUtilTest, GoogleDomains) {
                                  google_util::DISALLOW_SUBDOMAIN));
   EXPECT_FALSE(IsGoogleDomainUrl("doesnotexist://www.google.com",
                                  google_util::DISALLOW_SUBDOMAIN));
+}
+
+TEST(GoogleUtilTest, SearchTerms) {
+  // Simple searches.
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/search?q=tractor+supply"));
+  EXPECT_EQ(ASCIIToUTF16("tractor supply"),
+            google_util::GetSearchTermsFromGoogleSearchURL(
+                "http://google.com/search?q=tractor+supply&espv=1"));
+  // espv=1 only applies in query.
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/search?q=potato#espv=1"));
+
+  // Instant searches.
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/webhp#q=tractor+supply"));
+  EXPECT_EQ(ASCIIToUTF16("tractor supply"),
+            google_util::GetSearchTermsFromGoogleSearchURL(
+                "http://google.com/webhp?espv=1#q=tractor+supply"));
+  // espv=1 only applies in query.
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/webhp?#espv=1&q=potato"));
+
+  // Both query and ref components have a search term.
+  EXPECT_EQ(ASCIIToUTF16("tractor supply"),
+            google_util::GetSearchTermsFromGoogleSearchURL(
+                "http://google.com/webhp?q=potato&espv=1#q=tractor+supply"));
+
+  // Blank queries.
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/search?q=&q=potato&espv=1"));
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/webhp?espv=1#q=&q=tractor+supply"));
+
+  // Multiple non-empty queries.
+  EXPECT_EQ(ASCIIToUTF16("tractor supply"),
+            google_util::GetSearchTermsFromGoogleSearchURL(
+                "http://google.com/search?q=tractor+supply&q=potato&espv=1"));
+  EXPECT_EQ(ASCIIToUTF16("tractor supply"),
+            google_util::GetSearchTermsFromGoogleSearchURL(
+                "http://google.com/webhp?espv=1#q=tractor+supply&q=potato"));
+
+  // Blank terms in ref override non-blank terms in query.
+  EXPECT_EQ(string16(), google_util::GetSearchTermsFromGoogleSearchURL(
+      "http://google.com/search?q=potato&espv=1#q="));
+
+  // Blank terms in query do not override non-blank terms in ref.
+  EXPECT_EQ(ASCIIToUTF16("tractor supply"),
+            google_util::GetSearchTermsFromGoogleSearchURL(
+                "http://google.com/search?q=&espv=1#q=tractor+supply"));
 }

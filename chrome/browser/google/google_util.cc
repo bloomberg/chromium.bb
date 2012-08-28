@@ -57,6 +57,30 @@ bool HasQueryParameter(const std::string& str) {
 
 bool gUseMockLinkDoctorBaseURLForTesting = false;
 
+// Finds the first key-value pair where the key matches |query_key|. Returns
+// true if a match is found and sets |search_terms| to the value.
+bool ExtractSearchTermsFromComponent(const std::string& url,
+                                     url_parse::Component* component,
+                                     string16* search_terms) {
+  const std::string query_key = "q";
+  url_parse::Component key, value;
+
+  while (url_parse::ExtractQueryKeyValue(url.c_str(), component,
+                                         &key, &value)) {
+    if (url.compare(key.begin, key.len, query_key) != 0)
+      continue;
+    std::string value_str = url.substr(value.begin, value.len);
+    *search_terms = net::UnescapeAndDecodeUTF8URLComponent(
+        value_str,
+        net::UnescapeRule::SPACES |
+            net::UnescapeRule::URL_SPECIAL_CHARS |
+            net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
+        NULL);
+    return true;
+  }
+  return false;
+}
+
 }  // anonymous namespace
 
 namespace google_util {
@@ -159,27 +183,17 @@ string16 GetSearchTermsFromGoogleSearchURL(const std::string& url) {
   if (!IsInstantExtendedAPIGoogleSearchUrl(url))
     return string16();
 
-  const std::string query_key = "q";
-
   url_parse::Parsed parsed_url;
   url_parse::ParseStandardURL(url.c_str(), url.length(), &parsed_url);
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(
-      url.c_str(), &parsed_url.query, &key, &value)) {
-    // If the parameter key is |query_key| and the value is not empty, those are
-    // the search terms.
-    if (!url.compare(key.begin, key.len, query_key)) {
-      if (value.is_nonempty()) {
-        std::string value_str = url.substr(value.begin, value.len);
-        return net::UnescapeAndDecodeUTF8URLComponent(
-            value_str,
-            net::UnescapeRule::SPACES |
-                net::UnescapeRule::URL_SPECIAL_CHARS |
-                net::UnescapeRule::REPLACE_PLUS_WITH_SPACE,
-            NULL);
-      }
-      break;
-    }
+
+  string16 search_terms;
+  // The search terms can be in either the query or ref component - for
+  // instance, in a regular Google search they'll be in the query but in a
+  // Google Instant search they can be in both. The ref is the correct one to
+  // return in this case, so test the ref component first.
+  if (ExtractSearchTermsFromComponent(url, &parsed_url.ref, &search_terms) ||
+      ExtractSearchTermsFromComponent(url, &parsed_url.query, &search_terms)) {
+    return search_terms;
   }
   return string16();
 }
