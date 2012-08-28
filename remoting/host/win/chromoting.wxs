@@ -82,10 +82,30 @@
       <![CDATA[Installed OR (VersionNT >= 501)]]>
     </Condition>
 
-    <MajorUpgrade
-      AllowSameVersionUpgrades="yes"
-      DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."
-      Schedule="afterInstallInitialize" />
+    <!-- The upgrade rules below could be expressed with MajorUpgrade element.
+         Unfortunately, there is a bug in WiX decompiler (Dark) corrupting
+         InstallExecuteSequence table. The installation compiled from
+         the disassembled .msi schedules RemoveExistingProducts after
+         InstallFinalize while the original installation schedules it after
+         InstallInitialize. Fortunately, the verbose version of the upgrade
+         rules below decompiles correctly, so we use it instead.
+         See http://crbug.com/145265 for more details.
+    -->
+    <Upgrade Id="$(var.UpgradeCode)">
+      <UpgradeVersion IncludeMinimum="no"
+                      Minimum="$(var.Version)"
+                      OnlyDetect="yes"
+                      Property="NEWERVERSIONDETECTED" />
+      <UpgradeVersion IncludeMaximum="yes"
+                      IncludeMinimum="yes"
+                      Maximum="$(var.Version)"
+                      Minimum="0.0.0.0"
+                      Property="OLDERVERSIONBEINGUPGRADED" />
+    </Upgrade>
+
+    <Condition Message="A later version of [ProductName] is already installed. Setup will now exit.">
+      NOT NEWERVERSIONDETECTED
+    </Condition>
 
     <Media Id="1" Cabinet="chromoting.cab" EmbedCab="yes"/>
 
@@ -418,6 +438,10 @@
       <Custom Action="set_service_description" Before="InstallInitialize">
         <![CDATA[VersionNT >= 600]]>
       </Custom>
+
+      <!-- Schedule RemoveExistingProducts before installing any files.
+           See http://msdn.microsoft.com/en-us/library/aa371197.aspx. -->
+      <RemoveExistingProducts After="InstallInitialize" />
     </InstallExecuteSequence>
   </Product>
 </Wix>
