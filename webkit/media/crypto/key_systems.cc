@@ -48,7 +48,7 @@ supported_format_key_system_combinations[] = {
 
 static const KeySystemPluginTypePair key_system_to_plugin_type_mapping[] = {
   // TODO(xhwang): Update this with the real plugin name.
-  { kExternalClearKeyKeySystem, "application/x-ppapi-example" }
+  { kExternalClearKeyKeySystem, "application/x-ppapi-clearkey-cdm" }
 };
 
 static bool IsSupportedKeySystemWithContainerAndCodec(

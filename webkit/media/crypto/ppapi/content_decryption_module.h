@@ -33,7 +33,17 @@ enum Status {
   kErrorNoKey
 };
 
+// TODO(xhwang): Use int32_t instead of uint32_t for sizes here and below and
+// update checks to include <0.
 struct KeyMessage {
+  KeyMessage()
+      : session_id(NULL),
+        session_id_size(0),
+        message(NULL),
+        message_size(0),
+        default_url(NULL),
+        default_url_size(0) {}
+
   char* session_id;
   uint32_t session_id_size;
   uint8_t* message;
@@ -65,33 +75,55 @@ struct KeyMessage {
 //
 // TODO(xhwang): Add checks to make sure these structs have fixed layout.
 struct SubsampleEntry {
+  SubsampleEntry(uint32_t clear_bytes, uint32_t cipher_bytes)
+      : clear_bytes(clear_bytes), cipher_bytes(cipher_bytes) {}
+
   uint32_t clear_bytes;
   uint32_t cipher_bytes;
 };
 
 struct InputBuffer {
-  uint8_t* data;  // Pointer to the beginning of the input data.
+  InputBuffer()
+      : data(NULL),
+        data_size(0),
+        data_offset(0),
+        key_id(NULL),
+        key_id_size(0),
+        iv(NULL),
+        iv_size(0),
+        checksum(NULL),
+        checksum_size(0),
+        subsamples(NULL),
+        num_subsamples(0),
+        timestamp(0) {}
+
+  const uint8_t* data;  // Pointer to the beginning of the input data.
   uint32_t data_size;  // Size (in bytes) of |data|.
 
   uint32_t data_offset;  // Number of bytes to be discarded before decryption.
 
-  uint8_t* key_id;  // Key ID to identify the decryption key.
+  const uint8_t* key_id;  // Key ID to identify the decryption key.
   uint32_t key_id_size;  // Size (in bytes) of |key_id|.
 
-  uint8_t* iv;  // Initialization vector.
+  const uint8_t* iv;  // Initialization vector.
   uint32_t iv_size;  // Size (in bytes) of |iv|.
 
-  uint8_t* checksum;
+  const uint8_t* checksum;
   uint32_t checksum_size;  // Size (in bytes) of the |checksum|.
 
-  struct SubsampleEntry* subsamples;
+  const struct SubsampleEntry* subsamples;
   uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
 
 struct OutputBuffer {
-  uint8_t* data;  // Pointer to the beginning of the output data.
+  OutputBuffer()
+      : data(NULL),
+        data_size(0),
+        timestamp(0) {}
+
+  const uint8_t* data;  // Pointer to the beginning of the output data.
   uint32_t data_size;  // Size (in bytes) of |data|.
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
