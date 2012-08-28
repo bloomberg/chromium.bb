@@ -62,11 +62,16 @@ AudioScheduler::~AudioScheduler() {
 
 void AudioScheduler::NotifyAudioPacketCaptured(
     scoped_ptr<AudioPacket> packet) {
+  DCHECK(packet.get());
   scoped_ptr<AudioPacket> encoded_packet =
       audio_encoder_->Encode(packet.Pass());
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AudioScheduler::DoSendAudioPacket,
-                            this, base::Passed(encoded_packet.Pass())));
+
+  // The audio encoder returns a NULL audio packet if there's no audio to send.
+  if (encoded_packet.get()) {
+    network_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&AudioScheduler::DoSendAudioPacket,
+                              this, base::Passed(encoded_packet.Pass())));
+  }
 }
 
 void AudioScheduler::DoStart() {
@@ -79,6 +84,7 @@ void AudioScheduler::DoStart() {
 
 void AudioScheduler::DoSendAudioPacket(scoped_ptr<AudioPacket> packet) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+  DCHECK(packet.get());
 
   if (network_stopped_ || !audio_stub_)
     return;
