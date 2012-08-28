@@ -11,7 +11,7 @@ import java.util.concurrent.TimeoutException;
  * A helper class for listening to callbacks.
  */
 public class CallbackHelper {
-    private Object mLock = new Object();
+    private final Object mLock = new Object();
     protected int mCallCount = 0;
 
     /**
@@ -62,7 +62,7 @@ public class CallbackHelper {
             int callCountWhenDoneWaiting = currentCallCount + numberOfCallsToWaitFor;
             while (callCountWhenDoneWaiting > mCallCount) {
                 int callCountBeforeWait = mCallCount;
-                wait(unit.toMillis(timeout));
+                mLock.wait(unit.toMillis(timeout));
                 if (callCountBeforeWait == mCallCount) {
                     throw new TimeoutException("waitForCallback timed out!");
                 }
@@ -87,7 +87,7 @@ public class CallbackHelper {
     public void notifyCalled() {
         synchronized(mLock) {
             mCallCount++;
-            notifyAll();
+            mLock.notifyAll();
         }
     }
 }
