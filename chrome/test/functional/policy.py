@@ -411,19 +411,6 @@ class PolicyTest(policy_base.PolicyTestBase):
         pyauto.JSONInterfaceError,
         lambda: self.SetPrefs(pyauto.kPromptForDownload, True))
 
-  def testIncognitoEnabled(self):
-    """Verify that incognito window can be launched."""
-    policy = {'IncognitoEnabled': False}
-    self.SetUserPolicy(policy)
-    self.assertRaises(
-        pyauto_errors.JSONInterfaceError,
-        lambda: self.ApplyAccelerator(pyauto.IDC_NEW_INCOGNITO_WINDOW))
-    self.assertEquals(1, self.GetBrowserWindowCount())
-    policy = {'IncognitoEnabled': True}
-    self.SetUserPolicy(policy)
-    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
-    self.assertEquals(2, self.GetBrowserWindowCount())
-
   def testSavingBrowserHistoryDisabled(self):
     """Verify that browsing history is not being saved."""
     policy = {'SavingBrowserHistoryDisabled': True}

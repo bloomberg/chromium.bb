@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
@@ -12,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -107,6 +110,28 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_ClearSiteDataOnExit) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
   // Verify that the cookie is gone.
   EXPECT_TRUE(GetCookies(browser()->profile(), GURL(kURL)).empty());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
+  // Disable incognito via policy and verify that incognito windows can't be
+  // opened.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
+  PolicyMap policies;
+  policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  provider_.UpdateChromePolicy(policies);
+  EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
+
+  // Enable via policy and verify that incognito windows can be opened.
+  policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
+  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
 }
 
 }  // namespace policy
