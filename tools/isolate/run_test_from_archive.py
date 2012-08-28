@@ -24,7 +24,7 @@ import urllib
 
 
 # Types of action accepted by recreate_tree().
-HARDLINK, SYMLINK, COPY = range(4)[1:]
+HARDLINK, SYMLINK, COPY = range(1, 4)
 
 
 class MappingError(OSError):
@@ -164,6 +164,14 @@ def get_free_space(path):
   return f.f_bfree * f.f_frsize
 
 
+def make_temp_dir(prefix, root_dir):
+  """Returns a temporary directory on the same file system as root_dir."""
+  base_temp_dir = None
+  if not is_same_filesystem(root_dir, tempfile.gettempdir()):
+    base_temp_dir = os.path.dirname(root_dir)
+  return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
+
+
 def fix_python_path(cmd):
   """Returns the fixed command line to call the right python executable."""
   out = cmd[:]
@@ -172,6 +180,21 @@ def fix_python_path(cmd):
   elif out[0].endswith('.py'):
     out.insert(0, sys.executable)
   return out
+
+
+class Profiler(object):
+  def __init__(self, name):
+    self.name = name
+    self.start_time = None
+
+  def __enter__(self):
+    self.start_time = time.time()
+    return self
+
+  def __exit__(self, _exc_type, _exec_value, _traceback):
+    time_taken = time.time() - self.start_time
+    logging.info('Profiling: Section %s took %3.2f seconds',
+                 self.name, time_taken)
 
 
 class Cache(object):
@@ -330,29 +353,6 @@ class Cache(object):
   def save(self):
     """Saves the LRU ordering."""
     json.dump(self.state, open(self.state_file, 'wb'), separators=(',',':'))
-
-
-class Profiler(object):
-  def __init__(self, name):
-    self.name = name
-    self.start_time = None
-
-  def __enter__(self):
-    self.start_time = time.time()
-    return self
-
-  def __exit__(self, _exc_type, _exec_value, _traceback):
-    time_taken = time.time() - self.start_time
-    logging.info('Profiling: Section %s took %i seconds',
-                 self.name, time_taken)
-
-
-def make_temp_dir(prefix, root_dir):
-  """Returns a temporary directory on the same file system than root_dir."""
-  base_temp_dir = None
-  if not is_same_filesystem(root_dir, tempfile.gettempdir()):
-    base_temp_dir = os.path.dirname(root_dir)
-  return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
 
 def run_tha_test(
