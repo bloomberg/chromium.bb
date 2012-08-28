@@ -64,6 +64,8 @@ void BlobStorageController::AppendBlobDataItem(
   // 1) The Data item is denoted by the raw data and the range.
   // 2) The File item is denoted by the file path, the range and the expected
   //    modification time.
+  // 3) The FileSystem File item is denoted by the FileSystem URL, the range
+  //    and the expected modification time.
   // All the Blob items in the passing blob data are resolved and expanded into
   // a set of Data and File items.
 
@@ -79,6 +81,13 @@ void BlobStorageController::AppendBlobDataItem(
                      item.offset(),
                      item.length(),
                      item.expected_modification_time());
+      break;
+    case BlobData::Item::TYPE_FILE_FILESYSTEM:
+      AppendFileSystemFileItem(target_blob_data,
+                               item.url(),
+                               item.offset(),
+                               item.length(),
+                               item.expected_modification_time());
       break;
     case BlobData::Item::TYPE_BLOB: {
       BlobData* src_blob_data = GetBlobDataFromUrl(item.url());
@@ -216,6 +225,14 @@ void BlobStorageController::AppendFileItem(
       ShareableFileReference::Get(file_path);
   if (shareable_file)
     target_blob_data->AttachShareableFileReference(shareable_file);
+}
+
+void BlobStorageController::AppendFileSystemFileItem(
+    BlobData* target_blob_data,
+    const GURL& url, uint64 offset, uint64 length,
+    const base::Time& expected_modification_time) {
+  target_blob_data->AppendFileSystemFile(url, offset, length,
+                                         expected_modification_time);
 }
 
 void BlobStorageController::IncrementBlobDataUsage(BlobData* blob_data) {

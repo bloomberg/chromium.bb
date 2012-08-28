@@ -36,6 +36,16 @@ void BlobData::AppendBlob(const GURL& blob_url, uint64 offset, uint64 length) {
   items_.back().SetToBlobUrlRange(blob_url, offset, length);
 }
 
+void BlobData::AppendFileSystemFile(
+    const GURL& url, uint64 offset,
+    uint64 length,
+    const base::Time& expected_modification_time) {
+  DCHECK(length > 0);
+  items_.push_back(Item());
+  items_.back().SetToFileSystemUrlRange(url, offset, length,
+                                        expected_modification_time);
+}
+
 int64 BlobData::GetMemoryUsage() const {
   int64 memory = 0;
   for (std::vector<Item>::const_iterator iter = items_.begin();

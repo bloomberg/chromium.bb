@@ -35,6 +35,9 @@ class BLOB_EXPORT BlobData : public base::RefCounted<BlobData> {
 
   void AppendBlob(const GURL& blob_url, uint64 offset, uint64 length);
 
+  void AppendFileSystemFile(const GURL& url, uint64 offset, uint64 length,
+                            const base::Time& expected_modification_time);
+
   void AttachShareableFileReference(ShareableFileReference* reference) {
     shareable_files_.push_back(reference);
   }

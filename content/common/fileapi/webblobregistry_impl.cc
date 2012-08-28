@@ -84,6 +84,18 @@ void WebBlobRegistryImpl::registerBlobURL(
           child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         }
         break;
+      case WebBlobData::Item::TypeURL:
+        if (data_item.length) {
+          // We only support filesystem URL as of now.
+          DCHECK(GURL(data_item.url).SchemeIsFileSystem());
+          item.SetToFileSystemUrlRange(
+              data_item.url,
+              static_cast<uint64>(data_item.offset),
+              static_cast<uint64>(data_item.length),
+              base::Time::FromDoubleT(data_item.expectedModificationTime));
+          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+        }
+        break;
       default:
         NOTREACHED();
     }

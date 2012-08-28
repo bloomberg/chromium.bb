@@ -36,6 +36,14 @@ void ResourceRequestBody::AppendBlob(const GURL& blob_url) {
   elements_.back().SetToBlobUrl(blob_url);
 }
 
+void ResourceRequestBody::AppendFileSystemFileRange(
+    const GURL& url, uint64 offset, uint64 length,
+    const base::Time& expected_modification_time) {
+  elements_.push_back(Element());
+  elements_.back().SetToFileSystemUrlRange(url, offset, length,
+                                           expected_modification_time);
+}
+
 net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
     BlobStorageController* blob_controller) {
   net::UploadData* upload_data = new net::UploadData;
@@ -59,6 +67,10 @@ net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
             element.offset(),
             element.length(),
             element.expected_modification_time());
+        break;
+      case Element::TYPE_FILE_FILESYSTEM:
+        // TODO(kinuko): Resolve FileSystemURL before creating UploadData.
+        NOTREACHED();
         break;
       case Element::TYPE_BLOB:
         ResolveBlobReference(blob_controller, element.url(), elements);
@@ -108,6 +120,10 @@ void ResourceRequestBody::ResolveBlobReference(
             item.offset(),
             item.length(),
             item.expected_modification_time());
+        break;
+      case BlobData::Item::TYPE_FILE_FILESYSTEM:
+        // TODO(kinuko): Resolve FileSystemURL before creating UploadData.
+        NOTREACHED();
         break;
       default:
         NOTREACHED();

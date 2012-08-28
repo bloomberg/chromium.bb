@@ -25,6 +25,7 @@ class WEBKIT_BASE_EXPORT DataElement {
     TYPE_BYTES,
     TYPE_FILE,
     TYPE_BLOB,
+    TYPE_FILE_FILESYSTEM,
   };
 
   DataElement();
@@ -74,12 +75,17 @@ class WEBKIT_BASE_EXPORT DataElement {
   void SetToBlobUrlRange(const GURL& blob_url,
                          uint64 offset, uint64 length);
 
+  // Sets TYPE_FILE_FILESYSTEM with range.
+  void SetToFileSystemUrlRange(const GURL& filesystem_url,
+                               uint64 offset, uint64 length,
+                               const base::Time& expected_modification_time);
+
  private:
   Type type_;
-  std::vector<char> buf_;
-  const char* bytes_;
-  FilePath path_;
-  GURL url_;
+  std::vector<char> buf_;  // For TYPE_BYTES.
+  const char* bytes_;  // For TYPE_BYTES.
+  FilePath path_;  // For TYPE_FILE.
+  GURL url_;  // For TYPE_BLOB or TYPE_FILE_FILESYSTEM.
   uint64 offset_;
   uint64 length_;
   base::Time expected_modification_time_;
@@ -98,6 +104,7 @@ inline bool operator==(const DataElement& a, const DataElement& b) {
       return a.path() == b.path() &&
              a.expected_modification_time() == b.expected_modification_time();
     case DataElement::TYPE_BLOB:
+    case DataElement::TYPE_FILE_FILESYSTEM:
       return a.url() == b.url();
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();

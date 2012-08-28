@@ -244,7 +244,15 @@ void ParamTraits<webkit_base::DataElement>::Write(
       WriteParam(m, p.expected_modification_time());
       break;
     }
+    case webkit_base::DataElement::TYPE_FILE_FILESYSTEM: {
+      WriteParam(m, p.url());
+      WriteParam(m, p.offset());
+      WriteParam(m, p.length());
+      WriteParam(m, p.expected_modification_time());
+      break;
+    }
     default: {
+      DCHECK(p.type() == webkit_base::DataElement::TYPE_BLOB);
       WriteParam(m, p.url());
       break;
     }
@@ -279,6 +287,22 @@ bool ParamTraits<webkit_base::DataElement>::Read(
         return false;
       r->SetToFilePathRange(file_path, offset, length,
                             expected_modification_time);
+      break;
+    }
+    case webkit_base::DataElement::TYPE_FILE_FILESYSTEM: {
+      GURL file_system_url;
+      uint64 offset, length;
+      base::Time expected_modification_time;
+      if (!ReadParam(m, iter, &file_system_url))
+        return false;
+      if (!ReadParam(m, iter, &offset))
+        return false;
+      if (!ReadParam(m, iter, &length))
+        return false;
+      if (!ReadParam(m, iter, &expected_modification_time))
+        return false;
+      r->SetToFileSystemUrlRange(file_system_url, offset, length,
+                                 expected_modification_time);
       break;
     }
     default: {

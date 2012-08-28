@@ -50,6 +50,10 @@ class BLOB_EXPORT BlobStorageController {
   void AppendFileItem(BlobData* target_blob_data,
                       const FilePath& file_path, uint64 offset, uint64 length,
                       const base::Time& expected_modification_time);
+  void AppendFileSystemFileItem(
+      BlobData* target_blob_data,
+      const GURL& url, uint64 offset, uint64 length,
+      const base::Time& expected_modification_time);
 
   bool RemoveFromMapHelper(BlobMap* map, const GURL& url);
 

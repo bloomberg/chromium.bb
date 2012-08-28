@@ -308,6 +308,9 @@ bool BlobURLRequestJob::ReadItem() {
     case BlobData::Item::TYPE_FILE:
       return ReadFileItem(GetFileStreamReader(current_item_index_),
                           bytes_to_read);
+    case BlobData::Item::TYPE_FILE_FILESYSTEM:
+    // TODO(kinuko): Support TYPE_FILE_FILESYSTEM case.
+    // http://crbug.com/141835
     default:
       DCHECK(false);
       return false;
@@ -530,6 +533,8 @@ LocalFileStreamReader* BlobURLRequestJob::GetFileStreamReader(size_t index) {
   const BlobData::Item& item = blob_data_->items().at(index);
   if (item.type() != BlobData::Item::TYPE_FILE)
     return NULL;
+  // TODO(kinuko): Create appropriate FileStreamReader for TYPE_FILE_FILESYSTEM.
+  // http://crbug.com/141835
   if (index_to_reader_.find(index) == index_to_reader_.end()) {
     index_to_reader_[index] = new LocalFileStreamReader(
         file_thread_proxy_,

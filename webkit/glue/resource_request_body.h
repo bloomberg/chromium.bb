@@ -39,6 +39,8 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
                        uint64 offset, uint64 length,
                        const base::Time& expected_modification_time);
   void AppendBlob(const GURL& blob_url);
+  void AppendFileSystemFileRange(const GURL& url, uint64 offset, uint64 length,
+                                 const base::Time& expected_modification_time);
 
   // Creates a new UploadData from this request body. This also resolves
   // any blob references using given |blob_controller|.

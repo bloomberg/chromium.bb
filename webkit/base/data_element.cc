@@ -35,4 +35,15 @@ void DataElement::SetToBlobUrlRange(
   length_ = length;
 }
 
+void DataElement::SetToFileSystemUrlRange(
+    const GURL& filesystem_url,
+    uint64 offset, uint64 length,
+    const base::Time& expected_modification_time) {
+  type_ = TYPE_FILE_FILESYSTEM;
+  url_ = filesystem_url;
+  offset_ = offset;
+  length_ = length;
+  expected_modification_time_ = expected_modification_time;
+}
+
 }  // webkit_base

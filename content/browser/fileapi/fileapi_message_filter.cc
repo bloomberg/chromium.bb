@@ -520,6 +520,8 @@ void FileAPIMessageFilter::OnStartBuildingBlob(const GURL& url) {
 void FileAPIMessageFilter::OnAppendBlobDataItem(
     const GURL& url, const BlobData::Item& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(kinuko): We must check permission in TYPE_FILE_FILESYSTEM cases too.
+  // http://crbug.com/141827
   if (item.type() == BlobData::Item::TYPE_FILE &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, item.path())) {

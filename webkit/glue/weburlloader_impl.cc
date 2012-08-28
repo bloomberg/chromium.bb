@@ -469,6 +469,16 @@ void WebURLLoaderImpl::Context::Start(
                 base::Time::FromDoubleT(element.modificationTime));
           }
           break;
+        case WebHTTPBody::Element::TypeURL: {
+          GURL url = GURL(element.url);
+          DCHECK(url.SchemeIsFileSystem());
+          request_body->AppendFileSystemFileRange(
+              url,
+              static_cast<uint64>(element.fileStart),
+              static_cast<uint64>(element.fileLength),
+              base::Time::FromDoubleT(element.modificationTime));
+          break;
+        }
         case WebHTTPBody::Element::TypeBlob:
           request_body->AppendBlob(GURL(element.blobURL));
           break;

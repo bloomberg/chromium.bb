@@ -215,6 +215,15 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
         AddHTMLListItem(kType, "blob", out);
         AddHTMLListItem(kURL, item.url().spec(), out);
         break;
+      case BlobData::Item::TYPE_FILE_FILESYSTEM:
+        AddHTMLListItem(kType, "filesystem", out);
+        AddHTMLListItem(kURL, item.url().spec(), out);
+        if (!item.expected_modification_time().is_null()) {
+          AddHTMLListItem(kModificationTime, UTF16ToUTF8(
+              TimeFormatFriendlyDateAndTime(item.expected_modification_time())),
+              out);
+        }
+        break;
       case BlobData::Item::TYPE_UNKNOWN:
         NOTREACHED();
         break;

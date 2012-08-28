@@ -184,8 +184,8 @@ bool PPB_URLRequestInfo_Impl::AppendFileRefToBody(
   switch (file_ref->GetFileSystemType()) {
     case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
     case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
-      // TODO(kinuko): remove this sync IPC when we add more generic
-      // AppendURLRange solution that works for both Blob/FileSystem URL.
+      // TODO(kinuko): remove this sync IPC when we fully support
+      // AppendURLRange for FileSystem URL.
       plugin_delegate->SyncGetFileSystemPlatformPath(
           file_ref->GetFileSystemURL(), &platform_path);
       break;
