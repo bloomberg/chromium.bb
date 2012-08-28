@@ -78,7 +78,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   }
 
   virtual void Teardown() {
-    worker_.release();
+    worker_ = NULL;
     db_thread_.Stop();
   }
 

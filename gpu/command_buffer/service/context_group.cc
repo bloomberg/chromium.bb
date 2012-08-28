@@ -247,9 +247,7 @@ void ContextGroup::Destroy(bool have_context) {
     shader_manager_.reset();
   }
 
-  if (memory_tracker_.get()) {
-    memory_tracker_.release();
-  }
+  memory_tracker_ = NULL;
 }
 
 IdAllocatorInterface* ContextGroup::GetIdAllocator(unsigned namespace_id) {
@@ -311,5 +309,3 @@ bool ContextGroup::QueryGLFeatureU(
 
 }  // namespace gles2
 }  // namespace gpu
-
-

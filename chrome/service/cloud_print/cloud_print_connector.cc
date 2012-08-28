@@ -54,7 +54,7 @@ bool CloudPrintConnector::InitPrintSystem() {
   }
   cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
   if (!result.succeeded()) {
-    print_system_.release();
+    print_system_ = NULL;
     // We could not initialize the print system. We need to notify the server.
     ReportUserMessage(kPrintSystemFailedMessageId, result.message());
     return false;
@@ -86,7 +86,7 @@ void CloudPrintConnector::Stop() {
   DCHECK(IsRunning());
   // Do uninitialization here.
   pending_tasks_.clear();
-  print_server_watcher_.release();
+  print_server_watcher_ = NULL;
   request_ = NULL;
 }
 
@@ -588,4 +588,3 @@ bool CloudPrintConnector::IsSamePrinter(const std::string& name1,
                                         const std::string& name2) const {
   return (0 == base::strcasecmp(name1.c_str(), name2.c_str()));
 }
-

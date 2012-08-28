@@ -353,11 +353,11 @@ void TracingMessageHandler::FileSelected(
                    trace_data_to_save_.release()));
   }
 
-  select_trace_file_dialog_.release();
+  select_trace_file_dialog_ = NULL;
 }
 
 void TracingMessageHandler::FileSelectionCanceled(void* params) {
-  select_trace_file_dialog_.release();
+  select_trace_file_dialog_ = NULL;
   if (select_trace_file_dialog_type_ ==
       ui::SelectFileDialog::SELECT_OPEN_FILE) {
     web_ui()->CallJavascriptFunction(
