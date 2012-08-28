@@ -23,17 +23,19 @@ base::LazyInstance<AwBrowserDependencyFactoryImpl>::Leaky g_lazy_instance;
 
 class TabContentsWrapper : public AwContentsContainer {
  public:
-  TabContentsWrapper(content::WebContents* web_contents)
-      : tab_contents_(web_contents) {}
+  TabContentsWrapper(TabContents* tab_contents) {
+    tab_contents_.reset(tab_contents);
+  }
+
   virtual ~TabContentsWrapper() {}
 
   // AwContentsContainer
   virtual content::WebContents* GetWebContents() OVERRIDE {
-    return tab_contents_.web_contents();
+    return tab_contents_->web_contents();
   }
 
  private:
-  TabContents tab_contents_;
+  scoped_ptr<TabContents> tab_contents_;
 };
 
 }  // namespace
@@ -58,7 +60,8 @@ AwBrowserDependencyFactoryImpl::CreateWebContents(bool incognito) {
 
 AwContentsContainer* AwBrowserDependencyFactoryImpl::CreateContentsContainer(
     content::WebContents* contents) {
-  return new TabContentsWrapper(contents);
+  return new TabContentsWrapper(
+      TabContents::Factory::CreateTabContents(contents));
 }
 
 content::JavaScriptDialogCreator*
@@ -67,4 +70,3 @@ content::JavaScriptDialogCreator*
 }
 
 }  // namespace android_webview
-
