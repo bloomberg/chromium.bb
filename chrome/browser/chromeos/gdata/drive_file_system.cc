@@ -227,35 +227,44 @@ void CopyLocalFileOnBlockingPool(
       DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
 }
 
+// This is similar to SearchCallback, but the first two parameters (error,
+// next_feed) are omitted. These parameters are pre-bound by the client in
+// order to reduce parameters of AddEntryToSearchResults().
+typedef base::Callback<void(
+    scoped_ptr<std::vector<SearchResultInfo> > results)>
+    ProcessSearchResultsCallback;
+
 // Callback for GetEntryByResourceIdAsync.
-// Adds |entry| to |results|. Runs |callback| with |results| when
+// Adds |entry_proto| to |results|. Runs |callback| with |results| when
 // |run_callback| is true. When |entry| is not present in our local file system
 // snapshot, it is not added to |results|. Instead, |entry_skipped_callback| is
 // called.
-void AddEntryToSearchResults(
+void AddToSearchResults(
     std::vector<SearchResultInfo>* results,
-    const SearchCallback& callback,
+    const ProcessSearchResultsCallback& callback,
     const base::Closure& entry_skipped_callback,
-    DriveFileError error,
     bool run_callback,
-    const GURL& next_feed,
-    DriveEntry* entry) {
+    DriveFileError error,
+    const FilePath& file_path,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(!callback.is_null());
+  DCHECK(!entry_skipped_callback.is_null());
+
   // If a result is not present in our local file system snapshot, invoke
   // |entry_skipped_callback| and refreshes the snapshot with delta feed.
   // For example, this may happen if the entry has recently been added to the
   // drive (and we still haven't received its delta feed).
-  if (entry) {
-    const bool is_directory = entry->AsDriveDirectory() != NULL;
-    results->push_back(SearchResultInfo(entry->GetFilePath(), is_directory));
+  if (error == DRIVE_FILE_OK) {
+    DCHECK(entry_proto.get());
+    const bool is_directory = (entry_proto->file_info().is_directory());
+    results->push_back(SearchResultInfo(file_path, is_directory));
   } else {
-    if (!entry_skipped_callback.is_null())
-      entry_skipped_callback.Run();
+    entry_skipped_callback.Run();
   }
 
   if (run_callback) {
     scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
-    if (!callback.is_null())
-      callback.Run(error, next_feed, result_vec.Pass());
+    callback.Run(result_vec.Pass());
   }
 }
 
@@ -2217,10 +2226,10 @@ void DriveFileSystem::OnSearch(const SearchCallback& callback,
                                GetDocumentsParams* params,
                                DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
@@ -2238,8 +2247,7 @@ void DriveFileSystem::OnSearch(const SearchCallback& callback,
 
   if (feed->entries().empty()) {
     scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
-    if (!callback.is_null())
-      callback.Run(error, next_feed, result_vec.Pass());
+    callback.Run(DRIVE_FILE_OK, next_feed, result_vec.Pass());
     return;
   }
 
@@ -2269,14 +2277,14 @@ void DriveFileSystem::OnSearch(const SearchCallback& callback,
     // We can't use |entry| anymore, so we have to refetch entry from file
     // system. Also, |entry| doesn't have file path set before |RefreshFile|
     // call, so we can't get file path from there.
-    resource_metadata_->GetEntryByResourceIdAsync(entry_resource_id,
-        base::Bind(&AddEntryToSearchResults,
+    const bool should_run_callback = (i+1 == feed->entries().size());
+    resource_metadata_->GetEntryInfoByResourceId(
+        entry_resource_id,
+        base::Bind(&AddToSearchResults,
                    results,
-                   callback,
+                   base::Bind(callback, DRIVE_FILE_OK, next_feed),
                    base::Bind(&DriveFileSystem::CheckForUpdates, ui_weak_ptr_),
-                   error,
-                   i+1 == feed->entries().size(),
-                   next_feed));
+                   should_run_callback));
   }
 }
 
@@ -2285,6 +2293,8 @@ void DriveFileSystem::Search(const std::string& search_query,
                              const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&DriveFileSystem::SearchAsyncOnUIThread,
                                ui_weak_ptr_,
                                search_query,
@@ -2297,6 +2307,7 @@ void DriveFileSystem::SearchAsyncOnUIThread(
     const GURL& next_feed,
     const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   feed_loader_->SearchFromServer(
       resource_metadata_->origin(),

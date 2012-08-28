@@ -332,6 +332,7 @@ class DriveFileSystemInterface {
   // structs, which contains file's path and is_directory flag.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void Search(const std::string& search_query,
                       const GURL& next_feed,
                       const SearchCallback& callback) = 0;
