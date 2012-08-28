@@ -77,6 +77,21 @@ class RunTestFromArchive(unittest.TestCase):
   def _result_tree(self):
     return list_files_tree(self.tempdir)
 
+  @staticmethod
+  def _run(args):
+    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py')]
+    cmd.extend(args)
+    if VERBOSE:
+      cmd.extend(['-v'] * 2)
+      pipe = None
+    else:
+      pipe = subprocess.PIPE
+    logging.debug(' '.join(cmd))
+    proc = subprocess.Popen(
+        cmd, stdout=pipe, stderr=pipe, universal_newlines=True)
+    out, err = proc.communicate()
+    return out, err, proc.returncode
+
   def _store_result(self, result_data):
     """Stores a .results file in the hash table."""
     result_text = json.dumps(result_data, sort_keys=True, indent=2)
@@ -100,21 +115,18 @@ class RunTestFromArchive(unittest.TestCase):
     expected = [
       'state.json',
       self._store('gtest_fake.py'),
+      calc_sha1(manifest),
     ]
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py'),
+    args = [
       '--manifest', manifest,
       '--cache', self.cache,
       '--remote', self.table,
     ]
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        universal_newlines=True)
-    out, err = proc.communicate()
-    self.assertEquals('', err)
-    self.assertEquals(1070, len(out), out)
-    self.assertEquals(6, proc.returncode)
+    out, err, returncode = self._run(args)
+    if not VERBOSE:
+      self.assertEquals('', err)
+      self.assertEquals(1070, len(out), out)
+    self.assertEquals(6, returncode)
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
 
@@ -124,21 +136,18 @@ class RunTestFromArchive(unittest.TestCase):
     expected = [
       'state.json',
       self._store('gtest_fake.py'),
+      result_sha1,
     ]
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py'),
+    args = [
       '--hash', result_sha1,
       '--cache', self.cache,
       '--remote', self.table,
     ]
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        universal_newlines=True)
-    out, err = proc.communicate()
-    self.assertEquals('', err)
-    self.assertEquals(1070, len(out), out)
-    self.assertEquals(6, proc.returncode)
+    out, err, returncode = self._run(args)
+    if not VERBOSE:
+      self.assertEquals('', err)
+      self.assertEquals(1070, len(out), out)
+    self.assertEquals(6, returncode)
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
 
@@ -146,21 +155,50 @@ class RunTestFromArchive(unittest.TestCase):
     result_sha1 = self._store_result({})
     expected = [
       'state.json',
+      result_sha1,
     ]
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'run_test_from_archive.py'),
+    args = [
       '--hash', result_sha1,
       '--cache', self.cache,
       '--remote', self.table,
     ]
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        universal_newlines=True)
-    out, err = proc.communicate()
-    self.assertEquals('', out)
-    self.assertEquals('No file to map\n', err)
-    self.assertEquals(1, proc.returncode)
+    out, err, returncode = self._run(args)
+    if not VERBOSE:
+      self.assertEquals('', out)
+      self.assertEquals('No command to run\n', err)
+    self.assertEquals(1, returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEquals(sorted(expected), actual)
+
+  def test_includes(self):
+    # Loads a manifest that includes another one.
+
+    # References manifest1.results and gtest_fake.results. Maps file3.txt as
+    # file2.txt.
+    result_sha1 = self._store('check_files.results')
+    expected = [
+      'state.json',
+      self._store('check_files.py'),
+      self._store('gtest_fake.py'),
+      self._store('gtest_fake.results'),
+      self._store('file1.txt'),
+      self._store('file3.txt'),
+      # Maps file1.txt.
+      self._store('manifest1.results'),
+      # References manifest1.results. Maps file2.txt but it is overriden.
+      self._store('manifest2.results'),
+      result_sha1,
+    ]
+    args = [
+      '--hash', result_sha1,
+      '--cache', self.cache,
+      '--remote', self.table,
+    ]
+    out, err, returncode = self._run(args)
+    if not VERBOSE:
+      self.assertEquals('', err)
+      self.assertEquals('Success\n', out)
+    self.assertEquals(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
 
