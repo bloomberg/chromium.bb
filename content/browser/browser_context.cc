@@ -5,24 +5,23 @@
 #include "content/public/browser/browser_context.h"
 
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "webkit/database/database_tracker.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
-#include "content/browser/download/download_file_factory.h"
-#include "content/browser/download/download_item_factory.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/public/browser/resource_context.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/resource_context.h"
 #include "net/base/server_bound_cert_service.h"
 #include "net/base/server_bound_cert_store.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/database/database_tracker.h"
 
 using base::UserDataAdapter;
 
@@ -81,10 +80,12 @@ DownloadManager* BrowserContext::GetDownloadManager(
   if (!context->GetUserData(kDownloadManagerKeyName)) {
     ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
     DCHECK(rdh);
+    DownloadFileManager* file_manager = rdh->download_file_manager();
+    DCHECK(file_manager);
     scoped_refptr<DownloadManager> download_manager =
         new DownloadManagerImpl(
+            file_manager,
             scoped_ptr<DownloadItemFactory>(),
-            scoped_ptr<DownloadFileFactory>(),
             GetContentClient()->browser()->GetNetLog());
 
     context->SetUserData(

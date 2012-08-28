@@ -28,22 +28,12 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   void Attach();
   void Detach();
 
-  // Start the delegate's portion of the download; called when the
-  // download item is ready for the delegate to take over.
-  // Pure virtual because if the delegate doesn't do something the
-  // DownloadItemImpl is dead in the water.
-  // TODO(rdsmith): The machinery of running the download should be
-  // moved into the DownloadItem, and this should be changed into
-  // a probe as to whether to start and if not, provide a callback
-  // to call when it's time to start.
-  virtual void DelegateStart(DownloadItemImpl* download) = 0;
+  // Tests if a file type should be opened automatically.
+  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
 
   // Allows the delegate to override the opening of a download. If it returns
   // true then it's reponsible for opening the item.
   virtual bool ShouldOpenDownload(DownloadItemImpl* download);
-
-  // Tests if a file type should be opened automatically.
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
 
   // Checks whether a downloaded file still exists and updates the
   // file's state if the file is already removed.

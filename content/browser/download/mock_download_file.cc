@@ -7,19 +7,11 @@
 using ::testing::_;
 using ::testing::Return;
 
-namespace {
-
-void SuccessRun(content::DownloadFile::InitializeCallback callback) {
-  callback.Run(content::DOWNLOAD_INTERRUPT_REASON_NONE);
-}
-
-}  // namespace
-
 MockDownloadFile::MockDownloadFile() {
   // This is here because |Initialize()| is normally called right after
   // construction.
-  ON_CALL(*this, Initialize(_))
-      .WillByDefault(::testing::Invoke(SuccessRun));
+  ON_CALL(*this, Initialize())
+      .WillByDefault(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
 }
 
 MockDownloadFile::~MockDownloadFile() {
