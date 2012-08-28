@@ -266,7 +266,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
           this.hide_();
         } else {
           this.showError_(strf(this.transferType_() + '_FILESYSTEM_ERROR',
-                               getFileErrorString(event.error.data.code)));
+                               util.getFileErrorString(event.error.data.code)));
           }
       } else {
         this.showError_(strf(this.transferType_() + '_UNEXPECTED_ERROR',

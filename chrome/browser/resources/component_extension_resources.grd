@@ -72,6 +72,7 @@
         <!-- Images referenced from the manifest or the code -->
         <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/images/icon128.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_LOGO_SMALL" file="file_manager/images/files/ui/gdrive_logo_small.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE" file="file_manager/images/files/file_types/archive.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO" file="file_manager/images/files/file_types/audio.png" type="BINDATA" />

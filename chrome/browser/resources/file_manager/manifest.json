@@ -145,6 +145,14 @@
         "filesystem:*.gdraw",
         "filesystem:*.gtable"
       ]
+    },
+    {
+      "id": "send-to-drive",
+      "default_title": "__MSG_SEND_TO_DRIVE__",
+      "default_icon": "images/files/ui/gdrive_logo_small.png",
+      "file_filters": [
+          "filesystem:*.*"
+      ]
     }
   ],
   "chrome_url_overrides": {
