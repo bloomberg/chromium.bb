@@ -105,7 +105,9 @@ runTests([
              },
              'resourceType': ["main_frame"],
              'contentType': ["text/plain"],
-             'excludeContentType': ["image/png"]})],
+             'excludeContentType': ["image/png"],
+             'responseHeaders': [{ nameContains: ["content", "type"] } ],
+             'excludeResponseHeaders': [{ valueContains: "nonsense" }] })],
          'actions': [new CancelRequest()]}
       ],
       function() {navigateAndWait(getURLHttpWithHeaders());}

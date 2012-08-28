@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/api/events.h"
@@ -32,7 +33,8 @@ class WebRequestConditionAttribute {
  public:
   enum Type {
     CONDITION_RESOURCE_TYPE,
-    CONDITION_CONTENT_TYPE
+    CONDITION_CONTENT_TYPE,
+    CONDITION_REQUEST_HEADERS
   };
 
   WebRequestConditionAttribute();
@@ -53,7 +55,8 @@ class WebRequestConditionAttribute {
   virtual int GetStages() const = 0;
 
   // Returns whether the condition is fulfilled for this request.
-  virtual bool IsFulfilled(const WebRequestRule::RequestData& request_data) = 0;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const = 0;
 
   virtual Type GetType() const = 0;
 
@@ -88,8 +91,8 @@ class WebRequestConditionAttributeResourceType
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
-  virtual bool IsFulfilled(const WebRequestRule::RequestData& request_data)
-      OVERRIDE;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -118,8 +121,8 @@ class WebRequestConditionAttributeContentType
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
-  virtual bool IsFulfilled(const WebRequestRule::RequestData& request_data)
-      OVERRIDE;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -131,6 +134,87 @@ class WebRequestConditionAttributeContentType
   bool inclusive_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeContentType);
+};
+
+// Condition that performs matches against response headers' names and values.
+// In the comments below there is a distinction between when this condition is
+// "satisfied" and when it is "fulfilled". See the comments at |tests_| for
+// "satisfied" and the comment at |positive_test_| for "fulfilled".
+class WebRequestConditionAttributeResponseHeaders
+    : public WebRequestConditionAttribute {
+ public:
+  virtual ~WebRequestConditionAttributeResponseHeaders();
+
+  static bool IsMatchingType(const std::string& instance_type);
+
+  // Factory method, see WebRequestConditionAttribute::Create.
+  static scoped_ptr<WebRequestConditionAttribute> Create(
+      const std::string& name,
+      const base::Value* value,
+      std::string* error);
+
+  // Implementation of WebRequestConditionAttribute:
+  virtual int GetStages() const OVERRIDE;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  enum MatchType { kPrefix, kSuffix, kEquals, kContains };
+
+  class StringMatchTest {
+   public:
+    StringMatchTest(const std::string& data, MatchType type);
+    ~StringMatchTest();
+
+    // Does |str| pass |*this| StringMatchTest?
+    bool Matches(const std::string& str) const;
+
+   private:
+    const std::string data_;
+    const MatchType type_;
+    DISALLOW_COPY_AND_ASSIGN(StringMatchTest);
+  };
+
+  class HeaderMatchTest {
+   public:
+    // Takes ownership of the content of both |name| and |value|.
+    HeaderMatchTest(ScopedVector<const StringMatchTest>* name,
+              ScopedVector<const StringMatchTest>* value);
+    ~HeaderMatchTest();
+    // Does the header |name|: |value| match all tests in this header test?
+    bool Matches(const std::string& name, const std::string& value) const;
+
+   private:
+    // Tests to be passed by a header's name.
+    const ScopedVector<const StringMatchTest> name_;
+    // Tests to be passed by a header's value.
+    const ScopedVector<const StringMatchTest> value_;
+    DISALLOW_COPY_AND_ASSIGN(HeaderMatchTest);
+  };
+
+  WebRequestConditionAttributeResponseHeaders(
+      bool positive_test, ScopedVector<const HeaderMatchTest>* tests);
+
+  // Gets the tests' description in |tests| and creates the corresponding
+  // HeaderMatchTest. Returns NULL on failure.
+  static scoped_ptr<const HeaderMatchTest> CreateTests(
+      const base::DictionaryValue* tests,
+      std::string* error);
+  // Helper to CreateTests. Never returns NULL, except for memory failures.
+  static scoped_ptr<const StringMatchTest> CreateMatchTest(const Value* content,
+                                                     bool is_name_test,
+                                                     MatchType match_type);
+
+  // The condition is satisfied if there is a header and its value such that for
+  // some |i| the header passes all the tests from |tests_[i]|.
+  ScopedVector<const HeaderMatchTest> tests_;
+
+  // True means that IsFulfilled() reports whether the condition is satisfied.
+  // False means that it reports whether the condition is NOT satisfied.
+  bool positive_test_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResponseHeaders);
 };
 
 }  // namespace extensions

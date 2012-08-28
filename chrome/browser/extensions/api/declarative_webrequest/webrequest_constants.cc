@@ -32,6 +32,16 @@ const char kSecureKey[] = "secure";
 const char kToKey[] = "to";
 const char kUrlKey[] = "url";
 const char kValueKey[] = "value";
+const char kResponseHeadersKey[] = "responseHeaders";
+const char kExcludeResponseHeadersKey[] = "excludeResponseHeaders";
+const char kNamePrefixKey[] = "namePrefix";
+const char kNameSuffixKey[] = "nameSuffix";
+const char kNameContainsKey[] = "nameContains";
+const char kNameEqualsKey[] = "nameEquals";
+const char kValuePrefixKey[] = "valuePrefix";
+const char kValueSuffixKey[] = "valueSuffix";
+const char kValueContainsKey[] = "valueContains";
+const char kValueEqualsKey[] = "valueEquals";
 
 // Values of dictionaries, in particular instance types
 const char kAddRequestCookieType[] = "declarativeWebRequest.AddRequestCookie";

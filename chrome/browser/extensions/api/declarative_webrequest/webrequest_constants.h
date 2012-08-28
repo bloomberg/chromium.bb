@@ -35,6 +35,16 @@ extern const char kSecureKey[];
 extern const char kToKey[];
 extern const char kUrlKey[];
 extern const char kValueKey[];
+extern const char kResponseHeadersKey[];
+extern const char kExcludeResponseHeadersKey[];
+extern const char kNamePrefixKey[];
+extern const char kNameSuffixKey[];
+extern const char kNameContainsKey[];
+extern const char kNameEqualsKey[];
+extern const char kValuePrefixKey[];
+extern const char kValueSuffixKey[];
+extern const char kValueContainsKey[];
+extern const char kValueEqualsKey[];
 
 // Values of dictionaries, in particular instance types
 extern const char kAddRequestCookieType[];

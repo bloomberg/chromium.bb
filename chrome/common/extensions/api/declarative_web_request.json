@@ -8,6 +8,59 @@
     "documentation_permissions_required": ["declarative", "declarativeWebRequest"],
     "types": [
       {
+        "id": "HeaderFilter",
+        "type": "object",
+        "description": "Filters request headers for various criteria.",
+        "properties": {
+          "namePrefix": {
+            "description" : "Matches if the header name starts with the specified string.",
+            "type": "string",
+            "optional": true
+          },
+          "nameSuffix": {
+            "type": "string",
+            "optional": true,
+            "description" : "Matches if the header name ends with the specified string."
+          },
+          "nameContains": {
+            "choices": [
+             {"type": "array", "items": {"type": "string"}},
+             {"type": "string"}
+            ],
+            "optional": true,
+            "description" : "Matches if the header name contains all of the specified strings."
+          },
+          "nameEquals": {
+            "type": "string",
+            "optional": true,
+            "description" : "Matches if the header name is equal to the specified string."
+          },
+          "valuePrefix": {
+            "type": "string",
+            "optional": true,
+            "description" : "Matches if the header value starts with the specified string."
+          },
+          "valueSuffix": {
+            "type": "string",
+            "optional": true,
+            "description" : "Matches if the header value ends with the specified string."
+          },
+          "valueContains": {
+            "choices": [
+             {"type": "array", "items": {"type": "string"}},
+             {"type": "string"}
+            ],
+            "optional": true,
+            "description" : "Matches if the header value contains all of the specified strings."
+          },
+          "valueEquals": {
+            "type": "string",
+            "optional": true,
+            "description" : "Matches if the header value is equal to the specified string."
+          }
+        }
+      },
+      {
         "id": "RequestMatcher",
         "type": "object",
         "description": "Matches network events by various criteria.",
@@ -34,6 +87,18 @@
             "optional": true,
             "description": "Matches if the MIME media type of a response (from the HTTP Content-Type header) is <em>not</em> contained in the list.",
             "items": { "type": "string" }
+          },
+          "responseHeaders": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if some of the response headers is matched by one of the HeaderFilters.",
+            "items": { "$ref": "HeaderFilter" }
+          },
+          "excludeResponseHeaders": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if none of the response headers is matched by one of the HeaderFilters.",
+            "items": { "$ref": "HeaderFilter" }
           },
           "instanceType": {
             "type": "string", "enum": ["declarativeWebRequest.RequestMatcher"],

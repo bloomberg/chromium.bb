@@ -230,7 +230,11 @@
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-declarativeWebRequest.RequestMatcher">RequestMatcher</a>
+                <a href="#type-declarativeWebRequest.HeaderFilter">HeaderFilter</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.CancelRequest">CancelRequest</a>
                 <ol>
                 </ol>
               </li><li>
@@ -262,7 +266,7 @@
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-declarativeWebRequest.CancelRequest">CancelRequest</a>
+                <a href="#type-declarativeWebRequest.RequestMatcher">RequestMatcher</a>
                 <ol>
                 </ol>
               </li><li>
@@ -698,8 +702,8 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-declarativeWebRequest.RequestMatcher"></a>
-              <h4>declarativeWebRequest.RequestMatcher</h4>
+              <a name="type-declarativeWebRequest.HeaderFilter"></a>
+              <h4>declarativeWebRequest.HeaderFilter</h4>
               <div>
           <dt>
               <em>
@@ -715,14 +719,14 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>Matches network events by various criteria.</dd>
+          <dd>Filters request headers for various criteria.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
               <div>
                 <div>
           <dt>
-            <var>url</var>
+            <var>namePrefix</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -730,14 +734,14 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="events.html#type-events.UrlFilter">events.UrlFilter</a>
+                        <span>string</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the condition of the UrlFilter are fulfilled for the URL of the request.</dd>
+          <dd>Matches if the header name starts with the specified string.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -746,7 +750,7 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </div><div>
                 <div>
           <dt>
-            <var>resourceType</var>
+            <var>nameSuffix</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -754,21 +758,14 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>
-                          array of <span><span>
-                      <span>
                         <span>string</span>
-                        <span>["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"]</span>
-                      </span>
-                    </span></span>
-                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.</dd>
+          <dd>Matches if the header name ends with the specified string.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -777,7 +774,7 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </div><div>
                 <div>
           <dt>
-            <var>contentType</var>
+            <var>nameContains</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -785,20 +782,14 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span></span>
-                        </span>
+                        <span>array of string or string</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the MIME media type of a response (from the HTTP Content-Type header) is contained in the list.</dd>
+          <dd>Matches if the header name contains all of the specified strings.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -807,7 +798,7 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </div><div>
                 <div>
           <dt>
-            <var>excludeContentType</var>
+            <var>nameEquals</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -815,26 +806,144 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>
-                          array of <span><span>
-                      <span>
                         <span>string</span>
-                      </span>
-                    </span></span>
-                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the MIME media type of a response (from the HTTP Content-Type header) is <em>not</em> contained in the list.</dd>
+          <dd>Matches if the header name is equal to the specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>valuePrefix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the header value starts with the specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>valueSuffix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the header value ends with the specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>valueContains</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>array of string or string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the header value contains all of the specified strings.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>valueEquals</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the header value is equal to the specified string.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
               </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.CancelRequest"></a>
+              <h4>declarativeWebRequest.CancelRequest</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Declarative event action that cancels a network request.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
             </dl>
           </dd>
           <!-- OBJECT METHODS -->
@@ -1227,8 +1336,8 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-declarativeWebRequest.CancelRequest"></a>
-              <h4>declarativeWebRequest.CancelRequest</h4>
+              <a name="type-declarativeWebRequest.RequestMatcher"></a>
+              <h4>declarativeWebRequest.RequestMatcher</h4>
               <div>
           <dt>
               <em>
@@ -1244,10 +1353,186 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>Declarative event action that cancels a network request.</dd>
+          <dd>Matches network events by various criteria.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
+              <div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="events.html#type-events.UrlFilter">events.UrlFilter</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the condition of the UrlFilter are fulfilled for the URL of the request.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>resourceType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                        <span>["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"]</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>contentType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the MIME media type of a response (from the HTTP Content-Type header) is contained in the list.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>excludeContentType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the MIME media type of a response (from the HTTP Content-Type header) is <em>not</em> contained in the list.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>responseHeaders</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.HeaderFilter">declarativeWebRequest.HeaderFilter</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if some of the response headers is matched by one of the HeaderFilters.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>excludeResponseHeaders</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.HeaderFilter">declarativeWebRequest.HeaderFilter</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if none of the response headers is matched by one of the HeaderFilters.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
             </dl>
           </dd>
           <!-- OBJECT METHODS -->
