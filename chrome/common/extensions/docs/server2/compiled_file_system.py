@@ -6,19 +6,21 @@ import os
 
 import object_store
 
-APPS        = 'Apps'
-CRON        = 'Cron'
-EXTENSIONS  = 'Extensions'
-HANDLEBAR   = 'Handlebar'
-IDL         = 'IDL'
-IDL_NAMES   = 'IDLNames'
-INTRO       = 'Intro'
-JSON        = 'JSON'
-LIST        = 'List'
-PERMS       = 'Perms'
-RENDER      = 'Render'
-STATIC      = 'Static'
-ZIP         = 'Zip'
+APPS                      = 'Apps'
+CRON                      = 'Cron'
+EXTENSIONS                = 'Extensions'
+CRON_FILE_LISTING         = 'Cron.FileListing'
+CRON_GITHUB_INVALIDATION  = 'Cron.GithubInvalidation'
+CRON_INVALIDATION         = 'Cron.Invalidation'
+HANDLEBAR                 = 'Handlebar'
+IDL                       = 'IDL'
+IDL_NAMES                 = 'IDLNames'
+INTRO                     = 'Intro'
+JSON                      = 'JSON'
+LIST                      = 'List'
+PERMS                     = 'Perms'
+STATIC                    = 'Static'
+ZIP                       = 'Zip'
 
 class _CacheEntry(object):
   def __init__(self, cache_data, version):
@@ -68,7 +70,6 @@ class CompiledFileSystem(object):
     cache_entry = self._object_store.Get(self._MakeKey(path),
                                          object_store.FILE_SYSTEM_CACHE,
                                          time=0).Get()
-
     if (cache_entry is not None) and (version == cache_entry.version):
       return cache_entry._cache_data
     cache_data = self._populate_function(self._file_system.ReadSingle(path))

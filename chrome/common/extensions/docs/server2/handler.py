@@ -135,6 +135,7 @@ class _MockResponse(object):
   def __init__(self):
     self.status = 200
     self.out = StringIO()
+    self.headers = {}
 
   def set_status(self, status):
     self.status = status
@@ -173,16 +174,57 @@ class Handler(webapp.RequestHandler):
         logging.error('Error rendering %s: %s' % (path, str(e)))
     self.response = original_response
 
+  class _ValueHolder(object):
+    """Class to allow a value to be changed within a lambda.
+    """
+    def __init__(self, starting_value):
+      self._value = starting_value
+
+    def Set(self, value):
+      self._value = value
+
+    def Get(self):
+      return self._value
+
   def _HandleCron(self, path):
+    # Cache population strategy:
+    #
+    # We could list all files in PUBLIC_TEMPLATE_PATH then render them. However,
+    # this would be inefficient in the common case where files haven't changed
+    # since the last cron.
+    #
+    # Instead, let the CompiledFileSystem give us clues when to re-render: we
+    # use the CFS to check whether the templates, examples, or API folders have
+    # been changed. If there has been a change, I will call the compilation
+    # function. The same is then done separately with the apps samples page,
+    # since it pulls its data from Github.
     channel = path.split('/')[-1]
     branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel)
     logging.info('Running cron job for %s.' % branch)
     branch_memcache = InMemoryObjectStore(branch)
     file_system = _CreateMemcacheFileSystem(branch, branch_memcache)
     factory = CompiledFileSystem.Factory(file_system, branch_memcache)
-    render_cache = factory.Create(lambda x: self._Render(x, channel),
-                                  compiled_fs.RENDER)
-    render_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH)
+
+    needs_render = self._ValueHolder(False)
+    invalidation_cache = factory.Create(lambda _: needs_render.Set(True),
+                                        compiled_fs.CRON_INVALIDATION)
+    for path in [TEMPLATE_PATH, EXAMPLES_PATH, API_PATH]:
+      invalidation_cache.GetFromFile(path + '/')
+
+    if needs_render.Get():
+      file_listing_cache = factory.Create(lambda x: x,
+                                          compiled_fs.CRON_FILE_LISTING)
+      self._Render(file_listing_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH),
+                   channel)
+    else:
+      # If |needs_render| was True, this page was already rendered, and we don't
+      # need to render again.
+      github_invalidation_cache = GITHUB_COMPILED_FILE_SYSTEM.Create(
+          lambda _: needs_render.Set(True),
+          compiled_fs.CRON_GITHUB_INVALIDATION)
+      if needs_render.Get():
+        self._Render([PUBLIC_TEMPLATE_PATH + '/apps/samples.html'], channel)
+
     self.response.out.write('Success')
 
   def get(self):

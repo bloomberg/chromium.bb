@@ -56,7 +56,11 @@ class SamplesDataSource(object):
 
     def _GetDataFromManifest(self, path, file_system):
       manifest = file_system.ReadSingle(path + '/manifest.json')
-      manifest_json = json.loads(json_comment_eater.Nom(manifest))
+      try:
+        manifest_json = json.loads(json_comment_eater.Nom(manifest))
+      except ValueError as e:
+        logging.error('Error parsing manifest.json for %s: %s' % (path, e))
+        return None
       l10n_data = {
         'name': manifest_json.get('name', ''),
         'description': manifest_json.get('description', ''),
@@ -71,10 +75,15 @@ class SamplesDataSource(object):
       if locales_dir:
         locales_files = file_system.Read(
             [locales_path + f + 'messages.json' for f in locales_dir]).Get()
-        locales_json = [(path, json.loads(contents))
-                        for path, contents in locales_files.iteritems()]
-        for path, json_ in locales_json:
-          l10n_data['locales'][path[len(locales_path):].split('/')[0]] = json_
+        try:
+          locales_json = [(locale_path, json.loads(contents))
+                          for locale_path, contents in
+                          locales_files.iteritems()]
+        except ValueError as e:
+          logging.error('Error parsing locales files for %s: %s' % (path, e))
+        else:
+          for path, json_ in locales_json:
+            l10n_data['locales'][path[len(locales_path):].split('/')[0]] = json_
       return l10n_data
 
     def _MakeSamplesList(self, files, is_apps=False):
@@ -109,6 +118,8 @@ class SamplesDataSource(object):
               'link': self._MakeApiLink('method', item)
             })
         manifest_data = self._GetDataFromManifest(sample_path, file_system)
+        if manifest_data is None:
+          continue
 
         sample_base_path = sample_path.split('/', 1)[1]
         if is_apps:

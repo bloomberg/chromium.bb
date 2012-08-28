@@ -86,6 +86,6 @@ class InMemoryObjectStore(ObjectStore):
 
   def Delete(self, key, namespace):
     namespace = self._MakeNamespace(namespace)
-    if namespace in self._cache:
+    if namespace in self._cache and key in self._cache[namespace]:
       self._cache[namespace].pop(key)
     self._object_store.Delete(key, namespace)
