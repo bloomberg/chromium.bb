@@ -79,6 +79,10 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, Basics);
+  FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, ImagePositionWithBorder);
+
+  // Returns the correct position of the image for painting.
+  gfx::Point ComputeImagePaintPosition(const gfx::ImageSkia& image);
 
   // Image alignment.
   HorizontalAlignment h_alignment_;

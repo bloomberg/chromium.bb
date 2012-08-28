@@ -415,9 +415,23 @@ void Tab::Layout() {
     int close_button_top = top_padding() + kCloseButtonVertFuzz +
         (content_height - close_button_size.height()) / 2;
     // If the ratio of the close button size to tab width exceeds the maximum.
-    close_button()->SetBounds(lb.width() + kCloseButtonHorzFuzz,
-                              close_button_top, close_button_size.width(),
-                              close_button_size.height());
+    // The close button should be as large as possible so that there is a larger
+    // hit-target for touch events. So the close button bounds extends to the
+    // edges of the tab. However, the larger hit-target should be active only
+    // for mouse events, and the close-image should show up in the right place.
+    // So a border is added to the button with necessary padding. The close
+    // button (BaseTab::TabCloseButton) makes sure the padding is a hit-target
+    // only for touch events.
+    int top_border = close_button_top;
+    int bottom_border = height() - (close_button_size.height() + top_border);
+    int left_border = kCloseButtonHorzFuzz;
+    int right_border = width() - (lb.width() + close_button_size.width() +
+        left_border);
+    close_button()->set_border(views::Border::CreateEmptyBorder(top_border,
+        left_border, bottom_border, right_border));
+    close_button()->SetBounds(lb.width(), 0,
+        close_button_size.width() + left_border + right_border,
+        close_button_size.height() + top_border + bottom_border);
     close_button()->SetVisible(true);
   } else {
     close_button()->SetBounds(0, 0, 0, 0);

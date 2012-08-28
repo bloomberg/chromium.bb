@@ -31,6 +31,10 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 
+#if defined(USE_ASH)
+#include "ui/aura/env.h"
+#endif
+
 // How long the pulse throb takes.
 static const int kPulseDurationMs = 200;
 
@@ -46,6 +50,23 @@ class BaseTab::TabCloseButton : public views::ImageButton {
  public:
   explicit TabCloseButton(BaseTab* tab) : views::ImageButton(tab), tab_(tab) {}
   virtual ~TabCloseButton() {}
+
+  // Overridden from views::View.
+  virtual View* GetEventHandlerForPoint(const gfx::Point& point) OVERRIDE {
+    // Ignore the padding set on the button.
+    gfx::Rect rect = GetContentsBounds();
+
+#if defined(USE_ASH)
+    // Include the padding in hit-test for touch events.
+    if (aura::Env::GetInstance()->is_touch_down())
+      rect = GetLocalBounds();
+#elif defined(OS_WIN)
+    // TODO(sky): Use local-bounds if a touch-point is active.
+    // http://crbug.com/145258
+#endif
+
+    return rect.Contains(point) ? this : NULL;
+  }
 
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (tab_->controller())

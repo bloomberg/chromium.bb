@@ -80,25 +80,14 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   gfx::ImageSkia img = GetImageToPaint();
 
   if (!img.isNull()) {
-    int x = 0, y = 0;
-
-    if (h_alignment_ == ALIGN_CENTER)
-      x = (width() - img.width()) / 2;
-    else if (h_alignment_ == ALIGN_RIGHT)
-      x = width() - img.width();
-
-    if (v_alignment_ == ALIGN_MIDDLE)
-      y = (height() - img.height()) / 2;
-    else if (v_alignment_ == ALIGN_BOTTOM)
-      y = height() - img.height();
-
+    gfx::Point position = ComputeImagePaintPosition(img);
     if (!background_image_.isNull())
-      canvas->DrawImageInt(background_image_, x, y);
+      canvas->DrawImageInt(background_image_, position.x(), position.y());
 
-    canvas->DrawImageInt(img, x, y);
+    canvas->DrawImageInt(img, position.x(), position.y());
 
     if (!overlay_image_.isNull())
-      canvas->DrawImageInt(overlay_image_, x, y);
+      canvas->DrawImageInt(overlay_image_, position.x(), position.y());
   }
   OnPaintFocusBorder(canvas);
 }
@@ -117,6 +106,29 @@ gfx::ImageSkia ImageButton::GetImageToPaint() {
   }
 
   return !img.isNull() ? img : images_[BS_NORMAL];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ImageButton, private:
+
+gfx::Point ImageButton::ComputeImagePaintPosition(const gfx::ImageSkia& image) {
+  int x = 0, y = 0;
+  gfx::Rect rect = GetContentsBounds();
+
+  if (h_alignment_ == ALIGN_CENTER)
+    x = (rect.width() - image.width()) / 2;
+  else if (h_alignment_ == ALIGN_RIGHT)
+    x = rect.width() - image.width();
+
+  if (v_alignment_ == ALIGN_MIDDLE)
+    y = (rect.height() - image.height()) / 2;
+  else if (v_alignment_ == ALIGN_BOTTOM)
+    y = rect.height() - image.height();
+
+  x += rect.x();
+  y += rect.y();
+
+  return gfx::Point(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -80,4 +80,31 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_TRUE(button.overlay_image_.isNull());
 }
 
+TEST_F(ImageButtonTest, ImagePositionWithBorder) {
+  ImageButton button(NULL);
+  gfx::ImageSkia image = CreateTestImage(20, 30);
+  button.SetImage(CustomButton::BS_NORMAL, &image);
+
+  // The image should be painted at the top-left corner.
+  EXPECT_EQ(gfx::Point().ToString(),
+            button.ComputeImagePaintPosition(image).ToString());
+
+  button.set_border(views::Border::CreateEmptyBorder(10, 5, 0, 0));
+  EXPECT_EQ(gfx::Point(5, 10).ToString(),
+            button.ComputeImagePaintPosition(image).ToString());
+
+  button.set_border(NULL);
+  button.SetBounds(0, 0, 50, 50);
+  EXPECT_EQ(gfx::Point().ToString(),
+            button.ComputeImagePaintPosition(image).ToString());
+
+  button.SetImageAlignment(ImageButton::ALIGN_CENTER,
+                           ImageButton::ALIGN_MIDDLE);
+  EXPECT_EQ(gfx::Point(15, 10).ToString(),
+            button.ComputeImagePaintPosition(image).ToString());
+  button.set_border(views::Border::CreateEmptyBorder(10, 10, 0, 0));
+  EXPECT_EQ(gfx::Point(20, 15).ToString(),
+            button.ComputeImagePaintPosition(image).ToString());
+}
+
 }  // namespace views
