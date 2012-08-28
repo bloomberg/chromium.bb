@@ -53,6 +53,10 @@ bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& message) {
   return false;
 }
 
+std::string ContentClient::GetProduct() const {
+  return std::string();
+}
+
 std::string ContentClient::GetUserAgent() const {
   return std::string();
 }

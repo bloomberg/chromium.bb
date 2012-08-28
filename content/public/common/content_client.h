@@ -108,6 +108,10 @@ class CONTENT_EXPORT ContentClient {
   // behalf of a swapped out renderer.
   virtual bool CanHandleWhileSwappedOut(const IPC::Message& message);
 
+  // Returns a string describing the embedder version.  Used as part of the
+  // user agent string.
+  virtual std::string GetProduct() const;
+
   // Returns the user agent.
   virtual std::string GetUserAgent() const;
 

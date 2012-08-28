@@ -27,12 +27,14 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "webkit/glue/user_agent.h"
 #include "webkit/glue/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
@@ -95,6 +97,16 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
   notification_registrar_.Add(this,
                               NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
                               NotificationService::AllSources());
+
+  // Currently, the only use case we have for overriding a user agent involves
+  // spoofing a desktop Linux user agent for "Request desktop site".
+  // Automatically set it for all WebContents so that it is available when a
+  // NavigationEntry requires the user agent to be overridden.
+  const char kLinuxInfoStr[] = "X11; Linux x86_64";
+  std::string product = content::GetContentClient()->GetProduct();
+  std::string spoofed_ua =
+      webkit_glue::BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
+  web_contents->SetUserAgentOverride(spoofed_ua);
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {

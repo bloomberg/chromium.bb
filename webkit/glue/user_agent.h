@@ -25,6 +25,11 @@ int GetWebKitMinorVersion();
 // product name.
 std::string BuildUserAgentFromProduct(const std::string& product);
 
+// Builds a full user agent string given a string describing the OS and a
+// product name.
+std::string BuildUserAgentFromOSAndProduct(const std::string& os_info,
+                                           const std::string& product);
+
 }  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_USER_AGENT_H_

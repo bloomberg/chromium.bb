@@ -430,15 +430,19 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
   return false;
 }
 
-std::string ChromeContentClient::GetUserAgent() const {
+std::string ChromeContentClient::GetProduct() const {
   chrome::VersionInfo version_info;
   std::string product("Chrome/");
   product += version_info.is_valid() ? version_info.Version() : "0.0.0.0";
+  return product;
+}
+
+std::string ChromeContentClient::GetUserAgent() const {
+  std::string product = GetProduct();
 #if defined(OS_ANDROID)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent)) {
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";
-  }
 #endif
   return webkit_glue::BuildUserAgentFromProduct(product);
 }

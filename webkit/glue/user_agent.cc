@@ -155,18 +155,22 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
       "Unknown; ";
 #endif
 
-  std::string user_agent;
+  std::string os_info;
+  base::StringAppendF(&os_info, "%s%s", kUserAgentPlatform,
+                      webkit_glue::BuildOSCpuInfo().c_str());
+  return BuildUserAgentFromOSAndProduct(os_info, product);
+}
 
+std::string BuildUserAgentFromOSAndProduct(const std::string& os_info,
+                                           const std::string& product) {
+  // Derived from Safari's UA string.
   // This is done to expose our product name in a manner that is maximally
   // compatible with Safari, we hope!!
-
-  // Derived from Safari's UA string.
+  std::string user_agent;
   base::StringAppendF(
       &user_agent,
-      "Mozilla/5.0 (%s%s) AppleWebKit/%d.%d"
-      " (KHTML, like Gecko) %s Safari/%d.%d",
-      kUserAgentPlatform,
-      webkit_glue::BuildOSCpuInfo().c_str(),
+      "Mozilla/5.0 (%s) AppleWebKit/%d.%d (KHTML, like Gecko) %s Safari/%d.%d",
+      os_info.c_str(),
       WEBKIT_VERSION_MAJOR,
       WEBKIT_VERSION_MINOR,
       product.c_str(),
