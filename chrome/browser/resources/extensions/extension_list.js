@@ -83,7 +83,7 @@ cr.define('options', function() {
       var version = node.querySelector('.extension-version');
       version.textContent = extension.version;
 
-      var description = node.querySelector('.extension-description');
+      var description = node.querySelector('.extension-description span');
       description.textContent = extension.description;
 
       // The 'Show Browser Action' button.

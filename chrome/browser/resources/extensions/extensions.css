@@ -106,6 +106,10 @@ html[dir='rtl'] .extension-list-item {
   font-weight: 500;
 }
 
+.inactive-extension .extension-title {
+  color: inherit;
+}
+
 .extension-version {
   -webkit-padding-end: 7px;
   font-size: 13px;
