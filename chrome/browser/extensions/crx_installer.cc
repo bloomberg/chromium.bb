@@ -502,13 +502,16 @@ void CrxInstaller::CompleteInstall() {
   // lazily and based on the Extension's root path at that moment.
   // TODO(rdevlin.cronin): Continue removing std::string errors and replacing
   // with string16
+  std::string extension_id = extension_->id();
   std::string error;
   extension_ = extension_file_util::LoadExtension(
       version_dir,
       install_source_,
       extension_->creation_flags() | Extension::REQUIRE_KEY,
       &error);
-  LOG_ASSERT(error.empty()) << error;
+
+  LOG_ASSERT(error.empty()) << error << " " << extension_id << " "
+                            << download_url_.spec();
 
   ReportSuccessFromFileThread();
 }
