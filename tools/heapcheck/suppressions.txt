@@ -1411,6 +1411,7 @@
    fun:renderer_preferences_util::UpdateFromSystemSettings
    fun:PrefsTabHelper::PrefsTabHelper
    fun:TabContents::TabContents
+   fun:TabContents::Factory::CreateTabContents
    fun:TabContentsTestHarness::SetContents
    fun:content::RenderViewHostTestHarness::SetUp
    fun:ChromeRenderViewHostTestHarness::SetUp
