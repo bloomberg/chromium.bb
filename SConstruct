@@ -619,8 +619,6 @@ MAJOR_TEST_SUITES = set([
   'pepper_browser_tests',
   # Lightweight browser tests
   'chrome_browser_tests',
-  # Tests written using Chrome's PyAuto test jig
-  'pyauto_tests',
   'huge_tests',
   'memcheck_bot_tests',
   'tsan_bot_tests',
@@ -852,7 +850,6 @@ Alias('large_tests_irt', [])
 
 Alias('pepper_browser_tests', [])
 Alias('chrome_browser_tests', [])
-Alias('pyauto_tests', [])
 
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
@@ -2821,7 +2818,6 @@ nonvariant_tests = [
     # http://code.google.com/p/nativeclient/issues/detail?id=2092
     # See also the comment in "buildbot/buildbot_standard.py"
     'tests/pnacl_shared_lib_test/nacl.scons',
-    'tests/pyauto_nacl/nacl.scons',
     'tests/set_all_regs/nacl.scons',
     'tests/signal_handler_single_step/nacl.scons',
     'tests/thread_suspension/nacl.scons',

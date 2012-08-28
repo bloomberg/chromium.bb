@@ -35,25 +35,6 @@ def MakeCommandLineParser():
   return parser
 
 
-def CreateLinkToMacFrameworkDir(bin_root):
-  # On Mac, a link to the 'Chromium Framework.framework' directory must be
-  # available next to _pyautolib.so so that it can load the directory. Since
-  # the framework directory path is dependent on the Chromium version, we list
-  # the subdirectories of 'Versions' and pick the first subdirectory. This works
-  # on the NaCl bots because only one Chromium version is downloaded at a time.
-  dir_name = 'Chromium Framework.framework'
-  rel_path = os.path.join('Chromium.app',
-                          'Contents',
-                          'Versions')
-  rel_path = os.path.join(rel_path,
-                          os.listdir(os.path.join(bin_root, rel_path))[0],
-                          dir_name)
-  sys.stdout.write('Creating symlink in %s: %s -> %s\n' % (bin_root,
-                                                           dir_name,
-                                                           rel_path))
-  os.symlink(rel_path, os.path.join(bin_root, dir_name))
-
-
 def Unzip(zip_filename, target, verbose=True, remove_prefix=None):
   if verbose:
     print 'Extracting from %s...' % zip_filename
@@ -125,21 +106,6 @@ def Main():
         print '*'*78
         print
         raise
-
-      # Copy over files necessary to run pyauto.
-      pyauto_files = chromebinaries.GetPyAutoURLs(
-          options.base_url,
-          options.os,
-          options.arch,
-          options.revision)
-
-      for url in pyauto_files:
-        url_dst = os.path.join(tempdir, url.split('/')[-1])
-        download_utils.SyncURL(url, url_dst)
-
-      # On Mac, create a symlink to the framework directory so it can be loaded.
-      if options.os == 'mac':
-        CreateLinkToMacFrameworkDir(tempdir)
 
       # Move binaries from temp directory to destination.
       download_utils.WriteSourceStamp(tempdir, chrome_url)

@@ -17,26 +17,17 @@ directory_pattern = re.compile('<Prefix>([\w\d]+/[\d]+)/?</Prefix>', re.I)
 nextmarker_pattern = re.compile(
     '<NextMarker>([\w\d]+/[\d]+)/?</NextMarker>', re.I)
 
-# (os, arch) -> (base_directory, archive_name, pyautopy_name, pyautolib_name)
+# (os, arch) -> (base_directory, archive_name)
 # Used from constructing the full URL for a snapshot
 SNAPSHOT_MAP = {
            ('windows', 'x86-32'): ('Win',
-                                   'chrome-win32.zip',
-                                   'chrome-win32.test/pyautolib.py',
-                                   'chrome-win32.test/_pyautolib.pyd'),
+                                   'chrome-win32.zip'),
            ('mac', 'x86-32'): ('Mac',
-                               'chrome-mac.zip',
-                               'chrome-mac.test/pyautolib.py',
-                               'chrome-mac.test/_pyautolib.so',
-                               'chrome-mac.test/ffmpegsumo.so'),
+                               'chrome-mac.zip'),
            ('linux', 'x86-32'): ('Linux',
-                                 'chrome-linux.zip',
-                                 'chrome-linux.test/pyautolib.py',
-                                 'chrome-linux.test/_pyautolib.so'),
+                                 'chrome-linux.zip'),
            ('linux', 'x86-64'): ('Linux_x64',
-                                 'chrome-linux.zip',
-                                 'chrome-linux.test/pyautolib.py',
-                                 'chrome-linux.test/_pyautolib.so'),
+                                 'chrome-linux.zip'),
            }
 
 
@@ -134,14 +125,6 @@ def GetChromeURL(base_url, os, arch, revision):
   key = (os, arch)
   archive_name = SNAPSHOT_MAP[key][1]
   return '/'.join([directory, archive_name])
-
-
-def GetPyAutoURLs( base_url, os, arch, revision):
-  directory = GetBaseDirectory(base_url, os, arch, revision)
-  key = (os, arch)
-  pyauto_files = SNAPSHOT_MAP[key][2:]
-  pyauto_files = ['/'.join([directory, f]) for f in pyauto_files]
-  return pyauto_files
 
 
 def EvalDepsFile(path):

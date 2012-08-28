@@ -339,9 +339,6 @@ def BuildScript(status, context):
             mode=context['default_scons_mode'] + ['nacl_irt_test'],
             args=['SILENT=1', 'chrome_browser_tests'])
 
-    with Step('pyauto_tests', status, halt_on_fail=False):
-      SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])
-
   with Step('small_tests under IRT', status, halt_on_fail=False):
     SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=['small_tests_irt'])
