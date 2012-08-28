@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MODULE_SYSTEM_H_
-#define CHROME_RENDERER_MODULE_SYSTEM_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_
+#define CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/native_handler.h"
+#include "chrome/renderer/extensions/native_handler.h"
 #include "v8/include/v8.h"
 
 #include <map>
 #include <set>
 #include <string>
+
+namespace extensions {
 
 // A module system for JS similar to node.js' require() function.
 // Each module has three variables in the global scope:
@@ -137,4 +139,6 @@ class ModuleSystem : public NativeHandler {
   DISALLOW_COPY_AND_ASSIGN(ModuleSystem);
 };
 
-#endif  // CHROME_RENDERER_MODULE_SYSTEM_H_
+}  // extensions
+
+#endif  // CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/module_system.h"
+#include "chrome/renderer/extensions/module_system.h"
 
 #include "base/bind.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
@@ -15,6 +15,8 @@ const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
 } // namespace
+
+namespace extensions {
 
 ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
                            SourceMap* source_map)
@@ -265,3 +267,5 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
 v8::Handle<v8::Value> ModuleSystem::ThrowException(const std::string& message) {
   return v8::ThrowException(v8::String::New(message.c_str()));
 }
+
+}  // extensions

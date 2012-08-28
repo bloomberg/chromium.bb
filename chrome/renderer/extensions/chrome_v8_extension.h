@@ -9,7 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/string_piece.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
-#include "chrome/renderer/native_handler.h"
+#include "chrome/renderer/extensions/native_handler.h"
 #include "v8/include/v8.h"
 
 #include <map>

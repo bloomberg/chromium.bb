@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/native_handler.h"
+#include "chrome/renderer/extensions/native_handler.h"
 
 #include "base/memory/linked_ptr.h"
 #include "base/logging.h"
-#include "chrome/renderer/module_system.h"
+#include "chrome/renderer/extensions/module_system.h"
 #include "v8/include/v8.h"
+
+namespace extensions {
 
 NativeHandler::NativeHandler()
     : object_template_(
@@ -54,3 +56,5 @@ void NativeHandler::RouteStaticFunction(const std::string& name,
       v8::FunctionTemplate::New(handler_func, v8::External::New(this));
   object_template_->Set(name.c_str(), function_template);
 }
+
+}   // extensions

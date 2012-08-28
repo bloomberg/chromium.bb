@@ -4,7 +4,10 @@
 
 #include "chrome/test/base/module_system_test.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/module_system.h"
+#include "chrome/renderer/extensions/module_system.h"
+
+using extensions::ModuleSystem;
+using extensions::NativeHandler;
 
 class CounterNatives : public NativeHandler {
  public:

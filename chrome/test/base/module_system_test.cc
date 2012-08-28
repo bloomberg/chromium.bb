@@ -7,12 +7,15 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "chrome/renderer/native_handler.h"
+#include "chrome/renderer/extensions/native_handler.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include <map>
 #include <string>
+
+using extensions::ModuleSystem;
+using extensions::NativeHandler;
 
 // Native JS functions for doing asserts.
 class AssertNatives : public NativeHandler {

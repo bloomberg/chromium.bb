@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_NATIVE_HANDLER_H_
-#define CHROME_RENDERER_NATIVE_HANDLER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_NATIVE_HANDLER_H_
+#define CHROME_RENDERER_EXTENSIONS_NATIVE_HANDLER_H_
 
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"
@@ -11,6 +11,8 @@
 
 #include <string>
 #include <vector>
+
+namespace extensions {
 
 // A NativeHandler is a factory for JS objects with functions on them that map
 // to native C++ functions. Subclasses should call RouteFunction() in their
@@ -53,4 +55,6 @@ class NativeHandler {
   DISALLOW_COPY_AND_ASSIGN(NativeHandler);
 };
 
-#endif  // CHROME_RENDERER_NATIVE_HANDLER_H_
+}  // extensions
+
+#endif  // CHROME_RENDERER_EXTENSIONS_NATIVE_HANDLER_H_

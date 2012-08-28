@@ -5,7 +5,7 @@
 #ifndef CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 #define CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
 
-#include "chrome/renderer/module_system.h"
+#include "chrome/renderer/extensions/module_system.h"
 #include "v8/include/v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,7 +55,7 @@ class ModuleSystemTest : public testing::Test {
   v8::TryCatch try_catch_;
   AssertNatives* assert_natives_;
   scoped_ptr<StringSourceMap> source_map_;
-  scoped_ptr<ModuleSystem> module_system_;
+  scoped_ptr<extensions::ModuleSystem> module_system_;
   bool should_assertions_be_made_;
 };
 
