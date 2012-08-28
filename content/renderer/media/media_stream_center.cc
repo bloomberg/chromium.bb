@@ -83,10 +83,7 @@ static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
   return NULL;
 }
 
-MediaStreamCenter::MediaStreamCenter(
-    WebKit::WebMediaStreamCenterClient* client)
-    : client_(client) {
-}
+MediaStreamCenter::MediaStreamCenter(WebKit::WebMediaStreamCenterClient*) {}
 
 void MediaStreamCenter::queryMediaStreamSources(
     const WebKit::WebMediaStreamSourcesRequest& request) {

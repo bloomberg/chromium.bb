@@ -19,7 +19,7 @@ namespace content {
 class CONTENT_EXPORT MediaStreamCenter
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamCenter) {
  public:
-  explicit MediaStreamCenter(WebKit::WebMediaStreamCenterClient* client);
+  explicit MediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
 
   virtual void queryMediaStreamSources(
       const WebKit::WebMediaStreamSourcesRequest& request) OVERRIDE;
@@ -45,9 +45,6 @@ class CONTENT_EXPORT MediaStreamCenter
       const WebKit::WebSessionDescriptionDescriptor& description) OVERRIDE;
 
  private:
-  // Weak pointer, owned by WebKit.
-  WebKit::WebMediaStreamCenterClient* client_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };
 
