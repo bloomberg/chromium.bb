@@ -240,6 +240,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     WindowTypeLauncherItem::Activate(example_result->type(), event_flags);
   }
 
+  virtual void InvokeSearchResultAction(const app_list::SearchResult& result,
+                                        int action_index,
+                                        int event_flags) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
   virtual void StartSearch() OVERRIDE {
     string16 query;
     TrimWhitespace(model_->search_box()->text(), TRIM_ALL, &query);

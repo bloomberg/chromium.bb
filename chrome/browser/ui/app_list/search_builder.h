@@ -34,7 +34,14 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   void StartSearch();
   void StopSearch();
 
+  // Opens |result|.
   void OpenResult(const app_list::SearchResult& result, int event_flags);
+
+  // Invokes a custom action on |result|.  |action_index| corresponds to the
+  // index of the selected icon in |result.action_icons()|.
+  void InvokeResultAction(const app_list::SearchResult& result,
+                          int action_index,
+                          int event_flags);
 
  private:
   // Populates result list from AutocompleteResult.

@@ -19,6 +19,12 @@ class APP_LIST_EXPORT SearchResultListViewDelegate {
   virtual void OpenResult(const SearchResult& result,
                           int event_flags) = 0;
 
+  // Called to invoke a custom action on |result|.  |action_index| corresponds
+  // to the index of the icon in |result.action_icons()| that was activated.
+  virtual void InvokeResultAction(const SearchResult& result,
+                                  int action_index,
+                                  int event_flags) = 0;
+
  protected:
   virtual ~SearchResultListViewDelegate() {}
 };

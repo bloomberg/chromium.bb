@@ -70,6 +70,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Overridden from SearchResultListViewDelegate:
   virtual void OpenResult(const SearchResult& result,
                           int event_flags) OVERRIDE;
+  virtual void InvokeResultAction(const SearchResult& result,
+                                  int action_index,
+                                  int event_flags) OVERRIDE;
 
   scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;

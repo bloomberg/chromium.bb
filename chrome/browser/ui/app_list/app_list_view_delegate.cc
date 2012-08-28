@@ -57,6 +57,14 @@ void AppListViewDelegate::OpenSearchResult(
     search_builder_->OpenResult(result, event_flags);
 }
 
+void AppListViewDelegate::InvokeSearchResultAction(
+    const app_list::SearchResult& result,
+    int action_index,
+    int event_flags) {
+  if (search_builder_.get())
+    search_builder_->InvokeResultAction(result, action_index, event_flags);
+}
+
 void AppListViewDelegate::Close()  {
   controller_->CloseView();
 }

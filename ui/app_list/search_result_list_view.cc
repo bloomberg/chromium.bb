@@ -83,7 +83,7 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
       return true;
     case ui::VKEY_RETURN:
       if (selected_index_ >= 0)
-        ButtonPressed(GetResultViewAt(selected_index_), event);
+        SearchResultActivated(GetResultViewAt(selected_index_), event);
       return true;
     default:
       break;
@@ -127,20 +127,6 @@ void SearchResultListView::ScheduleUpdate() {
   }
 }
 
-void SearchResultListView::ButtonPressed(views::Button* sender,
-                                         const ui::Event& event) {
-  if (sender->GetClassName() != SearchResultView::kViewClassName)
-    return;
-
-  if (delegate_) {
-    const SearchResult* result =
-        static_cast<SearchResultView*>(sender)->result();
-
-    if (result)
-      delegate_->OpenResult(*result, event.flags());
-  }
-}
-
 void SearchResultListView::ListItemsAdded(size_t start, size_t count) {
   ScheduleUpdate();
 }
@@ -155,6 +141,21 @@ void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
 
 void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
   ScheduleUpdate();
+}
+
+void SearchResultListView::SearchResultActivated(SearchResultView* view,
+                                                 const ui::Event& event) {
+  if (delegate_ && view->result())
+    delegate_->OpenResult(*(view->result()), event.flags());
+}
+
+void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
+                                                       int action_index,
+                                                       const ui::Event& event) {
+  if (delegate_ && view->result()) {
+    delegate_->InvokeResultAction(
+        *(view->result()), action_index, event.flags());
+  }
 }
 
 }  // namespace app_list

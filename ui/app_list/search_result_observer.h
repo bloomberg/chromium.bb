@@ -11,8 +11,11 @@ namespace app_list {
 
 class APP_LIST_EXPORT SearchResultObserver {
  public:
-  // Invoked when SearchResult icon has changed.
+  // Invoked when the SearchResult's icon has changed.
   virtual void OnIconChanged() = 0;
+
+  // Invoked when the SearchResult's action icons have been changed.
+  virtual void OnActionIconsChanged() = 0;
 
  protected:
   virtual ~SearchResultObserver() {}

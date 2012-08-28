@@ -8,6 +8,19 @@
 
 namespace app_list {
 
+SearchResult::ActionIconSet::ActionIconSet(const gfx::ImageSkia& base_image,
+                                           const gfx::ImageSkia& hover_image,
+                                           const gfx::ImageSkia& pressed_image,
+                                           const string16& tooltip_text)
+    : base_image(base_image),
+      hover_image(hover_image),
+      pressed_image(pressed_image),
+      tooltip_text(tooltip_text) {
+}
+
+SearchResult::ActionIconSet::~ActionIconSet() {
+}
+
 SearchResult::SearchResult() {
 }
 
@@ -19,6 +32,13 @@ void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
   FOR_EACH_OBSERVER(SearchResultObserver,
                     observers_,
                     OnIconChanged());
+}
+
+void SearchResult::SetActionIcons(const std::vector<ActionIconSet>& sets) {
+  action_icons_ = sets;
+  FOR_EACH_OBSERVER(SearchResultObserver,
+                    observers_,
+                    OnActionIconsChanged());
 }
 
 void SearchResult::AddObserver(SearchResultObserver* observer) {

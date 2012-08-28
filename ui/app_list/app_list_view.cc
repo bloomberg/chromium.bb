@@ -193,4 +193,11 @@ void AppListView::OpenResult(const SearchResult& result, int event_flags) {
     delegate_->OpenSearchResult(result, event_flags);
 }
 
+void AppListView::InvokeResultAction(const SearchResult& result,
+                                     int action_index,
+                                     int event_flags) {
+  if (delegate_.get())
+    delegate_->InvokeSearchResultAction(result, action_index, event_flags);
+}
+
 }  // namespace app_list

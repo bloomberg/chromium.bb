@@ -31,6 +31,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   virtual void StopSearch() OVERRIDE;
   virtual void OpenSearchResult(const app_list::SearchResult& result,
                                 int event_flags) OVERRIDE;
+  virtual void InvokeSearchResultAction(const app_list::SearchResult& result,
+                                        int action_index,
+                                        int event_flags) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   scoped_ptr<AppsModelBuilder> apps_builder_;

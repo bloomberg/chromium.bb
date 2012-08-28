@@ -45,11 +45,25 @@ class APP_LIST_EXPORT SearchResult {
   };
   typedef std::vector<Tag> Tags;
 
+  // A collection of images representing an action that can be performed on this
+  // search result.
+  struct ActionIconSet {
+    ActionIconSet(const gfx::ImageSkia& base_image,
+                  const gfx::ImageSkia& hover_image,
+                  const gfx::ImageSkia& pressed_image,
+                  const string16& tooltip_text);
+    ~ActionIconSet();
+
+    gfx::ImageSkia base_image;
+    gfx::ImageSkia hover_image;
+    gfx::ImageSkia pressed_image;
+
+    string16 tooltip_text;
+  };
+  typedef std::vector<ActionIconSet> ActionIconSets;
+
   SearchResult();
   virtual ~SearchResult();
-
-  void AddObserver(SearchResultObserver* observer);
-  void RemoveObserver(SearchResultObserver* observer);
 
   const gfx::ImageSkia& icon() const { return icon_; }
   void SetIcon(const gfx::ImageSkia& icon);
@@ -66,6 +80,14 @@ class APP_LIST_EXPORT SearchResult {
   const Tags& details_tags() const { return details_tags_; }
   void set_details_tags(const Tags& tags) { details_tags_ = tags; }
 
+  const ActionIconSets& action_icons() const {
+    return action_icons_;
+  }
+  void SetActionIcons(const ActionIconSets& sets);
+
+  void AddObserver(SearchResultObserver* observer);
+  void RemoveObserver(SearchResultObserver* observer);
+
  private:
   gfx::ImageSkia icon_;
 
@@ -74,6 +96,10 @@ class APP_LIST_EXPORT SearchResult {
 
   string16 details_;
   Tags details_tags_;
+
+  // Optional list of icons representing additional actions that can be
+  // performed on this result.
+  ActionIconSets action_icons_;
 
   ObserverList<SearchResultObserver> observers_;
 

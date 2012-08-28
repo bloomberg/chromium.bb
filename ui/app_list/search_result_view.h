@@ -17,6 +17,7 @@ class RenderText;
 }
 
 namespace views {
+class ImageButton;
 class ImageView;
 }
 
@@ -24,16 +25,18 @@ namespace app_list {
 
 class SearchResult;
 class SearchResultListView;
+class SearchResultViewDelegate;
 
 // SearchResultView displays a SearchResult.
 class SearchResultView : public views::CustomButton,
+                         public views::ButtonListener,
                          public SearchResultObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
 
   SearchResultView(SearchResultListView* list_view,
-                   views::ButtonListener* listener);
+                   SearchResultViewDelegate* delegate);
   virtual ~SearchResultView();
 
   // Sets/gets SearchResult displayed by this view.
@@ -53,17 +56,28 @@ class SearchResultView : public views::CustomButton,
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
+  // views::ButtonListener overrides:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
   // SearchResultObserver overrides:
   virtual void OnIconChanged() OVERRIDE;
+  virtual void OnActionIconsChanged() OVERRIDE;
 
   SearchResult* result_;  // Owned by AppListModel::SearchResults.
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;
 
+  // Not owned by us.
+  SearchResultViewDelegate* delegate_;
+
   views::ImageView* icon_;  // Owned by views hierarchy.
   scoped_ptr<gfx::RenderText> title_text_;
   scoped_ptr<gfx::RenderText> details_text_;
+
+  // Owned by the views hierarchy.
+  std::vector<views::ImageButton*> action_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultView);
 };

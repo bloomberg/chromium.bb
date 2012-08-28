@@ -38,6 +38,12 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual void OpenSearchResult(const SearchResult& result,
                                 int event_flags) = 0;
 
+  // Called to invoke a custom action on |result|.  |action_index| corresponds
+  // to the index of an icon in |result.action_icons()|.
+  virtual void InvokeSearchResultAction(const SearchResult& result,
+                                        int action_index,
+                                        int event_flags) = 0;
+
   // Invoked to close app list.
   virtual void Close() = 0;
 };

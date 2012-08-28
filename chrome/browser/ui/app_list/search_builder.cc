@@ -258,6 +258,12 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
   }
 }
 
+void SearchBuilder::InvokeResultAction(const app_list::SearchResult& result,
+                                       int action_index,
+                                       int event_flags) {
+  NOTIMPLEMENTED();
+}
+
 void SearchBuilder::PopulateFromACResult(const AutocompleteResult& ac_result) {
   results_->DeleteAll();
   for (ACMatches::const_iterator it = ac_result.begin();
