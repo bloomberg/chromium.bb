@@ -665,6 +665,16 @@ bool WebMediaPlayerImpl::sourceAbort(const WebKit::WebString& id) {
   return true;
 }
 
+void WebMediaPlayerImpl::sourceSetDuration(double new_duration) {
+  if (static_cast<double>(duration()) == new_duration)
+    return;
+
+  proxy_->DemuxerSetDuration(
+      base::TimeDelta::FromMicroseconds(
+          new_duration * base::Time::kMicrosecondsPerSecond));
+  GetClient()->durationChanged();
+}
+
 void WebMediaPlayerImpl::sourceEndOfStream(
     WebMediaPlayer::EndOfStreamStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());

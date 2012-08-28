@@ -167,6 +167,10 @@ void WebMediaPlayerProxy::DemuxerAbort(const std::string& id) {
   chunk_demuxer_->Abort(id);
 }
 
+void WebMediaPlayerProxy::DemuxerSetDuration(base::TimeDelta duration) {
+  chunk_demuxer_->SetDuration(duration);
+}
+
 void WebMediaPlayerProxy::DemuxerEndOfStream(media::PipelineStatus status) {
   chunk_demuxer_->EndOfStream(status);
 }

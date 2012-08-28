@@ -89,6 +89,7 @@ class WebMediaPlayerProxy
   media::Ranges<base::TimeDelta> DemuxerBufferedRange(const std::string& id);
   bool DemuxerAppend(const std::string& id, const uint8* data, size_t length);
   void DemuxerAbort(const std::string& id);
+  void DemuxerSetDuration(base::TimeDelta duration);
   void DemuxerEndOfStream(media::PipelineStatus status);
   void DemuxerShutdown();
   bool DemuxerSetTimestampOffset(const std::string& id, base::TimeDelta offset);

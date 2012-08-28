@@ -198,6 +198,7 @@ class WebMediaPlayerImpl
                             const unsigned char* data,
                             unsigned length);
   virtual bool sourceAbort(const WebKit::WebString& id);
+  virtual void sourceSetDuration(double new_duration);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
   virtual bool sourceSetTimestampOffset(const WebKit::WebString& id,
                                         double offset);
