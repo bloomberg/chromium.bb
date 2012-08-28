@@ -24,10 +24,10 @@ namespace {
 typedef std::vector<SystemMonitor::RemovableStorageInfo> RemovableStorageInfo;
 
 // Prefix constants for different device id spaces.
-const char kUsbMassStorageWithDCIMPrefix[] = "dcim:";
-const char kUsbMassStorageNoDCIMPrefix[] = "usb:";
-const char kOtherMassStoragePrefix[] = "path:";
-const char kUsbMtpPrefix[] = "mtp:";
+const char kRemovableMassStorageWithDCIMPrefix[] = "dcim:";
+const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
+const char kFixedMassStoragePrefix[] = "path:";
+const char kMtpPtpPrefix[] = "mtp:";
 
 void EmptyPathIsFalseCallback(const MediaStorageUtil::BoolCallback& callback,
                               FilePath path) {
@@ -85,14 +85,14 @@ std::string MediaStorageUtil::MakeDeviceId(Type type,
                                            const std::string& unique_id) {
   DCHECK(!unique_id.empty());
   switch (type) {
-    case USB_MASS_STORAGE_WITH_DCIM:
-      return std::string(kUsbMassStorageWithDCIMPrefix) + unique_id;
-    case USB_MASS_STORAGE_NO_DCIM:
-      return std::string(kUsbMassStorageNoDCIMPrefix) + unique_id;
-    case OTHER_MASS_STORAGE:
-      return std::string(kOtherMassStoragePrefix) + unique_id;
-    case USB_MTP:
-      return std::string(kUsbMtpPrefix) + unique_id;
+    case REMOVABLE_MASS_STORAGE_WITH_DCIM:
+      return std::string(kRemovableMassStorageWithDCIMPrefix) + unique_id;
+    case REMOVABLE_MASS_STORAGE_NO_DCIM:
+      return std::string(kRemovableMassStorageNoDCIMPrefix) + unique_id;
+    case FIXED_MASS_STORAGE:
+      return std::string(kFixedMassStoragePrefix) + unique_id;
+    case MTP_OR_PTP:
+      return std::string(kMtpPtpPrefix) + unique_id;
   }
   NOTREACHED();
   return std::string();
@@ -106,14 +106,14 @@ bool MediaStorageUtil::CrackDeviceId(const std::string& device_id,
                        device_id.substr(0, prefix_length + 1) : "";
 
   Type found_type;
-  if (prefix == kUsbMassStorageWithDCIMPrefix) {
-    found_type = USB_MASS_STORAGE_WITH_DCIM;
-  } else if (prefix == kUsbMassStorageNoDCIMPrefix) {
-    found_type = USB_MASS_STORAGE_NO_DCIM;
-  } else if (prefix == kOtherMassStoragePrefix) {
-    found_type = OTHER_MASS_STORAGE;
-  } else if (prefix == kUsbMtpPrefix) {
-    found_type = USB_MTP;
+  if (prefix == kRemovableMassStorageWithDCIMPrefix) {
+    found_type = REMOVABLE_MASS_STORAGE_WITH_DCIM;
+  } else if (prefix == kRemovableMassStorageNoDCIMPrefix) {
+    found_type = REMOVABLE_MASS_STORAGE_NO_DCIM;
+  } else if (prefix == kFixedMassStoragePrefix) {
+    found_type = FIXED_MASS_STORAGE;
+  } else if (prefix == kMtpPtpPrefix) {
+    found_type = MTP_OR_PTP;
   } else {
     NOTREACHED();
     return false;
@@ -130,13 +130,13 @@ bool MediaStorageUtil::CrackDeviceId(const std::string& device_id,
 bool MediaStorageUtil::IsMediaDevice(const std::string& device_id) {
   Type type;
   return CrackDeviceId(device_id, &type, NULL) &&
-      (type == USB_MASS_STORAGE_WITH_DCIM || type == USB_MTP);
+      (type == REMOVABLE_MASS_STORAGE_WITH_DCIM || type == MTP_OR_PTP);
 }
 
 // static
 bool MediaStorageUtil::IsRemovableDevice(const std::string& device_id) {
   Type type;
-  return CrackDeviceId(device_id, &type, NULL) && type != OTHER_MASS_STORAGE;
+  return CrackDeviceId(device_id, &type, NULL) && type != FIXED_MASS_STORAGE;
 }
 
 // static
@@ -150,16 +150,16 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
   }
 
   switch (type) {
-    case USB_MTP:  // Fall through
-    case USB_MASS_STORAGE_WITH_DCIM:
+    case MTP_OR_PTP:  // Fall through
+    case REMOVABLE_MASS_STORAGE_WITH_DCIM:
       // We should be able to find media devices in SystemMonitor.
       callback.Run(!FindRemovableStorageLocationById(device_id).empty());
       break;
-    case USB_MASS_STORAGE_NO_DCIM:
+    case REMOVABLE_MASS_STORAGE_NO_DCIM:
       FindUSBDeviceById(unique_id,
                         base::Bind(&EmptyPathIsFalseCallback, callback));
       break;
-    case OTHER_MASS_STORAGE:
+    case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
@@ -181,7 +181,7 @@ void MediaStorageUtil::GetDeviceInfoFromPath(
   // * Search System monitor, just in case.
   // * If it's a USB device, generate device id, else use device root path as id
   std::string device_id =
-      MakeDeviceId(OTHER_MASS_STORAGE, path.AsUTF8Unsafe());
+      MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
   FilePath relative_path = MakePathRelative(path);
   string16 display_name = path.BaseName().LossyDisplayName();
 
@@ -198,20 +198,20 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
     callback.Run(FilePath());
 
   switch (type) {
-    case USB_MTP:
+    case MTP_OR_PTP:
       callback.Run(FilePath());
       break;
-    case USB_MASS_STORAGE_NO_DCIM:
+    case REMOVABLE_MASS_STORAGE_NO_DCIM:
       FindUSBDeviceById(unique_id, callback);
       break;
-    case OTHER_MASS_STORAGE:
+    case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&ValidatePathOnFileThread,
                      FilePath::FromUTF8Unsafe(unique_id), callback));
       break;
-    case USB_MASS_STORAGE_WITH_DCIM:
+    case REMOVABLE_MASS_STORAGE_WITH_DCIM:
       callback.Run(FilePath(FindRemovableStorageLocationById(device_id)));
       break;
   }
@@ -225,7 +225,7 @@ MediaStorageUtil::MediaStorageUtil() {}
 void MediaStorageUtil::FindUSBDeviceById(const std::string& unique_id,
                                          const FilePathCallback& callback) {
   // TODO(vandebo) This needs to be implemented per platform.
-  // Type is USB_MASS_STORAGE_NO_DCIM, so it's a device possibly mounted
+  // Type is REMOVABLE_MASS_STORAGE_NO_DCIM, so it's a device possibly mounted
   // somewhere...
   NOTREACHED();
   callback.Run(FilePath());

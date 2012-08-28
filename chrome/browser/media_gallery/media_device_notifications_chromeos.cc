@@ -152,7 +152,7 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
     return;
 
   std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
+      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id);
   mount_map_.insert(std::make_pair(mount_info.mount_path, device_id));
   base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
       device_id,

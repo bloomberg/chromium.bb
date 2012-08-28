@@ -23,7 +23,7 @@ typedef testing::Test MediaStorageUtilTest;
 // mtp device unique id.
 TEST_F(MediaStorageUtilTest, MakeMtpDeviceId) {
   std::string device_id =
-      MediaStorageUtil::MakeDeviceId(MediaStorageUtil::USB_MTP, kUniqueId);
+      MediaStorageUtil::MakeDeviceId(MediaStorageUtil::MTP_OR_PTP, kUniqueId);
   ASSERT_EQ(kMtpDeviceId, device_id);
 }
 
@@ -34,7 +34,7 @@ TEST_F(MediaStorageUtilTest, CrackMtpDeviceId) {
   std::string id;
   ASSERT_TRUE(MediaStorageUtil::CrackDeviceId(kMtpDeviceId, &type, &id));
   ASSERT_EQ(kUniqueId, id);
-  ASSERT_EQ(MediaStorageUtil::USB_MTP, type);
+  ASSERT_EQ(MediaStorageUtil::MTP_OR_PTP, type);
 }
 
 }  // namespace chrome

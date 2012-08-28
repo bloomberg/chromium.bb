@@ -104,7 +104,7 @@ void DeviceAttachedIntentSource::OnRemovableStorageAttached(
   // TODO(kmadhusu): Handle all device types. http://crbug.com/140353.
   MediaStorageUtil::Type type;
   MediaStorageUtil::CrackDeviceId(id, &type, NULL);
-  if (type == MediaStorageUtil::USB_MTP)
+  if (type == MediaStorageUtil::MTP_OR_PTP)
     return;
   DCHECK(MediaStorageUtil::IsRemovableDevice(id));
 

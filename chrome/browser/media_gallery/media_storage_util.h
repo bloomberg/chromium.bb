@@ -19,14 +19,14 @@ namespace chrome {
 class MediaStorageUtil {
  public:
   enum Type {
-    // A USB mass storage device with a DCIM directory.
-    USB_MASS_STORAGE_WITH_DCIM,
-    // A USB mass storage device without a DCIM directory.
-    USB_MASS_STORAGE_NO_DCIM,
-    // Mass storage not connected through USB - a proxy for fixed/removable.
-    OTHER_MASS_STORAGE,
+    // A removable mass storage device with a DCIM directory.
+    REMOVABLE_MASS_STORAGE_WITH_DCIM,
+    // A removable mass storage device without a DCIM directory.
+    REMOVABLE_MASS_STORAGE_NO_DCIM,
+    // A fixed mass storage device.
+    FIXED_MASS_STORAGE,
     // A MTP or PTP device.
-    USB_MTP,
+    MTP_OR_PTP,
   };
 
   typedef base::Callback<void(bool)> BoolCallback;
@@ -46,11 +46,11 @@ class MediaStorageUtil {
                             Type* type, std::string* unique_id);
 
   // Looks inside |device_id| to determine if it is a media device
-  // (type is USB_MASS_STORAGE_WITH_DCIM or USB_MTP).
+  // (type is REMOVABLE_MASS_STORAGE_WITH_DCIM or MTP_OR_PTP).
   static bool IsMediaDevice(const std::string& device_id);
 
   // Looks inside |device_id| to determine if it is a media device
-  // (type isn't OTHER_MASS_STORAGE).
+  // (type isn't FIXED_MASS_STORAGE).
   static bool IsRemovableDevice(const std::string& device_id);
 
   // Determines if the device is attached to the computer.

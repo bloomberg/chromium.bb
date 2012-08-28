@@ -95,7 +95,7 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     MediaStorageUtil::Type type;
     MediaStorageUtil::CrackDeviceId(media_devices[i].device_id, &type, NULL);
     // TODO(vandebo) Handle MTP devices.
-    if (type != MediaStorageUtil::USB_MTP &&
+    if (type != MediaStorageUtil::MTP_OR_PTP &&
         IsGalleryPermittedForExtension(extension, media_devices[i].location)) {
       device_id_map_.insert(std::make_pair(media_devices[i].device_id,
                                            media_devices[i]));

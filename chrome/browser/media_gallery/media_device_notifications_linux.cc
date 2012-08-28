@@ -174,7 +174,7 @@ bool GetDeviceInfo(const std::string& device_path, std::string* id,
       unique_id = kFSUniqueIdPrefix + unique_id;
     }
     *id = MediaStorageUtil::MakeDeviceId(
-        MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
+        MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id);
   }
   return true;
 }

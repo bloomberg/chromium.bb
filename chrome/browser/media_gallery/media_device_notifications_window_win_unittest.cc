@@ -103,7 +103,8 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
       drive[0] = 'A' + *it;
       FilePath::StringType name = L"V" + drive;
       std::string device_id = MediaStorageUtil::MakeDeviceId(
-          MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, base::IntToString(*it));
+          MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+          base::IntToString(*it));
       EXPECT_CALL(observer_, OnRemovableStorageAttached(device_id, name, drive))
           .Times(0);
     }
@@ -127,7 +128,8 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
          ++it) {
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
       std::string device_id = MediaStorageUtil::MakeDeviceId(
-          MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, base::IntToString(*it));
+          MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+          base::IntToString(*it));
       EXPECT_CALL(observer_, OnRemovableStorageDetached(device_id)).Times(0);
     }
   }

@@ -51,7 +51,7 @@ const char kMountPointB[] = "mnt_b";
 
 std::string GetDCIMDeviceId(std::string unique_id) {
   return chrome::MediaStorageUtil::MakeDeviceId(
-      chrome::MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM, unique_id);
+      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id);
 }
 
 bool GetDeviceInfo(const std::string& dev_path, std::string* id,

@@ -104,7 +104,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
             // TODO(kmadhusu) We need to look up a real device id as well as
             // having a fall back for volume name.
             std::string device_id = MediaStorageUtil::MakeDeviceId(
-                MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM,
+                MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
                 base::IntToString(i));
             BrowserThread::PostTask(
                 BrowserThread::FILE, FROM_HERE,
@@ -121,7 +121,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
       for (int i = 0; unitmask; ++i, unitmask >>= 1) {
         if (unitmask & 0x01) {
           std::string device_id = MediaStorageUtil::MakeDeviceId(
-              MediaStorageUtil::USB_MASS_STORAGE_WITH_DCIM,
+              MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM,
               base::IntToString(i));
           SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id);
         }
