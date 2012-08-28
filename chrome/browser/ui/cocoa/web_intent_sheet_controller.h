@@ -13,7 +13,7 @@
 
 class WebIntentPickerCocoa;
 class WebIntentPickerModel;
-@class SuggestionView;
+@class IntentView;
 
 // Controller for intent picker constrained dialog. This dialog pops up
 // whenever a web page invokes ActivateIntent and lets the user choose which
@@ -30,9 +30,8 @@ class WebIntentPickerModel;
   WebIntentPickerModel* model_;
 
   scoped_nsobject<NSTextField> actionTextField_;
-  scoped_nsobject<SuggestionView> suggestionView_;
+  scoped_nsobject<IntentView> intentView_;
   scoped_nsobject<NSButton> closeButton_;
-  scoped_nsobject<NSMutableArray> intentButtons_;
   scoped_nsobject<NSView> flipView_;
   scoped_nsobject<NSTextField> inlineDispositionTitleField_;
 }

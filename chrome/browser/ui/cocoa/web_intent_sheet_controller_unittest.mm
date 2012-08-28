@@ -53,18 +53,19 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
 
     NSArray* views = [[flip_views objectAtIndex:0] subviews];
 
-    // 3 + |row_count| subviews - header text, close button,
-    // |row_count| buttons, and a CWS link.
-    ASSERT_EQ(3U + row_count, [views count]);
+    // 4 subviews - header view, intents list, CWS link, close button.
+    // intents list is not added if there are no rows.
+    NSUInteger view_offset = row_count ? 1U : 0U;
+    ASSERT_EQ(3U + view_offset, [views count]);
 
-    const NSUInteger kFirstButton = 1;
     ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSView class]]);
     CheckHeader([views objectAtIndex:0]);
-    for(NSUInteger i = 0; i < row_count; ++i) {
-      ASSERT_TRUE([[views objectAtIndex:kFirstButton + i] isKindOfClass:
-          [NSButton class]]);
+    if (view_offset) {
+      ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSView class]]);
     }
-    ASSERT_TRUE([[views lastObject] isKindOfClass:
+    ASSERT_TRUE([[views objectAtIndex:1 + view_offset] isKindOfClass:
+                 [NSButton class]]);
+    ASSERT_TRUE([[views objectAtIndex:2 + view_offset] isKindOfClass:
         [HoverCloseButton class]]);
 
     // Verify the close button
@@ -73,22 +74,47 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
 
     // Verify the Chrome Web Store button.
     NSButton* button = static_cast<NSButton*>(
-        [views objectAtIndex:kFirstButton + row_count]);
-    ASSERT_TRUE([button isKindOfClass:[NSButton class]]);
+        [views objectAtIndex:1 + view_offset]);
     EXPECT_TRUE([[button cell] isKindOfClass:[HyperlinkButtonCell class]]);
     CheckButton(button, @selector(showChromeWebStore:));
-
-    // Verify buttons pointing to services.
-    for(NSUInteger i = 0; i < row_count; ++i) {
-      NSButton* button = [views objectAtIndex:kFirstButton + i];
-      CheckServiceButton(button, i);
-    }
   }
 
-  // Checks that a service button is hooked up correctly.
-  void CheckServiceButton(NSButton* button, NSUInteger service_index) {
-    CheckButton(button, @selector(invokeService:));
-    EXPECT_EQ(NSInteger(service_index), [button tag]);
+  void CheckSuggestionView(NSView* item_view, NSUInteger suggestion_index) {
+    // 5 subobjects - Icon, title, star rating, add button, and throbber.
+    ASSERT_EQ(5U, [[item_view subviews] count]);
+
+    // Verify title button is hooked up properly
+    ASSERT_TRUE([[[item_view subviews] objectAtIndex:1]
+        isKindOfClass:[NSButton class]]);
+    NSButton* title_button = [[item_view subviews] objectAtIndex:1];
+    CheckButton(title_button, @selector(openExtensionLink:));
+
+    // Verify "Add to Chromium" button is hooked up properly
+    ASSERT_TRUE([[[item_view subviews] objectAtIndex:3]
+        isKindOfClass:[NSButton class]]);
+    NSButton* add_button = [[item_view subviews] objectAtIndex:3];
+    CheckButton(add_button, @selector(installExtension:));
+    EXPECT_EQ(NSInteger(suggestion_index), [add_button tag]);
+
+    // Verify we have a throbber.
+    ASSERT_TRUE([[[item_view subviews] objectAtIndex:4]
+        isKindOfClass:[NSProgressIndicator class]]);
+  }
+
+  void CheckServiceView(NSView* item_view, NSUInteger service_index) {
+    // 3 subobjects - Icon, title, select button.
+    ASSERT_EQ(3U, [[item_view subviews] count]);
+
+    // Verify title is a text field.
+    ASSERT_TRUE([[[item_view subviews] objectAtIndex:1]
+        isKindOfClass:[NSTextField class]]);
+
+    // Verify "Select" button is hooked up properly.
+    ASSERT_TRUE([[[item_view subviews] objectAtIndex:2]
+        isKindOfClass:[NSButton class]]);
+    NSButton* select_button = [[item_view subviews] objectAtIndex:2];
+    CheckButton(select_button, @selector(invokeService:));
+    EXPECT_EQ(NSInteger(service_index), [select_button tag]);
   }
 
   // Checks that a button is hooked up correctly.
@@ -110,7 +136,7 @@ TEST_F(WebIntentPickerSheetControllerTest, NoRows) {
   CheckWindow(/*row_count=*/0);
 }
 
-TEST_F(WebIntentPickerSheetControllerTest, PopulatedRows) {
+TEST_F(WebIntentPickerSheetControllerTest, IntentRows) {
   WebIntentPickerModel model;
   model.AddInstalledService(string16(), GURL("http://example.org/intent.html"),
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
@@ -120,15 +146,32 @@ TEST_F(WebIntentPickerSheetControllerTest, PopulatedRows) {
   [controller_ performLayoutWithModel:&model];
 
   CheckWindow(/*row_count=*/2);
+
+  NSArray* flip_views = [[window_ contentView] subviews];
+  NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
+
+  // 2nd object should be the suggestion view, 3rd one is close button.
+  ASSERT_TRUE([main_views count] > 2);
+  ASSERT_TRUE([[main_views objectAtIndex:1] isKindOfClass:[NSView class]]);
+  NSView* intent_view = [main_views objectAtIndex:1];
+
+  // 2 subviews - the two installed services item. Tags are assigned reverse.
+  ASSERT_EQ(2U, [[intent_view subviews] count]);
+  NSView* item_view = [[intent_view subviews] objectAtIndex:0];
+  CheckServiceView(item_view, 1);
+  item_view = [[intent_view subviews] objectAtIndex:1];
+  CheckServiceView(item_view, 0);
 }
 
-TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
+TEST_F(WebIntentPickerSheetControllerTest, SuggestionRow) {
   WebIntentPickerModel model;
   std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
   suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
       string16(), string16(), 2.5));
   model.AddSuggestedExtensions(suggestions);
   [controller_ performLayoutWithModel:&model];
+
+  CheckWindow(/*row_count=*/1);
 
   // Get subviews.
   NSArray* flip_views = [[window_ contentView] subviews];
@@ -137,34 +180,47 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   // 2nd object should be the suggestion view, 3rd one is close button.
   ASSERT_TRUE([main_views count] > 2);
   ASSERT_TRUE([[main_views objectAtIndex:1] isKindOfClass:[NSView class]]);
-  NSView* suggest_view = [main_views objectAtIndex:1];
+  NSView* intent_view = [main_views objectAtIndex:1];
 
-  // There are two subviews - label & suggested items.
-  ASSERT_EQ(2U, [[suggest_view subviews] count]);
-  ASSERT_TRUE([[[suggest_view subviews] objectAtIndex:1]
-      isKindOfClass:[NSTextField class]]);
-  ASSERT_TRUE([[[suggest_view subviews] objectAtIndex:0]
+  // One subview - the suggested item.
+  ASSERT_EQ(1U, [[intent_view subviews] count]);
+  ASSERT_TRUE([[[intent_view subviews] objectAtIndex:0]
       isKindOfClass:[NSView class]]);
-  NSView* item_view = [[suggest_view subviews] objectAtIndex:0];
+  NSView* item_view = [[intent_view subviews] objectAtIndex:0];
+  CheckSuggestionView(item_view, 0);
+}
 
-  // 5 subobjects - Icon, title, star rating, add button, and throbber.
-  ASSERT_EQ(5U, [[item_view subviews] count]);
+TEST_F(WebIntentPickerSheetControllerTest, MixedIntentView) {
+  WebIntentPickerModel model;
+  std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
+  suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
+      string16(), string16(), 2.5));
+  model.AddSuggestedExtensions(suggestions);
+  model.AddInstalledService(string16(), GURL("http://example.org/intent.html"),
+      webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
+  model.AddInstalledService(string16(), GURL("http://example.com/intent.html"),
+      webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
 
-  // Verify title button is hooked up properly
-  ASSERT_TRUE([[[item_view subviews] objectAtIndex:1]
-      isKindOfClass:[NSButton class]]);
-  NSButton* title_button = [[item_view subviews] objectAtIndex:1];
-  CheckButton(title_button, @selector(openExtensionLink:));
+  [controller_ performLayoutWithModel:&model];
 
-  // Verify "Add to Chromium" button is hooked up properly
-  ASSERT_TRUE([[[item_view subviews] objectAtIndex:3]
-      isKindOfClass:[NSButton class]]);
-  NSButton* add_button = [[item_view subviews] objectAtIndex:3];
-  CheckButton(add_button, @selector(installExtension:));
+  CheckWindow(/*row_count=*/3);
 
-  // Verify we have a throbber.
-  ASSERT_TRUE([[[item_view subviews] objectAtIndex:4]
-      isKindOfClass:[NSProgressIndicator class]]);
+  NSArray* flip_views = [[window_ contentView] subviews];
+  NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
+
+  // 2nd object should be the suggestion view, 3rd one is close button.
+  ASSERT_TRUE([main_views count] > 2);
+  ASSERT_TRUE([[main_views objectAtIndex:1] isKindOfClass:[NSView class]]);
+  NSView* intent_view = [main_views objectAtIndex:1];
+
+  // 3 subviews - 2 installed services, 1 suggestion.
+  ASSERT_EQ(3U, [[intent_view subviews] count]);
+  NSView* item_view = [[intent_view subviews] objectAtIndex:0];
+  CheckSuggestionView(item_view, 0);
+  item_view = [[intent_view subviews] objectAtIndex:1];
+  CheckServiceView(item_view, 1);
+  item_view = [[intent_view subviews] objectAtIndex:2];
+  CheckServiceView(item_view, 0);
 }
 
 TEST_F(WebIntentPickerSheetControllerTest, EmptyView) {

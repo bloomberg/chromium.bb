@@ -16999,6 +16999,9 @@ Battery full
     <message name="IDS_INTENT_PICKER_WAIT_FOR_CWS" desc="Prompt indicating to the user that Chrome is currently waiting for results from the Chrome Web Store">
       Waiting for Chrome Web Store
     </message>
+    <message name="IDS_INTENT_PICKER_SELECT_INTENT" desc="Button text that, when clicked, allows the user to select the associated intent">
+      Select
+    </message>
 
     <!-- Web Intents common actions -->
     <message name="IDS_WEB_INTENTS_ACTION_SHARE" desc="Question asking the user to pick a service for the 'share' action.">
