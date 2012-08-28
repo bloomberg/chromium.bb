@@ -151,6 +151,24 @@ FileManager.prototype = {
     fileManager.decorateThumbnail_(li, showCheckbox, entry);
   };
 
+  /**
+   * @param {number} code File error code (from FileError object).
+   * @return {string} Translated file error string.
+   */
+  function getFileErrorString(code) {
+    for (var key in FileError) {
+      var match = /(.*)_ERR$/.exec(key);
+      if (match && FileError[key] == code) {
+        // This would convert 1 to 'NOT_FOUND'.
+        code = match[1];
+        break;
+      }
+    }
+    console.warn('File error: ' + code);
+    return loadTimeData.getString('FILE_ERROR_' + code) ||
+        loadTimeData.getString('FILE_ERROR_GENERIC');
+  }
+
   function removeChildren(element) {
     element.textContent = '';
   }
@@ -3160,7 +3178,7 @@ FileManager.prototype = {
 
     function onError(err) {
       this.alert.show(strf('ERROR_RENAMING', entry.name,
-                      util.getFileErrorString(err.code)));
+                      getFileErrorString(err.code)));
     }
 
     this.cancelRename_();
@@ -3299,7 +3317,7 @@ FileManager.prototype = {
 
     function onError(error) {
       self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
-                           util.getFileErrorString(error.code)));
+                           getFileErrorString(error.code)));
     }
 
     tryCreate();

@@ -65,24 +65,6 @@ util.getFileErrorMnemonic = function(code) {
 };
 
 /**
- * @param {number} code File error code (from FileError object).
- * @return {string} Translated file error string.
- */
-util.getFileErrorString = function(code) {
-  for (var key in FileError) {
-    var match = /(.*)_ERR$/.exec(key);
-    if (match && FileError[key] == code) {
-      // This would convert 1 to 'NOT_FOUND'.
-      code = match[1];
-      break;
-    }
-  }
-  console.warn('File error: ' + code);
-  return loadTimeData.getString('FILE_ERROR_' + code) ||
-      loadTimeData.getString('FILE_ERROR_GENERIC');
-};
-
-/**
  * @param {string} str String to unescape.
  * @return {string} Unescaped string.
  */
@@ -584,18 +566,6 @@ util.applyTransform = function(element, transform) {
  */
 util.makeFilesystemUrl = function(path) {
   return 'filesystem:' + chrome.extension.getURL('external' + path);
-};
-
-/**
- * Extracts path from filesystem: URL.
- * @param {string} url Filesystem URL.
- * @return {string} The path.
- */
-util.extractFilePath = function(url) {
-  var path = /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent)(\/.*)$/.
-      exec(url)[2];
-  if (!path) return null;
-  return decodeURIComponent(path);
 };
 
 /**

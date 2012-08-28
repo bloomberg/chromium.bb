@@ -11178,9 +11178,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_INSTALL_CRX" desc="Title of the action for installing extension from CRX file.">
         Open
       </message>
-      <message name="IDS_FILE_BROWSER_SEND_TO_DRIVE" desc="Title of the action for copying file to Drive.">
-        Send to Google Drive
-      </message>
 
       <message name="IDS_FILE_BROWSER_GALLERY_NO_IMAGES" desc="In the Gallery, the message that there are no images in this directory.">
         No images in this directory.

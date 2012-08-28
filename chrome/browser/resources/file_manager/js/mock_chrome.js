@@ -498,7 +498,6 @@ chrome.fileBrowserPrivate = {
       ACTION_WATCH: 'Watch',
       ACTION_LISTEN: 'Listen',
       INSTALL_CRX: 'Open',
-      SEND_TO_DRIVE: 'Send to Google Drive',
 
       CHANGE_DEFAULT_MENU_ITEM: 'Change default...',
       CHANGE_DEFAULT_CAPTION: 'Choose the default app for $1 files:',
