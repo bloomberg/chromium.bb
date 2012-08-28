@@ -5,6 +5,7 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPAPI_PLUGIN_INSTANCE_H_
 #define WEBKIT_PLUGINS_PPAPI_PPAPI_PLUGIN_INSTANCE_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "media/base/decryptor.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -67,6 +69,11 @@ class WebPluginContainer;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebPrintParams;
+}
+
+namespace media {
+class DecoderBuffer;
+class DecryptorClient;
 }
 
 namespace ppapi {
@@ -243,17 +250,19 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Provides access to PPP_ContentDecryptor_Private.
   // TODO(tomfinegan): Move decryptor methods to delegate class.
-  typedef base::Callback<void(void*, int)> DecryptedDataCB;
+  void set_decrypt_client(media::DecryptorClient* client);
   bool GenerateKeyRequest(const std::string& key_system,
                           const std::string& init_data);
   bool AddKey(const std::string& session_id,
               const std::string& key,
               const std::string& init_data);
   bool CancelKeyRequest(const std::string& session_id);
-  bool Decrypt(const base::StringPiece& encypted_block,
-               const DecryptedDataCB& callback);
-  bool DecryptAndDecode(const base::StringPiece& encypted_block,
-                        const DecryptedDataCB& callback);
+  bool Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+               const media::Decryptor::DecryptCB& decrypt_cb);
+  // TODO(xhwang): Update this when we need to support decrypt and decode.
+  bool DecryptAndDecode(
+      const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+      const media::Decryptor::DecryptCB& decrypt_cb);
 
   // There are 2 implementations of the fullscreen interface
   // PPB_FlashFullscreen is used by Pepper Flash.
@@ -337,7 +346,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void OnLockMouseACK(bool succeeded);
   // A mouse lock was in place, but has been lost.
   void OnMouseLockLost();
-  // A mouse lock is enabled and mouse events are being delievered.
+  // A mouse lock is enabled and mouse events are being delivered.
   void HandleMouseLockedInputEvent(const WebKit::WebMouseEvent& event);
 
   // Simulates an input event to the plugin by passing it down to WebKit,
@@ -465,7 +474,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // number of interfaces implemented by PluginInstance.
   class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API {
    public:
-    GamepadImpl(PluginDelegate* delegate);
+    explicit GamepadImpl(PluginDelegate* delegate);
     virtual void Sample(PP_GamepadsSampleData* data) OVERRIDE;
    private:
     PluginDelegate* delegate_;
@@ -738,6 +747,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // This is NULL unless HandleDocumentLoad has called. In that case, we store
   // the pointer so we can re-send it later if we are reset to talk to NaCl.
   scoped_refptr<PPB_URLLoader_Impl> document_loader_;
+
+  media::DecryptorClient* decryptor_client_;
+  uint32_t next_decryption_request_id_;
+  typedef std::map<uint32_t, media::Decryptor::DecryptCB> DecryptionCBMap;
+  DecryptionCBMap pending_decryption_cbs_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

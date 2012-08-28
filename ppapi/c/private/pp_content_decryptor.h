@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Thu Aug 16 20:21:00 2012. */
+/* From private/pp_content_decryptor.idl modified Fri Aug 24 16:06:47 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -29,7 +29,13 @@ struct PP_DecryptTrackingInfo {
    * this value, the client can associate the decrypted block with a decryption
    * request.
    */
-  uint64_t request_id;
+  uint32_t request_id;
+  /**
+   * 4-byte padding to make the size of <code>PP_DecryptTrackingInfo</code>
+   * a multiple of 8 bytes and make sure |timestamp| starts on 8-byte boundary.
+   * The value of this field should not be used.
+   */
+  uint32_t padding;
   /**
    * Timestamp in microseconds of the associated block. By using this value,
    * the client can associate the decrypted (and decoded) data with an input

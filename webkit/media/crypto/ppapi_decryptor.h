@@ -10,6 +10,10 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/decryptor.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace media {
 class DecryptorClient;
 }
@@ -22,6 +26,9 @@ class PluginInstance;
 
 namespace webkit_media {
 
+// PpapiDecrypor implements media::Decryptor and forwards all calls to the
+// PluginInstance.
+// This class should always be created on the main renderer thread.
 class PpapiDecryptor : public media::Decryptor {
  public:
   PpapiDecryptor(
@@ -46,13 +53,12 @@ class PpapiDecryptor : public media::Decryptor {
   virtual void Stop() OVERRIDE;
 
  private:
-  // Callback for the plugin to hand back the decrypted data.
-  void DataReady(const DecryptCB& decrypt_cb, const uint8* data, int data_size);
+  void ReportFailureToCallPlugin(const std::string& key_system,
+                                 const std::string& session_id);
 
-  // TODO(xhwang): Need to figure out how the CDM plugin fires key events
-  // (e.g. KeyMessage).
   media::DecryptorClient* client_;
   scoped_refptr<webkit::ppapi::PluginInstance> cdm_plugin_;
+  scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);
 };

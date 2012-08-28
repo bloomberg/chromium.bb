@@ -15,7 +15,14 @@ struct PP_DecryptTrackingInfo {
    * this value, the client can associate the decrypted block with a decryption
    * request.
    */
-  uint64_t request_id;
+  uint32_t request_id;
+
+  /**
+   * 4-byte padding to make the size of <code>PP_DecryptTrackingInfo</code>
+   * a multiple of 8 bytes and make sure |timestamp| starts on 8-byte boundary.
+   * The value of this field should not be used.
+   */
+  uint32_t padding;
 
   /**
    * Timestamp in microseconds of the associated block. By using this value,

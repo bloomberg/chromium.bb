@@ -9,10 +9,13 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "media/base/decoder_buffer.h"
+#include "media/base/decryptor_client.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
@@ -302,11 +305,11 @@ scoped_array<const char*> StringVectorToArgArray(
 // of 0 on failure. Upon success, the returned Buffer resource has a reference
 // count of 1.
 PP_Resource MakeBufferResource(PP_Instance instance,
-                               const base::StringPiece& data) {
-  if (data.empty())
+                               const uint8* data, int size) {
+  if (!data || !size)
     return 0;
 
-  ScopedPPResource resource(PPB_Buffer_Impl::Create(instance, data.size()));
+  ScopedPPResource resource(PPB_Buffer_Impl::Create(instance, size));
   if (!resource.get())
     return 0;
 
@@ -315,9 +318,64 @@ PP_Resource MakeBufferResource(PP_Instance instance,
     return 0;
 
   BufferAutoMapper mapper(enter.object());
-  memcpy(mapper.data(), data.data(), data.size());
+  if (!mapper.data() || mapper.size() < static_cast<size_t>(size))
+    return 0;
 
+  memcpy(mapper.data(), data, size);
   return resource.get();
+}
+
+// Copies the content of |str| into |array|.
+// Returns true if copy succeeded. Returns false if copy failed, e.g. if the
+// |array_size| is smaller than the |str| length.
+template <uint32_t array_size>
+bool CopyStringToArray(const std::string& str, uint8 (&array)[array_size]) {
+  if (array_size < str.size())
+    return false;
+
+  memcpy(array, str.data(), str.size());
+  return true;
+}
+
+// Fills the |block_info| with information from |decrypt_config|, |timestamp|
+// and |request_id|.
+// Returns true if |block_info| is successfully filled. Returns false otherwise.
+bool MakeEncryptedBlockInfo(
+    const media::DecryptConfig& decrypt_config,
+    int64_t timestamp,
+    uint32_t request_id,
+    PP_EncryptedBlockInfo* block_info) {
+  DCHECK(block_info);
+
+  // TODO(xhwang): Fix initialization of PP_EncryptedBlockInfo here and
+  // anywhere else.
+  memset(block_info, 0, sizeof(*block_info));
+
+  block_info->tracking_info.request_id = request_id;
+  block_info->tracking_info.timestamp = timestamp;
+  block_info->data_offset = decrypt_config.data_offset();
+
+  if (!CopyStringToArray(decrypt_config.key_id(), block_info->key_id) ||
+      !CopyStringToArray(decrypt_config.iv(), block_info->iv) ||
+      !CopyStringToArray(decrypt_config.checksum(), block_info->checksum))
+    return false;
+
+  block_info->key_id_size = decrypt_config.key_id().size();
+  block_info->iv_size = decrypt_config.iv().size();
+  block_info->checksum_size = decrypt_config.checksum().size();
+
+  if (decrypt_config.subsamples().size() > arraysize(block_info->subsamples))
+    return false;
+
+  block_info->num_subsamples = decrypt_config.subsamples().size();
+  for (uint32_t i = 0; i < block_info->num_subsamples; ++i) {
+    block_info->subsamples[i].clear_bytes =
+        decrypt_config.subsamples()[i].clear_bytes;
+    block_info->subsamples[i].cipher_bytes =
+        decrypt_config.subsamples()[i].cypher_bytes;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -389,7 +447,9 @@ PluginInstance::PluginInstance(
       selection_caret_(0),
       selection_anchor_(0),
       pending_user_gesture_(0.0),
-      flash_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      flash_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      decryptor_client_(NULL),
+      next_decryption_request_id_(1) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -1330,12 +1390,19 @@ void PluginInstance::RotateView(WebPlugin::RotationType type) {
   // NOTE: plugin instance may have been deleted.
 }
 
+void PluginInstance::set_decrypt_client(
+    media::DecryptorClient* decryptor_client) {
+  DCHECK(decryptor_client);
+  decryptor_client_ = decryptor_client;
+}
+
 bool PluginInstance::GenerateKeyRequest(const std::string& key_system,
                                         const std::string& init_data) {
   if (!LoadContentDecryptorInterface())
     return false;
   if (key_system.empty())
     return false;
+
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data.size(), init_data.data());
@@ -1375,39 +1442,58 @@ bool PluginInstance::CancelKeyRequest(const std::string& session_id) {
       StringVar::StringToPPVar(session_id)));
 }
 
-bool PluginInstance::Decrypt(const base::StringPiece& encrypted_block,
-                             const DecryptedDataCB& callback) {
+bool PluginInstance::Decrypt(
+    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+    const media::Decryptor::DecryptCB& decrypt_cb) {
   if (!LoadContentDecryptorInterface())
     return false;
-  ScopedPPResource encrypted_resource(MakeBufferResource(pp_instance(),
-                                                         encrypted_block));
+
+  ScopedPPResource encrypted_resource(
+      MakeBufferResource(pp_instance(),
+                         encrypted_buffer->GetData(),
+                         encrypted_buffer->GetDataSize()));
   if (!encrypted_resource.get())
     return false;
 
-  PP_EncryptedBlockInfo block_info;
+  uint32_t request_id = next_decryption_request_id_++;
 
-  // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
+  PP_EncryptedBlockInfo block_info;
+  DCHECK(encrypted_buffer->GetDecryptConfig());
+  if (!MakeEncryptedBlockInfo(*encrypted_buffer->GetDecryptConfig(),
+                              encrypted_buffer->GetTimestamp().InMicroseconds(),
+                              request_id,
+                              &block_info)) {
+    return false;
+  }
+
+  DCHECK(!ContainsKey(pending_decryption_cbs_, request_id));
+  pending_decryption_cbs_.insert(std::make_pair(request_id, decrypt_cb));
+
   return PP_ToBool(plugin_decryption_interface_->Decrypt(pp_instance(),
                                                          encrypted_resource,
                                                          &block_info));
 }
 
-bool PluginInstance::DecryptAndDecode(const base::StringPiece& encrypted_block,
-                                      const DecryptedDataCB& callback) {
+bool PluginInstance::DecryptAndDecode(
+    const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+    const media::Decryptor::DecryptCB& decrypt_cb) {
   if (!LoadContentDecryptorInterface())
     return false;
-  ScopedPPResource encrypted_resource(MakeBufferResource(pp_instance(),
-                                                         encrypted_block));
+
+  ScopedPPResource encrypted_resource(MakeBufferResource(
+      pp_instance(),
+      encrypted_buffer->GetData(),
+      encrypted_buffer->GetDataSize()));
   if (!encrypted_resource.get())
     return false;
 
   PP_EncryptedBlockInfo block_info;
 
   // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
-  return PP_ToBool(plugin_decryption_interface_->DecryptAndDecode(
-      pp_instance(),
-      encrypted_resource,
-      &block_info));
+  return PP_ToBool(
+      plugin_decryption_interface_->DecryptAndDecode(pp_instance(),
+                                                     encrypted_resource,
+                                                     &block_info));
 }
 
 bool PluginInstance::FlashIsFullscreenOrPending() {
@@ -2020,7 +2106,16 @@ void PluginInstance::NeedKey(PP_Instance instance,
 void PluginInstance::KeyAdded(PP_Instance instance,
                               PP_Var key_system_var,
                               PP_Var session_id_var) {
-  // TODO(tomfinegan): send the data to media stack.
+  StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
+  StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
+  if (!key_system_string || !session_id_string) {
+    decryptor_client_->KeyError("", "", media::Decryptor::kUnknownError, 0);
+    return;
+  }
+
+  DCHECK(decryptor_client_);
+  decryptor_client_->KeyAdded(key_system_string->value(),
+                              session_id_string->value());
 }
 
 void PluginInstance::KeyMessage(PP_Instance instance,
@@ -2028,7 +2123,35 @@ void PluginInstance::KeyMessage(PP_Instance instance,
                                 PP_Var session_id_var,
                                 PP_Resource message_resource,
                                 PP_Var default_url_var) {
-  // TODO(tomfinegan): send the data to media stack.
+  StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
+  StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
+  StringVar* default_url_string = StringVar::FromPPVar(default_url_var);
+
+  if (!key_system_string || !session_id_string || !default_url_string) {
+    decryptor_client_->KeyError("", "", media::Decryptor::kUnknownError, 0);
+    return;
+  }
+
+  EnterResourceNoLock<PPB_Buffer_API> enter(message_resource, true);
+  if (!enter.succeeded()) {
+    decryptor_client_->KeyError(key_system_string->value(),
+                                session_id_string->value(),
+                                media::Decryptor::kUnknownError,
+                                0);
+    return;
+  }
+
+  BufferAutoMapper mapper(enter.object());
+  scoped_array<uint8> message_array(new uint8[mapper.size()]);
+  if (mapper.data() && mapper.size())
+    memcpy(message_array.get(), mapper.data(), mapper.size());
+
+  DCHECK(decryptor_client_);
+  decryptor_client_->KeyMessage(key_system_string->value(),
+                                session_id_string->value(),
+                                message_array.Pass(),
+                                mapper.size(),
+                                default_url_string->value());
 }
 
 void PluginInstance::KeyError(PP_Instance instance,
@@ -2036,13 +2159,60 @@ void PluginInstance::KeyError(PP_Instance instance,
                               PP_Var session_id_var,
                               int32_t media_error,
                               int32_t system_code) {
-  // TODO(tomfinegan): send the data to media stack.
+  StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
+  StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
+  if (!key_system_string || !session_id_string) {
+    decryptor_client_->KeyError("", "", media::Decryptor::kUnknownError, 0);
+    return;
+  }
+
+  DCHECK(decryptor_client_);
+  decryptor_client_->KeyError(
+      key_system_string->value(),
+      session_id_string->value(),
+      static_cast<media::Decryptor::KeyError>(media_error),
+      system_code);
 }
 
 void PluginInstance::DeliverBlock(PP_Instance instance,
                                   PP_Resource decrypted_block,
                                   const PP_DecryptedBlockInfo* block_info) {
-  // TODO(xhwang): Pass the decrypted block back to media stack.
+  DCHECK(block_info);
+
+  DecryptionCBMap::iterator found = pending_decryption_cbs_.find(
+      block_info->tracking_info.request_id);
+
+  if (found == pending_decryption_cbs_.end())
+    return;
+  media::Decryptor::DecryptCB decrypt_cb = found->second;
+  pending_decryption_cbs_.erase(found);
+
+  if (block_info->result == PP_DECRYPTRESULT_DECRYPT_NOKEY) {
+    decrypt_cb.Run(media::Decryptor::kNoKey, NULL);
+    return;
+  }
+  if (block_info->result != PP_DECRYPTRESULT_SUCCESS) {
+    decrypt_cb.Run(media::Decryptor::kError, NULL);
+    return;
+  }
+  EnterResourceNoLock<PPB_Buffer_API> enter(decrypted_block, true);
+
+  if (!enter.succeeded()) {
+    decrypt_cb.Run(media::Decryptor::kError, NULL);
+    return;
+  }
+  BufferAutoMapper mapper(enter.object());
+  if (!mapper.data() || !mapper.size()) {
+    decrypt_cb.Run(media::Decryptor::kError, NULL);
+    return;
+  }
+
+  scoped_refptr<media::DecoderBuffer> decrypted_buffer(
+      media::DecoderBuffer::CopyFrom(
+          reinterpret_cast<const uint8*>(mapper.data()), mapper.size()));
+  decrypted_buffer->SetTimestamp(base::TimeDelta::FromMicroseconds(
+      block_info->tracking_info.timestamp));
+  decrypt_cb.Run(media::Decryptor::kSuccess, decrypted_buffer);
 }
 
 void PluginInstance::DeliverFrame(PP_Instance instance,
@@ -2058,7 +2228,6 @@ void PluginInstance::DeliverSamples(PP_Instance instance,
   // TODO(tomfinegan): To be implemented after completion of v0.1 of the
   // EME/CDM work.
 }
-
 
 void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,
                                                 int32_t total,
