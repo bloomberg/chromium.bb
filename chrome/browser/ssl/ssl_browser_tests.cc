@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -640,14 +642,21 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   ASSERT_TRUE(tab2->web_contents()->GetInterstitialPage());
 }
 
-// The test crashes on Mac and Linux, cause is unclear.
-// http://crbug.com/144624
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
   GURL url_non_dangerous = test_server()->GetURL("");
   GURL url_dangerous = https_server_expired_.GetURL(
       "files/downloads/dangerous/dangerous.exe");
+  ScopedTempDir downloads_directory_;
+
+  // Need empty temp dir to avoid having Chrome ask us for a new filename
+  // when we've downloaded dangerous.exe one hundred times.
+  ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
+
+  browser()->profile()->GetPrefs()->SetFilePath(
+      prefs::kDownloadDefaultDirectory,
+      downloads_directory_.path());
 
   // Visit a non-dangerous page.
   ui_test_utils::NavigateToURL(browser(), url_non_dangerous);
