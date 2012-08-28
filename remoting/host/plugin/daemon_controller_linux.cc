@@ -234,7 +234,7 @@ void DaemonControllerLinux::DoSetConfigAndStart(
   }
 
   std::vector<std::string> args;
-  args.push_back("--silent");
+  args.push_back("--start");
   AsyncResult result;
   int exit_code;
   if (RunScript(args, &exit_code)) {

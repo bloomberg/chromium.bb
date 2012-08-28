@@ -10,29 +10,19 @@
 # process, running under an ordinary (non-root) user account.
 
 import atexit
-import base64
 import errno
-import getpass
 import hashlib
-import hmac
 import json
 import logging
 import optparse
 import os
-import random
 import signal
 import socket
 import subprocess
 import sys
 import tempfile
 import time
-import urllib2
 import uuid
-
-# Local modules
-sys.path.insert(0, "/usr/share/chrome-remote-desktop")
-import gaia_auth
-import keygen
 
 # By default this script will try to determine the most appropriate X session
 # command for the system.  To use a specific session instead, set this variable
@@ -88,7 +78,7 @@ class Config:
       self.data = json.load(settings_file)
       self.changed = False
       settings_file.close()
-    except:
+    except Exception:
       return False
     return True
 
@@ -101,7 +91,7 @@ class Config:
       settings_file.write(json.dumps(self.data, indent=2))
       settings_file.close()
       os.umask(old_umask)
-    except:
+    except Exception:
       return False
     self.changed = False
     return True
@@ -118,8 +108,6 @@ class Config:
 
   def clear_auth(self):
     del self.data["xmpp_login"]
-    del self.data["chromoting_auth_token"]
-    del self.data["xmpp_auth_token"]
     del self.data["oauth_refresh_token"]
 
   def clear_host_info(self):
@@ -128,166 +116,38 @@ class Config:
     del self.data["host_secret_hash"]
     del self.data["private_key"]
 
+
 class Authentication:
   """Manage authentication tokens for Chromoting/xmpp"""
 
   def __init__(self):
     self.login = None
-    self.chromoting_auth_token = None
-    self.xmpp_auth_token = None
     self.oauth_refresh_token = None
 
-  def generate_tokens(self):
-    """Prompt for username/password and use them to generate new authentication
-    tokens.
-
-    Raises:
-      Exception: Failed to get new authentication tokens.
-    """
-    print "Email:",
-    self.login = raw_input()
-    password = getpass.getpass("App-specific password: ")
-
-    chromoting_auth = gaia_auth.GaiaAuthenticator('chromoting')
-    self.chromoting_auth_token = chromoting_auth.authenticate(self.login,
-                                                              password)
-
-    xmpp_authenticator = gaia_auth.GaiaAuthenticator('chromiumsync')
-    self.xmpp_auth_token = xmpp_authenticator.authenticate(self.login,
-                                                           password)
-
-  def has_chromoting_credentials(self):
-    """Returns True if we have credentials for the directory"""
-    return self.chromoting_auth_token != None
-
-  def has_xmpp_credentials(self):
-    """Returns True if we have credentials to authenticate XMPP connection"""
-    # XMPP connection can be authenticated using either OAuth or XMPP token.
-    return self.oauth_refresh_token != None or self.xmpp_auth_token != None
-
-  def load_config(self, config):
-    """Loads the config and returns false if the config is invalid. After
-    config is loaded caller must use has_xmpp_credentials() and
-    has_chromoting_credentials() to check that the credentials it needs are
-    present in the config."""
-
-    # Host can use different types of auth tokens depending on how the config
-    # was generated. E.g. if the config was created by the webapp it will have
-    # only oauth token. We still consider config to be valid in this case.
-    self.chromoting_auth_token = config.get("chromoting_auth_token")
-    self.oauth_refresh_token = config.get("oauth_refresh_token")
-    self.xmpp_auth_token = config.get("xmpp_auth_token")
-
+  def copy_from(self, config):
+    """Loads the config and returns false if the config is invalid."""
     try:
       self.login = config["xmpp_login"]
+      self.oauth_refresh_token = config["oauth_refresh_token"]
     except KeyError:
       return False
     return True
 
-  def save_config(self, config):
+  def copy_to(self, config):
     config["xmpp_login"] = self.login
-    if self.chromoting_auth_token:
-      config["chromoting_auth_token"] = self.chromoting_auth_token
-    if self.xmpp_auth_token:
-      config["xmpp_auth_token"] = self.xmpp_auth_token
+    config["oauth_refresh_token"] = self.oauth_refresh_token
 
 
 class Host:
-  """This manages the configuration for a host.
+  """This manages the configuration for a host."""
 
-  Callers should instantiate a Host object (passing in a filename where the
-  config will be kept), then should call either of the methods:
-
-  * register(auth): Create a new Host configuration and register it
-  with the Directory Service (the "auth" parameter is used to
-  authenticate with the Service).
-  * load_config(): Load a config from disk, with details of an existing Host
-  registration.
-
-  After calling register() (or making any config changes) the method
-  save_config() should be called to save the details to disk.
-  """
-
-  server = 'www.googleapis.com'
-  url = 'https://' + server + '/chromoting/v1/@me/hosts'
-
-  def __init__(self, auth):
-    """
-    Args:
-      config: Host configuration object
-      auth: Authentication object with credentials for authenticating with the
-        Directory service.
-    """
-    self.auth = auth
+  def __init__(self):
     self.host_id = str(uuid.uuid1())
     self.host_name = socket.gethostname()
     self.host_secret_hash = None
     self.private_key = None
 
-  def register(self):
-    """Generates a private key for the stored |host_id|, and registers it with
-    the Directory service.
-
-    Raises:
-      urllib2.HTTPError: An error occurred talking to the Directory server
-        (for example, if the |auth| credentials were rejected).
-    """
-
-    logging.info("HostId: " + self.host_id)
-    logging.info("HostName: " + self.host_name)
-
-    logging.info("Generating RSA key pair...")
-    (self.private_key, public_key) = keygen.generateRSAKeyPair()
-    logging.info("Done")
-
-    json_data = {
-        "data": {
-            "hostId": self.host_id,
-            "hostName": self.host_name,
-            "publicKey": public_key,
-        }
-    }
-    params = json.dumps(json_data)
-    headers = {
-        "Authorization": "GoogleLogin auth=" + self.auth.chromoting_auth_token,
-        "Content-Type": "application/json",
-    }
-
-    request = urllib2.Request(self.url, params, headers)
-    opener = urllib2.OpenerDirector()
-    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
-
-    logging.info("Registering host with directory service...")
-
-    res = urllib2.urlopen(request)
-    data = res.read()
-
-    logging.info("Done")
-
-  def ask_pin(self):
-    while 1:
-      pin = getpass.getpass("Host PIN: ")
-      if len(pin) < 6:
-        print "PIN must be at least 6 characters long."
-        continue
-      pin2 = getpass.getpass("Confirm host PIN: ")
-      if pin2 != pin:
-        print "PINs didn't match. Please try again."
-        continue
-      break
-    self.set_pin(pin)
-
-  def set_pin(self, pin):
-    if pin == "":
-      self.host_secret_hash = "plain:"
-    else:
-      self.host_secret_hash = "hmac:" + base64.b64encode(
-          hmac.new(str(self.host_id), pin, hashlib.sha256).digest())
-
-  def is_pin_set(self):
-    return self.host_secret_hash
-
-  def load_config(self, config):
+  def copy_from(self, config):
     try:
       self.host_id = config["host_id"]
       self.host_name = config["host_name"]
@@ -297,11 +157,12 @@ class Host:
       return False
     return True
 
-  def save_config(self, config):
+  def copy_to(self, config):
     config["host_id"] = self.host_id
     config["host_name"] = self.host_name
     config["host_secret_hash"] = self.host_secret_hash
     config["private_key"] = self.private_key
+
 
 class Desktop:
   """Manage a single virtual desktop"""
@@ -310,6 +171,7 @@ class Desktop:
     self.x_proc = None
     self.session_proc = None
     self.host_proc = None
+    self.child_env = None
     self.sizes = sizes
     g_desktops.append(self)
 
@@ -338,7 +200,7 @@ class Desktop:
     except Exception:
       xvfb = "Xvfb"
 
-    logging.info("Starting %s on display :%d" % (xvfb, display));
+    logging.info("Starting %s on display :%d" % (xvfb, display))
     screen_option = "%dx%dx24" % (max_width, max_height)
     self.x_proc = subprocess.Popen([xvfb, ":%d" % display,
                                     "-noreset",
@@ -367,9 +229,9 @@ class Desktop:
         self.child_env[key] = os.environ[key]
 
     # Wait for X to be active.
-    for test in range(5):
+    for _test in range(5):
       proc = subprocess.Popen("xdpyinfo", env=self.child_env, stdout=devnull)
-      pid, retcode = os.waitpid(proc.pid, 0)
+      _pid, retcode = os.waitpid(proc.pid, 0)
       if retcode == 0:
         break
       time.sleep(0.5)
@@ -386,7 +248,7 @@ class Desktop:
     # completes, since there are no other X clients running yet.
     proc = subprocess.Popen("setxkbmap -rules evdev", env=self.child_env,
                             shell=True)
-    pid, retcode = os.waitpid(proc.pid, 0)
+    _pid, retcode = os.waitpid(proc.pid, 0)
     if retcode != 0:
       logging.error("Failed to set XKB to 'evdev'")
 
@@ -659,7 +521,7 @@ def reload_config():
       desktop.host_proc.send_signal(signal.SIGHUP)
 
 
-def signal_handler(signum, stackframe):
+def signal_handler(signum, _stackframe):
   if signum == signal.SIGHUP:
     logging.info("SIGHUP caught, reloading configuration.")
     reload_config()
@@ -675,28 +537,29 @@ def relaunch_self():
 
 def main():
   DEFAULT_SIZE = "1280x800"
+  EPILOG = """This script is not intended for use by end-users.  To configure
+Chrome Remote Desktop, please install the app from the Chrome
+Web Store: https://chrome.google.com/remotedesktop"""
   parser = optparse.OptionParser(
-      "Usage: %prog [options] [ -- [ X server options ] ]")
+      usage="Usage: %prog [options] [ -- [ X server options ] ]",
+      epilog=EPILOG)
   parser.add_option("-s", "--size", dest="size", action="append",
-                    help="dimensions of virtual desktop (default: %s). "
+                    help="Dimensions of virtual desktop (default: %s). "
                     "This can be specified multiple times to make multiple "
                     "screen resolutions available (if the Xvfb server "
                     "supports this)" % DEFAULT_SIZE)
   parser.add_option("-f", "--foreground", dest="foreground", default=False,
                     action="store_true",
-                    help="don't run as a background daemon")
+                    help="Don't run as a background daemon.")
+  parser.add_option("", "--start", dest="start", default=False,
+                    action="store_true",
+                    help="Start the host.")
   parser.add_option("-k", "--stop", dest="stop", default=False,
                     action="store_true",
-                    help="stop the daemon currently running")
-  parser.add_option("-p", "--new-pin", dest="new_pin", default=False,
-                    action="store_true",
-                    help="set new PIN before starting the host")
+                    help="Stop the daemon currently running.")
   parser.add_option("", "--check-running", dest="check_running", default=False,
                     action="store_true",
-                    help="return 0 if the daemon is running, or 1 otherwise")
-  parser.add_option("", "--silent", dest="silent", default=False,
-                    action="store_true",
-                    help="Start the host without trying to configure it.")
+                    help="Return 0 if the daemon is running, or 1 otherwise.")
   parser.add_option("", "--reload", dest="reload", default=False,
                     action="store_true",
                     help="Signal currently running host to reload the config.")
@@ -705,6 +568,7 @@ def main():
   host_hash = hashlib.md5(socket.gethostname()).hexdigest()
   pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % host_hash)
 
+  # Check for a modal command-line option (start, stop, etc.)
   if options.check_running:
     running, pid = PidFile(pid_filename).check()
     return 0 if (running and pid != 0) else 1
@@ -712,7 +576,7 @@ def main():
   if options.stop:
     running, pid = PidFile(pid_filename).check()
     if not running:
-      print "The daemon currently is not running"
+      print "The daemon is not currently running"
     else:
       print "Killing process %s" % pid
       os.kill(pid, signal.SIGTERM)
@@ -724,6 +588,11 @@ def main():
       return 1
     os.kill(pid, signal.SIGHUP)
     return 0
+
+  if not options.start:
+    # If no modal command-line options specified, print an error and exit.
+    print >> sys.stderr, EPILOG
+    return 1
 
   if not options.size:
     options.size = [DEFAULT_SIZE]
@@ -772,84 +641,12 @@ def main():
   host_config.load()
 
   auth = Authentication()
-  auth_config_loaded = auth.load_config(host_config)
-  if not auth_config_loaded and not options.silent:
-    # If we failed to load authentication parameters from the host config
-    # then try loading them from the legacy auth.json file.
-    auth_config = Config(os.path.join(CONFIG_DIR, "auth.json"))
-    if auth_config.load():
-      auth_config_loaded = auth.load_config(auth_config)
-      # If we were able to read auth.json then copy its content to the host
-      # config.
-      if auth_config_loaded:
-        auth.save_config(host_config)
-        host_config.save()
-
-  host = Host(auth)
-  host_config_loaded = host.load_config(host_config)
-
-  if options.silent:
-    # Just validate the config when run with --silent.
-    if not host_config_loaded or not auth_config_loaded:
-      logging.error("Failed to load host configuration.")
-      return 1
-    if not auth.has_xmpp_credentials():
-      logging.error("Auth tokens are not configured.")
-      return 1
-  else:
-    need_auth_tokens = (
-        not auth_config_loaded or not auth.has_chromoting_credentials())
-    need_register_host = not host_config_loaded
-    # Outside the loop so user doesn't get asked twice.
-    if need_register_host:
-      host.ask_pin()
-    elif options.new_pin or not host.is_pin_set():
-      host.ask_pin()
-      host.save_config(host_config)
-      running, pid = PidFile(pid_filename).check()
-      if running and pid != 0:
-        os.kill(pid, signal.SIGHUP)
-        print "The running instance has been updated with the new PIN."
-        return 0
-
-    # The loop is to deal with the case of registering a new Host with
-    # previously-saved auth tokens (from a previous run of this script), which
-    # may require re-prompting for username & password.
-    while True:
-      if need_auth_tokens:
-        try:
-          auth.generate_tokens()
-          need_auth_tokens = False
-        except Exception:
-          logging.error("Authentication failed")
-          return 1
-        # Save the new auth tokens.
-        auth.save_config(host_config)
-        if not host_config.save():
-          logging.error("Failed to save host configuration.")
-          return 1
-
-      if need_register_host:
-        try:
-          host.register()
-          host.save_config(host_config)
-        except urllib2.HTTPError, err:
-          if err.getcode() == 401:
-            # Authentication failed - re-prompt for username & password.
-            need_auth_tokens = True
-            continue
-          else:
-            # Not an authentication error.
-            logging.error("Directory returned error: " + str(err))
-            logging.error(err.read())
-            return 1
-
-      # |auth| and |host| are both set up, so break out of the loop.
-      break
-
-    if not host_config.save():
-      logging.error("Failed to save host configuration.")
-      return 1
+  auth_config_valid = auth.copy_from(host_config)
+  host = Host()
+  host_config_valid = host.copy_from(host_config)
+  if not host_config_valid or not auth_config_valid:
+    logging.error("Failed to load host configuration.")
+    return 1
 
   global g_pidfile
   g_pidfile = PidFile(pid_filename)
@@ -862,9 +659,6 @@ def main():
     return 1
 
   g_pidfile.create()
-
-  # daemonize() must only be called after prompting for user/password, as the
-  # process will become detached from the controlling terminal.
 
   if not options.foreground:
     if not os.environ.has_key(REMOTING_LOG_FILE):

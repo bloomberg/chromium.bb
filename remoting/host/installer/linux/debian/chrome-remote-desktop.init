@@ -49,7 +49,7 @@ run_and_ignore_error() {
 
 do_start() {
   log_begin_msg "Starting Chrome Remote Desktop host for $1..."
-  run_and_ignore_error $1 --login "$HOST_PATH --silent"
+  run_and_ignore_error $1 --login "$HOST_PATH --start"
   log_end_msg $?
 }
 
@@ -68,7 +68,7 @@ do_reload() {
 do_restart() {
   log_begin_msg "Restarting Chrome Remote Desktop host for $1..."
   run_and_ignore_error $1 "$HOST_PATH --stop"
-  run_and_ignore_error $1 --login "$HOST_PATH --silent"
+  run_and_ignore_error $1 --login "$HOST_PATH --start"
   log_end_msg $?
 }
 
