@@ -274,7 +274,7 @@ name=http://crbug.com/101717 (4)
 *!scoped_ptr<_OBJECT_NAME_INFORMATION>::~scoped_ptr<_OBJECT_NAME_INFORMATION>
 *!sandbox::GetPathFromHandle
 
-WARNING
+GDI USAGE ERROR
 name=http://code.google.com/p/drmemory/issues/detail?id=899 deleting bitmap which is probably safe
 system call NtGdiDeleteObjectApp
 *!skia::`anonymous namespace'::Bitmap::~Bitmap
@@ -301,7 +301,7 @@ npapi_test_plugin.dll!NPAPIClient::PluginTest::id
 npapi_test_plugin.dll!NPAPIClient::ExecuteGetJavascriptUrlTest::TimerProc
 
 # Bad GDI teardown sequence.
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/109963 a
 system call NtGdiDeleteObjectApp
 # usually one or two GDI32.dll frames here but sometimes in light mode
@@ -309,7 +309,7 @@ system call NtGdiDeleteObjectApp
 ...
 *!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData
 
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/109963 b
 system call NtGdiDeleteObjectApp
 # usually one or two GDI32.dll frames here but sometimes in light mode
@@ -318,19 +318,19 @@ system call NtGdiDeleteObjectApp
 *!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::ReleaseBitmapDC
 
 # GDI usage errors in 3rd-party components
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/119552 a
 system call NtGdiDeleteObjectApp
 ...
 *!OmniboxViewWin::*
 
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/119552 b
 system call Nt*
 ...
 *!ATL::*
 
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/119552 c
 # optional gdi32.dll frame followed by user32.dll
 # TODO(bruening): once have
@@ -341,7 +341,7 @@ name=http://crbug.com/119552 c
 shell32.dll!SHGetFileInfoW
 *!IconLoader::ReadIcon
 
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/119552 d
 system call NtGdiDeleteObjectApp
 gdi32.dll!DeleteObject
@@ -349,7 +349,7 @@ riched20.dll!*
 riched20.dll!*
 riched20.dll!*
 
-WARNING
+GDI USAGE ERROR
 name=http://crbug.com/120157
 # "ReleaseDC called from different thread than GetDC"
 system call NtUserCallOneParam.RELEASEDC

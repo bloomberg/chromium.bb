@@ -914,7 +914,7 @@ class DrMemory(BaseTool):
     proc += ["-callstack_srcfile_prefix",
              "build\\src,chromium\\src,crt_build\\self_x86"]
     proc += ["-callstack_modname_hide",
-             "*.exe,chrome.dll"]
+             "*drmemory*,chrome.dll"]
 
     boring_callers = common.BoringCallers(mangled=False, use_re_wildcards=False)
     # TODO(timurrrr): In fact, we want "starting from .." instead of "below .."
