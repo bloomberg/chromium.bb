@@ -42,7 +42,6 @@
       'downloads',
       'execute_javascript',
       'extensions',
-      'flash',
       'fullscreen_mouselock',
       'history',
       'gtalk.test_basic',
@@ -383,11 +382,6 @@
       # Permanently-disabled tests.
       # ===========================
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
-      '-flash.FlashTest.testCanLoadFlash',
-      '-flash.FlashTest.testFlashLoadsAfterKill',
-      '-flash.FlashTest.testFlashIncognitoMode',
-      '-flash.FlashTest.testFlashWithMultipleTabs',
-      '-flash.FlashTest.testSingleFlashPluginProcess',
       '-ntp.NTPTest.testGetAppsWhenInstallApp',
       '-ntp.NTPTest.testLaunchAppNewWindow',
       '-ntp.NTPTest.testLaunchAppPinnedTab',

@@ -2696,6 +2696,7 @@
         'browser/browsing_data/browsing_data_remover_browsertest.cc',
         'browser/captive_portal/captive_portal_browsertest.cc',
         'browser/chrome_main_browsertest.cc',
+        'browser/chrome_plugin_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h',
