@@ -182,7 +182,7 @@ class ChromeToMobileService : public ProfileKeyedService,
                            bool success);
 
   // Create a cloud print job submission request for a URL or snapshot.
-  net::URLFetcher* CreateRequest(const JobData& data);
+  net::URLFetcher* CreateRequest();
 
   // Initialize cloud print URLFetcher requests.
   void InitRequest(net::URLFetcher* request);

@@ -251,8 +251,7 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
   std::string mobile_os;
   if (!mobile->GetString("type", &mobile_os))
     NOTREACHED();
-  data.mobile_os = (mobile_os.compare(kTypeAndroid) == 0) ?
-      ChromeToMobileService::ANDROID : ChromeToMobileService::IOS;
+  data.mobile_os = (mobile_os.compare(kTypeAndroid) == 0) ? ANDROID : IOS;
   if (!mobile->GetString("id", &data.mobile_id))
     NOTREACHED();
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
@@ -262,7 +261,7 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
   data.snapshot_id = base::GenerateGUID();
   data.type = !snapshot.empty() ? DELAYED_SNAPSHOT : URL;
 
-  net::URLFetcher* submit_url = CreateRequest(data);
+  net::URLFetcher* submit_url = CreateRequest();
   request_observer_map_[submit_url] = observer;
   SendRequest(submit_url, data);
 
@@ -270,7 +269,7 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
     LogMetric(SENDING_SNAPSHOT);
 
     data.type = SNAPSHOT;
-    net::URLFetcher* submit_snapshot = CreateRequest(data);
+    net::URLFetcher* submit_snapshot = CreateRequest();
     request_observer_map_[submit_snapshot] = observer;
     if (!content::BrowserThread::PostBlockingPoolSequencedTask(
             data.snapshot.AsUTF8Unsafe(), FROM_HERE,
@@ -428,7 +427,7 @@ void ChromeToMobileService::SnapshotFileCreated(
   }
 }
 
-net::URLFetcher* ChromeToMobileService::CreateRequest(const JobData& data) {
+net::URLFetcher* ChromeToMobileService::CreateRequest() {
   net::URLFetcher* request = net::URLFetcher::Create(
       cloud_print::GetUrlForSubmit(cloud_print_url_),
       net::URLFetcher::POST, this);
@@ -452,13 +451,13 @@ void ChromeToMobileService::SendRequest(net::URLFetcher* request,
   cloud_print::CreateMimeBoundaryForUpload(&bound);
   AddValue("printerid", UTF16ToUTF8(data.mobile_id), bound, &post);
   switch (data.mobile_os) {
-    case ChromeToMobileService::ANDROID:
+    case ANDROID:
       AddValue("tag", "__c2dm__job_data=" + GetJSON(data), bound, &post);
       break;
-    case ChromeToMobileService::IOS:
+    case IOS:
       AddValue("tag", "__snapshot_id=" + data.snapshot_id, bound, &post);
       AddValue("tag", "__snapshot_type=" + GetType(data), bound, &post);
-      if (data.type == ChromeToMobileService::SNAPSHOT) {
+      if (data.type == SNAPSHOT) {
         AddValue("tag", "__apns__suppress_notification", bound, &post);
       } else {
         const std::string url = data.url.spec();
@@ -476,9 +475,9 @@ void ChromeToMobileService::SendRequest(net::URLFetcher* request,
 
   // Add the snapshot or use dummy content to workaround a URL submission error.
   std::string file = "dummy";
-  if (data.type == ChromeToMobileService::SNAPSHOT &&
+  if (data.type == SNAPSHOT &&
       (!file_util::ReadFileToString(data.snapshot, &file) || file.empty())) {
-    LogMetric(ChromeToMobileService::SNAPSHOT_ERROR);
+    LogMetric(SNAPSHOT_ERROR);
     return;
   }
   cloud_print::AddMultipartValueForUpload("content", file, bound,
@@ -572,16 +571,7 @@ void ChromeToMobileService::HandleSearchResponse(
 
 void ChromeToMobileService::HandleSubmitResponse(
     const net::URLFetcher* source) {
-  // Get the observer for this response; bail if there is none or it is NULL.
-  RequestObserverMap::iterator i = request_observer_map_.find(source);
-  if (i == request_observer_map_.end())
-    return;
-  base::WeakPtr<Observer> observer = i->second;
-  request_observer_map_.erase(i);
-  if (!observer.get())
-    return;
-
-  // Get the success value from the CloudPrint server response data.
+  // Get the success value from the cloud print server response data.
   std::string data;
   source->GetResponseAsString(&data);
   bool success = false;
@@ -590,20 +580,31 @@ void ChromeToMobileService::HandleSubmitResponse(
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary)
     dictionary->GetBoolean("success", &success);
 
-  // Check if the observer is waiting on a second response (url and snapshot).
-  RequestObserverMap::iterator other = request_observer_map_.begin();
-  for (; other != request_observer_map_.end(); ++other) {
+  // Log each URL and [DELAYED_]SNAPSHOT job submission response.
+  LogMetric(success ? SEND_SUCCESS : SEND_ERROR);
+
+  // Get the observer for this job submission response.
+  base::WeakPtr<Observer> observer;
+  RequestObserverMap::iterator i = request_observer_map_.find(source);
+  if (i != request_observer_map_.end()) {
+    observer = i->second;
+    request_observer_map_.erase(i);
+  }
+
+  // Check if the observer is waiting on a second response (url or snapshot).
+  for (RequestObserverMap::iterator other = request_observer_map_.begin();
+       observer.get() && (other != request_observer_map_.end()); ++other) {
     if (other->second == observer) {
-      // Do not call OnSendComplete for observers waiting on a second response.
+      // Delay reporting success until the second response is received.
       if (success)
         return;
 
-      // Ensure a second response is not sent after reporting failure below.
+      // Report failure below and ignore the second response.
       request_observer_map_.erase(other);
       break;
     }
   }
 
-  LogMetric(success ? SEND_SUCCESS : SEND_ERROR);
-  observer->OnSendComplete(success);
+  if (observer.get())
+    observer->OnSendComplete(success);
 }
