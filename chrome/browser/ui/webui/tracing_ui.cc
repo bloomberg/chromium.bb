@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_util.h"
@@ -290,7 +291,8 @@ void ReadTraceFileCallback(TaskProxy* proxy, const FilePath& path) {
 
   // We need to escape the file contents, because it will go into a javascript
   // quoted string in TracingMessageHandler::LoadTraceFileComplete. We need to
-  // escape \ and ' (the only special characters in a ''-quoted string).
+  // escape control characters (to have well-formed javascript statements), as
+  // well as \ and ' (the only special characters in a ''-quoted string).
   // Do the escaping on this thread, it may take a little while for big files
   // and we don't want to block the UI during that time. Also do the UTF-16
   // conversion here.
@@ -303,6 +305,10 @@ void ReadTraceFileCallback(TaskProxy* proxy, const FilePath& path) {
   escaped_contents.reserve(size);
   for (size_t i = 0; i < size; ++i) {
     char c = file_contents[i];
+    if (c < ' ') {
+      escaped_contents += base::StringPrintf("\\u%04x", c);
+      continue;
+    }
     if (c == '\\' || c == '\'')
       escaped_contents.push_back('\\');
     escaped_contents.push_back(c);
