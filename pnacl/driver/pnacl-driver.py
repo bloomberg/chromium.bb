@@ -336,6 +336,9 @@ GCCPatterns = [
   ( '(-v|--v|--version)',     "env.set('DIAGNOSTIC', '1')"),
   ( '(-V)',                   "env.set('DIAGNOSTIC', '1')\n"
                               "env.clear('CC_FLAGS')"),
+  # These are preprocessor flags which should be passed to the frontend, but
+  # should not prevent the usual -i flags (which DIAGNOSTIC mode does)
+  ( '(-d[DIMNU])',            AddCCFlag),
   ( '(-d.*)',                 "env.set('DIAGNOSTIC', '1')"),
 
   # Catch all other command-line arguments
