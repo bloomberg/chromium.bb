@@ -226,6 +226,7 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
   }
 
   RootWindow* root_window_;
+
   DISALLOW_COPY_AND_ASSIGN(UIControlsX11);
 };
 

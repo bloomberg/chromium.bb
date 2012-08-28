@@ -6,6 +6,7 @@
 #include "ash/shell_factory.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_properties.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/gfx/screen.h"
@@ -34,6 +35,13 @@ ui_controls::UIControlsAura* GetUIControlsForRootWindow(
 // absolute screen coordinates.  NULL if there is no RootWindow under the
 // |point|.
 ui_controls::UIControlsAura* GetUIControlsAt(const gfx::Point& point) {
+  // If there is a capture events must be relative to it.
+  aura::client::CaptureClient* capture_client =
+      GetCaptureClient(ash::Shell::GetInstance()->GetPrimaryRootWindow());
+  if (capture_client && capture_client->GetCaptureWindow()) {
+    return GetUIControlsForRootWindow(
+        capture_client->GetCaptureWindow()->GetRootWindow());
+  }
   aura::RootWindow* root = wm::GetRootWindowAt(point);
   return root ? GetUIControlsForRootWindow(root) : NULL;
 }
