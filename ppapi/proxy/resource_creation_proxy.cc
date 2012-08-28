@@ -214,7 +214,6 @@ PP_Resource ResourceCreationProxy::CreateGraphics3D(
     PP_Instance instance,
     PP_Resource share_context,
     const int32_t* attrib_list) {
-  printf("ResourceCreationProxy::CreateGraphics3D\n");
   return PPB_Graphics3D_Proxy::CreateProxyResource(
       instance, share_context, attrib_list);
 }
@@ -223,7 +222,6 @@ PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
     PP_Instance instance,
     PP_Resource share_context,
     const int32_t* attrib_list) {
-  printf("ResourceCreationProxy::CreateGraphics3DRaw\n");
   // Not proxied. The raw creation function is used only in the implementation
   // of the proxy on the host side.
   return 0;
