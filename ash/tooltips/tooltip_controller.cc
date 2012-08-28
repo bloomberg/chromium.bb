@@ -264,9 +264,7 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
       if (tooltip_timer_.IsRunning())
         tooltip_timer_.Reset();
 
-      // We update the tooltip if it is visible, or if we force-hid it due to a
-      // mouse press.
-      if (GetTooltip()->IsVisible() || tooltip_window_at_mouse_press_)
+      if (GetTooltip()->IsVisible())
         UpdateIfRequired();
       break;
     case ui::ET_MOUSE_PRESSED:

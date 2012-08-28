@@ -19,6 +19,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -283,6 +284,10 @@ class NetworkListDetailedView : public NetworkDetailedView,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER,
         IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER,
         IDS_ASH_STATUS_TRAY_WIFI);
+    button_wifi_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_WIFI));
+    button_wifi_->SetToggledTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_WIFI));
     footer()->AddButton(button_wifi_);
 
     button_mobile_ = new TrayPopupHeaderButton(this,
@@ -291,6 +296,10 @@ class NetworkListDetailedView : public NetworkDetailedView,
         IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER,
         IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER,
         IDS_ASH_STATUS_TRAY_CELLULAR);
+    button_mobile_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_MOBILE));
+    button_mobile_->SetToggledTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_MOBILE));
     footer()->AddButton(button_mobile_);
 
     info_icon_ = new TrayPopupHeaderButton(this,
@@ -299,6 +308,8 @@ class NetworkListDetailedView : public NetworkDetailedView,
         IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
         IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
         IDS_ASH_STATUS_TRAY_NETWORK_INFO);
+    info_icon_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_INFO));
     footer()->AddButton(info_icon_);
   }
 

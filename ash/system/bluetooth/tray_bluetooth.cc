@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_views.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
@@ -102,6 +103,10 @@ class BluetoothDetailedView : public TrayDetailsView,
         IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER,
         IDS_ASH_STATUS_TRAY_BLUETOOTH);
     toggle_bluetooth_->SetToggled(!delegate->GetBluetoothEnabled());
+    toggle_bluetooth_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH));
+    toggle_bluetooth_->SetToggledTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH));
     footer()->AddButton(toggle_bluetooth_);
   }
 
