@@ -2,11 +2,24 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#page-settings .page-settings-print-pages-div {
+  -webkit-box-align: center;
+  display: -webkit-box;
+}
+
+#page-settings .page-settings-custom-input-wrapper {
+  -webkit-box-flex: 1;
+  -webkit-margin-start: 0.6em;
+  height: 24px;
+  position: relative;
+}
+
+#page-settings .page-settings-custom-input {
+  position: absolute;
+  width: 100%;
+}
+
 #page-settings .page-settings-custom-input.invalid {
   background: rgb(255, 240, 240);
   color: rgb(140, 20, 20);
-}
-
-#page-settings .page-settings-print-pages-div {
-  white-space: nowrap;
 }
