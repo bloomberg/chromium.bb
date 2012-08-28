@@ -37,6 +37,8 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual bool CanMaximize() const = 0;
   virtual bool CanActivate() const = 0;
 
+  virtual bool WidgetSizeIsClientSize() const = 0;
+
   // Returns true if the delegate has a focus saving mechanism that should be
   // used when the window is activated and deactivated.
   virtual bool CanSaveFocus() const = 0;
@@ -178,6 +180,23 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual void HandleTooltipMouseMove(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) = 0;
+
+  // Catch-all message handling and filtering. Called before
+  // HWNDMessageHandler's built-in handling, which may pre-empt some
+  // expectations in Views/Aura if messages are consumed. Returns true if the
+  // message was consumed by the delegate and should not be processed further
+  // by the HWNDMessageHandler. In this case, |result| is returned. |result| is
+  // not modified otherwise.
+  virtual bool PreHandleMSG(UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param,
+                            LRESULT* result) = 0;
+
+  // Like PreHandleMSG, but called after HWNDMessageHandler's built-in handling
+  // has run and after DefWindowProc.
+  virtual void PostHandleMSG(UINT message,
+                             WPARAM w_param,
+                             LPARAM l_param) = 0;
 
   // This is provided for methods that need to call private methods on NWW.
   // TODO(beng): should be removed once HWNDMessageHandler is the WindowImpl.

@@ -17,14 +17,12 @@ class Rect;
 
 namespace views {
 
-// TODO(beng): Temporary dependancy until fullscreen moves to
-//             HWNDMessageHandler.
-class Widget;
-
 class FullscreenHandler {
  public:
-  explicit FullscreenHandler(Widget* widget);
+  FullscreenHandler();
   ~FullscreenHandler();
+
+  void set_hwnd(HWND hwnd) { hwnd_ = hwnd; }
 
   void SetFullscreen(bool fullscreen);
   void SetMetroSnap(bool metro_snap);
@@ -46,7 +44,7 @@ class FullscreenHandler {
 
   void SetFullscreenImpl(bool fullscreen, bool for_metro);
 
-  Widget* widget_;
+  HWND hwnd_;
   bool fullscreen_;
   bool metro_snap_;
 

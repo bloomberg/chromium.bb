@@ -429,18 +429,21 @@ void NativeWidgetWin::SetOpacity(unsigned char opacity) {
 void NativeWidgetWin::SetUseDragFrame(bool use_drag_frame) {
   if (use_drag_frame) {
     // Make the frame slightly transparent during the drag operation.
-    drag_frame_saved_window_style_ = GetWindowLong(GWL_STYLE);
-    drag_frame_saved_window_ex_style_ = GetWindowLong(GWL_EXSTYLE);
-    SetWindowLong(GWL_EXSTYLE,
+    drag_frame_saved_window_style_ = GetWindowLong(GetNativeView(), GWL_STYLE);
+    drag_frame_saved_window_ex_style_ =
+        GetWindowLong(GetNativeView(), GWL_EXSTYLE);
+    SetWindowLong(GetNativeView(), GWL_EXSTYLE,
                   drag_frame_saved_window_ex_style_ | WS_EX_LAYERED);
     // Remove the captions tyle so the window doesn't have window controls for a
     // more "transparent" look.
-    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_ & ~WS_CAPTION);
-    SetLayeredWindowAttributes(GetNativeWindow(), RGB(0xFF, 0xFF, 0xFF),
+    SetWindowLong(GetNativeView(), GWL_STYLE,
+                  drag_frame_saved_window_style_ & ~WS_CAPTION);
+    SetLayeredWindowAttributes(GetNativeView(), RGB(0xFF, 0xFF, 0xFF),
                                kDragFrameWindowAlpha, LWA_ALPHA);
   } else {
-    SetWindowLong(GWL_STYLE, drag_frame_saved_window_style_);
-    SetWindowLong(GWL_EXSTYLE, drag_frame_saved_window_ex_style_);
+    SetWindowLong(GetNativeView(), GWL_STYLE, drag_frame_saved_window_style_);
+    SetWindowLong(GetNativeView(), GWL_EXSTYLE,
+                  drag_frame_saved_window_ex_style_);
   }
 }
 
@@ -494,18 +497,6 @@ void NativeWidgetWin::EndMoveLoop() {
 
 void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetWin, MessageLoop::Observer implementation:
-
-base::EventStatus NativeWidgetWin::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void NativeWidgetWin::DidProcessEvent(const base::NativeEvent& event) {
-  message_handler_->RedrawInvalidRect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -817,6 +808,12 @@ bool NativeWidgetWin::CanActivate() const {
   return delegate_->CanActivate();
 }
 
+bool NativeWidgetWin::WidgetSizeIsClientSize() const {
+  const Widget* widget = GetWidget()->GetTopLevelWidget();
+  return IsZoomed(GetNativeView()) ||
+         (widget && widget->ShouldUseNativeFrame());
+}
+
 bool NativeWidgetWin::CanSaveFocus() const {
   return GetWidget()->is_top_level();
 }
@@ -942,12 +939,6 @@ void NativeWidgetWin::HandleCreate() {
   drop_target_ = new DropTargetWin(
       static_cast<internal::RootView*>(GetWidget()->GetRootView()));
 
-  // We need to add ourselves as a message loop observer so that we can repaint
-  // aggressively if the contents of our window become invalid. Unfortunately
-  // WM_PAINT messages are starved and we get flickery redrawing when resizing
-  // if we do not do this.
-  MessageLoopForUI::current()->AddObserver(this);
-
   // Windows special DWM window frame requires a special tooltip manager so
   // that window controls in Chrome windows don't flicker when you move your
   // mouse over them. See comment in aero_tooltip_manager.h.
@@ -976,7 +967,6 @@ void NativeWidgetWin::HandleDestroying() {
 }
 
 void NativeWidgetWin::HandleDestroyed() {
-  MessageLoopForUI::current()->RemoveObserver(this);
   OnFinalMessage(hwnd());
 }
 
@@ -1070,6 +1060,18 @@ void NativeWidgetWin::HandleTooltipMouseMove(UINT message,
                                              LPARAM l_param) {
   if (tooltip_manager_.get())
     tooltip_manager_->OnMouse(message, w_param, l_param);
+}
+
+bool NativeWidgetWin::PreHandleMSG(UINT message,
+                                   WPARAM w_param,
+                                   LPARAM l_param,
+                                   LRESULT* result) {
+  return false;
+}
+
+void NativeWidgetWin::PostHandleMSG(UINT message,
+                                    WPARAM w_param,
+                                    LPARAM l_param) {
 }
 
 NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {
@@ -1166,11 +1168,6 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);
-}
-
-bool NativeWidgetWin::WidgetSizeIsClientSize() const {
-  const Widget* widget = GetWidget()->GetTopLevelWidget();
-  return IsZoomed() || (widget && widget->ShouldUseNativeFrame());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

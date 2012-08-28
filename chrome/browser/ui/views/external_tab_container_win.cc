@@ -164,7 +164,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
                                    const GURL& referrer,
                                    bool infobars_enabled,
                                    bool route_all_top_level_navigations) {
-  if (IsWindow()) {
+  if (IsWindow(GetNativeView())) {
     NOTREACHED();
     return false;
   }
@@ -179,7 +179,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   params.bounds = bounds;
   params.native_widget = this;
   GetWidget()->Init(params);
-  if (!IsWindow()) {
+  if (!IsWindow(GetNativeView())) {
     NOTREACHED();
     return false;
   }
@@ -243,7 +243,9 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   // Note that it's important to do this before we call SetParent since
   // during the SetParent call we will otherwise get a WA_ACTIVATE call
   // that causes us to steal the current focus.
-  SetWindowLong(GWL_STYLE, (GetWindowLong(GWL_STYLE) & ~WS_POPUP) | style);
+  SetWindowLong(
+      GetNativeView(), GWL_STYLE,
+      (GetWindowLong(GetNativeView(), GWL_STYLE) & ~WS_POPUP) | style);
 
   // Now apply the parenting and style
   if (parent)
@@ -943,19 +945,23 @@ void ExternalTabContainerWin::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, views::NativeWidgetWin overrides:
 
-LRESULT ExternalTabContainerWin::OnCreate(LPCREATESTRUCT create_struct) {
-  LRESULT result = views::NativeWidgetWin::OnCreate(create_struct);
-  if (result == 0) {
-    // Grab a reference here which will be released in OnFinalMessage
-    AddRef();
+bool ExternalTabContainerWin::PreHandleMSG(UINT message,
+                                           WPARAM w_param,
+                                           LPARAM l_param,
+                                           LRESULT* result) {
+  if (message == WM_DESTROY) {
+    prop_.reset();
+    Uninitialize();
   }
-  return result;
+  return false;
 }
 
-void ExternalTabContainerWin::OnDestroy() {
-  prop_.reset();
-  Uninitialize();
-  NativeWidgetWin::OnDestroy();
+void ExternalTabContainerWin::PostHandleMSG(UINT message,
+                                            WPARAM w_param,
+                                            LPARAM l_param) {
+    // Grab a reference here which will be released in OnFinalMessage
+  if (message == WM_CREATE)
+    AddRef();
 }
 
 void ExternalTabContainerWin::OnFinalMessage(HWND window) {

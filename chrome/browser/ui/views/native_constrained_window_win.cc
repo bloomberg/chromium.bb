@@ -34,12 +34,15 @@ class NativeConstrainedWindowWin : public NativeConstrainedWindow,
     delegate_->OnNativeConstrainedWindowDestroyed();
     NativeWidgetWin::OnFinalMessage(window);
   }
-  virtual LRESULT OnMouseActivate(UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param) OVERRIDE {
-    if (IsNonClientHitTestCode(static_cast<UINT>(LOWORD(l_param))))
+  virtual bool PreHandleMSG(UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param,
+                            LRESULT* result) OVERRIDE {
+    if (message == WM_MOUSEACTIVATE &&
+        IsNonClientHitTestCode(static_cast<UINT>(LOWORD(l_param)))) {
       delegate_->OnNativeConstrainedWindowMouseActivate();
-    return NativeWidgetWin::OnMouseActivate(message, w_param, l_param);
+    }
+    return false;
   }
 
   NativeConstrainedWindowDelegate* delegate_;

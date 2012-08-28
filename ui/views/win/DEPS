@@ -14,10 +14,6 @@ include_rules = [
   "+ui/views/widget/child_window_message_processor.h",
   "+ui/views/widget/monitor_win.h",
   "+ui/views/widget/native_widget_win.h",
-
-  # temporary until fullscreen moves to hwnd_message_handler.
-  "+ui/views/widget/widget.h",
-
   "+ui/views/widget/widget_hwnd_utils.h",
   "+ui/views/win",
 ]

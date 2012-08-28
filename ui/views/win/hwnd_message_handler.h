@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
@@ -43,7 +44,8 @@ VIEWS_EXPORT bool IsAeroGlassEnabled();
 // used by both a views::NativeWidget and an aura::RootWindowHost
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
-class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
+class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate,
+                                        public MessageLoopForUI::Observer {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler();
@@ -135,6 +137,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
                       const gfx::ImageSkia& app_icon);
 
   // Message Handlers.
+  // This list is in _ALPHABETICAL_ order!
   void OnActivate(UINT action, BOOL minimized, HWND window);
   // TODO(beng): Once this object becomes the WindowImpl, these methods can
   //             be made private.
@@ -219,6 +222,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate {
   // Overridden from WindowImpl:
   virtual HICON GetDefaultWindowIcon() const;
   virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
+
+  // Overridden from MessageLoopForUI::Observer:
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Can be called after the delegate has had the opportunity to set focus and
   // did not do so.

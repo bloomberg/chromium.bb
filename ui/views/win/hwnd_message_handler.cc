@@ -361,8 +361,8 @@ class HWNDMessageHandler::ScopedRedrawLock {
 
 HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(fullscreen_handler_(new FullscreenHandler(
-          delegate->AsNativeWidgetWin()->GetWidget()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          fullscreen_handler_(new FullscreenHandler)),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       remove_standard_frame_(false),
       restore_focus_when_enabled_(false),
@@ -924,6 +924,8 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   use_layered_buffer_ = !!(delegate_->AsNativeWidgetWin()->
       window_ex_style() & WS_EX_LAYERED);
 
+  fullscreen_handler_->set_hwnd(hwnd());
+
   // Attempt to detect screen readers by sending an event with our custom id.
   NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
 
@@ -954,6 +956,12 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // receive a size notification when its initial bounds are specified at window
   // creation time.
   ClientAreaSizeChanged();
+
+  // We need to add ourselves as a message loop observer so that we can repaint
+  // aggressively if the contents of our window become invalid. Unfortunately
+  // WM_PAINT messages are starved and we get flickery redrawing when resizing
+  // if we do not do this.
+  MessageLoopForUI::current()->AddObserver(this);
 
   delegate_->HandleCreate();
 
@@ -1011,7 +1019,7 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
 
   // Add the native frame border size to the minimum and maximum size if the
   // view reports its size as the client size.
-  if (delegate_->AsNativeWidgetWin()->WidgetSizeIsClientSize()) {
+  if (delegate_->WidgetSizeIsClientSize()) {
     CRect client_rect, window_rect;
     GetClientRect(hwnd(), &client_rect);
     GetWindowRect(hwnd(), &window_rect);
@@ -1852,6 +1860,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   HWND window = hwnd();
   LRESULT result = 0;
 
+  if (delegate_->PreHandleMSG(message, w_param, l_param, &result))
+    return result;
+
   // First allow messages sent by child controls to be processed directly by
   // their associated views. If such a view is present, it will handle the
   // message *instead of* this NativeWidgetWin.
@@ -1863,8 +1874,11 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
       window, message, w_param, l_param, result)) {
     result = DefWindowProc(window, message, w_param, l_param);
   }
-  if (message == WM_NCDESTROY)
+  delegate_->PostHandleMSG(message, w_param, l_param);
+  if (message == WM_NCDESTROY) {
+    MessageLoopForUI::current()->RemoveObserver(this);
     delegate_->HandleDestroyed();
+  }
 
   // Only top level widget should store/restore focus.
   if (message == WM_ACTIVATE && delegate_->CanSaveFocus())
@@ -1879,6 +1893,17 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   return result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// HWNDMessageHandler, MessageLoopForUI::Observer implementation:
+
+base::EventStatus HWNDMessageHandler::WillProcessEvent(
+      const base::NativeEvent& event) {
+  return base::EVENT_CONTINUE;
+}
+
+void HWNDMessageHandler::DidProcessEvent(const base::NativeEvent& event) {
+  RedrawInvalidRect();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
@@ -1960,7 +1985,7 @@ void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
 
 void HWNDMessageHandler::ClientAreaSizeChanged() {
   RECT r = {0, 0, 0, 0};
-  if (delegate_->AsNativeWidgetWin()->WidgetSizeIsClientSize()) {
+  if (delegate_->WidgetSizeIsClientSize()) {
     // TODO(beng): investigate whether this could be done
     // from other branch of if-else.
     if (!IsMinimized())

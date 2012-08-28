@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/window_impl.h"
@@ -71,7 +70,6 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
-                                     public MessageLoopForUI::Observer,
                                      public internal::NativeWidgetPrivate,
                                      public HWNDMessageHandlerDelegate {
  public:
@@ -108,62 +106,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   bool IsInMetroSnapMode() const;
 
   void SetCanUpdateLayeredWindow(bool can_update);
-
-  BOOL IsWindow() const {
-    return ::IsWindow(GetNativeView());
-  }
-
-  BOOL ShowWindow(int command) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::ShowWindow(GetNativeView(), command);
-  }
-
-  HWND GetParent() const {
-    return ::GetParent(GetNativeView());
-  }
-
-  LONG GetWindowLong(int index) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::GetWindowLong(GetNativeView(), index);
-  }
-
-  BOOL GetWindowRect(RECT* rect) const {
-    return ::GetWindowRect(GetNativeView(), rect);
-  }
-
-  LONG SetWindowLong(int index, LONG new_long) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetWindowLong(GetNativeView(), index, new_long);
-  }
-
-  BOOL SetWindowPos(HWND hwnd_after, int x, int y, int cx, int cy, UINT flags) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetWindowPos(GetNativeView(), hwnd_after, x, y, cx, cy, flags);
-  }
-
-  BOOL IsZoomed() const {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::IsZoomed(GetNativeView());
-  }
-
-  BOOL MoveWindow(int x, int y, int width, int height) {
-    return MoveWindow(x, y, width, height, TRUE);
-  }
-
-  BOOL MoveWindow(int x, int y, int width, int height, BOOL repaint) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::MoveWindow(GetNativeView(), x, y, width, height, repaint);
-  }
-
-  int SetWindowRgn(HRGN region, BOOL redraw) {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::SetWindowRgn(GetNativeView(), region, redraw);
-  }
-
-  BOOL GetClientRect(RECT* rect) const {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::GetClientRect(GetNativeView(), rect);
-  }
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
@@ -253,11 +195,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
 
  protected:
-  // Overridden from MessageLoop::Observer:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-
   // Overridden from WindowImpl:
   virtual HICON GetDefaultWindowIcon() const OVERRIDE;
   virtual LRESULT OnWndProc(UINT message,
@@ -444,6 +381,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
+  virtual bool WidgetSizeIsClientSize() const OVERRIDE;
   virtual bool CanSaveFocus() const OVERRIDE;
   virtual void SaveFocusOnDeactivate() OVERRIDE;
   virtual void RestoreFocusOnActivate() OVERRIDE;
@@ -494,6 +432,13 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void HandleTooltipMouseMove(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) OVERRIDE;
+  virtual bool PreHandleMSG(UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param,
+                            LRESULT* result) OVERRIDE;
+  virtual void PostHandleMSG(UINT message,
+                             WPARAM w_param,
+                             LPARAM l_param) OVERRIDE;
   virtual NativeWidgetWin* AsNativeWidgetWin() OVERRIDE;
 
  private:
@@ -504,9 +449,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   friend HWNDMessageHandler;
 
   void SetInitParams(const Widget::InitParams& params);
-
-  // Determines whether the delegate expects the client size or the window size.
-  bool WidgetSizeIsClientSize() const;
 
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.

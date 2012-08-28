@@ -7,10 +7,6 @@
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
-#endif
-
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,10 +31,9 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
 #if defined(OS_WIN) && !defined(USE_AURA)
   RECT rect = client_bounds.ToRECT();
-  NativeWidgetWin* widget_win =
-      static_cast<NativeWidgetWin*>(frame_->native_widget());
-  AdjustWindowRectEx(&rect, widget_win->window_style(), FALSE,
-                     widget_win->window_ex_style());
+  DWORD style = ::GetWindowLong(GetWidget()->GetNativeView(), GWL_STYLE);
+  DWORD ex_style = ::GetWindowLong(GetWidget()->GetNativeView(), GWL_EXSTYLE);
+  AdjustWindowRectEx(&rect, style, FALSE, ex_style);
   return gfx::Rect(rect);
 #else
   // TODO(sad):

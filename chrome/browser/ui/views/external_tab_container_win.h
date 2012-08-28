@@ -227,8 +227,13 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual ~ExternalTabContainerWin();
 
   // Overridden from views::NativeWidgetWin:
-  virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
-  virtual void OnDestroy();
+  virtual bool PreHandleMSG(UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param,
+                            LRESULT* result) OVERRIDE;
+  virtual void PostHandleMSG(UINT message,
+                             WPARAM w_param,
+                             LPARAM l_param) OVERRIDE;
   virtual void OnFinalMessage(HWND window);
 
   bool InitNavigationInfo(NavigationInfo* nav_info,
