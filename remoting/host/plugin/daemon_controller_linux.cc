@@ -33,7 +33,12 @@ namespace {
 
 const char kDaemonScript[] =
     "/opt/google/chrome-remote-desktop/chrome-remote-desktop";
+
+// Timeout for running daemon script.
 const int64 kDaemonTimeoutMs = 5000;
+
+// Timeout for commands that require password prompt- 1 minute;
+const int64 kSudoTimeoutMs = 60000;
 
 std::string GetMd5(const std::string& value) {
   base::MD5Context ctx;
@@ -91,7 +96,10 @@ static bool GetScriptPath(FilePath* result) {
   return false;
 }
 
-static bool RunScript(const std::vector<std::string>& args, int* exit_code) {
+static bool RunHostScriptWithTimeout(
+    const std::vector<std::string>& args,
+    base::TimeDelta timeout,
+    int* exit_code) {
   // As long as we're relying on running an external binary from the
   // PATH, don't do it as root.
   if (getuid() == 0) {
@@ -112,24 +120,31 @@ static bool RunScript(const std::vector<std::string>& args, int* exit_code) {
   if (result) {
     if (exit_code) {
       result = base::WaitForExitCodeWithTimeout(
-          process_handle, exit_code,
-          base::TimeDelta::FromMilliseconds(kDaemonTimeoutMs));
+          process_handle, exit_code, timeout);
     }
     base::CloseProcessHandle(process_handle);
   }
   return result;
 }
 
+static bool RunHostScript(const std::vector<std::string>& args,
+                          int* exit_code) {
+  return RunHostScriptWithTimeout(
+      args, base::TimeDelta::FromMilliseconds(kDaemonTimeoutMs), exit_code);
+}
+
 remoting::DaemonController::State DaemonControllerLinux::GetState() {
   std::vector<std::string> args;
   args.push_back("--check-running");
   int exit_code = 0;
-  if (!RunScript(args, &exit_code)) {
+  if (!RunHostScript(args, &exit_code)) {
     // TODO(jamiewalch): When we have a good story for installing, return
     // NOT_INSTALLED rather than NOT_IMPLEMENTED (the former suppresses
     // the relevant UI in the web-app).
     return remoting::DaemonController::STATE_NOT_IMPLEMENTED;
-  } else if (exit_code == 0) {
+  }
+
+  if (exit_code == 0) {
     return remoting::DaemonController::STATE_STARTED;
   } else {
     return remoting::DaemonController::STATE_STOPPED;
@@ -214,6 +229,21 @@ void DaemonControllerLinux::DoGetConfig(const GetConfigCallback& callback) {
 void DaemonControllerLinux::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
+
+  // Add the user to chrome-remote-desktop group first.
+  std::vector<std::string> args;
+  args.push_back("--add-user");
+  int exit_code;
+  if (!RunHostScriptWithTimeout(
+          args, base::TimeDelta::FromMilliseconds(kSudoTimeoutMs),
+          &exit_code) ||
+      exit_code != 0) {
+    LOG(ERROR) << "Failed to add user to chrome-remote-desktop group.";
+    done_callback.Run(RESULT_FAILED);
+    return;
+  }
+
+  // Write config.
   JsonHostConfig config_file(GetConfigPath());
   if (!config_file.CopyFrom(config.get()) ||
       !config_file.Save()) {
@@ -222,11 +252,11 @@ void DaemonControllerLinux::DoSetConfigAndStart(
     return;
   }
 
-  std::vector<std::string> args;
+  // Finally start the host.
+  args.clear();
   args.push_back("--start");
   AsyncResult result;
-  int exit_code;
-  if (RunScript(args, &exit_code)) {
+  if (RunHostScript(args, &exit_code)) {
     result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
   } else {
     result = RESULT_FAILED;
@@ -250,7 +280,7 @@ void DaemonControllerLinux::DoUpdateConfig(
   args.push_back("--reload");
   AsyncResult result;
   int exit_code;
-  if (RunScript(args, &exit_code)) {
+  if (RunHostScript(args, &exit_code)) {
     result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
   } else {
     result = RESULT_FAILED;
@@ -264,7 +294,7 @@ void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {
   args.push_back("--stop");
   int exit_code = 0;
   AsyncResult result;
-  if (RunScript(args, &exit_code)) {
+  if (RunHostScript(args, &exit_code)) {
     result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
   } else {
     result = RESULT_FAILED;

@@ -42,6 +42,8 @@ if SCRIPT_PATH == DEFAULT_INSTALL_PATH:
 else:
   HOST_BINARY_NAME = "remoting_me2me_host"
 
+CHROME_REMOTING_GROUP_NAME = "chrome-remote-desktop"
+
 CONFIG_DIR = os.path.expanduser("~/.config/chrome-remote-desktop")
 HOME_DIR = os.environ["HOME"]
 
@@ -560,6 +562,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
   parser.add_option("", "--reload", dest="reload", default=False,
                     action="store_true",
                     help="Signal currently running host to reload the config.")
+  parser.add_option("", "--add-user", dest="add_user", default=False,
+                    action="store_true",
+                    help="Add current user to the chrome-remote-desktop group.")
   (options, args) = parser.parse_args()
 
   host_hash = hashlib.md5(socket.gethostname()).hexdigest()
@@ -585,6 +590,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
       return 1
     os.kill(pid, signal.SIGHUP)
     return 0
+
+  if options.add_user:
+    command = ("sudo -k && gksudo --message "
+               "\"Please enter your password to enable Chrome Remote Desktop\" "
+               "-- sh -c "
+               "\"groupadd -f %(group)s && gpasswd --add %(user)s %(group)s\"" %
+               { 'group': CHROME_REMOTING_GROUP_NAME,
+                 'user': getpass.getuser() })
+    return os.system(command)
 
   if not options.start:
     # If no modal command-line options specified, print an error and exit.

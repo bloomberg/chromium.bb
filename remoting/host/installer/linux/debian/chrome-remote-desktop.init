@@ -15,7 +15,7 @@ HOST_PATH=/opt/google/chrome-remote-desktop/chrome-remote-desktop
 
 # Group of users for which Chrome Remote Desktop is enabled. Users are added
 # to that group when they start the host for the first time.
-CHROME_REMOTING_GROUP=chrome-remoting
+CHROME_REMOTING_GROUP=chrome-remote-desktop
 
 test -x $HOST_PATH || exit 0
 
