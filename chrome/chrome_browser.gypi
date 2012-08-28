@@ -2418,7 +2418,6 @@
         'browser/tab_contents/spelling_bubble_model.h',
         'browser/tab_contents/spelling_menu_observer.cc',
         'browser/tab_contents/spelling_menu_observer.h',
-        'browser/tab_contents/web_contents_user_data.h',
         'browser/tab_contents/web_drag_bookmark_handler_aura.cc',
         'browser/tab_contents/web_drag_bookmark_handler_aura.h',
         'browser/tab_contents/web_drag_bookmark_handler_gtk.cc',
