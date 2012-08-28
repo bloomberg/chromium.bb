@@ -9,6 +9,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
+#include "base/win/startup_information.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/target_process.h"
@@ -312,6 +313,14 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (ERROR_ALREADY_EXISTS == ::GetLastError())
     return SBOX_ERROR_GENERIC;
 
+  // Initialize the startup information from the policy.
+  base::win::StartupInformation startup_info;
+  string16 desktop = policy_base->GetAlternateDesktop();
+  if (!desktop.empty()) {
+    startup_info.startup_info()->lpDesktop =
+        const_cast<wchar_t*>(desktop.c_str());
+  }
+
   // Construct the thread pool here in case it is expensive.
   // The thread pool is shared by all the targets
   if (NULL == thread_pool_)
@@ -325,11 +334,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                                             job,
                                             thread_pool_);
 
-  std::wstring desktop = policy_base->GetAlternateDesktop();
-
   win_result = target->Create(exe_path, command_line,
-                              desktop.empty() ? NULL : desktop.c_str(),
-                              &process_info);
+                              startup_info, &process_info);
   if (ERROR_SUCCESS != win_result)
     return SpawnCleanup(target, win_result);
 

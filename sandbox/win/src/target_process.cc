@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
+#include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/crosscall_client.h"
@@ -130,27 +131,24 @@ TargetProcess::~TargetProcess() {
 // object.
 DWORD TargetProcess::Create(const wchar_t* exe_path,
                             const wchar_t* command_line,
-                            const wchar_t* desktop,
+                            const base::win::StartupInformation& startup_info,
                             base::win::ScopedProcessInformation* target_info) {
   exe_name_.reset(_wcsdup(exe_path));
 
   // the command line needs to be writable by CreateProcess().
   scoped_ptr_malloc<wchar_t> cmd_line(_wcsdup(command_line));
-  scoped_ptr_malloc<wchar_t> desktop_name(desktop ? _wcsdup(desktop) : NULL);
 
   // Start the target process suspended.
   DWORD flags =
       CREATE_SUSPENDED | CREATE_UNICODE_ENVIRONMENT | DETACHED_PROCESS;
 
+  if (startup_info.has_extended_startup_info())
+    flags |= EXTENDED_STARTUPINFO_PRESENT;
+
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
     // Windows 8 implements nested jobs, but for older systems we need to
     // break out of any job we're in to enforce our restrictions.
     flags |= CREATE_BREAKAWAY_FROM_JOB;
-  }
-
-  STARTUPINFO startup_info = {sizeof(STARTUPINFO)};
-  if (desktop) {
-    startup_info.lpDesktop = desktop_name.get();
   }
 
   base::win::ScopedProcessInformation process_info;
@@ -164,7 +162,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
                               flags,
                               NULL,   // Use the environment of the caller.
                               NULL,   // Use current directory of the caller.
-                              &startup_info,
+                              startup_info.startup_info(),
                               process_info.Receive())) {
     return ::GetLastError();
   }
