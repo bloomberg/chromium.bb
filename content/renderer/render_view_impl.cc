@@ -1757,6 +1757,7 @@ WebView* RenderViewImpl::createView(
   int32 surface_id = 0;
   int64 cloned_session_storage_namespace_id;
 
+  creator->consumeUserGesture();
   RenderThread::Get()->Send(
       new ViewHostMsg_CreateWindow(params,
                                    &routing_id,
