@@ -9,6 +9,9 @@ Import('env')
 if not env.Bit('build_x86_32'):
   Return()
 
+if env.Bit('bitcode'):
+  env.Append(CCFLAGS=['-allow-asm'])
+
 test_prog = env.ComponentProgram(
     'gs_segment_read_only_test', ['gs_segment_test.c'],
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])

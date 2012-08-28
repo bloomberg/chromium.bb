@@ -17,6 +17,12 @@ blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_BLOB_DATA_START}')
 # not affect the executable's base address.
 if blob_env.Bit('bitcode'):
   blob_env.Append(LINKFLAGS='-Wl,-Ttext=${IRT_BLOB_CODE_START}')
+  # allow use of asm in irt_thread.c and irt_private_pthread.c
+  # TODO(robertm): get rid of this once we can distinguish
+  #                real asms from those used for redirects.
+  #                In this case:  asm("llvm.nacl.tp.tdb.offset")
+  #                from src/untrusted/nacl/tls_params.h
+  blob_env.Append(CCFLAGS=['-allow-asm'])
 else:
   blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
 

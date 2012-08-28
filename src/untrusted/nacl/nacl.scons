@@ -10,7 +10,11 @@ Import('env')
 env.FilterOut(CCFLAGS=['-pedantic'])
 if env.Bit('bitcode'):
   # silence a warning when compiling malloc.c with clang
-  env.Append(CCFLAGS=['-Wno-self-assign'])
+  # TODO(robertm): get rid of -allow-asm once we can distinguish
+  #                real asms from those used for redirects.
+  #                In this case:  asm("llvm.nacl.tp.tdb.offset")
+  #                from src/untrusted/nacl/tls_params.h
+  env.Append(CCFLAGS=['-Wno-self-assign', '-allow-asm'])
 # Sources are split into essentially one function per file to be in
 # alignment with the linker, which resolves symbols by including entire
 # object files.  Placing multiple definitions in one file may result in

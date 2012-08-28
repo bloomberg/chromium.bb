@@ -8,6 +8,13 @@ Import('env')
 # (elijahtaylor): Removing so braced groups will work for GC syscall wrapping.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
+if env.Bit('bitcode'):
+  # TODO(robertm): get rid of -allow-asm once we can distinguish
+  #                real asms from those used for redirects.
+  #                In this case:  asm("llvm.nacl.tp.tdb.offset")
+  #                from src/untrusted/nacl/tls_params.h
+  env.Append(CCFLAGS=['-allow-asm'])
+
 valgrind = env.ComponentObject(
     'valgrind_annotations.o',
     '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
