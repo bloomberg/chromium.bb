@@ -525,30 +525,32 @@ void DriveFileSystem::GetEntryInfoByResourceIdOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  resource_metadata_->GetEntryByResourceIdAsync(resource_id,
-      base::Bind(&DriveFileSystem::GetEntryInfoByEntryOnUIThread,
+  resource_metadata_->GetEntryInfoByResourceId(
+      resource_id,
+      base::Bind(&DriveFileSystem::GetEntryInfoByResourceIdAfterGetEntry,
                  ui_weak_ptr_,
                  callback));
 }
 
-void DriveFileSystem::GetEntryInfoByEntryOnUIThread(
+void DriveFileSystem::GetEntryInfoByResourceIdAfterGetEntry(
     const GetEntryInfoWithFilePathCallback& callback,
-    DriveEntry* entry) {
+    DriveFileError error,
+    const FilePath& file_path,
+    scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (entry) {
-    scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto);
-    entry->ToProtoFull(entry_proto.get());
-    CheckLocalModificationAndRun(
-        entry_proto.Pass(),
-        base::Bind(&RunGetEntryInfoWithFilePathCallback,
-                   callback, entry->GetFilePath()));
-  } else {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND,
-                 FilePath(),
-                 scoped_ptr<DriveEntryProto>());
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, FilePath(), scoped_ptr<DriveEntryProto>());
+    return;
   }
+  DCHECK(entry_proto.get());
+
+  CheckLocalModificationAndRun(
+      entry_proto.Pass(),
+      base::Bind(&RunGetEntryInfoWithFilePathCallback,
+                 callback,
+                 file_path));
 }
 
 void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {

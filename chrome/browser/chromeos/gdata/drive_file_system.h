@@ -751,9 +751,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback,
       DriveEntry* entry);
-  void GetEntryInfoByEntryOnUIThread(
-      const GetEntryInfoWithFilePathCallback& callback,
-      DriveEntry* entry);
   void UpdateFileByResourceIdOnUIThread(const std::string& resource_id,
                                         const FileOperationCallback& callback);
   void GetEntryInfoByPathOnUIThread(const FilePath& file_path,
@@ -780,6 +777,15 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                  scoped_ptr<DocumentEntry> entry,
                                  const FilePath& file_content_path,
                                  const base::Closure& callback);
+
+  // Part of GetEntryInfoByResourceId(). Called after
+  // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // |callback| must not be null.
+  void GetEntryInfoByResourceIdAfterGetEntry(
+      const GetEntryInfoWithFilePathCallback& callback,
+      DriveFileError error,
+      const FilePath& file_path,
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of CopyOnUIThread(). Called after GetEntryInfoPairByPaths() is
   // complete. |callback| must not be null.
