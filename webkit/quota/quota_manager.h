@@ -223,11 +223,6 @@ class QuotaManager : public QuotaTaskObserver,
   friend struct QuotaManagerDeleter;
 
   class DatabaseTaskBase;
-  class InitializeTask;
-  class UpdateTemporaryQuotaOverrideTask;
-  class GetPersistentHostQuotaTask;
-  class UpdatePersistentHostQuotaTask;
-  class GetLRUOriginTask;
   class DeleteOriginInfo;
   class InitializeTemporaryOriginsInfoTask;
   class UpdateAccessTimeTask;
@@ -322,12 +317,6 @@ class QuotaManager : public QuotaTaskObserver,
   void DeleteOriginFromDatabase(const GURL& origin, StorageType type);
 
   void DidOriginDataEvicted(QuotaStatusCode status);
-  void DidGetGlobalUsageAndQuotaForEviction(QuotaStatusCode status,
-                                            StorageType type,
-                                            int64 usage,
-                                            int64 unlimited_usage,
-                                            int64 quota,
-                                            int64 available_space);
 
   void ReportHistogram();
   void DidGetTemporaryGlobalUsageForHistogram(StorageType type,
@@ -348,13 +337,32 @@ class QuotaManager : public QuotaTaskObserver,
   virtual void GetUsageAndQuotaForEviction(
       const GetUsageAndQuotaForEvictionCallback& callback) OVERRIDE;
 
-  void DidRunInitializeTask();
+  void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,
+                                          const int64* new_quota,
+                                          bool success);
+  void DidGetPersistentHostQuota(const HostQuotaCallback& callback,
+                                 const std::string& host,
+                                 const int64* quota,
+                                 bool success);
+  void DidSetPersistentHostQuota(const std::string& host,
+                                 const HostQuotaCallback& callback,
+                                 const int64* new_quota,
+                                 bool success);
+  void DidInitialize(int64* temporary_quota_override,
+                     int64* desired_available_space,
+                     bool success);
+  void DidGetLRUOrigin(const GURL* origin,
+                       bool success);
   void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
                                          StorageType type,
                                          int64 quota_unused);
-  void DidGetDatabaseLRUOrigin(const GURL& origin);
 
   void DeleteOnCorrectThread() const;
+
+  void PostTaskAndReplyWithResultForDBThread(
+      const tracked_objects::Location& from_here,
+      const base::Callback<bool(QuotaDatabase*)>& task,
+      const base::Callback<void(bool)>& reply);
 
   const bool is_incognito_;
   const FilePath profile_path_;
