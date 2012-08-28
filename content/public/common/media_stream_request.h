@@ -23,12 +23,15 @@ enum MediaStreamDeviceType {
   NUM_MEDIA_STREAM_DEVICE_TYPES
 };
 
+// TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).
 struct CONTENT_EXPORT MediaStreamDevice {
   MediaStreamDevice(
       MediaStreamDeviceType type,
       const std::string& device_id,
       const std::string& name);
+
+  ~MediaStreamDevice();
 
   // The device's type.
   MediaStreamDeviceType type;
@@ -65,6 +68,7 @@ struct CONTENT_EXPORT MediaStreamRequest {
 
   // A list of devices present on the user's computer, for each device type
   // requested.
+  // All the elements in this map will be deleted in ~MediaStreamRequest().
   MediaStreamDeviceMap devices;
 };
 

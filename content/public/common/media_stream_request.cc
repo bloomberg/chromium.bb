@@ -15,6 +15,8 @@ MediaStreamDevice::MediaStreamDevice(
       name(name) {
 }
 
+MediaStreamDevice::~MediaStreamDevice() {}
+
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
     int render_view_id,
@@ -25,6 +27,12 @@ MediaStreamRequest::MediaStreamRequest(
 }
 
 MediaStreamRequest::~MediaStreamRequest() {
+  for (MediaStreamDeviceMap::iterator iter = devices.begin();
+       iter != devices.end();
+       ++iter) {
+    iter->second.clear();
+  }
+  devices.clear();
 }
 
 }  // namespace content

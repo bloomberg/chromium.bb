@@ -29,7 +29,7 @@ class MediaStreamInfoBarGtk : public InfoBarGtk {
 
   MediaStreamInfoBarDelegate* GetDelegate();
 
-  MediaStreamDevicesMenuModel* devices_menu_model_;
+  scoped_ptr<MediaStreamDevicesMenuModel> devices_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamInfoBarGtk);
 };

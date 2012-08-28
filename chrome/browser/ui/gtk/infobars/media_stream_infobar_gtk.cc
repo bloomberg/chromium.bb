@@ -25,7 +25,7 @@ MediaStreamInfoBarGtk::MediaStreamInfoBarGtk(
     InfoBarTabHelper* owner,
     MediaStreamInfoBarDelegate* delegate)
     : InfoBarGtk(owner, delegate) {
-  devices_menu_model_ = new MediaStreamDevicesMenuModel(delegate);
+  devices_menu_model_.reset(new MediaStreamDevicesMenuModel(delegate));
   Init();
 }
 
@@ -74,7 +74,7 @@ void MediaStreamInfoBarGtk::Init() {
 }
 
 void MediaStreamInfoBarGtk::OnDevicesClicked(GtkWidget* sender) {
-  ShowMenuWithModel(sender, NULL, devices_menu_model_);
+  ShowMenuWithModel(sender, NULL, devices_menu_model_.get());
 }
 
 void MediaStreamInfoBarGtk::OnAllowButton(GtkWidget* widget) {
