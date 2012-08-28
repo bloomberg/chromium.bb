@@ -32,6 +32,9 @@ MenuConfig* MenuConfig::Create() {
   config->item_left_margin = 4;
   config->item_min_height = 29;
   config->separator_height = 15;
+  config->separator_spacing_height = 7;
+  config->separator_lower_height = 8;
+  config->separator_upper_height = 8;
   config->font = rb.GetFont(ResourceBundle::BaseFont);
   config->label_to_arrow_padding = 20;
   config->label_to_accelerator_padding = 20;

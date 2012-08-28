@@ -19,12 +19,18 @@ namespace views {
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   int pos = 0;
-  if (type_ == ui::LOWER_SEPARATOR)
-    pos = height() - kSeparatorHeight;
-  else if (type_ != ui::SPACING_SEPARATOR)
-    pos = height() / 2;
-  else if (type_ != ui::UPPER_SEPARATOR)
-    return;
+  switch (type_) {
+    case ui::LOWER_SEPARATOR:
+      pos = height() - kSeparatorHeight;
+      break;
+    case ui::SPACING_SEPARATOR:
+      return;
+    case ui::UPPER_SEPARATOR:
+      break;
+    default:
+      pos = height() / 2;
+      break;
+  }
   canvas->FillRect(gfx::Rect(0, pos, width(), kSeparatorHeight),
       ui::NativeTheme::instance()->GetSystemColor(
             ui::NativeTheme::kColorId_MenuSeparatorColor));

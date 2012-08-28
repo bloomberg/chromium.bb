@@ -621,7 +621,7 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
 }
 
 void WrenchMenuModel::CreateCutCopyPasteMenu(bool new_menu) {
-  AddSeparator(new_menu ? ui::LOWER_SEPARATOR: ui::NORMAL_SEPARATOR);
+  AddSeparator(new_menu ? ui::LOWER_SEPARATOR : ui::NORMAL_SEPARATOR);
 
 #if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
@@ -646,7 +646,7 @@ void WrenchMenuModel::CreateCutCopyPasteMenu(bool new_menu) {
 
 void WrenchMenuModel::CreateZoomMenu(bool new_menu) {
   // This menu needs to be enclosed by separators.
-  AddSeparator(new_menu ? ui::LOWER_SEPARATOR: ui::NORMAL_SEPARATOR);
+  AddSeparator(new_menu ? ui::LOWER_SEPARATOR : ui::NORMAL_SEPARATOR);
 
 #if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
@@ -672,7 +672,7 @@ void WrenchMenuModel::CreateZoomMenu(bool new_menu) {
   AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
 #endif
 
-  AddSeparator(new_menu ? ui::UPPER_SEPARATOR: ui::NORMAL_SEPARATOR);
+  AddSeparator(new_menu ? ui::UPPER_SEPARATOR : ui::NORMAL_SEPARATOR);
 }
 
 void WrenchMenuModel::UpdateZoomControls() {
