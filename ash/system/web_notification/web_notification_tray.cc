@@ -24,13 +24,13 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget_observer.h"
@@ -44,10 +44,6 @@ const int kTrayContainerVerticalPaddingVerticalAlignment = 1;
 const int kTrayContainerHorizontalPaddingVerticalAlignment = 0;
 const int kPaddingFromLeftEdgeOfSystemTrayBottomAlignment = 8;
 const int kPaddingFromTopEdgeOfSystemTrayVerticalAlignment = 10;
-const int kTrayWidth = 40;
-const int kTrayHeight = 31;
-const int kTraySideWidth = 32;
-const int kTraySideHeight = 24;
 
 // Web Notification Bubble constants
 const int kWebNotificationBubbleMinHeight = 80;
@@ -120,11 +116,10 @@ class WebNotificationList {
     if (message_center_visible_ == visible)
       return;
     message_center_visible_ = visible;
-    if (visible) {
-      // Clear the unread count when the list is shown.
+    if (!visible) {
+      // When the list is hidden, clear the unread count, and mark all
+      // notifications as read and shown.
       unread_count_ = 0;
-    } else {
-      // Mark all notifications as read and shown when the list is hidden.
       for (Notifications::iterator iter = notifications_.begin();
            iter != notifications_.end(); ++iter) {
         iter->is_read = true;
@@ -1088,18 +1083,12 @@ WebNotificationTray::WebNotificationTray(
     internal::StatusAreaWidget* status_area_widget)
     : internal::TrayBackgroundView(status_area_widget),
       notification_list_(new WebNotificationList()),
-      count_label_(NULL),
+      button_(NULL),
       delegate_(NULL),
       show_message_center_on_unlock_(false) {
-  count_label_ = new views::Label(UTF8ToUTF16("0"));
-  internal::SetupLabelForTray(count_label_);
-  gfx::Font font = count_label_->font();
-  count_label_->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
-  count_label_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-  count_label_->SetEnabledColor(kMessageCountColor);
+  button_ = new views::ImageButton(this);
 
-  tray_container()->set_size(gfx::Size(kTrayWidth, kTrayHeight));
-  tray_container()->AddChildView(count_label_);
+  tray_container()->AddChildView(button_);
 
   UpdateTray();
 }
@@ -1177,6 +1166,7 @@ void WebNotificationTray::HideMessageCenterBubble() {
   message_center_bubble_.reset();
   show_message_center_on_unlock_ = false;
   notification_list_->SetMessageCenterVisible(false);
+  UpdateTray();
   status_area_widget()->SetHideSystemNotifications(false);
   UpdateShouldShowLauncher();
 }
@@ -1238,10 +1228,6 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
-  if (alignment == SHELF_ALIGNMENT_BOTTOM)
-    tray_container()->set_size(gfx::Size(kTrayWidth, kTrayHeight));
-  else
-    tray_container()->set_size(gfx::Size(kTraySideWidth, kTraySideHeight));
   // Destroy any existing bubble so that it will be rebuilt correctly.
   HideMessageCenterBubble();
   HidePopupBubble();
@@ -1307,11 +1293,14 @@ void WebNotificationTray::DisableByUrl(const std::string& id) {
 }
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {
-  if (message_center_bubble())
-    HideMessageCenterBubble();
-  else
-    ShowMessageCenterBubble();
+  ToggleMessageCenterBubble();
   return true;
+}
+
+void WebNotificationTray::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event) {
+  DCHECK(sender == button_);
+  ToggleMessageCenterBubble();
 }
 
 void WebNotificationTray::ShowSettings(const std::string& id) {
@@ -1326,9 +1315,35 @@ void WebNotificationTray::OnClicked(const std::string& id) {
 
 // Other private methods
 
+void WebNotificationTray::ToggleMessageCenterBubble() {
+  if (message_center_bubble())
+    HideMessageCenterBubble();
+  else
+    ShowMessageCenterBubble();
+  UpdateTray();
+}
+
 void WebNotificationTray::UpdateTray() {
-  count_label_->SetText(UTF8ToUTF16(
-      GetNotificationText(notification_list()->unread_count())));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (notification_list()->unread_count() > 0) {
+    button_->SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL));
+    button_->SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_HOVER));
+    button_->SetImage(views::CustomButton::BS_PUSHED, rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_PRESSED));
+  } else {
+    button_->SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_NORMAL));
+    button_->SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_HOVER));
+    button_->SetImage(views::CustomButton::BS_PUSHED, rb.GetImageSkiaNamed(
+        IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_INACTIVE_PRESSED));
+  }
+  if (message_center_bubble())
+    button_->SetState(views::CustomButton::BS_PUSHED);
+  else
+    button_->SetState(views::CustomButton::BS_NORMAL);
   bool is_visible =
       (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
       (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
@@ -1339,8 +1354,6 @@ void WebNotificationTray::UpdateTray() {
 }
 
 void WebNotificationTray::UpdateTrayAndBubble() {
-  UpdateTray();
-
   if (message_center_bubble()) {
     if (notification_list_->notifications().size() == 0)
       HideMessageCenterBubble();
@@ -1353,6 +1366,7 @@ void WebNotificationTray::UpdateTrayAndBubble() {
     else
       popup_bubble()->ScheduleUpdate();
   }
+  UpdateTray();
 }
 
 void WebNotificationTray::HideBubble(Bubble* bubble) {

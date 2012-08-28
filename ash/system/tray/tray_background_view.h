@@ -84,8 +84,11 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
 
   virtual string16 GetAccessibleName() = 0;
 
-  // Sets |contents| as a child and sets its background to |background_|.
+  // Sets |contents| as a child.
   void SetContents(views::View* contents);
+
+  // Creates and sets contents background to |background_|.
+  void SetContentsBackground();
 
   // Sets whether the tray paints a background. Default is true, but is set to
   // false if a window overlaps the shelf.

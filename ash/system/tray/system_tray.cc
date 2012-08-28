@@ -71,6 +71,7 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       user_observer_(NULL),
       default_bubble_height_(0),
       hide_notifications_(false) {
+  SetContentsBackground();
 }
 
 SystemTray::~SystemTray() {

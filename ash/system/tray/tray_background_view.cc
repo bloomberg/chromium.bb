@@ -236,11 +236,13 @@ void TrayBackgroundView::UpdateBackground(int alpha) {
 }
 
 void TrayBackgroundView::SetContents(views::View* contents) {
-  background_ = new internal::TrayBackground;
-  contents->set_background(background_);
-
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(contents);
+}
+
+void TrayBackgroundView::SetContentsBackground() {
+  background_ = new internal::TrayBackground;
+  tray_container_->set_background(background_);
 }
 
 void TrayBackgroundView::SetPaintsBackground(
