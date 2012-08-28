@@ -248,8 +248,8 @@ class CppTypeGenerator(object):
     """
     if ref_type in self._type_namespaces:
       return self._type_namespaces[ref_type]
-    raise KeyError(('Cannot resolve type: %s.' % ref_type) +
-        'Maybe it needs a namespace prefix if it comes from another namespace?')
+    raise KeyError('Cannot resolve type: %s. Maybe it needs a namespace prefix '
+                   'if it comes from another namespace?' % ref_type)
     return None
 
   def GetReferencedProperty(self, prop):
