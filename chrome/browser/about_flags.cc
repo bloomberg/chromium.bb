@@ -929,6 +929,14 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableWebsiteSettings),
   },
+#if defined(USE_ASH)
+  { "ash-enable-advanced-gestures",
+    IDS_FLAGS_ENABLE_ADVANCED_GESTURES_NAME,
+    IDS_FLAGS_ENABLE_ADVANCED_GESTURES_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableAdvancedGestures),
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

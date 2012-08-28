@@ -10,6 +10,9 @@ namespace switches {
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
+// Enable advanced gestures (e.g. for window management).
+const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
+
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 

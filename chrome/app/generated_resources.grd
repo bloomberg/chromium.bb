@@ -5790,6 +5790,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_DESCRIPTION" desc="Title for the flag to enable the website settings feature.">
         Disables the Website Settings UI that replaces the page info bubble and provides an easy way to configure site-specific settings.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_NAME" desc="Title for the flag to enable advanced gestures.">
+        Enable advance gestures
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ADVANCED_GESTURES_DESCRIPTION" desc="Title for the flag to enable advanced gestures.">
+        Enables advanced gestures (e.g. 4-finger pinch to minimize window etc.).
+      </message>
       
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT" desc="Generic 'Default' experiment choice option name. E.G. shown in multi value options in about:flags.">
         Default

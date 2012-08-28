@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
@@ -597,6 +598,8 @@ SystemGestureEventFilter::SystemGestureEventFilter()
       start_location_(BEZEL_START_UNSET),
       orientation_(SCROLL_ORIENTATION_UNSET),
       is_scrubbing_(false),
+      system_gestures_enabled_(CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
       long_press_affordance_(new LongPressAffordanceAnimation) {
 }
 
@@ -654,6 +657,9 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     }
     return ui::GESTURE_STATUS_CONSUMED;
   }
+
+  if (!system_gestures_enabled_)
+    return ui::GESTURE_STATUS_UNKNOWN;
 
   aura::Window* system_target = GetTargetForSystemGestureEvent(target);
   if (!system_target)
@@ -831,7 +837,7 @@ void SystemGestureEventFilter::HandleBezelGestureUpdate(
     } else {
       // Check if device gestures should be performed or not.
       if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableBezelTouch)) {
+              ::switches::kDisableBezelTouch)) {
         start_location_ = BEZEL_START_UNSET;
         return;
       }

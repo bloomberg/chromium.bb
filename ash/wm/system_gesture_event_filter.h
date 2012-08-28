@@ -189,6 +189,8 @@ class SystemGestureEventFilter : public aura::EventFilter,
   // A device swipe gesture is in progress.
   bool is_scrubbing_;
 
+  bool system_gestures_enabled_;
+
   // To suppress random noise in the bezel area, the stroke needs to have at
   // least a certain amount of events in close proximity before it gets used.
   // This is the counter which keeps track of the number of events passed.

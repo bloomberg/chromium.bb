@@ -4,8 +4,8 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
-#include "base/timer.h"
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
@@ -15,7 +15,9 @@
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
@@ -144,6 +146,13 @@ class SystemGestureEventFilterTest : public AshTestBase {
   views::View* GetLongPressAffordanceView() {
     return reinterpret_cast<views::View*>(
         GetLongPressAffordance()->view_.get());
+  }
+
+  // Overridden from AshTestBase:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableAdvancedGestures);
+    test::AshTestBase::SetUp();
   }
 
  private:

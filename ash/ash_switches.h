@@ -16,6 +16,7 @@ namespace switches {
 
 // Please keep alphabetized.
 ASH_EXPORT extern const char kAshDebugShortcuts[];
+ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableWorkspace2[];
 ASH_EXPORT extern const char kAshExtendedDesktopDisabled[];
