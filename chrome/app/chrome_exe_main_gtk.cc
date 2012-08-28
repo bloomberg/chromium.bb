@@ -10,6 +10,19 @@
 // order to make it easy to update the app from GoogleUpdate. We don't need
 // that extra layer with on linux.
 
+#if defined(ADDRESS_SANITIZER) && defined(GOOGLE_CHROME_BUILD)
+const char *kAsanDefaultOptions = "quarantine_size=1048576";
+
+// Override the default ASan options for the Google Chrome executable.
+// __asan_default_options should not be instrumented, because it is called
+// before ASan is initialized.
+extern "C"
+__attribute__((no_address_safety_analysis))
+const char *__asan_default_options() {
+  return kAsanDefaultOptions;
+}
+#endif
+
 extern "C" {
 int ChromeMain(int argc, const char** argv);
 }
