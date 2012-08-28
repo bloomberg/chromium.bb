@@ -14,8 +14,9 @@ namespace content {
 
 // TODO(jln): have call sites provide a process / policy type to
 // InitializeSandbox().
-void InitializeSandbox() {
+bool InitializeSandbox() {
   bool seccomp_legacy_started = false;
+  bool seccomp_bpf_started = false;
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
   const std::string process_type =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -29,7 +30,7 @@ void InitializeSandbox() {
     // TODO(jln): change this into a CHECK() once we are more comfortable it
     // does not trigger.
     LOG(ERROR) << error_message;
-    return;
+    return false;
   }
 
   // First, try to enable seccomp-legacy.
@@ -40,8 +41,10 @@ void InitializeSandbox() {
   // instead of failing gracefully.
   // TODO(markus): fix this (crbug.com/139872).
   if (!seccomp_legacy_started) {
-    linux_sandbox->StartSeccompBpf(process_type);
+    seccomp_bpf_started = linux_sandbox->StartSeccompBpf(process_type);
   }
+
+  return seccomp_legacy_started || seccomp_bpf_started;
 }
 
 }  // namespace content
