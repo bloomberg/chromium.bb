@@ -5,6 +5,7 @@
 #include "chrome/browser/intents/web_intents_util.h"
 
 #include "base/command_line.h"
+#include "base/string_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +13,19 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/content_switches.h"
+
+namespace {
+
+const char* kRecognizedActions[] = {
+  web_intents::action::kShare,
+  web_intents::action::kPick,
+  web_intents::action::kEdit,
+  web_intents::action::kView,
+  web_intents::action::kSubscribe,
+  web_intents::action::kSave,
+};
+
+}  // namespace
 
 namespace web_intents {
 
@@ -33,6 +47,15 @@ Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile) {
   if (browser && profile && browser->profile() != profile)
     return NULL;
   return browser;
+}
+
+bool IsRecognizedAction(const string16& action) {
+  for (size_t i = 0; i < arraysize(kRecognizedActions); ++i) {
+    if (EqualsASCII(action, kRecognizedActions[i])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace web_intents

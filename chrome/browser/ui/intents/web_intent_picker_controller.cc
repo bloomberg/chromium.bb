@@ -18,6 +18,7 @@
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -55,13 +56,6 @@ using extensions::WebstoreInstaller;
 
 namespace {
 
-const char kShareActionURL[] = "http://webintents.org/share";
-const char kEditActionURL[] = "http://webintents.org/edit";
-const char kViewActionURL[] = "http://webintents.org/view";
-const char kPickActionURL[] = "http://webintents.org/pick";
-const char kSubscribeActionURL[] = "http://webintents.org/subscribe";
-const char kSaveActionURL[] = "http://webintents.org/save";
-
 // Maximum amount of time to delay displaying dialog while waiting for data.
 const int kMaxHiddenSetupTimeMs = 200;
 
@@ -87,17 +81,17 @@ CWSIntentsRegistry* GetCWSIntentsRegistry(TabContents* tab_contents) {
 
 // Returns the action-specific string for |action|.
 string16 GetIntentActionString(const std::string& action) {
-  if (!action.compare(kShareActionURL))
+  if (!action.compare(web_intents::action::kShare))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SHARE);
-  else if (!action.compare(kEditActionURL))
+  else if (!action.compare(web_intents::action::kEdit))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_EDIT);
-  else if (!action.compare(kViewActionURL))
+  else if (!action.compare(web_intents::action::kView))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_VIEW);
-  else if (!action.compare(kPickActionURL))
+  else if (!action.compare(web_intents::action::kPick))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_PICK);
-  else if (!action.compare(kSubscribeActionURL))
+  else if (!action.compare(web_intents::action::kSubscribe))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SUBSCRIBE);
-  else if (!action.compare(kSaveActionURL))
+  else if (!action.compare(web_intents::action::kSave))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SAVE);
   else
     return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE);

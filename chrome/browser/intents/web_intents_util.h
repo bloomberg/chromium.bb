@@ -5,11 +5,26 @@
 #ifndef CHROME_BROWSER_INTENTS_WEB_INTENTS_UTIL_H_
 #define CHROME_BROWSER_INTENTS_WEB_INTENTS_UTIL_H_
 
+#include "base/string16.h"
+
 class Browser;
 class Profile;
 class PrefService;
 
 namespace web_intents {
+
+namespace action {
+
+// "Recognized" action strings. These are basically the
+// actions we're reporting via UMA.
+const char kEdit[] = "http://webintents.org/edit";
+const char kPick[] = "http://webintents.org/pick";
+const char kSave[] = "http://webintents.org/save";
+const char kShare[] = "http://webintents.org/share";
+const char kSubscribe[] = "http://webintents.org/subscribe";
+const char kView[] = "http://webintents.org/view";
+
+}
 
 // Registers the preferences related to Web Intents.
 void RegisterUserPrefs(PrefService* user_prefs);
@@ -25,6 +40,10 @@ bool IsWebIntentsEnabledForProfile(Profile* profile);
 // or from an extension background page, get the browser in which to show the
 // intent picker to the user.
 Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile);
+
+// Returns the recognized action (the one described at
+// webintents.org) or an empty string if the action is not recognized.
+bool IsRecognizedAction(const string16& action);
 
 }  // namespace web_intents
 
