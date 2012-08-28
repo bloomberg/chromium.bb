@@ -1493,7 +1493,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderQuickQuit) {
 }
 
 // Checks that we don't prerender in an infinite loop.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoop) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
   const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
 
@@ -1519,7 +1519,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FLAKY_PrerenderInfiniteLoop) {
 
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoopMultiple) {
+// DISABLED: http://crbug.com/145248
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
       "files/prerender/prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB =
