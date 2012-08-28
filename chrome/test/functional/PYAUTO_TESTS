@@ -45,7 +45,6 @@
       'flash',
       'fullscreen_mouselock',
       'history',
-      'https',
       'gtalk.test_basic',
       'imports',
       'infobars',
@@ -326,9 +325,6 @@
       # crbug.com/134593
       '-gtalk.test_basic.BasicTest.testCurrentVersion',
       '-gtalk.test_basic.BasicTest.testRCVersion',
-      # crbug.com/129498
-      '-https.SSLTest.testSSLCertAuthorityOK',
-      '-https.SSLTest.testSSLCertOK',
       # crosbug.com/24496
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/109035
@@ -823,8 +819,6 @@
       '-translate.TranslateTest.testSeveralLanguages',
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       '-ntp.NTPTest.testLaunchAppFullScreen',
-      '-https.SSLTest.testSSLCertOK',
-      '-https.SSLTest.testSSLCertAuthorityOK',
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
       '-policy_prefs_ui.PolicyPrefsUITest.testNoUserPoliciesNoBanner',
       '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
