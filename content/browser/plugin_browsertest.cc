@@ -419,22 +419,22 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_FlashSecurity) {
 // TODO(port) Port the following tests to platforms that have the required
 // plugins.
 // Flaky: http://crbug.com/55915
-IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_Quicktime) {
+IN_PROC_BROWSER_TEST_F(PluginTest, Quicktime) {
   TestPlugin("quicktime.html");
 }
 
 // Disabled - http://crbug.com/44662
-IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_MediaPlayerNew) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MediaPlayerNew) {
   TestPlugin("wmp_new.html");
 }
 
 // http://crbug.com/4809
-IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
+IN_PROC_BROWSER_TEST_F(PluginTest, MediaPlayerOld) {
   TestPlugin("wmp_old.html");
 }
 
 // Disabled - http://crbug.com/44673
-IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_Real) {
+IN_PROC_BROWSER_TEST_F(PluginTest, Real) {
   TestPlugin("real.html");
 }
 
