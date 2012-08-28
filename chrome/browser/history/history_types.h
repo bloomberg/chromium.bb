@@ -22,7 +22,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
-#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 
 class PageUsageData;
@@ -274,6 +273,23 @@ typedef std::vector<VisitRow> VisitVector;
 // The basic information associated with a visit (timestamp, type of visit),
 // used by HistoryBackend::AddVisits() to create new visits for a URL.
 typedef std::pair<base::Time, content::PageTransition> VisitInfo;
+
+// Favicons -------------------------------------------------------------------
+
+// Used by the importer to set favicons for imported bookmarks.
+struct ImportedFaviconUsage {
+  ImportedFaviconUsage();
+  ~ImportedFaviconUsage();
+
+  // The URL of the favicon.
+  GURL favicon_url;
+
+  // The raw png-encoded data.
+  std::vector<unsigned char> png_data;
+
+  // The list of URLs using this favicon.
+  std::set<GURL> urls;
+};
 
 // PageVisit ------------------------------------------------------------------
 
@@ -756,57 +772,29 @@ struct IconMapping {
   IconType icon_type;
 };
 
-// Defines a favicon bitmap which best matches the desired DIP size and one of
-// the desired scale factors.
-struct FaviconBitmapResult {
-  FaviconBitmapResult();
-  ~FaviconBitmapResult();
+// Defines the favicon stored in history backend.
+struct FaviconData {
+  FaviconData();
+  ~FaviconData();
 
-  // Returns true if |bitmap_data| contains a valid bitmap.
-  bool is_valid() const { return bitmap_data.get() && bitmap_data->size(); }
+  // Returns true if the icon is known and image has data.
+  bool is_valid();
 
-  // Indicates whether |bitmap_data| is expired.
+  // Indicates whether the icon is known by the history backend.
+  bool known_icon;
+
+  // The bits of image.
+  scoped_refptr<base::RefCountedMemory> image_data;
+
+  // Indicates whether image is expired.
   bool expired;
 
-  // The bits of the bitmap.
-  scoped_refptr<base::RefCountedMemory> bitmap_data;
-
-  // The pixel dimensions of |bitmap_data|.
-  gfx::Size pixel_size;
-
-  // The URL of the containing favicon.
+  // The icon's URL.
   GURL icon_url;
 
-  // The icon type of the containing favicon.
-  IconType icon_type;
+  // The type of favicon.
+  history::IconType icon_type;
 };
-
-// Defines a gfx::Image of size desired_size_in_dip composed of image
-// representations for each of the desired scale factors.
-struct FaviconImageResult {
-  FaviconImageResult();
-  ~FaviconImageResult();
-
-  // The resulting image.
-  gfx::Image image;
-
-  // The URL of the favicon which contains all of the image representations of
-  // |image|.
-  // TODO(pkotwicz): Return multiple |icon_urls| to allow |image| to have
-  // representations from several favicons once content::FaviconStatus supports
-  // multiple URLs.
-  GURL icon_url;
-};
-
-// A map from an icon URL to a vector of the sizes of the favicon bitmaps at
-// that URL. There are several sizes for an icon URL only if the icon URL is
-// for a .ico file. The sizes for an icon URL represent the sizes that a
-// favicon is available from the web, not the sizes at which bitmaps are
-// cached in the thumbnail database for the icon URL. For instance, if an icon
-// URL represents a .ico file with 16x16 and 32x32 bitmaps, the sizes vector
-// will have both sizes regardless of whether either of these bitmaps is cached
-// in the thumbnail database.
-typedef std::map<GURL, std::vector<gfx::Size> > IconURLSizesMap;
 
 // Defines a favicon bitmap stored in the history backend.
 struct FaviconBitmap {
@@ -827,21 +815,6 @@ struct FaviconBitmap {
 
   // The pixel dimensions of bitmap_data.
   gfx::Size pixel_size;
-};
-
-// Used by the importer to set favicons for imported bookmarks.
-struct ImportedFaviconUsage {
-  ImportedFaviconUsage();
-  ~ImportedFaviconUsage();
-
-  // The URL of the favicon.
-  GURL favicon_url;
-
-  // The raw png-encoded data.
-  std::vector<unsigned char> png_data;
-
-  // The list of URLs using this favicon.
-  std::set<GURL> urls;
 };
 
 // Abbreviated information about a visit.

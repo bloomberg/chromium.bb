@@ -515,6 +515,12 @@ void HistoryService::GetFaviconForURL(
            page_url, icon_types);
 }
 
+void HistoryService::GetFaviconForID(FaviconService::GetFaviconRequest* request,
+                                     history::FaviconID id) {
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconForID, NULL, request,
+           id);
+}
+
 void HistoryService::SetFavicon(const GURL& page_url,
                                 const GURL& icon_url,
                                 const std::vector<unsigned char>& image_data,

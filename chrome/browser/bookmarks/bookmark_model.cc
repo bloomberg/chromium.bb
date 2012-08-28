@@ -29,7 +29,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_util.h"
 
 using base::Time;
@@ -778,16 +777,21 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
 
 void BookmarkModel::OnFaviconDataAvailable(
     FaviconService::Handle handle,
-    const history::FaviconImageResult& image_result) {
+    history::FaviconData favicon) {
   BookmarkNode* node =
       load_consumer_.GetClientData(
           FaviconServiceFactory::GetForProfile(
               profile_, Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
-  if (!image_result.image.IsEmpty()) {
-    node->set_favicon(image_result.image);
-    FaviconLoaded(node);
+  if (favicon.is_valid()) {
+    scoped_ptr<gfx::Image> favicon_image(
+        gfx::ImageFromPNGEncodedData(favicon.image_data->front(),
+                                     favicon.image_data->size()));
+    if (favicon_image.get()) {
+      node->set_favicon(*favicon_image.get());
+      FaviconLoaded(node);
+    }
   }
 }
 
@@ -800,9 +804,8 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
       profile_, Profile::EXPLICIT_ACCESS);
   if (!favicon_service)
     return;
-  FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      profile_, node->url(), history::FAVICON, gfx::kFaviconSize,
-      &load_consumer_,
+  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+      profile_, node->url(), history::FAVICON, &load_consumer_,
       base::Bind(&BookmarkModel::OnFaviconDataAvailable,
                  base::Unretained(this)));
   load_consumer_.SetClientData(favicon_service, handle, node);

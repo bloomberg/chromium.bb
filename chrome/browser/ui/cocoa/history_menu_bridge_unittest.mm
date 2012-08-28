@@ -103,10 +103,9 @@ class HistoryMenuBridgeTest : public CocoaProfileTest {
     bridge_->GetFaviconForHistoryItem(item);
   }
 
-  void GotFaviconData(
-      FaviconService::Handle handle,
-      const history::FaviconImageResult& image_result) {
-    bridge_->GotFaviconData(handle, image_result);
+  void GotFaviconData(FaviconService::Handle handle,
+                      history::FaviconData favicon) {
+    bridge_->GotFaviconData(handle, favicon);
   }
 
   CancelableRequestConsumerTSimple<HistoryMenuBridge::HistoryItem*>&
@@ -359,15 +358,25 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   bitmap.allocPixels();
   bitmap.eraseRGB(255, 0, 0);
 
+  // Convert it to raw PNG bytes. We totally ignore color order here because
+  // we just want to test the roundtrip through the Bridge, not that we can
+  // make icons look pretty.
+  std::vector<unsigned char> raw;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &raw);
+
   // Set up the HistoryItem.
   HistoryMenuBridge::HistoryItem item;
   item.menu_item.reset([[NSMenuItem alloc] init]);
   GetFaviconForHistoryItem(&item);
 
   // Pretend to be called back.
-  history::FaviconImageResult image_result;
-  image_result.image = gfx::Image(bitmap);
-  GotFaviconData(item.icon_handle, image_result);
+  history::FaviconData favicon;
+  favicon.known_icon = true;
+  favicon.image_data = new base::RefCountedBytes(raw);
+  favicon.expired = false;
+  favicon.icon_url = GURL();
+  favicon.icon_type = history::FAVICON;
+  GotFaviconData(item.icon_handle, favicon);
 
   // Make sure the callback works.
   EXPECT_FALSE(item.icon_requested);

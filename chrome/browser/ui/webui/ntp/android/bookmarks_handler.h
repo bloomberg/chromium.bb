@@ -130,9 +130,8 @@ class BookmarksHandler : public content::WebUIMessageHandler,
 
   // Called once the favicon is loaded during creation of the bookmark shortcuts
   // and is available for use.
-  void OnShortcutFaviconDataAvailable(
-      FaviconService::Handle handle,
-      const history::FaviconBitmapResult& bitmap_result);
+  void OnShortcutFaviconDataAvailable(FaviconService::Handle handle,
+                                      history::FaviconData favicon);
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

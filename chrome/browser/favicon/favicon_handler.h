@@ -138,19 +138,19 @@ class FaviconHandler {
       const GURL& icon_url,
       history::IconType icon_type,
       CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback);
+      const FaviconService::FaviconDataCallback& callback);
 
   virtual void GetFavicon(
       const GURL& icon_url,
       history::IconType icon_type,
       CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback);
+      const FaviconService::FaviconDataCallback& callback);
 
   virtual void GetFaviconForURL(
       const GURL& page_url,
       int icon_types,
       CancelableRequestConsumerBase* consumer,
-      const FaviconService::FaviconResultsCallback& callback);
+      const FaviconService::FaviconDataCallback& callback);
 
   virtual void SetHistoryFavicon(const GURL& page_url,
                                  const GURL& icon_url,
@@ -198,10 +198,8 @@ class FaviconHandler {
   };
 
   // See description above class for details.
-  void OnFaviconDataForInitialURL(
-      FaviconService::Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes);
+  void OnFaviconDataForInitialURL(FaviconService::Handle handle,
+                                  history::FaviconData favicon);
 
   // If the favicon has expired, asks the renderer to download the favicon.
   // Otherwise asks history to update the mapping between page url and icon
@@ -211,10 +209,8 @@ class FaviconHandler {
                                    history::IconType icon_type);
 
   // See description above class for details.
-  void OnFaviconData(
-      FaviconService::Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes);
+  void OnFaviconData(FaviconService::Handle handle,
+                     history::FaviconData favicon);
 
   // Schedules a download for the specified entry. This adds the request to
   // download_requests_.
@@ -289,8 +285,8 @@ class FaviconHandler {
   // The prioritized favicon candidates from the page back from the renderer.
   std::deque<FaviconURL> image_urls_;
 
-  // The FaviconBitmapResults from history.
-  std::vector<history::FaviconBitmapResult> history_results_;
+  // The FaviconData from history.
+  history::FaviconData history_icon_;
 
   // The Profile associated with this handler.
   Profile* profile_;

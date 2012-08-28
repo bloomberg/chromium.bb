@@ -124,10 +124,8 @@ class HistoryBackendTest : public testing::Test {
   }
 
   // Callback for UpdateFaviconMappingsAndFetch.
-  void OnFaviconResults(
-      FaviconService::Handle handle,
-      std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
-      history::IconURLSizesMap icon_url_sizes) {
+  void OnFaviconData(FaviconService::Handle handle,
+                     history::FaviconData favicon_data) {
   }
 
   const history::MostVisitedURLList& get_most_visited_list() const {
@@ -1226,8 +1224,7 @@ TEST_F(HistoryBackendTest, SetSameFaviconURLForTwoPages) {
   backend_->SetFavicon(page_url1, favicon_url, bitmap_data, FAVICON);
 
   scoped_refptr<GetFaviconRequest> request(new GetFaviconRequest(
-      base::Bind(&HistoryBackendTest::OnFaviconResults,
-                 base::Unretained(this))));
+      base::Bind(&HistoryBackendTest::OnFaviconData, base::Unretained(this))));
   HistoryBackendCancelableRequest cancellable_request;
   cancellable_request.MockScheduleOfRequest<GetFaviconRequest>(request);
   backend_->UpdateFaviconMappingAndFetch(request, page_url2, favicon_url,
@@ -1294,30 +1291,24 @@ TEST_F(HistoryBackendTest, GetFaviconForURL) {
       url, TOUCH_ICON, NULL));
 
   // Test the Fav icon for this URL.
-  std::vector<FaviconBitmapResult> favicon_bitmap_results;
-  ASSERT_TRUE(backend_->GetFaviconFromDB(url, FAVICON,
-                                         &favicon_bitmap_results));
-  EXPECT_EQ(1u, favicon_bitmap_results.size());
-  FaviconBitmapResult bitmap_result = favicon_bitmap_results[0];
+  FaviconData favicon;
+  ASSERT_TRUE(backend_->GetFaviconFromDB(url, FAVICON, &favicon));
   std::string favicon_data(
-      bitmap_result.bitmap_data->front(),
-      bitmap_result.bitmap_data->front() + bitmap_result.bitmap_data->size());
+      favicon.image_data->front(),
+      favicon.image_data->front() + favicon.image_data->size());
 
-  EXPECT_EQ(FAVICON, bitmap_result.icon_type);
-  EXPECT_EQ(icon_url, bitmap_result.icon_url);
+  EXPECT_EQ(FAVICON, favicon.icon_type);
+  EXPECT_EQ(icon_url, favicon.icon_url);
   EXPECT_EQ(blob_data, favicon_data);
 
   // Test the touch icon for this URL.
-  ASSERT_TRUE(backend_->GetFaviconFromDB(url, TOUCH_ICON,
-                                         &favicon_bitmap_results));
-  EXPECT_EQ(1u, favicon_bitmap_results.size());
-  bitmap_result = favicon_bitmap_results[0];
+  ASSERT_TRUE(backend_->GetFaviconFromDB(url, TOUCH_ICON, &favicon));
   std::string touchicon_data(
-      bitmap_result.bitmap_data->front(),
-      bitmap_result.bitmap_data->front() + bitmap_result.bitmap_data->size());
+      favicon.image_data->front(),
+      favicon.image_data->front() + favicon.image_data->size());
 
-  EXPECT_EQ(TOUCH_ICON, bitmap_result.icon_type);
-  EXPECT_EQ(icon_url, bitmap_result.icon_url);
+  EXPECT_EQ(TOUCH_ICON, favicon.icon_type);
+  EXPECT_EQ(icon_url, favicon.icon_url);
   EXPECT_EQ(blob_data, touchicon_data);
 }
 
@@ -1336,23 +1327,20 @@ TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {
       url, FAVICON, NULL));
 
   // Validate starting state.
-  std::vector<FaviconBitmapResult> favicon_bitmap_results;
-  EXPECT_TRUE(backend_->GetFaviconFromDB(url, FAVICON,
-                                         &favicon_bitmap_results));
-  EXPECT_FALSE(backend_->GetFaviconFromDB(same_domain_url, FAVICON,
-                                          &favicon_bitmap_results));
-  EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url, FAVICON,
-                                          &favicon_bitmap_results));
+  FaviconData favicon;
+  EXPECT_TRUE(backend_->GetFaviconFromDB(url, FAVICON, &favicon));
+  EXPECT_FALSE(backend_->GetFaviconFromDB(same_domain_url, FAVICON, &favicon));
+  EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url,
+                                          FAVICON, &favicon));
 
   // Same-domain cloning should work.
   backend_->CloneFavicon(url, same_domain_url);
-  EXPECT_TRUE(backend_->GetFaviconFromDB(same_domain_url, FAVICON,
-                                         &favicon_bitmap_results));
+  EXPECT_TRUE(backend_->GetFaviconFromDB(same_domain_url, FAVICON, &favicon));
 
   // Foreign-domain cloning is forbidden.
   backend_->CloneFavicon(url, foreign_domain_url);
-  EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url, FAVICON,
-                                          &favicon_bitmap_results));
+  EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url,
+                                          FAVICON, &favicon));
 }
 
 TEST_F(HistoryBackendTest, QueryFilteredURLs) {

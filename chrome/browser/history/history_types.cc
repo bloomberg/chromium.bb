@@ -90,6 +90,14 @@ VisitRow::VisitRow(URLID arg_url_id,
 VisitRow::~VisitRow() {
 }
 
+// Favicons -------------------------------------------------------------------
+
+ImportedFaviconUsage::ImportedFaviconUsage() {
+}
+
+ImportedFaviconUsage::~ImportedFaviconUsage() {
+}
+
 // StarredEntry ----------------------------------------------------------------
 
 StarredEntry::StarredEntry()
@@ -421,22 +429,18 @@ IconMapping::IconMapping()
 
 IconMapping::~IconMapping() {}
 
-// FaviconBitmapResult --------------------------------------------------------
+// FaviconData ----------------------------------------------------------------
 
-FaviconBitmapResult::FaviconBitmapResult()
-    : expired(false),
-      icon_type(history::INVALID_ICON) {
+FaviconData::FaviconData()
+  : known_icon(false),
+    expired(false),
+    icon_type(history::INVALID_ICON) {
 }
 
-FaviconBitmapResult::~FaviconBitmapResult() {
-}
+FaviconData::~FaviconData() {}
 
-// FaviconImageResult ---------------------------------------------------------
-
-FaviconImageResult::FaviconImageResult() {
-}
-
-FaviconImageResult::~FaviconImageResult() {
+bool FaviconData::is_valid() {
+  return known_icon && image_data.get() && image_data->size();
 }
 
 // FaviconBitmap --------------------------------------------------------------
@@ -447,14 +451,6 @@ FaviconBitmap::FaviconBitmap()
 }
 
 FaviconBitmap::~FaviconBitmap() {
-}
-
-// ImportedFaviconUsage --------------------------------------------------------
-
-ImportedFaviconUsage::ImportedFaviconUsage() {
-}
-
-ImportedFaviconUsage::~ImportedFaviconUsage() {
 }
 
 }  // namespace history

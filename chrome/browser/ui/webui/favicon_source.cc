@@ -15,7 +15,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
 
 FaviconSource::FaviconSource(Profile* profile, IconType type)
     : DataSource(type == FAVICON ? chrome::kChromeUIFaviconHost :
@@ -54,11 +53,9 @@ void FaviconSource::StartDataRequest(const std::string& path,
   FaviconService::Handle handle;
   if (path.size() > 8 && path.substr(0, 8) == "iconurl/") {
     // TODO : Change GetFavicon to support combination of IconType.
-    handle = favicon_service->GetRawFavicon(
+    handle = favicon_service->GetFavicon(
         GURL(path.substr(8)),
         history::FAVICON,
-        gfx::kFaviconSize,
-        ui::SCALE_FACTOR_100P,
         &cancelable_consumer_,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this)));
@@ -108,12 +105,10 @@ void FaviconSource::StartDataRequest(const std::string& path,
     }
 
     // TODO(estade): fetch the requested size.
-    handle = favicon_service->GetRawFaviconForURL(
+    handle = favicon_service->GetFaviconForURL(
         profile_,
         url,
         icon_types_,
-        gfx::kFaviconSize,
-        ui::SCALE_FACTOR_100P,
         &cancelable_consumer_,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this)));
@@ -137,15 +132,15 @@ bool FaviconSource::ShouldReplaceExistingSource() const {
 
 void FaviconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
-    const history::FaviconBitmapResult& bitmap_result) {
+    history::FaviconData favicon) {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(favicon_service,
                                                       request_handle);
 
-  if (bitmap_result.is_valid()) {
+  if (favicon.is_valid()) {
     // Forward the data along to the networking system.
-    SendResponse(request_id, bitmap_result.bitmap_data);
+    SendResponse(request_id, favicon.image_data);
   } else {
     SendDefaultResponse(request_id);
   }

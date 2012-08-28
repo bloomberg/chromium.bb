@@ -17,7 +17,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 class NotificationRegistrar;
@@ -52,7 +51,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   const std::wstring& title() const { return title_; }
   const std::wstring& icon() const { return icon_; }
   int index() const { return index_; }
-  const SkBitmap& data() const { return data_; }
+  scoped_refptr<base::RefCountedMemory> data() const { return data_; }
 
   void SetArguments(const std::wstring& arguments) {
     arguments_ = arguments;
@@ -68,7 +67,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
     favicon_ = favicon;
   }
 
-  void SetIconData(const SkBitmap& data) {
+  void SetIconData(scoped_refptr<base::RefCountedMemory> data) {
     data_ = data;
   }
 
@@ -80,7 +79,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   std::wstring arguments_;
   std::wstring title_;
   std::wstring icon_;
-  SkBitmap data_;
+  scoped_refptr<base::RefCountedMemory> data_;
   int index_;
   bool favicon_;
 
@@ -177,9 +176,8 @@ class JumpList : public TabRestoreServiceObserver,
   // a ShellLinkItem object.
   // When finishing loading all favicons, this function posts a task that
   // decompresses collected favicons and updates a JumpList.
-  void OnFaviconDataAvailable(
-      HistoryService::Handle handle,
-      const history::FaviconImageResult& image_result);
+  void OnFaviconDataAvailable(HistoryService::Handle handle,
+                              history::FaviconData favicon);
 
   // Callback for TopSites that notifies when the "Most
   // Visited" list is available. This function updates the ShellLinkItemList
@@ -192,9 +190,9 @@ class JumpList : public TabRestoreServiceObserver,
   // has been fetched.
   void RunUpdate();
 
-  // Helper method for RunUpdate to create icon files for the asynchrounously
+  // Helper method for RunUpdate to decode the data about the asynchrounously
   // loaded icons.
-  void CreateIconFiles(const ShellLinkItemList& item_list);
+  void DecodeIconData(const ShellLinkItemList& item_list);
 
  private:
   friend class base::RefCountedThreadSafe<JumpList>;

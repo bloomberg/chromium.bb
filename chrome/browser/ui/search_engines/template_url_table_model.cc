@@ -20,7 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 
 // Group IDs used by TemplateURLTableModel.
@@ -63,7 +63,7 @@ class ModelEntry {
   // fetched again. This should be invoked if the url is modified.
   void ResetIcon() {
     load_state_ = NOT_LOADED;
-    favicon_ = gfx::ImageSkia();
+    favicon_ = SkBitmap();
   }
 
  private:
@@ -92,24 +92,25 @@ class ModelEntry {
         return;
     }
     load_state_ = LOADING;
-    favicon_service->GetFaviconImage(favicon_url, history::FAVICON,
-        gfx::kFaviconSize, &request_consumer_,
+    favicon_service->GetFavicon(favicon_url, history::FAVICON,
+        &request_consumer_,
         base::Bind(&ModelEntry::OnFaviconDataAvailable,
                    base::Unretained(this)));
   }
 
   void OnFaviconDataAvailable(
       FaviconService::Handle handle,
-      const history::FaviconImageResult& image_result) {
+      history::FaviconData favicon) {
     load_state_ = LOADED;
-    if (!image_result.image.IsEmpty()) {
-      favicon_ = image_result.image.AsImageSkia();
+    if (favicon.is_valid() && gfx::PNGCodec::Decode(favicon.image_data->front(),
+                                                    favicon.image_data->size(),
+                                                    &favicon_)) {
       model_->FaviconAvailable(this);
     }
   }
 
   TemplateURL* template_url_;
-  gfx::ImageSkia favicon_;
+  SkBitmap favicon_;
   LoadState load_state_;
   TemplateURLTableModel* model_;
   CancelableRequestConsumer request_consumer_;

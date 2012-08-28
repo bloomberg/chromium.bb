@@ -479,16 +479,13 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       url.host() != extension_misc::kBookmarkManagerId) {
     ExtensionWebUI::GetFaviconForURL(profile, request, url);
   } else {
-    scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(url));
-    std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
-    if (bitmap.get() && bitmap->size()) {
-      history::FaviconBitmapResult bitmap_result;
-      bitmap_result.bitmap_data = bitmap;
-      bitmap_result.icon_type = history::FAVICON;
-      favicon_bitmap_results.push_back(bitmap_result);
-    }
-    request->ForwardResultAsync(request->handle(), favicon_bitmap_results,
-                                history::IconURLSizesMap());
+    history::FaviconData favicon;
+    favicon.image_data = scoped_refptr<base::RefCountedMemory>(
+        GetFaviconResourceBytes(url));
+    favicon.known_icon = favicon.image_data.get() != NULL &&
+                             favicon.image_data->size() > 0;
+    favicon.icon_type = history::FAVICON;
+    request->ForwardResultAsync(request->handle(), favicon);
   }
 }
 

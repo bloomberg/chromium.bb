@@ -40,9 +40,8 @@ class FaviconWebUIHandler : public content::WebUIMessageHandler {
 
  private:
   // Called when favicon data is available from the history backend.
-  void OnFaviconDataAvailable(
-      FaviconService::Handle request_handle,
-      const history::FaviconBitmapResult& bitmap_result);
+  void OnFaviconDataAvailable(FaviconService::Handle request_handle,
+                              history::FaviconData favicon);
 
   CancelableRequestConsumerTSimple<int> consumer_;
 

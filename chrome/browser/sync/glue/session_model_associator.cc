@@ -42,7 +42,6 @@
 #include "sync/syncable/write_transaction.h"
 #include "sync/util/get_session_name.h"
 #include "sync/util/time.h"
-#include "ui/gfx/favicon_size.h"
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #elif defined(OS_WIN)
@@ -552,9 +551,8 @@ void SessionModelAssociator::LoadFaviconForTab(TabLink* tab_link) {
     load_consumer_.CancelAllRequestsForClientData(tab_id);
   }
   DVLOG(1) << "Triggering favicon load for url " << tab_link->url().spec();
-  FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
-      profile_, tab_link->url(), history::FAVICON, gfx::kFaviconSize,
-      ui::SCALE_FACTOR_100P, &load_consumer_,
+  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+      profile_, tab_link->url(), history::FAVICON, &load_consumer_,
       base::Bind(&SessionModelAssociator::OnFaviconDataAvailable,
                  AsWeakPtr()));
   load_consumer_.SetClientData(favicon_service, handle, tab_id);
@@ -563,7 +561,7 @@ void SessionModelAssociator::LoadFaviconForTab(TabLink* tab_link) {
 
 void SessionModelAssociator::OnFaviconDataAvailable(
     FaviconService::Handle handle,
-    const history::FaviconBitmapResult& bitmap_result) {
+    history::FaviconData favicon) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kSyncTabFavicons))
     return;
@@ -583,10 +581,10 @@ void SessionModelAssociator::OnFaviconDataAvailable(
   // been canceled if the url had changed, we know the url must still be
   // up to date.
 
-  if (bitmap_result.is_valid()) {
+  if (favicon.is_valid()) {
     DCHECK_EQ(handle, tab_link->favicon_load_handle());
     tab_link->set_favicon_load_handle(0);
-    DCHECK_EQ(bitmap_result.icon_type, history::FAVICON);
+    DCHECK_EQ(favicon.icon_type, history::FAVICON);
     DCHECK_NE(tab_link->sync_id(), syncer::kInvalidId);
     // Load the sync tab node and update the favicon data.
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
@@ -601,14 +599,14 @@ void SessionModelAssociator::OnFaviconDataAvailable(
         tab_node.GetSessionSpecifics();
     DCHECK(session_specifics.has_tab());
     sync_pb::SessionTab* tab = session_specifics.mutable_tab();
-    if (bitmap_result.bitmap_data->size() > 0) {
+    if (favicon.image_data->size() > 0) {
       DVLOG(1) << "Storing session favicon for "
                << tab_link->url() << " with size "
-               << bitmap_result.bitmap_data->size() << " bytes.";
-      tab->set_favicon(bitmap_result.bitmap_data->front(),
-                       bitmap_result.bitmap_data->size());
+               << favicon.image_data->size() << " bytes.";
+      tab->set_favicon(favicon.image_data->front(),
+                       favicon.image_data->size());
       tab->set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
-      tab->set_favicon_source(bitmap_result.icon_url.spec());
+      tab->set_favicon_source(favicon.icon_url.spec());
     } else {
       LOG(WARNING) << "Null favicon stored for url " << tab_link->url().spec();
     }
