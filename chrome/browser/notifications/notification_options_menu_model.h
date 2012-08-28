@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OPTIONS_MENU_MODEL_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OPTIONS_MENU_MODEL_H_
 
-#include "chrome/browser/notifications/balloon.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
+
+class Balloon;
 
 // Model for the corner-selection submenu.
 class CornerSelectionMenuModel : public ui::SimpleMenuModel,
