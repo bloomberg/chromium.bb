@@ -54,7 +54,6 @@
       'ntp',
       'omnibox',
       'passwords',
-      'plugins',
       'plugins_check',
       'policy',
       'policy_prefs_ui',
@@ -103,12 +102,6 @@
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
       # crbug.com/137041
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
-      # crbug.com/86524
-      '-plugins.PluginsTest.testAllowPluginException',
-      # crbug.com/97140
-      '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      # crbug.com/85307
-      '-plugins.PluginsTest.testKillAndReloadAllPlugins',
       # crbug.com/115427
       '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
@@ -206,8 +199,6 @@
       '-omnibox.OmniboxTest.testContentHistory',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
-      # crbug.com/97140
-      '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/130094
       '-policy',
       '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
@@ -346,8 +337,6 @@
       '-prefs.PrefsTest.testSessionRestore',
       # sync tests were running into a secondary passphrase. crosbug.com/15016.
       '-sync',
-      # crbug.com/109035
-      '-plugins.PluginsTest.testBlockPluginException',
       # Deal with i18n chars.  crosbug.com/12639
       '-downloads.DownloadsTest.testCrazyFilenames',
       '-omnibox.OmniboxTest.testCrazyFilenames',
@@ -405,7 +394,6 @@
       '-passwords.PasswordTest.testLoginCredsNotShownInIncognito',
       '-passwords.PasswordTest.testNeverSavePasswords',
       '-passwords.PasswordTest.testPasswordInfobarShowsForBlockedDomain',
-      '-plugins.PluginsTest.testBlockAllPlugins',
       '-popups.PopupsTest.testMultiplePopups',
       '-popups.PopupsTest.testPopupBlockedEverySec',
     ],

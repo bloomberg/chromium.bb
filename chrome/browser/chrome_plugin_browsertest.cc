@@ -28,6 +28,14 @@ class ChromePluginTest : public InProcessBrowserTest {
  protected:
   ChromePluginTest() {}
 
+  static GURL GetURL(const char* filename) {
+    FilePath path;
+    PathService::Get(content::DIR_TEST_DATA, &path);
+    path = path.AppendASCII("plugin").AppendASCII(filename);
+    CHECK(file_util::PathExists(path));
+    return net::FilePathToFileURL(path);
+  }
+
   static void LoadAndWait(Browser* window, const GURL& url, bool pass) {
     content::WebContents* web_contents = chrome::GetActiveWebContents(window);
     string16 expected_title(ASCIIToUTF16(pass ? "OK" : "plugin_not_found"));
@@ -59,14 +67,14 @@ class ChromePluginTest : public InProcessBrowserTest {
     return path;
   }
 
-  static void DisableFlash(Profile* profile) {
+  static void EnableFlash(bool enable, Profile* profile) {
     FilePath flash_path = GetFlashPath();
     ASSERT_FALSE(flash_path.empty());
 
     PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    plugin_prefs->EnablePlugin(false, flash_path, runner->QuitClosure());
+    plugin_prefs->EnablePlugin(enable, flash_path, runner->QuitClosure());
     runner->Run();
   }
 
@@ -132,12 +140,7 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, Flash) {
   }
 #endif
 
-  FilePath path;
-  PathService::Get(content::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("plugin").AppendASCII("flash.html");
-  ASSERT_TRUE(file_util::PathExists(path));
-
-  GURL url = net::FilePathToFileURL(path);
+  GURL url = GetURL("flash.html");
   EnsureFlashProcessCount(0);
 
   // Try a single tab.
@@ -158,9 +161,14 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, Flash) {
   EnsureFlashProcessCount(1);
 
   // Now try disabling it.
-  DisableFlash(profile);
+  EnableFlash(false, profile);
   CrashFlash();
 
   ASSERT_NO_FATAL_FAILURE(LoadAndWait(browser(), url, false));
   EnsureFlashProcessCount(0);
+
+  // Now enable it again.
+  EnableFlash(true, profile);
+  ASSERT_NO_FATAL_FAILURE(LoadAndWait(browser(), url, true));
+  EnsureFlashProcessCount(1);
 }

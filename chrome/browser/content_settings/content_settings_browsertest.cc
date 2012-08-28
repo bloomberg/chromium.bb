@@ -318,6 +318,46 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+// Verify that plugins can be allowed on a domain by adding an exception
+IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, AllowException) {
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(), FilePath().AppendASCII("clicktoplay.html"));
+
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      "",
+      CONTENT_SETTING_ALLOW);
+
+  string16 expected_title(ASCIIToUTF16("OK"));
+  content::TitleWatcher title_watcher(
+      chrome::GetActiveWebContents(browser()), expected_title);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+// Verify that plugins can be blocked on a domain by adding an exception.
+IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, BlockException) {
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(), FilePath().AppendASCII("clicktoplay.html"));
+
+  browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      "",
+      CONTENT_SETTING_BLOCK);
+
+  string16 expected_title(ASCIIToUTF16("Click To Play"));
+  content::TitleWatcher title_watcher(
+      chrome::GetActiveWebContents(browser()), expected_title);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
