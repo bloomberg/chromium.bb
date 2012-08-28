@@ -370,10 +370,10 @@ static FORCEINLINE void rel8_operand(const uint8_t *rip,
   int8_t offset = (uint8_t) (rip[-1]);
   size_t jump_dest = offset + (rip - codeblock_start);
 
-  if (!MarkJumpTarget(jump_dest, jump_dests, jumpdests_size))
-    *instruction_info_collected |= RELATIVE_8BIT | DIRECT_JUMP_OUT_OF_RANGE;
-  else
+  if (MarkJumpTarget(jump_dest, jump_dests, jumpdests_size))
     *instruction_info_collected |= RELATIVE_8BIT;
+  else
+    *instruction_info_collected |= RELATIVE_8BIT | DIRECT_JUMP_OUT_OF_RANGE;
 }
 
 /*
@@ -390,10 +390,10 @@ static FORCEINLINE void rel32_operand(const uint8_t *rip,
                                        rip[-2] + 256U * ((uint32_t) rip[-1]))));
   size_t jump_dest = offset + (rip - codeblock_start);
 
-  if (!MarkJumpTarget(jump_dest, jump_dests, jumpdests_size))
-    *instruction_info_collected |= RELATIVE_32BIT | DIRECT_JUMP_OUT_OF_RANGE;
-  else
+  if (MarkJumpTarget(jump_dest, jump_dests, jumpdests_size))
     *instruction_info_collected |= RELATIVE_32BIT;
+  else
+    *instruction_info_collected |= RELATIVE_32BIT | DIRECT_JUMP_OUT_OF_RANGE;
 }
 
 static INLINE void check_access(ptrdiff_t instruction_start,

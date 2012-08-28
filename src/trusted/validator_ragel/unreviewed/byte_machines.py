@@ -58,6 +58,12 @@ byte_machines = [
   'b_0100_0xxx',
   'b_0100_xxxx',
 
+  # REX parsing - special instructions
+  'b_0100_0xx1',
+  'b_0100_11x0',
+  'b_0100_11x1',
+  'b_0100_xxx1',
+
   'b_0100_1000',
   'b_0100_1x00',
   'b_0100_10x0',

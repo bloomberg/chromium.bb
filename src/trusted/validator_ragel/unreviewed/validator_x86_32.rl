@@ -83,7 +83,8 @@
        BitmapSetBit(valid_targets, current_position - data);
      }
      @{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(instruction_start, current_position,
                                  instruction_info_collected, callback_data);

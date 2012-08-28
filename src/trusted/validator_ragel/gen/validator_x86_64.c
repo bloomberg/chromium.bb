@@ -2221,7 +2221,8 @@ tr0:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2251,7 +2252,8 @@ tr7:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2289,7 +2291,8 @@ tr8:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2321,7 +2324,8 @@ tr13:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2353,7 +2357,8 @@ tr14:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2384,7 +2389,8 @@ tr17:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2426,7 +2432,8 @@ tr18:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2456,7 +2463,8 @@ tr25:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2495,7 +2503,8 @@ tr26:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2528,7 +2537,8 @@ tr31:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2561,7 +2571,8 @@ tr32:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2604,7 +2615,8 @@ tr35:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2635,7 +2647,8 @@ tr42:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2675,7 +2688,8 @@ tr43:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2709,7 +2723,8 @@ tr48:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2743,7 +2758,8 @@ tr49:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2772,7 +2788,8 @@ tr52:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2802,7 +2819,8 @@ tr56:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2826,7 +2844,8 @@ tr59:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2853,7 +2872,8 @@ tr61:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2880,7 +2900,8 @@ tr69:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2907,7 +2928,8 @@ tr78:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2940,7 +2962,8 @@ tr96:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -2974,7 +2997,8 @@ tr100:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3008,7 +3032,8 @@ tr101:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3035,7 +3060,8 @@ tr102:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3070,7 +3096,8 @@ tr103:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3104,7 +3131,8 @@ tr110:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3132,7 +3160,8 @@ tr115:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3160,7 +3189,8 @@ tr116:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3190,7 +3220,8 @@ tr127:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3220,7 +3251,8 @@ tr128:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3259,7 +3291,8 @@ tr138:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3286,7 +3319,8 @@ tr145:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3321,7 +3355,8 @@ tr146:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3353,7 +3388,8 @@ tr153:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3381,7 +3417,8 @@ tr172:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3409,7 +3446,8 @@ tr186:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3448,7 +3486,8 @@ tr188:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3487,7 +3526,8 @@ tr191:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3514,7 +3554,8 @@ tr202:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3541,7 +3582,8 @@ tr203:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3576,7 +3618,8 @@ tr204:
                        rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3612,7 +3655,8 @@ tr206:
                                     operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3651,7 +3695,8 @@ tr216:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3680,7 +3725,8 @@ tr226:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3708,7 +3754,8 @@ tr230:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3736,7 +3783,8 @@ tr234:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3765,7 +3813,8 @@ tr244:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3798,7 +3847,8 @@ tr245:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3841,7 +3891,8 @@ tr257:
                                     operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3881,7 +3932,8 @@ tr258:
                                     operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3908,7 +3960,8 @@ tr259:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3938,7 +3991,8 @@ tr306:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -3977,7 +4031,8 @@ tr341:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4013,7 +4068,8 @@ tr348:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4043,7 +4099,8 @@ tr353:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4073,7 +4130,8 @@ tr354:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4106,7 +4164,8 @@ tr357:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4139,7 +4198,8 @@ tr374:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4172,7 +4232,8 @@ tr375:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4211,7 +4272,8 @@ tr376:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4238,7 +4300,8 @@ tr383:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4272,7 +4335,8 @@ tr384:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4304,7 +4368,8 @@ tr388:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4338,7 +4403,8 @@ tr389:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4377,7 +4443,8 @@ tr402:
                        rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4410,7 +4477,8 @@ tr417:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4449,7 +4517,8 @@ tr421:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4473,7 +4542,8 @@ tr473:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4501,7 +4571,8 @@ tr474:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4543,7 +4614,8 @@ tr477:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4579,7 +4651,8 @@ tr478:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4622,7 +4695,8 @@ tr492:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4649,7 +4723,8 @@ tr495:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4687,7 +4762,8 @@ tr496:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4722,7 +4798,8 @@ tr503:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4751,7 +4828,8 @@ tr508:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4780,7 +4858,8 @@ tr509:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4809,7 +4888,8 @@ tr519:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4842,7 +4922,8 @@ tr521:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4873,7 +4954,8 @@ tr528:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4904,7 +4986,8 @@ tr532:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4943,7 +5026,8 @@ tr549:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -4978,7 +5062,8 @@ tr550:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5011,7 +5096,8 @@ tr561:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5050,7 +5136,8 @@ tr572:
                        rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5079,7 +5166,8 @@ tr583:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5106,7 +5194,8 @@ tr604:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5134,7 +5223,8 @@ tr643:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5167,7 +5257,8 @@ tr679:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5206,7 +5297,8 @@ tr728:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5241,7 +5333,8 @@ tr729:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5271,7 +5364,8 @@ tr736:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5303,7 +5397,8 @@ tr742:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5333,7 +5428,8 @@ tr743:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5360,7 +5456,8 @@ tr784:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5394,7 +5491,8 @@ tr859:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5428,7 +5526,8 @@ tr865:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5474,7 +5573,8 @@ tr894:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5501,7 +5601,8 @@ tr898:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5537,7 +5638,8 @@ tr899:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5583,7 +5685,8 @@ tr902:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5619,7 +5722,8 @@ tr906:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5647,7 +5751,8 @@ tr1015:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5686,7 +5791,8 @@ tr1111:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5713,7 +5819,8 @@ tr1114:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5747,7 +5854,8 @@ tr1230:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5781,7 +5889,8 @@ tr1235:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5827,7 +5936,8 @@ tr1253:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5873,7 +5983,8 @@ tr1257:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5900,7 +6011,8 @@ tr1326:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5937,7 +6049,8 @@ tr1360:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -5970,7 +6083,8 @@ tr1361:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -6007,7 +6121,8 @@ tr1372:
         instruction_info_collected |= BAD_CALL_ALIGNMENT;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -6040,7 +6155,8 @@ tr1373:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -6072,7 +6188,8 @@ tr1417:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -6108,7 +6225,8 @@ tr1418:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -6135,7 +6253,8 @@ tr1434:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -6178,7 +6297,8 @@ tr1435:
                                     operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -10997,7 +11117,8 @@ tr337:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -11087,7 +11208,8 @@ tr340:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -12157,9 +12279,9 @@ st196:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof196;
 case 196:
-	if ( 128u <= (*( current_position)) )
-		goto tr473;
-	goto tr226;
+	if ( (*( current_position)) <= 127u )
+		goto tr226;
+	goto tr473;
 tr493:
 	{
     SET_DISP_TYPE(DISPNONE);
@@ -12293,9 +12415,9 @@ st200:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof200;
 case 200:
-	if ( 128u <= (*( current_position)) )
-		goto tr478;
-	goto tr226;
+	if ( (*( current_position)) <= 127u )
+		goto tr226;
+	goto tr478;
 st201:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof201;
@@ -12928,7 +13050,8 @@ tr536:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -14473,7 +14596,8 @@ tr722:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -14564,7 +14688,8 @@ tr726:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -14595,7 +14720,8 @@ tr1354:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -14780,7 +14906,8 @@ tr731:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -14811,7 +14938,8 @@ tr746:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -14902,7 +15030,8 @@ tr735:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -15042,7 +15171,8 @@ tr738:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -15073,7 +15203,8 @@ tr1351:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -15164,7 +15295,8 @@ tr741:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -15307,7 +15439,8 @@ tr732:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -15338,7 +15471,8 @@ tr747:
                                    operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -15429,7 +15563,8 @@ tr750:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -17779,7 +17914,8 @@ tr1436:
     process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -22576,7 +22712,8 @@ tr1356:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -22607,7 +22744,8 @@ tr1358:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -22638,7 +22776,8 @@ tr1357:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -22854,7 +22993,8 @@ tr1365:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23024,7 +23164,8 @@ tr1370:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23184,7 +23325,8 @@ tr1377:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23344,7 +23486,8 @@ tr1383:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23375,7 +23518,8 @@ tr1386:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23586,7 +23730,8 @@ tr1388:
                       rex_prefix, operand_states);
   }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23617,7 +23762,8 @@ tr1390:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
@@ -23648,7 +23794,8 @@ tr1389:
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     }
 	{
-       if ((instruction_info_collected & VALIDATION_ERRORS_MASK) ||
+       if ((instruction_info_collected &
+                               (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
            (options & CALL_USER_CALLBACK_ON_EACH_INSTRUCTION)) {
          result &= user_callback(
              instruction_start, current_position,
