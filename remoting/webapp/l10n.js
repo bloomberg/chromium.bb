@@ -19,14 +19,14 @@ var l10n = l10n || {};
 l10n.localizeElementFromTag = function(element, tag, opt_substitutions,
                                        opt_asHtml) {
   var translation = chrome.i18n.getMessage(tag, opt_substitutions);
-  if (translation) {
-    if (opt_asHtml) {
-      element.innerHTML = translation;
-    } else {
-      element.innerText = translation;
-    }
-  } else {
+  if (!translation) {
     console.error('Missing translation for "' + tag + '":', element);
+    translation = tag;  // Make errors more obvious
+  }
+  if (opt_asHtml) {
+    element.innerHTML = translation;
+  } else {
+    element.innerText = translation;
   }
   return translation != null;
 };
