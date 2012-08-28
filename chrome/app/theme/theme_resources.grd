@@ -280,7 +280,8 @@
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" />        
+        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="icon_add_user_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER24" file="icon_power24.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_POWER_WHITE" file="icon_power_white.png" />
       </if>
