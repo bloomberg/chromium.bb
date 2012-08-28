@@ -257,6 +257,17 @@ void OnGDataFileFound(Profile* profile,
   }
 }
 
+// Called when a crx file on GData was downloaded.
+void OnCRXDownloadCallback(Browser* browser,
+                           gdata::DriveFileError error,
+                           const FilePath& file,
+                           const std::string& unused_mime_type,
+                           gdata::DriveFileType file_type) {
+  if (error != gdata::DRIVE_FILE_OK || file_type != gdata::REGULAR_FILE)
+    return;
+  InstallCRX(browser, file);
+}
+
 }  // namespace
 
 GURL GetFileBrowserExtensionUrl() {
@@ -695,7 +706,18 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
   }
 
   if (IsCRXFile(file_extension.data())) {
-    InstallCRX(browser, path);
+    if (gdata::util::IsUnderGDataMountPoint(path)) {
+      gdata::DriveSystemService* system_service =
+          gdata::DriveSystemServiceFactory::GetForProfile(profile);
+      if (!system_service)
+        return false;
+      system_service->file_system()->GetFileByPath(
+          gdata::util::ExtractGDataPath(path),
+          base::Bind(&OnCRXDownloadCallback, browser),
+          gdata::GetContentCallback());
+    } else {
+      InstallCRX(browser, path);
+    }
     return true;
   }
 
