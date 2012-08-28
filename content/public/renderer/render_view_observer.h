@@ -68,6 +68,8 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidCompleteClientRedirect(WebKit::WebFrame* frame,
                                          const WebKit::WebURL& from) {}
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) {}
+  virtual void FrameCreated(WebKit::WebFrame* parent,
+                            WebKit::WebFrame* frame) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
   virtual void WillSubmitForm(WebKit::WebFrame* frame,

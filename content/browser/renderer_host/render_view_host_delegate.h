@@ -215,6 +215,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // entirely loaded).
   virtual void DidChangeLoadProgress(double progress) {}
 
+  // The RenderView has changed its frame hierarchy, so we need to update all
+  // other renderers interested in this event.
+  virtual void DidUpdateFrameTree(RenderViewHost* rvh) {}
+
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}

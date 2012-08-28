@@ -2768,6 +2768,10 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
     delegate_->LoadProgressChanged(this, progress);
 }
 
+void WebContentsImpl::DidUpdateFrameTree(RenderViewHost* rvh) {
+  render_manager_.DidUpdateFrameTree(rvh);
+}
+
 void WebContentsImpl::DocumentAvailableInMainFrame(
     RenderViewHost* render_view_host) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -2861,6 +2865,12 @@ void WebContentsImpl::RouteMessageEvent(
     return;
 
   ViewMsg_PostMessage_Params new_params(params);
+
+  // If the renderer has changed while the post message is being routed,
+  // drop the message, as it will not be delivered to the right target.
+  if (GetRenderViewHost()->GetProcess()->GetID() != params.target_process_id)
+    return;
+  DCHECK(params.target_frame_id != 0);
 
   // If there is a source_routing_id, translate it to the routing ID for
   // the equivalent swapped out RVH in the target process.  If we need
@@ -3108,6 +3118,16 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
   // SiteInstance as well.
   if (opener_)
     opener_route_id = opener_->CreateOpenerRenderViews(instance);
+
+  // If any of the renderers for this WebContents has the same SiteInstance,
+  // use it.
+  if (render_manager_.current_host()->GetSiteInstance() == instance)
+    return render_manager_.current_host()->GetRoutingID();
+
+  RenderViewHostImpl* rvh = render_manager_.GetSwappedOutRenderViewHost(
+      instance);
+  if (rvh)
+    return rvh->GetRoutingID();
 
   // Create a swapped out RenderView in the given SiteInstance if none exists,
   // setting its opener to the given route_id.  Return the new view's route_id.

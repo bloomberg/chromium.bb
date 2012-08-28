@@ -14,6 +14,13 @@
     w.postMessage(msg, "*");
     return true;
   }
+  
+  // Send a message to a subframe of window named "foo".
+  function postToFooFrame(msg) {
+    var w = window.open("", "foo");
+    w.frames[0][0].postMessage(msg, "*");
+    return true;
+  }
 
   // Listen to incoming messages.
   var receivedMessages = 0;

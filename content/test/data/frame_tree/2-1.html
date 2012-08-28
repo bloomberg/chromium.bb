@@ -1,0 +1,18 @@
+<html>
+<head>
+<script>
+window.addEventListener("message", messageReceived, false);
+
+function messageReceived(event) {
+  window.top.document.title = event.data;
+  event.source.postMessage(event.data, "*");
+}
+</script>
+</head>
+<body>
+
+Frame 2-1.
+<br>
+
+</body>
+</html>

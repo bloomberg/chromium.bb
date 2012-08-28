@@ -597,9 +597,16 @@ IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
 
   // When sent to the browser, this is the routing ID of the source frame in
   // the source process.  The browser replaces it with the routing ID of the
-  // equivalent (swapped out) frame in the destination process.  Set to
-  // MSG_ROUTING_NONE if the source frame isn't supported (e.g., subframes).
+  // equivalent (swapped out) frame in the destination process.
   IPC_STRUCT_MEMBER(int, source_routing_id)
+  // The identifier of the source frame in the source process.
+  IPC_STRUCT_MEMBER(int, source_frame_id)
+
+  // The full set of identifiers to uniquely describe the target frame. See
+  // the comment on ViewMsg_FrameTreeUpdated for details.
+  IPC_STRUCT_MEMBER(int, target_process_id)
+  IPC_STRUCT_MEMBER(int, target_routing_id)
+  IPC_STRUCT_MEMBER(int, target_frame_id)
 
   // The origin of the source frame.
   IPC_STRUCT_MEMBER(string16, source_origin)
@@ -1062,6 +1069,16 @@ IPC_MESSAGE_ROUTED4(ViewMsg_ScriptEvalRequest,
 // Posts a message from a frame in another process to the current renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
                     ViewMsg_PostMessage_Params)
+
+// Sends a JSON serialized frame tree to RenderView along with the process id
+// and route id of the source renderer.
+//
+// This message must be sent to swapped out RenderViews every time the browser
+// receives a ViewHostMsg_FrameTreeUpdated message.
+IPC_MESSAGE_ROUTED3(ViewMsg_UpdateFrameTree,
+                    int, /* the child process id of the active renderer */
+                    int, /* route_id of the active renderer */
+                    std::string /* json encoded frame tree */)
 
 // Request for the renderer to evaluate an xpath to a frame and insert css
 // into that frame's document. See ViewMsg_ScriptEvalRequest for details on
@@ -2232,3 +2249,34 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_PepperPluginHung,
 // Screen was rotated. Dispatched to the onorientationchange javascript API.
 IPC_MESSAGE_ROUTED1(ViewMsg_OrientationChangeEvent,
                     int /* orientation */)
+
+// Chrome allows JavaScript calls to be routed across process boundaries. To
+// achieve this, each active RenderView in the source process has a swapped out
+// "mirror" in the target process. The active RenderView and its mirror
+// need to have identical frame tree structure, so calls originating in and
+// targeting subframes can be routed properly. This is achieved by each active
+// RenderView sending a ViewHostMsg_FrameTreeUpdated message to the browser,
+// which in turn sends the update to the corresponding mirror RenderView(s)
+// through the ViewMsg_UpdateFrameTree. We use best effort to keep these
+// trees synchronized across processes.
+//
+// When routing JavaScript calls across processes, the target information
+// is kept in the renderer process instead of the browser process. This design
+// was chosen because frame ids are allocated by the renderer process. If the
+// browser was to keep a mapping of the frame ids across processes, it would
+// require an extra IPC message with the newly allocated frame ids, as a
+// response to this particular message.
+//
+// The frame tree for a RenderView is serialized to JSON, so it can be sent to
+// the browser process. Each node in the tree is an object with three
+// properties:
+// * id - (integer) the frame identifier in this RenderView
+// * name - (string) the name of the frame, if one has been assigned
+// * subtree - an array of the same type of objects for each frame that is a
+//     direct child of the current frame. This property can be omitted if
+//     there are no direct child frames, so less data is transferred.
+//
+// This message must be sent on any events that modify the tree structure or
+// the names of any frames.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameTreeUpdated,
+                    std::string /* json encoded frame tree */)

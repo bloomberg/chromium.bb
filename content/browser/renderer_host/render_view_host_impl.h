@@ -393,6 +393,17 @@ class CONTENT_EXPORT RenderViewHostImpl
   // User rotated the screen. Calls the "onorientationchange" Javascript hook.
   void SendOrientationChangeEvent(int orientation);
 
+  const std::string& frame_tree() const {
+    return frame_tree_;
+  }
+
+  // Updates the frame tree for this RVH and sends an IPC down to the renderer
+  // process to keep them in sync. For more details, see the comments on
+  // ViewHostMsg_FrameTreeUpdated.
+  void UpdateFrameTree(int process_id,
+                       int route_id,
+                       const std::string& frame_tree);
+
   void set_save_accessibility_tree_for_testing(bool save) {
     save_accessibility_tree_for_testing_ = save;
   }
@@ -542,6 +553,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRunFileChooser(const FileChooserParams& params);
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
+  void OnFrameTreeUpdated(const std::string& frame_tree);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
@@ -636,6 +648,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Whether accessibility notifications are sent for all WebKit notifications
   // for unit testing.
   bool send_accessibility_updated_notifications_;
+
+  // A JSON serialized representation of the frame tree for the current document
+  // in the render view. For more details, see the comments on
+  // ViewHostMsg_FrameTreeUpdated.
+  std::string frame_tree_;
 
   // The most recently received accessibility tree - for unit testing only.
   AccessibilityNodeData accessibility_tree_;

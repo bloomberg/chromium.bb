@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "content/common/content_constants_internal.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -26,6 +28,64 @@
 #include "content/test/content_browser_test_utils.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
+
+namespace {
+
+bool CompareTrees(base::DictionaryValue* first, base::DictionaryValue* second) {
+  string16 name1;
+  string16 name2;
+  if (!first->GetString(content::kFrameTreeNodeNameKey, &name1) ||
+      !second->GetString(content::kFrameTreeNodeNameKey, &name2))
+    return false;
+  if (name1 != name2)
+    return false;
+
+  int id1 = 0;
+  int id2 = 0;
+  if (!first->GetInteger(content::kFrameTreeNodeIdKey, &id1) ||
+      !second->GetInteger(content::kFrameTreeNodeIdKey, &id2)) {
+    return false;
+  }
+  if (id1 != id2)
+    return false;
+
+  ListValue* subtree1 = NULL;
+  ListValue* subtree2 = NULL;
+  bool result1 = first->GetList(content::kFrameTreeNodeSubtreeKey, &subtree1);
+  bool result2 = second->GetList(content::kFrameTreeNodeSubtreeKey, &subtree2);
+  if (!result1 && !result2)
+    return true;
+  if (!result1 || !result2)
+    return false;
+
+  if (subtree1->GetSize() != subtree2->GetSize())
+    return false;
+
+  base::DictionaryValue* child1 = NULL;
+  base::DictionaryValue* child2 = NULL;
+  for (size_t i = 0; i < subtree1->GetSize(); ++i) {
+    if (!subtree1->GetDictionary(i, &child1) ||
+        !subtree2->GetDictionary(i, &child2)) {
+      return false;
+    }
+    if (!CompareTrees(child1, child2))
+      return false;
+  }
+
+  return true;
+}
+
+base::DictionaryValue* GetTree(content::RenderViewHostImpl* rvh) {
+  std::string frame_tree = rvh->frame_tree();
+  EXPECT_FALSE(frame_tree.empty());
+  base::Value* v = base::JSONReader::Read(frame_tree);
+  base::DictionaryValue* tree = NULL;
+  EXPECT_TRUE(v->IsType(base::Value::TYPE_DICTIONARY));
+  EXPECT_TRUE(v->GetAsDictionary(&tree));
+  return tree;
+}
+
+} // namespace
 
 namespace content {
 
@@ -402,6 +462,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 // 2) Fail to post a message from "foo" to opener with the wrong target origin.
 // 3) Post a message from "foo" to opener, which replies back to "foo".
 // 4) Post a message from _blank to "foo".
+// 5) Post a message from "foo" to a subframe of opener, which replies back.
+// 6) Post a message from _blank to a subframe of "foo".
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SupportCrossProcessPostMessage) {
   // Start two servers with different sites.
@@ -486,6 +548,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       L"'http://google.com'));",
       &success));
   EXPECT_TRUE(success);
+  ASSERT_FALSE(opener_manager->GetSwappedOutRenderViewHost(orig_site_instance));
 
   // 3) Post a message from the foo window to the opener.  The opener will
   // reply, causing the foo window to update its own title.
@@ -497,6 +560,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       L"window.domAutomationController.send(postToOpener('msg','*'));",
       &success));
   EXPECT_TRUE(success);
+  ASSERT_FALSE(opener_manager->GetSwappedOutRenderViewHost(orig_site_instance));
   title_observer.Wait();
 
   // We should have received only 1 message in the opener and "foo" tabs,
@@ -531,6 +595,36 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // This postMessage should have created a swapped out RVH for the new
   // SiteInstance in the target=_blank window.
   EXPECT_TRUE(new_manager->GetSwappedOutRenderViewHost(foo_site_instance));
+
+  NavigateToURL(new_shell, https_server.GetURL("files/post_message2.html"));
+
+  // 5) Now verify that posting a message from the foo window to a subframe of
+  // the opener window works fine. The opener subframe will reply, causing the
+  // foo window to update its own title.
+  WindowedNotificationObserver title_observer3(
+      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+      Source<WebContents>(new_shell->web_contents()));
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      foo_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(postToOpenerFrame('msg3','*'));",
+      &success));
+  EXPECT_TRUE(success);
+  title_observer3.Wait();
+  EXPECT_EQ(ASCIIToUTF16("msg3"), new_shell->web_contents()->GetTitle());
+
+  // 6) Lastly, verify that the _blank window can post a message to a subframe
+  // of the foo window. The subframe of foo will set the foo window title and
+  // will reply, setting the _blank window title.
+  WindowedNotificationObserver title_observer4(
+      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+      Source<WebContents>(new_shell2->web_contents()));
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      new_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(postToFooFrame('msg4'));",
+      &success));
+  EXPECT_TRUE(success);
+  title_observer4.Wait();
+  EXPECT_EQ(ASCIIToUTF16("msg4"), new_shell2->web_contents()->GetTitle());
 }
 
 // Test for crbug.com/116192.  Navigations to a window's opener should
@@ -1037,6 +1131,171 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   RunAllPendingInMessageLoop();  // Needed on ChromeOS.
 
   EXPECT_EQ(0U, rvh_observers.GetNumObservers());
+}
+
+// Test for correct propagation of the frame hierarchy across processes in the
+// same BrowsingInstance. The test starts by navigating to a page that has
+// multiple nested frames. It then opens two windows and navigates each one
+// to a separate site, so at the end we have 3 SiteInstances. The opened
+// windows have swapped out RenderViews corresponding to the opener, so those
+// swapped out views must have a matching frame hierarchy. The test checks
+// that frame hierarchies are kept in sync through navigations, reloading, and
+// JavaScript manipulation of the frame tree.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, FrameTreeUpdates) {
+  // Start two servers to allow using different sites.
+  EXPECT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("content/test/data")));
+  EXPECT_TRUE(https_server.Start());
+
+  GURL frame_tree_url(test_server()->GetURL("files/frame_tree/top.html"));
+
+  // Replace the 127.0.0.1 with localhost, which will give us a different
+  // site instance.
+  GURL::Replacements replacements;
+  std::string new_host("localhost");
+  replacements.SetHostStr(new_host);
+  GURL remote_frame = test_server()->GetURL(
+      "files/frame_tree/1-1.html").ReplaceComponents(replacements);
+
+  bool success = false;
+  base::DictionaryValue* frames = NULL;
+  base::ListValue* subtree = NULL;
+
+  // First navigate to a page with no frames and ensure the frame tree has no
+  // subtrees.
+  NavigateToURL(shell(), test_server()->GetURL("files/simple_page.html"));
+  WebContents* opener_contents = shell()->web_contents();
+  RenderViewHostManager* opener_rvhm = static_cast<WebContentsImpl*>(
+      opener_contents)->GetRenderManagerForTesting();
+  frames = GetTree(opener_rvhm->current_host());
+  EXPECT_FALSE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+
+  NavigateToURL(shell(), frame_tree_url);
+  frames = GetTree(opener_rvhm->current_host());
+  EXPECT_TRUE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_TRUE(subtree->GetSize() == 3);
+
+  scoped_refptr<SiteInstance> orig_site_instance(
+      opener_contents->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance != NULL);
+
+  ShellAddedObserver shell_observer1;
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      opener_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(openWindow('1-3.html'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  Shell* shell1 = shell_observer1.GetShell();
+  WebContents* contents1 = shell1->web_contents();
+  WaitForLoadStop(contents1);
+  RenderViewHostManager* rvhm1 = static_cast<WebContentsImpl*>(
+      contents1)->GetRenderManagerForTesting();
+  EXPECT_EQ("/files/frame_tree/1-3.html", contents1->GetURL().path());
+
+  // Now navigate the new window to a different SiteInstance.
+  NavigateToURL(shell1, https_server.GetURL("files/title1.html"));
+  EXPECT_EQ("/files/title1.html", contents1->GetURL().path());
+  scoped_refptr<SiteInstance> site_instance1(
+      contents1->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, site_instance1);
+
+  ShellAddedObserver shell_observer2;
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      opener_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(openWindow('../title2.html'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  Shell* shell2 = shell_observer2.GetShell();
+  WebContents* contents2 = shell2->web_contents();
+  WaitForLoadStop(contents2);
+  EXPECT_EQ("/files/title2.html", contents2->GetURL().path());
+
+  // Navigate the second new window to a different SiteInstance as well.
+  NavigateToURL(shell2, remote_frame);
+  EXPECT_EQ("/files/frame_tree/1-1.html", contents2->GetURL().path());
+  scoped_refptr<SiteInstance> site_instance2(
+      contents2->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, site_instance2);
+  EXPECT_NE(site_instance1, site_instance2);
+
+  RenderViewHostManager* rvhm2 = static_cast<WebContentsImpl*>(
+      contents2)->GetRenderManagerForTesting();
+
+  EXPECT_TRUE(CompareTrees(
+      GetTree(opener_rvhm->current_host()),
+      GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance1))));
+  EXPECT_TRUE(CompareTrees(
+      GetTree(opener_rvhm->current_host()),
+      GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance2))));
+
+  EXPECT_TRUE(CompareTrees(
+      GetTree(rvhm1->current_host()),
+      GetTree(rvhm1->GetSwappedOutRenderViewHost(orig_site_instance))));
+  EXPECT_TRUE(CompareTrees(
+      GetTree(rvhm2->current_host()),
+      GetTree(rvhm2->GetSwappedOutRenderViewHost(orig_site_instance))));
+
+  // Verify that the frame trees from different windows aren't equal.
+  EXPECT_FALSE(CompareTrees(
+      GetTree(opener_rvhm->current_host()), GetTree(rvhm1->current_host())));
+  EXPECT_FALSE(CompareTrees(
+      GetTree(opener_rvhm->current_host()), GetTree(rvhm2->current_host())));
+
+  // Reload the original page, which will cause subframe ids to change. This
+  // will ensure that the ids are properly replicated across reload.
+  NavigateToURL(shell(), frame_tree_url);
+
+  EXPECT_TRUE(CompareTrees(
+      GetTree(opener_rvhm->current_host()),
+      GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance1))));
+  EXPECT_TRUE(CompareTrees(
+      GetTree(opener_rvhm->current_host()),
+      GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance2))));
+
+  EXPECT_FALSE(CompareTrees(
+      GetTree(opener_rvhm->current_host()), GetTree(rvhm1->current_host())));
+  EXPECT_FALSE(CompareTrees(
+      GetTree(opener_rvhm->current_host()), GetTree(rvhm2->current_host())));
+
+  // Now let's ensure that using JS to add/remove frames results in proper
+  // updates.
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      opener_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(removeFrame());",
+      &success));
+  EXPECT_TRUE(success);
+  frames = GetTree(opener_rvhm->current_host());
+  EXPECT_TRUE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_EQ(subtree->GetSize(), 2U);
+
+  // Create a load observer for the iframe that will be created by the
+  // JavaScript code we will execute.
+  WindowedNotificationObserver load_observer(
+      NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(
+              &opener_contents->GetController()));
+  EXPECT_TRUE(ExecuteJavaScriptAndExtractBool(
+      opener_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(addFrame());",
+      &success));
+  EXPECT_TRUE(success);
+  load_observer.Wait();
+
+  frames = GetTree(opener_rvhm->current_host());
+  EXPECT_TRUE(frames->GetList(content::kFrameTreeNodeSubtreeKey, &subtree));
+  EXPECT_EQ(subtree->GetSize(), 3U);
+
+  EXPECT_TRUE(CompareTrees(
+      GetTree(opener_rvhm->current_host()),
+      GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance1))));
+  EXPECT_TRUE(CompareTrees(
+      GetTree(opener_rvhm->current_host()),
+      GetTree(opener_rvhm->GetSwappedOutRenderViewHost(site_instance2))));
 }
 
 }  // namespace content

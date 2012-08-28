@@ -239,6 +239,26 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
+void RenderViewHostManager::DidUpdateFrameTree(
+    RenderViewHost* render_view_host) {
+  CHECK_EQ(render_view_host, current_host());
+
+  RenderViewHostImpl* render_view_host_impl = static_cast<RenderViewHostImpl*>(
+      render_view_host);
+
+  for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
+       iter != swapped_out_hosts_.end();
+       ++iter) {
+    DCHECK_NE(iter->second->GetSiteInstance(),
+        current_host()->GetSiteInstance());
+
+    iter->second->UpdateFrameTree(
+        render_view_host_impl->GetProcess()->GetID(),
+        render_view_host_impl->GetRoutingID(),
+        render_view_host_impl->frame_tree());
+  }
+}
+
 void RenderViewHostManager::SetWebUIPostCommit(WebUIImpl* web_ui) {
   DCHECK(!web_ui_.get());
   web_ui_.reset(web_ui);
@@ -495,6 +515,15 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     if (entry.IsViewSourceMode())
       return SiteInstance::CreateForURL(browser_context, dest_url);
 
+    // If we are navigating from a blank SiteInstance to a WebUI, make sure we
+    // create a new SiteInstance.
+    const WebUIControllerFactory* web_ui_factory =
+        content::GetContentClient()->browser()->GetWebUIControllerFactory();
+    if (web_ui_factory &&
+        web_ui_factory->UseWebUIForURL(browser_context, dest_url)) {
+        return SiteInstance::CreateForURL(browser_context, dest_url);
+    }
+
     // Normally the "site" on the SiteInstance is set lazily when the load
     // actually commits. This is to support better process sharing in case
     // the site redirects to some other site: we want to use the destination
@@ -607,6 +636,15 @@ int RenderViewHostManager::CreateRenderView(
     if (success) {
       // Don't show the view until we get a DidNavigate from it.
       new_render_view_host->GetView()->Hide();
+
+      // If we are creating a swapped out RVH, send a message to update its
+      // frame tree based on the active RVH for this RenderViewHostManager.
+      if (swapped_out) {
+        new_render_view_host->UpdateFrameTree(
+            current_host()->GetProcess()->GetID(),
+            current_host()->GetRoutingID(),
+            current_host()->frame_tree());
+      }
     } else if (!swapped_out) {
       CancelPending();
     }
@@ -920,7 +958,7 @@ bool RenderViewHostManager::IsSwappedOut(RenderViewHost* rvh) {
       swapped_out_hosts_.end();
 }
 
-RenderViewHost* RenderViewHostManager::GetSwappedOutRenderViewHost(
+RenderViewHostImpl* RenderViewHostManager::GetSwappedOutRenderViewHost(
     SiteInstance* instance) {
   RenderViewHostMap::iterator iter = swapped_out_hosts_.find(instance->GetId());
   if (iter != swapped_out_hosts_.end())

@@ -588,6 +588,8 @@
         'browser/speech/speech_recognition_browsertest.cc',
         'browser/webkit_browsertest.cc',
         'browser/worker_host/test/worker_browsertest.cc',
+        'common/content_constants_internal.cc',
+        'common/content_constants_internal.h',
         'renderer/browser_plugin/mock_browser_plugin.h',
         'renderer/browser_plugin/mock_browser_plugin.cc',
         'renderer/browser_plugin/mock_browser_plugin_manager.h',

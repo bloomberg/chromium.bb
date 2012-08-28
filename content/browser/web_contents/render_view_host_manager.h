@@ -162,6 +162,9 @@ class CONTENT_EXPORT RenderViewHostManager
   // Called when a renderer's main frame navigates.
   void DidNavigateMainFrame(content::RenderViewHost* render_view_host);
 
+  // Called when a renderer has navigated and when its frame tree is updated.
+  void DidUpdateFrameTree(content::RenderViewHost* render_view_host);
+
   // Helper method to create a RenderViewHost.  If |swapped_out| is true, it
   // will be initially placed on the swapped out hosts list.  Otherwise, it
   // will be used for a pending cross-site navigation.
@@ -220,7 +223,7 @@ class CONTENT_EXPORT RenderViewHostManager
   bool IsSwappedOut(content::RenderViewHost* rvh);
 
   // Returns the swapped out RenderViewHost for the given SiteInstance, if any.
-  content::RenderViewHost* GetSwappedOutRenderViewHost(
+  content::RenderViewHostImpl* GetSwappedOutRenderViewHost(
       content::SiteInstance* instance);
 
  private:

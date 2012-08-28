@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/edit_command.h"
@@ -539,6 +540,8 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebFrame* frame,
       WebKit::WebApplicationCacheHostClient* client);
   virtual WebKit::WebCookieJar* cookieJar(WebKit::WebFrame* frame);
+  virtual void didCreateFrame(WebKit::WebFrame* parent,
+                              WebKit::WebFrame* child);
   virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
@@ -677,7 +680,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void willOpenSocketStream(
       WebKit::WebSocketStreamHandle* handle);
   virtual bool willCheckAndDispatchMessageEvent(
-      WebKit::WebFrame* source,
+      WebKit::WebFrame* sourceFrame,
+      WebKit::WebFrame* targetFrame,
       WebKit::WebSecurityOrigin targetOrigin,
       WebKit::WebDOMMessageEvent event) OVERRIDE;
   virtual WebKit::WebString userAgentOverride(
@@ -1040,6 +1044,10 @@ class RenderViewImpl : public RenderWidget,
 
   void OnJavaBridgeInit();
 
+  void OnUpdatedFrameTree(int process_id,
+                          int route_id,
+                          const std::string& frame_tree);
+
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
 
@@ -1056,6 +1064,27 @@ class RenderViewImpl : public RenderWidget,
 
   WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
+
+  // This method walks the entire frame tree for this RenderView and sends an
+  // update to the browser process as described in the
+  // ViewHostMsg_FrameTreeUpdated comments. If |exclude_frame_subtree|
+  // frame is non-NULL, the subtree starting at that frame not included in the
+  // serialized form.
+  // This is used when a frame is going to be removed from the tree.
+  void SendUpdatedFrameTree(WebKit::WebFrame* exclude_frame_subtree);
+
+  // Recursively creates a DOM frame tree starting with |frame|, based on
+  // |frame_tree|. For each node, the frame is navigated to the swapped out URL,
+  // the name (if present) is set on it, and all the subframes are created
+  // and added to the DOM.
+  void CreateFrameTree(WebKit::WebFrame* frame, DictionaryValue* frame_tree);
+
+  // If this is a swapped out RenderView, which maintains a copy of the frame
+  // tree of an active RenderView, we keep a map from frame ids in this view to
+  // the frame ids of the active view for each corresponding frame.
+  // This method uses the map to find the frame in this RenderView that
+  // corresponds to the frame in the active RenderView specified by |frame_id|.
+  WebKit::WebFrame* GetFrameByMappedID(int frame_id);
 
   void EnsureMediaStreamImpl();
 
@@ -1105,7 +1134,7 @@ class RenderViewImpl : public RenderWidget,
                                    bool replace);
 
   // Make this RenderView show an empty, unscriptable page.
-  void NavigateToSwappedOutURL();
+  void NavigateToSwappedOutURL(WebKit::WebFrame* frame);
 
   // If we initiated a navigation, this function will populate |document_state|
   // with the navigation information saved in OnNavigate().
@@ -1468,6 +1497,34 @@ class RenderViewImpl : public RenderWidget,
   // These are the attributes originally passed into createOutputSurface
   // before the guest_to_embedder_channel was ready.
   WebKit::WebGraphicsContext3D::Attributes guest_attributes_;
+
+  // Boolean indicating whether we are in the process of creating the frame
+  // tree for this renderer in response to ViewMsg_UpdateFrameTree.  If true,
+  // we won't be sending ViewHostMsg_FrameTreeUpdated messages back to the
+  // browser, as those will be redundant.
+  bool updating_frame_tree_;
+
+  // Boolean indicating that the frame tree has changed, but a message has not
+  // been sent to the browser because a page has been loading. This helps
+  // avoid extra messages being sent to the browser when navigating away from a
+  // page with subframes, which will be destroyed. Instead, a single message
+  // is sent when the load is stopped with the final state of the frame tree.
+  //
+  // TODO(nasko): Relying on the is_loading_ means that frame tree updates will
+  // not be sent until *all* subframes have completed loading. This can cause
+  // JavaScript calls to fail, if they occur prior to the first update message
+  // being sent. This will be fixed by bug http://crbug.com/145014.
+  bool pending_frame_tree_update_;
+
+  // If this render view is a swapped out "mirror" of an active render view in a
+  // different process, we record the process id and route id for the active RV.
+  // For further details, see the comments on ViewHostMsg_FrameTreeUpdated.
+  int target_process_id_;
+  int target_routing_id_;
+
+  // A map of the current process's frame ids to ids in the remote active render
+  // view, if this is a swapped out render view.
+  std::map<int, int> active_frame_id_map_;
 
   // NOTE: pepper_delegate_ should be last member because its constructor calls
   // AddObservers method of RenderViewImpl from c-tor.
