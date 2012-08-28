@@ -15,6 +15,7 @@
 }
 
 #display-options-displays-view {
+  overflow: hidden;
   position: relative;
   width: 100%;
 }

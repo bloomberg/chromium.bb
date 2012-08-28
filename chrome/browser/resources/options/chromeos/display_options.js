@@ -34,6 +34,7 @@ cr.define('options', function() {
     this.mirroring_ = false;
     this.focusedIndex_ = null;
     this.displays_ = [];
+    this.visualScale_ = VISUAL_SCALE;
   }
 
   cr.addSingletonGetter(DisplayOptions);
@@ -78,7 +79,8 @@ cr.define('options', function() {
       } else {
         offset = secondary.div.offsetLeft - primary.div.offsetLeft;
       }
-      chrome.send('setDisplayLayout', [this.layout_, offset / VISUAL_SCALE]);
+      chrome.send('setDisplayLayout',
+                  [this.layout_, offset / this.visualScale_]);
     },
 
     /**
@@ -319,8 +321,8 @@ cr.define('options', function() {
       /** @const */ var MIRRORING_VERTICAL_MARGIN = 20;
 
       // The width/height should be same as the primary display:
-      var width = this.displays_[0].width * VISUAL_SCALE;
-      var height = this.displays_[0].height * VISUAL_SCALE;
+      var width = this.displays_[0].width * this.visualScale_;
+      var height = this.displays_[0].height * this.visualScale_;
 
       var numDisplays = Math.max(MIN_NUM_DISPLAYS, this.displays_.length);
 
@@ -355,28 +357,43 @@ cr.define('options', function() {
      * @private
      */
     layoutDisplays_: function() {
-      var totalHeight = 0;
+      var maxWidth = 0;
+      var maxHeight = 0;
       var boundingBox = {left: 0, right: 0, top: 0, bottom: 0};
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
-        totalHeight += display.height * VISUAL_SCALE;
-        boundingBox.left = Math.min(boundingBox.left, display.x * VISUAL_SCALE);
+        boundingBox.left = Math.min(boundingBox.left, display.x);
         boundingBox.right = Math.max(
-            boundingBox.right, (display.x + display.width) * VISUAL_SCALE);
-        boundingBox.top = Math.min(boundingBox.top, display.y * VISUAL_SCALE);
+            boundingBox.right, display.x + display.width);
+        boundingBox.top = Math.min(boundingBox.top, display.y);
         boundingBox.bottom = Math.max(
-            boundingBox.bottom, (display.y + display.height) * VISUAL_SCALE);
+            boundingBox.bottom, display.y + display.height);
+        maxWidth = Math.max(maxWidth, display.width);
+        maxHeight = Math.max(maxHeight, display.height);
       }
 
+      // Make the margin around the bounding box.
+      var areaWidth = boundingBox.right - boundingBox.left + maxWidth;
+      var areaHeight = boundingBox.bottom - boundingBox.top + maxHeight;
+
+      // Calculates the scale by the width since horizontal size is more strict.
+      // TODO(mukai): Adds the check of vertical size in case.
+      this.visualScale_ = Math.min(
+          VISUAL_SCALE, this.displaysView_.offsetWidth / areaWidth);
+
       // Prepare enough area for thisplays_view by adding the maximum height.
-      this.displaysView_.style.height = totalHeight + 'px';
+      this.displaysView_.style.height = areaHeight * this.visualScale_ + 'px';
+
+      var boundingCenter = {
+        x: (boundingBox.right + boundingBox.left) * this.visualScale_ / 2,
+        y: (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2};
 
       // Centering the bounding box of the display rectangles.
-      var offset = {x: $('display-options-displays-view').offsetWidth / 2 -
-                       (boundingBox.left + boundingBox.right) / 2,
-                    y: totalHeight / 2 -
-                       (boundingBox.top + boundingBox.bottom) / 2};
-
+      var offset = {
+        x: this.displaysView_.offsetWidth / 2 -
+           (boundingBox.right + boundingBox.left) * this.visualScale_ / 2,
+        y: this.displaysView_.offsetHeight / 2 -
+           (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2};
 
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
@@ -384,10 +401,15 @@ cr.define('options', function() {
         display.div = div;
 
         div.className = 'displays-display';
-        if (i == this.focusedIndex_)
+        var borderWidth = 1;
+        if (i == this.focusedIndex_) {
           div.classList.add('displays-focused');
-        div.style.width = display.width * VISUAL_SCALE + 'px';
-        div.style.height = display.height * VISUAL_SCALE + 'px';
+          borderWidth = 2;
+        }
+        div.style.width =
+            display.width * this.visualScale_ - borderWidth * 2 + 'px';
+        div.style.height =
+            display.height * this.visualScale_ - borderWidth * 2 + 'px';
         div.style.lineHeight = div.style.height;
         if (i == 0) {
           // Assumes that first display is primary and put a grey rectangle to
@@ -397,9 +419,8 @@ cr.define('options', function() {
           launcher.style.width = display.div.style.width;
           div.appendChild(launcher);
         }
-        div.style.left = display.x * VISUAL_SCALE + offset.x + 'px';
-        div.style.top = display.y * VISUAL_SCALE + offset.y + 'px';
-
+        div.style.left = display.x * this.visualScale_ + offset.x + 'px';
+        div.style.top = display.y * this.visualScale_ + offset.y + 'px';
         div.appendChild(document.createTextNode(display.name));
 
         this.displaysView_.appendChild(div);
