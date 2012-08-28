@@ -27,12 +27,16 @@ class AwWebContentsDelegate;
 // level of indirection provided by the AwContentsContainer abstraction.
 class AwContents {
  public:
+  // Returns the AwContents instance associated with |web_contents|, or NULL.
+  static AwContents* FromWebContents(content::WebContents* web_contents);
+
   AwContents(JNIEnv* env,
              jobject obj,
              jobject web_contents_delegate,
              bool private_browsing);
   ~AwContents();
 
+  // Methods called from Java.
   jint GetWebContents(JNIEnv* env, jobject obj);
   void Destroy(JNIEnv* env, jobject obj);
 

@@ -9,6 +9,7 @@
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/supports_user_data.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwContents_jni.h"
@@ -19,6 +20,31 @@ using content::ContentViewCore;
 using content::WebContents;
 
 namespace android_webview {
+
+namespace {
+
+const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
+
+class AwContentsUserData : public base::SupportsUserData::Data {
+ public:
+  AwContentsUserData(AwContents* ptr) : contents_(ptr) {}
+  AwContents* get() { return contents_; }
+
+ private:
+  AwContents* contents_;
+};
+
+}  // namespace
+
+// static
+AwContents* AwContents::FromWebContents(content::WebContents* web_contents) {
+  if (web_contents) {
+    AwContentsUserData* data = reinterpret_cast<AwContentsUserData*>(
+              web_contents->GetUserData(kAwContentsUserDataKey));
+    if (data) return data->get();
+  }
+  return NULL;
+}
 
 AwContents::AwContents(JNIEnv* env,
                        jobject obj,
@@ -36,9 +62,14 @@ AwContents::AwContents(JNIEnv* env,
   web_contents->SetDelegate(web_contents_delegate_.get());
   web_contents_delegate_->SetJavaScriptDialogCreator(
       dependency_factory->GetJavaScriptDialogCreator());
+  web_contents->SetUserData(kAwContentsUserDataKey,
+                            new AwContentsUserData(this));
 }
 
 AwContents::~AwContents() {
+  content::WebContents* web_contents = contents_container_->GetWebContents();
+  DCHECK(AwContents::FromWebContents(web_contents) == this);
+  web_contents->RemoveUserData(kAwContentsUserDataKey);
 }
 
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
