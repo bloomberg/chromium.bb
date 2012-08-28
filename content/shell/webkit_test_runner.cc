@@ -165,8 +165,8 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebKitTestRunner::OnCaptureTextDump(bool as_text,
-                                             bool printing,
-                                             bool recursive) {
+                                         bool printing,
+                                         bool recursive) {
   WebFrame* frame = render_view()->GetWebView()->mainFrame();
   std::string dump;
   if (as_text) {
