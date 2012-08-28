@@ -14,7 +14,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -30,7 +29,6 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
 using content::IndexedDBContext;
-using content::ResourceContext;
 
 namespace extensions {
 
@@ -70,7 +68,8 @@ void DataDeleter::StartDeleting(Profile* profile,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&DataDeleter::DeleteAppcachesOnIOThread,
                  deleter,
-                 profile->GetResourceContext()));
+                 BrowserContext::GetDefaultStoragePartition(profile)->
+                     GetAppCacheService()));
 
   profile->GetExtensionService()->settings_frontend()->
       DeleteStorageSoon(extension_id);
@@ -138,10 +137,11 @@ void DataDeleter::DeleteFileSystemOnFileThread() {
     file_util::Delete(isolated_app_path_, true);
 }
 
-void DataDeleter::DeleteAppcachesOnIOThread(ResourceContext* context) {
+void DataDeleter::DeleteAppcachesOnIOThread(
+    appcache::AppCacheService* appcache_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceContext::GetAppCacheService(context)->DeleteAppCachesForOrigin(
-      storage_origin_, net::CompletionCallback());
+  appcache_service->DeleteAppCachesForOrigin(storage_origin_,
+                                             net::CompletionCallback());
 }
 
 }  // namespace extensions

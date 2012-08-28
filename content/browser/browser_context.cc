@@ -22,6 +22,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using base::UserDataAdapter;
 
@@ -54,13 +55,15 @@ void PurgeDOMStorageContextInPartition(const std::string& id,
       GetDOMStorageContext()->PurgeMemory();
 }
 
-void SaveSessionStateOnIOThread(ResourceContext* resource_context) {
-  resource_context->GetRequestContext()->cookie_store()->GetCookieMonster()->
+void SaveSessionStateOnIOThread(
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+    appcache::AppCacheService* appcache_service) {
+  net::URLRequestContext* context = context_getter->GetURLRequestContext();
+  context->cookie_store()->GetCookieMonster()->
       SetForceKeepSessionState();
-  resource_context->GetRequestContext()->server_bound_cert_service()->
-      GetCertStore()->SetForceKeepSessionState();
-  ResourceContext::GetAppCacheService(resource_context)->
-      set_force_keep_session_state();
+  context->server_bound_cert_service()->GetCertStore()->
+      SetForceKeepSessionState();
+  appcache_service->set_force_keep_session_state();
 }
 
 void SaveSessionStateOnWebkitThread(
@@ -68,8 +71,8 @@ void SaveSessionStateOnWebkitThread(
   indexed_db_context->SetForceKeepSessionState();
 }
 
-void PurgeMemoryOnIOThread(ResourceContext* resource_context) {
-  ResourceContext::GetAppCacheService(resource_context)->PurgeMemory();
+void PurgeMemoryOnIOThread(appcache::AppCacheService* appcache_service) {
+  appcache_service->PurgeMemory();
 }
 
 }  // namespace
@@ -178,8 +181,11 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SaveSessionStateOnIOThread,
-                   browser_context->GetResourceContext()));
+        base::Bind(
+            &SaveSessionStateOnIOThread,
+            make_scoped_refptr(browser_context->GetRequestContext()),
+            BrowserContext::GetDefaultStoragePartition(browser_context)->
+                GetAppCacheService()));
   }
 
   DOMStorageContextImpl* dom_storage_context_impl =
@@ -201,8 +207,10 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PurgeMemoryOnIOThread,
-                   browser_context->GetResourceContext()));
+        base::Bind(
+            &PurgeMemoryOnIOThread,
+            BrowserContext::GetDefaultStoragePartition(browser_context)->
+                GetAppCacheService()));
   }
 
   ForEachStoragePartition(browser_context,

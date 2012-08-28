@@ -9,19 +9,19 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage.h"
 
-using appcache::AppCacheDatabase;
-using content::BrowserContext;
 using content::BrowserThread;
-using content::ResourceContext;
+using content::BrowserContext;
 
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(Profile* profile)
     : is_fetching_(false),
-      resource_context_(profile->GetResourceContext()) {
+      appcache_service_(BrowserContext::GetDefaultStoragePartition(profile)->
+                            GetAppCacheService()) {
 }
 
 void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
@@ -41,7 +41,7 @@ void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   appcache_info_callback_.Reset(
       base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete,
                  base::Unretained(this)));
-  ResourceContext::GetAppCacheService(resource_context_)->
+  appcache_service_->
       GetAllAppCacheInfo(info_collection_, appcache_info_callback_.callback());
 }
 
@@ -55,8 +55,8 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     return;
   }
 
-  ResourceContext::GetAppCacheService(resource_context_)->DeleteAppCacheGroup(
-      manifest_url, net::CompletionCallback());
+  appcache_service_->DeleteAppCacheGroup(manifest_url,
+                                         net::CompletionCallback());
 }
 
 BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}

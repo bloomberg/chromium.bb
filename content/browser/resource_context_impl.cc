@@ -154,8 +154,11 @@ class DeveloperProtocolHandler
 };
 
 void InitializeRequestContext(
-    ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    AppCacheService* appcache_service,
+    FileSystemContext* file_system_context,
+    ChromeBlobStorageContext* blob_storage_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context_getter)
     return;  // tests.
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
@@ -167,18 +170,17 @@ void InitializeRequestContext(
   bool set_protocol = job_factory->SetProtocolHandler(
       chrome::kBlobScheme,
       new BlobProtocolHandler(
-          GetBlobStorageControllerForResourceContext(resource_context),
+          blob_storage_context->controller(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kFileSystemScheme,
-      CreateFileSystemProtocolHandler(
-          GetFileSystemContextForResourceContext(resource_context)));
+      CreateFileSystemProtocolHandler(file_system_context));
   DCHECK(set_protocol);
 
-  job_factory->AddInterceptor(new DeveloperProtocolHandler(
-      ResourceContext::GetAppCacheService(resource_context),
-      GetBlobStorageControllerForResourceContext(resource_context)));
+  job_factory->AddInterceptor(
+      new DeveloperProtocolHandler(appcache_service,
+                                   blob_storage_context->controller()));
 
   // TODO(jam): Add the ProtocolHandlerRegistryIntercepter here!
 }
@@ -284,17 +286,35 @@ void InitializeResourceContext(BrowserContext* browser_context) {
   // TODO(creis): Do equivalent initializations for isolated app and isolated
   // media request contexts.
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    // TODO(ajwong): Move this whole block into
+    // StoragePartitionImplMap::PostCreateInitialization after we're certain
+    // this is safe to happen before InitializeResourceContext, and after we've
+    // found the right URLRequestContext for a storage partition.  Otherwise,
+    // our isolated URLRequestContext getters will do the wrong thing for blobs,
+    // and FileSystemContext.
+    //
+    // http://crbug.com/85121
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&InitializeRequestContext,
-                   resource_context,
-                   make_scoped_refptr(browser_context->GetRequestContext())));
+        base::Bind(
+            &InitializeRequestContext,
+            make_scoped_refptr(browser_context->GetRequestContext()),
+            BrowserContext::GetAppCacheService(browser_context),
+            make_scoped_refptr(
+                BrowserContext::GetFileSystemContext(browser_context)),
+            make_scoped_refptr(
+                ChromeBlobStorageContext::GetFor(browser_context))));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&InitializeRequestContext,
-                   resource_context,
-                   make_scoped_refptr(
-                       browser_context->GetMediaRequestContext())));
+        base::Bind(
+            &InitializeRequestContext,
+            make_scoped_refptr(browser_context->GetMediaRequestContext()),
+            BrowserContext::GetAppCacheService(browser_context),
+            make_scoped_refptr(
+                BrowserContext::GetFileSystemContext(browser_context)),
+            make_scoped_refptr(
+                ChromeBlobStorageContext::GetFor(browser_context))));
   }
 }
 

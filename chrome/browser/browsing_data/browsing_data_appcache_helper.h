@@ -13,8 +13,8 @@
 
 class Profile;
 
-namespace content {
-class ResourceContext;
+namespace appcache {
+class AppCacheService;
 }
 
 // This class fetches appcache information on behalf of a caller
@@ -45,7 +45,7 @@ class BrowsingDataAppCacheHelper
   void OnFetchComplete(int rv);
 
   bool is_fetching_;
-  content::ResourceContext* resource_context_;
+  appcache::AppCacheService* appcache_service_;
   net::CancelableCompletionCallback appcache_info_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);

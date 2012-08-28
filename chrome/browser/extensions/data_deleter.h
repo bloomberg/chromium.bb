@@ -12,10 +12,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+namespace appcache {
+class AppCacheService;
+}
+
 namespace content {
 class DOMStorageContext;
 class IndexedDBContext;
-class ResourceContext;
 }
 
 namespace fileapi {
@@ -80,7 +83,7 @@ class DataDeleter : public base::RefCountedThreadSafe<
 
   // Deletes appcache files for the extension. May only be called on the IO
   // thread.
-  void DeleteAppcachesOnIOThread(content::ResourceContext* resource_context);
+  void DeleteAppcachesOnIOThread(appcache::AppCacheService* appcache_service);
 
   // The ID of the extension being deleted.
   const std::string extension_id_;
