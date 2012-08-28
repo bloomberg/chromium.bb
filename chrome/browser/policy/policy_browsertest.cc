@@ -4,20 +4,27 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "policy/policy_constants.h"
@@ -132,6 +139,58 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(2u, BrowserList::size());
   EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
+  // Get the |infobar_helper|, and verify that there are no infobars on startup.
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(contents);
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
+  ASSERT_TRUE(tab_contents);
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  ASSERT_TRUE(infobar_helper);
+  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+
+  // Force enable the translate feature.
+  PolicyMap policies;
+  policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+  // Instead of waiting for NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, this test
+  // waits for NOTIFICATION_TAB_LANGUAGE_DETERMINED because that's what the
+  // TranslateManager observes. This allows checking that an infobar is NOT
+  // shown below, without polling for infobars for some indeterminate amount
+  // of time.
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(FILE_PATH_LITERAL("translate/es")),
+      FilePath(FILE_PATH_LITERAL("google.html")));
+  content::WindowedNotificationObserver language_observer1(
+      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURL(browser(), url);
+  language_observer1.Wait();
+  // Verify that the translate infobar showed up.
+  EXPECT_EQ(1u, infobar_helper->GetInfoBarCount());
+  InfoBarDelegate* infobar_delegate = infobar_helper->GetInfoBarDelegateAt(0);
+  TranslateInfoBarDelegate* delegate =
+      infobar_delegate->AsTranslateInfoBarDelegate();
+  ASSERT_TRUE(delegate);
+  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, delegate->type());
+  EXPECT_EQ("es", delegate->GetOriginalLanguageCode());
+
+  // Now force disable translate.
+  ui_test_utils::CloseAllInfoBars(tab_contents);
+  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+  policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  provider_.UpdateChromePolicy(policies);
+  // Navigating to the same URL now doesn't trigger an infobar.
+  content::WindowedNotificationObserver language_observer2(
+      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURL(browser(), url);
+  language_observer2.Wait();
+  EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
 }
 
 }  // namespace policy

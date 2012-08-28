@@ -425,28 +425,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertTrue(self.GetHistoryInfo().History(),
                      msg='History not is being saved.')
 
-  def testTranslateEnabled(self):
-    """Verify that translate happens if policy enables it."""
-    policy = {'TranslateEnabled': True}
-    self.SetUserPolicy(policy)
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
-    url = self.GetFileURLForDataPath('translate', 'es', 'google.html')
-    self.NavigateToURL(url)
-    self.assertTrue(self.WaitForInfobarCount(1))
-    translate_info = self.GetTranslateInfo()
-    self.assertEqual('es', translate_info['original_language'])
-    self.assertFalse(translate_info['page_translated'])
-    self.assertTrue(translate_info['can_translate_page'])
-    self.assertTrue('translate_bar' in translate_info)
-    self.assertFalse(self._GetPrefIsManagedError(pyauto.kEnableTranslate, True))
-    policy = {'TranslateEnabled': False}
-    self.SetUserPolicy(policy)
-    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
-    self.NavigateToURL(url)
-    self.assertFalse(self.WaitForInfobarCount(1))
-    self.assertFalse(self._GetPrefIsManagedError(pyauto.kEnableTranslate,
-                                                 False))
-
   def testDefaultSearchProviderOptions(self):
     """Verify a default search is performed when using omnibox."""
     policy = {
