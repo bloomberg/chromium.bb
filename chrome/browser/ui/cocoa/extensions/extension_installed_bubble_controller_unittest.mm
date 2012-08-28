@@ -176,9 +176,10 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
   int height = [controller calculateWindowHeight];
   // Height should equal the vertical padding + height of all messages.
   int correctHeight = 2 * extension_installed_bubble::kOuterVerticalMargin +
-      extension_installed_bubble::kInnerVerticalMargin +
+      2 * extension_installed_bubble::kInnerVerticalMargin +
       [controller getExtensionInstalledMsgFrame].size.height +
-      [controller getExtensionInstalledInfoMsgFrame].size.height;
+      [controller getExtensionInstalledInfoMsgFrame].size.height +
+      [controller getExtraInfoMsgFrame].size.height;
   EXPECT_EQ(height, correctHeight);
 
   [controller setMessageFrames:height];
@@ -186,11 +187,15 @@ TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
   // Bottom message should start kOuterVerticalMargin pixels above window edge.
   EXPECT_EQ(msg3Frame.origin.y,
       extension_installed_bubble::kOuterVerticalMargin);
+  NSRect msg2Frame = [controller getExtraInfoMsgFrame];
+  // Pageaction message should be kInnerVerticalMargin pixels above bottom msg.
+  EXPECT_EQ(NSMinY(msg2Frame),
+            NSMaxY(msg3Frame) +
+                extension_installed_bubble::kInnerVerticalMargin);
   NSRect msg1Frame = [controller getExtensionInstalledMsgFrame];
-  // Top message should start kInnerVerticalMargin pixels above top of
-  //  extensionInstalled message, because page action message is hidden.
-  EXPECT_EQ(msg1Frame.origin.y,
-            msg3Frame.origin.y + msg3Frame.size.height +
+  // Top message should be kInnerVerticalMargin pixels above BrowserAction msg.
+  EXPECT_EQ(NSMinY(msg1Frame),
+            NSMaxY(msg2Frame) +
                 extension_installed_bubble::kInnerVerticalMargin);
 
   [controller close];

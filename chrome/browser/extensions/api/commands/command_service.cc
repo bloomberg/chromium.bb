@@ -293,8 +293,11 @@ bool CommandService::GetExtensionActionCommand(
     extensions::Command* command,
     bool* active,
     ExtensionActionType action_type) {
-  const ExtensionSet* extensions =
-      ExtensionSystem::Get(profile_)->extension_service()->extensions();
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  if (!service)
+    return false;  // Can happen in tests.
+  const ExtensionSet* extensions = service->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 

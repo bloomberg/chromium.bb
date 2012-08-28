@@ -9,6 +9,8 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -110,7 +112,7 @@ class ExtensionLoadedNotificationObserver
     } else if (extension->browser_action()) {
       type_ = extension_installed_bubble::kBrowserAction;
     } else if (extension->page_action() &&
-               !extension->page_action()->default_icon_path().empty()) {
+             extension->is_verbose_install_message()) {
       type_ = extension_installed_bubble::kPageAction;
     } else {
       NOTREACHED();  // kGeneric installs handled in extension_install_prompt.
@@ -274,6 +276,43 @@ class ExtensionLoadedNotificationObserver
   return window;
 }
 
+- (NSString*)installMessageForExtensionAction {
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(browser_->profile());
+  if (type_ == extension_installed_bubble::kPageAction) {
+    extensions::Command page_action_command;
+    if (extension_->page_action_command() &&
+        command_service->GetPageActionCommand(
+            extension_->id(),
+            extensions::CommandService::ACTIVE_ONLY,
+            &page_action_command,
+            NULL)) {
+      return l10n_util::GetNSStringF(
+          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
+          page_action_command.accelerator().GetShortcutText());
+    } else {
+      return l10n_util::GetNSString(
+          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO);
+    }
+  } else {
+    CHECK_EQ(extension_installed_bubble::kBrowserAction, type_);
+    extensions::Command browser_action_command;
+    if (extension_->browser_action_command() &&
+        command_service->GetBrowserActionCommand(
+            extension_->id(),
+            extensions::CommandService::ACTIVE_ONLY,
+            &browser_action_command,
+            NULL)) {
+      return l10n_util::GetNSStringF(
+          IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
+          browser_action_command.accelerator().GetShortcutText());
+    } else {
+      return l10n_util::GetNSString(
+          IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO);
+    }
+  }
+}
+
 // Calculate the height of each install message, resizing messages in their
 // frames to fit window width.  Return the new window height, based on the
 // total of all message heights.
@@ -295,7 +334,9 @@ class ExtensionLoadedNotificationObserver
   }
 
   // If type is page action, include a special message about page actions.
-  if (type_ == extension_installed_bubble::kPageAction) {
+  if (type_ == extension_installed_bubble::kBrowserAction ||
+      type_ == extension_installed_bubble::kPageAction) {
+    [extraInfoMsg_ setStringValue:[self installMessageForExtensionAction]];
     [extraInfoMsg_ setHidden:NO];
     [[extraInfoMsg_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -420,8 +461,7 @@ class ExtensionLoadedNotificationObserver
       extensionMessageFrame1.size.height +
       extension_installed_bubble::kOuterVerticalMargin);
   [extensionInstalledMsg_ setFrame:extensionMessageFrame1];
-  if (type_ == extension_installed_bubble::kPageAction ||
-      type_ == extension_installed_bubble::kOmniboxKeyword) {
+  if (extension_->is_verbose_install_message()) {
     // The extra message is only shown when appropriate.
     NSRect extraMessageFrame = [extraInfoMsg_ frame];
     extraMessageFrame.origin.y = extensionMessageFrame1.origin.y - (

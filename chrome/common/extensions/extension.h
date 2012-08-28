@@ -613,6 +613,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   ExtensionAction* script_badge() const { return script_badge_.get(); }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
+  bool is_verbose_install_message() const {
+    return !omnibox_keyword().empty() ||
+           browser_action() ||
+           (page_action() &&
+               (page_action_command() ||
+                !page_action()->default_icon_path().empty()));
+  }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
   }

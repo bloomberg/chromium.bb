@@ -53,9 +53,7 @@ namespace chrome {
 void ShowExtensionInstalledBubble(const extensions::Extension* extension,
                                   Browser* browser,
                                   const SkBitmap& icon) {
-  if ((extension->browser_action()) || !extension->omnibox_keyword().empty() ||
-      (extension->page_action() &&
-      !extension->page_action()->default_icon_path().empty())) {
+  if (extension->is_verbose_install_message()) {
     // The controller is deallocated when the window is closed, so no need to
     // worry about it here.
     [[ExtensionInstalledBubbleController alloc]

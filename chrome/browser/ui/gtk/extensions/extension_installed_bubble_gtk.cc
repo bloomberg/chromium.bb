@@ -78,16 +78,14 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
       animation_wait_retries_(kAnimationWaitRetries) {
   AddRef();  // Balanced in Close().
 
-  if (!extension_->omnibox_keyword().empty()) {
+  if (!extension_->omnibox_keyword().empty())
     type_ = OMNIBOX_KEYWORD;
-  } else if (extension_->browser_action()) {
+  else if (extension_->browser_action())
     type_ = BROWSER_ACTION;
-  } else if (extension->page_action() &&
-             !extension->page_action()->default_icon_path().empty()) {
+  else if (extension->page_action() && extension->is_verbose_install_message())
     type_ = PAGE_ACTION;
-  } else {
+  else
     type_ = GENERIC;
-  }
 
   // |extension| has been initialized but not loaded at this point. We need
   // to wait on showing the Bubble until not only the EXTENSION_LOADED gets
