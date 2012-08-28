@@ -128,7 +128,16 @@ cr.define('print_preview', function() {
       numItems = Math.min(numItems, this.destinations_.length);
       var headerHeight =
           this.getChildElement('.destination-list > header').offsetHeight;
-      return headerHeight + numItems * DestinationList.HEIGHT_OF_ITEM_;
+      var throbberHeight =
+          getIsVisible(this.getChildElement('.throbber-container')) ?
+              DestinationList.HEIGHT_OF_ITEM_ : 0;
+      return headerHeight + numItems * DestinationList.HEIGHT_OF_ITEM_ +
+          throbberHeight;
+    },
+
+    /** @param {boolean} isVisible Whether the throbber is visible. */
+    setIsThrobberVisible: function(isVisible) {
+      setIsVisible(this.getChildElement('.throbber-container'), isVisible);
     },
 
     /**

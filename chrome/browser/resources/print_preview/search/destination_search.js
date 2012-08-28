@@ -187,6 +187,14 @@ cr.define('print_preview', function() {
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationStoreSelect_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SEARCH_STARTED,
+          this.updateThrobbers_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
+          this.updateThrobbers_.bind(this));
 
       this.tracker.add(
           this.localList_,
@@ -210,6 +218,8 @@ cr.define('print_preview', function() {
           this.onEmailChange_.bind(this));
 
       this.tracker.add(window, 'resize', this.onWindowResize_.bind(this));
+
+      this.updateThrobbers_();
 
       // Render any destinations already in the store.
       this.renderDestinations_();
@@ -326,6 +336,22 @@ cr.define('print_preview', function() {
             return sum + list.getEstimatedHeightInPixels(i) +
                 DestinationSearch.LIST_BOTTOM_PADDING_;
           }, 0) + 'px';
+    },
+
+    /**
+     * Updates whether the throbbers for the various destination lists should be
+     * shown or hidden.
+     * @private
+     */
+    updateThrobbers_: function() {
+      this.localList_.setIsThrobberVisible(
+          this.destinationStore_.isLocalDestinationSearchInProgress);
+      this.cloudList_.setIsThrobberVisible(
+          this.destinationStore_.isCloudDestinationSearchInProgress);
+      this.recentList_.setIsThrobberVisible(
+          this.destinationStore_.isLocalDestinationSearchInProgress &&
+          this.destinationStore_.isCloudDestinationSearchInProgress);
+      this.reflowLists_();
     },
 
     /**

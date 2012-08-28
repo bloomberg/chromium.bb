@@ -100,6 +100,20 @@ cr.define('print_preview', function() {
      */
     this.autoSelectTimeout_ = null;
 
+    /**
+     * Whether a search for local destinations is in progress.
+     * @type {boolean}
+     * @private
+     */
+    this.isLocalDestinationSearchInProgress_ = false;
+
+    /**
+     * Number of outstanding cloud destination search requests.
+     * @type {number}
+     * @private
+     */
+    this.outstandingCloudSearchRequestCount_ = 0;
+
     this.addEventListeners_();
     this.reset_();
   };
@@ -109,12 +123,24 @@ cr.define('print_preview', function() {
    * @enum {string}
    */
   DestinationStore.EventType = {
+    DESTINATION_SEARCH_DONE:
+        'print_preview.DestinationStore.DESTINATION_SEARCH_DONE',
+    DESTINATION_SEARCH_STARTED:
+        'print_preview.DestinationStore.DESTINATION_SEARCH_STARTED',
+    DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
-    DESTINATION_SELECT: 'print_preview.DestinationStore.DESTINATION_SELECT',
     SELECTED_DESTINATION_CAPABILITIES_READY:
         'print_preview.DestinationStore.SELECTED_DESTINATION_CAPABILITIES_READY'
   };
+
+  /**
+   * Number of built-in print destinations. This includes the "Save as PDF"
+   * destination.
+   * @type {number}
+   * @const
+   */
+  DestinationStore.BUILT_IN_DESTINATION_COUNT = 1;
 
   /**
    * Delay in milliseconds before the destination store ignores the initial
@@ -172,6 +198,20 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @return {boolean} Whether a search for local destinations is in progress.
+     */
+    get isLocalDestinationSearchInProgress() {
+      return this.isLocalDestinationSearchInProgress_;
+    },
+
+    /**
+     * @return {boolean} Whether a search for cloud destinations is in progress.
+     */
+    get isCloudDestinationSearchInProgress() {
+      return this.outstandingCloudSearchRequestCount_ > 0;
+    },
+
+    /**
      * Sets the initially selected destination. If any inserted destinations
      * match this ID, that destination will be automatically selected. This
      * occurs only once for every time this setter is called or if the store is
@@ -215,12 +255,16 @@ cr.define('print_preview', function() {
           this.onCloudPrintSearchDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
+          cloudprint.CloudPrintInterface.EventType.SEARCH_FAILED,
+          this.onCloudPrintSearchFailed_.bind(this));
+      this.tracker_.add(
+          this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.PRINTER_DONE,
           this.onCloudPrintPrinterDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.PRINTER_FAILED,
-          this.onPrinterFailed_.bind(this));
+          this.onCloudPrintPrinterFailed_.bind(this));
       // Fetch initial destination if its a cloud destination.
       if (this.isInAutoSelectMode_ && !this.isInitialDestinationLocal_) {
         this.cloudPrintInterface_.printer(this.initialDestinationId_);
@@ -254,7 +298,7 @@ cr.define('print_preview', function() {
         } else {
           assert(this.cloudPrintInterface_ != null,
                  'Selected destination is a cloud destination, but Google ' +
-                     'Cloud Print is not enabled');
+                 'Cloud Print is not enabled');
           this.cloudPrintInterface_.printer(destination.id);
         }
       } else {
@@ -333,12 +377,18 @@ cr.define('print_preview', function() {
     /** Initiates loading of local print destinations. */
     startLoadLocalDestinations: function() {
       this.nativeLayer_.startGetLocalDestinations();
+      this.isLocalDestinationSearchInProgress_ = true;
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
     },
 
     /** Initiates loading of recent cloud destinations. */
     startLoadRecentCloudDestinations: function() {
       if (this.cloudPrintInterface_ != null) {
         this.cloudPrintInterface_.search(true /*isRecent*/);
+        this.outstandingCloudSearchRequestCount_++;
+        cr.dispatchSimpleEvent(
+            this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
       }
     },
 
@@ -347,7 +397,10 @@ cr.define('print_preview', function() {
       if (this.cloudPrintInterface_ != null &&
           !this.hasLoadedAllCloudDestinations_) {
         this.cloudPrintInterface_.search(false /*isRecent*/);
+        this.outstandingCloudSearchRequestCount_++;
         this.hasLoadedAllCloudDestinations_ = true;
+        cr.dispatchSimpleEvent(
+            this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
       }
     },
 
@@ -423,6 +476,9 @@ cr.define('print_preview', function() {
         return print_preview.LocalDestinationParser.parse(destInfo);
       });
       this.insertDestinations(localDestinations);
+      this.isLocalDestinationSearchInProgress_ = false;
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
 
     /**
@@ -484,7 +540,21 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSearchDone_: function(event) {
+      this.outstandingCloudSearchRequestCount_--;
       this.insertDestinations(event.printers);
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+    },
+
+    /**
+     * Called when the /search call fails. Updates outstanding request count and
+     * dispatches CLOUD_DESTINATIONS_LOADED event.
+     * @private
+     */
+    onCloudPrintSearchFailed_: function() {
+      this.outstandingCloudSearchRequestCount_--;
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
 
     /**
@@ -500,6 +570,25 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(
             this,
             DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
+      }
+    },
+
+    /**
+     * Called when the Google Cloud Print interface fails to lookup a
+     * destination. Selects another destination if the failed destination was
+     * the initial destination.
+     * @param {object} event Contains the ID of the destination that was failed
+     *     to be looked up.
+     * @private
+     */
+    onCloudPrintPrinterFailed_: function(event) {
+      if (this.isInAutoSelectMode_ &&
+          this.initialDestinationId_ == event.destinationId) {
+        console.error('Could not find initial printer: ' + event.destinationId);
+        assert(this.destinations_.length > 0,
+               'No destinations were loaded when failed to get initial ' +
+               'destination');
+        this.selectDestination(this.destinations_[0]);
       }
     },
 
@@ -526,26 +615,6 @@ cr.define('print_preview', function() {
       assert(this.destinations_.length > 0,
              'No destinations were loaded before auto-select timeout expired');
       this.selectDestination(this.destinations_[0]);
-    },
-
-    /**
-     * Called when the Google Cloud Print interface fails to lookup a
-     * destination. Selects another destination if the failed destination was
-     * the initial destination.
-     * @param {object} event Contains the ID of the destination that was failed
-     *     to be looked up.
-     * @private
-     */
-    onPrinterFailed_: function(event) {
-      if (event.errorCode == '111' &&
-          this.isInAutoSelectMode_ &&
-          this.initialDestinationId_ == event.destinationId) {
-        console.error('Could not find initial printer: ' + event.destinationId);
-        assert(this.destinations_.length > 0,
-               'No destinations were loaded when failed to get initial ' +
-               'destination');
-        this.selectDestination(this.destinations_[0]);
-      }
     }
   };
 

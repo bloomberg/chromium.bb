@@ -34,11 +34,14 @@ cr.define('cloudprint', function() {
    * @enum {string}
    */
   CloudPrintInterface.EventType = {
-    ERROR: 'cloudprint.CloudPrintInterface.ERROR',
     PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
     PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
     SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
-    SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE'
+    SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
+    SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
+    SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
+    UPDATE_PRINTER_TOS_ACCEPTANCE_FAILED:
+        'cloudprint.CloudPrintInterface.UPDATE_PRINTER_TOS_ACCEPTANCE_FAILED'
   };
 
   /**
@@ -81,8 +84,8 @@ cr.define('cloudprint', function() {
       }
       params['connection_status'] = 'ALL';
       params['client'] = 'chrome';
-      this.sendRequest_(
-          'GET', 'search', params, null, this.onSearchDone_.bind(this));
+      this.sendRequest_('GET', 'search', params, null,
+                        this.onSearchDone_.bind(this, isRecent));
     },
 
     /**
@@ -90,8 +93,8 @@ cr.define('cloudprint', function() {
      * @param {string} body Body of the HTTP post request to send.
      */
     submit: function(body) {
-      this.sendRequest_(
-          'POST', 'submit', null, body, this.onSubmitDone_.bind(this));
+      this.sendRequest_('POST', 'submit', null, body,
+                        this.onSubmitDone_.bind(this));
     },
 
     /**
@@ -100,10 +103,8 @@ cr.define('cloudprint', function() {
      */
     printer: function(printerId) {
       var params = {'printerid': printerId};
-      this.sendRequest_(
-        'GET', 'printer', params, null,
-        this.onPrinterDone_.bind(this),
-        this.onPrinterFailed_.bind(this, printerId));
+      this.sendRequest_('GET', 'printer', params, null,
+                        this.onPrinterDone_.bind(this, printerId));
     },
 
     /**
@@ -120,7 +121,7 @@ cr.define('cloudprint', function() {
         'is_tos_accepted': isAccepted
       };
       this.sendRequest_('POST', 'update', params, null,
-                        this.onUpdatePrinterTosAcceptanceDone_);
+                        this.onUpdatePrinterTosAcceptanceDone_.bind(this));
     },
 
     /**
@@ -194,13 +195,10 @@ cr.define('cloudprint', function() {
      * @param {string} action Google Cloud Print action to perform.
      * @param {Object} params HTTP parameters to include in the request.
      * @param {string} body HTTP multi-part encoded body.
-     * @param {function(Object)} successCallback Callback to invoke when request
-     *     completes successfully.
-     * @param {function(Object)=} opt_failureCallback Callback to call if the
-     *     request failed.
+     * @param {function(number, Object)} callback Callback to invoke when
+     *     request completes.
      */
-    sendRequest_: function(method, action, params, body, successCallback,
-                           opt_failureCallback) {
+    sendRequest_: function(method, action, params, body, callback) {
       if (!this.xsrfToken_) {
         // TODO(rltoscano): Should throw an error if not a read-only action or
         // issue an xsrf token request.
@@ -222,8 +220,8 @@ cr.define('cloudprint', function() {
       }
 
       var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = this.onReadyStateChange_.bind(
-          this, xhr, successCallback, opt_failureCallback);
+      xhr.onreadystatechange =
+          this.onReadyStateChange_.bind(this, xhr, callback);
       xhr.open(method, url, true);
       xhr.withCredentials = true;
       for (var header in headers) {
@@ -233,125 +231,138 @@ cr.define('cloudprint', function() {
     },
 
     /**
-     * Dispatches an ERROR event with the given error message.
-     * @param {string} message Error message to include in the ERROR event.
+     * Creates a Google Cloud Print interface error that is ready to dispatch.
+     * @param {!CloudPrintInterface.EventType} type Type of the error.
+     * @param {number} status HTTP status code of the failed request.
+     * @param {Object} result JSON response of the request. {@code null} if
+     *     status was not 200.
+     * @return {!cr.Event} Google Cloud Print interface error event.
      * @private
      */
-    dispatchErrorEvent_: function(message) {
-      var errorEvent = new cr.Event(CloudPrintInterface.EventType.ERROR);
-      errorEvent.message = message;
-      this.dispatchEvent(errorEvent);
+    createErrorEvent_: function(type, status, result) {
+      var errorEvent = new cr.Event(type);
+      errorEvent.status = status;
+      errorEvent.errorCode = status == 200 ? result['errorCode'] : 0;
+      errorEvent.message = status == 200 ? result['message'] : '';
+      return errorEvent;
     },
 
     /**
      * Called when the ready-state of a XML http request changes.
      * Calls the successCallback with the result or dispatches an ERROR event.
      * @param {XMLHttpRequest} xhr XML http request that changed.
-     * @param {function(Object)} successCallback Callback to call if the request
-     *     was successful.
-     * @param {function(Object)=} opt_failureCallback Callback to call if the
-     *     request failed.
+     * @param {function(number, Object)} callback Callback to invoke when
+     *     request completes.
      * @private
      */
-    onReadyStateChange_: function(xhr, successCallback, opt_failureCallback) {
+    onReadyStateChange_: function(xhr, callback) {
       if (xhr.readyState == 4) {
         if (xhr.status == 200) {
           var result = JSON.parse(xhr.responseText);
           if (result['success']) {
             this.xsrfToken_ = result['xsrf_token'];
-            successCallback(result);
-          } else if (opt_failureCallback) {
-            opt_failureCallback(result);
-          } else {
-            this.dispatchErrorEvent_(result['message']);
           }
-        } else {
-          this.dispatchErrorEvent_(xhr.status + '');
         }
+        callback(xhr.status, result);
       }
     },
 
     /**
-     * Called when the search request completes successfully.
+     * Called when the search request completes.
+     * @param {boolean} isRecent Whether the search request was for recent
+     *     destinations.
+     * @param {number} status Status of the HTTP request.
      * @param {Object} result JSON response.
      * @private
      */
-    onSearchDone_: function(result) {
-      var printerListJson = result['printers'] || [];
-      var printerList = [];
-      printerListJson.forEach(function(printerJson) {
+    onSearchDone_: function(isRecent, status, result) {
+      if (status == 200 && result['success']) {
+        var printerListJson = result['printers'] || [];
+        var printerList = [];
+        printerListJson.forEach(function(printerJson) {
+          try {
+            printerList.push(
+                cloudprint.CloudDestinationParser.parse(printerJson));
+          } catch (err) {
+            console.error('Unable to parse cloud print destination: ' + err);
+          }
+        });
+        var searchDoneEvent =
+            new cr.Event(CloudPrintInterface.EventType.SEARCH_DONE);
+        searchDoneEvent.printers = printerList;
+        searchDoneEvent.isRecent = isRecent;
+        searchDoneEvent.email = result['request']['user'];
+        this.dispatchEvent(searchDoneEvent);
+      } else {
+        var errorEvent = this.createErrorEvent_(
+            CloudPrintInterface.EventType.SEARCH_FAILED, status, result);
+        this.dispatchEvent(errorEvent);
+      }
+    },
+
+    /**
+     * Called when the submit request completes.
+     * @param {number} status Status of the HTTP request.
+     * @param {Object} result JSON response.
+     * @private
+     */
+    onSubmitDone_: function(status, result) {
+      if (status == 200 && result['success']) {
+        var submitDoneEvent = new cr.Event(
+            CloudPrintInterface.EventType.SUBMIT_DONE);
+        submitDoneEvent.jobId = result['job']['id'];
+        this.dispatchEvent(submitDoneEvent);
+      } else {
+        var errorEvent = this.createErrorEvent_(
+            CloudPrintInterface.EventType.SUBMIT_FAILED, status, result);
+        this.dispatchEvent(errorEvent);
+      }
+    },
+
+    /**
+     * Called when the printer request completes.
+     * @param {string} destinationId ID of the destination that was looked up.
+     * @param {number} status Status of the HTTP request.
+     * @param {Object} result JSON response.
+     * @private
+     */
+    onPrinterDone_: function(destinationId, status, result) {
+      if (status == 200 && result['success']) {
+        var printerJson = result['printers'][0];
+        var printer;
         try {
-          printerList.push(
-              cloudprint.CloudDestinationParser.parse(printerJson));
+          printer = cloudprint.CloudDestinationParser.parse(printerJson);
         } catch (err) {
-          console.error('Unable to parse cloud print destination: ' + err);
+          console.error('Failed to parse cloud print destination: ' +
+              JSON.stringify(printerJson));
+          return;
         }
-      });
-      var isRecent = result['request']['params']['q'] == '^recent';
-      var searchDoneEvent =
-          new cr.Event(CloudPrintInterface.EventType.SEARCH_DONE);
-      searchDoneEvent.printers = printerList;
-      searchDoneEvent.isRecent = isRecent;
-      searchDoneEvent.email = result['request']['user'];
-      this.dispatchEvent(searchDoneEvent);
-    },
-
-    /**
-     * Called when the submit request completes successfully.
-     * @param {Object} result JSON response.
-     * @private
-     */
-    onSubmitDone_: function(result) {
-      var submitDoneEvent = new cr.Event(
-          CloudPrintInterface.EventType.SUBMIT_DONE);
-      submitDoneEvent.jobId = result['job']['id'];
-      this.dispatchEvent(submitDoneEvent);
-    },
-
-    /**
-     * Called when the printer request completes successfully.
-     * @param {Object} result JSON response.
-     * @private
-     */
-    onPrinterDone_: function(result) {
-      // TODO(rltoscano): Better error handling here.
-      var printerJson = result['printers'][0];
-      var printer;
-      try {
-        printer = cloudprint.CloudDestinationParser.parse(printerJson);
-      } catch (err) {
-        console.error('Failed to parse cloud print destination: ' +
-            JSON.stringify(printerJson));
-        return;
+        var printerDoneEvent =
+            new cr.Event(CloudPrintInterface.EventType.PRINTER_DONE);
+        printerDoneEvent.printer = printer;
+        this.dispatchEvent(printerDoneEvent);
+      } else {
+        var errorEvent = this.createErrorEvent_(
+            CloudPrintInterface.EventType.PRINTER_FAILED, status, result);
+        errorEvent.destinationId = destinationId;
+        this.dispatchEvent(errorEvent);
       }
-      var printerDoneEvent =
-          new cr.Event(CloudPrintInterface.EventType.PRINTER_DONE);
-      printerDoneEvent.printer = printer;
-      this.dispatchEvent(printerDoneEvent);
     },
 
     /**
-     * Called when the printer request fails.
-     * @param {string} ID of the destination that failed to be looked up.
-     * @param {object} Contains the JSON response.
-     * @private
-     */
-    onPrinterFailed_: function(destinationId, result) {
-      var printerFailedEvent = new cr.Event(
-          CloudPrintInterface.EventType.PRINTER_FAILED);
-      printerFailedEvent.destinationId = destinationId;
-      printerFailedEvent.errorCode = result['errorCode'];
-      this.dispatchEvent(printerFailedEvent);
-    },
-
-    /**
-     * Called when the update printer TOS acceptance request completes
-     * successfully.
+     * Called when the update printer TOS acceptance request completes.
+     * @param {number} status Status of the HTTP request.
      * @param {Object} result JSON response.
      * @private
      */
-    onUpdatePrinterTosAcceptanceDone_: function(result) {
-      // Do nothing.
+    onUpdatePrinterTosAcceptanceDone_: function(status, result) {
+      if (status == 200 && result['success']) {
+        // Do nothing.
+      } else {
+        var errorEvent = this.createErrorEvent_(
+            CloudPrintInterface.EventType.SUBMIT_FAILED, status, result);
+        this.dispatchEvent(errorEvent);
+      }
     }
   };
 

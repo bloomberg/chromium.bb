@@ -25,6 +25,13 @@
   padding: 0;
 }
 
+.destination-list .throbber-container {
+  -webkit-box-align: center;
+  display: -webkit-box;
+  height: 30px;
+  padding: 0 22px;
+}
+
 .destination-list .no-destinations-message {
   -webkit-padding-start: 18px;
   color: #999;
