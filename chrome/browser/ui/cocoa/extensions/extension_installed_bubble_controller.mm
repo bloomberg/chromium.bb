@@ -113,7 +113,7 @@ class ExtensionLoadedNotificationObserver
                !extension->page_action()->default_icon_path().empty()) {
       type_ = extension_installed_bubble::kPageAction;
     } else {
-      type_ = extension_installed_bubble::kGeneric;
+      NOTREACHED();  // kGeneric installs handled in extension_install_prompt.
     }
 
     if (type_ == extension_installed_bubble::kBundle) {
@@ -207,18 +207,16 @@ class ExtensionLoadedNotificationObserver
           locationBarView->GetPageActionBubblePoint(extension_->page_action());
       break;
     }
-    case extension_installed_bubble::kBundle:
-    case extension_installed_bubble::kGeneric: {
-      // Point at the bottom of the wrench menu.
+    case extension_installed_bubble::kBundle: {
       NSView* wrenchButton =
           [[window->cocoa_controller() toolbarController] wrenchButton];
       const NSRect bounds = [wrenchButton bounds];
-      NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
+      NSPoint anchor = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
       arrowPoint = [wrenchButton convertPoint:anchor toView:nil];
       break;
     }
     default: {
-      NOTREACHED();
+      NOTREACHED() << "Generic extension type not allowed in install bubble.";
     }
   }
   return arrowPoint;
@@ -227,6 +225,8 @@ class ExtensionLoadedNotificationObserver
 // Override -[BaseBubbleController showWindow:] to tweak bubble location and
 // set up UI elements.
 - (void)showWindow:(id)sender {
+  // Generic extensions get an infobar rather than a bubble.
+  DCHECK(type_ != extension_installed_bubble::kGeneric);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Load nib and calculate height based on messages to be shown.
