@@ -54,6 +54,7 @@
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 
 using application_launch::LaunchParams;
 using application_launch::OpenApplication;
@@ -704,8 +705,9 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   install_info->app_url = launch_url;
   install_info->page_ordinal = page_ordinal;
 
-  FaviconService::Handle h = favicon_service->GetFaviconForURL(
-      profile, launch_url, history::FAVICON, &favicon_consumer_,
+  FaviconService::Handle h = favicon_service->GetFaviconImageForURL(
+      profile, launch_url, history::FAVICON, gfx::kFaviconSize,
+      &favicon_consumer_,
       base::Bind(&AppLauncherHandler::OnFaviconForApp, base::Unretained(this)));
   favicon_consumer_.SetClientData(favicon_service, h, install_info.release());
 }
@@ -754,8 +756,9 @@ void AppLauncherHandler::HandleSetNotificationsDisabled(
   extension_service_->SetAppNotificationDisabled(extension_id, disabled);
 }
 
-void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
-                                         history::FaviconData data) {
+void AppLauncherHandler::OnFaviconForApp(
+    FaviconService::Handle handle,
+    const history::FaviconImageResult& image_result) {
   scoped_ptr<AppInstallInfo> install_info(
       favicon_consumer_.GetClientDataForCurrentRequest());
   scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
@@ -764,16 +767,12 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
   web_app->app_url = install_info->app_url;
   web_app->urls.push_back(install_info->app_url);
 
-  WebApplicationInfo::IconInfo icon;
-  web_app->icons.push_back(icon);
-  if (data.is_valid() && gfx::PNGCodec::Decode(data.image_data->front(),
-                                               data.image_data->size(),
-                                               &(web_app->icons[0].data))) {
-    web_app->icons[0].url = GURL();
-    web_app->icons[0].width = web_app->icons[0].data.width();
-    web_app->icons[0].height = web_app->icons[0].data.height();
-  } else {
-    web_app->icons.clear();
+  if (!image_result.image.IsEmpty()) {
+    WebApplicationInfo::IconInfo icon;
+    icon.data = image_result.image.AsBitmap();
+    icon.width = icon.data.width();
+    icon.height = icon.data.height();
+    web_app->icons.push_back(icon);
   }
 
   scoped_refptr<CrxInstaller> installer(

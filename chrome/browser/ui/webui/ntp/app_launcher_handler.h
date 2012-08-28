@@ -155,7 +155,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Continuation for installing a bookmark app after favicon lookup.
   void OnFaviconForApp(FaviconService::Handle handle,
-                       history::FaviconData data);
+                       const history::FaviconImageResult& image_result);
 
   // Sends |highlight_app_id_| to the js.
   void SetAppToBeHighlighted();

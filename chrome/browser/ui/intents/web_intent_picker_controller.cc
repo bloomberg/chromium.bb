@@ -503,10 +503,11 @@ void WebIntentPickerController::AddServiceToModel(
       service.disposition);
 
   pending_async_count_++;
-  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+  FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
       tab_contents_->profile(),
       service.service_url,
       history::FAVICON,
+      gfx::kFaviconSize,
       &favicon_consumer_,
       base::Bind(
           &WebIntentPickerController::OnFaviconDataAvailable,
@@ -580,18 +581,12 @@ void WebIntentPickerController::RegistryCallsCompleted() {
 }
 
 void WebIntentPickerController::OnFaviconDataAvailable(
-    FaviconService::Handle handle, history::FaviconData favicon_data) {
+    FaviconService::Handle handle,
+    const history::FaviconImageResult& image_result) {
   size_t index = favicon_consumer_.GetClientDataForCurrentRequest();
-  if (favicon_data.is_valid()) {
-    SkBitmap icon_bitmap;
-
-    if (gfx::PNGCodec::Decode(favicon_data.image_data->front(),
-                              favicon_data.image_data->size(),
-                              &icon_bitmap)) {
-      gfx::Image icon_image(icon_bitmap);
-      picker_model_->UpdateFaviconAt(index, icon_image);
-      return;
-    }
+  if (!image_result.image.IsEmpty()) {
+    picker_model_->UpdateFaviconAt(index, image_result.image);
+    return;
   }
 
   AsyncOperationFinished();

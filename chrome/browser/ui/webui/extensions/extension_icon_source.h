@@ -108,8 +108,9 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   void LoadFaviconImage(int request_id);
 
   // FaviconService callback
-  void OnFaviconDataAvailable(FaviconService::Handle request_handle,
-                              history::FaviconData favicon);
+  void OnFaviconDataAvailable(
+      FaviconService::Handle request_handle,
+      const history::FaviconBitmapResult& bitmap_result);
 
   // ImageLoadingTracker::Observer
   virtual void OnImageLoaded(const gfx::Image& image,

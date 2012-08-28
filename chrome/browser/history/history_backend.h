@@ -650,13 +650,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // If there is a favicon for |page_url| and one of the types in |icon_types|,
   // |favicon| is set appropriately and true is returned.
-  bool GetFaviconFromDB(const GURL& page_url,
-                        int icon_types,
-                        FaviconData* favicon);
+  bool GetFaviconFromDB(
+      const GURL& page_url,
+      int icon_types,
+      std::vector<FaviconBitmapResult>* favicon_bitmap_results);
 
   // Get favicon by the given |favicon_id|, the |favicon| is set appropriately
   // and true if returned on success, otherwise false is returned.
-  bool GetFaviconFromDB(FaviconID favicon_id, FaviconData* favicon);
+  bool GetFaviconFromDB(
+      FaviconID favicon_id,
+      std::vector<FaviconBitmapResult>* favicon_bitmap_results);
 
   // Notify any observers of an addition to the visit database.
   void NotifyVisitObservers(const VisitRow& visit);

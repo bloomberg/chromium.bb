@@ -29,6 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -213,10 +214,12 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
   }
 
   GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
-  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+  FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
       profile_,
       favicon_url,
       history::FAVICON,
+      gfx::kFaviconSize,
+      ui::SCALE_FACTOR_100P,
       &cancelable_consumer_,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
                  base::Unretained(this)));
@@ -225,14 +228,14 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
 void ExtensionIconSource::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
-    history::FaviconData favicon) {
+    const history::FaviconBitmapResult& bitmap_result) {
   int request_id = cancelable_consumer_.GetClientData(
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS),
       request_handle);
   ExtensionIconRequest* request = GetData(request_id);
 
   // Fallback to the default icon if there wasn't a favicon.
-  if (!favicon.is_valid()) {
+  if (!bitmap_result.is_valid()) {
     LoadDefaultImage(request_id);
     return;
   }
@@ -241,10 +244,10 @@ void ExtensionIconSource::OnFaviconDataAvailable(
     // If we don't need a grayscale image, then we can bypass FinalizeImage
     // to avoid unnecessary conversions.
     ClearData(request_id);
-    SendResponse(request_id, favicon.image_data);
+    SendResponse(request_id, bitmap_result.bitmap_data);
   } else {
-    FinalizeImage(ToBitmap(favicon.image_data->front(),
-                           favicon.image_data->size()), request_id);
+    FinalizeImage(ToBitmap(bitmap_result.bitmap_data->front(),
+                           bitmap_result.bitmap_data->size()), request_id);
   }
 }
 

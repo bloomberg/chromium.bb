@@ -105,37 +105,44 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
                          gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
                          ImageLoadingTracker::DONT_CACHE);
     } else {
-      ForwardResult(NULL);
+      ForwardResult(gfx::Image());
     }
   }
 
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,
                              int index) OVERRIDE {
-    if (!image.IsEmpty()) {
-      std::vector<unsigned char> image_data;
-      if (!gfx::PNGCodec::EncodeBGRASkBitmap(*image.ToSkBitmap(), false,
-                                             &image_data)) {
-        NOTREACHED() << "Could not encode extension favicon";
-      }
-      ForwardResult(base::RefCountedBytes::TakeVector(&image_data));
-    } else {
-      ForwardResult(NULL);
-    }
+    ForwardResult(image);
   }
 
  private:
   ~ExtensionWebUIImageLoadingTracker() {}
 
-  // Forwards the result on the request. If no favicon was available then
-  // |icon_data| may be backed by NULL. Once the result has been forwarded the
-  // instance is deleted.
-  void ForwardResult(scoped_refptr<base::RefCountedMemory> icon_data) {
-    history::FaviconData favicon;
-    favicon.known_icon = icon_data.get() != NULL && icon_data->size() > 0;
-    favicon.image_data = icon_data;
-    favicon.icon_type = history::FAVICON;
-    request_->ForwardResultAsync(request_->handle(), favicon);
+  // Forwards the result of the request. If no favicon was available then
+  // |icon| will be empty. Once the result has been forwarded the instance is
+  // deleted.
+  void ForwardResult(const gfx::Image& icon) {
+    std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
+    SkBitmap icon_bitmap = icon.AsBitmap();
+    if (!icon_bitmap.empty()) {
+      scoped_refptr<base::RefCountedBytes> icon_data(
+          new base::RefCountedBytes());
+      if (gfx::PNGCodec::EncodeBGRASkBitmap(icon_bitmap, false,
+                                            &icon_data->data())) {
+        history::FaviconBitmapResult bitmap_result;
+        bitmap_result.bitmap_data = icon_data;
+        bitmap_result.pixel_size = gfx::Size(icon_bitmap.width(),
+                                             icon_bitmap.height());
+        bitmap_result.icon_type = history::FAVICON;
+
+        favicon_bitmap_results.push_back(bitmap_result);
+      } else {
+        NOTREACHED() << "Could not encode extension favicon";
+      }
+    }
+
+    request_->ForwardResultAsync(request_->handle(), favicon_bitmap_results,
+                                 history::IconURLSizesMap());
     delete this;
   }
 

@@ -433,8 +433,9 @@ class SessionModelAssociator
 
   // Callback method to store a tab's favicon into its sync node once it becomes
   // available. Does nothing if no favicon data was available.
-  void OnFaviconDataAvailable(FaviconService::Handle handle,
-                              history::FaviconData favicon);
+  void OnFaviconDataAvailable(
+      FaviconService::Handle handle,
+      const history::FaviconBitmapResult& bitmap_result);
 
   // Used to populate a session header from the session specifics header
   // provided.

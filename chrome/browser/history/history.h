@@ -703,10 +703,6 @@ class HistoryService : public CancelableRequestProvider,
                         const GURL& page_url,
                         int icon_types);
 
-  // Used by the FaviconService to get a favicon from the history backend.
-  void GetFaviconForID(FaviconService::GetFaviconRequest* request,
-                       history::FaviconID id);
-
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.
   void SetFaviconOutOfDateForPage(const GURL& page_url);
