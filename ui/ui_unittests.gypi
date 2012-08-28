@@ -7,9 +7,6 @@
     {
       'target_name': 'ui_test_support',
       'type': 'static_library',
-      'includes': [
-        'base/ime/ime_test_support.gypi',
-      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
@@ -26,20 +23,23 @@
         '../',
       ],
       'conditions': [
+        ['OS!="ios"', {
+          'includes': [ 'base/ime/ime_test_support.gypi' ],
+        }, {  # OS=="ios"
+          # TODO(ios): None of the tests brought up on iOS use these yet.
+          'sources/': [['exclude', '^base/test/']],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../skia/skia.gyp:skia',
-          ]
+          ],
         }],
       ],
     },
     {
       'target_name': 'ui_unittests',
       'type': '<(gtest_target_type)',
-      'includes': [
-        'base/ime/ime_unittests.gypi',
-      ],
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
@@ -54,7 +54,13 @@
         'ui_resources',
         'ui_test_support',
       ],
-      'sources': [
+      # iOS uses a small subset of ui. common_sources are the only files that
+      # are built on iOS.
+      'common_sources' : [
+        'base/models/tree_node_iterator_unittest.cc',
+      ],
+      'all_sources': [
+        '<@(_common_sources)',
         'base/accelerators/accelerator_manager_unittest.cc',
         'base/animation/animation_container_unittest.cc',
         'base/animation/animation_unittest.cc',
@@ -120,6 +126,17 @@
         '../',
       ],
       'conditions': [
+        ['OS!="ios"', {
+          'sources' : ['<@(_all_sources)'],
+          'includes': [
+            'base/ime/ime_unittests.gypi',
+          ],
+        }, {  # OS=="ios"
+          'sources' : ['<@(_common_sources)'],
+          'dependencies' : [
+            '../testing/gtest.gyp:gtest_main',
+          ],
+        }],
         ['OS == "win"', {
           'sources': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
@@ -162,7 +179,7 @@
             'base/x/events_x_unittest.cc',
           ],
         }],
-        ['OS != "mac"', {
+        ['OS != "mac" and OS != "ios"', {
           'sources': [
             'gfx/transform_unittest.cc',
             'gfx/interpolated_transform_unittest.cc',
