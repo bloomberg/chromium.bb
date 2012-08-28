@@ -11,7 +11,7 @@
 
 # /etc/init.d/chrome-remote-desktop: Start and stop Chrome Remote Desktop host daemon.
 
-HOST_PATH=/usr/bin/me2me_virtual_host
+HOST_PATH=/opt/google/chrome-remote-desktop/chrome-remote-desktop
 
 # Group of users for which Chrome Remote Desktop is enabled. Users are added
 # to that group when they start the host for the first time.

@@ -11,7 +11,7 @@ Name: Please log out to update
 Priority: Medium
 OnlyAdminUsers: False
 DontShowAfterReboot: true
-DisplayIf: /usr/lib/chrome-remote-desktop/is_me2me_desktop
+DisplayIf: /opt/google/chrome-remote-desktop/is-remoting-session
 Description: Chrome Remote Desktop has been updated. Please save your work and log out in order to apply this update. Your virtual desktop will be restarted automatically.
 "
 
@@ -23,7 +23,7 @@ case "$1" in
   "configure")
     # Kill me2me host processes. The wrapper script will restart them.
     echo "Shutting down remoting hosts (they will restart automatically)..."
-    killall -q remoting_me2me_host || true
+    killall -q chrome-remoting-host || true
     # If any files have changed that require the user to restart their virtual
     # desktops (eg, the wrapper script itself) then notify them but don't do
     # anything that would result in them losing state.

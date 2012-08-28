@@ -6,4 +6,4 @@
 
 # Test whether or not the current desktop is virtual Me2Me.
 
-[ -n "$REMOTING_ME2ME_SESSION" ]
+[ -n "$CHROME_REMOTE_DESKTOP" ]

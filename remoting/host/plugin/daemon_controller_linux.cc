@@ -31,7 +31,8 @@ namespace remoting {
 
 namespace {
 
-const char kDaemonScript[] = "me2me_virtual_host";
+const char kDaemonScript[] =
+    "/opt/google/chrome-remote-desktop/chrome-remote-desktop";
 const int64 kDaemonTimeoutMs = 5000;
 
 std::string GetMd5(const std::string& value) {
@@ -81,24 +82,11 @@ DaemonControllerLinux::DaemonControllerLinux()
   file_io_thread_.Start();
 }
 
-// TODO(jamiewalch): We'll probably be able to do a better job of
-// detecting whether or not the daemon is installed once we have a
-// proper installer. For now, detecting whether or not the binary
-// is on the PATH is good enough.
 static bool GetScriptPath(FilePath* result) {
-  base::Environment* environment = base::Environment::Create();
-  std::string path;
-  if (environment->GetVar("PATH", &path)) {
-    std::vector<std::string> path_directories;
-    base::SplitString(path, ':', &path_directories);
-    for (unsigned int i = 0; i < path_directories.size(); ++i) {
-      FilePath candidate_exe(path_directories[i]);
-      candidate_exe = candidate_exe.Append(kDaemonScript);
-      if (access(candidate_exe.value().c_str(), X_OK) == 0) {
-        *result = candidate_exe;
-        return true;
-      }
-    }
+  FilePath candidate_exe(kDaemonScript);
+  if (access(candidate_exe.value().c_str(), X_OK) == 0) {
+    *result = candidate_exe;
+    return true;
   }
   return false;
 }
@@ -191,6 +179,7 @@ void DaemonControllerLinux::SetWindow(void* window_handle) {
 
 void DaemonControllerLinux::GetVersion(
     const GetVersionCallback& done_callback) {
+  // TODO(sergeyu): Implement this method.
   NOTIMPLEMENTED();
   done_callback.Run("");
 }

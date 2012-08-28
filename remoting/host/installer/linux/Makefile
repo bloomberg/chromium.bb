@@ -9,14 +9,14 @@ SRC = ../../../..
 TOOLS = $(SRC)/remoting/tools
 RELEASE = $(SRC)/out/Release
 
-BIN = $(DESTDIR)/usr/bin
-LIB = $(DESTDIR)/usr/lib/chrome-remote-desktop
+INSTALL_DIR = $(DESTDIR)/opt/google/chrome-remote-desktop
 
 all:
 
 install:
-	install -d $(BIN) $(LIB)
+	install -d $(INSTALL_DIR)
 	install $(TOOLS)/me2me_virtual_host.py -m 0755 \
-	  $(BIN)/me2me_virtual_host
-	install $(TOOLS)/is_me2me_desktop $(LIB)
-	install $(RELEASE)/remoting_me2me_host -m 0755 $(LIB)
+	  $(INSTALL_DIR)/chrome-remote-desktop
+	install $(TOOLS)/is-remoting-session $(INSTALL_DIR)
+	install $(RELEASE)/remoting_me2me_host -m 0755 \
+	  $(INSTALL_DIR)/chrome-remote-desktop-host

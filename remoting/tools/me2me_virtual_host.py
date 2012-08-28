@@ -32,25 +32,15 @@ import uuid
 # XSESSION_COMMAND = ["/usr/bin/gnome-session", "--session=ubuntu-2d"]
 XSESSION_COMMAND = None
 
-REMOTING_COMMAND = "remoting_me2me_host"
+LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
 
-REMOTING_LOG_FILE = "REMOTING_ME2ME_LOG_FILE"
+SCRIPT_PATH = sys.path[0]
 
-# Needs to be an absolute path, since the current working directory is changed
-# when this process self-daemonizes.
-SCRIPT_PATH = os.path.dirname(sys.argv[0])
-if SCRIPT_PATH:
-  SCRIPT_PATH = os.path.abspath(SCRIPT_PATH)
+DEFAULT_INSTALL_PATH = "/opt/google/chrome-remote-desktop"
+if SCRIPT_PATH == DEFAULT_INSTALL_PATH:
+  HOST_BINARY_NAME = "chrome-remote-desktop-host"
 else:
-  SCRIPT_PATH = os.getcwd()
-
-# These are relative to SCRIPT_PATH.
-EXE_PATHS_TO_TRY = [
-    ".",
-    "../../out/Debug",
-    "../../out/Release",
-    "/usr/lib/chrome-remote-desktop",
-]
+  HOST_BINARY_NAME = "remoting_me2me_host"
 
 CONFIG_DIR = os.path.expanduser("~/.config/chrome-remote-desktop")
 HOME_DIR = os.environ["HOME"]
@@ -215,7 +205,7 @@ class Desktop:
     # the user's console X session.
     self.child_env = {
         "DISPLAY": ":%d" % display,
-        "REMOTING_ME2ME_SESSION": "1" }
+        "CHROME_REMOTE_DESKTOP_SESSION": "1" }
     for key in [
         "HOME",
         "LANG",
@@ -224,7 +214,7 @@ class Desktop:
         "SHELL",
         "USER",
         "USERNAME",
-        REMOTING_LOG_FILE]:
+        LOG_FILE_ENV_VAR]:
       if os.environ.has_key(key):
         self.child_env[key] = os.environ[key]
 
@@ -295,12 +285,12 @@ class Desktop:
 
   def launch_host(self, host_config):
     # Start remoting host
-    args = [locate_executable(REMOTING_COMMAND),
+    args = [locate_executable(HOST_BINARY_NAME),
             "--host-config=%s" % (host_config.path)]
     self.host_proc = subprocess.Popen(args, env=self.child_env)
     logging.info(args)
     if not self.host_proc.pid:
-      raise Exception("Could not start remoting host")
+      raise Exception("Could not start Chrome Remote Desktop host")
 
 
 class PidFile:
@@ -432,8 +422,15 @@ def choose_x_session():
 
 
 def locate_executable(exe_name):
-  for path in EXE_PATHS_TO_TRY:
-    exe_path = os.path.join(SCRIPT_PATH, path, exe_name)
+  if SCRIPT_PATH == DEFAULT_INSTALL_PATH:
+    # If we are installed in the default path, then search the host binary
+    # only in the same directory.
+    paths_to_try = [ DEFAULT_INSTALL_PATH ]
+  else:
+    paths_to_try = map(lambda p: os.path.join(SCRIPT_PATH, p),
+                       [".", "../../out/Debug", "../../out/Release" ])
+  for path in paths_to_try:
+    exe_path = os.path.join(path, exe_name)
     if os.path.exists(exe_path):
       return exe_path
 
@@ -661,10 +658,11 @@ Web Store: https://chrome.google.com/remotedesktop"""
   g_pidfile.create()
 
   if not options.foreground:
-    if not os.environ.has_key(REMOTING_LOG_FILE):
-      log_file = tempfile.NamedTemporaryFile(prefix="me2me_host_", delete=False)
-      os.environ[REMOTING_LOG_FILE] = log_file.name
-    daemonize(os.environ[REMOTING_LOG_FILE])
+    if not os.environ.has_key(LOG_FILE_ENV_VAR):
+      log_file = tempfile.NamedTemporaryFile(
+          prefix="chrome_remote_desktop_", delete=False)
+      os.environ[LOG_FILE_ENV_VAR] = log_file.name
+    daemonize(os.environ[LOG_FILE_ENV_VAR])
 
   g_pidfile.write_pid()
 
