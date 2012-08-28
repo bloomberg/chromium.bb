@@ -51,7 +51,7 @@
 #include "base/process_util.h"
 #endif
 
-#if defined(OS_WIN)  // Currently Windows only
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define USE_RENDER_TEXT
 #endif
 
