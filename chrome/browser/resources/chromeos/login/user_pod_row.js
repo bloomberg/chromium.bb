@@ -317,13 +317,15 @@ cr.define('login', function() {
         return;
 
       if (active) {
-        this.parentNode.focusPod(undefined, true);  // Force focus clear first.
-        this.removeUserButtonElement.classList.add('active');
+        // Clear focus first if another pod is focused.
+        if (!this.parentNode.isFocused(this))
+          this.parentNode.focusPod(undefined, true);
         this.removeUserButtonElement.textContent =
             localStrings.getString('removeUser');
+        this.removeUserButtonElement.classList.add('active');
       } else {
-        this.removeUserButtonElement.classList.remove('active');
         this.removeUserButtonElement.textContent = '';
+        this.removeUserButtonElement.classList.remove('active');
       }
     },
 
@@ -648,13 +650,22 @@ cr.define('login', function() {
     },
 
     /**
+     * Whether the pod is currently focused.
+     * @param {UserPod} pod Pod to check for focus.
+     * @return {boolean} Pod focus status.
+     */
+    isFocused: function(pod) {
+      return this.focusedPod_ == pod;
+    },
+
+    /**
      * Focuses a given user pod or clear focus when given null.
      * @param {UserPod=} podToFocus User pod to focus (undefined clears focus).
      * @param {boolean=} opt_force If true, forces focus update even when
      *                             podToFocus is already focused.
      */
     focusPod: function(podToFocus, opt_force) {
-      if (this.focusedPod_ == podToFocus && !opt_force)
+      if (this.isFocused(podToFocus) && !opt_force)
         return;
 
       // Make sure there's only one focusPod operation happening at a time.

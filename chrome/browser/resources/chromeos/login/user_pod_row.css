@@ -87,6 +87,13 @@ html[oobe=new] .pod:not(.focused) {
   -webkit-transform: scale(0.9);
 }
 
+/* TODO(ivankr): workaround that forces a reflow for remove button when it
+ * becomes .active and its width/height change.
+ */
+html[oobe=new] .pod.focused {
+  -webkit-transform: scale(1.0);
+}
+
 .pod.init {
   -webkit-transform: scale(2.4);
   opacity: 0;
@@ -258,7 +265,7 @@ html[oobe=new] .remove-user-button {
   opacity: 1;
 }
 
-.pod.focused .remove-user-button {
+html[oobe=old] .pod.focused .remove-user-button {
   /* Track shifting of .user-image on pod focus. */
   -webkit-transform: translateY(-1px);
   -webkit-transition: -webkit-transform 140ms ease;
