@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
-#define SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
+#ifndef SYNC_NOTIFIER_INVALIDATION_HANDLER_H_
+#define SYNC_NOTIFIER_INVALIDATION_HANDLER_H_
 
 #include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/notifications_disabled_reason.h"
@@ -17,7 +17,7 @@ enum IncomingNotificationSource {
   LOCAL_NOTIFICATION,
 };
 
-class SyncNotifierObserver {
+class InvalidationHandler {
  public:
   // Called when notifications are enabled.
   virtual void OnNotificationsEnabled() = 0;
@@ -34,9 +34,9 @@ class SyncNotifierObserver {
       IncomingNotificationSource source) = 0;
 
  protected:
-  virtual ~SyncNotifierObserver() {}
+  virtual ~InvalidationHandler() {}
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
+#endif  // SYNC_NOTIFIER_INVALIDATION_HANDLER_H_

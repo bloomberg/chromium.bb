@@ -431,7 +431,7 @@ void ProfileSyncService::StartUp() {
   // http://crbug.com/140354).
   if (backend_.get()) {
     backend_->UpdateRegisteredInvalidationIds(
-        notifier_registrar_.GetAllRegisteredIds());
+        invalidator_registrar_.GetAllRegisteredIds());
   }
 
   if (!sync_global_error_.get()) {
@@ -445,26 +445,26 @@ void ProfileSyncService::StartUp() {
 }
 
 void ProfileSyncService::RegisterInvalidationHandler(
-    syncer::SyncNotifierObserver* handler) {
-  notifier_registrar_.RegisterHandler(handler);
+    syncer::InvalidationHandler* handler) {
+  invalidator_registrar_.RegisterHandler(handler);
 }
 
 void ProfileSyncService::UpdateRegisteredInvalidationIds(
-    syncer::SyncNotifierObserver* handler,
+    syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
-  notifier_registrar_.UpdateRegisteredIds(handler, ids);
+  invalidator_registrar_.UpdateRegisteredIds(handler, ids);
 
   // If |backend_| is NULL, its registered IDs will be updated when
   // it's created and initialized.
   if (backend_.get()) {
     backend_->UpdateRegisteredInvalidationIds(
-        notifier_registrar_.GetAllRegisteredIds());
+        invalidator_registrar_.GetAllRegisteredIds());
   }
 }
 
 void ProfileSyncService::UnregisterInvalidationHandler(
-    syncer::SyncNotifierObserver* handler) {
-  notifier_registrar_.UnregisterHandler(handler);
+    syncer::InvalidationHandler* handler) {
+  invalidator_registrar_.UnregisterHandler(handler);
 }
 
 void ProfileSyncService::Shutdown() {
@@ -660,18 +660,18 @@ void ProfileSyncService::DisableBrokenDatatype(
 }
 
 void ProfileSyncService::OnNotificationsEnabled() {
-  notifier_registrar_.EmitOnNotificationsEnabled();
+  invalidator_registrar_.EmitOnNotificationsEnabled();
 }
 
 void ProfileSyncService::OnNotificationsDisabled(
     syncer::NotificationsDisabledReason reason) {
-  notifier_registrar_.EmitOnNotificationsDisabled(reason);
+  invalidator_registrar_.EmitOnNotificationsDisabled(reason);
 }
 
 void ProfileSyncService::OnIncomingNotification(
     const syncer::ObjectIdStateMap& id_state_map,
     syncer::IncomingNotificationSource source) {
-  notifier_registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
+  invalidator_registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
 }
 
 void ProfileSyncService::OnBackendInitialized(

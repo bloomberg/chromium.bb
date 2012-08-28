@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// An implementation of SyncNotifier that wraps an invalidation
+// An implementation of Invalidator that wraps an invalidation
 // client.  Handles the details of connecting to XMPP and hooking it
 // up to the invalidation client.
 //
@@ -22,8 +22,8 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_registrar.h"
+#include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_registrar.h"
 
 namespace notifier {
 class PushClient;
@@ -32,8 +32,9 @@ class PushClient;
 namespace syncer {
 
 // This class must live on the IO thread.
+// TODO(dcheng): Think of a name better than InvalidationInvalidator.
 class InvalidationNotifier
-    : public SyncNotifier,
+    : public Invalidator,
       public ChromeInvalidationClient::Listener,
       public base::NonThreadSafe {
  public:
@@ -48,11 +49,11 @@ class InvalidationNotifier
 
   virtual ~InvalidationNotifier();
 
-  // SyncNotifier implementation.
-  virtual void RegisterHandler(SyncNotifierObserver* handler) OVERRIDE;
-  virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
+  // Invalidator implementation.
+  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(SyncNotifierObserver* handler) OVERRIDE;
+  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
@@ -77,7 +78,7 @@ class InvalidationNotifier
   };
   State state_;
 
-  SyncNotifierRegistrar registrar_;
+  InvalidatorRegistrar registrar_;
 
   // Passed to |invalidation_client_|.
   const InvalidationVersionMap initial_max_invalidation_versions_;

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_SYNC_NOTIFIER_REGISTRAR_H_
-#define SYNC_NOTIFIER_SYNC_NOTIFIER_REGISTRAR_H_
+#ifndef SYNC_NOTIFIER_INVALIDATOR_REGISTRAR_H_
+#define SYNC_NOTIFIER_INVALIDATOR_REGISTRAR_H_
 
 #include <map>
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/object_id_state_map.h"
-#include "sync/notifier/sync_notifier_observer.h"
 
 namespace invalidation {
 class ObjectId;
@@ -20,30 +20,29 @@ class ObjectId;
 
 namespace syncer {
 
-// A helper class for implementations of the SyncNotifier interface.  It helps
+// A helper class for implementations of the Invalidator interface.  It helps
 // keep track of registered handlers and which object ID registrations are
 // associated with which handlers, so implementors can just reuse the logic
 // here to dispatch invalidations and other interesting notifications.
-class SyncNotifierRegistrar {
+class InvalidatorRegistrar {
  public:
-  SyncNotifierRegistrar();
-  ~SyncNotifierRegistrar();
+  InvalidatorRegistrar();
+  ~InvalidatorRegistrar();
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must already be registered.
-  void RegisterHandler(SyncNotifierObserver* handler);
-
+  void RegisterHandler(InvalidationHandler* handler);
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  An ID must be registered for
   // at most one handler.
-  void UpdateRegisteredIds(SyncNotifierObserver* handler,
+  void UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids);
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs
   // associated with |handler|.
-  void UnregisterHandler(SyncNotifierObserver* handler);
+  void UnregisterHandler(InvalidationHandler* handler);
 
   // Returns the set of all IDs that are registered to some handler (even
   // handlers that have been unregistered).
@@ -60,26 +59,26 @@ class SyncNotifierRegistrar {
   void EmitOnNotificationsEnabled();
   void EmitOnNotificationsDisabled(NotificationsDisabledReason reason);
 
-  bool IsHandlerRegisteredForTest(SyncNotifierObserver* handler) const;
-  ObjectIdSet GetRegisteredIdsForTest(SyncNotifierObserver* handler) const;
+  bool IsHandlerRegisteredForTest(InvalidationHandler* handler) const;
+  ObjectIdSet GetRegisteredIdsForTest(InvalidationHandler* handler) const;
 
   // Needed for death tests.
   void DetachFromThreadForTest();
 
  private:
-  typedef std::map<invalidation::ObjectId, SyncNotifierObserver*,
+  typedef std::map<invalidation::ObjectId, InvalidationHandler*,
                    ObjectIdLessThan>
       IdHandlerMap;
 
-  SyncNotifierObserver* ObjectIdToHandler(const invalidation::ObjectId& id);
+  InvalidationHandler* ObjectIdToHandler(const invalidation::ObjectId& id);
 
   base::ThreadChecker thread_checker_;
-  ObserverList<SyncNotifierObserver> handlers_;
+  ObserverList<InvalidationHandler> handlers_;
   IdHandlerMap id_to_handler_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncNotifierRegistrar);
+  DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrar);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_REGISTRAR_H_
+#endif  // SYNC_NOTIFIER_INVALIDATOR_REGISTRAR_H_

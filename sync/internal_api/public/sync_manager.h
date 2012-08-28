@@ -38,11 +38,11 @@ struct Experiments;
 class ExtensionsActivityMonitor;
 class HttpPostProviderFactory;
 class InternalComponentsFactory;
+class InvalidationHandler;
+class Invalidator;
 class JsBackend;
 class JsEventHandler;
 class SyncEncryptionHandler;
-class SyncNotifier;
-class SyncNotifierObserver;
 class SyncScheduler;
 class UnrecoverableErrorHandler;
 struct UserShare;
@@ -290,7 +290,7 @@ class SyncManager {
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
-  // |sync_notifier| is owned and used to listen for notifications.
+  // |invalidator| is owned and used to listen for invalidations.
   // |restored_key_for_bootstrapping| is the key used to boostrap the
   // cryptographer
   // |keystore_encryption_enabled| determines whether we enable the keystore
@@ -311,7 +311,7 @@ class SyncManager {
       ExtensionsActivityMonitor* extensions_activity_monitor,
       ChangeDelegate* change_delegate,
       const SyncCredentials& credentials,
-      scoped_ptr<SyncNotifier> sync_notifier,
+      scoped_ptr<Invalidator> invalidator,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
@@ -342,18 +342,18 @@ class SyncManager {
   virtual void UpdateEnabledTypes(
       const ModelTypeSet& enabled_types) = 0;
 
-  // Forwards to the underlying notifier (see comments in sync_notifier.h).
+  // Forwards to the underlying invalidator (see comments in invalidator.h).
   virtual void RegisterInvalidationHandler(
-      SyncNotifierObserver* handler) = 0;
+      InvalidationHandler* handler) = 0;
 
-  // Forwards to the underlying notifier (see comments in sync_notifier.h).
+  // Forwards to the underlying notifier (see comments in invalidator.h).
   virtual void UpdateRegisteredInvalidationIds(
-      SyncNotifierObserver* handler,
+      InvalidationHandler* handler,
       const ObjectIdSet& ids) = 0;
 
-  // Forwards to the underlying notifier (see comments in sync_notifier.h).
+  // Forwards to the underlying notifier (see comments in invalidator.h).
   virtual void UnregisterInvalidationHandler(
-      SyncNotifierObserver* handler) = 0;
+      InvalidationHandler* handler) = 0;
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(

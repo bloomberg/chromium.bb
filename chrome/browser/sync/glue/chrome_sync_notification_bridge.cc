@@ -11,8 +11,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "sync/notifier/sync_notifier_observer.h"
-#include "sync/notifier/sync_notifier_registrar.h"
+#include "sync/notifier/invalidation_handler.h"
+#include "sync/notifier/invalidator_registrar.h"
 
 using content::BrowserThread;
 
@@ -31,10 +31,10 @@ class ChromeSyncNotificationBridge::Core
   void CleanupOnSyncThread();
 
   void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
-  void RegisterHandler(syncer::SyncNotifierObserver* handler);
-  void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
+  void RegisterHandler(syncer::InvalidationHandler* handler);
+  void UpdateRegisteredIds(syncer::InvalidationHandler* handler,
                            const syncer::ObjectIdSet& ids);
-  void UnregisterHandler(syncer::SyncNotifierObserver* handler);
+  void UnregisterHandler(syncer::InvalidationHandler* handler);
 
   void EmitNotification(
       const syncer::ModelTypeStateMap& state_map,
@@ -50,7 +50,7 @@ class ChromeSyncNotificationBridge::Core
 
   // Used only on |sync_task_runner_|.
   syncer::ModelTypeSet enabled_types_;
-  scoped_ptr<syncer::SyncNotifierRegistrar> notifier_registrar_;
+  scoped_ptr<syncer::InvalidatorRegistrar> notifier_registrar_;
 };
 
 ChromeSyncNotificationBridge::Core::Core(
@@ -67,7 +67,7 @@ ChromeSyncNotificationBridge::Core::~Core() {
 }
 
 void ChromeSyncNotificationBridge::Core::InitializeOnSyncThread() {
-  notifier_registrar_.reset(new syncer::SyncNotifierRegistrar());
+  notifier_registrar_.reset(new syncer::InvalidatorRegistrar());
 }
 
 void ChromeSyncNotificationBridge::Core::CleanupOnSyncThread() {
@@ -81,20 +81,20 @@ void ChromeSyncNotificationBridge::Core::UpdateEnabledTypes(
 }
 
 void ChromeSyncNotificationBridge::Core::RegisterHandler(
-    syncer::SyncNotifierObserver* handler) {
+    syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   notifier_registrar_->RegisterHandler(handler);
 }
 
 void ChromeSyncNotificationBridge::Core::UpdateRegisteredIds(
-    syncer::SyncNotifierObserver* handler,
+    syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   notifier_registrar_->UpdateRegisteredIds(handler, ids);
 }
 
 void ChromeSyncNotificationBridge::Core::UnregisterHandler(
-    syncer::SyncNotifierObserver* handler) {
+    syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   notifier_registrar_->UnregisterHandler(handler);
 }
@@ -147,20 +147,20 @@ void ChromeSyncNotificationBridge::UpdateEnabledTypes(
 }
 
 void ChromeSyncNotificationBridge::RegisterHandler(
-    syncer::SyncNotifierObserver* handler) {
+    syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->RegisterHandler(handler);
 }
 
 void ChromeSyncNotificationBridge::UpdateRegisteredIds(
-    syncer::SyncNotifierObserver* handler,
+    syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->UpdateRegisteredIds(handler, ids);
 }
 
 void ChromeSyncNotificationBridge::UnregisterHandler(
-    syncer::SyncNotifierObserver* handler) {
+    syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->UnregisterHandler(handler);
 }

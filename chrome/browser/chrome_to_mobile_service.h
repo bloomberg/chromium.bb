@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/invalidation_handler.h"
 
 class OAuth2AccessTokenFetcher;
 class Browser;
@@ -43,7 +43,7 @@ class ChromeToMobileService : public ProfileKeyedService,
                               public net::URLFetcherDelegate,
                               public content::NotificationObserver,
                               public OAuth2AccessTokenConsumer,
-                              public syncer::SyncNotifierObserver {
+                              public syncer::InvalidationHandler {
  public:
   class Observer {
    public:
@@ -155,7 +155,7 @@ class ChromeToMobileService : public ProfileKeyedService,
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // syncer::SyncNotifierObserver implementation.
+  // syncer::InvalidationHandler implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;

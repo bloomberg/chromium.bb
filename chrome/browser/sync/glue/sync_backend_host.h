@@ -27,8 +27,8 @@
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/sync_notifier_factory.h"
-#include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/invalidation_handler.h"
+#include "sync/notifier/invalidator_factory.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 
@@ -53,7 +53,7 @@ class SyncPrefs;
 // activity.
 // NOTE: All methods will be invoked by a SyncBackendHost on the same thread
 // used to create that SyncBackendHost.
-class SyncFrontend : public syncer::SyncNotifierObserver {
+class SyncFrontend : public syncer::InvalidationHandler {
  public:
   SyncFrontend() {}
 
@@ -299,7 +299,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
         MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
         const syncer::SyncCredentials& credentials,
         ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
-        syncer::SyncNotifierFactory* sync_notifier_factory,
+        syncer::InvalidatorFactory* invalidator_factory,
         syncer::SyncManagerFactory* sync_manager_factory,
         bool delete_sync_data_folder,
         const std::string& restored_key_for_bootstrapping,
@@ -321,7 +321,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn;
     syncer::SyncCredentials credentials;
     ChromeSyncNotificationBridge* const chrome_sync_notification_bridge;
-    syncer::SyncNotifierFactory* const sync_notifier_factory;
+    syncer::InvalidatorFactory* const invalidator_factory;
     syncer::SyncManagerFactory* const sync_manager_factory;
     std::string lsid;
     bool delete_sync_data_folder;
@@ -471,7 +471,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleNigoriConfigurationCompletedOnFrontendLoop(
       syncer::ModelTypeSet failed_configuration_types);
 
-  // syncer::SyncNotifierObserver-like functions.
+  // syncer::InvalidationHandler-like functions.
   void HandleNotificationsEnabledOnFrontendLoop();
   void HandleNotificationsDisabledOnFrontendLoop(
       syncer::NotificationsDisabledReason reason);
@@ -508,7 +508,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // into invalidations (on the sync thread).
   scoped_ptr<ChromeSyncNotificationBridge> chrome_sync_notification_bridge_;
 
-  syncer::SyncNotifierFactory sync_notifier_factory_;
+  syncer::InvalidatorFactory invalidator_factory_;
 
   ChromeExtensionsActivityMonitor extensions_activity_monitor_;
 

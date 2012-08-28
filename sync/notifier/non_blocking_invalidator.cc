@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/non_blocking_invalidation_notifier.h"
+#include "sync/notifier/non_blocking_invalidator.h"
 
 #include <cstddef>
 
@@ -17,15 +17,15 @@
 
 namespace syncer {
 
-class NonBlockingInvalidationNotifier::Core
-    : public base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>,
-      // SyncNotifierObserver to observe the InvalidationNotifier we create.
-      public SyncNotifierObserver {
+class NonBlockingInvalidator::Core
+    : public base::RefCountedThreadSafe<NonBlockingInvalidator::Core>,
+      // InvalidationHandler to observe the InvalidationNotifier we create.
+      public InvalidationHandler {
  public:
   // Called on parent thread.  |delegate_observer| should be
   // initialized.
   explicit Core(
-      const WeakHandle<SyncNotifierObserver>& delegate_observer);
+      const WeakHandle<InvalidationHandler>& delegate_observer);
 
   // Helpers called on I/O thread.
   void Initialize(
@@ -40,7 +40,7 @@ class NonBlockingInvalidationNotifier::Core
   void SetStateDeprecated(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
 
-  // SyncNotifierObserver implementation (all called on I/O thread by
+  // InvalidationHandler implementation (all called on I/O thread by
   // InvalidationNotifier).
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
@@ -51,28 +51,28 @@ class NonBlockingInvalidationNotifier::Core
 
  private:
   friend class
-      base::RefCountedThreadSafe<NonBlockingInvalidationNotifier::Core>;
+      base::RefCountedThreadSafe<NonBlockingInvalidator::Core>;
   // Called on parent or I/O thread.
   ~Core();
 
   // The variables below should be used only on the I/O thread.
-  const WeakHandle<SyncNotifierObserver> delegate_observer_;
+  const WeakHandle<InvalidationHandler> delegate_observer_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-NonBlockingInvalidationNotifier::Core::Core(
-    const WeakHandle<SyncNotifierObserver>& delegate_observer)
+NonBlockingInvalidator::Core::Core(
+    const WeakHandle<InvalidationHandler>& delegate_observer)
     : delegate_observer_(delegate_observer) {
   DCHECK(delegate_observer_.IsInitialized());
 }
 
-NonBlockingInvalidationNotifier::Core::~Core() {
+NonBlockingInvalidator::Core::~Core() {
 }
 
-void NonBlockingInvalidationNotifier::Core::Initialize(
+void NonBlockingInvalidator::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
@@ -94,60 +94,58 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
   invalidation_notifier_->RegisterHandler(this);
 }
 
-void NonBlockingInvalidationNotifier::Core::Teardown() {
+void NonBlockingInvalidator::Core::Teardown() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UnregisterHandler(this);
   invalidation_notifier_.reset();
   network_task_runner_ = NULL;
 }
 
-void NonBlockingInvalidationNotifier::Core::UpdateRegisteredIds(
-    const ObjectIdSet& ids) {
+void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateRegisteredIds(this, ids);
 }
 
-void NonBlockingInvalidationNotifier::Core::SetUniqueId(
-    const std::string& unique_id) {
+void NonBlockingInvalidator::Core::SetUniqueId(const std::string& unique_id) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->SetUniqueId(unique_id);
 }
 
-void NonBlockingInvalidationNotifier::Core::SetStateDeprecated(
+void NonBlockingInvalidator::Core::SetStateDeprecated(
     const std::string& state) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->SetStateDeprecated(state);
 }
 
-void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
+                                                     const std::string& token) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateCredentials(email, token);
 }
 
-void NonBlockingInvalidationNotifier::Core::OnNotificationsEnabled() {
+void NonBlockingInvalidator::Core::OnNotificationsEnabled() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
-                          &SyncNotifierObserver::OnNotificationsEnabled);
+                          &InvalidationHandler::OnNotificationsEnabled);
 }
 
-void NonBlockingInvalidationNotifier::Core::OnNotificationsDisabled(
+void NonBlockingInvalidator::Core::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(
-      FROM_HERE, &SyncNotifierObserver::OnNotificationsDisabled, reason);
+      FROM_HERE, &InvalidationHandler::OnNotificationsDisabled, reason);
 }
 
-void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
+void NonBlockingInvalidator::Core::OnIncomingNotification(
     const ObjectIdStateMap& id_state_map, IncomingNotificationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
-                          &SyncNotifierObserver::OnIncomingNotification,
+                          &InvalidationHandler::OnIncomingNotification,
                           id_state_map,
                           source);
 }
 
-NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
+NonBlockingInvalidator::NonBlockingInvalidator(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
@@ -164,7 +162,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
-              &NonBlockingInvalidationNotifier::Core::Initialize,
+              &NonBlockingInvalidator::Core::Initialize,
               core_.get(),
               notifier_options,
               initial_max_invalidation_versions,
@@ -175,96 +173,90 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
   }
 }
 
-NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
+NonBlockingInvalidator::~NonBlockingInvalidator() {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidationNotifier::Core::Teardown,
+          base::Bind(&NonBlockingInvalidator::Core::Teardown,
                      core_.get()))) {
     NOTREACHED();
   }
 }
 
-void NonBlockingInvalidationNotifier::RegisterHandler(
-    SyncNotifierObserver* handler) {
+void NonBlockingInvalidator::RegisterHandler(InvalidationHandler* handler) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.RegisterHandler(handler);
 }
 
-void NonBlockingInvalidationNotifier::UpdateRegisteredIds(
-    SyncNotifierObserver* handler,
-    const ObjectIdSet& ids) {
+void NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
+                                                 const ObjectIdSet& ids) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.UpdateRegisteredIds(handler, ids);
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
-              &NonBlockingInvalidationNotifier::Core::UpdateRegisteredIds,
+              &NonBlockingInvalidator::Core::UpdateRegisteredIds,
               core_.get(),
               registrar_.GetAllRegisteredIds()))) {
     NOTREACHED();
   }
 }
 
-void NonBlockingInvalidationNotifier::UnregisterHandler(
-    SyncNotifierObserver* handler) {
+void NonBlockingInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.UnregisterHandler(handler);
 }
 
-void NonBlockingInvalidationNotifier::SetUniqueId(
-    const std::string& unique_id) {
+void NonBlockingInvalidator::SetUniqueId(const std::string& unique_id) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidationNotifier::Core::SetUniqueId,
+          base::Bind(&NonBlockingInvalidator::Core::SetUniqueId,
                      core_.get(), unique_id))) {
     NOTREACHED();
   }
 }
 
-void NonBlockingInvalidationNotifier::SetStateDeprecated(
-    const std::string& state) {
+void NonBlockingInvalidator::SetStateDeprecated(const std::string& state) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
-              &NonBlockingInvalidationNotifier::Core::SetStateDeprecated,
+              &NonBlockingInvalidator::Core::SetStateDeprecated,
               core_.get(), state))) {
     NOTREACHED();
   }
 }
 
-void NonBlockingInvalidationNotifier::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
+                                               const std::string& token) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonBlockingInvalidationNotifier::Core::UpdateCredentials,
+          base::Bind(&NonBlockingInvalidator::Core::UpdateCredentials,
                      core_.get(), email, token))) {
     NOTREACHED();
   }
 }
 
-void NonBlockingInvalidationNotifier::SendNotification(
-    ModelTypeSet changed_types) {
+void NonBlockingInvalidator::SendNotification(ModelTypeSet changed_types) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.
 }
 
-void NonBlockingInvalidationNotifier::OnNotificationsEnabled() {
+void NonBlockingInvalidator::OnNotificationsEnabled() {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.EmitOnNotificationsEnabled();
 }
 
-void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
+void NonBlockingInvalidator::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.EmitOnNotificationsDisabled(reason);
 }
 
-void NonBlockingInvalidationNotifier::OnIncomingNotification(
+void NonBlockingInvalidator::OnIncomingNotification(
         const ObjectIdStateMap& id_state_map,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());

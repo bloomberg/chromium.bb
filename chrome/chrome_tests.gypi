@@ -1584,7 +1584,7 @@
         'browser/sync/glue/app_notification_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
-        'browser/sync/glue/bridged_sync_notifier_unittest.cc',
+        'browser/sync/glue/bridged_invalidator_unittest.cc',
         'browser/sync/glue/browser_thread_model_worker_unittest.cc',
         'browser/sync/glue/change_processor_mock.cc',
         'browser/sync/glue/change_processor_mock.h',

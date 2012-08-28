@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/sync_notifier_registrar.h"
+#include "sync/notifier/invalidator_registrar.h"
 
 #include <cstddef>
 #include <utility>
@@ -11,21 +11,21 @@
 
 namespace syncer {
 
-SyncNotifierRegistrar::SyncNotifierRegistrar() {}
+InvalidatorRegistrar::InvalidatorRegistrar() {}
 
-SyncNotifierRegistrar::~SyncNotifierRegistrar() {
+InvalidatorRegistrar::~InvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void SyncNotifierRegistrar::RegisterHandler(SyncNotifierObserver* handler) {
+void InvalidatorRegistrar::RegisterHandler(InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(!handlers_.HasObserver(handler));
   handlers_.AddObserver(handler);
 }
 
-void SyncNotifierRegistrar::UpdateRegisteredIds(
-    SyncNotifierObserver* handler,
+void InvalidatorRegistrar::UpdateRegisteredIds(
+    InvalidationHandler* handler,
     const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
@@ -56,14 +56,14 @@ void SyncNotifierRegistrar::UpdateRegisteredIds(
   }
 }
 
-void SyncNotifierRegistrar::UnregisterHandler(SyncNotifierObserver* handler) {
+void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
   handlers_.RemoveObserver(handler);
 }
 
-ObjectIdSet SyncNotifierRegistrar::GetAllRegisteredIds() const {
+ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdSet registered_ids;
   for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
@@ -73,7 +73,7 @@ ObjectIdSet SyncNotifierRegistrar::GetAllRegisteredIds() const {
   return registered_ids;
 }
 
-void SyncNotifierRegistrar::DispatchInvalidationsToHandlers(
+void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
     const ObjectIdStateMap& id_state_map,
     IncomingNotificationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -82,19 +82,19 @@ void SyncNotifierRegistrar::DispatchInvalidationsToHandlers(
     return;
   }
 
-  typedef std::map<SyncNotifierObserver*, ObjectIdStateMap> DispatchMap;
+  typedef std::map<InvalidationHandler*, ObjectIdStateMap> DispatchMap;
   DispatchMap dispatch_map;
   for (ObjectIdStateMap::const_iterator it = id_state_map.begin();
        it != id_state_map.end(); ++it) {
-    SyncNotifierObserver* const handler = ObjectIdToHandler(it->first);
+    InvalidationHandler* const handler = ObjectIdToHandler(it->first);
     // Filter out invalidations for IDs with no handler.
     if (handler)
       dispatch_map[handler].insert(*it);
   }
 
   // Emit invalidations only for handlers in |handlers_|.
-  ObserverListBase<SyncNotifierObserver>::Iterator it(handlers_);
-  SyncNotifierObserver* handler = NULL;
+  ObserverListBase<InvalidationHandler>::Iterator it(handlers_);
+  InvalidationHandler* handler = NULL;
   while ((handler = it.GetNext()) != NULL) {
     DispatchMap::const_iterator dispatch_it = dispatch_map.find(handler);
     if (dispatch_it != dispatch_map.end())
@@ -102,26 +102,26 @@ void SyncNotifierRegistrar::DispatchInvalidationsToHandlers(
   }
 }
 
-void SyncNotifierRegistrar::EmitOnNotificationsEnabled() {
+void InvalidatorRegistrar::EmitOnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, handlers_, OnNotificationsEnabled());
+  FOR_EACH_OBSERVER(InvalidationHandler, handlers_, OnNotificationsEnabled());
 }
 
-void SyncNotifierRegistrar::EmitOnNotificationsDisabled(
+void InvalidatorRegistrar::EmitOnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, handlers_,
+  FOR_EACH_OBSERVER(InvalidationHandler, handlers_,
                     OnNotificationsDisabled(reason));
 }
 
-bool SyncNotifierRegistrar::IsHandlerRegisteredForTest(
-    SyncNotifierObserver* handler) const {
+bool InvalidatorRegistrar::IsHandlerRegisteredForTest(
+    InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return handlers_.HasObserver(handler);
 }
 
-ObjectIdSet SyncNotifierRegistrar::GetRegisteredIdsForTest(
-    SyncNotifierObserver* handler) const {
+ObjectIdSet InvalidatorRegistrar::GetRegisteredIdsForTest(
+    InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdSet registered_ids;
   for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
@@ -133,12 +133,12 @@ ObjectIdSet SyncNotifierRegistrar::GetRegisteredIdsForTest(
   return registered_ids;
 }
 
-void SyncNotifierRegistrar::DetachFromThreadForTest() {
+void InvalidatorRegistrar::DetachFromThreadForTest() {
   DCHECK(thread_checker_.CalledOnValidThread());
   thread_checker_.DetachFromThread();
 }
 
-SyncNotifierObserver* SyncNotifierRegistrar::ObjectIdToHandler(
+InvalidationHandler* InvalidatorRegistrar::ObjectIdToHandler(
     const invalidation::ObjectId& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   IdHandlerMap::const_iterator it = id_to_handler_map_.find(id);

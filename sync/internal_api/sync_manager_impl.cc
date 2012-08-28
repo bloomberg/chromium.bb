@@ -40,7 +40,7 @@
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/sync_notifier.h"
+#include "sync/notifier/invalidator.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
@@ -349,7 +349,7 @@ void SyncManagerImpl::Init(
     ExtensionsActivityMonitor* extensions_activity_monitor,
     SyncManager::ChangeDelegate* change_delegate,
     const SyncCredentials& credentials,
-    scoped_ptr<SyncNotifier> sync_notifier,
+    scoped_ptr<Invalidator> invalidator,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
@@ -369,8 +369,8 @@ void SyncManagerImpl::Init(
 
   change_delegate_ = change_delegate;
 
-  sync_notifier_ = sync_notifier.Pass();
-  sync_notifier_->RegisterHandler(this);
+  invalidator_ = invalidator.Pass();
+  invalidator_->RegisterHandler(this);
 
   AddObserver(&js_sync_manager_observer_);
   SetJsEventHandler(event_handler);
@@ -425,7 +425,7 @@ void SyncManagerImpl::Init(
   std::string unique_id = directory()->cache_guid();
   DVLOG(1) << "Read notification unique ID: " << unique_id;
   allstatus_.SetUniqueId(unique_id);
-  sync_notifier_->SetUniqueId(unique_id);
+  invalidator_->SetUniqueId(unique_id);
 
   std::string state = directory()->GetNotificationState();
   if (VLOG_IS_ON(1)) {
@@ -436,7 +436,7 @@ void SyncManagerImpl::Init(
 
   // TODO(tim): Remove once invalidation state has been migrated to new
   // InvalidationStateTracker store. Bug 124140.
-  sync_notifier_->SetStateDeprecated(state);
+  invalidator_->SetStateDeprecated(state);
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -653,7 +653,7 @@ void SyncManagerImpl::UpdateCredentials(
   if (!connection_manager_->set_auth_token(credentials.sync_token))
     return;  // Auth token is known to be invalid, so exit early.
 
-  sync_notifier_->UpdateCredentials(credentials.email, credentials.sync_token);
+  invalidator_->UpdateCredentials(credentials.email, credentials.sync_token);
   scheduler_->OnCredentialsUpdated();
 }
 
@@ -661,31 +661,31 @@ void SyncManagerImpl::UpdateEnabledTypes(
     const ModelTypeSet& enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
-  sync_notifier_->UpdateRegisteredIds(
+  invalidator_->UpdateRegisteredIds(
       this,
       ModelTypeSetToObjectIdSet(enabled_types));
 }
 
 void SyncManagerImpl::RegisterInvalidationHandler(
-    SyncNotifierObserver* handler) {
+    InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
-  sync_notifier_->RegisterHandler(handler);
+  invalidator_->RegisterHandler(handler);
 }
 
 void SyncManagerImpl::UpdateRegisteredInvalidationIds(
-    SyncNotifierObserver* handler,
+    InvalidationHandler* handler,
     const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
-  sync_notifier_->UpdateRegisteredIds(handler, ids);
+  invalidator_->UpdateRegisteredIds(handler, ids);
 }
 
 void SyncManagerImpl::UnregisterInvalidationHandler(
-    SyncNotifierObserver* handler) {
+    InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
-  sync_notifier_->UnregisterHandler(handler);
+  invalidator_->UnregisterHandler(handler);
 }
 
 bool SyncManagerImpl::GetKeystoreKeyBootstrapToken(std::string* token) {
@@ -731,14 +731,14 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
 
   RemoveObserver(&debug_info_event_listener_);
 
-  // |sync_notifier_| and |connection_manager_| may end up being NULL here in
+  // |invalidator_| and |connection_manager_| may end up being NULL here in
   // tests (in synchronous initialization mode).
   //
   // TODO(akalin): Fix this behavior.
 
-  if (sync_notifier_.get())
-    sync_notifier_->UnregisterHandler(this);
-  sync_notifier_.reset();
+  if (invalidator_.get())
+    invalidator_->UnregisterHandler(this);
+  invalidator_.reset();
 
   if (connection_manager_.get())
     connection_manager_->RemoveListener(this);
@@ -1019,12 +1019,12 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
     bool is_notifiable_commit =
         (event.snapshot.model_neutral_state().num_successful_commits > 0);
     if (is_notifiable_commit) {
-      if (sync_notifier_.get()) {
+      if (invalidator_.get()) {
         const ModelTypeSet changed_types =
             ModelTypeStateMapToSet(event.snapshot.source().types);
-        sync_notifier_->SendNotification(changed_types);
+        invalidator_->SendNotification(changed_types);
       } else {
-        DVLOG(1) << "Not sending notification: sync_notifier_ is NULL";
+        DVLOG(1) << "Not sending notification: invalidator_ is NULL";
       }
     }
   }

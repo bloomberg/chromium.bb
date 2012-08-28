@@ -16,7 +16,7 @@
 class Profile;
 
 namespace syncer {
-class SyncNotifierObserver;
+class InvalidationHandler;
 }  // namespace
 
 namespace browser_sync {
@@ -44,10 +44,10 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
   // Must be called on the sync task runner.
   void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
   // Marked virtual for tests.
-  virtual void RegisterHandler(syncer::SyncNotifierObserver* handler);
-  virtual void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
+  virtual void RegisterHandler(syncer::InvalidationHandler* handler);
+  virtual void UpdateRegisteredIds(syncer::InvalidationHandler* handler,
                                    const syncer::ObjectIdSet& ids);
-  virtual void UnregisterHandler(syncer::SyncNotifierObserver* handler);
+  virtual void UnregisterHandler(syncer::InvalidationHandler* handler);
 
   // NotificationObserver implementation. Called on UI thread.
   virtual void Observe(int type,

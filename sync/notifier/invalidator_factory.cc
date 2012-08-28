@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/sync_notifier_factory.h"
+#include "sync/notifier/invalidator_factory.h"
 
 #include <string>
 
 #include "base/logging.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/notifier/non_blocking_invalidation_notifier.h"
-#include "sync/notifier/p2p_notifier.h"
-#include "sync/notifier/sync_notifier.h"
+#include "sync/notifier/invalidator.h"
+#include "sync/notifier/non_blocking_invalidator.h"
+#include "sync/notifier/p2p_invalidator.h"
 
 namespace syncer {
 namespace {
 
-SyncNotifier* CreateDefaultSyncNotifier(
+Invalidator* CreateDefaultInvalidator(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const std::string& initial_invalidation_state,
@@ -26,12 +26,12 @@ SyncNotifier* CreateDefaultSyncNotifier(
     // NOTIFY_OTHERS.  There's no good reason to notify ourselves of our own
     // commits.  We self-notify for now only because the integration tests rely
     // on this behaviour.  See crbug.com/97780.
-    return new P2PNotifier(
+    return new P2PInvalidator(
         notifier::PushClient::CreateDefault(notifier_options),
         NOTIFY_ALL);
   }
 
-  return new NonBlockingInvalidationNotifier(
+  return new NonBlockingInvalidator(
       notifier_options, initial_max_invalidation_versions,
       initial_invalidation_state, invalidation_state_tracker, client_info);
 }
@@ -39,7 +39,7 @@ SyncNotifier* CreateDefaultSyncNotifier(
 }  // namespace
 
 // TODO(akalin): Remove the dependency on jingle if OS_ANDROID is defined.
-SyncNotifierFactory::SyncNotifierFactory(
+InvalidatorFactory::InvalidatorFactory(
     const notifier::NotifierOptions& notifier_options,
     const std::string& client_info,
     const base::WeakPtr<InvalidationStateTracker>&
@@ -57,19 +57,19 @@ SyncNotifierFactory::SyncNotifierFactory(
       invalidation_state_tracker_(invalidation_state_tracker) {
 }
 
-SyncNotifierFactory::~SyncNotifierFactory() {
+InvalidatorFactory::~InvalidatorFactory() {
 }
 
-SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
+Invalidator* InvalidatorFactory::CreateInvalidator() {
 #if defined(OS_ANDROID)
   // Android uses ChromeSyncNotificationBridge exclusively.
   return NULL;
 #else
-  return CreateDefaultSyncNotifier(notifier_options_,
-                                   initial_max_invalidation_versions_,
-                                   initial_invalidation_state_,
-                                   invalidation_state_tracker_,
-                                   client_info_);
+  return CreateDefaultInvalidator(notifier_options_,
+                                  initial_max_invalidation_versions_,
+                                  initial_invalidation_state_,
+                                  invalidation_state_tracker_,
+                                  client_info_);
 #endif
 }
 }  // namespace syncer

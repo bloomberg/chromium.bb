@@ -13,8 +13,8 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"
-#include "sync/notifier/fake_sync_notifier_observer.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +35,7 @@ class InvalidationNotifierTest : public testing::Test {
   }
 
   // Constructs an InvalidationNotifier, places it in |invalidation_notifier_|,
-  // and registers |fake_observer_| as a handler. This remains in place until
+  // and registers |fake_handler_| as a handler. This remains in place until
   // either TearDown (automatic) or ResetNotifier (manual) is called.
   void CreateNotifier(
       const std::string& initial_invalidation_state) {
@@ -50,11 +50,11 @@ class InvalidationNotifierTest : public testing::Test {
             initial_invalidation_state,
             MakeWeakHandle(fake_tracker_.AsWeakPtr()),
             "fake_client_info"));
-    invalidation_notifier_->RegisterHandler(&fake_observer_);
+    invalidation_notifier_->RegisterHandler(&fake_handler_);
   }
 
   void ResetNotifier() {
-    invalidation_notifier_->UnregisterHandler(&fake_observer_);
+    invalidation_notifier_->UnregisterHandler(&fake_handler_);
     // Stopping the invalidation notifier stops its scheduler, which deletes any
     // pending tasks without running them.  Some tasks "run and delete" another
     // task, so they must be run in order to avoid leaking the inner task.
@@ -76,7 +76,7 @@ class InvalidationNotifierTest : public testing::Test {
  protected:
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   FakeInvalidationStateTracker fake_tracker_;
-  FakeSyncNotifierObserver fake_observer_;
+  FakeInvalidationHandler fake_handler_;
 };
 
 TEST_F(InvalidationNotifierTest, Basic) {
@@ -88,7 +88,7 @@ TEST_F(InvalidationNotifierTest, Basic) {
           ModelTypeSetToStateMap(models, "payload"));
 
   invalidation_notifier_->UpdateRegisteredIds(
-      &fake_observer_, ModelTypeSetToObjectIdSet(models));
+      &fake_handler_, ModelTypeSetToObjectIdSet(models));
 
   // TODO(tim): This call should be a no-op, Remove once bug 124140 and
   // associated issues are fixed.
@@ -101,22 +101,22 @@ TEST_F(InvalidationNotifierTest, Basic) {
 
   invalidation_notifier_->OnNotificationsEnabled();
   EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            fake_observer_.GetNotificationsDisabledReason());
+            fake_handler_.GetNotificationsDisabledReason());
 
   invalidation_notifier_->OnInvalidate(id_state_map);
   EXPECT_THAT(id_state_map,
-              Eq(fake_observer_.GetLastNotificationIdStateMap()));
-  EXPECT_EQ(REMOTE_NOTIFICATION, fake_observer_.GetLastNotificationSource());
+              Eq(fake_handler_.GetLastNotificationIdStateMap()));
+  EXPECT_EQ(REMOTE_NOTIFICATION, fake_handler_.GetLastNotificationSource());
 
   invalidation_notifier_->OnNotificationsDisabled(
       TRANSIENT_NOTIFICATION_ERROR);
   EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            fake_observer_.GetNotificationsDisabledReason());
+            fake_handler_.GetNotificationsDisabledReason());
 
   invalidation_notifier_->OnNotificationsDisabled(
       NOTIFICATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            fake_observer_.GetNotificationsDisabledReason());
+            fake_handler_.GetNotificationsDisabledReason());
 }
 
 TEST_F(InvalidationNotifierTest, MigrateState) {

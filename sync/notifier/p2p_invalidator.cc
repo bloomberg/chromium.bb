@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/p2p_notifier.h"
+#include "sync/notifier/p2p_invalidator.h"
 
 #include <algorithm>
 
@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/sync_notifier_observer.h"
 
 namespace syncer {
 
@@ -141,8 +141,8 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
   return true;
 }
 
-P2PNotifier::P2PNotifier(scoped_ptr<notifier::PushClient> push_client,
-                         P2PNotificationTarget send_notification_target)
+P2PInvalidator::P2PInvalidator(scoped_ptr<notifier::PushClient> push_client,
+                               P2PNotificationTarget send_notification_target)
     : push_client_(push_client.Pass()),
       logged_in_(false),
       notifications_enabled_(false),
@@ -152,17 +152,17 @@ P2PNotifier::P2PNotifier(scoped_ptr<notifier::PushClient> push_client,
   push_client_->AddObserver(this);
 }
 
-P2PNotifier::~P2PNotifier() {
+P2PInvalidator::~P2PInvalidator() {
   DCHECK(thread_checker_.CalledOnValidThread());
   push_client_->RemoveObserver(this);
 }
 
-void P2PNotifier::RegisterHandler(SyncNotifierObserver* handler) {
+void P2PInvalidator::RegisterHandler(InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   registrar_.RegisterHandler(handler);
 }
 
-void P2PNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
+void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                       const ObjectIdSet& ids) {
   // TODO(akalin): Handle arbitrary object IDs (http://crbug.com/140411).
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -177,22 +177,22 @@ void P2PNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
   enabled_types_ = enabled_types;
 }
 
-void P2PNotifier::UnregisterHandler(SyncNotifierObserver* handler) {
+void P2PInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   registrar_.UnregisterHandler(handler);
 }
 
-void P2PNotifier::SetUniqueId(const std::string& unique_id) {
+void P2PInvalidator::SetUniqueId(const std::string& unique_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   unique_id_ = unique_id;
 }
 
-void P2PNotifier::SetStateDeprecated(const std::string& state) {
+void P2PInvalidator::SetStateDeprecated(const std::string& state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Do nothing.
 }
 
-void P2PNotifier::UpdateCredentials(
+void P2PInvalidator::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(thread_checker_.CalledOnValidThread());
   notifier::Subscription subscription;
@@ -209,14 +209,14 @@ void P2PNotifier::UpdateCredentials(
   logged_in_ = true;
 }
 
-void P2PNotifier::SendNotification(ModelTypeSet changed_types) {
+void P2PInvalidator::SendNotification(ModelTypeSet changed_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
       unique_id_, send_notification_target_, changed_types);
   SendNotificationData(notification_data);
 }
 
-void P2PNotifier::OnNotificationsEnabled() {
+void P2PInvalidator::OnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool just_turned_on = (notifications_enabled_ == false);
   notifications_enabled_ = true;
@@ -228,13 +228,13 @@ void P2PNotifier::OnNotificationsEnabled() {
   }
 }
 
-void P2PNotifier::OnNotificationsDisabled(
+void P2PInvalidator::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   registrar_.EmitOnNotificationsDisabled(FromNotifierReason(reason));
 }
 
-void P2PNotifier::OnIncomingNotification(
+void P2PInvalidator::OnIncomingNotification(
     const notifier::Notification& notification) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Received notification " << notification.ToString();
@@ -275,13 +275,13 @@ void P2PNotifier::OnIncomingNotification(
       REMOTE_NOTIFICATION);
 }
 
-void P2PNotifier::SendNotificationDataForTest(
+void P2PInvalidator::SendNotificationDataForTest(
     const P2PNotificationData& notification_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SendNotificationData(notification_data);
 }
 
-void P2PNotifier::SendNotificationData(
+void P2PInvalidator::SendNotificationData(
     const P2PNotificationData& notification_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (notification_data.GetChangedTypes().Empty()) {

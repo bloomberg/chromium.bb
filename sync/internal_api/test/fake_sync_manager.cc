@@ -17,8 +17,8 @@
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/invalidator.h"
 #include "sync/notifier/object_id_state_map.h"
-#include "sync/notifier/sync_notifier.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
 namespace syncer {
@@ -111,7 +111,7 @@ void FakeSyncManager::Init(
     ExtensionsActivityMonitor* extensions_activity_monitor,
     ChangeDelegate* change_delegate,
     const SyncCredentials& credentials,
-    scoped_ptr<SyncNotifier> sync_notifier,
+    scoped_ptr<Invalidator> invalidator,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
@@ -163,18 +163,18 @@ void FakeSyncManager::UpdateEnabledTypes(const ModelTypeSet& types) {
 }
 
 void FakeSyncManager::RegisterInvalidationHandler(
-    SyncNotifierObserver* handler) {
+    InvalidationHandler* handler) {
   registrar_.RegisterHandler(handler);
 }
 
 void FakeSyncManager::UpdateRegisteredInvalidationIds(
-    SyncNotifierObserver* handler,
+    InvalidationHandler* handler,
     const ObjectIdSet& ids) {
   registrar_.UpdateRegisteredIds(handler, ids);
 }
 
 void FakeSyncManager::UnregisterInvalidationHandler(
-    SyncNotifierObserver* handler) {
+    InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
 }
 

@@ -53,7 +53,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-#include "sync/notifier/p2p_notifier.h"
+#include "sync/notifier/p2p_invalidator.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/engine/sync_scheduler_impl.h"
 

@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h"
-#include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/invalidation_handler.h"
 
 class InvalidationFrontend;
 
@@ -24,7 +24,7 @@ class PushMessagingInvalidationHandlerDelegate;
 // invalidation registrations, and dispatches callbacks for any invalidations
 // received.
 class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
-                                         public syncer::SyncNotifierObserver {
+                                         public syncer::InvalidationHandler {
  public:
   // |service| and |delegate| must remain valid for the lifetime of this object.
   // |extension_ids| is the set of extension IDs for which push messaging is
@@ -39,7 +39,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   virtual void RegisterExtension(const std::string& extension_id) OVERRIDE;
   virtual void UnregisterExtension(const std::string& extension_id) OVERRIDE;
 
-  // SyncNotifierObserver implementation.
+  // InvalidationHandler implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;

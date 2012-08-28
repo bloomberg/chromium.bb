@@ -8,21 +8,21 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/invalidation_handler.h"
 
 namespace syncer {
 
-class FakeSyncNotifierObserver : public SyncNotifierObserver {
+class FakeInvalidationHandler : public InvalidationHandler {
  public:
-  FakeSyncNotifierObserver();
-  virtual ~FakeSyncNotifierObserver();
+  FakeInvalidationHandler();
+  virtual ~FakeInvalidationHandler();
 
   NotificationsDisabledReason GetNotificationsDisabledReason() const;
   const ObjectIdStateMap& GetLastNotificationIdStateMap() const;
   IncomingNotificationSource GetLastNotificationSource() const;
   int GetNotificationCount() const;
 
-  // SyncNotifierObserver implementation.
+  // InvalidationHandler implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       NotificationsDisabledReason reason) OVERRIDE;

@@ -27,11 +27,11 @@ class MockInvalidationFrontend : public InvalidationFrontend {
   MockInvalidationFrontend();
   ~MockInvalidationFrontend();
   MOCK_METHOD1(RegisterInvalidationHandler,
-               void(syncer::SyncNotifierObserver*));
+               void(syncer::InvalidationHandler*));
   MOCK_METHOD2(UpdateRegisteredInvalidationIds,
-               void(syncer::SyncNotifierObserver*, const syncer::ObjectIdSet&));
+               void(syncer::InvalidationHandler*, const syncer::ObjectIdSet&));
   MOCK_METHOD1(UnregisterInvalidationHandler,
-               void(syncer::SyncNotifierObserver*));
+               void(syncer::InvalidationHandler*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInvalidationFrontend);
@@ -66,7 +66,7 @@ class PushMessagingInvalidationHandlerTest : public ::testing::Test {
   virtual void SetUpWithArgs(const std::set<std::string>& extension_ids,
                              const syncer::ObjectIdSet& expected_ids) {
     InSequence seq;
-    syncer::SyncNotifierObserver* handler[2] = {};
+    syncer::InvalidationHandler* handler[2] = {};
     EXPECT_CALL(service_, RegisterInvalidationHandler(NotNull()))
         .WillOnce(SaveArg<0>(&handler[0]));
     EXPECT_CALL(service_,

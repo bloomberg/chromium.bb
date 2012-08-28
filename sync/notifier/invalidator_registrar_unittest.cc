@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/notifier/fake_sync_notifier_observer.h"
+#include "sync/notifier/fake_invalidation_handler.h"
+#include "sync/notifier/invalidator_registrar.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
-#include "sync/notifier/sync_notifier_registrar.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 namespace {
 
-class SyncNotifierRegistrarTest : public testing::Test {
+class InvalidatorRegistrarTest : public testing::Test {
  protected:
-  SyncNotifierRegistrarTest()
+  InvalidatorRegistrarTest()
       : kObjectId1(ipc::invalidation::ObjectSource::TEST, "a"),
         kObjectId2(ipc::invalidation::ObjectSource::TEST, "b"),
         kObjectId3(ipc::invalidation::ObjectSource::TEST, "c"),
@@ -30,10 +30,10 @@ class SyncNotifierRegistrarTest : public testing::Test {
 // Register a handler, register some IDs for that handler, and then unregister
 // the handler, dispatching invalidations in between.  The handler should only
 // see invalidations when its registered and its IDs are registered.
-TEST_F(SyncNotifierRegistrarTest, Basic) {
-  FakeSyncNotifierObserver handler;
+TEST_F(InvalidatorRegistrarTest, Basic) {
+  FakeInvalidationHandler handler;
 
-  SyncNotifierRegistrar registrar;
+  InvalidatorRegistrar registrar;
 
   registrar.RegisterHandler(&handler);
 
@@ -89,13 +89,13 @@ TEST_F(SyncNotifierRegistrarTest, Basic) {
 // dispatch some notifications and invalidations.  Handlers that are registered
 // should get notifications, and the ones that have registered IDs should
 // receive invalidations for those IDs.
-TEST_F(SyncNotifierRegistrarTest, MultipleHandlers) {
-  FakeSyncNotifierObserver handler1;
-  FakeSyncNotifierObserver handler2;
-  FakeSyncNotifierObserver handler3;
-  FakeSyncNotifierObserver handler4;
+TEST_F(InvalidatorRegistrarTest, MultipleHandlers) {
+  FakeInvalidationHandler handler1;
+  FakeInvalidationHandler handler2;
+  FakeInvalidationHandler handler3;
+  FakeInvalidationHandler handler4;
 
-  SyncNotifierRegistrar registrar;
+  InvalidatorRegistrar registrar;
 
   registrar.RegisterHandler(&handler1);
   registrar.RegisterHandler(&handler2);
@@ -179,13 +179,13 @@ TEST_F(SyncNotifierRegistrarTest, MultipleHandlers) {
 
 // Multiple registrations by different handlers on the same object ID should
 // cause a CHECK.
-TEST_F(SyncNotifierRegistrarTest, MultipleRegistration) {
-  SyncNotifierRegistrar registrar;
+TEST_F(InvalidatorRegistrarTest, MultipleRegistration) {
+  InvalidatorRegistrar registrar;
 
-  FakeSyncNotifierObserver handler1;
+  FakeInvalidationHandler handler1;
   registrar.RegisterHandler(&handler1);
 
-  FakeSyncNotifierObserver handler2;
+  FakeInvalidationHandler handler2;
   registrar.RegisterHandler(&handler2);
 
   ObjectIdSet ids;
@@ -201,13 +201,13 @@ TEST_F(SyncNotifierRegistrarTest, MultipleRegistration) {
 
 // Make sure that passing an empty set to UpdateRegisteredIds clears the
 // corresponding entries for the handler.
-TEST_F(SyncNotifierRegistrarTest, EmptySetUnregisters) {
-  FakeSyncNotifierObserver handler1;
+TEST_F(InvalidatorRegistrarTest, EmptySetUnregisters) {
+  FakeInvalidationHandler handler1;
 
   // Control observer.
-  FakeSyncNotifierObserver handler2;
+  FakeInvalidationHandler handler2;
 
-  SyncNotifierRegistrar registrar;
+  InvalidatorRegistrar registrar;
 
   registrar.RegisterHandler(&handler1);
   registrar.RegisterHandler(&handler2);

@@ -26,10 +26,10 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_factory.h"
-#include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/invalidator_factory.h"
+#include "sync/notifier/invalidator.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -49,7 +49,7 @@ const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
 const char kNotificationMethodSwitch[] = "notification-method";
 
 // Class to print received notifications events.
-class NotificationPrinter : public SyncNotifierObserver {
+class NotificationPrinter : public InvalidationHandler {
  public:
   NotificationPrinter() {}
   virtual ~NotificationPrinter() {}
@@ -233,25 +233,25 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
           new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
-  SyncNotifierFactory sync_notifier_factory(
+  InvalidatorFactory invalidator_factory(
       notifier_options, kClientInfo,
       null_invalidation_state_tracker.AsWeakPtr());
-  scoped_ptr<SyncNotifier> sync_notifier(
-      sync_notifier_factory.CreateSyncNotifier());
+  scoped_ptr<Invalidator> invalidator(
+      invalidator_factory.CreateInvalidator());
   NotificationPrinter notification_printer;
 
   const char kUniqueId[] = "fake_unique_id";
-  sync_notifier->SetUniqueId(kUniqueId);
-  sync_notifier->UpdateCredentials(email, token);
+  invalidator->SetUniqueId(kUniqueId);
+  invalidator->UpdateCredentials(email, token);
 
   // Listen for notifications for all known types.
-  sync_notifier->RegisterHandler(&notification_printer);
-  sync_notifier->UpdateRegisteredIds(
+  invalidator->RegisterHandler(&notification_printer);
+  invalidator->UpdateRegisteredIds(
       &notification_printer, ModelTypeSetToObjectIdSet(ModelTypeSet::All()));
 
   ui_loop.Run();
 
-  sync_notifier->UnregisterHandler(&notification_printer);
+  invalidator->UnregisterHandler(&notification_printer);
   io_thread.Stop();
   return 0;
 }

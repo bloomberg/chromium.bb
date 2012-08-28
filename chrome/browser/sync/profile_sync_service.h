@@ -40,7 +40,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/js/sync_js_controller.h"
-#include "sync/notifier/sync_notifier_registrar.h"
+#include "sync/notifier/invalidator_registrar.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;
@@ -258,7 +258,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual bool HasSyncSetupCompleted() const;
   virtual void SetSyncSetupCompleted();
 
-  // syncer::SyncNotifier implementation (via SyncFrontend).
+  // syncer::InvalidationHandler implementation (via SyncFrontend).
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;
@@ -597,7 +597,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   //
   // Handler registrations are persisted across restarts of sync.
   virtual void RegisterInvalidationHandler(
-      syncer::SyncNotifierObserver* handler) OVERRIDE;
+      syncer::InvalidationHandler* handler) OVERRIDE;
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  An ID must be registered for
@@ -605,7 +605,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   //
   // Registered IDs are persisted across restarts of sync.
   virtual void UpdateRegisteredInvalidationIds(
-      syncer::SyncNotifierObserver* handler,
+      syncer::InvalidationHandler* handler,
       const syncer::ObjectIdSet& ids) OVERRIDE;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
@@ -614,7 +614,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   //
   // Handler registrations are persisted across restarts of sync.
   virtual void UnregisterInvalidationHandler(
-      syncer::SyncNotifierObserver* handler) OVERRIDE;
+      syncer::InvalidationHandler* handler) OVERRIDE;
 
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -891,7 +891,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   syncer::SyncManagerFactory sync_manager_factory_;
 
   // Dispatches invalidations to handlers.
-  syncer::SyncNotifierRegistrar notifier_registrar_;
+  syncer::InvalidatorRegistrar invalidator_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

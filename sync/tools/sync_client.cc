@@ -41,8 +41,8 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_factory.h"
+#include "sync/notifier/invalidator_factory.h"
+#include "sync/notifier/invalidator.h"
 #include "sync/test/fake_encryptor.h"
 
 #if defined(OS_MACOSX)
@@ -308,7 +308,7 @@ int SyncClientMain(int argc, char* argv[]) {
       ParseNotifierOptions(command_line, context_getter);
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
-  SyncNotifierFactory sync_notifier_factory(
+  InvalidatorFactory invalidator_factory(
       notifier_options, kClientInfo,
       null_invalidation_state_tracker.AsWeakPtr());
 
@@ -368,8 +368,8 @@ int SyncClientMain(int argc, char* argv[]) {
                     extensions_activity_monitor,
                     &change_delegate,
                     credentials,
-                    scoped_ptr<SyncNotifier>(
-                        sync_notifier_factory.CreateSyncNotifier()),
+                    scoped_ptr<Invalidator>(
+                        invalidator_factory.CreateInvalidator()),
                     kRestoredKeyForBootstrapping,
                     kRestoredKeystoreKeyForBootstrapping,
                     scoped_ptr<InternalComponentsFactory>(

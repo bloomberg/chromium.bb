@@ -23,7 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/sync/glue/bridged_sync_notifier.h"
+#include "chrome/browser/sync/glue/bridged_invalidator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
@@ -49,7 +49,7 @@
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
-#include "sync/notifier/sync_notifier.h"
+#include "sync/notifier/invalidator.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/nigori.h"
@@ -81,7 +81,7 @@ class SyncBackendHost::Core
     : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
       public syncer::SyncEncryptionHandler::Observer,
       public syncer::SyncManager::Observer,
-      public syncer::SyncNotifierObserver {
+      public syncer::InvalidationHandler {
  public:
   Core(const std::string& name,
        const FilePath& sync_data_folder_path,
@@ -118,7 +118,7 @@ class SyncBackendHost::Core
       syncer::Cryptographer* cryptographer) OVERRIDE;
   virtual void OnPassphraseStateChanged(syncer::PassphraseState state) OVERRIDE;
 
-  // syncer::SyncNotifierObserver implementation.
+  // syncer::InvalidationHandler implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
       syncer::NotificationsDisabledReason reason) OVERRIDE;
@@ -322,7 +322,7 @@ SyncBackendHost::SyncBackendHost(
                      weak_ptr_factory_.GetWeakPtr())),
       initialization_state_(NOT_ATTEMPTED),
       sync_prefs_(sync_prefs),
-      sync_notifier_factory_(
+      invalidator_factory_(
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
@@ -338,7 +338,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       profile_(profile),
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
-      sync_notifier_factory_(
+      invalidator_factory_(
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
@@ -451,7 +451,7 @@ void SyncBackendHost::Initialize(
                  make_scoped_refptr(profile_->GetRequestContext())),
       credentials,
       chrome_sync_notification_bridge_.get(),
-      &sync_notifier_factory_,
+      &invalidator_factory_,
       sync_manager_factory,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
@@ -839,7 +839,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
     const syncer::SyncCredentials& credentials,
     ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
-    syncer::SyncNotifierFactory* sync_notifier_factory,
+    syncer::InvalidatorFactory* invalidator_factory,
     syncer::SyncManagerFactory* sync_manager_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
@@ -858,7 +858,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       make_http_bridge_factory_fn(make_http_bridge_factory_fn),
       credentials(credentials),
       chrome_sync_notification_bridge(chrome_sync_notification_bridge),
-      sync_notifier_factory(sync_notifier_factory),
+      invalidator_factory(invalidator_factory),
       sync_manager_factory(sync_manager_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
@@ -1116,9 +1116,9 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.extensions_activity_monitor,
       options.registrar /* as SyncManager::ChangeDelegate */,
       options.credentials,
-      scoped_ptr<syncer::SyncNotifier>(new BridgedSyncNotifier(
+      scoped_ptr<syncer::Invalidator>(new BridgedInvalidator(
           options.chrome_sync_notification_bridge,
-          options.sync_notifier_factory->CreateSyncNotifier())),
+          options.invalidator_factory->CreateInvalidator())),
       options.restored_key_for_bootstrapping,
       options.restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory>(

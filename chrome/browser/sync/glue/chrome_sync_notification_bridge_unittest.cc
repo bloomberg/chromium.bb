@@ -22,8 +22,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
+#include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
-#include "sync/notifier/sync_notifier_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,9 +42,9 @@ using content::BrowserThread;
 // Note: Because this object lives on the sync thread, we use a fake
 // (vs a mock) so we don't have to worry about possible thread safety
 // issues within GTest/GMock.
-class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
+class FakeInvalidationHandler : public syncer::InvalidationHandler {
  public:
-  FakeSyncNotifierObserver(
+  FakeInvalidationHandler(
       const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner,
       ChromeSyncNotificationBridge* bridge,
       const syncer::ObjectIdStateMap& expected_states,
@@ -62,12 +62,12 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
     bridge_->UpdateRegisteredIds(this, ids);
   }
 
-  virtual ~FakeSyncNotifierObserver() {
+  virtual ~FakeInvalidationHandler() {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
     bridge_->UnregisterHandler(this);
   }
 
-  // SyncNotifierObserver implementation.
+  // InvalidationHandler implementation.
   virtual void OnIncomingNotification(
       const syncer::ObjectIdStateMap& id_state_map,
       syncer::IncomingNotificationSource source) OVERRIDE {
@@ -109,8 +109,8 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
   ChromeSyncNotificationBridgeTest()
       : ui_thread_(BrowserThread::UI),
         sync_thread_("Sync thread"),
-        sync_observer_(NULL),
-        sync_observer_notification_failure_(false),
+        sync_handler_(NULL),
+        sync_handler_notification_failure_(false),
         done_(true, false) {}
 
   virtual ~ChromeSyncNotificationBridgeTest() {}
@@ -128,8 +128,8 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
     sync_thread_.Stop();
     // Must be reset only after the sync thread is stopped.
     bridge_.reset();
-    EXPECT_EQ(NULL, sync_observer_);
-    if (sync_observer_notification_failure_)
+    EXPECT_EQ(NULL, sync_handler_);
+    if (sync_handler_notification_failure_)
       ADD_FAILURE() << "Sync Observer did not receive proper notification.";
   }
 
@@ -180,13 +180,13 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
  private:
   void VerifyAndDestroyObserverOnSyncThread() {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    if (!sync_observer_) {
-      sync_observer_notification_failure_ = true;
+    if (!sync_handler_) {
+      sync_handler_notification_failure_ = true;
     } else {
-      sync_observer_notification_failure_ =
-          !sync_observer_->ReceivedProperNotification();
-      delete sync_observer_;
-      sync_observer_ = NULL;
+      sync_handler_notification_failure_ =
+          !sync_handler_->ReceivedProperNotification();
+      delete sync_handler_;
+      sync_handler_ = NULL;
     }
   }
 
@@ -194,7 +194,7 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
       const syncer::ObjectIdStateMap& expected_states,
       syncer::IncomingNotificationSource expected_source) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    sync_observer_ = new FakeSyncNotifierObserver(
+    sync_handler_ = new FakeInvalidationHandler(
         sync_thread_.message_loop_proxy(),
         bridge_.get(),
         expected_states,
@@ -227,8 +227,8 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
   base::Thread sync_thread_;
   NiceMock<ProfileMock> mock_profile_;
   // Created/used/destroyed on sync thread.
-  FakeSyncNotifierObserver* sync_observer_;
-  bool sync_observer_notification_failure_;
+  FakeInvalidationHandler* sync_handler_;
+  bool sync_handler_notification_failure_;
   scoped_ptr<ChromeSyncNotificationBridge> bridge_;
   base::WaitableEvent done_;
 };

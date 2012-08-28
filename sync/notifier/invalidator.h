@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Interface to the sync notifier, which is an object that receives
-// notifications when updates are available for a set of sync types.
-// All the observers are notified when such an event happens.
+// Interface to the invalidator, which is an object that receives
+// invalidations for registered object IDs. The corresponding
+// InvalidationHandler is notifier when such an event occurs.
 
-#ifndef SYNC_NOTIFIER_SYNC_NOTIFIER_H_
-#define SYNC_NOTIFIER_SYNC_NOTIFIER_H_
+#ifndef SYNC_NOTIFIER_INVALIDATOR_H_
+#define SYNC_NOTIFIER_INVALIDATOR_H_
 
 #include <string>
 
@@ -15,28 +15,28 @@
 #include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
-class SyncNotifierObserver;
+class InvalidationHandler;
 
-class SyncNotifier {
+class Invalidator {
  public:
-  SyncNotifier() {}
-  virtual ~SyncNotifier() {}
+  Invalidator() {}
+  virtual ~Invalidator() {}
 
   // Clients should follow the pattern below:
   //
   // When starting the client:
   //
-  //   notifier->RegisterHandler(client_handler);
+  //   invalidator->RegisterHandler(client_handler);
   //
   // When the set of IDs to register changes for the client during its lifetime
   // (i.e., between calls to RegisterHandler(client_handler) and
   // UnregisterHandler(client_handler):
   //
-  //   notifier->UpdateRegisteredIds(client_handler, client_ids);
+  //   invalidator->UpdateRegisteredIds(client_handler, client_ids);
   //
-  // When shutting down the client for browser shutdown:
+  // When shutting down the client for profile shutdown:
   //
-  //   notifier->UnregisterHandler(client_handler);
+  //   invalidator->UnregisterHandler(client_handler);
   //
   // Note that there's no call to UpdateRegisteredIds() -- this is because the
   // invalidation API persists registrations across browser restarts.
@@ -44,23 +44,23 @@ class SyncNotifier {
   // When permanently shutting down the client, e.g. when disabling the related
   // feature:
   //
-  //   notifier->UpdateRegisteredIds(client_handler, ObjectIdSet());
-  //   notifier->UnregisterHandler(client_handler);
+  //   invalidator->UpdateRegisteredIds(client_handler, ObjectIdSet());
+  //   invalidator->UnregisterHandler(client_handler);
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must already be registered.
-  virtual void RegisterHandler(SyncNotifierObserver* handler) = 0;
+  virtual void RegisterHandler(InvalidationHandler* handler) = 0;
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  An ID must be registered for
   // at most one handler.
-  virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
+  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) = 0;
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
   // it must already be registered.  Note that this doesn't unregister the IDs
   // associated with |handler|.
-  virtual void UnregisterHandler(SyncNotifierObserver* handler) = 0;
+  virtual void UnregisterHandler(InvalidationHandler* handler) = 0;
 
   // SetUniqueId must be called once, before any call to
   // UpdateCredentials.  |unique_id| should be a non-empty globally
@@ -86,4 +86,4 @@ class SyncNotifier {
 };
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_H_
+#endif  // SYNC_NOTIFIER_INVALIDATOR_H_

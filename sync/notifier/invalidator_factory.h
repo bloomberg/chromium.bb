@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_SYNC_NOTIFIER_FACTORY_H_
-#define SYNC_NOTIFIER_SYNC_NOTIFIER_FACTORY_H_
+#ifndef SYNC_NOTIFIER_INVALIDATOR_FACTORY_H_
+#define SYNC_NOTIFIER_INVALIDATOR_FACTORY_H_
 
 #include <string>
 
@@ -14,26 +14,26 @@
 
 namespace syncer {
 
-class SyncNotifier;
+class Invalidator;
 
-// Class to instantiate various implementations of the SyncNotifier
+// Class to instantiate various implementations of the Invalidator
 // interface.
-class SyncNotifierFactory {
+class InvalidatorFactory {
  public:
   // |client_info| is a string identifying the client, e.g. a user
   // agent string.  |invalidation_state_tracker| may be NULL (for
   // tests).
-  SyncNotifierFactory(
+  InvalidatorFactory(
       const notifier::NotifierOptions& notifier_options,
       const std::string& client_info,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker);
-  ~SyncNotifierFactory();
+  ~InvalidatorFactory();
 
-  // Creates a sync notifier. Caller takes ownership of the returned
+  // Creates an invalidator. Caller takes ownership of the returned
   // object.  However, the returned object must not outlive the
   // factory from which it was created.  Can be called on any thread.
-  SyncNotifier* CreateSyncNotifier();
+  Invalidator* CreateInvalidator();
 
  private:
   const notifier::NotifierOptions notifier_options_;
@@ -46,4 +46,4 @@ class SyncNotifierFactory {
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_SYNC_NOTIFIER_FACTORY_H_
+#endif  // SYNC_NOTIFIER_INVALIDATOR_FACTORY_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A notifier that uses p2p notifications based on XMPP push
+// An invalidator that uses p2p notifications based on XMPP push
 // notifications.  Used only for sync integration tests.
 
-#ifndef SYNC_NOTIFIER_P2P_NOTIFIER_H_
-#define SYNC_NOTIFIER_P2P_NOTIFIER_H_
+#ifndef SYNC_NOTIFIER_P2P_INVALIDATOR_H_
+#define SYNC_NOTIFIER_P2P_INVALIDATOR_H_
 
 #include <string>
 
@@ -18,9 +18,9 @@
 #include "base/threading/thread_checker.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_registrar.h"
 #include "sync/notifier/notifications_disabled_reason.h"
-#include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_registrar.h"
 
 namespace notifier {
 class PushClient;
@@ -82,24 +82,24 @@ class P2PNotificationData {
   ModelTypeSet changed_types_;
 };
 
-class P2PNotifier : public SyncNotifier,
-                    public notifier::PushClientObserver {
+class P2PInvalidator : public Invalidator,
+                       public notifier::PushClientObserver {
  public:
   // The |send_notification_target| parameter was added to allow us to send
   // self-notifications in some cases, but not others.  The value should be
   // either NOTIFY_ALL to send notifications to all clients, or NOTIFY_OTHERS
   // to send notifications to all clients except for the one that triggered the
   // notification.  See crbug.com/97780.
-  P2PNotifier(scoped_ptr<notifier::PushClient> push_client,
-              P2PNotificationTarget send_notification_target);
+  P2PInvalidator(scoped_ptr<notifier::PushClient> push_client,
+                 P2PNotificationTarget send_notification_target);
 
-  virtual ~P2PNotifier();
+  virtual ~P2PInvalidator();
 
-  // SyncNotifier implementation
-  virtual void RegisterHandler(SyncNotifierObserver* handler) OVERRIDE;
-  virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
+  // Invalidator implementation
+  virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(SyncNotifierObserver* handler) OVERRIDE;
+  virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
@@ -121,7 +121,7 @@ class P2PNotifier : public SyncNotifier,
 
   base::ThreadChecker thread_checker_;
 
-  SyncNotifierRegistrar registrar_;
+  InvalidatorRegistrar registrar_;
 
   // The push client.
   scoped_ptr<notifier::PushClient> push_client_;
@@ -134,8 +134,10 @@ class P2PNotifier : public SyncNotifier,
   P2PNotificationTarget send_notification_target_;
 
   ModelTypeSet enabled_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(P2PInvalidator);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_P2P_NOTIFIER_H_
+#endif  // SYNC_NOTIFIER_P2P_INVALIDATOR_H_
