@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/toolbar_search_animator_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "ui/base/animation/multi_animation.h"
 
@@ -24,8 +25,10 @@ const double kMaxOpacity = 1.0f;
 namespace chrome {
 namespace search {
 
-ToolbarSearchAnimator::ToolbarSearchAnimator(SearchModel* search_model)
+ToolbarSearchAnimator::ToolbarSearchAnimator(SearchModel* search_model,
+                                             ToolbarModel* toolbar_model)
     : search_model_(search_model),
+      toolbar_model_(toolbar_model),
       background_change_delay_ms_(kBackgroundChangeDelayMs),
       background_change_duration_ms_(kBackgroundChangeDurationMs),
       is_omnibox_popup_open_(false) {
@@ -46,12 +49,13 @@ double ToolbarSearchAnimator::GetGradientOpacity() const {
 
 bool ToolbarSearchAnimator::IsToolbarSeparatorVisible() const {
   // The toolbar separator is only visible in 2 scenarios:
-  // 1) when mode is |SEARCH_SUGGESTIONS| and the omnibox popup has finished
-  //    retracting before the navigation URL was committed, i.e. before the
-  //    mode was changed to |DEFAULT|.
+  // 1) when mode is |SEARCH_SUGGESTIONS|, user input is not in progress, and
+  //    the omnibox popup has finished retracting before the navigation URL was
+  //    committed, i.e. before the mode was changed to |DEFAULT|.
   // 2) when mode is |DEFAULT| and the omnibox popup has finished retracting.
   return !is_omnibox_popup_open_ &&
-      (search_model_->mode().mode == Mode::MODE_SEARCH_SUGGESTIONS ||
+      ((search_model_->mode().mode == Mode::MODE_SEARCH_SUGGESTIONS &&
+        !toolbar_model_->input_in_progress()) ||
        search_model_->mode().is_default());
 }
 

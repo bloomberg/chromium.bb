@@ -12,6 +12,7 @@
 #include "ui/base/animation/animation_delegate.h"
 
 class TabContents;
+class ToolbarModel;
 
 namespace ui {
 class MultiAnimation;
@@ -30,7 +31,7 @@ class ToolbarSearchAnimatorObserver;
 class ToolbarSearchAnimator : public SearchModelObserver,
                               public ui::AnimationDelegate {
  public:
-  explicit ToolbarSearchAnimator(SearchModel* search_model);
+  ToolbarSearchAnimator(SearchModel* search_model, ToolbarModel* toolbar_model);
   virtual ~ToolbarSearchAnimator();
 
   // Get the gradient background opacity to paint for toolbar and active tab, a
@@ -86,6 +87,9 @@ class ToolbarSearchAnimator : public SearchModelObserver,
 
   // Weak.  Owned by Browser.  Non-NULL.
   SearchModel* search_model_;
+
+  // Weak.  Owned by Browser.  Non-NULL.
+  ToolbarModel* toolbar_model_;
 
   // The background change animation.
   scoped_ptr<ui::MultiAnimation> background_animation_;

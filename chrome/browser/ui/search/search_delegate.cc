@@ -12,10 +12,11 @@
 namespace chrome {
 namespace search {
 
-SearchDelegate::SearchDelegate(SearchModel* browser_model)
-    : browser_model_(browser_model),
+SearchDelegate::SearchDelegate(SearchModel* browser_search_model,
+                               ToolbarModel* toolbar_model)
+    : browser_model_(browser_search_model),
       tab_model_(NULL),
-      toolbar_search_animator_(browser_model) {
+      toolbar_search_animator_(browser_search_model, toolbar_model) {
 }
 
 SearchDelegate::~SearchDelegate() {

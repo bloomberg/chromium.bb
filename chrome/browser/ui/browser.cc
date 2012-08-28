@@ -386,7 +386,8 @@ Browser::Browser(const CreateParams& params)
   toolbar_model_.reset(new ToolbarModel(toolbar_model_delegate_.get()));
   search_model_.reset(new chrome::search::SearchModel(NULL));
   search_delegate_.reset(
-      new chrome::search::SearchDelegate(search_model_.get()));
+      new chrome::search::SearchDelegate(search_model_.get(),
+                                         toolbar_model_.get()));
 
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  content::NotificationService::AllSources());
