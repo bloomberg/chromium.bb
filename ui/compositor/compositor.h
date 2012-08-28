@@ -242,11 +242,7 @@ class COMPOSITOR_EXPORT Compositor
 
   gfx::AcceleratedWidget widget_;
   scoped_ptr<WebKit::WebLayer> root_web_layer_;
-#if defined(WEBLAYERTREEVIEW_IS_PURE_VIRTUAL)
   scoped_ptr<WebKit::WebLayerTreeView> host_;
-#else
-  WebKit::WebLayerTreeView host_;
-#endif
 
   // This is set to true when the swap buffers has been posted and we're waiting
   // for completion.
