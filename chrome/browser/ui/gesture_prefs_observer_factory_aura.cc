@@ -113,6 +113,9 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_max_touch_move_in_pixels_for_click(
       prefs_->GetDouble(
           prefs::kMaxTouchMoveInPixelsForClick));
+  GestureConfiguration::set_max_distance_between_taps_for_double_tap(
+      prefs_->GetDouble(
+          prefs::kMaxDistanceBetweenTapsForDoubleTap));
   GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(
       prefs_->GetDouble(
           prefs::kMinDistanceForPinchScrollInPixels));
@@ -199,6 +202,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(
       prefs::kMaxTouchMoveInPixelsForClick,
       GestureConfiguration::max_touch_move_in_pixels_for_click(),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kMaxDistanceBetweenTapsForDoubleTap,
+      GestureConfiguration::max_distance_between_taps_for_double_tap(),
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinDistanceForPinchScrollInPixels,

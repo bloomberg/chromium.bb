@@ -155,8 +155,10 @@ bool GesturePoint::IsInsideManhattanSquare(const TouchEvent& event) const {
 
 bool GesturePoint::IsSecondClickInsideManhattanSquare(
     const TouchEvent& event) const {
-  return ui::gestures::IsInsideManhattanSquare(event.location(),
-                                               last_tap_position_);
+  int manhattan_distance = abs(event.location().x() - last_tap_position_.x()) +
+                           abs(event.location().y() - last_tap_position_.y());
+  return manhattan_distance <
+      GestureConfiguration::max_distance_between_taps_for_double_tap();
 }
 
 bool GesturePoint::IsOverMinFlickSpeed() {

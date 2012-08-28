@@ -29,7 +29,7 @@ var gesture_config = (function() {
       key: 'semi_long_press_time_in_seconds',
       label: 'Semi Long Press Time',
       units: 'seconds',
-      default: 0.5
+      default: 0.4
     },
     {
       key: 'max_seconds_between_double_click',
@@ -60,6 +60,12 @@ var gesture_config = (function() {
     {
       key: 'max_touch_move_in_pixels_for_click',
       label: 'Maximum Touch-Move for Click',
+      units: 'pixels',
+      default: 5
+    },
+    {
+      key: 'max_distance_between_taps_for_double_tap',
+      label: 'Maximum Distance between two taps for Double Tap',
       units: 'pixels',
       default: 20
     },

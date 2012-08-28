@@ -532,7 +532,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->long_press());
 
      delegate->Reset();
-     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(377, 291),
+     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(367, 291),
                                 kTouchId, press.time_stamp() +
                                 base::TimeDelta::FromMilliseconds(50));
      release.set_radius_x(20);
@@ -550,9 +550,9 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
 
      EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(46, delegate->bounding_box().width());
+     EXPECT_EQ(40, delegate->bounding_box().width());
      EXPECT_EQ(40, delegate->bounding_box().height());
-     EXPECT_EQ(373, actual_point.x());
+     EXPECT_EQ(366, actual_point.x());
      EXPECT_EQ(290, actual_point.y());
   }
 
@@ -574,7 +574,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->long_press());
 
      delegate->Reset();
-     ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(52, 200),
+     ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(49, 204),
                              kTouchId, press.time_stamp() +
                              base::TimeDelta::FromMilliseconds(50));
      move.set_radius_x(8);
@@ -590,7 +590,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->long_press());
 
      delegate->Reset();
-     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(50, 195),
+     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(49, 204),
                                 kTouchId, press.time_stamp() +
                                 base::TimeDelta::FromMilliseconds(50));
      release.set_radius_x(4);
@@ -608,10 +608,10 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
 
      EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(28, delegate->bounding_box().width());
-     EXPECT_EQ(28, delegate->bounding_box().height());
-     EXPECT_EQ(49, actual_point.x());
-     EXPECT_EQ(200, actual_point.y());
+     EXPECT_EQ(25, delegate->bounding_box().width());
+     EXPECT_EQ(24, delegate->bounding_box().height());
+     EXPECT_EQ(48, actual_point.x());
+     EXPECT_EQ(203, actual_point.y());
   }
 
   // Test with a few ET_TOUCH_MOVED events.
@@ -632,7 +632,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->long_press());
 
      delegate->Reset();
-     ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(397, 155),
+     ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(397, 151),
                              kTouchId, press.time_stamp() +
                              base::TimeDelta::FromMilliseconds(50));
      move.set_radius_x(13);
@@ -648,7 +648,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->long_press());
 
      delegate->Reset();
-     ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(395, 148),
+     ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(397, 149),
                               kTouchId, move.time_stamp() +
                               base::TimeDelta::FromMilliseconds(50));
      move1.set_radius_x(16);
@@ -698,10 +698,10 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
 
      EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
-     EXPECT_EQ(35, delegate->bounding_box().width());
-     EXPECT_EQ(36, delegate->bounding_box().height());
-     EXPECT_EQ(396, actual_point.x());
-     EXPECT_EQ(149, actual_point.y());
+     EXPECT_EQ(33, delegate->bounding_box().width());
+     EXPECT_EQ(32, delegate->bounding_box().height());
+     EXPECT_EQ(397, actual_point.x());
+     EXPECT_EQ(148, actual_point.y());
   }
 }
 

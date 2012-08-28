@@ -73,6 +73,12 @@ class UI_EXPORT GestureConfiguration {
   static void set_max_touch_move_in_pixels_for_click(double val) {
     max_touch_move_in_pixels_for_click_ = val;
   }
+  static double max_distance_between_taps_for_double_tap() {
+    return max_distance_between_taps_for_double_tap_;
+  }
+  static void set_max_distance_between_taps_for_double_tap(double val) {
+    max_distance_between_taps_for_double_tap_ = val;
+  }
   static double min_distance_for_pinch_scroll_in_pixels() {
     return min_distance_for_pinch_scroll_in_pixels_;
   }
@@ -165,6 +171,7 @@ class UI_EXPORT GestureConfiguration {
   static double max_swipe_deviation_ratio_;
   static double max_touch_down_duration_in_seconds_for_click_;
   static double max_touch_move_in_pixels_for_click_;
+  static double max_distance_between_taps_for_double_tap_;
   static double min_distance_for_pinch_scroll_in_pixels_;
   static double min_flick_speed_squared_;
   static double min_pinch_update_distance_in_pixels_;

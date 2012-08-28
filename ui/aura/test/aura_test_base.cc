@@ -25,14 +25,15 @@ void AuraTestBase::SetUp() {
   // tests to fail, so we use a separate set of parameters for unit
   // testing.
   ui::GestureConfiguration::set_long_press_time_in_seconds(1.0);
-  ui::GestureConfiguration::set_semi_long_press_time_in_seconds(0.5);
+  ui::GestureConfiguration::set_semi_long_press_time_in_seconds(0.4);
   ui::GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(300);
   ui::GestureConfiguration::set_max_seconds_between_double_click(0.7);
   ui::GestureConfiguration::
       set_max_separation_for_gesture_touches_in_pixels(150);
   ui::GestureConfiguration::
       set_max_touch_down_duration_in_seconds_for_click(0.8);
-  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(20);
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(5);
+  ui::GestureConfiguration::set_max_distance_between_taps_for_double_tap(20);
   ui::GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(20);
   ui::GestureConfiguration::set_min_flick_speed_squared(550.f * 550.f);
   ui::GestureConfiguration::set_min_pinch_update_distance_in_pixels(5);

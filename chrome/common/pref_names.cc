@@ -1946,6 +1946,8 @@ const char kPinnedLauncherApps[] =
 
 const char kLongPressTimeInSeconds[] =
     "gesture.long_press_time_in_seconds";
+const char kMaxDistanceBetweenTapsForDoubleTap[] =
+    "gesture.max_distance_between_taps_for_double_tap";
 const char kMaxDistanceForTwoFingerTapInPixels[] =
     "gesture.max_distance_for_two_finger_tap_in_pixels";
 const char kMaxSecondsBetweenDoubleClick[] =
