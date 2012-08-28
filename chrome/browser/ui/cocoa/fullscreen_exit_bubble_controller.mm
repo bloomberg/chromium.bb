@@ -212,15 +212,25 @@ const float kHideDuration = 0.7;
   exitLabelPlaceholder_ = nil;  // Now released.
   [exitLabel_.get() setDelegate:self];
 
-  NSString* exitLinkText = l10n_util::GetNSString(IDS_EXIT_FULLSCREEN_MODE);
-  NSString* acceleratorText = [@" " stringByAppendingString:
-      l10n_util::GetNSStringF(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
-                              l10n_util::GetStringUTF16(IDS_APP_ESC_KEY))];
+  NSString* exitLinkText;
+  NSString* exitUnlinkedText;
+  if (bubbleType_ == FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION ||
+      bubbleType_ == FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION) {
+    exitLinkText = @"";
+    exitUnlinkedText = [@" " stringByAppendingString:
+        l10n_util::GetNSStringF(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT,
+                                l10n_util::GetStringUTF16(IDS_APP_ESC_KEY))];
+  } else {
+    exitLinkText = l10n_util::GetNSString(IDS_EXIT_FULLSCREEN_MODE);
+    exitUnlinkedText = [@" " stringByAppendingString:
+        l10n_util::GetNSStringF(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
+                                l10n_util::GetStringUTF16(IDS_APP_ESC_KEY))];
+  }
 
   NSFont* font = [NSFont systemFontOfSize:
       [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
   [(HyperlinkTextView*)exitLabel_.get()
-        setMessageAndLink:acceleratorText
+        setMessageAndLink:exitUnlinkedText
                  withLink:exitLinkText
                  atOffset:0
                      font:font
