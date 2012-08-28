@@ -22,7 +22,7 @@ class SamplesDataSource(object):
     Requests.
     """
     def __init__(self,
-                 branch,
+                 channel,
                  file_system,
                  github_file_system,
                  cache_factory,
@@ -30,7 +30,7 @@ class SamplesDataSource(object):
                  samples_path):
       self._file_system = file_system
       self._github_file_system = github_file_system
-      self._static_path = ((('/' + branch) if branch != 'local' else '') +
+      self._static_path = ((('/' + channel) if channel != 'local' else '') +
                            '/static')
       self._extensions_cache = cache_factory.Create(self._MakeSamplesList,
                                                     compiled_fs.EXTENSIONS)

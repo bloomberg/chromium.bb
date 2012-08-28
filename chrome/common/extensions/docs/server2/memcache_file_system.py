@@ -7,11 +7,17 @@ from future import Future
 import object_store
 
 class _AsyncUncachedFuture(object):
-  def __init__(self, uncached, current_result, file_system, object_store):
+  def __init__(self,
+               uncached,
+               current_result,
+               file_system,
+               object_store,
+               namespace):
     self._uncached = uncached
     self._current_result = current_result
     self._file_system = file_system
     self._object_store = object_store
+    self._namespace = namespace
 
   def Get(self):
     mapping = {}
@@ -20,7 +26,7 @@ class _AsyncUncachedFuture(object):
       version = self._file_system.Stat(item).version
       mapping[item] = (new_items[item], version)
       self._current_result[item] = new_items[item]
-    self._object_store.SetMulti(mapping, object_store.FILE_SYSTEM_READ, time=0)
+    self._object_store.SetMulti(mapping, self._namespace, time=0)
     return self._current_result
 
 class MemcacheFileSystem(FileSystem):
@@ -67,9 +73,10 @@ class MemcacheFileSystem(FileSystem):
     """
     result = {}
     uncached = []
-    results = self._object_store.GetMulti(paths,
-                                          object_store.FILE_SYSTEM_READ,
-                                          time=0).Get()
+    namespace = object_store.FILE_SYSTEM_READ
+    if binary:
+      namespace = '%s.binary' % namespace
+    results = self._object_store.GetMulti(paths, namespace, time=0).Get()
     result_values = [x[1] for x in sorted(results.iteritems())]
     stats = self._object_store.GetMulti(paths,
                                         object_store.FILE_SYSTEM_STAT).Get()
@@ -85,7 +92,6 @@ class MemcacheFileSystem(FileSystem):
       if stat is None:
         stat = self.Stat(path).version
       if stat != version:
-        self._object_store.Delete(path, object_store.FILE_SYSTEM_READ)
         uncached.append(path)
         continue
       result[path] = data
@@ -96,4 +102,5 @@ class MemcacheFileSystem(FileSystem):
         self._file_system.Read(uncached, binary=binary),
         result,
         self,
-        self._object_store))
+        self._object_store,
+        namespace))

@@ -93,7 +93,7 @@ def _GetInstanceForBranch(channel_name, local_path):
       cache_factory,
       [INTRO_PATH, ARTICLE_PATH])
   samples_data_source_factory = SamplesDataSource.Factory(
-      branch,
+      channel_name,
       file_system,
       GITHUB_FILE_SYSTEM,
       cache_factory,
@@ -113,8 +113,7 @@ def _GetInstanceForBranch(channel_name, local_path):
       PRIVATE_TEMPLATE_PATH)
   example_zipper = ExampleZipper(file_system,
                                  cache_factory,
-                                 DOCS_PATH,
-                                 EXAMPLES_PATH)
+                                 DOCS_PATH)
   SERVER_INSTANCES[branch] = ServerInstance(
       template_data_source_factory,
       example_zipper,

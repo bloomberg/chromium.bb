@@ -12,12 +12,11 @@ import compiled_file_system as compiled_fs
 class ExampleZipper(object):
   """This class creates a zip file given a samples directory.
   """
-  def __init__(self, file_system, cache_factory, base_path, match_path):
+  def __init__(self, file_system, cache_factory, base_path):
     self._base_path = base_path
     self._zip_cache = cache_factory.Create(self._MakeZipFile,
                                            compiled_fs.ZIP)
     self._file_system = file_system
-    self._match_path = match_path
 
   def _MakeZipFile(self, files):
     zip_path = os.path.commonprefix(files).rsplit('/', 1)[-2]
