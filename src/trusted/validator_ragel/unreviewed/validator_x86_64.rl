@@ -77,17 +77,18 @@
 
   # Special %rbp modifications without required sandboxing
   rbp_modifications =
-    ((0x48 | 0x4a) 0x89 0xe5)               | # mov %rsp,%rbp
-    ((0x48 | 0x4a) 0x8b 0xec)               # | mov %rsp,%rbp
-    #(0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rbp
-    #(0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rbp
+    (b_0100_10x0 0x89 0xe5)                        | # mov %rsp,%rbp
+    (b_0100_10x0 0x8b 0xec)                        # | mov %rsp,%rbp
+    #(b_0100_1xx0 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rbp
+    #(b_0100_1xx0 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rbp
     @process_0_operands;
 
   # Special instructions used for %rbp sandboxing
   rbp_sandboxing =
-    (0x4c 0x01 0xfd            | # add %r15,%rbp
-     0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
-     0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
+    (b_0100_11x0 0x01 0xfd            | # add %r15,%rbp
+     b_0100_10x1 0x03 0xef            | # add %r15,%rbp
+     0x49 0x8d 0x2c 0x2f              | # lea (%r15,%rbp,1),%rbp
+     0x4a 0x8d 0x6c 0x3d 0x00)          # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register == REG_RBP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -98,16 +99,17 @@
 
   # Special %rbp modifications without required sandboxing
   rsp_modifications =
-    ((0x48 | 0x4a) 0x89 0xec)              | # mov %rbp,%rsp
-    ((0x48 | 0x4a) 0x8b 0xe5)              | # mov %rbp,%rsp
-    (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
-    (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
+    (b_0100_10x0 0x89 0xec)                       | # mov %rbp,%rsp
+    (b_0100_10x0 0x8b 0xe5)                       | # mov %rbp,%rsp
+    (b_0100_1xx0 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
+    (b_0100_1xx0 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @process_0_operands;
 
   # Special instructions used for %rbp sandboxing
   rsp_sandboxing =
-    (0x4c 0x01 0xfc       | # add %r15,%rsp
-     0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
+    (b_0100_11x0 0x01 0xfc            | # add %r15,%rsp
+     b_0100_10x1 0x03 0xe7            | # add %r15,%rbp
+     0x4a 0x8d 0x24 0x3c)               # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register == REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
@@ -116,102 +118,8 @@
        BitmapClearBit(valid_targets, (instruction_start - data));
     };
 
-  # naclcall - old version (is not used by contemporary toolchain)
-  # Note: first "and $~0x1f, %eXX" is normal instruction and as such will detect
-  # case where %rbp/%rsp is illegally modified.
-  old_naclcall_or_nacljmp =
-
-     # and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
-    ((0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
-     # lea (%r15,%rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi),
-     #   %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     0x49 0x8d (0x04|0x0c|0x14|0x1c|0x24|0x2c|0x34|0x3c)
-         (0x07|0x0f|0x17|0x1f|0x27|0x2f|0x37|0x3f)
-     # callq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     ((REX_WRX? 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6|0xd7)) |
-     # jmpq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-      (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7)))) |
-
-     # and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
-     (0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
-     # lea (%r15,%rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi),
-     #   %r8/%r9/%r10/%r11/%r12/%r13/%r14
-     0x4d 0x8d (0x04|0x0c|0x14|0x1c|0x24|0x2c|0x34)
-         (0x07|0x0f|0x17|0x1f|0x27|0x2f|0x37|0x3f)
-     # callq %r8/%r9/%r10/%r11/%r12/%r13/%r14
-     ((b_0100_xxx1 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6)) |
-     # jmpq %r8/%r9/%r10/%r11/%r12/%r13/%r14
-      ((REX_WRXB - REX_WRX) 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6)))))
-     @{
-       instruction_start -= 7;
-       if (((instruction_start[1] & 0x07) !=
-                                        ((instruction_start[6] & 0x38) >> 3)) ||
-            (((instruction_start[5] & 0x38) >> 3) !=
-                                                    (*current_position & 0x07)))
-         instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
-       BitmapClearBit(valid_targets, (instruction_start - data) + 3);
-       BitmapClearBit(valid_targets, (instruction_start - data) + 7);
-       restricted_register = NO_REG;
-     } |
-
-     # rex.R?X? and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
-    ((REX_RX 0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
-     # lea (%r15,%rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi),
-     #   %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     0x49 0x8d (0x04|0x0c|0x14|0x1c|0x24|0x2c|0x34|0x3c)
-         (0x07|0x0f|0x17|0x1f|0x27|0x2f|0x37|0x3f)
-     # callq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     ((REX_WRX? 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6|0xd7)) |
-     # jmpq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-      (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7)))) |
-
-     # rex.R?X?B and $~0x1f, %r8d/r9d/r10d/r11d/r12d/r13d/14d
-     (b_0100_0xx1 0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6) 0xe0
-     # lea (%r15,%r8/%r9/%r10/%r11/%r12/%r13/%r14),
-     #   %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     0x4b 0x8d (0x04|0x0c|0x14|0x1c|0x24|0x2c|0x34|0x3c)
-         (0x07|0x0f|0x17|0x1f|0x27|0x2f|0x37)
-     # callq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     ((REX_WRX? 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6|0xd7)) |
-     # jmpq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-      (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7))))
-
-     # and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
-     (REX_RX 0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
-     # lea (%r15,%rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi),
-     #   %r8/%r9/%r10/%r11/%r12/%r13/%r14
-     0x4d 0x8d (0x04|0x0c|0x14|0x1c|0x24|0x2c|0x34)
-         (0x07|0x0f|0x17|0x1f|0x27|0x2f|0x37|0x3f)
-     # callq %r8/%r9/%r10/%r11/%r12/%r13/%r14
-     ((b_0100_xxx1 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6)) |
-     # jmpq %r8/%r9/%r10/%r11/%r12/%r13/%r14
-      (b_0100_xxx1 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6)))) |
-
-     # rex.R?X?B and $~0x1f, %r8d/r9d/r10d/r11d/r12d/r13d/14d
-     ((REX_RXB - REX_RX) 0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6) 0xe0
-     # lea (%r15,%r8/%r9/%r10/%r11/%r12/%r13/%r14),
-     #   %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
-     0x4f 0x8d (0x04|0x0c|0x14|0x1c|0x24|0x2c|0x34|0x3c)
-         (0x07|0x0f|0x17|0x1f|0x27|0x2f|0x37)
-     # callq %r8/%r9/%r10/%r11/%r12/%r13/%r14
-     ((b_0100_xxx1 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6)) |
-     # callq %r8/%r9/%r10/%r11/%r12/%r13/%r14
-      (b_0100_xxx1 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6)))))
-     @{
-       instruction_start -= 8;
-       if (((instruction_start[2] & 0x07) !=
-                                        ((instruction_start[7] & 0x38) >> 3)) ||
-            (((instruction_start[6] & 0x38) >> 3) !=
-                                                    (*current_position & 0x07)))
-         instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
-       BitmapClearBit(valid_targets, (instruction_start - data) + 4);
-       BitmapClearBit(valid_targets, (instruction_start - data) + 8);
-       restricted_register = NO_REG;
-     };
-
-  # naclcall or nacljmp - this the form used by contemporary toolchain
-  # Note: first "and $~0x1f, %eXX" is normal instruction and as such will detect
-  # case where %rbp/%rsp is illegally modified.
+  # naclcall or nacljmp.  Note: first "and $~0x1f, %eXX" is a normal instruction
+  # and as such will detect case where %rbp/%rsp is illegally modified.
   naclcall_or_nacljmp =
      # and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
      (0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
@@ -224,6 +132,25 @@
      @{
        instruction_start -= 6;
        if (((instruction_start[1] & 0x07) != (instruction_start[5] & 0x07)) ||
+           ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
+         instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 3);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 6);
+       restricted_register = NO_REG;
+     } |
+
+     # and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
+     (0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
+     # add %r15,%rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
+      b_0100_10x1 0x03 (0xc7|0xcf|0xd7|0xdf|0xe7|0xef|0xf7|0xff)
+     # callq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
+     ((REX_WRX? 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6|0xd7)) |
+     # jmpq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
+      (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7))))
+     @{
+       instruction_start -= 6;
+       if (((instruction_start[1] & 0x07) !=
+                                        ((instruction_start[5] & 0x38) >> 3)) ||
            ((instruction_start[1] & 0x07) != (*current_position & 0x07)))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -251,6 +178,34 @@
      @{
        instruction_start -= 7;
        if (((instruction_start[2] & 0x07) != (instruction_start[6] & 0x07)) ||
+           ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
+         instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 4);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 7);
+       restricted_register = NO_REG;
+     } |
+
+     # rex.R?X? and $~0x1f, %eax/%ecx/%edx/%ebx/%esp/%ebp/%esi/%edi
+    ((REX_RX 0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7) 0xe0
+     # add %r15,%rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
+      b_0100_10x1 0x03 (0xc7|0xcf|0xd7|0xdf|0xe7|0xef|0xf7|0xff)
+     # callq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
+      ((REX_WRX? 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6|0xd7)) |
+     # jmpq %rax/%rcx/%rdx/%rbx/%rsp/%rbp/%rsi/%rdi
+      (REX_WRX? 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6|0xe7)))) |
+
+     # and $~0x1f, %r8d/%r9d/%r10d/%r11d/%r12d/%r13d/%r14d
+     (b_0100_0xx1 0x83 (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6) 0xe0
+     # add %r15, %r8d/%r9d/%r10d/%r11d/%r12d/%r13d/%r14d
+      b_0100_11x1 0x03 (0xc7|0xcf|0xd7|0xdf|0xe7|0xef|0xf7)
+     # callq %r8/%r9/%r10/%r11/%r12/%r13/%r14
+     ((b_0100_xxx1 0xff (0xd0|0xd1|0xd2|0xd3|0xd4|0xd5|0xd6)) |
+     # jmpq %r8/%r9/%r10/%r11/%r12/%r13/%r14
+      (b_0100_xxx1 0xff (0xe0|0xe1|0xe2|0xe3|0xe4|0xe5|0xe6)))))
+     @{
+       instruction_start -= 7;
+       if (((instruction_start[2] & 0x07) !=
+                                        ((instruction_start[6] & 0x38) >> 3)) ||
            ((instruction_start[2] & 0x07) != (*current_position & 0x07)))
          instruction_info_collected |= UNRECOGNIZED_INSTRUCTION;
        BitmapClearBit(valid_targets, (instruction_start - data) + 4);
@@ -337,7 +292,6 @@
      rsp_modifications |
      rbp_sandboxing |
      rsp_sandboxing |
-     old_naclcall_or_nacljmp |
      naclcall_or_nacljmp |
      sandbox_string_instructions_rsi_no_rdi |
      sandbox_string_instructions_rdi_no_rsi |
