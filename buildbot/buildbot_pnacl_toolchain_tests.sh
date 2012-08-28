@@ -22,14 +22,14 @@ set -o errexit
 
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=9103
+ARCHIVED_PEXE_TRANSLATOR_REV=9326
 
 # The frontend from this rev will generate pexes for the archived frontend
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=8851
-ARCHIVED_TOOLCHAIN_HASH=c002ed9127700b33a6920bbbdbf3e9920ab2f899
+ARCHIVED_TOOLCHAIN_REV=9575
+ARCHIVED_TOOLCHAIN_HASH=0e7dba42b0c792a5d40f5293f56d1e7268ee4ab7
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
