@@ -7,15 +7,6 @@ import tempfile # for gio_test
 
 Import('env')
 
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): there should be a better way to generalize this requirement.
-crt = []
-if env.AllBits('windows', 'debug'):
-  for i in ['.', '${STAGING_DIR}']:
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                         'x86/Microsoft.VC80.DebugCRT')
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 
 env.DualLibrary('gio',
                 ['gio.c',
@@ -35,7 +26,6 @@ if not env.CrossToolsBuild():
       'gio_mem_test',
       ['gio_mem_test.cc'],
       EXTRA_LIBS=['gio', 'gio_test'])
-  gtest_env.Requires(gio_mem_test_exe, crt)
 
   node = gtest_env.CommandTest(
       'gio_mem_test_output.xml.out',
@@ -47,7 +37,6 @@ if not env.CrossToolsBuild():
       'gio_test',
       ['gio_test.cc'],
       EXTRA_LIBS=['gio', 'platform', 'gio_test'])
-  gtest_env.Requires(gio_test_exe, crt)
 
   # temp file will be removed by gio_test (if it compiles and test completes).
   temppath = tempfile.NamedTemporaryFile(prefix="gio", suffix=".tmp").name
@@ -68,7 +57,6 @@ if not env.CrossToolsBuild():
       'gio_pio_test',
       ['gio_pio_test.cc'],
       EXTRA_LIBS=['gio', 'platform', 'gio_test'])
-  gtest_env.Requires(gio_test_exe, crt)
 
   # temp file will be removed by gio_pio_test (if it compiles and completes).
   temppath = tempfile.NamedTemporaryFile(prefix="gio_pio", suffix=".tmp").name

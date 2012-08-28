@@ -16,15 +16,6 @@ env.Append(CPPPATH=['${TARGET_ROOT}/gen'])
 #  env.FilterOut(CCFLAGS=['-pedantic'])
 #  env.FilterOut(CCFLAGS=['-Wall'])
 
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): there should be a better way to generalize this requirement.
-crt = []
-if env.AllBits('windows', 'debug'):
-  for i in ['.', '${STAGING_DIR}']:
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                         'x86/Microsoft.VC80.DebugCRT')
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 if env.Bit('windows'):
   syscall_impl = 'win/nacl_syscall_impl.c'
 else:
@@ -350,7 +341,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                      'nacl_fault_inject',
                                      'platform',
                                      ])
-  env.Requires(SEL_LDR_NODE, crt)
 
   env.SDKInstallBin('sel_ldr', SEL_LDR_NODE)
 
@@ -492,7 +482,6 @@ if (not env.CrossToolsBuild() and
                   'platform',
                   'sel_test',
                   ])
-  gtest_env.Requires(unit_tests_exe, crt)
 
   node = gtest_env.CommandTest(
       'gtest_output.xml.out',
@@ -509,7 +498,6 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
                   'env_cleanser',
                   'nacl_perf_counter',
                   ])
-  env.Requires(format_string_test_exe, crt)
 
   node = env.CommandTest(
       'format_string_test.out',
@@ -550,7 +538,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'platform',
                   'sel_test',
                   ])
-  env.Requires(mmap_test_exe, crt)
 
   mmap_test_file = env.File(arch_testdata_dir + '/hello_world.nexe')
   mmap_test_command = env.AddBootstrap(mmap_test_exe, [mmap_test_file])
@@ -600,7 +587,6 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'nacl_interval',
                 'platform',
                 ])
-env.Requires(nacl_sync_cond_test_exe, crt)
 node = env.CommandTest(
     'nacl_sync_cond_test.out',
     command=[nacl_sync_cond_test_exe])
@@ -618,7 +604,6 @@ env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
 node = env.CommandTest(
     'env_cleanser_test.out',
     command=[env_cleanser_test_exe])
-env.Requires(env_cleanser_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_env_cleanser_test')
 
 # Test nacl_resource
@@ -629,7 +614,6 @@ nacl_resource_test_exe = env.ComponentProgram('nacl_resource_test',
 node = env.CommandTest(
     'nacl_resource_test.out',
     command=[nacl_resource_test_exe])
-env.Requires(nacl_resource_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_resource_test')
 
 # Test nacl_signal
@@ -645,7 +629,6 @@ if env.Bit('posix'):
                            exit_status='trusted_sigsegv_or_equivalent',
                            using_nacl_signal_handler=True)
 
-    env.Requires(nacl_signal_exe, crt)
     env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
 
   test_prog = env.ComponentProgram('nacl_signal_frame_test',
@@ -699,7 +682,6 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
 node = env.CommandTest(
     'check_test.out',
     command=[check_test_exe, '-C'])
-env.Requires(check_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 

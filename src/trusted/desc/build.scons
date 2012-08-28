@@ -99,13 +99,6 @@ node = env.CommandTest('nacl_desc_quota_test.out',
                                 ])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_desc_quota_test')
 
-# TODO(robertm): is this still needed?
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): this really should be avoided if possible.
-crt = env.Replicate('.', '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                    'x86/Microsoft.VC80.DebugCRT')
-crt += env.Replicate('.', '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 # TODO: add comment
 if env.Bit('windows'):
   env.Append(LIBS = [ 'ws2_32', 'advapi32' ])

@@ -14,15 +14,6 @@ Import('env')
 # TODO(robertm): consider adding this to the top level scons files
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): there should be a better way to generalize this requirement.
-crt = []
-if env.AllBits('windows', 'debug'):
-  for i in ['.', '${STAGING_DIR}']:
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                         'x86/Microsoft.VC80.DebugCRT')
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 env.DualLibrary('gio_wrapped_desc',
                 ['gio_shm.c',
                  'gio_shm_unbounded.c',
@@ -52,7 +43,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
   node = env.CommandTest(
       'gio_shm_test.out',
       command=[gio_shm_test_exe] + params)
-  env.Requires(gio_shm_test_exe, crt)
   env.AddNodeToTestSuite(node, ['large_tests'], 'run_gio_shm_test')
 
   gio_shm_unbounded_test_exe = (
@@ -69,7 +59,6 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
   node = env.CommandTest(
       'gio_shm_unbounded_test.out',
       command=[gio_shm_unbounded_test_exe,])
-  env.Requires(gio_shm_unbounded_test_exe, crt)
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test')
 

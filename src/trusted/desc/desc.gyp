@@ -256,31 +256,3 @@
     },
   ],
 }
-
-# TODO:
-# Currently, this is only defined for x86, so only compile if x86.
-#if env['TARGET_ARCHITECTURE'] != 'x86':
-#  Return()
-#
-#if env.Bit('linux'):
-#   env_no_strict_aliasing.Append(CCFLAGS = ['-fno-strict-aliasing'])
-#
-## TODO(robertm): is this still needed?
-## Make a copy of debug CRT for now.
-## TODO(bradnelson): this really should be avoided if possible.
-#crt = env.Replicate('.', '$VC80_DIR/vc/redist/Debug_NonRedist/'
-#                    'x86/Microsoft.VC80.DebugCRT')
-#crt += env.Replicate('.', '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-#
-#if env['TARGET_PLATFORM'] == 'WINDOWS':
-#  env.Append(LIBS = [ 'ws2_32', 'advapi32' ])
-#
-#env.ComponentProgram('nrd_xfer_test', 'nrd_xfer_test.c',
-#                     EXTRA_LIBS=['sel',
-#                                 'nrd_xfer',
-#                                 'nonnacl_srpc',
-#                                 'ncvalidate',
-#                                 'imc',
-#                                 'platform',
-#                                 'gio'])
-#

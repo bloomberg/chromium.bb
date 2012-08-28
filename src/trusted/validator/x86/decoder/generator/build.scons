@@ -18,16 +18,6 @@ if not env.Bit('target_x86'): Return()
 # ------------------------------------------------------
 # General adjustments to the environment for builds.
 
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): there should be a better way to generalize this requirement.
-# NOTE: debug builds on windows break without this
-crt = []
-if env.AllBits('windows', 'debug'):
-  for i in ['.', '$STAGING_DIR']:
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                         'x86/Microsoft.VC80.DebugCRT')
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 # Defines which test sets tests should be added to.
 STANDARD_TESTS = ['small_tests', 'validator_tests']
 
@@ -181,7 +171,6 @@ ncdecode_tablegen = gen_env.ComponentProgram(
     EXTRA_LIBS=[gen_env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),
                 'utils'])
 
-gen_env.Requires(ncdecode_tablegen, crt)
 
 # ------------------------------------------------------
 #  Source generation step 2: Generate decoder tables.

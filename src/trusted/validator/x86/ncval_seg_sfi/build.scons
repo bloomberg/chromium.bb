@@ -15,16 +15,6 @@ Import('env')
 #
 if not env.Bit('target_x86'): Return()
 
-# Make a copy of debug CRT for now.
-# TODO(bradnelson): there should be a better way to generalize this requirement.
-# NOTE: debug builds on windows break without this
-crt = []
-if env.AllBits('windows', 'debug'):
-  for i in ['.', '$STAGING_DIR']:
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
-                         'x86/Microsoft.VC80.DebugCRT')
-    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
-
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 

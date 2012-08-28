@@ -2176,26 +2176,6 @@ def MakeWindowsEnv():
 (windows_debug_env,
  windows_optimized_env) = GenerateOptimizationLevels(MakeWindowsEnv())
 
-# TODO(bradnelson): This does not quite work yet (c.f.
-# service_runtime/build.scons)
-# move some debug info close to the binaries where the debugger can find it
-# This only matter when we the "wrong" version of VisualStudio is used
-n = windows_debug_env.Command('dummy', [], 'echo INSTALL WINDOWS DEBUG DATA')
-windows_debug_env.Alias('windows_debug_data_install', n)
-
-n = windows_debug_env.Replicate(
-    '${STAGING_DIR}',
-    '${VC80_DIR}/vc/redist/Debug_NonRedist/x86/Microsoft.VC80.DebugCRT')
-
-windows_debug_env.Alias('windows_debug_data_install', n)
-
-n = windows_debug_env.Replicate(
-    '${STAGING_DIR}',
-    '${VC80_DIR}/vc/redist/x86/Microsoft.VC80.CRT')
-
-windows_debug_env.Alias('windows_debug_data_install', n)
-
-
 def MakeUnixLikeEnv():
   unix_like_env = MakeBaseTrustedEnv()
   # -Wdeclaration-after-statement is desirable because MS studio does
