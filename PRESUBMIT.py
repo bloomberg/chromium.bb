@@ -587,7 +587,7 @@ def GetPreferredTrySlaves(project, change):
     return ['android']
 
   trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile',
-             'android']
+             'linux_chromeos', 'android']
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for ash and chromeos.
