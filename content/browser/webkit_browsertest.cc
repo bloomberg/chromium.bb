@@ -55,4 +55,25 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 
+// This is a browser test because DumpRenderTree has a PrerendererClient
+// implementation, and the purpose of this test is to ensure that content_shell
+// does not crash when prerender elements are encountered with no Prererering
+// implementation supplied to WebKit.
+
+// TODO(gavinp,jochen): This browser_test depends on there not being a
+// prerendering client and prerendering platform provided by the test_shell.
+// But both will exist when we use content_shell to run layout tests. We must
+// then add a mechanism to start content_shell without these, or else this
+// test is not very interesting.
+const char kPrerenderNoCrashPage[] =
+    "files/prerender/prerender-no-crash.html";
+IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, PrerenderNoCrash) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL(kPrerenderNoCrashPage);
+
+  NavigateToURL(shell(), url);
+
+  EXPECT_FALSE(shell()->web_contents()->IsCrashed());
+}
+
 }  // namespace content
