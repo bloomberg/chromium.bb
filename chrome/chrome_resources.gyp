@@ -293,9 +293,6 @@
         {
           'includes': ['chrome_repack_chrome_touch_100_percent.gypi']
         },
-        {
-          'includes': ['chrome_repack_chrome_touch_200_percent.gypi']
-        },
       ],
       'conditions': [
         ['OS != "mac"', {
@@ -364,16 +361,6 @@
                   'destination': '<(PRODUCT_DIR)',
                   'files': [
                     '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_touch_100_percent.pak',
-                  ],
-                },
-              ],
-            }],
-            ['enable_hidpi == 1 and enable_touch_ui==1', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)',
-                  'files': [
-                    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_touch_200_percent.pak',
                   ],
                 },
               ],

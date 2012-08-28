@@ -12,7 +12,6 @@
     <output filename="ui_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="ui_resources_200_percent.pak" type="data_package" context="default_200_percent" />
     <output filename="ui_resources_touch_100_percent.pak" type="data_package" context="touch_100_percent" />
-    <output filename="ui_resources_touch_200_percent.pak" type="data_package" context="touch_200_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">

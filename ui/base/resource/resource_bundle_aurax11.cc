@@ -42,13 +42,6 @@ void ResourceBundle::LoadCommonResources() {
     AddDataPackFromPath(GetResourcesPakFilePath(
                         "chrome_touch_100_percent.pak"),
                         SCALE_FACTOR_100P);
-
-    // 2x touch
-    // TODO(flackr): Don't log an error message if these are not found as this
-    // is an expected case in ChromeOS.
-    AddDataPackFromPath(GetResourcesPakFilePath(
-                        "chrome_touch_200_percent.pak"),
-                        SCALE_FACTOR_200P);
   } else {
     // 1x non touch
     AddDataPackFromPath(GetResourcesPakFilePath(

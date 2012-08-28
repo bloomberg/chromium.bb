@@ -28,7 +28,6 @@ def _CommonChecks(input_api, output_api):
   # that the images modified in one are the correct scale of the other.
   path_scales = [
     [(1, 'default_100_percent/'), (2, 'default_200_percent/')],
-    [(1, 'touch_100_percent/'), (2, 'touch_200_percent/')],
   ]
 
   import sys
