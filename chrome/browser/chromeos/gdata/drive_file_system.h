@@ -511,7 +511,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Callback for DriveServiceInterface::DeleteDocument. Removes the entry with
   // |resource_id| from the local snapshot of the filesystem and the cache.
-  // |document_url| is unused. |callback| may be null.
+  // |document_url| is unused. |callback| must not be null.
   void RemoveResourceLocally(const FileOperationCallback& callback,
                              const std::string& resource_id,
                              GDataErrorCode status,
@@ -797,6 +797,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Part of RemoveOnUIThread(). Called after GetEntryInfoByPath() is
   // complete.
+  // |callback| must not be null.
   void RemoveOnUIThreadAfterGetEntryInfo(
       const FileOperationCallback& callback,
       DriveFileError error,

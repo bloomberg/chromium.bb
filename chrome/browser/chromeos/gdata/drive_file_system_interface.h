@@ -227,6 +227,7 @@ class DriveFileSystemInterface {
   // TODO(satorux): is_recursive is not supported yet. crbug.com/138282
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void Remove(const FilePath& file_path,
                       bool is_recursive,
                       const FileOperationCallback& callback) = 0;

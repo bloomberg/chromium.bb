@@ -1212,6 +1212,8 @@ void DriveFileSystem::Remove(const FilePath& file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&DriveFileSystem::RemoveOnUIThread,
                                ui_weak_ptr_,
                                file_path,
@@ -1222,6 +1224,7 @@ void DriveFileSystem::RemoveOnUIThread(
     const FilePath& file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // Get the edit URL of an entry at |file_path|.
   resource_metadata_->GetEntryInfoByPath(
@@ -1237,16 +1240,20 @@ void DriveFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null()) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE, base::Bind(callback, error));
-    }
+    callback.Run(error);
+    return;
+  }
+  DCHECK(entry_proto.get());
+
+  // The edit URL can be empty for some reason.
+  if (entry_proto->edit_url().empty()) {
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
-  DCHECK(entry_proto.get());
   drive_service_->DeleteDocument(
       GURL(entry_proto->edit_url()),
       base::Bind(&DriveFileSystem::RemoveResourceLocally,
@@ -2416,11 +2423,11 @@ void DriveFileSystem::RemoveResourceLocally(
     GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
+    callback.Run(error);
     return;
   }
 
