@@ -9,7 +9,8 @@
         "comment": "'Google Talk Plugin' and 'Google Talk Plugin Video Accelerator' use two completely different versioning schemes, so we can't define a minimum version."
       }
     ],
-    "name": "Google Talk"
+    "name": "Google Talk",
+    "group_name_matcher": "Google Talk"
   },
   "java-runtime-environment": {
     "mime_types": [
@@ -65,7 +66,8 @@
     "name": "Java(TM)",
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
     "url": "http://java.com/download",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Java"
   },
   "adobe-flash-player": {
     "mime_types": [
@@ -83,6 +85,63 @@
     "name": "Adobe Flash Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Shockwave Flash"
+  },
+  "redhat-icetea-java": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "1.8.13",
+        "status": "requires_authorization",
+        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
+      },
+      {
+        "version": "1.9",
+        "status": "out_of_date"
+      },
+      {
+        "version": "1.9.13",
+        "status": "requires_authorization",
+        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
+      },
+      {
+        "version": "1.10",
+        "status": "out_of_date"
+      },
+      {
+        "version": "1.10.6",
+        "status": "requires_authorization",
+        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
+      },
+      {
+        "version": "2",
+        "status": "out_of_date"
+      },
+      {
+        "version": "2.0.1",
+        "status": "requires_authorization",
+        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
+      }
+    ],
+    "lang": "en-US",
+    "name": "IcedTea",
+    "url": "http://icedtea.classpath.org/",
+    "displayurl": true,
+    "group_name_matcher": "IcedTea"
+  },
+  "google-chrome-pdf": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "up_to_date",
+        "comment": "Google Chrome PDF has no version information."
+      }
+    ],
+    "name": "Chrome PDF Viewer",
+    "group_name_matcher": "Chrome PDF Viewer"
   }
 }

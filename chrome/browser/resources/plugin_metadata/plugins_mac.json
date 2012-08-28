@@ -9,7 +9,8 @@
         "comment": "'Google Talk Plugin' and 'Google Talk Plugin Video Accelerator' use two completely different versioning schemes, so we can't define a minimum version."
       }
     ],
-    "name": "Google Talk"
+    "name": "Google Talk",
+    "group_name_matcher": "Google Talk"
   },
   "java-runtime-environment": {
     "mime_types": [
@@ -74,7 +75,8 @@
     "name": "Java(TM)",
     "url": "http://java.com/en/download/apple_manual.jsp",
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Java"
   },
   "realplayer": {
     "mime_types": [
@@ -93,7 +95,8 @@
     "lang": "en-US",
     "name": "RealPlayer",
     "url": "http://director.real.com/realplayer?type=rpsp_mac",
-    "help_url": "https://support.google.com/chrome/?p=plugin_real"
+    "help_url": "https://support.google.com/chrome/?p=plugin_real",
+    "group_name_matcher": "RealPlayer"
   },
   "adobe-flash-player": {
     "mime_types": [
@@ -111,7 +114,8 @@
     "name": "Adobe Flash Player",
     "url": "http://get.adobe.com/flashplayer/",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Shockwave Flash"
   },
   "adobe-shockwave": {
     "mime_types": [
@@ -127,7 +131,8 @@
     "lang": "en-US",
     "name": "Adobe Shockwave Player",
     "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/macosx/latest/Shockwave_Installer_Full_64bit.dmg",
-    "help_url": "https://support.google.com/chrome/?p=plugin_shockwave"
+    "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
+    "group_name_matcher": "Shockwave for Director"
   },
   "apple-quicktime": {
     "mime_types": [
@@ -191,7 +196,8 @@
     "name": "QuickTime Player",
     "url": "http://www.apple.com/quicktime/download/",
     "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "QuickTime Plug-in"
   },
   "flip4mac": {
     "mime_types": [
@@ -216,7 +222,8 @@
     "name": "Flip4Mac",
     "url": "http://www.microsoft.com/download/en/confirmation.aspx?id=9442",
     "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Flip4Mac"
   },
   "divx-player": {
     "mime_types": [
@@ -232,7 +239,8 @@
     "lang": "en-US",
     "name": "DivX Web Player",
     "url": "http://www.divx.com/en/downloads/divx/mac",
-    "help_url": "https://support.google.com/chrome/?p=plugin_divx"
+    "help_url": "https://support.google.com/chrome/?p=plugin_divx",
+    "group_name_matcher": "DivX Plus Web Player"
   },
   "silverlight": {
     "mime_types": [
@@ -249,6 +257,20 @@
     "lang": "en-US",
     "name": "Silverlight",
     "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Silverlight"
+  },
+  "google-chrome-pdf": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "up_to_date",
+        "comment": "Chrome PDF Viewer has no version information."
+      }
+    ],
+    "name": "Chrome PDF Viewer",
+    "group_name_matcher": "Chrome PDF Viewer"
   }
 }

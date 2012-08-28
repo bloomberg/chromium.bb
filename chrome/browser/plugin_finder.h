@@ -10,9 +10,11 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace base {
 class DictionaryValue;
@@ -34,6 +36,9 @@ class PluginFinder {
   // Returns the plug-in with the given identifier.
   PluginInstaller* FindPluginWithIdentifier(const std::string& identifier);
 
+  // Gets a plug-in installer using |plugin|.
+  PluginInstaller* GetPluginInstaller(const webkit::WebPluginInfo& plugin);
+
  private:
   friend struct DefaultSingletonTraits<PluginFinder>;
   friend class Singleton<PluginFinder>;
@@ -54,6 +59,11 @@ class PluginFinder {
 
   scoped_ptr<base::DictionaryValue> plugin_list_;
   std::map<std::string, PluginInstaller*> installers_;
+
+  // Note: Don't free memory for |name_insallers_| values
+  // since it holds pointers to same instances
+  // in |installers_| (Double De-allocation).
+  base::hash_map<string16, PluginInstaller*> name_installers_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginFinder);
 };

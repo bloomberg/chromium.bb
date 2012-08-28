@@ -44,7 +44,8 @@ class PluginInstaller : public content::DownloadItem::Observer {
                   const string16& name,
                   bool url_for_display,
                   const GURL& plugin_url,
-                  const GURL& help_url);
+                  const GURL& help_url,
+                  const string16& group_name_matcher);
   virtual ~PluginInstaller();
 
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
@@ -61,6 +62,9 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
   // Human-readable name of the plug-in.
   const string16& name() const { return name_; }
+
+  // Checks if the plug-in matches the group matcher.
+  bool MatchesPlugin(const webkit::WebPluginInfo& plugin);
 
   // If |url_for_display| is false, |plugin_url| is the URL of the download page
   // for the plug-in, which should be opened in a new tab. If it is true,
@@ -108,6 +112,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
 
   std::string identifier_;
   string16 name_;
+  string16 group_name_matcher_;
   bool url_for_display_;
   GURL plugin_url_;
   GURL help_url_;

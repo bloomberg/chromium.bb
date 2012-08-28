@@ -9,7 +9,8 @@
         "comment": "'Google Talk Plugin' and 'Google Talk Plugin Video Accelerator' use two completely different versioning schemes, so we can't define a minimum version."
       }
     ],
-    "name": "Google Talk"
+    "name": "Google Talk",
+    "group_name_matcher": "Google Talk"
   },
   "java-runtime-environment": {
     "mime_types": [
@@ -70,7 +71,8 @@
     "name": "Java(TM)",
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
     "url": "http://java.com/download",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Java"
   },
   "realplayer": {
     "mime_types": [
@@ -89,7 +91,8 @@
     "lang": "en-US",
     "name": "RealPlayer",
     "help_url": "https://support.google.com/chrome/?p=plugin_real",
-    "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us"
+    "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us",
+    "group_name_matcher": "RealPlayer"
   },
   "adobe-flash-player": {
     "mime_types": [
@@ -107,7 +110,8 @@
     "name": "Adobe Flash Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Shockwave Flash"
   },
   "adobe-shockwave": {
     "mime_types": [
@@ -123,7 +127,8 @@
     "lang": "en-US",
     "name": "Adobe Shockwave Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
-    "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe"
+    "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe",
+    "group_name_matcher": "Shockwave for Director"
   },
   "adobe-reader": {
     "mime_types": [
@@ -153,7 +158,8 @@
     "lang": "en-US",
     "name": "Adobe Reader",
     "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
-    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.4/en_US/AdbeRdr1014_en_US.exe"
+    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.4/en_US/AdbeRdr1014_en_US.exe",
+    "group_name_matcher": "Adobe Acrobat"
   },
   "apple-quicktime": {
     "mime_types": [
@@ -216,7 +222,8 @@
     "lang": "en-US",
     "name": "QuickTime Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
-    "url": "http://appldnld.apple.com/QuickTime/041-3089.20111026.Sxpr4/QuickTimeInstaller.exe"
+    "url": "http://appldnld.apple.com/QuickTime/041-3089.20111026.Sxpr4/QuickTimeInstaller.exe",
+    "group_name_matcher": "QuickTime Plug-in"
   },
   "windows-media-player": {
     "mime_types": [
@@ -235,7 +242,8 @@
     "name": "Windows Media Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
     "url": "http://www.interoperabilitybridges.com/wmp-extension-for-chrome",
-    "displayurl": true
+    "displayurl": true,
+    "group_name_matcher": "Windows Media Player"
   },
   "divx-player": {
     "mime_types": [
@@ -251,7 +259,8 @@
     "lang": "en-US",
     "name": "DivX Web Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_divx",
-    "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe"
+    "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe",
+    "group_name_matcher": "DivX Web Player"
   },
   "silverlight": {
     "mime_types": [
@@ -267,6 +276,46 @@
     ],
     "lang": "en-US",
     "name": "Silverlight",
-    "url": "http://go.microsoft.com/fwlink/?LinkID=149156"
+    "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
+    "group_name_matcher": "Silverlight"
+  },
+  "microsoft-office": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "requires_authorization",
+        "comment": "Microsoft Office has no version information."
+      }
+    ],
+    "name": "Microsoft Office",
+    "group_name_matcher": "Microsoft Office"
+  },
+  "nvidia-3d": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "requires_authorization",
+        "comment": "NVidia 3D has no version information."
+      }
+    ],
+    "name": "NVIDIA 3D",
+    "group_name_matcher": "NVIDIA 3D"
+  },
+  "google-chrome-pdf": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "up_to_date",
+        "comment": "Chrome PDF Viewer has no version information."
+      }
+    ],
+    "name": "Chrome PDF Viewer",
+    "group_name_matcher": "Chrome PDF Viewer"
   }
 }

@@ -8,6 +8,8 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugin_installer.h"
@@ -20,6 +22,33 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using base::DictionaryValue;
+
+namespace {
+
+// Gets the base name of the file path as the identifier.
+static std::string GetIdentifier(const webkit::WebPluginInfo& plugin) {
+#if defined(OS_POSIX)
+  return plugin.path.BaseName().value();
+#elif defined(OS_WIN)
+  return base::SysWideToUTF8(plugin.path.BaseName().value());
+#endif
+}
+
+// Gets the plug-in group name as the plug-in name if it is not empty or
+// the filename without extension if the name is empty.
+static string16 GetGroupName(const webkit::WebPluginInfo& plugin) {
+  if (!plugin.name.empty())
+    return plugin.name;
+
+  FilePath::StringType path = plugin.path.BaseName().RemoveExtension().value();
+#if defined(OS_POSIX)
+  return UTF8ToUTF16(path);
+#elif defined(OS_WIN)
+  return WideToUTF16(path);
+#endif
+}
+
+}  // namespace
 
 // static
 void PluginFinder::Get(const base::Callback<void(PluginFinder*)>& cb) {
@@ -129,12 +158,16 @@ PluginInstaller* PluginFinder::CreateInstaller(
   DCHECK(success);
   bool display_url = false;
   plugin_dict->GetBoolean("displayurl", &display_url);
+  string16 group_name_matcher;
+  success = plugin_dict->GetString("group_name_matcher", &group_name_matcher);
+  DCHECK(success);
 
   PluginInstaller* installer = new PluginInstaller(identifier,
                                                    name,
                                                    display_url,
                                                    GURL(url),
-                                                   GURL(help_url));
+                                                   GURL(help_url),
+                                                   group_name_matcher);
   const ListValue* versions = NULL;
   if (plugin_dict->GetList("versions", &versions)) {
     for (ListValue::const_iterator it = versions->begin();
@@ -159,5 +192,38 @@ PluginInstaller* PluginFinder::CreateInstaller(
   }
 
   installers_[identifier] = installer;
+  return installer;
+}
+
+PluginInstaller* PluginFinder::GetPluginInstaller(
+    const webkit::WebPluginInfo& plugin) {
+  if (name_installers_.find(plugin.name) != name_installers_.end())
+    return name_installers_[plugin.name];
+
+  for (DictionaryValue::Iterator plugin_it(*plugin_list_);
+       plugin_it.HasNext(); plugin_it.Advance()) {
+    // This method triggers the lazy initialization for all PluginInstallers.
+    FindPluginWithIdentifier(plugin_it.key());
+  }
+
+  // Use the group name matcher to find the plug-in installer we want.
+  for (std::map<std::string, PluginInstaller*>::const_iterator it =
+      installers_.begin(); it != installers_.end(); ++it) {
+    if (!it->second->MatchesPlugin(plugin))
+      continue;
+
+    name_installers_[plugin.name] = it->second;
+    return it->second;
+  }
+
+  // The plug-in installer was not found, create a dummy one holding
+  // the name, identifier and group name only.
+  std::string identifier = GetIdentifier(plugin);
+  PluginInstaller* installer = new PluginInstaller(identifier,
+                                                   GetGroupName(plugin),
+                                                   false, GURL(), GURL(),
+                                                   GetGroupName(plugin));
+  installers_[identifier] = installer;
+  name_installers_[plugin.name] = installer;
   return installer;
 }

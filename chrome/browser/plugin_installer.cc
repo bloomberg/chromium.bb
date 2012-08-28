@@ -72,9 +72,11 @@ PluginInstaller::PluginInstaller(const std::string& identifier,
                                  const string16& name,
                                  bool url_for_display,
                                  const GURL& plugin_url,
-                                 const GURL& help_url)
+                                 const GURL& help_url,
+                                 const string16& group_name_matcher)
     : identifier_(identifier),
       name_(name),
+      group_name_matcher_(group_name_matcher),
       url_for_display_(url_for_display),
       plugin_url_(plugin_url),
       help_url_(help_url),
@@ -249,4 +251,8 @@ void PluginInstaller::DownloadCancelled() {
   DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
   state_ = INSTALLER_STATE_IDLE;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadCancelled());
+}
+
+bool PluginInstaller::MatchesPlugin(const webkit::WebPluginInfo& plugin) {
+  return plugin.name.find(group_name_matcher_) != string16::npos;
 }
