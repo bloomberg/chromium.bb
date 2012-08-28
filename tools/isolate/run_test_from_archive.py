@@ -26,6 +26,13 @@ import urllib
 # Types of action accepted by recreate_tree().
 HARDLINK, SYMLINK, COPY = range(1, 4)
 
+RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
+
+
+class ConfigError(ValueError):
+  """Generic failure to load a manifest."""
+  pass
+
 
 class MappingError(OSError):
   """Failed to recreate the tree."""
@@ -170,6 +177,62 @@ def make_temp_dir(prefix, root_dir):
   if not is_same_filesystem(root_dir, tempfile.gettempdir()):
     base_temp_dir = os.path.dirname(root_dir)
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
+
+
+def load_manifest(content):
+  """Verifies the manifest is valid and loads this object with the json data.
+  """
+  data = json.loads(content)
+  if not isinstance(data, dict):
+    raise ConfigError('Expected dict, got %r' % data)
+
+  for key, value in data.iteritems():
+    if key == 'command':
+      if not isinstance(value, list):
+        raise ConfigError('Expected list, got %r' % value)
+      for subvalue in value:
+        if not isinstance(subvalue, basestring):
+          raise ConfigError('Expected string, got %r' % subvalue)
+
+    elif key == 'files':
+      if not isinstance(value, dict):
+        raise ConfigError('Expected dict, got %r' % value)
+      for subkey, subvalue in value.iteritems():
+        if not isinstance(subkey, basestring):
+          raise ConfigError('Expected string, got %r' % subkey)
+        if not isinstance(subvalue, dict):
+          raise ConfigError('Expected dict, got %r' % subvalue)
+        for subsubkey, subsubvalue in subvalue.iteritems():
+          if subsubkey == 'link':
+            if not isinstance(subsubvalue, basestring):
+              raise ConfigError('Expected string, got %r' % subsubvalue)
+          elif subsubkey == 'mode':
+            if not isinstance(subsubvalue, int):
+              raise ConfigError('Expected int, got %r' % subsubvalue)
+          elif subsubkey == 'sha-1':
+            if not RE_IS_SHA1.match(subsubvalue):
+              raise ConfigError('Expected sha-1, got %r' % subsubvalue)
+          elif subsubkey == 'timestamp':
+            if not isinstance(subsubvalue, int):
+              raise ConfigError('Expected int, got %r' % subsubvalue)
+          else:
+            raise ConfigError('Unknown key %s' % subsubkey)
+        if bool('sha-1' in subvalue) and bool('link' in subvalue):
+          raise ConfigError(
+              'Did not expect both \'sha-1\' and \'link\', got: %r' % subvalue)
+
+    elif key == 'read_only':
+      if not isinstance(value, bool):
+        raise ConfigError('Expected bool, got %r' % value)
+
+    elif key == 'relative_cwd':
+      if not isinstance(value, basestring):
+        raise ConfigError('Expected string, got %r' % value)
+
+    else:
+      raise ConfigError('Unknown key %s' % subkey)
+
+  return data
 
 
 def fix_python_path(cmd):
@@ -394,7 +457,7 @@ def run_tha_test(manifest, cache_dir, remote, policies):
             # A symlink.
             os.symlink(properties['link'], outfile)
           else:
-            raise ValueError('Unexpected entry: %s' % properties)
+            raise ConfigError('Unexpected entry: %s' % properties)
           if 'mode' in properties:
             # It's not set on Windows.
             os.chmod(outfile, properties['mode'])
@@ -483,7 +546,7 @@ def main():
     # First calculate the reference to it.
     options.manifest = '%s/%s' % (options.remote.rstrip('/'), options.hash)
   try:
-    manifest = json.load(open_remote(options.manifest))
+    manifest = load_manifest(open_remote(options.manifest).read())
   except IOError as e:
     parser.error(
         'Failed to read manifest %s; remote:%s; hash:%s; %s' %
@@ -497,7 +560,7 @@ def main():
         os.path.abspath(options.cache),
         options.remote,
         policies)
-  except MappingError, e:
+  except (ConfigError, MappingError), e:
     print >> sys.stderr, str(e)
     return 1
 
