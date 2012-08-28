@@ -77,10 +77,6 @@
       '<(PRODUCT_DIR)/test_data/chrome/',
       'test/data/extensions/api_test/accessibility/',
     ],
-    'isolate_dependency_touched': [
-      '../third_party/pyftpdlib/src/pyftpdlib/__init__.py',
-      'test/data/title2.html',
-    ],
   },
   'conditions': [
     ['OS=="linux"', {
@@ -114,6 +110,7 @@
           '<(PRODUCT_DIR)/DumpRenderTree<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/chrome<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
@@ -910,8 +907,6 @@
           'test/data/viewsource/',
         ],
         'isolate_dependency_touched': [
-          '<(PRODUCT_DIR)/DumpRenderTree<(EXECUTABLE_SUFFIX)',
-          '<(PRODUCT_DIR)/libppapi_tests.so',
           '<(PRODUCT_DIR)/plugins/libTestNetscapePlugIn.so',
           '<(PRODUCT_DIR)/plugins/libnpapi_test_plugin.so',
         ],
@@ -934,6 +929,9 @@
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
           '<(PRODUCT_DIR)/Chromium.app/',
           'test/data/extensions/api_test/bookmark_manager/standard/',
+        ],
+        'isolate_dependency_touched': [
+          'test/data/title2.html',
         ],
       },
     }, {
@@ -1668,7 +1666,6 @@
           'test/data/extensions/api_test/window_update/show_state/',
         ],
         'isolate_dependency_touched': [
-          '../third_party/python_26/Lib/email/mime/__init__.py',
           'test/data/download-test3.gif',
           'test/data/empty.html',
           'test/data/extensions/api_test/window_update/focus/blank.html',
