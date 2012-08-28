@@ -46,6 +46,18 @@ DomStorageContext::DomStorageContext(
 }
 
 DomStorageContext::~DomStorageContext() {
+  if (session_storage_database_.get()) {
+    // SessionStorageDatabase shouldn't be deleted right away: deleting it will
+    // potentially involve waiting in leveldb::DBImpl::~DBImpl, and waiting
+    // shouldn't happen on this thread. This will unassign the ref counted
+    // pointer without decreasing the ref count, and is balanced by the Release
+    // that happens later.
+    task_runner_->PostShutdownBlockingTask(
+        FROM_HERE,
+        DomStorageTaskRunner::COMMIT_SEQUENCE,
+        base::Bind(&SessionStorageDatabase::Release,
+                   base::Unretained(session_storage_database_.release())));
+  }
 }
 
 DomStorageNamespace* DomStorageContext::GetStorageNamespace(
