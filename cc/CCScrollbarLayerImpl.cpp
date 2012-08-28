@@ -41,12 +41,12 @@ CCScrollbarLayerImpl::CCScrollbarLayerImpl(int id)
 {
 }
 
-void CCScrollbarLayerImpl::setScrollbarGeometry(PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry)
+void CCScrollbarLayerImpl::setScrollbarGeometry(PassOwnPtr<CCScrollbarGeometryFixedThumb> geometry)
 {
     m_geometry = geometry;
 }
 
-void CCScrollbarLayerImpl::setScrollbarData(const WebScrollbar* scrollbar)
+void CCScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)
 {
     m_scrollbarOverlayStyle = scrollbar->scrollbarOverlayStyle();
     m_orientation = scrollbar->orientation();
@@ -60,6 +60,8 @@ void CCScrollbarLayerImpl::setScrollbarData(const WebScrollbar* scrollbar)
     m_isOverlayScrollbar = scrollbar->isOverlay();
 
     scrollbar->getTickmarks(m_tickmarks);
+
+    m_geometry->update(scrollbar);
 }
 
 static FloatRect toUVRect(const WebRect& r, const IntRect& bounds)
