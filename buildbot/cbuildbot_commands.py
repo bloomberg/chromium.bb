@@ -1187,11 +1187,12 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
   return archive_name
 
 
-def BuildFactoryZip(buildroot, archive_dir, image_root):
+def BuildFactoryZip(buildroot, board, archive_dir, image_root):
   """Build factory_image.zip in archive_dir.
 
   Args:
     buildroot: Root directory where build occurs.
+    board: Board name of build target.
     archive_dir: Directory to store image.zip.
     image_root: Directory containing factory_shim and factory_test symlinks.
 
@@ -1235,6 +1236,16 @@ def BuildFactoryZip(buildroot, archive_dir, image_root):
 
   for exclude in excludes_list:
     cmd.extend(['--exclude', exclude])
+
+  # Everything in /usr/local/factory/bundle gets overlaid into the
+  # bundle.
+  bundle_src_dir = os.path.join(
+      buildroot, 'chroot', 'build', board, 'usr', 'local', 'factory', 'bundle')
+  if os.path.exists(bundle_src_dir):
+    for f in os.listdir(bundle_src_dir):
+      os.symlink(os.path.join(bundle_src_dir, f),
+                 os.path.join(temp_dir, f))
+      cmd.extend(['--include', os.path.join(f, '*')])
 
   cros_build_lib.RunCommandCaptureOutput(cmd, cwd=temp_dir)
   shutil.rmtree(temp_dir)
