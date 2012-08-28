@@ -203,7 +203,8 @@ class EnterResourceNoLock : public EnterResource<ResourceT, false> {
   EnterResourceNoLock(PP_Resource resource, bool report_error)
       : EnterResource<ResourceT, false>(resource, report_error) {
   }
-  EnterResourceNoLock(PP_Resource resource, PP_CompletionCallback callback,
+  EnterResourceNoLock(PP_Resource resource,
+                      const PP_CompletionCallback& callback,
                       bool report_error)
       : EnterResource<ResourceT, false>(resource, callback, report_error) {
   }
