@@ -1063,6 +1063,9 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
+    ['chromeos==1', {
+      'includes': [ 'chrome_browser_chromeos.gypi' ],
+    }],  # chromeos==1
     ['OS=="android"',
       {
       'targets': [
