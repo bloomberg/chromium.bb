@@ -63,7 +63,7 @@ def get_flavor():
 def default_blacklist(f):
   """Filters unimportant files normally ignored."""
   return (
-      f.endswith(('.pyc', 'testserver.log')) or
+      f.endswith(('.pyc', '.run_test_cases', 'testserver.log')) or
       _GIT_PATH in f or
       _SVN_PATH in f or
       f in ('.git', '.svn'))
