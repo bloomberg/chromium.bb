@@ -197,6 +197,22 @@ class Profiler(object):
                  self.name, time_taken)
 
 
+class CachePolicies(object):
+  def __init__(self, max_cache_size, min_free_space, max_items):
+    """
+    Arguments:
+    - max_cache_size: Trim if the cache gets larger than this value. If 0, the
+                      cache is effectively a leak.
+    - min_free_space: Trim if disk free space becomes lower than this value. If
+                      0, it unconditionally fill the disk.
+    - max_items: Maximum number of items to keep in the cache. If 0, do not
+                 enforce a limit.
+    """
+    self.max_cache_size = max_cache_size
+    self.min_free_space = min_free_space
+    self.max_items = max_items
+
+
 class Cache(object):
   """Stateful LRU cache.
 
@@ -204,24 +220,17 @@ class Cache(object):
   """
   STATE_FILE = 'state.json'
 
-  def __init__(
-      self, cache_dir, remote, max_cache_size, min_free_space, max_items):
+  def __init__(self, cache_dir, remote, policies):
     """
     Arguments:
     - cache_dir: Directory where to place the cache.
     - remote: Remote directory (NFS, SMB, etc) or HTTP url to fetch the objects
               from
-    - max_cache_size: Trim if the cache gets larger than this value. If 0, the
-                      cache is effectively a leak.
-    - min_free_space: Trim if disk free space becomes lower than this value. If
-                      0, it unconditionally fill the disk.
-    - max_items: Maximum number of items to keep in the cache.
+    - policies: cache retention policies.
     """
     self.cache_dir = cache_dir
     self.remote = remote
-    self.max_cache_size = max_cache_size
-    self.min_free_space = min_free_space
-    self.max_items = max_items
+    self.policies = policies
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
     # The files are kept as an array in a LRU style. E.g. self.state[0] is the
     # oldest item.
@@ -298,13 +307,13 @@ class Cache(object):
 
     # Ensure enough free space.
     while (
-        self.min_free_space and
+        self.policies.min_free_space and
         self.state and
-        get_free_space(self.cache_dir) < self.min_free_space):
+        get_free_space(self.cache_dir) < self.policies.min_free_space):
       self.remove_lru_file()
 
     # Ensure maximum cache size.
-    if self.max_cache_size and self.state:
+    if self.policies.max_cache_size and self.state:
       try:
         sizes = [os.stat(self.path(f)).st_size for f in self.state]
       except OSError:
@@ -312,13 +321,13 @@ class Cache(object):
             'At least one file is missing; %s\n' % '\n'.join(self.state))
         raise
 
-      while sizes and sum(sizes) > self.max_cache_size:
+      while sizes and sum(sizes) > self.policies.max_cache_size:
         self.remove_lru_file()
         sizes.pop(0)
 
     # Ensure maximum number of items in the cache.
-    if self.max_items and self.state:
-      while len(self.state) > self.max_items:
+    if self.policies.max_items and self.state:
+      while len(self.state) > self.policies.max_items:
         self.remove_lru_file()
 
     self.save()
@@ -355,13 +364,11 @@ class Cache(object):
     json.dump(self.state, open(self.state_file, 'wb'), separators=(',',':'))
 
 
-def run_tha_test(
-    manifest, cache_dir, remote, max_cache_size, min_free_space, max_items):
+def run_tha_test(manifest, cache_dir, remote, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
   """
-  with Cache(
-      cache_dir, remote, max_cache_size, min_free_space, max_items) as cache:
+  with Cache(cache_dir, remote, policies) as cache:
     outdir = make_temp_dir('run_tha_test', cache_dir)
 
     if not 'files' in manifest:
@@ -482,9 +489,17 @@ def main():
         'Failed to read manifest %s; remote:%s; hash:%s; %s' %
         (options.manifest, options.remote, options.hash, str(e)))
 
-  return run_tha_test(
-      manifest, os.path.abspath(options.cache), options.remote,
+  policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
+  try:
+    return run_tha_test(
+        manifest,
+        os.path.abspath(options.cache),
+        options.remote,
+        policies)
+  except MappingError, e:
+    print >> sys.stderr, str(e)
+    return 1
 
 
 if __name__ == '__main__':
