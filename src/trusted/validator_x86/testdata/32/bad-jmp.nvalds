@@ -1,4 +1,4 @@
-VALIDATOR: 80000000: Doesn't jump to instruction address
+VALIDATOR: 0: Doesn't jump to instruction address
 *** <input> IS UNSAFE ***
 
 Opcode Histogram;

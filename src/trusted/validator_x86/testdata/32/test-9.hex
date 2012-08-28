@@ -1,4 +1,3 @@
 # test 9: seven byte control transfer, unprotected.
-@80000000
 ff 24 95 c8 6e 05 08
 90 90 90 90 90 90 f4

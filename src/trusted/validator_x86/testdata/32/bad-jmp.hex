@@ -1,3 +1,2 @@
 # Example of jumping to the middle of an instruction.
-@80000000
 7f ff f4

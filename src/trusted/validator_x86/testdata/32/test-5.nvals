@@ -1,5 +1,5 @@
-VALIDATOR: 805464b: JUMP TARGET out of range
-VALIDATOR: 80546eb: JUMP TARGET out of range
+VALIDATOR: 4b: JUMP TARGET out of range
+VALIDATOR: eb: JUMP TARGET out of range
 *** <input> IS UNSAFE ***
 
 Opcode Histogram;

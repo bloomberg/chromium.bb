@@ -1,5 +1,4 @@
 # Model a call to address one, aligned to the end of a 32-byte block.
-@202c0
 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90
 90 90 90 90 90 90 90 90 90 90 90
 e8 21 fd fd ff

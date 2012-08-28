@@ -1,5 +1,4 @@
 # test 1: a first very simple test with an illegal inst.
-@80000000
 55
 89 e5
 83 ec 08

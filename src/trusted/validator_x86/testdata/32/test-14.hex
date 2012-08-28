@@ -1,4 +1,3 @@
 # test 14: ldmxcsr, stmxcsr
-@80000000
 90 0f ae 10 90 0f ae 18
 90 90 90 90 90 90 f4

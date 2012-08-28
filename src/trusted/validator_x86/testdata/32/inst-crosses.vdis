@@ -1,8 +1,8 @@
- 80000000:	67 8d 1d            	lea %ebx, *NaClIllegal*
- 80000003:	22 a0 05 e3 7b 9c   	and %esp, 0x9c7be305[%eax]
- 80000009:	db 08               	fisttp
- 8000000b:	04 b1               	add %al, 0xffffffffffffffb1
- 8000000d:	90                  	nop
- 8000000e:	ed                  	in %eax, %dx
- 8000000f:	12 f4               	adc %esi, %esi
- 80000011:	f4                  	hlt
+ 0:	67 8d 1d            	lea %ebx, *NaClIllegal*
+ 3:	22 a0 05 e3 7b 9c   	and %esp, 0x9c7be305[%eax]
+ 9:	db 08               	fisttp
+ b:	04 b1               	add %al, 0xffffffffffffffb1
+ d:	90                  	nop
+ e:	ed                  	in %eax, %dx
+ f:	12 f4               	adc %esi, %esi
+ 11:	f4                  	hlt

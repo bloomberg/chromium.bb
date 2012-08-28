@@ -1,11 +1,11 @@
- 80000000:	90                  	nop
- 80000001:	0f ae 10            	ldmxcsr [%eax]
- 80000004:	90                  	nop
- 80000005:	0f ae 18            	stmxcsr [%eax]
- 80000008:	90                  	nop
- 80000009:	90                  	nop
- 8000000a:	90                  	nop
- 8000000b:	90                  	nop
- 8000000c:	90                  	nop
- 8000000d:	90                  	nop
- 8000000e:	f4                  	hlt
+ 0:	90                  	nop
+ 1:	0f ae 10            	ldmxcsr [%eax]
+ 4:	90                  	nop
+ 5:	0f ae 18            	stmxcsr [%eax]
+ 8:	90                  	nop
+ 9:	90                  	nop
+ a:	90                  	nop
+ b:	90                  	nop
+ c:	90                  	nop
+ d:	90                  	nop
+ e:	f4                  	hlt

@@ -1,6 +1,5 @@
 # Example of a relative address that jumps to before the code block, but is
 # still divisible by the block size.
-@20260
 90 90 90 90 90 90 90 90 90 90 90 90 90 90
 90 90 90 90 90 90 90 90 90 90 90 90 90
 e8 80 fd fd ff

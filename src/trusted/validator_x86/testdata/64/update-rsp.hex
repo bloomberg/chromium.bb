@@ -1,6 +1,5 @@
 # Sample of updating rps
 #   sub %esp, 0x8
 #   add %rsp, %r15
-@200c0
 83 ec 08
 4c 01 fc

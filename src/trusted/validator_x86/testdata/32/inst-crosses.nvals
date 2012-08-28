@@ -1,5 +1,5 @@
-VALIDATOR: 80000000: Bad prefix usage
-VALIDATOR: 8000000e: Illegal instruction
+VALIDATOR: 0: Bad prefix usage
+VALIDATOR: e: Illegal instruction
 *** <input> IS UNSAFE ***
 
 Opcode Histogram;

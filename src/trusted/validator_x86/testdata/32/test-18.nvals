@@ -1,4 +1,4 @@
-VALIDATOR: 80000007: Illegal instruction
+VALIDATOR: 7: Illegal instruction
 *** <input> IS UNSAFE ***
 
 Opcode Histogram;

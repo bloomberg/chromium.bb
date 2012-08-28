@@ -1,9 +1,9 @@
- 80000000:	90                  	nop
- 80000001:	0f ae 21            	invalid [%ecx]
- 80000004:	90                  	nop
- 80000005:	90                  	nop
- 80000006:	90                  	nop
- 80000007:	90                  	nop
- 80000008:	90                  	nop
- 80000009:	90                  	nop
- 8000000a:	f4                  	hlt
+ 0:	90                  	nop
+ 1:	0f ae 21            	invalid [%ecx]
+ 4:	90                  	nop
+ 5:	90                  	nop
+ 6:	90                  	nop
+ 7:	90                  	nop
+ 8:	90                  	nop
+ 9:	90                  	nop
+ a:	f4                  	hlt

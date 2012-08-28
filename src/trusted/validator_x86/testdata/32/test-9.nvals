@@ -1,4 +1,4 @@
-VALIDATOR: 80000000: Unsafe indirect jump
+VALIDATOR: 0: Unsafe indirect jump
 *** <input> IS UNSAFE ***
 
 Opcode Histogram;

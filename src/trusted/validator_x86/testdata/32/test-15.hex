@@ -1,4 +1,3 @@
 # test 15: invalid instruction
-@80000000
 90 0f ae 21
 90 90 90 90 90 90 f4

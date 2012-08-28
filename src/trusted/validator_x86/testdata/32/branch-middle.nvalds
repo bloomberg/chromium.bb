@@ -1,4 +1,4 @@
-VALIDATOR: 80000000: Jumps into middle of nacl pattern
+VALIDATOR: 0: Jumps into middle of nacl pattern
 *** <input> IS UNSAFE ***
 
 Opcode Histogram;

@@ -1,2 +1,2 @@
 # Test that we allow the ud2 instruction.
-0f0b
+0f 0b
