@@ -32,7 +32,7 @@
           '..',
         ],
         'target_conditions': [
-          ['>(nacl_untrusted_build)==1' or '>(nacl_win64_target)==1', {
+          ['>(nacl_untrusted_build)==1 or >(nacl_win64_target)==1', {
             'sources!': [
               'proxy/serialized_flash_menu.cc',
             ],

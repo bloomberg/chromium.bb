@@ -410,7 +410,7 @@
         },
       ],
     }],
-    ['disable_nacl!=1' and 'OS=="win"', {
+    ['disable_nacl!=1 and OS=="win"', {
       'targets': [
         {
           'target_name': 'gpu_ipc_win64',
