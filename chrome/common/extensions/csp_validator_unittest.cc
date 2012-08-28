@@ -91,6 +91,15 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' http://127.0.0.1.example.com"));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' http://localhost.example.com"));
+
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' blob:"));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' blob:http://example.com/XXX"));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' filesystem:"));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' filesystem:http://example.com/XXX"));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {

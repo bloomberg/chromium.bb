@@ -47,6 +47,8 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer) {
     if (source == "'self'" ||
         source == "'none'" ||
         source == "http://127.0.0.1" ||
+        LowerCaseEqualsASCII(source, "blob:") ||
+        LowerCaseEqualsASCII(source, "filesystem:") ||
         LowerCaseEqualsASCII(source, "http://localhost") ||
         StartsWithASCII(source, "http://127.0.0.1:", false) ||
         StartsWithASCII(source, "http://localhost:", false) ||
