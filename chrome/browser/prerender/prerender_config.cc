@@ -9,10 +9,13 @@ namespace prerender {
 Config::Config() : max_bytes(100 * 1024 * 1024),
                    max_concurrency(1),
                    rate_limit_enabled(true),
-                   max_age(base::TimeDelta::FromSeconds(30)),
+                   time_to_live(base::TimeDelta::FromSeconds(30)),
+                   abandon_time_to_live(base::TimeDelta::FromSeconds(30)),
                    https_allowed(true),
                    default_tab_bounds(640, 480),
                    is_overriding_user_agent(false) {
 }
+
+Config::~Config() { }
 
 }  // namespace prerender

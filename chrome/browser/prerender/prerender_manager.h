@@ -177,7 +177,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool ActuallyPrerendering();
   static bool IsControlGroup();
   static bool IsNoUseGroup();
-  static size_t GetMaxConcurrency();
 
   // Query the list of current prerender pages to see if the given web contents
   // is prerendering a page.
@@ -247,7 +246,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     explicit PrerenderData(PrerenderManager* manager);
 
     // Constructor for an active prerender.
-    PrerenderData(PrerenderManager* manager, PrerenderContents* contents);
+    PrerenderData(PrerenderManager* manager,
+                  PrerenderContents* contents,
+                  base::TimeTicks expiry_time);
 
     ~PrerenderData();
 
@@ -267,6 +268,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     PrerenderContents* contents() { return contents_; }
 
+    base::TimeTicks expiry_time() const { return expiry_time_; }
+
    private:
     friend class PrerenderManager;
 
@@ -279,6 +282,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     // pending prerenders, this will always be 1, since the PrerenderManager
     // only merges handles of running prerenders.
     int handle_count_;
+
+    // After this time, this prerender is no longer fresh, and should be
+    // removed.
+    base::TimeTicks expiry_time_;
 
     DISALLOW_COPY_AND_ASSIGN(PrerenderData);
   };
@@ -297,7 +304,17 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace);
 
+  // Called by a PrerenderData to self-destroy, but only when the PrerenderData
+  // is pending (as in not yet active). Should not be called except for
+  // objects known to be in |pending_prerender_list_|.
   void DestroyPendingPrerenderData(PrerenderData* pending_prerender_data);
+
+  // Called by a PrerenderData to signal that the launcher has navigated away
+  // from the context that launched the prerender. A user may have clicked
+  // a link in a page containing a <link rel=prerender> element, or the user
+  // might have committed an omnibox navigation. This is used to possibly
+  // shorten the TTL of the prerendered page.
+  void SourceNavigatedAway(PrerenderData* prerender_data);
 
   // Utility method that is called from the virtual Shutdown method on this
   // class but is called directly from the TestPrerenderManager in the unit
@@ -352,8 +369,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // automatically be cancelled.
   void PostCleanupTask();
 
-  base::TimeDelta GetMaxAge() const;
-  bool IsPrerenderFresh(base::TimeTicks start) const;
+  base::TimeTicks GetExpiryTimeForNewPrerender() const;
+  base::TimeTicks GetExpiryTimeForNavigatedAwayPrerender() const;
+
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
@@ -366,6 +384,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Deletes any PrerenderContents that have been added to the pending delete
   // list.
   void DeletePendingDeleteEntries();
+
+  // Adds a prerender data to the |active_prerender_list_|, keeping the list
+  // sorted by increasing expiry time.
+  void InsertActivePrerenderData(
+      linked_ptr<PrerenderData> linked_prerender_data);
 
   // Finds the active PrerenderData object for a running prerender matching
   // |url| and |session_storage_namespace|.

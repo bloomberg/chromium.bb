@@ -157,9 +157,9 @@ void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   }
 }
 
-void PrerenderHistograms::RecordConcurrency(size_t prerender_count) const {
+void PrerenderHistograms::RecordConcurrency(size_t prerender_count,
+                                            size_t max_concurrency) const {
   static const size_t kMaxRecordableConcurrency = 3;
-  const size_t max_concurrency = PrerenderManager::GetMaxConcurrency();
   DCHECK_GE(kMaxRecordableConcurrency, max_concurrency);
   if (max_concurrency > 1) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -334,14 +334,15 @@ bool PrerenderHistograms::WithinWindow() const {
 }
 
 void PrerenderHistograms::RecordTimeUntilUsed(
-    base::TimeDelta time_until_used, base::TimeDelta max_age) const {
+    base::TimeDelta time_until_used,
+    base::TimeDelta time_to_live) const {
   PREFIXED_HISTOGRAM(
       "TimeUntilUsed",
       UMA_HISTOGRAM_CUSTOM_TIMES(
           name,
           time_until_used,
           base::TimeDelta::FromMilliseconds(10),
-          max_age,
+          time_to_live,
           50));
 }
 

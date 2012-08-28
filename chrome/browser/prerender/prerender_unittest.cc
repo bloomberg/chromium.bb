@@ -80,7 +80,6 @@ class UnitTestPrerenderManager : public PrerenderManager {
  public:
   using PrerenderManager::kMinTimeBetweenPrerendersMs;
   using PrerenderManager::kNavigationRecordWindowMs;
-  using PrerenderManager::GetMaxAge;
 
   explicit UnitTestPrerenderManager(PrerenderTracker* prerender_tracker)
       : PrerenderManager(&profile_, prerender_tracker),
@@ -386,9 +385,83 @@ TEST_F(PrerenderTest, ExpireTest) {
   EXPECT_TRUE(AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  prerender_manager()->AdvanceTimeTicks(prerender_manager()->GetMaxAge() +
-                                        TimeDelta::FromSeconds(1));
+  prerender_manager()->AdvanceTimeTicks(
+      prerender_manager()->config().time_to_live + TimeDelta::FromSeconds(1));
   ASSERT_EQ(null, prerender_manager()->FindEntry(url));
+}
+
+// When the user navigates away from a page, the prerenders it launched should
+// have their time to expiry shortened from the default time to live.
+TEST_F(PrerenderTest, LinkManagerNavigateAwayExpire) {
+  const TimeDelta time_to_live = TimeDelta::FromSeconds(300);
+  const TimeDelta abandon_time_to_live = TimeDelta::FromSeconds(20);
+  const TimeDelta test_advance = TimeDelta::FromSeconds(22);
+  ASSERT_LT(test_advance, time_to_live);
+  ASSERT_LT(abandon_time_to_live, test_advance);
+
+  prerender_manager()->mutable_config().time_to_live = time_to_live;
+  prerender_manager()->mutable_config().abandon_time_to_live =
+      abandon_time_to_live;
+
+  GURL url("http://example.com");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(url,
+                                                       FINAL_STATUS_TIMED_OUT);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  EXPECT_FALSE(prerender_contents->prerendering_has_been_cancelled());
+  ASSERT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
+  prerender_link_manager()->OnAbandonPrerender(kDefaultChildId,
+                                               last_prerender_id());
+  EXPECT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
+  DummyPrerenderContents* null = NULL;
+  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
+  prerender_manager()->AdvanceTimeTicks(test_advance);
+
+  EXPECT_EQ(null, prerender_manager()->FindEntry(url));
+}
+
+// But when we navigate away very close to the original expiry of a prerender,
+// we shouldn't expect it to be extended.
+TEST_F(PrerenderTest, LinkManagerNavigateAwayNearExpiry) {
+  const TimeDelta time_to_live = TimeDelta::FromSeconds(300);
+  const TimeDelta abandon_time_to_live = TimeDelta::FromSeconds(20);
+
+  // We will expect the prerender to still be alive after advancing the clock
+  // by first_advance. But, after second_advance, we expect it to have timed
+  // out, demonstrating that you can't extend a prerender by navigating away
+  // from its launcher.
+  const TimeDelta first_advance = TimeDelta::FromSeconds(298);
+  const TimeDelta second_advance = TimeDelta::FromSeconds(4);
+  ASSERT_LT(first_advance, time_to_live);
+  ASSERT_LT(time_to_live - first_advance, abandon_time_to_live);
+  ASSERT_LT(time_to_live, first_advance + second_advance);
+
+  prerender_manager()->mutable_config().time_to_live = time_to_live;
+  prerender_manager()->mutable_config().abandon_time_to_live =
+      abandon_time_to_live;
+
+  GURL url("http://example2.com");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(url,
+                                                       FINAL_STATUS_TIMED_OUT);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  EXPECT_FALSE(prerender_contents->prerendering_has_been_cancelled());
+  ASSERT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
+
+  prerender_manager()->AdvanceTimeTicks(first_advance);
+  EXPECT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
+
+  prerender_link_manager()->OnAbandonPrerender(kDefaultChildId,
+                                               last_prerender_id());
+  EXPECT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
+
+  DummyPrerenderContents* null = NULL;
+  EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
+
+  prerender_manager()->AdvanceTimeTicks(second_advance);
+  EXPECT_EQ(null, prerender_manager()->FindEntry(url));
 }
 
 // LRU Test. Make sure that if we prerender more requests than we support, that
@@ -1020,8 +1093,8 @@ TEST_F(PrerenderTest, LinkManagerExpireThenCancel) {
   EXPECT_TRUE(prerender_contents->prerendering_has_started());
   EXPECT_FALSE(prerender_contents->prerendering_has_been_cancelled());
   ASSERT_EQ(prerender_contents, prerender_manager()->FindEntry(url));
-  prerender_manager()->AdvanceTimeTicks(prerender_manager()->GetMaxAge() +
-                                        TimeDelta::FromSeconds(1));
+  prerender_manager()->AdvanceTimeTicks(
+      prerender_manager()->config().time_to_live + TimeDelta::FromSeconds(1));
 
   EXPECT_FALSE(IsEmptyPrerenderLinkManager());
   DummyPrerenderContents* null = NULL;
@@ -1044,8 +1117,8 @@ TEST_F(PrerenderTest, LinkManagerExpireThenAddAgain) {
   EXPECT_FALSE(first_prerender_contents->prerendering_has_been_cancelled());
   ASSERT_EQ(first_prerender_contents,
             prerender_manager()->FindEntry(url));
-  prerender_manager()->AdvanceTimeTicks(prerender_manager()->GetMaxAge() +
-                                        TimeDelta::FromSeconds(1));
+  prerender_manager()->AdvanceTimeTicks(
+      prerender_manager()->config().time_to_live + TimeDelta::FromSeconds(1));
   DummyPrerenderContents* null = NULL;
   ASSERT_EQ(null, prerender_manager()->FindEntry(url));
   DummyPrerenderContents* second_prerender_contents =

@@ -59,7 +59,7 @@ class PrerenderHistograms {
   // Records the time from when a page starts prerendering to when the user
   // navigates to it. This must be called on the UI thread.
   void RecordTimeUntilUsed(base::TimeDelta time_until_used,
-                           base::TimeDelta max_age) const;
+                           base::TimeDelta time_to_live) const;
 
   // Record a PerSessionCount data point.
   void RecordPerSessionCount(int count) const;
@@ -81,7 +81,7 @@ class PrerenderHistograms {
 
   // To be called when we know how many prerenders are running after starting
   // a prerender.
-  void RecordConcurrency(size_t prerender_count) const;
+  void RecordConcurrency(size_t prerender_count, size_t max_concurrency) const;
 
   // Called when we swap in a prerender.
   void RecordUsedPrerender(Origin origin) const;

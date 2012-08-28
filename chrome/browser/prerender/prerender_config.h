@@ -14,6 +14,7 @@ namespace prerender {
 
 struct Config {
   Config();
+  ~Config();
 
   // Maximum memory use for a prerendered page until it is killed.
   size_t max_bytes;
@@ -24,8 +25,17 @@ struct Config {
   // Is rate limiting enabled?
   bool rate_limit_enabled;
 
-  // Maximum age for a prerendered page until it is removed.
-  base::TimeDelta max_age;
+  // The default time to live of a newly created prerender. May be shortened to
+  // abandon_time_to_live, below.
+  base::TimeDelta time_to_live;
+
+  // After a prerender has been abandoned by the user navigating away from the
+  // source page or otherwise mooting the launcher, how long until the prerender
+  // should be removed. This exists because a prerendered page is often
+  // navigated to through a chain of redirects; removing the prerender when the
+  // link element is removed because of navigation would destroy prerenders just
+  // before they were going to be used.
+  base::TimeDelta abandon_time_to_live;
 
   // Is https allowed?
   bool https_allowed;

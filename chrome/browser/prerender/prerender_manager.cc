@@ -107,6 +107,17 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING;
 }
 
+size_t GetMaxConcurrency() {
+  return PrerenderManager::GetMode() ==
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP ? 3 : 1;
+}
+
+base::TimeDelta GetTimeToLive() {
+  return PrerenderManager::GetMode() ==
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP ?
+      base::TimeDelta::FromMinutes(5) : base::TimeDelta::FromSeconds(30);
+}
+
 }  // namespace
 
 class PrerenderManager::OnCloseTabContentsDeleter
@@ -189,6 +200,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
   // the same thread that it was created on.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   config_.max_concurrency = GetMaxConcurrency();
+  config_.time_to_live = GetTimeToLive();
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -360,9 +372,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // At this point, we've determined that we will use the prerender.
 
   if (!prerender_contents->load_start_time().is_null()) {
-    histograms_->RecordTimeUntilUsed(GetCurrentTimeTicks() -
-                                     prerender_contents->load_start_time(),
-                                     GetMaxAge());
+    histograms_->RecordTimeUntilUsed(
+        GetCurrentTimeTicks() - prerender_contents->load_start_time(),
+        config_.time_to_live);
   }
 
   histograms_->RecordPerSessionCount(++prerenders_per_session_count_);
@@ -588,12 +600,6 @@ bool PrerenderManager::IsNoUseGroup() {
 }
 
 // static
-size_t PrerenderManager::GetMaxConcurrency() {
-  if (GetMode() == PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP)
-    return 3;
-  return 1;
-}
-
 bool PrerenderManager::IsWebContentsPrerendering(
     WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
@@ -751,8 +757,12 @@ PrerenderManager::PrerenderData::PrerenderData(PrerenderManager* manager)
 }
 
 PrerenderManager::PrerenderData::PrerenderData(PrerenderManager* manager,
-                                               PrerenderContents* contents)
-    : manager_(manager), contents_(contents), handle_count_(0) {
+                                               PrerenderContents* contents,
+                                               base::TimeTicks expiry_time)
+    : manager_(manager),
+      contents_(contents),
+      handle_count_(0),
+      expiry_time_(expiry_time) {
 }
 
 void PrerenderManager::PrerenderData::OnNewHandle() {
@@ -762,11 +772,6 @@ void PrerenderManager::PrerenderData::OnNewHandle() {
 }
 
 void PrerenderManager::PrerenderData::OnNavigateAwayByHandle() {
-  // TODO(gavinp): Implement reasonable behaviour for navigation away from
-  // launcher. We can't just call OnCancel, because many cases have redirect
-  // chains that will eventually lead to the correct prerendered page, and we
-  // don't want to delete our prerender just as it is going to be used.
-
   if (!contents_) {
     DCHECK_EQ(1, handle_count_);
     // Pending prerenders are not maintained in the active_prerender_list_, so
@@ -774,6 +779,11 @@ void PrerenderManager::PrerenderData::OnNavigateAwayByHandle() {
     // launched yet, and it's held by a page that is being prerendered, we will
     // just delete it.
     manager_->DestroyPendingPrerenderData(this);
+  } else {
+    DCHECK_LE(0, handle_count_);
+    // We intentionally don't decrement the handle count here, so that the
+    // prerender won't be canceled until it times out.
+    manager_->SourceNavigatedAway(this);
   }
 }
 
@@ -836,6 +846,33 @@ void PrerenderManager::StartPendingPrerender(
   // it return false for PrerenderHandle::IsPending(), and will release the
   // PrerenderData from pending_prerender_list_.
   existing_prerender_handle->OnCancel();
+}
+
+void PrerenderManager::SourceNavigatedAway(PrerenderData* prerender_data) {
+  // The expiry time of our prerender data will likely change because of
+  // this navigation. Since active_prerender_list_ is maintained in sorted
+  // order, we remove the affected element from the list, and reinsert it to
+  // maintain ordering.
+  linked_ptr<PrerenderData> linked_prerender_data;
+  for (std::list<linked_ptr<PrerenderData> >::iterator
+           it = active_prerender_list_.begin();
+       it != active_prerender_list_.end();
+       ++it) {
+    if (it->get() == prerender_data) {
+      linked_prerender_data = *it;
+      active_prerender_list_.erase(it);
+      // The iterator it is now invalidated; let's clear out of this scope
+      // inside of the loop before continuing.
+      break;
+    }
+  }
+
+  DCHECK(linked_prerender_data.get());
+
+  linked_prerender_data->expiry_time_ =
+      std::min(linked_prerender_data->expiry_time(),
+               GetExpiryTimeForNavigatedAwayPrerender());
+  InsertActivePrerenderData(linked_prerender_data);
 }
 
 void PrerenderManager::DestroyPendingPrerenderData(
@@ -939,8 +976,9 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   histograms_->RecordPrerenderStarted(origin);
 
   // TODO(cbentzel): Move invalid checks here instead of PrerenderContents?
-  active_prerender_list_.push_back(
-      linked_ptr<PrerenderData>(new PrerenderData(this, prerender_contents)));
+  InsertActivePrerenderData(linked_ptr<PrerenderData>(new PrerenderData(
+      this, prerender_contents, GetExpiryTimeForNewPrerender())));
+
   PrerenderHandle* prerender_handle =
       new PrerenderHandle(active_prerender_list_.back().get());
 
@@ -959,7 +997,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     prerender_contents->Destroy(FINAL_STATUS_EVICTED);
   }
 
-  histograms_->RecordConcurrency(active_prerender_list_.size());
+  histograms_->RecordConcurrency(active_prerender_list_.size(),
+                                 config_.max_concurrency);
 
   StartSchedulingPeriodicCleanups();
   return prerender_handle;
@@ -1012,24 +1051,25 @@ void PrerenderManager::PostCleanupTask() {
                  weak_factory_.GetWeakPtr()));
 }
 
-base::TimeDelta PrerenderManager::GetMaxAge() const {
-  return (GetMode() == PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP ?
-      base::TimeDelta::FromSeconds(300) : config_.max_age);
+base::TimeTicks PrerenderManager::GetExpiryTimeForNewPrerender() const {
+  return GetCurrentTimeTicks() + config_.time_to_live;
 }
 
-bool PrerenderManager::IsPrerenderFresh(const base::TimeTicks start) const {
-  DCHECK(CalledOnValidThread());
-  return GetCurrentTimeTicks() - start < GetMaxAge();
+base::TimeTicks PrerenderManager::GetExpiryTimeForNavigatedAwayPrerender()
+    const {
+  return GetCurrentTimeTicks() + config_.abandon_time_to_live;
 }
 
 void PrerenderManager::DeleteOldEntries() {
   DCHECK(CalledOnValidThread());
   while (!active_prerender_list_.empty()) {
-    PrerenderContents* contents = active_prerender_list_.front()->contents_;
-    DCHECK(contents);
-    if (IsPrerenderFresh(contents->load_start_time()))
+    PrerenderData* prerender_data = active_prerender_list_.front().get();
+    DCHECK(prerender_data);
+    DCHECK(prerender_data->contents());
+
+    if (prerender_data->expiry_time() > GetCurrentTimeTicks())
       return;
-    contents->Destroy(FINAL_STATUS_TIMED_OUT);
+    prerender_data->contents()->Destroy(FINAL_STATUS_TIMED_OUT);
   }
 }
 
@@ -1058,6 +1098,20 @@ void PrerenderManager::DeletePendingDeleteEntries() {
     pending_delete_list_.pop_front();
     delete contents;
   }
+}
+
+void PrerenderManager::InsertActivePrerenderData(
+    linked_ptr<PrerenderData> linked_prerender_data) {
+  for (std::list<linked_ptr<PrerenderData> >::iterator
+           it = active_prerender_list_.begin();
+       it != active_prerender_list_.end();
+       ++it) {
+    if (it->get()->expiry_time() > linked_prerender_data->expiry_time()) {
+      active_prerender_list_.insert(it, linked_prerender_data);
+      return;
+    }
+  }
+  active_prerender_list_.push_back(linked_prerender_data);
 }
 
 PrerenderManager::PrerenderData* PrerenderManager::FindPrerenderData(
