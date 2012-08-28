@@ -77,12 +77,12 @@ class ReplayServer(object):
 
     Args:
       archive_path: a path to a specific WPR archive (required).
-      replay_options: a list of options strings to forward to replay.py.
+      replay_options: an iterable of options strings to forward to replay.py.
       replay_dir: directory that has replay.py and related modules.
       log_path: a path to a log file.
    """
     self.archive_path = os.environ.get('WPR_ARCHIVE_PATH', archive_path)
-    self.replay_options = replay_options or []
+    self.replay_options = list(replay_options or ())
     self.replay_dir = os.environ.get('WPR_REPLAY_DIR', replay_dir or REPLAY_DIR)
     self.log_path = log_path or LOG_PATH
 
@@ -109,7 +109,6 @@ class ReplayServer(object):
         '--ssl_port', str(HTTPS_PORT),
         '--use_closest_match',
         '--no-dns_forwarding',
-        # '--net', 'fios',  # TODO(slamm): Add traffic shaping (requires root).
         ]
 
   def _CheckPath(self, label, path):
@@ -153,8 +152,9 @@ class ReplayServer(object):
     self.replay_process = subprocess.Popen(
       cmd_line, stdout=self.log_fh, stderr=subprocess.STDOUT)
     if not self.IsStarted():
+      log = open(self.log_path).read()
       raise ReplayNotStartedError(
-          'Web Page Replay failed to start. See the log file: ' + self.log_name)
+          'Web Page Replay failed to start. Log output:\n%s' % log)
 
   def StopServer(self):
     """Stop Web Page Replay."""

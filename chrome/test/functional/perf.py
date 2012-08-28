@@ -2275,9 +2275,9 @@ class PageCyclerReplay(object):
     return FormatChromePath(cls._PATHS[key], **kwargs)
 
   @classmethod
-  def ReplayServer(cls, test_name):
+  def ReplayServer(cls, test_name, replay_options=None):
     archive_path = cls.Path('archive', test_name=test_name)
-    return webpagereplay.ReplayServer(archive_path)
+    return webpagereplay.ReplayServer(archive_path, replay_options)
 
 
 class PageCyclerNetSimTest(BasePageCyclerTest):
@@ -2310,8 +2310,16 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
       test_name: name for archive (.wpr) and config (.js) files.
       description: a string description for the test
     """
-    with PageCyclerReplay.ReplayServer(test_name) as replay_server:
-      if replay_server.is_record_mode:
+    replay_options = None
+    if self.IsMac():
+      # Adding --net=fios uses dummynet by default (which Macs have).
+      # Linux would work after installing ipfw/dummynet and ipfw kernel module.
+      # Windows is trickier. It would require running WPR on a separate machine
+      # because running on same machine does not work with Windows loopback.
+      # Adding --no-admin-check skips running the entire script as sudo.
+      replay_options = ('--no-admin-check', '--net', 'fios')
+    with PageCyclerReplay.ReplayServer(test_name, replay_options) as server:
+      if server.is_record_mode:
         self._num_iterations = 1
       super_self = super(PageCyclerNetSimTest, self)
       super_self.RunPageCyclerTest(test_name, description)
