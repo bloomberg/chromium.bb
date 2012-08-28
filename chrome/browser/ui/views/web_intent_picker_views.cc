@@ -80,6 +80,19 @@ void EnableChildViews(views::View* view, bool enabled) {
   }
 }
 
+// Create a "close" button.
+views::ImageButton* CreateCloseButton(views::ButtonListener* listener) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  views::ImageButton* close_button = new views::ImageButton(listener);
+  close_button->SetImage(views::CustomButton::BS_NORMAL,
+                         rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
+  close_button->SetImage(views::CustomButton::BS_HOT,
+                         rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+  close_button->SetImage(views::CustomButton::BS_PUSHED,
+                         rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+  return close_button;
+}
+
 // StarsView -------------------------------------------------------------------
 
 // A view that displays 5 stars: empty, full or half full, given a rating in
@@ -229,6 +242,67 @@ void ThrobberNativeTextButton::Run() {
   DCHECK(running_);
 
   SchedulePaint();
+}
+
+// WaitingView ----------------------------------------------------------
+class WaitingView : public views::View {
+ public:
+  WaitingView(views::ButtonListener* listener, bool use_close_button);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WaitingView);
+};
+
+WaitingView::WaitingView(views::ButtonListener* listener,
+                         bool use_close_button) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(WebIntentPicker::kWindowWidth, 0));
+  layout->SetInsets(WebIntentPicker::kContentAreaBorder,
+                    WebIntentPicker::kContentAreaBorder,
+                    WebIntentPicker::kContentAreaBorder,
+                    WebIntentPicker::kContentAreaBorder);
+  SetLayoutManager(layout);
+
+  views::ColumnSet* cs = layout->AddColumnSet(0);
+  views::ColumnSet* header_cs = NULL;
+  if (use_close_button) {
+    header_cs = layout->AddColumnSet(1);
+    header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+    header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                         GridLayout::USE_PREF, 0, 0);  // Close Button.
+  }
+  cs->AddPaddingColumn(0, views::kPanelHorizIndentation);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER,
+                1, GridLayout::USE_PREF, 0, 0);
+  cs->AddPaddingColumn(0, views::kPanelHorizIndentation);
+
+  // Create throbber.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* frames =
+      rb.GetImageNamed(IDR_SPEECH_INPUT_SPINNER).ToImageSkia();
+  views::Throbber* throbber = new views::Throbber(kThrobberFrameTimeMs, true);
+  throbber->SetFrames(frames);
+  throbber->Start();
+
+  // Create text.
+  views::Label* label = new views::Label();
+  label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  label->SetFont(rb.GetFont(ui::ResourceBundle::MediumBoldFont));
+  label->SetText(l10n_util::GetStringUTF16(IDS_INTENT_PICKER_WAIT_FOR_CWS));
+
+  // Layout the view.
+  if (use_close_button) {
+    layout->StartRow(0, 1);
+    layout->AddView(CreateCloseButton(listener));
+  }
+
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
+  layout->StartRow(0, 0);
+  layout->AddView(throbber);
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
+  layout->StartRow(0, 0);
+  layout->AddView(label);
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 }
 
 // ServiceButtonsView ----------------------------------------------------------
@@ -705,14 +779,14 @@ class WebIntentPickerViews : public views::ButtonListener,
   // non-NULL.
   void InitContents();
 
+  // Initialize the main contents of the picker. (Suggestions, services).
+  void InitMainContents();
+
   // Restore the contents of the picker to the initial contents.
   void ResetContents();
 
   // Resize the constrained window to the size of its contents.
   void SizeToContents();
-
-  // Returns a new close button.
-  views::ImageButton* CreateCloseButton();
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.
@@ -763,6 +837,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Created locally, owned by Views.
   views::Link* choose_another_service_link_;
 
+  // Weak pointer to "Waiting for CWS" display. Owned by parent view.
+  WaitingView* waiting_view_;
+
   // Set to true when displaying the inline disposition web contents. Used to
   // prevent laying out the inline disposition widgets twice.
   bool displaying_web_contents_;
@@ -803,6 +880,7 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       window_(NULL),
       more_suggestions_link_(NULL),
       choose_another_service_link_(NULL),
+      waiting_view_(NULL),
       displaying_web_contents_(false) {
   use_close_button_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFramelessConstrainedDialogs);
@@ -865,7 +943,9 @@ void WebIntentPickerViews::Close() {
 
 void WebIntentPickerViews::SetActionString(const string16& action) {
   action_text_ = action;
-  action_label_->SetText(action);
+
+  if (action_label_)
+    action_label_->SetText(action);
 }
 
 void WebIntentPickerViews::OnExtensionInstallSuccess(const std::string& id) {
@@ -989,7 +1069,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   }
 
   if (use_close_button_)
-    grid_layout->AddView(CreateCloseButton());
+    grid_layout->AddView(CreateCloseButton(this));
 
   // Inline web contents row.
   grid_layout->StartRow(0, 1);
@@ -1001,20 +1081,29 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 }
 
 void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
-  string16 label_text = model->GetSuggestionsLinkText();
-  suggestions_label_->SetText(label_text);
+  if (waiting_view_ && !model->IsWaitingForSuggestions()) {
+    InitMainContents();
+  }
+  if (suggestions_label_) {
+    string16 label_text = model->GetSuggestionsLinkText();
+    suggestions_label_->SetText(label_text);
+    suggestions_label_->SetVisible(!label_text.empty());
+  }
 
-  suggestions_label_->SetVisible(!label_text.empty());
+  if (service_buttons_)
+    service_buttons_->Update();
 
-  service_buttons_->Update();
-  extensions_->Update();
+  if (extensions_)
+    extensions_->Update();
   contents_->Layout();
   SizeToContents();
 }
 
 void WebIntentPickerViews::OnFaviconChanged(
     WebIntentPickerModel* model, size_t index) {
-  service_buttons_->Update();
+  if (service_buttons_)
+    service_buttons_->Update();
+
   contents_->Layout();
   SizeToContents();
 }
@@ -1022,7 +1111,9 @@ void WebIntentPickerViews::OnFaviconChanged(
 void WebIntentPickerViews::OnExtensionIconChanged(
     WebIntentPickerModel* model,
     const string16& extension_id) {
-  extensions_->Update();
+  if (extensions_)
+    extensions_->Update();
+
   contents_->Layout();
   SizeToContents();
 }
@@ -1083,19 +1174,31 @@ void WebIntentPickerViews::OnExtensionLinkClicked(
 }
 
 void WebIntentPickerViews::InitContents() {
+  DCHECK(!contents_);
+  contents_ = new views::View();
+
+  if (model_ && model_->IsWaitingForSuggestions()) {
+    contents_->RemoveAllChildViews(true);
+    contents_->SetLayoutManager(new views::FillLayout());
+    waiting_view_ = new WaitingView(this, use_close_button_);
+    contents_->AddChildView(waiting_view_);
+    contents_->Layout();
+  } else {
+    InitMainContents();
+  }
+}
+
+void WebIntentPickerViews::InitMainContents() {
+  DCHECK(contents_);
   enum {
     kHeaderRowColumnSet,  // Column set for header layout.
     kFullWidthColumnSet,  // Column set with a single full-width column.
     kIndentedFullWidthColumnSet,  // Single full-width column, indented.
   };
 
-  if (contents_) {
-    // Replace the picker with the inline disposition.
-    contents_->RemoveAllChildViews(true);
-    displaying_web_contents_ = false;
-  } else {
-    contents_ = new views::View();
-  }
+  contents_->RemoveAllChildViews(true);
+  displaying_web_contents_ = false;
+
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
 
@@ -1131,7 +1234,7 @@ void WebIntentPickerViews::InitContents() {
   grid_layout->AddView(action_label_);
 
   if (use_close_button_)
-    grid_layout->AddView(CreateCloseButton());
+    grid_layout->AddView(CreateCloseButton(this));
 
   // Padding row.
   grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -1195,14 +1298,4 @@ void WebIntentPickerViews::SizeToContents() {
   window_->CenterWindow(new_window_bounds.size());
 }
 
-views::ImageButton* WebIntentPickerViews::CreateCloseButton() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::ImageButton* close_button = new views::ImageButton(this);
-  close_button->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
-  close_button->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
-  close_button->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
-  return close_button;
-}
+

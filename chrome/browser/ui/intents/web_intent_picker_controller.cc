@@ -412,7 +412,7 @@ void WebIntentPickerController::OnChooseAnotherService() {
 }
 
 void WebIntentPickerController::OnClosing() {
-  picker_shown_ = false;
+  SetDialogState(kPickerHidden);
   picker_ = NULL;
 }
 
@@ -880,8 +880,7 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
 
   switch (state) {
     case kPickerSetup:
-      DCHECK(dialog_state_ == kPickerHidden);
-
+      DCHECK_EQ(dialog_state_, kPickerHidden);
       // Post timer CWS pending
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
           base::Bind(&WebIntentPickerController::OnPickerEvent,
@@ -891,7 +890,7 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
       break;
 
     case kPickerWaiting:
-      DCHECK(dialog_state_ == kPickerSetup);
+      DCHECK_EQ(dialog_state_, kPickerSetup);
       // Waiting dialog can be dismissed after minimum wait time.
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
           base::Bind(&WebIntentPickerController::OnPickerEvent,
@@ -901,7 +900,7 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
       break;
 
     case kPickerWaitLong:
-      DCHECK(dialog_state_ == kPickerWaiting);
+      DCHECK_EQ(dialog_state_, kPickerWaiting);
       break;
 
     case kPickerMain:
