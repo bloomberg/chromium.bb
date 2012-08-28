@@ -8,6 +8,7 @@ import re
 
 prefixes = ["../../third_party/WebKit/Source/WebCore/platform/chromium/support",
             "../../third_party/WebKit/Source/WebKit/chromium/src",
+            "../../third_party/WebKit/Source/WebKit/chromium/tests",
             "../../third_party/WebKit/Source/WebCore/platform"]
 
 def Copy(name):
@@ -60,7 +61,12 @@ def FixCopyrightHeader(filepath):
 def Main():
   files = Readfile("compositor.gyp")['variables']['webkit_compositor_sources']
   for f in files:
-    dst =Copy(f)
+    dst = Copy(f)
+    FixCopyrightHeader(dst)
+
+  files = Readfile("compositor.gyp")['variables']['webkit_compositor_tests_sources']
+  for f in files:
+    dst = Copy(f)
     FixCopyrightHeader(dst)
 
 if __name__ == '__main__':

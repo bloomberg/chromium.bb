@@ -5,6 +5,7 @@
 {
   'variables': {
     'chromium_code': 0,
+    'use_libcc_for_compositor%': 0,
     'webkit_compositor_sources': [
       'CCThreadImpl.cpp',
       'CCThreadImpl.h',
@@ -62,9 +63,9 @@
             'WEBKIT_IMPLEMENTATION=1',
           ],
           'include_dirs': [
-            'stubs',
             '<(DEPTH)/cc',
             '<(DEPTH)/cc/stubs',
+            'stubs',
             '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/public',
           ],
           'sources': [
@@ -72,7 +73,7 @@
             'stubs/AnimationIdVendor.h',
             'stubs/public/WebTransformationMatrix',
           ],
-        },
+        }
       ],
     }],
   ],
