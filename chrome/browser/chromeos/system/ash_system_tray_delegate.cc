@@ -341,18 +341,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     chrome::ShowHelp(GetAppropriateBrowser(), chrome::HELP_SOURCE_MENU);
   }
 
-  virtual bool IsCapsLockOn() const OVERRIDE {
-    input_method::InputMethodManager* ime_manager =
-        input_method::InputMethodManager::GetInstance();
-    return ime_manager->GetXKeyboard()->CapsLockIsEnabled();
-  }
-
-  virtual void SetCapsLockEnabled(bool enabled) OVERRIDE {
-    input_method::InputMethodManager* ime_manager =
-        input_method::InputMethodManager::GetInstance();
-    return ime_manager->GetXKeyboard()->SetCapsLockEnabled(enabled);
-  }
-
   virtual void ShutDown() OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
     if (!base::chromeos::IsRunningOnChromeOS())

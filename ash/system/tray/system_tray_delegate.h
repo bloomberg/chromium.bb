@@ -145,12 +145,6 @@ class SystemTrayDelegate {
   // Shows help.
   virtual void ShowHelp() = 0;
 
-  // Gets whether the caps lock is on.
-  virtual bool IsCapsLockOn() const = 0;
-
-  // Sets the caps lock status to |enabled|.
-  virtual void SetCapsLockEnabled(bool enabled) = 0;
-
   // Attempts to shut down the system.
   virtual void ShutDown() = 0;
 

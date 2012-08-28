@@ -93,30 +93,6 @@ class DummyScreenshotDelegate : public ScreenshotDelegate {
   DISALLOW_COPY_AND_ASSIGN(DummyScreenshotDelegate);
 };
 
-class DummyCapsLockDelegate : public CapsLockDelegate {
- public:
-  explicit DummyCapsLockDelegate(bool consume)
-      : consume_(consume),
-        handle_caps_lock_count_(0) {
-  }
-  virtual ~DummyCapsLockDelegate() {}
-
-  virtual bool HandleToggleCapsLock() OVERRIDE {
-    ++handle_caps_lock_count_;
-    return consume_;
-  }
-
-  int handle_caps_lock_count() const {
-    return handle_caps_lock_count_;
-  }
-
- private:
-  const bool consume_;
-  int handle_caps_lock_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyCapsLockDelegate);
-};
-
 class DummyVolumeControlDelegate : public VolumeControlDelegate {
  public:
   explicit DummyVolumeControlDelegate(bool consume)
@@ -602,44 +578,51 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
   // DisableCapsLock
   {
+    CapsLockDelegate* delegate = Shell::GetInstance()->caps_lock_delegate();
+    delegate->SetCapsLockEnabled(true);
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
     // Handled only on key release.
     EXPECT_FALSE(GetController()->Process(
         ui::Accelerator(ui::VKEY_LSHIFT, ui::EF_NONE)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
     EXPECT_TRUE(GetController()->Process(
         ReleaseAccelerator(ui::VKEY_SHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(delegate->IsCapsLockEnabled());
+    delegate->SetCapsLockEnabled(true);
     EXPECT_FALSE(GetController()->Process(
         ui::Accelerator(ui::VKEY_RSHIFT, ui::EF_NONE)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
     EXPECT_TRUE(GetController()->Process(
         ReleaseAccelerator(ui::VKEY_LSHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(delegate->IsCapsLockEnabled());
+    delegate->SetCapsLockEnabled(true);
     EXPECT_FALSE(GetController()->Process(
         ui::Accelerator(ui::VKEY_SHIFT, ui::EF_NONE)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
     EXPECT_TRUE(GetController()->Process(
         ReleaseAccelerator(ui::VKEY_RSHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(delegate->IsCapsLockEnabled());
 
     // Do not handle when a shift pressed with other keys.
+    delegate->SetCapsLockEnabled(true);
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
     EXPECT_FALSE(GetController()->Process(
         ReleaseAccelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
   }
   // ToggleCapsLock
   {
-    EXPECT_FALSE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
-    DummyCapsLockDelegate* delegate = new DummyCapsLockDelegate(false);
-    GetController()->SetCapsLockDelegate(
-        scoped_ptr<CapsLockDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_caps_lock_count());
-    EXPECT_FALSE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
-    EXPECT_EQ(1, delegate->handle_caps_lock_count());
-  }
-  {
-    DummyCapsLockDelegate* delegate = new DummyCapsLockDelegate(true);
-    GetController()->SetCapsLockDelegate(
-        scoped_ptr<CapsLockDelegate>(delegate).Pass());
-    EXPECT_EQ(0, delegate->handle_caps_lock_count());
+    CapsLockDelegate* delegate = Shell::GetInstance()->caps_lock_delegate();
+    delegate->SetCapsLockEnabled(true);
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
-    EXPECT_EQ(1, delegate->handle_caps_lock_count());
+    EXPECT_FALSE(delegate->IsCapsLockEnabled());
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_ALT_DOWN)));
+    EXPECT_TRUE(delegate->IsCapsLockEnabled());
   }
   // Volume
   const ui::Accelerator f8(ui::VKEY_F8, ui::EF_NONE);

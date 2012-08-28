@@ -59,6 +59,7 @@ class Widget;
 namespace ash {
 
 class AcceleratorController;
+class CapsLockDelegate;
 class DesktopBackgroundController;
 class HighContrastController;
 class Launcher;
@@ -286,6 +287,10 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
     return user_wallpaper_delegate_.get();
   }
 
+  CapsLockDelegate* caps_lock_delegate() {
+    return caps_lock_delegate_.get();
+  }
+
   HighContrastController* high_contrast_controller() {
     return high_contrast_controller_.get();
   }
@@ -408,6 +413,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
 
   scoped_ptr<ShellDelegate> delegate_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
+  scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
 
   scoped_ptr<Launcher> launcher_;
 

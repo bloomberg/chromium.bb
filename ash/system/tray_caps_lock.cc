@@ -4,8 +4,8 @@
 
 #include "ash/system/tray_caps_lock.h"
 
+#include "ash/caps_lock_delegate.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "grit/ash_strings.h"
@@ -92,8 +92,7 @@ class CapsLockDefaultView : public ActionableView {
 
   // Overridden from ActionableView:
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
-    Shell::GetInstance()->tray_delegate()->SetCapsLockEnabled(
-        !Shell::GetInstance()->tray_delegate()->IsCapsLockOn());
+    Shell::GetInstance()->caps_lock_delegate()->ToggleCapsLock();
     return true;
   }
 
@@ -109,14 +108,14 @@ TrayCapsLock::TrayCapsLock()
       detailed_(NULL),
       search_mapped_to_caps_lock_(false),
       caps_lock_enabled_(
-          Shell::GetInstance()->tray_delegate()->IsCapsLockOn()),
+          Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled()),
       message_shown_(false) {
 }
 
 TrayCapsLock::~TrayCapsLock() {}
 
 bool TrayCapsLock::GetInitialVisibility() {
-  return Shell::GetInstance()->tray_delegate()->IsCapsLockOn();
+  return Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled();
 }
 
 views::View* TrayCapsLock::CreateDefaultView(user::LoginStatus status) {

@@ -22,7 +22,7 @@ class CapsLockHandlerTest : public InProcessBrowserTest {
   }
   virtual void SetUp() OVERRIDE {
     handler_.reset(new CapsLockHandler(&xkeyboard_));
-    // Force CapsLockHandler::HandleToggleCapsLock() to toggle the lock state.
+    // Force CapsLockHandler::ToggleCapsLock() to toggle the lock state.
     handler_->set_is_running_on_chromeos_for_test(true);
   }
   virtual void TearDown() OVERRIDE {
@@ -41,16 +41,26 @@ class CapsLockHandlerTest : public InProcessBrowserTest {
 }  // namespace
 
 #if defined(OS_CHROMEOS)
-// Check if HandleToggleCapsLock() really changes the lock state.
+// Check if ToggleCapsLock() really changes the lock state.
 IN_PROC_BROWSER_TEST_F(CapsLockHandlerTest, TestCapsLock) {
   EXPECT_EQ(initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
-  EXPECT_TRUE(handler_->HandleToggleCapsLock());
+  handler_->ToggleCapsLock();
   EXPECT_EQ(!initial_caps_lock_state_, xkeyboard_.CapsLockIsEnabled());
   handler_->OnCapsLockChange(!initial_caps_lock_state_);
   EXPECT_EQ(!initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
-  EXPECT_TRUE(handler_->HandleToggleCapsLock());
+  handler_->ToggleCapsLock();
   handler_->OnCapsLockChange(initial_caps_lock_state_);
   EXPECT_EQ(initial_caps_lock_state_, xkeyboard_.CapsLockIsEnabled());
   EXPECT_EQ(initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
+
+  // Check if SetCapsLockEnabled really changes the lock state.
+  handler_->SetCapsLockEnabled(!initial_caps_lock_state_);
+  EXPECT_EQ(!initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
+  EXPECT_EQ(!initial_caps_lock_state_, xkeyboard_.CapsLockIsEnabled());
+  EXPECT_EQ(!initial_caps_lock_state_, handler_->IsCapsLockEnabled());
+  handler_->SetCapsLockEnabled(initial_caps_lock_state_);
+  EXPECT_EQ(initial_caps_lock_state_, handler_->caps_lock_is_on_for_test());
+  EXPECT_EQ(initial_caps_lock_state_, xkeyboard_.CapsLockIsEnabled());
+  EXPECT_EQ(initial_caps_lock_state_, handler_->IsCapsLockEnabled());
 }
 #endif

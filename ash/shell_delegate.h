@@ -29,6 +29,7 @@ class Widget;
 
 namespace ash {
 
+class CapsLockDelegate;
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
@@ -128,6 +129,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a user wallpaper delegate. Shell takes ownership of the delegate.
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() = 0;
+
+  // Creates a caps lock delegate. Shell takes ownership of the delegate.
+  virtual CapsLockDelegate* CreateCapsLockDelegate() = 0;
 
   // Creates a user action client. Shell takes ownership of the object.
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;

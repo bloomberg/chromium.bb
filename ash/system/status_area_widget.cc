@@ -125,14 +125,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowHelp() OVERRIDE {
   }
 
-  virtual bool IsCapsLockOn() const OVERRIDE {
-    return caps_lock_enabled_;
-  }
-
-  virtual void SetCapsLockEnabled(bool enabled) OVERRIDE {
-    caps_lock_enabled_ = enabled;
-  }
-
   virtual void ShutDown() OVERRIDE {
     MessageLoop::current()->Quit();
   }

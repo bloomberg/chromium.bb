@@ -492,14 +492,12 @@ bool AcceleratorController::PerformAction(int action,
       ash::Shell::GetInstance()->ToggleAppList();
       return true;
     case DISABLE_CAPS_LOCK:
-      // TODO(mazda): Handle this using |caps_lock_delegate_|.
-      if (shell->tray_delegate()->IsCapsLockOn())
-        shell->tray_delegate()->SetCapsLockEnabled(false);
+      if (shell->caps_lock_delegate()->IsCapsLockEnabled())
+        shell->caps_lock_delegate()->SetCapsLockEnabled(false);
       return true;
     case TOGGLE_CAPS_LOCK:
-      if (caps_lock_delegate_.get())
-        return caps_lock_delegate_->HandleToggleCapsLock();
-      break;
+      shell->caps_lock_delegate()->ToggleCapsLock();
+      return true;
     case BRIGHTNESS_DOWN:
       if (brightness_control_delegate_.get())
         return brightness_control_delegate_->HandleBrightnessDown(accelerator);
@@ -701,11 +699,6 @@ bool AcceleratorController::PerformAction(int action,
 void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
   brightness_control_delegate_.swap(brightness_control_delegate);
-}
-
-void AcceleratorController::SetCapsLockDelegate(
-    scoped_ptr<CapsLockDelegate> caps_lock_delegate) {
-  caps_lock_delegate_.swap(caps_lock_delegate);
 }
 
 void AcceleratorController::SetImeControlDelegate(

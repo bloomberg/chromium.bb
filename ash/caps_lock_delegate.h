@@ -5,17 +5,29 @@
 #ifndef ASH_CAPS_LOCK_DELEGATE_H_
 #define ASH_CAPS_LOCK_DELEGATE_H_
 
+#include "ash/ash_export.h"
+
 namespace ash {
 
-// Delegate for toggling Caps Lock.
-class CapsLockDelegate {
+// Delegate for controlling Caps Lock.
+class ASH_EXPORT CapsLockDelegate {
  public:
   virtual ~CapsLockDelegate() {}
 
-  // A derived class should do either of the following: 1) toggle Caps Lock and
-  // return true, or 2) do nothing and return false (see crosbug.com/110127).
-  virtual bool HandleToggleCapsLock() = 0;
+  // Returns true if caps lock is enabled.
+  virtual bool IsCapsLockEnabled() const = 0;
+
+  // Sets the caps lock state to |enabled|.
+  // The state change can occur asynchronously and calling IsCapsLockEnabled
+  // just after this may return the old state.
+  virtual void SetCapsLockEnabled(bool enabled) = 0;
+
+  // Toggles the caps lock state.
+  // The state change can occur asynchronously and calling IsCapsLockEnabled
+  // just after this may return the old state.
+  virtual void ToggleCapsLock() = 0;
 };
+
 }  // namespace ash
 
 #endif  // ASH_CAPS_LOCK_DELEGATE_H_

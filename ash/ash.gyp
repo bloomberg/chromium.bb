@@ -58,6 +58,8 @@
         'ash_switches.cc',
         'ash_switches.h',
         'caps_lock_delegate.h',
+        'caps_lock_delegate_stub.cc',
+        'caps_lock_delegate_stub.h',
         'desktop_background/desktop_background_controller.cc',
         'desktop_background/desktop_background_controller.h',
         'desktop_background/desktop_background_resources.cc',

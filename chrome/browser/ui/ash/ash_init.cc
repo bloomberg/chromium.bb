@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/event_rewriter.h"
 #include "chrome/browser/ui/ash/screenshot_taker.h"
@@ -27,7 +26,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
@@ -78,10 +76,6 @@ void OpenAsh() {
   shell->accelerator_controller()->SetBrightnessControlDelegate(
       scoped_ptr<ash::BrightnessControlDelegate>(
           new BrightnessController).Pass());
-  chromeos::input_method::XKeyboard* xkeyboard =
-      chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard();
-  shell->accelerator_controller()->SetCapsLockDelegate(
-      scoped_ptr<ash::CapsLockDelegate>(new CapsLockHandler(xkeyboard)).Pass());
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
   shell->accelerator_controller()->SetKeyboardBrightnessControlDelegate(

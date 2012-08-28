@@ -34,7 +34,9 @@ class CapsLockHandler : public ash::CapsLockDelegate
   virtual ~CapsLockHandler();
 
   // Overridden from ash::CapsLockHandler:
-  virtual bool HandleToggleCapsLock() OVERRIDE;
+  virtual bool IsCapsLockEnabled() const OVERRIDE;
+  virtual void SetCapsLockEnabled(bool enabled) OVERRIDE;
+  virtual void ToggleCapsLock() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
   // Overridden from chromeos::SystemKeyEventListener::CapsLockObserver:

@@ -37,17 +37,37 @@ CapsLockHandler::~CapsLockHandler() {
 #endif
 }
 
-bool CapsLockHandler::HandleToggleCapsLock() {
+bool CapsLockHandler::IsCapsLockEnabled() const {
+#if defined(OS_CHROMEOS)
+  return caps_lock_is_on_;
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
+}
+
+void CapsLockHandler::SetCapsLockEnabled(bool enabled) {
 #if defined(OS_CHROMEOS)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (is_running_on_chromeos_) {
-    xkeyboard_->SetCapsLockEnabled(!caps_lock_is_on_);
-    return true;  // consume the shortcut key.
+    xkeyboard_->SetCapsLockEnabled(enabled);
+    return;
   }
 #else
   NOTIMPLEMENTED();
 #endif
-  return false;
+}
+
+void CapsLockHandler::ToggleCapsLock() {
+#if defined(OS_CHROMEOS)
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (is_running_on_chromeos_) {
+    xkeyboard_->SetCapsLockEnabled(!caps_lock_is_on_);
+    return;
+  }
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 #if defined(OS_CHROMEOS)

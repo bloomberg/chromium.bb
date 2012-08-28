@@ -22,7 +22,6 @@ namespace ash {
 
 struct AcceleratorData;
 class BrightnessControlDelegate;
-class CapsLockDelegate;
 class ImeControlDelegate;
 class KeyboardBrightnessControlDelegate;
 class ScreenshotDelegate;
@@ -75,7 +74,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
 
   void SetBrightnessControlDelegate(
       scoped_ptr<BrightnessControlDelegate> brightness_control_delegate);
-  void SetCapsLockDelegate(scoped_ptr<CapsLockDelegate> caps_lock_delegate);
   void SetImeControlDelegate(
       scoped_ptr<ImeControlDelegate> ime_control_delegate);
   void SetKeyboardBrightnessControlDelegate(
@@ -104,7 +102,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // TODO(derat): BrightnessControlDelegate is also used by the system tray;
   // move it outside of this class.
   scoped_ptr<BrightnessControlDelegate> brightness_control_delegate_;
-  scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<ImeControlDelegate> ime_control_delegate_;
   scoped_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
