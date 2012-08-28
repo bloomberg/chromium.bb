@@ -658,6 +658,14 @@ void RenderViewContextMenu::AppendPlatformAppItems() {
   DCHECK(platform_app);
   DCHECK(platform_app->is_platform_app());
 
+  bool has_selection = !params_.selection_text.empty();
+
+  // Add undo/redo, cut/copy/paste etc for text fields
+  if (params_.is_editable)
+    AppendEditableItems();
+  else if (has_selection)
+    AppendCopyItem();
+
   int index = 0;
   AppendExtensionItems(platform_app->id(), &index);
 

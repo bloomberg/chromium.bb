@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
@@ -108,6 +109,61 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LoadAndLaunchPlatformApp("context_menu");
+
+  // Wait for the extension to tell us it's initialized its context menus and
+  // launched a window.
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // The context_menu app has one context menu item. This, along with a
+  // separator and the developer tools, is all that should be in the menu.
+  WebContents* web_contents = GetFirstShellWindowWebContents();
+  ASSERT_TRUE(web_contents);
+  WebKit::WebContextMenuData data;
+  content::ContextMenuParams params(data);
+  params.is_editable = true;
+  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
+      params);
+  menu->Init();
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LoadAndLaunchPlatformApp("context_menu");
+
+  // Wait for the extension to tell us it's initialized its context menus and
+  // launched a window.
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // The context_menu app has one context menu item. This, along with a
+  // separator and the developer tools, is all that should be in the menu.
+  WebContents* web_contents = GetFirstShellWindowWebContents();
+  ASSERT_TRUE(web_contents);
+  WebKit::WebContextMenuData data;
+  content::ContextMenuParams params(data);
+  params.selection_text = ASCIIToUTF16("Hello World");
+  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
+      params);
+  menu->Init();
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_UNDO));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_COPY));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
 }
