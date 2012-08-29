@@ -57,7 +57,7 @@ void InitLogging() {
   log_filename = log_filename.AppendASCII("content_shell.log");
   logging::InitLogging(
       log_filename.value().c_str(),
-      logging::LOG_ONLY_TO_FILE,
+      logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
       logging::LOCK_LOG_FILE,
       logging::DELETE_OLD_LOG_FILE,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
@@ -83,8 +83,8 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   logging::LogEventProvider::Initialize(kContentShellProviderName);
 #endif
 
+  InitLogging();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    InitLogging();
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAllowFileAccessFromFiles);
   }
