@@ -10,6 +10,7 @@
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/process_utils.h"
 #include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
+#include "chrome/browser/history/android/sqlite_cursor.h"
 
 namespace chrome {
 namespace android {
@@ -18,6 +19,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ContentViewUtil", RegisterContentViewUtil },
   { "IntentHelper", RegisterIntentHelper },
   { "ProcessUtils", RegisterProcessUtils },
+  { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
 };
 
 bool RegisterJni(JNIEnv* env) {

@@ -686,6 +686,8 @@
         'browser/history/android/favicon_sql_handler.h',
         'browser/history/android/sql_handler.cc',
         'browser/history/android/sql_handler.h',
+        'browser/history/android/sqlite_cursor.cc',
+        'browser/history/android/sqlite_cursor.h',
         'browser/history/android/urls_sql_handler.cc',
         'browser/history/android/urls_sql_handler.h',
         'browser/history/android/visit_sql_handler.cc',
@@ -5020,6 +5022,7 @@
             'android/java/src/org/chromium/chrome/browser/ContentViewUtil.java',
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
             'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
+            'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',
           ],
           'variables': {
             'jni_gen_dir': 'chrome',
