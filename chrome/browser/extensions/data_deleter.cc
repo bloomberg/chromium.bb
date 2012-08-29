@@ -81,7 +81,10 @@ DataDeleter::DataDeleter(
     const GURL& storage_origin,
     bool is_storage_isolated)
     : extension_id_(extension_id) {
-  database_tracker_ = BrowserContext::GetDatabaseTracker(profile);
+  // TODO(michaeln): Delete from the right StoragePartition.
+  // http://crbug.com/85127
+  database_tracker_ = BrowserContext::GetDefaultStoragePartition(profile)->
+      GetDatabaseTracker();
   // Pick the right request context depending on whether it's an extension,
   // isolated app, or regular app.
   if (storage_origin.SchemeIs(chrome::kExtensionScheme)) {

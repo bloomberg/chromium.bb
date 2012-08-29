@@ -74,6 +74,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -3427,7 +3428,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Open a database.
   webkit_database::DatabaseTracker* db_tracker =
-      BrowserContext::GetDatabaseTracker(profile_.get());
+      BrowserContext::GetDefaultStoragePartition(profile_.get())->
+          GetDatabaseTracker();
   string16 db_name = UTF8ToUTF16("db");
   string16 description = UTF8ToUTF16("db_description");
   int64 size;
@@ -3538,7 +3540,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   // Open a database.
   webkit_database::DatabaseTracker* db_tracker =
-      BrowserContext::GetDatabaseTracker(profile_.get());
+      BrowserContext::GetDefaultStoragePartition(profile_.get())->
+          GetDatabaseTracker();
   string16 db_name = UTF8ToUTF16("db");
   string16 description = UTF8ToUTF16("db_description");
   int64 size;

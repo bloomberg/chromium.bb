@@ -56,8 +56,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   static DownloadManager* GetDownloadManager(BrowserContext* browser_context);
   static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
-  static webkit_database::DatabaseTracker* GetDatabaseTracker(
-      BrowserContext* browser_context);
   static appcache::AppCacheService* GetAppCacheService(
       BrowserContext* browser_context);
   static fileapi::FileSystemContext* GetFileSystemContext(

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 
 using content::BrowserContext;
@@ -30,7 +31,8 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
  public:
   virtual void CreateDatabases() {
     webkit_database::DatabaseTracker* db_tracker =
-        BrowserContext::GetDatabaseTracker(browser()->profile());
+        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
+            GetDatabaseTracker();
     string16 db_name = ASCIIToUTF16("db");
     string16 description = ASCIIToUTF16("db_description");
     int64 size;

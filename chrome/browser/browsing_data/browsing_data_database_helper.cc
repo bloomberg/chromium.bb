@@ -12,6 +12,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
@@ -43,7 +44,8 @@ BrowsingDataDatabaseHelper::DatabaseInfo::~DatabaseInfo() {}
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
     : is_fetching_(false),
-      tracker_(BrowserContext::GetDatabaseTracker(profile)) {
+      tracker_(BrowserContext::
+                  GetDefaultStoragePartition(profile)->GetDatabaseTracker()) {
 }
 
 BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {

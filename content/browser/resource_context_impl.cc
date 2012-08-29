@@ -18,6 +18,7 @@
 #include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -259,7 +260,8 @@ void InitializeResourceContext(BrowserContext* browser_context) {
   resource_context->SetUserData(
       kDatabaseTrackerKeyName,
       new UserDataAdapter<webkit_database::DatabaseTracker>(
-          BrowserContext::GetDatabaseTracker(browser_context)));
+          BrowserContext::GetDefaultStoragePartition(browser_context)->
+              GetDatabaseTracker()));
   resource_context->SetUserData(
       kAppCacheServiceKeyName,
       new UserDataAdapter<ChromeAppCacheService>(

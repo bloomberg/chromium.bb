@@ -578,7 +578,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
-      BrowserContext::GetDatabaseTracker(browser_context)));
+      storage_partition_impl_->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
   channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)

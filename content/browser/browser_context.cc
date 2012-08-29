@@ -109,13 +109,6 @@ IndexedDBContext* BrowserContext::GetIndexedDBContext(
   return GetDefaultStoragePartition(browser_context)->GetIndexedDBContext();
 }
 
-webkit_database::DatabaseTracker* BrowserContext::GetDatabaseTracker(
-    BrowserContext* browser_context) {
-  // TODO(ajwong): Change this API to require a SiteInstance instead of
-  // using GetDefaultStoragePartition().
-  return GetDefaultStoragePartition(browser_context)->GetDatabaseTracker();
-}
-
 appcache::AppCacheService* BrowserContext::GetAppCacheService(
     BrowserContext* browser_context) {
   // TODO(ajwong): Change this API to require a SiteInstance instead of
@@ -176,7 +169,8 @@ void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
 }
 
 void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
-  GetDatabaseTracker(browser_context)->SetForceKeepSessionState();
+  GetDefaultStoragePartition(browser_context)->GetDatabaseTracker()->
+      SetForceKeepSessionState();
 
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
