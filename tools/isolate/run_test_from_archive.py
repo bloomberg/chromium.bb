@@ -255,7 +255,7 @@ class Profiler(object):
 
   def __exit__(self, _exc_type, _exec_value, _traceback):
     time_taken = time.time() - self.start_time
-    logging.info('Profiling: Section %s took %3.2f seconds',
+    logging.info('Profiling: Section %s took %3.3f seconds',
                  self.name, time_taken)
 
 
@@ -272,6 +272,7 @@ class Remote(object):
   # Priorities.
   LOW, MED, HIGH = (1<<8, 2<<8, 3<<8)
   INTERNAL_PRIORITY_BITS = (1<<8) - 1
+  RETRIES = 5
 
   def __init__(self, file_or_url):
     # Function to fetch a remote object.
@@ -283,7 +284,7 @@ class Remote(object):
 
     # To keep FIFO ordering in self._queue. It is assumed xrange's iterator is
     # thread-safe.
-    self._next_index = xrange(0, 1<<31).__iter__().next
+    self._next_index = xrange(0, 1<<30).__iter__().next
 
     # Control access to the following member.
     self._ready_lock = threading.Lock()
@@ -348,7 +349,7 @@ class Remote(object):
         self._do_item(obj, dest)
       except IOError:
         # Retry a few times, lowering the priority.
-        if (priority & self.INTERNAL_PRIORITY_BITS) < 5:
+        if (priority & self.INTERNAL_PRIORITY_BITS) < self.RETRIES:
           self._fetch(priority + 1, obj, dest)
           continue
         # Transfers the exception back. It has maximum priority.
@@ -413,18 +414,20 @@ class Cache(object):
     self.remote = remote
     self.policies = policies
     self.state_file = os.path.join(cache_dir, self.STATE_FILE)
-    # The files are kept as an array in a LRU style. E.g. self.state[0] is the
-    # oldest item.
+    # The tuple(file, size) are kept as an array in a LRU style. E.g.
+    # self.state[0] is the oldest item.
     self.state = []
+    # A lookup map to speed up searching.
+    self._lookup = {}
+    self._dirty = False
 
     # Items currently being fetched. Keep it local to reduce lock contention.
     self._pending_queue = set()
 
     # Profiling values.
-    # The files added and removed are stored as tuples of the filename and
-    # the file size.
-    self.files_added = []
-    self.files_removed = []
+    self._added = []
+    self._removed = []
+    self._free_disk = 0
 
     if not os.path.isdir(self.cache_dir):
       os.makedirs(self.cache_dir)
@@ -435,6 +438,42 @@ class Cache(object):
         # Too bad. The file will be overwritten and the cache cleared.
         logging.error(
             'Broken state file %s, ignoring.\n%s' % (self.STATE_FILE, e))
+      if (not isinstance(self.state, list) or
+          not all(
+            isinstance(i, (list, tuple)) and len(i) == 2 for i in self.state)):
+        # Discard.
+        self.state = []
+        self._dirty = True
+
+    # Ensure that all files listed in the state still exist and add new ones.
+    previous = set(filename for filename, _ in self.state)
+    if len(previous) != len(self.state):
+      logging.warn('Cache state is corrupted')
+      self._dirty = True
+      self.state = []
+    else:
+      for filename in os.listdir(self.cache_dir):
+        if filename == self.STATE_FILE:
+          continue
+        if filename in previous:
+          previous.remove(filename)
+          continue
+        # An untracked file.
+        self._dirty = True
+        if not RE_IS_SHA1.match(filename):
+          logging.warn('Removing unknown file %s from cache', filename)
+          os.remove(self.path(filename))
+        else:
+          # Insert as the oldest file. It will be deleted eventually if not
+          # accessed.
+          logging.warn('Adding back unknown file %s in cache', filename)
+          self._add(filename, False)
+      self.state = [
+        (filename, size) for filename, size in self.state
+        if filename not in previous
+      ]
+      self._update_lookup()
+
     with Profiler('SetupTrimming'):
       self.trim()
 
@@ -445,72 +484,47 @@ class Cache(object):
     with Profiler('CleanupTrimming'):
       self.trim()
 
-    logging.info('Number of files added to cache: %i',
-                 len(self.files_added))
-    logging.info('Size of files added to cache: %i',
-                 sum(item[1] for item in self.files_added))
-    logging.debug('All files added:')
-    logging.debug(self.files_added)
-
-    logging.info('Number of files removed from cache: %i',
-                 len(self.files_removed))
-    logging.info('Size of files removed from cache: %i',
-                 sum(item[1] for item in self.files_removed))
-    logging.debug('All files remove:')
-    logging.debug(self.files_added)
+    logging.info(
+        '%3d (%5dkb) added', len(self._added), sum(self._added) / 1024)
+    logging.info(
+        '%3d (%5dkb) current',
+        len(self.state),
+        sum(i[1] for i in self.state) / 1024)
+    logging.info(
+        '%3d (%5dkb) removed', len(self._removed), sum(self._removed) / 1024)
+    logging.info('%5dkb free', self._free_disk / 1024)
 
   def remove_lru_file(self):
     """Removes the last recently used file."""
     try:
-      filename = self.state.pop(0)
-      full_path = self.path(filename)
-      size = os.stat(full_path).st_size
-      logging.info('Trimming %s: %d bytes' % (filename, size))
-      self.files_removed.append((filename, size))
-      os.remove(full_path)
+      filename, size = self.state.pop(0)
+      del self._lookup[filename]
+      self._removed.append(size)
+      os.remove(self.path(filename))
+      self._dirty = True
     except OSError as e:
       logging.error('Error attempting to delete a file\n%s' % e)
 
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
-    # Ensure that all files listed in the state still exist.
-    for filename in self.state[:]:
-      if not os.path.exists(self.path(filename)):
-        logging.info('Removing lost file %s' % filename)
-        self.state.remove(filename)
-
-    for filename in os.listdir(self.cache_dir):
-      if filename == self.STATE_FILE or filename in self.state:
-        continue
-      logging.warn('Unknown file %s from cache' % filename)
-      # Insert as the oldest file. It will be deleted eventually if not
-      # accessed.
-      self.state.insert(0, filename)
-
-    # Ensure enough free space.
-    while (
-        self.policies.min_free_space and
-        self.state and
-        get_free_space(self.cache_dir) < self.policies.min_free_space):
-      self.remove_lru_file()
-
     # Ensure maximum cache size.
     if self.policies.max_cache_size and self.state:
-      try:
-        sizes = [os.stat(self.path(f)).st_size for f in self.state]
-      except OSError:
-        logging.error(
-            'At least one file is missing; %s\n' % '\n'.join(self.state))
-        raise
-
-      while sizes and sum(sizes) > self.policies.max_cache_size:
+      while sum(i[1] for i in self.state) > self.policies.max_cache_size:
         self.remove_lru_file()
-        sizes.pop(0)
 
     # Ensure maximum number of items in the cache.
     if self.policies.max_items and self.state:
       while len(self.state) > self.policies.max_items:
         self.remove_lru_file()
+
+    # Ensure enough free space.
+    self._free_disk = get_free_space(self.cache_dir)
+    while (
+        self.policies.min_free_space and
+        self.state and
+        self._free_disk < self.policies.min_free_space):
+      self.remove_lru_file()
+      self._free_disk = get_free_space(self.cache_dir)
 
     self.save()
 
@@ -520,24 +534,25 @@ class Cache(object):
     """
     assert not '/' in item
     path = self.path(item)
-    try:
-      index = self.state.index(item)
-      # Was already in cache. Update it's LRU value.
-      self.state.pop(index)
-      self.state.append(item)
-      os.utime(path, None)
-    except ValueError:
+    index = self._lookup.get(item)
+    if index is None:
       if item in self._pending_queue:
         # Already pending. The same object could be referenced multiple times.
         return
       self.remote.fetch_item(priority, item, path)
       self._pending_queue.add(item)
+    else:
+      if index != len(self.state) - 1:
+        # Was already in cache. Update it's LRU value by putting it at the end.
+        self.state.append(self.state.pop(index))
+        self._dirty = True
+        self._update_lookup()
 
   def add(self, filepath, obj):
     """Forcibly adds a file to the cache."""
-    if not obj in self.state:
+    if not obj in self._lookup:
       link_file(self.path(obj), filepath, HARDLINK)
-      self.state.append(obj)
+      self._add(obj, True)
 
   def path(self, item):
     """Returns the path to one item."""
@@ -554,7 +569,7 @@ class Cache(object):
     """
     # Flush items already present.
     for item in items:
-      if item in self.state:
+      if item in self._lookup:
         return item
 
     assert all(i in self._pending_queue for i in items), (
@@ -567,9 +582,29 @@ class Cache(object):
     while self._pending_queue:
       item = self.remote.get_result()
       self._pending_queue.remove(item)
-      self.state.append(item)
+      self._add(item, True)
       if item in items:
         return item
+
+  def _add(self, item, at_end):
+    """Adds an item in the internal state.
+
+    If |at_end| is False, self._lookup becomes inconsistent and
+    self._update_lookup() must be called.
+    """
+    size = os.stat(self.path(item)).st_size
+    self._added.append(size)
+    if at_end:
+      self.state.append((item, size))
+      self._lookup[item] = len(self.state) - 1
+    else:
+      self.state.insert(0, (item, size))
+    self._dirty = True
+
+  def _update_lookup(self):
+    self._lookup = dict(
+        (filename, index) for index, (filename, _) in enumerate(self.state))
+
 
 
 class Manifest(object):
