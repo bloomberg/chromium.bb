@@ -109,6 +109,7 @@ struct desktop_shell {
 		unsigned int num;
 
 		struct weston_animation animation;
+		struct wl_list anim_sticky_list;
 		int anim_dir;
 		uint32_t anim_timestamp;
 		double anim_current;
@@ -450,6 +451,34 @@ restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 }
 
 static void
+replace_focus_state(struct desktop_shell *shell, struct workspace *ws,
+		    struct weston_seat *seat)
+{
+	struct focus_state *state;
+	struct wl_surface *surface;
+
+	wl_list_for_each(state, &ws->focus_list, link) {
+		if (state->seat == seat) {
+			surface = seat->seat.keyboard->focus;
+			state->keyboard_focus =
+				(struct weston_surface *) surface;
+			return;
+		}
+	}
+}
+
+static void
+drop_focus_state(struct desktop_shell *shell, struct workspace *ws,
+		 struct weston_surface *surface)
+{
+	struct focus_state *state;
+
+	wl_list_for_each(state, &ws->focus_list, link)
+		if (state->keyboard_focus == surface)
+			state->keyboard_focus = NULL;
+}
+
+static void
 workspace_destroy(struct workspace *ws)
 {
 	struct focus_state *state, *next;
@@ -591,8 +620,6 @@ reverse_workspace_change_animation(struct desktop_shell *shell,
 	shell->workspaces.anim_dir = -1 * shell->workspaces.anim_dir;
 	shell->workspaces.anim_timestamp = 0;
 
-	restore_focus_state(shell, to);
-
 	weston_compositor_schedule_repaint(shell->compositor);
 }
 
@@ -604,8 +631,10 @@ workspace_deactivate_transforms(struct workspace *ws)
 
 	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
 		shsurf = get_shell_surface(surface);
-		wl_list_remove(&shsurf->workspace_transform.link);
-		wl_list_init(&shsurf->workspace_transform.link);
+		if (!wl_list_empty(&shsurf->workspace_transform.link)) {
+			wl_list_remove(&shsurf->workspace_transform.link);
+			wl_list_init(&shsurf->workspace_transform.link);
+		}
 		shsurf->surface->geometry.dirty = 1;
 	}
 }
@@ -704,13 +733,22 @@ animate_workspace_change(struct desktop_shell *shell,
 	wl_list_insert(&output->animation_list,
 		       &shell->workspaces.animation.link);
 
-	wl_list_insert(&from->layer.link, &to->layer.link);
+	wl_list_insert(from->layer.link.prev, &to->layer.link);
 
 	workspace_translate_in(to, 0);
 
 	restore_focus_state(shell, to);
 
 	weston_compositor_schedule_repaint(shell->compositor);
+}
+
+static void
+update_workspace(struct desktop_shell *shell, unsigned int index,
+		 struct workspace *from, struct workspace *to)
+{
+	shell->workspaces.current = index;
+	wl_list_insert(&from->layer.link, &to->layer.link);
+	wl_list_remove(&from->layer.link);
 }
 
 static void
@@ -731,6 +769,7 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 
 	if (shell->workspaces.anim_from == to &&
 	    shell->workspaces.anim_to == from) {
+		restore_focus_state(shell, to);
 		reverse_workspace_change_animation(shell, index, from, to);
 		return;
 	}
@@ -740,15 +779,77 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 						  shell->workspaces.anim_from,
 						  shell->workspaces.anim_to);
 
-	if (workspace_is_empty(to) && workspace_is_empty(from)) {
-		shell->workspaces.current = index;
-		wl_list_insert(&from->layer.link, &to->layer.link);
-		wl_list_remove(&from->layer.link);
+	restore_focus_state(shell, to);
 
-		restore_focus_state(shell, to);
-	}
+	if (workspace_is_empty(to) && workspace_is_empty(from))
+		update_workspace(shell, index, from, to);
 	else
 		animate_workspace_change(shell, index, from, to);
+}
+
+static bool
+workspace_has_only(struct workspace *ws, struct weston_surface *surface)
+{
+	struct wl_list *list = &ws->layer.surface_list;
+	struct wl_list *e;
+
+	if (wl_list_empty(list))
+		return false;
+
+	e = list->next;
+
+	if (e->next != list)
+		return false;
+
+	return container_of(e, struct weston_surface, layer_link) == surface;
+}
+
+static void
+take_surface_to_workspace_by_seat(struct desktop_shell *shell,
+				  struct wl_seat *seat,
+				  unsigned int index)
+{
+	struct weston_surface *surface =
+		(struct weston_surface *) seat->keyboard->focus;
+	struct shell_surface *shsurf;
+	struct workspace *from;
+	struct workspace *to;
+
+	if (surface == NULL ||
+	    index == shell->workspaces.current)
+		return;
+
+	from = get_current_workspace(shell);
+	to = get_workspace(shell, index);
+
+	wl_list_remove(&surface->layer_link);
+	wl_list_insert(&to->layer.surface_list, &surface->layer_link);
+
+	replace_focus_state(shell, to, (struct weston_seat *) seat);
+	drop_focus_state(shell, from, surface);
+
+	if (shell->workspaces.anim_from == to &&
+	    shell->workspaces.anim_to == from) {
+		reverse_workspace_change_animation(shell, index, from, to);
+		return;
+	}
+
+	if (shell->workspaces.anim_to != NULL)
+		finish_workspace_change_animation(shell,
+						  shell->workspaces.anim_from,
+						  shell->workspaces.anim_to);
+
+	if (workspace_is_empty(from) &&
+	    workspace_has_only(to, surface))
+		update_workspace(shell, index, from, to);
+	else {
+		shsurf = get_shell_surface(surface);
+		if (wl_list_empty(&shsurf->workspace_transform.link))
+			wl_list_insert(&shell->workspaces.anim_sticky_list,
+				       &shsurf->workspace_transform.link);
+
+		animate_workspace_change(shell, index, from, to);
+	}
 }
 
 static void
@@ -3345,6 +3446,37 @@ workspace_f_binding(struct wl_seat *seat, uint32_t time,
 	change_workspace(shell, new_index);
 }
 
+static void
+workspace_move_surface_up_binding(struct wl_seat *seat, uint32_t time,
+				  uint32_t key, void *data)
+{
+	struct desktop_shell *shell = data;
+	unsigned int new_index = shell->workspaces.current;
+
+	if (shell->locked)
+		return;
+
+	if (new_index != 0)
+		new_index--;
+
+	take_surface_to_workspace_by_seat(shell, seat, new_index);
+}
+
+static void
+workspace_move_surface_down_binding(struct wl_seat *seat, uint32_t time,
+				    uint32_t key, void *data)
+{
+	struct desktop_shell *shell = data;
+	unsigned int new_index = shell->workspaces.current;
+
+	if (shell->locked)
+		return;
+
+	if (new_index < shell->workspaces.num - 1)
+		new_index++;
+
+	take_surface_to_workspace_by_seat(shell, seat, new_index);
+}
 
 static void
 shell_destroy(struct wl_listener *listener, void *data)
@@ -3421,6 +3553,12 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  workspace_up_binding, shell);
 	weston_compositor_add_key_binding(ec, KEY_DOWN, mod,
 					  workspace_down_binding, shell);
+	weston_compositor_add_key_binding(ec, KEY_UP, mod | MODIFIER_SHIFT,
+					  workspace_move_surface_up_binding,
+					  shell);
+	weston_compositor_add_key_binding(ec, KEY_DOWN, mod | MODIFIER_SHIFT,
+					  workspace_move_surface_down_binding,
+					  shell);
 
 	/* Add bindings for mod+F[1-6] for workspace 1 to 6. */
 	if (shell->workspaces.num > 1) {
@@ -3494,6 +3632,7 @@ shell_init(struct weston_compositor *ec)
 	}
 	activate_workspace(shell, 0);
 
+	wl_list_init(&shell->workspaces.anim_sticky_list);
 	wl_list_init(&shell->workspaces.animation.link);
 	shell->workspaces.animation.frame = animate_workspace_change_frame;
 
