@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
 }
 
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(NDEBUG)
 // http://crbug.com/114859. Times out frequently on Windows.
 #define MAYBE_ThirtyFourTabs DISABLED_ThirtyFourTabs
 #else
