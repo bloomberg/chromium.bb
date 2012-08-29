@@ -26,11 +26,12 @@
           'files': [ 'main.c', ],  # $SOURCE_ROOT doesn't work with xcode
         },
       ],
-      # Env vars in actions.
+      # Env vars in actions. The $FOO's are here to test that env vars that
+      # aren't defined are handled in some way that doesn't break the build.
       'actions': [
         {
-          'action_name': 'Action copy braces ${PRODUCT_NAME}',
-          'description': 'Action copy braces ${PRODUCT_NAME}',
+          'action_name': 'Action copy braces ${PRODUCT_NAME} ${FOO}',
+          'description': 'Action copy braces ${PRODUCT_NAME} ${FOO}',
           'inputs': [ '${SOURCE_ROOT}/main.c' ],
           # Referencing ${PRODUCT_NAME} in action outputs doesn't work with
           # the Xcode generator (PRODUCT_NAME expands to "Test Support").
@@ -39,23 +40,23 @@
                       '<(PRODUCT_DIR)/action-copy-brace.txt' ],
         },
         {
-          'action_name': 'Action copy parens ${PRODUCT_NAME}',
-          'description': 'Action copy parens ${PRODUCT_NAME}',
+          'action_name': 'Action copy parens $(PRODUCT_NAME) $(FOO)',
+          'description': 'Action copy parens $(PRODUCT_NAME) $(FOO)',
           'inputs': [ '${SOURCE_ROOT}/main.c' ],
-          # Referencing ${PRODUCT_NAME} in action outputs doesn't work with
+          # Referencing $(PRODUCT_NAME) in action outputs doesn't work with
           # the Xcode generator (PRODUCT_NAME expands to "Test Support").
           'outputs': [ '<(PRODUCT_DIR)/action-copy-paren.txt' ],
-          'action': [ 'cp', '${SOURCE_ROOT}/main.c',
+          'action': [ 'cp', '$(SOURCE_ROOT)/main.c',
                       '<(PRODUCT_DIR)/action-copy-paren.txt' ],
         },
         {
-          'action_name': 'Action copy bare ${PRODUCT_NAME}',
-          'description': 'Action copy bare ${PRODUCT_NAME}',
+          'action_name': 'Action copy bare $PRODUCT_NAME $FOO',
+          'description': 'Action copy bare $PRODUCT_NAME $FOO',
           'inputs': [ '${SOURCE_ROOT}/main.c' ],
-          # Referencing ${PRODUCT_NAME} in action outputs doesn't work with
+          # Referencing $PRODUCT_NAME in action outputs doesn't work with
           # the Xcode generator (PRODUCT_NAME expands to "Test Support").
           'outputs': [ '<(PRODUCT_DIR)/action-copy-bare.txt' ],
-          'action': [ 'cp', '${SOURCE_ROOT}/main.c',
+          'action': [ 'cp', '$SOURCE_ROOT/main.c',
                       '<(PRODUCT_DIR)/action-copy-bare.txt' ],
         },
       ],

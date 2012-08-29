@@ -838,6 +838,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                    actions)
     part_of_all: flag indicating this target is part of 'all'
     """
+    env = self.GetSortedXcodeEnv()
     for action in actions:
       name = StringToMakefileVariable('%s_%s' % (self.qualified_target,
                                                  action['action_name']))
@@ -858,7 +859,11 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         extra_mac_bundle_resources += outputs
 
       # Write the actual command.
-      command = gyp.common.EncodePOSIXShellList(action['action'])
+      action_commands = action['action']
+      if self.flavor == 'mac':
+        action_commands = [gyp.xcode_emulation.ExpandEnvVars(command, env)
+                          for command in action_commands]
+      command = gyp.common.EncodePOSIXShellList(action_commands)
       if 'message' in action:
         self.WriteLn('quiet_cmd_%s = ACTION %s $@' % (name, action['message']))
       else:
@@ -907,7 +912,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
             "Spaces in action output filenames not supported (%s)"  % output)
 
       # See the comment in WriteCopies about expanding env vars.
-      env = self.GetSortedXcodeEnv()
       outputs = [gyp.xcode_emulation.ExpandEnvVars(o, env) for o in outputs]
       inputs = [gyp.xcode_emulation.ExpandEnvVars(i, env) for i in inputs]
 

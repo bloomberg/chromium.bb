@@ -549,9 +549,6 @@ class NinjaWriter:
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(action)
                    if self.flavor == 'win' else False)
       args = action['action']
-      args = [self.msvs_settings.ConvertVSMacros(
-                  arg, self.base_to_build, config=self.config_name)
-              for arg in args] if self.flavor == 'win' else args
       rule_name = self.WriteNewNinjaRule(name, args, description,
                                          is_cygwin, env=env)
 
@@ -588,9 +585,6 @@ class NinjaWriter:
           ('%s ' + generator_default_variables['RULE_INPUT_PATH']) % name)
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(rule)
                    if self.flavor == 'win' else False)
-      args = [self.msvs_settings.ConvertVSMacros(
-                  arg, self.base_to_build, config=self.config_name)
-              for arg in args] if self.flavor == 'win' else args
       rule_name = self.WriteNewNinjaRule(name, args, description, is_cygwin)
 
       # TODO: if the command references the outputs directly, we should
@@ -1148,10 +1142,20 @@ class NinjaWriter:
       values = []
     self.ninja.variable(var, ' '.join(values))
 
-  def WriteNewNinjaRule(self, name, args, description, is_cygwin, env={}):
+  def WriteNewNinjaRule(self, name, args, description, is_cygwin, env=[]):
     """Write out a new ninja "rule" statement for a given command.
 
     Returns the name of the new rule."""
+
+    if self.flavor == 'win':
+      args = [self.msvs_settings.ConvertVSMacros(
+                  arg, self.base_to_build, config=self.config_name)
+              for arg in args]
+      description = self.msvs_settings.ConvertVSMacros(
+          description, config=self.config_name)
+    elif self.flavor == 'mac':
+      args = [gyp.xcode_emulation.ExpandEnvVars(arg, env) for arg in args]
+      description = gyp.xcode_emulation.ExpandEnvVars(description, env)
 
     # TODO: we shouldn't need to qualify names; we do it because
     # currently the ninja rule namespace is global, but it really
@@ -1162,11 +1166,9 @@ class NinjaWriter:
     rule_name += '.' + name
     rule_name = re.sub('[^a-zA-Z0-9_]', '_', rule_name)
 
-    args = args[:]
+    description = re.sub('[^a-zA-Z0-9_]', '_', description)
 
-    if self.flavor == 'win':
-      description = self.msvs_settings.ConvertVSMacros(
-          description, config=self.config_name)
+    args = args[:]
 
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in
