@@ -33,7 +33,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   const AccessibilityNodeData& GetAccessibilityNodeDataTree(
       AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
     WindowedNotificationObserver tree_updated_observer(
-        NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+        NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
         NotificationService::AllSources());
     RenderWidgetHostView* host_view =
         shell()->web_contents()->GetRenderWidgetHostView();

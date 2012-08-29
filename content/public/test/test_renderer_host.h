@@ -41,11 +41,6 @@ class RenderViewHostTester {
   // RenderViewHostTestEnabler instance (see below) to do this.
   static RenderViewHostTester* For(RenderViewHost* host);
 
-  // This removes the need to expose
-  // RenderViewHostImpl::set_send_accessibility_updated_notifications()
-  // outside of content.
-  static void EnableAccessibilityUpdatedNotifications(RenderViewHost* host);
-
   // If the given WebContentsImpl has a pending RVH, returns it, otherwise NULL.
   static RenderViewHost* GetPendingForController(
       NavigationController* controller);

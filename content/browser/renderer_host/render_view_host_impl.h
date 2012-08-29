@@ -408,10 +408,6 @@ class CONTENT_EXPORT RenderViewHostImpl
     save_accessibility_tree_for_testing_ = save;
   }
 
-  void set_send_accessibility_updated_notifications(bool send) {
-    send_accessibility_updated_notifications_ = send;
-  }
-
   const AccessibilityNodeData& accessibility_tree_for_testing() {
     return accessibility_tree_;
   }
@@ -644,10 +640,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;
-
-  // Whether accessibility notifications are sent for all WebKit notifications
-  // for unit testing.
-  bool send_accessibility_updated_notifications_;
 
   // A JSON serialized representation of the frame tree for the current document
   // in the render view. For more details, see the comments on

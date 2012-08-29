@@ -252,11 +252,6 @@ enum NotificationType {
   // std::pair::<old RenderViewHost, new RenderViewHost>).
   NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
 
-  // Indicates that the render view host has received an accessibility tree
-  // update, either partial or full, from the render view.  The source is the
-  // RenderViewHost, the details are not used.
-  NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-
   // This is sent when a RenderWidgetHost is being destroyed. The source is
   // the RenderWidgetHost, the details are not used.
   NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
@@ -320,6 +315,21 @@ enum NotificationType {
   // renderer in response to a dom automation controller action. The source is
   // the RenderViewHost, and the details is a DomOperationNotificationDetails.
   NOTIFICATION_DOM_OPERATION_RESPONSE,
+
+  // Indicates that the render view host has received a "load complete"
+  // accessibility notification. The source is the RenderViewHost,
+  // the details are not used.
+  NOTIFICATION_ACCESSIBILITY_LOAD_COMPLETE,
+
+  // Indicates that the render view host has received a "layout complete"
+  // accessibility notification. The source is the RenderViewHost,
+  // the details are not used.
+  NOTIFICATION_ACCESSIBILITY_LAYOUT_COMPLETE,
+
+  // Indicates that the render view host has received an accessibility
+  // notification. other than the ones covered above.
+  // The source is the RenderViewHost, the details are not used.
+  NOTIFICATION_ACCESSIBILITY_OTHER,
 
   // Child Processes ---------------------------------------------------------
 

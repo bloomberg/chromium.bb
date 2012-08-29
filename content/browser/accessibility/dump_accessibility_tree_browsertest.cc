@@ -156,7 +156,7 @@ void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
 
   // Load the page.
   WindowedNotificationObserver tree_updated_observer(
-      NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
+      NOTIFICATION_ACCESSIBILITY_LOAD_COMPLETE,
       NotificationService::AllSources());
   string16 html_contents16;
   html_contents16 = UTF8ToUTF16(html_contents);

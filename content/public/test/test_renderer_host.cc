@@ -27,13 +27,6 @@ RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
 }
 
 // static
-void RenderViewHostTester::EnableAccessibilityUpdatedNotifications(
-    RenderViewHost* host) {
-  static_cast<RenderViewHostImpl*>(
-      host)->set_send_accessibility_updated_notifications(true);
-}
-
-// static
 RenderViewHost* RenderViewHostTester::GetPendingForController(
     NavigationController* controller) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
