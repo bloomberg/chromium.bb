@@ -102,7 +102,6 @@ CXXFLAGS+=\
 	-Wmissing-field-initializers \
 	-Wsign-compare \
 	-Wtype-limits \
-	-Wuninitialized \
 	-D__STDC_FORMAT_MACROS=1 \
 	-D_FILE_OFFSET_BITS=64 \
 	-DGESTURES_INTERNAL=1 \
