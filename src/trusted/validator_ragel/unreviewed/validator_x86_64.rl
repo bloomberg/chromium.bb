@@ -256,19 +256,29 @@
     rep? REXW_NONE? 0xa5     ; # movs[lq] %es:(%rdi),%ds:(%rsi)
 
   sandbox_instructions_rsi_no_rdi =
-    (0x89 | 0x8b) 0xf6         . # mov %esi,%esi
-    0x49 0x8d 0x34 0x37        . # lea (%r15,%rsi,1),%rsi
+    (0x89 | 0x8b) 0xf6       . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
     string_instructions_rsi_no_rdi
     @{
        instruction_start -= 6;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
        restricted_register = NO_REG;
+    } |
+
+    REX_X (0x89 | 0x8b) 0xf6 . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
+    string_instructions_rsi_no_rdi
+    @{
+       instruction_start -= 7;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 3);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 7);
+       restricted_register = NO_REG;
     };
 
   sandbox_instructions_rdi_no_rsi =
-    (0x89 | 0x8b) 0xff         . # mov %edi,%edi
-    0x49 0x8d 0x3c 0x3f        . # lea (%r15,%rdi,1),%rdi
+    (0x89 | 0x8b) 0xff       . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
     (
         string_instructions_rdi_no_rsi |
         maskmovq |
@@ -279,14 +289,25 @@
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
        restricted_register = NO_REG;
+    } |
+
+    REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
+    string_instructions_rdi_no_rsi
+    @{
+       instruction_start -= 7;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 3);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 7);
+       restricted_register = NO_REG;
     };
+
 
   # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
   sandbox_instructions_rsi_rdi =
-    (0x89 | 0x8b) 0xf6        . # mov %esi,%esi
-    0x49 0x8d 0x34 0x37       . # lea (%r15,%rsi,1),%rsi
-    (0x89 | 0x8b) 0xff        . # mov %edi,%edi
-    0x49 0x8d 0x3c 0x3f       . # lea (%r15,%rdi,1),%rdi
+    (0x89 | 0x8b) 0xf6       . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
+    (0x89 | 0x8b) 0xff       . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
     string_instructions_rsi_rdi
     @{
        instruction_start -= 12;
@@ -294,6 +315,48 @@
        BitmapClearBit(valid_targets, (instruction_start - data) + 6);
        BitmapClearBit(valid_targets, (instruction_start - data) + 8);
        BitmapClearBit(valid_targets, (instruction_start - data) + 12);
+       restricted_register = NO_REG;
+    } |
+
+    (0x89 | 0x8b) 0xf6       . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
+    REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
+    string_instructions_rsi_rdi
+    @{
+       instruction_start -= 13;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 2);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 6);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 9);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 13);
+       restricted_register = NO_REG;
+    } |
+
+    REX_X (0x89 | 0x8b) 0xf6 . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
+    (0x89 | 0x8b) 0xff       . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
+    string_instructions_rsi_rdi
+    @{
+       instruction_start -= 13;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 3);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 7);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 9);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 13);
+       restricted_register = NO_REG;
+    } |
+
+    REX_X (0x89 | 0x8b) 0xf6 . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
+    REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
+    string_instructions_rsi_rdi
+    @{
+       instruction_start -= 14;
+       BitmapClearBit(valid_targets, (instruction_start - data) + 3);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 7);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 10);
+       BitmapClearBit(valid_targets, (instruction_start - data) + 14);
        restricted_register = NO_REG;
     };
 
