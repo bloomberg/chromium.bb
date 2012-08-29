@@ -4,10 +4,14 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_path.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -24,13 +28,20 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_util.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_filter.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 using testing::Return;
 
 namespace policy {
@@ -42,6 +53,52 @@ const char kCookieValue[] = "converted=true";
 // Assigned to Philip J. Fry to fix eventually.
 const char kCookieOptions[] = ";expires=Wed Jan 01 3000 00:00:00 GMT";
 
+// Filters requests to the hosts in |urls| and redirects them to the test data
+// dir through URLRequestMockHTTPJobs.
+void RedirectHostsToTestDataOnIOThread(const GURL* const urls[], size_t size) {
+  // Map the given hosts to the test data dir.
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  for (size_t i = 0; i < size; ++i) {
+    const GURL* url = urls[i];
+    EXPECT_TRUE(url->is_valid());
+    filter->AddHostnameHandler(url->scheme(), url->host(),
+                               URLRequestMockHTTPJob::Factory);
+  }
+}
+
+// Verifies that the given |url| can be opened. This assumes that |url| points
+// at empty.html in the test data dir.
+void CheckCanOpenURL(Browser* browser, const GURL& url) {
+  ui_test_utils::NavigateToURL(browser, url);
+  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  EXPECT_EQ(url, contents->GetURL());
+  EXPECT_EQ(net::FormatUrl(url, std::string()), contents->GetTitle());
+}
+
+// Verifies that access to the given |url| is blocked.
+void CheckURLIsBlocked(Browser* browser, const GURL& url) {
+  ui_test_utils::NavigateToURL(browser, url);
+  content::WebContents* contents = chrome::GetActiveWebContents(browser);
+  EXPECT_EQ(url, contents->GetURL());
+  string16 title = UTF8ToUTF16(url.spec() + " is not available");
+  EXPECT_EQ(title, contents->GetTitle());
+
+  // Verify that the expected error page is being displayed.
+  // (error 138 == NETWORK_ACCESS_DENIED)
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+      contents->GetRenderViewHost(),
+      std::wstring(),
+      ASCIIToWide(
+          "var hasError = false;"
+          "var error = document.getElementById('errorDetails');"
+          "if (error)"
+          "  hasError = error.textContent.indexOf('Error 138') == 0;"
+          "domAutomationController.send(hasError);"),
+      &result));
+  EXPECT_TRUE(result);
+}
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -52,6 +109,12 @@ class PolicyTest : public InProcessBrowserTest {
     EXPECT_CALL(provider_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   MockConfigurationPolicyProvider provider_;
@@ -191,6 +254,56 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   ui_test_utils::NavigateToURL(browser(), url);
   language_observer2.Wait();
   EXPECT_EQ(0u, infobar_helper->GetInfoBarCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
+  // Checks that URLs can be blacklisted, and that exceptions can be made to
+  // the blacklist.
+  const GURL kAAA("http://aaa.com/empty.html");
+  const GURL kBBB("http://bbb.com/empty.html");
+  const GURL kSUB_BBB("http://sub.bbb.com/empty.html");
+  const GURL kBBB_PATH("http://bbb.com/policy/device_management");
+  // Filter |kURLS| on IO thread, so that requests to those hosts end up
+  // as URLRequestMockHTTPJobs.
+  const GURL* kURLS[] = {
+    &kAAA,
+    &kBBB,
+    &kSUB_BBB,
+    &kBBB_PATH,
+  };
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(RedirectHostsToTestDataOnIOThread, kURLS, arraysize(kURLS)),
+      MessageLoop::QuitClosure());
+  content::RunMessageLoop();
+
+  // Verify that all the URLs can be opened without a blacklist.
+  for (size_t i = 0; i < arraysize(kURLS); ++i)
+    CheckCanOpenURL(browser(), *kURLS[i]);
+
+  // Set a blacklist.
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue("bbb.com"));
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  // All bbb.com URLs are blocked.
+  CheckCanOpenURL(browser(), kAAA);
+  for (size_t i = 1; i < arraysize(kURLS); ++i)
+    CheckURLIsBlocked(browser(), *kURLS[i]);
+
+  // Whitelist some sites of bbb.com.
+  base::ListValue whitelist;
+  whitelist.Append(base::Value::CreateStringValue("sub.bbb.com"));
+  whitelist.Append(base::Value::CreateStringValue("bbb.com/policy"));
+  policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, whitelist.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  CheckCanOpenURL(browser(), kAAA);
+  CheckURLIsBlocked(browser(), kBBB);
+  CheckCanOpenURL(browser(), kSUB_BBB);
+  CheckCanOpenURL(browser(), kBBB_PATH);
 }
 
 }  // namespace policy

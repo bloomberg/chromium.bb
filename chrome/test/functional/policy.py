@@ -60,22 +60,6 @@ class PolicyTest(policy_base.PolicyTestBase):
         return x['pid']
     return None
 
-  def _IsBlocked(self, url):
-    """Returns true if navigating to |url| is blocked."""
-    self.NavigateToURL(url)
-    blocked = self.GetActiveTabTitle() == url + ' is not available'
-    ret = self.ExecuteJavascript("""
-        var hasError = false;
-        var error = document.getElementById('errorDetails');
-        if (error) {
-          hasError = error.textContent.indexOf('Error 138') == 0;
-        }
-        domAutomationController.send(hasError.toString());
-    """)
-    ret = ret == 'true'
-    self.assertEqual(blocked, ret)
-    return blocked
-
   def _IsJavascriptEnabled(self):
     """Returns true if Javascript is enabled, false otherwise."""
     try:
@@ -131,30 +115,6 @@ class PolicyTest(policy_base.PolicyTestBase):
       total += 1
     self.assertFalse(fails, msg='%d of %d policies failed.\n%s' %
                      (len(fails), total, '\n'.join(fails)))
-
-  def testBlacklistPolicy(self):
-    """Tests the URLBlacklist and URLWhitelist policies."""
-    # This is an end to end test and not an exaustive test of the filter format.
-    policy = {
-      'URLBlacklist': [
-        'news.google.com',
-        'chromium.org',
-      ],
-      'URLWhitelist': [
-        'dev.chromium.org',
-        'chromium.org/chromium-os',
-      ]
-    }
-    self.SetUserPolicy(policy)
-
-    self.assertTrue(self._IsBlocked('http://news.google.com/'))
-    self.assertFalse(self._IsBlocked('http://www.google.com/'))
-    self.assertFalse(self._IsBlocked('http://google.com/'))
-
-    self.assertTrue(self._IsBlocked('http://chromium.org/'))
-    self.assertTrue(self._IsBlocked('http://www.chromium.org/'))
-    self.assertFalse(self._IsBlocked('http://dev.chromium.org/'))
-    self.assertFalse(self._IsBlocked('http://chromium.org/chromium-os/testing'))
 
   def testJavascriptPolicies(self):
     """Tests the Javascript policies."""
