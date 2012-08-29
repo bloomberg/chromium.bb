@@ -122,9 +122,6 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
 // Class to handle DriveEntry* lookups, add/remove DriveEntry*.
 class DriveResourceMetadata {
  public:
-  // Callback for GetEntryByResourceIdAsync.
-  typedef base::Callback<void(DriveEntry* entry)> GetEntryByResourceIdCallback;
-
   // Map of resource id and serialized DriveEntry.
   typedef std::map<std::string, std::string> SerializedMap;
   // Map of resource id strings to DriveEntry*.
@@ -197,12 +194,6 @@ class DriveResourceMetadata {
   // but can be difficult. See crbug.com/137374
   DriveEntry* GetEntryByResourceId(const std::string& resource_id);
 
-  // Returns the DriveEntry* in the callback with the corresponding
-  // |resource_id|. TODO(satorux): Remove this in favor of
-  // GetEntryInfoByResourceId(). crbug.com/137512
-  void GetEntryByResourceIdAsync(const std::string& resource_id,
-                                 const GetEntryByResourceIdCallback& callback);
-
   // Finds an entry (a file or a directory) by |resource_id|.
   //
   // Must be called from UI thread. |callback| is run on UI thread.
@@ -258,6 +249,9 @@ class DriveResourceMetadata {
   void SaveToDB();
 
  private:
+  // Callback for GetEntryByResourceIdAsync.
+  typedef base::Callback<void(DriveEntry* entry)> GetEntryByResourceIdCallback;
+
   // Initializes the resource map using serialized_resources fetched from the
   // database.
   void InitResourceMap(CreateDBParams* create_params,
@@ -269,6 +263,11 @@ class DriveResourceMetadata {
   // Creates DriveEntry from serialized string.
   scoped_ptr<DriveEntry> FromProtoString(
       const std::string& serialized_proto);
+
+  // Returns the DriveEntry* in the callback with the corresponding
+  // |resource_id|.
+  void GetEntryByResourceIdAsync(const std::string& resource_id,
+                                 const GetEntryByResourceIdCallback& callback);
 
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the
