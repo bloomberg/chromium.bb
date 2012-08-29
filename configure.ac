@@ -14,6 +14,7 @@ AM_SILENT_RULES([yes])
 # Check for programs
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_SED
 
 # Initialize libtool
 LT_PREREQ([2.2])
@@ -240,5 +241,6 @@ AC_CONFIG_FILES([Makefile
 		 wcap/Makefile
 		 data/Makefile
 		 protocol/Makefile
+		 man/Makefile
 		 tests/Makefile])
 AC_OUTPUT
