@@ -469,8 +469,87 @@ def list_test_cases(executable, index, shards, disabled, fails, flaky):
   return filter_bad_tests(tests, disabled, fails, flaky)
 
 
+class RunSome(object):
+  """Thread-safe object deciding if testing should continue."""
+  def __init__(self, expected_count, retries, min_failures, max_failure_ratio):
+    """Determines if it is better to give up testing after an amount of failures
+    and successes.
+
+    Arguments:
+    - expected_count is the expected number of elements to run.
+    - retries is how many time a failing element can be retried. retries should
+      be set to the maximum number of retries per failure. This permits
+      dampening the curve to determine threshold where to stop.
+    - min_failures is the minimal number of failures to tolerate, to put a lower
+      limit when expected_count is small. This value is multiplied by the number
+      of retries.
+    - max_failure_ratio is the the ratio of permitted failures, e.g. 0.1 to stop
+      after 10% of failed test cases.
+
+    For large values of expected_count, the number of tolerated failures will be
+    at maximum "(expected_count * retries) * max_failure_ratio".
+
+    For small values of expected_count, the number of tolerated failures will be
+    at least "min_failures * retries".
+    """
+    assert 0 < expected_count
+    assert 0 <= retries < 100
+    assert 0 <= min_failures
+    assert 0. < max_failure_ratio < 1.
+    # Constants.
+    self._expected_count = expected_count
+    self._retries = retries
+    self._min_failures = min_failures
+    self._max_failure_ratio = max_failure_ratio
+
+    self._min_failures_tolerated = self._min_failures * self._retries
+    # Pre-calculate the maximum number of allowable failures. Note that
+    # _max_failures can be lower than _min_failures.
+    self._max_failures_tolerated = round(
+        (expected_count * retries) * max_failure_ratio)
+
+    # Variables.
+    self._lock = threading.Lock()
+    self._passed = 0
+    self._failures = 0
+
+  def should_stop(self):
+    """Stops once a threshold was reached. This includes retries."""
+    with self._lock:
+      # Accept at least the minimum number of failures.
+      if self._failures <= self._min_failures_tolerated:
+        return False
+      return self._failures >= self._max_failures_tolerated
+
+  def got_result(self, passed):
+    with self._lock:
+      if passed:
+        self._passed += 1
+      else:
+        self._failures += 1
+
+  def __str__(self):
+    return '%s(%d, %d, %d, %.3f)' % (
+        self.__class__.__name__,
+        self._expected_count,
+        self._retries,
+        self._min_failures,
+        self._max_failure_ratio)
+
+
+class RunAll(object):
+  """Never fails."""
+  @staticmethod
+  def should_stop():
+    return False
+  @staticmethod
+  def got_result(_):
+    pass
+
+
 class Runner(object):
-  def __init__(self, executable, cwd_dir, timeout, progress, retry_count=3):
+  def __init__(
+      self, executable, cwd_dir, timeout, progress, retry_count, decider):
     # Constants
     self.executable = executable
     self.cwd_dir = cwd_dir
@@ -480,6 +559,7 @@ class Runner(object):
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
     self.env = setup_gtest_env()
+    self.decider = decider
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
@@ -487,6 +567,9 @@ class Runner(object):
     cmd = fix_python_path(cmd)
     out = []
     for retry in range(self.retry_count):
+      if self.decider.should_stop():
+        break
+
       start = time.time()
       output, returncode = call_with_timeout(
           cmd,
@@ -505,6 +588,7 @@ class Runner(object):
       if '[ RUN      ]' not in output:
         # Can't find gtest marker, mark it as invalid.
         returncode = returncode or 1
+      self.decider.got_result(bool(returncode))
       out.append(data)
       if sys.platform == 'win32':
         output = output.replace('\r\n', '\n')
@@ -566,11 +650,20 @@ def LogResults(result_file, results):
     json.dump(results, f, sort_keys=True, indent=2)
 
 
-def run_test_cases(executable, test_cases, jobs, timeout, result_file):
+def run_test_cases(executable, test_cases, jobs, timeout, run_all, result_file):
   """Traces test cases one by one."""
+  if not test_cases:
+    return 0
   progress = Progress(len(test_cases))
+  retries = 3
+  if run_all:
+    decider = RunAll()
+  else:
+    # If 10% of test cases fail, just too bad.
+    decider = RunSome(len(test_cases), retries, 2, 0.1)
   with ThreadPool(jobs) as pool:
-    function = Runner(executable, os.getcwd(), timeout, progress).map
+    function = Runner(
+        executable, os.getcwd(), timeout, progress, retries, decider).map
     for test_case in test_cases:
       pool.add_task(function, test_case)
     results = pool.join(progress, 0.1)
@@ -607,6 +700,8 @@ def run_test_cases(executable, test_cases, jobs, timeout, result_file):
   for test_case in sorted(fail):
     print '%s failed' % (test_case)
 
+  if decider.should_stop():
+    print '** STOPPED EARLY due to high failure rate **'
   print 'Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total)
   print 'Flaky:   %4d %5.2f%%' % (len(flaky), len(flaky) * 100. / total)
   print 'Fail:    %4d %5.2f%%' % (len(fail), len(fail) * 100. / total)
@@ -707,6 +802,10 @@ def main(argv):
       default=int(os.environ.get('ISOLATE_DEBUG', 0)),
       help='Use multiple times')
   parser.add_option(
+      '--run-all',
+      action='store_true',
+      help='Do not fail early when a large number of test cases fail')
+  parser.add_option(
       '--no-dump',
       action='store_true',
       help='do not generate a .run_test_cases file')
@@ -766,6 +865,7 @@ def main(argv):
       test_cases,
       options.jobs,
       options.timeout,
+      options.run_all,
       result_file)
 
 

@@ -17,17 +17,12 @@ sys.path.append(os.path.join(ROOT_DIR, 'data', 'gtest_fake'))
 import gtest_fake_base
 
 
-def RunTest(test_file, dump_file=None):
+def RunTest(test_file, extra_flags):
   target = os.path.join(ROOT_DIR, 'data', 'gtest_fake', test_file)
   cmd = [
       sys.executable,
       os.path.join(ROOT_DIR, 'run_test_cases.py'),
-  ]
-
-  if dump_file:
-    cmd.extend(['--result', dump_file])
-  else:
-    cmd.append('--no-dump')
+  ] + extra_flags
 
   cmd.append(target)
   logging.debug(' '.join(cmd))
@@ -76,8 +71,8 @@ class TraceTestCases(unittest.TestCase):
       self.assertEqual(entry_count, len(file_contents[entry_name]))
 
   def test_simple_pass(self):
-    out, err, return_code = RunTest('gtest_fake_pass.py',
-                                    dump_file=self.filename)
+    out, err, return_code = RunTest(
+        'gtest_fake_pass.py', ['--result', self.filename])
 
     self.assertEquals(0, return_code)
 
@@ -101,7 +96,8 @@ class TraceTestCases(unittest.TestCase):
     self._check_results_file(expected_result_file_entries)
 
   def test_simple_fail(self):
-    out, err, return_code = RunTest('gtest_fake_fail.py', self.filename)
+    out, err, return_code = RunTest(
+        'gtest_fake_fail.py', ['--result', self.filename])
 
     self.assertEquals(1, return_code)
 
@@ -141,7 +137,8 @@ class TraceTestCases(unittest.TestCase):
     self._check_results_file(expected_result_file_entries)
 
   def test_simple_gtest_list_error(self):
-    out, err, return_code = RunTest('gtest_fake_error.py')
+    out, err, return_code = RunTest(
+        'gtest_fake_error.py', ['--no-dump'])
 
     expected_out_re = [
         'Failed to run .+gtest_fake_error.py',

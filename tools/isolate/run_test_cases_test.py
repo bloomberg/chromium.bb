@@ -99,11 +99,12 @@ class RunTestCases(unittest.TestCase):
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
     exe = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake_pass.py')
-    def expect(executable, test_cases, jobs, timeout, result_file):
+    def expect(executable, test_cases, jobs, timeout, run_all, result_file):
       self.assertEquals(exe, executable)
       self.assertEquals(['Foo.Bar1', 'Foo.Bar3'], test_cases)
       self.assertEquals(run_test_cases.num_processors(), jobs)
       self.assertEquals(120, timeout)
+      self.assertEquals(None, run_all)
       self.assertEquals(exe + '.run_test_cases', result_file)
       return 89
     try:
@@ -112,6 +113,50 @@ class RunTestCases(unittest.TestCase):
       self.assertEquals(89, result)
     finally:
       run_test_cases.run_test_cases = old
+
+  def testRunSome(self):
+    tests = [
+        # Try with named arguments. Accepts 3*1 failures.
+        (
+          run_test_cases.RunSome(
+              expected_count=10,
+              retries=3,
+              min_failures=1,
+              max_failure_ratio=0.001),
+          [False] * 4),
+        # Same without named arguments.
+        (run_test_cases.RunSome(  10, 3, 1, 0.001), [False] * 4),
+
+        (run_test_cases.RunSome(  10, 1, 1, 0.001), [False] * 2),
+        (run_test_cases.RunSome(  10, 1, 1, 0.010), [False] * 2),
+
+        # For low expected_count value, retries * min_failures is the minimum
+        # bound of accepted failures.
+        (run_test_cases.RunSome(  10, 3, 1, 0.010), [False] * 4),
+        (run_test_cases.RunSome(  10, 3, 1, 0.020), [False] * 4),
+        (run_test_cases.RunSome(  10, 3, 1, 0.050), [False] * 4),
+        (run_test_cases.RunSome(  10, 3, 1, 0.100), [False] * 4),
+        (run_test_cases.RunSome(  10, 3, 1, 0.110), [False] * 4),
+
+        # Allows expected_count + retries failures at maximum.
+        (run_test_cases.RunSome(  10, 3, 1, 0.200), [False] * 6),
+        (run_test_cases.RunSome(  10, 3, 1, 0.999), [False] * 30),
+
+        # The asympthote is nearing max_failure_ratio for large expected_count
+        # values.
+        (run_test_cases.RunSome(1000, 3, 1, 0.050), [False] * 150),
+    ]
+    for index, (decider, rounds) in enumerate(tests):
+      for index2, r in enumerate(rounds):
+        self.assertFalse(decider.should_stop(), (index, index2, str(decider)))
+        decider.got_result(r)
+      self.assertTrue(decider.should_stop(), (index, str(decider)))
+
+  def testStatsInfinite(self):
+    decider = run_test_cases.RunAll()
+    for _ in xrange(200):
+      self.assertFalse(decider.should_stop())
+      decider.got_result(False)
 
 
 class WorkerPoolTest(unittest.TestCase):
