@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -396,11 +395,6 @@ void ChromeShellDelegate::HandleMediaPrevTrack() {
 #if defined(OS_CHROMEOS)
   ExtensionMediaPlayerEventRouter::GetInstance()->NotifyPrevTrack();
 #endif
-}
-
-string16 ChromeShellDelegate::GetTimeRemainingString(
-    const base::TimeDelta& delta) {
-  return TimeFormat::TimeRemaining(delta);
 }
 
 void ChromeShellDelegate::Observe(int type,

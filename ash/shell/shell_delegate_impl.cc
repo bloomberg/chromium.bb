@@ -147,10 +147,5 @@ void ShellDelegateImpl::HandleMediaPlayPause() {
 void ShellDelegateImpl::HandleMediaPrevTrack() {
 }
 
-string16 ShellDelegateImpl::GetTimeRemainingString(
-    const base::TimeDelta& delta) {
-  return string16();
-}
-
 }  // namespace shell
 }  // namespace ash
