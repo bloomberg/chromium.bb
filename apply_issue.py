@@ -52,6 +52,10 @@ def main():
   if not options.issue:
     parser.error('Require --issue')
 
+  # TODO(rogerta): Remove me, it's ugly.
+  if options.email == '=':
+    options.email = ''
+
   obj = rietveld.Rietveld(options.server, options.email, None)
 
   if not options.patchset:
