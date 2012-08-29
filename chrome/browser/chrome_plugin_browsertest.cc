@@ -58,13 +58,23 @@ class ChromePluginTest : public InProcessBrowserTest {
   }
 
   static FilePath GetFlashPath() {
-    FilePath path;
+    std::vector<webkit::WebPluginInfo> plugins = GetPlugins();
+    for (std::vector<webkit::WebPluginInfo>::const_iterator it =
+           plugins.begin(); it != plugins.end(); ++it) {
+      if (it->name == ASCIIToUTF16("Shockwave Flash"))
+        return it->path;
+    }
+    return FilePath();
+  }
+
+  static std::vector<webkit::WebPluginInfo> GetPlugins() {
+    std::vector<webkit::WebPluginInfo> plugins;
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     content::PluginService::GetInstance()->GetPlugins(
-        base::Bind(&GetPluginsInfoCallback, &path, runner->QuitClosure()));
+        base::Bind(&GetPluginsInfoCallback, &plugins, runner->QuitClosure()));
     runner->Run();
-    return path;
+    return plugins;
   }
 
   static void EnableFlash(bool enable, Profile* profile) {
@@ -106,16 +116,10 @@ class ChromePluginTest : public InProcessBrowserTest {
   }
 
   static void GetPluginsInfoCallback(
-      FilePath* flash_path,
+      std::vector<webkit::WebPluginInfo>* rv,
       const base::Closure& quit_task,
       const std::vector<webkit::WebPluginInfo>& plugins) {
-    for (std::vector<webkit::WebPluginInfo>::const_iterator it =
-           plugins.begin(); it != plugins.end(); ++it) {
-      if (it->name == ASCIIToUTF16("Shockwave Flash")) {
-        *flash_path = it->path;
-        break;
-      }
-    }
+    *rv = plugins;
     quit_task.Run();
   }
 
@@ -171,4 +175,32 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, Flash) {
   EnableFlash(true, profile);
   ASSERT_NO_FATAL_FAILURE(LoadAndWait(browser(), url, true));
   EnsureFlashProcessCount(1);
+}
+
+// Verify that the official builds have the known set of plugins.
+IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
+#if !defined(OFFICIAL_BUILD)
+  return;
+#endif
+  const char* expected[] = {
+    "Chrome PDF Viewer",
+    "Shockwave Flash",
+    "Native Client",
+#if defined(OS_CHROMEOS)
+    "Chrome Remote Desktop Viewer",
+    "Google Talk Plugin",
+    "Google Talk Plugin Video Accelerator",
+    "Netflix",
+#endif
+  };
+
+  std::vector<webkit::WebPluginInfo> plugins = GetPlugins();
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {
+    size_t j = 0;
+    for (; j < plugins.size(); ++j) {
+      if (plugins[j].name == ASCIIToUTF16(expected[i]))
+        break;
+    }
+    ASSERT_TRUE(j != plugins.size()) << "Didn't find " << expected[i];
+  }
 }

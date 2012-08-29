@@ -54,7 +54,6 @@
       'ntp',
       'omnibox',
       'passwords',
-      'plugins_check',
       'policy',
       'policy_prefs_ui',
       'popups',
