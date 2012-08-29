@@ -472,6 +472,40 @@ panel_create(struct display *display)
 	return panel;
 }
 
+static cairo_surface_t *
+load_icon_or_fallback(const char *icon)
+{
+	cairo_surface_t *surface = cairo_image_surface_create_from_png(icon);
+	cairo_t *cr;
+
+	if (cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS)
+		return surface;
+
+	cairo_surface_destroy(surface);
+	fprintf(stderr, "ERROR loading icon from file '%s'\n", icon);
+
+	/* draw fallback icon */
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					     20, 20);
+	cr = cairo_create(surface);
+
+	cairo_set_source_rgba(cr, 0.8, 0.8, 0.8, 1);
+	cairo_paint(cr);
+
+	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+	cairo_rectangle(cr, 0, 0, 20, 20);
+	cairo_move_to(cr, 4, 4);
+	cairo_line_to(cr, 16, 16);
+	cairo_move_to(cr, 4, 16);
+	cairo_line_to(cr, 16, 4);
+	cairo_stroke(cr);
+
+	cairo_destroy(cr);
+
+	return surface;
+}
+
 static void
 panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 {
@@ -481,7 +515,7 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 
 	launcher = malloc(sizeof *launcher);
 	memset(launcher, 0, sizeof *launcher);
-	launcher->icon = cairo_image_surface_create_from_png(icon);
+	launcher->icon = load_icon_or_fallback(icon);
 	launcher->path = strdup(path);
 
 	wl_array_init(&launcher->envp);
