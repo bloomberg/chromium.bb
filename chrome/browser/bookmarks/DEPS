@@ -1,0 +1,64 @@
+include_rules = [
+  # Bookmarks is being made into a Browser Component, so we have these
+  # two basic rules followed by temporary exceptions.  Please don't
+  # add to the list of exceptions!
+  "-chrome/browser",
+  "+chrome/browser/api",
+  "+chrome/browser/bookmarks",
+
+  # TODO(kaiwang): Bring this list to zero.
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  "!chrome/browser/browser_process.h",
+  "!chrome/browser/cancelable_request.h",
+  "!chrome/browser/extensions/event_router.h",
+  "!chrome/browser/extensions/extension_function.h",
+  "!chrome/browser/extensions/extension_function_dispatcher.h",
+  "!chrome/browser/extensions/extension_web_ui.h",
+  "!chrome/browser/extensions/extensions_quota_service.h",
+  "!chrome/browser/favicon/favicon_service.h",
+  "!chrome/browser/favicon/favicon_service_factory.h",
+  "!chrome/browser/history/history.h",
+  "!chrome/browser/history/history_database.h",
+  "!chrome/browser/history/history_notifications.h",
+  "!chrome/browser/history/history_service_factory.h",
+  "!chrome/browser/history/history_types.h",
+  "!chrome/browser/history/query_parser.h",
+  "!chrome/browser/history/snippet.h",
+  "!chrome/browser/importer/importer_data_types.h",
+  "!chrome/browser/importer/importer_host.h",
+  "!chrome/browser/prefs/incognito_mode_prefs.h",
+  "!chrome/browser/prefs/pref_service.h",
+  "!chrome/browser/profiles/profile.h",
+  "!chrome/browser/profiles/profile_dependency_manager.h",
+  "!chrome/browser/profiles/profile_keyed_service.h",
+  "!chrome/browser/profiles/profile_keyed_service_factory.h",
+  "!chrome/browser/ui/bookmarks/bookmark_tab_helper.h",
+  "!chrome/browser/ui/browser.h",
+  "!chrome/browser/ui/browser_list.h",
+  "!chrome/browser/ui/browser_tabstrip.h",
+  "!chrome/browser/ui/browser_window.h",
+  "!chrome/browser/ui/chrome_pages.h",
+  "!chrome/browser/ui/chrome_select_file_policy.h",
+  "!chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h",
+  "!chrome/browser/ui/gtk/custom_drag.h",
+  "!chrome/browser/ui/simple_message_box.h",
+  "!chrome/browser/ui/tab_contents/tab_contents.h",
+  "!chrome/browser/ui/webui/chrome_url_data_manager.h",
+  "!chrome/browser/view_type_utils.h",
+  # Do not add to the list of temporarily-allowed dependencies above,
+  # and please do not introduce more #includes of these files.
+]
+
+specific_include_rules = {
+  # TODO(kaiwang): Bring this list to zero.
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  '.*_[a-z]*test\.cc': [
+    "!chrome/browser/extensions/extension_apitest.h",
+    "!chrome/browser/history/in_memory_database.h",
+    "!chrome/browser/importer/firefox2_importer.h",
+    "!chrome/browser/profiles/profile_manager.h",
+    "!chrome/browser/ui/browser_commands.h",
+  ]
+}
