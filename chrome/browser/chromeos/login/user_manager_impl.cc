@@ -675,6 +675,29 @@ bool UserManagerImpl::IsSessionStarted() const {
   return session_started_;
 }
 
+bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
+  // The guest and stub user always are ephemeral.
+  if (email == kGuestUser || email == kStubUser)
+    return true;
+
+  // The currently logged-in user is ephemeral iff logged in as ephemeral.
+  if (logged_in_user_ && (email == logged_in_user_->email()))
+    return is_current_user_ephemeral_;
+
+  // The owner and any users found in the persistent list are never ephemeral.
+  if (email == owner_email_  || FindUserInList(email))
+    return false;
+
+  // Any other user is ephemeral when:
+  // a) Going through the regular login flow and ephemeral users are enabled.
+  //    - or -
+  // b) The browser is restarting after a crash.
+  return AreEphemeralUsersEnabled() ||
+         (base::chromeos::IsRunningOnChromeOS() &&
+          !CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kLoginManager));
+}
+
 void UserManagerImpl::AddObserver(Observer* obs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_list_.AddObserver(obs);
@@ -854,29 +877,6 @@ bool UserManagerImpl::AreEphemeralUsersEnabled() const {
   return ephemeral_users_enabled_ &&
       (g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ||
       !owner_email_.empty());
-}
-
-bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
-  // The guest and stub user always are ephemeral.
-  if (email == kGuestUser || email == kStubUser)
-    return true;
-
-  // The currently logged-in user is ephemeral iff logged in as ephemeral.
-  if (logged_in_user_ && (email == logged_in_user_->email()))
-    return is_current_user_ephemeral_;
-
-  // The owner and any users found in the persistent list are never ephemeral.
-  if (email == owner_email_  || FindUserInList(email))
-    return false;
-
-  // Any other user is ephemeral when:
-  // a) Going through the regular login flow and ephemeral users are enabled.
-  //    - or -
-  // b) The browser is restarting after a crash.
-  return AreEphemeralUsersEnabled() ||
-         (base::chromeos::IsRunningOnChromeOS() &&
-          !CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kLoginManager));
 }
 
 const User* UserManagerImpl::FindUserInList(const std::string& email) const {

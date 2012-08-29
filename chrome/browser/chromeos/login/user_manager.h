@@ -233,6 +233,10 @@ class UserManager {
   // or restart after crash.
   virtual bool IsSessionStarted() const = 0;
 
+  // Returns true if the user with the given email address is to be treated as
+  // ephemeral.
+  virtual bool IsEphemeralUser(const std::string& email) const = 0;
+
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;
 

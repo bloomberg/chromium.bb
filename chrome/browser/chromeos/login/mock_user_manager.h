@@ -56,6 +56,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
+  MOCK_CONST_METHOD1(IsEphemeralUser, bool(const std::string&));
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));

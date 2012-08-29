@@ -92,6 +92,7 @@ class UserManagerImpl : public UserManager,
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
+  virtual bool IsEphemeralUser(const std::string& email) const OVERRIDE;
   virtual void AddObserver(Observer* obs) OVERRIDE;
   virtual void RemoveObserver(Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
@@ -128,10 +129,6 @@ class UserManagerImpl : public UserManager,
   // Returns true if trusted device policies have successfully been retrieved
   // and ephemeral users are enabled.
   bool AreEphemeralUsersEnabled() const;
-
-  // Returns true if the user with the given email address is to be treated as
-  // ephemeral.
-  bool IsEphemeralUser(const std::string& email) const;
 
   // Returns the user with the given email address if found in the persistent
   // list. Returns |NULL| otherwise.
