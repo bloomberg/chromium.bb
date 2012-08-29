@@ -7,33 +7,20 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/brightness/brightness_control_delegate.h"
-#include "ash/system/tray/system_tray_delegate.h"
-#include "ash/volume_control_delegate.h"
 #include "ash/wm/gestures/bezel_gesture_handler.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/gestures/system_pinch_handler.h"
+#include "ash/wm/gestures/two_finger_drag_handler.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/event.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/screen.h"
-#include "ui/gfx/size.h"
-#include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/touch/touch_factory.h"
@@ -60,7 +47,8 @@ SystemGestureEventFilter::SystemGestureEventFilter()
       system_gestures_enabled_(CommandLine::ForCurrentProcess()->
           HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
       bezel_gestures_(new BezelGestureHandler),
-      long_press_affordance_(new LongPressAffordanceHandler) {
+      long_press_affordance_(new LongPressAffordanceHandler),
+      two_finger_drag_(new TwoFingerDragHandler) {
 }
 
 SystemGestureEventFilter::~SystemGestureEventFilter() {
@@ -102,6 +90,9 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     bezel_gestures_->ProcessGestureEvent(target, *event);
     return ui::GESTURE_STATUS_CONSUMED;
   }
+
+  if (two_finger_drag_->ProcessGestureEvent(target, *event))
+    return ui::GESTURE_STATUS_CONSUMED;
 
   if (!system_gestures_enabled_)
     return ui::GESTURE_STATUS_UNKNOWN;

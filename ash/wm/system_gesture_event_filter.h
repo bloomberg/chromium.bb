@@ -35,6 +35,7 @@ class BezelGestureHandler;
 class LongPressAffordanceHandler;
 class SystemPinchHandler;
 class TouchUMA;
+class TwoFingerDragHandler;
 
 // An event filter which handles system level gesture events.
 class SystemGestureEventFilter : public aura::EventFilter,
@@ -75,6 +76,7 @@ class SystemGestureEventFilter : public aura::EventFilter,
 
   scoped_ptr<BezelGestureHandler> bezel_gestures_;
   scoped_ptr<LongPressAffordanceHandler> long_press_affordance_;
+  scoped_ptr<TwoFingerDragHandler> two_finger_drag_;
 
   TouchUMA touch_uma_;
 

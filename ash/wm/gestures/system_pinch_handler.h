@@ -32,6 +32,7 @@ enum SystemGestureStatus {
   SYSTEM_GESTURE_END,        // Marks the end of the sytem gesture.
 };
 
+// This handles 4+ finger pinch gestures to maximize/minimize/restore windows.
 class SystemPinchHandler {
  public:
   explicit SystemPinchHandler(aura::Window* target);

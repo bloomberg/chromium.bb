@@ -267,6 +267,8 @@
         'wm/gestures/long_press_affordance_handler.h',
         'wm/gestures/system_pinch_handler.cc',
         'wm/gestures/system_pinch_handler.h',
+        'wm/gestures/two_finger_drag_handler.cc',
+        'wm/gestures/two_finger_drag_handler.h',
         'wm/image_grid.cc',
         'wm/image_grid.h',
         'wm/maximize_bubble_controller.cc',
