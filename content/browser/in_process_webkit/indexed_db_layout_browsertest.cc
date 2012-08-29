@@ -28,7 +28,8 @@ namespace {
 static const char* kBasicTests[] = {
   "basics.html",
   "basics-shared-workers.html",
-  "basics-workers.html",
+  // Failing on Precise bot (crbug.com/145592).
+  // "basics-workers.html",
   "database-basics.html",
   "factory-basics.html",
   "index-basics.html",
