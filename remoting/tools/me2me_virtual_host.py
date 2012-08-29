@@ -11,6 +11,7 @@
 
 import atexit
 import errno
+import getpass
 import hashlib
 import json
 import logging
