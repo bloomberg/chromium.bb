@@ -2760,17 +2760,17 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
   DCHECK(doc_entry.get());
 
   const std::string& resource_id = doc_entry->resource_id();
-  scoped_ptr<AddUploadedFileParams> params(
+  AddUploadedFileParams* params =
       new AddUploadedFileParams(upload_mode,
                                 directory_path,
                                 doc_entry.Pass(),
                                 file_content_path,
                                 cache_operation,
-                                callback));
+                                callback);
 
   const FileMoveCallback file_move_callback =
       base::Bind(&DriveFileSystem::ContinueAddUploadedFile,
-                 ui_weak_ptr_, base::Passed(&params));
+                 ui_weak_ptr_, params);
 
   if (upload_mode == UPLOAD_EXISTING_FILE) {
     // Remove the existing entry.
@@ -2781,7 +2781,7 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
 }
 
 void DriveFileSystem::ContinueAddUploadedFile(
-    scoped_ptr<AddUploadedFileParams> params,
+    AddUploadedFileParams* params,
     DriveFileError error,
     const FilePath& /* file_path */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2798,11 +2798,11 @@ void DriveFileSystem::ContinueAddUploadedFile(
       params->doc_entry.Pass(),
       base::Bind(&DriveFileSystem::AddUploadedFileToCache,
                  ui_weak_ptr_,
-                 base::Passed(&params)));
+                 base::Owned(params)));
 }
 
 void DriveFileSystem::AddUploadedFileToCache(
-    scoped_ptr<AddUploadedFileParams> params,
+    AddUploadedFileParams* params,
     DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

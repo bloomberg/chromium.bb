@@ -541,12 +541,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& directory_path);
 
   // Continues to add an uploaded file after existing entry has been deleted.
-  void ContinueAddUploadedFile(scoped_ptr<AddUploadedFileParams> params,
+  void ContinueAddUploadedFile(AddUploadedFileParams* params,
                                DriveFileError error,
                                const FilePath& file_path);
 
   // Adds the uploaded file to the cache.
-  void AddUploadedFileToCache(scoped_ptr<AddUploadedFileParams> params,
+  void AddUploadedFileToCache(AddUploadedFileParams* params,
                               DriveFileError error,
                               const FilePath& file_path);
 
