@@ -197,6 +197,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // the layer.
   ui::Layer* layer_;
 
+  // If non-NULL the destructor sets this to true. Used to determine if this has
+  // been deleted.
+  bool* destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };
 

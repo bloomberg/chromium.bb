@@ -3410,6 +3410,7 @@
         'browser/ui/views/tabs/dock_info_win.cc',
         'browser/ui/views/tabs/dragged_tab_view.cc',
         'browser/ui/views/tabs/dragged_tab_view.h',
+        'browser/ui/views/tabs/end_drag_reason.h',
         'browser/ui/views/tabs/native_view_photobooth.h',
         'browser/ui/views/tabs/native_view_photobooth_win.cc',
         'browser/ui/views/tabs/native_view_photobooth_win.h',

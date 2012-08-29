@@ -80,6 +80,9 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
 
   if (layer_)
     wm::DeepDeleteLayers(layer_);
+
+  if (destroyed_)
+    *destroyed_ = true;
 }
 
 // static
@@ -130,17 +133,22 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   else
     snap_phantom_window_controller_.reset();
 
+  if (!attached_windows_.empty())
+    LayoutAttachedWindows(bounds, grid_size);
+  if (bounds != window()->bounds()) {
+    bool destroyed = false;
+    destroyed_ = &destroyed;
+    window()->SetBounds(bounds);
+    if (destroyed)
+      return;
+    destroyed_ = NULL;
+  }
   // Show a phantom window for dragging in another root window.
   if (HasSecondaryRootWindow())
     UpdateDragPhantomWindow(bounds, in_original_root);
   else
     drag_phantom_window_controller_.reset();
 
-  if (!attached_windows_.empty())
-    LayoutAttachedWindows(bounds, grid_size);
-  if (bounds != window()->bounds())
-    window()->SetBounds(bounds);
-  // WARNING: we may have been deleted.
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
@@ -233,7 +241,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0),
-      layer_(NULL) {
+      layer_(NULL),
+      destroyed_(NULL) {
   DCHECK(details_.is_resizable);
 
   Shell* shell = Shell::GetInstance();

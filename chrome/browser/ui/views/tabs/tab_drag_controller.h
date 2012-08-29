@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
+#include "chrome/browser/ui/views/tabs/end_drag_reason.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -114,10 +115,8 @@ class TabDragController : public content::WebContentsDelegate,
   // Invoked to drag to the new location, in screen coordinates.
   void Drag(const gfx::Point& point_in_screen);
 
-  // Complete the current drag session. If the drag session was canceled
-  // because the user pressed escape or something interrupted it, |canceled|
-  // is true and the drag is reverted.
-  void EndDrag(bool canceled);
+  // Complete the current drag session.
+  void EndDrag(EndDragReason reason);
 
  private:
   class DockDisplayer;

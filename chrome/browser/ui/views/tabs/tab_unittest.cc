@@ -39,7 +39,7 @@ class FakeTabController : public TabController {
       const TabStripSelectionModel& original_selection) OVERRIDE {}
   virtual void ContinueDrag(views::View* view,
                             const gfx::Point& location) OVERRIDE {}
-  virtual bool EndDrag(bool canceled) OVERRIDE { return false; }
+  virtual bool EndDrag(EndDragReason reason) OVERRIDE { return false; }
   virtual BaseTab* GetTabAt(BaseTab* tab,
                             const gfx::Point& tab_in_tab_coordinates) OVERRIDE {
     return NULL;

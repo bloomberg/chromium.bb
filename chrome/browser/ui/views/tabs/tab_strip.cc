@@ -1059,11 +1059,11 @@ void TabStrip::ContinueDrag(views::View* view, const gfx::Point& location) {
   }
 }
 
-bool TabStrip::EndDrag(bool canceled) {
+bool TabStrip::EndDrag(EndDragReason reason) {
   if (!drag_controller_.get())
     return false;
   bool started_drag = drag_controller_->started_drag();
-  drag_controller_->EndDrag(canceled);
+  drag_controller_->EndDrag(reason);
   return started_drag;
 }
 
@@ -1408,12 +1408,12 @@ bool TabStrip::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TabStrip::OnMouseReleased(const ui::MouseEvent& event) {
-  EndDrag(false);
+  EndDrag(END_DRAG_COMPLETE);
   UpdateLayoutTypeFromMouseEvent(this, event);
 }
 
 void TabStrip::OnMouseCaptureLost() {
-  EndDrag(true);
+  EndDrag(END_DRAG_CAPTURE_LOST);
 }
 
 void TabStrip::OnMouseMoved(const ui::MouseEvent& event) {
@@ -1424,7 +1424,7 @@ ui::GestureStatus TabStrip::OnGestureEvent(
     const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_END:
-      EndDrag(false);
+      EndDrag(END_DRAG_COMPLETE);
       if (adjust_layout_) {
         SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
         controller_->LayoutTypeMaybeChanged();
@@ -1441,7 +1441,7 @@ ui::GestureStatus TabStrip::OnGestureEvent(
       break;
 
     case ui::ET_GESTURE_BEGIN:
-      EndDrag(true);
+      EndDrag(END_DRAG_CANCEL);
       break;
 
     default:

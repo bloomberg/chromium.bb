@@ -179,7 +179,7 @@ class TabStrip : public views::View,
       const TabStripSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(views::View* view,
                             const gfx::Point& location) OVERRIDE;
-  virtual bool EndDrag(bool canceled) OVERRIDE;
+  virtual bool EndDrag(EndDragReason reason) OVERRIDE;
   virtual BaseTab* GetTabAt(BaseTab* tab,
                             const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
   virtual void ClickActiveTab(const BaseTab* tab) const OVERRIDE;

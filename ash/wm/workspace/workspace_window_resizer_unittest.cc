@@ -10,6 +10,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/string_number_conversions.h"
@@ -491,6 +492,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiMonitors) {
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("800x600,800x600");
+  Shell::GetInstance()->shelf()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
@@ -555,6 +557,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiMonitors) {
 TEST_F(WorkspaceWindowResizerTest,
        MAYBE_WindowDragWithMultiMonitorsRightToLeft) {
   UpdateDisplay("800x600,800x600");
+  Shell::GetInstance()->shelf()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 

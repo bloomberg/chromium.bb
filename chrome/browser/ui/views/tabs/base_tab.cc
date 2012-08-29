@@ -375,7 +375,7 @@ void BaseTab::OnMouseReleased(const ui::MouseEvent& event) {
   // In some cases, ending the drag will schedule the tab for destruction; if
   // so, bail immediately, since our members are already dead and we shouldn't
   // do anything else except drop the tab where it is.
-  if (controller()->EndDrag(false))
+  if (controller()->EndDrag(END_DRAG_COMPLETE))
     return;
 
   // Close tab on middle click, but only if the button is released over the tab
@@ -404,7 +404,7 @@ void BaseTab::OnMouseReleased(const ui::MouseEvent& event) {
 
 void BaseTab::OnMouseCaptureLost() {
   if (controller())
-    controller()->EndDrag(true);
+    controller()->EndDrag(END_DRAG_CAPTURE_LOST);
 }
 
 void BaseTab::OnMouseEntered(const ui::MouseEvent& event) {
@@ -440,7 +440,7 @@ ui::GestureStatus BaseTab::OnGestureEvent(const ui::GestureEvent& event) {
     }
 
     case ui::ET_GESTURE_END:
-      controller()->EndDrag(false);
+      controller()->EndDrag(END_DRAG_COMPLETE);
       break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:

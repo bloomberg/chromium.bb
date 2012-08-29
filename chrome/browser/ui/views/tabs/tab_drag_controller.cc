@@ -492,8 +492,14 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
   ContinueDragging(real_point_in_screen);
 }
 
-void TabDragController::EndDrag(bool canceled) {
-  EndDragImpl(canceled && source_tabstrip_ ? CANCELED : NORMAL);
+void TabDragController::EndDrag(EndDragReason reason) {
+  // If we're dragging a window ignore capture lost since it'll ultimately
+  // trigger the move loop to end and we'll revert the drag when RunMoveLoop()
+  // finishes.
+  if (reason == END_DRAG_CAPTURE_LOST && is_dragging_window_)
+    return;
+  EndDragImpl(reason != END_DRAG_COMPLETE && source_tabstrip_ ?
+              CANCELED : NORMAL);
 }
 
 void TabDragController::InitTabDragData(BaseTab* tab,
@@ -626,7 +632,7 @@ void TabDragController::DidProcessEvent(const base::NativeEvent& event) {
   // kinds of tab dragging.
   if (ui::EventTypeFromNative(event) == ui::ET_KEY_PRESSED &&
       ui::KeyboardCodeFromNative(event) == ui::VKEY_ESCAPE) {
-    EndDrag(true);
+    EndDrag(END_DRAG_CANCEL);
   }
 }
 
@@ -821,7 +827,6 @@ TabDragController::DragBrowserToNewTabStrip(
 #if !defined(USE_ASH)
     browser_widget->ReleaseCapture();
 #else
-    attached_tabstrip_->ReleaseDragController();
     target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
 #endif
     // EndMoveLoop is going to snap the window back to its original location.
@@ -1350,7 +1355,8 @@ void TabDragController::RunMoveLoop(const gfx::Point& drag_offset) {
     DCHECK(attached_tabstrip_);
     attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
   } else if (active_) {
-    EndDrag(result == views::Widget::MOVE_LOOP_CANCELED);
+    EndDrag(result == views::Widget::MOVE_LOOP_CANCELED ?
+            END_DRAG_CANCEL : END_DRAG_COMPLETE);
   }
 }
 

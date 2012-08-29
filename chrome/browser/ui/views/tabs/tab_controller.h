@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
+#include "chrome/browser/ui/views/tabs/end_drag_reason.h"
+
 class BaseTab;
 class TabStripSelectionModel;
 
@@ -60,10 +62,8 @@ class TabController {
   // Continues dragging a Tab.
   virtual void ContinueDrag(views::View* view, const gfx::Point& location) = 0;
 
-  // Ends dragging a Tab. |canceled| is true if the drag was aborted in a way
-  // other than the user releasing the mouse. Returns whether the tab has been
-  // destroyed.
-  virtual bool EndDrag(bool canceled) = 0;
+  // Ends dragging a Tab. Returns whether the tab has been destroyed.
+  virtual bool EndDrag(EndDragReason reason) = 0;
 
   // Returns the tab that contains the specified coordinates, in terms of |tab|,
   // or NULL if there is no tab that contains the specified point.

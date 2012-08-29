@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 
 #include <stdlib.h>
+
 #include "base/logging.h"
 
 namespace {
