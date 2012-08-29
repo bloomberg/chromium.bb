@@ -21,7 +21,6 @@ include_rules = [
   "!chrome/browser/bookmarks/bookmark_codec.h",
   "!chrome/browser/bookmarks/bookmark_model.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
-  "!chrome/browser/bookmarks/bookmark_service.h",
   "!chrome/browser/browser_process.h",
   "!chrome/browser/cancelable_request.h",
   "!chrome/browser/chromeos/login/existing_user_controller.h",
