@@ -14,6 +14,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -177,6 +179,8 @@ class PolicyTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
+  // Verifies that the bookmarks bar can be forced to always or never show up.
+
   // Test starts in about:blank.
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
@@ -212,6 +216,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_ClearSiteDataOnExit) {
+  // Verifies that cookies are deleted on shutdown. This test is split in 3
+  // parts because it spans 2 browser restarts.
+
   Profile* profile = browser()->profile();
   GURL url(kURL);
   // No cookies at startup.
@@ -323,6 +330,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
+  // Verifies that incognito windows can't be opened when disabled by policy.
+
   // Disable incognito via policy and verify that incognito windows can't be
   // opened.
   EXPECT_EQ(1u, BrowserList::size());
@@ -344,7 +353,37 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
+  // Verifies that browsing history is not saved.
+  PolicyMap policies;
+  policies.Set(key::kSavingBrowserHistoryDisabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("empty.html")));
+  ui_test_utils::NavigateToURL(browser(), url);
+  // Verify that the navigation wasn't saved in the history.
+  HistoryService* history = HistoryServiceFactory::GetForProfile(
+      browser()->profile(), Profile::EXPLICIT_ACCESS);
+  ASSERT_TRUE(history);
+  ui_test_utils::HistoryEnumerator enumerator1(history);
+  EXPECT_EQ(0u, enumerator1.urls().size());
+
+  // Now flip the policy and try again.
+  policies.Set(key::kSavingBrowserHistoryDisabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  provider_.UpdateChromePolicy(policies);
+  ui_test_utils::NavigateToURL(browser(), url);
+  // Verify that the navigation was saved in the history.
+  ui_test_utils::HistoryEnumerator enumerator2(history);
+  ASSERT_EQ(1u, enumerator2.urls().size());
+  EXPECT_EQ(url, enumerator2.urls()[0]);
+}
+
 IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
+  // Verifies that translate can be forced enabled or disabled by policy.
+
   // Get the |infobar_helper|, and verify that there are no infobars on startup.
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(contents);

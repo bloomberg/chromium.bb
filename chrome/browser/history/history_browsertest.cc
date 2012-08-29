@@ -55,40 +55,6 @@ class WaitForHistoryTask : public HistoryDBTask {
   DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
 };
 
-// Enumerates all history contents on the backend thread.
-class HistoryEnumerator : public HistoryService::URLEnumerator {
- public:
-  explicit HistoryEnumerator(HistoryService* history) {
-    EXPECT_TRUE(history);
-    if (!history)
-      return;
-
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&HistoryService::IterateURLs, history, this));
-    content::RunMessageLoop();
-  }
-
-  virtual void OnURL(const GURL& url) {
-    urls_.push_back(url);
-  }
-
-  virtual void OnComplete(bool success) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        MessageLoop::QuitClosure());
-  }
-
-  std::vector<GURL>& urls() { return urls_; }
-
- private:
-  std::vector<GURL> urls_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryEnumerator);
-};
-
 }  // namespace
 
 class HistoryBrowserTest : public InProcessBrowserTest {
@@ -111,7 +77,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   std::vector<GURL> GetHistoryContents() {
-    HistoryEnumerator enumerator(GetHistoryService());
+    ui_test_utils::HistoryEnumerator enumerator(GetHistoryService());
     return enumerator.urls();
   }
 

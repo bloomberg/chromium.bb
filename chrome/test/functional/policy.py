@@ -345,20 +345,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     pid = self._GetPluginPID('Java')
     self.assertTrue(pid, 'No plugin process for java')
 
-  def testSavingBrowserHistoryDisabled(self):
-    """Verify that browsing history is not being saved."""
-    policy = {'SavingBrowserHistoryDisabled': True}
-    self.SetUserPolicy(policy)
-    url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'empty.html'))
-    self.NavigateToURL(url)
-    self.assertFalse(self.GetHistoryInfo().History(),
-                     msg='History is being saved.')
-    policy = {'SavingBrowserHistoryDisabled': False}
-    self.SetUserPolicy(policy)
-    self.NavigateToURL(url)
-    self.assertTrue(self.GetHistoryInfo().History(),
-                     msg='History not is being saved.')
-
   # Needed for extension tests
   _GOOD_CRX_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf'
   _ADBLOCK_CRX_ID = 'dojnnbeimaimaojcialkkgajdnefpgcn'

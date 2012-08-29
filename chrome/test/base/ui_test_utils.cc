@@ -8,8 +8,6 @@
 #include <windows.h>
 #endif
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -26,7 +24,6 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -47,6 +44,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/base/bookmark_load_observer.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -63,10 +61,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/test/python_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
@@ -77,6 +73,7 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::BrowserThread;
 using content::DomOperationNotificationDetails;
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
@@ -715,4 +712,27 @@ void ClickTask(ui_controls::MouseButton button,
 }
 
 }  // namespace internal
+
+HistoryEnumerator::HistoryEnumerator(HistoryService* history) {
+  CHECK(history);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&HistoryService::IterateURLs, history, this));
+  content::RunMessageLoop();
+}
+
+HistoryEnumerator::~HistoryEnumerator() {}
+
+void HistoryEnumerator::OnURL(const GURL& url) {
+  urls_.push_back(url);
+}
+
+void HistoryEnumerator::OnComplete(bool success) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      MessageLoop::QuitClosure());
+}
+
 }  // namespace ui_test_utils
