@@ -67,7 +67,9 @@ libtoytoolkit_a_SOURCES =			\
 	window.c				\
 	window.h				\
 	text-cursor-position-protocol.c		\
-	text-cursor-position-client-protocol.h
+	text-cursor-position-client-protocol.h	\
+	workspaces-protocol.c			\
+	workspaces-client-protocol.h
 
 toolkit_libs =						\
 	libtoytoolkit.a					\
@@ -143,7 +145,9 @@ BUILT_SOURCES =					\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	tablet-shell-client-protocol.h		\
-	tablet-shell-protocol.c
+	tablet-shell-protocol.c			\
+	workspaces-client-protocol.h		\
+	workspaces-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
 endif

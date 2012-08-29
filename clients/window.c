@@ -62,6 +62,7 @@
 #include <wayland-client.h>
 #include "../shared/cairo-util.h"
 #include "text-cursor-position-client-protocol.h"
+#include "workspaces-client-protocol.h"
 #include "../shared/os-compatibility.h"
 
 #include "window.h"
@@ -75,6 +76,7 @@ struct display {
 	struct wl_shm *shm;
 	struct wl_data_device_manager *data_device_manager;
 	struct text_cursor_position *text_cursor_position;
+	struct workspace_manager *workspace_manager;
 	EGLDisplay dpy;
 	EGLConfig argb_config;
 	EGLContext argb_ctx;
@@ -108,6 +110,9 @@ struct display {
 	void *user_data;
 
 	struct xkb_context *xkb_context;
+
+	uint32_t workspace;
+	uint32_t workspace_count;
 };
 
 enum {
@@ -1345,6 +1350,22 @@ widget_set_tooltip(struct widget *parent, char *entry, float x, float y)
 }
 
 static void
+workspace_manager_state(void *data,
+			struct workspace_manager *workspace_manager,
+			uint32_t current,
+			uint32_t count)
+{
+	struct display *display = data;
+
+	display->workspace = current;
+	display->workspace_count = count;
+}
+
+static const struct workspace_manager_listener workspace_manager_listener = {
+	workspace_manager_state
+};
+
+static void
 frame_resize_handler(struct widget *widget,
 		     int32_t width, int32_t height, void *data)
 {
@@ -1659,6 +1680,8 @@ frame_get_pointer_image_for_location(struct frame *frame, struct input *input)
 static void
 frame_menu_func(struct window *window, int index, void *data)
 {
+	struct display *display;
+
 	switch (index) {
 	case 0: /* close */
 		if (window->close_handler)
@@ -1672,6 +1695,20 @@ frame_menu_func(struct window *window, int index, void *data)
 		if (window->fullscreen_handler)
 			window->fullscreen_handler(window, window->user_data);
 		break;
+	case 2: /* move to workspace above */
+		display = window->display;
+		if (display->workspace > 0)
+			workspace_manager_move_surface(display->workspace_manager,
+						       window->surface,
+						       display->workspace - 1);
+		break;
+	case 3: /* move to workspace below */
+		display = window->display;
+		if (display->workspace < display->workspace_count)
+			workspace_manager_move_surface(display->workspace_manager,
+						       window->surface,
+						       display->workspace + 1);
+		break;
 	}
 }
 
@@ -1682,7 +1719,8 @@ window_show_frame_menu(struct window *window,
 	int32_t x, y;
 
 	static const char *entries[] = {
-		"Close", "Fullscreen"
+		"Close", "Fullscreen",
+		"Move to workspace above", "Move to workspace below"
 	};
 
 	input_get_position(input, &x, &y);
@@ -3504,6 +3542,17 @@ input_destroy(struct input *input)
 }
 
 static void
+init_workspace_manager(struct display *d, uint32_t id)
+{
+	d->workspace_manager =
+		wl_display_bind(d->display, id, &workspace_manager_interface);
+	if (d->workspace_manager != NULL)
+		workspace_manager_add_listener(d->workspace_manager,
+					       &workspace_manager_listener,
+					       d);
+}
+
+static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -3528,6 +3577,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->text_cursor_position =
 			wl_display_bind(display, id,
 					&text_cursor_position_interface);
+	} else if (strcmp(interface, "workspace_manager") == 0) {
+		init_workspace_manager(d, id);
 	}
 }
 
@@ -3693,6 +3744,9 @@ display_create(int argc, char *argv[])
 	d->theme = theme_create();
 
 	wl_list_init(&d->window_list);
+
+	d->workspace = 0;
+	d->workspace_count = 1;
 
 	return d;
 }
