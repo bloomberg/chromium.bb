@@ -11,7 +11,6 @@
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -621,7 +620,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
     if ((ui_state->num_fetched_documents - ui_state->num_showing_documents)
         < kFetchUiUpdateStep) {
       // Currently the UI update is stopped. Start UI periodic callback.
-      MessageLoop::current()->PostTask(
+      base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -736,7 +735,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
     if ((ui_state->num_fetched_documents - ui_state->num_showing_documents)
         < kFetchUiUpdateStep) {
       // Currently the UI update is stopped. Start UI periodic callback.
-      MessageLoop::current()->PostTask(
+      base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -806,7 +805,7 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
       // UI update timing.
       base::TimeDelta remaining_duration =
           ui_state->feed_fetching_elapsed_time - elapsed_time;
-      MessageLoop::current()->PostDelayedTask(
+      base::MessageLoopProxy::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
@@ -1305,7 +1304,7 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
   switch (result) {
     case FOUND_INVALID: {
       if (!callback.is_null()) {
-        MessageLoop::current()->PostTask(FROM_HERE,
+        base::MessageLoopProxy::current()->PostTask(FROM_HERE,
             base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
       }
 
@@ -1313,7 +1312,7 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
     }
     case DIRECTORY_ALREADY_PRESENT: {
       if (!callback.is_null()) {
-        MessageLoop::current()->PostTask(FROM_HERE,
+        base::MessageLoopProxy::current()->PostTask(FROM_HERE,
             base::Bind(callback,
                        is_exclusive ? DRIVE_FILE_ERROR_EXISTS :
                                       DRIVE_FILE_OK));
@@ -1336,7 +1335,7 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
   // directory if this is not a recursive operation.
   if (directory_path !=  first_missing_path && !is_recursive) {
     if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
+      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
            base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
     }
     return;
@@ -1485,7 +1484,7 @@ void DriveFileSystem::GetResolvedFileByPath(
 
   if (error != DRIVE_FILE_OK) {
     if (!get_file_callback.is_null()) {
-      MessageLoop::current()->PostTask(
+      base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(get_file_callback,
                      DRIVE_FILE_ERROR_NOT_FOUND,
@@ -2948,7 +2947,7 @@ void DriveFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   // Open->Open->modify->Close->modify->Close; the second modify may not be
   // synchronized to the server since it is already Closed on the cache).
   if (open_files_.find(file_path) != open_files_.end()) {
-    MessageLoop::current()->PostTask(
+    base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_FILE_ERROR_IN_USE, FilePath()));
     return;
@@ -3078,7 +3077,7 @@ void DriveFileSystem::CloseFileOnUIThread(
 
   if (open_files_.find(file_path) == open_files_.end()) {
     // The file is not being opened.
-    MessageLoop::current()->PostTask(
+    base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
     return;
