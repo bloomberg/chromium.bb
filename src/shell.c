@@ -439,6 +439,22 @@ focus_state_create(struct weston_seat *seat, struct workspace *ws)
 	return state;
 }
 
+static struct focus_state *
+ensure_focus_state(struct desktop_shell *shell, struct weston_seat *seat)
+{
+	struct workspace *ws = get_current_workspace(shell);
+	struct focus_state *state;
+
+	wl_list_for_each(state, &ws->focus_list, link)
+		if (state->seat == seat)
+			break;
+
+	if (&state->link == &ws->focus_list)
+		state = focus_state_create(seat, ws);
+
+	return state;
+}
+
 static void
 restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 {
@@ -859,6 +875,7 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	struct shell_surface *shsurf;
 	struct workspace *from;
 	struct workspace *to;
+	struct focus_state *state;
 
 	if (surface == NULL ||
 	    index == shell->workspaces.current)
@@ -902,6 +919,10 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	}
 
 	broadcast_current_workspace_state(shell);
+
+	state = ensure_focus_state(shell, seat);
+	if (state != NULL)
+		state->keyboard_focus = surface;
 }
 
 static void
@@ -2590,20 +2611,14 @@ static void
 activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat)
 {
-	struct workspace *ws = get_current_workspace(shell);
 	struct focus_state *state;
+	struct workspace *ws;
 
 	weston_surface_activate(es, seat);
 
-	wl_list_for_each(state, &ws->focus_list, link)
-		if (state->seat == seat)
-			break;
-
-	if (&state->link == &ws->focus_list) {
-		state = focus_state_create(seat, ws);
-		if (state == NULL)
-			return;
-	}
+	state = ensure_focus_state(shell, seat);
+	if (state == NULL)
+		return;
 
 	state->keyboard_focus = es;
 	wl_list_remove(&state->surface_destroy_listener.link);
