@@ -37,7 +37,8 @@ static const struct sockaddr_un example_sockaddr_un;
 #define TOO_LONG (1 + sizeof example_sockaddr_un.sun_path)
 
 /* Ensure the connection doesn't fail due to lack of XDG_RUNTIME_DIR. */
-static void require_xdg_runtime_dir()
+static void
+require_xdg_runtime_dir(void)
 {
 	char *val = getenv("XDG_RUNTIME_DIR");
 	if (!val)
