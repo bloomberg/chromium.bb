@@ -56,7 +56,7 @@ void UserImageLoader::LoadImage(const std::string& filepath,
   file_util::ReadFileToString(FilePath(filepath), &image_data);
 
   scoped_refptr<ImageDecoder> image_decoder =
-      new ImageDecoder(this, image_data);
+      new ImageDecoder(this, image_data, ImageDecoder::ROBUST_JPEG_CODEC);
   image_info_map_.insert(std::make_pair(image_decoder.get(), image_info));
   image_decoder->Start();
 }

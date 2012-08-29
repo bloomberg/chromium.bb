@@ -85,6 +85,11 @@ IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                      printing::PdfRenderSettings,  // PDF render settitngs
                      std::vector<printing::PageRange>)
 
+// Tell the utility process to decode the given JPEG image data with a robust
+// libjpeg codec.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_RobustJPEGDecodeImage,
+                     std::vector<unsigned char>)  // encoded image contents
+
 // Tell the utility process to parse a JSON string into a Value object.
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseJSON,
                      std::string /* JSON to parse */)

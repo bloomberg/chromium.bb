@@ -62,7 +62,8 @@ class WallpaperSetWallpaperFunction::WallpaperDecoder
   }
 
   void Start(const std::string& image_data) {
-    image_decoder_ = new ImageDecoder(this, image_data);
+    image_decoder_ = new ImageDecoder(this, image_data,
+                                      ImageDecoder::ROBUST_JPEG_CODEC);
     image_decoder_->Start();
   }
 

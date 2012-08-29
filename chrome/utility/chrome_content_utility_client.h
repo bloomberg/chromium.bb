@@ -60,6 +60,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       const FilePath& metafile_path,
       const printing::PdfRenderSettings& pdf_render_settings,
       const std::vector<printing::PageRange>& page_ranges);
+  void OnRobustJPEGDecodeImage(
+      const std::vector<unsigned char>& encoded_data);
   void OnParseJSON(const std::string& json);
 
 #if defined(OS_WIN)

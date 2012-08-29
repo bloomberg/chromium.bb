@@ -331,7 +331,7 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   } else if (source == profile_image_fetcher_.get()) {
     VLOG(1) << "Decoding the image...";
     scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(
-        this, data);
+        this, data, ImageDecoder::DEFAULT_CODEC);
     image_decoder->Start();
   }
 }

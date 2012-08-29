@@ -14,9 +14,11 @@ using content::BrowserThread;
 using content::UtilityProcessHost;
 
 ImageDecoder::ImageDecoder(Delegate* delegate,
-                           const std::string& image_data)
+                           const std::string& image_data,
+                           ImageCodec image_codec)
     : delegate_(delegate),
       image_data_(image_data.begin(), image_data.end()),
+      image_codec_(image_codec),
       target_thread_id_(BrowserThread::UI) {
 }
 
@@ -62,5 +64,10 @@ void ImageDecoder::DecodeImageInSandbox(
   UtilityProcessHost* utility_process_host = UtilityProcessHost::Create(
       this, target_thread_id_);
   utility_process_host->EnableZygote();
-  utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
+  if (image_codec_ == ROBUST_JPEG_CODEC) {
+    utility_process_host->Send(
+        new ChromeUtilityMsg_RobustJPEGDecodeImage(image_data));
+  } else {
+    utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
+  }
 }

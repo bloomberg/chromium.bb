@@ -33,8 +33,14 @@ class ImageDecoder : public content::UtilityProcessHostClient {
     virtual ~Delegate() {}
   };
 
+  enum ImageCodec {
+    DEFAULT_CODEC = 0,  // Uses WebKit image decoding (via WebImage).
+    ROBUST_JPEG_CODEC,  // Restrict decoding to robust jpeg codec.
+  };
+
   ImageDecoder(Delegate* delegate,
-               const std::string& image_data);
+               const std::string& image_data,
+               ImageCodec image_codec);
 
   // Starts image decoding.
   void Start();
@@ -61,6 +67,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
 
   Delegate* delegate_;
   std::vector<unsigned char> image_data_;
+  const ImageCodec image_codec_;
   content::BrowserThread::ID target_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);

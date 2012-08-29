@@ -28,6 +28,7 @@
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -83,6 +84,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImageBase64, OnDecodeImageBase64)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                         OnRenderPDFPagesToMetafile)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RobustJPEGDecodeImage,
+                        OnRobustJPEGDecodeImage)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
@@ -357,6 +360,17 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
 }
 #endif  // defined(OS_WIN)
 
+void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
+    const std::vector<unsigned char>& encoded_data) {
+  scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodec::Decode(
+      &encoded_data[0], encoded_data.size()));
+  if (decoded_image->empty()) {
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
+  } else {
+    Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(*decoded_image));
+  }
+  content::UtilityThread::Get()->ReleaseProcessIfNeeded();
+}
 
 void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   int error_code;
