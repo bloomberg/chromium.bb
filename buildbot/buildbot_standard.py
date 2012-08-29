@@ -294,8 +294,6 @@ def BuildScript(status, context):
       ValidatorTest(
           context, 'x86-64',
           'scons-out/opt-linux-x86-64/staging/validator_test')
-    with Step('validator_diff_tests', status, halt_on_fail=False):
-      SCons(context, args=['validator_diff_tests'])
 
     return
 
