@@ -422,6 +422,18 @@ class MediaTransferProtocolDaemonClientStubImpl
 ////////////////////////////////////////////////////////////////////////////////
 // StorageInfo
 
+StorageInfo::StorageInfo()
+    : vendor_id_(0),
+      product_id_(0),
+      device_flags_(0),
+      storage_type_(0),
+      filesystem_type_(0),
+      access_capability_(0),
+      max_capacity_(0),
+      free_space_in_bytes_(0),
+      free_space_in_objects_(0) {
+}
+
 StorageInfo::StorageInfo(const std::string& storage_name,
                          dbus::Response* response)
     : vendor_id_(0),
@@ -483,6 +495,13 @@ void StorageInfo::InitializeFromResponse(dbus::Response* response) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // FileEntry
+
+FileEntry::FileEntry()
+    : item_id_(0),
+      parent_id_(0),
+      file_size_(0),
+      file_type_(FILE_TYPE_UNKNOWN) {
+}
 
 FileEntry::FileEntry(dbus::Response* response)
     : item_id_(0),
