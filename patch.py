@@ -135,6 +135,11 @@ class Hunk(object):
     self.variation = self.lines_dst - self.lines_src
     self.text = []
 
+  def __repr__(self):
+    return '%s<(%d, %d) to (%d, %d)>' % (
+        self.__class__.__name__,
+        self.start_src, self.lines_src, self.start_dst, self.lines_dst)
+
 
 class FilePatchDiff(FilePatchBase):
   """Patch for a single file."""
@@ -235,18 +240,26 @@ class FilePatchDiff(FilePatchBase):
         # "-1,N +0,0" where N is the number of lines deleted. That's from diff
         # and svn diff. git diff doesn't exhibit this behavior.
         # svn diff for a single line file rewrite "@@ -1 +1 @@". Fun.
+        # "@@ -1 +1,N @@" is also valid where N is the length of the new file.
         if not match:
           self._fail('Hunk header is unparsable')
-        if ',' in match.group(1):
+        count = match.group(1).count(',')
+        if not count:
+          start_src = int(match.group(1))
+          lines_src = 1
+        elif count == 1:
           start_src, lines_src = map(int, match.group(1).split(',', 1))
         else:
-          start_src = int(match.group(1))
-          lines_src = 0
-        if ',' in match.group(2):
+          self._fail('Hunk header is malformed')
+
+        count = match.group(2).count(',')
+        if not count:
+          start_dst = int(match.group(2))
+          lines_dst = 1
+        elif count == 1:
           start_dst, lines_dst = map(int, match.group(2).split(',', 1))
         else:
-          start_dst = int(match.group(2))
-          lines_dst = 0
+          self._fail('Hunk header is malformed')
         new_hunk = Hunk(start_src, lines_src, start_dst, lines_dst)
         if hunks:
           if new_hunk.start_src <= hunks[-1].start_src:
@@ -273,8 +286,8 @@ class FilePatchDiff(FilePatchBase):
             len([1 for i in hunk.text if i.startswith('-')]))
         if variation != hunk.variation:
           self._fail(
-              'Hunk header is incorrect: %d vs %d' % (
-                variation, hunk.variation))
+              'Hunk header is incorrect: %d vs %d; %r' % (
+                variation, hunk.variation, hunk))
         if not hunk.start_src:
           self._fail(
               'Hunk header start line is incorrect: %d' % hunk.start_src)

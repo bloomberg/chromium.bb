@@ -152,6 +152,16 @@ class GIT(object):
       ' ggg\n'
       ' hh\n')
 
+  # http://codereview.chromium.org/download/issue10868039_12001_10003.diff
+  PATCH_SHORT_HUNK_HEADER = (
+      'Index: chrome/browser/api/OWNERS\n'
+      'diff --git a/chrome/browser/api/OWNERS b/chrome/browser/api/OWNERS\n'
+      '--- a/chrome/browser/api/OWNERS\n'
+      '+++ b/chrome/browser/api/OWNERS\n'
+      '@@ -1 +1,2 @@\n'
+      '+erikwright@chromium.org\n'
+      ' joi@chromium.org\n')
+
   # http://codereview.chromium.org/download/issue6368055_22_29.diff
   DELETE = (
       'Index: tools/clang_check/README.chromium\n'

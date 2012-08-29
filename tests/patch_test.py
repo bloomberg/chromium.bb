@@ -360,6 +360,19 @@ class PatchTest(unittest.TestCase):
     patchset = patch.PatchSet(patches)
     self.assertEquals(expected, patchset.filenames)
 
+  def testGitPatch(self):
+    p = patch.FilePatchDiff('chrome/file.cc', GIT.PATCH, [])
+    self._check_patch(
+        p, 'chrome/file.cc', GIT.PATCH, is_git_diff=True, patchlevel=1,
+        nb_hunks=1)
+
+  def testGitPatchShortHunkHeader(self):
+    p = patch.FilePatchDiff(
+        'chrome/browser/api/OWNERS', GIT.PATCH_SHORT_HUNK_HEADER, [])
+    self._check_patch(
+        p, 'chrome/browser/api/OWNERS', GIT.PATCH_SHORT_HUNK_HEADER,
+        is_git_diff=True, patchlevel=1, nb_hunks=1)
+
 
 class PatchTestFail(unittest.TestCase):
   # All patches that should throw.
@@ -509,6 +522,19 @@ class PatchTestFail(unittest.TestCase):
   def testInvertedOnlyHeader(self):
     try:
       patch.FilePatchDiff('file_a', '+++ file_a\n--- file_a\n', [])
+      self.fail()
+    except patch.UnsupportedPatchFormat:
+      pass
+
+  def testBadHunkCommas(self):
+    try:
+      patch.FilePatchDiff(
+        'file_a',
+        '--- file_a\n'
+        '+++ file_a\n'
+        '@@ -0,,0 +1 @@\n'
+        '+foo\n',
+        [])
       self.fail()
     except patch.UnsupportedPatchFormat:
       pass
