@@ -147,11 +147,7 @@ void NativeWidgetWin::ClearAccessibilityViewEvent(View* view) {
 
 void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
   SetInitParams(params);
-
-  message_handler_->Init(params.bounds);
-
-  // Create the window.
-  WindowImpl::Init(params.GetParent(), params.bounds);
+  message_handler_->Init(params.GetParent(), params.bounds);
 }
 
 NonClientFrameView* NativeWidgetWin::CreateNonClientFrameView() {
@@ -181,11 +177,11 @@ const Widget* NativeWidgetWin::GetWidget() const {
 }
 
 gfx::NativeView NativeWidgetWin::GetNativeView() const {
-  return WindowImpl::hwnd();
+  return message_handler_->hwnd();
 }
 
 gfx::NativeWindow NativeWidgetWin::GetNativeWindow() const {
-  return WindowImpl::hwnd();
+  return message_handler_->hwnd();
 }
 
 Widget* NativeWidgetWin::GetTopLevelWidget() {
@@ -223,11 +219,11 @@ void NativeWidgetWin::SetNativeWindowProperty(const char* name, void* value) {
   }
 
   if (value)
-    props_.push_back(new ViewProp(hwnd(), name, value));
+    props_.push_back(new ViewProp(GetNativeView(), name, value));
 }
 
 void* NativeWidgetWin::GetNativeWindowProperty(const char* name) const {
-  return ViewProp::GetValue(hwnd(), name);
+  return ViewProp::GetValue(GetNativeView(), name);
 }
 
 TooltipManager* NativeWidgetWin::GetTooltipManager() const {
@@ -500,260 +496,7 @@ void NativeWidgetWin::SetVisibilityChangedAnimationsEnabled(bool value) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetWin, WindowImpl overrides:
-
-HICON NativeWidgetWin::GetDefaultWindowIcon() const {
-  return message_handler_->GetDefaultWindowIcon();
-}
-
-LRESULT NativeWidgetWin::OnWndProc(UINT message,
-                                   WPARAM w_param,
-                                   LPARAM l_param) {
-  return message_handler_->OnWndProc(message, w_param, l_param);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, protected:
-
-// Message handlers ------------------------------------------------------------
-
-void NativeWidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
-  message_handler_->OnActivate(action, minimized, window);
-}
-
-void NativeWidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
-  message_handler_->OnActivateApp(active, thread_id);
-}
-
-LRESULT NativeWidgetWin::OnAppCommand(HWND window,
-                                      short app_command,
-                                      WORD device,
-                                      int keystate) {
-  return message_handler_->OnAppCommand(window, app_command, device, keystate);
-}
-
-void NativeWidgetWin::OnCancelMode() {
-  message_handler_->OnCancelMode();
-}
-
-void NativeWidgetWin::OnCaptureChanged(HWND hwnd) {
-  message_handler_->OnCaptureChanged(hwnd);
-}
-
-void NativeWidgetWin::OnClose() {
-  message_handler_->OnClose();
-}
-
-void NativeWidgetWin::OnCommand(UINT notification_code,
-                                int command_id,
-                                HWND window) {
-  message_handler_->OnCommand(notification_code, command_id, window);
-}
-
-LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  return message_handler_->OnCreate(create_struct);
-}
-
-void NativeWidgetWin::OnDestroy() {
-  message_handler_->OnDestroy();
-}
-
-void NativeWidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
-  message_handler_->OnDisplayChange(bits_per_pixel, screen_size);
-}
-
-LRESULT NativeWidgetWin::OnDwmCompositionChanged(UINT msg,
-                                                 WPARAM w_param,
-                                                 LPARAM l_param) {
-  return message_handler_->OnDwmCompositionChanged(msg, w_param, l_param);
-}
-
-void NativeWidgetWin::OnEndSession(BOOL ending, UINT logoff) {
-  message_handler_->OnEndSession(ending, logoff);
-}
-
-void NativeWidgetWin::OnEnterSizeMove() {
-  message_handler_->OnEnterSizeMove();
-}
-
-LRESULT NativeWidgetWin::OnEraseBkgnd(HDC dc) {
-  return message_handler_->OnEraseBkgnd(dc);
-}
-
-void NativeWidgetWin::OnExitMenuLoop(BOOL is_track_popup_menu) {
-  message_handler_->OnExitMenuLoop(is_track_popup_menu);
-}
-
-void NativeWidgetWin::OnExitSizeMove() {
-  message_handler_->OnExitSizeMove();
-}
-
-LRESULT NativeWidgetWin::OnGetObject(UINT message,
-                                     WPARAM w_param,
-                                     LPARAM l_param) {
-  return message_handler_->OnGetObject(message, w_param, l_param);
-}
-
-void NativeWidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
-  message_handler_->OnGetMinMaxInfo(minmax_info);
-}
-
-void NativeWidgetWin::OnHScroll(int scroll_type,
-                                short position,
-                                HWND scrollbar) {
-  message_handler_->OnHScroll(scroll_type, position, scrollbar);
-}
-
-LRESULT NativeWidgetWin::OnImeMessages(UINT message,
-                                       WPARAM w_param,
-                                       LPARAM l_param) {
-  return message_handler_->OnImeMessages(message, w_param, l_param);
-}
-
-void NativeWidgetWin::OnInitMenu(HMENU menu) {
-  message_handler_->OnInitMenu(menu);
-}
-
-void NativeWidgetWin::OnInitMenuPopup(HMENU menu,
-                                      UINT position,
-                                      BOOL is_system_menu) {
-  message_handler_->OnInitMenuPopup();
-}
-
-void NativeWidgetWin::OnInputLangChange(DWORD character_set,
-                                        HKL input_language_id) {
-  message_handler_->OnInputLangChange(character_set, input_language_id);
-}
-
-LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
-                                    WPARAM w_param,
-                                    LPARAM l_param) {
-  return message_handler_->OnKeyEvent(message, w_param, l_param);
-}
-
-void NativeWidgetWin::OnKillFocus(HWND focused_window) {
-  message_handler_->OnKillFocus(focused_window);
-}
-
-LRESULT NativeWidgetWin::OnMouseActivate(UINT message,
-                                         WPARAM w_param,
-                                         LPARAM l_param) {
-  return message_handler_->OnMouseActivate(message, w_param, l_param);
-}
-
-LRESULT NativeWidgetWin::OnMouseRange(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param) {
-  return message_handler_->OnMouseRange(message, w_param, l_param);
-}
-
-void NativeWidgetWin::OnMove(const CPoint& point) {
-  message_handler_->OnMove(point);
-}
-
-void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
-  message_handler_->OnMoving(param, new_bounds);
-}
-
-LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
-  return message_handler_->OnNCActivate(active);
-}
-
-LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
-  return message_handler_->OnNCCalcSize(mode, l_param);
-}
-
-LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
-  return message_handler_->OnNCHitTest(point);
-}
-
-void NativeWidgetWin::OnNCPaint(HRGN rgn) {
-  message_handler_->OnNCPaint(rgn);
-}
-
-LRESULT NativeWidgetWin::OnNCUAHDrawCaption(UINT msg,
-                                            WPARAM w_param,
-                                            LPARAM l_param) {
-  return message_handler_->OnNCUAHDrawCaption(msg, w_param, l_param);
-}
-
-LRESULT NativeWidgetWin::OnNCUAHDrawFrame(UINT msg,
-                                          WPARAM w_param,
-                                          LPARAM l_param) {
-  return message_handler_->OnNCUAHDrawFrame(msg, w_param, l_param);
-}
-
-LRESULT NativeWidgetWin::OnNotify(int w_param, NMHDR* l_param) {
-  return message_handler_->OnNotify(w_param, l_param);
-}
-
-void NativeWidgetWin::OnPaint(HDC dc) {
-  message_handler_->OnPaint(dc);
-}
-
-LRESULT NativeWidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
-  return message_handler_->OnPowerBroadcast(power_event, data);
-}
-
-LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
-                                            WPARAM w_param,
-                                            LPARAM l_param) {
-  return message_handler_->OnReflectedMessage(msg, w_param, l_param);
-}
-
-LRESULT NativeWidgetWin::OnSetCursor(UINT message,
-                                     WPARAM w_param,
-                                     LPARAM l_param) {
-  return message_handler_->OnSetCursor(message, w_param, l_param);
-}
-
-void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
-  message_handler_->OnSetFocus(old_focused_window);
-}
-
-LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
-  return message_handler_->OnSetIcon(size_type, new_icon);
-}
-
-LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
-  return message_handler_->OnSetText(text);
-}
-
-void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
-  message_handler_->OnSettingChange(flags, section);
-}
-
-void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
-  message_handler_->OnSize(param, size);
-}
-
-void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
-  message_handler_->OnSysCommand(notification_code, click);
-}
-
-void NativeWidgetWin::OnThemeChanged() {
-  message_handler_->OnThemeChanged();
-}
-
-LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param) {
-  return message_handler_->OnTouchEvent(message, w_param, l_param);
-}
-
-void NativeWidgetWin::OnVScroll(int scroll_type,
-                                short position,
-                                HWND scrollbar) {
-  message_handler_->OnVScroll(scroll_type, position, scrollbar);
-}
-
-void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
-  message_handler_->OnWindowPosChanging(window_pos);
-}
-
-void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  message_handler_->OnWindowPosChanged(window_pos);
-}
 
 void NativeWidgetWin::OnFinalMessage(HWND window) {
   // We don't destroy props in WM_DESTROY as we may still get messages after
@@ -769,6 +512,10 @@ void NativeWidgetWin::OnFinalMessage(HWND window) {
 
 void NativeWidgetWin::OnScreenReaderDetected() {
   screen_reader_active_ = true;
+}
+
+HWNDMessageHandler* NativeWidgetWin::GetMessageHandler() {
+  return message_handler_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -932,9 +679,9 @@ void NativeWidgetWin::HandleCreate() {
   // TODO(beng): much of this could/should maybe move to HWNDMessageHandler.
 
   SetNativeWindowProperty(kNativeWidgetKey, this);
-  CHECK_EQ(this, GetNativeWidgetForNativeView(hwnd()));
+  CHECK_EQ(this, GetNativeWidgetForNativeView(GetNativeView()));
 
-  props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(hwnd()));
+  props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(GetNativeView()));
 
   drop_target_ = new DropTargetWin(
       static_cast<internal::RootView*>(GetWidget()->GetRootView()));
@@ -961,13 +708,13 @@ void NativeWidgetWin::HandleCreate() {
 void NativeWidgetWin::HandleDestroying() {
   delegate_->OnNativeWidgetDestroying();
   if (drop_target_.get()) {
-    RevokeDragDrop(hwnd());
+    RevokeDragDrop(GetNativeView());
     drop_target_ = NULL;
   }
 }
 
 void NativeWidgetWin::HandleDestroyed() {
-  OnFinalMessage(hwnd());
+  OnFinalMessage(GetNativeView());
 }
 
 bool NativeWidgetWin::HandleInitialFocus() {
@@ -1074,10 +821,6 @@ void NativeWidgetWin::PostHandleMSG(UINT message,
                                     LPARAM l_param) {
 }
 
-NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {
-  return this;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, private:
 
@@ -1162,9 +905,10 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
       NOTREACHED();
   }
 
-  set_initial_class_style(class_style);
-  set_window_style(window_style() | style);
-  set_window_ex_style(window_ex_style() | ex_style);
+  message_handler_->set_initial_class_style(class_style);
+  message_handler_->set_window_style(message_handler_->window_style() | style);
+  message_handler_->set_window_ex_style(
+      message_handler_->window_ex_style() | ex_style);
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
   message_handler_->set_remove_standard_frame(params.remove_standard_frame);

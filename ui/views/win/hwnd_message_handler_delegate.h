@@ -198,10 +198,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
                              WPARAM w_param,
                              LPARAM l_param) = 0;
 
-  // This is provided for methods that need to call private methods on NWW.
-  // TODO(beng): should be removed once HWNDMessageHandler is the WindowImpl.
-  virtual NativeWidgetWin* AsNativeWidgetWin() = 0;
-
  protected:
   virtual ~HWNDMessageHandlerDelegate() {}
 };

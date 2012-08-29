@@ -75,11 +75,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from WindowImpl:
-  virtual LRESULT OnWndProc(UINT message,
-                            WPARAM w_param,
-                            LPARAM l_param) OVERRIDE;
-
  private:
   // Updates the DWM with the frame bounds.
   void UpdateDWMFrame();

@@ -386,9 +386,12 @@ HWNDMessageHandler::~HWNDMessageHandler() {
     *destroyed_ = true;
 }
 
-void HWNDMessageHandler::Init(const gfx::Rect& bounds) {
+void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
                      &last_work_area_);
+
+  // Create the window.
+  WindowImpl::Init(parent, bounds);
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -921,8 +924,7 @@ void HWNDMessageHandler::OnCommand(UINT notification_code,
 }
 
 LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
-  use_layered_buffer_ = !!(delegate_->AsNativeWidgetWin()->
-      window_ex_style() & WS_EX_LAYERED);
+  use_layered_buffer_ = !!(window_ex_style() & WS_EX_LAYERED);
 
   fullscreen_handler_->set_hwnd(hwnd());
 
@@ -1107,7 +1109,9 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
                           !is_minimized);
 }
 
-void HWNDMessageHandler::OnInitMenuPopup() {
+void HWNDMessageHandler::OnInitMenuPopup(HMENU menu,
+                                         UINT position,
+                                         BOOL is_system_menu) {
   SetMsgHandled(FALSE);
 }
 
@@ -1831,14 +1835,6 @@ void HWNDMessageHandler::ResetWindowRegion(bool force) {
   DeleteObject(current_rgn);
 }
 
-HWND HWNDMessageHandler::hwnd() {
-  return delegate_->AsNativeWidgetWin()->hwnd();
-}
-
-HWND HWNDMessageHandler::hwnd() const {
-  return delegate_->AsNativeWidgetWin()->hwnd();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, InputMethodDelegate implementation:
 
@@ -1870,10 +1866,8 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
     return result;
 
   // Otherwise we handle everything else.
-  if (!delegate_->AsNativeWidgetWin()->ProcessWindowMessage(
-      window, message, w_param, l_param, result)) {
+  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
     result = DefWindowProc(window, message, w_param, l_param);
-  }
   delegate_->PostHandleMSG(message, w_param, l_param);
   if (message == WM_NCDESTROY) {
     MessageLoopForUI::current()->RemoveObserver(this);
@@ -2118,10 +2112,6 @@ void HWNDMessageHandler::RedrawLayeredWindowContents() {
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   invalid_rect_.SetRect(0, 0, 0, 0);
   skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
-}
-
-void HWNDMessageHandler::SetMsgHandled(BOOL handled) {
-  delegate_->AsNativeWidgetWin()->SetMsgHandled(handled);
 }
 
 }  // namespace views

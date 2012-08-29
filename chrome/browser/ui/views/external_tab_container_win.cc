@@ -66,6 +66,7 @@
 #include "ui/base/view_prop.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/win/hwnd_message_handler.h"
 
 using content::BrowserThread;
 using content::LoadNotificationDetails;
@@ -173,7 +174,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   handle_top_level_requests_ = handle_top_level_requests;
   route_all_top_level_navigations_ = route_all_top_level_navigations;
 
-  set_window_style(WS_POPUP | WS_CLIPCHILDREN);
+  GetMessageHandler()->set_window_style(WS_POPUP | WS_CLIPCHILDREN);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = bounds;
@@ -593,7 +594,7 @@ void ExternalTabContainerWin::ContentsZoomChange(bool zoom_in) {
 }
 
 gfx::NativeWindow ExternalTabContainerWin::GetFrameNativeWindow() {
-  return hwnd();
+  return GetNativeView();
 }
 
 bool ExternalTabContainerWin::TakeFocus(content::WebContents* source,

@@ -18,8 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
+#include "base/win/win_util.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/base/win/window_impl.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
@@ -38,19 +40,31 @@ class InputMethod;
 
 VIEWS_EXPORT bool IsAeroGlassEnabled();
 
+// These two messages aren't defined in winuser.h, but they are sent to windows
+// with captions. They appear to paint the window caption and frame.
+// Unfortunately if you override the standard non-client rendering as we do
+// with CustomFrameWindow, sometimes Windows (not deterministically
+// reproducibly but definitely frequently) will send these messages to the
+// window and paint the standard caption/title over the top of the custom one.
+// So we need to handle these messages in CustomFrameWindow to prevent this
+// from happening.
+const int WM_NCUAHDRAWCAPTION = 0xAE;
+const int WM_NCUAHDRAWFRAME = 0xAF;
+
 // An object that handles messages for a HWND that implements the views
 // "Custom Frame" look. The purpose of this class is to isolate the windows-
 // specific message handling from the code that wraps it. It is intended to be
 // used by both a views::NativeWidget and an aura::RootWindowHost
 // implementation.
 // TODO(beng): This object should eventually *become* the WindowImpl.
-class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate,
+class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
+                                        public internal::InputMethodDelegate,
                                         public MessageLoopForUI::Observer {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler();
 
-  void Init(const gfx::Rect& bounds);
+  void Init(HWND parent, const gfx::Rect& bounds);
   void InitModalType(ui::ModalType modal_type);
 
   void Close();
@@ -163,7 +177,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate,
   LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
   void OnInitMenu(HMENU menu);
-  void OnInitMenuPopup();
+  void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
   void OnInputLangChange(DWORD character_set, HKL input_language_id);
   LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnKillFocus(HWND focused_window);
@@ -194,8 +208,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate,
   void OnWindowPosChanging(WINDOWPOS* window_pos);
   void OnWindowPosChanged(WINDOWPOS* window_pos);
 
-  // TODO(beng): Can be removed once this object becomes the WindowImpl.
-  bool remove_standard_frame() const { return remove_standard_frame_; }
   void set_remove_standard_frame(bool remove_standard_frame) {
     remove_standard_frame_ = remove_standard_frame;
   }
@@ -205,23 +217,17 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate,
   // frame windows.
   void ResetWindowRegion(bool force);
 
-  // TODO(beng): This won't be a style violation once this object becomes the
-  //             WindowImpl.
-  HWND hwnd();
-  HWND hwnd() const;
-
  private:
   typedef std::set<DWORD> TouchIDs;
-
-  // TODO(beng): remove once this is the WindowImpl.
-  friend class NativeWidgetWin;
 
   // Overridden from internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
   // Overridden from WindowImpl:
-  virtual HICON GetDefaultWindowIcon() const;
-  virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
+  virtual HICON GetDefaultWindowIcon() const OVERRIDE;
+  virtual LRESULT OnWndProc(UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param) OVERRIDE;
 
   // Overridden from MessageLoopForUI::Observer:
   virtual base::EventStatus WillProcessEvent(
@@ -281,15 +287,100 @@ class VIEWS_EXPORT HWNDMessageHandler : public internal::InputMethodDelegate,
   // layered windows only.
   void RedrawLayeredWindowContents();
 
-  // TODO(beng): Remove once this class becomes the WindowImpl.
-  void SetMsgHandled(BOOL handled);
+
+  // Message Handlers ----------------------------------------------------------
+
+  BEGIN_MSG_MAP_EX(NativeWidgetWin)
+    // Range handlers must go first!
+    MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
+    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
+
+    // Reflected message handler
+    MESSAGE_HANDLER_EX(base::win::kReflectedMessage, OnReflectedMessage)
+
+    // CustomFrameWindow hacks
+    MESSAGE_HANDLER_EX(WM_NCUAHDRAWCAPTION, OnNCUAHDrawCaption)
+    MESSAGE_HANDLER_EX(WM_NCUAHDRAWFRAME, OnNCUAHDrawFrame)
+
+    // Vista and newer
+    MESSAGE_HANDLER_EX(WM_DWMCOMPOSITIONCHANGED, OnDwmCompositionChanged)
+
+    // Non-atlcrack.h handlers
+    MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
+
+    // Mouse events.
+    MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
+    MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseRange)
+    MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
+    MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor);
+
+    // Key events.
+    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
+
+    // IME Events.
+    MESSAGE_HANDLER_EX(WM_IME_SETCONTEXT, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_STARTCOMPOSITION, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_ENDCOMPOSITION, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_IME_REQUEST, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_CHAR, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_DEADCHAR, OnImeMessages)
+    MESSAGE_HANDLER_EX(WM_SYSDEADCHAR, OnImeMessages)
+
+    // Touch Events.
+    MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
+
+    // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
+    MSG_WM_ACTIVATE(OnActivate)
+    MSG_WM_ACTIVATEAPP(OnActivateApp)
+    MSG_WM_APPCOMMAND(OnAppCommand)
+    MSG_WM_CANCELMODE(OnCancelMode)
+    MSG_WM_CAPTURECHANGED(OnCaptureChanged)
+    MSG_WM_CLOSE(OnClose)
+    MSG_WM_COMMAND(OnCommand)
+    MSG_WM_CREATE(OnCreate)
+    MSG_WM_DESTROY(OnDestroy)
+    MSG_WM_DISPLAYCHANGE(OnDisplayChange)
+    MSG_WM_ERASEBKGND(OnEraseBkgnd)
+    MSG_WM_ENDSESSION(OnEndSession)
+    MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
+    MSG_WM_EXITMENULOOP(OnExitMenuLoop)
+    MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
+    MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
+    MSG_WM_HSCROLL(OnHScroll)
+    MSG_WM_INITMENU(OnInitMenu)
+    MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
+    MSG_WM_INPUTLANGCHANGE(OnInputLangChange)
+    MSG_WM_KILLFOCUS(OnKillFocus)
+    MSG_WM_MOVE(OnMove)
+    MSG_WM_MOVING(OnMoving)
+    MSG_WM_NCACTIVATE(OnNCActivate)
+    MSG_WM_NCCALCSIZE(OnNCCalcSize)
+    MSG_WM_NCHITTEST(OnNCHitTest)
+    MSG_WM_NCPAINT(OnNCPaint)
+    MSG_WM_NOTIFY(OnNotify)
+    MSG_WM_PAINT(OnPaint)
+    MSG_WM_POWERBROADCAST(OnPowerBroadcast)
+    MSG_WM_SETFOCUS(OnSetFocus)
+    MSG_WM_SETICON(OnSetIcon)
+    MSG_WM_SETTEXT(OnSetText)
+    MSG_WM_SETTINGCHANGE(OnSettingChange)
+    MSG_WM_SIZE(OnSize)
+    MSG_WM_SYSCOMMAND(OnSysCommand)
+    MSG_WM_THEMECHANGED(OnThemeChanged)
+    MSG_WM_VSCROLL(OnVScroll)
+    MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
+    MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
+  END_MSG_MAP()
 
   HWNDMessageHandlerDelegate* delegate_;
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;
 
-  // The following factory is used for calls to close the NativeWidgetWin
-  // instance.
   base::WeakPtrFactory<HWNDMessageHandler> close_widget_factory_;
 
   bool remove_standard_frame_;

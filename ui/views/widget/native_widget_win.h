@@ -5,24 +5,13 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_WIN_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_WIN_H_
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlcrack.h>
-#include <atlmisc.h>
-
-#include <set>
-#include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/window_impl.h"
-#include "ui/views/focus/focus_manager.h"
-#include "ui/views/layout/layout_manager.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 
@@ -45,17 +34,6 @@ class InputMethodDelegate;
 class RootView;
 class TooltipManagerWin;
 
-// These two messages aren't defined in winuser.h, but they are sent to windows
-// with captions. They appear to paint the window caption and frame.
-// Unfortunately if you override the standard non-client rendering as we do
-// with CustomFrameWindow, sometimes Windows (not deterministically
-// reproducibly but definitely frequently) will send these messages to the
-// window and paint the standard caption/title over the top of the custom one.
-// So we need to handle these messages in CustomFrameWindow to prevent this
-// from happening.
-const int WM_NCUAHDRAWCAPTION = 0xAE;
-const int WM_NCUAHDRAWFRAME = 0xAF;
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // NativeWidgetWin
@@ -69,8 +47,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //  then responsible for cleaning up after it.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
-                                     public internal::NativeWidgetPrivate,
+class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
                                      public HWNDMessageHandlerDelegate {
  public:
   explicit NativeWidgetWin(internal::NativeWidgetDelegate* delegate);
@@ -102,7 +79,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // like a fullscreen window except that it remains within the boundaries
   // of the metro snap divider.
   void SetMetroSnapFullscreen(bool metro_snap);
-
   bool IsInMetroSnapMode() const;
 
   void SetCanUpdateLayeredWindow(bool can_update);
@@ -195,168 +171,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
 
  protected:
-  // Overridden from WindowImpl:
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE;
-  virtual LRESULT OnWndProc(UINT message,
-                            WPARAM w_param,
-                            LPARAM l_param) OVERRIDE;
-
-  // Message Handlers ----------------------------------------------------------
-
-  BEGIN_MSG_MAP_EX(NativeWidgetWin)
-    // Range handlers must go first!
-    MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
-
-    // Reflected message handler
-    MESSAGE_HANDLER_EX(base::win::kReflectedMessage, OnReflectedMessage)
-
-    // CustomFrameWindow hacks
-    MESSAGE_HANDLER_EX(WM_NCUAHDRAWCAPTION, OnNCUAHDrawCaption)
-    MESSAGE_HANDLER_EX(WM_NCUAHDRAWFRAME, OnNCUAHDrawFrame)
-
-    // Vista and newer
-    MESSAGE_HANDLER_EX(WM_DWMCOMPOSITIONCHANGED, OnDwmCompositionChanged)
-
-    // Non-atlcrack.h handlers
-    MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
-
-    // Mouse events.
-    MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
-    MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseRange)
-    MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
-    MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor);
-
-    // Key events.
-    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
-
-    // IME Events.
-    MESSAGE_HANDLER_EX(WM_IME_SETCONTEXT, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_IME_STARTCOMPOSITION, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_IME_ENDCOMPOSITION, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_IME_REQUEST, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_CHAR, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_DEADCHAR, OnImeMessages)
-    MESSAGE_HANDLER_EX(WM_SYSDEADCHAR, OnImeMessages)
-
-    // Touch Events.
-    MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
-
-    // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
-    MSG_WM_ACTIVATE(OnActivate)
-    MSG_WM_ACTIVATEAPP(OnActivateApp)
-    MSG_WM_APPCOMMAND(OnAppCommand)
-    MSG_WM_CANCELMODE(OnCancelMode)
-    MSG_WM_CAPTURECHANGED(OnCaptureChanged)
-    MSG_WM_CLOSE(OnClose)
-    MSG_WM_COMMAND(OnCommand)
-    MSG_WM_CREATE(OnCreate)
-    MSG_WM_DESTROY(OnDestroy)
-    MSG_WM_DISPLAYCHANGE(OnDisplayChange)
-    MSG_WM_ERASEBKGND(OnEraseBkgnd)
-    MSG_WM_ENDSESSION(OnEndSession)
-    MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
-    MSG_WM_EXITMENULOOP(OnExitMenuLoop)
-    MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
-    MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
-    MSG_WM_HSCROLL(OnHScroll)
-    MSG_WM_INITMENU(OnInitMenu)
-    MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
-    MSG_WM_INPUTLANGCHANGE(OnInputLangChange)
-    MSG_WM_KILLFOCUS(OnKillFocus)
-    MSG_WM_MOVE(OnMove)
-    MSG_WM_MOVING(OnMoving)
-    MSG_WM_NCACTIVATE(OnNCActivate)
-    MSG_WM_NCCALCSIZE(OnNCCalcSize)
-    MSG_WM_NCHITTEST(OnNCHitTest)
-    MSG_WM_NCPAINT(OnNCPaint)
-    MSG_WM_NOTIFY(OnNotify)
-    MSG_WM_PAINT(OnPaint)
-    MSG_WM_POWERBROADCAST(OnPowerBroadcast)
-    MSG_WM_SETFOCUS(OnSetFocus)
-    MSG_WM_SETICON(OnSetIcon)
-    MSG_WM_SETTEXT(OnSetText)
-    MSG_WM_SETTINGCHANGE(OnSettingChange)
-    MSG_WM_SIZE(OnSize)
-    MSG_WM_SYSCOMMAND(OnSysCommand)
-    MSG_WM_THEMECHANGED(OnThemeChanged)
-    MSG_WM_VSCROLL(OnVScroll)
-    MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
-    MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
-  END_MSG_MAP()
-
-  // These are all virtual so that specialized Widgets can modify or augment
-  // processing.
-  // This list is in _ALPHABETICAL_ order!
-  // Note: in the base class these functions must do nothing but convert point
-  //       coordinates to client coordinates (if necessary) and forward the
-  //       handling to the appropriate Process* function. This is so that
-  //       subclasses can easily override these methods to do different things
-  //       and have a convenient function to call to get the default behavior.
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
-  virtual void OnActivateApp(BOOL active, DWORD thread_id);
-  virtual LRESULT OnAppCommand(HWND window, short app_command, WORD device,
-                               int keystate);
-  virtual void OnCancelMode();
-  virtual void OnCaptureChanged(HWND hwnd);
-  virtual void OnClose();
-  virtual void OnCommand(UINT notification_code, int command_id, HWND window);
-  virtual LRESULT OnCreate(CREATESTRUCT* create_struct);
-  // WARNING: If you override this be sure and invoke super, otherwise we'll
-  // leak a few things.
-  virtual void OnDestroy();
-  virtual void OnDisplayChange(UINT bits_per_pixel, CSize screen_size);
-  virtual LRESULT OnDwmCompositionChanged(UINT msg,
-                                          WPARAM w_param,
-                                          LPARAM l_param);
-  virtual void OnEndSession(BOOL ending, UINT logoff);
-  virtual void OnEnterSizeMove();
-  virtual LRESULT OnEraseBkgnd(HDC dc);
-  virtual void OnExitMenuLoop(BOOL is_track_popup_menu);
-  virtual void OnExitSizeMove();
-  virtual LRESULT OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param);
-  virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
-  virtual void OnHScroll(int scroll_type, short position, HWND scrollbar);
-  virtual LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnInitMenu(HMENU menu);
-  virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
-  virtual void OnInputLangChange(DWORD character_set, HKL input_language_id);
-  virtual LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnKillFocus(HWND focused_window);
-  virtual LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnMove(const CPoint& point);
-  virtual void OnMoving(UINT param, LPRECT new_bounds);
-  virtual LRESULT OnNCActivate(BOOL active);
-  virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param);
-  virtual LRESULT OnNCHitTest(const CPoint& pt);
-  virtual void OnNCPaint(HRGN rgn);
-  virtual LRESULT OnNCUAHDrawCaption(UINT msg,
-                                     WPARAM w_param,
-                                     LPARAM l_param);
-  virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNotify(int w_param, NMHDR* l_param);
-  virtual void OnPaint(HDC dc);
-  virtual LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
-  virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnSetFocus(HWND old_focused_window);
-  virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon);
-  virtual LRESULT OnSetText(const wchar_t* text);
-  virtual void OnSettingChange(UINT flags, const wchar_t* section);
-  virtual void OnSize(UINT param, const CSize& size);
-  virtual void OnSysCommand(UINT notification_code, CPoint click);
-  virtual void OnThemeChanged();
-  virtual LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnVScroll(int scroll_type, short position, HWND scrollbar);
-  virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
-  virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
-
   // Deletes this window as it is destroyed, override to provide different
   // behavior.
   virtual void OnFinalMessage(HWND window);
@@ -364,13 +178,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Called when a MSAA screen reader client is detected.
   virtual void OnScreenReaderDetected();
 
-  // The TooltipManager. This is NULL if there is a problem creating the
-  // underlying tooltip window.
-  // WARNING: RootView's destructor calls into the TooltipManager. As such, this
-  // must be destroyed AFTER root_view_.
-  scoped_ptr<TooltipManagerWin> tooltip_manager_;
-
-  scoped_refptr<DropTargetWin> drop_target_;
+  HWNDMessageHandler* GetMessageHandler();
 
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;
@@ -439,14 +247,17 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void PostHandleMSG(UINT message,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
-  virtual NativeWidgetWin* AsNativeWidgetWin() OVERRIDE;
+
+  // The TooltipManager. This is NULL if there is a problem creating the
+  // underlying tooltip window.
+  // WARNING: RootView's destructor calls into the TooltipManager. As such, this
+  // must be destroyed AFTER root_view_.
+  scoped_ptr<TooltipManagerWin> tooltip_manager_;
+
+  scoped_refptr<DropTargetWin> drop_target_;
 
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
-
-  // TODO(beng): This friendship can be removed once all methods relating to
-  //             this object being a WindowImpl are moved to HWNDMessageHandler.
-  friend HWNDMessageHandler;
 
   void SetInitParams(const Widget::InitParams& params);
 
