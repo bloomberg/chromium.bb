@@ -76,8 +76,14 @@ def _CreateMemcacheFileSystem(branch, branch_memcache):
 
 def _GetInstanceForBranch(channel_name, local_path):
   branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
-  if branch in SERVER_INSTANCES:
-    return SERVER_INSTANCES[branch]
+
+  # The key for the server is a tuple of |channel_name| with |branch|, since
+  # sometimes stable and beta point to the same branch.
+  instance_key = '%s/%s' % (channel_name, branch)
+  instance = SERVER_INSTANCES.get(instance_key, None)
+  if instance is not None:
+    return instance
+
   branch_memcache = InMemoryObjectStore(branch)
   if branch == 'local':
     file_system = LocalFileSystem(local_path)
@@ -114,11 +120,12 @@ def _GetInstanceForBranch(channel_name, local_path):
   example_zipper = ExampleZipper(file_system,
                                  cache_factory,
                                  DOCS_PATH)
-  SERVER_INSTANCES[branch] = ServerInstance(
-      template_data_source_factory,
-      example_zipper,
-      cache_factory)
-  return SERVER_INSTANCES[branch]
+
+  instance = ServerInstance(template_data_source_factory,
+                            example_zipper,
+                            cache_factory)
+  SERVER_INSTANCES[instance_key] = instance
+  return instance
 
 def _GetURLFromBranch(branch):
     if branch == 'trunk':
