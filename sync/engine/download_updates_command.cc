@@ -11,8 +11,8 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/syncable/directory.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/read_transaction.h"
-#include "sync/util/cryptographer.h"
 
 using sync_pb::DebugInfo;
 
@@ -38,13 +38,14 @@ SyncerError HandleGetEncryptionKeyResponse(
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
   syncable::ReadTransaction trans(FROM_HERE, dir);
-  Cryptographer* cryptographer = dir->GetCryptographer(&trans);
-  success = cryptographer->SetKeystoreKey(
-      update_response.get_updates().encryption_key());
+  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
+  success = nigori_handler->SetKeystoreKey(
+      update_response.get_updates().encryption_key(),
+      &trans);
 
   DVLOG(1) << "GetUpdates returned encryption key of length "
            << update_response.get_updates().encryption_key().length()
-           << ". Cryptographer keystore key "
+           << ". Nigori keystore key "
            << (success ? "" : "not ") << "updated.";
   return (success ? SYNCER_OK : SERVER_RESPONSE_VALIDATION_FAILED);
 }
@@ -91,9 +92,8 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   if (session->context()->keystore_encryption_enabled()) {
     syncable::Directory* dir = session->context()->directory();
     syncable::ReadTransaction trans(FROM_HERE, dir);
-    Cryptographer* cryptographer =
-        session->context()->directory()->GetCryptographer(&trans);
-    need_encryption_key = !cryptographer->HasKeystoreKey();
+    syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
+    need_encryption_key = nigori_handler->NeedKeystoreKey(&trans);
     get_updates->set_need_encryption_key(need_encryption_key);
 
   }

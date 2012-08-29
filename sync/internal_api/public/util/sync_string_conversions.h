@@ -17,6 +17,8 @@ const char* PassphraseRequiredReasonToString(
     PassphraseRequiredReason reason);
 
 const char* PassphraseStateToString(PassphraseState state);
+
+const char* BootstrapTokenTypeToString(BootstrapTokenType type);
 }
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_SYNC_STRING_CONVERSIONS_H_

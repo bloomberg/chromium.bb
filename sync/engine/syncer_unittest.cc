@@ -4094,7 +4094,7 @@ TEST_F(SyncerTest, ConfigureFailsDontApplyUpdates) {
 TEST_F(SyncerTest, GetKeySuccess) {
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_FALSE(GetCryptographer(&rtrans)->HasKeystoreKey());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
   }
 
   SyncShareConfigure();
@@ -4102,14 +4102,14 @@ TEST_F(SyncerTest, GetKeySuccess) {
   EXPECT_EQ(session_->status_controller().last_get_key_result(), SYNCER_OK);
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_TRUE(GetCryptographer(&rtrans)->HasKeystoreKey());
+    EXPECT_FALSE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
   }
 }
 
 TEST_F(SyncerTest, GetKeyEmpty) {
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_FALSE(GetCryptographer(&rtrans)->HasKeystoreKey());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
   }
 
   mock_server_->SetKeystoreKey("");
@@ -4118,7 +4118,7 @@ TEST_F(SyncerTest, GetKeyEmpty) {
   EXPECT_NE(session_->status_controller().last_get_key_result(), SYNCER_OK);
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_FALSE(GetCryptographer(&rtrans)->HasKeystoreKey());
+    EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
   }
 }
 

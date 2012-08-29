@@ -387,10 +387,6 @@ class SyncManager {
   // Status-related getter.  May be called on any thread.
   virtual SyncStatus GetDetailedStatus() const = 0;
 
-  // Extracts the keystore encryption bootstrap token if a keystore key existed.
-  // Returns true if bootstrap token successfully extracted, false otherwise.
-  virtual bool GetKeystoreKeyBootstrapToken(std::string* token) = 0;
-
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
   virtual void SaveChanges() = 0;

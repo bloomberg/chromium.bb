@@ -93,19 +93,18 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
   PumpLoop();
 }
 
-TEST_F(JsSyncEncryptionHandlerObserverTest, SensitiveNotifiations) {
-  DictionaryValue redacted_token_details;
-  redacted_token_details.SetString("token", "<redacted>");
-  DictionaryValue redacted_bootstrap_token_details;
-  redacted_bootstrap_token_details.SetString("bootstrapToken", "<redacted>");
+TEST_F(JsSyncEncryptionHandlerObserverTest, OnBootstrapTokenUpdated) {
+  DictionaryValue bootstrap_token_details;
+  bootstrap_token_details.SetString("bootstrapToken", "<redacted>");
+  bootstrap_token_details.SetString("type", "PASSPHRASE_BOOTSTRAP_TOKEN");
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent(
-                  "OnBootstrapTokenUpdated",
-                  HasDetailsAsDictionary(redacted_bootstrap_token_details)));
+                  "onBootstrapTokenUpdated",
+                  HasDetailsAsDictionary(bootstrap_token_details)));
 
   js_sync_encryption_handler_observer_.OnBootstrapTokenUpdated(
-      "sensitive_token");
+      "sensitive_token", PASSPHRASE_BOOTSTRAP_TOKEN);
   PumpLoop();
 }
 

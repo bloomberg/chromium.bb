@@ -40,7 +40,8 @@ class SyncEncryptionHandlerObserverMock
                void(PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));  // NOLINT
   MOCK_METHOD0(OnPassphraseAccepted, void());  // NOLINT
-  MOCK_METHOD1(OnBootstrapTokenUpdated, void(const std::string&));  // NOLINT
+  MOCK_METHOD2(OnBootstrapTokenUpdated,
+               void(const std::string&, BootstrapTokenType type));  // NOLINT
   MOCK_METHOD2(OnEncryptedTypesChanged,
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
@@ -67,10 +68,10 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
  protected:
   void SetUpEncryption() {
-    ReadTransaction trans(FROM_HERE, user_share());
     encryption_handler_.reset(
         new SyncEncryptionHandlerImpl(user_share(),
-                                      &encryptor_));
+                                      &encryptor_,
+                                      "", ""  /* bootstrap tokens */));
     encryption_handler_->AddObserver(&observer_);
   }
 
@@ -128,7 +129,8 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
 
   StrictMock<SyncEncryptionHandlerObserverMock> observer2;
   SyncEncryptionHandlerImpl handler2(user_share(),
-                                     &encryptor_);
+                                     &encryptor_,
+                                     "", ""  /* bootstrap tokens */);
   handler2.AddObserver(&observer2);
 
   // Just set the sensitive types (shouldn't trigger any notifications).
@@ -412,6 +414,27 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
         GetCryptographer()->CanDecryptUsingDefaultKey(nigori.encrypted()));
   }
   EXPECT_TRUE(encryption_handler()->EncryptEverythingEnabled());
+}
+
+// Ensure setting the keystore key works, updates the bootstrap token, and
+// doesn't modify the cryptographer.
+TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreUpdatedBoostrapToken) {
+  WriteTransaction trans(FROM_HERE, user_share());
+  EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
+  EXPECT_FALSE(GetCryptographer()->is_initialized());
+  EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+  EXPECT_FALSE(encryption_handler()->SetKeystoreKey("",
+                                                    trans.GetWrappedTrans()));
+  EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+  Mock::VerifyAndClearExpectations(observer());
+
+  const char kValidKey[] = "keystore_key";
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(kValidKey, KEYSTORE_BOOTSTRAP_TOKEN));
+  EXPECT_TRUE(encryption_handler()->SetKeystoreKey(kValidKey,
+                                                   trans.GetWrappedTrans()));
+  EXPECT_FALSE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
+  EXPECT_FALSE(GetCryptographer()->is_initialized());
 }
 
 }  // namespace syncer

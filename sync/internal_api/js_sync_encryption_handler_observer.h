@@ -36,7 +36,8 @@ class JsSyncEncryptionHandlerObserver : public SyncEncryptionHandler::Observer {
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(
-      const std::string& bootstrap_token) OVERRIDE;
+      const std::string& bootstrap_token,
+      BootstrapTokenType type) OVERRIDE;
   virtual void OnEncryptedTypesChanged(
       ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;

@@ -44,4 +44,14 @@ const char* PassphraseStateToString(PassphraseState state) {
   }
 }
 
+const char* BootstrapTokenTypeToString(BootstrapTokenType type) {
+  switch (type) {
+    ENUM_CASE(PASSPHRASE_BOOTSTRAP_TOKEN);
+    ENUM_CASE(KEYSTORE_BOOTSTRAP_TOKEN);
+    default:
+      NOTREACHED();
+      return "INVALID_BOOTSTRAP_TOKEN_TYPE";
+  }
+}
+
 }  // namespace syncer

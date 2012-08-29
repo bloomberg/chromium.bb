@@ -138,19 +138,6 @@ TEST_F(SyncCryptographerTest, AddKeySetsDefault) {
   EXPECT_EQ(encrypted3.key_name(), encrypted4.key_name());
 }
 
-// Ensure setting the keystore key works and doesn't modify the default nigori.
-TEST_F(SyncCryptographerTest, SetKeystore) {
-  EXPECT_FALSE(cryptographer_.is_initialized());
-  EXPECT_FALSE(cryptographer_.HasKeystoreKey());
-
-  EXPECT_FALSE(cryptographer_.SetKeystoreKey(""));
-  EXPECT_FALSE(cryptographer_.HasKeystoreKey());
-
-  EXPECT_TRUE(cryptographer_.SetKeystoreKey("keystore_key"));
-  EXPECT_TRUE(cryptographer_.HasKeystoreKey());
-  EXPECT_FALSE(cryptographer_.is_initialized());
-}
-
 // Crashes, Bug 55178.
 #if defined(OS_WIN)
 #define MAYBE_EncryptExportDecrypt DISABLED_EncryptExportDecrypt
@@ -222,24 +209,6 @@ TEST_F(SyncCryptographerTest, MAYBE_PackUnpack) {
   EXPECT_EQ(expected_user, user_key);
   EXPECT_EQ(expected_encryption, encryption_key);
   EXPECT_EQ(expected_mac, mac_key);
-}
-
-// Test that bootstrapping the keystore key works and doesn't affect the default
-// nigori.
-TEST_F(SyncCryptographerTest, BootstrapKeystore) {
-  std::string token;
-  cryptographer_.GetKeystoreKeyBootstrapToken(&token);
-  EXPECT_TRUE(token.empty());
-
-  cryptographer_.SetKeystoreKey("keystore_key");
-  cryptographer_.GetKeystoreKeyBootstrapToken(&token);
-  EXPECT_FALSE(token.empty());
-
-  Cryptographer cryptographer2(&encryptor_);
-  EXPECT_FALSE(cryptographer2.HasKeystoreKey());
-  cryptographer2.BootstrapKeystoreKey(token);
-  EXPECT_TRUE(cryptographer2.HasKeystoreKey());
-  EXPECT_FALSE(cryptographer2.is_initialized());
 }
 
 }  // namespace syncer

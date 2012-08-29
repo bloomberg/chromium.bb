@@ -49,13 +49,19 @@ SyncEncryptionHandlerImpl::Vault::~Vault() {
 
 SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     UserShare* user_share,
-    Encryptor* encryptor)
+    Encryptor* encryptor,
+    const std::string& restored_key_for_bootstrapping,
+    const std::string& restored_keystore_key_for_bootstrapping)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
       passphrase_state_(IMPLICIT_PASSPHRASE),
+      keystore_key_(restored_keystore_key_for_bootstrapping),
       nigori_overwrite_count_(0) {
+  // We only bootstrap the user provided passphrase. The keystore key is handled
+  // at Init time once we're sure the nigori is downloaded.
+  vault_unsafe_.cryptographer.Bootstrap(restored_key_for_bootstrapping);
 }
 
 SyncEncryptionHandlerImpl::~SyncEncryptionHandlerImpl() {}
@@ -424,6 +430,27 @@ void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
                                            nigori);
 }
 
+bool SyncEncryptionHandlerImpl::NeedKeystoreKey(
+    syncable::BaseTransaction* const trans) const {
+  return keystore_key_.empty();
+}
+
+bool SyncEncryptionHandlerImpl::SetKeystoreKey(
+    const std::string& key,
+    syncable::BaseTransaction* const trans) {
+  if (!keystore_key_.empty() || key.empty())
+    return false;
+  keystore_key_ = key;
+
+  // TODO(zea): trigger migration if necessary.
+
+  DVLOG(1) << "Keystore bootstrap token updated.";
+  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                    OnBootstrapTokenUpdated(key,
+                                            KEYSTORE_BOOTSTRAP_TOKEN));
+  return true;
+}
+
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypes(
     syncable::BaseTransaction* const trans) const {
   return UnlockVault(trans).encrypted_types;
@@ -688,7 +715,8 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
   if (!bootstrap_token.empty()) {
     DVLOG(1) << "Passphrase bootstrap token updated.";
     FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                      OnBootstrapTokenUpdated(bootstrap_token));
+                      OnBootstrapTokenUpdated(bootstrap_token,
+                                              PASSPHRASE_BOOTSTRAP_TOKEN));
   }
 
   const Cryptographer& cryptographer =
@@ -710,6 +738,8 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
   }
 
   DCHECK(cryptographer.is_ready());
+
+  // TODO(zea): trigger migration if necessary.
 
   sync_pb::NigoriSpecifics specifics(nigori_node->GetNigoriSpecifics());
   // Does not modify specifics.encrypted() if the original decrypted data was

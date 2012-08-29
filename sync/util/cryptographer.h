@@ -63,10 +63,6 @@ class Cryptographer {
   // never call Bootstrap at all.
   void Bootstrap(const std::string& restored_bootstrap_token);
 
-  // Bootstrap the keystore key.
-  void BootstrapKeystoreKey(
-      const std::string& restored_keystore_bootstrap_token);
-
   // Returns whether we can decrypt |encrypted| using the keys we currently know
   // about.
   bool CanDecrypt(const sync_pb::EncryptedData& encrypted) const;
@@ -135,11 +131,14 @@ class Cryptographer {
   // correspond to a nigori that has already been installed into the keybag.
   void SetDefaultKey(const std::string& key_name);
 
-  bool is_initialized() const { return !nigoris_.empty() && default_nigori_; }
+  bool is_initialized() const {
+    return !nigoris_.empty() && !default_nigori_name_.empty();
+  }
 
   // Returns whether this Cryptographer is ready to encrypt and decrypt data.
-  bool is_ready() const { return is_initialized() &&
-                          has_pending_keys() == false; }
+  bool is_ready() const {
+    return is_initialized() && !has_pending_keys();
+  }
 
   // Returns whether there is a pending set of keys that needs to be decrypted.
   bool has_pending_keys() const { return NULL != pending_keys_.get(); }
@@ -148,18 +147,6 @@ class Cryptographer {
   // Cryptographer instance to bootstrap itself.  Returns false if such a token
   // can't be created (i.e. if this Cryptograhper doesn't have valid keys).
   bool GetBootstrapToken(std::string* token) const;
-
-  // Obtain the bootstrap token based on the keystore encryption key.
-  bool GetKeystoreKeyBootstrapToken(std::string* token) const;
-
-  // Set the keystore-derived nigori from the provided key.
-  // Returns true if we succesfully create the keystore derived nigori from the
-  // provided key, false otherwise.
-  bool SetKeystoreKey(const std::string& keystore_key);
-
-  // Returns true if we currently have a keystore-derived nigori, false
-  // otherwise.
-  bool HasKeystoreKey() const;
 
   Encryptor* encryptor() const { return encryptor_; }
 
@@ -173,9 +160,8 @@ class Cryptographer {
   // Does not update the default nigori.
   void InstallKeyBag(const sync_pb::NigoriKeyBag& bag);
 
-  // Helper method to add a nigori as either the new default nigori or the new
-  // keystore nigori.
-  bool AddKeyImpl(Nigori* nigori, bool is_keystore_key);
+  // Helper method to add a nigori as the default key.
+  bool AddKeyImpl(scoped_ptr<Nigori> nigori);
 
   // Functions to serialize + encrypt a Nigori object in an opaque format for
   // persistence by sync infrastructure.
@@ -184,9 +170,11 @@ class Cryptographer {
 
   Encryptor* const encryptor_;
 
-  NigoriMap nigoris_;  // The Nigoris we know about, mapped by key name.
-  NigoriMap::value_type* default_nigori_;  // The Nigori used for encryption.
-  NigoriMap::value_type* keystore_nigori_; // Nigori generated from keystore.
+  // The Nigoris we know about, mapped by key name.
+  NigoriMap nigoris_;
+  // The key name associated with the default nigori. If non-empty, must
+  // correspond to a nigori within |nigoris_|.
+  std::string default_nigori_name_;
 
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
 

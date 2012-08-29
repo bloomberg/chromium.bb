@@ -44,8 +44,11 @@ class SyncEncryptionHandlerImpl
     : public SyncEncryptionHandler,
       public syncable::NigoriHandler {
  public:
-  SyncEncryptionHandlerImpl(UserShare* user_share,
-                            Encryptor* encryptor);
+  SyncEncryptionHandlerImpl(
+      UserShare* user_share,
+      Encryptor* encryptor,
+      const std::string& restored_key_for_bootstrapping,
+      const std::string& restored_keystore_key_for_bootstrapping);
   virtual ~SyncEncryptionHandlerImpl();
 
   // SyncEncryptionHandler implementation.
@@ -67,6 +70,11 @@ class SyncEncryptionHandlerImpl
   virtual void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const OVERRIDE;
+  virtual bool NeedKeystoreKey(
+      syncable::BaseTransaction* const trans) const OVERRIDE;
+  virtual bool SetKeystoreKey(
+      const std::string& key,
+      syncable::BaseTransaction* const trans) OVERRIDE;
   // Can be called from any thread.
   virtual ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const OVERRIDE;
@@ -181,6 +189,9 @@ class SyncEncryptionHandlerImpl
   // The current state of the passphrase required to decrypt the encryption
   // keys stored in the nigori node.
   PassphraseState passphrase_state_;
+
+  // The keystore key provided by the server.
+  std::string keystore_key_;
 
   // The number of times we've automatically (i.e. not via SetPassphrase or
   // conflict resolver) updated the nigori's encryption keys in this chrome

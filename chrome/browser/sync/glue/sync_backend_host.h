@@ -378,12 +378,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     INITIALIZED,            // Initialization is complete.
   };
 
-  // Enum used to distinguish which bootstrap encryption token is being updated.
-  enum BootstrapTokenType {
-    PASSPHRASE_BOOTSTRAP_TOKEN,
-    KEYSTORE_BOOTSTRAP_TOKEN
-  };
-
   // Checks if we have received a notice to turn on experimental datatypes
   // (via the nigori node) and informs the frontend if that is the case.
   // Note: it is illegal to call this before the backend is initialized.
@@ -414,7 +408,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // storage.
   void PersistEncryptionBootstrapToken(
       const std::string& token,
-      BootstrapTokenType token_type);
+      syncer::BootstrapTokenType token_type);
 
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialization_state_ == INITIALIZED; }

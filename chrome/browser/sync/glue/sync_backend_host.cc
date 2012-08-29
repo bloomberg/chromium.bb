@@ -109,7 +109,8 @@ class SyncBackendHost::Core
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(
-      const std::string& bootstrap_token) OVERRIDE;
+      const std::string& bootstrap_token,
+      syncer::BootstrapTokenType type) OVERRIDE;
   virtual void OnEncryptedTypesChanged(
       syncer::ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
@@ -896,23 +897,6 @@ void SyncBackendHost::Core::OnSyncCycleCompleted(
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
-  if (snapshot.model_neutral_state().last_get_key_result ==
-          syncer::SYNCER_OK) {
-    // If we just received a new keystore key, get it and make sure we update
-    // the bootstrap token with it.
-    std::string keystore_token;
-    sync_manager_->GetKeystoreKeyBootstrapToken(&keystore_token);
-    if (!keystore_token.empty()) {
-      DVLOG(1) << "Persisting keystore encryption bootstrap token.";
-      host_.Call(FROM_HERE,
-                 &SyncBackendHost::PersistEncryptionBootstrapToken,
-                 keystore_token,
-                 KEYSTORE_BOOTSTRAP_TOKEN);
-    } else {
-      NOTREACHED();
-    }
-  }
-
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop,
@@ -928,6 +912,11 @@ void SyncBackendHost::Core::OnInitializationComplete(
 
   if (!success) {
     DoDestroySyncManager();
+  } else {
+    // Register for encryption related changes now. We have to do this before
+    // the associate nigori state in order to receive notifications triggered
+    // by the initial download of the nigori node.
+    sync_manager_->GetEncryptionHandler()->AddObserver(this);
   }
 
   host_.Call(
@@ -973,14 +962,15 @@ void SyncBackendHost::Core::OnPassphraseAccepted() {
 }
 
 void SyncBackendHost::Core::OnBootstrapTokenUpdated(
-    const std::string& bootstrap_token) {
+    const std::string& bootstrap_token,
+    syncer::BootstrapTokenType type) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
              &SyncBackendHost::PersistEncryptionBootstrapToken,
              bootstrap_token,
-             PASSPHRASE_BOOTSTRAP_TOKEN);
+             type);
 }
 
 void SyncBackendHost::Core::OnStopSyncingPermanently() {
@@ -1175,11 +1165,7 @@ void SyncBackendHost::Core::DoStartSyncing(
 
 void SyncBackendHost::Core::DoAssociateNigori() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->GetEncryptionHandler()->AddObserver(this);
   sync_manager_->GetEncryptionHandler()->Init();
-  host_.Call(FROM_HERE,
-             &SyncBackendHost::HandlePassphraseStateChangedOnFrontendLoop,
-             sync_manager_->GetEncryptionHandler()->GetPassphraseState());
   host_.Call(FROM_HERE,
              &SyncBackendHost::HandleInitializationCompletedOnFrontendLoop,
              true);
@@ -1428,10 +1414,10 @@ void SyncBackendHost::RetryConfigurationOnFrontendLoop(
 
 void SyncBackendHost::PersistEncryptionBootstrapToken(
     const std::string& token,
-    BootstrapTokenType token_type) {
+    syncer::BootstrapTokenType token_type) {
   CHECK(sync_prefs_.get());
   DCHECK(!token.empty());
-  if (token_type == PASSPHRASE_BOOTSTRAP_TOKEN)
+  if (token_type == syncer::PASSPHRASE_BOOTSTRAP_TOKEN)
     sync_prefs_->SetEncryptionBootstrapToken(token);
   else
     sync_prefs_->SetKeystoreEncryptionBootstrapToken(token);

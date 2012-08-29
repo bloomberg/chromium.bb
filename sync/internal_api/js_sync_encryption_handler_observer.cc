@@ -49,13 +49,15 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseAccepted() {
 }
 
 void JsSyncEncryptionHandlerObserver::OnBootstrapTokenUpdated(
-    const std::string& boostrap_token) {
+    const std::string& boostrap_token,
+    BootstrapTokenType type) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
   details.SetString("bootstrapToken", "<redacted>");
-  HandleJsEvent(FROM_HERE, "OnBootstrapTokenUpdated", JsEventDetails(&details));
+  details.SetString("type", BootstrapTokenTypeToString(type));
+  HandleJsEvent(FROM_HERE, "onBootstrapTokenUpdated", JsEventDetails(&details));
 }
 
 void JsSyncEncryptionHandlerObserver::OnEncryptedTypesChanged(

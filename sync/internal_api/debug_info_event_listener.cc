@@ -68,8 +68,13 @@ void DebugInfoEventListener::OnPassphraseAccepted() {
 }
 
 void DebugInfoEventListener::OnBootstrapTokenUpdated(
-    const std::string& bootstrap_token) {
-  CreateAndAddEvent(sync_pb::DebugEventInfo::BOOTSTRAP_TOKEN_UPDATED);
+    const std::string& bootstrap_token, BootstrapTokenType type) {
+  if (type == PASSPHRASE_BOOTSTRAP_TOKEN) {
+    CreateAndAddEvent(sync_pb::DebugEventInfo::BOOTSTRAP_TOKEN_UPDATED);
+    return;
+  }
+  DCHECK_EQ(type, KEYSTORE_BOOTSTRAP_TOKEN);
+  CreateAndAddEvent(sync_pb::DebugEventInfo::KEYSTORE_TOKEN_UPDATED);
 }
 
 void DebugInfoEventListener::OnStopSyncingPermanently() {

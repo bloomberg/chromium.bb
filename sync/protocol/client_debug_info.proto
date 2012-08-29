@@ -63,6 +63,8 @@ message DebugEventInfo {
     BOOTSTRAP_TOKEN_UPDATED = 9;  // A new cryptographer bootstrap token was
                                   // generated.
     PASSPHRASE_STATE_CHANGED = 10;  // The encryption passphrase state changed.
+    KEYSTORE_TOKEN_UPDATED = 11;  // A new keystore encryption token was
+                                  // persisted.
   }
   // In a given |DebugEventInfo| only one of the following would be set.
   optional EventType type = 1;

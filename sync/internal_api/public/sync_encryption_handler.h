@@ -38,6 +38,12 @@ enum PassphraseState {
   CUSTOM_PASSPHRASE = 3,               // User-provided passphrase.
 };
 
+// Enum used to distinguish which bootstrap encryption token is being updated.
+enum BootstrapTokenType {
+  PASSPHRASE_BOOTSTRAP_TOKEN,
+  KEYSTORE_BOOTSTRAP_TOKEN
+};
+
 // Sync's encryption handler. Handles tracking encrypted types, ensuring the
 // cryptographer encrypts with the proper key and has the most recent keybag,
 // and keeps the nigori node up to date.
@@ -77,7 +83,8 @@ class SyncEncryptionHandler {
     // with explicit passphrases, it will be the most recently seen custom
     // passphrase.
     virtual void OnBootstrapTokenUpdated(
-        const std::string& bootstrap_token) = 0;
+        const std::string& bootstrap_token,
+        BootstrapTokenType type) = 0;
 
     // Called when the set of encrypted types or the encrypt
     // everything flag has been changed.  Note that encryption isn't

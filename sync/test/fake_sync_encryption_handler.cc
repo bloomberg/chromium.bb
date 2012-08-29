@@ -57,6 +57,25 @@ void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(
                                            nigori);
 }
 
+bool FakeSyncEncryptionHandler::NeedKeystoreKey(
+    syncable::BaseTransaction* const trans) const {
+  return keystore_key_.empty();
+}
+
+bool FakeSyncEncryptionHandler::SetKeystoreKey(
+    const std::string& key,
+    syncable::BaseTransaction* const trans) {
+  if (!keystore_key_.empty() || key.empty())
+    return false;
+  keystore_key_ = key;
+
+  DVLOG(1) << "Keystore bootstrap token updated.";
+  FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                    OnBootstrapTokenUpdated(key,
+                                            KEYSTORE_BOOTSTRAP_TOKEN));
+  return true;
+}
+
 ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
     syncable::BaseTransaction* const trans) const {
   return encrypted_types_;

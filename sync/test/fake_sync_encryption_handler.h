@@ -46,6 +46,11 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   virtual void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const OVERRIDE;
+  virtual bool NeedKeystoreKey(
+      syncable::BaseTransaction* const trans) const OVERRIDE;
+  virtual bool SetKeystoreKey(
+      const std::string& key,
+      syncable::BaseTransaction* const trans) OVERRIDE;
   virtual ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const OVERRIDE;
 
@@ -59,6 +64,7 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
 
   FakeEncryptor encryptor_;
   Cryptographer cryptographer_;
+  std::string keystore_key_;
 };
 
 }  // namespace syncer

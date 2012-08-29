@@ -229,10 +229,6 @@ SyncStatus FakeSyncManager::GetDetailedStatus() const {
   return SyncStatus();
 }
 
-bool FakeSyncManager::GetKeystoreKeyBootstrapToken(std::string* token) {
-  return false;
-}
-
 void FakeSyncManager::SaveChanges() {
   // Do nothing.
 }

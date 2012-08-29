@@ -35,6 +35,16 @@ class NigoriHandler {
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const = 0;
 
+  // Whether a keystore key needs to be requested from the sync server.
+  virtual bool NeedKeystoreKey(
+      syncable::BaseTransaction* const trans) const = 0;
+
+  // Set the keystore key the server returned for this account.
+  // Returns true on success, false otherwise.
+  virtual bool SetKeystoreKey(
+      const std::string& key,
+      syncable::BaseTransaction* const trans) = 0;
+
   // Returns the set of currently encrypted types.
   virtual ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const = 0;

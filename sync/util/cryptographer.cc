@@ -22,9 +22,7 @@ const char kNigoriTag[] = "google_chrome_nigori";
 const char kNigoriKeyName[] = "nigori-key";
 
 Cryptographer::Cryptographer(Encryptor* encryptor)
-    : encryptor_(encryptor),
-      default_nigori_(NULL),
-      keystore_nigori_(NULL) {
+    : encryptor_(encryptor) {
   DCHECK(encryptor);
 }
 
@@ -39,19 +37,7 @@ void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
 
   scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
   if (nigori.get())
-    AddKeyImpl(nigori.release(), false);
-}
-
-void Cryptographer::BootstrapKeystoreKey(
-    const std::string& restored_bootstrap_token) {
-  if (keystore_nigori_) {
-    NOTREACHED();
-    return;
-  }
-
-  scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
-  if (nigori.get())
-    AddKeyImpl(nigori.release(), true);
+    AddKeyImpl(nigori.Pass());
 }
 
 bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {
@@ -60,15 +46,22 @@ bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {
 
 bool Cryptographer::CanDecryptUsingDefaultKey(
     const sync_pb::EncryptedData& data) const {
-  return default_nigori_ && (data.key_name() == default_nigori_->first);
+  return !default_nigori_name_.empty() &&
+         data.key_name() == default_nigori_name_;
 }
 
 bool Cryptographer::Encrypt(
     const ::google::protobuf::MessageLite& message,
     sync_pb::EncryptedData* encrypted) const {
   DCHECK(encrypted);
-  if (!default_nigori_) {
+  if (default_nigori_name_.empty()) {
     LOG(ERROR) << "Cryptographer not ready, failed to encrypt.";
+    return false;
+  }
+  NigoriMap::const_iterator default_nigori =
+      nigoris_.find(default_nigori_name_);
+  if (default_nigori == nigoris_.end()) {
+    LOG(ERROR) << "Corrupt default key.";
     return false;
   }
 
@@ -86,9 +79,9 @@ bool Cryptographer::Encrypt(
     }
   }
 
-  encrypted->set_key_name(default_nigori_->first);
-  if (!default_nigori_->second->Encrypt(serialized,
-                                        encrypted->mutable_blob())) {
+  encrypted->set_key_name(default_nigori_name_);
+  if (!default_nigori->second->Encrypt(serialized,
+                                       encrypted->mutable_blob())) {
     LOG(ERROR) << "Failed to encrypt data.";
     return false;
   }
@@ -147,7 +140,7 @@ bool Cryptographer::AddKey(const KeyParams& params) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
-  return AddKeyImpl(nigori.release(), false);
+  return AddKeyImpl(nigori.Pass());
 }
 
 bool Cryptographer::AddKeyFromBootstrapToken(
@@ -156,22 +149,17 @@ bool Cryptographer::AddKeyFromBootstrapToken(
   scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
   if (!nigori.get())
     return false;
-  return AddKeyImpl(nigori.release(), false);
+  return AddKeyImpl(nigori.Pass());
 }
 
-bool Cryptographer::AddKeyImpl(Nigori* initialized_nigori,
-                               bool is_keystore_key) {
-  scoped_ptr<Nigori> nigori(initialized_nigori);
+bool Cryptographer::AddKeyImpl(scoped_ptr<Nigori> initialized_nigori) {
   std::string name;
-  if (!nigori->Permute(Nigori::Password, kNigoriKeyName, &name)) {
+  if (!initialized_nigori->Permute(Nigori::Password, kNigoriKeyName, &name)) {
     NOTREACHED();
     return false;
   }
-  nigoris_[name] = make_linked_ptr(nigori.release());
-  if (is_keystore_key)
-    keystore_nigori_ = &*nigoris_.find(name);
-  else
-    default_nigori_ = &*nigoris_.find(name);
+  nigoris_[name] = make_linked_ptr(initialized_nigori.release());
+  default_nigori_name_ = name;
   return true;
 }
 
@@ -186,7 +174,7 @@ void Cryptographer::InstallKeys(const sync_pb::EncryptedData& encrypted) {
 
 void Cryptographer::SetDefaultKey(const std::string& key_name) {
   DCHECK(nigoris_.end() != nigoris_.find(key_name));
-  default_nigori_ = &*nigoris_.find(key_name);
+  default_nigori_name_ = key_name;
 }
 
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
@@ -220,8 +208,7 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
   }
   InstallKeyBag(bag);
   const std::string& new_default_key_name = pending_keys_->key_name();
-  DCHECK(nigoris_.end() != nigoris_.find(new_default_key_name));
-  default_nigori_ = &*nigoris_.find(new_default_key_name);
+  SetDefaultKey(new_default_key_name);
   pending_keys_.reset();
   return true;
 }
@@ -231,16 +218,11 @@ bool Cryptographer::GetBootstrapToken(std::string* token) const {
   if (!is_initialized())
     return false;
 
-  return PackBootstrapToken(default_nigori_->second.get(), token);
-}
-
-bool Cryptographer::GetKeystoreKeyBootstrapToken(
-    std::string* token) const {
-  DCHECK(token);
-  if (!HasKeystoreKey())
+  NigoriMap::const_iterator default_nigori =
+      nigoris_.find(default_nigori_name_);
+  if (default_nigori == nigoris_.end())
     return false;
-
-  return PackBootstrapToken(keystore_nigori_->second.get(), token);
+  return PackBootstrapToken(default_nigori->second.get(), token);
 }
 
 bool Cryptographer::PackBootstrapToken(const Nigori* nigori,
@@ -305,27 +287,6 @@ Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
   }
 
   return nigori.release();
-}
-
-bool Cryptographer::SetKeystoreKey(const std::string& keystore_key) {
-  if (keystore_key.empty())
-    return false;
-  KeyParams params = {"localhost", "dummy", keystore_key};
-
-  // Create the new Nigori and make it the default keystore encryptor.
-  scoped_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.hostname,
-                                params.username,
-                                params.password)) {
-    NOTREACHED();  // Invalid username or password.
-    return false;
-  }
-
-  return AddKeyImpl(nigori.release(), true);
-}
-
-bool Cryptographer::HasKeystoreKey() const {
-  return keystore_nigori_ != NULL;
 }
 
 void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
