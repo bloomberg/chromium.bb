@@ -1738,21 +1738,14 @@ libstdcpp-install() {
 
 build-validator() {
   arch=$1
-  if [ ${arch} == 'mips' ]; then
-    targetplatform='mips32'
-  else
-    targetplatform=$arch
-  fi
   ARCH=`echo ${arch} | tr '[:lower:]' '[:upper:]'`
-  TARGETPLATFORM=`echo ${targetplatform} | tr '[:lower:]' '[:upper:]'`
-  StepBanner "MISC-"${ARCH} "Building validator ("${TARGETPLATFORM}")"
+  StepBanner "MISC-"${ARCH} "Building validator ("${arch}")"
   spushd "${NACL_ROOT}"
   RunWithLog ${arch}_ncval_core \
     ./scons MODE=opt-host \
-    targetplatform=${targetplatform} \
     sysinfo=0 \
     ${arch}-ncval-core
-  cp ${SCONS_OUT}/opt-linux-x86-32-to-${targetplatform}/obj/src/trusted/\
+  cp ${SCONS_OUT}/opt-linux-x86-32/obj/src/trusted/\
 validator_${arch}/${arch}-ncval-core ${INSTALL_ROOT}/tools-x86
   spopd
 }
