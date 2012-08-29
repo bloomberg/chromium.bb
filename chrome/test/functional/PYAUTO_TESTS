@@ -49,7 +49,6 @@
       'infobars',
       'instant',
       'multiprofile',
-      'navigation',
       'notifications',
       'ntp',
       'omnibox',
