@@ -61,11 +61,12 @@ def main():
   if not options.patchset:
     options.patchset = obj.get_issue_properties(
         options.issue, False)['patchsets'][-1]
-    logging.info('Using patchset %d' % options.patchset)
-  # Download the patch.
+    print('No patchset specified. Using patchset %d' % options.patchset)
+
+  print('Downloading the patch.')
   patchset = obj.get_patch(options.issue, options.patchset)
   for patch in patchset.patches:
-    logging.info(patch)
+    print(patch)
   scm_type = scm.determine_scm(options.root_dir)
   if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(options.root_dir, None, None, None, None)
