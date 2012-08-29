@@ -445,6 +445,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_PINCH_THIRD_CANCELLED:
     case GST_PINCH_FOURTH_CANCELLED:
     case GST_PINCH_FIFTH_CANCELLED:
+      // Was it a swipe? i.e. were all the fingers moving in the same
+      // direction?
+      MaybeSwipe(event, point, gestures.get());
+
       if (point_count_ == 2) {
         PinchEnd(event, point, gestures.get());
 
@@ -452,10 +456,6 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
         // remaining finger on the screen.
         set_state(GS_SCROLL);
       } else {
-        // Was it a swipe? i.e. were all the fingers moving in the same
-        // direction?
-        MaybeSwipe(event, point, gestures.get());
-
         // Nothing else to do if we have more than 2 fingers active, since after
         // the release/cancel, there are still enough fingers to do pinch.
         // pinch_distance_current_ and pinch_distance_start_ will be updated

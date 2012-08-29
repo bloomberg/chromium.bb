@@ -48,6 +48,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         long_press_(false),
         fling_(false),
         two_finger_tap_(false),
+        swipe_left_(false),
+        swipe_right_(false),
+        swipe_up_(false),
+        swipe_down_(false),
         scroll_x_(0),
         scroll_y_(0),
         scroll_velocity_x_(0),
@@ -74,6 +78,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     long_press_ = false;
     fling_ = false;
     two_finger_tap_ = false;
+    swipe_left_ = false;
+    swipe_right_ = false;
+    swipe_up_ = false;
+    swipe_down_ = false;
 
     scroll_begin_position_.SetPoint(0, 0);
     tap_location_.SetPoint(0, 0);
@@ -101,6 +109,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool long_press() const { return long_press_; }
   bool fling() const { return fling_; }
   bool two_finger_tap() const { return two_finger_tap_; }
+  bool swipe_left() const { return swipe_left_; }
+  bool swipe_right() const { return swipe_right_; }
+  bool swipe_up() const { return swipe_up_; }
+  bool swipe_down() const { return swipe_down_; }
 
   const gfx::Point scroll_begin_position() const {
     return scroll_begin_position_;
@@ -180,6 +192,12 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       case ui::ET_GESTURE_TWO_FINGER_TAP:
         two_finger_tap_ = true;
         break;
+      case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+        swipe_left_ = gesture->details().swipe_left();
+        swipe_right_ = gesture->details().swipe_right();
+        swipe_up_ = gesture->details().swipe_up();
+        swipe_down_ = gesture->details().swipe_down();
+        break;
       default:
         NOTREACHED();
     }
@@ -201,6 +219,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool long_press_;
   bool fling_;
   bool two_finger_tap_;
+  bool swipe_left_;
+  bool swipe_right_;
+  bool swipe_up_;
+  bool swipe_down_;
 
   gfx::Point scroll_begin_position_;
   gfx::Point tap_location_;
@@ -2296,6 +2318,46 @@ TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
     root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
     EXPECT_FALSE(delegate->two_finger_tap());
     EXPECT_TRUE(delegate->pinch_end());
+  }
+}
+
+TEST_F(GestureRecognizerTest, MultiFingerSwipe) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+
+  gfx::Rect bounds(5, 10, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  const int kSteps = 15;
+  const int kTouchPoints = 4;
+  gfx::Point points[kTouchPoints] = {
+    gfx::Point(10, 30),
+    gfx::Point(30, 20),
+    gfx::Point(50, 30),
+    gfx::Point(80, 50)
+  };
+
+  aura::test::EventGenerator generator(root_window(), window.get());
+
+  for (int count = 2; count <= kTouchPoints; ++count) {
+    generator.GestureMultiFingerScroll(count, points, 15, kSteps, 0, -150);
+    EXPECT_TRUE(delegate->swipe_up());
+    delegate->Reset();
+
+    generator.GestureMultiFingerScroll(count, points, 15, kSteps, 0, 150);
+    EXPECT_TRUE(delegate->swipe_down());
+    delegate->Reset();
+
+    generator.GestureMultiFingerScroll(count, points, 15, kSteps, -150, 0);
+    EXPECT_TRUE(delegate->swipe_left());
+    delegate->Reset();
+
+    generator.GestureMultiFingerScroll(count, points, 15, kSteps, 150, 0);
+    EXPECT_TRUE(delegate->swipe_right());
+    delegate->Reset();
   }
 }
 
