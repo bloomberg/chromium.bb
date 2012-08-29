@@ -44,6 +44,7 @@ class NavigationMetricsRecorder;
 class OffscreenTabContentsCreator;
 class OldBasePanelBrowserTest;
 class OmniboxSearchHint;
+class PanelHost;
 class PasswordManager;
 class PasswordManagerDelegate;
 class PDFTabObserver;
@@ -165,6 +166,7 @@ class TabContents : public content::WebContentsObserver {
     friend class InstantLoader;
     friend class OldBasePanelBrowserTest;
     friend class OffscreenTabContentsCreator;
+    friend class PanelHost;
     friend class prerender::PrerenderContents;
     friend class ShellWindow;
     friend class TabContentsTestHarness;

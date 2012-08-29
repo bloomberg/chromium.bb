@@ -259,6 +259,19 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   WaitForTabsAndPopups(browser(), 1, num_popups, 0);
 }
 
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFromPanel) {
+  if (!PanelManager::UseBrowserlessPanels())
+    return;
+
+  ASSERT_TRUE(StartTestServer());
+
+  // Load the extension that will open a panel. The panel then calls
+  // window.open which should open a tab.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("window_open").
+                            AppendASCII("panel_window_open")));
+  WaitForTabsAndPopups(browser(), 1, 0, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpener) {
   ASSERT_TRUE(RunExtensionTest("window_open/opener")) << message_;
 }

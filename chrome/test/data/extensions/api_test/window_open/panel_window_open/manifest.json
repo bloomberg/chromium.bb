@@ -1,0 +1,10 @@
+{
+  "name": "Extension app for testing window.open from a panel.",
+  "version": "1",
+  "manifest_version": 2,
+  "description": "window.open from a panel should open as a tab.",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": ["tabs"]
+}

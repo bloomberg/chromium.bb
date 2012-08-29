@@ -108,6 +108,31 @@ void PanelHost::NavigationStateChanged(const content::WebContents* source,
     panel_->UpdateTitleBar();
 }
 
+void PanelHost::AddNewContents(content::WebContents* source,
+                               content::WebContents* new_contents,
+                               WindowOpenDisposition disposition,
+                               const gfx::Rect& initial_pos,
+                               bool user_gesture) {
+  chrome::NavigateParams navigate_params(profile_, new_contents->GetURL(),
+                                         content::PAGE_TRANSITION_LINK);
+  // Create a TabContents because the NavigateParams takes a TabContents,
+  // not a WebContents, for the target_contents.
+  TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
+  if (!new_tab_contents)
+    new_tab_contents = TabContents::Factory::CreateTabContents(new_contents);
+  navigate_params.target_contents = new_tab_contents;
+
+  // Force all links to open in a new tab, even if they were trying to open a
+  // window.
+  navigate_params.disposition =
+      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+
+  navigate_params.window_bounds = initial_pos;
+  navigate_params.user_gesture = user_gesture;
+  navigate_params.extension_app_id = panel_->extension_id();
+  chrome::Navigate(&navigate_params);
+}
+
 void PanelHost::ActivateContents(content::WebContents* contents) {
   panel_->Activate();
 }
