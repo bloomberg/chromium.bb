@@ -1506,7 +1506,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
   int pic_num_lx_no_wrap;
   int pic_num_lx;
   bool done = false;
-  H264Picture *pic ;
+  H264Picture* pic;
   for (int i = 0; i < H264SliceHeader::kRefListModSize && !done; ++i) {
     switch (list_mod->modification_of_pic_nums_idc) {
       case 0:
@@ -1562,7 +1562,8 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
                   H264SliceHeader::kRefListModSize);
         pic = dpb_.GetLongRefPicByLongTermPicNum(list_mod->long_term_pic_num);
         if (!pic) {
-          DVLOG(1) << "Malformed stream, no pic num " << pic_num_lx;
+          DVLOG(1) << "Malformed stream, no pic num "
+                   << list_mod->long_term_pic_num;
           return false;
         }
         ShiftRightAndInsert(ref_pic_listx, ref_idx_lx,
