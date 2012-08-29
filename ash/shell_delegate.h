@@ -150,6 +150,11 @@ class ASH_EXPORT ShellDelegate {
 
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
+
+  // Produces l10n-ed text of remaining time, e.g.: "13 mins left" or
+  // "13 Minuten übrig".
+  // Used, for example, to display the remaining battery life.
+  virtual string16 GetTimeRemainingString(const base::TimeDelta& delta) = 0;
 };
 
 }  // namespace ash

@@ -53,6 +53,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
+  virtual string16 GetTimeRemainingString(
+      const base::TimeDelta& delta) OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.
