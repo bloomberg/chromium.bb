@@ -64,7 +64,8 @@ def Main():
     dst = Copy(f)
     FixCopyrightHeader(dst)
 
-  files = Readfile("compositor.gyp")['variables']['webkit_compositor_tests_sources']
+  variables = Readfile("compositor_tests.gyp")['variables']
+  files = variables['webkit_compositor_tests_sources']
   for f in files:
     dst = Copy(f)
     FixCopyrightHeader(dst)

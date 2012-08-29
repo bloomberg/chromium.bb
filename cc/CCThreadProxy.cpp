@@ -294,6 +294,7 @@ void CCThreadProxy::didLoseContextOnImplThread()
 {
     ASSERT(isImplThread());
     TRACE_EVENT0("cc", "CCThreadProxy::didLoseContextOnImplThread");
+    m_currentTextureUpdateControllerOnImplThread.clear();
     m_schedulerOnImplThread->didLoseContext();
 }
 
@@ -599,8 +600,7 @@ void CCThreadProxy::scheduledActionCommit()
 {
     TRACE_EVENT0("cc", "CCThreadProxy::scheduledActionCommit");
     ASSERT(isImplThread());
-    ASSERT(m_currentTextureUpdateControllerOnImplThread);
-    ASSERT(!m_currentTextureUpdateControllerOnImplThread->hasMoreUpdates());
+    ASSERT(!hasMoreResourceUpdates());
     ASSERT(m_commitCompletionEventOnImplThread);
 
     m_currentTextureUpdateControllerOnImplThread.clear();

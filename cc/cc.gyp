@@ -15,6 +15,7 @@
       'CCActiveAnimation.h',
       'CCActiveGestureAnimation.cpp',
       'CCActiveGestureAnimation.h',
+      'CCAppendQuadsData.h',
       'CCAnimationCurve.cpp',
       'CCAnimationCurve.h',
       'CCAnimationEvents.h',

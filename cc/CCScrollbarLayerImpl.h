@@ -40,7 +40,7 @@ public:
 
     WebKit::WebScrollbar::Orientation orientation() const { return m_orientation; }
 
-    virtual void appendQuads(CCQuadSink&, bool& hadMissingTiles) OVERRIDE;
+    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
 
     virtual void didLoseContext() OVERRIDE;
 

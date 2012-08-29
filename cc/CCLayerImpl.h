@@ -26,11 +26,13 @@ namespace WebCore {
 
 class CCLayerSorter;
 class CCLayerTreeHostImpl;
-class CCRenderer;
 class CCQuadSink;
+class CCRenderer;
 class CCScrollbarAnimationController;
 class CCScrollbarLayerImpl;
 class LayerChromium;
+
+struct CCAppendQuadsData;
 
 class CCLayerImpl : public CCLayerAnimationControllerClient {
 public:
@@ -74,7 +76,7 @@ public:
     // the layer is destroyed. To enforce this, any class that overrides
     // willDraw/didDraw must call the base class version.
     virtual void willDraw(CCResourceProvider*);
-    virtual void appendQuads(CCQuadSink&, bool& hadMissingTiles) { }
+    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) { }
     virtual void didDraw(CCResourceProvider*);
 
     virtual CCResourceProvider::ResourceId contentsResourceId() const;
@@ -253,7 +255,7 @@ public:
 protected:
     explicit CCLayerImpl(int);
 
-    void appendDebugBorderQuad(CCQuadSink&, const CCSharedQuadState*) const;
+    void appendDebugBorderQuad(CCQuadSink&, const CCSharedQuadState*, CCAppendQuadsData&) const;
 
     virtual void dumpLayerProperties(TextStream&, int indent) const;
     static void writeIndent(TextStream&, int indent);

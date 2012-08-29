@@ -13,7 +13,7 @@
 #include "CCLayerTestCommon.h"
 #include "CCLayerTilingData.h"
 #include "CCLayerTreeTestCommon.h"
-#include "CCQuadCuller.h"
+#include "CCQuadSink.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRendererGL.h"
 #include "CCScrollbarGeometryFixedThumb.h"
@@ -1326,7 +1326,7 @@ class BlendStateCheckLayer : public CCLayerImpl {
 public:
     static PassOwnPtr<BlendStateCheckLayer> create(int id, CCResourceProvider* resourceProvider) { return adoptPtr(new BlendStateCheckLayer(id, resourceProvider)); }
 
-    virtual void appendQuads(CCQuadSink& quadSink, bool&) OVERRIDE
+    virtual void appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData) OVERRIDE
     {
         m_quadsAppended = true;
 
@@ -1341,7 +1341,7 @@ public:
         testBlendingDrawQuad->setQuadVisibleRect(m_quadVisibleRect);
         EXPECT_EQ(m_blend, testBlendingDrawQuad->needsBlending());
         EXPECT_EQ(m_hasRenderSurface, !!renderSurface());
-        quadSink.append(testBlendingDrawQuad.release());
+        quadSink.append(testBlendingDrawQuad.release(), appendQuadsData);
     }
 
     void setExpectation(bool blend, bool hasRenderSurface)
@@ -1860,14 +1860,14 @@ class FakeLayerWithQuads : public CCLayerImpl {
 public:
     static PassOwnPtr<FakeLayerWithQuads> create(int id) { return adoptPtr(new FakeLayerWithQuads(id)); }
 
-    virtual void appendQuads(CCQuadSink& quadSink, bool&) OVERRIDE
+    virtual void appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData) OVERRIDE
     {
         CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
 
         SkColor gray = SkColorSetRGB(100, 100, 100);
         IntRect quadRect(IntPoint(0, 0), contentBounds());
         OwnPtr<CCDrawQuad> myQuad = CCSolidColorDrawQuad::create(sharedQuadState, quadRect, gray);
-        quadSink.append(myQuad.release());
+        quadSink.append(myQuad.release(), appendQuadsData);
     }
 
 private:

@@ -6,6 +6,7 @@
 
 #include "CCRenderSurface.h"
 
+#include "CCAppendQuadsData.h"
 #include "CCLayerImpl.h"
 #include "CCRenderPassSink.h"
 #include "CCSharedQuadState.h"
@@ -100,9 +101,10 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     CCQuadList quadList;
     CCSharedQuadStateList sharedStateList;
     MockCCQuadCuller mockQuadCuller(quadList, sharedStateList);
+    CCAppendQuadsData appendQuadsData;
 
     bool forReplica = false;
-    renderSurface->appendQuads(mockQuadCuller, forReplica, 1);
+    renderSurface->appendQuads(mockQuadCuller, appendQuadsData, forReplica, 2);
 
     ASSERT_EQ(1u, sharedStateList.size());
     CCSharedQuadState* sharedQuadState = sharedStateList[0].get();

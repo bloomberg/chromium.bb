@@ -21,7 +21,7 @@ public:
     }
     virtual ~CCTiledLayerImpl();
 
-    virtual void appendQuads(CCQuadSink&, bool& hadMissingTiles) OVERRIDE;
+    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
 
     virtual CCResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
 

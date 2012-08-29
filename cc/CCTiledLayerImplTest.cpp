@@ -6,6 +6,7 @@
 
 #include "CCTiledLayerImpl.h"
 
+#include "CCAppendQuadsData.h"
 #include "CCLayerTestCommon.h"
 #include "CCLayerTilingData.h"
 #include "CCSingleThreadProxy.h"
@@ -56,8 +57,8 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
     {
         OwnPtr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
         MockCCQuadCuller quadCuller;
-        bool hadMissingTiles = false;
-        layer->appendQuads(quadCuller, hadMissingTiles);
+        CCAppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
         const unsigned numTiles = numTilesX * numTilesY;
         EXPECT_EQ(quadCuller.quadList().size(), numTiles);
     }
@@ -68,8 +69,8 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
         layer->setVisibleContentRect(IntRect());
 
         MockCCQuadCuller quadCuller;
-        bool hadMissingTiles = false;
-        layer->appendQuads(quadCuller, hadMissingTiles);
+        CCAppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 
@@ -81,8 +82,8 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
         layer->setVisibleContentRect(outsideBounds);
 
         MockCCQuadCuller quadCuller;
-        bool hadMissingTiles = false;
-        layer->appendQuads(quadCuller, hadMissingTiles);
+        CCAppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 
@@ -92,8 +93,8 @@ TEST(CCTiledLayerImplTest, emptyQuadList)
         layer->setSkipsDraw(true);
 
         MockCCQuadCuller quadCuller;
-        bool hadMissingTiles = false;
-        layer->appendQuads(quadCuller, hadMissingTiles);
+        CCAppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 }
@@ -112,10 +113,10 @@ TEST(CCTiledLayerImplTest, checkerboarding)
     // No checkerboarding
     {
         MockCCQuadCuller quadCuller;
-        bool hadMissingTiles = false;
-        layer->appendQuads(quadCuller, hadMissingTiles);
+        CCAppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
-        EXPECT_FALSE(hadMissingTiles);
+        EXPECT_FALSE(data.hadMissingTiles);
 
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
             EXPECT_EQ(quadCuller.quadList()[i]->material(), CCDrawQuad::TiledContent);
@@ -128,9 +129,9 @@ TEST(CCTiledLayerImplTest, checkerboarding)
     // All checkerboarding
     {
         MockCCQuadCuller quadCuller;
-        bool hadMissingTiles = false;
-        layer->appendQuads(quadCuller, hadMissingTiles);
-        EXPECT_TRUE(hadMissingTiles);
+        CCAppendQuadsData data;
+        layer->appendQuads(quadCuller, data);
+        EXPECT_TRUE(data.hadMissingTiles);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
             EXPECT_NE(quadCuller.quadList()[i]->material(), CCDrawQuad::TiledContent);
@@ -144,8 +145,8 @@ static void getQuads(CCQuadList& quads, CCSharedQuadStateList& sharedStates, Int
     layer->setBounds(layerSize);
 
     MockCCQuadCuller quadCuller(quads, sharedStates);
-    bool hadMissingTiles = false;
-    layer->appendQuads(quadCuller, hadMissingTiles);
+    CCAppendQuadsData data;
+    layer->appendQuads(quadCuller, data);
 }
 
 // Test with both border texels and without.
