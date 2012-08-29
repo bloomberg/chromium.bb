@@ -17,7 +17,7 @@ if not env.Bit('target_x86'): Return()
 # part of the TCB. Then define compile-time flag that communicates
 # that we are compiling in the test environment (rather than for the TCB).
 test_env = env.Clone()
-test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB', '-DNACL_RAGEL_DECODER'])
+test_env.Append(CPPDEFINES=['NACL_TRUSTED_BUT_NOT_TCB', 'NACL_RAGEL_DECODER'])
 
 vdiff = test_env.ComponentProgram(
   'vdiff',
@@ -38,3 +38,16 @@ vdiff = test_env.ComponentProgram(
               env.NaClTargetArchSuffix('dfa_validate_caller'),
               'platform', 'gio', 'utils',
              ])
+
+if env.Bit('target_x86_64'):
+  node = env.CommandTest(
+    'vdiff.out', command=[vdiff, '--easydiff'],
+    stdout_golden=test_env.File('vdiff_x86_64_baseline.out'),
+    time_warning=800, time_error=2000)
+  env.AddNodeToTestSuite(node, ['validator_diff_tests'], 'vdiff_test')
+
+if env.Bit('target_x86_32'):
+  # No golden output for 32-bit until more diffs are fixed
+  node = env.CommandTest('vdiff.out', command=[vdiff],
+                         time_warning=800, time_error=2000)
+  env.AddNodeToTestSuite(node, ['validator_diff_tests'], 'vdiff_test')

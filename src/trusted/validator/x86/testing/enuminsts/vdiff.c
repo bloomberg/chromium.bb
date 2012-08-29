@@ -16,6 +16,9 @@
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error("This file is not meant for use in the TCB.")
 #endif
+#if NACL_WINDOWS
+#define _CRT_RAND_S  /* enable decl of rand_s() */
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
 
@@ -24,6 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -49,6 +53,10 @@ static Bool gSilent = FALSE;
  */
 static Bool gSkipRepeatReports = FALSE;
 
+/* Set to true to enable checking of mnemonics (opcode names).
+ */
+static Bool gCheckMnemonics = TRUE;
+
 /* Count of errors that have a high certainty of being exploitable. */
 static int gSawLethalError = 0;
 
@@ -61,12 +69,18 @@ static unsigned int gPrefix = 0;
 /* If non-negative, defines the opcode to test. */
 static int gOpcode = -1;
 
+/* This option triggers a set of behaviors that help produce repeatable
+ * output, for easier diffs on the buildbots.
+ */
+static Bool gEasyDiffMode;
+
 /* The production and new R-DFA validators */
 NaClEnumeratorDecoder* vProd;
 NaClEnumeratorDecoder* vDFA;
 
 /* The name of the executable (i.e. argv[0] from the command line). */
-static char *gArgv0 = "argv0";
+static const char *gArgv0 = "argv0";
+#define FLAG_EasyDiff "--easydiff"
 
 /* Records that unexpected internal error occurred. */
 void InternalError(const char *why) {
@@ -145,7 +159,6 @@ static void CheckMnemonics(NaClEnumerator* pinst, NaClEnumerator* dinst) {
     /* avoid redundant messages... */
     if (NotOpcodeRepeat(prod_opcode)) {
       printf("Warning: OPCODE MISMATCH: %s != %s\n", prod_opcode, dfa_opcode);
-      /* PrintDisassembledInstructionVariants(pinst, dinst); */
     }
   }
 }
@@ -174,8 +187,11 @@ static void IncrErrors() {
 }
 
 static void PrintStats() {
-  printf("valid: %" NACL_PRIu64 "\n", gVDiffStats.valid);
-  printf("invalid: %" NACL_PRIu64 "\n", gVDiffStats.invalid);
+  printf("Stats:\n");
+  if (!gEasyDiffMode) {
+    printf("valid: %" NACL_PRIu64 "\n", gVDiffStats.valid);
+    printf("invalid: %" NACL_PRIu64 "\n", gVDiffStats.invalid);
+  }
   printf("errors: %" NACL_PRIu64 "\n", gVDiffStats.errors);
   printf("tried: %" NACL_PRIu64 "\n", gVDiffStats.tried);
   printf("    =? %" NACL_PRIu64 " valid + invalid + errors\n",
@@ -220,7 +236,7 @@ static void TryOneInstruction(uint8_t *itext, size_t nbytes) {
           /* and they agree on critical details.      */
           IncrValid();
           /* Warn if decoders disagree opcode name. */
-          CheckMnemonics(&pinst, &dinst);
+          if (gCheckMnemonics) CheckMnemonics(&pinst, &dinst);
         } else {
           DecoderError("LENGTH MISMATCH", &pinst, &dinst, "");
           IncrErrors();
@@ -239,19 +255,45 @@ static void TryOneInstruction(uint8_t *itext, size_t nbytes) {
       IncrInvalid();
     }
 
-    /* no error */
     if (gVerbose) {
       PrintDisassembledInstructionVariants(&pinst, &dinst);
     }
   } while (0);
 }
 
+/* A function type for instruction "TestAll" functions.
+ * Parameters:
+ *     prefix: up to four bytes of prefix.
+ *     prefix_length: size_t on [0..4] specifying length of prefix.
+ *     print_prefix: For easy diff of test output, avoid printing
+ *         the value of a randomly selected REX prefix.
+ */
+typedef void (*TestAllFunction)(const unsigned int prefix,
+                                const size_t prefix_length,
+                                const char* print_prefix);
+
+/* Create a char* rendition of a prefix string, appending bytes
+ * in ps. When using a randomly generated REX prefix on the bots,
+ * it's useful to avoid printing the actual REX prefix so that
+ * output can be diffed from run-to-run. For example, instead of
+ * printing "0F45" you might print "0FXX". Parameters:
+ *     prefix: The part of the prefix value to print
+ *     ps: 'postscript', string to append to prefix value
+ *     str: where to put the ASCII version of the prefix
+ */
+static char* StrPrefix(const unsigned int prefix, char* ps, char* str) {
+  sprintf(str, "%x%s", prefix, (ps == NULL) ? "" : ps);
+  return str;
+}
+
 /* Enumerate and test all 24-bit opcode+modrm+sib patterns for a
  * particular prefix.
  */
-static void TestAllWithPrefix(unsigned int prefix, size_t prefix_length) {
-  const int kInstByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
-  const int kIterByteCount = 3;
+static void TestAllWithPrefix(const unsigned int prefix,
+                              const size_t prefix_length,
+                              const char* print_prefix) {
+  const size_t kInstByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
+  const size_t kIterByteCount = 3;
   InstByteArray itext;
   size_t i;
   int op, modrm, sib;
@@ -260,7 +302,7 @@ static void TestAllWithPrefix(unsigned int prefix, size_t prefix_length) {
 
   if ((gPrefix > 0) && (gPrefix != prefix)) return;
 
-  PrintProgress("TestAllWithPrefix(%x)\n", prefix);
+  PrintProgress("TestAllWithPrefix(%s)\n", print_prefix);
   /* set up prefix */
   memcpy(itext, &prefix, prefix_length);
   /* set up filler bytes */
@@ -288,22 +330,63 @@ static void TestAllWithPrefix(unsigned int prefix, size_t prefix_length) {
   }
 }
 
+#if NACL_TARGET_SUBARCH == 64
+/* REX prefixes range from 0x40 to 0x4f. */
+const uint32_t kREXBase = 0x40;
+const uint32_t kREXRange = 0x10;
+const uint32_t kREXMax = 0x50;  /* kREXBase + kREXRange */
+
+/* Generate a random REX prefix, to use for the entire run. */
+static uint32_t RandomRexPrefix() {
+  static uint32_t static_rex_prefix = 0;
+
+  if (0 == static_rex_prefix) {
+#if NACL_LINUX || NACL_OSX
+    static_rex_prefix = kREXBase + (random() % kREXRange);
+#elif NACL_WINDOWS
+    if (rand_s(&static_rex_prefix) != 0) {
+      ReportFatalError("rand_s() failed\n");
+    } else {
+      static_rex_prefix = kREXBase + (static_rex_prefix % kREXRange);
+    }
+#else
+# error "Unknown operating system."
+#endif
+  }
+  return static_rex_prefix;
+}
+#endif
+
+#define AppendPrefixByte(oldprefix, pbyte) (((oldprefix) << 8) | (pbyte))
 /* For x86-64, enhance the iteration by looping through REX prefixes.
  */
-static void TestAllWithPrefixREX(unsigned int prefix, size_t prefix_length) {
+static void WithREX(TestAllFunction testall,
+                    const unsigned int prefix,
+                    const size_t prefix_length) {
+  char pstr[kBufferSize];
 #if NACL_TARGET_SUBARCH == 64
-  unsigned char REXp;
+  unsigned char irex;
   unsigned int rprefix;
   /* test with REX prefixes */
-  for (REXp = 0x40; REXp < 0x50; REXp++) {
-    rprefix = (prefix << 8 | REXp);
-    printf("Testing with prefix %x\n", rprefix);
-    TestAllWithPrefix(rprefix, prefix_length + 1);
+  printf("WithREX(testall, %x, %d, %d)\n", prefix,
+         (int)prefix_length, gEasyDiffMode);
+  if (gEasyDiffMode) {
+    printf("With random REX prefix.\n");
+    irex = RandomRexPrefix();
+    rprefix = AppendPrefixByte(prefix, irex);
+    testall(rprefix, prefix_length + 1, StrPrefix(prefix, "XX", pstr));
+  } else {
+    for (irex = kREXBase; irex < kREXMax; irex++) {
+      rprefix = AppendPrefixByte(prefix, irex);
+      printf("With REX prefix %x\n", rprefix);
+      testall(rprefix, prefix_length + 1, StrPrefix(rprefix, "", pstr));
+    }
   }
 #endif
   /* test with no REX prefix */
-  TestAllWithPrefix(prefix, prefix_length);
+  testall(prefix, prefix_length, StrPrefix(prefix, NULL, pstr));
 }
+#undef AppendPrefixByte
 
 /* For all prefixes, call TestAllWithPrefix() to enumrate and test
  * all instructions.
@@ -314,24 +397,22 @@ static void TestAllInstructions() {
    * an integer. For example, for integer prefix 0x3a0f, 0f will
    * go in instruction byte 0, and 3a in byte 1.
    */
-  /* TODO(bradchen): extend enuminsts-64 to iterate over 64-bit prefixes. */
-  TestAllWithPrefixREX(0, 0);
-  TestAllWithPrefixREX(0x0f, 1);
-  TestAllWithPrefixREX(0x0ff2, 2);
-  TestAllWithPrefixREX(0x0ff3, 2);
-  TestAllWithPrefixREX(0x0f66, 2);
-  TestAllWithPrefixREX(0x0f0f, 2);
-  TestAllWithPrefixREX(0x380f, 2);
-  TestAllWithPrefixREX(0x3a0f, 2);
-  TestAllWithPrefixREX(0x380f66, 3);
-  TestAllWithPrefixREX(0x380ff2, 3);
-  TestAllWithPrefixREX(0x3a0f66, 3);
+  WithREX(TestAllWithPrefix, 0, 0);
+  WithREX(TestAllWithPrefix, 0x0f, 1);     /* two-byte opcode */
+  WithREX(TestAllWithPrefix, 0x0ff2, 2);   /* SSE2  */
+  WithREX(TestAllWithPrefix, 0x0ff3, 2);   /* SSE   */
+  WithREX(TestAllWithPrefix, 0x0f66, 2);   /* SSE2  */
+  WithREX(TestAllWithPrefix, 0x380f, 2);   /* SSSE3 */
+  WithREX(TestAllWithPrefix, 0x3a0f, 2);   /* SSE4  */
+  WithREX(TestAllWithPrefix, 0x380f66, 3); /* SSE4+ */
+  WithREX(TestAllWithPrefix, 0x380ff2, 3); /* SSE4+ */
+  WithREX(TestAllWithPrefix, 0x3a0f66, 3); /* SSE4+ */
 }
 
 /* Used to test one instruction at a time, for example, in regression
  * testing, or for instruction arguments from the command line.
  */
-static void TestOneInstruction(char *asciihex) {
+static void TestOneInstruction(const char *asciihex) {
   InstByteArray ibytes;
   int nbytes;
 
@@ -380,7 +461,7 @@ static void RunRegressionTests() {
   TestOneInstruction("664001d8");  /* legal; REX after data16    */
   TestOneInstruction("414001d8");  /* illegal; two REX bytes     */
 
-  /* Reset the opcode repeat test, so as not to silence erros */
+  /* Reset the opcode repeat test, so as not to silence errors */
   /* that happened in the regression suite. */
   (void)NotOpcodeRepeat("");
 }
@@ -390,28 +471,43 @@ extern NaClEnumeratorDecoder* RegisterNaClDecoder();
 extern NaClEnumeratorDecoder* RegisterRagelDecoder();
 
 /* Initialize the set of available decoders. */
-static void NaClInitializeAvailableDecoders() {
+static void VDiffInitializeAvailableDecoders() {
   vProd = RegisterNaClDecoder();
   vDFA = RegisterRagelDecoder();
 }
 
-int main(int argc, char *argv[]) {
-  int testargs;
+static int ParseArgv(const int argc, const char* argv[]) {
+  int nextarg;
+
+  gArgv0 = argv[0];
+  nextarg = 1;
+  if (nextarg < argc &&
+      0 == strcmp(argv[nextarg], FLAG_EasyDiff)) {
+    gEasyDiffMode = TRUE;
+    gCheckMnemonics = FALSE;
+    nextarg += 1;
+  }
+  return nextarg;
+}
+
+int main(const int argc, const char *argv[]) {
+  int nextarg;
 
   NaClLogModuleInit();
   NaClLogSetVerbosity(LOG_FATAL);
-  NaClInitializeAvailableDecoders();
+#if NACL_LINUX || NACL_OSX
+  srandom(time(NULL));
+#endif
+  VDiffInitializeAvailableDecoders();
 
-  gArgv0 = argv[0];
-  testargs = 1;
-
-  if (testargs == argc) {
+  nextarg = ParseArgv(argc, argv);
+  if (nextarg == argc) {
     if (gPrefix == 0) RunRegressionTests();
     TestAllInstructions();
   } else {
     int i;
     gVerbose = TRUE;
-    for (i = testargs; i < argc; ++i) {
+    for (i = nextarg; i < argc; ++i) {
       TestOneInstruction(argv[i]);
     }
   }

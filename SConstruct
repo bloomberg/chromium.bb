@@ -627,6 +627,8 @@ MAJOR_TEST_SUITES = set([
   'tsan_bot_tests',
   # Special testing environment for testing comparing x86 validators.
   'ncval_testing',
+  # Environment for validator difference testing
+  'validator_diff_tests',
 ])
 
 # These are the test suites we know exist, but aren't run on a regular basis.
@@ -1554,7 +1556,7 @@ TEST_EXTRA_ARGS = ['stdin', 'log_file',
                    'osenv', 'arch', 'subarch', 'exit_status', 'track_cmdtime',
                    'num_runs', 'process_output_single',
                    'process_output_combined', 'using_nacl_signal_handler',
-                   'declares_exit_status']
+                   'declares_exit_status', 'time_warning', 'time_error']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,
