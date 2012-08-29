@@ -90,8 +90,8 @@ NSImage* NSImageFromImageSkia(const gfx::ImageSkia& image_skia) {
     return nil;
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-
-  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.GetRepresentations();
+  image_skia.EnsureRepsForSupportedScaleFactors();
+  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
        it != image_reps.end(); ++it) {
     [image addRepresentation:
@@ -108,9 +108,8 @@ NSImage* NSImageFromImageSkiaWithColorSpace(const gfx::ImageSkia& image_skia,
     return nil;
 
   scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-
-  const std::vector<gfx::ImageSkiaRep>& image_reps =
-      image_skia.GetRepresentations();
+  image_skia.EnsureRepsForSupportedScaleFactors();
+  std::vector<gfx::ImageSkiaRep> image_reps = image_skia.image_reps();
   for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
        it != image_reps.end(); ++it) {
     [image addRepresentation:

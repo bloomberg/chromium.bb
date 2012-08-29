@@ -16,7 +16,10 @@ class UI_EXPORT ImageSkiaSource {
  public:
   virtual ~ImageSkiaSource() {}
 
-  // Returns the ImageSkiaRep for the given |scale_factor|.
+  // Returns the ImageSkiaRep for the given |scale_factor|. ImageSkia
+  // caches the returned ImageSkiaRep and calls this method only if it
+  // doesn't have ImageSkaiRep for given |scale_factor|. There is
+  // no need for the implementation to cache the image.
   virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) = 0;
 };
 

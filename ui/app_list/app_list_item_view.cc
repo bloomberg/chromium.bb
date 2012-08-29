@@ -104,16 +104,8 @@ class AppListItemView::IconOperation
         skia::ImageOperations::RESIZE_BEST, size_));
     gfx::ImageSkia shadow(
         gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized, shadows_));
-
-    // The following statement causes shadowed image being generated for all
-    // existing image reps in |image_|. This is needed so that expensive shadow
-    // generation does not run on UI thread.
-    gfx::ImageSkia::ImageSkiaReps image_reps = image_.image_reps();
-    for (gfx::ImageSkia::ImageSkiaReps::const_iterator it = image_reps.begin();
-         it != image_reps.end(); ++it) {
-      shadow.GetRepresentation(it->scale_factor());
-    }
     image_ = shadow;
+    image_.MakeThreadSafe();
   }
 
   void Cancel() {

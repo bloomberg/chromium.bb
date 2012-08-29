@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/nix/mime_util_xdg.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "webkit/glue/image_decoder.h"
 
 using std::string;
@@ -47,7 +48,9 @@ void IconLoader::ReadIcon() {
     if (!bitmap.empty()) {
       DCHECK_EQ(size_pixels, bitmap.width());
       DCHECK_EQ(size_pixels, bitmap.height());
-      image_.reset(new gfx::Image(bitmap));
+      gfx::ImageSkia image_skia(bitmap);
+      image_skia.MakeThreadSafe();
+      image_.reset(new gfx::Image(image_skia));
     } else {
       LOG(WARNING) << "Unsupported file type or load error: "
                    << filename.value();

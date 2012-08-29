@@ -436,11 +436,14 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
   pack->CreateImages(&pack->images_on_ui_thread_);
   pack->CreateImages(&pack->images_on_file_thread_);
 
-  // For M22, as it is not possible to easily determine which scale factors are
-  // in use, assume that the 1x scale factor is in use.
-  std::vector<ui::ScaleFactor> scale_factors_in_use;
-  scale_factors_in_use.push_back(ui::SCALE_FACTOR_100P);
-  pack->GenerateImageReps(scale_factors_in_use);
+  // Make sure the |images_on_file_thread_| has bitmaps for supported
+  // scale factors before passing to FILE thread.
+  for (ImageCache::iterator it = pack->images_on_file_thread_.begin();
+       it != pack->images_on_file_thread_.end(); ++it) {
+    gfx::ImageSkia* image_skia =
+        const_cast<gfx::ImageSkia*>(it->second->ToImageSkia());
+    image_skia->MakeThreadSafe();
+  }
 
   // The BrowserThemePack is now in a consistent state.
   return pack;
@@ -1117,14 +1120,6 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
        it != images.end(); ++it) {
     gfx::ImageSkia image_skia = *it->second->ToImageSkia();
 
-    // Attempt to generate image reps for all supported scale factors.
-    for (ScaleFactors::const_iterator factor_it = scale_factors_.begin();
-         factor_it != scale_factors_.end(); ++factor_it) {
-      // Ask for representation to force the representation to be generated
-      // if it wasn't already.
-      image_skia.GetRepresentation(*factor_it);
-    }
-
     typedef std::vector<gfx::ImageSkiaRep> ImageSkiaReps;
     ImageSkiaReps image_reps = image_skia.image_reps();
     if (image_reps.empty()) {
@@ -1141,34 +1136,6 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
       int raw_id = GetRawIDByPersistentID(it->first, rep_it->scale_factor());
       (*reencoded_images)[raw_id] =
           base::RefCountedBytes::TakeVector(&bitmap_data);
-    }
-  }
-}
-
-void BrowserThemePack::GenerateImageReps(
-    const std::vector<ui::ScaleFactor>& scale_factors) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (ImageCache::const_iterator it = images_on_ui_thread_.begin();
-       it != images_on_ui_thread_.end();
-       ++it) {
-    const gfx::ImageSkia* image1 = it->second->ToImageSkia();
-    const gfx::ImageSkia* image2 =
-        images_on_file_thread_[it->first]->ToImageSkia();
-
-    // Ensure that image reps are generated and cached in |image1| by
-    // calling GetRepresentation().
-    for (size_t i = 0; i < scale_factors.size(); ++i)
-      image1->GetRepresentation(scale_factors[i]);
-
-    // |image1| and |image2| have ImageSkiaSources which produce pixel
-    // equivalent output. Instead of regenerating again, copy the image reps
-    // which were generated for |image1| into |image2|.
-    // Don't do a deep copy of the SkBitmaps as SkBitmap is thread safe.
-    std::vector<gfx::ImageSkiaRep> image1_reps = image1->image_reps();
-    for (size_t i = 0; i < image1_reps.size(); ++i) {
-      gfx::ImageSkiaRep image1_rep = image1_reps[i];
-      const_cast<gfx::ImageSkia*>(image2)->AddRepresentation(gfx::ImageSkiaRep(
-          image1_rep.sk_bitmap(), image1_rep.scale_factor()));
     }
   }
 }

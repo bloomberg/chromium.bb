@@ -92,11 +92,12 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
       final_image = cropped_image;
     }
   }
-
+  gfx::ImageSkia final_image_skia(final_image);
+  final_image_skia.MakeThreadSafe();
   target_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(image_info.loaded_cb,
-                 UserImage(final_image, decoder->get_image_data())));
+                 UserImage(final_image_skia, decoder->get_image_data())));
 
   image_info_map_.erase(info_it);
 }

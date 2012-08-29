@@ -181,10 +181,6 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   void RepackImages(const ImageCache& images,
                     RawImages* reencoded_images) const;
 
-  // Generates image reps for |scale_factors| for
-  // |prepared_images_on_ui_thread_| and |prepared_images_on_file_thread_|.
-  void GenerateImageReps(const std::vector<ui::ScaleFactor>& scale_factors);
-
   // Takes all images in |source| and puts them in |destination|, freeing any
   // image already in |destination| that |source| would overwrite.
   void MergeImageCaches(const ImageCache& source,

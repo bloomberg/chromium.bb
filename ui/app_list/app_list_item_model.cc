@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_item_model.h"
 
+#include "base/logging.h"
 #include "ui/app_list/app_list_item_model_observer.h"
 
 namespace app_list {
@@ -16,6 +17,7 @@ AppListItemModel::~AppListItemModel() {
 
 void AppListItemModel::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
+  DCHECK(icon.IsThreadSafe());
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemIconChanged());
 }
 

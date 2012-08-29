@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -181,9 +182,10 @@ void IconLoader::ReadIcon() {
       LAZY_INSTANCE_INITIALIZER;
   int idr = icon_mapper.Get().Lookup(group_, icon_size_);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* image_skia = rb.GetImageNamed(idr).ToImageSkia();
-  image_.reset(new gfx::Image(
-      ResizeImage(*image_skia, IconSizeToDIPSize(icon_size_))));
+  gfx::ImageSkia image_skia(ResizeImage(*(rb.GetImageNamed(idr)).ToImageSkia(),
+                                        IconSizeToDIPSize(icon_size_)));
+  image_skia.MakeThreadSafe();
+  image_.reset(new gfx::Image(image_skia));
   target_message_loop_->PostTask(
       FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
 }

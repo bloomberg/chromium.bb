@@ -181,10 +181,15 @@ void ExtensionAppItem::StartExtensionUninstall() {
 void ExtensionAppItem::OnImageLoaded(const gfx::Image& image,
                                      const std::string& extension_id,
                                      int tracker_index) {
-  if (!image.IsEmpty())
-    SetIcon(*image.ToImageSkia());
-  else
-    SetIcon(Extension::GetDefaultIcon(true /* is_app */));
+  if (!image.IsEmpty()) {
+    gfx::ImageSkia image_skia = *image.ToImageSkia();
+    image_skia.MakeThreadSafe();
+    SetIcon(image_skia);
+  } else {
+    gfx::ImageSkia image_skia(Extension::GetDefaultIcon(true /* is_app */));
+    image_skia.MakeThreadSafe();
+    SetIcon(image_skia);
+  }
 }
 
 bool ExtensionAppItem::IsItemForCommandIdDynamic(int command_id) const {

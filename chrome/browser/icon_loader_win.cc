@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 
 void IconLoader::ReadIcon() {
@@ -37,7 +38,9 @@ void IconLoader::ReadIcon() {
 
   scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(
       file_info.hIcon));
-  image_.reset(new gfx::Image(*bitmap));
+  gfx::ImageSkia image_skia(*bitmap);
+  image_skia.MakeThreadSafe();
+  image_.reset(new gfx::Image(image_skia));
   DestroyIcon(file_info.hIcon);
   target_message_loop_->PostTask(FROM_HERE,
       base::Bind(&IconLoader::NotifyDelegate, this));

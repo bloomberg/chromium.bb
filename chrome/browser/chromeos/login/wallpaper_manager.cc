@@ -76,25 +76,8 @@ gfx::ImageSkia GetWallpaperThumbnail(const gfx::ImageSkia& wallpaper) {
       skia::ImageOperations::RESIZE_LANCZOS3,
       gfx::Size(kThumbnailWidth, kThumbnailHeight));
 
-  // Ideally, this would call thumbnail.GetRepresentations(). But since that
-  // isn't exposed on non-mac yet, we have to do this here.
-  std::vector<ui::ScaleFactor> scales = ui::GetSupportedScaleFactors();
-  for (size_t i = 0; i < scales.size(); ++i) {
-    if (wallpaper.HasRepresentation(scales[i]))
-      thumbnail.GetRepresentation(scales[i]);
-  }
-
+  thumbnail.MakeThreadSafe();
   return thumbnail;
-}
-
-gfx::ImageSkia ImageSkiaDeepCopy(const gfx::ImageSkia& image) {
-  gfx::ImageSkia copy;
-  std::vector<gfx::ImageSkiaRep> reps = image.image_reps();
-  for (std::vector<gfx::ImageSkiaRep>::iterator iter = reps.begin();
-      iter != reps.end(); ++iter) {
-    copy.AddRepresentation(*iter);
-  }
-  return copy;
 }
 
 }  // namespace
@@ -205,7 +188,7 @@ gfx::ImageSkia WallpaperManager::GetCustomWallpaperThumbnail(
     const std::string& email) {
   CustomWallpaperMap::const_iterator it =
       custom_wallpaper_thumbnail_cache_.find(email);
-  if (it != wallpaper_cache_.end())
+  if (it != custom_wallpaper_thumbnail_cache_.end())
     return (*it).second;
   else
     return gfx::ImageSkia();
@@ -626,7 +609,7 @@ void WallpaperManager::CacheWallpaper(const std::string& email,
       FROM_HERE,
       base::Bind(&WallpaperManager::CacheThumbnail,
                  base::Unretained(this), email,
-                 ImageSkiaDeepCopy(wallpaper.image())));
+                 wallpaper.image().DeepCopy()));
 
   wallpaper_cache_.insert(std::make_pair(email, wallpaper.image()));
 }
@@ -668,8 +651,7 @@ void WallpaperManager::FetchWallpaper(const std::string& email,
       FROM_HERE,
       base::Bind(&WallpaperManager::CacheThumbnail,
                  base::Unretained(this), email,
-                 ImageSkiaDeepCopy(wallpaper.image())));
-
+                 wallpaper.image().DeepCopy()));
   wallpaper_cache_.insert(std::make_pair(email, wallpaper.image()));
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper.image(), layout);

@@ -243,6 +243,9 @@ class UI_EXPORT ResourceBundle {
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LoadDataResourceBytes);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LocaleDataPakExists);
 
+  class ResourceBundleImageSource;
+  friend class ResourceBundleImageSource;
+
   // Ctor/dtor are private, since we're a singleton.
   explicit ResourceBundle(Delegate* delegate);
   ~ResourceBundle();
@@ -269,9 +272,13 @@ class UI_EXPORT ResourceBundle {
   void LoadFontsIfNecessary();
 
   // Creates and returns a new SkBitmap given the data file to look in and the
-  // resource id.  It's up to the caller to free the returned bitmap when
+  // |resource_id|.  It's up to the caller to free the returned bitmap when
   // done.
-  SkBitmap* LoadBitmap(const ResourceHandle& dll_inst, int resource_id);
+  SkBitmap* LoadBitmap(const ResourceHandle& dll_inst, int resource_id) const;
+
+  // Creates and returns a new SkBitmap for |resource_id| and |scale_factor|.
+  // Returns NULL if the resource does not exist.
+  SkBitmap* LoadBitmap(int resource_id, ScaleFactor scale_factor) const;
 
   // Returns an empty image for when a resource cannot be loaded. This is a
   // bright red bitmap.
@@ -309,8 +316,6 @@ class UI_EXPORT ResourceBundle {
   scoped_ptr<gfx::Font> large_font_;
   scoped_ptr<gfx::Font> large_bold_font_;
   scoped_ptr<gfx::Font> web_font_;
-
-  static ResourceBundle* g_shared_instance_;
 
   FilePath overridden_pak_path_;
 
