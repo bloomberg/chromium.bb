@@ -434,25 +434,4 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   ASSERT_FALSE(prefix_set.get());
 }
 
-// TODO(shess): Remove once the problem is debugged.  But, until then,
-// make sure the accessors work!
-TEST_F(PrefixSetTest, DebuggingAccessors) {
-  std::vector<SBPrefix> prefixes;
-  std::unique_copy(shared_prefixes_.begin(), shared_prefixes_.end(),
-                   std::back_inserter(prefixes));
-  safe_browsing::PrefixSet prefix_set(prefixes);
-
-  EXPECT_EQ(prefixes.size(), prefix_set.GetSize());
-  EXPECT_FALSE(prefix_set.IsDeltaAt(0));
-  for (size_t i = 1; i < prefixes.size(); ++i) {
-    const int delta = prefixes[i] - prefixes[i - 1];
-    if (delta > 0xFFFF) {
-      EXPECT_FALSE(prefix_set.IsDeltaAt(i));
-    } else {
-      ASSERT_TRUE(prefix_set.IsDeltaAt(i));
-      EXPECT_EQ(delta, prefix_set.DeltaAt(i));
-    }
-  }
-}
-
 }  // namespace
