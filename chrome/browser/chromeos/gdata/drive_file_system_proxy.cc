@@ -554,6 +554,19 @@ void DriveFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
                           base::Bind(&EmitDebugLogForCloseFile, file_path));
 }
 
+void DriveFileSystemProxy::TouchFile(
+    const fileapi::FileSystemURL& url,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time,
+    const FileSystemOperation::StatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // TODO(kinaba,kochi): crbug.com/144369. Support this operations once we have
+  // migrated to the new Drive API.
+  MessageLoopProxy::current()->PostTask(FROM_HERE,
+       base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+}
+
 void DriveFileSystemProxy::CreateSnapshotFile(
     const FileSystemURL& file_url,
     const FileSystemOperation::SnapshotFileCallback& callback) {

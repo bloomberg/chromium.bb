@@ -77,7 +77,12 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperation::OpenFileCallback&
           callback) OVERRIDE;
   virtual void NotifyCloseFile(const fileapi::FileSystemURL& url) OVERRIDE;
-  // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
+  virtual void TouchFile(
+      const fileapi::FileSystemURL& url,
+      const base::Time& last_access_time,
+      const base::Time& last_modified_time,
+      const fileapi::FileSystemOperation::StatusCallback& callback)
+          OVERRIDE;
 
  protected:
   virtual ~DriveFileSystemProxy();

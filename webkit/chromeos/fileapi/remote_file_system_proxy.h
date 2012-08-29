@@ -103,7 +103,14 @@ class RemoteFileSystemProxyInterface :
   // Notifies that a file opened by OpenFile (at |path|) is closed.
   virtual void NotifyCloseFile(const FileSystemURL& url) = 0;
 
-  // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
+  // Modifies the timestamp of a given |url| to |last_access_time| and
+  // |last_modified_time|. Note that unlike 'touch' command of Linux, it
+  // does not create a new file.
+  virtual void TouchFile(
+      const fileapi::FileSystemURL& url,
+      const base::Time& last_access_time,
+      const base::Time& last_modified_time,
+      const FileSystemOperation::StatusCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<RemoteFileSystemProxyInterface>;

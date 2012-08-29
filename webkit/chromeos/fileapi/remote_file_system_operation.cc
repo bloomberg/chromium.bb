@@ -177,7 +177,13 @@ void RemoteFileSystemOperation::TouchFile(const FileSystemURL& url,
                                           const base::Time& last_access_time,
                                           const base::Time& last_modified_time,
                                           const StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(SetPendingOperationType(kOperationTouchFile));
+  remote_proxy_->TouchFile(
+      url,
+      last_access_time,
+      last_modified_time,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
 }
 
 void RemoteFileSystemOperation::OpenFile(const FileSystemURL& url,
