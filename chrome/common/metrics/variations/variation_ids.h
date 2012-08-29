@@ -110,6 +110,12 @@ enum VariationID {
   kInstantIDSuggest = 3310023,
   kInstantIDInstant = 3310024,
 
+  // Instant dummy field trial.
+  kDummyInstantIDDefault       = 3310025,
+  kDummyInstantIDControl       = 3310026,
+  kDummyInstantIDExperimentOne = 3310027,
+  kDummyInstantIDExperimentTwo = 3310028,
+
   // USABLE IDs END HERE.
   //
   // The largest possible Chrome variation ID in the reserved range. When
