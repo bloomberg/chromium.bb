@@ -9,6 +9,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -17,12 +18,19 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -30,8 +38,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -97,6 +107,19 @@ void CheckURLIsBlocked(Browser* browser, const GURL& url) {
           "domAutomationController.send(hasError);"),
       &result));
   EXPECT_TRUE(result);
+}
+
+void SendToOmniboxAndSubmit(LocationBar* location_bar, const string16& input) {
+  OmniboxView* omnibox = location_bar->GetLocationEntry();
+  omnibox->model()->OnSetFocus(false);
+  omnibox->SetUserText(input);
+  location_bar->AcceptInput();
+  while (!omnibox->model()->autocomplete_controller()->done()) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        content::NotificationService::AllSources());
+    observer.Wait();
+  }
 }
 
 }  // namespace
@@ -180,6 +203,57 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_ClearSiteDataOnExit) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
   // Verify that the cookie is gone.
   EXPECT_TRUE(GetCookies(browser()->profile(), GURL(kURL)).empty());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
+  // Verifies that a default search is made using the provider configured via
+  // policy. Also checks that default search can be completely disabled.
+  const string16 kKeyword(ASCIIToUTF16("testsearch"));
+  const std::string kSearchURL("http://search.example/search?q={searchTerms}");
+
+  TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
+      browser()->profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  TemplateURL* default_search = service->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_search);
+  EXPECT_NE(kKeyword, default_search->keyword());
+  EXPECT_NE(kSearchURL, default_search->url());
+
+  // Override the default search provider using policies.
+  PolicyMap policies;
+  policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  policies.Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword));
+  policies.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL));
+  provider_.UpdateChromePolicy(policies);
+  default_search = service->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_search);
+  EXPECT_EQ(kKeyword, default_search->keyword());
+  EXPECT_EQ(kSearchURL, default_search->url());
+
+  // Verify that searching from the omnibox uses kSearchURL.
+  chrome::FocusLocationBar(browser());
+  LocationBar* location_bar = browser()->window()->GetLocationBar();
+  SendToOmniboxAndSubmit(location_bar, ASCIIToUTF16("stuff to search for"));
+  OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
+  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  GURL expected("http://search.example/search?q=stuff+to+search+for");
+  EXPECT_EQ(expected, web_contents->GetURL());
+
+  // Verify that searching from the omnibox can be disabled.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  EXPECT_TRUE(service->GetDefaultSearchProvider());
+  provider_.UpdateChromePolicy(policies);
+  EXPECT_FALSE(service->GetDefaultSearchProvider());
+  SendToOmniboxAndSubmit(location_bar, ASCIIToUTF16("should not work"));
+  // This means that submitting won't trigger any action.
+  EXPECT_FALSE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_EQ(GURL("about:blank"), web_contents->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {

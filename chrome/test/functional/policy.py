@@ -385,45 +385,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertTrue(self.GetHistoryInfo().History(),
                      msg='History not is being saved.')
 
-  def testDefaultSearchProviderOptions(self):
-    """Verify a default search is performed when using omnibox."""
-    policy = {
-      'DefaultSearchProviderEnabled': True,
-      'DefaultSearchProviderEncodings': ['UTF-8', 'UTF-16', 'GB2312',
-                                         'ISO-8859-1'],
-      'DefaultSearchProviderIconURL': 'http://search.my.company/favicon.ico',
-      'DefaultSearchProviderInstantURL': ('http://search.my.company/'
-                                          'suggest?q={searchTerms}'),
-      'DefaultSearchProviderKeyword': 'mis',
-      'DefaultSearchProviderName': 'My Intranet Search',
-      'DefaultSearchProviderSearchURL': ('http://search.my.company/'
-                                         'search?q={searchTerms}'),
-      'DefaultSearchProviderSuggestURL': ('http://search.my.company/'
-                                          'suggest?q={searchTerms}'),
-    }
-    self.SetUserPolicy(policy)
-    self.assertFalse(
-        self._GetPrefIsManagedError(pyauto.kDefaultSearchProviderEnabled, True))
-    intranet_engine = [x for x in self.GetSearchEngineInfo()
-                       if x['keyword'] == 'mis']
-    self.assertTrue(intranet_engine)
-    self.assertTrue(intranet_engine[0]['is_default'])
-    self.SetOmniboxText('google chrome')
-    self.WaitUntilOmniboxQueryDone()
-    self.OmniboxAcceptInput()
-    self.assertTrue('search.my.company' in self.GetActiveTabURL().spec())
-    policy = {
-      'DefaultSearchProviderEnabled': False,
-    }
-    self.SetUserPolicy(policy)
-    self.assertFalse(
-        self._GetPrefIsManagedError(pyauto.kDefaultSearchProviderEnabled,
-                                    False))
-    self.SetOmniboxText('deli')
-    self.WaitUntilOmniboxQueryDone()
-    self.assertRaises(pyauto.JSONInterfaceError,
-                      lambda: self.OmniboxAcceptInput())
-
   # Needed for extension tests
   _GOOD_CRX_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf'
   _ADBLOCK_CRX_ID = 'dojnnbeimaimaojcialkkgajdnefpgcn'
