@@ -1922,8 +1922,9 @@ void ExtensionService::AddExtension(const Extension* extension) {
   if (!extensions_enabled() &&
       !extension->is_theme() &&
       extension->location() != Extension::COMPONENT &&
-      !Extension::IsExternalLocation(extension->location()))
+      !Extension::IsExternalLocation(extension->location())) {
     return;
+  }
 
   SetBeingUpgraded(extension, false);
 

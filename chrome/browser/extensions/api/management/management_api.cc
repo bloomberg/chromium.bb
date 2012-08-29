@@ -447,11 +447,25 @@ bool SetEnabledFunction::RunImpl() {
 
   extension_id_ = params->id;
 
-  const Extension* extension = service()->GetExtensionById(extension_id_, true);
+  const Extension* extension = service()->GetInstalledExtension(extension_id_);
   if (!extension) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
+  }
+
+  // The extension may have been unloaded due to a crash.
+  if (service()->GetTerminatedExtension(extension_id_)) {
+    if (params->enabled) {
+      service()->ReloadExtension(extension_id_);
+    } else {
+      // Treat setEnabled(false) when the extension has crashed as a no-op.
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&SetEnabledFunction::SendResponse, this, true));
+      return true;
+    }
   }
 
   const extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(

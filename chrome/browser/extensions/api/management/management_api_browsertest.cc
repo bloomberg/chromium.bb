@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/management/management_api_constants.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -18,6 +19,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
 
 namespace keys = extension_management_api_constants;
 namespace util = extension_function_test_utils;
@@ -144,13 +148,15 @@ class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
         service->extension_prefs()->DidExtensionEscalatePermissions(kId));
   }
 
-  void ReEnable(bool user_gesture, const std::string& expected_error) {
+  void SetEnabled(bool enabled, bool user_gesture,
+                  const std::string& expected_error) {
     scoped_refptr<SetEnabledFunction> function(new SetEnabledFunction);
+    const char* enabled_string = enabled ? "true" : "false";
     if (user_gesture)
       function->set_user_gesture(true);
     bool response = util::RunFunction(
         function.get(),
-        base::StringPrintf("[\"%s\", true]", kId),
+        base::StringPrintf("[\"%s\", %s]", kId, enabled_string),
         browser(),
         util::NONE);
     if (expected_error.empty()) {
@@ -159,6 +165,22 @@ class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
       EXPECT_TRUE(response == false);
       EXPECT_EQ(expected_error, function->GetError());
     }
+  }
+
+  bool CrashEnabledExtension(const std::string& extension_id) {
+    content::WindowedNotificationObserver extension_crash_observer(
+        chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+        content::NotificationService::AllSources());
+    extensions::ExtensionHost* background_host =
+        browser()->profile()->GetExtensionProcessManager()->
+            GetBackgroundHostForExtension(extension_id);
+    if (!background_host)
+      return false;
+    background_host->host_contents()->GetController().LoadURL(
+        GURL(chrome::kChromeUICrashURL), content::Referrer(),
+        content::PAGE_TRANSITION_LINK, std::string());
+    extension_crash_observer.Wait();
+    return true;
   }
 
  private:
@@ -186,17 +208,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
-                       ReEnable) {
+                       SetEnabled) {
   // Expect an error about no gesture.
-  ReEnable(false, keys::kGestureNeededForEscalationError);
+  SetEnabled(true, false, keys::kGestureNeededForEscalationError);
 
   // Expect an error that user cancelled the dialog.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
-  ReEnable(true, keys::kUserDidNotReEnableError);
+  SetEnabled(true, true, keys::kUserDidNotReEnableError);
 
   // This should succeed when user accepts dialog.
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
-  ReEnable(true, "");
+  SetEnabled(true, true, "");
+
+  // Crash the extension and try to enable. The extension should be reloaded and
+  // enabled.
+  ASSERT_TRUE(CrashEnabledExtension(kId));
+  SetEnabled(true, true, "");
+
+  // Crash the extension again and try to disable. This call should be a no-op
+  // and the extension should remain unloaded.
+  ASSERT_TRUE(CrashEnabledExtension(kId));
+  SetEnabled(false, true, "");
+  const extensions::Extension* extension = browser()->profile()->
+      GetExtensionService()->GetTerminatedExtension(kId);
+  ASSERT_TRUE(extension);
 }

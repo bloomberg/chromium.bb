@@ -73,16 +73,14 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
 
   void CrashExtension(std::string extension_id) {
     const Extension* extension =
-        GetExtensionService()->extensions()->GetByID(extension_id);
+        GetExtensionService()->GetExtensionById(extension_id, false);
     ASSERT_TRUE(extension);
     extensions::ExtensionHost* extension_host = GetExtensionProcessManager()->
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
 
-    content::RenderProcessHost* extension_rph =
-        extension_host->render_view_host()->GetProcess();
-    base::KillProcess(extension_rph->GetHandle(), content::RESULT_CODE_KILLED,
-                      false);
+    base::KillProcess(extension_host->render_process_host()->GetHandle(),
+                      content::RESULT_CODE_KILLED, false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
     ASSERT_FALSE(GetExtensionProcessManager()->
                  GetBackgroundHostForExtension(extension_id));
