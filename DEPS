@@ -308,7 +308,7 @@ deps = {
     "/trunk/tools/deps2git@148781",
 
   "src/third_party/webpagereplay":
-    (Var("googlecode_url") % "web-page-replay") + "/trunk@492",
+    (Var("googlecode_url") % "web-page-replay") + "/trunk@494",
 
   "src/third_party/pywebsocket/src":
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@658",
