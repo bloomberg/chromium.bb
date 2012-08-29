@@ -103,12 +103,27 @@ GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
 bool BoundsMatchMonitorSize(GtkWindow* window, gfx::Rect bounds) {
   // A screen can be composed of multiple monitors.
   GdkScreen* screen = gtk_window_get_screen(window);
-  gint monitor_num = gdk_screen_get_monitor_at_window(screen,
-      gtk_widget_get_window(GTK_WIDGET(window)));
-
   GdkRectangle monitor_size;
-  gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor_size);
-  return bounds.size() == gfx::Size(monitor_size.width, monitor_size.height);
+
+  if (gtk_widget_get_realized(GTK_WIDGET(window))) {
+    // |window| has been realized.
+    gint monitor_num = gdk_screen_get_monitor_at_window(screen,
+        gtk_widget_get_window(GTK_WIDGET(window)));
+    gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor_size);
+    return bounds.size() == gfx::Size(monitor_size.width, monitor_size.height);
+  }
+
+  // Make sure the window doesn't match any monitor size. We compare against
+  // all monitors because we don't know which monitor the window is going to
+  // open on before window realized.
+  gint num_monitors = gdk_screen_get_n_monitors(screen);
+  for (gint i = 0; i < num_monitors; ++i) {
+    GdkRectangle monitor_size;
+    gdk_screen_get_monitor_geometry(screen, i, &monitor_size);
+    if (bounds.size() == gfx::Size(monitor_size.width, monitor_size.height))
+      return true;
+  }
+  return false;
 }
 
 bool HandleTitleBarLeftMousePress(
@@ -181,6 +196,49 @@ void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
   // Set WM_WINDOW_ROLE for session management purposes.
   // See http://tronche.com/gui/x/icccm/sec-5.html .
   gtk_window_set_role(window, wmclass.c_str());
+}
+
+void SetWindowSize(GtkWindow* window, const gfx::Size& size) {
+  gfx::Size new_size = size;
+  gint current_width = 0;
+  gint current_height = 0;
+  gtk_window_get_size(window, &current_width, &current_height);
+  GdkRectangle size_with_decorations = {0};
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+  if (gdk_window) {
+    gdk_window_get_frame_extents(gdk_window,
+                                 &size_with_decorations);
+  }
+
+  if (current_width == size_with_decorations.width &&
+      current_height == size_with_decorations.height) {
+    // Make sure the window doesn't match any monitor size.  We compare against
+    // all monitors because we don't know which monitor the window is going to
+    // open on (the WM decides that).
+    GdkScreen* screen = gtk_window_get_screen(window);
+    gint num_monitors = gdk_screen_get_n_monitors(screen);
+    for (gint i = 0; i < num_monitors; ++i) {
+      GdkRectangle monitor_size;
+      gdk_screen_get_monitor_geometry(screen, i, &monitor_size);
+      if (gfx::Size(monitor_size.width, monitor_size.height) == size) {
+        gtk_window_resize(window, size.width(), size.height() - 1);
+        return;
+      }
+    }
+  } else {
+    // gtk_window_resize is the size of the window not including decorations,
+    // but we are given the |size| including window decorations.
+    if (size_with_decorations.width > current_width) {
+      new_size.set_width(size.width() - size_with_decorations.width +
+          current_width);
+    }
+    if (size_with_decorations.height > current_height) {
+      new_size.set_height(size.height() - size_with_decorations.height +
+          current_height);
+    }
+  }
+
+  gtk_window_resize(window, new_size.width(), new_size.height());
 }
 
 }  // namespace gtk_window_util

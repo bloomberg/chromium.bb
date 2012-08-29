@@ -42,6 +42,13 @@ void UnMaximize(GtkWindow* window,
 
 // Set a custom WM_CLASS for a window.
 void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass);
+
+// A helper method for setting the GtkWindow size that should be used in place
+// of calling gtk_window_resize directly.  This is done to avoid a WM "feature"
+// where setting the window size to the monitor size causes the WM to set the
+// EWMH for full screen mode.
+void SetWindowSize(GtkWindow* window, const gfx::Size& size);
+
 }  // namespace gtk_window_util
 
 #endif  // CHROME_BROWSER_UI_GTK_GTK_WINDOW_UTIL_H_
