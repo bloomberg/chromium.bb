@@ -150,64 +150,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon);
 
-  // Message Handlers.
-  // This list is in _ALPHABETICAL_ order!
-  void OnActivate(UINT action, BOOL minimized, HWND window);
-  // TODO(beng): Once this object becomes the WindowImpl, these methods can
-  //             be made private.
-  void OnActivateApp(BOOL active, DWORD thread_id);
-  // TODO(beng): return BOOL is temporary until this object becomes a
-  //             WindowImpl.
-  BOOL OnAppCommand(HWND window, short command, WORD device, int keystate);
-  void OnCancelMode();
-  void OnCaptureChanged(HWND window);
-  void OnClose();
-  void OnCommand(UINT notification_code, int command, HWND window);
-  LRESULT OnCreate(CREATESTRUCT* create_struct);
-  void OnDestroy();
-  void OnDisplayChange(UINT bits_per_pixel, const CSize& screen_size);
-  LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param, LPARAM l_param);
-  void OnEndSession(BOOL ending, UINT logoff);
-  void OnEnterSizeMove();
-  LRESULT OnEraseBkgnd(HDC dc);
-  void OnExitMenuLoop(BOOL is_track_popup_menu);
-  void OnExitSizeMove();
-  void OnHScroll(int scroll_type, short position, HWND scrollbar);
-  void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
-  LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnInitMenu(HMENU menu);
-  void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
-  void OnInputLangChange(DWORD character_set, HKL input_language_id);
-  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnKillFocus(HWND focused_window);
-  LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnMove(const CPoint& point);
-  void OnMoving(UINT param, const RECT* new_bounds);
-  LRESULT OnNCActivate(BOOL active);
-  LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
-  LRESULT OnNCHitTest(const CPoint& point);
-  void OnNCPaint(HRGN rgn);
-  LRESULT OnNCUAHDrawCaption(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnNotify(int w_param, NMHDR* l_param);
-  void OnPaint(HDC dc);
-  LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
-  LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnSetFocus(HWND last_focused_window);
-  LRESULT OnSetIcon(UINT size_type, HICON new_icon);
-  LRESULT OnSetText(const wchar_t* text);
-  void OnSettingChange(UINT flags, const wchar_t* section);
-  void OnSize(UINT param, const CSize& size);
-  void OnSysCommand(UINT notification_code, const CPoint& point);
-  void OnThemeChanged();
-  LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnVScroll(int scroll_type, short position, HWND scrollbar);
-  void OnWindowPosChanging(WINDOWPOS* window_pos);
-  void OnWindowPosChanged(WINDOWPOS* window_pos);
-
   void set_remove_standard_frame(bool remove_standard_frame) {
     remove_standard_frame_ = remove_standard_frame;
   }
@@ -335,10 +277,8 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
 
     // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
-    MSG_WM_ACTIVATE(OnActivate)
     MSG_WM_ACTIVATEAPP(OnActivateApp)
     MSG_WM_APPCOMMAND(OnAppCommand)
-    MSG_WM_CANCELMODE(OnCancelMode)
     MSG_WM_CAPTURECHANGED(OnCaptureChanged)
     MSG_WM_CLOSE(OnClose)
     MSG_WM_COMMAND(OnCommand)
@@ -346,14 +286,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     MSG_WM_DESTROY(OnDestroy)
     MSG_WM_DISPLAYCHANGE(OnDisplayChange)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
-    MSG_WM_ENDSESSION(OnEndSession)
     MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
-    MSG_WM_EXITMENULOOP(OnExitMenuLoop)
     MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
     MSG_WM_GETMINMAXINFO(OnGetMinMaxInfo)
-    MSG_WM_HSCROLL(OnHScroll)
     MSG_WM_INITMENU(OnInitMenu)
-    MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
     MSG_WM_INPUTLANGCHANGE(OnInputLangChange)
     MSG_WM_KILLFOCUS(OnKillFocus)
     MSG_WM_MOVE(OnMove)
@@ -372,10 +308,60 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     MSG_WM_SIZE(OnSize)
     MSG_WM_SYSCOMMAND(OnSysCommand)
     MSG_WM_THEMECHANGED(OnThemeChanged)
-    MSG_WM_VSCROLL(OnVScroll)
     MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
     MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
   END_MSG_MAP()
+
+  // Message Handlers.
+  // This list is in _ALPHABETICAL_ order!
+  // TODO(beng): Once this object becomes the WindowImpl, these methods can
+  //             be made private.
+  void OnActivateApp(BOOL active, DWORD thread_id);
+  // TODO(beng): return BOOL is temporary until this object becomes a
+  //             WindowImpl.
+  BOOL OnAppCommand(HWND window, short command, WORD device, int keystate);
+  void OnCaptureChanged(HWND window);
+  void OnClose();
+  void OnCommand(UINT notification_code, int command, HWND window);
+  LRESULT OnCreate(CREATESTRUCT* create_struct);
+  void OnDestroy();
+  void OnDisplayChange(UINT bits_per_pixel, const CSize& screen_size);
+  LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param, LPARAM l_param);
+  void OnEnterSizeMove();
+  LRESULT OnEraseBkgnd(HDC dc);
+  void OnExitSizeMove();
+  void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
+  LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnInitMenu(HMENU menu);
+  void OnInputLangChange(DWORD character_set, HKL input_language_id);
+  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnKillFocus(HWND focused_window);
+  LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnMove(const CPoint& point);
+  void OnMoving(UINT param, const RECT* new_bounds);
+  LRESULT OnNCActivate(BOOL active);
+  LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
+  LRESULT OnNCHitTest(const CPoint& point);
+  void OnNCPaint(HRGN rgn);
+  LRESULT OnNCUAHDrawCaption(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnNotify(int w_param, NMHDR* l_param);
+  void OnPaint(HDC dc);
+  LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
+  LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnSetFocus(HWND last_focused_window);
+  LRESULT OnSetIcon(UINT size_type, HICON new_icon);
+  LRESULT OnSetText(const wchar_t* text);
+  void OnSettingChange(UINT flags, const wchar_t* section);
+  void OnSize(UINT param, const CSize& size);
+  void OnSysCommand(UINT notification_code, const CPoint& point);
+  void OnThemeChanged();
+  LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnWindowPosChanging(WINDOWPOS* window_pos);
+  void OnWindowPosChanged(WINDOWPOS* window_pos);
 
   HWNDMessageHandlerDelegate* delegate_;
 

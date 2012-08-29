@@ -876,9 +876,328 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
   }
 }
 
-void HWNDMessageHandler::OnActivate(UINT action, BOOL minimized, HWND window) {
-  SetMsgHandled(FALSE);
+void HWNDMessageHandler::ResetWindowRegion(bool force) {
+  // A native frame uses the native window region, and we don't want to mess
+  // with it.
+  if (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow()) {
+    if (force)
+      SetWindowRgn(hwnd(), NULL, TRUE);
+    return;
+  }
+
+  // Changing the window region is going to force a paint. Only change the
+  // window region if the region really differs.
+  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
+  int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
+
+  CRect window_rect;
+  GetWindowRect(hwnd(), &window_rect);
+  HRGN new_region;
+  if (IsMaximized()) {
+    HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi;
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(monitor, &mi);
+    CRect work_rect = mi.rcWork;
+    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    new_region = CreateRectRgnIndirect(&work_rect);
+  } else {
+    gfx::Path window_mask;
+    delegate_->GetWindowMask(
+        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = window_mask.CreateNativeRegion();
+  }
+
+  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
+    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
+    SetWindowRgn(hwnd(), new_region, TRUE);
+  } else {
+    DeleteObject(new_region);
+  }
+
+  DeleteObject(current_rgn);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// HWNDMessageHandler, InputMethodDelegate implementation:
+
+void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
+  SetMsgHandled(delegate_->HandleKeyEvent(key));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HWNDMessageHandler, ui::WindowImpl overrides:
+
+HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
+  return ViewsDelegate::views_delegate ?
+      ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
+}
+
+LRESULT HWNDMessageHandler::OnWndProc(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
+  HWND window = hwnd();
+  LRESULT result = 0;
+
+  if (delegate_->PreHandleMSG(message, w_param, l_param, &result))
+    return result;
+
+  // First allow messages sent by child controls to be processed directly by
+  // their associated views. If such a view is present, it will handle the
+  // message *instead of* this NativeWidgetWin.
+  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
+    return result;
+
+  // Otherwise we handle everything else.
+  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
+    result = DefWindowProc(window, message, w_param, l_param);
+  delegate_->PostHandleMSG(message, w_param, l_param);
+  if (message == WM_NCDESTROY) {
+    MessageLoopForUI::current()->RemoveObserver(this);
+    delegate_->HandleDestroyed();
+  }
+
+  // Only top level widget should store/restore focus.
+  if (message == WM_ACTIVATE && delegate_->CanSaveFocus())
+    PostProcessActivateMessage(LOWORD(w_param));
+  if (message == WM_ENABLE && restore_focus_when_enabled_) {
+    // This path should be executed only for top level as
+    // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
+    DCHECK(delegate_->CanSaveFocus());
+    restore_focus_when_enabled_ = false;
+    delegate_->RestoreFocusOnEnable();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HWNDMessageHandler, MessageLoopForUI::Observer implementation:
+
+base::EventStatus HWNDMessageHandler::WillProcessEvent(
+      const base::NativeEvent& event) {
+  return base::EVENT_CONTINUE;
+}
+
+void HWNDMessageHandler::DidProcessEvent(const base::NativeEvent& event) {
+  RedrawInvalidRect();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HWNDMessageHandler, private:
+
+void HWNDMessageHandler::SetInitialFocus() {
+  if (!(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
+      !(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
+    // The window does not get keyboard messages unless we focus it.
+    SetFocus(hwnd());
+  }
+}
+
+void HWNDMessageHandler::PostProcessActivateMessage(int activation_state) {
+  DCHECK(delegate_->CanSaveFocus());
+  if (WA_INACTIVE == activation_state) {
+    // We might get activated/inactivated without being enabled, so we need to
+    // clear restore_focus_when_enabled_.
+    restore_focus_when_enabled_ = false;
+    delegate_->SaveFocusOnDeactivate();
+  } else {
+    // We must restore the focus after the message has been DefProc'ed as it
+    // does set the focus to the last focused HWND.
+    // Note that if the window is not enabled, we cannot restore the focus as
+    // calling ::SetFocus on a child of the non-enabled top-window would fail.
+    // This is the case when showing a modal dialog (such as 'open file',
+    // 'print'...) from a different thread.
+    // In that case we delay the focus restoration to when the window is enabled
+    // again.
+    if (!IsWindowEnabled(hwnd())) {
+      DCHECK(!restore_focus_when_enabled_);
+      restore_focus_when_enabled_ = true;
+      return;
+    }
+    delegate_->RestoreFocusOnActivate();
+  }
+}
+
+void HWNDMessageHandler::RestoreEnabledIfNecessary() {
+  if (delegate_->IsModal() && !restored_enabled_) {
+    restored_enabled_ = true;
+    // If we were run modally, we need to undo the disabled-ness we inflicted on
+    // the owner's parent hierarchy.
+    HWND start = ::GetWindow(hwnd(), GW_OWNER);
+    while (start) {
+      ::EnableWindow(start, TRUE);
+      start = ::GetParent(start);
+    }
+  }
+}
+
+void HWNDMessageHandler::ExecuteSystemMenuCommand(int command) {
+  if (command)
+    SendMessage(hwnd(), WM_SYSCOMMAND, command, 0);
+}
+
+void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
+  // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
+  // when the user moves the mouse outside this HWND's bounds.
+  if (active_mouse_tracking_flags_ == 0 || mouse_tracking_flags & TME_CANCEL) {
+    if (mouse_tracking_flags & TME_CANCEL) {
+      // We're about to cancel active mouse tracking, so empty out the stored
+      // state.
+      active_mouse_tracking_flags_ = 0;
+    } else {
+      active_mouse_tracking_flags_ = mouse_tracking_flags;
+    }
+
+    TRACKMOUSEEVENT tme;
+    tme.cbSize = sizeof(tme);
+    tme.dwFlags = mouse_tracking_flags;
+    tme.hwndTrack = hwnd();
+    tme.dwHoverTime = 0;
+    TrackMouseEvent(&tme);
+  } else if (mouse_tracking_flags != active_mouse_tracking_flags_) {
+    TrackMouseEvents(active_mouse_tracking_flags_ | TME_CANCEL);
+    TrackMouseEvents(mouse_tracking_flags);
+  }
+}
+
+void HWNDMessageHandler::ClientAreaSizeChanged() {
+  RECT r = {0, 0, 0, 0};
+  if (delegate_->WidgetSizeIsClientSize()) {
+    // TODO(beng): investigate whether this could be done
+    // from other branch of if-else.
+    if (!IsMinimized())
+      GetClientRect(hwnd(), &r);
+  } else {
+    GetWindowRect(hwnd(), &r);
+  }
+  gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
+              std::max(0, static_cast<int>(r.bottom - r.top)));
+  delegate_->HandleClientSizeChanged(s);
+  if (use_layered_buffer_) {
+    layered_window_contents_.reset(
+        new gfx::Canvas(s, ui::SCALE_FACTOR_100P, false));
+  }
+}
+
+gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
+  gfx::Insets insets;
+  if (delegate_->GetClientAreaInsets(&insets))
+    return insets;
+  DCHECK(insets.empty());
+
+  // Returning an empty Insets object causes the default handling in
+  // NativeWidgetWin::OnNCCalcSize() to be invoked.
+  if (!delegate_->IsWidgetWindow() ||
+      (!delegate_->IsUsingCustomFrame() && !remove_standard_frame_)) {
+    return insets;
+  }
+
+  if (IsMaximized()) {
+    // Windows automatically adds a standard width border to all sides when a
+    // window is maximized.
+    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
+    return gfx::Insets(border_thickness, border_thickness, border_thickness,
+                       border_thickness);
+  }
+
+  // The hack below doesn't seem to be necessary when the standard frame is
+  // removed.
+  if (remove_standard_frame_)
+    return insets;
+  // This is weird, but highly essential. If we don't offset the bottom edge
+  // of the client rect, the window client area and window area will match,
+  // and when returning to glass rendering mode from non-glass, the client
+  // area will not paint black as transparent. This is because (and I don't
+  // know why) the client area goes from matching the window rect to being
+  // something else. If the client area is not the window rect in both
+  // modes, the blackness doesn't occur. Because of this, we need to tell
+  // the RootView to lay out to fit the window rect, rather than the client
+  // rect when using the opaque frame.
+  // Note: this is only required for non-fullscreen windows. Note that
+  // fullscreen windows are in restored state, not maximized.
+  return gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
+}
+
+LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
+                                                        WPARAM w_param,
+                                                        LPARAM l_param) {
+  ScopedRedrawLock lock(this);
+  // The Widget and HWND can be destroyed in the call to DefWindowProc, so use
+  // the |destroyed_| flag to avoid unlocking (and crashing) after destruction.
+  bool destroyed = false;
+  destroyed_ = &destroyed;
+  LRESULT result = DefWindowProc(hwnd(), message, w_param, l_param);
+  if (destroyed)
+    lock.CancelUnlockOperation();
+  else
+    destroyed_ = NULL;
+  return result;
+}
+
+void HWNDMessageHandler::NotifyOwnedWindowsParentClosing() {
+  FindOwnedWindowsData data;
+  data.window = hwnd();
+  EnumThreadWindows(GetCurrentThreadId(), FindOwnedWindowsCallback,
+                    reinterpret_cast<LPARAM>(&data));
+  for (size_t i = 0; i < data.owned_widgets.size(); ++i)
+    data.owned_widgets[i]->OnOwnerClosing();
+}
+
+void HWNDMessageHandler::LockUpdates(bool force) {
+  // We skip locked updates when Aero is on for two reasons:
+  // 1. Because it isn't necessary
+  // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
+  //    attempting to present a child window's backbuffer onscreen. When these
+  //    two actions race with one another, the child window will either flicker
+  //    or will simply stop updating entirely.
+  if ((force || !ui::win::IsAeroGlassEnabled()) && ++lock_updates_count_ == 1) {
+    SetWindowLong(hwnd(), GWL_STYLE,
+                  GetWindowLong(hwnd(), GWL_STYLE) & ~WS_VISIBLE);
+  }
+}
+
+void HWNDMessageHandler::UnlockUpdates(bool force) {
+  if ((force || !ui::win::IsAeroGlassEnabled()) && --lock_updates_count_ <= 0) {
+    SetWindowLong(hwnd(), GWL_STYLE,
+                  GetWindowLong(hwnd(), GWL_STYLE) | WS_VISIBLE);
+    lock_updates_count_ = 0;
+  }
+}
+
+void HWNDMessageHandler::RedrawInvalidRect() {
+  if (!use_layered_buffer_) {
+    RECT r = { 0, 0, 0, 0 };
+    if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
+      RedrawWindow(hwnd(), &r, NULL,
+                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
+    }
+  }
+}
+
+void HWNDMessageHandler::RedrawLayeredWindowContents() {
+  if (invalid_rect_.IsEmpty())
+    return;
+
+  // We need to clip to the dirty rect ourselves.
+  layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
+  layered_window_contents_->ClipRect(invalid_rect_);
+  delegate_->PaintLayeredWindow(layered_window_contents_.get());
+  layered_window_contents_->sk_canvas()->restore();
+
+  RECT wr;
+  GetWindowRect(hwnd(), &wr);
+  SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
+  POINT position = {wr.left, wr.top};
+  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_->sk_canvas());
+  POINT zero = {0, 0};
+  BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
+  UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
+                      RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
+  invalid_rect_.SetRect(0, 0, 0, 0);
+  skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
+}
+
+// Message handlers ------------------------------------------------------------
 
 void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
   if (delegate_->IsWidgetWindow() && !active &&
@@ -900,10 +1219,6 @@ BOOL HWNDMessageHandler::OnAppCommand(HWND window,
   // system will execute the default handler which can cause bugs like going
   // forward or back two pages instead of one.
   return handled;
-}
-
-void HWNDMessageHandler::OnCancelMode() {
-  SetMsgHandled(FALSE);
 }
 
 void HWNDMessageHandler::OnCaptureChanged(HWND window) {
@@ -991,10 +1306,6 @@ LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
   return 0;
 }
 
-void HWNDMessageHandler::OnEndSession(BOOL ending, UINT logoff) {
-  SetMsgHandled(FALSE);
-}
-
 void HWNDMessageHandler::OnEnterSizeMove() {
   delegate_->HandleBeginWMSizeMove();
   SetMsgHandled(FALSE);
@@ -1003,10 +1314,6 @@ void HWNDMessageHandler::OnEnterSizeMove() {
 LRESULT HWNDMessageHandler::OnEraseBkgnd(HDC dc) {
   // Needed to prevent resize flicker.
   return 1;
-}
-
-void HWNDMessageHandler::OnExitMenuLoop(BOOL is_track_popup_menu) {
-  SetMsgHandled(FALSE);
 }
 
 void HWNDMessageHandler::OnExitSizeMove() {
@@ -1071,12 +1378,6 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
   return reference_result;
 }
 
-void HWNDMessageHandler::OnHScroll(int scroll_type,
-                                   short position,
-                                   HWND scrollbar) {
-  SetMsgHandled(FALSE);
-}
-
 LRESULT HWNDMessageHandler::OnImeMessages(UINT message,
                                           WPARAM w_param,
                                           LPARAM l_param) {
@@ -1107,12 +1408,6 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
                           !is_fullscreen && !is_maximized);
   EnableMenuItemByCommand(menu, SC_MINIMIZE, delegate_->CanMaximize() &&
                           !is_minimized);
-}
-
-void HWNDMessageHandler::OnInitMenuPopup(HMENU menu,
-                                         UINT position,
-                                         BOOL is_system_menu) {
-  SetMsgHandled(FALSE);
 }
 
 void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
@@ -1684,12 +1979,6 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   return 0;
 }
 
-void HWNDMessageHandler::OnVScroll(int scroll_type,
-                                   short position,
-                                   HWND scrollbar) {
-  SetMsgHandled(FALSE);
-}
-
 void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
   if (ignore_window_pos_changes_) {
     // If somebody's trying to toggle our visibility, change the nonclient area,
@@ -1791,327 +2080,6 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   else if (window_pos->flags & SWP_HIDEWINDOW)
     delegate_->HandleVisibilityChanged(false);
   SetMsgHandled(FALSE);
-}
-
-void HWNDMessageHandler::ResetWindowRegion(bool force) {
-  // A native frame uses the native window region, and we don't want to mess
-  // with it.
-  if (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow()) {
-    if (force)
-      SetWindowRgn(hwnd(), NULL, TRUE);
-    return;
-  }
-
-  // Changing the window region is going to force a paint. Only change the
-  // window region if the region really differs.
-  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
-  int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
-
-  CRect window_rect;
-  GetWindowRect(hwnd(), &window_rect);
-  HRGN new_region;
-  if (IsMaximized()) {
-    HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
-    MONITORINFO mi;
-    mi.cbSize = sizeof mi;
-    GetMonitorInfo(monitor, &mi);
-    CRect work_rect = mi.rcWork;
-    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
-    new_region = CreateRectRgnIndirect(&work_rect);
-  } else {
-    gfx::Path window_mask;
-    delegate_->GetWindowMask(
-        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
-    new_region = window_mask.CreateNativeRegion();
-  }
-
-  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
-    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
-    SetWindowRgn(hwnd(), new_region, TRUE);
-  } else {
-    DeleteObject(new_region);
-  }
-
-  DeleteObject(current_rgn);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, InputMethodDelegate implementation:
-
-void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
-  SetMsgHandled(delegate_->HandleKeyEvent(key));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, ui::WindowImpl overrides:
-
-HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
-  return ViewsDelegate::views_delegate ?
-      ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
-}
-
-LRESULT HWNDMessageHandler::OnWndProc(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param) {
-  HWND window = hwnd();
-  LRESULT result = 0;
-
-  if (delegate_->PreHandleMSG(message, w_param, l_param, &result))
-    return result;
-
-  // First allow messages sent by child controls to be processed directly by
-  // their associated views. If such a view is present, it will handle the
-  // message *instead of* this NativeWidgetWin.
-  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
-    return result;
-
-  // Otherwise we handle everything else.
-  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
-    result = DefWindowProc(window, message, w_param, l_param);
-  delegate_->PostHandleMSG(message, w_param, l_param);
-  if (message == WM_NCDESTROY) {
-    MessageLoopForUI::current()->RemoveObserver(this);
-    delegate_->HandleDestroyed();
-  }
-
-  // Only top level widget should store/restore focus.
-  if (message == WM_ACTIVATE && delegate_->CanSaveFocus())
-    PostProcessActivateMessage(LOWORD(w_param));
-  if (message == WM_ENABLE && restore_focus_when_enabled_) {
-    // This path should be executed only for top level as
-    // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
-    DCHECK(delegate_->CanSaveFocus());
-    restore_focus_when_enabled_ = false;
-    delegate_->RestoreFocusOnEnable();
-  }
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, MessageLoopForUI::Observer implementation:
-
-base::EventStatus HWNDMessageHandler::WillProcessEvent(
-      const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void HWNDMessageHandler::DidProcessEvent(const base::NativeEvent& event) {
-  RedrawInvalidRect();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, private:
-
-void HWNDMessageHandler::SetInitialFocus() {
-  if (!(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
-      !(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
-    // The window does not get keyboard messages unless we focus it.
-    SetFocus(hwnd());
-  }
-}
-
-void HWNDMessageHandler::PostProcessActivateMessage(int activation_state) {
-  DCHECK(delegate_->CanSaveFocus());
-  if (WA_INACTIVE == activation_state) {
-    // We might get activated/inactivated without being enabled, so we need to
-    // clear restore_focus_when_enabled_.
-    restore_focus_when_enabled_ = false;
-    delegate_->SaveFocusOnDeactivate();
-  } else {
-    // We must restore the focus after the message has been DefProc'ed as it
-    // does set the focus to the last focused HWND.
-    // Note that if the window is not enabled, we cannot restore the focus as
-    // calling ::SetFocus on a child of the non-enabled top-window would fail.
-    // This is the case when showing a modal dialog (such as 'open file',
-    // 'print'...) from a different thread.
-    // In that case we delay the focus restoration to when the window is enabled
-    // again.
-    if (!IsWindowEnabled(hwnd())) {
-      DCHECK(!restore_focus_when_enabled_);
-      restore_focus_when_enabled_ = true;
-      return;
-    }
-    delegate_->RestoreFocusOnActivate();
-  }
-}
-
-void HWNDMessageHandler::RestoreEnabledIfNecessary() {
-  if (delegate_->IsModal() && !restored_enabled_) {
-    restored_enabled_ = true;
-    // If we were run modally, we need to undo the disabled-ness we inflicted on
-    // the owner's parent hierarchy.
-    HWND start = ::GetWindow(hwnd(), GW_OWNER);
-    while (start) {
-      ::EnableWindow(start, TRUE);
-      start = ::GetParent(start);
-    }
-  }
-}
-
-void HWNDMessageHandler::ExecuteSystemMenuCommand(int command) {
-  if (command)
-    SendMessage(hwnd(), WM_SYSCOMMAND, command, 0);
-}
-
-void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
-  // Begin tracking mouse events for this HWND so that we get WM_MOUSELEAVE
-  // when the user moves the mouse outside this HWND's bounds.
-  if (active_mouse_tracking_flags_ == 0 || mouse_tracking_flags & TME_CANCEL) {
-    if (mouse_tracking_flags & TME_CANCEL) {
-      // We're about to cancel active mouse tracking, so empty out the stored
-      // state.
-      active_mouse_tracking_flags_ = 0;
-    } else {
-      active_mouse_tracking_flags_ = mouse_tracking_flags;
-    }
-
-    TRACKMOUSEEVENT tme;
-    tme.cbSize = sizeof(tme);
-    tme.dwFlags = mouse_tracking_flags;
-    tme.hwndTrack = hwnd();
-    tme.dwHoverTime = 0;
-    TrackMouseEvent(&tme);
-  } else if (mouse_tracking_flags != active_mouse_tracking_flags_) {
-    TrackMouseEvents(active_mouse_tracking_flags_ | TME_CANCEL);
-    TrackMouseEvents(mouse_tracking_flags);
-  }
-}
-
-void HWNDMessageHandler::ClientAreaSizeChanged() {
-  RECT r = {0, 0, 0, 0};
-  if (delegate_->WidgetSizeIsClientSize()) {
-    // TODO(beng): investigate whether this could be done
-    // from other branch of if-else.
-    if (!IsMinimized())
-      GetClientRect(hwnd(), &r);
-  } else {
-    GetWindowRect(hwnd(), &r);
-  }
-  gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
-              std::max(0, static_cast<int>(r.bottom - r.top)));
-  delegate_->HandleClientSizeChanged(s);
-  if (use_layered_buffer_) {
-    layered_window_contents_.reset(
-        new gfx::Canvas(s, ui::SCALE_FACTOR_100P, false));
-  }
-}
-
-gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
-  gfx::Insets insets;
-  if (delegate_->GetClientAreaInsets(&insets))
-    return insets;
-  DCHECK(insets.empty());
-
-  // Returning an empty Insets object causes the default handling in
-  // NativeWidgetWin::OnNCCalcSize() to be invoked.
-  if (!delegate_->IsWidgetWindow() ||
-      (!delegate_->IsUsingCustomFrame() && !remove_standard_frame_)) {
-    return insets;
-  }
-
-  if (IsMaximized()) {
-    // Windows automatically adds a standard width border to all sides when a
-    // window is maximized.
-    int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
-    return gfx::Insets(border_thickness, border_thickness, border_thickness,
-                       border_thickness);
-  }
-
-  // The hack below doesn't seem to be necessary when the standard frame is
-  // removed.
-  if (remove_standard_frame_)
-    return insets;
-  // This is weird, but highly essential. If we don't offset the bottom edge
-  // of the client rect, the window client area and window area will match,
-  // and when returning to glass rendering mode from non-glass, the client
-  // area will not paint black as transparent. This is because (and I don't
-  // know why) the client area goes from matching the window rect to being
-  // something else. If the client area is not the window rect in both
-  // modes, the blackness doesn't occur. Because of this, we need to tell
-  // the RootView to lay out to fit the window rect, rather than the client
-  // rect when using the opaque frame.
-  // Note: this is only required for non-fullscreen windows. Note that
-  // fullscreen windows are in restored state, not maximized.
-  return gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
-}
-
-LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
-                                                        WPARAM w_param,
-                                                        LPARAM l_param) {
-  ScopedRedrawLock lock(this);
-  // The Widget and HWND can be destroyed in the call to DefWindowProc, so use
-  // the |destroyed_| flag to avoid unlocking (and crashing) after destruction.
-  bool destroyed = false;
-  destroyed_ = &destroyed;
-  LRESULT result = DefWindowProc(hwnd(), message, w_param, l_param);
-  if (destroyed)
-    lock.CancelUnlockOperation();
-  else
-    destroyed_ = NULL;
-  return result;
-}
-
-void HWNDMessageHandler::NotifyOwnedWindowsParentClosing() {
-  FindOwnedWindowsData data;
-  data.window = hwnd();
-  EnumThreadWindows(GetCurrentThreadId(), FindOwnedWindowsCallback,
-                    reinterpret_cast<LPARAM>(&data));
-  for (size_t i = 0; i < data.owned_widgets.size(); ++i)
-    data.owned_widgets[i]->OnOwnerClosing();
-}
-
-void HWNDMessageHandler::LockUpdates(bool force) {
-  // We skip locked updates when Aero is on for two reasons:
-  // 1. Because it isn't necessary
-  // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
-  //    attempting to present a child window's backbuffer onscreen. When these
-  //    two actions race with one another, the child window will either flicker
-  //    or will simply stop updating entirely.
-  if ((force || !ui::win::IsAeroGlassEnabled()) && ++lock_updates_count_ == 1) {
-    SetWindowLong(hwnd(), GWL_STYLE,
-                  GetWindowLong(hwnd(), GWL_STYLE) & ~WS_VISIBLE);
-  }
-}
-
-void HWNDMessageHandler::UnlockUpdates(bool force) {
-  if ((force || !ui::win::IsAeroGlassEnabled()) && --lock_updates_count_ <= 0) {
-    SetWindowLong(hwnd(), GWL_STYLE,
-                  GetWindowLong(hwnd(), GWL_STYLE) | WS_VISIBLE);
-    lock_updates_count_ = 0;
-  }
-}
-
-void HWNDMessageHandler::RedrawInvalidRect() {
-  if (!use_layered_buffer_) {
-    RECT r = { 0, 0, 0, 0 };
-    if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
-      RedrawWindow(hwnd(), &r, NULL,
-                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
-    }
-  }
-}
-
-void HWNDMessageHandler::RedrawLayeredWindowContents() {
-  if (invalid_rect_.IsEmpty())
-    return;
-
-  // We need to clip to the dirty rect ourselves.
-  layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
-  layered_window_contents_->ClipRect(invalid_rect_);
-  delegate_->PaintLayeredWindow(layered_window_contents_.get());
-  layered_window_contents_->sk_canvas()->restore();
-
-  RECT wr;
-  GetWindowRect(hwnd(), &wr);
-  SIZE size = {wr.right - wr.left, wr.bottom - wr.top};
-  POINT position = {wr.left, wr.top};
-  HDC dib_dc = skia::BeginPlatformPaint(layered_window_contents_->sk_canvas());
-  POINT zero = {0, 0};
-  BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
-  UpdateLayeredWindow(hwnd(), NULL, &position, &size, dib_dc, &zero,
-                      RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-  invalid_rect_.SetRect(0, 0, 0, 0);
-  skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
 }
 
 }  // namespace views
