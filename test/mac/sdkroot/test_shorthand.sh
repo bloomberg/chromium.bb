@@ -4,3 +4,5 @@
 # found in the LICENSE file.
 
 set -e
+
+test $SDKROOT = /Developer/SDKs/MacOSX10.6.sdk
