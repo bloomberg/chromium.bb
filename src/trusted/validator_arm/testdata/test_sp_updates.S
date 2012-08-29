@@ -64,7 +64,7 @@ bundle7:
   bic sp, sp, #0xC0000000 @ with a mask: ERROR - affects flags
 
 bundle8:
-  ldrd r0, [sp], r1       @ Post-index SP with a register on LDRD,
+  ldrd r0, r1, [sp], r3   @ Post-index SP with a register on LDRD,
   nop                     @ without a mask: ERROR.
-  ldrd r0, [sp], r1       @ Same case,
+  ldrd r0, r1, [sp], r3   @ Same case,
   bic sp, sp, #0xC0000000 @ with a mask - should pass.

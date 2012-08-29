@@ -82,6 +82,12 @@ int32_t BranchImmediate24::branch_target_offset(Instruction i) const {
 }
 
 // BreakPointAndConstantPoolHead
+SafetyLevel BreakPointAndConstantPoolHead::safety(const Instruction i) const {
+  return i.GetCondition() == Instruction::AL
+      ? MAY_BE_SAFE
+      : UNPREDICTABLE;
+}
+
 bool BreakPointAndConstantPoolHead::
 is_literal_pool_head(const Instruction i) const {
   return i.GetCondition() == Instruction::AL &&
@@ -90,6 +96,13 @@ is_literal_pool_head(const Instruction i) const {
 
 // BranchToRegister
 SafetyLevel BranchToRegister::safety(const Instruction i) const {
+  // Extra NaCl constraint: can't branch to PC. This would branch to 8 bytes
+  // after the current instruction. This instruction should be in an instruction
+  // pair, the mask should therefore be to PC and fail checking, but there's
+  // little harm in checking.
+  if (m.reg(i).Equals(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  // Redundant with the above, but this is actually UNPREDICTABLE. Expect DCE.
   if (link_register.IsUpdated(i) && m.reg(i).Equals(kRegisterPc)) {
     return UNPREDICTABLE;
   }
@@ -357,6 +370,7 @@ SafetyLevel LoadStore2RegisterImm8Op::safety(const Instruction i) const {
        // may not check for this. For the moment, we are changing
        // the code to ignore this case for stores.
        // TODO(karl): Should we not allow this?
+       // TODO(jfb) Fix this.
        (is_load_ && n.reg(i).Equals(t.reg(i))))) {
     return UNPREDICTABLE;
   }
@@ -450,6 +464,9 @@ SafetyLevel LoadStore2RegisterImm12Op::safety(const Instruction i) const {
        // may not check for this. For the moment, we are changing
        // the code to ignore this case for stores.
        // TODO(karl): Should we not allow this?
+       // TODO(jfb) Fix this. Once this is fixed,
+       //           Store2RegisterImm12OpRnNotRtOnWriteback becomes redundant
+       //           with this class and can be removed.
        (is_load_ && n.reg(i).Equals(t.reg(i))))) {
     return UNPREDICTABLE;
   }
@@ -494,6 +511,7 @@ RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
 // Store2RegisterImm12OpRnNotRtOnWriteback
 SafetyLevel Store2RegisterImm12OpRnNotRtOnWriteback::
 safety(Instruction i) const {
+  // TODO(jfb) Redundant with LoadStore2RegisterImm12Op, once it is fixed.
   if (HasWriteBack(i) && (n.reg(i).Equals(t.reg(i))))
     return UNPREDICTABLE;
   return Store2RegisterImm12Op::safety(i);
@@ -665,9 +683,12 @@ SafetyLevel LoadStore3RegisterOp::safety(const Instruction i) const {
        // may not check for this. For the moment, we are changing
        // the code to ignore this case for stores.
        // TODO(karl): Should we not allow this?
+       // TODO(jfb) Fix this.
        (is_load_ && n.reg(i).Equals(t.reg(i))))) {
     return UNPREDICTABLE;
   }
+
+  // TODO(jfb) if ArchVersion() < 6 && wback && m == n then UNPREDICTABLE;
 
   // Don't let addressing writeback alter PC (NaCl constraint).
   if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
@@ -714,7 +735,12 @@ SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
   // may not check for this. For the moment, we are changing
   // the code to ignore this case for stores.
   // TODO(karl): Should we not allow this?
+  // TODO(jfb) Fix this.
   if (is_load_ && HasWriteBack(i) && n.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  if (is_load_ && (m.reg(i).Equals(t.reg(i)) || m.reg(i).Equals(t2.reg(i)))) {
     return UNPREDICTABLE;
   }
 
@@ -808,6 +834,7 @@ SafetyLevel LoadStore3RegisterImm5Op::safety(const Instruction i) const {
        // may not check for this. For the moment, we are changing
        // the code to ignore this case for stores.
        // TODO(karl): Should we not allow this?
+       // TODO(jfb) Fix this.
        (is_load_ && n.reg(i).Equals(t.reg(i))))) {
     return UNPREDICTABLE;
   }
@@ -820,6 +847,8 @@ SafetyLevel LoadStore3RegisterImm5Op::safety(const Instruction i) const {
 
   // Don't let addressing writeback alter PC (NaCl constraint).
   if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  // TODO(jfb) if ArchVersion() < 6 && wback && m == n then UNPREDICTABLE;
 
   return MAY_BE_SAFE;
 }

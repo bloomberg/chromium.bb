@@ -452,9 +452,11 @@ class LoadBasedMemoryWithWriteBack : public LoadBasedMemory {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
 
-  LoadBasedMemoryWithWriteBack() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+
+ protected:
+  LoadBasedMemoryWithWriteBack() {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadBasedMemoryWithWriteBack);
@@ -550,9 +552,11 @@ class StoreBasedMemoryWithWriteBack : public BasedAddressUsingRn {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
 
-  StoreBasedMemoryWithWriteBack() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+
+ protected:
+  StoreBasedMemoryWithWriteBack() {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedMemoryWithWriteBack);
@@ -703,6 +707,7 @@ class Roadblock : public OldClassDecoder {
 class Breakpoint : public Roadblock {
  public:
   Breakpoint() {}
+  virtual SafetyLevel safety(Instruction i) const;
   virtual bool is_literal_pool_head(Instruction i) const;
 
  private:

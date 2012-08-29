@@ -1051,7 +1051,10 @@ ApplySanityChecks(Instruction inst,
 
 // LoadStore2RegisterImm8OpTester
 LoadStore2RegisterImm8OpTester::LoadStore2RegisterImm8OpTester(
-    const NamedClassDecoder& decoder) : CondDecoderTester(decoder) {}
+    const NamedClassDecoder& decoder)
+    : CondDecoderTester(decoder),
+      // TODO(jfb) Assuming this is a load seems wrong.
+      expected_decoder_(true) {}
 
 bool LoadStore2RegisterImm8OpTester::
 PassesParsePreconditions(Instruction inst,
@@ -1131,7 +1134,9 @@ ApplySanityChecks(Instruction inst,
 // LoadStore2RegisterImm8DoubleOpTester
 LoadStore2RegisterImm8DoubleOpTester::
 LoadStore2RegisterImm8DoubleOpTester(const NamedClassDecoder& decoder)
-    : LoadStore2RegisterImm8OpTester(decoder) {}
+    : LoadStore2RegisterImm8OpTester(decoder),
+      // TODO(jfb) Assuming this is a load seems wrong.
+      expected_decoder_(true) {}
 
 bool LoadStore2RegisterImm8DoubleOpTester::
 ApplySanityChecks(Instruction inst,
@@ -1190,7 +1195,10 @@ ApplySanityChecks(Instruction inst,
 
 // LoadStore2RegisterImm12OpTester
 LoadStore2RegisterImm12OpTester::LoadStore2RegisterImm12OpTester(
-    const NamedClassDecoder& decoder) : CondDecoderTester(decoder) {}
+    const NamedClassDecoder& decoder)
+  : CondDecoderTester(decoder),
+    // TODO(jfb) Assuming this is a load seems wrong.
+    expected_decoder_(true) {}
 
 bool LoadStore2RegisterImm12OpTester::
 PassesParsePreconditions(Instruction inst,
@@ -1413,7 +1421,10 @@ ApplySanityChecks(Instruction inst,
 
 // LoadStore3RegisterOpTester
 LoadStore3RegisterOpTester::LoadStore3RegisterOpTester(
-    const NamedClassDecoder& decoder) : CondDecoderTester(decoder) {}
+    const NamedClassDecoder& decoder)
+    : CondDecoderTester(decoder),
+      // TODO(jfb) Assuming this is a load seems wrong.
+      expected_decoder_(true) {}
 
 bool LoadStore3RegisterOpTester::
 PassesParsePreconditions(Instruction inst,
@@ -1474,8 +1485,9 @@ ApplySanityChecks(Instruction inst,
 // LoadStore3RegisterDoubleOpTester
 LoadStore3RegisterDoubleOpTester::
 LoadStore3RegisterDoubleOpTester(const NamedClassDecoder& decoder)
-    : LoadStore3RegisterOpTester(decoder) {
-}
+    : LoadStore3RegisterOpTester(decoder),
+      // TODO(jfb) Assuming this is a load seems wrong.
+      expected_decoder_(true) {}
 
 bool LoadStore3RegisterDoubleOpTester::
 ApplySanityChecks(Instruction inst,
@@ -1564,7 +1576,10 @@ ApplySanityChecks(Instruction inst,
 
 // LoadStore3RegisterImm5OpTester
 LoadStore3RegisterImm5OpTester::LoadStore3RegisterImm5OpTester(
-    const NamedClassDecoder& decoder) : CondDecoderTester(decoder) {}
+    const NamedClassDecoder& decoder)
+    : CondDecoderTester(decoder),
+      // TODO(jfb) Assuming this is a load seems wrong.
+      expected_decoder_(true) {}
 
 bool LoadStore3RegisterImm5OpTester::
 ApplySanityChecks(Instruction inst,

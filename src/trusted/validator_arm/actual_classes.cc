@@ -341,6 +341,10 @@ SafetyLevel LoadBasedOffsetMemoryDouble::safety(const Instruction i) const {
     return UNPREDICTABLE;
   }
 
+  if (m.reg(i).Equals(t.reg(i)) || m.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
   // Now apply non-double width restrictions for this instruction.
   return LoadBasedOffsetMemory::safety(i);
 }
@@ -394,6 +398,7 @@ SafetyLevel StoreBasedMemoryWithWriteBack::safety(const Instruction i) const {
     // may not check for this. For the moment, we are changing
     // the code to ignore this case for stores.
     // TODO(karl): Should we not allow this?
+    // TODO(jfb) Fix this.
     return UNPREDICTABLE;
   }
 
@@ -428,8 +433,11 @@ SafetyLevel StoreBasedOffsetMemory::safety(const Instruction i) const {
     // may not check for this. For the moment, we are changing
     // the code to ignore this case for stores.
     // TODO(karl): Should we not allow this?
+    // TODO(jfb) Fix this.
     return UNPREDICTABLE;
   }
+
+  // TODO(jfb) if ArchVersion() < 6 && wback && m == n then UNPREDICTABLE;
 
   return StoreBasedMemoryWithWriteBack::safety(i);
 }
@@ -513,6 +521,12 @@ RegisterList Roadblock::defs(Instruction i) const {
 }
 
 // Breakpoint
+SafetyLevel Breakpoint::safety(Instruction i) const {
+  return i.GetCondition() == Instruction::AL
+      ? MAY_BE_SAFE
+      : UNPREDICTABLE;
+}
+
 bool Breakpoint::is_literal_pool_head(const Instruction i) const {
   return i.GetCondition() == Instruction::AL
       && i.Bits(19, 8) == 0x777
@@ -707,6 +721,13 @@ RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
 // Control flow
 
 SafetyLevel BxBlx::safety(Instruction i) const {
+  // Extra NaCl constraint: can't branch to PC. This would branch to 8 bytes
+  // after the current instruction. This instruction should be in an instruction
+  // pair, the mask should therefore be to PC and fail checking, but there's
+  // little harm in checking.
+  if (m.reg(i).Equals(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  // Redundant with the above, but this is actually UNPREDICTABLE. Expect DCE.
   if (link_register.IsUpdated(i) && m.reg(i).Equals(kRegisterPc)) {
     return UNPREDICTABLE;
   }

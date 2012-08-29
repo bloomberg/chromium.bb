@@ -9,6 +9,17 @@
 
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
 
+// TODO(jfb) Remove these forward declatations? They're only needed for
+//           friend classes which shouldn't be needed themselves.
+namespace nacl_arm_test {
+class LoadStore2RegisterImm8OpTester;
+class LoadStore2RegisterImm8DoubleOpTester;
+class LoadStore2RegisterImm12OpTester;
+class LoadStore3RegisterOpTester;
+class LoadStore3RegisterDoubleOpTester;
+class LoadStore3RegisterImm5OpTester;
+}  // namespace nacl_arm_test
+
 /*
  * Models the baseline "instruction classes" that capture what the
  * decoder produces.
@@ -155,7 +166,7 @@ class CondVfpOp : public CoprocessorOp {
 // Definitions:
 //    mask = Defines which parts of the APSR is set. When mask<1>=1,
 //           the N, Z, C, V, and Q bits (31:27) are updated. When
-//           mask<0>=1, the GE bits (3:0 and 19:16) are updated.
+//           mask<0>=1, the GE bits (19:16) are updated.
 // Note: If mask=3, then N, Z, C, V, Q, and GE bits are updated.
 // Note: mask=0 should not parse.
 class MoveImmediate12ToApsr : public ClassDecoder {
@@ -237,6 +248,7 @@ class BranchImmediate24 : public ClassDecoder {
 class BreakPointAndConstantPoolHead : public Immediate16Use {
  public:
   BreakPointAndConstantPoolHead() {}
+  virtual SafetyLevel safety(Instruction i) const;
   virtual bool is_literal_pool_head(Instruction i) const;
 
  private:
@@ -619,7 +631,6 @@ class LoadStore2RegisterImm8Op : public ClassDecoder {
   static const PrePostIndexingBit24Interface indexing;
   static const ConditionBits28To31Interface cond;
 
-  LoadStore2RegisterImm8Op() : ClassDecoder(), is_load_(false) {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(const Instruction i) const;
@@ -629,17 +640,21 @@ class LoadStore2RegisterImm8Op : public ClassDecoder {
   }
 
  protected:
+  // TODO(jfb) Remove friend? It looks like its usage of the protected
+  //           ctor shouldn't be.
+  friend class nacl_arm_test::LoadStore2RegisterImm8OpTester;
+  explicit LoadStore2RegisterImm8Op(bool is_load)
+      : ClassDecoder(), is_load_(is_load) {}
   bool is_load_;  // true if load (rather than store).
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8Op);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(LoadStore2RegisterImm8Op);
 };
 
 // Defines the virtuals for a load immediate instruction.
 class Load2RegisterImm8Op : public LoadStore2RegisterImm8Op {
  public:
-  Load2RegisterImm8Op() : LoadStore2RegisterImm8Op() {
-    is_load_ = true;
+  Load2RegisterImm8Op() : LoadStore2RegisterImm8Op(true) {
   }
   virtual RegisterList defs(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
@@ -651,8 +666,7 @@ class Load2RegisterImm8Op : public LoadStore2RegisterImm8Op {
 // Defines the virtuals for a store immediate instruction.
 class Store2RegisterImm8Op : public LoadStore2RegisterImm8Op {
  public:
-  Store2RegisterImm8Op() : LoadStore2RegisterImm8Op() {
-    is_load_ = false;
+  Store2RegisterImm8Op() : LoadStore2RegisterImm8Op(false) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -668,20 +682,24 @@ class LoadStore2RegisterImm8DoubleOp
   // Interface for components in the instruction (and not inherited).
   static const RegBits12To15Plus1Interface t2;
 
-  LoadStore2RegisterImm8DoubleOp()
-      : LoadStore2RegisterImm8Op() {}
   virtual SafetyLevel safety(Instruction i) const;
 
+ protected:
+  // TODO(jfb) Remove friend? It looks like its usage of the protected
+  //           ctor shouldn't be.
+  friend class nacl_arm_test::LoadStore2RegisterImm8DoubleOpTester;
+  explicit LoadStore2RegisterImm8DoubleOp(bool is_load)
+      : LoadStore2RegisterImm8Op(is_load) {}
+
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm8DoubleOp);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(LoadStore2RegisterImm8DoubleOp);
 };
 
 // Defines the virtuals for a load immediate double instruction.
 class Load2RegisterImm8DoubleOp
     : public LoadStore2RegisterImm8DoubleOp {
  public:
-  Load2RegisterImm8DoubleOp() : LoadStore2RegisterImm8DoubleOp() {
-    is_load_ = true;
+  Load2RegisterImm8DoubleOp() : LoadStore2RegisterImm8DoubleOp(true) {
   }
   virtual RegisterList defs(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
@@ -695,8 +713,7 @@ class Store2RegisterImm8DoubleOp
     : public LoadStore2RegisterImm8DoubleOp {
  public:
   Store2RegisterImm8DoubleOp()
-      : LoadStore2RegisterImm8DoubleOp() {
-    is_load_ = false;
+      : LoadStore2RegisterImm8DoubleOp(false) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -751,7 +768,7 @@ class LoadStore2RegisterImm12Op : public ClassDecoder {
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
   static const ConditionBits28To31Interface cond;
-  LoadStore2RegisterImm12Op() : ClassDecoder() , is_load_(false) {}
+
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(const Instruction i) const;
@@ -760,17 +777,21 @@ class LoadStore2RegisterImm12Op : public ClassDecoder {
   }
 
  protected:
+  // TODO(jfb) Remove friend? It looks like its usage of the protected
+  //           ctor shouldn't be.
+  friend class nacl_arm_test::LoadStore2RegisterImm12OpTester;
+  explicit LoadStore2RegisterImm12Op(bool is_load)
+      : ClassDecoder() , is_load_(is_load) {}
   bool is_load_;  // true if load (rather than store).
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore2RegisterImm12Op);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(LoadStore2RegisterImm12Op);
 };
 
 // Defines the virtuals for a load immediate instruction.
 class Load2RegisterImm12Op : public LoadStore2RegisterImm12Op {
  public:
-  Load2RegisterImm12Op() : LoadStore2RegisterImm12Op() {
-    is_load_ = true;
+  Load2RegisterImm12Op() : LoadStore2RegisterImm12Op(true) {
   }
   virtual RegisterList defs(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
@@ -784,8 +805,7 @@ class Load2RegisterImm12Op : public LoadStore2RegisterImm12Op {
 // on how PUSH (i.e. when Rn=Sp && U=0 && W=1 && Imm12=4) is handled.
 class Store2RegisterImm12Op : public LoadStore2RegisterImm12Op {
  public:
-  Store2RegisterImm12Op() : LoadStore2RegisterImm12Op() {
-    is_load_ = false;
+  Store2RegisterImm12Op() : LoadStore2RegisterImm12Op(false) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -1165,7 +1185,6 @@ class LoadStore3RegisterOp : public ClassDecoder {
   static const PrePostIndexingBit24Interface indexing;
   static const ConditionBits28To31Interface cond;
 
-  LoadStore3RegisterOp() : ClassDecoder(), is_load_(false) {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual Register base_address_register(const Instruction i) const;
   bool HasWriteBack(const Instruction i) const {
@@ -1173,17 +1192,21 @@ class LoadStore3RegisterOp : public ClassDecoder {
   }
 
  protected:
+  // TODO(jfb) Remove friend? It looks like its usage of the protected
+  //           ctor shouldn't be.
+  friend class nacl_arm_test::LoadStore3RegisterOpTester;
+  explicit LoadStore3RegisterOp(bool is_load)
+      : ClassDecoder(), is_load_(is_load) {}
   bool is_load_;  // true if load (rather than store).
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterOp);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(LoadStore3RegisterOp);
 };
 
 // Defines the virtuals for a load register instruction.
 class Load3RegisterOp : public LoadStore3RegisterOp {
  public:
-  Load3RegisterOp() : LoadStore3RegisterOp() {
-    is_load_ = true;
+  Load3RegisterOp() : LoadStore3RegisterOp(true) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -1194,8 +1217,7 @@ class Load3RegisterOp : public LoadStore3RegisterOp {
 // Defines the virtuals for a store register instruction.
 class Store3RegisterOp : public LoadStore3RegisterOp {
  public:
-  Store3RegisterOp() : LoadStore3RegisterOp() {
-    is_load_ = false;
+  Store3RegisterOp() : LoadStore3RegisterOp(false) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -1210,18 +1232,23 @@ class LoadStore3RegisterDoubleOp : public LoadStore3RegisterOp {
   // Interface for components in the instruction (and not inherited).
   static const RegBits12To15Plus1Interface t2;
 
-  LoadStore3RegisterDoubleOp() : LoadStore3RegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
 
+ protected:
+  // TODO(jfb) Remove friend? It looks like its usage of the protected
+  //           ctor shouldn't be.
+  friend class nacl_arm_test::LoadStore3RegisterDoubleOpTester;
+  explicit LoadStore3RegisterDoubleOp(bool is_load)
+      : LoadStore3RegisterOp(is_load) {}
+
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterDoubleOp);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(LoadStore3RegisterDoubleOp);
 };
 
 // Defines the virtuals for a load double register instruction
 class Load3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
  public:
-  Load3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {
-    is_load_ = true;
+  Load3RegisterDoubleOp() : LoadStore3RegisterDoubleOp(true) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -1232,8 +1259,7 @@ class Load3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
 // Defines the virtuals for s store double register instruction.
 class Store3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
  public:
-  Store3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {
-    is_load_ = false;
+  Store3RegisterDoubleOp() : LoadStore3RegisterDoubleOp(false) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -1309,7 +1335,7 @@ class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
 // if ArchVersion() < 6 && wback && Rm=Rn then unpredictable.
 // NaCl Disallows writing to PC.
 //
-// Note: We NaCl disallow Rt=PC for stores (not just loads), even
+// Note: NaCl disallows Rt=PC for stores (not just loads), even
 // though it isn't a requirement of the corresponding baseline
 // classes. This is done so that StrRegister (in the actual class
 // decoders) behave the same as this. This simplifies what we need to
@@ -1327,7 +1353,6 @@ class LoadStore3RegisterImm5Op : public ClassDecoder {
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm;
 
-  LoadStore3RegisterImm5Op() : ClassDecoder(), is_load_(false) {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual Register base_address_register(const Instruction i) const;
 
@@ -1341,17 +1366,21 @@ class LoadStore3RegisterImm5Op : public ClassDecoder {
   }
 
  protected:
+  // TODO(jfb) Remove friend? It looks like its usage of the protected
+  //           ctor shouldn't be.
+  friend class nacl_arm_test::LoadStore3RegisterImm5OpTester;
+  explicit LoadStore3RegisterImm5Op(bool is_load)
+      : ClassDecoder(), is_load_(is_load) {}
   bool is_load_;  // true if load (rather than store).
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterImm5Op);
+  NACL_DISALLOW_DEFAULT_COPY_AND_ASSIGN(LoadStore3RegisterImm5Op);
 };
 
 // Defines the virtuals for a load register instruction.
 class Load3RegisterImm5Op : public LoadStore3RegisterImm5Op {
  public:
-  Load3RegisterImm5Op() : LoadStore3RegisterImm5Op() {
-    is_load_ = true;
+  Load3RegisterImm5Op() : LoadStore3RegisterImm5Op(true) {
   }
   virtual RegisterList defs(Instruction i) const;
 
@@ -1362,8 +1391,7 @@ class Load3RegisterImm5Op : public LoadStore3RegisterImm5Op {
 // Defines the virtuals for a store register instruction.
 class Store3RegisterImm5Op : public LoadStore3RegisterImm5Op {
  public:
-  Store3RegisterImm5Op() : LoadStore3RegisterImm5Op() {
-    is_load_ = false;
+  Store3RegisterImm5Op() : LoadStore3RegisterImm5Op(false) {
   }
   virtual RegisterList defs(Instruction i) const;
 

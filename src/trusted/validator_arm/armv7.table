@@ -112,9 +112,10 @@
 
 class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
+class Deprecated : UnsafeCondNop
 class ForbiddenCondNop : UnsafeCondNop
 class ForbiddenUncondNop : UnsafeUncondNop
-class LoadRegisterList : LoadStoreRegisterList      
+class LoadRegisterList : LoadStoreRegisterList
 class LoadStoreVectorRegister : LoadStoreVectorOp
 class LoadVectorRegister : LoadStoreVectorRegister
 class LoadVectorRegisterList : LoadStoreVectorRegisterList
@@ -161,8 +162,13 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "      1xxxx      1001     ->synchronization_primitives
 | "      ~0xx1x     1011     ->extra_load_store_instructions
 | "      "          11x1     "
-| "      0xx1x      1011     =Forbidden  # Load/Store Unprivileged, plus undef
-| "      "          11x1     "
+| "      0xx1x      1011     =ForbiddenCondNop => Forbidden
+                              extra_load_store_instructions_unpriviledged
+                              cccc0000xx1xxxxxxxxxxxxx1011xxxx
+| "      "          11x1     =ForbiddenCondNop => Forbidden
+                              # TODO(jfb) Same as above, but different pattern.
+                              extra_load_store_instructions_unpriviledged
+                              cccc0000xx1xxxxxxxxxxxxx11x1xxxx
 | 1      ~10xx0     -        ->data_processing_immediate
 | "      10000      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVW A8-194
                                Mov_Rule_96_A2_P194
@@ -229,7 +235,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 10001      -         -        = Binary2RegisterImmedShiftedTest
                                      => DontCareInst
                                      Tst_Rule_231_A1_P456
-                                     cccc00010001nnnn0000iiiiitt0mmmm 
+                                     cccc00010001nnnn0000iiiiitt0mmmm
 | 10011      -         -        = Binary2RegisterImmedShiftedTest
                                      => DontCareInst
                                      Teq_Rule_228_A1_P450
@@ -311,12 +317,12 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            cccc0000011snnnnddddssss0tt1mmmm RegsNotPc
 | 0100x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
-                           Add_Rule_7_A1_P26 
+                           Add_Rule_7_A1_P26
                            cccc0000100snnnnddddssss0tt1mmmm RegsNotPc
 | 0101x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Adc_Rule_3_A1_P18
-                           cccc0000101snnnnddddssss0tt1mmmm RegsNotPc      
+                           cccc0000101snnnnddddssss0tt1mmmm RegsNotPc
 | 0110x      -        = Binary4RegisterShiftedOp
                            => Defs12To15RdRnRsRmNotPc
                            Sbc_Rule_153_A1_P306
@@ -404,7 +410,9 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Adr_Rule_10_A2_P32
                            cccc001001001111ddddiiiiiiiiiiii
-| 00101      1111     = Forbidden # SUBS PC, LR and related instructions
+| 00101      1111     = ForbiddenCondNop => Forbidden
+                           Subs_Pc_Lr_and_related_instructions_Rule_A1a
+                           cccc00100101nnnn1111iiiiiiiiiiii
 | 0011x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Rsb_Rule_142_A1_P284
@@ -412,7 +420,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0100x      ~1111    = Binary2RegisterImmediateOp
                            => Defs12To15
                            Add_Rule_5_A1_P22
-                           cccc0010100snnnnddddiiiiiiiiiiii 
+                           cccc0010100snnnnddddiiiiiiiiiiii
                            NeitherRdIsPcAndSNorRnIsPcAndNotS
                         # Note: Table says that op=0100x for ADR, but
                         # patterns for ADR do not match (page A8-32).
@@ -426,7 +434,9 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Adr_Rule_10_A1_P32
                            cccc001010001111ddddiiiiiiiiiiii
-| 01001      1111     = Forbidden # SUBS PC, LR and related instructions
+| 01001      1111     = ForbiddenCondNop => Forbidden
+                           Subs_Pc_Lr_and_related_instructions_Rule_A1b
+                           cccc00101001nnnn1111iiiiiiiiiiii
 | 0101x      -        = Binary2RegisterImmediateOp
                            => Defs12To15
                            Adc_Rule_6_A1_P14
@@ -508,7 +518,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 100x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umull_Rule_246_A1_P486
-                 cccc0000100shhhhllllmmmm1001nnnn RegsNotPc                 
+                 cccc0000100shhhhllllmmmm1001nnnn RegsNotPc
 | 101x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umlal_Rule_245_A1_P484
@@ -516,7 +526,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 110x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Smull_Rule_179_A1_P356
-                 cccc0000110shhhhllllmmmm1001nnnn RegsNotPc   
+                 cccc0000110shhhhllllmmmm1001nnnn RegsNotPc
 | 111x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Smlal_Rule_168_A1_P334
@@ -562,7 +572,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 01         1     = Binary3RegisterOpAltA
                         => Defs16To19CondsDontCareRdRmRnNotPc
                         Smulwx_Rule_180_A1_P358
-                        cccc00010010dddd0000mmmm1x10nnnn RegsNotPc (v5TE) 
+                        cccc00010010dddd0000mmmm1x10nnnn RegsNotPc (v5TE)
                      # Implements Smlalbb, Smlalbt, Smlaltb, and Smlaltt
                      # where the t/b bits (xx) are in bits 5:6.
 | 10         -     = Binary4RegisterDualResult
@@ -581,7 +591,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | op2(6:5) op1(24:20) Rn(19:16)
 # Note the following encodings which lead to a different table and aren't
 # handled in this table.
-# TODO(jfb) Should we make them Forbidden?
+# TODO(jfb) Should we mark them as unreachable?
 # 00       -          -         ->data_processing_and_miscellaneous_instructions
 # -        0xx11      -         "
 # 0x       0xx10      -         "
@@ -596,7 +606,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                   => StoreBasedImmedMemory
                                   Strh_Rule_207_A1_P410
                                   cccc000pu1w0nnnnttttiiii1011iiii
-| "        xx1x1      ~1111     = Load2RegisterImm8Op 
+| "        xx1x1      ~1111     = Load2RegisterImm8Op
                                   => LoadBasedImmedMemory
                                   Ldrh_Rule_74_A1_P152
                                   cccc000pu1w1nnnnttttiiii1011iiii
@@ -616,7 +626,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                   Ldrd_Rule_66_A1_P136
                                   cccc000pu1w0nnnnttttiiii1101iiii (v5TE)
 | "        "          1111      = Load2RegisterImm8DoubleOp
-                                  => LoadBasedImmedMemoryDouble 
+                                  => LoadBasedImmedMemoryDouble
                                   Ldrd_Rule_67_A1_P138
                                   cccc0001u1001111ttttiiii1101iiii (v5TE)
 | "        xx1x1      ~1111     = Load2RegisterImm8Op
@@ -654,7 +664,11 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- synchronization_primitives (See Section A5.2.10)
 | op(23:20)
-| 0x00      = Deprecated      # SWP, SWPB  TODO(karl): model these? a8-432
+            # SWP/SWPB are OPTIONAL+deprecated in v7 with the Virtualization
+            # Extension, and OBSOLETE+UNDEFINED in v8 aarch32.
+| 0x00      = Deprecated
+              Swp_Swpb_Rule_A1
+              cccc00010b00nnnntttt00001001tttt
 | 1000      = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3
               Strex_Rule_202_A1_P400
               cccc00011000nnnndddd11111001tttt (v6)
@@ -673,14 +687,14 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
               cccc00011100nnnndddd11111001tttt (v6K)
 | 1101      = LoadExclusive2RegisterOp => LoadBasedMemory
               Ldrexb_Rule_70_A1_P144
-              cccc00011101nnnndddd111110011111 (v6K)
+              cccc00011101nnnntttt111110011111 (v6K)
 | 1110      = StoreExclusive3RegisterOp  => StoreBasedMemoryRtBits0To3
               Strexh_Rule_205_A1_P406
               cccc00011110nnnndddd11111001tttt (v6K)
 | 1111      = LoadExclusive2RegisterOp => LoadBasedMemory
               Ldrexh_Rule_72_A1_P148
               cccc00011111nnnntttt111110011111 (v6K)
-| else:     = Undefined (v6K)            # Note on page A5-16
+| else:     = Undefined # Note on page A5-16
 +--
 
 +-- msr_immediate_and_hints (See Section A5.2.11)
@@ -715,7 +729,13 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                  # conditions flag is always changed, which
                                  # is a safe presumption.
                                  Msr_Rule_103_A1_P208
-| "      1x00       "          "
+                                 cccc0011001001001111iiiiiiiiiiii
+| "      1x00       "          = MoveImmediate12ToApsr => DontCareInst
+                                 # TODO(jfb) This and the above are the same
+                                 #           except for the pattern: 0b00 mask
+                                 #           isn't allowed.
+                                 Msr_Rule_103_A1_P208
+                                 cccc001100101x001111iiiiiiiiiiii
 | "      xx01       -          = ForbiddenCondNop => Forbidden
                                  Msr_Rule_B6_1_6_A1_PB6_12
                                  cccc00110010ii011111iiiiiiiiiiii
@@ -732,45 +752,57 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +--
 
 +-- miscellaneous_instructions (See Section A5.2.12)
-| op2(6:4) op(22:21) op1(19:16)
-| 000      x0        xxxx       = Unary1RegisterSet
-                                  Mrs_Rule_102_A1_P206_Or_B6_10
-                                  cccc00010r001111dddd000000000000
-| "        01        xx00       = Unary1RegisterUse
-                                  Msr_Rule_104_A1_P210
-                                  cccc00010010mm00111100000000nnnn
-| "        01        xx01       = ForbiddenCondNop => Forbidden
-                                  Msr_Rule_B6_1_7_P14
-                                  cccc00010010mm01111100000000nnnn
-| "        "         xx1x       = ForbiddenCondNop => Forbidden
-                                  Msr_Rule_B6_1_7_P14
-                                  cccc00010010mm1m111100000000nnnn
-| "        11        -          = ForbiddenCondNop => Forbidden
-                                  Msr_Rule_B6_1_7_P14
-                                  cccc00010110mmmm111100000000nnnn
-| 001      01        -          = BranchToRegister => BxBlx
-                                  Bx_Rule_25_A1_P62
-                                  cccc000100101111111111110001mmmm (v4T)
-| "        11        -          = Unary2RegisterOpNotRmIsPc
-                                  => Defs12To15RdRnNotPc
-                                  Clz_Rule_31_A1_P72
-                                  cccc000101101111dddd11110001mmmm (v6)
-| 010      01        -          = ForbiddenCondNop => Forbidden
-                                  Bxj_Rule_26_A1_P64
-                                  cccc000100101111111111110010mmmm
-| 011      01        -          = BranchToRegister => BxBlx
-                                  Blx_Rule_24_A1_P60
-                                  cccc000100101111111111110011mmmm
-                                  RegsNotPc (v5T)
-| 101      -         -          ->saturating_addition_and_subtraction
-| 111      01        -          = BreakPointAndConstantPoolHead
-                                  => Breakpoint
-                                  Bkpt_Rule_22_A1_P56
-                                  cccc00010010iiiiiiiiiiii0111iiii (v5T)
-| 111      11        -          = ForbiddenCondNop => Forbidden
-                                  Smc_Rule_B6_1_9_P18
-                                  cccc000101100000000000000111mmmm
-| else:                         = Undefined     # Note on page A5-18
+| op2(6:4) B(9) op(22:21) op1(19:16)
+| 000      1    x0        xxxx       = ForbiddenCondNop => Forbidden
+                                       Msr_Rule_Banked_register_A1_B9_1990
+                                       cccc00010r00mmmmdddd001m00000000 (v7VE)
+| "        "    x1        "          = ForbiddenCondNop => Forbidden
+                                       Msr_Rule_Banked_register_A1_B9_1992
+                                       cccc00010r10mmmm1111001m0000nnnn (v7VE)
+| "        0    x0        xxxx       = Unary1RegisterSet
+                                       Mrs_Rule_102_A1_P206_Or_B6_10
+                                       cccc00010r001111dddd000000000000
+| "        "    01        xx00       = Unary1RegisterUse
+                                       Msr_Rule_104_A1_P210
+                                       cccc00010010mm00111100000000nnnn
+| "        "    01        xx01       = ForbiddenCondNop => Forbidden
+                                       Msr_Rule_B6_1_7_P14
+                                       cccc00010010mm01111100000000nnnn
+| "        "    "         xx1x       = ForbiddenCondNop => Forbidden
+                                       Msr_Rule_B6_1_7_P14
+                                       cccc00010010mm1m111100000000nnnn
+| "        "    11        -          = ForbiddenCondNop => Forbidden
+                                       Msr_Rule_B6_1_7_P14
+                                       cccc00010110mmmm111100000000nnnn
+| 001      -    01        -          = BranchToRegister => BxBlx
+                                       Bx_Rule_25_A1_P62
+                                       cccc000100101111111111110001mmmm (v4T)
+| "        -    11        -          = Unary2RegisterOpNotRmIsPc
+                                       => Defs12To15RdRnNotPc
+                                       Clz_Rule_31_A1_P72
+                                       cccc000101101111dddd11110001mmmm (v5T)
+| 010      -    01        -          = ForbiddenCondNop => Forbidden
+                                       Bxj_Rule_26_A1_P64
+                                       cccc000100101111111111110010mmmm (v5TEJ)
+| 011      -    01        -          = BranchToRegister => BxBlx
+                                       Blx_Rule_24_A1_P60
+                                       cccc000100101111111111110011mmmm
+                                       RegsNotPc (v5T)
+| 101      -    -         -          ->saturating_addition_and_subtraction
+| 110      -    11        -          = ForbiddenCondNop => Forbidden
+                                       Eret_Rule_A1
+                                       cccc0001011000000000000001101110 (v7VE)
+| 111      -    01        -          = BreakPointAndConstantPoolHead
+                                       => Breakpoint
+                                       Bkpt_Rule_22_A1_P56
+                                       cccc00010010iiiiiiiiiiii0111iiii (v5T)
+| "        -    10        -          = ForbiddenCondNop => Forbidden
+                                       Hvc_Rule_A1
+                                       cccc00010100iiiiiiiiiiii0111iiii (v7VE)
+| "        -    11        -          = ForbiddenCondNop => Forbidden
+                                       Smc_Rule_B6_1_9_P18
+                                       cccc000101100000000000000111iiii (SE)
+| else:                              = Undefined     # Note on page A5-18
 +--
 
 +-- load_store_word_and_unsigned_byte (See Section A5.3)
@@ -778,65 +810,74 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 # (anded) multiple test conditions for this row.
 | A(25) op1(24:20) B(4) Rn(19:16)  op1_repeated(24:20)
 | 0     xx0x0      -    -          ~0x010 -> load_store_word_and_unsigned_byte_str_or_push
-| 1     xx0x0      0    -          ~0x010
-                                   = Store3RegisterImm5Op 
-                                   => StoreBasedOffsetMemory
-                                   Str_Rule_195_A1_P386
-                                   cccc011pd0w0nnnnttttiiiiitt0mmmm
-# STRT (rule 210, A1 and A2, page 416) define unprivledge stores, which
-# NaCl doesn't allow.
-| 0     0x010      -    -          - = Forbidden
-| 1     0x010      0    -          - = Forbidden
+| 1     xx0x0      0    -          ~0x010 = Store3RegisterImm5Op
+                                            => StoreBasedOffsetMemory
+                                            Str_Rule_195_A1_P386
+                                            cccc011pd0w0nnnnttttiiiiitt0mmmm
+| 0     0x010      -    -          - = ForbiddenCondNop => Forbidden
+                                       Strt_Rule_A1
+                                       cccc0100u010nnnnttttiiiiiiiiiiii
+| 1     0x010      0    -          - = ForbiddenCondNop => Forbidden
+                                       Strt_Rule_A2
+                                       cccc0110u010nnnnttttiiiiitt0mmmm
 | 0     xx0x1      -    ~1111      ~0x011
                                    = Load2RegisterImm12Op
                                    => LoadBasedImmedMemory
                                    Ldr_Rule_58_A1_P120
-                                   cccc010pd0w1nnnnttttiiiiiiiiiiii NotRnIsPc
-| "     xx0x1      "    1111       ~0x011  
+                                   cccc010pu0w1nnnnttttiiiiiiiiiiii NotRnIsPc
+| "     xx0x1      "    1111       ~0x011
                                    = Load2RegisterImm12Op
                                    => LoadBasedImmedMemory
                                    Ldr_Rule_59_A1_P122
-                                   cccc0101d0011111ttttiiiiiiiiiiii
+                                   cccc0101u0011111ttttiiiiiiiiiiii
 | 1     xx0x1      0    -          ~0x011
                                    = Load3RegisterImm5Op => LoadBasedOffsetMemory
                                    Ldr_Rule_60_A1_P124
-                                   cccc011pd0w1nnnnttttiiiiitt0mmmm
-# LDRT (rule 86, A1 and A2, page 176) define unprivledge loads, which
-# NaCl doesn't allow.
-| 0     0x011      -    -          - = Forbidden
-| 1     0x011      0    -          - = Forbidden
+                                   cccc011pu0w1nnnnttttiiiiitt0mmmm
+| 0     0x011      -    -          - = ForbiddenCondNop => Forbidden
+                                       Ldrt_Rule_A1
+                                       cccc0100u011nnnnttttiiiiiiiiiiii
+| 1     0x011      0    -          - = ForbiddenCondNop => Forbidden
+                                       Ldrt_Rule_A2
+                                       cccc0110u011nnnnttttiiiiitt0mmmm
 | 0     xx1x0      -    -          ~0x110
                                    = Store2RegisterImm12Op
                                    => StoreBasedImmedMemory
                                    Strb_Rule_197_A1_P390
-                                   cccc010pd1w0nnnnttttiiiiiiiiiiii
+                                   cccc010pu1w0nnnnttttiiiiiiiiiiii
 | 1     xx1x0      0    -          ~0x110
                                    = Store3RegisterImm5Op
                                    => StoreBasedOffsetMemory
                                    Strb_Rule_198_A1_P392
-                                   cccc011pd1w0nnnnttttiiiiitt0mmmm
-# Strbt (rule 199, A1 and A2, page 394) define unprivledged stores, which
-# NaCl doesn't allow.
-| 0     0x110      -    -          - = Forbidden # STRBT A8-394
-| 1     0x110      0    -          - "
+                                   cccc011pu1w0nnnnttttiiiiitt0mmmm
+| 0     0x110      -    -          - = ForbiddenCondNop => Forbidden
+                                       Strtb_Rule_A1
+                                       cccc0100u110nnnnttttiiiiiiiiiiii
+| 1     0x110      0    -          - = ForbiddenCondNop => Forbidden
+                                       Strtb_Rule_A2
+                                       cccc0110u110nnnnttttiiiiitt0mmmm
 | 0     xx1x1      -    ~1111      ~0x111
                                    = Load2RegisterImm12Op
                                    => LoadBasedImmedMemory
                                    Ldrb_Rule_62_A1_P128
-                                   cccc010pd1w1nnnnttttiiiiiiiiiiii NotRnIsPc
+                                   cccc010pu1w1nnnnttttiiiiiiiiiiii NotRnIsPc
 | "     xx1x1      "    1111       ~0x111
                                    = Load2RegisterImm12Op
                                    => LoadBasedImmedMemory
                                    Ldrb_Rule_63_A1_P130
-                                   cccc0101d1011111ttttiiiiiiiiiiii
+                                   cccc0101u1011111ttttiiiiiiiiiiii
 | 1     xx1x1      0    -          ~0x111
                                    = Load3RegisterImm5Op => LoadBasedOffsetMemory
                                    Ldrb_Rule_64_A1_P132
-                                   cccc011pd1w1nnnnttttiiiiitt0mmmm
-# Ldrbt (rule 65, A1 and A2, page 134) define unprivledged loads, which
-# NaCl doesn't allow.
-| 0     0x111      -    -          - = Forbidden
-| 1     0x111      0    -          - "
+                                   cccc011pu1w1nnnnttttiiiiitt0mmmm
+| 0     0x111      -    -          - = ForbiddenCondNop => Forbidden
+                                       Ldrtb_Rule_A1
+                                       cccc0100u111nnnnttttiiiiiiiiiiii
+| 1     0x111      0    -          - = ForbiddenCondNop => Forbidden
+                                       Ldrtb_Rule_A2
+                                       cccc0110u111nnnnttttiiiiitt0mmmm
+# Instructions with A==1 and B==1 are in media_instructions.
+# TODO(jfb) Should we mark them as unreachable?
 +--
 
 +-- load_store_word_and_unsigned_byte_str_or_push (See Section A5.3)
@@ -1291,11 +1332,11 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +--
 
 +-- coprocessor_instructions_and_supervisor_call (See Section A5.6)
-# Note: We currently only allow floating point (and advanced SIMD) 
+# Note: We currently only allow floating point (and advanced SIMD)
 # coprocessor operations (coproc=101x).
 # Note: Column op1 is repeated so that the first three rows can define
 # (anded) multiple test conditions for this row.
-| op1(25:20) op(4) coproc(11:8) Rn(19:16) op1_repeated(25:20) 
+| op1(25:20) op(4) coproc(11:8) Rn(19:16) op1_repeated(25:20)
 | 0xxxxx     -     101x         -         ~000x0x
                    -> extension_register_load_store_instructions
 | 0xxxx0     -     ~101x           -      ~000x0x
@@ -1363,7 +1404,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +--
 
 +-- other_floating_point_data_processing_instructions (A7.5 Table A7-17, page 17-25)
-# Other VPD data-processing, CDP instructions for coprocessors 10/11. 
+# Other VPD data-processing, CDP instructions for coprocessors 10/11.
 #
 # Note: Currently, all instructions use class CoprocessorOp
 # to follow what the previous version of the ARM validator did.
@@ -1508,7 +1549,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 +--
 
 +-- unconditional_instructions (See Section A5.7)
-# Note: We currently only allow floating point (and advanced SIMD) 
+# Note: We currently only allow floating point (and advanced SIMD)
 # coprocessor operations (coproc=101x).
 #
 # Note: Most instructions in this table are forbidden because they

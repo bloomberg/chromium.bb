@@ -325,7 +325,8 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
   }
 
   if ((insn.Bits() & 0x01F00000) == 0x00500000 /* op(24:20) == 00101 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */) {
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
     return Forbidden_instance_;
   }
 
@@ -335,7 +336,8 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_immediate(
   }
 
   if ((insn.Bits() & 0x01F00000) == 0x00900000 /* op(24:20) == 01001 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */) {
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
     return Forbidden_instance_;
   }
 
@@ -946,36 +948,55 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
      const Instruction insn) const
 {
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000000 /* B(9:9) == 0 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
       (insn.Bits() & 0x00030000) == 0x00000000 /* op1(19:16) == xx00 */ &&
-      (insn.Bits() & 0x0000FF00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
+      (insn.Bits() & 0x0000FD00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
     return Unary1RegisterUse_instance_;
   }
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000000 /* B(9:9) == 0 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
       (insn.Bits() & 0x00030000) == 0x00010000 /* op1(19:16) == xx01 */ &&
-      (insn.Bits() & 0x0000FF00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
+      (insn.Bits() & 0x0000FD00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
     return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000000 /* B(9:9) == 0 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
       (insn.Bits() & 0x00020000) == 0x00020000 /* op1(19:16) == xx1x */ &&
-      (insn.Bits() & 0x0000FF00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
+      (insn.Bits() & 0x0000FD00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
     return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000000 /* B(9:9) == 0 */ &&
       (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */ &&
-      (insn.Bits() & 0x0000FF00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
+      (insn.Bits() & 0x0000FD00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) {
     return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000000 /* B(9:9) == 0 */ &&
       (insn.Bits() & 0x00200000) == 0x00000000 /* op(22:21) == x0 */ &&
-      (insn.Bits() & 0x000F0F0F) == 0x000F0000 /* $pattern(31:0) == xxxxxxxxxxxx1111xxxx0000xxxx0000 */) {
+      (insn.Bits() & 0x000F0D0F) == 0x000F0000 /* $pattern(31:0) == xxxxxxxxxxxx1111xxxx00x0xxxx0000 */) {
     return Unary1RegisterSet_instance_;
+  }
+
+  if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000200 /* B(9:9) == 1 */ &&
+      (insn.Bits() & 0x00200000) == 0x00000000 /* op(22:21) == x0 */ &&
+      (insn.Bits() & 0x00000C0F) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxx00xxxxxx0000 */) {
+    return Forbidden_instance_;
+  }
+
+  if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
+      (insn.Bits() & 0x00000200) == 0x00000200 /* B(9:9) == 1 */ &&
+      (insn.Bits() & 0x00200000) == 0x00200000 /* op(22:21) == x1 */ &&
+      (insn.Bits() & 0x0000FC00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx111100xxxxxxxxxx */) {
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x00000070) == 0x00000010 /* op2(6:4) == 001 */ &&
@@ -1006,9 +1027,20 @@ const ClassDecoder& Arm32DecoderState::decode_miscellaneous_instructions(
     return decode_saturating_addition_and_subtraction(insn);
   }
 
+  if ((insn.Bits() & 0x00000070) == 0x00000060 /* op2(6:4) == 110 */ &&
+      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */ &&
+      (insn.Bits() & 0x000FFF0F) == 0x0000000E /* $pattern(31:0) == xxxxxxxxxxxx000000000000xxxx1110 */) {
+    return Forbidden_instance_;
+  }
+
   if ((insn.Bits() & 0x00000070) == 0x00000070 /* op2(6:4) == 111 */ &&
       (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */) {
     return Breakpoint_instance_;
+  }
+
+  if ((insn.Bits() & 0x00000070) == 0x00000070 /* op2(6:4) == 111 */ &&
+      (insn.Bits() & 0x00600000) == 0x00400000 /* op(22:21) == 10 */) {
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x00000070) == 0x00000070 /* op2(6:4) == 111 */ &&
@@ -1067,12 +1099,14 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
   }
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */) {
+      (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
     return DontCareInst_instance_;
   }
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x000B0000) == 0x00080000 /* op1(19:16) == 1x00 */) {
+      (insn.Bits() & 0x000B0000) == 0x00080000 /* op1(19:16) == 1x00 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
     return DontCareInst_instance_;
   }
 
@@ -1447,7 +1481,8 @@ const ClassDecoder& Arm32DecoderState::decode_synchronization_primitives(
     return LoadBasedMemoryDouble_instance_;
   }
 
-  if ((insn.Bits() & 0x00B00000) == 0x00000000 /* op(23:20) == 0x00 */) {
+  if ((insn.Bits() & 0x00B00000) == 0x00000000 /* op(23:20) == 0x00 */ &&
+      (insn.Bits() & 0x00000F00) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx */) {
     return Deprecated_instance_;
   }
 
