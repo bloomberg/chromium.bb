@@ -17,6 +17,7 @@
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/gestures/system_pinch_handler.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_resizer.h"
@@ -51,8 +52,6 @@
 
 namespace {
 using views::Widget;
-
-const int kSystemGesturePoints = 4;
 
 const int kAffordanceOuterRadius = 60;
 const int kAffordanceInnerRadius = 50;
@@ -109,15 +108,6 @@ const SkColor kAffordanceGlowStartColor = SkColorSetARGB(24, 255, 255, 255);
 const SkColor kAffordanceGlowEndColor = SkColorSetARGB(0, 255, 255, 255);
 const SkColor kAffordanceArcColor = SkColorSetARGB(80, 0, 0, 0);
 const int kAffordanceFrameRateHz = 60;
-
-const double kPinchThresholdForMaximize = 1.5;
-const double kPinchThresholdForMinimize = 0.7;
-
-enum SystemGestureStatus {
-  SYSTEM_GESTURE_PROCESSED,  // The system gesture has been processed.
-  SYSTEM_GESTURE_IGNORED,    // The system gesture was ignored.
-  SYSTEM_GESTURE_END,        // Marks the end of the sytem gesture.
-};
 
 aura::Window* GetTargetForSystemGestureEvent(aura::Window* target) {
   aura::Window* system_target = target;
@@ -437,161 +427,6 @@ void LongPressAffordanceAnimation::AnimationEnded(
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// SystemPinchHandler
-
-class SystemPinchHandler {
- public:
-  explicit SystemPinchHandler(aura::Window* target)
-      : target_(target),
-        phantom_(target),
-        phantom_state_(PHANTOM_WINDOW_NORMAL),
-        pinch_factor_(1.) {
-    widget_ = views::Widget::GetWidgetForNativeWindow(target_);
-  }
-
-  ~SystemPinchHandler() {
-  }
-
-  SystemGestureStatus ProcessGestureEvent(const ui::GestureEvent& event) {
-    // The target has changed, somehow. Let's bale.
-    if (!widget_ || !widget_->widget_delegate()->CanResize())
-      return SYSTEM_GESTURE_END;
-
-    switch (event.type()) {
-      case ui::ET_GESTURE_END: {
-        if (event.details().touch_points() > kSystemGesturePoints)
-          break;
-
-        if (phantom_state_ == PHANTOM_WINDOW_MAXIMIZED) {
-          if (!wm::IsWindowMaximized(target_) &&
-              !wm::IsWindowFullscreen(target_))
-            wm::MaximizeWindow(target_);
-        } else if (phantom_state_ == PHANTOM_WINDOW_MINIMIZED) {
-          if (wm::IsWindowMaximized(target_) ||
-              wm::IsWindowFullscreen(target_)) {
-            wm::RestoreWindow(target_);
-          } else {
-            wm::MinimizeWindow(target_);
-
-            // NOTE: Minimizing the window will cause this handler to be
-            // destroyed. So do not access anything from |this| from here.
-            return SYSTEM_GESTURE_END;
-          }
-        }
-        return SYSTEM_GESTURE_END;
-      }
-
-      case ui::ET_GESTURE_PINCH_UPDATE: {
-        // The PINCH_UPDATE events contain incremental scaling updates.
-        pinch_factor_ *= event.details().scale();
-        gfx::Rect bounds =
-            GetPhantomWindowScreenBounds(target_, event.location());
-        if (phantom_state_ != PHANTOM_WINDOW_NORMAL || phantom_.IsShowing())
-          phantom_.Show(bounds);
-        break;
-      }
-
-      case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
-        phantom_.Hide();
-        pinch_factor_ = 1.0;
-        phantom_state_ = PHANTOM_WINDOW_NORMAL;
-
-        if (event.details().swipe_left() || event.details().swipe_right()) {
-          // Snap for left/right swipes. In case the window is
-          // maximized/fullscreen, then restore the window first so that tiling
-          // works correctly.
-          if (wm::IsWindowMaximized(target_) ||
-              wm::IsWindowFullscreen(target_))
-            wm::RestoreWindow(target_);
-
-          ui::ScopedLayerAnimationSettings settings(
-              target_->layer()->GetAnimator());
-          SnapSizer sizer(target_,
-              gfx::Point(),
-              event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                             internal::SnapSizer::RIGHT_EDGE,
-              Shell::GetInstance()->GetGridSize());
-          target_->SetBounds(sizer.GetSnapBounds(target_->bounds()));
-        } else if (event.details().swipe_up()) {
-          if (!wm::IsWindowMaximized(target_) &&
-              !wm::IsWindowFullscreen(target_))
-            wm::MaximizeWindow(target_);
-        } else if (event.details().swipe_down()) {
-          wm::MinimizeWindow(target_);
-        } else {
-          NOTREACHED() << "Swipe happened without a direction.";
-        }
-        break;
-      }
-
-      default:
-        break;
-    }
-
-    return SYSTEM_GESTURE_PROCESSED;
-  }
-
- private:
-  gfx::Rect GetPhantomWindowScreenBounds(aura::Window* window,
-                                         const gfx::Point& point) {
-    if (pinch_factor_ > kPinchThresholdForMaximize) {
-      phantom_state_ = PHANTOM_WINDOW_MAXIMIZED;
-      return ScreenAsh::ConvertRectToScreen(
-          target_->parent(),
-          ScreenAsh::GetMaximizedWindowBoundsInParent(target_));
-    }
-
-    if (pinch_factor_ < kPinchThresholdForMinimize) {
-      if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
-        const gfx::Rect* restore = GetRestoreBoundsInScreen(window);
-        if (restore) {
-          phantom_state_ = PHANTOM_WINDOW_MINIMIZED;
-          return *restore;
-        }
-        return window->bounds();
-      }
-
-      Launcher* launcher = Shell::GetInstance()->launcher();
-      gfx::Rect rect = launcher->GetScreenBoundsOfItemIconForWindow(target_);
-      if (rect.IsEmpty())
-        rect = launcher->widget()->GetWindowBoundsInScreen();
-      else
-        rect.Inset(-8, -8);
-      phantom_state_ = PHANTOM_WINDOW_MINIMIZED;
-      return rect;
-    }
-
-    phantom_state_ = PHANTOM_WINDOW_NORMAL;
-    return window->bounds();
-  }
-
-  enum PhantomWindowState {
-    PHANTOM_WINDOW_NORMAL,
-    PHANTOM_WINDOW_MAXIMIZED,
-    PHANTOM_WINDOW_MINIMIZED,
-  };
-
-  aura::Window* target_;
-  views::Widget* widget_;
-
-  // A phantom window is used to provide visual cues for
-  // pinch-to-resize/maximize/minimize gestures.
-  PhantomWindowController phantom_;
-
-  // When the phantom window is in minimized or maximized state, moving the
-  // target window should not move the phantom window. So |phantom_state_| is
-  // used to track the state of the phantom window.
-  PhantomWindowState phantom_state_;
-
-  // PINCH_UPDATE events include incremental pinch-amount. But it is necessary
-  // to keep track of the overall pinch-amount. |pinch_factor_| is used for
-  // that.
-  double pinch_factor_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemPinchHandler);
-};
-
 SystemGestureEventFilter::SystemGestureEventFilter()
     : aura::EventFilter(),
       overlap_percent_(5),
@@ -674,7 +509,8 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     // The gesture was on the desktop window.
     if (event->type() == ui::ET_GESTURE_MULTIFINGER_SWIPE &&
         event->details().swipe_up() &&
-        event->details().touch_points() == kSystemGesturePoints) {
+        event->details().touch_points() ==
+        SystemPinchHandler::kSystemGesturePoints) {
       ash::AcceleratorController* accelerator =
           ash::Shell::GetInstance()->accelerator_controller();
       if (accelerator->PerformAction(CYCLE_FORWARD_MRU, ui::Accelerator()))
@@ -692,7 +528,8 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   } else {
     if (event->type() == ui::ET_GESTURE_BEGIN &&
-        event->details().touch_points() >= kSystemGesturePoints) {
+        event->details().touch_points() >=
+        SystemPinchHandler::kSystemGesturePoints) {
       pinch_handlers_[system_target] = new SystemPinchHandler(system_target);
       system_target->AddObserver(this);
       return ui::GESTURE_STATUS_CONSUMED;

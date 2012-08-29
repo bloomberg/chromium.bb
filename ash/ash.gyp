@@ -261,6 +261,8 @@
         'wm/event_rewriter_event_filter.h',
         'wm/frame_painter.cc',
         'wm/frame_painter.h',
+        'wm/gestures/system_pinch_handler.cc',
+        'wm/gestures/system_pinch_handler.h',
         'wm/image_grid.cc',
         'wm/image_grid.h',
         'wm/maximize_bubble_controller.cc',
