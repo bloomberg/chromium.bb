@@ -81,11 +81,6 @@ public abstract class AwContentsClient extends ContentViewClient {
         }
 
         @Override
-        public void onReceiveFindMatchRects(int version, float[] rect_data, RectF activeRect) {
-            // TODO: implement
-        }
-
-        @Override
         public void openNewTab(String url, boolean incognito) {
             // TODO: implement
         }
