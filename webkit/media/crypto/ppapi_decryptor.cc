@@ -32,7 +32,7 @@ PpapiDecryptor::PpapiDecryptor(
 PpapiDecryptor::~PpapiDecryptor() {
 }
 
-void PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
+bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
                                         const uint8* init_data,
                                         int init_data_length) {
   DVLOG(1) << "GenerateKeyRequest()";
@@ -46,7 +46,10 @@ void PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
       std::string(reinterpret_cast<const char*>(init_data),
                   init_data_length))) {
     ReportFailureToCallPlugin(key_system, "");
+    return false;
   }
+
+  return true;
 }
 
 void PpapiDecryptor::AddKey(const std::string& key_system,

@@ -724,8 +724,12 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
-  decryptor_.GenerateKeyRequest(key_system.utf8(),
-                                init_data, init_data_length);
+  if (!decryptor_.GenerateKeyRequest(key_system.utf8(),
+                                     init_data, init_data_length)) {
+    current_key_system_.reset();
+    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+  }
+
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 

@@ -72,7 +72,7 @@ ProxyDecryptor::ProxyDecryptor(
 ProxyDecryptor::~ProxyDecryptor() {
 }
 
-void ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
+bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
                                         const uint8* init_data,
                                         int init_data_length) {
   // We do not support run-time switching of decryptors. GenerateKeyRequest()
@@ -85,10 +85,15 @@ void ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
 
   if (!decryptor_.get()) {
     client_->KeyError(key_system, "", media::Decryptor::kUnknownError, 0);
-    return;
+    return false;
   }
 
-  decryptor_->GenerateKeyRequest(key_system, init_data, init_data_length);
+  if(!decryptor_->GenerateKeyRequest(key_system, init_data, init_data_length)) {
+    decryptor_.reset();
+    return false;
+  }
+
+  return true;
 }
 
 void ProxyDecryptor::AddKey(const std::string& key_system,
@@ -162,7 +167,7 @@ void ProxyDecryptor::Decrypt(
 }
 
 void ProxyDecryptor::Stop() {
-  DVLOG(1) << "AddKey()";
+  DVLOG(1) << "Stop()";
 
   std::vector<base::Closure> closures_to_run;
   {

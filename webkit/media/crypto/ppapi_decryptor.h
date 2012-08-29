@@ -37,7 +37,7 @@ class PpapiDecryptor : public media::Decryptor {
   virtual ~PpapiDecryptor();
 
   // media::Decryptor implementation.
-  virtual void GenerateKeyRequest(const std::string& key_system,
+  virtual bool GenerateKeyRequest(const std::string& key_system,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
   virtual void AddKey(const std::string& key_system,
