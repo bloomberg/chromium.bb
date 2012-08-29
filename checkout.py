@@ -357,9 +357,13 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             # using above.
             stdout += self._check_output_svn(
                 ['add', p.filename, '--force'], credentials=False)
-          for prop in p.svn_properties:
-            stdout += self._check_output_svn(
-                ['propset', prop[0], prop[1], p.filename], credentials=False)
+          for name, value in p.svn_properties:
+            if value is None:
+              stdout += self._check_output_svn(
+                  ['propdel', '--quiet', name, p.filename], credentials=False)
+            else:
+              stdout += self._check_output_svn(
+                  ['propset', name, value, p.filename], credentials=False)
           for prop, values in self.svn_config.auto_props.iteritems():
             if fnmatch.fnmatch(p.filename, prop):
               for value in values.split(';'):
@@ -528,18 +532,18 @@ class GitCheckoutBase(CheckoutBase):
             # p.diff_hunks. git apply manages all that already.
             stdout += self._check_output_git(
                 ['apply', '--index', '-p%s' % p.patchlevel], stdin=p.get(True))
-          for prop in p.svn_properties:
+          for name, _ in p.svn_properties:
             # Ignore some known auto-props flags through .subversion/config,
             # bails out on the other ones.
             # TODO(maruel): Read ~/.subversion/config and detect the rules that
             # applies here to figure out if the property will be correctly
             # handled.
-            if not prop[0] in (
+            if not name in (
                 'svn:eol-style', 'svn:executable', 'svn:mime-type'):
               raise patch.UnsupportedPatchFormat(
                   p.filename,
                   'Cannot apply svn property %s to file %s.' % (
-                        prop[0], p.filename))
+                        name, p.filename))
         for post in post_processors:
           post(self, p)
       except OSError, e:

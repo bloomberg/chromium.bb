@@ -404,9 +404,10 @@ class FilePatchDiff(FilePatchBase):
     if match:
       mode = match.group(2)
       # Only look at owner ACL for executable.
-      # TODO(maruel): Add support to remove a property.
       if bool(int(mode[4]) & 1):
         self.svn_properties.append(('svn:executable', '*'))
+      else:
+        self.svn_properties.append(('svn:executable', None))
       return
 
     match = re.match(r'^--- (.*)$', line)
