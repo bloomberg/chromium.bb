@@ -3050,6 +3050,7 @@ sdk-irt-shim() {
             naclsdk_validate=0 \
             pnacl_generate_pexe=0 \
             --verbose \
+            enable_chrome_side=1 \
             pnacl_irt_shim
   local out_dir_prefix="${SCONS_OUT}"/nacl-x86-64-pnacl-clang
   local outdir="${out_dir_prefix}"/obj/src/untrusted/pnacl_irt_shim

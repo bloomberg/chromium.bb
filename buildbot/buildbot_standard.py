@@ -171,12 +171,6 @@ def BuildScript(status, context):
                           not context['off_trunk'] and
                           not context['asan'])
 
-  # If we're running browser tests on a 64-bit Windows machine, build a 32-bit
-  # plugin.
-  need_plugin_32 = (context.Windows() and
-                    context['bits'] == '64' and
-                    not inside_toolchain)
-
   # Clean out build directories.
   with Step('clobber', status):
     RemoveDirectory(r'scons-out')
@@ -314,13 +308,6 @@ def BuildScript(status, context):
   with Step('scons_compile', status):
     SCons(context, parallel=True, args=[])
 
-  if need_plugin_32:
-    with Step('plugin_compile_32', status):
-      SCons(context, platform='x86-32', parallel=True, args=['plugin'])
-
-  with Step('compile IRT tests', status):
-    SCons(context, parallel=True, mode=['nacl_irt_test'])
-
   ### BEGIN tests ###
   with Step('small_tests', status, halt_on_fail=False):
     SCons(context, args=['small_tests'])
@@ -329,20 +316,12 @@ def BuildScript(status, context):
   with Step('large_tests', status, halt_on_fail=False):
     SCons(context, args=['large_tests'])
 
-  if do_integration_tests:
-    with Step('chrome_browser_tests', status, halt_on_fail=False):
-      # Note that we have to add nacl_irt_test to --mode in order to
-      # get inbrowser_test_runner to run.
-      # TODO(mseaborn): Change it so that inbrowser_test_runner is not
-      # a special case.
-      SCons(context, browser_test=True,
-            mode=context['default_scons_mode'] + ['nacl_irt_test'],
-            args=['SILENT=1', 'chrome_browser_tests'])
+  with Step('compile IRT tests', status):
+    SCons(context, parallel=True, mode=['nacl_irt_test'])
 
   with Step('small_tests under IRT', status, halt_on_fail=False):
     SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=['small_tests_irt'])
-
   with Step('medium_tests under IRT', status, halt_on_fail=False):
     SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=['medium_tests_irt'])
@@ -388,6 +367,32 @@ def BuildScript(status, context):
     SCons(context,
           mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=args)
+
+  # These tests will move to chrome side.
+  if do_integration_tests:
+    # If we're running browser tests on a 64-bit Windows machine, build a 32-bit
+    # plugin.
+    if (context.Windows() and
+        context['bits'] == '64' and
+        not inside_toolchain):
+      with Step('plugin_compile_32', status):
+        SCons(context, platform='x86-32', parallel=True, args=['plugin'],
+              enable_chrome_side=True)
+
+    with Step('scons_compile (chrome side)', status, halt_on_fail=False):
+      # Build chrome side of the build.
+      SCons(context, parallel=True, args=[],
+            enable_chrome_side=True)
+
+    with Step('chrome_browser_tests', status, halt_on_fail=False):
+      # Note that we have to add nacl_irt_test to --mode in order to
+      # get inbrowser_test_runner to run.
+      # TODO(mseaborn): Change it so that inbrowser_test_runner is not
+      # a special case.
+      SCons(context, browser_test=True,
+            mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['SILENT=1', 'chrome_browser_tests'],
+            enable_chrome_side=True)
 
 
 def Main():

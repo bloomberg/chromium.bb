@@ -329,6 +329,9 @@ def SetUpArgumentBits(env):
     desc='Use the zero-address-based x86-64 sandbox model instead of '
       'the r15-based model.')
 
+  BitFromArgument(env, 'enable_chrome_side', default=True,
+    desc='Exclude chrome-only components from build.')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -1234,11 +1237,29 @@ def ExtractPublishedFiles(env, target_name):
 pre_base_env.AddMethod(ExtractPublishedFiles)
 
 
-# Pull in the Chrome side of the build.
-# As there are multiple contexts in which the Chrome build
-# will need to inject files, a method (AddChromeFilesFromGroup)
-# is added which gets called in each.
-SConscript('chrome_root.scons', exports=['pre_base_env'])
+# Optionally exclude the chrome side of the build.
+# As there are multiple contexts in which the chrome build
+# will need to inject files, call this method in each to grant
+# the chrome side an opportunity to inject them.
+# When the chrome side is absent, provide an empty stub.
+def AddChromeFilesFromGroup(env, file_group):
+  pass
+if not pre_base_env.Bit('enable_chrome_side'):
+  pre_base_env.AddMethod(AddChromeFilesFromGroup)
+# Currently chrome_root.scons in this directory is the entry point for chrome
+# build/test that will be moved to the chrome side. On the chrome side,
+# we will land a copy of this file renamed to chrome_main.scons.
+# If this file is present, we will assume we've landing the migrated files and
+# use chrome_main.scons as the entry point. Prior to that, we will fall back
+# to chrome_root.scons.
+elif os.path.exists(pre_base_env.File(
+    '#/../ppapi/native_client/chrome_main.scons').abspath):
+  SConscript('#/../ppapi/native_client/chrome_main.scons',
+      exports=['pre_base_env'])
+# TODO(bradnelson): drop once chrome_root.scons -> chrome_main.scons
+#     http://code.google.com/p/nativeclient/issues/detail?id=2957
+else:
+  SConscript('chrome_root.scons', exports=['pre_base_env'])
 
 
 def ProgramNameForNmf(env, basename):
@@ -2665,11 +2686,7 @@ nacl_env.Append(
     'src/trusted/validator_x86/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
     'src/untrusted/crash_dump/nacl.scons',
-    'src/untrusted/irt_stub/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
-    'src/untrusted/nacl_ppapi_util/nacl.scons',
-    'src/untrusted/pnacl_irt_shim/nacl.scons',
-    'src/untrusted/pnacl_support_extension/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
 ])
@@ -2691,8 +2708,6 @@ irt_variant_tests = [
     'tests/autoloader/nacl.scons',
     'tests/bigalloc/nacl.scons',
     'tests/blob_library_loading/nacl.scons',
-    'tests/browser_dynamic_library/nacl.scons',
-    'tests/browser_startup_time/nacl.scons',
     'tests/bundle_size/nacl.scons',
     'tests/callingconv/nacl.scons',
     'tests/callingconv_case_by_case/nacl.scons',
@@ -2707,8 +2722,6 @@ irt_variant_tests = [
     'tests/egyptian_cotton/nacl.scons',
     'tests/environment_variables/nacl.scons',
     'tests/exception_test/nacl.scons',
-# Disabled by Brad Chen 4 Sep to try to green Chromium nacl_integrationt tests
-#    'tests/fault_injection/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/fixedfeaturecpu/nacl.scons',
@@ -2726,14 +2739,12 @@ irt_variant_tests = [
     'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
     'tests/manifest_file/nacl.scons',
-    'tests/manifest_file/nacl_chrome.scons',
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/mmap_race_protect/nacl.scons',
     'tests/nacl_log/nacl.scons',
     'tests/nameservice/nacl.scons',
-    'tests/nameservice/nacl_chrome.scons',
     'tests/nanosleep/nacl.scons',
     'tests/noop/nacl.scons',
     'tests/nrd_xfer/nacl.scons',
@@ -2742,8 +2753,6 @@ irt_variant_tests = [
     'tests/nullptr/nacl.scons',
     'tests/pagesize/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
-    'tests/pnacl_client_translator/nacl.scons',
-    'tests/postmessage_redir/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/sbrk/nacl.scons',
@@ -2774,9 +2783,7 @@ irt_variant_tests = [
     # works in nacl_env but not in nacl_irt_test_env) while also
     # adding tests to nacl_irt_test_env.
     'tests/inbrowser_test_runner/nacl.scons',
-    'tests/inbrowser_test_runner/nacl_chrome.scons',
     'tests/untrusted_crash_dump/nacl.scons',
-    'tests/untrusted_crash_dump/nacl_chrome.scons',
 ]
 
 # These are tests that are NOT worthwhile to run in an IRT variant.
@@ -2788,12 +2795,10 @@ nonvariant_tests = [
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',
-    'tests/exit_status/nacl.scons',
     'tests/faulted_thread_queue/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/minnacl/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
-    'tests/nacl.scons',
     # Potential issue with running them:
     # http://code.google.com/p/nativeclient/issues/detail?id=2092
     # See also the comment in "buildbot/buildbot_standard.py"
@@ -2812,6 +2817,7 @@ nonvariant_tests = [
 nacl_env.Append(BUILD_SCONSCRIPTS=nonvariant_tests)
 nacl_env.AddChromeFilesFromGroup('nonvariant_test_scons_files')
 nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests)
+nacl_env.AddChromeFilesFromGroup('irt_variant_test_scons_files')
 
 # Defines TESTS_TO_RUN_INBROWSER.
 SConscript('tests/inbrowser_test_runner/selection.scons',
@@ -3036,7 +3042,13 @@ def AddImplicitLibs(env):
     #       is not really needed.
     #       Note: the "precious" mechanism did not work in this case
     if not env.Bit('built_elsewhere'):
-      implicit_libs += ['libpnacl_irt_shim.a']
+      if env.Bit('enable_chrome_side'):
+        implicit_libs += ['libpnacl_irt_shim.a']
+      else:
+        if env.Bit('pnacl_generate_pexe'):
+          env.Append(TRANSLATEFLAGS=['--noirtshim'])
+        else:
+          env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,--noirtshim'])
 
   if not env.Bit('nacl_glibc'):
     # These are automatically linked in by the compiler, either directly
@@ -3093,7 +3105,8 @@ nacl_irt_test_env = nacl_env.Clone(
     BUILD_SCONSCRIPTS = [],
     )
 nacl_irt_test_env.SetBits('tests_use_irt')
-nacl_irt_test_env.Replace(TESTRUNNER_LIBS=['testrunner_browser'])
+if nacl_irt_test_env.Bit('enable_chrome_side'):
+  nacl_irt_test_env.Replace(TESTRUNNER_LIBS=['testrunner_browser'])
 
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests)
 nacl_irt_test_env.Append(BUILD_SCONSCRIPTS=irt_only_tests)

@@ -29,7 +29,8 @@ readonly SCONS_S_M_L_IRT="small_tests_irt medium_tests_irt large_tests_irt"
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests large_tests"
 
-readonly SCONS_COMMON="./scons --verbose bitcode=1"
+readonly CHROME_SELECT="enable_chrome_side=${ENABLE_CHROME_SIDE:-False}"
+readonly SCONS_COMMON="./scons --verbose bitcode=1 ${CHROME_SELECT}"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
@@ -390,6 +391,7 @@ single-browser-test() {
 browser-tests() {
   local platform=$1
   local extra=$2
+  export ENABLE_CHROME_SIDE=True
   if [[ "${extra}" =~ --nacl_glibc ]]; then
     # For glibc, only non-pexe mode works for now.
     # We need to ensure psos are translated before running.

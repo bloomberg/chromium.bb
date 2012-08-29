@@ -242,7 +242,7 @@ def Command(context, cmd, cwd=None):
 
 # A specialized version of CommandStep.
 def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
-          args=(), cwd=None):
+          args=(), cwd=None, enable_chrome_side=False):
   python = sys.executable
   if mode is None: mode = context['default_scons_mode']
   if platform is None: platform = context['default_scons_platform']
@@ -268,6 +268,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
   if context['clang']: cmd.append('--clang')
   if context['asan']: cmd.append('--asan')
   if context['use_glibc']: cmd.append('--nacl_glibc')
+  cmd.append('enable_chrome_side=%s' % enable_chrome_side)
   # Append used-specified arguments.
   cmd.extend(args)
   Command(context, cmd, cwd)
