@@ -1737,9 +1737,8 @@ libstdcpp-install() {
 }
 
 build-validator() {
-  arch=$1
-  ARCH=`echo ${arch} | tr '[:lower:]' '[:upper:]'`
-  StepBanner "MISC-"${ARCH} "Building validator ("${arch}")"
+  local arch=$1
+  StepBanner "MISC-TOOLS" "Building validator ("${arch}")"
   spushd "${NACL_ROOT}"
   RunWithLog ${arch}_ncval_core \
     ./scons MODE=opt-host \
@@ -1753,7 +1752,7 @@ validator_${arch}/${arch}-ncval-core ${INSTALL_ROOT}/tools-x86
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
   if ${PNACL_BUILD_ARM} ; then
-    StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
+    StepBanner "MISC-TOOLS" "Building sel_ldr (arm)"
 
     # TODO(robertm): revisit some of these options
     spushd "${NACL_ROOT}"
@@ -1770,7 +1769,7 @@ misc-tools() {
        "${INSTALL_ROOT}/tools-arm"
     spopd
   else
-    StepBanner "MISC-ARM" "Skipping ARM sel_ldr (No trusted ARM toolchain)"
+    StepBanner "MISC-TOOLS" "Skipping arm sel_ldr (No trusted arm toolchain)"
   fi
 
   if ${BUILD_PLATFORM_LINUX} ; then
@@ -1780,7 +1779,7 @@ misc-tools() {
       build-validator $target
     done
   else
-    for target in ARM MIPS; do
+    for target in arm mips; do
       StepBanner "MISC-"${target} "Skipping " ${target} " validator (Not yet supported on Mac)"
     done
   fi
