@@ -9,10 +9,8 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "ui/base/animation/animation_delegate.h"
 
 class Panel;
-class PanelBoundsAnimation;
 class PanelBrowserTitlebarGtk;
 class PanelDragGtk;
 class NativePanelTestingGtk;
@@ -22,8 +20,7 @@ class Image;
 }
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
-                              public NativePanel,
-                              public ui::AnimationDelegate {
+                              public NativePanel {
  public:
   enum PaintState {
     PAINT_AS_ACTIVE,
@@ -118,18 +115,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
  private:
   friend class NativePanelTestingGtk;
 
-  void StartBoundsAnimation(const gfx::Rect& from_bounds,
-                            const gfx::Rect& to_bounds);
-  bool IsAnimatingBounds() const;
-
-  // Overridden from AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-
   // Creates helper for handling drags if not already created.
   void EnsureDragHelperCreated();
 
-  void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
+  void SetBoundsInternal(const gfx::Rect& bounds);
 
   PanelBrowserTitlebarGtk* GetPanelTitlebar() const;
 
@@ -154,16 +143,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // Indicates that the panel is currently drawing attention.
   bool is_drawing_attention_;
-
-  // Used to animate the bounds change.
-  scoped_ptr<PanelBoundsAnimation> bounds_animator_;
-  gfx::Rect animation_start_bounds_;
-
-  // This records the bounds set on the last animation progress notification.
-  // We need this for the case where a new bounds animation starts before the
-  // current one completes. In this case, we want to start the new animation
-  // from where the last one left.
-  gfx::Rect last_animation_progressed_bounds_;
 
   content::NotificationRegistrar registrar_;
 

@@ -461,7 +461,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
+#if defined(OS_LINUX)
+// There is no animations on Linux, by design (http://crbug.com/144074).
+#define MAYBE_AnimateBounds DISABLED_AnimateBounds
+#else
+#define MAYBE_AnimateBounds AnimateBounds
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AnimateBounds) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));

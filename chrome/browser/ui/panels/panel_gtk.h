@@ -12,13 +12,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/gfx/rect.h"
 
 class Panel;
-class PanelBoundsAnimation;
 class PanelTitlebarGtk;
 class PanelDragGtk;
 class GtkNativePanelTesting;
@@ -29,8 +27,7 @@ class Image;
 
 // An implementation of the native panel in GTK.
 class PanelGtk : public NativePanel,
-                 public ui::ActiveWindowWatcherXObserver,
-                 public ui::AnimationDelegate {
+                 public ui::ActiveWindowWatcherXObserver {
  public:
   enum PaintState {
     PAINT_AS_ACTIVE,
@@ -122,18 +119,10 @@ class PanelGtk : public NativePanel,
   // Animation when panel is first shown.
   void RevealPanel();
 
-  void StartBoundsAnimation(const gfx::Rect& from_bounds,
-                            const gfx::Rect& to_bounds);
-  bool IsAnimatingBounds() const;
-
-  // Overridden from AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-
   // Creates helper for handling drags if not already created.
   void EnsureDragHelperCreated();
 
-  void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
+  void SetBoundsInternal(const gfx::Rect& bounds);
 
   void LoadingAnimationCallback();
 
@@ -188,16 +177,6 @@ class PanelGtk : public NativePanel,
 
   // Indicates that the panel is currently drawing attention.
   bool is_drawing_attention_;
-
-  // Used to animate the bounds change.
-  scoped_ptr<PanelBoundsAnimation> bounds_animator_;
-  gfx::Rect animation_start_bounds_;
-
-  // This records the bounds set on the last animation progress notification.
-  // We need this for the case where a new bounds animation starts before the
-  // current one completes. In this case, we want to start the new animation
-  // from where the last one left.
-  gfx::Rect last_animation_progressed_bounds_;
 
   // The timer used to update frames for the Loading Animation.
   base::RepeatingTimer<PanelGtk> loading_animation_timer_;

@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_titlebar_gtk.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_drag_gtk.h"
@@ -740,12 +739,7 @@ void PanelGtk::ShowPanelInactive() {
 void PanelGtk::RevealPanel() {
   DCHECK(!is_shown_);
   is_shown_ = true;
-
-  // Grow the window from the botttom up to produce a 'reveal' animation.
-  int top = bounds_.bottom() - configure_size_.height();
-  StartBoundsAnimation(
-      gfx::Rect(bounds_.x(), top, bounds_.width(), configure_size_.height()),
-      bounds_);
+  SetBoundsInternal(bounds_);
 }
 
 gfx::Rect PanelGtk::GetPanelBounds() const {
@@ -753,31 +747,24 @@ gfx::Rect PanelGtk::GetPanelBounds() const {
 }
 
 void PanelGtk::SetPanelBounds(const gfx::Rect& bounds) {
-  SetBoundsInternal(bounds, true);
+  SetBoundsInternal(bounds);
 }
 
 void PanelGtk::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
-  SetBoundsInternal(bounds, false);
+  SetBoundsInternal(bounds);
 }
 
-void PanelGtk::SetBoundsInternal(const gfx::Rect& bounds, bool animate) {
-  if (bounds == bounds_)
-    return;
-
+void PanelGtk::SetBoundsInternal(const gfx::Rect& bounds) {
   if (is_shown_) {
-    if (!animate) {
-      // If no animation is in progress, apply bounds change instantly.
-      // Otherwise, continue the animation with new target bounds.
-      if (!IsAnimatingBounds())
-        gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window_)),
-                               bounds.x(), bounds.y(),
-                               bounds.width(), bounds.height());
-    } else {
-      StartBoundsAnimation(bounds_, bounds);
-    }
+    gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window_)),
+                           bounds.x(), bounds.y(),
+                           bounds.width(), bounds.height());
   }
 
   bounds_ = bounds;
+
+  titlebar_->SendEnterNotifyToCloseButtonIfUnderMouse();
+  panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
 void PanelGtk::ClosePanel() {
@@ -787,9 +774,6 @@ void PanelGtk::ClosePanel() {
 
   if (!panel_->ShouldCloseWindow())
     return;
-
-  if (bounds_animator_.get())
-    bounds_animator_.reset();
 
   if (drag_helper_.get())
     drag_helper_.reset();
@@ -1005,39 +989,6 @@ void PanelGtk::UpdatePanelMinimizeRestoreButtonVisibility() {
   titlebar_->UpdateMinimizeRestoreButtonVisibility();
 }
 
-void PanelGtk::StartBoundsAnimation(
-    const gfx::Rect& from_bounds, const gfx::Rect& to_bounds) {
-  animation_start_bounds_ = IsAnimatingBounds() ?
-      last_animation_progressed_bounds_ : from_bounds;
-
-  bounds_animator_.reset(new PanelBoundsAnimation(
-      this, panel_.get(), animation_start_bounds_, to_bounds));
-
-  bounds_animator_->Start();
-  last_animation_progressed_bounds_ = animation_start_bounds_;
-}
-
-bool PanelGtk::IsAnimatingBounds() const {
-  return bounds_animator_.get() && bounds_animator_->is_animating();
-}
-
-void PanelGtk::AnimationEnded(const ui::Animation* animation) {
-  titlebar_->SendEnterNotifyToCloseButtonIfUnderMouse();
-  panel_->manager()->OnPanelAnimationEnded(panel_.get());
-}
-
-void PanelGtk::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK(is_shown_);
-  gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
-      animation_start_bounds_, bounds_);
-
-  gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window_)),
-                         new_bounds.x(), new_bounds.y(),
-                         new_bounds.width(), new_bounds.height());
-
-  last_animation_progressed_bounds_ = new_bounds;
-}
-
 gfx::Size PanelGtk::GetNonClientFrameSize() const {
   GtkAllocation window_allocation;
   gtk_widget_get_allocation(window_container_, &window_allocation);
@@ -1088,10 +1039,6 @@ GtkNativePanelTesting::GtkNativePanelTesting(PanelGtk* panel_gtk)
 
 void GtkNativePanelTesting::PressLeftMouseButtonTitlebar(
     const gfx::Point& mouse_location, panel::ClickModifier modifier) {
-  // If there is an animation, wait for it to finish as we don't handle button
-  // clicks while animation is in progress.
-  while (panel_gtk_->IsAnimatingBounds())
-    MessageLoopForUI::current()->RunAllPending();
 
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
   event->button.button = 1;
@@ -1159,8 +1106,6 @@ bool GtkNativePanelTesting::VerifyActiveState(bool is_active) {
 void GtkNativePanelTesting::WaitForWindowCreationToComplete() const {
   while (GetFrameSize().IsEmpty())
     MessageLoopForUI::current()->RunAllPending();
-  while (panel_gtk_->IsAnimatingBounds())
-    MessageLoopForUI::current()->RunAllPending();
 }
 
 bool GtkNativePanelTesting::IsWindowSizeKnown() const {
@@ -1168,7 +1113,7 @@ bool GtkNativePanelTesting::IsWindowSizeKnown() const {
 }
 
 bool GtkNativePanelTesting::IsAnimatingBounds() const {
-  return panel_gtk_->IsAnimatingBounds();
+  return false;
 }
 
 bool GtkNativePanelTesting::IsButtonVisible(
