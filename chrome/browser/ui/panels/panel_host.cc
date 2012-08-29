@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_page_zoom.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -184,6 +185,12 @@ void PanelHost::WebContentsFocused(content::WebContents* contents) {
 void PanelHost::ResizeDueToAutoResize(content::WebContents* web_contents,
                                       const gfx::Size& new_size) {
   panel_->OnContentsAutoResized(new_size);
+}
+
+void PanelHost::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  extensions::WindowController* window = GetExtensionWindowController();
+  render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
+      render_view_host->GetRoutingID(), window->GetWindowId()));
 }
 
 void PanelHost::RenderViewGone(base::TerminationStatus status) {
