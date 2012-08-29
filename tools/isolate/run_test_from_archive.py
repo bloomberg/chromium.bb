@@ -201,6 +201,9 @@ def load_manifest(content):
           elif subsubkey == 'sha-1':
             if not RE_IS_SHA1.match(subsubvalue):
               raise ConfigError('Expected sha-1, got %r' % subsubvalue)
+          elif subsubkey == 'size':
+            if not isinstance(subsubvalue, int):
+              raise ConfigError('Expected int, got %r' % subsubvalue)
           elif subsubkey == 'timestamp':
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
