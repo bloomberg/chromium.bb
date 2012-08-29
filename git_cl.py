@@ -1093,10 +1093,6 @@ def CMDupload(parser, args):
   parser.add_option("--emulate_svn_auto_props", action="store_true",
                     dest="emulate_svn_auto_props",
                     help="Emulate Subversion's auto properties feature.")
-  parser.add_option("--desc_from_logs", action="store_true",
-                    dest="from_logs",
-                    help="""Squashes git commit logs into change description and
-                            uses message as subject""")
   parser.add_option('-c', '--use-commit-queue', action='store_true',
                     help='tell the commit queue to commit this patchset')
   if settings.GetIsGerrit():
