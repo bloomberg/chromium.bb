@@ -12,6 +12,8 @@ import os
 import re
 import signal
 import socket
+# pylint: disable=W0402
+import string
 import subprocess
 import sys
 import tempfile
@@ -627,6 +629,27 @@ def ReinterpretPathForChroot(path):
 
   new_path = os.path.join('/home', os.getenv('USER'), 'trunk', relative_path)
   return new_path
+
+
+_HEX_CHARS = set(string.hexdigits)
+def IsSHA1(value, full=True):
+  """Returns True if the given value looks like a sha1.
+
+  If full is True, then it must be full length- 40 chars.  If False, >=6, and
+  <40."""
+  if not all(x in _HEX_CHARS for x in value):
+    return False
+  l = len(value)
+  if full:
+    return l == 40
+  return l >= 6 and l <= 40
+
+
+def IsRefsTags(value):
+  """Return True if the given value looks like a tag.
+
+  Currently this is identified via refs/tags/ prefixing."""
+  return value.startswith("refs/tags/")
 
 
 def GetGitRepoRevision(cwd, branch='HEAD'):

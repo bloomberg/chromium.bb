@@ -9,7 +9,6 @@ import logging
 import os
 import random
 import re
-import string
 
 from chromite.lib import cros_build_lib
 
@@ -245,7 +244,7 @@ def FormatChangeId(text, force_internal=False, force_external=False,
 
   # Drop the leading I.
   text = text[1:].lower()
-  if any(x not in string.hexdigits for x in text):
+  if not cros_build_lib.IsSHA1(text, False):
     raise ValueError("FormatChangeId invoked w/ a non hex ChangeId value: %s"
                      % original_text)
 
@@ -288,16 +287,11 @@ def FormatSha1(text, force_internal=False, force_external=False, strict=False):
       prefix = '*'
     text = text[1:]
 
-  if len(text) != 40:
-    raise ValueError("FormatSha1 invoked w/ a malformed value, "
-                     "value isn't 40 characters: %r" % (original_text,))
+  if not cros_build_lib.IsSHA1(text):
+    raise ValueError("FormatSha1 invoked w/ a malformed value: %r "
+                     % (original_text,))
 
-  text = text.lower()
-  if any(x not in string.hexdigits for x in text):
-    raise ValueError("FormatSha1 invoked w/ a non hex sha1 value: %s"
-                     % original_text)
-
-  return '%s%s' % (prefix, text)
+  return '%s%s' % (prefix, text.lower())
 
 
 def FormatGerritNumber(text, force_internal=False, force_external=False,
