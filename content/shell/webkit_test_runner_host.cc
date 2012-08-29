@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -74,6 +75,7 @@ bool WebKitTestController::PrepareForLayoutTest(
 bool WebKitTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
   in_test_ = false;
+  pumping_messages_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
   captured_dump_ = false;
@@ -85,11 +87,17 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
   watchdog_.Cancel();
-  if (main_window_ &&
-      main_window_->web_contents()->GetController().GetEntryCount() > 0) {
-    // Reset the WebContents for the next test.
-    // TODO(jochen): Reset it more thoroughly.
-    main_window_->web_contents()->GetController().GoToIndex(0);
+  if (main_window_) {
+    if (main_window_->web_contents()->GetController().GetEntryCount() > 0) {
+      // Reset the WebContents for the next test.
+      // TODO(jochen): Reset it more thoroughly.
+      main_window_->web_contents()->GetController().GoToIndex(0);
+    }
+    // Wait for the main_window_ to finish loading.
+    pumping_messages_ = true;
+    base::RunLoop run_loop;
+    run_loop.Run();
+    pumping_messages_ = false;
   }
   return main_window_ != NULL;
 }
@@ -172,7 +180,7 @@ void WebKitTestController::FinishRemainingBlocks() {
 }
 
 void WebKitTestController::CaptureDump() {
-  if (captured_dump_ || !main_window_)
+  if (captured_dump_ || !main_window_ || !in_test_)
     return;
   captured_dump_ = true;
 
@@ -198,6 +206,10 @@ void WebKitTestController::TimeoutHandler() {
 }
 
 void WebKitTestController::OnDidFinishLoad() {
+  if (pumping_messages_) {
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    return;
+  }
   if (wait_until_done_)
     return;
   CaptureDump();
