@@ -23,7 +23,8 @@ Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
       default_fixed_font_size(prefs.default_fixed_font_size),
       number_of_cpu_cores(prefs.number_of_cpu_cores),
       is_3d_supported(prefs.flash_3d_enabled),
-      is_stage3d_supported(prefs.flash_stage3d_enabled) {
+      is_stage3d_supported(prefs.flash_stage3d_enabled),
+      is_webgl_supported(prefs.experimental_webgl_enabled) {
 }
 
 Preferences::~Preferences() {
