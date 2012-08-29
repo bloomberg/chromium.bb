@@ -1,0 +1,19 @@
+{
+   "extensions": {
+      "theme": {
+          "use_system": false
+      }
+   },
+   "browser": {
+      "custom_chrome_frame": true
+   },
+   "profile": {
+      "exited_cleanly": true,
+      "id": "not-signed-in",
+      "name": "Not Signed In",
+      "nickname": "not-signed-in"
+   },
+   "spellcheck": {
+      "dictionary": "en-US"
+   }
+}
