@@ -19,8 +19,9 @@ public class TestContentViewClient extends ContentViewClient {
 
     public static class OnPageFinishedHelper extends CallbackHelper {
         private String mUrl;
-        void setUrl(String url) {
+        public void notifyCalled(String url) {
             mUrl = url;
+            notifyCalled();
         }
         public String getUrl() {
             assert getCallCount() > 0;
@@ -30,8 +31,9 @@ public class TestContentViewClient extends ContentViewClient {
 
     public static class OnPageStartedHelper extends CallbackHelper {
         private String mUrl;
-        void setUrl(String url) {
+        public void notifyCalled(String url) {
             mUrl = url;
+            notifyCalled();
         }
         public String getUrl() {
             assert getCallCount() > 0;
@@ -43,14 +45,11 @@ public class TestContentViewClient extends ContentViewClient {
         private int mErrorCode;
         private String mDescription;
         private String mFailingUrl;
-        void setErrorCode(int errorCode) {
+        public void notifyCalled(int errorCode, String description, String failingUrl) {
             mErrorCode = errorCode;
-        }
-        void setDescription(String description) {
             mDescription = description;
-        }
-        void setFailingUrl(String failingUrl) {
             mFailingUrl = failingUrl;
+            notifyCalled();
         }
         public int getErrorCode() {
             assert getCallCount() > 0;
@@ -69,11 +68,10 @@ public class TestContentViewClient extends ContentViewClient {
     public static class OnEvaluateJavaScriptResultHelper extends CallbackHelper {
         private int mId;
         private String mJsonResult;
-        void setId(int id) {
+        public void notifyCalled(int id, String jsonResult) {
             mId = id;
-        }
-        void setJsonResult(String jsonResult) {
             mJsonResult = jsonResult;
+            notifyCalled();
         }
         public int getId() {
             assert getCallCount() > 0;
@@ -122,31 +120,24 @@ public class TestContentViewClient extends ContentViewClient {
     @Override
     public void onPageStarted(String url) {
         super.onPageStarted(url);
-        mOnPageStartedHelper.setUrl(url);
-        mOnPageStartedHelper.notifyCalled();
+        mOnPageStartedHelper.notifyCalled(url);
     }
 
     @Override
     public void onPageFinished(String url) {
         super.onPageFinished(url);
-        mOnPageFinishedHelper.setUrl(url);
-        mOnPageFinishedHelper.notifyCalled();
+        mOnPageFinishedHelper.notifyCalled(url);
     }
 
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
         super.onReceivedError(errorCode, description, failingUrl);
-        mOnReceivedErrorHelper.setErrorCode(errorCode);
-        mOnReceivedErrorHelper.setDescription(description);
-        mOnReceivedErrorHelper.setFailingUrl(failingUrl);
-        mOnReceivedErrorHelper.notifyCalled();
+        mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
     }
 
     @Override
     public void onEvaluateJavaScriptResult(int id, String jsonResult) {
         super.onEvaluateJavaScriptResult(id, jsonResult);
-        mOnEvaluateJavaScriptResultHelper.setId(id);
-        mOnEvaluateJavaScriptResultHelper.setJsonResult(jsonResult);
-        mOnEvaluateJavaScriptResultHelper.notifyCalled();
+        mOnEvaluateJavaScriptResultHelper.notifyCalled(id, jsonResult);
     }
 }

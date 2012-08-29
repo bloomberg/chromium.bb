@@ -8,12 +8,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.view.KeyEvent;
-import android.view.View;
-import android.webkit.ConsoleMessage;
 import android.widget.GridLayout;
 
-import org.chromium.android_webview.AndroidWebViewUtil;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.base.test.Feature;
@@ -31,6 +27,9 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     private AwContents createContents(Context context) {
         GridLayout viewGroup = new GridLayout(context);
 
+        // TODO: Required ContentViewCore changes are not upstreamed yet.
+        // ContentViewCore contentViewCore = new ContentViewCore(
+        //        context, ContentViewCore.PERSONALITY_VIEW);
         ContentViewCore contentViewCore = new ContentViewCore(
                 context, viewGroup, null, 0, ContentViewCore.PERSONALITY_VIEW);
         AwContents awContents = new AwContents(viewGroup, null, contentViewCore,
@@ -39,6 +38,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     }
 
     @SmallTest
+    @Feature({"Android-WebView"})
     public void testCreateDestroy() throws Throwable {
         final Throwable[] error = new Throwable[1];
         final Semaphore s = new Semaphore(0);

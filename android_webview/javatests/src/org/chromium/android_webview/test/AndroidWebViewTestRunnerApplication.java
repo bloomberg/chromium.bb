@@ -11,8 +11,6 @@ import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ResourceExtractor;
 import org.chromium.content.common.CommandLine;
 
-import android.util.Log;
-
 public class AndroidWebViewTestRunnerApplication extends Application {
 
     /**

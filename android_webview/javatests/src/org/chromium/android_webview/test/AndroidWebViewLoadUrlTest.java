@@ -4,35 +4,21 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.Smoke;
+import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.Feature;
-import org.chromium.content.browser.ContentView;
+import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwWebContentsDelegate;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.test.TestContentViewClient;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.ArrayList;
 
 /**
  * Test suite for loadUrl().
  */
 public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
-
-    private ContentViewCore createContentViewOnMainSync(final TestContentViewClient client)
-            throws Exception {
-        final AtomicReference<ContentView> contentView = new AtomicReference<ContentView>();
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                contentView.set(createContentView(false, client));
-                getActivity().setContentViews(contentView.get());
-            }
-        });
-        return contentView.get().getContentViewCore();
-    }
 
     private String getTitleOnUiThread(final ContentViewCore contentViewCore) throws Throwable {
         return runTestOnUiThreadAndGetResult(new Callable<String>() {
@@ -47,12 +33,14 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView"})
     public void testDataUrl() throws Throwable {
         final String expectedTitle = "dataUrlTest";
-        final String dataUrl =
-            "data:text/html,<html><head><title>" + expectedTitle + "</title></head></html>";
+        final String data =
+            "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
 
-        final TestContentViewClient contentViewClient = new TestContentViewClient();
-        final ContentViewCore contentViewCore = createContentViewOnMainSync(contentViewClient);
-        loadUrlSync(contentViewCore, contentViewClient.getOnPageFinishedHelper(), dataUrl);
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ContentViewCore contentViewCore =
+            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(), data,
+                     "text/html", false);
         assertEquals(expectedTitle, getTitleOnUiThread(contentViewCore));
     }
 
@@ -60,13 +48,14 @@ public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
     @Feature({"Android-WebView"})
     public void testDataUrlBase64() throws Throwable {
         final String expectedTitle = "dataUrlTestBase64";
-        final String dataUrl = "data:text/html;base64," +
-                "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48" +
-                "L2hlYWQ+PC9odG1sPg==";
+        final String data = "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48" +
+                            "L2hlYWQ+PC9odG1sPg==";
 
-        final TestContentViewClient contentViewClient = new TestContentViewClient();
-        final ContentViewCore contentViewCore = createContentViewOnMainSync(contentViewClient);
-        loadUrlSync(contentViewCore, contentViewClient.getOnPageFinishedHelper(), dataUrl);
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ContentViewCore contentViewCore =
+            createAwTestContainerViewOnMainSync(contentsClient).getContentViewCore();
+        loadDataSync(contentViewCore, contentsClient.getOnPageFinishedHelper(), data,
+                     "text/html", true);
         assertEquals(expectedTitle, getTitleOnUiThread(contentViewCore));
     }
 }
