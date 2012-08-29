@@ -588,7 +588,7 @@ class Runner(object):
       if '[ RUN      ]' not in output:
         # Can't find gtest marker, mark it as invalid.
         returncode = returncode or 1
-      self.decider.got_result(bool(returncode))
+      self.decider.got_result(not bool(returncode))
       out.append(data)
       if sys.platform == 'win32':
         output = output.replace('\r\n', '\n')
@@ -668,7 +668,7 @@ def run_test_cases(executable, test_cases, jobs, timeout, run_all, result_file):
       pool.add_task(function, test_case)
     results = pool.join(progress, 0.1)
     duration = time.time() - progress.start
-  results = dict((item[0]['test_case'], item) for item in results)
+  results = dict((item[0]['test_case'], item) for item in results if item)
   LogResults(result_file, results)
   sys.stdout.write('\n')
   total = len(results)
@@ -804,6 +804,7 @@ def main(argv):
   parser.add_option(
       '--run-all',
       action='store_true',
+      default=bool(int(os.environ.get('RUN_TEST_CASES_RUN_ALL', '0'))),
       help='Do not fail early when a large number of test cases fail')
   parser.add_option(
       '--no-dump',

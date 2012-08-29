@@ -41,11 +41,14 @@ else:
 
 def trace_and_merge(result, test):
   """Traces a single test case and merges the result back into .isolate."""
+  env = os.environ.copy()
+  env['RUN_TEST_CASES_RUN_ALL'] = '1'
   subprocess.call(
       [
         sys.executable, 'isolate.py', 'trace', '-r', result,
         '--', '--gtest_filter=' + test,
-      ])
+      ],
+      env=env)
   return not subprocess.call(
       [sys.executable, 'isolate.py', 'merge', '-r', result])
 
@@ -59,6 +62,7 @@ def run_all(result, shard_index, shard_count):
   os.close(handle)
   env = os.environ.copy()
   env['RUN_TEST_CASES_RESULT_FILE'] = result_file
+  env['RUN_TEST_CASES_RUN_ALL'] = '1'
   env['GTEST_SHARD_INDEX'] = str(shard_index)
   env['GTEST_TOTAL_SHARDS'] = str(shard_count)
   cmd = [sys.executable, 'isolate.py', 'run', '-r', result]
@@ -116,7 +120,8 @@ def fix_all(result, shard_index, shard_count):
   """
   # These could have adverse side-effects.
   # TODO(maruel): Be more intelligent about it, for now be safe.
-  for i in run_test_cases.KNOWN_GTEST_ENV_VARS:
+  run_test_cases_env = ['RUN_TEST_CASES_RESULT_FILE', 'RUN_TEST_CASES_RUN_ALL']
+  for i in run_test_cases.KNOWN_GTEST_ENV_VARS + run_test_cases_env:
     if i in os.environ:
       print >> 'Please unset %s' % i
       return False
