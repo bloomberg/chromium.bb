@@ -143,6 +143,7 @@ extern const char kEnableChromeToMobile[];
 extern const char kEnableCloudPolicyService[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableConnectBackupJobs[];
+extern const char kEnableContacts[];
 extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDiscoveryInNewTabPage[];

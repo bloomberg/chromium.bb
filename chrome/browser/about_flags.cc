@@ -929,6 +929,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableWebsiteSettings),
   },
+  {
+    "enable-contacts",
+    IDS_FLAGS_ENABLE_CONTACTS_NAME,
+    IDS_FLAGS_ENABLE_CONTACTS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableContacts)
+  },
 #if defined(USE_ASH)
   { "ash-enable-advanced-gestures",
     IDS_FLAGS_ENABLE_ADVANCED_GESTURES_NAME,

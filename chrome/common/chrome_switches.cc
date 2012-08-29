@@ -502,6 +502,10 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 // exceeded.
 const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 
+// Enables fetching the user's contacts from Google and showing them in the
+// Chrome OS apps list.
+const char kEnableContacts[]                = "enable-contacts";
+
 // Enables web developers to create apps for Chrome without using crx packages.
 const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 
@@ -529,7 +533,7 @@ const char kEnableExtensionActivityLogging[] =
 const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 
 // Enables to show extensions in an action box.
-const char kEnableExtensionsInActionBox[] = "extensions-in-action-box";
+const char kEnableExtensionsInActionBox[]   = "extensions-in-action-box";
 
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";

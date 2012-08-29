@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -367,6 +368,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   if (parsed_command_line().HasSwitch(switches::kAllowFileAccess))
     ChromeNetworkDelegate::AllowAccessToAllFiles();
 
+  if (parsed_command_line().HasSwitch(switches::kEnableContacts)) {
+    contact_manager_.reset(new contacts::ContactManager());
+    contact_manager_->Init();
+  }
+
   // There are two use cases for kLoginUser:
   //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"
   //   2) if passed alone, to signal that the indicated user has already
@@ -540,9 +546,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   screen_dimming_observer_.reset();
 
-  // Delete the NetworkConfigurationUpdater while |g_browser_process| is still
-  // alive.
+  // Delete NetworkConfigurationUpdater and ContactManager while
+  // |g_browser_process| is still alive.
   network_config_updater_.reset();
+  contact_manager_.reset();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
