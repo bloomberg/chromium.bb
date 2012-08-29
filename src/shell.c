@@ -439,11 +439,13 @@ static void
 restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 {
 	struct focus_state *state, *next;
+	struct wl_surface *surface;
 
 	wl_list_for_each_safe(state, next, &ws->focus_list, link) {
-		if (state->keyboard_focus)
-			wl_keyboard_set_focus(state->seat->seat.keyboard,
-					      &state->keyboard_focus->surface);
+		surface = state->keyboard_focus ?
+			&state->keyboard_focus->surface : NULL;
+
+		wl_keyboard_set_focus(state->seat->seat.keyboard, surface);
 	}
 }
 
