@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/display.h"
@@ -35,7 +36,7 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
  public:
   enum Style {
     STYLE_SHADOW,  // for window snapping.
-    STYLE_NONE,  // for window dragging.
+    STYLE_DRAGGING,  // for window dragging.
   };
 
   explicit PhantomWindowController(aura::Window* window);
@@ -48,8 +49,10 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   const gfx::Rect& bounds() const { return bounds_; }
 
   // Shows the phantom window at the specified location (coordinates of the
-  // parent). This does not immediately show the window.
-  void Show(const gfx::Rect& bounds);
+  // parent). If |layer| is non-NULL, it is shown on top of the phantom window.
+  // |layer| is owned by the caller.
+  // This does not immediately show the window.
+  void Show(const gfx::Rect& bounds, ui::Layer* layer);
 
   // This is used to set bounds for the phantom window immediately. This should
   // be called only when the phantom window is already visible.
@@ -67,11 +70,6 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
     phantom_below_window_ = phantom_below_window;
   }
 
-  // Sets/gets the |layer| which is shown on top of the |phantom_widget_|.
-  // PhantomWindowController does not own the |layer|.
-  void set_layer(ui::Layer* layer);
-  ui::Layer* layer() const { return layer_; }
-
   // Sets/gets the style of the phantom window.
   void set_style(Style style);
   Style style() const { return style_; }
@@ -84,8 +82,12 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomStyle);
+
   // Creates and shows the |phantom_widget_| at |bounds|.
-  void CreatePhantomWidget(const gfx::Rect& bounds);
+  // |layer| is shown on top of the phantom window if it is non-NULL.
+  // |layer| is not owned by this object.
+  void CreatePhantomWidget(const gfx::Rect& bounds, ui::Layer* layer);
 
   // Sets bounds of the phantom window. The window is shown on |dst_display_|
   // if its id() is valid. Otherwise, a display nearest to |bounds| is chosen.
@@ -116,10 +118,6 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
 
   // The style of the phantom window.
   Style style_;
-
-  // The layer which should be shown on top of the |phantom_widget_|. NULL when
-  // no layer needs to be shown. This object does not own the layer.
-  ui::Layer* layer_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

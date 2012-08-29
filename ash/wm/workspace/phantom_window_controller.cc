@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/shadow_types.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
@@ -80,8 +81,7 @@ PhantomWindowController::PhantomWindowController(aura::Window* window)
     : window_(window),
       phantom_below_window_(NULL),
       phantom_widget_(NULL),
-      style_(STYLE_SHADOW),
-      layer_(NULL) {
+      style_(STYLE_SHADOW) {
 }
 
 PhantomWindowController::~PhantomWindowController() {
@@ -93,15 +93,7 @@ void PhantomWindowController::SetDestinationDisplay(
   dst_display_ = dst_display;
 }
 
-void PhantomWindowController::set_layer(ui::Layer* layer) {
-  // Cannot set a layer after the widget is initialized.
-  DCHECK(!phantom_widget_);
-  layer_ = layer;
-}
-
-void PhantomWindowController::Show(const gfx::Rect& bounds) {
-  if (layer_)
-    layer_->SetVisible(true);
+void PhantomWindowController::Show(const gfx::Rect& bounds, ui::Layer* layer) {
   if (bounds == bounds_)
     return;
   bounds_ = bounds;
@@ -109,7 +101,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
     // Show the phantom at the bounds of the window. We'll animate to the target
     // bounds.
     start_bounds_ = window_->GetBoundsInScreen();
-    CreatePhantomWidget(start_bounds_);
+    CreatePhantomWidget(start_bounds_, layer);
   } else {
     start_bounds_ = phantom_widget_->GetWindowBoundsInScreen();
   }
@@ -119,8 +111,6 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
 
 void PhantomWindowController::SetBounds(const gfx::Rect& bounds) {
   DCHECK(IsShowing());
-  if (layer_)
-    layer_->SetVisible(true);
   animation_.reset();
   bounds_ = bounds;
   SetBoundsInternal(bounds);
@@ -130,8 +120,6 @@ void PhantomWindowController::Hide() {
   if (phantom_widget_)
     phantom_widget_->Close();
   phantom_widget_ = NULL;
-  if (layer_)
-    layer_->SetVisible(false);
 }
 
 bool PhantomWindowController::IsShowing() const {
@@ -161,7 +149,8 @@ void PhantomWindowController::AnimationProgressed(
   SetBoundsInternal(animation->CurrentValueBetween(start_bounds_, bounds_));
 }
 
-void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
+void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds,
+                                                  ui::Layer* layer) {
   DCHECK(!phantom_widget_);
   phantom_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
@@ -182,25 +171,31 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
     content_view->set_background(
         views::Background::CreateBackgroundPainter(true, new EdgePainter));
     phantom_widget_->SetContentsView(content_view);
+  } else if (style_ == STYLE_DRAGGING) {
+    // Show shadow for the dragging window.
+    SetShadowType(phantom_widget_->GetNativeWindow(), SHADOW_TYPE_RECTANGULAR);
   }
   SetBoundsInternal(bounds);
   if (phantom_below_window_)
     phantom_widget_->StackBelow(phantom_below_window_);
   else
     phantom_widget_->StackAbove(window_);
-  phantom_widget_->Show();
 
-  if (layer_) {
+  if (layer) {
     aura::Window* window = phantom_widget_->GetNativeWindow();
-    window->layer()->Add(layer_);
-    window->layer()->StackAtTop(layer_);
+    layer->SetVisible(true);
+    window->layer()->Add(layer);
+    window->layer()->StackAtTop(layer);
   }
 
+  // Show the widget after all the setups.
+  phantom_widget_->Show();
+
   // Fade the window in.
-  ui::Layer* layer = phantom_widget_->GetNativeWindow()->layer();
-  layer->SetOpacity(0);
-  ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
-  layer->SetOpacity(1);
+  ui::Layer* widget_layer = phantom_widget_->GetNativeWindow()->layer();
+  widget_layer->SetOpacity(0);
+  ui::ScopedLayerAnimationSettings scoped_setter(widget_layer->GetAnimator());
+  widget_layer->SetOpacity(1);
 }
 
 void PhantomWindowController::SetBoundsInternal(const gfx::Rect& bounds) {

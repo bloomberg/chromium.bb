@@ -482,14 +482,13 @@ void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds,
       drag_phantom_window_controller_.reset(
           new PhantomWindowController(window()));
       drag_phantom_window_controller_->set_style(
-          PhantomWindowController::STYLE_NONE);
+          PhantomWindowController::STYLE_DRAGGING);
       // Always show the drag phantom on the |another_root| window.
       drag_phantom_window_controller_->SetDestinationDisplay(
           gfx::Screen::GetDisplayMatching(another_root->GetBoundsInScreen()));
       if (!layer_)
         RecreateWindowLayers();
-      drag_phantom_window_controller_->set_layer(layer_);
-      drag_phantom_window_controller_->Show(bounds_in_screen);
+      drag_phantom_window_controller_->Show(bounds_in_screen, layer_);
     } else {
       // No animation.
       drag_phantom_window_controller_->SetBounds(bounds_in_screen);
@@ -529,7 +528,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
         new PhantomWindowController(window()));
   }
   snap_phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
-      window()->parent(), snap_sizer_->target_bounds()));
+      window()->parent(), snap_sizer_->target_bounds()), NULL);
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
