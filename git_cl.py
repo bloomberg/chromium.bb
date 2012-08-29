@@ -1254,9 +1254,12 @@ def SendUpstream(parser, args, cmd):
     description = cl.GetDescription()
 
   if not description:
-    print 'No description set.'
-    print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
-    return 1
+    if not cl.GetIssue() and options.bypass_hooks:
+      description = CreateDescriptionFromLog([base_branch])
+    else:
+      print 'No description set.'
+      print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
+      return 1
 
   if cl.GetIssue():
     description += "\n\nReview URL: %s" % cl.GetIssueURL()
