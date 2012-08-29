@@ -18,7 +18,7 @@
 
 #if !defined(OS_CHROMEOS)
 namespace chrome {
-class RemovableDeviceNotificationsLinux;
+class MediaDeviceNotificationsLinux;
 }
 #endif
 
@@ -34,8 +34,8 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 
  private:
 #if !defined(OS_CHROMEOS)
-  scoped_refptr<chrome::RemovableDeviceNotificationsLinux>
-      removable_device_notifications_linux_;
+  scoped_refptr<chrome::MediaDeviceNotificationsLinux>
+      media_device_notifications_linux_;
 #endif
 
 #if defined(OS_CHROMEOS)

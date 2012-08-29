@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/media_gallery/removable_device_notifications_linux.h"
+#include "chrome/browser/media_gallery/media_device_notifications_linux.h"
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -104,9 +104,9 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 
 #if !defined(OS_CHROMEOS)
   const FilePath kDefaultMtabPath("/etc/mtab");
-  removable_device_notifications_linux_ =
-      new chrome::RemovableDeviceNotificationsLinux(kDefaultMtabPath);
-  removable_device_notifications_linux_->Init();
+  media_device_notifications_linux_ =
+      new chrome::MediaDeviceNotificationsLinux(kDefaultMtabPath);
+  media_device_notifications_linux_->Init();
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
@@ -117,7 +117,7 @@ void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {
   // Release it now. Otherwise the FILE thread would be gone when we try to
   // release it in the dtor and Valgrind would report a leak on almost ever
   // single browser_test.
-  removable_device_notifications_linux_ = NULL;
+  media_device_notifications_linux_ = NULL;
 #endif
 
   ChromeBrowserMainPartsPosix::PostMainMessageLoopRun();

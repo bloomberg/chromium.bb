@@ -156,7 +156,7 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
       callback.Run(!FindRemovableStorageLocationById(device_id).empty());
       break;
     case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      FindUSBDeviceById(device_id,
+      FindUSBDeviceById(unique_id,
                         base::Bind(&EmptyPathIsFalseCallback, callback));
       break;
     case FIXED_MASS_STORAGE:
@@ -202,7 +202,7 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
       callback.Run(FilePath());
       break;
     case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      FindUSBDeviceById(device_id, callback);
+      FindUSBDeviceById(unique_id, callback);
       break;
     case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
@@ -222,7 +222,7 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
 MediaStorageUtil::MediaStorageUtil() {}
 
 // static
-void MediaStorageUtil::FindUSBDeviceById(const std::string& device_id,
+void MediaStorageUtil::FindUSBDeviceById(const std::string& unique_id,
                                          const FilePathCallback& callback) {
   // TODO(vandebo) This needs to be implemented per platform.
   // Type is REMOVABLE_MASS_STORAGE_NO_DCIM, so it's a device possibly mounted

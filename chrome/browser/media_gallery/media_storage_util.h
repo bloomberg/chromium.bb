@@ -72,7 +72,7 @@ class MediaStorageUtil {
   MediaStorageUtil();
 
   // A platform specific helper.
-  static void FindUSBDeviceById(const std::string& device_id,
+  static void FindUSBDeviceById(const std::string& unique_id,
                                 const FilePathCallback& callback);
 
   DISALLOW_COPY_AND_ASSIGN(MediaStorageUtil);
