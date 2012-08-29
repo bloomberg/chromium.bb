@@ -350,9 +350,6 @@
                   'chromeos/.*(language|keyboard)'\
                   '|chrome/browser/ui/webui/options/language'
     },
-    'this_file': {
-      'filepath': '^WATCHLISTS$',
-    },
     'tools': {
       'filepath': 'tools/',
     },
@@ -544,7 +541,6 @@
                   'suzhe@chromium.org',
                   'yusukes+watch@chromium.org'],
     'textinput_chromeos': ['yusukes+watch@chromium.org'],
-    'this_file': ['nirnimesh@chromium.org'],
     'tools': ['pam+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org',
                     'dhollowa+watch@chromium.org'],
