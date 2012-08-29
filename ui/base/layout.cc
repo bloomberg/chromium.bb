@@ -141,8 +141,11 @@ void SetSupportedScaleFactors(
 #if !defined(OS_MACOSX)
 ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view) {
 #if defined(USE_AURA) && !defined(OS_WIN)
+  aura::RootWindow* root_window = view->GetRootWindow();
+  if (!root_window)
+    return SCALE_FACTOR_NONE;
   return GetScaleFactorFromScale(
-      view->GetRootWindow()->compositor()->device_scale_factor());
+      root_window->compositor()->device_scale_factor());
 #else
   NOTIMPLEMENTED();
   return SCALE_FACTOR_NONE;
