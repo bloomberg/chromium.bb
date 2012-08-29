@@ -549,8 +549,8 @@ class NinjaWriter:
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(action)
                    if self.flavor == 'win' else False)
       args = action['action']
-      rule_name = self.WriteNewNinjaRule(name, args, description,
-                                         is_cygwin, env=env)
+      rule_name, _ = self.WriteNewNinjaRule(name, args, description,
+                                            is_cygwin, env=env)
 
       inputs = [self.GypPathToNinja(i, env) for i in action['inputs']]
       if int(action.get('process_outputs_as_sources', False)):
@@ -585,7 +585,8 @@ class NinjaWriter:
           ('%s ' + generator_default_variables['RULE_INPUT_PATH']) % name)
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(rule)
                    if self.flavor == 'win' else False)
-      rule_name = self.WriteNewNinjaRule(name, args, description, is_cygwin)
+      rule_name, args = self.WriteNewNinjaRule(
+          name, args, description, is_cygwin)
 
       # TODO: if the command references the outputs directly, we should
       # simplify it to just use $out.
@@ -1145,7 +1146,8 @@ class NinjaWriter:
   def WriteNewNinjaRule(self, name, args, description, is_cygwin, env=[]):
     """Write out a new ninja "rule" statement for a given command.
 
-    Returns the name of the new rule."""
+    Returns the name of the new rule, and a copy of |args| with variables
+    expanded."""
 
     if self.flavor == 'win':
       args = [self.msvs_settings.ConvertVSMacros(
@@ -1167,8 +1169,6 @@ class NinjaWriter:
     rule_name = re.sub('[^a-zA-Z0-9_]', '_', rule_name)
 
     description = re.sub('[^ a-zA-Z0-9_]', '_', description)
-
-    args = args[:]
 
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in
@@ -1203,7 +1203,7 @@ class NinjaWriter:
                     rspfile=rspfile, rspfile_content=rspfile_content)
     self.ninja.newline()
 
-    return rule_name
+    return rule_name, args
 
 
 def CalculateVariables(default_variables, params):
