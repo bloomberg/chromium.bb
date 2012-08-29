@@ -25,7 +25,7 @@ class ResourceScaleFactors(object):
       paths: An array of tuples giving the folders to check and their
           relevant scale factors. For example:
 
-          [(1, 'default_100_percent'), (2, 'default_200_percent')]
+          [(100, 'default_100_percent'), (200, 'default_200_percent')]
   """
 
   def __init__(self, input_api, output_api, paths):
@@ -47,11 +47,13 @@ class ResourceScaleFactors(object):
       assert data[:8] == '\x89PNG\r\n\x1A\n' and data[12:16] == 'IHDR'
       return struct.unpack('>ii', data[16:24])
 
-    # TODO(flackr): This should allow some flexibility for non-integer scale
-    # factors such as allowing any size between the floor and ceiling of
-    # base * scale.
-    def ExpectedSize(base_width, base_height, scale):
-      return round(base_width * scale), round(base_height * scale)
+    # Returns a list of valid scaled image sizes. The valid sizes are the
+    # floor and ceiling of (base_size * scale_percent / 100). This is equivalent
+    # to requiring that the actual scaled size is less than one pixel away from
+    # the exact scaled size.
+    def ValidSizes(base_size, scale_percent):
+      return sorted(set([(base_size * scale_percent) / 100,
+                         (base_size * scale_percent + 99) / 100]))
 
     repository_path = self.input_api.os_path.relpath(
         self.input_api.PresubmitLocalPath(),
@@ -80,7 +82,7 @@ class ResourceScaleFactors(object):
             'Base image %s does not exist' % self.input_api.os_path.join(
             repository_path, base_image)))
         continue
-      base_width, base_height = ImageSize(base_image)
+      base_dimensions = ImageSize(base_image)
       # Find all scaled versions of the base image and verify their sizes.
       for i in range(1, len(self.paths)):
         image_path = self.input_api.os_path.join(self.paths[i][1], f)
@@ -88,12 +90,15 @@ class ResourceScaleFactors(object):
           continue
         # Ensure that each image for a particular scale factor is the
         # correct scale of the base image.
-        exp_width, exp_height = ExpectedSize(base_width, base_height,
-            self.paths[i][0])
-        width, height = ImageSize(image_path)
-        if width != exp_width or height != exp_height:
-          results.append(self.output_api.PresubmitError(
-              'Image %s is %dx%d, expected to be %dx%d' % (
-              self.input_api.os_path.join(repository_path, image_path),
-              width, height, exp_width, exp_height)))
+        scaled_dimensions = ImageSize(image_path)
+        for dimension_name, base_size, scaled_size in zip(
+            ('width', 'height'), base_dimensions, scaled_dimensions):
+          valid_sizes = ValidSizes(base_size, self.paths[i][0])
+          if scaled_size not in valid_sizes:
+            results.append(self.output_api.PresubmitError(
+                'Image %s has %s %d, expected to be %s' % (
+                self.input_api.os_path.join(repository_path, image_path),
+                dimension_name,
+                scaled_size,
+                ' or '.join(map(str, valid_sizes)))))
     return results

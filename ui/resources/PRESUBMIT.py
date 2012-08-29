@@ -27,7 +27,7 @@ def _CommonChecks(input_api, output_api):
   # List of paths with their associated scale factor. This is used to verify
   # that the images modified in one are the correct scale of the other.
   path_scales = [
-    [(1, 'default_100_percent/'), (2, 'default_200_percent/')],
+    [(100, 'default_100_percent/'), (200, 'default_200_percent/')],
   ]
 
   import sys
