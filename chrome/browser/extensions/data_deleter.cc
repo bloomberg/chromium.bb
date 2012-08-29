@@ -15,6 +15,7 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_constants.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"
@@ -93,7 +94,7 @@ DataDeleter::DataDeleter(
     extension_request_context_ =
         profile->GetRequestContextForIsolatedApp(extension_id);
     isolated_app_path_ = profile->GetPath().
-        Append(chrome::kIsolatedAppStateDirname).AppendASCII(extension_id);
+        Append(content::kStoragePartitionDirname).AppendASCII(extension_id);
   } else {
     extension_request_context_ = profile->GetRequestContext();
   }

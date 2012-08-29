@@ -18,10 +18,6 @@
 
 namespace content {
 
-// Dirname for storing persistent data for renderers with isolated storage.
-const FilePath::CharType kStoragePartitionDirName[] =
-    FILE_PATH_LITERAL("Storage Partitions");
-
 StoragePartitionImplMap::StoragePartitionImplMap(
     BrowserContext* browser_context)
     : browser_context_(browser_context) {
@@ -45,7 +41,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   if (!partition_id.empty()) {
     // TODO(ajwong): This should check the path is valid?
     CHECK(IsStringASCII(partition_id));
-    partition_path = partition_path.Append(kStoragePartitionDirName)
+    partition_path = partition_path.Append(kStoragePartitionDirname)
         .AppendASCII(partition_id);
   }
 

@@ -86,6 +86,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -384,7 +385,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
   extensions_cookie_path =
       extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
 
-  FilePath app_path = GetPath().Append(chrome::kIsolatedAppStateDirname);
+  FilePath app_path = GetPath().Append(content::kStoragePartitionDirname);
 
 #if defined(OS_ANDROID)
   SessionStartupPref::Type startup_pref_type =
