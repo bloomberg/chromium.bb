@@ -510,10 +510,12 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
         DistanceTravelledSq(fs) <= thumb_dist_sq_thresh) {
       if (!MapContainsKey(thumb_, fs.tracking_id))
         thumb_[fs.tracking_id] = hwstate.timestamp;
-    } else if (MapContainsKey(thumb_, fs.tracking_id) &&
-               hwstate.timestamp <
-               max(started_moving_time_,
-                   thumb_[fs.tracking_id]) + thumb_eval_timeout_.val_) {
+    } else if ((MapContainsKey(thumb_, fs.tracking_id) &&
+                hwstate.timestamp <
+                max(started_moving_time_,
+                    thumb_[fs.tracking_id]) + thumb_eval_timeout_.val_) ||
+               (DistanceTravelledSq(fs) > thumb_dist_sq_thresh &&
+                fs.tracking_id != min_fs->tracking_id)) {
       thumb_.erase(fs.tracking_id);
     }
   }
