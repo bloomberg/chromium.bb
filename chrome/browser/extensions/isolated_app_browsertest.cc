@@ -174,8 +174,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CookieIsolation) {
 
 }
 
+// This test is disabled due to being flaky. http://crbug.com/145588
 // Ensure that cookies are not isolated if the isolated apps are not installed.
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_NoCookieIsolationWithoutApp) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
