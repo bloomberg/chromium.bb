@@ -654,7 +654,7 @@ class Manifest(object):
     assert self.can_fetch
     if not self._manifest_parsed or self.files_fetched:
       return
-    logging.info('fetch_files(%s)' % self.obj_hash)
+    logging.debug('fetch_files(%s)' % self.obj_hash)
     for filepath, properties in self.data.get('files', {}).iteritems():
       # Root manifest has priority on the files being mapped. In particular,
       # overriden files must not be fetched.
@@ -662,7 +662,7 @@ class Manifest(object):
         files[filepath] = properties
         if 'sha-1' in properties:
           # Preemptively request files.
-          logging.info('fetching %s' % filepath)
+          logging.debug('fetching %s' % filepath)
           cache.retrieve(Remote.MED, properties['sha-1'])
     self.files_fetched = True
 
@@ -778,8 +778,10 @@ def run_tha_test(manifest_hash, cache_dir, remote, policies):
         logging.debug('Creating directories')
         # Creates the tree of directories to create.
         directories = set(os.path.dirname(f) for f in settings.files)
-        for item in directories:
-          directories.add(os.path.dirname(item))
+        for item in list(directories):
+          while item:
+            directories.add(item)
+            item = os.path.dirname(item)
         for d in sorted(directories):
           if d:
             os.mkdir(os.path.join(outdir, d))
