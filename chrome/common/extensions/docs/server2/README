@@ -1,37 +1,58 @@
 Overview
 
-This is a new iteration of the Chrome extension and app documentation
-server. It will replace the existing doc build system described in
-../README.txt.
+This is a Google App Engine server which serves the documentation for Chrome
+apps and extensions. At time of this writing, the primary URL is:
+http://developer.chrome.com/.
 
-As with the previous version, the goals of the system are:
+Documentation for Chrome apps and extensions is partly generated from API
+definitions (for the reference material), and partly hand-written.
 
-* Docs are generated from API definitions; it isn't possible to add or
-modify APIs without creating stub reference documentation at the same
-time.
-* Docs are editable by anyone with Chrome commit access. Docs go live
-automatically and immediately.
-* Docs are branched automatically with Chrome's source code; it's
-always possible to see the current doc for any Chrome release channel.
+All documentation sources are checked into source control, just like any other
+Chrome source code. The server consumes these sources and generates the
+documentation web pages dynamically.
 
-The main difference from the previous iteration is that this server
-implements all the generation dynamically on the server, thus
-eliminating the need for annoying and error-prone generation step at
-commit time.
+The goals of this system are:
+
+* Docs are generated from API definitions; it isn't possible to add or modify
+APIs without creating stub reference documentation at the same time.
+
+* Docs are editable by anyone with Chrome commit access. This encourages
+developers to do their part to keep doc up to date, and allows part-time
+contributors to help too.
+
+* Docs go live automatically and immediately, upon check-in. There's no separate
+push process for docs.
+
+* Docs are branched automatically with Chrome's source code; the docs for each
+Chrome release are kept with the corresponding source code.
+
+* Users can always find the current doc for any Chrome release channel (i.e.,
+/trunk/extensions/, /beta/apps/, etc.). These URLs are updated automatically
+with Chrome's release process.
 
 
-Viewing the Docs
+Editing Docs
 
-The preview server allows easy viewing of the docs. To run the preview server:
+  1. Edit files.
 
-  1. Run './preview.py'
+     - They will mostly be in chrome/common/extensions/api/ or
+       chrome/common/extensions/docs/server2/templates/.
 
-  2. View docs at http://localhost:8000/(apps|extensions)/<doc_name>
+     - Files in templates directory use the Handlebar template language. It is
+       extremely simple. See third_party/handlebar/README.md.
+
+  2. Run './preview.py'
+
+  3. Check your work at http://localhost:8000/(apps|extensions)/<doc_name>
+
+  4. Send a CL and commit files as with any other Chrome change. The live
+     server will update within 5-10 minutes.
 
 
 Developing the Server
 
-To run the server in the App Engine environment, follow these steps:
+You shouldn't need app engine locally to develop the server, preview.py should
+be sufficient. If for some reason you want to test against the app engine SDK:
 
   1. Download the python Google App Engine SDK from:
      https://developers.google.com/appengine/downloads
@@ -40,3 +61,28 @@ To run the server in the App Engine environment, follow these steps:
      (dev_appserver.py is part of the App Engine)
 
   3. View docs at http://localhost:8080/(apps|extensions)/<doc_name>
+
+
+Deploying the Server
+
+You will need to have access to the http://chrome-apps-doc.appspot.com app.
+Contact aa@chromium.org, erikkay@chromium.org, mihaip@chromium.org, or
+miket@chromium.org to obtain access.
+
+Once you have access:
+
+1. Increment the version in app.yaml so we can roll back if the update breaks.
+
+2. Run appcfg.py (supplied with the App Engine SDK) to upload the server code:
+
+    appcfg.py update .
+
+3. When prompted for your credentials, enter the information for the account
+   that has access to the production app.
+
+4. Go to http://www.appspot.com, select the docs project, click "versions" in
+   the sidebar, and make the version you just deployed the "default" version.
+
+   If you get an error about too many versions when deploying, go into this
+   view and delete the version which was deployed the longest time ago.  Then
+   try to deploy again.
