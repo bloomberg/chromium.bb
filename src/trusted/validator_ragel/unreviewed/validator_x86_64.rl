@@ -214,14 +214,20 @@
      };
 
   # EMMS/SSE2/AVX instructions which have implicit %ds:(%rsi) operand
-  mmx_sse_rdi_instructions =
-    (REX_WRXB? (0x0f 0xf7)
-      @CPUFeature_EMMX modrm_registers | # maskmovq %mmX,%mmY
-     0x66 REX_WRXB? (0x0f 0xf7) @not_data16_prefix
-      @CPUFeature_SSE2 modrm_registers | # maskmovdqu %xmmX, %xmmY
-     ((0xc4 (VEX_RB & VEX_map00001) 0x79 @vex_prefix3) |
+  # maskmovq %mmX,%mmY
+  maskmovq =
+      REX_WRXB? (0x0f 0xf7)
+      @CPUFeature_EMMX modrm_registers;
+  # maskmovdqu %xmmX, %xmmY
+  maskmovdqu =
+      0x66 REX_WRXB? (0x0f 0xf7) @not_data16_prefix
+      @CPUFeature_SSE2 modrm_registers;
+  # vmaskmovdqu %xmmX, %xmmY
+  vmaskmovdqu =
+      ((0xc4 (VEX_RB & VEX_map00001) 0x79 @vex_prefix3) |
       (0xc5 (0x79 | 0xf9) @vex_prefix_short)) 0xf7
-      @CPUFeature_AVX modrm_registers);  # vmaskmovdqu %xmmX, %xmmY
+      @CPUFeature_AVX modrm_registers;
+  mmx_sse_rdi_instructions = maskmovq | maskmovdqu | vmaskmovdqu;
 
   # String instructions which use only %ds:(%rsi)
   string_instructions_rsi_no_rdi =
@@ -249,7 +255,7 @@
     data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
     rep? REXW_NONE? 0xa5     ; # movs[lq] %es:(%rdi),%ds:(%rsi)
 
-  sandbox_string_instructions_rsi_no_rdi =
+  sandbox_instructions_rsi_no_rdi =
     (0x89 | 0x8b) 0xf6         . # mov %esi,%esi
     0x49 0x8d 0x34 0x37        . # lea (%r15,%rsi,1),%rsi
     string_instructions_rsi_no_rdi
@@ -260,10 +266,14 @@
        restricted_register = NO_REG;
     };
 
-  sandbox_string_instructions_rdi_no_rsi =
+  sandbox_instructions_rdi_no_rsi =
     (0x89 | 0x8b) 0xff         . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f        . # lea (%r15,%rdi,1),%rdi
-    string_instructions_rdi_no_rsi
+    (
+        string_instructions_rdi_no_rsi |
+        maskmovq |
+        maskmovdqu
+    )
     @{
        instruction_start -= 6;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -272,7 +282,7 @@
     };
 
   # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
-  sandbox_string_instructions_rsi_rdi =
+  sandbox_instructions_rsi_rdi =
     (0x89 | 0x8b) 0xf6        . # mov %esi,%esi
     0x49 0x8d 0x34 0x37       . # lea (%r15,%rsi,1),%rsi
     (0x89 | 0x8b) 0xff        . # mov %edi,%edi
@@ -293,9 +303,9 @@
      rbp_sandboxing |
      rsp_sandboxing |
      naclcall_or_nacljmp |
-     sandbox_string_instructions_rsi_no_rdi |
-     sandbox_string_instructions_rdi_no_rsi |
-     sandbox_string_instructions_rsi_rdi)
+     sandbox_instructions_rsi_no_rdi |
+     sandbox_instructions_rdi_no_rsi |
+     sandbox_instructions_rsi_rdi)
     @{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     };
