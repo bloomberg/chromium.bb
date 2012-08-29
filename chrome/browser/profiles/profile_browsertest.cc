@@ -92,7 +92,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile asynchronously.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileAsynchronous) {
+// This test is flaky on Linux, Win and Mac.  See crbug.com/142787
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateNewProfileAsynchronous) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
