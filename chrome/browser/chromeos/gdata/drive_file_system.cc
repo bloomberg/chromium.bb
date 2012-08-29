@@ -1431,8 +1431,6 @@ void DriveFileSystem::GetFileByPath(
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!get_file_callback.is_null());
-
   RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::GetFileByPathOnUIThread,
                  ui_weak_ptr_,
@@ -1446,7 +1444,6 @@ void DriveFileSystem::GetFileByPathOnUIThread(
     const GetFileCallback& get_file_callback,
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
 
   resource_metadata_->GetEntryInfoByPath(
       file_path,
@@ -1464,34 +1461,38 @@ void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
-    get_file_callback.Run(error, FilePath(), std::string(), REGULAR_FILE);
-    return;
-  }
-  DCHECK(entry_proto.get());
-
+  // If |error| == PLATFORM_FILE_OK then |entry_proto| must be valid.
+  DCHECK(error != DRIVE_FILE_OK ||
+         (entry_proto.get() && !entry_proto->resource_id().empty()));
   GetResolvedFileByPath(file_path,
                         get_file_callback,
                         get_content_callback,
-                        entry_proto.Pass());
+                        error,
+                        entry_proto.get());
 }
 
 void DriveFileSystem::GetResolvedFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
     const GetContentCallback& get_content_callback,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    DriveFileError error,
+    const DriveEntryProto* entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
-  DCHECK(entry_proto.get());
 
-  if (!entry_proto->has_file_specific_info()) {
-    get_file_callback.Run(DRIVE_FILE_ERROR_NOT_FOUND,
-                          FilePath(),
-                          std::string(),
-                          REGULAR_FILE);
+  if (entry_proto && !entry_proto->has_file_specific_info())
+    error = DRIVE_FILE_ERROR_NOT_FOUND;
+
+  if (error != DRIVE_FILE_OK) {
+    if (!get_file_callback.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(get_file_callback,
+                     DRIVE_FILE_ERROR_NOT_FOUND,
+                     FilePath(),
+                     std::string(),
+                     REGULAR_FILE));
+    }
     return;
   }
 
@@ -1568,37 +1569,43 @@ void DriveFileSystem::GetFileByResourceIdOnUIThread(
     const GetFileCallback& get_file_callback,
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
 
-  resource_metadata_->GetEntryInfoByResourceId(
-      resource_id,
-      base::Bind(&DriveFileSystem::GetFileByResourceIdAfterGetEntry,
+  resource_metadata_->GetEntryByResourceIdAsync(resource_id,
+      base::Bind(&DriveFileSystem::GetFileByEntryOnUIThread,
                  ui_weak_ptr_,
                  get_file_callback,
                  get_content_callback));
 }
 
-void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
+void DriveFileSystem::GetFileByEntryOnUIThread(
     const GetFileCallback& get_file_callback,
     const GetContentCallback& get_content_callback,
-    DriveFileError error,
-    const FilePath& file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
+    DriveEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!get_file_callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
-    get_file_callback.Run(DRIVE_FILE_ERROR_NOT_FOUND,
-                          FilePath(),
-                          std::string(),
-                          REGULAR_FILE);
+  FilePath file_path;
+  if (entry) {
+    DriveFile* file = entry->AsDriveFile();
+    if (file)
+      file_path = file->GetFilePath();
+  }
+
+  // Report an error immediately if the file for the resource ID is not
+  // found.
+  if (file_path.empty()) {
+    if (!get_file_callback.is_null()) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(get_file_callback,
+                     DRIVE_FILE_ERROR_NOT_FOUND,
+                     FilePath(),
+                     std::string(),
+                     REGULAR_FILE));
+    }
     return;
   }
 
-  GetResolvedFileByPath(file_path,
-                        get_file_callback,
-                        get_content_callback,
-                        entry_proto.Pass());
+  GetFileByPath(file_path, get_file_callback, get_content_callback);
 }
 
 void DriveFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
@@ -1607,14 +1614,15 @@ void DriveFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                                          const std::string& md5,
                                          const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
 
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == DRIVE_FILE_OK) {
-    params.get_file_callback.Run(error,
-                                 cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    if (!params.get_file_callback.is_null()) {
+      params.get_file_callback.Run(error,
+                                   cache_file_path,
+                                   params.mime_type,
+                                   REGULAR_FILE);
+    }
     return;
   }
 
@@ -1649,7 +1657,6 @@ void DriveFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
                                          GDataErrorCode status,
                                          scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
 
   DriveFileError error = util::GDataToDriveFileError(status);
 
@@ -1665,10 +1672,12 @@ void DriveFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   }
 
   if (error != DRIVE_FILE_OK) {
-    params.get_file_callback.Run(error,
-                                 cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    if (!params.get_file_callback.is_null()) {
+      params.get_file_callback.Run(error,
+                                   cache_file_path,
+                                   params.mime_type,
+                                   REGULAR_FILE);
+    }
     return;
   }
 
@@ -1702,14 +1711,15 @@ void DriveFileSystem::StartDownloadFileIfEnoughSpace(
     const FilePath& cache_file_path,
     bool* has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
 
   if (!*has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
-    params.get_file_callback.Run(DRIVE_FILE_ERROR_NO_SPACE,
-                                 cache_file_path,
-                                 params.mime_type,
-                                 REGULAR_FILE);
+    if (!params.get_file_callback.is_null()) {
+      params.get_file_callback.Run(DRIVE_FILE_ERROR_NO_SPACE,
+                                   cache_file_path,
+                                   params.mime_type,
+                                   REGULAR_FILE);
+    }
     return;
   }
 
@@ -2449,7 +2459,6 @@ void DriveFileSystem::OnFileDownloaded(
     const GURL& content_url,
     const FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
 
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
@@ -2507,7 +2516,6 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     const FilePath& downloaded_file_path,
     bool* has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.get_file_callback.is_null());
 
   DriveFileError error = util::GDataToDriveFileError(status);
 
@@ -2536,10 +2544,12 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     }
   }
 
-  params.get_file_callback.Run(error,
-                               downloaded_file_path,
-                               params.mime_type,
-                               REGULAR_FILE);
+  if (!params.get_file_callback.is_null()) {
+    params.get_file_callback.Run(error,
+                                 downloaded_file_path,
+                                 params.mime_type,
+                                 REGULAR_FILE);
+  }
 }
 
 void DriveFileSystem::OnDownloadStoredToCache(DriveFileError error,
@@ -2990,7 +3000,8 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
                      entry_proto->resource_id(),
                      entry_proto->file_specific_info().file_md5())),
       GetContentCallback(),
-      entry_proto.Pass());
+      error,
+      entry_proto.get());
 }
 
 void DriveFileSystem::OnGetFileCompleteForOpenFile(
