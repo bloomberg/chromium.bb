@@ -261,6 +261,8 @@ class DriveFileSystemInterface {
   //
   // Can be called from UI/IO thread. |get_file_callback| and
   // |get_content_callback| are run on the calling thread.
+  // |get_file_callback| must not be null.
+  // |get_content_callback| may be null.
   virtual void GetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
@@ -271,6 +273,8 @@ class DriveFileSystemInterface {
   //
   // Can be called from UI/IO thread. |get_file_callback| and
   // |get_content_callback| are run on the calling thread.
+  // |get_file_callback| must not be null.
+  // |get_content_callback| may be null.
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,

@@ -257,6 +257,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Invoked upon completion of GetEntryInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
+  // |get_file_callback| must not be null.
+  // |get_content_callback| may be null.
   void OnGetEntryInfoCompleteForGetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
@@ -657,16 +659,16 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void LoadFeedIfNeeded(const FileOperationCallback& callback);
 
-  // Gets |file_path| from the file system after the file info is already
-  // resolved with GetEntryInfoByPath(). This function is called by
-  // OnGetEntryInfoCompleteForGetFileByPath and
-  // OnGetEntryInfoCompleteForOpenFile.
+  // Gets the file at |file_path| from the cache (if found in the cache),
+  // or the server (if not found in the cache) after the file info is
+  // already resolved with GetEntryInfoByPath() or GetEntryInfoByResourceId().
+  // |get_file_callback| must not be null.
+  // |get_content_callback| may be null.
   void GetResolvedFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback,
-      DriveFileError error,
-      const DriveEntryProto* entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId(). Called when
   // DriveDirectory::GetEntryInfoByResourceId() is complete.
@@ -747,10 +749,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetContentCallback& get_content_callback);
-  void GetFileByEntryOnUIThread(
-      const GetFileCallback& get_file_callback,
-      const GetContentCallback& get_content_callback,
-      DriveEntry* entry);
   void UpdateFileByResourceIdOnUIThread(const std::string& resource_id,
                                         const FileOperationCallback& callback);
   void GetEntryInfoByPathOnUIThread(const FilePath& file_path,
@@ -783,6 +781,17 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void GetEntryInfoByResourceIdAfterGetEntry(
       const GetEntryInfoWithFilePathCallback& callback,
+      DriveFileError error,
+      const FilePath& file_path,
+      scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Part of GetFileByResourceIdOnUIThread(). Called after
+  // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
+  // |get_file_callback| must not be null.
+  // |get_content_callback| may be null.
+  void GetFileByResourceIdAfterGetEntry(
+      const GetFileCallback& get_file_callback,
+      const GetContentCallback& get_content_callback,
       DriveFileError error,
       const FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
