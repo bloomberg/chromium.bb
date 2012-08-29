@@ -62,7 +62,6 @@
       'prefs_ui',
       'pyauto_webdriver',
       'search_engines',
-      'shortcuts',
       'special_tabs',
       'sync.SyncTest',
       'test_pyauto',
@@ -443,8 +442,6 @@
       # The source is behind.  Waiting for dev to automate the update.
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
-      # crbug.com/132272
-      '-shortcuts.ShortcutsTest.testHelpShortcut',
       # crbug.com/132285
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/129802
