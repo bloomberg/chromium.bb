@@ -232,18 +232,18 @@ bool BrowserThreadImpl::PostTaskHelper(
     bool nestable) {
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
-  // order of lifetime.  So no need to lock if we know that the other thread
-  // outlives this one.
+  // order of lifetime.  So no need to lock if we know that the target thread
+  // outlives current thread.
   // Note: since the array is so small, ok to loop instead of creating a map,
   // which would require a lock because std::map isn't thread safe, defeating
   // the whole purpose of this optimization.
   BrowserThread::ID current_thread;
-  bool guaranteed_to_outlive_target_thread =
+  bool target_thread_outlives_current =
       GetCurrentThreadIdentifier(&current_thread) &&
-      current_thread <= identifier;
+      current_thread >= identifier;
 
   BrowserThreadGlobals& globals = g_globals.Get();
-  if (!guaranteed_to_outlive_target_thread)
+  if (!target_thread_outlives_current)
     globals.lock.Acquire();
 
   MessageLoop* message_loop = globals.threads[identifier] ?
@@ -256,7 +256,7 @@ bool BrowserThreadImpl::PostTaskHelper(
     }
   }
 
-  if (!guaranteed_to_outlive_target_thread)
+  if (!target_thread_outlives_current)
     globals.lock.Release();
 
   return !!message_loop;
