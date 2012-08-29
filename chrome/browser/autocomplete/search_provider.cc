@@ -1125,21 +1125,16 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // When the user forced a query, we need to make sure all the fill_into_edit
   // values preserve that property.  Otherwise, if the user starts editing a
   // suggestion, non-Search results will suddenly appear.
-  size_t search_start = 0;
-  if (input_.type() == AutocompleteInput::FORCED_QUERY) {
+  if (input_.type() == AutocompleteInput::FORCED_QUERY)
     match.fill_into_edit.assign(ASCIIToUTF16("?"));
-    ++search_start;
-  }
-  if (is_keyword) {
+  if (is_keyword)
     match.fill_into_edit.append(match.keyword + char16(' '));
-    search_start += match.keyword.length() + 1;
+  if (!input_.prevent_inline_autocomplete() &&
+      StartsWith(query_string, input_text, false)) {
+    match.inline_autocomplete_offset =
+        match.fill_into_edit.length() + input_text.length();
   }
   match.fill_into_edit.append(query_string);
-  // Not all suggestions start with the original input.
-  if (!input_.prevent_inline_autocomplete() &&
-      !match.fill_into_edit.compare(search_start, input_text.length(),
-                                   input_text))
-    match.inline_autocomplete_offset = search_start + input_text.length();
 
   const TemplateURLRef& search_url = provider_url->url_ref();
   DCHECK(search_url.SupportsReplacement());

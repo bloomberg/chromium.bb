@@ -642,6 +642,22 @@ TEST_F(SearchProviderTest, DontCrowdOutSingleWords) {
   EXPECT_GT(term_match.relevance, wyt_match.relevance);
 }
 
+// Inline autocomplete matches regardless of case differences from the input.
+TEST_F(SearchProviderTest, InlineMixedCaseMatches) {
+  GURL term_url(AddSearchToHistory(default_t_url_, ASCIIToUTF16("FOO"), 1));
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  AutocompleteMatch wyt_match;
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("f"),
+                                                      &wyt_match));
+  ASSERT_EQ(2u, provider_->matches().size());
+  AutocompleteMatch term_match;
+  EXPECT_TRUE(FindMatchWithDestination(term_url, &term_match));
+  EXPECT_GT(term_match.relevance, wyt_match.relevance);
+  EXPECT_EQ(1u, term_match.inline_autocomplete_offset);
+  EXPECT_EQ(ASCIIToUTF16("FOO"), term_match.fill_into_edit);
+}
+
 // Verifies AutocompleteControllers sets descriptions for results correctly.
 TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   // Add an entry that corresponds to a keyword search with 'term2'.
