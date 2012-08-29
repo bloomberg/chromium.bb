@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator_arm/address_set.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode.h"
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
@@ -84,6 +85,26 @@ class SfiValidator {
   //
   // Returns true iff no problems were found.
   bool validate(const std::vector<CodeSegment>& segments, ProblemSink* out);
+
+  // Entry point for validation of dynamic code replacement. Allows
+  // micromodifications of dynamically generated code in form of
+  // constant updates for inline caches and similar VM techniques.
+  // Very minimal modifications allowed, essentially only immediate
+  // value update for MOV or ORR instruction.
+  // Returns true iff no problems were found.
+  bool ValidateSegmentPair(const CodeSegment& old_code,
+                           const CodeSegment& new_code,
+                           ProblemSink* out);
+
+  // Entry point for dynamic code creation. Copies code from
+  // source segment to destination, performing validation
+  // and accounting for need of safe handling of cases,
+  // where code being replaced is executed.
+  // Returns true iff no problems were found.
+  bool CopyCode(const CodeSegment& source_code,
+                CodeSegment& dest_code,
+                NaClCopyInstructionFunc copy_func,
+                ProblemSink* out);
 
   // A 2-dimensional array, defined on the Condition of two
   // instructions, defining when we can statically prove that the
@@ -352,6 +373,10 @@ class CodeSegment {
 
   bool operator<(const CodeSegment& other) const {
     return start_addr_ < other.start_addr_;
+  }
+
+  const uint8_t* base() const {
+    return base_;
   }
 
  private:

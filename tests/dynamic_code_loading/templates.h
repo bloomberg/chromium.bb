@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-
+#if !defined(__ASSEMBLER__)
 extern char template_func;
 extern char template_func_end;
 extern char template_func_replacement;
@@ -44,3 +44,9 @@ extern char template_func_external_jump_target;
 extern char template_func_external_jump_target_end;
 extern char template_func_external_jump_target_replace;
 extern char template_func_external_jump_target_replace_end;
+#endif /* !__ASSEMBLER__ */
+
+/* Constants shared between assembler templates and C test harness. */
+#define MARKER_OLD    1234
+#define MARKER_NEW    4321
+#define MARKER_STABLE 9876

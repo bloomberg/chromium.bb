@@ -740,6 +740,7 @@ tests_to_disable_qemu = set([
     'run_thread_stack_alloc_test',
     'run_thread_suspension_test',
     'run_thread_test',
+    'run_dynamic_modify_test',
 ])
 
 tests_to_disable = set()

@@ -36,8 +36,8 @@ extern int nacl_dyncode_create(void *dest, const void *src, size_t size);
  *  @param size of both dest and src, need not be aligned.
  *  @return Returns zero on success, -1 on failure.
  *  Sets errno to EINVAL if validation fails, if src or size are not
- *  properly aligned, or the destination is invalid or has already had
- *  code loaded into it.
+ *  properly aligned, or the destination is not previously created
+ *  dyncode region or instruction boundaries changed.
  */
 extern int nacl_dyncode_modify(void *dest, const void *src, size_t size);
 

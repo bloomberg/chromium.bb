@@ -4,11 +4,15 @@
  * found in the LICENSE file.
  */
 
+#define ASSEMBLER_ONLY
+#include "templates.h"
+#undef ASSEMBLER_ONLY
+
         .global template_func
         .global template_func_end
 template_func:
 #if defined(__i386__)
-        movl $1234, %eax
+        movl $MARKER_OLD, %eax
         popl %ecx
         and  $0xffffffe0,%ecx
         jmp  *%ecx
@@ -23,7 +27,7 @@ template_func:
         jmpq *%r11
         call template_func
         test $0xffffffff,%r11d
-        movq $1234, %rax
+        movq $MARKER_OLD, %rax
 #else
 # error "Unsupported architecture"
 #endif
@@ -35,7 +39,7 @@ template_func_end:
         .p2align 5
 template_func_replacement:
 #if defined(__i386__)
-        movl $4321, %eax                       /* replaces constant */
+        movl $MARKER_NEW, %eax                       /* replaces constant */
         popl %ecx
         and  $0xffffffe0,%ecx
         jmp  *%ecx
@@ -60,7 +64,7 @@ template_func_replacement:
                                                 * and target address outside
                                                 * modified section  */
         test $0xffffffff,%r11d
-        movq $4321, %rax                       /* replaces constant */
+        movq $MARKER_NEW, %rax                       /* replaces constant */
 #else
 # error "Unsupported architecture"
 #endif
@@ -134,7 +138,7 @@ template_func_misaligned_replacement:
         nop                                    /* nop creates misalignment in
                                                 * replacing section which makes
                                                 * it illegal */
-        movl $1234, %eax
+        movl $MARKER_OLD, %eax
         popl %ecx
         and  $0xffffffe0,%ecx
         jmp  *%ecx
@@ -151,7 +155,7 @@ template_func_misaligned_replacement:
         jmpq *%r11
         call template_func_misaligned_replacement
         test $0xffffffff,%r11d
-        movq $1234, %rax
+        movq $MARKER_OLD, %rax
 #else
 # error "Unsupported architecture"
 #endif
@@ -211,7 +215,7 @@ invalid_code_end:
         .p2align 5
 template_func_illegal_register_replacement:
 #if defined(__i386__)
-        movl $1234, %eax
+        movl $MARKER_OLD, %eax
         popl %ecx
         and  $0xffffffe0,%ecx
         jmp  *%edx                             /* replaces register here, jmp
@@ -226,7 +230,7 @@ template_func_illegal_register_replacement:
         jmpq *%r11
         call template_func_illegal_register_replacement
         test $0xffffffff,%r11d
-        movq $1234, %rbx                       /* replaces register
+        movq $MARKER_OLD, %rbx                       /* replaces register
                                                 * which is not allowed */
 #else
 # error "Unsupported architecture"
@@ -239,7 +243,7 @@ template_func_illegal_register_replacement_end:
         .p2align 5
 template_func_illegal_guard_replacement:
 #if defined(__i386__)
-        movl $1234, %eax
+        movl $MARKER_OLD, %eax
         popl %ecx
         and  $0xffffffff,%ecx                  /* modifies mask */
         jmp  *%ecx
@@ -307,7 +311,7 @@ template_func_illegal_constant_replacement:
         jmpq *%r11
         call (template_func_illegal_constant_replacement)
         test $0xf0f0f0f0,%r11d             /* can't change constant in test */
-        movq $1234, %rax
+        movq $MARKER_OLD, %rax
 #else
 # error "Unsupported architecture"
 #endif
@@ -318,19 +322,19 @@ template_func_illegal_constant_replacement_end:
         .p2align 5
 template_func_external_jump_target:
 #if defined(__i386__)
-        movl $1234, %eax
+        movl $MARKER_OLD, %eax
         jmp external_jump_return
         call template_func_external_jump_target
-        movl $9876, %eax
+        movl $MARKER_STABLE, %eax
 external_jump_return:
         popl %ecx
         and  $0xffffffe0,%ecx
         jmp  *%ecx
 #elif defined(__x86_64__)
-        movq $1234, %rax
+        movq $MARKER_OLD, %rax
         jmp external_jump_return
         call template_func_external_jump_target
-        movq $9876, %rax
+        movq $MARKER_STABLE, %rax
 external_jump_return:
         popq %r11
         andl $0xffffffe0,%r11d
@@ -346,19 +350,19 @@ template_func_external_jump_target_end:
         .p2align 5
 template_func_external_jump_target_replace:
 #if defined(__i386__)
-        movl $4321, %eax
+        movl $MARKER_NEW, %eax
         jmp external_jump_replace_return
         call template_func_external_jump_target_replace
-        movl $9876, %eax
+        movl $MARKER_STABLE, %eax
 external_jump_replace_return:
         popl %ecx
         and  $0xffffffe0,%ecx
         jmp  *%ecx
 #elif defined(__x86_64__)
-        movq $4321, %rax
+        movq $MARKER_NEW, %rax
         jmp external_jump_replace_return
         call template_func_external_jump_target_replace
-        movq $9876, %rax
+        movq $MARKER_STABLE, %rax
 external_jump_replace_return:
         popq %r11
         andl $0xffffffe0,%r11d

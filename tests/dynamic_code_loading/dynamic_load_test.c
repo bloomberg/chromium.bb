@@ -122,7 +122,7 @@ void test_loading_code() {
    */
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 1234);
+  assert(rc == MARKER_OLD);
 }
 
 /*
@@ -149,7 +149,7 @@ void test_stress() {
     assert(rc == 0);
     func = (int (*)()) (uintptr_t) dest;
     rc = func();
-    assert(rc == 1234);
+    assert(rc == MARKER_OLD);
   }
 }
 
@@ -395,7 +395,7 @@ void test_deleting_code() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 1234);
+  assert(rc == MARKER_OLD);
 
   rc = nacl_dyncode_delete(load_area, sizeof(buf));
   assert(rc == 0);
@@ -428,7 +428,7 @@ void test_deleting_code() {
     assert(rc == 0);
     func = (int (*)()) (uintptr_t) load_area;
     rc = func();
-    assert(rc == 4321);
+    assert(rc == MARKER_NEW);
 
     rc = nacl_dyncode_delete(load_area, sizeof(buf));
     assert(rc == 0);

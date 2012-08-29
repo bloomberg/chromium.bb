@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/include/concurrency_ops.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -103,6 +104,7 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
+  int status;
   /* Fixed-feature mode disables any code copying for now. Currently
    * the only use of NaClCodeCopy() seems to be for dynamic code
    * modification, which should fail in NaClValidateCodeReplacement()
@@ -111,10 +113,21 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
   if (nap->fixed_feature_cpu_mode) {
     return LOAD_BAD_FILE;
   }
-  return NaClValidateStatus(nap->validator->CopyCode(
-      guest_addr, data_old, data_new, size,
-      &nap->cpu_features,
-      NaClCopyInstruction));
+  status = NaClValidateStatus(nap->validator->CopyCode(
+                              guest_addr, data_old, data_new, size,
+                              &nap->cpu_features,
+                              NaClCopyInstruction));
+  /*
+   * Flush the processor's instruction cache.  This is not necessary
+   * for security, because any old cached instructions will just be
+   * safe halt instructions.  It is only necessary to ensure that
+   * untrusted code runs correctly when it tries to execute the
+   * dynamically-loaded code.
+   */
+  NaClFlushCacheForDoublyMappedCode(data_old,
+                                    (uint8_t *) guest_addr,
+                                    size);
+  return status;
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {

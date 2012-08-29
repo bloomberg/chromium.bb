@@ -118,7 +118,7 @@ void test_replacing_code() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 1234);
+  assert(rc == MARKER_OLD);
 
   /* write replacement to the same location */
   copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
@@ -127,7 +127,7 @@ void test_replacing_code() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 4321);
+  assert(rc == MARKER_NEW);
 }
 
 
@@ -144,21 +144,23 @@ void test_replacing_code_unaligned() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 1234);
+  assert(rc == MARKER_OLD);
 
   /* write replacement to the same location, unaligned */
   copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
                                           &template_func_replacement_end);
+  /* we find first byte where old and new code differs */
   while (buf[first_diff] == load_area[first_diff] && first_diff < sizeof buf) {
     first_diff++;
   }
-  assert(first_diff > 0 && first_diff <= sizeof(buf));
+  /* and check, that there is some data in common, and some different */
+  assert(first_diff > 0 && first_diff < sizeof(buf));
   rc = nacl_dyncode_modify(load_area+first_diff, buf+first_diff,
                            sizeof(buf)-first_diff);
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 4321);
+  assert(rc == MARKER_NEW);
 }
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -213,7 +215,7 @@ void test_illegal_code_replacment() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 1234);
+  assert(rc == MARKER_OLD);
 
   for (i = 0;
        i < (sizeof(illegal_code_sections) / sizeof(struct code_section));
@@ -227,7 +229,7 @@ void test_illegal_code_replacment() {
     assert(rc != 0);
     func = (int (*)()) (uintptr_t) load_area;
     rc = func();
-    assert(rc == 1234);
+    assert(rc == MARKER_OLD);
   }
 }
 
@@ -247,7 +249,7 @@ void test_external_jump_target_replacement() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 1234);
+  assert(rc == MARKER_OLD);
 
   copy_and_pad_fragment(buf, sizeof(buf),
                         &template_func_external_jump_target_replace,
@@ -257,7 +259,7 @@ void test_external_jump_target_replacement() {
   assert(rc == 0);
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
-  assert(rc == 4321);
+  assert(rc == MARKER_NEW);
 }
 
 #if defined(__i386__) || defined(__x86_64__)

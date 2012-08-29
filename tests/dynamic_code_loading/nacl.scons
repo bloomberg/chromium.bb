@@ -138,13 +138,12 @@ if not env.Bit('tests_use_irt'):
   env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_disabled_test',
                          is_broken=is_broken)
 
-if not env.Bit('target_arm'):
-  node = env.CommandSelLdrTestNacl('dynamic_modify_test.out',
-                                   dynamic_modify_test_nexe,
-                                   sel_ldr_flags=['-E', 'OUTSIDE_BROWSER=1'])
-  # This test fails under Valgrind presumably because Valgrind cannot
-  # handle dynamic code modifications that occur via our doubly-mapped
-  # shared memory segment.  It does not know to flush its code
-  # translation cache.
-  env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_modify_test',
-                         is_broken=is_broken or env.IsRunningUnderValgrind())
+node = env.CommandSelLdrTestNacl('dynamic_modify_test.out',
+                                 dynamic_modify_test_nexe,
+                                 sel_ldr_flags=['-E', 'OUTSIDE_BROWSER=1'])
+# This test fails under Valgrind presumably because Valgrind cannot
+# handle dynamic code modifications that occur via our doubly-mapped
+# shared memory segment.  It does not know to flush its code
+# translation cache.
+env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_modify_test',
+                       is_broken=is_broken or env.IsRunningUnderValgrind())

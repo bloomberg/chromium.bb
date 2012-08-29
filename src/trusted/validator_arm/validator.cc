@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/include/nacl_macros.h"
 
@@ -634,6 +635,129 @@ bool SfiValidator::validate(const vector<CodeSegment>& segments,
   complete_success &= validate_branches(segments, branches, critical, out);
 
   return complete_success;
+}
+
+static inline bool TypeMatch(Instruction insn1,
+                             Instruction insn2,
+                             uint32_t mask) {
+  return (insn1.Bits() & mask) == (insn2.Bits() & mask);
+}
+
+static inline bool IsMov1ImmNotSpecial(Instruction insn, uint32_t* mask) {
+  // See A8.8.102.
+  // Encoding A1.
+  // cond insn    S 0    Rd   imm12
+  // 1111 1111 1111 1111 1111 0000 0000 0000
+  // Binary constants is GCC extension, which we frown upon.
+  *mask = 0xfffff000;
+  return (insn.Bits(27, 21) == 0x1d /* 0b0011101 */) &&
+         (insn.Bits(19, 16) == 0x0 /* 0b0000 */) &&
+         (insn.Bits(15, 12) < 13);
+}
+
+static inline bool IsMov2ImmNotSpecial(Instruction insn, uint32_t* mask) {
+  // See A8.8.102.
+  // Encoding A2 (for ARM starting ARMv6T2), allowing 16-bit immediates.
+  // cond insn      imm4 Rd   imm12
+  // 1111 1111 1111 0000 1111 0000 0000 0000
+  *mask = 0xfff0f000;
+  return (insn.Bits(27, 20) == 0x30 /* 0b00110000 */) &&
+         (insn.Bits(15, 12) < 13);
+}
+
+static inline bool IsMovtImmNotSpecial(Instruction insn, uint32_t* mask) {
+  // See A8.8.106.
+  // Encoding A1, ARMv6T2, ARMv7, allowing 16 bit immediates.
+  // cond insn      imm4 Rd   imm12
+  // 1111 1111 1111 0000 1111 0000 0000 0000
+  *mask = 0xfff0f000;
+  return (insn.Bits(27, 20) == 0x34 /* 0b00110100 */) &&
+         (insn.Bits(15, 12) < 13);
+}
+
+static inline bool IsMvnImmNotSpecial(Instruction insn, uint32_t* mask) {
+  // See A8.8.115.
+  // Encoding A1.  ARMv4, ARMv5T, ARMv6, ARMv7.
+  // cond  insn   S 0    Rd   imm12
+  // 1111 1111 1111 1111 1111 0000 0000 0000
+  *mask = 0xfffff000;
+  return (insn.Bits(27, 21) == 0x1f /* 0b0011111 */) &&
+         (insn.Bits(19, 16) == 0x0  /* 0b0000 */) &&
+         (insn.Bits(15, 12) < 13);
+}
+
+static inline bool IsOrrImmNotSpecial(Instruction insn, uint32_t* mask) {
+  // See A8.8.122.
+  // Encoding A1.  ARMv4, ARMv5T, ARMv6, ARMv7.
+  // cond insn    S Rn   Rd   imm12
+  // 1111 1111 1111 1111 1111 0000 0000 0000
+  *mask = 0xfffff000;
+  return (insn.Bits(27, 21) == 0x1c /* 0b0011100 */) &&
+         (insn.Bits(15, 12) < 13);
+}
+
+bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
+                                       const CodeSegment& new_code,
+                                       ProblemSink* out) {
+  assert(old_code.begin_addr() == new_code.begin_addr());
+  assert(old_code.end_addr() == new_code.end_addr());
+
+  assert(nacl_arm_dec::kArm32InstSize / 8 == 4);
+  for (uintptr_t va = old_code.begin_addr();
+       va != old_code.end_addr();
+       va += nacl_arm_dec::kArm32InstSize / 8) {
+      Instruction old_insn = old_code[va];
+      Instruction new_insn = new_code[va];
+      if (new_insn.Bits() == old_insn.Bits())
+          continue;
+      // We allow replacement of immediates in following instructions:
+      //  MOV rX, imm; MVN rX, imm; MOVT rX, imm; ORR rX, imm.
+      // (and rX is not allowed to be SP, LR, PC).
+      // They are needed to allow modification of immediate constants,
+      // which is important for updating inline caches in JIT compilers,
+      // like one used in V8.
+      // And register shall not be PC.
+      // TODO(olonho): shall we allow MOV => MVN and vice versa
+      // replacement?
+      uint32_t mask = 0;
+      bool is_safe = false;
+      if (IsMov1ImmNotSpecial(new_insn, &mask) ||
+          IsMov2ImmNotSpecial(new_insn, &mask) ||
+          IsMovtImmNotSpecial(new_insn, &mask) ||
+          IsMvnImmNotSpecial(new_insn, &mask)  ||
+          IsOrrImmNotSpecial(new_insn, &mask)   )
+        is_safe = TypeMatch(old_insn, new_insn, mask);
+      if (!is_safe) {
+        out->ReportProblem(va, kProblemUnsafe);
+        return false;
+      }
+  }
+  return true;
+}
+
+bool SfiValidator::CopyCode(const CodeSegment& source_code,
+                            CodeSegment& dest_code,
+                            NaClCopyInstructionFunc copy_func,
+                            ProblemSink* out) {
+  vector<CodeSegment> segments;
+  segments.push_back(source_code);
+  if (!validate(segments, out))
+      return false;
+
+  // As on ARM all instructions are 4 bytes in size and aligned
+  // we don't have to check instruction boundary invariant.
+  for (uintptr_t va = source_code.begin_addr();
+       va != source_code.end_addr();
+       va += nacl_arm_dec::kArm32InstSize / 8) {
+    intptr_t offset = va - source_code.begin_addr();
+    // TODO(olonho): this const cast is a bit ugly, but we
+    // need to write to dest segment.
+    copy_func(const_cast<uint8_t*>(dest_code.base()) + offset,
+              const_cast<uint8_t*>(source_code.base()) + offset,
+              nacl_arm_dec::kArm32InstSize / 8);
+  }
+
+  return true;
 }
 
 bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
