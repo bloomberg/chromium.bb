@@ -429,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MediaPlayerNew) {
 }
 
 // http://crbug.com/4809
-IN_PROC_BROWSER_TEST_F(PluginTest, MediaPlayerOld) {
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
   TestPlugin("wmp_old.html");
 }
 
