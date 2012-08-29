@@ -188,11 +188,11 @@ bool BrowserFrameWin::GetClientAreaInsets(gfx::Insets* insets) const {
   return true;
 }
 
-void BrowserFrameWin::UpdateFrameAfterFrameChange() {
+void BrowserFrameWin::HandleFrameChanged() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
   UpdateDWMFrame();
-  NativeWidgetWin::UpdateFrameAfterFrameChange();
+  NativeWidgetWin::HandleFrameChanged();
 }
 
 bool BrowserFrameWin::PreHandleMSG(UINT message,

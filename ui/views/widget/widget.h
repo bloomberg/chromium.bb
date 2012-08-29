@@ -493,9 +493,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the focus to |native_view|.
   void FocusNativeView(gfx::NativeView native_view);
 
-  // Updates the frame after an event caused it to be changed.
-  virtual void UpdateFrameAfterFrameChange();
-
   void set_frame_type(FrameType frame_type) { frame_type_ = frame_type; }
   FrameType frame_type() const { return frame_type_; }
 

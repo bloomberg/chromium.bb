@@ -72,7 +72,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual gfx::Size GetRootViewSize() const = 0;
 
   virtual void ResetWindowControls() = 0;
-  virtual void UpdateFrame() = 0;
 
   virtual void PaintLayeredWindow(gfx::Canvas* canvas) = 0;
 
@@ -126,9 +125,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when display settings are adjusted on the system.
   virtual void HandleDisplayChange() = 0;
 
-  // Called when the system changes from glass to non-glass or vice versa.
-  virtual void HandleGlassModeChange() = 0;
-
   // Called when the user begins or ends a size/move operation using the window
   // manager.
   virtual void HandleBeginWMSizeMove() = 0;
@@ -146,6 +142,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the window's client size changed. |new_size| holds the new
   // size.
   virtual void HandleClientSizeChanged(const gfx::Size& new_size) = 0;
+
+  // Called when the window's frame has changed.
+  virtual void HandleFrameChanged() = 0;
 
   // Called when focus shifted to this HWND from |last_focused_window|.
   virtual void HandleNativeFocus(HWND last_focused_window) = 0;

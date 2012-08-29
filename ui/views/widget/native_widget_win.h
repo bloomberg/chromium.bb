@@ -86,7 +86,6 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
-  virtual void UpdateFrameAfterFrameChange() OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual void FrameTypeChanged() OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
@@ -204,7 +203,6 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
                              gfx::Size* max_size) const OVERRIDE;
   virtual gfx::Size GetRootViewSize() const OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
-  virtual void UpdateFrame() OVERRIDE;
   virtual void PaintLayeredWindow(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual InputMethod* GetInputMethod() OVERRIDE;
@@ -220,13 +218,13 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void HandleDestroyed() OVERRIDE;
   virtual bool HandleInitialFocus() OVERRIDE;
   virtual void HandleDisplayChange() OVERRIDE;
-  virtual void HandleGlassModeChange() OVERRIDE;
   virtual void HandleBeginWMSizeMove() OVERRIDE;
   virtual void HandleEndWMSizeMove() OVERRIDE;
   virtual void HandleMove() OVERRIDE;
   virtual void HandleWorkAreaChanged() OVERRIDE;
   virtual void HandleVisibilityChanged(bool visible) OVERRIDE;
   virtual void HandleClientSizeChanged(const gfx::Size& new_size) OVERRIDE;
+  virtual void HandleFrameChanged() OVERRIDE;
   virtual void HandleNativeFocus(HWND last_focused_window) OVERRIDE;
   virtual void HandleNativeBlur(HWND focused_window) OVERRIDE;
   virtual bool HandleMouseEvent(const ui::MouseEvent& event) OVERRIDE;

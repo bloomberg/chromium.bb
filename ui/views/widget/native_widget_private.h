@@ -76,7 +76,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // the NativeWidget wants no special NonClientFrameView.
   virtual NonClientFrameView* CreateNonClientFrameView() = 0;
 
-  virtual void UpdateFrameAfterFrameChange() = 0;
   virtual bool ShouldUseNativeFrame() const = 0;
   virtual void FrameTypeChanged() = 0;
 

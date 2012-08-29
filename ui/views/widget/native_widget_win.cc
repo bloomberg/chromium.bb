@@ -155,11 +155,6 @@ NonClientFrameView* NativeWidgetWin::CreateNonClientFrameView() {
       new NativeFrameView(GetWidget()) : NULL;
 }
 
-void NativeWidgetWin::UpdateFrameAfterFrameChange() {
-  // We've either gained or lost a custom window region, so reset it now.
-  message_handler_->ResetWindowRegion(true);
-}
-
 bool NativeWidgetWin::ShouldUseNativeFrame() const {
   return ui::win::IsAeroGlassEnabled();
 }
@@ -626,10 +621,6 @@ void NativeWidgetWin::ResetWindowControls() {
   GetWidget()->non_client_view()->ResetWindowControls();
 }
 
-void NativeWidgetWin::UpdateFrame() {
-  GetWidget()->non_client_view()->UpdateFrame();
-}
-
 void NativeWidgetWin::PaintLayeredWindow(gfx::Canvas* canvas) {
   GetWidget()->GetRootView()->Paint(canvas);
 }
@@ -725,16 +716,6 @@ void NativeWidgetWin::HandleDisplayChange() {
   GetWidget()->widget_delegate()->OnDisplayChanged();
 }
 
-void NativeWidgetWin::HandleGlassModeChange() {
-  // For some reason, we need to hide the window while we're changing the frame
-  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
-  // If we don't, the client area will be filled with black. I'm suspecting
-  // something skia-ey.
-  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
-  // to have this requirement.
-  FrameTypeChanged();
-}
-
 void NativeWidgetWin::HandleBeginWMSizeMove() {
   delegate_->OnNativeWidgetBeginUserBoundsChange();
 }
@@ -757,6 +738,10 @@ void NativeWidgetWin::HandleVisibilityChanged(bool visible) {
 
 void NativeWidgetWin::HandleClientSizeChanged(const gfx::Size& new_size) {
   delegate_->OnNativeWidgetSizeChanged(new_size);
+}
+
+void NativeWidgetWin::HandleFrameChanged() {
+  GetWidget()->non_client_view()->UpdateFrame();
 }
 
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {

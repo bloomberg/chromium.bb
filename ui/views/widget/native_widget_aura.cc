@@ -241,9 +241,6 @@ NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
   return NULL;
 }
 
-void NativeWidgetAura::UpdateFrameAfterFrameChange() {
-}
-
 bool NativeWidgetAura::ShouldUseNativeFrame() const {
   // There is only one frame type for aura.
   return false;

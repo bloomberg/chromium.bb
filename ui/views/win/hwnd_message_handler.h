@@ -154,11 +154,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
     remove_standard_frame_ = remove_standard_frame;
   }
 
-  // Resets the window region for the current widget bounds if necessary.
-  // If |force| is true, the window region is reset to NULL even for native
-  // frame windows.
-  void ResetWindowRegion(bool force);
-
  private:
   typedef std::set<DWORD> TouchIDs;
 
@@ -202,6 +197,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   // Returns the insets of the client area relative to the non-client area of
   // the window.
   gfx::Insets GetClientAreaInsets() const;
+
+  // Resets the window region for the current widget bounds if necessary.
+  // If |force| is true, the window region is reset to NULL even for native
+  // frame windows.
+  void ResetWindowRegion(bool force);
 
   // Calls DefWindowProc, safely wrapping the call in a ScopedRedrawLock to
   // prevent frame flicker. DefWindowProc handling can otherwise render the

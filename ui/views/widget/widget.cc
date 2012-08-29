@@ -764,10 +764,6 @@ void Widget::FocusNativeView(gfx::NativeView native_view) {
   native_widget_->FocusNativeView(native_view);
 }
 
-void Widget::UpdateFrameAfterFrameChange() {
-  native_widget_->UpdateFrameAfterFrameChange();
-}
-
 NonClientFrameView* Widget::CreateNonClientFrameView() {
   NonClientFrameView* frame_view =
       widget_delegate_->CreateNonClientFrameView(this);

@@ -65,7 +65,6 @@ void NonClientView::UpdateFrame() {
   widget->ThemeChanged();
   Layout();
   SchedulePaint();
-  widget->UpdateFrameAfterFrameChange();
 }
 
 void NonClientView::SetInactiveRenderingDisabled(bool disable) {

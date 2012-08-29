@@ -812,13 +812,10 @@ void HWNDMessageHandler::FrameTypeChanged() {
                           &policy, sizeof(DWMNCRENDERINGPOLICY));
   }
 
-  // Send a frame change notification, since the non-client metrics have
-  // changed.
-  SendFrameChanged();
+  ResetWindowRegion(true);
 
-  // Update the non-client view with the correct frame view for the active frame
-  // type.
-  delegate_->UpdateFrame();
+  // The non-client view needs to update too.
+  delegate_->HandleFrameChanged();
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
@@ -874,48 +871,6 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
     if (old_icon)
       DestroyIcon(old_icon);
   }
-}
-
-void HWNDMessageHandler::ResetWindowRegion(bool force) {
-  // A native frame uses the native window region, and we don't want to mess
-  // with it.
-  if (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow()) {
-    if (force)
-      SetWindowRgn(hwnd(), NULL, TRUE);
-    return;
-  }
-
-  // Changing the window region is going to force a paint. Only change the
-  // window region if the region really differs.
-  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
-  int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
-
-  CRect window_rect;
-  GetWindowRect(hwnd(), &window_rect);
-  HRGN new_region;
-  if (IsMaximized()) {
-    HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
-    MONITORINFO mi;
-    mi.cbSize = sizeof mi;
-    GetMonitorInfo(monitor, &mi);
-    CRect work_rect = mi.rcWork;
-    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
-    new_region = CreateRectRgnIndirect(&work_rect);
-  } else {
-    gfx::Path window_mask;
-    delegate_->GetWindowMask(
-        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
-    new_region = window_mask.CreateNativeRegion();
-  }
-
-  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
-    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
-    SetWindowRgn(hwnd(), new_region, TRUE);
-  } else {
-    DeleteObject(new_region);
-  }
-
-  DeleteObject(current_rgn);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1118,6 +1073,48 @@ gfx::Insets HWNDMessageHandler::GetClientAreaInsets() const {
   return gfx::Insets(0, 0, fullscreen_handler_->fullscreen() ? 0 : 1, 0);
 }
 
+void HWNDMessageHandler::ResetWindowRegion(bool force) {
+  // A native frame uses the native window region, and we don't want to mess
+  // with it.
+  if (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow()) {
+    if (force)
+      SetWindowRgn(hwnd(), NULL, TRUE);
+    return;
+  }
+
+  // Changing the window region is going to force a paint. Only change the
+  // window region if the region really differs.
+  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
+  int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
+
+  CRect window_rect;
+  GetWindowRect(hwnd(), &window_rect);
+  HRGN new_region;
+  if (IsMaximized()) {
+    HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi;
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(monitor, &mi);
+    CRect work_rect = mi.rcWork;
+    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    new_region = CreateRectRgnIndirect(&work_rect);
+  } else {
+    gfx::Path window_mask;
+    delegate_->GetWindowMask(
+      gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = window_mask.CreateNativeRegion();
+  }
+
+  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
+    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
+    SetWindowRgn(hwnd(), new_region, TRUE);
+  } else {
+    DeleteObject(new_region);
+  }
+
+  DeleteObject(current_rgn);
+}
+
 LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
                                                         WPARAM w_param,
                                                         LPARAM l_param) {
@@ -1302,7 +1299,13 @@ LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
     SetMsgHandled(FALSE);
     return 0;
   }
-  delegate_->HandleGlassModeChange();
+  // For some reason, we need to hide the window while we're changing the frame
+  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
+  // If we don't, the client area will be filled with black. I'm suspecting
+  // something skia-ey.
+  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
+  // to have this requirement.
+  FrameTypeChanged();
   return 0;
 }
 
