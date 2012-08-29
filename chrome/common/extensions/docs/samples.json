@@ -2527,6 +2527,30 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.systemInfo.storage.get"
+      ],
+      "crx_path": null,
+      "description": "Show disk capacity via SystemInfo API",
+      "features": [
+        "experimental"
+      ],
+      "icon": null,
+      "id": "9ddbb2719be2b3eff9a10422234b805d0c488cec",
+      "name": "SystemInfo APIs",
+      "packaged_app": true,
+      "path": "examples/api/systemInfo/",
+      "protocols": [],
+      "search_string": "SYSTEMINFO APIS SHOW DISK CAPACITY VIA SYSTEMINFO API EXPERIMENTAL CHROME.EXPERIMENTAL.SYSTEMINFO.STORAGE.GET",
+      "source_files": [
+        "index.html",
+        "main.js",
+        "manifest.json"
+      ],
+      "source_hash": "f84cb32e717c7dfb0181dd3e27ebe33e9176acf1",
+      "zip_path": "examples/api/systemInfo.zip"
+    },
+    {
+      "api_calls": [
         "chrome.browserAction.onClicked",
         "chrome.extension.getURL",
         "chrome.tabs.create",
