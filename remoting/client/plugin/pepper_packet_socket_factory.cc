@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
 #include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/cpp/private/udp_socket_private.h"
@@ -31,7 +32,7 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   virtual ~UdpPacketSocket();
 
   // |min_port| and |max_port| are set to zero if the port number
-  // |should be assigned by the OS.
+  // should be assigned by the OS.
   bool Init(const talk_base::SocketAddress& local_address,
             int min_port,
             int max_port);
@@ -87,6 +88,8 @@ class UdpPacketSocket : public talk_base::AsyncPacketSocket {
   std::list<PendingPacket> send_queue_;
   int send_queue_size_;
 
+  base::WeakPtrFactory<UdpPacketSocket> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(UdpPacketSocket);
 };
 
@@ -106,7 +109,8 @@ UdpPacketSocket::UdpPacketSocket(const pp::InstanceHandle& instance)
       min_port_(0),
       max_port_(0),
       send_pending_(false),
-      send_queue_size_(0) {
+      send_queue_size_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 UdpPacketSocket::~UdpPacketSocket() {
@@ -131,7 +135,8 @@ bool UdpPacketSocket::Init(const talk_base::SocketAddress& local_address,
   }
 
   int result = socket_.Bind(&pp_local_address, PpCompletionCallback(
-      base::Bind(&UdpPacketSocket::OnBindCompleted, base::Unretained(this))));
+      base::Bind(&UdpPacketSocket::OnBindCompleted,
+                 weak_factory_.GetWeakPtr())));
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
   state_ = STATE_BINDING;
 
@@ -169,7 +174,7 @@ void UdpPacketSocket::OnBindCompleted(int result) {
                                          min_port_)) {
       int result = socket_.Bind(&pp_local_address, PpCompletionCallback(
           base::Bind(&UdpPacketSocket::OnBindCompleted,
-                     base::Unretained(this))));
+                     weak_factory_.GetWeakPtr())));
       DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
     }
   } else {
@@ -258,7 +263,7 @@ void UdpPacketSocket::DoSend() {
       send_queue_.front().data->data(), send_queue_.front().data->size(),
       &send_queue_.front().address,
       PpCompletionCallback(base::Bind(&UdpPacketSocket::OnSendCompleted,
-                                      base::Unretained(this))));
+                                      weak_factory_.GetWeakPtr())));
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
   send_pending_ = true;
 }
@@ -305,7 +310,7 @@ void UdpPacketSocket::DoRead() {
   int result = socket_.RecvFrom(
       &receive_buffer_[0], receive_buffer_.size(),
       PpCompletionCallback(base::Bind(&UdpPacketSocket::OnReadCompleted,
-                                      base::Unretained(this))));
+                                      weak_factory_.GetWeakPtr())));
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
 }
 
