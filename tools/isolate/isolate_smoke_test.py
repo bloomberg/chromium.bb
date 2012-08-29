@@ -231,9 +231,10 @@ class IsolateModeBase(IsolateBase):
     """Verifies self.result contains the expected data."""
     expected = {
       u'files': self._gen_files(read_only, empty_file),
-      u'read_only': read_only,
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
     }
+    if read_only is not None:
+      expected[u'read_only'] = read_only
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     else:

@@ -452,6 +452,7 @@ class Cache(object):
       self._dirty = True
       self.state = []
     else:
+      added = 0
       for filename in os.listdir(self.cache_dir):
         if filename == self.STATE_FILE:
           continue
@@ -466,8 +467,10 @@ class Cache(object):
         else:
           # Insert as the oldest file. It will be deleted eventually if not
           # accessed.
-          logging.warn('Adding back unknown file %s in cache', filename)
           self._add(filename, False)
+          added += 1
+      if added:
+        logging.warn('Added back %d unknown files', added)
       self.state = [
         (filename, size) for filename, size in self.state
         if filename not in previous
@@ -485,14 +488,14 @@ class Cache(object):
       self.trim()
 
     logging.info(
-        '%3d (%5dkb) added', len(self._added), sum(self._added) / 1024)
+        '%4d (%7dkb) added', len(self._added), sum(self._added) / 1024)
     logging.info(
-        '%3d (%5dkb) current',
+        '%4d (%7dkb) current',
         len(self.state),
         sum(i[1] for i in self.state) / 1024)
     logging.info(
-        '%3d (%5dkb) removed', len(self._removed), sum(self._removed) / 1024)
-    logging.info('%5dkb free', self._free_disk / 1024)
+        '%4d (%7dkb) removed', len(self._removed), sum(self._removed) / 1024)
+    logging.info('%7dkb free', self._free_disk / 1024)
 
   def remove_lru_file(self):
     """Removes the last recently used file."""

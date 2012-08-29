@@ -554,13 +554,14 @@ def write_json(filepath_or_handle, data, dense):
   """
   if hasattr(filepath_or_handle, 'write'):
     if dense:
-      filepath_or_handle.write(json.dumps(data, separators=(',',':')))
+      filepath_or_handle.write(
+          json.dumps(data, sort_keys=True, separators=(',',':')))
     else:
       filepath_or_handle.write(json.dumps(data, sort_keys=True, indent=2))
   else:
     with open(filepath_or_handle, 'wb') as f:
       if dense:
-        json.dump(data, f, separators=(',',':'))
+        json.dump(data, f, sort_keys=True, separators=(',',':'))
       else:
         json.dump(data, f, sort_keys=True, indent=2)
 

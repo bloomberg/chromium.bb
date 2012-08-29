@@ -364,8 +364,12 @@ class Flattenable(object):
   MEMBERS = ()
 
   def flatten(self):
-    """Returns a json-serializable version of itself."""
-    return dict((member, getattr(self, member)) for member in self.MEMBERS)
+    """Returns a json-serializable version of itself.
+
+    Skips None entries.
+    """
+    items = ((member, getattr(self, member)) for member in self.MEMBERS)
+    return dict((member, value) for member, value in items if value is not None)
 
   @classmethod
   def load(cls, data):
@@ -568,13 +572,13 @@ class CompleteState(object):
   def save_files(self):
     """Saves both self.result and self.saved_state."""
     logging.debug('Dumping to %s' % self.result_file)
-    trace_inputs.write_json(self.result_file, self.result.flatten(), False)
+    trace_inputs.write_json(self.result_file, self.result.flatten(), True)
     total_bytes = sum(i.get('size', 0) for i in self.result.files.itervalues())
     if total_bytes:
       logging.debug('Total size: %d bytes' % total_bytes)
     saved_state_file = result_to_state(self.result_file)
     logging.debug('Dumping to %s' % saved_state_file)
-    trace_inputs.write_json(saved_state_file, self.saved_state.flatten(), False)
+    trace_inputs.write_json(saved_state_file, self.saved_state.flatten(), True)
 
   @property
   def root_dir(self):

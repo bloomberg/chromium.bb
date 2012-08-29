@@ -33,8 +33,6 @@ class Isolate(unittest.TestCase):
     expected = {
       'command': [],
       'files': {},
-      'read_only': None,
-      'relative_cwd': None,
     }
     self.assertEquals(expected, isolate.Result.load(values).flatten())
 
@@ -43,13 +41,11 @@ class Isolate(unittest.TestCase):
       'command': 'maybe',
       'files': {'foo': 42},
       'read_only': 2,
-      'relative_cwd': None,
     }
     expected = {
       'command': 'maybe',
       'files': {'foo': 42},
       'read_only': 2,
-      'relative_cwd': None,
     }
     self.assertEquals(expected, isolate.Result.load(values).flatten())
 
@@ -72,7 +68,6 @@ class Isolate(unittest.TestCase):
     values = {
     }
     expected = {
-      'isolate_file': None,
       'variables': {},
     }
     self.assertEquals(expected, isolate.SavedState.load(values).flatten())
@@ -142,7 +137,6 @@ class Isolate(unittest.TestCase):
             'size': self._size('isolate.py'),
           },
         },
-        'read_only': None,
         'relative_cwd': os.path.join('data', 'isolate'),
       }
       if sys.platform == 'win32':
