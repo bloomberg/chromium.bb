@@ -52,6 +52,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
 
  private:
   // Updates from model.

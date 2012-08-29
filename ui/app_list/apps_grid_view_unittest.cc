@@ -68,6 +68,11 @@ class AppsGridViewTest : public testing::Test {
     item->SetHighlighted(true);
   }
 
+  AppListItemView* GetItemViewAt(int index) {
+    DCHECK(index >= 0 && index < apps_grid_view_->child_count());
+    return static_cast<AppListItemView*>(apps_grid_view_->child_at(index));
+  }
+
   scoped_ptr<AppListModel::Apps> apps_model_;
   scoped_ptr<PaginationModel> pagination_model_;
   scoped_ptr<AppsGridView> apps_grid_view_;
@@ -107,6 +112,24 @@ TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
   // Highlight last one in the model and last page should be selected.
   HighlightItemAt(apps_model_->item_count() - 1);
   EXPECT_EQ(kPages - 1, pagination_model_->selected_page());
+}
+
+TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
+  const int kTotalItems = 2;
+  const int kLastItemIndex = kTotalItems - 1;
+
+  PopulateApps(kTotalItems);
+
+  AppListItemView* last_item = GetItemViewAt(kLastItemIndex);
+  apps_grid_view_->SetSelectedItem(last_item);
+  apps_model_->DeleteAt(kLastItemIndex);
+
+  EXPECT_FALSE(apps_grid_view_->IsSelectedItem(last_item));
+
+  // No crash happens.
+  AppListItemView* item = GetItemViewAt(0);
+  apps_grid_view_->SetSelectedItem(item);
+  EXPECT_TRUE(apps_grid_view_->IsSelectedItem(item));
 }
 
 }  // namespace test

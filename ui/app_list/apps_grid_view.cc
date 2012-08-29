@@ -237,6 +237,18 @@ void AppsGridView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Override to not paint focus frame.
 }
 
+void AppsGridView::ViewHierarchyChanged(bool is_add,
+                                        views::View* parent,
+                                        views::View* child) {
+  if (!is_add) {
+    if (parent == this &&
+        selected_item_index_ >= 0 &&
+        GetItemViewAtIndex(selected_item_index_) == child) {
+      selected_item_index_ = -1;
+    }
+  }
+}
+
 void AppsGridView::Update() {
   selected_item_index_ = -1;
   RemoveAllChildViews(true);
