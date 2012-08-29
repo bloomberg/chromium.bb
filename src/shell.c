@@ -35,6 +35,7 @@
 #include <wayland-server.h>
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
+#include "workspaces-server-protocol.h"
 #include "../shared/config-parser.h"
 
 #define DEFAULT_NUM_WORKSPACES 1
@@ -107,6 +108,8 @@ struct desktop_shell {
 		struct wl_array array;
 		unsigned int current;
 		unsigned int num;
+
+		struct wl_list client_list;
 
 		struct weston_animation animation;
 		struct wl_list anim_sticky_list;
@@ -608,6 +611,17 @@ workspace_translate_in(struct workspace *ws, double fraction)
 }
 
 static void
+broadcast_current_workspace_state(struct desktop_shell *shell)
+{
+	struct wl_resource *resource;
+
+	wl_list_for_each(resource, &shell->workspaces.client_list, link)
+		workspace_manager_send_state(resource,
+					     shell->workspaces.current,
+					     shell->workspaces.num);
+}
+
+static void
 reverse_workspace_change_animation(struct desktop_shell *shell,
 				   unsigned int index,
 				   struct workspace *from,
@@ -771,6 +785,7 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 	    shell->workspaces.anim_to == from) {
 		restore_focus_state(shell, to);
 		reverse_workspace_change_animation(shell, index, from, to);
+		broadcast_current_workspace_state(shell);
 		return;
 	}
 
@@ -785,6 +800,8 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 		update_workspace(shell, index, from, to);
 	else
 		animate_workspace_change(shell, index, from, to);
+
+	broadcast_current_workspace_state(shell);
 }
 
 static bool
@@ -805,12 +822,40 @@ workspace_has_only(struct workspace *ws, struct weston_surface *surface)
 }
 
 static void
+move_surface_to_workspace(struct desktop_shell *shell,
+			  struct weston_surface *surface,
+			  uint32_t workspace)
+{
+	struct workspace *from;
+	struct workspace *to;
+	struct weston_seat *seat;
+
+	if (workspace == shell->workspaces.current)
+		return;
+
+	from = get_current_workspace(shell);
+	to = get_workspace(shell, workspace);
+
+	wl_list_remove(&surface->layer_link);
+	wl_list_insert(&to->layer.surface_list, &surface->layer_link);
+
+	drop_focus_state(shell, from, surface);
+	wl_list_for_each(seat, &shell->compositor->seat_list, link)
+		if (seat->has_keyboard &&
+		    seat->keyboard.focus == &surface->surface)
+			wl_keyboard_set_focus(&seat->keyboard, NULL);
+
+	weston_surface_damage_below(surface);
+}
+
+static void
 take_surface_to_workspace_by_seat(struct desktop_shell *shell,
-				  struct wl_seat *seat,
+				  struct wl_seat *wl_seat,
 				  unsigned int index)
 {
+	struct weston_seat *seat = (struct weston_seat *) wl_seat;
 	struct weston_surface *surface =
-		(struct weston_surface *) seat->keyboard->focus;
+		(struct weston_surface *) wl_seat->keyboard->focus;
 	struct shell_surface *shsurf;
 	struct workspace *from;
 	struct workspace *to;
@@ -825,12 +870,17 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 	wl_list_remove(&surface->layer_link);
 	wl_list_insert(&to->layer.surface_list, &surface->layer_link);
 
-	replace_focus_state(shell, to, (struct weston_seat *) seat);
+	replace_focus_state(shell, to, seat);
 	drop_focus_state(shell, from, surface);
 
 	if (shell->workspaces.anim_from == to &&
 	    shell->workspaces.anim_to == from) {
+		wl_list_remove(&to->layer.link);
+		wl_list_insert(from->layer.link.prev, &to->layer.link);
+
 		reverse_workspace_change_animation(shell, index, from, to);
+		broadcast_current_workspace_state(shell);
+
 		return;
 	}
 
@@ -850,6 +900,56 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 
 		animate_workspace_change(shell, index, from, to);
 	}
+
+	broadcast_current_workspace_state(shell);
+}
+
+static void
+workspace_manager_move_surface(struct wl_client *client,
+			       struct wl_resource *resource,
+			       struct wl_resource *surface_resource,
+			       uint32_t workspace)
+{
+	struct desktop_shell *shell = resource->data;
+	struct weston_surface *surface =
+		(struct weston_surface *) surface_resource;
+
+	move_surface_to_workspace(shell, surface, workspace);
+}
+
+static const struct workspace_manager_interface workspace_manager_implementation = {
+	workspace_manager_move_surface,
+};
+
+static void
+unbind_resource(struct wl_resource *resource)
+{
+	wl_list_remove(&resource->link);
+	free(resource);
+}
+
+static void
+bind_workspace_manager(struct wl_client *client,
+		       void *data, uint32_t version, uint32_t id)
+{
+	struct desktop_shell *shell = data;
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &workspace_manager_interface,
+					&workspace_manager_implementation,
+					id, shell);
+
+	if (resource == NULL) {
+		weston_log("couldn't add workspace manager object");
+		return;
+	}
+
+	resource->destroy = unbind_resource;
+	wl_list_insert(&shell->workspaces.client_list, &resource->link);
+
+	workspace_manager_send_state(resource,
+				     shell->workspaces.current,
+				     shell->workspaces.num);
 }
 
 static void
@@ -3618,6 +3718,7 @@ shell_init(struct weston_compositor *ec)
 	weston_layer_init(&shell->input_panel_layer, NULL);
 
 	wl_array_init(&shell->workspaces.array);
+	wl_list_init(&shell->workspaces.client_list);
 
 	shell_configuration(shell);
 
@@ -3651,6 +3752,10 @@ shell_init(struct weston_compositor *ec)
 
 	if (wl_display_add_global(ec->wl_display, &input_panel_interface,
 				  shell, bind_input_panel) == NULL)
+		return -1;
+
+	if (wl_display_add_global(ec->wl_display, &workspace_manager_interface,
+				  shell, bind_workspace_manager) == NULL)
 		return -1;
 
 	shell->child.deathstamp = weston_compositor_get_time();

@@ -1,0 +1,27 @@
+<protocol name="workspaces">
+
+  <interface name="workspace_manager" version="1">
+    <description summary="workspaces manager">
+      An interface for managing surfaces in workspaces.
+    </description>
+
+    <request name="move_surface">
+      <description summary="move surface to workspace">
+	Move the given surface to the specified workspace.
+      </description>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="workspace" type="uint"/>
+    </request>
+
+    <event name="state">
+      <description summary="workspace state">
+	The current workspace state, such as current workspace and workspace
+	count, has changed.
+      </description>
+      <arg name="current" type="uint"/>
+      <arg name="count" type="uint"/>
+    </event>
+
+  </interface>
+
+</protocol>
