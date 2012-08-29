@@ -189,6 +189,17 @@ class HGenerator(object):
       if type_.description:
         c.Comment(type_.description)
       c.Append('typedef std::string %(classname)s;')
+    elif type_.type_ == PropertyType.ENUM:
+      if type_.description:
+        c.Comment(type_.description)
+      c.Sblock('enum %(classname)s {')
+      for value in type_.enum_values:
+        c.Append('%s_%s,' % (classname.upper(), value.upper()))
+      (c.Eblock('};')
+        .Append()
+        .Append('scoped_ptr<base::Value> CreateEnumValue(%s %s);' %
+                (classname, classname.lower()))
+      )
     else:
       if type_.description:
         c.Comment(type_.description)

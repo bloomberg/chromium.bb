@@ -81,6 +81,11 @@ class Type(object):
                                 from_client=True)
     elif json.get('type') == 'string':
       self.type_ = PropertyType.STRING
+    elif 'enum' in json:
+      self.enum_values = []
+      for value in json['enum']:
+        self.enum_values.append(value)
+      self.type_ = PropertyType.ENUM
     else:
       if not (
           'properties' in json or

@@ -98,15 +98,20 @@ class CppTypeGenerator(object):
     """Gets the enum value in the given model.Property indicating no value has
     been set.
     """
-    return '%s_NONE' % prop.unix_name.upper()
+    prop_name = prop.unix_name
+    if (self.IsEnumRef(prop)):
+      prop_name = self.GetCompiledType(prop).upper()
+    return '%s_NONE' % prop_name.upper()
 
   def GetEnumValue(self, prop, enum_value):
     """Gets the enum value of the given model.Property of the given type.
 
     e.g VAR_STRING
     """
-    return '%s_%s' % (
-        prop.unix_name.upper(), cpp_util.Classname(enum_value.upper()))
+    prop_name = prop.unix_name.upper()
+    if (self.IsEnumRef(prop)):
+      prop_name = self.GetCompiledType(prop).upper()
+    return '%s_%s' % (prop_name, cpp_util.Classname(enum_value.upper()))
 
   def GetChoicesEnumType(self, prop):
     """Gets the type of the enum for the given model.Property.
@@ -189,7 +194,7 @@ class CppTypeGenerator(object):
 
     # Enums aren't wrapped because C++ won't allow it. Optional enums have a
     # NONE value generated instead.
-    if wrap_optional and prop.optional and type_ != PropertyType.ENUM:
+    if wrap_optional and prop.optional and not self.IsEnumOrEnumRef(prop):
       cpp_type = 'scoped_ptr<%s> ' % cpp_type
     if pad_for_generics:
       return cpp_type
@@ -262,6 +267,17 @@ class CppTypeGenerator(object):
       return prop
     return self._ResolveTypeNamespace(prop.ref_type).types.get(prop.ref_type,
         None)
+
+  def IsEnumOrEnumRef(self, prop):
+    """Returns true if the property is an ENUM or a reference to an ENUM.
+    """
+    return self.GetReferencedProperty(prop).type_ == PropertyType.ENUM
+
+  def IsEnumRef(self, prop):
+    """Returns true if the property is a reference to an ENUM.
+    """
+    return (prop.type_ == PropertyType.REF and
+            self.GetReferencedProperty(prop).type_ == PropertyType.ENUM)
 
   def _NamespaceTypeDependencies(self):
     """Returns a dict containing a mapping of model.Namespace to the C++ type

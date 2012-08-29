@@ -3,12 +3,29 @@
     "namespace": "enums",
     "types": [
       {
+        "id": "Enumeration",
+        "enum": ["none", "one", "two", "three"]
+      },
+      {
         "id": "EnumType",
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
             "enum": ["one", "two", "three"]
+          }
+        }
+      },
+      {
+        "id": "HasEnumeration",
+        "type": "object",
+        "properties": {
+          "enumeration": {
+            "$ref": "Enumeration"
+          },
+          "optional_enumeration": {
+            "$ref": "Enumeration",
+            "optional": true
           }
         }
       },
@@ -43,6 +60,22 @@
         ]
       },
       {
+        "name": "takesEnumAsType",
+        "type": "function",
+        "description": "Takes an enum type as its parameter.",
+        "parameters": [
+          {
+            "name": "enumeration",
+            "$ref": "Enumeration"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "returnsEnum",
         "type": "function",
         "description": "Returns an enum through the callback",
@@ -55,6 +88,23 @@
                 "name": "state",
                 "type": "string",
                 "enum": ["foo", "bar", "baz"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "returnsEnumAsType",
+        "type": "function",
+        "description": "Returns an enum through the callback",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "enumeration",
+                "$ref": "Enumeration"
               }
             ]
           }
