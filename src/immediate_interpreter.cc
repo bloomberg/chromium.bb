@@ -278,6 +278,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       sent_button_down_(false),
       button_down_timeout_(0.0),
       started_moving_time_(-1.0),
+      gs_changed_time_(-1.0),
       finger_leave_time_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_to_click_state_entered_(0.0),
@@ -401,6 +402,8 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   UpdatePointingFingers(*hwstate);
   UpdateThumbState(*hwstate);
   set<short, kMaxGesturingFingers> gs_fingers = GetGesturingFingers(*hwstate);
+  if (gs_fingers != prev_gs_fingers_)
+    gs_changed_time_ = hwstate->timestamp;
 
   UpdateStartedMovingTime(*hwstate, gs_fingers);
   UpdateButtons(*hwstate);
@@ -628,7 +631,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
         current_gesture_type_ = kGestureTypeMove;
       } else {
         if (changed_time_ > started_moving_time_ ||
-            hwstate.timestamp - started_moving_time_ <
+            hwstate.timestamp - max(started_moving_time_, gs_changed_time_) <
             evaluation_timeout_.val_ ||
             current_gesture_type_ == kGestureTypeNull) {
           if (num_gesturing == 2) {
