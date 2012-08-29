@@ -3197,6 +3197,7 @@ usage(int error_code)
 
 
 		"Core options:\n\n"
+		"  --version\t\tPrint weston version\n"
 		"  -B, --backend=MODULE\tBackend module, one of drm-backend.so,\n"
 		"\t\t\t\tx11-backend.so or wayland-backend.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
@@ -3249,6 +3250,7 @@ int main(int argc, char *argv[])
 	int32_t idle_time = 300;
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
+	int32_t version = 0;
 	char *config_file;
 
 	const struct config_key core_config_keys[] = {
@@ -3267,6 +3269,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
 		{ WESTON_OPTION_STRING, "log", 0, &log },
 		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
+		{ WESTON_OPTION_BOOLEAN, "version", 0, &version },
 	};
 
 	argc = parse_options(core_options,
@@ -3274,6 +3277,11 @@ int main(int argc, char *argv[])
 
 	if (help)
 		usage(EXIT_SUCCESS);
+
+	if (version) {
+		printf(PACKAGE_STRING "\n");
+		return EXIT_SUCCESS;
+	}
 
 	weston_log_file_open(log);
 	

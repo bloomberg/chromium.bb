@@ -104,8 +104,11 @@ or you can pass an absolute path. The default backend is
 unless the environment suggests otherwise, see
 .IR DISPLAY " and " WAYLAND_DISPLAY .
 .TP
+.BR \-\-version
+Print the program version.
+.TP
 .BR \-\^h ", " \-\-help
-Print the program version and a summary of command line options, and quit.
+Print a summary of command line options, and quit.
 .TP
 \fB\-\^i\fR\fIN\fR, \fB\-\-idle\-time\fR=\fIN\fR
 Set the idle timeout to
