@@ -34,9 +34,9 @@ import url_constants
 # URL. This is necessary because it is not possible to pass flags to the script
 # handler.
 # Production settings:
-# DEFAULT_BRANCHES = { 'extensions': 'stable', 'apps': 'trunk' }
+DEFAULT_BRANCHES = { 'extensions': 'stable', 'apps': 'trunk' }
 # Dev settings:
-DEFAULT_BRANCHES = { 'extensions': 'local', 'apps': 'local' }
+# DEFAULT_BRANCHES = { 'extensions': 'local', 'apps': 'local' }
 
 BRANCH_UTILITY_MEMCACHE = InMemoryObjectStore('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,

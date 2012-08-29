@@ -2,15 +2,19 @@ cron:
 - description: Load everything for trunk.
   url: /cron/trunk
   schedule: every 5 minutes
+  target: 2-0-0
 
 - description: Load everything for dev.
   url: /cron/dev
   schedule: every 5 minutes
+  target: 2-0-0
 
 - description: Load everything for beta.
   url: /cron/beta
   schedule: every 5 minutes
+  target: 2-0-0
 
 - description: Load everything for stable.
   url: /cron/stable
   schedule: every 5 minutes
+  target: 2-0-0
