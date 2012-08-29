@@ -210,7 +210,7 @@
       ],
       'msvs_disabled_warnings': [4244, 4267, 4341, 4345, 4390, 4554, 4748, 4800],
       'defines': [
-        'SK_GAMMA_SRGB',
+        #'SK_GAMMA_SRGB',
         #'SK_GAMMA_APPLY_TO_A8',
         'SK_BUILD_NO_IMAGE_ENCODE',
         'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
@@ -250,6 +250,26 @@
             }],
           ],
         }],
+        #Settings for text blitting, chosen to approximate the system browser.
+        [ 'OS == "linux"', {
+          'defines': [
+            'SK_GAMMA_EXPONENT=1.2',
+            'SK_GAMMA_CONTRAST=0.2',
+          ],
+        }],
+        ['OS == "android" or OS == "win"', {
+          'defines': [
+            'SK_GAMMA_SRGB',
+            'SK_GAMMA_CONTRAST=0.5',
+          ],
+        }],
+        ['OS == "mac"', {
+          'defines': [
+            'SK_GAMMA_SRGB',
+            'SK_GAMMA_CONTRAST=0.0',
+          ],
+        }],
+        
         # For POSIX platforms, prefer the Mutex implementation provided by Skia
         # since it does not generate static initializers.
         [ 'OS == "android" or OS == "linux" or OS == "mac"', {
