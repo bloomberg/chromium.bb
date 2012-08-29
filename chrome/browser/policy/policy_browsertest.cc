@@ -6,8 +6,11 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "base/test/test_file_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +21,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -36,11 +40,15 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
@@ -120,6 +128,31 @@ void SendToOmniboxAndSubmit(LocationBar* location_bar, const string16& input) {
         content::NotificationService::AllSources());
     observer.Wait();
   }
+}
+
+// Downloads a file named |file| and expects it to be saved to |dir|, which
+// must be empty.
+void DownloadAndVerifyFile(
+    Browser* browser, const FilePath& dir, const FilePath& file) {
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(browser->profile());
+  content::DownloadTestObserverTerminal observer(
+      download_manager, 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
+  FilePath downloaded = dir.Append(file);
+  EXPECT_FALSE(file_util::PathExists(downloaded));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser, url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  observer.WaitForFinished();
+  EXPECT_EQ(
+      1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));
+  EXPECT_TRUE(file_util::PathExists(downloaded));
+  file_util::FileEnumerator enumerator(
+      dir, false, file_util::FileEnumerator::FILES);
+  EXPECT_EQ(file, enumerator.Next().BaseName());
+  EXPECT_EQ(FilePath(), enumerator.Next());
 }
 
 }  // namespace
@@ -255,6 +288,39 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_FALSE(model->CurrentMatch().destination_url.is_valid());
   EXPECT_EQ(GURL("about:blank"), web_contents->GetURL());
 }
+
+// This policy isn't available on Chrome OS.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
+  // Verifies that the download directory can be forced by policy.
+
+  // Set the initial download directory.
+  ScopedTempDir initial_dir;
+  ASSERT_TRUE(initial_dir.CreateUniqueTempDir());
+  browser()->profile()->GetPrefs()->SetFilePath(
+      prefs::kDownloadDefaultDirectory, initial_dir.path());
+  // Don't prompt for the download location during this test.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kPromptForDownload, false);
+
+  // Verify that downloads end up on the default directory.
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  DownloadAndVerifyFile(browser(), initial_dir.path(), file);
+  file_util::DieFileDie(initial_dir.path().Append(file), false);
+
+  // Override the download directory with the policy and verify a download.
+  ScopedTempDir forced_dir;
+  ASSERT_TRUE(forced_dir.CreateUniqueTempDir());
+  PolicyMap policies;
+  policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(forced_dir.path().value()));
+  provider_.UpdateChromePolicy(policies);
+  DownloadAndVerifyFile(browser(), forced_dir.path(), file);
+  // Verify that the first download location wasn't affected.
+  EXPECT_FALSE(file_util::PathExists(initial_dir.path().Append(file)));
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   // Disable incognito via policy and verify that incognito windows can't be

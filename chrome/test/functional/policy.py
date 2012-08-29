@@ -345,32 +345,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     pid = self._GetPluginPID('Java')
     self.assertTrue(pid, 'No plugin process for java')
 
-  def testSetDownloadDirectory(self):
-    """Verify download directory and prompt cannot be modified."""
-    # Check for changing the download directory location
-    download_default_dir = self.GetDownloadDirectory().value()
-    self.assertEqual(
-        download_default_dir,
-        self.GetPrefsInfo().Prefs()['download']['default_directory'],
-        msg='Downloads directory is not set correctly.')
-    self.SetPrefs(pyauto.kDownloadDefaultDirectory, 'download')
-    new_download_dir = os.path.abspath(os.path.join(download_default_dir,
-                                                    os.pardir))
-    policy = {'DownloadDirectory': new_download_dir}
-    self.SetUserPolicy(policy)
-    self.assertEqual(
-        new_download_dir,
-        self.GetPrefsInfo().Prefs()['download']['default_directory'],
-        msg='Downloads directory is not set correctly.')
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs(pyauto.kDownloadDefaultDirectory,
-                              'download'))
-    # Check for changing the option 'Ask for each download'
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs(pyauto.kPromptForDownload, True))
-
   def testSavingBrowserHistoryDisabled(self):
     """Verify that browsing history is not being saved."""
     policy = {'SavingBrowserHistoryDisabled': True}
