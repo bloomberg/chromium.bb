@@ -261,6 +261,8 @@
         'wm/event_rewriter_event_filter.h',
         'wm/frame_painter.cc',
         'wm/frame_painter.h',
+        'wm/gestures/long_press_affordance_handler.cc',
+        'wm/gestures/long_press_affordance_handler.h',
         'wm/gestures/system_pinch_handler.cc',
         'wm/gestures/system_pinch_handler.h',
         'wm/image_grid.cc',

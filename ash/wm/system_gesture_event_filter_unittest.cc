@@ -14,6 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/time.h"
@@ -128,13 +129,13 @@ class SystemGestureEventFilterTest : public AshTestBase {
   SystemGestureEventFilterTest() : AshTestBase() {}
   virtual ~SystemGestureEventFilterTest() {}
 
-  internal::LongPressAffordanceAnimation* GetLongPressAffordance() {
+  internal::LongPressAffordanceHandler* GetLongPressAffordance() {
     Shell::TestApi shell_test(Shell::GetInstance());
     return shell_test.system_gesture_event_filter()->
         long_press_affordance_.get();
   }
 
-  base::OneShotTimer<internal::LongPressAffordanceAnimation>*
+  base::OneShotTimer<internal::LongPressAffordanceHandler>*
       GetLongPressAffordanceTimer() {
     return &GetLongPressAffordance()->timer_;
   }
@@ -488,7 +489,7 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_TRUE(window1->HasCapture());
 
-  base::OneShotTimer<internal::LongPressAffordanceAnimation>* timer =
+  base::OneShotTimer<internal::LongPressAffordanceHandler>* timer =
       GetLongPressAffordanceTimer();
   EXPECT_TRUE(timer->IsRunning());
   EXPECT_EQ(kTouchId, GetLongPressAffordanceTouchId());

@@ -28,10 +28,11 @@ namespace ash {
 
 namespace test {
 class SystemGestureEventFilterTest;
-}  // namespace test
+}
 
 namespace internal {
 
+class LongPressAffordanceHandler;
 class SystemPinchHandler;
 class TouchUMA;
 
@@ -47,54 +48,6 @@ enum ScrollOrientation {
   SCROLL_ORIENTATION_UNSET = 0,
   SCROLL_ORIENTATION_HORIZONTAL,
   SCROLL_ORIENTATION_VERTICAL
-};
-
-// LongPressAffordanceAnimation displays an animated affordance that is shown
-// on a TAP_DOWN gesture. The animation sequence consists of two parts:
-// The first part is a grow animation that starts at semi-long-press and
-// completes on a long-press gesture. The affordance animates to full size
-// during grow animation.
-// The second part is a shrink animation that start after grow and shrinks the
-// affordance out of view.
-class LongPressAffordanceAnimation : public ui::AnimationDelegate,
-                                     public ui::LinearAnimation {
- public:
-  LongPressAffordanceAnimation();
-  virtual ~LongPressAffordanceAnimation();
-
-  // Display or removes long press affordance according to the |event|.
-  void ProcessEvent(aura::Window* target,
-                    ui::LocatedEvent* event,
-                    int touch_id);
-
- private:
-  friend class ash::test::SystemGestureEventFilterTest;
-
-  enum LongPressAnimationType {
-    NONE,
-    GROW_ANIMATION,
-    SHRINK_ANIMATION,
-  };
-
-  void StartAnimation();
-  void StopAnimation();
-
-  // Overridden from ui::LinearAnimation.
-  virtual void AnimateToState(double state) OVERRIDE;
-  virtual bool ShouldSendCanceledFromStop() OVERRIDE;
-
-  // Overridden from ui::AnimationDelegate.
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-
-  class LongPressAffordanceView;
-  scoped_ptr<LongPressAffordanceView> view_;
-  gfx::Point tap_down_location_;
-  int tap_down_touch_id_;
-  base::OneShotTimer<LongPressAffordanceAnimation> timer_;
-  int tap_down_display_id_;
-  LongPressAnimationType current_animation_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceAnimation);
 };
 
 // An event filter which handles system level gesture events.
@@ -196,7 +149,7 @@ class SystemGestureEventFilter : public aura::EventFilter,
   // This is the counter which keeps track of the number of events passed.
   int initiation_delay_events_;
 
-  scoped_ptr<LongPressAffordanceAnimation> long_press_affordance_;
+  scoped_ptr<LongPressAffordanceHandler> long_press_affordance_;
 
   TouchUMA touch_uma_;
 
