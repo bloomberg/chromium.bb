@@ -545,6 +545,10 @@ class DocumentFeed : public FeedEntry {
   // List of document entries.
   const ScopedVector<DocumentEntry>& entries() const { return entries_; }
 
+  // Releases entries_ into |entries|. This is a transfer of ownership, so the
+  // caller is responsible for deleting the elements of |entries|.
+  void ReleaseEntries(std::vector<DocumentEntry*>* entries);
+
   // Start index of the document entry list.
   int start_index() const { return start_index_; }
 
