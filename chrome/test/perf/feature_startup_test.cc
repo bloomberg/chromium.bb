@@ -196,24 +196,4 @@ TEST_F(NewTabUIStartupTest, DISABLED_NewTabTimingTestsCold) {
   RunNewTabTimingTest();
 }
 
-#if defined(TOOLKIT_GTK)
-TEST_F(NewTabUIStartupTest, GtkThemeCold) {
-  RunStartupTest("tab_gtk_theme_cold", false /* cold */,
-                 false /* not important */,
-                 UITestBase::NATIVE_THEME);
-}
-
-TEST_F(NewTabUIStartupTest, NativeFrameCold) {
-  RunStartupTest("tab_custom_frame_cold", false /* cold */,
-                 false /* not important */,
-                 UITestBase::CUSTOM_FRAME);
-}
-
-TEST_F(NewTabUIStartupTest, NativeFrameGtkThemeCold) {
-  RunStartupTest("tab_custom_frame_gtk_theme_cold", false /* cold */,
-                 false /* not important */,
-                 UITestBase::CUSTOM_FRAME_NATIVE_THEME);
-}
-#endif
-
 }  // namespace
