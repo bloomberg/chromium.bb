@@ -163,6 +163,9 @@ class CommandBufferProxyImpl
   uint32 next_signal_id_;
   SignalTaskMap signal_tasks_;
 
+  // ID of transfer buffer containing shared state.
+  int32 state_buffer_;
+
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };
 

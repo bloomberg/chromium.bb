@@ -34,10 +34,13 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       route_id_(route_id),
       flush_count_(0),
       last_put_offset_(-1),
-      next_signal_id_(0) {
+      next_signal_id_(0),
+      state_buffer_(-1) {
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
+  if (state_buffer_ != -1)
+    DestroyTransferBuffer(state_buffer_);
   // Delete all the locally cached shared memory objects, closing the handle
   // in this process.
   for (TransferBufferMap::iterator it = transfer_buffers_.begin();
@@ -148,14 +151,14 @@ bool CommandBufferProxyImpl::Initialize() {
     return false;
   }
 
-  int32 state_buffer = CreateTransferBuffer(sizeof *shared_state_, -1);
+  state_buffer_ = CreateTransferBuffer(sizeof *shared_state_, -1);
 
-  if (state_buffer == -1) {
+  if (state_buffer_ == -1) {
     LOG(ERROR) << "Failed to create shared state transfer buffer.";
     return false;
   }
 
-  gpu::Buffer buffer = GetTransferBuffer(state_buffer);
+  gpu::Buffer buffer = GetTransferBuffer(state_buffer_);
   if (!buffer.ptr) {
     LOG(ERROR) << "Failed to get shared state transfer buffer";
     return false;
@@ -165,7 +168,7 @@ bool CommandBufferProxyImpl::Initialize() {
   shared_state_->Initialize();
 
   if (!Send(new GpuCommandBufferMsg_SetSharedStateBuffer(route_id_,
-                                                         state_buffer))) {
+                                                         state_buffer_))) {
     LOG(ERROR) << "Failed to initialize shared command buffer state.";
     return false;
   }
