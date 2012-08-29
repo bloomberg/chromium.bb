@@ -17,6 +17,7 @@ import tempfile
 import unittest
 
 import isolate
+import run_test_from_archive
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 VERBOSE = False
@@ -256,6 +257,8 @@ class IsolateModeBase(IsolateBase):
   def _expect_results(self, args, read_only, extra_vars, empty_file):
     self._expected_result(args, read_only, empty_file)
     self._expected_saved_state(extra_vars)
+    # Also verifies run_test_from_archive.py will be able to read it.
+    run_test_from_archive.load_manifest(open(self.result, 'r').read())
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.result))

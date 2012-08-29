@@ -207,6 +207,9 @@ def load_manifest(content):
           elif subsubkey == 'timestamp':
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
+          elif subsubkey == 'touched_only':
+            if not isinstance(subsubvalue, bool):
+              raise ConfigError('Expected bool, got %r' % subsubvalue)
           else:
             raise ConfigError('Unknown key %s' % subsubkey)
         if bool('sha-1' in subvalue) and bool('link' in subvalue):
