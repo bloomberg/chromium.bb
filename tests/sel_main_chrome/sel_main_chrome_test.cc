@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/desc/nacl_desc_custom.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -66,6 +67,40 @@ void WINAPI DummyRendererThread(void *thread_arg) {
                                                &untrusted_channel));
 }
 
+void ExampleDescDestroy(void *handle) {
+  UNREFERENCED_PARAMETER(handle);
+}
+
+ssize_t ExampleDescSendMsg(void *handle,
+                           const struct NaClImcTypedMsgHdr *msg,
+                           int flags) {
+  UNREFERENCED_PARAMETER(handle);
+  UNREFERENCED_PARAMETER(msg);
+  UNREFERENCED_PARAMETER(flags);
+
+  NaClLog(LOG_FATAL, "ExampleDescSendMsg: Not implemented\n");
+  return 0;
+}
+
+ssize_t ExampleDescRecvMsg(void *handle,
+                           struct NaClImcTypedMsgHdr *msg,
+                           int flags) {
+  UNREFERENCED_PARAMETER(handle);
+  UNREFERENCED_PARAMETER(msg);
+  UNREFERENCED_PARAMETER(flags);
+
+  NaClLog(LOG_FATAL, "ExampleDescRecvMsg: Not implemented\n");
+  return 0;
+}
+
+struct NaClDesc *MakeExampleDesc() {
+  struct NaClDescCustomFuncs funcs = NACL_DESC_CUSTOM_FUNCS_INITIALIZER;
+  funcs.Destroy = ExampleDescDestroy;
+  funcs.SendMsg = ExampleDescSendMsg;
+  funcs.RecvMsg = ExampleDescRecvMsg;
+  return NaClDescMakeCustomDesc(NULL, &funcs);
+}
+
 int main(int argc, char **argv) {
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   struct ThreadArgs thread_args;
@@ -75,7 +110,8 @@ int main(int argc, char **argv) {
   args->prereserved_sandbox_size = g_prereserved_sandbox_size;
 #endif
 
-  NaClAllModulesInit();
+  // Note that we deliberately do not call NaClAllModulesInit() here,
+  // in order to mimic what we expect the Chromium side to do.
 
   CHECK(argc == 3);
 
@@ -90,6 +126,10 @@ int main(int argc, char **argv) {
   CHECK(NaClSocketPair(socketpair) == 0);
   args->imc_bootstrap_handle = socketpair[0];
   thread_args.channel = socketpair[1];
+
+  // Check that NaClDescMakeCustomDesc() works when called before
+  // NaClChromeMainStart().
+  args->initial_ipc_desc = MakeExampleDesc();
 
   NaClThread thread;
   CHECK(NaClThreadCtor(&thread, DummyRendererThread, &thread_args,

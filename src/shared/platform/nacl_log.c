@@ -38,6 +38,8 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
 
+static int              g_initialized = 0;
+
 /*
  * Three implementation strategies for module-specific logging:
  *
@@ -270,16 +272,19 @@ void NaClLogParseAndSetModuleVerbosityMap(char const *module_verbosity_map) {
 void NaClLogModuleInitExtended2(int         default_verbosity,
                                 char const  *module_verbosity_map,
                                 struct Gio  *log_gio) {
-
+  if (!g_initialized) {
 #if !THREAD_SAFE_DETAIL_CHECK && !NACL_PLATFORM_HAS_TLS && NACL_PLATFORM_HAS_TSD
-  int errnum;
+    int errnum;
 
-  if (0 != (errnum = pthread_key_create(&gModuleNameKey, NULL))) {
-    fprintf(stderr, "NaClLogModuleInitExtended2: pthread_key_create failed\n");
-    abort();
-  }
+    if (0 != (errnum = pthread_key_create(&gModuleNameKey, NULL))) {
+      fprintf(stderr, "NaClLogModuleInitExtended2: "
+              "pthread_key_create failed\n");
+      abort();
+    }
 #endif
-  NaClXMutexCtor(&log_mu);
+    NaClXMutexCtor(&log_mu);
+    g_initialized = 1;
+  }
   NaClLogSetVerbosity(default_verbosity);
   NaClLogParseAndSetModuleVerbosityMap(module_verbosity_map);
   NaClLogSetGio(log_gio);
@@ -310,6 +315,7 @@ void NaClLogModuleFini(void) {
   }
   gNaClLogModuleVerbosity = NULL;
   NaClMutexDtor(&log_mu);
+  g_initialized = 0;
 }
 
 void NaClLogTagNext_mu(void) {

@@ -62,6 +62,14 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 #if NACL_LINUX
   args->prereserved_sandbox_size = 0;
 #endif
+
+  /*
+   * Initialize NaClLog so that Chromium can call
+   * NaClDescMakeCustomDesc() between calling
+   * NaClChromeMainArgsCreate() and NaClChromeMainStart().
+   */
+  NaClLogModuleInit();
+
   return args;
 }
 

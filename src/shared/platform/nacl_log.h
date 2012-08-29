@@ -131,9 +131,6 @@ EXTERN_C_BEGIN
  * and the caller wants to crank up logging to get logging output from
  * functions invoked in the module initializers that occur after
  * NaClLogModuleInit (and prior to NaClNrdModuleInit returning).
- * After either the NaClLogModuleInit or NaClLogModuleInitExtended
- * functions are called, then these functions are no longer safe to
- * use; use NaClLogSetVerbosity and NaClLogSetGio instead.
  */
 void NaClLogPreInitSetVerbosity(int verb);
 void NaClLogPreInitSetGio(struct Gio *out_stream);
@@ -141,6 +138,11 @@ void NaClLogPreInitSetGio(struct Gio *out_stream);
 /*
  * TODO: per-module logging, adding a module-name parameter, probably
  * an atom that is statically allocated.
+ */
+
+/*
+ * NaClLogModuleInit() is idempotent, provided that all the calls to
+ * it originate from a single thread.
  */
 void NaClLogModuleInit(void);
 
