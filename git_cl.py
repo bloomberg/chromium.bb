@@ -436,10 +436,11 @@ or verify this branch is set up to track another (via the --track argument to
     return RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
   def GetIssue(self):
+    """Returns the issue number as a int or None if not set."""
     if not self.has_issue:
       issue = RunGit(['config', self._IssueSetting()], error_ok=True).strip()
       if issue:
-        self.issue = issue
+        self.issue = int(issue)
       else:
         self.issue = None
       self.has_issue = True
@@ -463,7 +464,7 @@ or verify this branch is set up to track another (via the --track argument to
   def GetDescription(self, pretty=False):
     if not self.has_description:
       if self.GetIssue():
-        issue = int(self.GetIssue())
+        issue = self.GetIssue()
         try:
           self.description = self.RpcServer().get_description(issue).strip()
         except urllib2.HTTPError, e:
@@ -488,11 +489,12 @@ or verify this branch is set up to track another (via the --track argument to
     return self.description
 
   def GetPatchset(self):
+    """Returns the patchset number as a int or None if not set."""
     if not self.has_patchset:
       patchset = RunGit(['config', self._PatchsetSetting()],
                         error_ok=True).strip()
       if patchset:
-        self.patchset = patchset
+        self.patchset = int(patchset)
       else:
         self.patchset = None
       self.has_patchset = True
@@ -542,8 +544,8 @@ or verify this branch is set up to track another (via the --track argument to
            'replacing trunk with origin/master or the relevant branch') %
           (upstream_branch, self.GetBranch()))
 
-    issue = ConvertToInteger(self.GetIssue())
-    patchset = ConvertToInteger(self.GetPatchset())
+    issue = self.GetIssue()
+    patchset = self.GetPatchset()
     if issue:
       description = self.GetDescription()
     else:
@@ -586,7 +588,7 @@ or verify this branch is set up to track another (via the --track argument to
 
   def CloseIssue(self):
     """Updates the description and closes the issue."""
-    issue = int(self.GetIssue())
+    issue = self.GetIssue()
     self.RpcServer().update_description(issue, self.description)
     return self.RpcServer().close_issue(issue)
 
@@ -596,7 +598,7 @@ or verify this branch is set up to track another (via the --track argument to
       DieWithError('The patchset needs to match. Send another patchset.')
     try:
       return self.RpcServer().set_flag(
-          int(self.GetIssue()), int(self.GetPatchset()), flag, value)
+          self.GetIssue(), self.GetPatchset(), flag, value)
     except urllib2.HTTPError, e:
       if e.code == 404:
         DieWithError('The issue %s doesn\'t exist.' % self.GetIssue())
@@ -864,7 +866,7 @@ def CMDstatus(parser, args):
       print 'no issue assigned.'
       return 0
     print cl.GetBranch()
-    print 'Issue number:', cl.GetIssue(), '(%s)' % cl.GetIssueURL()
+    print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
     print 'Issue description:'
     print cl.GetDescription(pretty=True)
   return 0
@@ -886,7 +888,7 @@ def CMDissue(parser, args):
       DieWithError('Pass a number to set the issue or none to list it.\n'
           'Maybe you want to run git cl status?')
     cl.SetIssue(issue)
-  print 'Issue number:', cl.GetIssue(), '(%s)' % cl.GetIssueURL()
+  print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
   return 0
 
 
@@ -918,14 +920,6 @@ def CreateDescriptionFromLog(args):
   else:
     log_args = args[:]  # Hope for the best!
   return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
-
-
-def ConvertToInteger(inputval):
-  """Convert a string to integer, but returns either an int or None."""
-  try:
-    return int(inputval)
-  except (TypeError, ValueError):
-    return None
 
 
 def CMDpresubmit(parser, args):
@@ -1011,7 +1005,7 @@ def RietveldUpload(options, args, cl):
       # for upload.py.  Soon this will be changed to set the --message option.
       # Will wait until people are used to typing -t instead of -m.
       upload_args.extend(['--title', options.message])
-    upload_args.extend(['--issue', cl.GetIssue()])
+    upload_args.extend(['--issue', str(cl.GetIssue())])
     print ("This branch is associated with issue %s. "
            "Adding patch to that issue." % cl.GetIssue())
   else:
@@ -1405,9 +1399,9 @@ def CMDpatch(parser, args):
   # TODO(maruel): Use apply_issue.py
   # TODO(ukai): use gerrit-cherry-pick for gerrit repository?
 
-  if re.match(r'\d+', issue_arg):
+  if issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
-    issue = issue_arg
+    issue = int(issue_arg)
     patch_data = Changelist().GetPatchSetDiff(issue)
   else:
     # Assume it's a URL to the patch. Default to https.
@@ -1416,7 +1410,7 @@ def CMDpatch(parser, args):
     if not match:
       DieWithError('Must pass an issue ID or full URL for '
           '\'Download raw patch set\'')
-    issue = match.group(1)
+    issue = int(match.group(1))
     patch_data = urllib2.urlopen(issue_arg).read()
 
   if options.newbranch:
