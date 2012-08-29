@@ -463,8 +463,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(E_FAIL, hr);
 }
 
+// Periodically failing.  See crbug.com/145537
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationActiveDescendantChanged) {
+                       DISABLED_TestNotificationActiveDescendantChanged) {
   LoadInitialAccessibilityTreeFromHtml(
       "<ul tabindex='-1' role='radiogroup' aria-label='ul'>"
       "<li id='li'>li</li></ul>");
