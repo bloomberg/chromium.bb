@@ -1166,7 +1166,7 @@ class NinjaWriter:
     rule_name += '.' + name
     rule_name = re.sub('[^a-zA-Z0-9_]', '_', rule_name)
 
-    description = re.sub('[^a-zA-Z0-9_]', '_', description)
+    description = re.sub('[^ a-zA-Z0-9_]', '_', description)
 
     args = args[:]
 
