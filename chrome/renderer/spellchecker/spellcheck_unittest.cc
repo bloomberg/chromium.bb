@@ -793,6 +793,55 @@ TEST_F(SpellCheckTest, GetAutoCorrectionWord_EN_US) {
   }
 }
 
+// Verify that our SpellCheck::SpellCheckWord() returns false when it checks
+// misspelled words.
+TEST_F(SpellCheckTest, MisspelledWords) {
+  static const struct {
+    const char* language;
+    const wchar_t* input;
+  } kTestCases[] = {
+    {
+      // A misspelled word for English
+      "en-US",
+      L"aaaaaaaaaa",
+    }, {
+      // A misspelled word for Greek.
+      "el-GR",
+      L"\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1",
+    }, {
+      // A misspelled word for Hebrew
+      "he-IL",
+      L"\x05D0\x05D0\x05D0\x05D0\x05D0\x05D0\x05D0\x05D0\x05D0\x05D0",
+    }, {
+      // Hindi
+      "hi-IN",
+      L"\x0905\x0905\x0905\x0905\x0905\x0905\x0905\x0905\x0905\x0905",
+    }, {
+      // A misspelled word for Russian
+      "ru-RU",
+      L"\x0430\x0430\x0430\x0430\x0430\x0430\x0430\x0430\x0430\x0430",
+    },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    ReinitializeSpellCheck(kTestCases[i].language);
+
+    string16 word(WideToUTF16(kTestCases[i].input));
+    int word_length = static_cast<int>(word.length());
+    int misspelling_start = 0;
+    int misspelling_length = 0;
+    bool result = spell_check()->SpellCheckWord(word.c_str(),
+                                                word_length,
+                                                0,
+                                                &misspelling_start,
+                                                &misspelling_length,
+                                                NULL);
+    EXPECT_FALSE(result);
+    EXPECT_EQ(0, misspelling_start);
+    EXPECT_EQ(word_length, misspelling_length);
+  }
+}
+
 // Since SpellCheck::SpellCheckParagraph is not implemented on Mac,
 // we skip these SpellCheckParagraph tests on Mac.
 #if !defined(OS_MACOSX)

@@ -293,7 +293,7 @@ SpellcheckWordIterator::SpellcheckWordIterator()
 }
 
 SpellcheckWordIterator::~SpellcheckWordIterator() {
-  Close();
+  Reset();
 }
 
 bool SpellcheckWordIterator::Initialize(
@@ -380,7 +380,7 @@ bool SpellcheckWordIterator::GetNextWord(string16* word_string,
   return false;
 }
 
-void SpellcheckWordIterator::Close() {
+void SpellcheckWordIterator::Reset() {
   if (iterator_) {
     ubrk_close(iterator_);
     iterator_ = NULL;

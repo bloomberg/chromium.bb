@@ -139,10 +139,10 @@ class SpellcheckWordIterator {
                    int* word_start,
                    int* word_length);
 
- private:
   // Releases all the resources attached to this object.
-  void Close();
+  void Reset();
 
+ private:
   // Normalizes a non-terminated string returned from an ICU word-break
   // iterator. A word returned from an ICU break iterator may include characters
   // not supported by our spellchecker, e.g. ligatures, combining/ characters,

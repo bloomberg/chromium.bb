@@ -129,6 +129,8 @@ void SpellCheck::Init(base::PlatformFile file,
       file == base::kInvalidPlatformFileValue && !language.empty();
 
   character_attributes_.SetDefaultLanguage(language);
+  text_iterator_.Reset();
+  contraction_iterator_.Reset();
 
   custom_words_.insert(custom_words_.end(),
                        custom_words.begin(), custom_words.end());
