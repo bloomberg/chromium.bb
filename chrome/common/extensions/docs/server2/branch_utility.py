@@ -15,7 +15,7 @@ class BranchUtility(object):
     self._object_store = object_store
 
   def GetAllBranchNumbers(self):
-    return [self.GetBranchNumberForChannelName(branch)
+    return [(branch, self.GetBranchNumberForChannelName(branch))
             for branch in ['dev', 'beta', 'stable', 'trunk', 'local']]
 
   def SplitChannelNameFromPath(self, path):
@@ -56,10 +56,11 @@ class BranchUtility(object):
       for version in entry['versions']:
         if version['channel'] != channel_name:
           continue
-        if version['true_branch'] not in branch_numbers:
-          branch_numbers[version['true_branch']] = 0
+        branch = version['version'].split('.')[2]
+        if branch not in branch_numbers:
+          branch_numbers[branch] = 0
         else:
-          branch_numbers[version['true_branch']] += 1
+          branch_numbers[branch] += 1
 
     sorted_branches = sorted(branch_numbers.iteritems(),
                              None,

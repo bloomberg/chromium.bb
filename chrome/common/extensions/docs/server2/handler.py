@@ -74,12 +74,15 @@ def _CreateMemcacheFileSystem(branch, branch_memcache):
   return MemcacheFileSystem(SubversionFileSystem(fetcher, stat_fetcher),
                             branch_memcache)
 
+def _MakeInstanceKey(branch, number):
+  return '%s/%s' % (branch, number)
+
 def _GetInstanceForBranch(channel_name, local_path):
   branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
 
   # The key for the server is a tuple of |channel_name| with |branch|, since
   # sometimes stable and beta point to the same branch.
-  instance_key = '%s/%s' % (channel_name, branch)
+  instance_key = _MakeInstanceKey(channel_name, branch)
   instance = SERVER_INSTANCES.get(instance_key, None)
   if instance is not None:
     return instance
@@ -133,9 +136,10 @@ def _GetURLFromBranch(branch):
     return url_constants.SVN_BRANCH_URL + '/' + branch + '/src'
 
 def _CleanBranches():
-  numbers = BRANCH_UTILITY.GetAllBranchNumbers()
+  keys = [_MakeInstanceKey(branch, number)
+          for branch, number in BRANCH_UTILITY.GetAllBranchNumbers()]
   for key in SERVER_INSTANCES.keys():
-    if key not in numbers:
+    if key not in keys:
       SERVER_INSTANCES.pop(key)
 
 class _MockResponse(object):

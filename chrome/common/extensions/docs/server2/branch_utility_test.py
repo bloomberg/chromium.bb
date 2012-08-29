@@ -37,11 +37,11 @@ class BranchUtilityTest(unittest.TestCase):
                       'extensions/dev/stuff.html'))
 
   def testGetBranchNumberForChannelName(self):
-    self.assertEquals('1132',
+    self.assertEquals('1145',
                       self._branch_util.GetBranchNumberForChannelName('dev'))
     self.assertEquals('1084',
                       self._branch_util.GetBranchNumberForChannelName('beta'))
-    self.assertEquals('1234',
+    self.assertEquals('1084',
                       self._branch_util.GetBranchNumberForChannelName('stable'))
     self.assertEquals('trunk',
                       self._branch_util.GetBranchNumberForChannelName('trunk'))
