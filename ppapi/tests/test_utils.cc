@@ -89,6 +89,14 @@ void NestedEvent::Signal() {
     GetTestingInterface()->QuitMessageLoop(instance_);
 }
 
+void NestedEvent::Reset() {
+  // It doesn't make sense to reset when we're still waiting.
+  PP_DCHECK(!waiting_);
+  // We must have already been Signalled().
+  PP_DCHECK(signalled_);
+  signalled_ = false;
+}
+
 TestCompletionCallback::TestCompletionCallback(PP_Instance instance)
     : wait_for_result_called_(false),
       have_result_(false),

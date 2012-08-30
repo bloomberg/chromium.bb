@@ -50,6 +50,8 @@ class NestedEvent {
   void Wait();
   // Signal the NestedEvent. If Wait() has been called, quit the message loop.
   void Signal();
+  // Reset the NestedEvent so it can be used again.
+  void Reset();
  private:
   PP_Instance instance_;
   bool waiting_;

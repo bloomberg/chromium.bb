@@ -12,7 +12,7 @@ namespace ppapi {
 
 Resource::Resource(ResourceObjectType type, PP_Instance instance)
     : host_resource_(HostResource::MakeInstanceOnly(instance)) {
-  // The instance should always be valid (nonzero).
+  // The instance should be valid (nonzero).
   DCHECK(instance);
 
   pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
@@ -38,6 +38,10 @@ Resource::Resource(ResourceObjectType type, const HostResource& host_resource)
     // See previous constructor.
     host_resource_.SetHostResource(host_resource.instance(), pp_resource_);
   }
+}
+
+Resource::Resource(Untracked) {
+  pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
 }
 
 Resource::~Resource() {

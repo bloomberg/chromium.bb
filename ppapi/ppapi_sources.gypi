@@ -365,6 +365,8 @@
       'tests/test_input_event.h',
       'tests/test_memory.cc',
       'tests/test_memory.h',
+      'tests/test_message_loop.cc',
+      'tests/test_message_loop.h',
       'tests/test_mouse_cursor.cc',
       'tests/test_mouse_cursor.h',
       'tests/test_mouse_lock.cc',

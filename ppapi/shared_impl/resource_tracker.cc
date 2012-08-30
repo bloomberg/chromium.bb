@@ -92,7 +92,7 @@ void ResourceTracker::DidCreateInstance(PP_Instance instance) {
 void ResourceTracker::DidDeleteInstance(PP_Instance instance) {
   InstanceMap::iterator found_instance = instance_map_.find(instance);
 
-  // Due to the infrastructure of some tests, the instance is uyregistered
+  // Due to the infrastructure of some tests, the instance is unregistered
   // twice in a few cases. It would be nice not to do that and assert here
   // instead.
   if (found_instance == instance_map_.end())
@@ -155,20 +155,27 @@ PP_Resource ResourceTracker::AddResource(Resource* object) {
   if (last_resource_value_ == kMaxPPId)
     return 0;
 
-  InstanceMap::iterator found = instance_map_.find(object->pp_instance());
-  if (found == instance_map_.end()) {
-    // If you hit this, it's likely somebody forgot to call DidCreateInstance,
-    // the resource was created with an invalid PP_Instance, or the renderer
-    // side tried to create a resource for a plugin that crashed/exited. This
-    // could happen for OOP plugins where due to reentrancies in context of
-    // outgoing sync calls the renderer can send events after a plugin has
-    // exited.
-    DLOG(INFO) << "Failed to find plugin instance in instance map";
-    return 0;
-  }
-
+  // Allocate an ID. Note there's a rare error condition below that means we
+  // could end up not using |new_id|, but that's harmless.
   PP_Resource new_id = MakeTypedId(++last_resource_value_, PP_ID_TYPE_RESOURCE);
-  found->second->resources.insert(new_id);
+
+  // Some objects have a 0 instance, meaning they aren't associated with any
+  // instance, so they won't be in |instance_map_|. This is (as of this writing)
+  // only true of the PPB_MessageLoop resource for the main thread.
+  if (object->pp_instance()) {
+    InstanceMap::iterator found = instance_map_.find(object->pp_instance());
+    if (found == instance_map_.end()) {
+      // If you hit this, it's likely somebody forgot to call DidCreateInstance,
+      // the resource was created with an invalid PP_Instance, or the renderer
+      // side tried to create a resource for a plugin that crashed/exited. This
+      // could happen for OOP plugins where due to reentrancies in context of
+      // outgoing sync calls the renderer can send events after a plugin has
+      // exited.
+      DLOG(INFO) << "Failed to find plugin instance in instance map";
+      return 0;
+    }
+    found->second->resources.insert(new_id);
+  }
 
   live_resources_[new_id] = ResourceAndRefCount(object, 0);
   return new_id;
@@ -185,16 +192,22 @@ void ResourceTracker::RemoveResource(Resource* object) {
 void ResourceTracker::LastPluginRefWasDeleted(Resource* object) {
   // Bug http://crbug.com/134611 indicates that sometimes the resource tracker
   // is null here. This should never be the case since if we have a resource in
-  // the tracker, it should always have a valid instance associated with it.
+  // the tracker, it should always have a valid instance associated with it
+  // (except for the resource for the main thread's message loop, which has
+  // instance set to 0).
   // As a result, we do some CHECKs here to see what types of problems the
   // instance might have before dispatching.
   //
   // TODO(brettw) remove these checks when this bug is no longer relevant.
-  CHECK(object->pp_instance());
+  // Note, we do an imperfect check here; this might be a loop that's not the
+  // main one.
+  const bool is_message_loop = (object->AsPPB_MessageLoop_API() != NULL);
+  CHECK(object->pp_instance() || is_message_loop);
   CallbackTracker* callback_tracker =
       PpapiGlobals::Get()->GetCallbackTrackerForInstance(object->pp_instance());
-  CHECK(callback_tracker);
-  callback_tracker->PostAbortForResource(object->pp_resource());
+  CHECK(callback_tracker || is_message_loop);
+  if (callback_tracker)
+    callback_tracker->PostAbortForResource(object->pp_resource());
   object->LastPluginRefWasDeleted();
 }
 

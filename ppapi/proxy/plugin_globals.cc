@@ -6,6 +6,7 @@
 
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
+#include "ppapi/proxy/ppb_message_loop_proxy.h"
 #include "ppapi/thunk/enter.h"
 
 namespace ppapi {
@@ -16,7 +17,9 @@ PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 PluginGlobals::PluginGlobals()
     : ppapi::PpapiGlobals(),
       plugin_proxy_delegate_(NULL),
-      callback_tracker_(new CallbackTracker) {
+      callback_tracker_(new CallbackTracker),
+      loop_for_main_thread_(
+          new MessageLoopResource(MessageLoopResource::ForMainThread())) {
   DCHECK(!plugin_globals_);
   plugin_globals_ = this;
 }
@@ -100,6 +103,10 @@ void PluginGlobals::BroadcastLogWithSource(PP_Module /* module */,
   // the same as "send to everybody" which is what the dispatcher implements
   // for the "instance = 0" case.
   LogWithSource(0, level, source, value);
+}
+
+MessageLoopResource* PluginGlobals::loop_for_main_thread() {
+  return loop_for_main_thread_.get();
 }
 
 bool PluginGlobals::IsPluginGlobals() const {

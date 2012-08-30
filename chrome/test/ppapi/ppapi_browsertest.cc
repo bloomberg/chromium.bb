@@ -821,6 +821,15 @@ TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL_VIA_HTTP(MouseCursor)
 
+// PPB_MessageLoop is only supported out-of-process.
+// TODO(dmichael): Enable for NaCl with the IPC proxy. crbug.com/116317
+TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Basics)
+// Note to sheriffs: MessageLoop_Post starts a thread, which has a history of
+// slowness, particularly on Windows XP. If this test times out, please try
+// marking it SLOW_ before disabling.
+//    - dmichael
+TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
+
 // Only enabled in out-of-process mode.
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
 

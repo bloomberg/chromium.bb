@@ -107,7 +107,7 @@ class InstanceHandle;
 /// to run until all pending tasks are run.
 ///
 /// If you post a callback to a message loop that's been destroyed, or to an
-/// invalid message loop, PostTask will return an error and will not run the
+/// invalid message loop, PostWork will return an error and will not run the
 /// callback. This is true even for callbacks with the "required" flag set,
 /// since the system may not even know what thread to issue the error callback
 /// on.

@@ -18,6 +18,7 @@
 namespace ppapi {
 namespace proxy {
 
+class MessageLoopResource;
 class PluginProxyDelegate;
 
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
@@ -86,6 +87,11 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
     msg_loop_slot_.reset(slot);
   }
 
+  // Return the special Resource that represents the MessageLoop for the main
+  // thread. This Resource is not associated with any instance, and lives as
+  // long as the plugin.
+  MessageLoopResource* loop_for_main_thread();
+
   // The embedder should call this function when the name of the plugin module
   // is known. This will be used for error logging.
   void set_plugin_name(const std::string& name) { plugin_name_ = name; }
@@ -106,6 +112,9 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   base::Lock proxy_lock_;
 
   scoped_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;
+  // Note that loop_for_main_thread's constructor sets msg_loop_slot_, so it
+  // must be initialized after msg_loop_slot_ (hence the order here).
+  scoped_refptr<MessageLoopResource> loop_for_main_thread_;
 
   // Name of the plugin used for error logging. This will be empty until
   // set_plugin_name is called.

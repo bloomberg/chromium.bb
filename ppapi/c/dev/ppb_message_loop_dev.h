@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_message_loop_dev.idl modified Thu Jan 19 20:02:41 2012. */
+/* From dev/ppb_message_loop_dev.idl modified Wed Aug 29 12:22:26 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_MESSAGE_LOOP_DEV_H_
 #define PPAPI_C_DEV_PPB_MESSAGE_LOOP_DEV_H_
@@ -124,7 +124,7 @@
  * to run until all pending tasks are run.
  *
  * If you post a callback to a message loop that's been destroyed, or to an
- * invalid message loop, PostTask will return an error and will not run the
+ * invalid message loop, PostWork will return an error and will not run the
  * callback. This is true even for callbacks with the "required" flag set,
  * since the system may not even know what thread to issue the error callback
  * on.
