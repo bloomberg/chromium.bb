@@ -88,3 +88,20 @@ TEST_F(WebContentsUserDataTest, TwoInstancesOneAttachment) {
   ASSERT_EQ(one_class, one_class_again);
   ASSERT_NE(one_class, two_class);
 }
+
+TEST_F(WebContentsUserDataTest, Idempotence) {
+  content::WebContents* contents = web_contents();
+  WebContentsAttachedClass1* clazz =
+      WebContentsAttachedClass1::FromWebContents(contents);
+  ASSERT_EQ(NULL, clazz);
+
+  WebContentsAttachedClass1::CreateForWebContents(contents);
+  clazz = WebContentsAttachedClass1::FromWebContents(contents);
+  ASSERT_TRUE(clazz != NULL);
+
+  WebContentsAttachedClass1::CreateForWebContents(contents);
+  WebContentsAttachedClass1* class_again =
+      WebContentsAttachedClass1::FromWebContents(contents);
+  ASSERT_TRUE(class_again != NULL);
+  ASSERT_EQ(clazz, class_again);
+}

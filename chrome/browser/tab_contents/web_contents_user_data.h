@@ -26,8 +26,10 @@ template <typename T>
 class WebContentsUserData : public base::SupportsUserData::Data {
  public:
   // Creates an object of type T, and attaches it to the specified WebContents.
+  // If an instance is already attached, does nothing.
   static void CreateForWebContents(content::WebContents* contents) {
-    contents->SetUserData(&T::kUserDataKey, new T(contents));
+    if (!FromWebContents(contents))
+      contents->SetUserData(&T::kUserDataKey, new T(contents));
   }
 
   // Retrieves the instance of type T that was attached to the specified
