@@ -21,15 +21,15 @@ Feature::Availability ManifestFeature::IsAvailableToContext(
   Availability availability = Feature::IsAvailableToContext(extension,
                                                             context,
                                                             platform);
-  if (availability != IS_AVAILABLE)
+  if (!availability.is_available())
     return availability;
 
   // We know we can skip manifest()->GetKey() here because we just did the same
   // validation it would do above.
   if (!extension->manifest()->value()->HasKey(name()))
-    return NOT_PRESENT;
+    return CreateAvailability(NOT_PRESENT, extension->GetType());
 
-  return IS_AVAILABLE;
+  return CreateAvailability(IS_AVAILABLE);
 }
 
 }  // namespace

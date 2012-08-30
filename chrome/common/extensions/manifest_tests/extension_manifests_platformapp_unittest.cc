@@ -18,11 +18,6 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
 
-  LoadAndExpectWarning(
-      "init_invalid_platform_app_1.json",
-      "'app.launch' is not allowed for specified package type "
-          "(theme, app, etc.).");
-
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
         errors::kBackgroundRequiredForPlatformApps),
@@ -34,16 +29,16 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   Testcase warning_testcases[] = {
     Testcase(
         "init_invalid_platform_app_1.json",
-        "'app.launch' is not allowed for specified package type "
-            "(theme, app, etc.)."),
+        "'app.launch' is only allowed for hosted apps and legacy packaged "
+            "apps, and this is a packaged app."),
     Testcase(
         "init_invalid_platform_app_4.json",
-        "'background' is not allowed for specified package type "
-            "(theme, app, etc.)."),
+        "'background' is only allowed for extensions, hosted apps and legacy "
+            "packaged apps, and this is a packaged app."),
     Testcase(
         "init_invalid_platform_app_5.json",
-        "'background' is not allowed for specified package type "
-            "(theme, app, etc.).")
+        "'background' is only allowed for extensions, hosted apps and legacy "
+            "packaged apps, and this is a packaged app.")
   };
   RunTestcases(
       warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);

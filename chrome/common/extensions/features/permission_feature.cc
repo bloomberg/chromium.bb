@@ -19,13 +19,13 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   Availability availability = Feature::IsAvailableToContext(extension,
                                                             context,
                                                             platform);
-  if (availability != IS_AVAILABLE)
+  if (!availability.is_available())
     return availability;
 
   if (!extension->HasAPIPermission(name()))
-    return NOT_PRESENT;
+    return CreateAvailability(NOT_PRESENT, extension->GetType());
 
-  return IS_AVAILABLE;
+  return CreateAvailability(IS_AVAILABLE);
 }
 
 }  // namespace

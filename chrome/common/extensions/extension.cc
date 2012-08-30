@@ -3380,13 +3380,12 @@ bool Extension::ParsePermissions(const char* key,
                 GetType(),
                 extensions::Feature::ConvertLocation(location()),
                 manifest_version());
-        if (availability != extensions::Feature::IS_AVAILABLE) {
+        if (!availability.is_available()) {
           // Don't fail, but warn the developer that the manifest contains
           // unrecognized permissions. This may happen legitimately if the
           // extensions requests platform- or channel-specific permissions.
-          install_warnings_.push_back(
-              InstallWarning(InstallWarning::FORMAT_TEXT,
-                             feature->GetErrorMessage(availability)));
+          install_warnings_.push_back(InstallWarning(
+              InstallWarning::FORMAT_TEXT, availability.message()));
           continue;
         }
 

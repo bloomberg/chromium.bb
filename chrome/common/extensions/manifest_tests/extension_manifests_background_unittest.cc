@@ -63,11 +63,9 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   EXPECT_EQ("/foo.html", extension->GetBackgroundURL().path());
 
   manifest->SetInteger(keys::kManifestVersion, 2);
-  Feature* feature = SimpleFeatureProvider::GetManifestFeatures()->
-      GetFeature("background_page");
   LoadAndExpectWarning(
       Manifest(manifest.get(), ""),
-      feature->GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION));
+      "'background_page' requires manifest version of 1 or lower.");
 }
 
 TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 
 using chrome::VersionInfo;
@@ -135,6 +136,29 @@ void ParseEnumSet(const DictionaryValue* value,
   }
 }
 
+// Gets a human-readable name for the given extension type.
+std::string GetDisplayTypeName(Extension::Type type) {
+  switch (type) {
+    case Extension::TYPE_UNKNOWN:
+      return "unknown";
+    case Extension::TYPE_EXTENSION:
+      return "extension";
+    case Extension::TYPE_HOSTED_APP:
+      return "hosted app";
+    case Extension::TYPE_PACKAGED_APP:
+      return "legacy packaged app";
+    case Extension::TYPE_PLATFORM_APP:
+      return "packaged app";
+    case Extension::TYPE_THEME:
+      return "theme";
+    case Extension::TYPE_USER_SCRIPT:
+      return "user script";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 namespace extensions {
@@ -206,7 +230,104 @@ void Feature::Parse(const DictionaryValue* value) {
       g_mappings.Get().channels);
 }
 
-std::string Feature::GetErrorMessage(Feature::Availability result) {
+Feature::Availability Feature::IsAvailableToManifest(
+    const std::string& extension_id,
+    Extension::Type type,
+    Location location,
+    int manifest_version,
+    Platform platform) const {
+  // Component extensions can access any feature.
+  if (location == COMPONENT_LOCATION)
+    return CreateAvailability(IS_AVAILABLE, type);
+
+  if (!whitelist_.empty()) {
+    if (whitelist_.find(extension_id) == whitelist_.end()) {
+      // TODO(aa): This is gross. There should be a better way to test the
+      // whitelist.
+      CommandLine* command_line = CommandLine::ForCurrentProcess();
+      if (!command_line->HasSwitch(switches::kWhitelistedExtensionID))
+        return CreateAvailability(NOT_FOUND_IN_WHITELIST, type);
+
+      std::string whitelist_switch_value =
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kWhitelistedExtensionID);
+      if (extension_id != whitelist_switch_value)
+        return CreateAvailability(NOT_FOUND_IN_WHITELIST, type);
+    }
+  }
+
+  if (!extension_types_.empty() &&
+      extension_types_.find(type) == extension_types_.end()) {
+    return CreateAvailability(INVALID_TYPE, type);
+  }
+
+  if (location_ != UNSPECIFIED_LOCATION && location_ != location)
+    return CreateAvailability(INVALID_LOCATION, type);
+
+  if (platform_ != UNSPECIFIED_PLATFORM && platform_ != platform)
+    return CreateAvailability(INVALID_PLATFORM, type);
+
+  if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
+    return CreateAvailability(INVALID_MIN_MANIFEST_VERSION, type);
+
+  if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
+    return CreateAvailability(INVALID_MAX_MANIFEST_VERSION, type);
+
+  if (channel_ < g_current_channel)
+    return CreateAvailability(UNSUPPORTED_CHANNEL, type);
+
+  return CreateAvailability(IS_AVAILABLE, type);
+}
+
+Feature::Availability Feature::IsAvailableToContext(
+    const Extension* extension,
+    Feature::Context context,
+    Feature::Platform platform) const {
+  Availability result = IsAvailableToManifest(
+      extension->id(),
+      extension->GetType(),
+      ConvertLocation(extension->location()),
+      extension->manifest_version(),
+      platform);
+  if (!result.is_available())
+    return result;
+
+  if (!contexts_.empty() &&
+      contexts_.find(context) == contexts_.end()) {
+    return CreateAvailability(INVALID_CONTEXT, extension->GetType());
+  }
+
+  return CreateAvailability(IS_AVAILABLE);
+}
+
+// static
+chrome::VersionInfo::Channel Feature::GetCurrentChannel() {
+  return g_current_channel;
+}
+
+// static
+void Feature::SetCurrentChannel(VersionInfo::Channel channel) {
+  g_current_channel = channel;
+}
+
+// static
+chrome::VersionInfo::Channel Feature::GetDefaultChannel() {
+  return kDefaultChannel;
+}
+
+Feature::Availability Feature::CreateAvailability(
+    AvailabilityResult result) const {
+  return Availability(
+      result, GetAvailabilityMessage(result, Extension::TYPE_UNKNOWN));
+}
+
+Feature::Availability Feature::CreateAvailability(
+    AvailabilityResult result, Extension::Type type) const {
+  return Availability(result, GetAvailabilityMessage(result, type));
+}
+
+std::string Feature::GetAvailabilityMessage(
+    AvailabilityResult result, Extension::Type type) const {
   switch (result) {
     case IS_AVAILABLE:
       return "";
@@ -214,10 +335,28 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
       return base::StringPrintf(
           "'%s' is not allowed for specified extension ID.",
           name().c_str());
-    case INVALID_TYPE:
+    case INVALID_TYPE: {
+      std::string allowed_type_names;
+      // Turn the set of allowed types into a vector so that it's easier to
+      // inject the appropriate separator into the display string.
+      std::vector<Extension::Type> extension_types(
+          extension_types_.begin(), extension_types_.end());
+      for (size_t i = 0; i < extension_types.size(); i++) {
+        // Pluralize type name.
+        allowed_type_names += GetDisplayTypeName(extension_types[i]) + "s";
+        if (i == extension_types_.size() - 2) {
+          allowed_type_names += " and ";
+        } else if (i != extension_types_.size() - 1) {
+          allowed_type_names += ", ";
+        }
+      }
+
       return base::StringPrintf(
-          "'%s' is not allowed for specified package type (theme, app, etc.).",
-          name().c_str());
+          "'%s' is only allowed for %s, and this is a %s.",
+          name().c_str(),
+          allowed_type_names.c_str(),
+          GetDisplayTypeName(type).c_str());
+    }
     case INVALID_CONTEXT:
       return base::StringPrintf(
           "'%s' is not allowed for specified context type content script, "
@@ -247,99 +386,16 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
           name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "'%s' requires Google Chrome %s channel or newer, and we're running "
-              "on the %s channel.",
+          "'%s' requires Google Chrome %s channel or newer, and this is the "
+              "%s channel.",
           name().c_str(),
           GetChannelName(channel_).c_str(),
           GetChannelName(GetCurrentChannel()).c_str());
   }
 
+  NOTREACHED();
   return "";
 }
 
-Feature::Availability Feature::IsAvailableToManifest(
-    const std::string& extension_id,
-    Extension::Type type,
-    Location location,
-    int manifest_version,
-    Platform platform) const {
-  // Component extensions can access any feature.
-  if (location == COMPONENT_LOCATION)
-    return IS_AVAILABLE;
 
-  if (!whitelist_.empty()) {
-    if (whitelist_.find(extension_id) == whitelist_.end()) {
-      // TODO(aa): This is gross. There should be a better way to test the
-      // whitelist.
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (!command_line->HasSwitch(switches::kWhitelistedExtensionID))
-        return NOT_FOUND_IN_WHITELIST;
-
-      std::string whitelist_switch_value =
-          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kWhitelistedExtensionID);
-      if (extension_id != whitelist_switch_value)
-        return NOT_FOUND_IN_WHITELIST;
-    }
-  }
-
-  if (!extension_types_.empty() &&
-      extension_types_.find(type) == extension_types_.end()) {
-    return INVALID_TYPE;
-  }
-
-  if (location_ != UNSPECIFIED_LOCATION && location_ != location)
-    return INVALID_LOCATION;
-
-  if (platform_ != UNSPECIFIED_PLATFORM && platform_ != platform)
-    return INVALID_PLATFORM;
-
-  if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
-    return INVALID_MIN_MANIFEST_VERSION;
-
-  if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
-    return INVALID_MAX_MANIFEST_VERSION;
-
-  if (channel_ < g_current_channel)
-    return UNSUPPORTED_CHANNEL;
-
-  return IS_AVAILABLE;
-}
-
-Feature::Availability Feature::IsAvailableToContext(
-    const Extension* extension,
-    Feature::Context context,
-    Feature::Platform platform) const {
-  Availability result = IsAvailableToManifest(
-      extension->id(),
-      extension->GetType(),
-      ConvertLocation(extension->location()),
-      extension->manifest_version(),
-      platform);
-  if (result != IS_AVAILABLE)
-    return result;
-
-  if (!contexts_.empty() &&
-      contexts_.find(context) == contexts_.end()) {
-    return INVALID_CONTEXT;
-  }
-
-  return IS_AVAILABLE;
-}
-
-// static
-chrome::VersionInfo::Channel Feature::GetCurrentChannel() {
-  return g_current_channel;
-}
-
-// static
-void Feature::SetCurrentChannel(VersionInfo::Channel channel) {
-  g_current_channel = channel;
-}
-
-// static
-chrome::VersionInfo::Channel Feature::GetDefaultChannel() {
-  return kDefaultChannel;
-}
-
-}  // namespace
+}  // namespace extensions

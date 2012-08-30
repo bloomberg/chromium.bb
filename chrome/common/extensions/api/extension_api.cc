@@ -501,7 +501,7 @@ bool ExtensionAPI::IsAvailable(const std::string& full_name,
 
     Feature::Availability availability =
         feature->IsAvailableToContext(extension, context);
-    if (availability != Feature::IS_AVAILABLE)
+    if (!availability.is_available())
       return false;
   }
 

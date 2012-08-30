@@ -51,7 +51,7 @@ class Feature {
 
   // Whether a feature is available in a given situation or not, and if not,
   // why not.
-  enum Availability {
+  enum AvailabilityResult {
     IS_AVAILABLE,
     NOT_FOUND_IN_WHITELIST,
     INVALID_TYPE,
@@ -62,6 +62,25 @@ class Feature {
     INVALID_MAX_MANIFEST_VERSION,
     NOT_PRESENT,
     UNSUPPORTED_CHANNEL,
+  };
+
+  // Container for AvailabiltyResult that also exposes a user-visible error
+  // message in cases where the feature is not available.
+  class Availability {
+   public:
+    AvailabilityResult result() const { return result_; }
+    bool is_available() const { return result_ == IS_AVAILABLE; }
+    const std::string& message() const { return message_; }
+
+   private:
+    friend class Feature;
+
+    // Instances should be created via Feature::CreateAvailability.
+    Availability(AvailabilityResult result, const std::string& message)
+        : result_(result), message_(message) { }
+
+    const AvailabilityResult result_;
+    const std::string message_;
   };
 
   Feature();
@@ -158,10 +177,15 @@ class Feature {
                                             Context context,
                                             Platform platform) const;
 
-  // Returns an error message for an Availability code.
-  std::string GetErrorMessage(Availability result);
+ protected:
+  Availability CreateAvailability(AvailabilityResult result) const;
+  Availability CreateAvailability(AvailabilityResult result,
+                                  Extension::Type type) const;
 
  private:
+  std::string GetAvailabilityMessage(
+      AvailabilityResult result, Extension::Type type) const;
+
   std::string name_;
 
   // For clarify and consistency, we handle the default value of each of these

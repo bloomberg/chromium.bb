@@ -36,17 +36,17 @@ TEST(SimpleFeatureProvider, ManifestFeatures) {
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
+      extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 
   feature = provider->GetFeature("theme");
   ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::INVALID_TYPE, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
+      extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 
   feature = provider->GetFeature("devtools_page");
   ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_PRESENT, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
+      extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 }
 
 TEST(SimpleFeatureProvider, PermissionFeatures) {
@@ -75,17 +75,17 @@ TEST(SimpleFeatureProvider, PermissionFeatures) {
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
+      extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 
   feature = provider->GetFeature("chromePrivate");
   ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
+      extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 
   feature = provider->GetFeature("clipboardWrite");
   ASSERT_TRUE(feature);
   EXPECT_EQ(Feature::NOT_PRESENT, feature->IsAvailableToContext(
-      extension.get(), Feature::UNSPECIFIED_CONTEXT));
+      extension.get(), Feature::UNSPECIFIED_CONTEXT).result());
 }
 
 TEST(SimpleFeatureProvider, Validation) {

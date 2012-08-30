@@ -97,8 +97,9 @@ TEST_F(ManifestTest, Extension) {
     Feature feature;
     feature.set_name("background_page");
     feature.set_max_manifest_version(1);
-    EXPECT_EQ(feature.GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION),
-              warnings[0].message);
+    EXPECT_EQ(
+        "'background_page' requires manifest version of 1 or lower.",
+        warnings[0].message);
   }
 
   // Test DeepCopy and Equals.

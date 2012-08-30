@@ -66,8 +66,8 @@ TEST_F(ExtensionManifestTest, OAuth2SectionParsing) {
     EXPECT_EQ(1U, extension->install_warnings().size());
     const extensions::Extension::InstallWarning& warning =
         extension->install_warnings()[0];
-    EXPECT_EQ("'oauth2' is not allowed for specified package type "
-              "(theme, app, etc.).",
+    EXPECT_EQ("'oauth2' is only allowed for extensions, legacy packaged apps "
+                  "and packaged apps, and this is a hosted app.",
               warning.message);
     EXPECT_EQ("", extension->oauth2_info().client_id);
     EXPECT_TRUE(extension->oauth2_info().scopes.empty());

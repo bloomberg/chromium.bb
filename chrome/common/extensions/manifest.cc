@@ -72,10 +72,9 @@ void Manifest::ValidateManifest(
     Feature::Availability result = feature->IsAvailableToManifest(
         extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
-    if (result != Feature::IS_AVAILABLE)
+    if (!result.is_available())
       warnings->push_back(Extension::InstallWarning(
-          Extension::InstallWarning::FORMAT_TEXT,
-          feature->GetErrorMessage(result)));
+          Extension::InstallWarning::FORMAT_TEXT, result.message()));
   }
 
   // Also generate warnings for keys that are not features.
@@ -170,9 +169,9 @@ bool Manifest::CanAccessKey(const std::string& key) const {
   if (!feature)
     return true;
 
-  return Feature::IS_AVAILABLE == feature->IsAvailableToManifest(
+  return feature->IsAvailableToManifest(
       extension_id_, type_, Feature::ConvertLocation(location_),
-      GetManifestVersion());
+      GetManifestVersion()).is_available();
 }
 
 }  // namespace extensions
