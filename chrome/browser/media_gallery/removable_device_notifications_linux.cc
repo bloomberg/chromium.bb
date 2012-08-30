@@ -385,10 +385,12 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
       DCHECK(priority != mount_priority_map_.end());
       ReferencedMountPoint::const_iterator has_priority =
           priority->second.find(mount_point);
-      if (old_iter->second.has_dcim) {
+      if (MediaStorageUtil::IsRemovableDevice(old_iter->second.device_id)) {
         DCHECK(has_priority != priority->second.end());
-        if (has_priority->second)
-          RemoveMediaMount(old_iter->second.device_id);
+        if (has_priority->second) {
+          SystemMonitor::Get()->ProcessRemovableStorageDetached(
+              old_iter->second.device_id);
+        }
         if (priority->second.size() > 1)
           multiple_mounted_devices_needing_reattachment.push_back(mount_device);
       }
@@ -422,7 +424,7 @@ void RemovableDeviceNotificationsLinux::UpdateMtab() {
 
     const MountPointInfo& mount_info =
         mount_info_map_.find(mount_point)->second;
-    DCHECK(mount_info.has_dcim);
+    DCHECK(MediaStorageUtil::IsRemovableDevice(mount_info.device_id));
     base::SystemMonitor::Get()->ProcessRemovableStorageAttached(
         mount_info.device_id, mount_info.device_name, mount_point.value());
   }
@@ -493,20 +495,14 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   mount_point_info.mount_device = mount_device;
   mount_point_info.device_id = device_id;
   mount_point_info.device_name = name;
-  mount_point_info.has_dcim = has_dcim;
 
   mount_info_map_[mount_point] = mount_point_info;
-  mount_priority_map_[mount_device][mount_point] = has_dcim;
+  mount_priority_map_[mount_device][mount_point] = removable;
 
-  if (mount_point_info.has_dcim) {
+  if (removable) {
     SystemMonitor::Get()->ProcessRemovableStorageAttached(device_id, name,
                                                           mount_point.value());
   }
-}
-
-void RemovableDeviceNotificationsLinux::RemoveMediaMount(
-    const std::string& device_id) {
-  SystemMonitor::Get()->ProcessRemovableStorageDetached(device_id);
 }
 
 }  // namespace chrome

@@ -26,8 +26,8 @@
 
 class FilePath;
 
-// Gets the media device information given a |device_path|. On success,
-// returns true and fills in |unique_id|, |name|, and |removable|.
+// Gets device information given a |device_path|. On success, returns true and
+// fills in |unique_id|, |name|, and |removable|.
 typedef bool (*GetDeviceInfoFunc)(const FilePath& device_path,
                                   std::string* unique_id, string16* name,
                                   bool* removable);
@@ -82,7 +82,6 @@ class RemovableDeviceNotificationsLinux
     FilePath mount_device;
     std::string device_id;
     string16 device_name;
-    bool has_dcim;
   };
 
   // Mapping of mount points to MountPointInfo.
@@ -105,11 +104,8 @@ class RemovableDeviceNotificationsLinux
   void UpdateMtab();
 
   // Adds |mount_device| as mounted on |mount_point|.  If the device is a new
-  // media device, SystemMonitor is notified.
+  // device SystemMonitor is notified.
   void AddNewMount(const FilePath& mount_device, const FilePath& mount_point);
-
-  // Removes media device with a given device id.
-  void RemoveMediaMount(const std::string& device_id);
 
   // Whether Init() has been called or not.
   bool initialized_;

@@ -34,11 +34,11 @@ const char kInvalidFS[] = "invalidfs";
 
 const char kInvalidPath[] = "invalid path does not exist";
 
-const char kDevice1[] = "d1";
-const char kDevice2[] = "d2";
-const char kDevice3[] = "d3";
-const char kDevice4[] = "d4";
-const char kDevice5[] = "d5";
+const char kDeviceDCIM1[] = "d1";
+const char kDeviceDCIM2[] = "d2";
+const char kDeviceDCIM3[] = "d3";
+const char kDeviceNoDCIM[] = "d4";
+const char kDeviceFixed[] = "d5";
 
 const char kInvalidDevice[] = "invalid_device";
 
@@ -56,15 +56,15 @@ struct TestDeviceData {
 };
 
 const TestDeviceData kTestDeviceData[] = {
-  {kDevice1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
+  {kDeviceDCIM1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
-  {kDevice2, "VendorModelSerial:ComName:Model2010:89898989", "TEST_USB_MODEL_2",
+  {kDeviceDCIM2, "VendorModelSerial:ComName:Model2010:8989", "TEST_USB_MODEL_2",
    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
-  {kDevice3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
+  {kDeviceDCIM3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
    MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM},
-  {kDevice4, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
+  {kDeviceNoDCIM, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
    MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM},
-  {kDevice5, "UUID:743A91FD2349", "TEST_USB_MODEL_5",
+  {kDeviceFixed, "UUID:743A91FD2349", "TEST_USB_MODEL_5",
    MediaStorageUtil::FIXED_MASS_STORAGE},
 };
 
@@ -310,47 +310,67 @@ TEST_F(RemovableDeviceNotificationLinuxTest, BasicAttachDetach) {
   FilePath test_path = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path.empty());
   MtabTestData test_data[] = {
-    MtabTestData(kDevice1, kInvalidPath, kValidFS),
-    MtabTestData(kDevice2, test_path.value(), kValidFS),
+    MtabTestData(kDeviceDCIM2, test_path.value(), kValidFS),
+    MtabTestData(kDeviceFixed, kInvalidPath, kValidFS),
   };
-  // Only |kDevice2| should be attached, since |kDevice1| has a bad path.
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(GetDeviceId(kDevice2),
-                                                     GetDeviceName(kDevice2),
-                                                     test_path.value()))
+  // Only |kDeviceDCIM2| should be attached, since |kDeviceFixed| has a bad
+  // path.
+  EXPECT_CALL(observer(),
+              OnRemovableStorageAttached(GetDeviceId(kDeviceDCIM2),
+                                         GetDeviceName(kDeviceDCIM2),
+                                         test_path.value()))
       .InSequence(mock_sequence);
   AppendToMtabAndRunLoop(test_data, arraysize(test_data));
 
-  // |kDevice2| should be detached here.
-  EXPECT_CALL(observer(), OnRemovableStorageDetached(GetDeviceId(kDevice2)))
+  // |kDeviceDCIM2| should be detached here.
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(GetDeviceId(kDeviceDCIM2)))
       .InSequence(mock_sequence);
   WriteEmptyMtabAndRunLoop();
 }
 
-// Only mount points with DCIM directories are recognized.
-TEST_F(RemovableDeviceNotificationLinuxTest, DCIM) {
+// Only removable devices are recognized.
+TEST_F(RemovableDeviceNotificationLinuxTest, Removable) {
   testing::Sequence mock_sequence;
   FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path_a.empty());
   MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
   };
-  // |kDevice1| should be attached as expected.
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(GetDeviceId(kDevice1),
-                                                     GetDeviceName(kDevice1),
-                                                     test_path_a.value()))
+  // |kDeviceDCIM1| should be attached as expected.
+  EXPECT_CALL(observer(),
+              OnRemovableStorageAttached(GetDeviceId(kDeviceDCIM1),
+                                         GetDeviceName(kDeviceDCIM1),
+                                         test_path_a.value()))
       .InSequence(mock_sequence);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
-  // This should do nothing, since |kMountPointB| does not have a DCIM dir.
+  // This should do nothing, since |kDeviceFixed| is not removable.
   FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_b.empty());
   MtabTestData test_data2[] = {
-    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_b.value(), kValidFS),
   };
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
-  // |kDevice1| should be detached as expected.
-  EXPECT_CALL(observer(), OnRemovableStorageDetached(GetDeviceId(kDevice1)))
+  // |kDeviceDCIM1| should be detached as expected.
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(GetDeviceId(kDeviceDCIM1)))
+      .InSequence(mock_sequence);
+  WriteEmptyMtabAndRunLoop();
+
+  // |kDeviceNoDCIM| should be attached as expected.
+  EXPECT_CALL(observer(),
+              OnRemovableStorageAttached(GetDeviceId(kDeviceNoDCIM),
+                                         GetDeviceName(kDeviceNoDCIM),
+                                         test_path_b.value()))
+      .InSequence(mock_sequence);
+  MtabTestData test_data3[] = {
+    MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
+  };
+  AppendToMtabAndRunLoop(test_data3, arraysize(test_data3));
+
+  // |kDeviceNoDCIM| should be detached as expected.
+  EXPECT_CALL(observer(),
+              OnRemovableStorageDetached(GetDeviceId(kDeviceNoDCIM)))
       .InSequence(mock_sequence);
   WriteEmptyMtabAndRunLoop();
 }
@@ -362,12 +382,12 @@ TEST_F(RemovableDeviceNotificationLinuxTest, SwapMountPoints) {
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
-  // Attach two devices.
-  // kDevice1 -> kMountPointA
-  // kDevice2 -> kMountPointB
+  // Attach two devices.  (*'d mounts are those SystemMonitor knows about.)
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM2 -> kMountPointB *
   MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM2, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
@@ -375,11 +395,11 @@ TEST_F(RemovableDeviceNotificationLinuxTest, SwapMountPoints) {
 
   // Detach two devices from old mount points and attach the devices at new
   // mount points.
-  // kDevice1 -> kMountPointB
-  // kDevice2 -> kMountPointA
+  // kDeviceDCIM1 -> kMountPointB *
+  // kDeviceDCIM2 -> kMountPointA *
   MtabTestData test_data2[] = {
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice2, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM2, test_path_a.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(2);
@@ -398,55 +418,56 @@ TEST_F(RemovableDeviceNotificationLinuxTest, MultiDevicesMultiMountPoints) {
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
-  // Attach two devices.
-  // kDevice1 -> kMountPointA *
-  // kDevice2 -> kMountPointB *
+  // Attach two devices.  (*'d mounts are those SystemMonitor knows about.)
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM2 -> kMountPointB *
   MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM2, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
-  // Attach |kDevice1| to |kMountPointB|.
-  // |kDevice2| is inaccessible, so it is detached. |kDevice1| has been
+  // Attach |kDeviceDCIM1| to |kMountPointB|.
+  // |kDeviceDCIM2| is inaccessible, so it is detached. |kDeviceDCIM1| has been
   // attached at |kMountPointB|, but is still accessible from |kMountPointA|.
-  // kDevice1 -> kMountPointA *
-  // kDevice2 -> kMountPointB
-  // kDevice1 -> kMountPointB
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM2 -> kMountPointB
+  // kDeviceDCIM1 -> kMountPointB
   MtabTestData test_data2[] = {
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
-  // Detach |kDevice1| from |kMountPointA|, causing a detach and attach event.
-  // kDevice2 -> kMountPointB
-  // kDevice1 -> kMountPointB *
+  // Detach |kDeviceDCIM1| from |kMountPointA|, causing a detach and attach
+  // event.
+  // kDeviceDCIM2 -> kMountPointB
+  // kDeviceDCIM1 -> kMountPointB *
   MtabTestData test_data3[] = {
-    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM2, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   OverwriteMtabAndRunLoop(test_data3, arraysize(test_data3));
 
-  // Attach |kDevice1| to |kMountPointA|.
-  // kDevice2 -> kMountPointB
-  // kDevice1 -> kMountPointB *
-  // kDevice1 -> kMountPointA
+  // Attach |kDeviceDCIM1| to |kMountPointA|.
+  // kDeviceDCIM2 -> kMountPointB
+  // kDeviceDCIM1 -> kMountPointB *
+  // kDeviceDCIM1 -> kMountPointA
   MtabTestData test_data4[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data4, arraysize(test_data4));
 
-  // Detach |kDevice1| from |kMountPointB|.
-  // kDevice1 -> kMountPointA *
-  // kDevice2 -> kMountPointB *
+  // Detach |kDeviceDCIM1| from |kMountPointB|.
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM2 -> kMountPointB *
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   OverwriteMtabAndRunLoop(test_data1, arraysize(test_data1));
@@ -464,53 +485,78 @@ TEST_F(RemovableDeviceNotificationLinuxTest,
   ASSERT_FALSE(test_path_a.empty());
   ASSERT_FALSE(test_path_b.empty());
 
-  // Attach to one first.
-  // kDevice1 -> kMountPointA *
+  // Attach to one first. (*'d mounts are those SystemMonitor knows about.)
+  // kDeviceDCIM1 -> kMountPointA *
   MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
-  // Attach |kDevice1| to |kMountPointB|.
-  // kDevice1 -> kMountPointA *
-  // kDevice1 -> kMountPointB
+  // Attach |kDeviceDCIM1| to |kMountPointB|.
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM1 -> kMountPointB
   MtabTestData test_data2[] = {
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
-  // Attach |kDevice4| (a non-DCIM device) to |kMountPointA|.
-  // kDevice1 -> kMountPointA
-  // kDevice1 -> kMountPointB *
-  // kDevice4 -> kMountPointA
+  // Attach |kDeviceFixed| (a non-removable device) to |kMountPointA|.
+  // kDeviceDCIM1 -> kMountPointA
+  // kDeviceDCIM1 -> kMountPointB *
+  // kDeviceFixed -> kMountPointA
   MtabTestData test_data3[] = {
-    MtabTestData(kDevice4, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_a.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   RemoveDCIMDirFromMountPoint(kMountPointA);
   AppendToMtabAndRunLoop(test_data3, arraysize(test_data3));
 
-  // Detach |kDevice4|.
-  // kDevice1 -> kMountPointA
-  // kDevice1 -> kMountPointB *
+  // Detach |kDeviceFixed|.
+  // kDeviceDCIM1 -> kMountPointA
+  // kDeviceDCIM1 -> kMountPointB *
   MtabTestData test_data4[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
+  CreateMountPointWithDCIMDir(kMountPointA);
   OverwriteMtabAndRunLoop(test_data4, arraysize(test_data4));
 
-  // Detach |kDevice1| from |kMountPointA|.
-  // kDevice1 -> kMountPointB *
+  // Attach |kDeviceNoDCIM| (a non-DCIM device) to |kMountPointB|.
+  // kDeviceDCIM1  -> kMountPointA *
+  // kDeviceDCIM1  -> kMountPointB
+  // kDeviceNoDCIM -> kMountPointB *
+  MtabTestData test_data5[] = {
+    MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
+  };
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
+  file_util::Delete(test_path_b.Append("DCIM"), false);
+  AppendToMtabAndRunLoop(test_data5, arraysize(test_data5));
+
+  // Detach |kDeviceNoDCIM|.
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM1 -> kMountPointB
+  MtabTestData test_data6[] = {
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
+  };
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
+  CreateMountPointWithDCIMDir(kMountPointB);
+  OverwriteMtabAndRunLoop(test_data6, arraysize(test_data6));
+
+  // Detach |kDeviceDCIM1| from |kMountPointB|.
+  // kDeviceDCIM1 -> kMountPointA *
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
-  OverwriteMtabAndRunLoop(test_data2, arraysize(test_data2));
+  OverwriteMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Detach all devices.
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
@@ -526,70 +572,70 @@ TEST_F(RemovableDeviceNotificationLinuxTest, MountLookUp) {
   ASSERT_FALSE(test_path_b.empty());
   ASSERT_FALSE(test_path_c.empty());
 
-  // Attach to one first.
-  // kDevice1 -> kMountPointA *
-  // kDevice4 -> kMountPointB
-  // kDevice5 -> kMountPointC
+  // Attach to one first. (*'d mounts are those SystemMonitor knows about.)
+  // kDeviceDCIM1  -> kMountPointA *
+  // kDeviceNoDCIM -> kMountPointB *
+  // kDeviceFixed  -> kMountPointC
   MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice4, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice5, test_path_c.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_c.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   EXPECT_EQ(test_path_a,
-            notifier()->GetDeviceMountPoint(GetDeviceId(kDevice1)));
+            notifier()->GetDeviceMountPoint(GetDeviceId(kDeviceDCIM1)));
   EXPECT_EQ(test_path_b,
-            notifier()->GetDeviceMountPoint(GetDeviceId(kDevice4)));
+            notifier()->GetDeviceMountPoint(GetDeviceId(kDeviceNoDCIM)));
   EXPECT_EQ(test_path_c,
-            notifier()->GetDeviceMountPoint(GetDeviceId(kDevice5)));
+            notifier()->GetDeviceMountPoint(GetDeviceId(kDeviceFixed)));
   EXPECT_EQ(FilePath(),
             notifier()->GetDeviceMountPoint(GetDeviceId(kInvalidDevice)));
 
-  // Make |kDevice1| mounted in multiple places.
-  // kDevice1 -> kMountPointA *
-  // kDevice1 -> kMountPointB
-  // kDevice1 -> kMountPointC
+  // Make |kDeviceDCIM1| mounted in multiple places.
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceDCIM1 -> kMountPointB
+  // kDeviceDCIM1 -> kMountPointC
   MtabTestData test_data2[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice1, test_path_c.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_c.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
-  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   // Add DCIM dirs.
   CreateMountPointWithDCIMDir(kMountPointB);
   CreateMountPointWithDCIMDir(kMountPointC);
   OverwriteMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   EXPECT_EQ(test_path_a,
-            notifier()->GetDeviceMountPoint(GetDeviceId(kDevice1)));
+            notifier()->GetDeviceMountPoint(GetDeviceId(kDeviceDCIM1)));
 
-  // Unmount |kDevice1| from |kMountPointA|.
-  // kDevice1 -> kMountPointB *
-  // kDevice1 -> kMountPointC
+  // Unmount |kDeviceDCIM1| from |kMountPointA|.
+  // kDeviceDCIM1 -> kMountPointB *
+  // kDeviceDCIM1 -> kMountPointC
   // Either |kMountPointB| or |kMountPointC| is a valid new default, but
   // it turns out that it will be B.
   MtabTestData test_data3[] = {
-    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   OverwriteMtabAndRunLoop(test_data3, arraysize(test_data3));
 
   EXPECT_EQ(test_path_b,
-            notifier()->GetDeviceMountPoint(GetDeviceId(kDevice1)));
+            notifier()->GetDeviceMountPoint(GetDeviceId(kDeviceDCIM1)));
 
   // Mount a non-removable device in multiple places.
-  // kDevice5 -> kMountPointA
-  // kDevice5 -> kMountPointB
-  // kDevice5 -> kMountPointC
+  // kDeviceFixed -> kMountPointA
+  // kDeviceFixed -> kMountPointB
+  // kDeviceFixed -> kMountPointC
   MtabTestData test_data4[] = {
-    MtabTestData(kDevice5, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice5, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice5, test_path_c.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_c.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
@@ -601,7 +647,7 @@ TEST_F(RemovableDeviceNotificationLinuxTest, MountLookUp) {
 
   // Any of the mount points would be valid.
   EXPECT_EQ(test_path_a.value(),
-            notifier()->GetDeviceMountPoint(GetDeviceId(kDevice5)).value());
+            notifier()->GetDeviceMountPoint(GetDeviceId(kDeviceFixed)).value());
 }
 
 TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
@@ -612,27 +658,27 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   ASSERT_FALSE(test_path_b.empty());
   ASSERT_FALSE(test_path_c.empty());
 
-  // Attach to one first.
-  // kDevice1 -> kMountPointA *
-  // kDevice4 -> kMountPointB
-  // kDevice5 -> kMountPointC
+  // Attach to one first. (*'d mounts are those SystemMonitor knows about.)
+  // kDeviceDCIM1  -> kMountPointA *
+  // kDeviceNoDCIM -> kMountPointB *
+  // kDeviceFixed  -> kMountPointC
   MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice4, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice5, test_path_c.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceNoDCIM, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_c.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(1);
+  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   FilePath mount_point;
-  EXPECT_EQ(GetDeviceId(kDevice1),
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1),
             notifier()->GetDeviceIdForPath(test_path_a, &mount_point));
   EXPECT_EQ(test_path_a.value(), mount_point.value());
-  EXPECT_EQ(GetDeviceId(kDevice4),
+  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM),
             notifier()->GetDeviceIdForPath(test_path_b, &mount_point));
   EXPECT_EQ(test_path_b.value(), mount_point.value());
-  EXPECT_EQ(GetDeviceId(kDevice5),
+  EXPECT_EQ(GetDeviceId(kDeviceFixed),
             notifier()->GetDeviceIdForPath(test_path_c, NULL));
 
   // An invalid path.
@@ -640,28 +686,28 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
             notifier()->GetDeviceIdForPath(FilePath(kInvalidPath), NULL));
 
   // Test filling in of the mount point.
-  EXPECT_EQ(GetDeviceId(kDevice1), notifier()->GetDeviceIdForPath(
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), notifier()->GetDeviceIdForPath(
       test_path_a.Append("some/other/path"), &mount_point));
   EXPECT_EQ(test_path_a.value(), mount_point.value());
 
   // One device attached at multiple points.
-  // kDevice1 -> kMountPointA *
-  // kDevice5 -> kMountPointB
-  // kDevice5 -> kMountPointC
+  // kDeviceDCIM1 -> kMountPointA *
+  // kDeviceFixed -> kMountPointB
+  // kDeviceFixed -> kMountPointC
   MtabTestData test_data2[] = {
-    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
-    MtabTestData(kDevice5, test_path_b.value(), kValidFS),
-    MtabTestData(kDevice5, test_path_c.value(), kValidFS),
+    MtabTestData(kDeviceDCIM1, test_path_a.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_b.value(), kValidFS),
+    MtabTestData(kDeviceFixed, test_path_c.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
-  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
+  EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
-  EXPECT_EQ(GetDeviceId(kDevice1),
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1),
             notifier()->GetDeviceIdForPath(test_path_a, NULL));
-  EXPECT_EQ(GetDeviceId(kDevice5),
+  EXPECT_EQ(GetDeviceId(kDeviceFixed),
             notifier()->GetDeviceIdForPath(test_path_b, NULL));
-  EXPECT_EQ(GetDeviceId(kDevice5),
+  EXPECT_EQ(GetDeviceId(kDeviceFixed),
             notifier()->GetDeviceIdForPath(test_path_c, NULL));
 }
 
