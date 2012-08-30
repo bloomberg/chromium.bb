@@ -4290,7 +4290,7 @@
           },
         }],
         ['os_posix == 1 and OS != "mac"', {
-          'sources': [ 'browser/crash_handler_host_linuxish.h', ],
+          'sources': [ 'browser/crash_handler_host_linux.h', ],
           'conditions': [
             ['linux_breakpad==1', {
               'sources': [
