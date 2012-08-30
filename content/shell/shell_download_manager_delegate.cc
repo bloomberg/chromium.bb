@@ -28,7 +28,9 @@
 namespace content {
 
 ShellDownloadManagerDelegate::ShellDownloadManagerDelegate()
-    : download_manager_(NULL) {
+    : download_manager_(NULL),
+      suppress_prompting_(false),
+      last_download_db_handle_(DownloadItem::kUninitializedHandle) {
   // Balanced in Shutdown();
   AddRef();
 }
@@ -49,6 +51,14 @@ void ShellDownloadManagerDelegate::Shutdown() {
 bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
     DownloadItem* download,
     const DownloadTargetCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // This assignment needs to be here because even at the call to
+  // SetDownloadManager, the system is not fully initialized.
+  if (default_download_path_.empty()) {
+    default_download_path_ = download_manager_->GetBrowserContext()->GetPath().
+        Append(FILE_PATH_LITERAL("Downloads"));
+  }
+
   if (!download->GetForcedFilePath().empty()) {
     callback.Run(download->GetForcedFilePath(),
                  DownloadItem::TARGET_DISPOSITION_OVERWRITE,
@@ -70,32 +80,49 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
       FROM_HERE,
       base::Bind(
           &ShellDownloadManagerDelegate::GenerateFilename,
-          this, download->GetId(), callback, generated_name));
-  return false;
+          this, download->GetId(), callback, generated_name,
+          default_download_path_));
+  return true;
 }
 
 void ShellDownloadManagerDelegate::GenerateFilename(
     int32 download_id,
     const DownloadTargetCallback& callback,
-    const FilePath& generated_name) {
-  FilePath suggested_path = download_manager_->GetBrowserContext()->GetPath().
-      Append(FILE_PATH_LITERAL("Downloads"));
-  if (!file_util::PathExists(suggested_path))
-    file_util::CreateDirectory(suggested_path);
+    const FilePath& generated_name,
+    const FilePath& suggested_directory) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!file_util::PathExists(suggested_directory))
+    file_util::CreateDirectory(suggested_directory);
 
-  suggested_path = suggested_path.Append(generated_name);
+  FilePath suggested_path(suggested_directory.Append(generated_name));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &ShellDownloadManagerDelegate::ChooseDownloadPath,
+          &ShellDownloadManagerDelegate::OnDownloadPathGenerated,
           this, download_id, callback, suggested_path));
+}
+
+void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
+    int32 download_id,
+    const DownloadTargetCallback& callback,
+    const FilePath& suggested_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (suppress_prompting_) {
+    // Testing exit.
+    callback.Run(suggested_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                 DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, suggested_path);
+    return;
+  }
+
+  ChooseDownloadPath(download_id, callback, suggested_path);
 }
 
 void ShellDownloadManagerDelegate::ChooseDownloadPath(
     int32 download_id,
     const DownloadTargetCallback& callback,
     const FilePath& suggested_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadItem* item =
       download_manager_->GetActiveDownloadItem(download_id);
   if (!item)
@@ -152,6 +179,18 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 
   callback.Run(result, DownloadItem::TARGET_DISPOSITION_PROMPT,
                DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result);
+}
+
+void ShellDownloadManagerDelegate::AddItemToPersistentStore(
+    DownloadItem* item) {
+  download_manager_->OnItemAddedToPersistentStore(
+      item->GetId(), --last_download_db_handle_);
+}
+
+void ShellDownloadManagerDelegate::SetDownloadBehaviorForTesting(
+    const FilePath& default_download_path) {
+  default_download_path_ = default_download_path;
+  suppress_prompting_ = true;
 }
 
 }  // namespace content

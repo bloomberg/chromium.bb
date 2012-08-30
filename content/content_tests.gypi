@@ -572,6 +572,7 @@
         'browser/database_browsertest.cc',
         'browser/device_orientation/device_orientation_browsertest.cc',
         'browser/dom_storage/dom_storage_browsertest.cc',
+	'browser/download/download_browsertest.cc',
         'browser/download/mhtml_generation_browsertest.cc',
         'browser/download/save_package_browsertest.cc',
         'browser/fileapi/file_system_browsertest.cc',
