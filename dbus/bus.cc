@@ -33,7 +33,7 @@ class Watch : public base::MessagePumpLibevent::Watcher {
     dbus_watch_set_data(raw_watch_, this, NULL);
   }
 
-  ~Watch() {
+  virtual ~Watch() {
     dbus_watch_set_data(raw_watch_, NULL, NULL);
   }
 
@@ -74,13 +74,13 @@ class Watch : public base::MessagePumpLibevent::Watcher {
 
  private:
   // Implement MessagePumpLibevent::Watcher.
-  virtual void OnFileCanReadWithoutBlocking(int file_descriptor) {
+  virtual void OnFileCanReadWithoutBlocking(int file_descriptor) OVERRIDE {
     const bool success = dbus_watch_handle(raw_watch_, DBUS_WATCH_READABLE);
     CHECK(success) << "Unable to allocate memory";
   }
 
   // Implement MessagePumpLibevent::Watcher.
-  virtual void OnFileCanWriteWithoutBlocking(int file_descriptor) {
+  virtual void OnFileCanWriteWithoutBlocking(int file_descriptor) OVERRIDE {
     const bool success = dbus_watch_handle(raw_watch_, DBUS_WATCH_WRITABLE);
     CHECK(success) << "Unable to allocate memory";
   }
