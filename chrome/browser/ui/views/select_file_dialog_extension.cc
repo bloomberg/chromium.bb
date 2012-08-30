@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -301,7 +301,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   // possible. If there is no tab contents use a tab_id of 0. A dialog without
   // an associated tab contents will be shown fully screen; only one at a time
   // is allowed in this state.
-  int32 tab_id = tab ? tab->restore_tab_helper()->session_id().id() : 0;
+  int32 tab_id = tab ? tab->session_tab_helper()->session_id().id() : 0;
   if (PendingExists(tab_id)) {
     DLOG(WARNING) << "Pending dialog exists with id " << tab_id;
     return;

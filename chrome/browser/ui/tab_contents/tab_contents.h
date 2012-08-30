@@ -51,9 +51,9 @@ class PDFTabObserver;
 class PluginObserver;
 class PrefsTabHelper;
 class Profile;
-class RestoreTabHelper;
 class SadTabHelper;
 class SearchEngineTabHelper;
+class SessionTabHelper;
 class ShellWindow;
 class SnapshotTabHelper;
 class TabAutofillManagerDelegate;
@@ -276,14 +276,6 @@ class TabContents : public content::WebContentsObserver {
     return print_view_manager_.get();
   }
 
-  RestoreTabHelper* restore_tab_helper() {
-    return restore_tab_helper_.get();
-  }
-
-  const RestoreTabHelper* restore_tab_helper() const {
-    return restore_tab_helper_.get();
-  }
-
   SadTabHelper* sad_tab_helper() { return sad_tab_helper_.get(); }
 
   SearchEngineTabHelper* search_engine_tab_helper() {
@@ -292,6 +284,14 @@ class TabContents : public content::WebContentsObserver {
 
   chrome::search::SearchTabHelper* search_tab_helper() {
     return search_tab_helper_.get();
+  }
+
+  SessionTabHelper* session_tab_helper() {
+    return session_tab_helper_.get();
+  }
+
+  const SessionTabHelper* session_tab_helper() const {
+    return session_tab_helper_.get();
   }
 
   SnapshotTabHelper* snapshot_tab_helper() {
@@ -329,7 +329,6 @@ class TabContents : public content::WebContentsObserver {
 
   // content::WebContentsObserver overrides:
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
-  virtual void UserAgentOverrideSet(const std::string& user_agent) OVERRIDE;
 
  private:
   friend class TabContentsFactory;
@@ -379,10 +378,10 @@ class TabContents : public content::WebContentsObserver {
   // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
 
-  scoped_ptr<RestoreTabHelper> restore_tab_helper_;
   scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<chrome::search::SearchTabHelper> search_tab_helper_;
+  scoped_ptr<SessionTabHelper> session_tab_helper_;
   scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;

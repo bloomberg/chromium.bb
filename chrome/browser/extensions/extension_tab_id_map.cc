@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -80,8 +80,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID(),
-              tab->restore_tab_helper()->session_id().id(),
-              tab->restore_tab_helper()->window_id().id()));
+              tab->session_tab_helper()->session_id().id(),
+              tab->session_tab_helper()->window_id().id()));
       break;
     }
     case chrome::NOTIFICATION_TAB_PARENTED: {
@@ -94,8 +94,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID(),
-              tab->restore_tab_helper()->session_id().id(),
-              tab->restore_tab_helper()->window_id().id()));
+              tab->session_tab_helper()->session_id().id(),
+              tab->session_tab_helper()->window_id().id()));
       break;
     }
     case chrome::NOTIFICATION_RETARGETING: {
@@ -112,8 +112,8 @@ void ExtensionTabIdMap::TabObserver::Observe(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
               host->GetProcess()->GetID(), host->GetRoutingID(),
-              tab->restore_tab_helper()->session_id().id(),
-              tab->restore_tab_helper()->window_id().id()));
+              tab->session_tab_helper()->session_id().id(),
+              tab->session_tab_helper()->window_id().id()));
       break;
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {

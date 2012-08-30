@@ -78,9 +78,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/repost_form_warning_controller.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -1026,7 +1026,7 @@ void Browser::TabInsertedAt(TabContents* contents,
                             int index,
                             bool foreground) {
   SetAsDelegate(contents, this);
-  contents->restore_tab_helper()->SetWindowID(session_id());
+  contents->session_tab_helper()->SetWindowID(session_id());
 
   SyncHistoryWithTabs(index);
 
@@ -1184,7 +1184,7 @@ void Browser::TabPinnedStateChanged(TabContents* contents, int index) {
   if (session_service) {
     session_service->SetPinnedState(
         session_id(),
-        chrome::GetTabContentsAt(this, index)->restore_tab_helper()->
+        chrome::GetTabContentsAt(this, index)->session_tab_helper()->
             session_id(),
         tab_strip_model_->IsTabPinned(index));
   }
@@ -2081,10 +2081,10 @@ void Browser::SyncHistoryWithTabs(int index) {
       TabContents* tab = chrome::GetTabContentsAt(this, i);
       if (tab) {
         session_service->SetTabIndexInWindow(
-            session_id(), tab->restore_tab_helper()->session_id(), i);
+            session_id(), tab->session_tab_helper()->session_id(), i);
         session_service->SetPinnedState(
             session_id(),
-            tab->restore_tab_helper()->session_id(),
+            tab->session_tab_helper()->session_id(),
             tab_strip_model_->IsTabPinned(i));
       }
     }

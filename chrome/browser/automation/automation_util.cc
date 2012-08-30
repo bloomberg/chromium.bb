@@ -19,8 +19,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -411,7 +411,7 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
 AutomationId GetIdForTab(const TabContents* tab) {
   return AutomationId(
       AutomationId::kTypeTab,
-      base::IntToString(tab->restore_tab_helper()->session_id().id()));
+      base::IntToString(tab->session_tab_helper()->session_id().id()));
 }
 
 AutomationId GetIdForExtensionView(
@@ -459,7 +459,7 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
       TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
       if (base::IntToString(
-              tab_contents->restore_tab_helper()->session_id().id()) ==
+              tab_contents->session_tab_helper()->session_id().id()) ==
                   id.id()) {
         *tab = tab_contents->web_contents();
         return true;
@@ -469,7 +469,7 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
             preview_controller->GetPrintPreviewForTab(tab_contents);
         if (preview_tab_contents) {
           std::string preview_id = base::IntToString(
-              preview_tab_contents->restore_tab_helper()->session_id().id());
+              preview_tab_contents->session_tab_helper()->session_id().id());
           if (preview_id == id.id()) {
             *tab = preview_tab_contents->web_contents();
             return true;

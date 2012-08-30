@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -595,7 +595,7 @@ int BrowserActionsToolbarGtk::GetCurrentTabId() const {
   if (!active_tab)
     return -1;
 
-  return active_tab->restore_tab_helper()->session_id().id();
+  return active_tab->session_tab_helper()->session_id().id();
 }
 
 void BrowserActionsToolbarGtk::Update() {

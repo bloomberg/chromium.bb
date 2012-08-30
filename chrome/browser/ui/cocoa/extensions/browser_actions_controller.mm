@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -851,7 +851,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   if (!selected_tab)
     return -1;
 
-  return selected_tab->restore_tab_helper()->session_id().id();
+  return selected_tab->session_tab_helper()->session_id().id();
 }
 
 #pragma mark -

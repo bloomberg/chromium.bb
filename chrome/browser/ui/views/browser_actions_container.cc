@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -457,7 +457,7 @@ void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
 
 int BrowserActionsContainer::GetCurrentTabId() const {
   TabContents* tab = chrome::GetActiveTabContents(browser_);
-  return tab ? tab->restore_tab_helper()->session_id().id() : -1;
+  return tab ? tab->session_tab_helper()->session_id().id() : -1;
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(

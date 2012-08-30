@@ -83,8 +83,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -5747,7 +5747,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
   if (has_handle) {
     TabContents* tab = TabContents::FromWebContents(
         tab_tracker_->GetResource(id_or_handle)->GetWebContents());
-    id = tab->restore_tab_helper()->session_id().id();
+    id = tab->session_tab_helper()->session_id().id();
   }
   BrowserList::const_iterator iter = BrowserList::begin();
   int browser_index = 0;
@@ -5755,7 +5755,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
       TabContents* tab = chrome::GetTabContentsAt(browser, tab_index);
-      if (tab->restore_tab_helper()->session_id().id() == id) {
+      if (tab->session_tab_helper()->session_id().id() == id) {
         DictionaryValue dict;
         dict.SetInteger("windex", browser_index);
         dict.SetInteger("tab_index", tab_index);
@@ -6398,7 +6398,7 @@ void TestingAutomationProvider::GetTabIds(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      int id = chrome::GetTabContentsAt(browser, i)->restore_tab_helper()->
+      int id = chrome::GetTabContentsAt(browser, i)->session_tab_helper()->
           session_id().id();
       id_list->Append(Value::CreateIntegerValue(id));
     }
@@ -6471,7 +6471,7 @@ void TestingAutomationProvider::IsTabIdValid(
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
       TabContents* tab = chrome::GetTabContentsAt(browser, i);
-      if (tab->restore_tab_helper()->session_id().id() == id) {
+      if (tab->session_tab_helper()->session_id().id() == id) {
         is_valid = true;
         break;
       }

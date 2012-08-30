@@ -13,8 +13,8 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/printing/print_view_manager.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
@@ -167,7 +167,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     tabContents_ = aTabContent;
     scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc]
-            initWithInt:tabContents_->restore_tab_helper()->session_id().id()]);
+            initWithInt:tabContents_->session_tab_helper()->session_id().id()]);
     [self setUniqueID:numID];
   }
   return self;
@@ -181,7 +181,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   tabContents_ = aTabContent;
   scoped_nsobject<NSNumber> numID(
       [[NSNumber alloc]
-          initWithInt:tabContents_->restore_tab_helper()->session_id().id()]);
+          initWithInt:tabContents_->session_tab_helper()->session_id().id()]);
   [self setUniqueID:numID];
 
   if ([self tempURL])

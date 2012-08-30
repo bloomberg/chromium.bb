@@ -49,7 +49,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -828,7 +828,7 @@ void BrowserOpenedNotificationObserver::Observe(
         content::Source<NavigationController>(source).ptr();
     TabContents* tab =
         TabContents::FromWebContents(controller->GetWebContents());
-    int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
+    int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (use_json_interface_) {
         AutomationJSONReply(automation_,
@@ -2208,7 +2208,7 @@ void AppLaunchObserver::Observe(int type,
           content::Source<NavigationController>(source).ptr();
       TabContents* tab =
           TabContents::FromWebContents(controller->GetWebContents());
-      int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
+      int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
       if (window_id == new_window_id_) {
         if (automation_) {
           AutomationJSONReply(automation_,
@@ -2864,7 +2864,7 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
         content::Source<NavigationController>(source).ptr();
     TabContents* tab =
         TabContents::FromWebContents(controller->GetWebContents());
-    int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
+    int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (automation_) {
         AutomationJSONReply(automation_, reply_message_.release())
@@ -2974,7 +2974,7 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
         content::Source<NavigationController>(source).ptr();
     TabContents* tab = TabContents::FromWebContents(
         controller->GetWebContents());
-    int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
+    int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_ && --num_loads_ == 0) {
       if (automation_) {
         AutomationJSONReply(automation_, reply_message_.release())

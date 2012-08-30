@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   }
 
   // Test that we received the changes.
-  int tab_id = chrome::GetActiveTabContents(browser())->restore_tab_helper()->
+  int tab_id = chrome::GetActiveTabContents(browser())->session_tab_helper()->
       session_id().id();
   ExtensionAction* action = extension->page_action();
   ASSERT_TRUE(action);
@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   }
 
   // Test that we received the changes.
-  tab_id = chrome::GetActiveTabContents(browser())->restore_tab_helper()->
+  tab_id = chrome::GetActiveTabContents(browser())->session_tab_helper()->
       session_id().id();
   EXPECT_FALSE(action->GetIcon(tab_id).IsEmpty());
 }

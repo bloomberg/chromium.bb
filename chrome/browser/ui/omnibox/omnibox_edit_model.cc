@@ -37,7 +37,7 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -538,7 +538,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // we can easily get the tab ID.  (If it's being opened in a new
       // tab, we don't know the tab ID yet.)
       log.tab_id = controller_->GetTabContents()->
-          restore_tab_helper()->session_id().id();
+          session_tab_helper()->session_id().id();
     }
     autocomplete_controller_->AddProvidersInfo(&log.providers_info);
     content::NotificationService::current()->Notify(

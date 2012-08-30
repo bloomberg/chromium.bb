@@ -18,7 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/restore_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -428,7 +428,7 @@ void DevToolsWindow::UpdateFrontendAttachedState() {
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
   if (inspected_tab_) {
     base::FundamentalValue tabId(
-        inspected_tab_->restore_tab_helper()->session_id().id());
+        inspected_tab_->session_tab_helper()->session_id().id());
     CallClientFunction("WebInspector.setInspectedTabId", &tabId);
   }
   ListValue results;
