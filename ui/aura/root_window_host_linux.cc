@@ -133,8 +133,6 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
     case ui::kCursorWestPanning:
       return XC_sb_left_arrow;
     case ui::kCursorNone:
-    case ui::kCursorGrab:
-    case ui::kCursorGrabbing:
       // TODO(jamescook): Need cursors for these.  crbug.com/111650
       return XC_left_ptr;
 
@@ -169,6 +167,8 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
     case ui::kCursorVerticalText:
     case ui::kCursorZoomIn:
     case ui::kCursorZoomOut:
+    case ui::kCursorGrab:
+    case ui::kCursorGrabbing:
       NOTREACHED() << "Cursor (" << native_cursor.native_type() << ") should "
                    << "have an image asset.";
       return XC_left_ptr;
@@ -299,48 +299,77 @@ class RootWindowHostLinux::ImageCursors {
     UnloadAll();
     // The cursor's hot points are defined in chromeos cursor images at:
     // http://folder/kuscher/projects/Chrome_OS/Pointers/focuspoint
-    LoadImageCursor(ui::kCursorNull, IDR_AURA_CURSOR_PTR, 8, 3);
-    LoadImageCursor(ui::kCursorPointer, IDR_AURA_CURSOR_PTR, 8, 3);
-    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, 3, 1);
-    LoadImageCursor(ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP, 3, 1);
-    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY, 3, 1);
-    LoadImageCursor(ui::kCursorHand, IDR_AURA_CURSOR_HAND, 9, 3);
-    LoadImageCursor(ui::kCursorMove, IDR_AURA_CURSOR_MOVE, 11, 11);
+    LoadImageCursor(ui::kCursorNull, IDR_AURA_CURSOR_PTR,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorPointer, IDR_AURA_CURSOR_PTR,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorHand, IDR_AURA_CURSOR_HAND,
+                    gfx::Point(9, 4), gfx::Point(19, 8));
+    LoadImageCursor(ui::kCursorMove, IDR_AURA_CURSOR_MOVE,
+                    gfx::Point(11, 11), gfx::Point(23, 23));
     LoadImageCursor(ui::kCursorNorthEastResize,
-                    IDR_AURA_CURSOR_NORTH_EAST_RESIZE, 12, 11);
+                    IDR_AURA_CURSOR_NORTH_EAST_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
     LoadImageCursor(ui::kCursorSouthWestResize,
-                    IDR_AURA_CURSOR_SOUTH_WEST_RESIZE, 12, 11);
+                    IDR_AURA_CURSOR_SOUTH_WEST_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
     LoadImageCursor(ui::kCursorSouthEastResize,
-                    IDR_AURA_CURSOR_SOUTH_EAST_RESIZE, 11, 11);
+                    IDR_AURA_CURSOR_SOUTH_EAST_RESIZE,
+                    gfx::Point(11, 11), gfx::Point(24, 23));
     LoadImageCursor(ui::kCursorNorthWestResize,
-                    IDR_AURA_CURSOR_NORTH_WEST_RESIZE, 11, 11);
-    LoadImageCursor(ui::kCursorNorthResize,
-                    IDR_AURA_CURSOR_NORTH_RESIZE, 11, 10);
-    LoadImageCursor(ui::kCursorSouthResize,
-                    IDR_AURA_CURSOR_SOUTH_RESIZE, 11, 11);
-    LoadImageCursor(ui::kCursorEastResize, IDR_AURA_CURSOR_EAST_RESIZE, 11, 11);
-    LoadImageCursor(ui::kCursorWestResize, IDR_AURA_CURSOR_WEST_RESIZE, 11, 11);
-    LoadImageCursor(ui::kCursorIBeam, IDR_AURA_CURSOR_IBEAM, 12, 12);
-    LoadImageCursor(ui::kCursorAlias, IDR_AURA_CURSOR_ALIAS, 8, 5);
-    LoadImageCursor(ui::kCursorCell, IDR_AURA_CURSOR_CELL, 12, 11);
-    LoadImageCursor(ui::kCursorContextMenu, IDR_AURA_CURSOR_CONTEXT_MENU, 3, 1);
-    LoadImageCursor(ui::kCursorCross, IDR_AURA_CURSOR_CROSSHAIR, 12, 11);
-    LoadImageCursor(ui::kCursorHelp, IDR_AURA_CURSOR_HELP, 3, 1);
-    LoadImageCursor(ui::kCursorVerticalText,
-                    IDR_AURA_CURSOR_XTERM_HORIZ, 12, 12);
-    LoadImageCursor(ui::kCursorZoomIn, IDR_AURA_CURSOR_ZOOM_IN, 12, 12);
-    LoadImageCursor(ui::kCursorZoomOut, IDR_AURA_CURSOR_ZOOM_OUT, 11, 11);
-    LoadImageCursor(ui::kCursorRowResize, IDR_AURA_CURSOR_ROW_RESIZE, 11, 11);
-    LoadImageCursor(ui::kCursorColumnResize,
-                    IDR_AURA_CURSOR_COL_RESIZE, 11, 11);
-    LoadImageCursor(ui::kCursorEastWestResize,
-                    IDR_AURA_CURSOR_EAST_WEST_RESIZE, 11, 11);
+                    IDR_AURA_CURSOR_NORTH_WEST_RESIZE,
+                    gfx::Point(11, 11), gfx::Point(24, 23));
+    LoadImageCursor(ui::kCursorNorthResize, IDR_AURA_CURSOR_NORTH_RESIZE,
+                    gfx::Point(11, 12), gfx::Point(23, 23));
+    LoadImageCursor(ui::kCursorSouthResize, IDR_AURA_CURSOR_SOUTH_RESIZE,
+                    gfx::Point(11, 12), gfx::Point(23, 23));
+    LoadImageCursor(ui::kCursorEastResize, IDR_AURA_CURSOR_EAST_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
+    LoadImageCursor(ui::kCursorWestResize, IDR_AURA_CURSOR_WEST_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
+    LoadImageCursor(ui::kCursorIBeam, IDR_AURA_CURSOR_IBEAM,
+                    gfx::Point(12, 12), gfx::Point(24, 25));
+    LoadImageCursor(ui::kCursorAlias, IDR_AURA_CURSOR_ALIAS,
+                    gfx::Point(8, 6), gfx::Point(15, 11));
+    LoadImageCursor(ui::kCursorCell, IDR_AURA_CURSOR_CELL,
+                    gfx::Point(11, 11), gfx::Point(24, 23));
+    LoadImageCursor(ui::kCursorContextMenu, IDR_AURA_CURSOR_CONTEXT_MENU,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorCross, IDR_AURA_CURSOR_CROSSHAIR,
+                    gfx::Point(12, 12), gfx::Point(25, 23));
+    LoadImageCursor(ui::kCursorHelp, IDR_AURA_CURSOR_HELP,
+                    gfx::Point(4, 4), gfx::Point(8, 9));
+    LoadImageCursor(ui::kCursorVerticalText, IDR_AURA_CURSOR_XTERM_HORIZ,
+                    gfx::Point(12, 11), gfx::Point(26, 23));
+    LoadImageCursor(ui::kCursorZoomIn, IDR_AURA_CURSOR_ZOOM_IN,
+                    gfx::Point(10, 10), gfx::Point(20, 20));
+    LoadImageCursor(ui::kCursorZoomOut, IDR_AURA_CURSOR_ZOOM_OUT,
+                    gfx::Point(10, 10), gfx::Point(20, 20));
+    LoadImageCursor(ui::kCursorRowResize, IDR_AURA_CURSOR_ROW_RESIZE,
+                    gfx::Point(11, 12), gfx::Point(23, 23));
+    LoadImageCursor(ui::kCursorColumnResize, IDR_AURA_CURSOR_COL_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
+    LoadImageCursor(ui::kCursorEastWestResize, IDR_AURA_CURSOR_EAST_WEST_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
     LoadImageCursor(ui::kCursorNorthSouthResize,
-                    IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE, 11, 11);
+                    IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE,
+                    gfx::Point(11, 12), gfx::Point(23, 23));
     LoadImageCursor(ui::kCursorNorthEastSouthWestResize,
-                    IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE, 12, 11);
+                    IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE,
+                    gfx::Point(12, 11), gfx::Point(25, 23));
     LoadImageCursor(ui::kCursorNorthWestSouthEastResize,
-                    IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE, 11, 11);
+                    IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE,
+                    gfx::Point(11, 11), gfx::Point(24, 23));
+    LoadImageCursor(ui::kCursorGrab, IDR_AURA_CURSOR_GRAB,
+                    gfx::Point(8, 5), gfx::Point(16, 10));
+    LoadImageCursor(ui::kCursorGrabbing, IDR_AURA_CURSOR_GRABBING,
+                    gfx::Point(9, 9), gfx::Point(18, 18));
     LoadAnimatedCursor(ui::kCursorWait, IDR_THROBBER, 7, 7);
     LoadAnimatedCursor(ui::kCursorProgress, IDR_THROBBER, 7, 7);
   }
@@ -380,12 +409,15 @@ class RootWindowHostLinux::ImageCursors {
 
  private:
   // Creates an X Cursor from an image resource and puts it in the cursor map.
-  void LoadImageCursor(int id, int resource_id, int hot_x, int hot_y) {
+  void LoadImageCursor(int id,
+                       int resource_id,
+                       const gfx::Point& hot_1x,
+                       const gfx::Point& hot_2x) {
     const gfx::ImageSkia* image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
     const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
         ui::GetScaleFactorFromScale(scale_factor_));
-    gfx::Point hot(hot_x * scale_factor_, hot_y * scale_factor_);
+    const gfx::Point& hot = (scale_factor_ == 1) ? hot_1x : hot_2x;
     XcursorImage* x_image =
         ui::SkBitmapToXcursorImage(&image_rep.sk_bitmap(), hot);
     cursors_[id] = ui::CreateReffedCustomXCursor(x_image);
