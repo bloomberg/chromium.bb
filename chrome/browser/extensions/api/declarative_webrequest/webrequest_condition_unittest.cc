@@ -244,4 +244,10 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   ASSERT_EQ(0u, url_match_ids.size());
 }
 
+// TODO(vabr): Once the condition attribute for request headers has been
+// implemented, add a new test for WebRequestCondition::Create that
+// creates a condition with two attributes: one on the request header
+// and one on the response header. The Create() method should fail complaining
+// that it is impossible that both conditions are fulfilled at the same time.
+
 }  // namespace extensions

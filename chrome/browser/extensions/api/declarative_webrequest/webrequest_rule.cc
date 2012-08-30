@@ -15,6 +15,9 @@
 namespace {
 const char kInvalidActionDatatype[] = "An action of a rule set had an invalid "
     "structure that should have been caught by the JSON validator.";
+const char kActionCannotBeExecuted[] = "An action can never be executed "
+    "because there are is no time in the request life-cycle during which the "
+    "conditions can be checked and the action can possibly be executed.";
 }  // namespace
 
 namespace extensions {
@@ -41,7 +44,28 @@ bool WebRequestRule::CheckConsistency(
     WebRequestConditionSet* conditions,
     WebRequestActionSet* actions,
     std::string* error) {
-  // TODO(battre): Implement this.
+  // Actions and conditions can be checked and executed in specific phases
+  // of each web request. We consider a rule inconsistent if there is an action
+  // that cannot be triggered by any condition.
+  for (WebRequestActionSet::Actions::const_iterator action_iter =
+           actions->actions().begin();
+       action_iter != actions->actions().end();
+       ++action_iter) {
+    bool found_matching_condition = false;
+    for (WebRequestConditionSet::Conditions::const_iterator condition_iter =
+             conditions->conditions().begin();
+         condition_iter != conditions->conditions().end() &&
+             !found_matching_condition;
+         ++condition_iter) {
+      // Test the intersection of bit masks, this is intentionally & and not &&.
+      if ((*action_iter)->GetStages() & (*condition_iter)->stages())
+        found_matching_condition = true;
+    }
+    if (!found_matching_condition) {
+      *error = kActionCannotBeExecuted;
+      return false;
+    }
+  }
   return true;
 }
 

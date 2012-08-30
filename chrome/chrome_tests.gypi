@@ -1239,6 +1239,7 @@
         'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_unittest.cc',
+        'browser/extensions/api/declarative_webrequest/webrequest_rule_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',
         'browser/extensions/api/discovery/discovery_api_unittest.cc',
         'browser/extensions/api/extension_action/extension_browser_actions_api_unittest.cc',

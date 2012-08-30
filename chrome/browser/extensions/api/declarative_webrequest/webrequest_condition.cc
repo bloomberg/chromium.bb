@@ -30,6 +30,9 @@ const char kExpectedOtherConditionType[] = "Expected a condition of type "
     "declarativeWebRequest.RequestMatcher";
 const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
 const char kInvalidTypeOfParamter[] = "Attribute '%s' has an invalid type";
+const char kConditionCannotBeFulfilled[] = "A condition can never be "
+    "fulfilled because its attributes cannot all be tested at the "
+    "same time in the request life-cycle.";
 }  // namespace
 
 namespace extensions {
@@ -136,8 +139,15 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
     url_matcher_condition_set =
         new URLMatcherConditionSet(++g_next_id, url_matcher_conditions);
   }
-  return scoped_ptr<WebRequestCondition>(
+  scoped_ptr<WebRequestCondition> result(
       new WebRequestCondition(url_matcher_condition_set, attributes));
+
+  if (!result->stages()) {
+    *error = kConditionCannotBeFulfilled;
+    return scoped_ptr<WebRequestCondition>(NULL);
+  }
+
+  return result.Pass();
 }
 
 
@@ -146,7 +156,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 //
 
 WebRequestConditionSet::WebRequestConditionSet(
-    const std::vector<linked_ptr<WebRequestCondition> >& conditions)
+    const WebRequestConditionSet::Conditions& conditions)
     : conditions_(conditions) {
   for (Conditions::iterator i = conditions_.begin(); i != conditions_.end();
        ++i) {
@@ -180,7 +190,7 @@ scoped_ptr<WebRequestConditionSet> WebRequestConditionSet::Create(
     URLMatcherConditionFactory* url_matcher_condition_factory,
     const AnyVector& conditions,
     std::string* error) {
-  std::vector<linked_ptr<WebRequestCondition> > result;
+  WebRequestConditionSet::Conditions result;
 
   for (AnyVector::const_iterator i = conditions.begin();
        i != conditions.end(); ++i) {

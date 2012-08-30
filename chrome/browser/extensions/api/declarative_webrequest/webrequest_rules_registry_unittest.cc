@@ -52,7 +52,6 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
 
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
- public:
   WebRequestRulesRegistryTest()
       : message_loop(MessageLoop::TYPE_IO),
         ui(content::BrowserThread::UI, &message_loop),

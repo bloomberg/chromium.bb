@@ -67,6 +67,16 @@ class WebRequestCondition {
     return url_matcher_conditions_;
   }
 
+  // Returns the condition attributes checked by this condition.
+  const WebRequestConditionAttributes condition_attributes() const {
+    return condition_attributes_;
+  }
+
+  // Returns a bit vector representing extensions::RequestStage. The bit vector
+  // contains a 1 for each request stage during which the condition can be
+  // tested.
+  int stages() const { return applicable_request_stages_; }
+
  private:
   scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
   WebRequestConditionAttributes condition_attributes_;
@@ -84,9 +94,9 @@ class WebRequestCondition {
 class WebRequestConditionSet {
  public:
   typedef std::vector<linked_ptr<json_schema_compiler::any::Any> > AnyVector;
+  typedef std::vector<linked_ptr<WebRequestCondition> > Conditions;
 
-  explicit WebRequestConditionSet(
-      const std::vector<linked_ptr<WebRequestCondition> >& conditions);
+  explicit WebRequestConditionSet(const Conditions& conditions);
   ~WebRequestConditionSet();
 
   // Factory method that creates an WebRequestConditionSet according to the JSON
@@ -97,7 +107,7 @@ class WebRequestConditionSet {
       const AnyVector& conditions,
       std::string* error);
 
-  const std::vector<linked_ptr<WebRequestCondition> >& conditions() const {
+  const Conditions& conditions() const {
     return conditions_;
   }
 
@@ -115,7 +125,6 @@ class WebRequestConditionSet {
       URLMatcherConditionSet::Vector* condition_sets) const;
 
  private:
-  typedef std::vector<linked_ptr<WebRequestCondition> > Conditions;
   Conditions conditions_;
 
   typedef std::map<URLMatcherConditionSet::ID, WebRequestCondition*>
