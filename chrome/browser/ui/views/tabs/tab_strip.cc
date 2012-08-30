@@ -1834,7 +1834,7 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
       mouse_move_count_ = 0;
       last_mouse_move_time_ = base::TimeTicks();
       SetResetToShrinkOnExit((event.flags() & ui::EF_FROM_TOUCH) == 0);
-      if (reset_to_shrink_on_exit_) {
+      if (reset_to_shrink_on_exit_ && touch_layout_.get()) {
         gfx::Point tab_strip_point(event.location());
         views::View::ConvertPointToTarget(source, this, &tab_strip_point);
         Tab* tab = FindTabForEvent(tab_strip_point);
