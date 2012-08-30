@@ -10,14 +10,11 @@ import os
 import subprocess
 import sys
 
-def run(command, filter=None):
+def run(command):
   popen = subprocess.Popen(
       command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   out, _ = popen.communicate()
-  for line in out.splitlines():
-    if filter and line.strip() != filter:
-      print line
-  return popen.returncode
+  return popen.returncode, out
 
 def main():
   parser = OptionParser()
@@ -55,8 +52,11 @@ def main():
                     common +
                     '-out "%(intermediate_dir)s/%(basename)s.wixobj" ' +
                     '"%(input)s" ')
-  rc = run(candle_template % parameters, os.path.basename(parameters['input']))
+  (rc, out) = run(candle_template % parameters)
   if rc:
+    for line in out.splitlines():
+      print line
+    print 'candle.exe returned %d' % rc
     return rc
 
   light_template = ('"%(wix_path)s\\light" ' +
@@ -65,8 +65,11 @@ def main():
                     '-sw1076 ' +
                     '-out "%(output)s" ' +
                     '"%(intermediate_dir)s/%(basename)s.wixobj" ')
-  rc = run(light_template % parameters)
+  (rc, out) = run(light_template % parameters)
   if rc:
+    for line in out.splitlines():
+      print line
+    print 'light.exe returned %d' % rc
     return rc
 
   return 0

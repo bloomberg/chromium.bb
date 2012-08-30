@@ -11,14 +11,11 @@ import os
 import subprocess
 import sys
 
-def run(command, filter=None):
+def run(command):
   popen = subprocess.Popen(
       command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   out, _ = popen.communicate()
-  for line in out.splitlines():
-    if filter and line.strip() != filter:
-      print line
-  return popen.returncode
+  return popen.returncode, out
 
 def main():
   parser = OptionParser()
@@ -38,8 +35,11 @@ def main():
                    '"%(input)s" ' +
                    '-o "%(intermediate_dir)s/%(basename)s.wxs" ' +
                    '-x "%(intermediate_dir)s"')
-  rc = run(dark_template % parameters)
+  (rc, out) = run(dark_template % parameters)
   if rc:
+    for line in out.splitlines():
+      print line
+    print 'dark.exe returned %d' % rc
     return rc
 
   candle_template = ('"%(wix_path)s\\candle" ' +
@@ -47,8 +47,11 @@ def main():
                      '"%(intermediate_dir)s/%(basename)s.wxs" ' +
                      '-o "%(intermediate_dir)s/%(basename)s.wixobj" ' +
                      '-ext "%(wix_path)s\\WixFirewallExtension.dll"')
-  rc = run(candle_template % parameters, parameters['basename'] + '.wxs')
+  (rc, out) = run(candle_template % parameters)
   if rc:
+    for line in out.splitlines():
+      print line
+    print 'candle.exe returned %d' % rc
     return rc
 
   light_template = ('"%(wix_path)s\\light" ' +
@@ -57,8 +60,11 @@ def main():
                     '-o "%(output)s" ' +
                     '-ext "%(wix_path)s\\WixFirewallExtension.dll" ' +
                     '-sw1076 ')
-  rc = run(light_template % parameters)
+  (rc, out) = run(light_template % parameters)
   if rc:
+    for line in out.splitlines():
+      print line
+    print 'candle.exe returned %d' % rc
     return rc
 
   return 0
