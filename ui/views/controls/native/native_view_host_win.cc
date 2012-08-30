@@ -48,7 +48,6 @@ void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
   if (!destroyed) {
     if (installed_clip_)
       UninstallClip();
-    ClearFocus();
     SetParent(host_->native_view(), ui::GetHiddenWindow());
   }
   installed_clip_ = false;
@@ -145,20 +144,6 @@ gfx::NativeViewAccessible NativeViewHostWin::GetNativeViewAccessible() {
     return accessible;
   } else {
     return NULL;
-  }
-}
-
-void NativeViewHostWin::ClearFocus() {
-  FocusManager* focus_manager = host_->GetFocusManager();
-  if (!focus_manager || !focus_manager->GetFocusedView())
-    return;
-
-  Widget::Widgets widgets;
-  Widget::GetAllChildWidgets(host_->native_view(), &widgets);
-  for (Widget::Widgets::iterator i = widgets.begin(); i != widgets.end(); ++i) {
-    focus_manager->ViewRemoved((*i)->GetRootView());
-    if (!focus_manager->GetFocusedView())
-      return;
   }
 }
 

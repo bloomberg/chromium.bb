@@ -181,9 +181,26 @@ gfx::NativeViewAccessible NativeViewHost::GetNativeViewAccessible() {
 
 void NativeViewHost::Detach(bool destroyed) {
   if (native_view_) {
+    if (!destroyed)
+      ClearFocus();
     native_wrapper_->NativeViewDetaching(destroyed);
     native_view_ = NULL;
   }
 }
+
+void NativeViewHost::ClearFocus() {
+  FocusManager* focus_manager = GetFocusManager();
+  if (!focus_manager || !focus_manager->GetFocusedView())
+    return;
+
+  Widget::Widgets widgets;
+  Widget::GetAllChildWidgets(native_view(), &widgets);
+  for (Widget::Widgets::iterator i = widgets.begin(); i != widgets.end(); ++i) {
+    focus_manager->ViewRemoved((*i)->GetRootView());
+    if (!focus_manager->GetFocusedView())
+      return;
+  }
+}
+
 
 }  // namespace views

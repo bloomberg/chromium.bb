@@ -998,7 +998,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
     // Code expects widget for |native_view| to be added to |children|.
     NativeWidgetAura* native_widget = static_cast<NativeWidgetAura*>(
         GetNativeWidgetForNativeView(native_view));
-    if (native_widget->GetWidget())
+    if (native_widget && native_widget->GetWidget())
       children->insert(native_widget->GetWidget());
   }
 

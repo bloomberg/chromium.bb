@@ -32,11 +32,6 @@ class NativeViewHostWin : public NativeViewHostWrapper {
   virtual gfx::NativeViewAccessible GetNativeViewAccessible();
 
  private:
-  // Invokes ViewRemoved() on the FocusManager for all the child Widgets of our
-  // NativeView. This is used when detaching to ensure the FocusManager doesn't
-  // have a reference to a View that is no longer reachable.
-  void ClearFocus();
-
   // Our associated NativeViewHost.
   NativeViewHost* host_;
 
