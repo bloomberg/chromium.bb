@@ -58,7 +58,8 @@ function DirectoryModel(root, singleSelection,
  * @private
  */
 DirectoryModel.fakeGDataEntry_ = {
-  fullPath: RootDirectory.GDATA
+  fullPath: RootDirectory.GDATA,
+  isDirectory: true
 };
 
 /**
