@@ -134,7 +134,11 @@ function disableTextSelectAndDrag(opt_allowSelectStart, opt_allowDragStart) {
  */
 function preventDefaultOnPoundLinkClicks() {
   document.addEventListener('click', function(e) {
-    if (e.target.nodeName == 'A' && e.target.getAttribute('href') == '#')
+    var anchor = findAncestor(e.target, function(el) {
+      return el.tagName == 'A';
+    });
+    // Use getAttribute() to prevent URL normalization.
+    if (anchor && anchor.getAttribute('href') == '#')
       e.preventDefault();
   });
 }
