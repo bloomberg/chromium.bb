@@ -472,17 +472,15 @@ class FlagBit21Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit21Interface);
 };
 
-// Interface class to pull out R (read SPSR) bit 22. which (for at
-// least MRS) defines if one should use the SPSR register instead of
-// the APSR/CPSR.
-class ReadSpsrBit22Interface {
+// Interface class to pull out bit 22.
+class FlagBit22Interface {
  public:
   static bool IsDefined(const Instruction& i) {
     return i.Bit(22);
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ReadSpsrBit22Interface);
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit22Interface);
 };
 
 // Interface to pull out U (direction) bit 23, which defines if

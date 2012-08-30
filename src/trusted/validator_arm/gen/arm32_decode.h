@@ -76,7 +76,10 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_media_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions(
+  inline const ClassDecoder& decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_memory_hints_simd_10xxx11(
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_miscellaneous_instructions(
@@ -127,7 +130,7 @@ class Arm32DecoderState : DecoderState {
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
-  const CoprocessorOp CoprocessorOp_instance_;
+  const DataBarrier DataBarrier_instance_;
   const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
@@ -144,8 +147,8 @@ class Arm32DecoderState : DecoderState {
   const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;
   const DontCareInstRnRsRmNotPc DontCareInstRnRsRmNotPc_instance_;
   const DuplicateToVfpRegisters DuplicateToVfpRegisters_instance_;
-  const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;
+  const InstructionBarrier InstructionBarrier_instance_;
   const LoadBasedImmedMemory LoadBasedImmedMemory_instance_;
   const LoadBasedImmedMemoryDouble LoadBasedImmedMemoryDouble_instance_;
   const LoadBasedMemory LoadBasedMemory_instance_;
@@ -160,6 +163,8 @@ class Arm32DecoderState : DecoderState {
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const NotImplemented NotImplemented_instance_;
+  const PreloadRegisterPairOp PreloadRegisterPairOp_instance_;
+  const PreloadRegisterPairOpRAndRnNotPc PreloadRegisterPairOpRAndRnNotPc_instance_;
   const Roadblock Roadblock_instance_;
   const Store2RegisterImm12OpRnNotRtOnWriteback Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;

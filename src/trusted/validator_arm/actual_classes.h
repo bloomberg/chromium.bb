@@ -1063,7 +1063,7 @@ class Unary1RegisterSet : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const RegBits12To15Interface d;
-  static const ReadSpsrBit22Interface read_spsr;
+  static const FlagBit22Interface read_spsr;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.

@@ -20,6 +20,13 @@ namespace nacl_arm_test {
 
 // Implements an Arm32DecoderTester with a parse precondition that
 // the conditions bits (28-31) are 1111.
+// +--------+--------------------------------------------------------+
+// |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------------------------------------------------+
+// |  cond  |                                                        |
+// +--------+--------------------------------------------------------+
+//
+// if cond!=1111 then UNDEFINED.
 class UncondDecoderTester : public Arm32DecoderTester {
  public:
   explicit UncondDecoderTester(const NamedClassDecoder& decoder)
@@ -32,30 +39,35 @@ class UncondDecoderTester : public Arm32DecoderTester {
 
  protected:
   // Used to get the conditional bits out of the instruction.
-  nacl_arm_dec::UncondNop cond_decoder_;
+  nacl_arm_dec::UncondDecoder cond_decoder_;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(UncondDecoderTester);
 };
 
-// Implements a decoder tester for an UnsafeUncondNop
-class UnsafeUncondNopTester : public UncondDecoderTester {
+// Implements a decoder tester for an UnsafeUncondDecoder
+class UnsafeUncondDecoderTester : public UncondDecoderTester {
  public:
-  explicit UnsafeUncondNopTester(const NamedClassDecoder& decoder)
+  explicit UnsafeUncondDecoderTester(const NamedClassDecoder& decoder)
       : UncondDecoderTester(decoder),
         expected_decoder_(nacl_arm_dec::UNKNOWN) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::UnsafeUncondNop expected_decoder_;
+  nacl_arm_dec::UnsafeUncondDecoder expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeUncondNopTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeUncondDecoderTester);
 };
 
-// Implements an Arm32DecoderTester with a parse precondition that
-// the conditions bits (28-31) are defined.
+// Implements a decoder tester for decoder CondDecoder.
+// Nop<c>
+// +--------+--------------------------------------------------------+
+// |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------------------------------------------------+
+// |  cond  |                                                        |
+// +--------+--------------------------------------------------------+
 class CondDecoderTester : public Arm32DecoderTester {
  public:
   explicit CondDecoderTester(const NamedClassDecoder& decoder);
@@ -67,41 +79,26 @@ class CondDecoderTester : public Arm32DecoderTester {
 
  protected:
   // Used to get the conditional bits out of the instruction.
-  nacl_arm_dec::CondNop cond_decoder_;
+  nacl_arm_dec::CondDecoder cond_decoder_;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(CondDecoderTester);
 };
 
-// Implements a decoder tester for an UnsafeCondNop
-class UnsafeCondNopTester : public CondDecoderTester {
+// Implements a decoder tester for an UnsafeCondDecoder
+class UnsafeCondDecoderTester : public CondDecoderTester {
  public:
-  explicit UnsafeCondNopTester(const NamedClassDecoder& decoder)
+  explicit UnsafeCondDecoderTester(const NamedClassDecoder& decoder)
       : CondDecoderTester(decoder),
         expected_decoder_(nacl_arm_dec::UNKNOWN) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::UnsafeCondNop expected_decoder_;
+  nacl_arm_dec::UnsafeCondDecoder expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeCondNopTester);
-};
-
-// Implements a decoder tester for decoder CondNop.
-// Nop<c>
-// +--------+--------------------------------------------------------+
-// |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
-// +--------+--------------------------------------------------------+
-// |  cond  |                                                        |
-// +--------+--------------------------------------------------------+
-class CondNopTester : public CondDecoderTester {
- public:
-  explicit CondNopTester(const NamedClassDecoder& decoder);
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(CondNopTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeCondDecoderTester);
 };
 
 // Implements a decoder tester for vfp operations with possible condition
@@ -147,6 +144,20 @@ class Unary1RegisterSetTester : public CondDecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterSetTester);
 };
 
+// Implements a Unary1RegisterSetTester where Rd is not Pc.
+// Note: The test is actually already in Unary1RegisterSetTester. However,
+// we are defining this to be more explicit in the armv6.table file what
+// safety conditions are applied.
+class Unary1RegisterSetTesterRegsNotPc : public Unary1RegisterSetTester {
+ public:
+  explicit Unary1RegisterSetTesterRegsNotPc(
+      const NamedClassDecoder& decoder)
+      : Unary1RegisterSetTester(decoder) {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterSetTesterRegsNotPc);
+};
+
 // Implements a decoder tester for decoder Unary1RegisterUse
 // MSR<c> <spec_reg>, <Rn>
 // +--------+---------------+----+----------------------------+--------+
@@ -169,6 +180,20 @@ class Unary1RegisterUseTester : public CondDecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterUseTester);
+};
+
+// Implements a Unary1RegisterUseTester where Rd is not Pc.
+// Note: The test is actually already in Unary1RegisterUseTester. However,
+// we are defining this to be more explicit in the armv6.table file what
+// safety conditions are applied.
+class Unary1RegisterUseTesterRegsNotPc : public Unary1RegisterUseTester {
+ public:
+  explicit Unary1RegisterUseTesterRegsNotPc(
+      const NamedClassDecoder& decoder)
+      : Unary1RegisterUseTester(decoder) {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterUseTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder MoveImmediate12ToApsr.
@@ -478,6 +503,9 @@ class Unary2RegisterOpNotRmIsPcTester : public Unary2RegisterOpTester {
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
+ protected:
+  nacl_arm_dec::Unary2RegisterOpNotRmIsPc expected_decoder_;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcTester);
 };
@@ -497,6 +525,22 @@ class Unary2RegisterOpTesterNotRdIsPcAndS : public Unary2RegisterOpTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpTesterNotRdIsPcAndS);
+};
+
+// Implements a decoder tester for Unary2RegisterOpNotRmIsPc where
+// all registers are not pc.
+class Unary2RegisterOpNotRmIsPcTesterRegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTester {
+ public:
+  explicit Unary2RegisterOpNotRmIsPcTesterRegsNotPc(
+      const NamedClassDecoder& decoder)
+      : Unary2RegisterOpNotRmIsPcTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpNotRmIsPcTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Binary2RegisterImmediateOp.
@@ -999,6 +1043,88 @@ class LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc);
+};
+
+// Models a prefetch load/store 12-bit immediate operation.
+// Op [<Rn>, #+/-<imm12>]
+// +--------+--------+--+--+----+--------+--------+------------------------+
+// |31302928|27262524|23|22|2120|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------+--+--+----+--------+--------+------------------------+
+// |  cond  |        | U| R|    |   Rn   |        |         imm12          |
+// +--------+--------+--+--+----+--------+--------+------------------------+
+// cond=1111
+// U - defines direction(+/-)
+// R - 1 if memory access is a read (otherwise write).
+// Rn - The base register.
+// imm12 - The offset from the address.
+//
+// Note: Currently we don't mask addresses for preload instructions,
+// since an actual load doesn't occur, and it doesn't fault the processor.
+// Hence, we do not define virtual base_address_register.
+// TODO(karl): Verify that we don't want to mask preload addresses.
+class PreloadRegisterImm12OpTester : public UncondDecoderTester {
+ public:
+  explicit PreloadRegisterImm12OpTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::PreloadRegisterImm12Op expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterImm12OpTester);
+};
+
+
+// Models a prefetch register pair load/store tester.
+// Op [<Rn>, #+/-<Rm>{, <shift>}]
+// +--------+--------+--+--+----+--------+--------+----------+----+--+--------+
+// |31302928|27262524|23|22|2120|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------+--+--+----+--------+--------+----------+----+--+--------+
+// |  cond  |        | U| R|    |   Rn   |        |   imm5   |type|  |        |
+// +--------+--------+--+--+----+--------+--------+---------------------------+
+// cond=1111
+// U - defines direction(+/-)
+// R - 1 if memory access is a read (otherwise write).
+// Rn - The base register.
+// Rm - The offset that is optionally shifted and applied to the value of <Rn>
+//      to form the address.
+//
+// Note: Currently we don't mask addresses for preload instructions,
+// since an actual load doesn't occur, and it doesn't fault the processor.
+// Hence, we do not define virtual base_address_register.
+// Note: We assume that we don't care if the conditions flags are set.
+// TODO(karl): Verify that we don't want to mask preload addresses.
+class PreloadRegisterPairOpTester : public UncondDecoderTester {
+ public:
+  explicit PreloadRegisterPairOpTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::PreloadRegisterPairOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpTester);
+};
+
+// Implements a tester for PreloadRegisterPairOpRAndRnNotPc
+class PreloadRegisterPairOpRAndRnNotPcTester
+    : public PreloadRegisterPairOpTester {
+ public:
+  explicit PreloadRegisterPairOpRAndRnNotPcTester(
+      const NamedClassDecoder& decoder)
+      : PreloadRegisterPairOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpRAndRnNotPcTester);
 };
 
 // Models a 2-register load/store 12-bit immediate operation of the forms:
@@ -2005,6 +2131,63 @@ class DuplicateToVfpRegistersTester : public CondVfpOpTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToVfpRegistersTester);
+};
+
+// Implements a decoder tester for BarrierInst
+// Op #<option>
+// +--------+------------------------------------------------+--------+
+// |31302928|272625242322212019181716151413121110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+------------------------------------------------+--------+
+// |  cond  |                                                |  option|
+// +--------+------------------------------------------------+--------+
+// cond=1111
+// option in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+//
+// Note: NaCl disallow all other values other than 1111, since is
+// IMPLEMENTATION DEFINED whether option values other than 1111 are implemented.
+class BarrierInstTester : public UncondDecoderTester {
+ public:
+  explicit BarrierInstTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::BarrierInst expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BarrierInstTester);
+};
+
+// Implements a decoder tester for a DataBarrier.
+//
+// option in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+class DataBarrierTester : public BarrierInstTester {
+ public:
+  explicit DataBarrierTester(const NamedClassDecoder& decoder)
+      : BarrierInstTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DataBarrierTester);
+};
+
+// Implements a decoder tester for an InstructionBarrier
+//
+// option = 1111 (All other values are reserved).
+class InstructionBarrierTester : public BarrierInstTester {
+ public:
+  explicit InstructionBarrierTester(const NamedClassDecoder& decoder)
+      : BarrierInstTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(InstructionBarrierTester);
 };
 
 }  // namespace nacl_arm_test

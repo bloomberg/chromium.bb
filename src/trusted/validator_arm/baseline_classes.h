@@ -18,6 +18,8 @@ class LoadStore2RegisterImm12OpTester;
 class LoadStore3RegisterOpTester;
 class LoadStore3RegisterDoubleOpTester;
 class LoadStore3RegisterImm5OpTester;
+class UnsafeUncondDecoderTester;
+class UnsafeCondDecoderTester;
 }  // namespace nacl_arm_test
 
 /*
@@ -40,8 +42,8 @@ class LoadStore3RegisterImm5OpTester;
  */
 namespace nacl_arm_dec {
 
-// Models an unconditional nop.
-// Nop<c>
+// Models an unconditional instruction.
+// Op<c>
 // +--------+--------------------------------------------------------+
 // |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
 // +--------+--------------------------------------------------------+
@@ -49,91 +51,96 @@ namespace nacl_arm_dec {
 // +--------+--------------------------------------------------------+
 //
 // if cond!=1111 then UNDEFINED.
-class UncondNop : public ClassDecoder {
+class UncondDecoder : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  UncondNop() : ClassDecoder() {}
+  UncondDecoder() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(UncondNop);
+  NACL_DISALLOW_COPY_AND_ASSIGN(UncondDecoder);
 };
 
 
-// Models an unconditional nop that is always unsafe (i.e. one of:
+// Models an unconditional instruction that is always unsafe (i.e. one of:
 // Forbidden, Undefined, Deprecated, and Unpredictable).
-class UnsafeUncondNop : public UncondNop {
+class UnsafeUncondDecoder : public UncondDecoder {
  public:
-  explicit UnsafeUncondNop(SafetyLevel safety)
-      : UncondNop(), safety_(safety) {}
   virtual SafetyLevel safety(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return safety_;
   }
 
+ protected:
+  explicit UnsafeUncondDecoder(SafetyLevel safety)
+      : UncondDecoder(), safety_(safety) {}
+
  private:
   SafetyLevel safety_;  // The unsafe value to return.
-  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeUncondNop);
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeUncondDecoder);
+  friend class nacl_arm_test::UnsafeUncondDecoderTester;
 };
 
-
-// Models an unconditional forbidden UnsafeCondNop.
-class ForbiddenUncondNop : public UnsafeUncondNop {
+// Models an unconditional forbidden unsafe decoder.
+class ForbiddenUncondDecoder : public UnsafeUncondDecoder {
  public:
-  explicit ForbiddenUncondNop() : UnsafeUncondNop(FORBIDDEN) {}
+  explicit ForbiddenUncondDecoder() : UnsafeUncondDecoder(FORBIDDEN) {}
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenUncondNop);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenUncondDecoder);
 };
 
-// Models a (conditional) nop.
-// Nop<c>
+// Models a (conditional) instruction.
+// Op<c>
 // +--------+--------------------------------------------------------+
 // |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
 // +--------+--------------------------------------------------------+
 // |  cond  |                                                        |
 // +--------+--------------------------------------------------------+
-class CondNop : public ClassDecoder {
+class CondDecoder : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  CondNop() : ClassDecoder() {}
+  CondDecoder() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(CondNop);
+  NACL_DISALLOW_COPY_AND_ASSIGN(CondDecoder);
 };
 
-// Models a (conditional) nop that is always unsafe (i.e. one of:
+// Models a (conditional) instruction that is always unsafe (i.e. one of:
 // Forbidden, Undefined, Deprecated, and Unpredictable).
-class UnsafeCondNop : public CondNop {
+class UnsafeCondDecoder : public CondDecoder {
  public:
-  explicit UnsafeCondNop(SafetyLevel safety)
-      : CondNop(), safety_(safety) {}
   virtual SafetyLevel safety(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
     return safety_;
   }
 
+ protected:
+  explicit UnsafeCondDecoder(SafetyLevel safety)
+      : CondDecoder(), safety_(safety) {}
+
  private:
   SafetyLevel safety_;  // The unsafe value to return.
-  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeCondNop);
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeCondDecoder);
+  friend class nacl_arm_test::UnsafeCondDecoderTester;
 };
 
-// Models a (conditional) forbidden UnsafeCondNop.
-class ForbiddenCondNop : public UnsafeCondNop {
+// Models a (conditional) forbidden UnsafeCondDecoder.
+class ForbiddenCondDecoder : public UnsafeCondDecoder {
  public:
-  explicit ForbiddenCondNop() : UnsafeCondNop(FORBIDDEN) {}
+  explicit ForbiddenCondDecoder() : UnsafeCondDecoder(FORBIDDEN) {}
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenCondNop);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenCondDecoder);
 };
 
 // Implements a VFP operation on instructions of the form;
@@ -719,6 +726,90 @@ class Store2RegisterImm8DoubleOp
 
  protected:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm8DoubleOp);
+};
+
+// Models a prefetch load/store 12-bit immediate operation.
+// Op [<Rn>, #+/-<imm12>]
+// +--------+--------+--+--+----+--------+--------+------------------------+
+// |31302928|27262524|23|22|2120|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------+--+--+----+--------+--------+------------------------+
+// |  cond  |        | U| R|    |   Rn   |        |          imm12         |
+// +--------+--------+--+--+----+--------+--------+------------------------+
+// cond=1111
+// U - defines direction (+/-).
+// R - 1 if memory access is a read (otherwise write).
+// Rn - The base register.
+// imm12 - The offset from the address.
+//
+// Note: Currently we don't maks addresses for preload instructions,
+// since an action load doesn't occur, and it doesn't fault the processor.
+// Hence we do not define virtual base_address_register.
+// Note: We assume that we don't care if the conditions flags are set.
+// TODO(karl): Verify that we don't want to mask preload addresses.
+class PreloadRegisterImm12Op : public ClassDecoder {
+ public:
+  static const Imm12Bits0To11Interface imm12;
+  static const RegBits16To19Interface n;
+  static const FlagBit22Interface read;
+  static const AddOffsetBit23Interface direction;
+  static const ConditionBits28To31Interface cond;
+
+  PreloadRegisterImm12Op() : ClassDecoder() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterImm12Op);
+};
+
+// Models a prefetch register pair load/store operation.
+// Op [<Rn>, #+/-<Rm>{, <shift>}]
+// +--------+--------+--+--+----+--------+--------+----------+----+--+--------+
+// |31302928|27262523|23|22|2120|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------+--+--+----+--------+--------+----------+----+--+--------+
+// |  cond  |        | U| R|    |   Rn   |        |   imm5   |type|  |   Rm   |
+// +--------+--------+--+--+----+--------+--------+----------+----+--+--------+
+// cond=1111
+// U - defines direction (+/-)
+// R - 1 if memory access is a read (otherwise write).
+// Rn - The base register.
+// Rm - The offset that is optionally shifted and applied to the value of <Rn>
+//      to form the address.
+//
+// Note: Currently we don't maks addresses for preload instructions.
+// since an actual laod doesn't occur, and it doesn't fault the processor.
+// Hence, we do not define virtual base_address_register.
+// Note: We assume that we don't care if the condition flags are set.
+// Note: NaCl assumes that Rn can be PC, but that Rm can't (i.e. only
+// Rn can be used to define a PLI instruction.
+// TODO(karl): Verify that we don't want to mask preload addresses.
+class PreloadRegisterPairOp : public ClassDecoder {
+ public:
+  static const RegBits0To3Interface m;
+  static const ShiftTypeBits5To6Interface shift_type;
+  static const Imm5Bits7To11Interface imm5;
+  static const RegBits16To19Interface n;
+  static const FlagBit22Interface read;
+  static const AddOffsetBit23Interface direction;
+  static const ConditionBits28To31Interface cond;
+
+  PreloadRegisterPairOp() : ClassDecoder() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOp);
+};
+
+// Defines a PreloadRegisterPairOp where if Rn=Pc and R=1 (i.e. is for
+// write).
+class PreloadRegisterPairOpRAndRnNotPc : public PreloadRegisterPairOp {
+ public:
+  PreloadRegisterPairOpRAndRnNotPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpRAndRnNotPc);
 };
 
 // Models a 2-register load/store 12-bit immediate operation of the forms:
@@ -1738,7 +1829,7 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
 //
 // Note: The vector registers are not tracked by the validator, and hence,
 // are not modeled, other than their index.
-class VectorUnary2RegisterOpBase : public UncondNop {
+class VectorUnary2RegisterOpBase : public UncondDecoder {
  public:
   static const RegBits0To3Interface vm;
   static const Imm1Bit5Interface m;
@@ -1805,7 +1896,7 @@ class VectorUnary2RegisterDup : public VectorUnary2RegisterOpBase {
 //
 // Note: The vector registers are not tracked by the validator, and hence,
 // are not modeled, other than their index.
-class VectorBinary3RegisterOpBase : public UncondNop {
+class VectorBinary3RegisterOpBase : public UncondDecoder {
  public:
   static const RegBits0To3Interface vm;
   static const Imm1Bit5Interface m;
@@ -1984,6 +2075,9 @@ class MoveVfpRegisterOpWithTypeSel : public MoveVfpRegisterOp {
   // Methods for class
   MoveVfpRegisterOpWithTypeSel() {}
   virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOpWithTypeSel);
 };
 
 // Models a move from a core register to every element of a vfp register.
@@ -2015,6 +2109,58 @@ class DuplicateToVfpRegisters : public CondVfpOp {
   uint32_t be_value(const Instruction& i) const {
     return (b.value(i) << 1) | e.value(i);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToVfpRegisters);
+};
+
+// Models a synchronization barrier instruction.
+// Op #<option>
+// +--------+------------------------------------------------+--------+
+// |31302928|272625242322212019181716151413121110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+------------------------------------------------+--------+
+// |  cond  |                                                | option |
+// +--------+------------------------------------------------+--------+
+// cond=1111
+class BarrierInst : public UncondDecoder {
+ public:
+  static const Imm4Bits0To3Interface option;
+
+  // Methods for class.
+  BarrierInst() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BarrierInst);
+};
+
+// Implements a data synchronization barrier instruction.
+//
+// option in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+//
+// Note: While the ARM v7 manual states that only option SY(1111) is guaranteed
+// to be implemented, and the remaining 7 option values are IMPLEMENTATION
+// DEFINED, the NaCl compilers generate more than 1111. As a result, we
+// are currently allowing all 8 option values.
+// TODO(karl) Figure out if we should allow all 8 values, or only 1111.
+class DataBarrier : public BarrierInst {
+ public:
+  DataBarrier() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DataBarrier);
+};
+
+// Implements an instruction synchronization barrier instruction.
+//
+// option = 1111 (All other values are reserved).
+class InstructionBarrier : public BarrierInst {
+ public:
+  InstructionBarrier() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(InstructionBarrier);
 };
 
 }  // namespace nacl_arm_dec

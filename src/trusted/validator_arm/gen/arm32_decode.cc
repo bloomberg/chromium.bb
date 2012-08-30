@@ -16,7 +16,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
-  , CoprocessorOp_instance_()
+  , DataBarrier_instance_()
   , Defs12To15_instance_()
   , Defs12To15CondsDontCare_instance_()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
@@ -33,8 +33,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DontCareInstRdNotPc_instance_()
   , DontCareInstRnRsRmNotPc_instance_()
   , DuplicateToVfpRegisters_instance_()
-  , EffectiveNoOp_instance_()
   , Forbidden_instance_()
+  , InstructionBarrier_instance_()
   , LoadBasedImmedMemory_instance_()
   , LoadBasedImmedMemoryDouble_instance_()
   , LoadBasedMemory_instance_()
@@ -49,6 +49,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , NotImplemented_instance_()
+  , PreloadRegisterPairOp_instance_()
+  , PreloadRegisterPairOpRAndRnNotPc_instance_()
   , Roadblock_instance_()
   , Store2RegisterImm12OpRnNotRtOnWriteback_instance_()
   , StoreBasedImmedMemory_instance_()
@@ -847,50 +849,38 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
   return not_implemented_;
 }
 
-// Implementation of table: memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions.
+// Implementation of table: memory_hints_advanced_simd_instructions_and_miscellaneous_instructions.
 // Specified by: See Section A5.7.1
-const ClassDecoder& Arm32DecoderState::decode_memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions(
+const ClassDecoder& Arm32DecoderState::decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(
      const Instruction insn) const
 {
-  UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x07F00000) == 0x01000000 /* op1(26:20) == 0010000 */ &&
       (insn.Bits() & 0x000000F0) == 0x00000000 /* op2(7:4) == 0000 */ &&
-      (insn.Bits() & 0x00010000) == 0x00010000 /* Rn(19:16) == xxx1 */) {
+      (insn.Bits() & 0x00010000) == 0x00010000 /* Rn(19:16) == xxx1 */ &&
+      (insn.Bits() & 0x000EFD0F) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxx000x000000x0xxxx0000 */) {
     return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x07F00000) == 0x01000000 /* op1(26:20) == 0010000 */ &&
       (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:4) == xx0x */ &&
-      (insn.Bits() & 0x00010000) == 0x00000000 /* Rn(19:16) == xxx0 */) {
+      (insn.Bits() & 0x00010000) == 0x00000000 /* Rn(19:16) == xxx0 */ &&
+      (insn.Bits() & 0x0000FE00) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx0000000xxxxxxxxx */) {
     return Forbidden_instance_;
   }
 
-  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
-      (insn.Bits() & 0x000000F0) == 0x00000010 /* op2(7:4) == 0001 */) {
-    return EffectiveNoOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
-      (insn.Bits() & 0x000000F0) == 0x00000050 /* op2(7:4) == 0101 */) {
-    return EffectiveNoOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
-      (insn.Bits() & 0x000000D0) == 0x00000040 /* op2(7:4) == 01x0 */) {
-    return EffectiveNoOp_instance_;
-  }
-
   if ((insn.Bits() & 0x07700000) == 0x04100000 /* op1(26:20) == 100x001 */) {
-    return EffectiveNoOp_instance_;
+    return Forbidden_instance_;
   }
 
-  if ((insn.Bits() & 0x07700000) == 0x04500000 /* op1(26:20) == 100x101 */) {
-    return EffectiveNoOp_instance_;
+  if ((insn.Bits() & 0x07700000) == 0x04500000 /* op1(26:20) == 100x101 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return DontCareInst_instance_;
   }
 
   if ((insn.Bits() & 0x07700000) == 0x05100000 /* op1(26:20) == 101x001 */ &&
-      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */) {
-    return EffectiveNoOp_instance_;
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return DontCareInst_instance_;
   }
 
   if ((insn.Bits() & 0x07700000) == 0x05100000 /* op1(26:20) == 101x001 */ &&
@@ -898,27 +888,36 @@ const ClassDecoder& Arm32DecoderState::decode_memory_hints_andvanced_simd_instru
     return Unpredictable_instance_;
   }
 
-  if ((insn.Bits() & 0x07700000) == 0x05500000 /* op1(26:20) == 101x101 */) {
-    return EffectiveNoOp_instance_;
+  if ((insn.Bits() & 0x07700000) == 0x05500000 /* op1(26:20) == 101x101 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return DontCareInst_instance_;
+  }
+
+  if ((insn.Bits() & 0x07700000) == 0x06100000 /* op1(26:20) == 110x001 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */) {
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x07700000) == 0x06500000 /* op1(26:20) == 110x101 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */) {
-    return EffectiveNoOp_instance_;
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return PreloadRegisterPairOp_instance_;
+  }
+
+  if ((insn.Bits() & 0x07700000) == 0x07100000 /* op1(26:20) == 111x001 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return PreloadRegisterPairOpRAndRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x07700000) == 0x07500000 /* op1(26:20) == 111x101 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */) {
-    return EffectiveNoOp_instance_;
-  }
-
-  if ((insn.Bits() & 0x06700000) == 0x06100000 /* op1(26:20) == 11xx001 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */) {
-    return EffectiveNoOp_instance_;
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return PreloadRegisterPairOpRAndRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x06300000) == 0x04300000 /* op1(26:20) == 10xxx11 */) {
-    return Unpredictable_instance_;
+    return decode_memory_hints_simd_10xxx11(insn);
   }
 
   if ((insn.Bits() & 0x06300000) == 0x06300000 /* op1(26:20) == 11xxx11 */ &&
@@ -936,6 +935,44 @@ const ClassDecoder& Arm32DecoderState::decode_memory_hints_andvanced_simd_instru
 
   if (true) {
     return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: memory_hints_simd_10xxx11.
+// Specified by: See Section A5.7.1
+const ClassDecoder& Arm32DecoderState::decode_memory_hints_simd_10xxx11(
+     const Instruction insn) const
+{
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
+      (insn.Bits() & 0x000000F0) == 0x00000010 /* op2(7:4) == 0001 */ &&
+      (insn.Bits() & 0x000FFF0F) == 0x000FF00F /* $pattern(31:0) == xxxxxxxxxxxx111111110000xxxx1111 */) {
+    return Forbidden_instance_;
+  }
+
+  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
+      (insn.Bits() & 0x000000F0) == 0x00000040 /* op2(7:4) == 0100 */ &&
+      (insn.Bits() & 0x000FFF00) == 0x000FF000 /* $pattern(31:0) == xxxxxxxxxxxx111111110000xxxxxxxx */) {
+    return DataBarrier_instance_;
+  }
+
+  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
+      (insn.Bits() & 0x000000F0) == 0x00000050 /* op2(7:4) == 0101 */ &&
+      (insn.Bits() & 0x000FFF00) == 0x000FF000 /* $pattern(31:0) == xxxxxxxxxxxx111111110000xxxxxxxx */) {
+    return DataBarrier_instance_;
+  }
+
+  if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
+      (insn.Bits() & 0x000000F0) == 0x00000060 /* op2(7:4) == 0110 */ &&
+      (insn.Bits() & 0x000FFF00) == 0x000FF000 /* $pattern(31:0) == xxxxxxxxxxxx111111110000xxxxxxxx */) {
+    return InstructionBarrier_instance_;
+  }
+
+  if (true) {
+    return Unpredictable_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -1095,7 +1132,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000F0) == 0x000000F0 /* op2(7:0) == 1111xxxx */ &&
       (insn.Bits() & 0x0000FF00) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
-    return DontCareInst_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
@@ -1578,48 +1615,33 @@ const ClassDecoder& Arm32DecoderState::decode_transfer_between_arm_core_and_exte
 const ClassDecoder& Arm32DecoderState::decode_unconditional_instructions(
      const Instruction insn) const
 {
-  if ((insn.Bits() & 0x0FB00000) == 0x0C200000 /* op1(27:20) == 11000x10 */) {
-    return Forbidden_instance_;
-  }
-
-  if ((insn.Bits() & 0x0FB00000) == 0x0C300000 /* op1(27:20) == 11000x11 */ &&
-      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */) {
-    return Forbidden_instance_;
-  }
-
   if ((insn.Bits() & 0x0FE00000) == 0x0C400000 /* op1(27:20) == 1100010x */) {
     return Forbidden_instance_;
   }
 
-  if ((insn.Bits() & 0x0F900000) == 0x0C800000 /* op1(27:20) == 11001xx0 */) {
+  if ((insn.Bits() & 0x0E500000) == 0x08100000 /* op1(27:20) == 100xx0x1 */ &&
+      (insn.Bits() & 0x0000FFFF) == 0x00000A00 /* $pattern(31:0) == xxxxxxxxxxxxxxxx0000101000000000 */) {
     return Forbidden_instance_;
   }
 
-  if ((insn.Bits() & 0x0F900000) == 0x0C900000 /* op1(27:20) == 11001xx1 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */) {
+  if ((insn.Bits() & 0x0E500000) == 0x08400000 /* op1(27:20) == 100xx1x0 */ &&
+      (insn.Bits() & 0x000FFFE0) == 0x000D0500 /* $pattern(31:0) == xxxxxxxxxxxx110100000101000xxxxx */) {
     return Forbidden_instance_;
   }
 
-  if ((insn.Bits() & 0x0E500000) == 0x08100000 /* op1(27:20) == 100xx0x1 */) {
+  if ((insn.Bits() & 0x0E100000) == 0x0C000000 /* op1(27:20) == 110xxxx0 */ &&
+      (insn.Bits() & 0x0FB00000) != 0x0C100000 /* op1_repeated(27:20) == ~11000x01 */) {
     return Forbidden_instance_;
   }
 
-  if ((insn.Bits() & 0x0E500000) == 0x08400000 /* op1(27:20) == 100xx1x0 */) {
-    return Forbidden_instance_;
-  }
-
-  if ((insn.Bits() & 0x0F100000) == 0x0D000000 /* op1(27:20) == 1101xxx0 */) {
-    return Forbidden_instance_;
-  }
-
-  if ((insn.Bits() & 0x0F100000) == 0x0D100000 /* op1(27:20) == 1101xxx1 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */) {
+  if ((insn.Bits() & 0x0E100000) == 0x0C100000 /* op1(27:20) == 110xxxx1 */ &&
+      (insn.Bits() & 0x0FB00000) != 0x0C100000 /* op1_repeated(27:20) == ~11000x01 */) {
     return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */) {
-    return CoprocessorOp_instance_;
+    return Forbidden_instance_;
   }
 
   if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
@@ -1632,7 +1654,7 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional_instructions(
   }
 
   if ((insn.Bits() & 0x08000000) == 0x00000000 /* op1(27:20) == 0xxxxxxx */) {
-    return decode_memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions(insn);
+    return decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(insn);
   }
 
   if (true) {

@@ -112,9 +112,9 @@
 
 class BreakPointAndConstantPoolHead : Immediate16Use
 class Binary3RegisterImmedShiftedOpRegsNotPc : Binary3RegisterImmedShiftedOp
-class Deprecated : UnsafeCondNop
-class ForbiddenCondNop : UnsafeCondNop
-class ForbiddenUncondNop : UnsafeUncondNop
+class Deprecated : UnsafeCondDecoder
+class ForbiddenCondDecoder : UnsafeCondDecoder
+class ForbiddenUncondDecoder : UnsafeUncondDecoder
 class LoadRegisterList : LoadStoreRegisterList
 class LoadStoreVectorRegister : LoadStoreVectorOp
 class LoadVectorRegister : LoadStoreVectorRegister
@@ -162,10 +162,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "      1xxxx      1001     ->synchronization_primitives
 | "      ~0xx1x     1011     ->extra_load_store_instructions
 | "      "          11x1     "
-| "      0xx1x      1011     =ForbiddenCondNop => Forbidden
+| "      0xx1x      1011     =ForbiddenCondDecoder => Forbidden
                               extra_load_store_instructions_unpriviledged
                               cccc0000xx1xxxxxxxxxxxxx1011xxxx
-| "      "          11x1     =ForbiddenCondNop => Forbidden
+| "      "          11x1     =ForbiddenCondDecoder => Forbidden
                               # TODO(jfb) Same as above, but different pattern.
                               extra_load_store_instructions_unpriviledged
                               cccc0000xx1xxxxxxxxxxxxx11x1xxxx
@@ -410,7 +410,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Adr_Rule_10_A2_P32
                            cccc001001001111ddddiiiiiiiiiiii
-| 00101      1111     = ForbiddenCondNop => Forbidden
+| 00101      1111     = ForbiddenCondDecoder => Forbidden
                            Subs_Pc_Lr_and_related_instructions_Rule_A1a
                            cccc00100101nnnn1111iiiiiiiiiiii
 | 0011x      -        = Binary2RegisterImmediateOp
@@ -434,7 +434,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                            => Defs12To15
                            Adr_Rule_10_A1_P32
                            cccc001010001111ddddiiiiiiiiiiii
-| 01001      1111     = ForbiddenCondNop => Forbidden
+| 01001      1111     = ForbiddenCondDecoder => Forbidden
                            Subs_Pc_Lr_and_related_instructions_Rule_A1b
                            cccc00101001nnnn1111iiiiiiiiiiii
 | 0101x      -        = Binary2RegisterImmediateOp
@@ -699,29 +699,31 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- msr_immediate_and_hints (See Section A5.2.11)
 | op(22) op1(19:16) op2(7:0)
-| 0      0000       0000_0000  = CondNop => DontCareInst
+| 0      0000       0000_0000  = CondDecoder => DontCareInst
                                  Nop_Rule_110_A1_P222
                                  cccc0011001000001111000000000000 (v6K,v6T2)
-| "      "          0000_0001  = CondNop => DontCareInst
+| "      "          0000_0001  = CondDecoder => DontCareInst
                                  Yield_Rule_413_A1_P812
                                  cccc0011001000001111000000000001 (v6K)
-| "      "          0000_0010  = ForbiddenCondNop => Forbidden
+| "      "          0000_0010  = ForbiddenCondDecoder => Forbidden
                                  # Don't allow, may put hardware to sleep
                                  # until a send event occurs.
                                  Wfe_Rule_411_A1_P808
                                  cccc0011001000001111000000000010 (v6K)
-| "      "          0000_0011  = ForbiddenCondNop => Forbidden
+| "      "          0000_0011  = ForbiddenCondDecoder => Forbidden
                                  # Don't allow, may put hardware to sleep
                                  # until a send event occurs.
                                  Wfi_Rule_412_A1_P810
                                  cccc0011001000001111000000000011 (v6K)
-| "      "          0000_0100  = ForbiddenCondNop => Forbidden
+| "      "          0000_0100  = ForbiddenCondDecoder => Forbidden
                                  # Don't allow, causes an event to be
                                  # signalled to all processors in the
                                  # multiprocessor system.
                                  Sev_Rule_158_A1_P316
                                  cccc0011001000001111000000000100 (v6K)
-| "      "          1111_xxxx  = CondNop => DontCareInst
+| "      "          1111_xxxx  = ForbiddenCondDecoder => Forbidden
+                                 # Don't allow unless there is a good reason
+                                 # for it.
                                  Dbg_Rule_40_A1_P88
                                  cccc001100100000111100001111iiii (v7)
 | "      0100       -          = MoveImmediate12ToApsr => DontCareInst
@@ -736,15 +738,15 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                  #           isn't allowed.
                                  Msr_Rule_103_A1_P208
                                  cccc001100101x001111iiiiiiiiiiii
-| "      xx01       -          = ForbiddenCondNop => Forbidden
+| "      xx01       -          = ForbiddenCondDecoder => Forbidden
                                  Msr_Rule_B6_1_6_A1_PB6_12
                                  cccc00110010ii011111iiiiiiiiiiii
                                  # MSR(immediate), ring0 version
-| "      xx1x       -          = ForbiddenCondNop => Forbidden
+| "      xx1x       -          = ForbiddenCondDecoder => Forbidden
                                  Msr_Rule_B6_1_6_A1_PB6_12
                                  cccc00110010ii1i1111iiiiiiiiiiii
                                  # MSR(immediate), ring0 version
-| 1      -          -          = ForbiddenCondNop => Forbidden
+| 1      -          -          = ForbiddenCondDecoder => Forbidden
                                  Msr_Rule_B6_1_6_A1_PB6_12
                                  cccc00110110iiii1111iiiiiiiiiiii
                                  # MSR(immediate), ring0 version
@@ -753,10 +755,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- miscellaneous_instructions (See Section A5.2.12)
 | op2(6:4) B(9) op(22:21) op1(19:16)
-| 000      1    x0        xxxx       = ForbiddenCondNop => Forbidden
+| 000      1    x0        xxxx       = ForbiddenCondDecoder => Forbidden
                                        Msr_Rule_Banked_register_A1_B9_1990
                                        cccc00010r00mmmmdddd001m00000000 (v7VE)
-| "        "    x1        "          = ForbiddenCondNop => Forbidden
+| "        "    x1        "          = ForbiddenCondDecoder => Forbidden
                                        Msr_Rule_Banked_register_A1_B9_1992
                                        cccc00010r10mmmm1111001m0000nnnn (v7VE)
 | "        0    x0        xxxx       = Unary1RegisterSet
@@ -765,13 +767,13 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "        "    01        xx00       = Unary1RegisterUse
                                        Msr_Rule_104_A1_P210
                                        cccc00010010mm00111100000000nnnn
-| "        "    01        xx01       = ForbiddenCondNop => Forbidden
+| "        "    01        xx01       = ForbiddenCondDecoder => Forbidden
                                        Msr_Rule_B6_1_7_P14
                                        cccc00010010mm01111100000000nnnn
-| "        "    "         xx1x       = ForbiddenCondNop => Forbidden
+| "        "    "         xx1x       = ForbiddenCondDecoder => Forbidden
                                        Msr_Rule_B6_1_7_P14
                                        cccc00010010mm1m111100000000nnnn
-| "        "    11        -          = ForbiddenCondNop => Forbidden
+| "        "    11        -          = ForbiddenCondDecoder => Forbidden
                                        Msr_Rule_B6_1_7_P14
                                        cccc00010110mmmm111100000000nnnn
 | 001      -    01        -          = BranchToRegister => BxBlx
@@ -781,7 +783,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                        => Defs12To15RdRnNotPc
                                        Clz_Rule_31_A1_P72
                                        cccc000101101111dddd11110001mmmm (v5T)
-| 010      -    01        -          = ForbiddenCondNop => Forbidden
+| 010      -    01        -          = ForbiddenCondDecoder => Forbidden
                                        Bxj_Rule_26_A1_P64
                                        cccc000100101111111111110010mmmm (v5TEJ)
 | 011      -    01        -          = BranchToRegister => BxBlx
@@ -789,17 +791,17 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                        cccc000100101111111111110011mmmm
                                        RegsNotPc (v5T)
 | 101      -    -         -          ->saturating_addition_and_subtraction
-| 110      -    11        -          = ForbiddenCondNop => Forbidden
+| 110      -    11        -          = ForbiddenCondDecoder => Forbidden
                                        Eret_Rule_A1
                                        cccc0001011000000000000001101110 (v7VE)
 | 111      -    01        -          = BreakPointAndConstantPoolHead
                                        => Breakpoint
                                        Bkpt_Rule_22_A1_P56
                                        cccc00010010iiiiiiiiiiii0111iiii (v5T)
-| "        -    10        -          = ForbiddenCondNop => Forbidden
+| "        -    10        -          = ForbiddenCondDecoder => Forbidden
                                        Hvc_Rule_A1
                                        cccc00010100iiiiiiiiiiii0111iiii (v7VE)
-| "        -    11        -          = ForbiddenCondNop => Forbidden
+| "        -    11        -          = ForbiddenCondDecoder => Forbidden
                                        Smc_Rule_B6_1_9_P18
                                        cccc000101100000000000000111iiii (SE)
 | else:                              = Undefined     # Note on page A5-18
@@ -814,10 +816,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                             => StoreBasedOffsetMemory
                                             Str_Rule_195_A1_P386
                                             cccc011pd0w0nnnnttttiiiiitt0mmmm
-| 0     0x010      -    -          - = ForbiddenCondNop => Forbidden
+| 0     0x010      -    -          - = ForbiddenCondDecoder => Forbidden
                                        Strt_Rule_A1
                                        cccc0100u010nnnnttttiiiiiiiiiiii
-| 1     0x010      0    -          - = ForbiddenCondNop => Forbidden
+| 1     0x010      0    -          - = ForbiddenCondDecoder => Forbidden
                                        Strt_Rule_A2
                                        cccc0110u010nnnnttttiiiiitt0mmmm
 | 0     xx0x1      -    ~1111      ~0x011
@@ -834,10 +836,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                    = Load3RegisterImm5Op => LoadBasedOffsetMemory
                                    Ldr_Rule_60_A1_P124
                                    cccc011pu0w1nnnnttttiiiiitt0mmmm
-| 0     0x011      -    -          - = ForbiddenCondNop => Forbidden
+| 0     0x011      -    -          - = ForbiddenCondDecoder => Forbidden
                                        Ldrt_Rule_A1
                                        cccc0100u011nnnnttttiiiiiiiiiiii
-| 1     0x011      0    -          - = ForbiddenCondNop => Forbidden
+| 1     0x011      0    -          - = ForbiddenCondDecoder => Forbidden
                                        Ldrt_Rule_A2
                                        cccc0110u011nnnnttttiiiiitt0mmmm
 | 0     xx1x0      -    -          ~0x110
@@ -850,10 +852,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                    => StoreBasedOffsetMemory
                                    Strb_Rule_198_A1_P392
                                    cccc011pu1w0nnnnttttiiiiitt0mmmm
-| 0     0x110      -    -          - = ForbiddenCondNop => Forbidden
+| 0     0x110      -    -          - = ForbiddenCondDecoder => Forbidden
                                        Strtb_Rule_A1
                                        cccc0100u110nnnnttttiiiiiiiiiiii
-| 1     0x110      0    -          - = ForbiddenCondNop => Forbidden
+| 1     0x110      0    -          - = ForbiddenCondDecoder => Forbidden
                                        Strtb_Rule_A2
                                        cccc0110u110nnnnttttiiiiitt0mmmm
 | 0     xx1x1      -    ~1111      ~0x111
@@ -870,10 +872,10 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                    = Load3RegisterImm5Op => LoadBasedOffsetMemory
                                    Ldrb_Rule_64_A1_P132
                                    cccc011pu1w1nnnnttttiiiiitt0mmmm
-| 0     0x111      -    -          - = ForbiddenCondNop => Forbidden
+| 0     0x111      -    -          - = ForbiddenCondDecoder => Forbidden
                                        Ldrtb_Rule_A1
                                        cccc0100u111nnnnttttiiiiiiiiiiii
-| 1     0x111      0    -          - = ForbiddenCondNop => Forbidden
+| 1     0x111      0    -          - = ForbiddenCondDecoder => Forbidden
                                        Ldrtb_Rule_A2
                                        cccc0110u111nnnnttttiiiiitt0mmmm
 # Instructions with A==1 and B==1 are in media_instructions.
@@ -918,7 +920,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         RegsNotPc (v6)
 | 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
                                         => Defs12To15CondsDontCareRdRnNotPc
-# TODO(karl) Add restriction:
+# TODO(karl) Add (explicit) restriction:
 #   mdbit = lsbit + widthminus1
 #   if msbit <= 32 then
 #      R[d] = SignExtend(R[n]<msbit:lsbit>, 32)
@@ -926,16 +928,16 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 #      UNPREDICTABLE.
                                         Sbfx_Rule_154_A1_P308
                                         cccc0111101wwwwwddddlllll101nnnn (v6T2)
-# TODO(karl) Add RegsNotPc as safety constraint.
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
 | 1110x      x00      -         1111  = Unary1RegisterBitRange
                                         # Note: Alternative form for clearing
                                         # bits in a memory address (i.e.
                                         # alternative for bic).
                                         Bfc_17_A1_P46
                                         cccc0111110mmmmmddddlllll0011111 (v6T2)
-# TODO(karl) Add RegsNotPc as safety constraint.
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
 | "          x00      -         ~1111 = Binary2RegisterBitRange
-# TODO(karl) Add RegsNotPc as safety constraint.
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
                                         => Defs12To15CondsDontCare
                                         Bfi_Rule_18_A1_P48
                                         cccc0111110mmmmmddddlllll001nnnn
@@ -945,7 +947,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 # TODO(karl) Add same restriction as for Sbfx_Rule_154_A1_P308
                                         Ubfx_Rule_236_A1_P466
                                         cccc0111111mmmmmddddlllll101nnnn (v6T2)
-# TODO(karl) Add RegsNotPc as safety constraint.
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
 | 11111      111      -         -     = Roadblock  # Permanently Undefined
 | else:                               = Undefined  # Note on page A5-21
 +--
@@ -1287,6 +1289,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- branch_branch_with_link_and_block_data_transfer (See Section A5.5)
 # TODO(karl): Clean up the actual classes once baseline has been committed.
+# TODO(karl) ARM ARM revision C breaks out LDM/POP and STM/PUSH. Should we?
 | op(25:20) R(15)
 | 0000x0    -     = StoreRegisterList
                     Stmda_Stmed_Rule_190_A1_P376
@@ -1314,13 +1317,13 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0110x1    -     = LoadRegisterList => LoadMultiple
                     Ldmib_Ldmed_Rule_56_A1_P116
                     cccc100110w1nnnnrrrrrrrrrrrrrrrr
-| 0xx1x0    -     = ForbiddenCondNop => Forbidden
+| 0xx1x0    -     = ForbiddenCondDecoder => Forbidden
                     Stm_Rule_11_B6_A1_P22 # ring0 version
                     cccc100pu100nnnnrrrrrrrrrrrrrrrr
-| 0xx1x1    0     = ForbiddenCondNop => Forbidden
+| 0xx1x1    0     = ForbiddenCondDecoder => Forbidden
                     Ldm_Rule_3_B6_A1_P7   # ring0 version
                     cccc100pu101nnnn0rrrrrrrrrrrrrrr
-| "         1     = ForbiddenCondNop => Forbidden
+| "         1     = ForbiddenCondDecoder => Forbidden
                     Ldm_Rule_2_B6_A1_P5   # exception return
                     cccc100pu1w1nnnn1rrrrrrrrrrrrrrr
 | 10xxxx    -     = BranchImmediate24 => Branch
@@ -1554,70 +1557,226 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 #
 # Note: Most instructions in this table are forbidden because they
 # aren't specific to the Vfp coprocessors (10, 11).
-| op1(27:20) op(4) Rn(19:16)
-| 0xxx_xxxx  -     -         ->memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions
+#
+# Note: op1 and op1_repeated are the same columns. This is so that we
+# can test patterns like XXXX_XXXX & ~YYYY_YYYY.
+#
+| op1(27:20) op(4) Rn(19:16) op1_repeated(27:20)
+| 0xxx_xxxx  -     -         -
+                             ->memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
 # Note: These instructions are not allowed for any coprocessor.
-| 100x_x1x0  -     -         = ForbiddenUncondNop # SRS B6-20
-                             => Forbidden (v6)
-| 100x_x0x1  -     -         = ForbiddenUncondNop # RFE B6-16
-                             => Forbidden (v6)
+| 100x_x1x0  -     -         -
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Srs_Rule_B6_1_10_A1_B6_20
+                         1111100pu1w0110100000101000iiiii
+                         (v6)
+| 100x_x0x1  -     -         -
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Rfe_Rule_B6_1_10_A1_B6_16
+                         1111100pu0w1nnnn0000101000000000
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
+                         (v6)
 # Note: The following version of blx is forbidden because it
-# can allow branches to lables divisible by 2, which may be the
-# middle of an ARM instruction.
-| 101x_xxxx  -     -         = ForbiddenUncondNop => Forbidden
-                             Blx_Rule_23_A2_P58
-                             1111101hiiiiiiiiiiiiiiiiiiiiiiii
+# switches to Thum mode.
+| 101x_xxxx  -     -         -
+                         = ForbiddenUncondDecoder => Forbidden
+                         Blx_Rule_23_A2_P58
+                         1111101hiiiiiiiiiiiiiiiiiiiiiiii
+                         (v5)
 # The following are load/store instructions to corresponding coprocessor
 # registers. These are (currently) forbidden, since Vfp (coprocessor 10, 11)
 # have explicit instructions for loading/storing values
 # into Vfp registers.
-| 1100_0x11  -     ~1111     = ForbiddenUncondNop # LDC(immed),
-                             => Forbidden (v5)    # LDC2(immed) A8-106
-| 1100_1xx1  -     1111      = ForbiddenUncondNop # LDC(literal),
-                             => Forbidden (v5)    # LDC2(literal) A8-108
-| 1101_xxx1  -     1111      = ForbiddenUncondNop # LDC(literal),
-                             => Forbidden (v5)    # LDC2(literal) A8-106
-| 1100_0x10  -     -         = ForbiddenUncondNop # STC, STC2 A8-372
-                             => Forbidden (v5)
-| 1100_1xx0  -     -         "
-| 1101_xxx0  -     -         "
-| 1100_0100  -     -         = ForbiddenUncondNop # MCRR, MCRR2 A8-188
-                             => Forbidden (v6)
-| 1100_0101  -     -         = ForbiddenUncondNop # MRRC, MRRC2 A8-204
-                             => Forbidden (v6)
-| 1110_xxx0  1     -         = ForbiddenUncondNop # MCR, MCR2 A8-186
-                             => Forbidden (v5)
-| 1110_xxx1  1     -         = ForbiddenUncondNop # MRC, MRC2 A8-202
-                             => Forbidden (v5)
-# The following applies a coprocessor operation, which we currently
-# only allow for coprocessors 10 and 11.
-| 1110_xxxx  0     -         = CoprocessorOp (v5) # CDP, CDP2 A8-68
-| else:                      = Undefined          # Note on page A5-30
+#
+# Note: The following two rows are from revision C of the ARM ARM manual.
+| 110x_xxx1  -     1111      ~1100_0x01
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Ldc2_Rule_52_A2_P108
+                         1111110pudw11111iiiiiiiiiiiiiiii
+                         (v5)
+| 110x_xxx1  -     ~1111     ~1100_0x01
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Ldc2_Rule_51_A1_P106
+                         1111110pudw1nnnniiiiiiiiiiiiiiii
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
+                         (v5)
+# Note: The following three (commented out) rows are the rows for
+# for implementing LDC and LDC2 from revision B of the ARM ARM manual.
+#| 1100_0x11  -     ~1111     -
+#                         = ForbiddenUncondDecoder # LDC(immed),
+#                         => Forbidden (v5)    # LDC2(immed) A8-106
+#| 1100_1xx1  -     1111      -
+#                         = ForbiddenUncondDecoder # LDC(literal),
+#                         => Forbidden (v5)    # LDC2(literal) A8-108
+#| 1101_xxx1  -     1111      -
+#                         = ForbiddenUncondDecoder # LDC(literal),
+#                         => Forbidden (v5)    # LDC2(literal) A8-106
+# Note: The following two row is from revision C of the ARM ARM manual.
+| 110x_xxx0   -     -        ~1100_0x01
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Sdc2_Rule_188_A1_P372
+                         1111110pudw0nnnniiiiiiiiiiiiiiii
+# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
+                         (v5)
+# Note: The following three (commented out) rows are the rows for
+# for implementing LDC and LDC2 from revision B of the ARM ARM manual.
+#| 1100_0x10  -     -         -
+#                         = ForbiddenUncondDecoder # STC, STC2 A8-372
+#                         => Forbidden (v5)
+#| 1100_1xx0  -     -         -
+#                         "
+#| 1101_xxx0  -     -         -
+#                         "
+| 1100_0100  -     -         -
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Mcrr2_Rule_93_A2_P188
+                         111111000100ssssttttiiiiiiiiiiii
+                         (v6)
+| 1100_0101  -     -         -
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Mrrc2_Rule_101_A2_P204
+                         111111000101ssssttttiiiiiiiiiiii
+                         (v6)
+| 1110_xxx0  1     -         -
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Mcr2_Rule_92_A2_P186
+                         11111110iii0iiiittttiiiiiii1iiii
+                         (v5)
+| 1110_xxx1  1     -         -
+                         = ForbiddenUncondDecoder # MRC, MRC2 A8-202
+                         => Forbidden
+                         Mrc2_Rule_100_A2_P202
+                         11111110iii1iiiittttiiiiiii1iiii
+                         (v5)
+# The following applies a coprocessor operation CDP2. We don't allow
+# since not in SIMD (requires bits 27:25==001), and not in Vfp
+# (section a7.5: UNDEFINED if cond(31:28)=1111).
+| 1110_xxxx  0     -         -
+                         = ForbiddenUncondDecoder
+                         => Forbidden
+                         Cdp2_Rule_28_A2_P68
+                         11111110iiiiiiiiiiiiiiiiiii0iiii
+| else:                  = Undefined          # Note on page A5-30
 +--
 
-+-- memory_hints_andvanced_simd_instructions_and_miscellaneous_instructions (See Section A5.7.1)
++-- memory_hints_advanced_simd_instructions_and_miscellaneous_instructions (See Section A5.7.1)
+# Note: We have factored out cases when op1(26:20)=10xxx11, so that we can
+# use a table "else" clause to implement the "UNPREDICTABLE except as shown
+# above" table entry correctly.
+#
+# Note: Revision C of the ARM ARM manual is a bit different for this table. Some
+# of the unpredictables are clearer, and it also defines a permanently undefined
+# instruction.
+#
+# TODO(karl) Modify this table to match revision C of the ARM ARM manual.
 | op1(26:20) op2(7:4) Rn(19:16)
-| 001_0000   xx0x     xxx0      =Forbidden  # CPS
-| 001_0000   0000     xxx1      =Forbidden  # SETEND
-| 01x_xxxx   -        -         ->advanced_simd_data_processing_instructions
-| 100_xxx0   -        -         ->advanced_simd_element_or_structure_load_store_instructions
-| 100_x001   -        -         =EffectiveNoOp(MP)    # Unallocated memory hint
-| 100_x101   -        -         =EffectiveNoOp(v7)    # PLI(immediate, literal)
-| 101_x001   -        ~1111     =EffectiveNoOp(MP)    # PLDW(immediate)
-| "          -        1111      =Unpredictable
-| 101_x101   -        ~1111     =EffectiveNoOp(v5TE)  # PLD(immediate)
-| 101_x101   -        1111      =EffectiveNoOp(v5TE)  # PLD(literal)
-| 101_0111   0001     -         =EffectiveNoOp(v6K)   # CLREX
-| "          0100     -         =EffectiveNoOp(v6T2)  # DSB
-| "          0101     -         =EffectiveNoOp(v7)    # DMB
-| "          0110     -         =EffectiveNoOp(v6T2)  # ISB
-| 10x_xx11   -        -         =Unpredictable
-| 110_x001   xxx0     -         =EffectiveNoOp(MP)    # Unallocated memory hint
-| 110_x101   xxx0     -         =EffectiveNoOp(v7)    # PLI(register)
-| 111_x001   xxx0     -         =EffectiveNoOp(MP)    # PLDW(register)
-| 111_x101   xxx0     -         =EffectiveNoOp(v5TE)  # PLD(register)
-| 11x_xx11   xxx0     -         =Unpredictable
-| else:                         =Undefined   # Note on page A5-31
+| 001_0000   xx0x     xxx0  = ForbiddenUncondDecoder => Forbidden
+                            Cps_Rule_b6_1_1_A1_B6_3
+                            111100010000iii00000000iii0iiiii
+| 001_0000   0000     xxx1  = ForbiddenUncondDecoder => Forbidden
+                            # Note: we don't allow one to change endianess
+                            Setend_Rule_157_P314
+                            1111000100000001000000i000000000
+                            (v6)
+  # SETEND A8-324
+| 01x_xxxx   -        -     ->advanced_simd_data_processing_instructions
+| 100_xxx0   -        -     ->advanced_simd_element_or_structure_load_store_instructions
+                            # The following are unallocated memory hints,
+                            # which the manual (for this table) states should
+                            # be treated as nop. However, we will disallow until
+                            # more specific information is provided as to why
+                            # we should allow such instructions, and what (exactly)
+                            # those instructions are.
+| 100_x001   -        -     = Forbidden (MP)
+                            # TODO(karl): Should we allow the following
+                            # preload instruction.
+| 100_x101   -        -     = PreloadRegisterImm12Op => DontCareInst
+                              Pli_Rule_120_A1_P242
+                              11110100u101nnnn1111iiiiiiiiiiii
+                              (v7)
+| 101_x001   -        ~1111 = PreloadRegisterImm12Op => DontCareInst
+                              Pldw_Rule_117_A1_P236
+                              11110101u001nnnn1111iiiiiiiiiiii
+                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx
+                              (MP)
+| "          -        1111  = Unpredictable
+| 101_x101   -        ~1111 = PreloadRegisterImm12Op => DontCareInst
+                              Pld_Rule_117_A1_P236
+                              11110101u101nnnn1111iiiiiiiiiiii
+                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx
+                              (v5TE)
+| 101_x101   -        1111  = PreloadRegisterImm12Op => DontCareInst
+                              Pld_Rule_118_A1_P238
+                              11110101u10111111111iiiiiiiiiiii (v5TE)
+| 10x_xx11   -        -     -> memory_hints_simd_10xxx11
+                            # The following are unallocated memory hints,
+                            # which the manual (for this table) states should
+                            # be treated as nop. However, we will disallow until
+                            # more specific information is provided as to why
+                            # we should allow such instructions, and what (exactly)
+                            # those instructions are.
+| 110_x001   xxx0     -     = Forbidden (MP)
+                            # TODO(karl): Should we allow the following
+                            # preload instruction.
+| 110_x101   xxx0     -     = PreloadRegisterPairOp
+                              Pli_Rule_121_A1_P244
+                              11110110u101nnnn1111iiiiitt0mmmm
+# TODO(karl) Add (explicit) safety constraint that Rm can't be PC.
+                              (v7)
+| 111_x001   xxx0     -     = PreloadRegisterPairOpRAndRnNotPc
+                              Pldw_Rule_119_A1_P240
+                              11110111u001nnnn1111iiiiitt0mmmm
+# TODO(karl) Add (explicit) safety constraint that Rn and Rm can't be PC.
+                              (MP)
+| 111_x101   xxx0     -     = PreloadRegisterPairOpRAndRnNotPc
+                              Pld_Rule_119_A1_P240
+                              11110111u101nnnn1111iiiiitt0mmmm
+# TODO(karl) Add (explicit) xsafety constraint that Rn and Rm can't be PC.
+                              (v5TE)
+| 11x_xx11   xxx0     -     = Unpredictable
+| else:                     = Undefined   # Note on page A5-31
++--
+
++-- memory_hints_simd_10xxx11 (See Section A5.7.1)
+# Implements op1(26:20)=10xxx11 entries from the
+# memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
+# table, so that the ""UNPREDICTABLE except as shown above" table
+# entry can be implemented as an else clause.
+| op1(26:20) op2(7:4) Rn(19:16)
+| 101_0111   0001     -         = ForbiddenUncondDecoder => Forbidden
+                                  # Note: For now, we are forbidding the following.
+                                  # If we want to put it back, the following is
+                                  # how it should be encoded.
+                                  # UncondDecoder => DontCareInst
+                                  Clrex_Rule_30_A1_P70
+                                  11110101011111111111000000011111
+                                  (v6K)
+| "          0100     -         = DataBarrier
+                                  Dsb_Rule_42_A1_P92
+                                  1111010101111111111100000100xxxx
+# Note: Has safety constraint that
+# xxxx in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+                                  (v6T2)
+| "          0101     -         = DataBarrier
+                                  Dmb_Rule_41_A1_P90
+                                  1111010101111111111100000101xxxx
+# Note: Has safety constraint that
+# xxxx in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+                                  (v7)
+| "          0110     -         = InstructionBarrier
+                                  Isb_Rule_49_A1_P102
+                                  1111010101111111111100000110xxxx
+# Note: Has safety constraint that xxxx = 1111
+                                  (v6T2)
+| else:                         = Unpredictable # 10x_xx11  (except shown above)
 +--
 
 +-- advanced_simd_data_processing_instructions (See Section A7.4)

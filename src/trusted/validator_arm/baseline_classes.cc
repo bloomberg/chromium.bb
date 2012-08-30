@@ -14,24 +14,24 @@
 
 namespace nacl_arm_dec {
 
-// UncondNop
-SafetyLevel UncondNop::safety(const Instruction i) const {
+// UncondDecoder
+SafetyLevel UncondDecoder::safety(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList UncondNop::defs(const Instruction i) const {
+RegisterList UncondDecoder::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
 
-// CondNop
-SafetyLevel CondNop::safety(const Instruction i) const {
+// CondDecoder
+SafetyLevel CondDecoder::safety(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList CondNop::defs(const Instruction i) const {
+RegisterList CondDecoder::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
@@ -452,6 +452,38 @@ bool Load2RegisterImm8DoubleOp::offset_is_immediate(Instruction i) const {
 // Store2RegisterImm8DoubleOp
 RegisterList Store2RegisterImm8DoubleOp::defs(Instruction i) const {
   return immediate_addressing_defs(i);
+}
+
+// PreloadRegisterImm12Op
+SafetyLevel PreloadRegisterImm12Op::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList PreloadRegisterImm12Op::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kCondsDontCare;
+}
+
+// PreloadRegisterPairOp
+SafetyLevel PreloadRegisterPairOp::safety(Instruction i) const {
+  if (m.reg(i).Equals(kRegisterPc))
+    return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+RegisterList PreloadRegisterPairOp::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kCondsDontCare;
+}
+
+// PreloadRegisterPairOpRAndRnNotPc
+SafetyLevel PreloadRegisterPairOpRAndRnNotPc::safety(Instruction i) const {
+  // Defined in version C of ARM ARM v7 manual.
+  // if m==15 || (n==15 && is_pldw) then UNPREDICTABLE;
+  if (read.IsDefined(i) and n.reg(i).Equals(kRegisterPc))
+    return FORBIDDEN_OPERANDS;
+  return PreloadRegisterPairOp::safety(i);
 }
 
 // LoadStore2RegisterImm12Op
@@ -1082,6 +1114,30 @@ SafetyLevel DuplicateToVfpRegisters::safety(Instruction i) const {
     return UNPREDICTABLE;
 
   return CondVfpOp::safety(i);
+}
+
+// DataBarrier
+SafetyLevel DataBarrier::safety(Instruction i) const {
+  switch (option.value(i)) {
+    case 0xF:  // 1111
+    case 0xE:  // 1110
+    case 0xB:  // 1011
+    case 0xA:  // 1010
+    case 0x7:  // 0111
+    case 0x6:  // 0110
+    case 0x3:  // 0011
+    case 0x2:  // 0010
+      return UncondDecoder::safety(i);
+    default:
+      return FORBIDDEN_OPERANDS;
+  }
+}
+
+// InstructionBarrier
+SafetyLevel InstructionBarrier::safety(Instruction i) const {
+  if (option.value(i) != 0xF)
+    return FORBIDDEN_OPERANDS;
+  return UncondDecoder::safety(i);
 }
 
 }  // namespace nacl_arm_dec

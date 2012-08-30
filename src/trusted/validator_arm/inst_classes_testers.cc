@@ -44,8 +44,8 @@ ApplySanityChecks(Instruction inst,
   return Arm32DecoderTester::ApplySanityChecks(inst, decoder);
 }
 
-// UnsafeUncondNopTester
-bool UnsafeUncondNopTester::
+// UnsafeUncondDecoderTester
+bool UnsafeUncondDecoderTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -86,8 +86,8 @@ ApplySanityChecks(Instruction inst,
   return Arm32DecoderTester::ApplySanityChecks(inst, decoder);
 }
 
-// UnsafeCondNopTester
-bool UnsafeCondNopTester::
+// UnsafeCondDecoderTester
+bool UnsafeCondDecoderTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -100,10 +100,6 @@ ApplySanityChecks(Instruction inst,
   // Don't continue, we've already reported the root problem!
   return false;
 }
-
-// CondNopTester
-CondNopTester::CondNopTester(const NamedClassDecoder& decoder)
-    : CondDecoderTester(decoder) {}
 
 // CondVfpOpTester
 CondVfpOpTester::CondVfpOpTester(const NamedClassDecoder& decoder)
@@ -636,6 +632,18 @@ ApplySanityChecks(Instruction inst,
   }
 
   return Unary2RegisterOpTester::ApplySanityChecks(inst, decoder);
+}
+
+// Unary2RegisterOpNotRmIsPcTesterRegsNotPc
+bool Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterOpNotRmIsPcTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
 }
 
 // Binary3RegisterOpTester
@@ -1185,12 +1193,62 @@ bool LoadStore2RegisterImm8DoubleOpTesterNotRnIsPc::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check that we don't parse when Rn=15.
-  if (expected_decoder_.n.reg(inst).Equals(kRegisterPc)) {
-    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
-  }
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc));
 
   return LoadStore2RegisterImm8DoubleOpTester::
       ApplySanityChecks(inst, decoder);
+}
+
+// PreloadRegisterImm12OpTester
+bool PreloadRegisterImm12OpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.imm12.value(inst), inst.Bits(11, 0));
+  EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder_.read.IsDefined(inst), inst.Bit(22));
+  EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
+
+  return true;
+}
+
+// PreloadRegisterPairOpTester
+bool PreloadRegisterPairOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_TRUE(expected_decoder_.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder_.shift_type.value(inst), inst.Bits(6, 5));
+  EXPECT_EQ(expected_decoder_.imm5.value(inst), inst.Bits(11, 7));
+  EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder_.read.IsDefined(inst), inst.Bit(22));
+  EXPECT_EQ(expected_decoder_.direction.IsAdd(inst), inst.Bit(23));
+
+  // Check that we don't parse when Rm=15.
+  EXPECT_FALSE(expected_decoder_.m.reg(inst).Equals(kRegisterPc));
+
+  return true;
+}
+
+// PreloadRegisterPairOpRAndRnNotPcTester
+bool PreloadRegisterPairOpRAndRnNotPcTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check that it passes base tests.
+  NC_PRECOND(PreloadRegisterPairOpTester::
+             ApplySanityChecks(inst, decoder));
+
+  // Check that we don't parse when Rn=15 and R=1
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc)
+               && expected_decoder_.read.IsDefined(inst));
+
+  return true;
 }
 
 // LoadStore2RegisterImm12OpTester
@@ -2226,6 +2284,50 @@ ApplySanityChecks(Instruction inst,
                && !expected_decoder_.vd.IsEven(inst));
   EXPECT_NE(expected_decoder_.be_value(inst),
             static_cast<uint32_t>(0x3));
+
+  return true;
+}
+
+// BarrierInstTester
+bool BarrierInstTester::ApplySanityChecks(Instruction inst,
+                                          const NamedClassDecoder& decoder) {
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+  EXPECT_EQ(expected_decoder_.option.value(inst), inst.Bits(3, 0));
+
+  return true;
+}
+
+// DataBarrierTester
+bool DataBarrierTester::ApplySanityChecks(Instruction inst,
+                                          const NamedClassDecoder& decoder) {
+  NC_PRECOND(BarrierInstTester::ApplySanityChecks(inst, decoder));
+  EXPECT_EQ(expected_decoder_.option.value(inst), inst.Bits(3, 0));
+
+  switch (expected_decoder_.option.value(inst)) {
+    case 0xF:  // 1111
+    case 0xE:  // 1110
+    case 0xB:  // 1011
+    case 0xA:  // 1010
+    case 0x7:  // 0111
+    case 0x6:  // 0110
+    case 0x3:  // 0011
+    case 0x2:  // 0010
+      break;
+    default:
+      EXPECT_FALSE(true)
+          << "Expected forbidden operands for option" << InstContents();
+  }
+  return true;
+}
+
+// InstructionBarrierTester
+bool InstructionBarrierTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(BarrierInstTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_EQ(static_cast<uint32_t>(0xF), expected_decoder_.option.value(inst))
+      << "Expected forbidden operands for option" << InstContents();
 
   return true;
 }
