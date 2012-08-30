@@ -389,8 +389,11 @@ class HistoryService : public CancelableRequestProvider,
                               const QueryMostVisitedURLsCallback& callback);
 
   // Request the |result_count| URLs filtered and sorted based on the |filter|.
-  // If |extended_info| is enabled, additional data will be provided in the
-  // results.
+  // If |extended_info| is true, additional data will be provided in the
+  // results. Computing this additional data is expensive, likely to become
+  // more expensive as additional data points are added in future changes, and
+  // not useful in most cases. Set |extended_info| to true only if you
+  // explicitly require the additional data.
   Handle QueryFilteredURLs(
       int result_count,
       const history::VisitFilter& filter,
