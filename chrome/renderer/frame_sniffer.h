@@ -13,7 +13,8 @@
 // messages to be handled by RenderViewHostObserver.
 class FrameSniffer : public content::RenderViewObserver {
  public:
-  FrameSniffer(content::RenderView* render_view, const string16 &frame_name);
+  FrameSniffer(content::RenderView* render_view,
+               const string16 &unique_frame_name);
   virtual ~FrameSniffer();
 
   // Implements RenderViewObserver.
@@ -26,7 +27,7 @@ class FrameSniffer : public content::RenderViewObserver {
   bool ShouldSniffFrame(WebKit::WebFrame* frame);
 
   // Name of the frame to be monitored.
-  string16 frame_name_;
+  string16 unique_frame_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSniffer);
 };

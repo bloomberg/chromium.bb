@@ -119,7 +119,7 @@ string16 DumpFramesAsText(WebFrame* web_frame, bool recursive) {
   if (web_frame->parent() &&
       !web_frame->document().documentElement().isNull()) {
     result.append(ASCIIToUTF16("\n--------\nFrame: '"));
-    result.append(web_frame->name());
+    result.append(web_frame->uniqueName());
     result.append(ASCIIToUTF16("'\n--------\n"));
   }
 
@@ -162,7 +162,7 @@ string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   if (offset.width() > 0 || offset.height() > 0) {
     if (web_frame->parent()) {
       base::StringAppendF(&result_utf8, "frame '%s' ",
-                          UTF16ToUTF8(web_frame->name()).c_str());
+                          UTF16ToUTF8(web_frame->uniqueName()).c_str());
     }
     base::StringAppendF(&result_utf8, "scrolled to %d,%d\n",
                         offset.width(), offset.height());

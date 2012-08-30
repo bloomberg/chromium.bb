@@ -10,8 +10,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 
 FrameSniffer::FrameSniffer(content::RenderView* render_view,
-                           const string16 &frame_name)
-    : content::RenderViewObserver(render_view), frame_name_(frame_name) {
+                           const string16 &unique_frame_name)
+    : content::RenderViewObserver(render_view),
+      unique_frame_name_(unique_frame_name) {
 }
 
 FrameSniffer::~FrameSniffer() {
@@ -32,5 +33,5 @@ void FrameSniffer::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
 }
 
 bool FrameSniffer::ShouldSniffFrame(WebKit::WebFrame* frame) {
-  return frame->name() == frame_name_;
+  return frame->uniqueName() == unique_frame_name_;
 }
