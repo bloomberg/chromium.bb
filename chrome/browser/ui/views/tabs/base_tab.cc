@@ -65,7 +65,7 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     // http://crbug.com/145258
 #endif
 
-    return rect.Contains(point) ? this : NULL;
+    return rect.Contains(point) ? this : parent();
   }
 
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
@@ -83,7 +83,6 @@ class BaseTab::TabCloseButton : public views::ImageButton {
   // fire before Enter events, so this works.
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseEntered(event);
-    parent()->OnMouseEntered(event);
   }
 
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
@@ -100,7 +99,6 @@ class BaseTab::TabCloseButton : public views::ImageButton {
 
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseExited(event);
-    parent()->OnMouseExited(event);
   }
 
   virtual ui::GestureStatus OnGestureEvent(
@@ -197,6 +195,10 @@ BaseTab::BaseTab(TabController* controller)
       theme_provider_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_controller_(this)) {
   BaseTab::InitResources();
+
+  // So we get don't get enter/exit on children and don't prematurely stop the
+  // hover.
+  set_notify_enter_exit_on_child(true);
 
   set_id(VIEW_ID_TAB);
 
