@@ -6,6 +6,7 @@
 #define ASH_WM_WORKSPACE_FRAME_MAXIMIZE_BUTTON_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/workspace/maximize_bubble_frame_state.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
@@ -116,6 +117,9 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
   // Snaps the window to the current snap position.
   void Snap(const internal::SnapSizer& snap_sizer);
+
+  // Determine the maximize type of this window.
+  MaximizeBubbleFrameState GetMaximizeBubbleFrameState() const;
 
   // Frame that the maximize button acts on.
   views::NonClientFrameView* frame_;

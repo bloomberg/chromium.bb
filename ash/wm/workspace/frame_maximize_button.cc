@@ -35,6 +35,8 @@ const int kUpdateDelayMS = 400;
 // The delay of the bubble appearance.
 const int kBubbleAppearanceDelayMS = 500;
 
+// The minimum sanp size in percent of the screen width.
+const int kMinSnapSizePercent = 50;
 }
 
 // EscapeEventFilter is installed on the RootWindow to track when the escape key
@@ -212,7 +214,7 @@ void FrameMaximizeButton::OnMouseEntered(const ui::MouseEvent& event) {
     }
     maximizer_.reset(new MaximizeBubbleController(
         this,
-        frame_->GetWidget()->IsMaximized(),
+        GetMaximizeBubbleFrameState(),
         bubble_appearance_delay_ms_));
   }
 }
@@ -304,7 +306,7 @@ void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {
   if (!maximizer_.get()) {
     maximizer_.reset(new MaximizeBubbleController(
         this,
-        frame_->GetWidget()->IsMaximized(),
+        GetMaximizeBubbleFrameState(),
         bubble_appearance_delay_ms_));
   } else {
     // If the menu did not show up yet, we delay it even a bit more.
@@ -433,17 +435,18 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
 
 SnapType FrameMaximizeButton::SnapTypeForLocation(
     const gfx::Point& location) const {
+  MaximizeBubbleFrameState maximize_type = GetMaximizeBubbleFrameState();
   int delta_x = location.x() - press_location_.x();
   int delta_y = location.y() - press_location_.y();
   if (!views::View::ExceededDragThreshold(delta_x, delta_y))
-    return !frame_->GetWidget()->IsMaximized() ? SNAP_MAXIMIZE : SNAP_RESTORE;
+    return maximize_type != FRAME_STATE_FULL ? SNAP_MAXIMIZE : SNAP_RESTORE;
   else if (delta_x < 0 && delta_y > delta_x && delta_y < -delta_x)
-    return SNAP_LEFT;
+    return maximize_type == FRAME_STATE_SNAP_LEFT ? SNAP_RESTORE : SNAP_LEFT;
   else if (delta_x > 0 && delta_y > -delta_x && delta_y < delta_x)
-    return SNAP_RIGHT;
+    return maximize_type == FRAME_STATE_SNAP_RIGHT ? SNAP_RESTORE : SNAP_RIGHT;
   else if (delta_y > 0)
     return SNAP_MINIMIZE;
-  return !frame_->GetWidget()->IsMaximized() ? SNAP_MAXIMIZE : SNAP_RESTORE;
+  return maximize_type != FRAME_STATE_FULL ? SNAP_MAXIMIZE : SNAP_RESTORE;
 }
 
 gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
@@ -462,7 +465,8 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
           ScreenAsh::GetMaximizedWindowBoundsInParent(window));
     case SNAP_MINIMIZE: {
       Launcher* launcher = Shell::GetInstance()->launcher();
-      gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(window));
+      gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(
+          window));
       if (!item_rect.IsEmpty()) {
         // PhantomWindowController insets slightly, outset it so the phantom
         // doesn't appear inset.
@@ -490,31 +494,73 @@ gfx::Point FrameMaximizeButton::LocationForSnapSizer(
 }
 
 void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
+  views::Widget* widget = frame_->GetWidget();
   switch (snap_type_) {
     case SNAP_LEFT:
-    case SNAP_RIGHT:
-      if (frame_->GetWidget()->IsMaximized()) {
-        ash::SetRestoreBoundsInScreen(frame_->GetWidget()->GetNativeWindow(),
+    case SNAP_RIGHT: {
+      // Get the window coordinates on the screen for restore purposes.
+      gfx::Rect restore = widget->GetNativeWindow()->bounds();
+      if (widget->IsMaximized()) {
+        // In case of maximized we have a restore boundary.
+        DCHECK(ash::GetRestoreBoundsInScreen(widget->GetNativeWindow()));
+        // If it was maximized we need to recover the old restore set.
+        restore = *ash::GetRestoreBoundsInScreen(widget->GetNativeWindow());
+        // Set the restore size we want to restore to.
+        ash::SetRestoreBoundsInScreen(widget->GetNativeWindow(),
                                       ScreenBoundsForType(snap_type_,
                                                           snap_sizer));
-        frame_->GetWidget()->Restore();
+        widget->Restore();
       } else {
-        frame_->GetWidget()->SetBounds(ScreenBoundsForType(snap_type_,
-                                                           snap_sizer));
+        // Others might also have set up a restore rectangle already. If so,
+        // we should not overwrite the restore rectangle.
+        bool restore_set = GetRestoreBoundsInScreen(widget->GetNativeWindow());
+        widget->SetBounds(ScreenBoundsForType(snap_type_, snap_sizer));
+        if (restore_set)
+          break;
+      }
+      // Remember the widow's bounds for restoration.
+      ash::SetRestoreBoundsInScreen(widget->GetNativeWindow(), restore);
       }
       break;
     case SNAP_MAXIMIZE:
-      frame_->GetWidget()->Maximize();
+      widget->Maximize();
       break;
     case SNAP_MINIMIZE:
-      frame_->GetWidget()->Minimize();
+      widget->Minimize();
       break;
     case SNAP_RESTORE:
-      frame_->GetWidget()->Restore();
+      widget->Restore();
       break;
     case SNAP_NONE:
       NOTREACHED();
   }
+}
+
+MaximizeBubbleFrameState
+   FrameMaximizeButton::GetMaximizeBubbleFrameState() const {
+  // When there are no restore bounds, we are in normal mode.
+  if (!ash::GetRestoreBoundsInScreen(
+           frame_->GetWidget()->GetNativeWindow()))
+    return FRAME_STATE_NONE;
+  // The normal maximized test can be used.
+  if (frame_->GetWidget()->IsMaximized())
+    return FRAME_STATE_FULL;
+  // For Left/right maximize we need to check the dimensions.
+  gfx::Rect bounds = frame_->GetWidget()->GetWindowBoundsInScreen();
+  gfx::Rect screen = gfx::Screen::GetDisplayMatching(bounds).work_area();
+  if (bounds.width() < (screen.width() * kMinSnapSizePercent) / 100)
+    return FRAME_STATE_NONE;
+  // We have to be in a maximize mode at this point.
+  DCHECK(bounds.y() == screen.y());
+  DCHECK(bounds.height() >= screen.height());
+  if (bounds.x() == screen.x())
+    return FRAME_STATE_SNAP_LEFT;
+  if (bounds.right() == screen.right())
+    return FRAME_STATE_SNAP_RIGHT;
+  // If we come here, it is likely caused by the fact that the
+  // "VerticalResizeDoubleClick" stored a restore rectangle. In that case
+  // we allow all maximize operations (and keep the restore rectangle).
+  return FRAME_STATE_NONE;
 }
 
 }  // namespace ash

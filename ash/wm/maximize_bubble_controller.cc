@@ -501,7 +501,8 @@ bool MaximizeBubbleController::Bubble::Contains(
       owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
           screen_point);
   if (!owner_->frame_maximize_button()->is_snap_enabled() && inside_button) {
-    SetSnapType(controller()->is_maximized() ? SNAP_RESTORE : SNAP_MAXIMIZE);
+    SetSnapType(controller()->maximize_type() == FRAME_STATE_FULL ?
+        SNAP_RESTORE : SNAP_MAXIMIZE);
     return true;
   }
   // Check if either a gesture is taking place (=> bubble stays no matter what
@@ -568,21 +569,37 @@ BubbleContentsButtonRow::BubbleContentsButtonRow(
   set_background(
       views::Background::CreateSolidBackground(kBubbleBackgroundColor));
 
-  left_button_ = new BubbleDialogButton(
-      this,
-      IDR_AURA_WINDOW_POSITION_LEFT,
-      IDR_AURA_WINDOW_POSITION_LEFT_H,
-      IDR_AURA_WINDOW_POSITION_LEFT_P);
+  if (bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT) {
+    left_button_ = new BubbleDialogButton(
+        this,
+        IDR_AURA_WINDOW_POSITION_LEFT_RESTORE,
+        IDR_AURA_WINDOW_POSITION_LEFT_RESTORE_H,
+        IDR_AURA_WINDOW_POSITION_LEFT_RESTORE_P);
+  } else {
+    left_button_ = new BubbleDialogButton(
+        this,
+        IDR_AURA_WINDOW_POSITION_LEFT,
+        IDR_AURA_WINDOW_POSITION_LEFT_H,
+        IDR_AURA_WINDOW_POSITION_LEFT_P);
+  }
   minimize_button_ = new BubbleDialogButton(
       this,
       IDR_AURA_WINDOW_POSITION_MIDDLE,
       IDR_AURA_WINDOW_POSITION_MIDDLE_H,
       IDR_AURA_WINDOW_POSITION_MIDDLE_P);
-  right_button_ = new BubbleDialogButton(
-      this,
-      IDR_AURA_WINDOW_POSITION_RIGHT,
-      IDR_AURA_WINDOW_POSITION_RIGHT_H,
-      IDR_AURA_WINDOW_POSITION_RIGHT_P);
+  if (bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT) {
+    right_button_ = new BubbleDialogButton(
+        this,
+        IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE,
+        IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_H,
+        IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_P);
+  } else {
+    right_button_ = new BubbleDialogButton(
+        this,
+        IDR_AURA_WINDOW_POSITION_RIGHT,
+        IDR_AURA_WINDOW_POSITION_RIGHT_H,
+        IDR_AURA_WINDOW_POSITION_RIGHT_P);
+  }
 }
 
 // Overridden from ButtonListener.
@@ -592,11 +609,15 @@ void BubbleContentsButtonRow::ButtonPressed(views::Button* sender,
   if (!bubble_->controller())
     return;
   if (sender == left_button_)
-    bubble_->controller()->OnButtonClicked(SNAP_LEFT);
+    bubble_->controller()->OnButtonClicked(
+        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT ?
+            SNAP_RESTORE : SNAP_LEFT);
   else if (sender == minimize_button_)
     bubble_->controller()->OnButtonClicked(SNAP_MINIMIZE);
   else if (sender == right_button_)
-    bubble_->controller()->OnButtonClicked(SNAP_RIGHT);
+    bubble_->controller()->OnButtonClicked(
+        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT ?
+            SNAP_RESTORE : SNAP_RIGHT);
   else
     NOTREACHED() << "Unknown button pressed.";
 }
@@ -607,11 +628,15 @@ void BubbleContentsButtonRow::ButtonHovered(BubbleDialogButton* sender) {
   if (!bubble_->controller())
     return;
   if (sender == left_button_)
-    bubble_->controller()->OnButtonHover(SNAP_LEFT);
+    bubble_->controller()->OnButtonHover(
+        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_LEFT ?
+            SNAP_RESTORE : SNAP_LEFT);
   else if (sender == minimize_button_)
     bubble_->controller()->OnButtonHover(SNAP_MINIMIZE);
   else if (sender == right_button_)
-    bubble_->controller()->OnButtonHover(SNAP_RIGHT);
+    bubble_->controller()->OnButtonHover(
+        bubble_->controller()->maximize_type() == FRAME_STATE_SNAP_RIGHT ?
+            SNAP_RESTORE : SNAP_RIGHT);
   else
     bubble_->controller()->OnButtonHover(SNAP_NONE);
 }
@@ -671,19 +696,19 @@ void BubbleContentsView::SetSnapType(SnapType snap_type) {
       id = IDS_ASH_SNAP_WINDOW_RIGHT;
       break;
     case SNAP_MAXIMIZE:
-      DCHECK(!bubble_->controller()->is_maximized());
+      DCHECK_NE(FRAME_STATE_FULL, bubble_->controller()->maximize_type());
       id = IDS_ASH_MAXIMIZE_WINDOW;
       break;
     case SNAP_MINIMIZE:
       id = IDS_ASH_MINIMIZE_WINDOW;
       break;
     case SNAP_RESTORE:
-      DCHECK(bubble_->controller()->is_maximized());
+      DCHECK_NE(FRAME_STATE_NONE, bubble_->controller()->maximize_type());
       id = IDS_ASH_RESTORE_WINDOW;
       break;
     default:
       // If nothing is selected, we automatically select the click operation.
-      id = bubble_->controller()->is_maximized() ? IDS_ASH_RESTORE_WINDOW :
+      id = bubble_->controller()->maximize_type() ? IDS_ASH_RESTORE_WINDOW :
                IDS_ASH_MAXIMIZE_WINDOW;
       break;
   }
@@ -692,11 +717,11 @@ void BubbleContentsView::SetSnapType(SnapType snap_type) {
 
 MaximizeBubbleController::MaximizeBubbleController(
     FrameMaximizeButton* frame_maximize_button,
-    bool is_maximized,
+    MaximizeBubbleFrameState maximize_type,
     int appearance_delay_ms)
     : frame_maximize_button_(frame_maximize_button),
       bubble_(NULL),
-      is_maximized_(is_maximized),
+      maximize_type_(maximize_type),
       appearance_delay_ms_(appearance_delay_ms) {
   // Create the task which will create the bubble delayed.
   base::OneShotTimer<MaximizeBubbleController>* new_timer =
