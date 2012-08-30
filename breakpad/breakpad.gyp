@@ -372,7 +372,6 @@
             {
               'target_name': 'symupload',
               'type': 'executable',
-              'toolsets': [ 'host', ],
 
               # This uses the system libcurl, so don't use the default 32-bit
               # compile flags when building on a 64-bit machine.
