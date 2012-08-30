@@ -6,6 +6,7 @@
 #define ASH_WM_MAXIMIZE_BUBBLE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/workspace/maximize_bubble_frame_state.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -31,7 +32,7 @@ class ASH_EXPORT MaximizeBubbleController {
   class Bubble;
 
   MaximizeBubbleController(FrameMaximizeButton* frame_maximize_button,
-                           bool is_maximized,
+                           MaximizeBubbleFrameState maximize_type,
                            int appearance_delay_ms);
   // Called from the outside to destroy the interface to the UI visuals.
   // The visuals will then delete when possible (maybe asynchronously).
@@ -61,7 +62,7 @@ class ASH_EXPORT MaximizeBubbleController {
   }
 
   // The status of the associated window: Maximized or normal.
-  bool is_maximized() const { return is_maximized_; }
+  MaximizeBubbleFrameState maximize_type() const { return maximize_type_; }
 
   // A unit test function to return buttons of the sub menu. |state| can be
   // either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
@@ -83,8 +84,8 @@ class ASH_EXPORT MaximizeBubbleController {
   // The bubble menu.
   Bubble* bubble_;
 
-  // If true the owning window is maximized.
-  const bool is_maximized_;
+  // The current maximize state of the owning window.
+  const MaximizeBubbleFrameState maximize_type_;
 
   // The timer for the delayed creation of the menu.
   scoped_ptr<base::Timer> timer_;
