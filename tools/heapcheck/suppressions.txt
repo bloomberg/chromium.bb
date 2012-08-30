@@ -1531,3 +1531,18 @@
    fun:gdata::DriveResourceMetadata::RefreshFile
    fun:gdata::DriveFileSystem::OnSearch
 }
+{
+   bug_145757c
+   Heapcheck:Leak
+   ...
+   fun:base::internal::NestedValueConverter::Convert
+   fun:base::internal::FieldConverter::ConvertField
+   fun:base::JSONValueConverter::Convert
+   fun:base::internal::RepeatedMessageConverter::Convert
+   fun:base::internal::FieldConverter::ConvertField
+   fun:base::JSONValueConverter::Convert
+   fun:gdata::DocumentFeed::Parse
+   fun:gdata::DocumentFeed::CreateFrom
+   fun:gdata::DocumentFeed::ExtractAndParse
+   fun:gdata::GDataWapiFeedLoader::OnGetDocuments
+}
