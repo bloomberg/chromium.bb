@@ -251,7 +251,7 @@ DriveFileSystem::CreateDirectoryParams::CreateDirectoryParams(
       is_exclusive(is_exclusive),
       is_recursive(is_recursive),
       callback(callback) {
-  DCHECK(!callback.is_null())
+  DCHECK(!callback.is_null());
 }
 
 DriveFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
