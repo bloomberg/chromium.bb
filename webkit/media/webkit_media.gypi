@@ -10,6 +10,7 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/media/media.gyp:yuv_convert',
         '<(DEPTH)/skia/skia.gyp:skia',
       ],
