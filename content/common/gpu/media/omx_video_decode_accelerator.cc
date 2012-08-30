@@ -742,6 +742,25 @@ void OmxVideoDecodeAccelerator::FreeOMXBuffers() {
   }
   pictures_.clear();
 
+  // Delete pending fake_output_buffers_
+  for (std::set<OMX_BUFFERHEADERTYPE*>::iterator it =
+           fake_output_buffers_.begin();
+       it != fake_output_buffers_.end(); ++it) {
+    OMX_BUFFERHEADERTYPE* buffer = *it;
+    OMX_ERRORTYPE result =
+        OMX_FreeBuffer(component_handle_, output_port_, buffer);
+    if (result != OMX_ErrorNone) {
+      DLOG(ERROR) << "OMX_FreeBuffer failed: 0x" << std::hex << result;
+      failure_seen = true;
+    }
+  }
+  fake_output_buffers_.clear();
+
+  // Dequeue pending queued_picture_buffer_ids_
+  for (size_t i = 0; i < queued_picture_buffer_ids_.size(); ++i)
+    client_->DismissPictureBuffer(queued_picture_buffer_ids_[i]);
+  queued_picture_buffer_ids_.clear();
+
   RETURN_ON_FAILURE(!failure_seen, "OMX_FreeBuffer", PLATFORM_FAILURE,);
 }
 
@@ -798,6 +817,15 @@ void OmxVideoDecodeAccelerator::OnOutputPortEnabled() {
 
 void OmxVideoDecodeAccelerator::FillBufferDoneTask(
     OMX_BUFFERHEADERTYPE* buffer) {
+
+  // If we are destroying and then get a fillbuffer callback, calling into any
+  // openmax function will put us in error mode, so bail now. In the RESETTING
+  // case we still need to enqueue the picture ids but have to avoid giving
+  // them to the client (this is handled below).
+  if (current_state_change_ == DESTROYING ||
+      current_state_change_ == ERRORING)
+    return;
+
   media::Picture* picture =
       reinterpret_cast<media::Picture*>(buffer->pAppPrivate);
   int picture_buffer_id = picture ? picture->picture_buffer_id() : -1;
@@ -829,10 +857,8 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
 
   // During the transition from Executing to Idle, and during port-flushing, all
   // pictures are sent back through here.  Avoid giving them to the client.
-  if (current_state_change_ != NO_TRANSITION &&
-      current_state_change_ != FLUSHING) {
-    if (current_state_change_ == RESETTING)
-      queued_picture_buffer_ids_.push_back(picture_buffer_id);
+  if (current_state_change_ == RESETTING) {
+    queued_picture_buffer_ids_.push_back(picture_buffer_id);
     return;
   }
 
