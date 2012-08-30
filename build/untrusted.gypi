@@ -83,6 +83,12 @@
           'compile_flags': [
             '<@(nacl_default_compile_flags)',
             '-fomit-frame-pointer',
+            # A debugger should be able to unwind IRT call frames. As the IRT is
+            # compiled with high level of optimizations and without debug info,
+            # compiler is requested to generate unwind tables explicitly. This
+            # is the default behavior on x86-64 and when compiling C++ with
+            # exceptions enabled, the change is for the benefit of x86-32 C.
+            '-fasynchronous-unwind-tables',
             '-mtls-use-call'
           ],
           'sources': [],
