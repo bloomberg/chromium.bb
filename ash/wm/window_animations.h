@@ -90,10 +90,12 @@ ASH_EXPORT void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
                                                  ui::Layer* layer);
 
 // Animates between two workspaces. If |animate_old| is false |old_window| is
-// not animated, otherwise it is.
+// not animated, otherwise it is. |is_new_desktop| indicates if |new_window|
+// corresponds to the desktop workspace.
 ASH_EXPORT void AnimateBetweenWorkspaces(aura::Window* old_window,
                                          aura::Window* new_window,
-                                         bool animate_old);
+                                         bool animate_old,
+                                         bool is_new_desktop);
 
 // Indicates the direction the workspace should appear to go.
 enum WorkspaceAnimationDirection {

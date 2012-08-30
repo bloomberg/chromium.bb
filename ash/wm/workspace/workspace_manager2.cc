@@ -279,7 +279,8 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
 
   if (animate_type != ANIMATE_NONE) {
     AnimateBetweenWorkspaces(last_active->window(), workspace->window(),
-                             (animate_type == ANIMATE_OLD_AND_NEW));
+                             (animate_type == ANIMATE_OLD_AND_NEW),
+                             active_workspace_ == desktop_workspace());
   }
 
   RootWindowController* root_controller = GetRootWindowController(
