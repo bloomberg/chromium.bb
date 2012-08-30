@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       json_blacklist, GpuBlacklist::kAllOs));
   blacklist->UpdateGpuDataManager();
   GpuFeatureType type =
-      content::GpuDataManager::GetInstance()->GetGpuFeatureType();
+      content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   bool webgl_allowed = false;

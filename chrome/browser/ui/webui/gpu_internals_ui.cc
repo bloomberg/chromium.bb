@@ -240,7 +240,7 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 Value* GpuMessageHandler::OnRequestLogMessages(const ListValue*) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return GpuDataManager::GetInstance()->GetLogMessages().DeepCopy();
+  return GpuDataManager::GetInstance()->GetLogMessages();
 }
 
 Value* GpuMessageHandler::OnRequestCrashList(const ListValue*) {

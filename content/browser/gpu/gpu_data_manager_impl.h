@@ -28,16 +28,20 @@ class CONTENT_EXPORT GpuDataManagerImpl
   static GpuDataManagerImpl* GetInstance();
 
   // GpuDataManager implementation.
-  virtual content::GpuFeatureType GetGpuFeatureType() OVERRIDE;
-  virtual void SetGpuFeatureType(content::GpuFeatureType feature_type) OVERRIDE;
+  virtual void InitializeGpuInfo() OVERRIDE;
+  virtual content::GpuFeatureType GetBlacklistedFeatures() const OVERRIDE;
+  virtual void SetPreliminaryBlacklistedFeatures(
+      content::GpuFeatureType features) OVERRIDE;
   virtual content::GPUInfo GetGPUInfo() const OVERRIDE;
-  virtual bool GpuAccessAllowed() OVERRIDE;
+  virtual bool GpuAccessAllowed() const OVERRIDE;
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
-  virtual bool IsCompleteGPUInfoAvailable() const OVERRIDE;
-  virtual void RequestVideoMemoryUsageStatsUpdate() OVERRIDE;
-  virtual bool ShouldUseSoftwareRendering() OVERRIDE;
+  virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
+  virtual void RequestVideoMemoryUsageStatsUpdate() const OVERRIDE;
+  virtual bool ShouldUseSoftwareRendering() const OVERRIDE;
   virtual void RegisterSwiftShaderPath(const FilePath& path) OVERRIDE;
-  virtual const base::ListValue& GetLogMessages() const OVERRIDE;
+  virtual void AddLogMessage(int level, const std::string& header,
+                             const std::string& message) OVERRIDE;
+  virtual base::ListValue* GetLogMessages() const OVERRIDE;
   virtual void AddObserver(content::GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       content::GpuDataManagerObserver* observer) OVERRIDE;
@@ -48,22 +52,17 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void UpdateVideoMemoryUsageStats(
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
-  void AddLogMessage(Value* msg);
-
   // Insert disable-feature switches corresponding to preliminary gpu feature
   // flags into the renderer process command line.
-  void AppendRendererCommandLine(CommandLine* command_line);
+  void AppendRendererCommandLine(CommandLine* command_line) const;
 
   // Insert switches into gpu process command line: kUseGL,
   // kDisableGLMultisampling.
-  void AppendGpuCommandLine(CommandLine* command_line);
+  void AppendGpuCommandLine(CommandLine* command_line) const;
 
   // Insert switches into plugin process command line:
   // kDisableCoreAnimationPlugins.
-  void AppendPluginCommandLine(CommandLine* command_line);
-
-  // This gets called when switching GPU might have happened.
-  void HandleGpuSwitch();
+  void AppendPluginCommandLine(CommandLine* command_line) const;
 
   // Force the current card to be blacklisted (usually due to GPU process
   // crashes).
@@ -72,7 +71,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
 #if defined(OS_WIN)
   // Is the GPU process using the accelerated surface to present, instead of
   // presenting by itself.
-  bool IsUsingAcceleratedSurface();
+  bool IsUsingAcceleratedSurface() const;
 #endif
 
  private:
@@ -84,23 +83,17 @@ class CONTENT_EXPORT GpuDataManagerImpl
   GpuDataManagerImpl();
   virtual ~GpuDataManagerImpl();
 
-  void Initialize();
-
   // If flags hasn't been set and GPUInfo is available, run through blacklist
   // and compute the flags.
-  void UpdateGpuFeatureType(content::GpuFeatureType embedder_feature_type);
+  void UpdateBlacklistedFeatures(content::GpuFeatureType features);
 
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
-
-  // If use-gl switch is osmesa or any, return true.
-  bool UseGLIsOSMesaOrAny();
 
   // Try to switch to software rendering, if possible and necessary.
   void EnableSoftwareRenderingIfNecessary();
 
   bool complete_gpu_info_already_requested_;
-  bool complete_gpu_info_available_;
 
   content::GpuFeatureType gpu_feature_type_;
   content::GpuFeatureType preliminary_gpu_feature_type_;
@@ -108,10 +101,11 @@ class CONTENT_EXPORT GpuDataManagerImpl
   content::GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
 
-  // Observers.
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
   ListValue log_messages_;
+  mutable base::Lock log_messages_lock_;
+
   bool software_rendering_;
 
   FilePath swiftshader_path_;

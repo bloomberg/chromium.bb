@@ -181,7 +181,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
   GpuDataManager *gpu_data_manager = GpuDataManager::GetInstance();
 
   if (!gpu_data_manager->GpuAccessAllowed() ||
-      (gpu_data_manager->GetGpuFeatureType() &
+      (gpu_data_manager->GetBlacklistedFeatures() &
        content::GPU_FEATURE_TYPE_WEBGL) ||
       gpu_data_manager->ShouldUseSoftwareRendering()) {
     gpu_data_manager->RemoveObserver(this);

@@ -154,7 +154,8 @@ class GpuFeatureTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
@@ -176,7 +177,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
       "  ]\n"
       "}";
   SetupBlacklist(json_blacklist);
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING);
 
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
@@ -198,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
@@ -220,7 +223,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
       "  ]\n"
       "}";
   SetupBlacklist(json_blacklist);
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
 
   const FilePath url(FILE_PATH_LITERAL("feature_webgl.html"));
@@ -244,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
   // Multisampling is not supported if running on top of osmesa.
@@ -284,7 +289,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
       "  ]\n"
       "}";
   SetupBlacklist(json_blacklist);
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_MULTISAMPLING);
 
   const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
@@ -313,7 +319,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   if (GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
 
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
@@ -335,7 +342,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DBlocked) {
       "  ]\n"
       "}";
   SetupBlacklist(json_blacklist);
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  GpuFeatureType type =
+      GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));

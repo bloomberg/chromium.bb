@@ -298,7 +298,7 @@ Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool gpu_access_blocked = !GpuDataManager::GetInstance()->GpuAccessAllowed();
 
-  uint32 flags = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  uint32 flags = GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   DictionaryValue* status = new DictionaryValue();
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
@@ -549,7 +549,7 @@ void UpdateStats() {
   }
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  uint32 flags = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  uint32 flags = GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   bool disabled = false;
   if (flags == 0) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",

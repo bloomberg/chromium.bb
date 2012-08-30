@@ -554,7 +554,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   {  // Certain GPU features might have been blacklisted.
     GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
     DCHECK(gpu_data_manager);
-    uint32 blacklist_type = gpu_data_manager->GetGpuFeatureType();
+    uint32 blacklist_type = gpu_data_manager->GetBlacklistedFeatures();
     if (blacklist_type & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)
       prefs.accelerated_compositing_enabled = false;
     if (blacklist_type & content::GPU_FEATURE_TYPE_WEBGL)

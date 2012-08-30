@@ -1053,7 +1053,8 @@ GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
 void GpuBlacklist::UpdateGpuDataManager() {
   content::GpuFeatureType feature_type = DetermineGpuFeatureType(
       GpuBlacklist::kOsAny, NULL, GpuDataManager::GetInstance()->GetGPUInfo());
-  GpuDataManager::GetInstance()->SetGpuFeatureType(feature_type);
+  GpuDataManager::GetInstance()->SetPreliminaryBlacklistedFeatures(
+      feature_type);
   gpu_util::UpdateStats();
 }
 

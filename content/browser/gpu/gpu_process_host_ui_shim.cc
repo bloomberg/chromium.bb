@@ -180,11 +180,9 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Pointer()->Remove(host_id_);
 
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger("level", logging::LOG_ERROR);
-  dict->SetString("header", "GpuProcessHostUIShim");
-  dict->SetString("message", "GPU Process Crashed.");
-  GpuDataManagerImpl::GetInstance()->AddLogMessage(dict);
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(
+      logging::LOG_ERROR, "GpuProcessHostUIShim",
+      "GPU Process Crashed.");
 }
 
 bool GpuProcessHostUIShim::OnControlMessageReceived(
@@ -223,11 +221,8 @@ void GpuProcessHostUIShim::OnLogMessage(
     int level,
     const std::string& header,
     const std::string& message) {
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetInteger("level", level);
-  dict->SetString("header", header);
-  dict->SetString("message", message);
-  GpuDataManagerImpl::GetInstance()->AddLogMessage(dict);
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(
+      level, header, message);
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(

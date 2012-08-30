@@ -18,7 +18,7 @@ bool IsFeatureAllowed(content::GpuDataManager* manager,
   if (!manager->GpuAccessAllowed()) {
     feature_allowed = false;
   } else {
-    uint32 blacklist_type = manager->GetGpuFeatureType();
+    uint32 blacklist_type = manager->GetBlacklistedFeatures();
     if (blacklist_type & feature)
       feature_allowed = false;
   }
@@ -48,7 +48,7 @@ void GPUFeatureChecker::CheckGPUFeatureAvailability() {
 #endif
 
   content::GpuDataManager* manager = content::GpuDataManager::GetInstance();
-  if (manager->IsCompleteGPUInfoAvailable())
+  if (manager->IsCompleteGpuInfoAvailable())
     finalized = true;
 
   bool feature_allowed = IsFeatureAllowed(manager, feature_);

@@ -402,7 +402,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 // Load GPU Blacklist, collect preliminary gpu info, and compute preliminary
 // gpu feature flags.
 void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
-  content::GpuDataManager::GetInstance();
+  content::GpuDataManager::GetInstance()->InitializeGpuInfo();
   if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading) ||
       parsed_command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
     return;

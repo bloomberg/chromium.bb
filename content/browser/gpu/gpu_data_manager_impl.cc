@@ -44,41 +44,35 @@ GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
 
 GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
-      complete_gpu_info_available_(false),
       gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       preliminary_gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false),
       card_blacklisted_(false) {
-  Initialize();
-}
-
-void GpuDataManagerImpl::Initialize() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
     command_line->AppendSwitch(switches::kDisableAcceleratedLayers);
   }
-
-  if (!command_line->HasSwitch(switches::kSkipGpuDataLoading)) {
-    content::GPUInfo gpu_info;
-    gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
-    {
-      base::AutoLock auto_lock(gpu_info_lock_);
-      gpu_info_ = gpu_info;
-    }
-  }
   if (command_line->HasSwitch(switches::kDisableGpu))
     BlacklistCard();
+}
+
+void GpuDataManagerImpl::InitializeGpuInfo() {
+  content::GPUInfo gpu_info;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSkipGpuDataLoading))
+    gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
+  else
+    gpu_info.finalized = true;
+  UpdateGpuInfo(gpu_info);
 }
 
 GpuDataManagerImpl::~GpuDataManagerImpl() {
 }
 
 void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (complete_gpu_info_already_requested_ || complete_gpu_info_available_)
+  if (complete_gpu_info_already_requested_ || gpu_info_.finalized)
     return;
   complete_gpu_info_already_requested_ = true;
 
@@ -88,26 +82,25 @@ void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
       new GpuMsg_CollectGraphicsInfo());
 }
 
-bool GpuDataManagerImpl::IsCompleteGPUInfoAvailable() const {
-  return complete_gpu_info_available_;
+bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
+  return gpu_info_.finalized;
 }
 
 void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (gpu_info_.finalized)
+    return;
+
+  content::GetContentClient()->SetGpuInfo(gpu_info);
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_info_ = gpu_info;
 #if defined(ARCH_CPU_X86_FAMILY)
     if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id)
       gpu_info_.finalized = true;
-    else
 #endif
-      gpu_info_ = gpu_info;
-    complete_gpu_info_available_ =
-        complete_gpu_info_available_ || gpu_info_.finalized;
     complete_gpu_info_already_requested_ =
         complete_gpu_info_already_requested_ || gpu_info_.finalized;
-    content::GetContentClient()->SetGpuInfo(gpu_info_);
   }
 
   // We have to update GpuFeatureType before notify all the observers.
@@ -115,22 +108,41 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
 }
 
 content::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
-  return gpu_info_;
+  content::GPUInfo gpu_info;
+  {
+    base::AutoLock auto_lock(gpu_info_lock_);
+    gpu_info = gpu_info_;
+  }
+  return gpu_info;
 }
 
-void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate() {
+void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate() const {
   GpuProcessHost::SendOnIO(
       GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
       content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
       new GpuMsg_GetVideoMemoryUsageStats());
 }
 
-void GpuDataManagerImpl::AddLogMessage(Value* msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  log_messages_.Append(msg);
+void GpuDataManagerImpl::AddLogMessage(
+    int level, const std::string& header, const std::string& message) {
+  base::AutoLock auto_lock(log_messages_lock_);
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger("level", level);
+  dict->SetString("header", header);
+  dict->SetString("message", message);
+  log_messages_.Append(dict);
 }
 
-GpuFeatureType GpuDataManagerImpl::GetGpuFeatureType() {
+base::ListValue* GpuDataManagerImpl::GetLogMessages() const {
+  base::ListValue* value;
+  {
+    base::AutoLock auto_lock(log_messages_lock_);
+    value = log_messages_.DeepCopy();
+  }
+  return value;
+}
+
+GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
   if (software_rendering_) {
     GpuFeatureType flags;
 
@@ -143,7 +155,7 @@ GpuFeatureType GpuDataManagerImpl::GetGpuFeatureType() {
   return gpu_feature_type_;
 }
 
-bool GpuDataManagerImpl::GpuAccessAllowed() {
+bool GpuDataManagerImpl::GpuAccessAllowed() const {
   if (software_rendering_)
     return true;
 
@@ -169,11 +181,10 @@ void GpuDataManagerImpl::RemoveObserver(GpuDataManagerObserver* observer) {
 }
 
 void GpuDataManagerImpl::AppendRendererCommandLine(
-    CommandLine* command_line) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    CommandLine* command_line) const {
   DCHECK(command_line);
 
-  uint32 flags = GetGpuFeatureType();
+  uint32 flags = GetBlacklistedFeatures();
   if ((flags & content::GPU_FEATURE_TYPE_WEBGL)) {
 #if !defined(OS_ANDROID)
     if (!command_line->HasSwitch(switches::kDisableExperimentalWebGL))
@@ -199,8 +210,7 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(
-    CommandLine* command_line) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    CommandLine* command_line) const {
   DCHECK(command_line);
 
   std::string use_gl =
@@ -208,7 +218,7 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   FilePath swiftshader_path =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kSwiftShaderPath);
-  uint32 flags = GetGpuFeatureType();
+  uint32 flags = GetBlacklistedFeatures();
   if ((flags & content::GPU_FEATURE_TYPE_MULTISAMPLING) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
@@ -259,16 +269,15 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
 }
 
 #if defined(OS_WIN)
-bool GpuDataManagerImpl::IsUsingAcceleratedSurface() {
+bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
 
-  base::AutoLock auto_lock(gpu_info_lock_);
   if (gpu_info_.amd_switchable)
     return false;
   if (software_rendering_)
     return false;
-  uint32 flags = GetGpuFeatureType();
+  uint32 flags = GetBlacklistedFeatures();
   if (flags & content::GPU_FEATURE_TYPE_TEXTURE_SHARING)
     return false;
 
@@ -277,12 +286,11 @@ bool GpuDataManagerImpl::IsUsingAcceleratedSurface() {
 #endif
 
 void GpuDataManagerImpl::AppendPluginCommandLine(
-    CommandLine* command_line) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    CommandLine* command_line) const {
   DCHECK(command_line);
 
 #if defined(OS_MACOSX)
-  uint32 flags = GetGpuFeatureType();
+  uint32 flags = GetBlacklistedFeatures();
   // TODO(jbauman): Add proper blacklist support for core animation plugins so
   // special-casing this video card won't be necessary. See
   // http://crbug.com/134015
@@ -297,9 +305,9 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
 #endif
 }
 
-void GpuDataManagerImpl::SetGpuFeatureType(GpuFeatureType feature_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UpdateGpuFeatureType(feature_type);
+void GpuDataManagerImpl::SetPreliminaryBlacklistedFeatures(
+    GpuFeatureType feature_type) {
+  UpdateBlacklistedFeatures(feature_type);
   preliminary_gpu_feature_type_ = gpu_feature_type_;
 }
 
@@ -313,12 +321,10 @@ void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
                          video_memory_usage_stats);
 }
 
-void GpuDataManagerImpl::UpdateGpuFeatureType(
-    GpuFeatureType embedder_feature_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+void GpuDataManagerImpl::UpdateBlacklistedFeatures(
+    GpuFeatureType features) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int flags = embedder_feature_type;
+  int flags = features;
 
   // Force disable using the GPU for these features, even if they would
   // otherwise be allowed.
@@ -340,11 +346,6 @@ void GpuDataManagerImpl::RegisterSwiftShaderPath(const FilePath& path) {
   EnableSoftwareRenderingIfNecessary();
 }
 
-const base::ListValue& GpuDataManagerImpl::GetLogMessages() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return log_messages_;
-}
-
 void GpuDataManagerImpl::EnableSoftwareRenderingIfNecessary() {
   if (!GpuAccessAllowed() ||
       (gpu_feature_type_ & content::GPU_FEATURE_TYPE_WEBGL)) {
@@ -357,7 +358,7 @@ void GpuDataManagerImpl::EnableSoftwareRenderingIfNecessary() {
   }
 }
 
-bool GpuDataManagerImpl::ShouldUseSoftwareRendering() {
+bool GpuDataManagerImpl::ShouldUseSoftwareRendering() const {
   return software_rendering_;
 }
 
