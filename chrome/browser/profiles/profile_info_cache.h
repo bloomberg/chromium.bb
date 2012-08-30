@@ -50,6 +50,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual size_t GetIndexOfProfileWithPath(
       const FilePath& profile_path) const OVERRIDE;
   virtual string16 GetNameOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual string16 GetShortcutNameOfProfileAtIndex(size_t index)
+      const OVERRIDE;
   virtual FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual string16 GetUserNameOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
@@ -72,6 +74,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
   void SetNameOfProfileAtIndex(size_t index, const string16& name);
+  void SetShortcutNameOfProfileAtIndex(size_t index, const string16& name);
   void SetUserNameOfProfileAtIndex(size_t index, const string16& user_name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetBackgroundStatusOfProfileAtIndex(size_t index,

@@ -59,26 +59,82 @@ class ProfileShortcutManagerTest : public testing::Test {
         static_cast<TestingBrowserProcess*>(g_browser_process);
     profile_manager_.reset(new TestingProfileManager(browser_process));
     ASSERT_TRUE(profile_manager_->SetUp());
-    ProfileInfoCache* cache = profile_manager_->profile_info_cache();
     // Profile shortcut manager will be NULL for non-windows platforms
-    profile_shortcut_manager_.reset(ProfileShortcutManager::Create(*cache));
+    profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
+        profile_manager_->profile_info_cache()));
 
     dest_path_ = profile_manager_->profile_info_cache()->GetUserDataDir();
-    dest_path_ = dest_path_.Append(FILE_PATH_LITERAL("New Profile 1"));
+    dest_path_ = dest_path_.Append(FILE_PATH_LITERAL("My profile"));
     file_util::CreateDirectoryW(dest_path_);
     profile_name_ = ASCIIToUTF16("My profile");
+
+    second_dest_path_ =
+        profile_manager_->profile_info_cache()->GetUserDataDir();
+    second_dest_path_ =
+        second_dest_path_.Append(FILE_PATH_LITERAL("My profile 2"));
+    file_util::CreateDirectoryW(second_dest_path_);
+    second_profile_name_ = ASCIIToUTF16("My profile 2");
   }
 
   virtual void TearDown() {
     message_loop_.RunAllPending();
-    profile_shortcut_manager_->DeleteProfileDesktopShortcut(
-      dest_path_, profile_name_);
-    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+
+    int num_profiles =
+        profile_manager_->profile_info_cache()->GetNumberOfProfiles();
+
+    // Remove all shortcuts except the last (since it will no longer have
+    // an appended name).
+    for (int i = 0; i < num_profiles; ++i) {
+      const FilePath profile_path =
+          profile_manager_->profile_info_cache()->GetPathOfProfileAtIndex(0);
+      string16 profile_name;
+      if (i != num_profiles - 1) {
+        profile_name =
+            profile_manager_->profile_info_cache()->GetNameOfProfileAtIndex(0);
+      }
+      profile_manager_->profile_info_cache()->DeleteProfileFromCache(
+          profile_path);
+      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+      MessageLoop::current()->Run();
+      EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+                VerifyProfileShortcut(profile_name));
+      ASSERT_FALSE(file_util::PathExists(profile_path.Append(
+          FILE_PATH_LITERAL("Google Profile.ico"))));
+    }
+  }
+
+  void SetupDefaultProfileShortcut() {
     EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
               VerifyProfileShortcut(profile_name_));
-    ASSERT_FALSE(file_util::PathExists(dest_path_.Append(
-        FILE_PATH_LITERAL("Google Profile.ico"))));
+
+    profile_manager_->profile_info_cache()->AddProfileToCache(
+        dest_path_, profile_name_, string16(), 0);
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    MessageLoop::current()->Run();
+    // We now have 1 profile, so we expect a new shortcut with no profile
+    // information.
+    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+              VerifyProfileShortcut(string16()));
+  }
+
+  void SetupAndCreateTwoShortcuts() {
+    ASSERT_EQ(0, profile_manager_->profile_info_cache()->GetNumberOfProfiles());
+    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+              VerifyProfileShortcut(profile_name_));
+    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+              VerifyProfileShortcut(second_profile_name_));
+
+    profile_manager_->profile_info_cache()->AddProfileToCache(
+        dest_path_, profile_name_, string16(), 0);
+    profile_manager_->profile_info_cache()->AddProfileToCache(
+        second_dest_path_, second_profile_name_, string16(), 0);
+
+    MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    MessageLoop::current()->Run();
+    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+              VerifyProfileShortcut(profile_name_));
+    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+              VerifyProfileShortcut(second_profile_name_));
   }
 
   MessageLoopForUI message_loop_;
@@ -88,63 +144,113 @@ class ProfileShortcutManagerTest : public testing::Test {
   scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
   FilePath dest_path_;
   string16 profile_name_;
+  FilePath second_dest_path_;
+  string16 second_profile_name_;
 };
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
   if (!profile_shortcut_manager_.get())
     return;
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
-            VerifyProfileShortcut(profile_name_));
-  ASSERT_FALSE(file_util::PathExists(dest_path_.Append(
-      FILE_PATH_LITERAL("Google Profile.ico"))));
+  ProfileShortcutManagerTest::SetupDefaultProfileShortcut();
 
-  gfx::Image& avatar = ResourceBundle::GetSharedInstance().
-      GetNativeImageNamed(IDR_PROFILE_AVATAR_0);
-
-  profile_shortcut_manager_->StartProfileDesktopShortcutCreation(
-      dest_path_, profile_name_, avatar);
+  profile_manager_->profile_info_cache()->AddProfileToCache(
+      second_dest_path_, second_profile_name_, string16(), 0);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
+  // We now have 2 profiles, so we expect a new shortcut with profile
+  // information for this 2nd profile.
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
-            VerifyProfileShortcut(profile_name_));
-  ASSERT_TRUE(file_util::PathExists(dest_path_.Append(
+            VerifyProfileShortcut(second_profile_name_));
+  ASSERT_TRUE(file_util::PathExists(second_dest_path_.Append(
       FILE_PATH_LITERAL("Google Profile.ico"))));
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
   if (!profile_shortcut_manager_.get())
     return;
+  ProfileShortcutManagerTest::SetupDefaultProfileShortcut();
+
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
-            VerifyProfileShortcut(profile_name_));
+            VerifyProfileShortcut(second_profile_name_));
 
   profile_manager_->profile_info_cache()->AddProfileToCache(
-       dest_path_, profile_name_, string16(), 0);
-  gfx::Image& avatar = ResourceBundle::GetSharedInstance().
-      GetNativeImageNamed(IDR_PROFILE_AVATAR_0);
-
-  profile_shortcut_manager_->StartProfileDesktopShortcutCreation(
-      dest_path_, profile_name_, avatar);
+      second_dest_path_, second_profile_name_, string16(), 0);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
-            VerifyProfileShortcut(profile_name_));
-  string16 new_profile_name = ASCIIToUTF16("My New Profile Name");
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
-            VerifyProfileShortcut(new_profile_name));
+            VerifyProfileShortcut(second_profile_name_));
 
   // Cause an update in ProfileShortcutManager by modifying the profile info
-  // cache
+  // cache.
+  string16 new_profile_name = ASCIIToUTF16("New Profile Name");
   profile_manager_->profile_info_cache()->SetNameOfProfileAtIndex(
       profile_manager_->profile_info_cache()->GetIndexOfProfileWithPath(
-          dest_path_), new_profile_name);
+          second_dest_path_),
+      new_profile_name);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
-            VerifyProfileShortcut(profile_name_));
+            VerifyProfileShortcut(second_profile_name_));
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(new_profile_name));
+}
 
-  profile_name_ = new_profile_name;
+TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
+  if (!profile_shortcut_manager_.get())
+    return;
+  ProfileShortcutManagerTest::SetupAndCreateTwoShortcuts();
+
+  // Delete one shortcut
+  profile_manager_->profile_info_cache()->DeleteProfileFromCache(
+      second_dest_path_);
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  MessageLoop::current()->Run();
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+            VerifyProfileShortcut(second_profile_name_));
+
+  // Verify that the profile name has been removed from the remaining shortcut
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+            VerifyProfileShortcut(string16()));
+  // Verify that an additional shortcut, with the default profile's name does
+  // not exist
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+            VerifyProfileShortcut(profile_name_));
+}
+
+TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
+  if (!profile_shortcut_manager_.get())
+    return;
+  ProfileShortcutManagerTest::SetupAndCreateTwoShortcuts();
+
+  // Delete one shortcut
+  profile_manager_->profile_info_cache()->DeleteProfileFromCache(
+      second_dest_path_);
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  MessageLoop::current()->Run();
+
+  // Verify that a default shortcut exists (no profile name/avatar)
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+            VerifyProfileShortcut(string16()));
+  // Verify that an additional shortcut, with the default profile's name does
+  // not exist
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+            VerifyProfileShortcut(profile_name_));
+
+  // Create a second profile and shortcut
+  profile_manager_->profile_info_cache()->AddProfileToCache(
+       second_dest_path_, second_profile_name_, string16(), 0);
+
+  MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  MessageLoop::current()->Run();
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+            VerifyProfileShortcut(second_profile_name_));
+
+  // Verify that the original shortcut received the profile's name
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+            VerifyProfileShortcut(profile_name_));
+  // Verify that a default shortcut no longer exists
+  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+            VerifyProfileShortcut(string16()));
 }
 

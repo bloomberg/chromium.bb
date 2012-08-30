@@ -37,6 +37,7 @@ using content::BrowserThread;
 namespace {
 
 const char kNameKey[] = "name";
+const char kShortcutNameKey[] = "shortcut_name";
 const char kGAIANameKey[] = "gaia_name";
 const char kUseGAIANameKey[] = "use_gaia_name";
 const char kUserNameKey[] = "user_name";
@@ -277,6 +278,14 @@ string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   return name;
 }
 
+string16 ProfileInfoCache::GetShortcutNameOfProfileAtIndex(size_t index)
+    const {
+  string16 shortcut_name;
+  GetInfoForProfileAtIndex(index)->GetString(
+      kShortcutNameKey, &shortcut_name);
+  return shortcut_name;
+}
+
 FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(sorted_keys_[index]);
 }
@@ -429,6 +438,17 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
                       observer_list_,
                       OnProfileNameChanged(profile_path, old_display_name));
   }
+}
+
+void ProfileInfoCache::SetShortcutNameOfProfileAtIndex(
+    size_t index,
+    const string16& shortcut_name) {
+  if (shortcut_name == GetShortcutNameOfProfileAtIndex(index))
+    return;
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kShortcutNameKey, shortcut_name);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,

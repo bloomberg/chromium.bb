@@ -14,13 +14,7 @@ class ProfileShortcutManager {
   virtual ~ProfileShortcutManager();
 
   static bool IsFeatureEnabled();
-  static ProfileShortcutManager* Create(ProfileInfoCache& cache);
-
-  virtual void StartProfileDesktopShortcutCreation(
-      const FilePath& profile_path, const string16& profile_name,
-      const gfx::Image& avatar_image) = 0;
-  virtual void DeleteProfileDesktopShortcut(const FilePath& profile_path,
-      const string16& profile_name) = 0;
+  static ProfileShortcutManager* Create(ProfileInfoCache* cache);
 
  protected:
   ProfileShortcutManager();

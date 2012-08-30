@@ -270,7 +270,7 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
 
   if (ProfileShortcutManager::IsFeatureEnabled())
     profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
-                                    GetProfileInfoCache()));
+                                    &GetProfileInfoCache()));
 }
 
 ProfileManager::~ProfileManager() {
@@ -455,13 +455,6 @@ void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
       cache.AddProfileToCache(profile_path, name, string16(), icon_index);
     }
     info->callbacks.push_back(callback);
-    if (profile_shortcut_manager_.get() && !name.empty() &&
-        !icon_url.empty()) {
-      profile_shortcut_manager_->StartProfileDesktopShortcutCreation(
-          profile_path, name,
-          ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-              cache.GetDefaultAvatarIconResourceIDAtIndex(icon_index)));
-    }
   }
 }
 
@@ -952,12 +945,6 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
           profile)->DisableForUser();
     }
   }
-
-  // Delete possible shortcuts for this profile
-  if (profile_shortcut_manager_.get())
-    profile_shortcut_manager_->DeleteProfileDesktopShortcut(
-        profile_dir, cache.GetNameOfProfileAtIndex(
-        cache.GetIndexOfProfileWithPath(profile_dir)));
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);

@@ -24,6 +24,8 @@ class ProfileInfoInterface {
 
   virtual string16 GetNameOfProfileAtIndex(size_t index) const = 0;
 
+  virtual string16 GetShortcutNameOfProfileAtIndex(size_t index) const = 0;
+
   virtual FilePath GetPathOfProfileAtIndex(size_t index) const = 0;
 
   virtual string16 GetUserNameOfProfileAtIndex(size_t index) const = 0;
