@@ -293,7 +293,8 @@ WebRequestConditionAttributeResponseHeaders::Create(
       return scoped_ptr<WebRequestConditionAttribute>(NULL);
     }
 
-    scoped_ptr<const HeaderMatchTest> header_test(CreateTests(tests, error));
+    scoped_ptr<const HeaderMatchTest> header_test(
+        CreateHeaderMatchTest(tests, error));
     if (header_test.get() == NULL)
       return scoped_ptr<WebRequestConditionAttribute>(NULL);
     header_tests.push_back(header_test.release());
@@ -343,7 +344,7 @@ bool WebRequestConditionAttributeResponseHeaders::IsFulfilled(
 
 WebRequestConditionAttribute::Type
 WebRequestConditionAttributeResponseHeaders::GetType() const {
-  return CONDITION_REQUEST_HEADERS;
+  return CONDITION_RESPONSE_HEADERS;
 }
 
 bool WebRequestConditionAttributeResponseHeaders::StringMatchTest::Matches(
@@ -382,7 +383,7 @@ bool WebRequestConditionAttributeResponseHeaders::HeaderMatchTest::Matches(
 
 // static
 scoped_ptr<const WebRequestConditionAttributeResponseHeaders::HeaderMatchTest>
-WebRequestConditionAttributeResponseHeaders::CreateTests(
+WebRequestConditionAttributeResponseHeaders::CreateHeaderMatchTest(
     const DictionaryValue* tests,
     std::string* error) {
   ScopedVector<const StringMatchTest> name;
@@ -429,14 +430,15 @@ WebRequestConditionAttributeResponseHeaders::CreateTests(
         for (ListValue::const_iterator it = list->begin();
              it != list->end(); ++it) {
           ScopedVector<const StringMatchTest>* tests = is_name ? &name : &value;
-          tests->push_back(CreateMatchTest(*it, is_name, match_type).release());
+          tests->push_back(
+              CreateStringMatchTest(*it, is_name, match_type).release());
         }
         break;
       }
       case Value::TYPE_STRING: {
         ScopedVector<const StringMatchTest>* tests = is_name ? &name : &value;
         tests->push_back(
-            CreateMatchTest(content, is_name, match_type).release());
+            CreateStringMatchTest(content, is_name, match_type).release());
         break;
       }
       default: {
@@ -452,8 +454,10 @@ WebRequestConditionAttributeResponseHeaders::CreateTests(
 
 // static
 scoped_ptr<const WebRequestConditionAttributeResponseHeaders::StringMatchTest>
-WebRequestConditionAttributeResponseHeaders::CreateMatchTest(
-    const Value* content, bool is_name_test, MatchType match_type) {
+WebRequestConditionAttributeResponseHeaders::CreateStringMatchTest(
+    const Value* content,
+    bool is_name_test,
+    MatchType match_type) {
   std::string str;
 
   CHECK(content->GetAsString(&str));

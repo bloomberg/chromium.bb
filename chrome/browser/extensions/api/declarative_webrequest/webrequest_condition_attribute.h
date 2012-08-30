@@ -34,7 +34,7 @@ class WebRequestConditionAttribute {
   enum Type {
     CONDITION_RESOURCE_TYPE,
     CONDITION_CONTENT_TYPE,
-    CONDITION_REQUEST_HEADERS
+    CONDITION_RESPONSE_HEADERS
   };
 
   WebRequestConditionAttribute();
@@ -180,7 +180,7 @@ class WebRequestConditionAttributeResponseHeaders
    public:
     // Takes ownership of the content of both |name| and |value|.
     HeaderMatchTest(ScopedVector<const StringMatchTest>* name,
-              ScopedVector<const StringMatchTest>* value);
+                    ScopedVector<const StringMatchTest>* value);
     ~HeaderMatchTest();
     // Does the header |name|: |value| match all tests in this header test?
     bool Matches(const std::string& name, const std::string& value) const;
@@ -198,13 +198,15 @@ class WebRequestConditionAttributeResponseHeaders
 
   // Gets the tests' description in |tests| and creates the corresponding
   // HeaderMatchTest. Returns NULL on failure.
-  static scoped_ptr<const HeaderMatchTest> CreateTests(
+  static scoped_ptr<const HeaderMatchTest> CreateHeaderMatchTest(
       const base::DictionaryValue* tests,
       std::string* error);
-  // Helper to CreateTests. Never returns NULL, except for memory failures.
-  static scoped_ptr<const StringMatchTest> CreateMatchTest(const Value* content,
-                                                     bool is_name_test,
-                                                     MatchType match_type);
+  // Helper to CreateHeaderMatchTest. Never returns NULL, except for memory
+  // failures.
+  static scoped_ptr<const StringMatchTest> CreateStringMatchTest(
+      const Value* content,
+      bool is_name_test,
+      MatchType match_type);
 
   // The condition is satisfied if there is a header and its value such that for
   // some |i| the header passes all the tests from |tests_[i]|.
