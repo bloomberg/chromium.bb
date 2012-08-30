@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_LIB_MAIN_WEBVIEW_MAIN_DELEGATE_H_
-#define ANDROID_WEBVIEW_LIB_MAIN_WEBVIEW_MAIN_DELEGATE_H_
+#ifndef ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
+#define ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_content_client.h"
@@ -16,10 +16,10 @@ class BrowserMainRunner;
 namespace android_webview {
 
 // Android WebView implementation of ContentMainDelegate.
-class WebViewMainDelegate : public content::ContentMainDelegate {
+class AwMainDelegate : public content::ContentMainDelegate {
  public:
-  WebViewMainDelegate();
-  virtual ~WebViewMainDelegate();
+  AwMainDelegate();
+  virtual ~AwMainDelegate();
 
  private:
   // content::ContentMainDelegate implementation:
@@ -37,9 +37,9 @@ class WebViewMainDelegate : public content::ContentMainDelegate {
   scoped_ptr<content::BrowserMainRunner> browser_runner_;
   chrome::ChromeContentClient chrome_content_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebViewMainDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);
 };
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_LIB_MAIN_WEBVIEW_MAIN_DELEGATE_H_
+#endif  // ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_

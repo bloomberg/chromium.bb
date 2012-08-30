@@ -18,21 +18,20 @@
         '<(DEPTH)/chrome/browser/component/components.gyp:browser_component_jni_headers',
       ],
       'include_dirs': [
-        '../..',
-        '../../skia/config',
+        '<(DEPTH)',
+        '<(DEPTH)/skia/config',
       ],
       'sources': [
-        'aw_browser_dependency_factory_impl.cc',
-        'aw_browser_dependency_factory_impl.h',
-        'aw_content_browser_client.cc',
-        'aw_content_browser_client.h',
-        'main/webview_entry_point.cc',
-        'main/webview_main_delegate.cc',
-        'main/webview_main_delegate.h',
-        'main/webview_stubs.cc',
-      ],
-      'includes': [
-        '../aw_browser.gypi',
+        'browser/renderer_host/aw_resource_dispatcher_host_delegate.cc',
+        'browser/renderer_host/aw_resource_dispatcher_host_delegate.h',
+        'lib/aw_browser_dependency_factory_impl.cc',
+        'lib/aw_browser_dependency_factory_impl.h',
+        'lib/aw_content_browser_client.cc',
+        'lib/aw_content_browser_client.h',
+        'lib/main/aw_main_delegate.cc',
+        'lib/main/aw_main_delegate.h',
+        'lib/main/webview_entry_point.cc',
+        'lib/main/webview_stubs.cc',
       ],
     },
     {
@@ -42,7 +41,7 @@
         'libwebview',
       ],
       'variables': {
-        'install_binary_script': '../build/install_binary',
+        'install_binary_script': 'build/install_binary',
       },
       'actions': [
         {
@@ -74,7 +73,7 @@
         'package_name': 'android_webview_java',
         'java_in_dir': '<(DEPTH)/android_webview/java',
       },
-      'includes': [ '../../build/java.gypi' ],
+      'includes': [ '../build/java.gypi' ],
     },
     {
       'target_name': 'android_webview_javatests',
@@ -90,7 +89,7 @@
         'package_name': 'android_webview_javatests',
         'java_in_dir': '<(DEPTH)/android_webview/javatests',
       },
-      'includes': [ '../../build/java.gypi' ],
+      'includes': [ '../build/java.gypi' ],
     },
 
     {

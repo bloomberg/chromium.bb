@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/lib/main/webview_main_delegate.h"
+#include "android_webview/lib/main/aw_main_delegate.h"
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "content/public/app/android_library_loader_hooks.h"
@@ -19,7 +19,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   if (!android_webview::RegisterJni(env))
     return -1;
 
-  content::SetContentMainDelegate(new android_webview::WebViewMainDelegate());
+  content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 
   return JNI_VERSION_1_4;
 }
