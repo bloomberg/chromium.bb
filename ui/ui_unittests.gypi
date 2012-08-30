@@ -26,8 +26,8 @@
         ['OS!="ios"', {
           'includes': [ 'base/ime/ime_test_support.gypi' ],
         }, {  # OS=="ios"
-          # TODO(ios): None of the tests brought up on iOS use these yet.
-          'sources/': [['exclude', '^base/test/']],
+          # The cocoa files don't apply to iOS.
+          'sources/': [['exclude', 'cocoa']],
         }],
         ['chromeos==1', {
           'dependencies': [
