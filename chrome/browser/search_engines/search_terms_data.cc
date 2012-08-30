@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/search/search.h"
@@ -112,8 +113,8 @@ std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (InstantController::IsEnabled(profile_)) {
-    return chrome::search::IsInstantExtendedAPIEnabled(profile_) ? "&espv=1"
-                                                                 : "&ion=1";
+    return std::string(chrome::search::IsInstantExtendedAPIEnabled(profile_) ?
+        google_util::kInstantExtendedAPIParam : "ion") + "=1&";
   }
   return std::string();
 }

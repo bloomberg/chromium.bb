@@ -270,7 +270,7 @@ bool IsInstantExtendedAPIGoogleSearchUrl(const std::string& url) {
   if (!IsGoogleSearchUrl(url))
     return false;
 
-  const std::string embedded_search_key = "espv";
+  const std::string embedded_search_key = kInstantExtendedAPIParam;
 
   url_parse::Parsed parsed_url;
   url_parse::ParseStandardURL(url.c_str(), url.length(), &parsed_url);

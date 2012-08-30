@@ -19,6 +19,9 @@ class Profile;
 // and state relating to Google Chrome distributions (such as RLZ).
 namespace google_util {
 
+// The query key that identifies a Google Extended API request for Instant.
+const char kInstantExtendedAPIParam[] = "espv";
+
 GURL LinkDoctorBaseURL();
 void SetMockLinkDoctorBaseURLForTesting();
 

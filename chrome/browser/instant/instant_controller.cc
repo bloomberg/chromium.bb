@@ -648,9 +648,11 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
     return false;
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
-  if (!instant_url_ref.IsValid() || !instant_url_ref.SupportsReplacement())
+  if (!instant_url_ref.IsValid())
     return false;
 
+  // Even if the URL template doesn't have search terms, it may have other
+  // components (such as {google:baseURL}) that need to be replaced.
   *instant_url = instant_url_ref.ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(string16()));
 

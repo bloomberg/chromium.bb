@@ -50,10 +50,12 @@ class InstantTest : public InProcessBrowserTest {
     ui_test_utils::WaitForTemplateURLServiceToLoad(service);
 
     TemplateURLData data;
-    data.SetURL(base::StringPrintf("http://%s:%d/files/%s?q={searchTerms}",
+    data.SetURL("http://does/not/exist?q={searchTerms}");
+    data.instant_url = base::StringPrintf(
+        "http://%s:%d/files/%s",
         test_server()->host_port_pair().host().c_str(),
-        test_server()->host_port_pair().port(), page.c_str()));
-    data.instant_url = data.url();
+        test_server()->host_port_pair().port(),
+        page.c_str());
 
     TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
     service->Add(template_url);  // Takes ownership of |template_url|.

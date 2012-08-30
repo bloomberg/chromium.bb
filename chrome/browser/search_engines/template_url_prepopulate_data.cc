@@ -1097,8 +1097,8 @@ const PrepopulatedEngine google = {
   "UTF-8",
   "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}"
       "client=chrome&hl={language}&q={searchTerms}",
-  "{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
-      "ie={inputEncoding}{google:instantEnabledParameter}{searchTerms}",
+  "{google:baseURL}webhp?sourceid=chrome-instant&{google:RLZ}"
+      "{google:instantEnabledParameter}ie={inputEncoding}",
   SEARCH_ENGINE_GOOGLE,
   1,
 };
@@ -3311,7 +3311,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 40;
+  const int kCurrentDataVersion = 41;
   // Allow tests to override the local version.
   return (prefs && prefs->HasPrefPath(prefs::kSearchProviderOverridesVersion)) ?
       prefs->GetInteger(prefs::kSearchProviderOverridesVersion) :
