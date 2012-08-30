@@ -108,6 +108,9 @@ IP_REG = {
     }
 
 
+X86_TRAP_FLAG = 1 << 8
+
+
 def DecodeRegs(reply):
   defs = REG_DEFS[ARCH]
   names = [reg_name for reg_name, reg_fmt in defs]
@@ -396,8 +399,10 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest(step_command)
       self.assertEqual(reply, stop_reply)
       ip += size
-      actual_ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
-      self.assertEqual(actual_ip, ip)
+      regs = DecodeRegs(connection.RspRequest('g'))
+      self.assertEqual(regs[IP_REG[ARCH]], ip)
+      # The trap flag should be reported as unset.
+      self.assertEqual(regs['eflags'] & X86_TRAP_FLAG, 0)
 
   def test_single_step(self):
     if ARCH == 'arm':
@@ -411,6 +416,9 @@ class DebugStubTest(unittest.TestCase):
       AssertReplySignal(reply, NACL_SIGTRAP)
 
       self.CheckSingleStep(connection, 's', reply)
+      # Check that we can continue after single-stepping.
+      reply = connection.RspRequest('c')
+      self.assertEquals(reply, 'W00')
 
   def test_vCont(self):
     # Basically repeat test_single_step, but using vCont commands.

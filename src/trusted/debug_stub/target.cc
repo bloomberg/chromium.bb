@@ -166,8 +166,6 @@ void Target::Run(Session *ses) {
     MutexLock lock(mutex_);
     Packet recv, reply;
 
-    uint32_t id = 0;
-
     if (step_over_breakpoint_thread_ != 0) {
       // We are waiting for a specific thread to fault while all other
       // threads are suspended.  Note that faulted_thread_count might
@@ -188,21 +186,17 @@ void Target::Run(Session *ses) {
       IThread::SuspendSingleThread(step_over_breakpoint_thread_);
       IThread::UnqueueSpecificFaultedThread(step_over_breakpoint_thread_,
                                             &cur_signal_);
-      id = step_over_breakpoint_thread_;
+      sig_thread_ = step_over_breakpoint_thread_;
+      reg_thread_ = step_over_breakpoint_thread_;
       step_over_breakpoint_thread_ = 0;
-      sig_thread_ = id;
-      reg_thread_ = id;
-      // Reset single stepping.
-      threads_[id]->SetStep(false);
     } else if (nap_->faulted_thread_count != 0) {
       // At least one untrusted thread has got an exception.  First we
       // need to ensure that all threads are suspended.  Then we can
       // retrieve a thread from the set of faulted threads.
       IThread::SuspendAllThreads();
-      IThread::UnqueueAnyFaultedThread(&id, &cur_signal_);
-      sig_thread_ = id;
-      reg_thread_ = id;
-      RemoveTemporaryBreakpoints(threads_[id]);
+      IThread::UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
+      reg_thread_ = sig_thread_;
+      RemoveTemporaryBreakpoints(threads_[sig_thread_]);
     } else {
       // Otherwise look for messages from GDB.
       if (!ses->DataAvailable()) {
@@ -220,9 +214,14 @@ void Target::Run(Session *ses) {
       IThread::SuspendAllThreads();
     }
 
+    if (sig_thread_ != 0) {
+      // Reset single stepping.
+      threads_[sig_thread_]->SetStep(false);
+    }
+
     // Next update the current thread info
     char tmp[16];
-    snprintf(tmp, sizeof(tmp), "QC%x", id);
+    snprintf(tmp, sizeof(tmp), "QC%x", sig_thread_);
     properties_["C"] = tmp;
 
     if (first) {
