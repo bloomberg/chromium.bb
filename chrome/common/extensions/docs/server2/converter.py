@@ -25,6 +25,7 @@ from docs_server_utils import SanitizeAPIName
 IGNORED_FILES = [
   # These are custom files.
   '404',
+  'apps',
   'apps_api_index',
   'api_index',
   'experimental',

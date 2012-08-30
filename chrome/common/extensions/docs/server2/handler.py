@@ -239,6 +239,18 @@ class Handler(webapp.RequestHandler):
 
     self.response.out.write('Success')
 
+  def _RedirectSpecialCases(self, path):
+    google_dev_url = 'http://developer.google.com/chrome'
+    if path == '/' or path == '/index.html':
+      self.redirect(google_dev_url)
+      return True
+
+    if path == '/apps.html':
+      self.redirect('/apps/about_apps.html')
+      return True
+
+    return False
+
   def _RedirectFromCodeDotGoogleDotCom(self, path):
     if (not self.request.url.startswith(('http://code.google.com',
                                          'https://code.google.com'))):
@@ -264,6 +276,9 @@ class Handler(webapp.RequestHandler):
 
   def get(self):
     path = self.request.path
+    if self._RedirectSpecialCases(path):
+      return
+
     if path.startswith('/cron'):
       self._HandleCron(path)
       return
