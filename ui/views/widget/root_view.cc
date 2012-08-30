@@ -381,7 +381,7 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
 
 bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   bool consumed = false;
-  for (View* v = GetFocusManager()->GetFocusedView();
+  for (View* v = GetFocusManager() ? GetFocusManager()->GetFocusedView() : NULL;
        v && v != this && !consumed; v = v->parent())
     consumed = v->OnMouseWheel(event);
   return consumed;
