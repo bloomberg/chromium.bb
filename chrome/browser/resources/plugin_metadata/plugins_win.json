@@ -53,9 +53,9 @@
     ],
     "versions": [
       {
-        "version": "6.0.330",
+        "version": "6.0.350",
         "status": "requires_authorization",
-        "comment": "Java SE 6 Update 33. '330' is not a typo."
+        "comment": "Java SE 6 Update 35. '350' is not a typo."
       },
       {
         "version": "7",
