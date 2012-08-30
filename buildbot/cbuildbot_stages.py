@@ -118,7 +118,9 @@ class CleanUpStage(bs.BuilderStage):
       try:
         manifest = cros_build_lib.ManifestCheckout.Cached(self._build_root,
                                                           search=False)
-      except EnvironmentError, e:
+      except (KeyboardInterrupt, MemoryError, SystemExit):
+        raise
+      except Exception, e:
         # Either there is no repo there, or the manifest isn't usable.  If the
         # directory exists, log the exception for debugging reasons.  Either
         # way, the checkout needs to be wiped since it's in an unknown
