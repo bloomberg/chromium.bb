@@ -76,7 +76,14 @@ bool ContainsSamePasswordFormsPtr(
     const std::vector<PasswordForm*>& second) {
   if (first.size() != second.size())
     return false;
-  SetOfForms expectations(first.begin(), first.end());
+
+  // TODO(cramya): As per b/7079906, the STLport of Android causes a crash
+  // if we use expectations(first.begin(), first.end()) to copy a vector
+  // into a set rather than std::copy that is used below.
+  // Need to revert this once STLport is fixed.
+  SetOfForms expectations;
+  std::copy(first.begin(), first.end(), std::inserter(expectations,
+                                                      expectations.begin()));
   for (unsigned int i = 0; i < second.size(); ++i) {
     const PasswordForm* actual = second[i];
     bool found_match = false;
