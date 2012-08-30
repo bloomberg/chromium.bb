@@ -26,6 +26,7 @@
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::IntToPlatformFile;
+using ppapi::proxy::SerializedHandle;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Audio_API;
 using ppapi::thunk::PPB_AudioConfig_API;
@@ -253,14 +254,14 @@ void PPB_Audio_Proxy::AudioChannelConnected(
   // inconvenient to clean up. Our IPC code will automatically handle this for
   // us, as long as the remote side always closes the handles it receives
   // (in OnMsgNotifyAudioStreamCreated), even in the failure case.
-  ppapi::proxy::SerializedHandle fd_wrapper(socket_handle);
+  SerializedHandle fd_wrapper(SerializedHandle::SOCKET, socket_handle);
 
   // Note that we must call TotalSharedMemorySizeInBytes because
   // Audio allocates extra space in shared memory for book-keeping, so the
   // actual size of the shared memory buffer is larger than audio_buffer_length.
   // When sending to NaCl, NaClIPCAdapter expects this size to match the size
   // of the full shared memory buffer.
-  ppapi::proxy::SerializedHandle handle_wrapper(
+  SerializedHandle handle_wrapper(
       shared_memory,
       media::TotalSharedMemorySizeInBytes(audio_buffer_length));
   dispatcher()->Send(new PpapiMsg_PPBAudio_NotifyAudioStreamCreated(
@@ -309,8 +310,8 @@ int32_t PPB_Audio_Proxy::GetAudioConnectedHandles(
 void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
     const HostResource& audio_id,
     int32_t result_code,
-    ppapi::proxy::SerializedHandle socket_handle,
-    ppapi::proxy::SerializedHandle handle) {
+    SerializedHandle socket_handle,
+    SerializedHandle handle) {
   CHECK(socket_handle.is_socket());
   CHECK(handle.is_shmem());
   EnterPluginFromHostResource<PPB_Audio_API> enter(audio_id);
