@@ -249,8 +249,11 @@ void CloseChromeFrameHelperProcess() {
 // We try to remove the standard desktop shortcut but if that fails we try
 // to remove the alternate desktop shortcut. Only one of them should be
 // present in a given install but at this point we don't know which one.
+// We remove all start screen secondary tiles by removing the folder Windows
+// uses to store this installation's tiles.
 void DeleteChromeShortcuts(const InstallerState& installer_state,
-                           const Product& product) {
+                           const Product& product,
+                           const string16& chrome_exe) {
   if (!product.is_chrome()) {
     VLOG(1) << __FUNCTION__ " called for non-CHROME distribution";
     return;
@@ -299,6 +302,9 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
     if (!file_util::Delete(shortcut_path, true))
       LOG(ERROR) << "Failed to delete folder: " << shortcut_path.value();
   }
+
+  ShellUtil::RemoveChromeStartScreenShortcuts(product.distribution(),
+                                              chrome_exe);
 }
 
 bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
@@ -984,7 +990,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
         ASCIIToUTF16(chrome::kInitialProfile));
 
     // First delete shortcuts from Start->Programs, Desktop & Quick Launch.
-    DeleteChromeShortcuts(installer_state, product);
+    DeleteChromeShortcuts(installer_state, product, chrome_exe);
   }
 
   // Delete the registry keys (Uninstall key and Version key).

@@ -391,6 +391,10 @@ class ShellUtil {
   static bool RemoveChromeQuickLaunchShortcut(BrowserDistribution* dist,
                                               int shell_change);
 
+  // This will remove all secondary tiles from the start screen for |dist|.
+  static void RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
+                                               const string16& chrome_exe);
+
   enum ChromeShortcutOptions {
     SHORTCUT_NO_OPTIONS = 0,
     // Set DualMode property for Windows 8 Metro-enabled shortcuts.

@@ -1626,6 +1626,33 @@ bool ShellUtil::RemoveChromeQuickLaunchShortcut(BrowserDistribution* dist,
   return ret;
 }
 
+void ShellUtil::RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
+                                                 const string16& chrome_exe) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  FilePath app_shortcuts_path;
+  if (!PathService::Get(base::DIR_APP_SHORTCUTS, &app_shortcuts_path)) {
+    LOG(ERROR) << "Could not get application shortcuts location to delete"
+               << " start screen shortcuts.";
+    return;
+  }
+
+  app_shortcuts_path = app_shortcuts_path.Append(
+      GetBrowserModelId(dist, chrome_exe));
+  if (!file_util::DirectoryExists(app_shortcuts_path)) {
+    VLOG(1) << "No start screen shortcuts to delete.";
+    return;
+  }
+
+  VLOG(1) << "Removing start screen shortcuts from "
+          << app_shortcuts_path.value();
+  if (!file_util::Delete(app_shortcuts_path, true)) {
+    LOG(ERROR) << "Failed to remove start screen shortcuts from "
+               << app_shortcuts_path.value();
+  }
+}
+
 bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                                      const string16& chrome_exe,
                                      const string16& shortcut,
