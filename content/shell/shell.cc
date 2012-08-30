@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "content/shell/shell_javascript_dialog_creator.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/webkit_test_runner_host.h"
 #include "ui/gfx/size.h"
 
 // Content area size for newly created windows.
@@ -218,10 +220,11 @@ bool Shell::AddMessageToConsole(WebContents* source,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return false;
 
-  printf("CONSOLE MESSAGE: ");
+  std::string buffer("CONSOLE MESSAGE: ");
   if (line_no)
-    printf("line %d: ", line_no);
-  printf("%s\n", UTF16ToUTF8(message).c_str());
+    buffer += base::StringPrintf("line %d: ", line_no);
+  buffer += UTF16ToUTF8(message);
+  WebKitTestController::Get()->printer().AddMessage(buffer);
   return true;
 }
 

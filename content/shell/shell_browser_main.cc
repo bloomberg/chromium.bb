@@ -94,9 +94,6 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         break;
       }
 
-      // Test header.
-      printf("Content-Type: text/plain\n");
-
       main_runner_->Run();
 
       fflush(stdout);

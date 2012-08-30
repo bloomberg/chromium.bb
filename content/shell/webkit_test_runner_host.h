@@ -18,6 +18,40 @@ namespace content {
 
 class Shell;
 
+class WebKitTestResultPrinter {
+ public:
+  WebKitTestResultPrinter();
+  ~WebKitTestResultPrinter();
+
+  void reset() {
+    state_ = BEFORE_TEST;
+  }
+  bool in_text_block() const { return state_ == IN_TEXT_BLOCK; }
+
+  void PrintTextHeader();
+  void PrintTextBlock(const std::string& block);
+  void PrintTextFooter();
+
+  void PrintImageHeader(const std::string& actual_hash,
+                        const std::string& expected_hash);
+  void PrintImageBlock(const std::vector<unsigned char>& png_image);
+  void PrintImageFooter();
+
+  void AddMessage(const std::string& message);
+  void AddErrorMessage(const std::string& message);
+
+ private:
+  enum State {
+    BEFORE_TEST,
+    IN_TEXT_BLOCK,
+    IN_IMAGE_BLOCK,
+    AFTER_TEST
+  };
+  State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebKitTestResultPrinter);
+};
+
 class WebKitTestController : public base::NonThreadSafe,
                              public WebContentsObserver {
  public:
@@ -32,6 +66,8 @@ class WebKitTestController : public base::NonThreadSafe,
                             const std::string& expected_pixel_hash);
   // True if the controller was reset successfully.
   bool ResetAfterLayoutTest();
+
+  WebKitTestResultPrinter& printer() { return printer_; }
 
   // Interface for WebKitTestRunnerHost.
   void NotifyDone();
@@ -65,7 +101,6 @@ class WebKitTestController : public base::NonThreadSafe,
  private:
   static WebKitTestController* instance_;
 
-  void FinishRemainingBlocks();
   void CaptureDump();
   void TimeoutHandler();
 
@@ -74,6 +109,8 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
 
+  WebKitTestResultPrinter printer_;
+
   Shell* main_window_;
 
   bool pumping_messages_;
@@ -81,9 +118,6 @@ class WebKitTestController : public base::NonThreadSafe,
   std::string expected_pixel_hash_;
 
   bool captured_dump_;
-  bool finished_text_block_;
-  bool finished_pixel_block_;
-  bool output_finished_;
 
   bool dump_as_text_;
   bool dump_child_frames_;
