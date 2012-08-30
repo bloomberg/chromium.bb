@@ -102,16 +102,11 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     table_ =
         PredictorDatabaseFactory::GetForProfile(profile_)->autocomplete_table();
 
-    // Create local caches using the database as loaded. We will garbage collect
-    // rows from the caches and the database once the history service is
-    // available.
-    std::vector<AutocompleteActionPredictorTable::Row>* rows =
-        new std::vector<AutocompleteActionPredictorTable::Row>();
-    content::BrowserThread::PostTaskAndReply(content::BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&AutocompleteActionPredictorTable::GetAllRows, table_, rows),
-        base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
-                   base::Owned(rows)));
+    // Observe all main frame loads so we can wait for the first to complete
+    // before accessing DB and IO threads to build the local cache.
+    notification_registrar_.Add(this,
+                                content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                                content::NotificationService::AllSources());
   }
 }
 
@@ -233,6 +228,14 @@ void AutocompleteActionPredictor::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
+    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
+      CreateLocalCachesFromDatabase();
+      notification_registrar_.Remove(
+          this,
+          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+          content::NotificationService::AllSources());
+      break;
+
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
       DCHECK(initialized_);
       const content::Details<const history::URLsDeletedDetails>
@@ -270,6 +273,19 @@ void AutocompleteActionPredictor::Observe(
       NOTREACHED() << "Unexpected notification observed.";
       break;
   }
+}
+
+void AutocompleteActionPredictor::CreateLocalCachesFromDatabase() {
+  // Create local caches using the database as loaded. We will garbage collect
+  // rows from the caches and the database once the history service is
+  // available.
+  std::vector<AutocompleteActionPredictorTable::Row>* rows =
+      new std::vector<AutocompleteActionPredictorTable::Row>();
+  content::BrowserThread::PostTaskAndReply(content::BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&AutocompleteActionPredictorTable::GetAllRows, table_, rows),
+      base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
+                 base::Owned(rows)));
 }
 
 void AutocompleteActionPredictor::DeleteAllRows() {

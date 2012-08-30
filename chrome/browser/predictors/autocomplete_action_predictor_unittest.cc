@@ -94,6 +94,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
         switches::kPrerenderFromOmnibox,
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 
+    predictor_->CreateLocalCachesFromDatabase();
     profile_.CreateHistoryService(true, false);
     profile_.BlockUntilHistoryProcessesPendingRequests();
 

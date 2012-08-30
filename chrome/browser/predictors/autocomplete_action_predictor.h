@@ -151,6 +151,11 @@ class AutocompleteActionPredictor
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // The first step in initializing the predictor is accessing the database and
+  // building the local cache. This should be delayed until after critical DB
+  // and IO processes have completed.
+  void CreateLocalCachesFromDatabase();
+
   // Removes all rows from the database and caches.
   void DeleteAllRows();
 
