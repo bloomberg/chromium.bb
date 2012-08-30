@@ -10,6 +10,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
@@ -41,6 +42,7 @@ char g_printer_info[kPrinterInfoStrLen * kMaxReportedPrinterRecords + 1] = "";
 static const size_t kNumSize = 32;
 char g_num_extensions[kNumSize] = "";
 char g_num_switches[kNumSize] = "";
+char g_num_variations[kNumSize] = "";
 char g_num_views[kNumSize] = "";
 
 static const size_t kMaxExtensionSize =
@@ -51,10 +53,13 @@ char g_extension_ids[kMaxExtensionSize] = "";
 static const size_t kMaxSwitchesSize = kSwitchLen * kMaxSwitches + 1;
 char g_switches[kMaxSwitchesSize] = "";
 
+static const size_t kMaxVariationChunksSize =
+    kMaxVariationChunkSize * kMaxReportedVariationChunks + 1;
+char g_variation_chunks[kMaxVariationChunksSize] = "";
+
 void SetActiveURL(const GURL& url) {
-  base::strlcpy(g_active_url,
-                url.possibly_invalid_spec().c_str(),
-                kMaxActiveURLSize);
+  base::strlcpy(g_active_url, url.possibly_invalid_spec().c_str(),
+                arraysize(g_active_url));
 }
 
 void SetClientId(const std::string& client_id) {
@@ -74,35 +79,31 @@ std::string GetClientId() {
 }
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  snprintf(g_num_extensions, kNumSize - 1, "%" PRIuS, extension_ids.size());
-  g_num_extensions[kNumSize - 1] = '\0';
+  snprintf(g_num_extensions, arraysize(g_num_extensions), "%" PRIuS,
+           extension_ids.size());
 
   std::string extension_str;
   std::set<std::string>::const_iterator iter = extension_ids.begin();
-  for (int i = 0;
+  for (size_t i = 0;
        i < kMaxReportedActiveExtensions && iter != extension_ids.end();
        ++i, ++iter) {
     extension_str += *iter;
   }
-  strncpy(g_extension_ids, extension_str.c_str(), kMaxExtensionSize - 1);
-  g_extension_ids[kMaxExtensionSize - 1] = '\0';
+  base::strlcpy(g_extension_ids, extension_str.c_str(),
+                arraysize(g_extension_ids));
 }
 
 void SetGpuInfo(const content::GPUInfo& gpu_info) {
-  snprintf(g_gpu_vendor_id, kGpuStringSize, "0x%04x", gpu_info.gpu.vendor_id);
-  snprintf(g_gpu_device_id, kGpuStringSize, "0x%04x", gpu_info.gpu.device_id);
-  strncpy(g_gpu_driver_ver,
-          gpu_info.driver_version.c_str(),
-          kGpuStringSize - 1);
-  g_gpu_driver_ver[kGpuStringSize - 1] = '\0';
-  strncpy(g_gpu_ps_ver,
-          gpu_info.pixel_shader_version.c_str(),
-          kGpuStringSize - 1);
-  g_gpu_ps_ver[kGpuStringSize - 1] = '\0';
-  strncpy(g_gpu_vs_ver,
-          gpu_info.vertex_shader_version.c_str(),
-          kGpuStringSize - 1);
-  g_gpu_vs_ver[kGpuStringSize - 1] = '\0';
+  snprintf(g_gpu_vendor_id, arraysize(g_gpu_vendor_id), "0x%04x",
+           gpu_info.gpu.vendor_id);
+  snprintf(g_gpu_device_id, arraysize(g_gpu_device_id), "0x%04x",
+           gpu_info.gpu.device_id);
+  base::strlcpy(g_gpu_driver_ver, gpu_info.driver_version.c_str(),
+                arraysize(g_gpu_driver_ver));
+  base::strlcpy(g_gpu_ps_ver, gpu_info.pixel_shader_version.c_str(),
+                arraysize(g_gpu_ps_ver));
+  base::strlcpy(g_gpu_vs_ver,  gpu_info.vertex_shader_version.c_str(),
+                arraysize(g_gpu_vs_ver));
 }
 
 void SetPrinterInfo(const char* printer_info) {
@@ -115,21 +116,19 @@ void SetPrinterInfo(const char* printer_info) {
     // Truncate long switches, align short ones with spaces to be trimmed later.
     printer_info_str.resize((i + 1) * kPrinterInfoStrLen, ' ');
   }
-  strncpy(g_printer_info, printer_info_str.c_str(),
-          arraysize(g_printer_info) - 1);
-  g_printer_info[arraysize(g_printer_info) - 1] = '\0';
+  base::strlcpy(g_printer_info, printer_info_str.c_str(),
+                arraysize(g_printer_info));
 }
 
 void SetNumberOfViews(int number_of_views) {
-  snprintf(g_num_views, kNumSize - 1, "%d", number_of_views);
-  g_num_views[kNumSize - 1] = '\0';
+  snprintf(g_num_views, arraysize(g_num_views), "%d", number_of_views);
 }
 
 void SetCommandLine(const CommandLine* command_line) {
   const CommandLine::StringVector& argv = command_line->argv();
 
-  snprintf(g_num_switches, kNumSize - 1, "%" PRIuS, argv.size() - 1);
-  g_num_switches[kNumSize - 1] = '\0';
+  snprintf(g_num_switches, arraysize(g_num_switches), "%" PRIuS,
+           argv.size() - 1);
 
   std::string command_line_str;
   for (size_t argv_i = 1;
@@ -139,17 +138,35 @@ void SetCommandLine(const CommandLine* command_line) {
     // Truncate long switches, align short ones with spaces to be trimmed later.
     command_line_str.resize(argv_i * kSwitchLen, ' ');
   }
-  strncpy(g_switches, command_line_str.c_str(), kMaxSwitchesSize - 1);
-  g_switches[kMaxSwitchesSize - 1] = '\0';
+  base::strlcpy(g_switches, command_line_str.c_str(), arraysize(g_switches));
 }
 
-void SetExperimentList(const std::vector<string16>& state) {
-  // TODO(mad): Implement this.
+void SetExperimentList(const std::vector<string16>& experiments) {
+  std::vector<string16> chunks;
+  chrome_variations::GenerateVariationChunks(experiments, &chunks);
+
+  // Store up to |kMaxReportedVariationChunks| chunks.
+  std::string chunks_str;
+  const size_t number_of_chunks_to_report =
+      std::min(chunks.size(), kMaxReportedVariationChunks);
+  for (size_t i = 0; i < number_of_chunks_to_report; ++i) {
+    chunks_str += UTF16ToUTF8(chunks[i]);
+    // Align short chunks with spaces to be trimmed later.
+    chunks_str.resize(i * kMaxVariationChunkSize, ' ');
+  }
+  base::strlcpy(g_variation_chunks, chunks_str.c_str(),
+                arraysize(g_variation_chunks));
+
+  // Make note of the total number of experiments, which may be greater than
+  // what was able to fit in |kMaxReportedVariationChunks|. This is useful when
+  // correlating stability with the number of experiments running
+  // simultaneously.
+  snprintf(g_num_variations, arraysize(g_num_variations), "%" PRIuS,
+           experiments.size());
 }
 
 void SetChannel(const std::string& channel) {
-  strncpy(g_channel, channel.c_str(), kChannelSize - 1);
-  g_channel[kChannelSize - 1] = '\0';
+  base::strlcpy(g_channel, channel.c_str(), arraysize(g_channel));
 }
 
 }  // namespace child_process_logging

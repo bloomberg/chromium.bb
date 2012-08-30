@@ -23,12 +23,12 @@ struct GPUInfo;
 // The maximum number of active extensions we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
-static const int kMaxReportedActiveExtensions = 10;
+static const size_t kMaxReportedActiveExtensions = 10;
 
 // The maximum number of variation chunks we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
-static const int kMaxReportedVariationChunks = 15;
+static const size_t kMaxReportedVariationChunks = 15;
 
 // The maximum size of a variation chunk. This size was picked to be
 // consistent between platforms and the value was chosen from the Windows
@@ -61,9 +61,11 @@ extern char g_gpu_ps_ver[];
 extern char g_gpu_vs_ver[];
 extern char g_num_extensions[];
 extern char g_num_switches[];
+extern char g_num_variations[];
 extern char g_num_views[];
 extern char g_printer_info[];
 extern char g_switches[];
+extern char g_variation_chunks[];
 
 // Assume IDs are 32 bytes long.
 static const size_t kExtensionLen = 32;

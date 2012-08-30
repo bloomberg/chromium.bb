@@ -869,8 +869,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   }
 
   // If GPU info is known, send it.
-  unsigned gpu_vendor_len = my_strlen(child_process_logging::g_gpu_vendor_id);
-  if (gpu_vendor_len) {
+  if (*child_process_logging::g_gpu_vendor_id) {
     static const char vendor_msg[] = "gpu-venid";
     static const char device_msg[] = "gpu-devid";
     static const char driver_msg[] = "gpu-driver";
@@ -906,19 +905,19 @@ void HandleCrashDump(const BreakpadInfo& info) {
         MimeWriter::kMaxCrashChunkSize, false /* Don't strip whitespaces. */);
   }
 
-  if (my_strlen(child_process_logging::g_channel)) {
+  if (*child_process_logging::g_channel) {
     writer.AddPairString("channel", child_process_logging::g_channel);
     writer.AddBoundary();
     writer.Flush();
   }
 
-  if (my_strlen(child_process_logging::g_num_views)) {
+  if (*child_process_logging::g_num_views) {
     writer.AddPairString("num-views", child_process_logging::g_num_views);
     writer.AddBoundary();
     writer.Flush();
   }
 
-  if (my_strlen(child_process_logging::g_num_extensions)) {
+  if (*child_process_logging::g_num_extensions) {
     writer.AddPairString("num-extensions",
                          child_process_logging::g_num_extensions);
     writer.AddBoundary();
@@ -951,7 +950,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
         true);
   }
 
-  if (my_strlen(child_process_logging::g_num_switches)) {
+  if (*child_process_logging::g_num_switches) {
     writer.AddPairString("num-switches",
                          child_process_logging::g_num_switches);
     writer.AddBoundary();
@@ -969,6 +968,26 @@ void HandleCrashDump(const BreakpadInfo& info) {
         std::min(switches_len, kMaxSwitchLen),
         child_process_logging::kSwitchLen,
         true /* Strip whitespace since switches are padded to kSwitchLen. */);
+  }
+
+  if (*child_process_logging::g_num_variations) {
+    writer.AddPairString("num-experiments",
+                         child_process_logging::g_num_variations);
+    writer.AddBoundary();
+    writer.Flush();
+  }
+
+  unsigned variation_chunks_len =
+      my_strlen(child_process_logging::g_variation_chunks);
+  if (variation_chunks_len) {
+    static const char variation_msg[] = "experiment-chunk-";
+    static const unsigned kMaxVariationsLen =
+        kMaxReportedVariationChunks * kMaxVariationChunkSize;
+    writer.AddPairDataInChunks(variation_msg, sizeof(variation_msg) - 1,
+        child_process_logging::g_variation_chunks,
+        std::min(variation_chunks_len, kMaxVariationsLen),
+        kMaxVariationChunkSize,
+        true /* Strip whitespace since variation chunks are padded. */);
   }
 
   if (info.oom_size) {
