@@ -102,9 +102,8 @@ SerializedHandle::SerializedHandle(const base::SharedMemoryHandle& handle,
 }
 
 SerializedHandle::SerializedHandle(
-    Type type,
     const IPC::PlatformFileForTransit& socket_descriptor)
-    : type_(type),
+    : type_(SOCKET),
       shm_handle_(base::SharedMemory::NULLHandle()),
       size_(0),
       descriptor_(socket_descriptor) {
@@ -113,8 +112,8 @@ SerializedHandle::SerializedHandle(
 bool SerializedHandle::IsHandleValid() const {
   if (type_ == SHARED_MEMORY)
     return base::SharedMemory::IsHandleValid(shm_handle_);
-  else if (type_ == SOCKET || type_ == CHANNEL_HANDLE)
-    return !(IPC::InvalidPlatformFileForTransit() == descriptor_);
+  else if (type_ == SOCKET)
+    return (IPC::InvalidPlatformFileForTransit() == descriptor_);
   return false;
 }
 
@@ -146,7 +145,8 @@ bool SerializedHandle::ReadHeader(PickleIterator* iter, Header* hdr) {
       break;
     }
     case SOCKET:
-    case CHANNEL_HANDLE:
+      valid_type = true;
+      break;
     case INVALID:
       valid_type = true;
       break;

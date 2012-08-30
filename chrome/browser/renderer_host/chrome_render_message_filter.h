@@ -66,9 +66,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;
 
-  int render_process_id() { return render_process_id_; }
-  bool off_the_record() { return off_the_record_; }
-
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ChromeRenderMessageFilter>;

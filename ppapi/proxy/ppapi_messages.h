@@ -266,14 +266,6 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
                      int /* renderer_id */,
                      bool /* incognito */)
 
-// Creates a channel to talk to a renderer. This message is only used by the
-// NaCl IPC proxy. It is intercepted by NaClIPCAdapter, which creates the
-// actual channel and rewrites the message for the untrusted side.
-IPC_MESSAGE_CONTROL3(PpapiMsg_CreateNaClChannel,
-                     int /* renderer_id */,
-                     bool /* incognito */,
-                     ppapi::proxy::SerializedHandle /* channel_handle */)
-
 // Each plugin may be referenced by multiple renderers. We need the instance
 // IDs to be unique within a plugin, despite coming from different renderers,
 // and unique within a renderer, despite going to different plugins. This means
