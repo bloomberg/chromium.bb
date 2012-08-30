@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_wapi_service.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
@@ -57,6 +58,12 @@ const char* GetExportFormatParam(DocumentExportFormat format) {
   }
 }
 
+// OAuth2 scopes for the documents API.
+const char kDocsListScope[] = "https://docs.google.com/feeds/";
+const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
+const char kUserContentScope[] = "https://docs.googleusercontent.com/";
+const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
+
 }  // namespace
 
 GDataWapiService::GDataWapiService()
@@ -76,7 +83,14 @@ AuthService* GDataWapiService::auth_service_for_testing() {
 void GDataWapiService::Initialize(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
-  runner_.reset(new OperationRunner(profile));
+
+  std::vector<std::string> scopes;
+  scopes.push_back(kDocsListScope);
+  scopes.push_back(kSpreadsheetsScope);
+  scopes.push_back(kUserContentScope);
+  // Drive App scope is required for even WAPI v3 apps access.
+  scopes.push_back(kDriveAppsScope);
+  runner_.reset(new OperationRunner(profile, scopes));
   runner_->Initialize();
 }
 

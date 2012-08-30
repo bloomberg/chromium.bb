@@ -67,7 +67,8 @@ class GDataOperationsTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
-    runner_.reset(new OperationRunner(profile_.get()));
+    runner_.reset(new OperationRunner(profile_.get(),
+                                      std::vector<std::string>()));
     runner_->Initialize();
   }
 

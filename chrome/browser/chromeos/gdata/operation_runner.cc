@@ -13,9 +13,10 @@ using content::BrowserThread;
 
 namespace gdata {
 
-OperationRunner::OperationRunner(Profile* profile)
+OperationRunner::OperationRunner(Profile* profile,
+                                 const std::vector<std::string>& scopes)
     : profile_(profile),
-      auth_service_(new AuthService()),
+      auth_service_(new AuthService(scopes)),
       operation_registry_(new OperationRegistry()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

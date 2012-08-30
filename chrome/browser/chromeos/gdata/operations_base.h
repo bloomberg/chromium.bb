@@ -33,6 +33,7 @@ class AuthOperation : public OperationRegistry::Operation,
  public:
   AuthOperation(OperationRegistry* registry,
                 const AuthStatusCallback& callback,
+                const std::vector<std::string>& scopes,
                 const std::string& refresh_token);
   virtual ~AuthOperation();
   void Start();
@@ -48,6 +49,7 @@ class AuthOperation : public OperationRegistry::Operation,
  private:
   std::string refresh_token_;
   AuthStatusCallback callback_;
+  std::vector<std::string> scopes_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthOperation);

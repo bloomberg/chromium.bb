@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/auth_service.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
@@ -39,8 +40,9 @@ void AuthService::Initialize(Profile* profile) {
     FOR_EACH_OBSERVER(Observer, observers_, OnOAuth2RefreshTokenChanged());
 }
 
-AuthService::AuthService()
+AuthService::AuthService(const std::vector<std::string>& scopes)
     : profile_(NULL),
+      scopes_(scopes),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -48,9 +50,8 @@ AuthService::AuthService()
 AuthService::~AuthService() {
 }
 
-void AuthService::StartAuthentication(
-    OperationRegistry* registry,
-    const AuthStatusCallback& callback) {
+void AuthService::StartAuthentication(OperationRegistry* registry,
+                                      const AuthStatusCallback& callback) {
   scoped_refptr<base::MessageLoopProxy> relay_proxy(
       base::MessageLoopProxy::current());
 
@@ -81,7 +82,7 @@ void AuthService::StartAuthenticationOnUIThread(
     const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We have refresh token, let's gets authenticated.
-  (new AuthOperation(registry, callback, refresh_token_))->Start();
+  (new AuthOperation(registry, callback, scopes_, refresh_token_))->Start();
 }
 
 void AuthService::OnAuthCompleted(

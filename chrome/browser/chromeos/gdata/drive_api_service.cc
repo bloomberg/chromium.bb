@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/drive_api_service.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
@@ -20,6 +21,15 @@ using content::BrowserThread;
 
 namespace gdata {
 
+namespace {
+
+// OAuth2 scopes for Drive API.
+const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
+const char kDriveAppsReadonlyScope[] =
+    "https://www.googleapis.com/auth/drive.apps.readonly";
+
+}  // namespace
+
 DriveAPIService::DriveAPIService()
     : profile_(NULL),
       runner_(NULL) {
@@ -33,7 +43,11 @@ DriveAPIService::~DriveAPIService() {
 void DriveAPIService::Initialize(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_ = profile;
-  runner_.reset(new OperationRunner(profile));
+
+  std::vector<std::string> scopes;
+  scopes.push_back(kDriveScope);
+  scopes.push_back(kDriveAppsReadonlyScope);
+  runner_.reset(new OperationRunner(profile, scopes));
   runner_->Initialize();
 }
 

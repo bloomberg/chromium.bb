@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_OPERATION_RUNNER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,7 +25,7 @@ class OperationRegistry;
 // retries and authentication.
 class OperationRunner : public AuthService::Observer {
  public:
-  explicit OperationRunner(Profile* profile);
+  OperationRunner(Profile* profile, const std::vector<std::string>& scopes);
   virtual ~OperationRunner();
 
   AuthService* auth_service() { return auth_service_.get(); }

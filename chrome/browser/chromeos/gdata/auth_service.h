@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_AUTH_SERVICE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -38,7 +39,7 @@ class AuthService : public content::NotificationObserver {
     virtual ~Observer() {}
   };
 
-  AuthService();
+  explicit AuthService(const std::vector<std::string>& scopes);
   virtual ~AuthService();
 
   // Adds and removes the observer. AddObserver() should be called before
@@ -50,7 +51,7 @@ class AuthService : public content::NotificationObserver {
   // refresh token.
   void Initialize(Profile* profile);
 
-  // Starts fetching OAuth2 auth token from the refresh token.
+  // Starts fetching OAuth2 auth token from the refresh token for |scopes_|.
   void StartAuthentication(OperationRegistry* registry,
                            const AuthStatusCallback& callback);
 
@@ -95,6 +96,7 @@ class AuthService : public content::NotificationObserver {
   Profile* profile_;
   std::string refresh_token_;
   std::string access_token_;
+  std::vector<std::string> scopes_;
   ObserverList<Observer> observers_;
 
   content::NotificationRegistrar registrar_;

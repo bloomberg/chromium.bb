@@ -10,7 +10,6 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
@@ -40,20 +39,6 @@ const char kGDataVersionHeader[] = "GData-Version: 3.0";
 
 // Maximum number of attempts for re-authentication per operation.
 const int kMaxReAuthenticateAttemptsPerOperation = 1;
-
-// OAuth scope for the documents API.
-const char kDocsListScope[] = "https://docs.google.com/feeds/";
-const char kSpreadsheetsScope[] = "https://spreadsheets.google.com/feeds/";
-const char kUserContentScope[] = "https://docs.googleusercontent.com/";
-
-// OAuth scope for the Contacts API.
-const char kContactsScope[] = "https://www.google.com/m8/feeds/";
-
-// OAuth scope for Drive API.
-const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
-const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
-const char kDriveAppsReadonlyScope[] =
-    "https://www.googleapis.com/auth/drive.apps.readonly";
 
 // Parse JSON string to base::Value object.
 void ParseJsonOnBlockingPool(const std::string& data,
@@ -85,27 +70,18 @@ namespace gdata {
 
 AuthOperation::AuthOperation(OperationRegistry* registry,
                              const AuthStatusCallback& callback,
+                             const std::vector<std::string>& scopes,
                              const std::string& refresh_token)
     : OperationRegistry::Operation(registry),
-      refresh_token_(refresh_token), callback_(callback) {
+      refresh_token_(refresh_token),
+      callback_(callback),
+      scopes_(scopes) {
 }
 
 AuthOperation::~AuthOperation() {}
 
 void AuthOperation::Start() {
   DCHECK(!refresh_token_.empty());
-  std::vector<std::string> scopes;
-  if (gdata::util::IsDriveV2ApiEnabled()) {
-    scopes.push_back(kDriveScope);
-    scopes.push_back(kDriveAppsReadonlyScope);
-  } else {
-    scopes.push_back(kDocsListScope);
-    scopes.push_back(kSpreadsheetsScope);
-    scopes.push_back(kUserContentScope);
-    scopes.push_back(kContactsScope);
-    // Drive App scope is required for even WAPI v3 apps access.
-    scopes.push_back(kDriveAppsScope);
-  }
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, g_browser_process->system_request_context()));
   NotifyStart();
@@ -113,7 +89,7 @@ void AuthOperation::Start() {
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
       refresh_token_,
-      scopes);
+      scopes_);
 }
 
 void AuthOperation::DoCancel() {
