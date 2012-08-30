@@ -159,7 +159,7 @@ void ExtensionAppProvider::RefreshAppList() {
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const extensions::Extension* app = *iter;
-    if (!app->is_app())
+    if (!app->ShouldDisplayInLauncher())
       continue;
 
     if (profile_->IsOffTheRecord() &&
