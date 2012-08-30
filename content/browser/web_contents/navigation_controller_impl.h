@@ -156,13 +156,22 @@ class CONTENT_EXPORT NavigationControllerImpl
   // pending and in page navigations only happen on committed pages. If there
   // is no last committed entry, then nothing will be in-page.
   //
-  // Special note: if the URLs are the same, it does NOT count as an in-page
-  // navigation. Neither does an input URL that has no ref, even if the rest is
-  // the same. This may seem weird, but when we're considering whether a
-  // navigation happened without loading anything, the same URL would be a
-  // reload, while only a different ref would be in-page (pages can't clear
+  // Special note: if the URLs are the same, it does NOT automatically count as
+  // an in-page navigation. Neither does an input URL that has no ref, even if
+  // the rest is the same. This may seem weird, but when we're considering
+  // whether a navigation happened without loading anything, the same URL could
+  // be a reload, while only a different ref would be in-page (pages can't clear
   // refs without reload, only change to "#" which we don't count as empty).
-  bool IsURLInPageNavigation(const GURL& url) const;
+  bool IsURLInPageNavigation(const GURL& url) const {
+    return IsURLInPageNavigation(url, false);
+  }
+
+  // The situation is made murkier by history.replaceState(), which could
+  // provide the same URL as part of an in-page navigation, not a reload. So
+  // we need this form which lets the (untrustworthy) renderer resolve the
+  // ambiguity, but only when the URLs are equal. This should be safe since the
+  // origin isn't changing.
+  bool IsURLInPageNavigation(const GURL& url, bool renderer_says_in_page) const;
 
   // Sets the SessionStorageNamespace for the given |partition_id|. This is
   // used during initialization of a new NavigationController to allow

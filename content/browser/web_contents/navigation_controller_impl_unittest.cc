@@ -1435,7 +1435,28 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
 
-  // First navigation.
+  // Ensure main page navigation to same url respects the was_within_same_page
+  // hint provided in the params.
+  ViewHostMsg_FrameNavigate_Params self_params;
+  self_params.page_id = 0;
+  self_params.url = url1;
+  self_params.transition = content::PAGE_TRANSITION_LINK;
+  self_params.should_update_history = false;
+  self_params.gesture = NavigationGestureUser;
+  self_params.is_post = false;
+  self_params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url1));
+  self_params.was_within_same_page = true;
+
+  content::LoadCommittedDetails details;
+  EXPECT_TRUE(controller.RendererDidNavigate(self_params, &details));
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  EXPECT_TRUE(details.is_in_page);
+  // TODO(tsepez): check why |did_replace_entry| is returned as false.
+  EXPECT_FALSE(details.did_replace_entry);
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Fragment navigation to a new page_id.
   const GURL url2("http://foo#a");
   ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 1;
@@ -1447,7 +1468,6 @@ TEST_F(NavigationControllerTest, InPage) {
   params.content_state = webkit_glue::CreateHistoryStateForURL(GURL(url2));
 
   // This should generate a new entry.
-  content::LoadCommittedDetails details;
   EXPECT_TRUE(controller.RendererDidNavigate(params, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
@@ -1504,6 +1524,8 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_FALSE(details.is_in_page);
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 }
 
 TEST_F(NavigationControllerTest, InPage_Replace) {

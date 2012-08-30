@@ -103,8 +103,13 @@ void ConfigureEntriesForRestore(
 }
 
 // See NavigationController::IsURLInPageNavigation for how this works and why.
-bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
-  if (existing_url == new_url || !new_url.has_ref()) {
+bool AreURLsInPageNavigation(const GURL& existing_url,
+                             const GURL& new_url,
+                             bool renderer_says_in_page) {
+  if (existing_url == new_url)
+    return renderer_says_in_page;
+
+  if (!new_url.has_ref()) {
     // TODO(jcampan): what about when navigating back from a ref URL to the top
     // non ref URL? Nothing is loaded in that case but we return false here.
     // The user could also navigate from the ref URL to the non ref URL by
@@ -684,7 +689,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   }
 
   // is_in_page must be computed before the entry gets committed.
-  details->is_in_page = IsURLInPageNavigation(params.url);
+  details->is_in_page = IsURLInPageNavigation(
+      params.url, params.was_within_same_page);
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(params);
@@ -871,7 +877,7 @@ content::NavigationType NavigationControllerImpl::ClassifyNavigation(
   // the time this doesn't matter since WebKit doesn't tell us about subframe
   // navigations that don't actually navigate, but it can happen when there is
   // an encoding override (it always sends a navigation request).
-  if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url))
+  if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url, false))
     return content::NAVIGATION_TYPE_IN_PAGE;
 
   // Since we weeded out "new" navigations above, we know this is an existing
@@ -1079,11 +1085,11 @@ int NavigationControllerImpl::GetIndexOfEntry(
   return (i == entries_.end()) ? -1 : static_cast<int>(i - entries_.begin());
 }
 
-bool NavigationControllerImpl::IsURLInPageNavigation(const GURL& url) const {
+bool NavigationControllerImpl::IsURLInPageNavigation(
+    const GURL& url, bool renderer_says_in_page) const {
   NavigationEntry* last_committed = GetLastCommittedEntry();
-  if (!last_committed)
-    return false;
-  return AreURLsInPageNavigation(last_committed->GetURL(), url);
+  return last_committed && AreURLsInPageNavigation(
+      last_committed->GetURL(), url, renderer_says_in_page);
 }
 
 void NavigationControllerImpl::CopyStateFrom(
