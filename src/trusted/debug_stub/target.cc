@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/abi.h"
@@ -454,13 +455,13 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         }
 
         len = static_cast<uint32_t>(wlen);
-        uint8_t *block = new uint8_t[len];
-        if (!port::IPlatform::GetMemory(sys_addr, len, block)) {
+        nacl::scoped_array<uint8_t> block(new uint8_t[len]);
+        if (!port::IPlatform::GetMemory(sys_addr, len, block.get())) {
           err = FAILED;
           break;
         }
 
-        pktOut->AddBlock(block, len);
+        pktOut->AddBlock(block.get(), len);
         break;
       }
 
@@ -486,10 +487,10 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         }
 
         len = static_cast<uint32_t>(wlen);
-        uint8_t *block = new uint8_t[len];
-        pktIn->GetBlock(block, len);
+        nacl::scoped_array<uint8_t> block(new uint8_t[len]);
+        pktIn->GetBlock(block.get(), len);
 
-        if (!port::IPlatform::SetMemory(sys_addr, len, block)) {
+        if (!port::IPlatform::SetMemory(sys_addr, len, block.get())) {
           err = FAILED;
           break;
         }
