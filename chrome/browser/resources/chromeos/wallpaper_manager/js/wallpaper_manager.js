@@ -219,8 +219,7 @@ function WallpaperManager(dialogDom) {
     for (var key in this.manifest_.categories) {
       categoriesDataModel.push(this.manifest_.categories[key]);
     }
-    // Adds custom category as last category.
-    categoriesDataModel.push(str('customCategoryLabel'));
+    //TODO(bshe): Add custom wallpaper category once it is ready.
     this.categoriesList_.dataModel = categoriesDataModel;
   };
 
