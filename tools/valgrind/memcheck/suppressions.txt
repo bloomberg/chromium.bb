@@ -6157,6 +6157,16 @@
    fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
 
+{
+   bug_145757
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5gdata21DriveResourceMetadata20CreateDriveDirectoryEv
+   fun:_ZN5gdata21DriveResourceMetadata17FromDocumentEntryERKNS_13DocumentEntryE
+   fun:_ZN5gdata21DriveResourceMetadata11RefreshFileE10scoped_ptrINS_13DocumentEntryEERKN4base8CallbackIFvNS_14DriveFileErrorERK8FilePathS1_INS_15DriveEntryProtoEEEEE
+   fun:_ZN5gdata15DriveFileSystem8OnSearchERKN4base8CallbackIFvNS_14DriveFileErrorERK4GURL10scoped_ptrISt6vectorINS_16SearchResultInfoESaIS9_EEEEEEPNS_18GetDocumentsParamsES3_
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 

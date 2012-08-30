@@ -1510,3 +1510,24 @@
    fun:KioskModeIdleLogoutTest_CheckObserversBeforeUserLogin_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_145757a
+   Heapcheck:Leak
+   fun:gdata::DriveResourceMetadata::CreateDriveDirectory
+   fun:gdata::DriveResourceMetadata::FromDocumentEntry
+   fun:gdata::DriveResourceMetadata::RefreshFile
+   fun:gdata::DriveFileSystem::OnSearch
+}
+{
+   bug_145757b
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:base::PrepareForUTF8Output
+   fun:UTF16ToUTF8
+   fun:UTF16ToUTF8
+   fun:gdata::DriveEntry::InitFromDocumentEntry
+   fun:gdata::DriveDirectory::InitFromDocumentEntry
+   fun:gdata::DriveResourceMetadata::FromDocumentEntry
+   fun:gdata::DriveResourceMetadata::RefreshFile
+   fun:gdata::DriveFileSystem::OnSearch
+}
