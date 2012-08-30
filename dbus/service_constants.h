@@ -181,7 +181,6 @@ const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
-const char kSetIsFullscreenMethod[] = "SetIsFullscreen";
 // DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
