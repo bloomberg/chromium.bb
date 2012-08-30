@@ -8,7 +8,7 @@
     # duplicated from chrome.gyp
     'chromium_code': 1,
 
-    'remoting_audio%': 0,
+    'remoting_audio%': 1,
     'remoting_multi_process%': 0,
 
     # The version is composed from major & minor versions specific to remoting
