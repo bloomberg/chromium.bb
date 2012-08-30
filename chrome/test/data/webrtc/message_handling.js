@@ -19,6 +19,12 @@
 var gPeerConnection = null;
 
 /**
+ * True if we are accepting incoming calls.
+ * @private
+ */
+var gAcceptsIncomingCalls = true;
+
+/**
  * Our peer id as assigned by the peerconnection_server.
  * @private
  */
@@ -104,13 +110,15 @@ function is_call_active() {
 }
 
 /**
- * Hangs up a started call. Returns ok-call-hung-up on success.
+ * Hangs up a started call. Returns ok-call-hung-up on success. This tab will
+ * not accept any incoming calls after this call.
  */
 function hangUp() {
   if (gPeerConnection == null)
     failTest('hanging up, but no call is active');
   sendToPeer(gRemotePeerId, 'BYE');
   closeCall();
+  gAcceptsIncomingCalls = false;
   returnToPyAuto('ok-call-hung-up');
 }
 
@@ -263,7 +271,7 @@ function handlePeerMessage(peerId, message) {
     closeCall();
     return;
   }
-  if (gPeerConnection == null) {
+  if (gPeerConnection == null && gAcceptsIncomingCalls) {
     debug('We are being called: answer...');
     if (gLocalStream == null)
       failTest('We are being called, but we are not connected.');
