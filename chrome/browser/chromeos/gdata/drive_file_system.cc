@@ -380,7 +380,7 @@ DriveFileSystem::DriveFileSystem(
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
-      ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

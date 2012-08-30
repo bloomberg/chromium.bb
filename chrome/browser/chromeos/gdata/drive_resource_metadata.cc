@@ -184,7 +184,7 @@ DriveResourceMetadata::DriveResourceMetadata()
       serialized_size_(0),
       largest_changestamp_(0),
       origin_(UNINITIALIZED),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   root_.reset(CreateDriveDirectory());
   if (!util::IsDriveV2ApiEnabled())
     InitializeRootEntry(kDriveRootDirectoryResourceId);

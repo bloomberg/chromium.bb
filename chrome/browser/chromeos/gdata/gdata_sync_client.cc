@@ -82,7 +82,7 @@ GDataSyncClient::GDataSyncClient(Profile* profile,
       registrar_(new PrefChangeRegistrar),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
       sync_loop_is_running_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

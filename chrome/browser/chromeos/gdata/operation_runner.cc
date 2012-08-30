@@ -18,7 +18,7 @@ OperationRunner::OperationRunner(Profile* profile,
     : profile_(profile),
       auth_service_(new AuthService(scopes)),
       operation_registry_(new OperationRegistry()),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   auth_service_->AddObserver(this);
 }

@@ -203,7 +203,6 @@ class GDataURLRequestJob : public net::URLRequestJob {
   // Helper method to close |stream_|.
   void CloseFileStream();
 
-  scoped_ptr<base::WeakPtrFactory<GDataURLRequestJob> > weak_ptr_factory_;
   DriveFileSystemInterface* file_system_;
 
   bool error_;  // True if we've encountered an error.
@@ -221,21 +220,23 @@ class GDataURLRequestJob : public net::URLRequestJob {
   scoped_refptr<net::GrowableIOBuffer> download_growable_buf_;
   scoped_refptr<net::DrainableIOBuffer> download_drainable_buf_;
 
+  // This should remain the last member so it'll be destroyed first and
+  // invalidate its weak pointers before other members are destroyed.
+  base::WeakPtrFactory<GDataURLRequestJob> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(GDataURLRequestJob);
 };
 
 GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request,
                                        net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
-          new base::WeakPtrFactory<GDataURLRequestJob>(this))),
       file_system_(NULL),
       error_(false),
       headers_set_(false),
       initial_file_size_(0),
       remaining_bytes_(0),
       streaming_download_(false),
-      download_growable_buf_(new net::GrowableIOBuffer) {
+      download_growable_buf_(new net::GrowableIOBuffer),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   download_growable_buf_->SetCapacity(kInitialDownloadBufferSizeInBytes);
   download_drainable_buf_ = new net::DrainableIOBuffer(
       download_growable_buf_, download_growable_buf_->capacity());
@@ -308,7 +309,7 @@ void GDataURLRequestJob::Start() {
       FROM_HERE,
       base::Bind(&GetFileSystemOnUIThread, file_system),
       base::Bind(&GDataURLRequestJob::StartAsync,
-                 weak_ptr_factory_->GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file_system)));
 }
 
@@ -340,7 +341,7 @@ void GDataURLRequestJob::Kill() {
   }
 
   net::URLRequestJob::Kill();
-  weak_ptr_factory_->InvalidateWeakPtrs();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -503,7 +504,7 @@ void GDataURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
   file_system_->GetEntryInfoByResourceId(
       resource_id,
       base::Bind(&GDataURLRequestJob::OnGetEntryInfoByResourceId,
-                 weak_ptr_factory_->GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  resource_id));
 }
 
@@ -531,9 +532,9 @@ void GDataURLRequestJob::OnGetEntryInfoByResourceId(
   file_system_->GetFileByResourceId(
       resource_id,
       base::Bind(&GDataURLRequestJob::OnGetFileByResourceId,
-                 weak_ptr_factory_->GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&GDataURLRequestJob::OnUrlFetchDownloadData,
-                 weak_ptr_factory_->GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GDataURLRequestJob::OnUrlFetchDownloadData(
@@ -685,7 +686,7 @@ void GDataURLRequestJob::OnGetFileByResourceId(
                  local_file_path_,
                  base::Unretained(file_size)),
       base::Bind(&GDataURLRequestJob::OnGetFileSize,
-                 weak_ptr_factory_->GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file_size)));
 }
 
@@ -739,7 +740,7 @@ void GDataURLRequestJob::ReadFromFile() {
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
       base::Bind(&GDataURLRequestJob::OnFileOpen,
-                 weak_ptr_factory_->GetWeakPtr(),
+                 weak_ptr_factory_.GetWeakPtr(),
                  bytes_to_read));
 
   if (result == net::ERR_IO_PENDING) {
@@ -774,7 +775,7 @@ void GDataURLRequestJob::ReadFileStream(int bytes_to_read) {
 
   int result = stream_->Read(read_buf_, bytes_to_read,
                              base::Bind(&GDataURLRequestJob::OnReadFileStream,
-                                        weak_ptr_factory_->GetWeakPtr()));
+                                        weak_ptr_factory_.GetWeakPtr()));
 
   // If IO is pending, we just need to wait.
   if (result == net::ERR_IO_PENDING) {

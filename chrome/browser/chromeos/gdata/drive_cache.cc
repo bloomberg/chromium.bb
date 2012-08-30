@@ -313,7 +313,7 @@ DriveCache::DriveCache(const FilePath& cache_root_path,
     : cache_root_path_(cache_root_path),
       cache_paths_(GetCachePaths(cache_root_path_)),
       blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

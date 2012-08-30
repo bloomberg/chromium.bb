@@ -246,7 +246,7 @@ GDataWapiFeedLoader::GDataWapiFeedLoader(
       webapps_registry_(webapps_registry),
       cache_(cache),
       blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 GDataWapiFeedLoader::~GDataWapiFeedLoader() {
