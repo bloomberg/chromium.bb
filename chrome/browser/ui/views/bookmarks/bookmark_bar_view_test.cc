@@ -635,7 +635,8 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Flaky on ChromeOS: http://crbug.com/145819
 #define MAYBE_DND DISABLED_DND
 #else
 #define MAYBE_DND DND
