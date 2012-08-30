@@ -18,7 +18,7 @@ class NotificationService;
 }
 
 namespace crypto {
-class MacKeychain;
+class AppleKeychain;
 }
 
 // Implements PasswordStore on top of the OS X Keychain, with an internal
@@ -30,7 +30,7 @@ class PasswordStoreMac : public PasswordStore {
  public:
   // Takes ownership of |keychain| and |login_db|, both of which must be
   // non-NULL.
-  PasswordStoreMac(crypto::MacKeychain* keychain, LoginDatabase* login_db);
+  PasswordStoreMac(crypto::AppleKeychain* keychain, LoginDatabase* login_db);
 
   // Initializes |thread_| and |notification_service_|.
   virtual bool Init() OVERRIDE;
@@ -87,7 +87,7 @@ class PasswordStoreMac : public PasswordStore {
   // thread.
   void CreateNotificationService();
 
-  scoped_ptr<crypto::MacKeychain> keychain_;
+  scoped_ptr<crypto::AppleKeychain> keychain_;
   scoped_ptr<LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.

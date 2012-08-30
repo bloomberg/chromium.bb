@@ -21,8 +21,8 @@
 #include "chrome/browser/password_manager/password_store_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/password_manager/password_store_mac.h"
-#include "crypto/keychain_mac.h"
-#include "crypto/mock_keychain_mac.h"
+#include "crypto/apple_keychain.h"
+#include "crypto/mock_apple_keychain.h"
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Don't do anything. We're going to use the default store.
 #elif defined(OS_POSIX)
@@ -115,9 +115,9 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
       WebDataServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
-    ps = new PasswordStoreMac(new crypto::MockKeychain(), login_db);
+    ps = new PasswordStoreMac(new crypto::MockAppleKeychain(), login_db);
   } else {
-    ps = new PasswordStoreMac(new crypto::MacKeychain(), login_db);
+    ps = new PasswordStoreMac(new crypto::AppleKeychain(), login_db);
   }
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native

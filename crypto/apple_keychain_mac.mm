@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "crypto/keychain_mac.h"
+#include "crypto/apple_keychain.h"
+
+#import <Foundation/Foundation.h>
 
 namespace crypto {
 
-MacKeychain::MacKeychain() {}
+AppleKeychain::AppleKeychain() {}
 
-MacKeychain::~MacKeychain() {}
+AppleKeychain::~AppleKeychain() {}
 
-OSStatus MacKeychain::ItemCopyAttributesAndData(
+OSStatus AppleKeychain::ItemCopyAttributesAndData(
     SecKeychainItemRef itemRef,
     SecKeychainAttributeInfo* info,
     SecItemClass* itemClass,
@@ -21,7 +23,7 @@ OSStatus MacKeychain::ItemCopyAttributesAndData(
                                               attrList, length, outData);
 }
 
-OSStatus MacKeychain::ItemModifyAttributesAndData(
+OSStatus AppleKeychain::ItemModifyAttributesAndData(
     SecKeychainItemRef itemRef,
     const SecKeychainAttributeList* attrList,
     UInt32 length,
@@ -30,17 +32,17 @@ OSStatus MacKeychain::ItemModifyAttributesAndData(
                                                 data);
 }
 
-OSStatus MacKeychain::ItemFreeAttributesAndData(
+OSStatus AppleKeychain::ItemFreeAttributesAndData(
     SecKeychainAttributeList* attrList,
     void* data) const {
   return SecKeychainItemFreeAttributesAndData(attrList, data);
 }
 
-OSStatus MacKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
+OSStatus AppleKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
   return SecKeychainItemDelete(itemRef);
 }
 
-OSStatus MacKeychain::SearchCreateFromAttributes(
+OSStatus AppleKeychain::SearchCreateFromAttributes(
     CFTypeRef keychainOrArray,
     SecItemClass itemClass,
     const SecKeychainAttributeList* attrList,
@@ -49,12 +51,12 @@ OSStatus MacKeychain::SearchCreateFromAttributes(
                                                attrList, searchRef);
 }
 
-OSStatus MacKeychain::SearchCopyNext(SecKeychainSearchRef searchRef,
-                                     SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::SearchCopyNext(SecKeychainSearchRef searchRef,
+                                       SecKeychainItemRef* itemRef) const {
   return SecKeychainSearchCopyNext(searchRef, itemRef);
 }
 
-OSStatus MacKeychain::AddInternetPassword(
+OSStatus AppleKeychain::AddInternetPassword(
     SecKeychainRef keychain,
     UInt32 serverNameLength,
     const char* serverName,
@@ -80,14 +82,14 @@ OSStatus MacKeychain::AddInternetPassword(
                                         itemRef);
 }
 
-OSStatus MacKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
-                                          UInt32 serviceNameLength,
-                                          const char* serviceName,
-                                          UInt32 accountNameLength,
-                                          const char* accountName,
-                                          UInt32* passwordLength,
-                                          void** passwordData,
-                                          SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
+                                            UInt32 serviceNameLength,
+                                            const char* serviceName,
+                                            UInt32 accountNameLength,
+                                            const char* accountName,
+                                            UInt32* passwordLength,
+                                            void** passwordData,
+                                            SecKeychainItemRef* itemRef) const {
   return SecKeychainFindGenericPassword(keychainOrArray,
                                         serviceNameLength,
                                         serviceName,
@@ -98,19 +100,19 @@ OSStatus MacKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
                                         itemRef);
 }
 
-OSStatus MacKeychain::ItemFreeContent(SecKeychainAttributeList* attrList,
-                                      void* data) const {
+OSStatus AppleKeychain::ItemFreeContent(SecKeychainAttributeList* attrList,
+                                        void* data) const {
   return SecKeychainItemFreeContent(attrList, data);
 }
 
-OSStatus MacKeychain::AddGenericPassword(SecKeychainRef keychain,
-                                         UInt32 serviceNameLength,
-                                         const char* serviceName,
-                                         UInt32 accountNameLength,
-                                         const char* accountName,
-                                         UInt32 passwordLength,
-                                         const void* passwordData,
-                                         SecKeychainItemRef* itemRef) const {
+OSStatus AppleKeychain::AddGenericPassword(SecKeychainRef keychain,
+                                           UInt32 serviceNameLength,
+                                           const char* serviceName,
+                                           UInt32 accountNameLength,
+                                           const char* accountName,
+                                           UInt32 passwordLength,
+                                           const void* passwordData,
+                                           SecKeychainItemRef* itemRef) const {
   return SecKeychainAddGenericPassword(keychain,
                                        serviceNameLength,
                                        serviceName,
@@ -121,7 +123,7 @@ OSStatus MacKeychain::AddGenericPassword(SecKeychainRef keychain,
                                        itemRef);
 }
 
-void MacKeychain::Free(CFTypeRef ref) const {
+void AppleKeychain::Free(CFTypeRef ref) const {
   if (ref)
     CFRelease(ref);
 }

@@ -10,12 +10,12 @@
 #include "base/basictypes.h"
 
 namespace crypto {
-class MacKeychain;
+class AppleKeychain;
 }  // namespace crypto
 
 class EncryptorPassword {
  public:
-  explicit EncryptorPassword(const crypto::MacKeychain& keychain)
+  explicit EncryptorPassword(const crypto::AppleKeychain& keychain)
       : keychain_(keychain) {
   }
 
@@ -29,7 +29,7 @@ class EncryptorPassword {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EncryptorPassword);
-  const crypto::MacKeychain& keychain_;
+  const crypto::AppleKeychain& keychain_;
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_PASSWORD_H__

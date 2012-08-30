@@ -17,10 +17,10 @@
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
-#include "crypto/mock_keychain_mac.h"
+#include "crypto/mock_apple_keychain.h"
 
 using content::BrowserThread;
-using crypto::MockKeychain;
+using crypto::MockAppleKeychain;
 using webkit::forms::PasswordForm;
 using testing::_;
 using testing::DoAll;
@@ -51,7 +51,7 @@ ACTION(QuitUIMessageLoop) {
 class PasswordStoreMacInternalsTest : public testing::Test {
  public:
   virtual void SetUp() {
-    MockKeychain::KeychainTestData test_data[] = {
+    MockAppleKeychain::KeychainTestData test_data[] = {
       // Basic HTML form.
       { kSecAuthenticationTypeHTMLForm, "some.domain.com",
         kSecProtocolTypeHTTP, NULL, 0, NULL, "20020601171500Z",
@@ -91,7 +91,7 @@ class PasswordStoreMacInternalsTest : public testing::Test {
         "abc", "123", false },
     };
 
-    keychain_ = new MockKeychain();
+    keychain_ = new MockAppleKeychain();
 
     for (unsigned int i = 0; i < arraysize(test_data); ++i) {
       keychain_->AddTestItem(test_data[i]);
@@ -120,7 +120,7 @@ class PasswordStoreMacInternalsTest : public testing::Test {
     EXPECT_TRUE(keychain_->CreatorCodesSetForAddedItems());
   }
 
-  MockKeychain* keychain_;
+  MockAppleKeychain* keychain_;
 };
 
 #pragma mark -
@@ -274,7 +274,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainToFormTranslation) {
   };
 
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {
-    // Create our fake KeychainItemRef; see MockKeychain docs.
+    // Create our fake KeychainItemRef; see MockAppleKeychain docs.
     SecKeychainItemRef keychain_item =
         reinterpret_cast<SecKeychainItemRef>(i + 1);
     PasswordForm form;
@@ -514,7 +514,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainAdd) {
         "gobbledygook", NULL, NULL, NULL, NULL,
         L"anonymous", L"knock-knock", false, false, 0 }, false },
     // Test that failing to update a duplicate (forced using the magic failure
-    // password; see MockKeychain::ItemModifyAttributesAndData) is reported.
+    // password; see MockAppleKeychain::ItemModifyAttributesAndData) is
+    // reported.
     { { PasswordForm::SCHEME_HTML, "http://some.domain.com",
         "http://some.domain.com/insecure.html", NULL, NULL, NULL, NULL,
         L"joe_user", L"fail_me", false, false, 0 }, false },
@@ -906,7 +907,7 @@ class PasswordStoreMacTest : public testing::Test {
     FilePath db_file = db_dir_.path().AppendASCII("login.db");
     ASSERT_TRUE(login_db_->Init(db_file));
 
-    keychain_ = new MockKeychain();
+    keychain_ = new MockAppleKeychain();
 
     store_ = new PasswordStoreMac(keychain_, login_db_);
     ASSERT_TRUE(store_->Init());
@@ -922,7 +923,7 @@ class PasswordStoreMacTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
-  MockKeychain* keychain_;  // Owned by store_.
+  MockAppleKeychain* keychain_;  // Owned by store_.
   LoginDatabase* login_db_;  // Owned by store_.
   scoped_refptr<PasswordStoreMac> store_;
   ScopedTempDir db_dir_;
@@ -941,14 +942,14 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
   };
   scoped_ptr<PasswordForm> joint_form(CreatePasswordFormFromData(joint_data));
   login_db_->AddLogin(*joint_form);
-  MockKeychain::KeychainTestData joint_keychain_data = {
+  MockAppleKeychain::KeychainTestData joint_keychain_data = {
     kSecAuthenticationTypeHTMLForm, "some.domain.com",
     kSecProtocolTypeHTTP, "/insecure.html", 0, NULL, "20020601171500Z",
     "joe_user", "sekrit", false };
   keychain_->AddTestItem(joint_keychain_data);
 
   // Insert a password into the keychain only.
-  MockKeychain::KeychainTestData keychain_only_data = {
+  MockAppleKeychain::KeychainTestData keychain_only_data = {
     kSecAuthenticationTypeHTMLForm, "keychain.only.com",
     kSecProtocolTypeHTTP, NULL, 0, NULL, "20020601171500Z",
     "keychain", "only", false

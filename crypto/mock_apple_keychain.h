@@ -13,12 +13,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "crypto/keychain_mac.h"
+#include "crypto/apple_keychain.h"
 
 namespace crypto {
-
-// Type used for the keys in the std::map(s) and MockKeychain items.
-typedef uintptr_t MockKeychainItemType;
 
 // Mock Keychain wrapper for testing code that interacts with the OS X
 // Keychain.  Implemented by storing SecKeychainAttributeList and
@@ -26,14 +23,37 @@ typedef uintptr_t MockKeychainItemType;
 // mapping them to integer keys.
 //
 // Note that "const" is pretty much meaningless for this class; the const-ness
-// of MacKeychain doesn't apply to the actual keychain data, so all of the Mock
-// data is mutable; don't assume that it won't change over the life of tests.
-class CRYPTO_EXPORT MockKeychain : public MacKeychain {
+// of AppleKeychain doesn't apply to the actual keychain data, so all of the
+// Mock data is mutable; don't assume that it won't change over the life of
+// tests.
+class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
  public:
-  MockKeychain();
-  virtual ~MockKeychain();
+  MockAppleKeychain();
+  virtual ~MockAppleKeychain();
 
-  // MacKeychain implementation.
+  // AppleKeychain implementation.
+  virtual OSStatus FindGenericPassword(
+      CFTypeRef keychainOrArray,
+      UInt32 serviceNameLength,
+      const char* serviceName,
+      UInt32 accountNameLength,
+      const char* accountName,
+      UInt32* passwordLength,
+      void** passwordData,
+      SecKeychainItemRef* itemRef) const OVERRIDE;
+  virtual OSStatus ItemFreeContent(SecKeychainAttributeList* attrList,
+                                   void* data) const OVERRIDE;
+  virtual OSStatus AddGenericPassword(
+      SecKeychainRef keychain,
+      UInt32 serviceNameLength,
+      const char* serviceName,
+      UInt32 accountNameLength,
+      const char* accountName,
+      UInt32 passwordLength,
+      const void* passwordData,
+      SecKeychainItemRef* itemRef) const OVERRIDE;
+
+#if !defined(OS_IOS)
   virtual OSStatus ItemCopyAttributesAndData(
       SecKeychainItemRef itemRef,
       SecKeychainAttributeInfo* info,
@@ -72,26 +92,6 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
       UInt32 passwordLength,
       const void* passwordData,
       SecKeychainItemRef* itemRef) const OVERRIDE;
-  virtual OSStatus FindGenericPassword(
-      CFTypeRef keychainOrArray,
-      UInt32 serviceNameLength,
-      const char* serviceName,
-      UInt32 accountNameLength,
-      const char* accountName,
-      UInt32* passwordLength,
-      void** passwordData,
-      SecKeychainItemRef* itemRef) const OVERRIDE;
-  virtual OSStatus ItemFreeContent(SecKeychainAttributeList* attrList,
-                                   void* data) const OVERRIDE;
-  virtual OSStatus AddGenericPassword(
-      SecKeychainRef keychain,
-      UInt32 serviceNameLength,
-      const char* serviceName,
-      UInt32 accountNameLength,
-      const char* accountName,
-      UInt32 passwordLength,
-      const void* passwordData,
-      SecKeychainItemRef* itemRef) const OVERRIDE;
   virtual void Free(CFTypeRef ref) const OVERRIDE;
 
   // Return the counts of objects returned by Create/Copy functions but never
@@ -118,6 +118,7 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
   };
   // Adds a keychain item with the given info to the test set.
   void AddTestItem(const KeychainTestData& item_data);
+#endif  // !defined(OS_IOS)
 
   // |FindGenericPassword()| can return different results depending on user
   // interaction with the system Keychain.  For mocking purposes we allow the
@@ -139,6 +140,15 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
   int password_data_count() const { return password_data_count_; }
 
  private:
+
+  // Type used for the keys in the std::map(s) and MockAppleKeychain items.
+  typedef uintptr_t MockKeychainItemType;
+
+  // Type of the map holding the mock keychain attributes.
+  typedef std::map<MockKeychainItemType, SecKeychainAttributeList>
+      MockKeychainAttributesMap;
+
+#if !defined(OS_IOS)
   // Returns true if the keychain already contains a password that matches the
   // attributes provided.
   bool AlreadyContainsInternetPassword(
@@ -178,10 +188,9 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
   void SetTestDataNegativeItem(MockKeychainItemType item, Boolean value);
   void SetTestDataCreator(MockKeychainItemType item, OSType value);
   // Sets the password data and length for the item-th test item.
-  void SetTestDataPasswordBytes(
-      MockKeychainItemType item,
-      const void* data,
-      size_t length);
+  void SetTestDataPasswordBytes(MockKeychainItemType item,
+                                const void* data,
+                                size_t length);
   // Sets the password for the item-th test item. As with SetTestDataString,
   // the data will not be null-terminated.
   void SetTestDataPasswordString(MockKeychainItemType item, const char* value);
@@ -199,11 +208,11 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
     UInt32 length;
   } KeychainPasswordData;
 
-  // Mutable because the MockKeychain API requires its internal keychain storage
-  // to be modifiable by users of this class.
+  // Mutable because the MockAppleKeychain API requires its internal keychain
+  // storage to be modifiable by users of this class.
+  mutable MockKeychainAttributesMap keychain_attr_list_;
   mutable std::map<MockKeychainItemType,
-                   SecKeychainAttributeList> keychain_attr_list_;
-  mutable std::map<MockKeychainItemType, KeychainPasswordData> keychain_data_;
+                   KeychainPasswordData> keychain_data_;
   mutable MockKeychainItemType next_item_key_;
 
   // Tracks the items that should be returned in subsequent calls to
@@ -221,6 +230,7 @@ class CRYPTO_EXPORT MockKeychain : public MacKeychain {
 
   // Tracks which items (by key) were added with AddInternetPassword.
   mutable std::set<MockKeychainItemType> added_via_api_;
+#endif  // !defined(OS_IOS)
 
   // Result code for the |FindGenericPassword()| method.
   OSStatus find_generic_result_;

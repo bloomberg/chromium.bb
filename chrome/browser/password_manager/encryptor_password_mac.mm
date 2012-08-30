@@ -9,17 +9,17 @@
 #include "base/base64.h"
 #include "base/mac/mac_logging.h"
 #include "base/rand_util.h"
-#include "crypto/keychain_mac.h"
+#include "crypto/apple_keychain.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using crypto::MacKeychain;
+using crypto::AppleKeychain;
 
 namespace {
 
 // Generates a random password and adds it to the Keychain.  The added password
 // is returned from the function.  If an error occurs, an empty password is
 // returned.
-std::string AddRandomPasswordToKeychain(const MacKeychain& keychain,
+std::string AddRandomPasswordToKeychain(const AppleKeychain& keychain,
                                         const std::string& service_name,
                                         const std::string& account_name) {
   // Generate a password with 128 bits of randomness.

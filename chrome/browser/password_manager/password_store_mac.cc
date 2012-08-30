@@ -22,16 +22,16 @@
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "crypto/keychain_mac.h"
+#include "crypto/apple_keychain.h"
 
-using crypto::MacKeychain;
+using crypto::AppleKeychain;
 using webkit::forms::PasswordForm;
 
 // Utility class to handle the details of constructing and running a keychain
 // search from a set of attributes.
 class KeychainSearch {
  public:
-  explicit KeychainSearch(const MacKeychain& keychain);
+  explicit KeychainSearch(const AppleKeychain& keychain);
   ~KeychainSearch();
 
   // Sets up a keycahin search based on an non "null" (NULL for char*,
@@ -49,12 +49,12 @@ class KeychainSearch {
   void FindMatchingItems(std::vector<SecKeychainItemRef>* matches);
 
  private:
-  const MacKeychain* keychain_;
+  const AppleKeychain* keychain_;
   SecKeychainAttributeList search_attributes_;
   SecKeychainSearchRef search_ref_;
 };
 
-KeychainSearch::KeychainSearch(const MacKeychain& keychain)
+KeychainSearch::KeychainSearch(const AppleKeychain& keychain)
     : keychain_(&keychain), search_ref_(NULL) {
   search_attributes_.count = 0;
   search_attributes_.attr = NULL;
@@ -231,7 +231,7 @@ PasswordForm::Scheme SchemeForAuthType(SecAuthenticationType auth_type) {
   }
 }
 
-bool FillPasswordFormFromKeychainItem(const MacKeychain& keychain,
+bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
                                       const SecKeychainItemRef& keychain_item,
                                       PasswordForm* form) {
   DCHECK(form);
@@ -444,7 +444,8 @@ void MergePasswordForms(std::vector<PasswordForm*>* keychain_forms,
 }
 
 std::vector<PasswordForm*> GetPasswordsForForms(
-    const MacKeychain& keychain, std::vector<PasswordForm*>* database_forms) {
+    const AppleKeychain& keychain,
+    std::vector<PasswordForm*>* database_forms) {
   MacKeychainPasswordFormAdapter keychain_adapter(&keychain);
 
   std::vector<PasswordForm*> merged_forms;
@@ -469,7 +470,7 @@ std::vector<PasswordForm*> GetPasswordsForForms(
 #pragma mark -
 
 MacKeychainPasswordFormAdapter::MacKeychainPasswordFormAdapter(
-    const MacKeychain* keychain)
+    const AppleKeychain* keychain)
     : keychain_(keychain), finds_only_owned_(false) {
 }
 
@@ -734,7 +735,7 @@ OSType MacKeychainPasswordFormAdapter::CreatorCodeForSearch() {
 
 #pragma mark -
 
-PasswordStoreMac::PasswordStoreMac(MacKeychain* keychain,
+PasswordStoreMac::PasswordStoreMac(AppleKeychain* keychain,
                                    LoginDatabase* login_db)
     : keychain_(keychain), login_metadata_db_(login_db) {
   DCHECK(keychain_.get());

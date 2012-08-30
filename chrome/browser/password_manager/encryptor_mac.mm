@@ -10,11 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/encryptor_password_mac.h"
+#include "crypto/apple_keychain.h"
 #include "crypto/encryptor.h"
-#include "crypto/keychain_mac.h"
 #include "crypto/symmetric_key.h"
 
-using crypto::MacKeychain;
+using crypto::AppleKeychain;
 
 namespace {
 
@@ -45,7 +45,7 @@ crypto::SymmetricKey* GetEncryptionKey() {
   if (use_mock_keychain) {
     password = "mock_password";
   } else {
-    MacKeychain keychain;
+    AppleKeychain keychain;
     EncryptorPassword encryptor_password(keychain);
     password = encryptor_password.GetEncryptorPassword();
   }
