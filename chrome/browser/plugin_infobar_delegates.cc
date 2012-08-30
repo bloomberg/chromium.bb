@@ -5,7 +5,7 @@
 #include "chrome/browser/plugin_infobar_delegates.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/plugin_observer.h"
@@ -35,7 +35,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
 
-PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarTabService* infobar_service,
+PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarService* infobar_service,
                                              const string16& name,
                                              const std::string& identifier)
     : ConfirmInfoBarDelegate(infobar_service),
@@ -76,7 +76,7 @@ string16 PluginInfoBarDelegate::GetLinkText() const {
 // UnauthorizedPluginInfoBarDelegate ------------------------------------------
 
 UnauthorizedPluginInfoBarDelegate::UnauthorizedPluginInfoBarDelegate(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     HostContentSettingsMap* content_settings,
     const string16& utf16_name,
     const std::string& identifier)
@@ -175,7 +175,7 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginObserver* observer,
     PluginInstaller* installer,
     const string16& message)
-    : PluginInfoBarDelegate(InfoBarTabService::ForTab(observer->tab_contents()),
+    : PluginInfoBarDelegate(InfoBarService::ForTab(observer->tab_contents()),
           installer->name(),
           installer->identifier()),
       WeakPluginInstallerObserver(installer),
@@ -299,7 +299,7 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
 // PluginInstallerInfoBarDelegate ---------------------------------------------
 
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     PluginInstaller* installer,
     const base::Closure& callback,
     bool new_install,
@@ -315,7 +315,7 @@ PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
 }
 
 InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     PluginInstaller* installer,
     const base::Closure& callback) {
   string16 message;
@@ -423,7 +423,7 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
 // PluginMetroModeInfoBarDelegate ---------------------------------------------
 #if defined(OS_WIN)
 InfoBarDelegate* PluginMetroModeInfoBarDelegate::Create(
-    InfoBarTabService* infobar_service, const string16& plugin_name) {
+    InfoBarService* infobar_service, const string16& plugin_name) {
   string16 message = l10n_util::GetStringFUTF16(
       IDS_METRO_MISSING_PLUGIN_PROMPT, plugin_name);
   return new PluginMetroModeInfoBarDelegate(
@@ -431,7 +431,7 @@ InfoBarDelegate* PluginMetroModeInfoBarDelegate::Create(
 }
 
 PluginMetroModeInfoBarDelegate::PluginMetroModeInfoBarDelegate(
-    InfoBarTabService* infobar_service, const string16& message)
+    InfoBarService* infobar_service, const string16& message)
     : ConfirmInfoBarDelegate(infobar_service),
       message_(message) {
 }

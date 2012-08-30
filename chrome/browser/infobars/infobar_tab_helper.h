@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_INFOBARS_INFOBAR_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -14,14 +14,14 @@
 class InfoBarDelegate;
 
 // Per-tab info bar manager.
-class InfoBarTabHelper : public InfoBarTabService,
+class InfoBarTabHelper : public InfoBarService,
                          public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
   explicit InfoBarTabHelper(content::WebContents* web_contents);
   virtual ~InfoBarTabHelper();
 
-  // InfoBarTabService implementation.
+  // InfoBarService implementation.
   virtual bool AddInfoBar(InfoBarDelegate* delegate) OVERRIDE;
   virtual void RemoveInfoBar(InfoBarDelegate* delegate) OVERRIDE;
   virtual bool ReplaceInfoBar(InfoBarDelegate* old_delegate,

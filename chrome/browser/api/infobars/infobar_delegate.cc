@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -90,7 +90,7 @@ TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return NULL;
 }
 
-InfoBarDelegate::InfoBarDelegate(InfoBarTabService* infobar_service)
+InfoBarDelegate::InfoBarDelegate(InfoBarService* infobar_service)
     : contents_unique_id_(0),
       owner_(infobar_service) {
   if (infobar_service)
@@ -98,7 +98,7 @@ InfoBarDelegate::InfoBarDelegate(InfoBarTabService* infobar_service)
 }
 
 void InfoBarDelegate::StoreActiveEntryUniqueID(
-    InfoBarTabService* infobar_service) {
+    InfoBarService* infobar_service) {
   NavigationEntry* active_entry =
       infobar_service->GetWebContents()->GetController().GetActiveEntry();
   contents_unique_id_ = active_entry ? active_entry->GetUniqueID() : 0;

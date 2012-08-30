@@ -13,7 +13,7 @@ class AutoLoginInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class InfoBar;
-class InfoBarTabService;
+class InfoBarService;
 class InsecureContentInfoBarDelegate;
 class LinkInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
@@ -58,18 +58,18 @@ class InfoBarDelegate {
 
   // Called to create the InfoBar. Implementation of this method is
   // platform-specific.
-  virtual InfoBar* CreateInfoBar(InfoBarTabService* owner) = 0;
+  virtual InfoBar* CreateInfoBar(InfoBarService* owner) = 0;
 
   // TODO(pkasting): Move to InfoBar once InfoBars own their delegates.
-  InfoBarTabService* owner() { return owner_; }
+  InfoBarService* owner() { return owner_; }
 
   void clear_owner() { owner_ = NULL; }
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
-  // InfoBarTabService when determining whether or not a delegate should be
+  // InfoBarService when determining whether or not a delegate should be
   // added because a matching one already exists. If this function returns true,
-  // the InfoBarTabService will not add the new delegate because it considers
+  // the InfoBarService will not add the new delegate because it considers
   // one to already be present.
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
 
@@ -110,12 +110,12 @@ class InfoBarDelegate {
  protected:
   // If |contents| is non-NULL, its active entry's unique ID will be stored
   // using StoreActiveEntryUniqueID automatically.
-  explicit InfoBarDelegate(InfoBarTabService* infobar_service);
+  explicit InfoBarDelegate(InfoBarService* infobar_service);
 
   // Store the unique id for the active entry in the specified WebContents, to
   // be used later upon navigation to determine if this InfoBarDelegate should
   // be expired from |contents_|.
-  void StoreActiveEntryUniqueID(InfoBarTabService* infobar_service);
+  void StoreActiveEntryUniqueID(InfoBarService* infobar_service);
 
   // Direct accessors for subclasses that need to do something special.
   int contents_unique_id() const { return contents_unique_id_; }
@@ -137,7 +137,7 @@ class InfoBarDelegate {
   int contents_unique_id_;
 
   // TODO(pkasting): Remove.
-  InfoBarTabService* owner_;
+  InfoBarService* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };

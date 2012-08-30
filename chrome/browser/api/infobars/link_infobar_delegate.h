@@ -31,12 +31,12 @@ class LinkInfoBarDelegate : public InfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  protected:
-  explicit LinkInfoBarDelegate(InfoBarTabService* infobar_service);
+  explicit LinkInfoBarDelegate(InfoBarService* infobar_service);
   virtual ~LinkInfoBarDelegate();
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarTabService* infobar_service) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarService* infobar_service) OVERRIDE;
   virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(LinkInfoBarDelegate);

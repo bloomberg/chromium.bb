@@ -24,7 +24,7 @@ struct LoadCommittedDetails;
 // card information gathered from a form submission.
 class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  AutofillCCInfoBarDelegate(InfoBarTabService* infobar_service,
+  AutofillCCInfoBarDelegate(InfoBarService* infobar_service,
                             const CreditCard* credit_card,
                             PersonalDataManager* personal_data,
                             const AutofillMetrics* metric_logger);

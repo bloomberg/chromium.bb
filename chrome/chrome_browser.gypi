@@ -134,7 +134,7 @@
         'browser/api/infobars/confirm_infobar_delegate.h',
         'browser/api/infobars/infobar_delegate.cc',
         'browser/api/infobars/infobar_delegate.h',
-        'browser/api/infobars/infobar_tab_service.h',
+        'browser/api/infobars/infobar_service.h',
         'browser/api/infobars/link_infobar_delegate.cc',
         'browser/api/infobars/link_infobar_delegate.h',
         'browser/api/infobars/simple_alert_infobar_delegate.cc',

@@ -39,7 +39,7 @@ namespace {
 
 class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  KeystonePromotionInfoBarDelegate(InfoBarTabService* infobar_service,
+  KeystonePromotionInfoBarDelegate(InfoBarService* infobar_service,
                                    PrefService* prefs);
 
  private:
@@ -71,7 +71,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     PrefService* prefs)
     : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),

@@ -8,7 +8,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -320,7 +320,7 @@ AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
   if (created_card)
     *created_card = credit_card;
   return new AutofillCCInfoBarDelegate(
-      InfoBarTabService::ForTab(tab_contents()),
+      InfoBarService::ForTab(tab_contents()),
       credit_card,
       &personal_data_,
       metric_logger);

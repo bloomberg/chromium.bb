@@ -58,7 +58,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  protected:
-  explicit ConfirmInfoBarDelegate(InfoBarTabService* infobar_service);
+  explicit ConfirmInfoBarDelegate(InfoBarService* infobar_service);
   virtual ~ConfirmInfoBarDelegate();
 
   virtual bool ShouldExpireInternal(
@@ -66,7 +66,7 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarTabService* owner) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() OVERRIDE;
 

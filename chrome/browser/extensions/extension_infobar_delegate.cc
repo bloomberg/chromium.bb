@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/infobars/infobar.h"
@@ -17,7 +17,7 @@
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     Browser* browser,
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     const extensions::Extension* extension,
     const GURL& url,
     int height)

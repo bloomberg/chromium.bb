@@ -16,7 +16,7 @@
 // the Autofill developers.
 class AutofillFeedbackInfoBarDelegate : public LinkInfoBarDelegate {
  public:
-  AutofillFeedbackInfoBarDelegate(InfoBarTabService* infobar_service,
+  AutofillFeedbackInfoBarDelegate(InfoBarService* infobar_service,
                                   const string16& message,
                                   const string16& link_text,
                                   const std::string& feedback_message);

@@ -5,7 +5,7 @@
 #include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -17,7 +17,7 @@
 const char kCategoryTagAutofill[] = "Autofill";
 
 AutofillFeedbackInfoBarDelegate::AutofillFeedbackInfoBarDelegate(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     const string16& message,
     const string16& link_text,
     const std::string& feedback_message)

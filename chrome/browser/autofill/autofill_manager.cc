@@ -19,7 +19,7 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/api/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
@@ -840,7 +840,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && web_contents()) {
-    InfoBarTabService* infobar_service = manager_delegate_->GetInfoBarService();
+    InfoBarService* infobar_service = manager_delegate_->GetInfoBarService();
     infobar_service->AddInfoBar(
         new AutofillCCInfoBarDelegate(infobar_service,
                                       scoped_credit_card.release(),

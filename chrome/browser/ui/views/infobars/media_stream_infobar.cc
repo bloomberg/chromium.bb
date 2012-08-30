@@ -14,7 +14,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 
-InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   DCHECK(owner);
   return new MediaStreamInfoBar(static_cast<InfoBarTabHelper*>(owner), this);
 }

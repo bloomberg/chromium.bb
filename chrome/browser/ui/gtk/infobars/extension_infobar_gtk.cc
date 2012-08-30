@@ -203,6 +203,6 @@ gboolean ExtensionInfoBarGtk::OnExpose(GtkWidget* sender,
   return FALSE;
 }
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ExtensionInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
 }

@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -140,7 +140,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 @implementation ExtensionInfoBarController
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarTabService*)owner
+                 owner:(InfoBarService*)owner
                 window:(NSWindow*)window {
   if ((self = [super initWithDelegate:delegate owner:owner])) {
     window_ = window;
@@ -272,7 +272,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
 @end
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   NSWindow* window =
       [(NSView*)owner->GetWebContents()->GetContentNativeView() window];
   ExtensionInfoBarController* controller =

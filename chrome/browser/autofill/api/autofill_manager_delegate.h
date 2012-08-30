@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOFILL_API_AUTOFILL_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_AUTOFILL_API_AUTOFILL_MANAGER_DELEGATE_H_
 
-class InfoBarTabService;
+class InfoBarService;
 class PrefServiceBase;
 
 namespace autofill {
@@ -23,13 +23,7 @@ class AutofillManagerDelegate {
   virtual ~AutofillManagerDelegate() {}
 
   // Gets the infobar service associated with the delegate.
-  //
-  // TODO(joi): Given the approach (which we will likely use more
-  // widely) of a context associated with the instance of the delegate,
-  // it seems right to rename InfoBarTabService to just
-  // InfoBarService.  Naming the getter appropriately, will name the
-  // class itself in a follow-up change.
-  virtual InfoBarTabService* GetInfoBarService() = 0;
+  virtual InfoBarService* GetInfoBarService() = 0;
 
   // Gets the preferences associated with the delegate.
   virtual PrefServiceBase* GetPrefs() = 0;

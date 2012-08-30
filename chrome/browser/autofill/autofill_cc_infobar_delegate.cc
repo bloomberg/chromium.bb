@@ -5,7 +5,7 @@
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 
 #include "base/logging.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/common/url_constants.h"
@@ -18,7 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     const CreditCard* credit_card,
     PersonalDataManager* personal_data,
     const AutofillMetrics* metric_logger)

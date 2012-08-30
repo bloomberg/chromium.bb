@@ -163,7 +163,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   typedef std::pair<std::string, string16> LanguageNamePair;
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarTabService* infobar_helper) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarService* infobar_helper) OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual InfoBarDelegate::Type GetInfoBarType() const OVERRIDE;

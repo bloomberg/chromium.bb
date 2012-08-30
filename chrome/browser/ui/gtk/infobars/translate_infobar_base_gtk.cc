@@ -195,7 +195,7 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
 }
 
 // TranslateInfoBarDelegate specific method:
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   InfoBarTabHelper* helper = static_cast<InfoBarTabHelper*>(owner);
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {

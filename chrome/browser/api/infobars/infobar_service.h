@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_INFOBARS_INFOBAR_TAB_SERVICE_H_
-#define CHROME_BROWSER_API_INFOBARS_INFOBAR_TAB_SERVICE_H_
+#ifndef CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
+#define CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
 
 namespace content {
 class WebContents;
@@ -14,12 +14,12 @@ class TabContents;
 
 // Provides access to creating, removing and enumerating info bars
 // attached to a tab.
-class InfoBarTabService {
+class InfoBarService {
  public:
-  // Retrieves the InfoBarTabService for a given tab.
-  static InfoBarTabService* ForTab(TabContents* tab_contents);
+  // Retrieves the InfoBarService for a given tab.
+  static InfoBarService* ForTab(TabContents* tab_contents);
 
-  virtual ~InfoBarTabService() {}
+  virtual ~InfoBarService() {}
 
   // Adds an InfoBar for the specified |delegate|.
   //
@@ -60,4 +60,4 @@ class InfoBarTabService {
   virtual content::WebContents* GetWebContents() = 0;
 };
 
-#endif  // CHROME_BROWSER_API_INFOBARS_INFOBAR_TAB_SERVICE_H_
+#endif  // CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_

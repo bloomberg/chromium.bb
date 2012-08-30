@@ -7,7 +7,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
-    InfoBarTabService* infobar_service,
+    InfoBarService* infobar_service,
     gfx::Image* icon,
     const string16& message,
     bool auto_expire)

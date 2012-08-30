@@ -10,7 +10,7 @@
 
 // LinkInfoBarDelegate ---------------------------------------------------------
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new LinkInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
 }
 

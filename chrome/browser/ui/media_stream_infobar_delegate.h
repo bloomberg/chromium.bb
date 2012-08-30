@@ -12,7 +12,7 @@
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
 class InfoBarTabHelper;
-class InfoBarTabService;
+class InfoBarService;
 
 // This class configures an infobar shown when a page requests access to a
 // user's microphone and/or video camera.  The user is shown a message asking
@@ -54,7 +54,7 @@ class MediaStreamInfoBarDelegate : public InfoBarDelegate {
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarTabService* owner) OVERRIDE;
+  virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

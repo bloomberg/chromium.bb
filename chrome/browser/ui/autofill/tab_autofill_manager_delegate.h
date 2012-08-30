@@ -17,7 +17,7 @@ class TabAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
   explicit TabAutofillManagerDelegate(TabContents* tab);
   virtual ~TabAutofillManagerDelegate() {}
 
-  virtual InfoBarTabService* GetInfoBarService() OVERRIDE;
+  virtual InfoBarService* GetInfoBarService() OVERRIDE;
   virtual PrefServiceBase* GetPrefs() OVERRIDE;
   virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
 

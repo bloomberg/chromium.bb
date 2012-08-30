@@ -10,7 +10,7 @@
 @class HoverCloseButton;
 @protocol InfoBarContainer;
 class InfoBarDelegate;
-class InfoBarTabService;
+class InfoBarService;
 @class InfoBarGradientView;
 
 // A controller for an infobar in the browser window.  There is one
@@ -20,7 +20,7 @@ class InfoBarTabService;
 @interface InfoBarController : NSViewController<NSTextViewDelegate> {
  @private
   id<InfoBarContainer> containerController_;  // weak, owns us
-  InfoBarTabService* owner_;  // weak
+  InfoBarService* owner_;  // weak
   BOOL infoBarClosing_;
 
  @protected
@@ -45,7 +45,7 @@ class InfoBarTabService;
 
 // Initializes a new InfoBarController.
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarTabService*)owner;
+                 owner:(InfoBarService*)owner;
 
 // Returns YES if the infobar is owned.  If this is NO, it is not safe to call
 // any delegate functions, since they might attempt to access the owner.  Code

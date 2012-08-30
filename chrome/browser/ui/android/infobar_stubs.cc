@@ -8,12 +8,12 @@
 
 // Infobars are implemented in Java on Android.
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   NOTIMPLEMENTED();
   return NULL;
 }

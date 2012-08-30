@@ -15,7 +15,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
@@ -135,7 +135,7 @@ class WindowedPersonalDataManagerObserver
                        const content::NotificationDetails& details) OVERRIDE {
     // Accept in the infobar.
     infobar_service_ =
-        InfoBarTabService::ForTab(chrome::GetActiveTabContents(browser_));
+        InfoBarService::ForTab(chrome::GetActiveTabContents(browser_));
     InfoBarDelegate* infobar = infobar_service_->GetInfoBarDelegateAt(0);
 
     ConfirmInfoBarDelegate* confirm_infobar =
@@ -148,7 +148,7 @@ class WindowedPersonalDataManagerObserver
   bool has_run_message_loop_;
   Browser* browser_;
   content::NotificationRegistrar registrar_;
-  InfoBarTabService* infobar_service_;
+  InfoBarService* infobar_service_;
 };
 
 class AutofillTest : public InProcessBrowserTest {
@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
       render_view_host(),
       ChromeViewHostMsg_TranslateLanguageDetermined(0, "ja", true));
   TranslateInfoBarDelegate* infobar =
-      InfoBarTabService::ForTab(chrome::GetActiveTabContents(browser()))->
+      InfoBarService::ForTab(chrome::GetActiveTabContents(browser()))->
           GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
 
   ASSERT_TRUE(infobar != NULL);
@@ -1015,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
   ASSERT_FALSE(CreditCard::IsValidCreditCardNumber(ASCIIToUTF16(card)));
   SubmitCreditCard("Bob Smith", card.c_str(), "12", "2014");
   ASSERT_EQ(0u,
-            InfoBarTabService::ForTab(chrome::GetActiveTabContents(browser()))->
+            InfoBarService::ForTab(chrome::GetActiveTabContents(browser()))->
                 GetInfoBarCount());
 }
 
@@ -1229,7 +1229,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
   FillFormAndSubmit("cc_autocomplete_off_test.html", data);
 
   ASSERT_EQ(0u,
-            InfoBarTabService::ForTab(chrome::GetActiveTabContents(browser()))->
+            InfoBarService::ForTab(chrome::GetActiveTabContents(browser()))->
                 GetInfoBarCount());
 }
 

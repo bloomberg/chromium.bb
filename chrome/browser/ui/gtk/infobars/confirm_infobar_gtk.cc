@@ -16,7 +16,7 @@
 
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ConfirmInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
 }
 

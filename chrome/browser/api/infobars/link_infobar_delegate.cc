@@ -8,7 +8,7 @@ bool LinkInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;
 }
 
-LinkInfoBarDelegate::LinkInfoBarDelegate(InfoBarTabService* infobar_service)
+LinkInfoBarDelegate::LinkInfoBarDelegate(InfoBarService* infobar_service)
     : InfoBarDelegate(infobar_service) {
 }
 

@@ -9,7 +9,7 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -51,7 +51,7 @@ const float kAnimateCloseDuration = 0.12;
 @synthesize delegate = delegate_;
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate
-                 owner:(InfoBarTabService*)owner {
+                 owner:(InfoBarService*)owner {
   DCHECK(delegate);
   if ((self = [super initWithNibName:@"InfoBar"
                               bundle:base::mac::FrameworkBundle()])) {
@@ -451,13 +451,13 @@ const float kAnimateCloseDuration = 0.12;
 //////////////////////////////////////////////////////////////////////////
 // CreateInfoBar() implementations
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   LinkInfoBarController* controller =
       [[LinkInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);
 }
 
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   ConfirmInfoBarController* controller =
       [[ConfirmInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);

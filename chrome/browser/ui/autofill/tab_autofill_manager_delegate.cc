@@ -16,7 +16,7 @@ TabAutofillManagerDelegate::TabAutofillManagerDelegate(TabContents* tab)
   DCHECK(tab_);
 }
 
-InfoBarTabService* TabAutofillManagerDelegate::GetInfoBarService() {
+InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
   return tab_->infobar_tab_helper();
 }
 

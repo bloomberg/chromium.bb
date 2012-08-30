@@ -9,14 +9,14 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
-class InfoBarTabService;
+class InfoBarService;
 class ProtocolHandlerRegistry;
 
 // An InfoBar delegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission.
 class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  RegisterProtocolHandlerInfoBarDelegate(InfoBarTabService* infobar_service,
+  RegisterProtocolHandlerInfoBarDelegate(InfoBarService* infobar_service,
                                          ProtocolHandlerRegistry* registry,
                                          const ProtocolHandler& handler);
 

@@ -26,7 +26,7 @@
 
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
-InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ExtensionInfoBar(
       browser_, static_cast<InfoBarTabHelper*>(owner), this);
 }

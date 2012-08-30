@@ -16,7 +16,7 @@
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 
-InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabService* owner) {
+InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   DCHECK(owner);
   return new MediaStreamInfoBarGtk(static_cast<InfoBarTabHelper*>(owner), this);
 }
