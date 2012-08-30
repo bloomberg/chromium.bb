@@ -136,7 +136,6 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
       window->layer()->SetTransform(ui::Transform());
     }
     if (old_state != ui::SHOW_STATE_MINIMIZED &&
-        !GetRestoreBoundsInScreen(window) &&
         WorkspaceManager2::IsMaximizedState(new_state) &&
         !WorkspaceManager2::IsMaximizedState(old_state)) {
       SetRestoreBoundsInParent(window, window->bounds());
