@@ -14,8 +14,10 @@
 extern "C" {
 #if defined(USE_SYSTEM_LIBJPEG)
 #include <jpeglib.h>
+#elif defined(USE_LIBJPEG_TURBO)
+#include "third_party/libjpeg_turbo/jpeglib.h"
 #else
-#include "jpeglib.h"
+#include "third_party/libjpeg/jpeglib.h"
 #endif
 }
 
