@@ -104,19 +104,6 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, **kwargs):
       raise results_lib.BuildScriptFailure(ex, cmd[0])
 
 
-def _GetVMConstants(buildroot):
-  """Returns minimum (vdisk_size, statefulfs_size) recommended for VM's."""
-  cwd = os.path.join(buildroot, 'src', 'scripts', 'lib')
-  source_cmd = 'source %s/cros_vm_constants.sh' % cwd
-  vdisk_size = cros_build_lib.RunCommandCaptureOutput(
-      ['/bin/bash', '-c', '%s && echo $MIN_VDISK_SIZE_FULL' % source_cmd]
-      ).output.strip()
-  statefulfs_size = cros_build_lib.RunCommandCaptureOutput(
-      ['/bin/bash', '-c', '%s && echo $MIN_STATEFUL_FS_SIZE_FULL' % source_cmd],
-       ).output.strip()
-  return (vdisk_size, statefulfs_size)
-
-
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
   return raw_input(prompt)
@@ -331,27 +318,27 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
 
 
 def BuildImage(buildroot, board, images_to_build, version='',
-               rootfs_verification=True, extra_env=None, root_boost=None):
+               rootfs_verification=True, extra_env=None, disk_layout=None):
+
   # Default to base if images_to_build is passed empty.
   if not images_to_build: images_to_build = ['base']
   version_str = '--version=%s' % version
 
   cmd = ['./build_image', '--board=%s' % board, '--replace', version_str]
-  if root_boost is not None:
-    cmd += ['--rootfs_boost_size=%d' % root_boost]
 
   if not rootfs_verification:
     cmd += ['--noenable_rootfs_verification']
 
   cmd += images_to_build
+
+  if disk_layout is not None:
+    cmd += '--disk_layout=%s' % disk_layout
+
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
 def BuildVMImageForTesting(buildroot, board, extra_env=None):
-  (vdisk_size, statefulfs_size) = _GetVMConstants(buildroot)
-  cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image',
-         '--full', '--vdisk_size=%s' % vdisk_size,
-         '--statefulfs_size=%s' % statefulfs_size]
+  cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image']
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 

@@ -1001,10 +1001,10 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._build_config['images']).intersection(
         images_can_build)
-    root_boost = None
+    disk_layout = None
     if (self._build_config['useflags'] and
         'pgo_generate' in self._build_config['useflags']):
-      root_boost = 400
+      disk_layout = 'pgo'
 
     rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,
@@ -1012,7 +1012,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                         list(images_to_build),
                         rootfs_verification=rootfs_verification,
                         version=self._version,
-                        root_boost=root_boost,
+                        disk_layout=disk_layout,
                         extra_env=self._env)
 
     if self._build_config['vm_tests']:
