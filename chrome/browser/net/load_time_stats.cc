@@ -59,15 +59,9 @@ void CallLoadTimeStatsTabEventOnIOThread(
 
 // Times after a load has started at which stats are collected.
 const int kStatsCollectionTimesMs[] = {
-  500,
   1000,
   2000,
-  3000,
   4000,
-  5000,
-  7500,
-  10000,
-  15000,
   20000
 };
 
@@ -254,7 +248,7 @@ LoadTimeStats::LoadTimeStats() {
         histograms_[status][histogram_type].push_back(
             base::LinearHistogram::FactoryGet(
                 histogram_name,
-                0, 101, 102, base::Histogram::kUmaTargetedHistogramFlag));
+                0, 101, 51, base::Histogram::kUmaTargetedHistogramFlag));
       }
       DCHECK_EQ(histograms_[status][histogram_type].size(),
                 arraysize(kStatsCollectionTimesMs));
