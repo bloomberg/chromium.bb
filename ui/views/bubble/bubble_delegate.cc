@@ -31,8 +31,7 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
     bubble_params.parent = bubble->parent_window();
   else
     bubble_params.parent_widget = bubble->anchor_widget();
-  if (bubble->use_focusless())
-    bubble_params.can_activate = false;
+  bubble_params.can_activate = bubble->CanActivate();
 #if defined(OS_WIN) && !defined(USE_AURA)
   bubble_params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   bubble_params.transparent = false;
@@ -89,6 +88,7 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble) {
   border_params.delegate = new BubbleBorderDelegate(bubble, border_widget);
   border_params.transparent = true;
   border_params.parent_widget = bubble->anchor_widget();
+  border_params.can_activate = bubble->CanActivate();
   border_widget->Init(border_params);
   return border_widget;
 }
@@ -181,6 +181,10 @@ BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
   return this;
 }
 
+bool BubbleDelegateView::CanActivate() const {
+  return !use_focusless();
+}
+
 View* BubbleDelegateView::GetContentsView() {
   return this;
 }
@@ -212,9 +216,14 @@ void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
     return;
 
   if (visible) {
-    if (border_widget_)
-      border_widget_->Show();
-    GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
+    if (border_widget_) {
+      if (CanActivate())
+        border_widget_->Show();
+      else
+        border_widget_->ShowInactive();
+    }
+    if (CanActivate())
+      GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
     if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
       anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
   } else {
