@@ -61,7 +61,7 @@ struct geometry {
 
 struct window {
 	struct display *display;
-	struct geometry geometry, window_size, fullscreen_size;
+	struct geometry geometry, window_size;
 	struct {
 		GLuint fbo;
 		GLuint color_rbo;
@@ -236,9 +236,7 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 	window->geometry.width = width;
 	window->geometry.height = height;
 
-	if (window->fullscreen)
-		window->fullscreen_size = window->geometry;
-	else
+	if (!window->fullscreen)
 		window->window_size = window->geometry;
 }
 
