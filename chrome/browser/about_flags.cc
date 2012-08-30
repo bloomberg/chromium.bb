@@ -345,7 +345,7 @@ const Experiment kExperiments[] = {
     "enable-nacl-exception-handling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_NAME,
     IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_DESCRIPTION,
-    kOsWin,
+    kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableNaClExceptionHandling)
   },
   {
