@@ -1076,7 +1076,7 @@ class MinidumpWriter {
   }
 
   uintptr_t GetInstructionPointer() {
-    return ucontext_->uc_mcontext.arm_ip;
+    return ucontext_->uc_mcontext.arm_pc;
   }
 #else
 #error "This code has not been ported to your platform yet."
