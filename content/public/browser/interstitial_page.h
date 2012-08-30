@@ -40,6 +40,8 @@ class InterstitialPage {
   // appears as a new navigation entry). |new_navigation| should be false when
   // the interstitial was triggered by a loading a sub-resource in a page. Takes
   // ownership of |delegate|.
+  //
+  // Reloading the interstitial page will result in a new navigation to |url|.
   CONTENT_EXPORT static InterstitialPage* Create(
       WebContents* web_contents,
       bool new_navigation,

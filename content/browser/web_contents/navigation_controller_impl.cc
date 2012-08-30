@@ -253,9 +253,19 @@ void NavigationControllerImpl::ReloadOriginalRequestURL(bool check_for_repost) {
 
 void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
                                               ReloadType reload_type) {
-  // Reloading a transient entry does nothing.
-  if (transient_entry_index_ != -1)
+  if (transient_entry_index_ != -1) {
+    // If an interstitial is showing, treat a reload as a navigation to the
+    // transient entry's URL.
+    content::NavigationEntryImpl* active_entry =
+        NavigationEntryImpl::FromNavigationEntry(GetActiveEntry());
+    if (!active_entry)
+      return;
+    LoadURL(active_entry->GetURL(),
+            content::Referrer(),
+            content::PAGE_TRANSITION_RELOAD,
+            active_entry->extra_headers());
     return;
+  }
 
   DiscardNonCommittedEntriesInternal();
   int current_index = GetCurrentEntryIndex();

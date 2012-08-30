@@ -284,7 +284,8 @@ class NavigationController {
 
   // Reloads the current entry. If |check_for_repost| is true and the current
   // entry has POST data the user is prompted to see if they really want to
-  // reload the page. In nearly all cases pass in true.
+  // reload the page. In nearly all cases pass in true.  If a transient entry
+  // is showing, initiates a new navigation to its URL.
   virtual void Reload(bool check_for_repost) = 0;
 
   // Like Reload(), but don't use caches (aka "shift-reload").
