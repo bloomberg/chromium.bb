@@ -394,8 +394,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     if (!chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
       g_browser_process->browser_policy_connector()->InitializeUserPolicy(
           username, false  /* wait_for_policy_fetch */);
-      chromeos::UserManager::Get()->SessionStarted();
     }
+    chromeos::UserManager::Get()->SessionStarted();
   }
 
   // In Aura builds this will initialize ash::Shell.
