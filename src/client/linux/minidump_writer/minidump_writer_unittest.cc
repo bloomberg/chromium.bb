@@ -46,6 +46,7 @@
 #include "common/linux/ignore_ret.h"
 #include "common/linux/safe_readlink.h"
 #include "common/tests/auto_tempdir.h"
+#include "common/tests/file_utils.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/minidump.h"
 #include "processor/scoped_ptr.h"
@@ -328,10 +329,8 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   // Copy binary to a temp file.
   AutoTempDir temp_dir;
   string binpath = temp_dir.path() + "/linux-dumper-unittest-helper";
-  char cmdline[2 * PATH_MAX];
-  sprintf(cmdline, "/bin/cp \"%s\" \"%s\"", helper_path.c_str(),
-          binpath.c_str());
-  ASSERT_EQ(0, system(cmdline)) << "Failed to execute: " << cmdline;
+  ASSERT_EQ(true, CopyFile(helper_path.c_str(), binpath.c_str())) \
+    << "Failed to copy " << helper_path << " to " << binpath;
   ASSERT_EQ(0, chmod(binpath.c_str(), 0755));
 
   int fds[2];
