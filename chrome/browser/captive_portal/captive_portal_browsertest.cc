@@ -1155,11 +1155,10 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
                                               hanging_url,
                                               CURRENT_TAB,
                                               ui_test_utils::BROWSER_TEST_NONE);
+  portal_observer.WaitForResults(1);
 
   if (expect_open_login_tab) {
-    portal_observer.WaitForResults(2);
     navigation_observer.WaitForNavigations(1);
-    EXPECT_EQ(2, portal_observer.num_results_received());
 
     ASSERT_EQ(initial_tab_count + 1, browser->tab_count());
     EXPECT_EQ(initial_tab_count, browser->active_index());
@@ -1170,7 +1169,6 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
               GetStateOfTabReloader(chrome::GetTabContentsAt(browser, 1)));
     EXPECT_TRUE(IsLoginTab(chrome::GetTabContentsAt(browser, 1)));
   } else {
-    portal_observer.WaitForResults(1);
     EXPECT_EQ(0, navigation_observer.num_navigations());
     EXPECT_EQ(initial_active_index, browser->active_index());
     ASSERT_EQ(initial_tab_count, browser->tab_count());
@@ -1185,6 +1183,7 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
   EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
+  EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
@@ -1235,12 +1234,10 @@ void CaptivePortalBrowserTest::FastTimeoutBehindCaptivePortal(
                                               timeout_url,
                                               CURRENT_TAB,
                                               ui_test_utils::BROWSER_TEST_NONE);
+  portal_observer.WaitForResults(1);
 
   if (expect_open_login_tab) {
-    portal_observer.WaitForResults(2);
     navigation_observer.WaitForNavigations(2);
-    EXPECT_EQ(2, portal_observer.num_results_received());
-
     ASSERT_EQ(initial_tab_count + 1, browser->tab_count());
     EXPECT_EQ(initial_tab_count, browser->active_index());
     // Make sure that the originally active tab and the captive portal tab have
@@ -1253,10 +1250,7 @@ void CaptivePortalBrowserTest::FastTimeoutBehindCaptivePortal(
               GetStateOfTabReloader(chrome::GetTabContentsAt(browser, 1)));
     EXPECT_TRUE(IsLoginTab(chrome::GetTabContentsAt(browser, 1)));
   } else {
-    portal_observer.WaitForResults(1);
     navigation_observer.WaitForNavigations(1);
-    EXPECT_EQ(1, portal_observer.num_results_received());
-
     EXPECT_EQ(initial_active_index, browser->active_index());
     EXPECT_EQ(1, navigation_observer.NumNavigationsForTab(
                      chrome::GetWebContentsAt(browser, initial_active_index)));
@@ -1268,6 +1262,7 @@ void CaptivePortalBrowserTest::FastTimeoutBehindCaptivePortal(
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
   EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
+  EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
@@ -1871,13 +1866,14 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_GoBackToTimeout) {
   CaptivePortalObserver portal_observer(browser()->profile());
   chrome::GoBack(browser(), CURRENT_TAB);
 
-  // Wait for both the check triggered by the broken tab and the first load
-  // of the login tab, and for the login tab to stop loading.
-  portal_observer.WaitForResults(2);
+  // Wait for the check triggered by the broken tab and for the login tab to
+  // stop loading.
+  portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
+  // Make sure the request has been issued.
   URLRequestTimeoutOnDemandJob::WaitForJobs(1);
 
-  EXPECT_EQ(2, portal_observer.num_results_received());
+  EXPECT_EQ(1, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
   ASSERT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
@@ -1923,14 +1919,14 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_ReloadTimeout) {
   MultiNavigationObserver navigation_observer;
   chrome::GetActiveWebContents(browser())->GetController().Reload(true);
 
-  // Wait for the login tab to open, and the two captive portal results from
-  // opening an it.
-  portal_observer.WaitForResults(2);
+  // Wait for the check triggered by the broken tab and for the login tab to
+  // stop loading.
+  portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
   // Make sure the request has been issued.
   URLRequestTimeoutOnDemandJob::WaitForJobs(1);
 
-  ASSERT_EQ(2, portal_observer.num_results_received());
+  ASSERT_EQ(1, portal_observer.num_results_received());
   ASSERT_FALSE(CheckPending(browser()));
   ASSERT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
@@ -2007,10 +2003,10 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   EXPECT_EQ(0, NumLoadingTabs());
 
   // Check captive portal test results.
-  portal_observer.WaitForResults(2);
+  portal_observer.WaitForResults(1);
   ASSERT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
-  EXPECT_EQ(2, portal_observer.num_results_received());
+  EXPECT_EQ(1, portal_observer.num_results_received());
 
   // Check the inactive browser.
   EXPECT_EQ(2, inactive_browser->tab_count());

@@ -215,7 +215,7 @@ void CaptivePortalTabHelper::OnLoadAborted() {
 }
 
 void CaptivePortalTabHelper::SetIsLoginTab() {
-  login_detector_->set_is_login_tab();
+  login_detector_->SetIsLoginTab();
 }
 
 void CaptivePortalTabHelper::SetTabReloaderForTest(

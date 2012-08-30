@@ -30,7 +30,7 @@ class CaptivePortalLoginDetector {
   void OnCaptivePortalResults(Result previous_result, Result result);
 
   bool is_login_tab() const { return is_login_tab_; }
-  void set_is_login_tab() { is_login_tab_ = true; }
+  void SetIsLoginTab();
 
  private:
   Profile* profile_;
@@ -38,6 +38,10 @@ class CaptivePortalLoginDetector {
   // True if this is a login tab.  Set manually, automatically cleared once
   // login is detected.
   bool is_login_tab_;
+
+  // Page is on its first load since being tagged as a login tab.  Used to
+  // prevent a second captive portal check on the first load of the login page.
+  bool first_login_tab_load_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalLoginDetector);
 };
