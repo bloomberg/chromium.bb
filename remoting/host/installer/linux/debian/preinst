@@ -19,7 +19,7 @@ save_hash() {
 case "$1" in
   "install" | "upgrade")
     rm -f "$HASHES_FILE"
-    save_hash /usr/bin/me2me_virtual_host
+    save_hash /opt/google/chrome-remote-desktop
     ;;
 esac
 

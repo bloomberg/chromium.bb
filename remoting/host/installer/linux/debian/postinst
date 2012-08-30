@@ -29,7 +29,7 @@ case "$1" in
     # anything that would result in them losing state.
     if [ -f "$HASHES_FILE" ]; then
       if [ -d "$NOTIFIER_DIR" ]; then
-        if ! md5sum --status -c "$HASHES_FILE"; then
+        if ! md5sum --status -c "$HASHES_FILE" 2>/dev/null; then
           echo "Sending logout notification messages to virtual desktops."
           echo "$LOGOUT_MSG" > "$NOTIFIER_DIR/chrome-remote-desktop-logout"
         fi
