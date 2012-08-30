@@ -77,6 +77,13 @@ cr.define('options.network', function() {
   var cellularEnabled_ = false;
 
   /**
+   * Indicates if cellular device supports network scanning.
+   * @type {boolean}
+   * @private
+   */
+  var cellularSupportsScan_ = false;
+
+  /**
    * Indicates if WiMAX networks are available.
    * @type {boolean}
    * @private
@@ -301,15 +308,7 @@ cr.define('options.network', function() {
         Menu.decorate(menu);
         for (var i = 0; i < this.data.menu.length; i++) {
           var entry = this.data.menu[i];
-          var button = this.ownerDocument.createElement('div');
-          button.className = 'network-menu-item';
-          var buttonLabel = this.ownerDocument.createElement('div');
-          buttonLabel.className = 'network-menu-item-label';
-          buttonLabel.textContent = entry.label;
-          button.appendChild(buttonLabel);
-          button.addEventListener('click', entry.command);
-          MenuItem.decorate(button);
-          menu.appendChild(button);
+          createCallback_(menu, null, entry.label, entry.command);
         }
         return menu;
       }
@@ -439,10 +438,20 @@ cr.define('options.network', function() {
       var addendum = [];
       if (this.data_.key == 'wifi') {
         addendum.push({label: loadTimeData.getString('joinOtherNetwork'),
-                       command: 'connect',
+                       command: 'add',
                        data: {networkType: Constants.TYPE_WIFI,
-                              servicePath: '?'}});
+                              servicePath: ''}});
       } else if (this.data_.key == 'cellular') {
+        if (cellularEnabled_ && cellularSupportsScan_) {
+          entry = {
+            label: loadTimeData.getString('otherCellularNetworks'),
+            command: createAddConnectionCallback_(Constants.TYPE_CELLULAR),
+            addClass: ['other-cellulars'],
+            data: {}
+          };
+          addendum.push(entry);
+        }
+
         var label = enableDataRoaming_ ? 'disableDataRoaming' :
             'enableDataRoaming';
         var disabled = !UIAccountTweaks.currentUserIsOwner();
@@ -532,10 +541,12 @@ cr.define('options.network', function() {
         for (var i = 0; i < addendum.length; i++) {
           var value = addendum[i];
           if (value.data) {
-            var item = this.createCallback_(menu, value.data, value.label,
-                                            value.command);
+            var item = createCallback_(menu, value.data, value.label,
+                                       value.command);
             if (value.tooltip)
               item.title = value.tooltip;
+            if (value.addClass)
+              item.classList.add(value.addClass);
             separator = false;
           } else if (!separator) {
             menu.appendChild(MenuItem.createSeparator());
@@ -621,60 +632,17 @@ cr.define('options.network', function() {
     },
 
     /**
-     * Adds a command to a menu for modifying network settings.
-     * @param {!Element} menu Parent menu.
-     * @param {Object} data Description of the network.
-     * @param {string} label Display name for the menu item.
-     * @param {string|function} command Callback function or name
-     *     of the command for |networkCommand|.
-     * @return {!Element} The created menu item.
-     * @private
-     */
-    createCallback_: function(menu, data, label, command) {
-      var button = this.ownerDocument.createElement('div');
-      button.className = 'network-menu-item';
-      var buttonLabel = this.ownerDocument.createElement('span');
-      buttonLabel.className = 'network-menu-item-label';
-      buttonLabel.textContent = label;
-      button.appendChild(buttonLabel);
-      var callback = null;
-      if (typeof command == 'string') {
-        var type = String(data.networkType);
-        var path = data.servicePath;
-        callback = function() {
-          chrome.send('networkCommand',
-                      [type, path, command]);
-          closeMenu_();
-        };
-      } else if (command != null) {
-        callback = function() {
-          command(data);
-          closeMenu_();
-        };
-      }
-      if (callback != null)
-        button.addEventListener('click', callback);
-      else
-        buttonLabel.classList.add('network-disabled-control');
-
-      button.data = {label: label};
-      MenuItem.decorate(button);
-      menu.appendChild(button);
-      return button;
-    },
-
-    /**
      * Adds a menu item for showing network details.
      * @param {!Element} parent The parent element.
      * @param {Object} data Description of the network.
      * @private
      */
     createNetworkOptionsCallback_: function(parent, data) {
-      var menuItem = this.createCallback_(parent,
-                                          data,
-                                          data.networkName,
-                                          'options');
-      menuItem.style.backgroundImage = url(data.iconURL);
+      var menuItem = createCallback_(parent,
+                                     data,
+                                     data.networkName,
+                                     'options',
+                                     data.iconURL);
       if (data.policyManaged)
         menuItem.appendChild(new ManagedNetworkIndicator());
       if (data.connected || data.connecting) {
@@ -718,6 +686,64 @@ cr.define('options.network', function() {
   };
 
   /**
+   * Adds a command to a menu for modifying network settings.
+   * @param {!Element} menu Parent menu.
+   * @param {!Object} data Description of the network.
+   * @param {!string} label Display name for the menu item.
+   * @param {?(string|function)} command Callback function or name
+   *     of the command for |networkCommand|.
+   * @param {?string=} opt_iconURL Optional URL to an icon for the menu item.
+   * @return {!Element} The created menu item.
+   * @private
+   */
+  function createCallback_(menu, data, label, command, opt_iconURL) {
+    var button = menu.ownerDocument.createElement('div');
+    button.className = 'network-menu-item';
+
+    var buttonIcon = menu.ownerDocument.createElement('div');
+    buttonIcon.className = 'network-menu-item-icon';
+    button.appendChild(buttonIcon);
+    if (opt_iconURL)
+      buttonIcon.style.backgroundImage = url(opt_iconURL);
+
+    var buttonLabel = menu.ownerDocument.createElement('span');
+    buttonLabel.className = 'network-menu-item-label';
+    buttonLabel.textContent = label;
+    button.appendChild(buttonLabel);
+    var callback = null;
+    if (typeof command == 'string') {
+      var type = String(data.networkType);
+      var path = data.servicePath;
+      callback = function() {
+        chrome.send('networkCommand',
+                    [type, path, command]);
+        closeMenu_();
+      };
+    } else if (command != null) {
+      if (data) {
+        callback = function() {
+          command(data);
+          closeMenu_();
+        };
+      } else {
+        callback = function() {
+          command();
+          closeMenu_();
+        };
+      }
+    }
+    if (callback != null)
+      button.addEventListener('click', callback);
+    else
+      buttonLabel.classList.add('network-disabled-control');
+
+    button.data = {label: label};
+    MenuItem.decorate(button);
+    menu.appendChild(button);
+    return button;
+  }
+
+  /**
    * A list of controls for manipulating network connectivity.
    * @constructor
    */
@@ -745,20 +771,17 @@ cr.define('options.network', function() {
                      }});
       }
 
-      // Add connection control.
-      var addConnection = function(type) {
-        var callback = function() {
-          chrome.send('networkCommand',
-                      [String(type), '?', 'connect']);
-        }
-        return callback;
-      }
+      var entryAddWifi = {
+        label: loadTimeData.getString('addConnectionWifi'),
+        command: createAddConnectionCallback_(Constants.TYPE_WIFI)
+      };
+      var entryAddVPN = {
+        label: loadTimeData.getString('addConnectionVPN'),
+        command: createAddConnectionCallback_(Constants.TYPE_VPN)
+      };
       this.update({key: 'addConnection',
                    iconType: 'add-connection',
-                   menu: [{label: loadTimeData.getString('addConnectionWifi'),
-                           command: addConnection(Constants.TYPE_WIFI)},
-                          {label: loadTimeData.getString('addConnectionVPN'),
-                           command: addConnection(Constants.TYPE_VPN)}]
+                   menu: [entryAddWifi, entryAddVPN]
                   });
 
       var prefs = options.Preferences.getInstance();
@@ -884,6 +907,7 @@ cr.define('options.network', function() {
     networkList.startBatchUpdates();
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
+    cellularSupportsScan_ = data.cellularSupportsScan;
     wimaxAvailable_ = data.wimaxAvailable;
     wimaxEnabled_ = data.wimaxEnabled;
 
@@ -1084,6 +1108,18 @@ cr.define('options.network', function() {
      // TODO(kevers): Use library callback to determine if airplane mode is
      // available once back-end suport is in place.
      return false;
+  }
+
+  /**
+   * Create a callback function that adds a new connection of the given type.
+   * @param {!number} type A network type Constants.TYPE_*.
+   * @return {function()} The created callback.
+   * @private
+   */
+  function createAddConnectionCallback_(type) {
+    return function() {
+      chrome.send('networkCommand', [String(type), '', 'add']);
+    };
   }
 
   /**

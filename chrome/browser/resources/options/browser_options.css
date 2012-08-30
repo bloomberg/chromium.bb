@@ -128,9 +128,7 @@ input[type='range'] {
 
 .network-group {
   -webkit-box-orient: horizontal;
-  display: -webkit-box;
   height: 42px;
-  vertical-align: middle;
 }
 
 list:not([disabled]) > .network-group:hover,
@@ -148,13 +146,18 @@ list:not([disabled]) > .network-group[selected] {
   padding-top: 3px;
 }
 
-.network-icon {
+.network-icon,
+.network-menu-item-icon {
   -webkit-margin-end: 8px;
   background-position: left top;
   background-size: 25px;
-  display: -webkit-box;
   height: 25px;
   width: 25px;
+}
+
+.other-cellulars > .network-menu-item-icon {
+  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
+  background-position: left top;
 }
 
 @-webkit-keyframes connecting-animation {
@@ -242,12 +245,7 @@ list:not([disabled]) > .network-group[selected] {
   -webkit-margin-end: 5px;
   display: block;
   height: 16px;
-  margin-top: 9px;
   width: 16px;
-}
-
-.network-group > .controlled-setting-indicator {
-  margin-top: 0;
 }
 
 .network-options-button:hover {
@@ -308,14 +306,12 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-menu-item {
-  -webkit-padding-start: 32px;
-  background: left center no-repeat;
-  background-size: 25px;
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
   display: -webkit-box;
   height: 32px;
   margin-left: 4px;
   margin-right: 4px;
-  vertical-align: middle;
 }
 
 .network-menu-item-label {
@@ -323,9 +319,7 @@ list:not([disabled]) > .network-group[selected] {
   color: #555;
   display: block;
   overflow-x: hidden;
-  padding-top: 8px;
   text-overflow: ellipsis;
-  vertical-align: middle;
   white-space: nowrap;
 }
 
@@ -345,10 +339,6 @@ list:not([disabled]) > .network-group[selected] {
     overflow-x: hidden;
     overflow-y: auto;
     text-overflow: ellipsis;
-}
-
-html[dir=rtl] .network-menu-item {
-  background: right center no-repeat;
 }
 
 .network-menu-item:hover {

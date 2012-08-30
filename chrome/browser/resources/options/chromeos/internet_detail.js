@@ -120,7 +120,7 @@ cr.define('options.internet', function() {
 
       $('buyplan-details').addEventListener('click', function(event) {
         var data = $('connection-state').data;
-        chrome.send('buyDataPlan', [String(data.servicePath)]);
+        chrome.send('buyDataPlan', [data.servicePath]);
         OptionsPage.closeOverlay();
       });
 
@@ -143,7 +143,7 @@ cr.define('options.internet', function() {
           data.apn.apn = data.providerApnList.value[iApn].apn;
           data.apn.username = data.providerApnList.value[iApn].username;
           data.apn.password = data.providerApnList.value[iApn].password;
-          chrome.send('setApn', [String(data.servicePath),
+          chrome.send('setApn', [data.servicePath,
                                  String(data.apn.apn),
                                  String(data.apn.username),
                                  String(data.apn.password)]);
@@ -170,10 +170,10 @@ cr.define('options.internet', function() {
         data.apn.apn = String($('cellular-apn').value);
         data.apn.username = String($('cellular-apn-username').value);
         data.apn.password = String($('cellular-apn-password').value);
-        chrome.send('setApn', [String(data.servicePath),
-                                String(data.apn.apn),
-                                String(data.apn.username),
-                                String(data.apn.password)]);
+        chrome.send('setApn', [data.servicePath,
+                               String(data.apn.apn),
+                               String(data.apn.username),
+                               String(data.apn.password)]);
 
         if (data.userApnIndex != -1) {
           apnSelector.remove(data.userApnIndex);
@@ -203,14 +203,14 @@ cr.define('options.internet', function() {
         var apnSelector = $('select-apn');
         if (apnSelector[apnSelector.selectedIndex].value != -1) {
           var apnList = data.providerApnList.value;
-          chrome.send('setApn', [String(data.servicePath),
+          chrome.send('setApn', [data.servicePath,
               String(apnList[apnSelector.selectedIndex].apn),
               String(apnList[apnSelector.selectedIndex].username),
               String(apnList[apnSelector.selectedIndex].password)
           ]);
           data.selectedApn = apnSelector.selectedIndex;
         } else if (apnSelector.selectedIndex == data.userApnIndex) {
-          chrome.send('setApn', [String(data.servicePath),
+          chrome.send('setApn', [data.servicePath,
                                  String(data.apn.apn),
                                  String(data.apn.username),
                                  String(data.apn.password)]);
@@ -539,8 +539,8 @@ cr.define('options.internet', function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
     chrome.send('networkCommand', [String(data.type),
-                                        servicePath,
-                                        'disconnect']);
+                                          servicePath,
+                                          'disconnect']);
     OptionsPage.closeOverlay();
   };
 
@@ -549,8 +549,8 @@ cr.define('options.internet', function() {
     var servicePath = data.servicePath;
     if (data.type == Constants.TYPE_CELLULAR) {
       chrome.send('networkCommand', [String(data.type),
-                                          String(servicePath),
-                                          'activate']);
+                                            servicePath,
+                                            'activate']);
     }
     OptionsPage.closeOverlay();
   };
@@ -560,18 +560,18 @@ cr.define('options.internet', function() {
     var servicePath = data.servicePath;
     if (data.type == Constants.TYPE_WIFI) {
       chrome.send('setPreferNetwork',
-                   [String(servicePath),
+                   [servicePath,
                     $('prefer-network-wifi').checked ? 'true' : 'false']);
       chrome.send('setAutoConnect',
-                  [String(servicePath),
+                  [servicePath,
                    $('auto-connect-network-wifi').checked ? 'true' : 'false']);
     } else if (data.type == Constants.TYPE_WIMAX) {
       chrome.send('setAutoConnect',
-          [String(servicePath),
-          $('auto-connect-network-wimax').checked ? 'true' : 'false']);
+          [servicePath,
+           $('auto-connect-network-wimax').checked ? 'true' : 'false']);
     } else if (data.type == Constants.TYPE_CELLULAR) {
       chrome.send('setAutoConnect',
-                  [String(servicePath),
+                  [servicePath,
                    $('auto-connect-network-cellular').checked ? 'true' :
                        'false']);
     }

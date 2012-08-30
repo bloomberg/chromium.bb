@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -68,22 +69,16 @@ class InternetOptionsHandler
   // browser window with an empty tab and returns it.
   Browser* GetAppropriateBrowser();
 
-  // Passes data needed to show the details overlay for a network.
-  // |args| will be [ network_type, service_path, command ]
-  // And command is one of 'options', 'connect', disconnect', 'activate' or
-  // 'forget'
+  // Handle various network commands and clicks on a network item
+  // in the network list.
+  // |args| has to be [ network_type, service_path, command ]
+  // and command is one of the strings
+  //  options, connect disconnect, activate, forget, add
   void NetworkCommandCallback(const base::ListValue* args);
 
-  // Handle{Wifi,Wimax,Cellular,VPN}ButtonClick handles button click on a
-  // wireless, wimax, cellular or VPN network item, respectively.
-  void HandleWifiButtonClick(const std::string& service_path,
-                             const std::string& command);
-  void HandleWimaxButtonClick(const std::string& service_path,
-                              const std::string& command);
-  void HandleCellularButtonClick(const std::string& service_path,
-                                 const std::string& command);
-  void HandleVPNButtonClick(const std::string& service_path,
-                            const std::string& command);
+  // Helper functions called by NetworkCommandCallback(...)
+  void AddConnection(chromeos::ConnectionType type);
+  void ConnectToNetwork(chromeos::Network* network);
 
   // Used to finish up async connection to the |network|.  |network| cannot
   // be NULL.
