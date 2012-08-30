@@ -474,15 +474,27 @@ void HWNDMessageHandler::GetWindowPlacement(
   DCHECK(succeeded);
 
   if (bounds != NULL) {
-    MONITORINFO mi;
-    mi.cbSize = sizeof(mi);
-    const bool succeeded = !!GetMonitorInfo(
-        MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST), &mi);
-    DCHECK(succeeded);
-    *bounds = gfx::Rect(wp.rcNormalPosition);
-    // Convert normal position from workarea coordinates to screen coordinates.
-    bounds->Offset(mi.rcWork.left - mi.rcMonitor.left,
-                   mi.rcWork.top - mi.rcMonitor.top);
+    if (wp.showCmd == SW_SHOWNORMAL) {
+      // GetWindowPlacement can return misleading position if a normalized
+      // window was resized using Aero Snap feature (see comment 9 in bug
+      // 36421). As a workaround, using GetWindowRect for normalized windows.
+      const bool succeeded = GetWindowRect(hwnd(), &wp.rcNormalPosition) != 0;
+      DCHECK(succeeded);
+
+      *bounds = gfx::Rect(wp.rcNormalPosition);
+    } else {
+      MONITORINFO mi;
+      mi.cbSize = sizeof(mi);
+      const bool succeeded = GetMonitorInfo(
+          MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST), &mi) != 0;
+      DCHECK(succeeded);
+
+      *bounds = gfx::Rect(wp.rcNormalPosition);
+      // Convert normal position from workarea coordinates to screen
+      // coordinates.
+      bounds->Offset(mi.rcWork.left - mi.rcMonitor.left,
+                     mi.rcWork.top - mi.rcMonitor.top);
+    }
   }
 
   if (show_state) {
