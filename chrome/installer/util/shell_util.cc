@@ -205,8 +205,7 @@ class RegistryEntry {
 
   // This method returns a list of all the registry entries that
   // are needed to register this installation's ProgId and AppId.
-  // These entries should be registered in HKCU for user-level installs and in
-  // HKLM for system-level installs.
+  // These entries need to be registered in HKLM prior to Win8.
   static void GetProgIdEntries(BrowserDistribution* dist,
                                const string16& chrome_exe,
                                const string16& suffix,
@@ -397,8 +396,7 @@ class RegistryEntry {
   //    http://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
   //  - File Associations
   //    http://msdn.microsoft.com/en-us/library/bb166549
-  // These entries should be registered in HKCU for user-level installs and in
-  // HKLM for system-level installs.
+  // These entries need to be registered in HKLM prior to Win8.
   static void GetAppRegistrationEntries(const string16& chrome_exe,
                                         const string16& suffix,
                                         ScopedVector<RegistryEntry>* entries) {
@@ -1457,9 +1455,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
                                              &progid_and_appreg_entries);
     RegistryEntry::GetShellIntegrationEntries(
         dist, chrome_exe, suffix, &shell_entries);
-    return AddRegistryEntries(user_level ? HKEY_CURRENT_USER :
-                                           HKEY_LOCAL_MACHINE,
-                              progid_and_appreg_entries) &&
+    return AddRegistryEntries(root, progid_and_appreg_entries) &&
            AddRegistryEntries(root, shell_entries);
   }
 
