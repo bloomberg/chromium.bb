@@ -84,6 +84,10 @@ void AppListView::InitAsBubble(
   // Resets default background since AppListBubbleBorder paints background.
   GetBubbleFrameView()->set_background(NULL);
 
+  contents_view_->SetPaintToLayer(true);
+  contents_view_->SetFillsBoundsOpaquely(false);
+  contents_view_->layer()->SetMasksToBounds(true);
+
   CreateModel();
 }
 

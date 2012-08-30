@@ -306,4 +306,13 @@ void AppListItemView::StateChanged() {
   }
 }
 
+bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
+  // Don't enter pushed state for ET_GESTURE_TAP_DOWN so that hover gray
+  // background does not show up during scroll.
+  if (event.type() == ui::ET_GESTURE_TAP_DOWN)
+    return false;
+
+  return views::CustomButton::ShouldEnterPushedState(event);
+}
+
 }  // namespace app_list

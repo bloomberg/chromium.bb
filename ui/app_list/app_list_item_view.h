@@ -75,6 +75,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // views::CustomButton overrides:
   virtual void StateChanged() OVERRIDE;
+  virtual bool ShouldEnterPushedState(const ui::Event& event) OVERRIDE;
 
   AppListItemModel* model_;  // Owned by AppListModel::Apps.
 

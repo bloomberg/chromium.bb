@@ -31,7 +31,10 @@ const int kIndexSearchResults = 2;
 
 const int kMinMouseWheelToSwitchPage = 20;
 const int kMinScrollToSwitchPage = 20;
-const int kMinHorizVelocityToSwitchPage = 1100;
+const int kMinHorizVelocityToSwitchPage = 800;
+
+const double kFinishTransitionThreshold = 0.33;
+const int kTransitionAnimationDurationInMs = 180;
 
 // Helpers to get certain child view from |model|.
 AppsGridView* GetAppsGridView(views::ViewModel* model) {
@@ -56,6 +59,8 @@ ContentsView::ContentsView(AppListView* app_list_view,
       view_model_(new views::ViewModel),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           bounds_animator_(new views::BoundsAnimator(this))) {
+  pagination_model_->SetTransitionDuration(kTransitionAnimationDurationInMs);
+
   AppsGridView* apps_grid_view = new AppsGridView(app_list_view,
                                                   pagination_model);
   apps_grid_view->SetLayout(kPreferredIconDimension,
@@ -202,12 +207,12 @@ ui::GestureStatus ContentsView::OnGestureEvent(
           event.details().scroll_x() / GetContentsBounds().width());
       return ui::GESTURE_STATUS_CONSUMED;
     case ui::ET_GESTURE_SCROLL_END:
-      pagination_model_->EndScroll();
+      pagination_model_->EndScroll(pagination_model_->
+          transition().progress < kFinishTransitionThreshold);
       return ui::GESTURE_STATUS_CONSUMED;
     case ui::ET_SCROLL_FLING_START: {
-      pagination_model_->EndScroll();
+      pagination_model_->EndScroll(true);
       if (fabs(event.details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
-        pagination_model_->ResetTransitionAnimation();
         pagination_model_->SelectPageRelative(
             event.details().velocity_x() < 0 ? 1 : -1,
             true);
