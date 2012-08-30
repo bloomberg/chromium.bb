@@ -148,6 +148,8 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
 
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformFontWin);
 };
 
 }  // namespace gfx

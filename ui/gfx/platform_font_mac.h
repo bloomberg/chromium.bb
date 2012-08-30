@@ -45,10 +45,12 @@ class PlatformFontMac : public PlatformFont {
   int font_size_;
   int style_;
 
-  // Cached metrics, generated at construction
+  // Cached metrics, generated at construction.
   int height_;
   int ascent_;
   int average_width_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformFontMac);
 };
 
 }  // namespace gfx
