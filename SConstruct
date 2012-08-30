@@ -100,8 +100,6 @@ ACCEPTABLE_ARGUMENTS = set([
     'SILENT',
     # Limit bandwidth of browser tester
     'browser_tester_bw',
-    # set build platform
-    'buildplatform',
     # Location to download Chromium binaries to and/or read them from.
     'chrome_binaries_dir',
     # used for chrome_browser_tests: path to the browser
@@ -126,7 +124,6 @@ ACCEPTABLE_ARGUMENTS = set([
     # Not using nacl_linkflags since that gets clobbered in some tests.
     'pnacl_bcldflags',
     'naclsdk_mode',
-    # set both targetplatform and buildplatform
     'platform',
     # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
     # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
@@ -140,8 +137,6 @@ ACCEPTABLE_ARGUMENTS = set([
     # Run browser tests under this tool. See
     # tools/browser_tester/browsertester/browserlauncher.py for tool names.
     'browser_test_tool',
-    # set target platform
-    'targetplatform',
     # activates buildbot-specific presets
     'buildbot',
     # Where to install header files for public consumption.
@@ -877,27 +872,13 @@ pre_base_env.AddMethod(Banner)
 
 
 # PLATFORM LOGIC
-# Define the build and target platforms, and use them to define the path
-# for the scons-out directory (aka TARGET_ROOT)
-#.
-# We have "build" and "target" platforms for the non nacl environments
-# which govern service runtime, validator, etc.
-#
-# "build" means the  platform the code is running on
-# "target" means the platform the validator is checking for.
-# Typically they are the same but testing it useful to have flexibility.
+# Define the platforms, and use them to define the path for the
+# scons-out directory (aka TARGET_ROOT)
 #
 # Various variables in the scons environment are related to this, e.g.
 #
 # BUILD_ARCH: (arm, mips, x86)
 # BUILD_SUBARCH: (32, 64)
-#
-# The settings can be controlled using scons command line variables:
-#
-#
-# buildplatform=: controls the build platform
-# targetplatform=: controls the target platform
-# platform=: controls both
 #
 # This dictionary is used to translate from a platform name to a
 # (arch, subarch) pair
@@ -909,17 +890,9 @@ AVAILABLE_PLATFORMS = {
     'arm-thumb2'  : { 'arch' : 'arm' , 'subarch' : '32' }
     }
 
-# Look up the platform name from the command line arguments,
-# defaulting to 'platform' if needed.
-def GetPlatform(name):
-  platform = ARGUMENTS.get(name)
-  if platform is None:
-    return ARGUMENTS.get('platform', 'x86-32')
-  elif ARGUMENTS.get('platform') is None:
-    return platform
-  else:
-    raise Exception('Can\'t specify both %s and %s on the command line'
-                    % ('platform', name))
+# Look up the platform name from the command line arguments.
+def GetPlatform():
+  return ARGUMENTS.get('platform', 'x86-32')
 
 
 # Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
@@ -963,22 +936,22 @@ DeclareBit('target_arm', 'Tools being built will process arm binaries')
 
 def MakeArchSpecificEnv():
   env = pre_base_env.Clone()
-  BUILD_NAME = GetPlatform('buildplatform')
-  env.Replace(BUILD_FULLARCH=BUILD_NAME)
-  env.Replace(BUILD_ARCHITECTURE=DecodePlatform(BUILD_NAME)['arch'])
-  env.Replace(BUILD_SUBARCH=DecodePlatform(BUILD_NAME)['subarch'])
+  platform = GetPlatform()
+  info = DecodePlatform(platform)
 
-  TARGET_NAME = GetPlatform('targetplatform')
-  env.Replace(TARGET_FULLARCH=TARGET_NAME)
-  env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
-  env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
+  env.Replace(BUILD_FULLARCH=platform)
+  env.Replace(BUILD_ARCHITECTURE=info['arch'])
+  env.Replace(BUILD_SUBARCH=info['subarch'])
+  env.Replace(TARGET_FULLARCH=platform)
+  env.Replace(TARGET_ARCHITECTURE=info['arch'])
+  env.Replace(TARGET_SUBARCH=info['subarch'])
 
   # Example: PlatformBit('build', 'x86-32') -> build_x86_32
   def PlatformBit(prefix, platform):
     return "%s_%s" % (prefix, platform.replace('-', '_'))
 
-  env.SetBits(PlatformBit('build', BUILD_NAME))
-  env.SetBits(PlatformBit('target', TARGET_NAME))
+  env.SetBits(PlatformBit('build', platform))
+  env.SetBits(PlatformBit('target', platform))
 
   if env.Bit('build_x86_32') or env.Bit('build_x86_64'):
     env.SetBits('build_x86')
@@ -990,7 +963,7 @@ def MakeArchSpecificEnv():
   if env.Bit('target_arm_arm') or env.Bit('target_arm_thumb2'):
     env.SetBits('target_arm')
 
-  env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
+  env.Replace(BUILD_ISA_NAME=GetPlatform())
 
   if env.Bit('target_arm') or env.Bit('target_mips32'):
     if not env.Bit('native_code'):
@@ -1002,11 +975,7 @@ def MakeArchSpecificEnv():
     env.SetBits('native_code')
 
   # Determine where the object files go
-  if BUILD_NAME == TARGET_NAME:
-    BUILD_TARGET_NAME = TARGET_NAME
-  else:
-    BUILD_TARGET_NAME = '%s-to-%s' % (BUILD_NAME, TARGET_NAME)
-  env.Replace(BUILD_TARGET_NAME=BUILD_TARGET_NAME)
+  env.Replace(BUILD_TARGET_NAME=platform)
   # This may be changed later; see target_variant_map, below.
   env.Replace(TARGET_VARIANT='')
   env.Replace(TARGET_ROOT=
@@ -2374,7 +2343,7 @@ def MakeLinuxEnv():
     # TODO(petarj): Add support for MIPS.
     pass
   else:
-    Banner('Strange platform: %s' % BUILD_NAME)
+    Banner('Strange platform: %s' % GetPlatform())
 
   # These are desireable options for every Linux platform:
   # _FORTIFY_SOURCE: general paranoia "hardening" option for library functions
@@ -3075,7 +3044,7 @@ def AddImplicitLibs(env):
                         'crti.o',
                         'crtn.o']
       # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
-      if GetPlatform('targetplatform') == 'x86-32':
+      if GetPlatform() == 'x86-32':
         implicit_libs.append(os.path.join('32', 'crt1.o'))
 
   if implicit_libs != []:
