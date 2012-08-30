@@ -750,8 +750,6 @@
       'media_stream_infobar',
       'webrtc_brutality_test',
       'webrtc_call',
-      # crbug.com/140465
-      '-webrtc_brutality_test.WebrtcBrutalityTest.testRepeatedGetUserMediaRequests'
     ],
   },
 
