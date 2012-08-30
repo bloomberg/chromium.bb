@@ -24,6 +24,15 @@ class RootWindow;
 
 namespace ash {
 
+// The width and height of small/large resolution wallpaper. When screen size is
+// smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|, the
+// small resolution wallpaper should be used. Otherwise, uses the large
+// resolution wallpaper.
+ASH_EXPORT extern const int kSmallWallpaperMaxWidth;
+ASH_EXPORT extern const int kSmallWallpaperMaxHeight;
+ASH_EXPORT extern const int kLargeWallpaperMaxWidth;
+ASH_EXPORT extern const int kLargeWallpaperMaxHeight;
+
 class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}

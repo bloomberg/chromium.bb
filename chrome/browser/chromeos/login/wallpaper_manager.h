@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/desktop_background/desktop_background_resources.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -60,16 +61,21 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
 
-  // Fetches |email|'s wallpaper from local disk.
-  void FetchCustomWallpaper(const std::string& email);
+  // Gets |email|'s wallpaper from local disk.
+  void GetCustomWallpaper(const std::string& email);
 
   // Gets encoded custom wallpaper from cache. Returns true if success.
   bool GetCustomWallpaperFromCache(const std::string& email,
                                    gfx::ImageSkia* wallpaper);
 
-  // Returns wallpaper/thumbnail filepath for the given user.
+  // Returns filepath to save original custom wallpaper for the given user.
+  FilePath GetOriginalWallpaperPathForUser(const std::string& username);
+
+  // Returns small resolution custom wallpaper filepath for the given user when
+  // |is_small| is ture. Otherwise, returns large resolution custom wallpaper
+  // path.
   FilePath GetWallpaperPathForUser(const std::string& username,
-                                   bool is_thumbnail);
+                                   bool is_small);
 
   // Gets the thumbnail of custom wallpaper from cache.
   gfx::ImageSkia GetCustomWallpaperThumbnail(const std::string& email);
@@ -183,6 +189,11 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                       base::WeakPtr<WallpaperDelegate> delegate,
                                       const gfx::ImageSkia& wallpaper);
 
+  // Gets |email|'s custom wallpaper in appropriate resolution. Falls back on
+  // original custom wallpaper. Must run on FILE thread.
+  void GetCustomWallpaperInternal(const std::string& email,
+                                  const WallpaperInfo& info);
+
   // Gets wallpaper information of |email| from Local State or memory. Returns
   // false if wallpaper information is not found.
   bool GetUserWallpaperInfo(const std::string& email, WallpaperInfo* info);
@@ -202,19 +213,37 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Updates the custom wallpaper thumbnail in wallpaper picker UI.
   void OnThumbnailUpdated(base::WeakPtr<WallpaperDelegate> delegate);
 
-  // Saves wallpaper to |path| (absolute path) in file system.
-  void SaveWallpaper(const FilePath& path, const UserImage& wallpaper);
+  // Saves encoded wallpaper to |path|. This callback is called after encoding
+  // to PNG completes.
+  void OnWallpaperEncoded(const FilePath& path,
+                          scoped_refptr<base::RefCountedBytes> data);
+
+  // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
+  // and |preferred_height| while maintaining aspect ratio. And saves the
+  // resized wallpaper to |path|.
+  void ResizeAndSaveCustomWallpaper(const UserImage& wallpaper,
+                                    const FilePath& path,
+                                    ash::WallpaperLayout layout,
+                                    int preferred_width,
+                                    int preferred_height);
+
+  // Saves original custom wallpaper to |path| (absolute path) on filesystem
+  // and starts resizing operation of the custom wallpaper if necessary.
+  void SaveCustomWallpaper(const std::string& email,
+                           const FilePath& path,
+                           ash::WallpaperLayout layout,
+                           const UserImage& wallpaper);
 
   // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
   void SaveWallpaperInternal(const FilePath& path, const char* data, int size);
 
-  // Saves wallpaper to file, post task to generate thumbnail and updates local
-  // state preferences.
-  void SetWallpaper(const std::string& username,
-                    ash::WallpaperLayout layout,
-                    User::WallpaperType type,
-                    base::WeakPtr<WallpaperDelegate> delegate,
-                    const UserImage& wallpaper);
+  // Saves custom wallpaper to file, post task to generate thumbnail and updates
+  // local state preferences.
+  void SetCustomWallpaper(const std::string& username,
+                          ash::WallpaperLayout layout,
+                          User::WallpaperType type,
+                          base::WeakPtr<WallpaperDelegate> delegate,
+                          const UserImage& wallpaper);
 
   // Whether wallpaper data should be persisted for user |email|.
   // Note: this function can not be called in SetUserWallpaperProperties. It

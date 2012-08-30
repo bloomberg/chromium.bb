@@ -26,8 +26,6 @@
 namespace ash {
 namespace {
 
-const int kSmallWallpaperMaximalWidth = 1366;
-const int kSmallWallpaperMaximalHeight = 800;
 const SkColor kTransparentColor = SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 
 internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
@@ -36,6 +34,11 @@ internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
       root_window->layout_manager());
 }
 }  // namespace
+
+const int kSmallWallpaperMaxWidth = 1366;
+const int kSmallWallpaperMaxHeight = 800;
+const int kLargeWallpaperMaxWidth = 2560;
+const int kLargeWallpaperMaxHeight = 1700;
 
 // Stores the current wallpaper data.
 struct DesktopBackgroundController::WallpaperData {
@@ -228,8 +231,8 @@ WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     gfx::Size root_window_size = (*iter)->GetHostSize();
-    if (root_window_size.width() > kSmallWallpaperMaximalWidth ||
-        root_window_size.height() > kSmallWallpaperMaximalHeight)
+    if (root_window_size.width() > kSmallWallpaperMaxWidth ||
+        root_window_size.height() > kSmallWallpaperMaxHeight)
       resolution = LARGE;
   }
   return resolution;

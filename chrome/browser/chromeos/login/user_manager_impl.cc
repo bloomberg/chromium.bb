@@ -547,7 +547,7 @@ void UserManagerImpl::SetLoggedInUserCustomWallpaperLayout(
       GetWallpaperPathForUser(username, false).value();
   SaveWallpaperToLocalState(username, file_path, layout, User::CUSTOMIZED);
   // Load wallpaper from file.
-  WallpaperManager::Get()->OnUserSelected(username);
+  WallpaperManager::Get()->SetUserWallpaper(username);
 }
 
 void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
@@ -1351,6 +1351,14 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
       base::Bind(&UserManagerImpl::DeleteUserImage,
                  base::Unretained(this),
                  wallpaper_path));
+  FilePath wallpaper_original_path = WallpaperManager::Get()->
+      GetOriginalWallpaperPathForUser(email);
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UserManagerImpl::DeleteUserImage,
+                 base::Unretained(this),
+                 wallpaper_original_path));
 
   DictionaryPrefUpdate prefs_images_update(prefs, kUserImages);
   std::string image_path_string;

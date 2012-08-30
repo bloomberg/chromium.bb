@@ -423,6 +423,8 @@
         'browser/chromeos/login/screen_locker_delegate.cc',
         'browser/chromeos/login/screen_locker_delegate.h',
         'browser/chromeos/login/screen_observer.h',
+        'browser/chromeos/login/simple_jpeg_encoder.cc',
+        'browser/chromeos/login/simple_jpeg_encoder.h',
         'browser/chromeos/login/simple_web_view_dialog.cc',
         'browser/chromeos/login/simple_web_view_dialog.h',
         'browser/chromeos/login/take_photo_view.cc',
