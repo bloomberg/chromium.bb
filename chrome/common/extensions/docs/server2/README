@@ -35,11 +35,17 @@ Editing Docs
 
   1. Edit files.
 
-     - They will mostly be in chrome/common/extensions/api/ or
-       chrome/common/extensions/docs/server2/templates/.
+     - If you are not updating the static HTML for a docs page, you will most
+       likely not have to do anything. The docs server will automatically pick
+       up changes to the JSON or IDL schemas.
+
+     - Otherwise, they will be in
+       chrome/common/extensions/docs/server2/templates/. See the
+       "Overview of ./tempaltes Directory" section for more information.
 
      - Files in templates directory use the Handlebar template language. It is
-       extremely simple. See third_party/handlebar/README.md.
+       extremely simple, essentially: write HTML.
+       See third_party/handlebar/README.md.
 
   2. Run './preview.py'
 
@@ -47,6 +53,20 @@ Editing Docs
 
   4. Send a CL and commit files as with any other Chrome change. The live
      server will update within 5-10 minutes.
+
+
+Overview of ./templates Directory
+
+The ./templates directory has four subdirectories.
+
+    - intros -> The static content that appears before the API reference on API
+                 pages.
+
+    - articles -> The static content that appears on non-API pages.
+
+    - public -> The top level templates for all pages.
+
+    - private -> Helper templates used in rendering the docs.
 
 
 Developing the Server
