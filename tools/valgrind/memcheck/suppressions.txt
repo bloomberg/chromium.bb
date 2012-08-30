@@ -2817,12 +2817,6 @@
    fun:_ZN3gfx8PNGCodec6Decode*
 }
 {
-   bug_75137
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14NewTabObserver7ObserveEiRK18NotificationSourceRK19NotificationDetails
-}
-{
    bug_75641
    Memcheck:Param
    write(buf)
