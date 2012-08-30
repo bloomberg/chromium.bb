@@ -58,7 +58,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath history_db_name = temp_dir_.path().AppendASCII(
         chrome::kHistoryFilename);
-    history_db_.Init(history_db_name, temp_dir_.path());
+    history_db_.Init(history_db_name);
   }
 
   // Runs the MessageLoopForUI, and return till all pending messages were

@@ -607,12 +607,10 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   FilePath history_name = history_dir_.Append(chrome::kHistoryFilename);
   FilePath thumbnail_name = GetThumbnailFileName();
   FilePath archived_name = GetArchivedFileName();
-  FilePath tmp_bookmarks_file = history_dir_.Append(
-      chrome::kHistoryBookmarksFileName);
 
   // History database.
   db_.reset(new HistoryDatabase());
-  sql::InitStatus status = db_->Init(history_name, tmp_bookmarks_file);
+  sql::InitStatus status = db_->Init(history_name);
   switch (status) {
     case sql::INIT_OK:
       break;

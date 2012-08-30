@@ -67,8 +67,7 @@ class HistoryDatabase : public DownloadDatabase,
   // Must call this function to complete initialization. Will return true on
   // success. On false, no other function should be called. You may want to call
   // BeginExclusiveMode after this when you are ready.
-  sql::InitStatus Init(const FilePath& history_name,
-                       const FilePath& tmp_bookmarks_path);
+  sql::InitStatus Init(const FilePath& history_name);
 
   // Call to set the mode on the database to exclusive. The default locking mode
   // is "normal" but we want to run in exclusive mode for slightly better
@@ -173,7 +172,7 @@ class HistoryDatabase : public DownloadDatabase,
   //
   // This assumes it is called from the init function inside a transaction. It
   // may commit the transaction and start a new one if migration requires it.
-  sql::InitStatus EnsureCurrentVersion(const FilePath& tmp_bookmarks_path);
+  sql::InitStatus EnsureCurrentVersion();
 
 #if !defined(OS_WIN)
   // Converts the time epoch in the database from being 1970-based to being

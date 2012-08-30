@@ -14,7 +14,6 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/browser/history/starred_url_database.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX)
@@ -68,8 +67,7 @@ HistoryDatabase::HistoryDatabase()
 HistoryDatabase::~HistoryDatabase() {
 }
 
-sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
-                                      const FilePath& bookmarks_path) {
+sql::InitStatus HistoryDatabase::Init(const FilePath& history_name) {
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(GetErrorHandlerForHistoryDb());
 
@@ -119,7 +117,7 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
   CreateKeywordSearchTermsIndices();
 
   // Version check.
-  sql::InitStatus version_status = EnsureCurrentVersion(bookmarks_path);
+  sql::InitStatus version_status = EnsureCurrentVersion();
   if (version_status != sql::INIT_OK)
     return version_status;
 
@@ -244,8 +242,7 @@ sql::MetaTable& HistoryDatabase::GetMetaTable() {
 
 // Migration -------------------------------------------------------------------
 
-sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
-    const FilePath& tmp_bookmarks_path) {
+sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   // We can't read databases newer than we were designed for.
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "History database is too new.";
@@ -263,9 +260,7 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
   // Put migration code here
 
   if (cur_version == 15) {
-    StarredURLDatabase starred_url_database(&db_);
-    if (!starred_url_database.MigrateBookmarksToFile(tmp_bookmarks_path) ||
-        !DropStarredIDFromURLs()) {
+    if (!db_.Execute("DROP TABLE starred") || !DropStarredIDFromURLs()) {
       LOG(WARNING) << "Unable to update history database to version 16.";
       return sql::INIT_FAILURE;
     }

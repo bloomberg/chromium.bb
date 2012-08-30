@@ -45,7 +45,7 @@ class AndroidURLsMigrationTest : public HistoryUnitTestBase {
 
 TEST_F(AndroidURLsMigrationTest, MigrateToVersion22) {
   HistoryDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(history_db_name_, profile_->GetPath()));
+  ASSERT_EQ(sql::INIT_OK, db.Init(history_db_name_));
   // Migration has done.
   // The column of previous table shouldn't exist.
   EXPECT_FALSE(db.GetDB().DoesColumnExist("android_urls", "bookmark"));

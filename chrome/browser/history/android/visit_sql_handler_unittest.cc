@@ -36,9 +36,7 @@ class VisitSQLHandlerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     FilePath history_db_name = temp_dir_.path().AppendASCII(
         chrome::kHistoryFilename);
-    FilePath bookmark_temp = temp_dir_.path().AppendASCII("bookmark_temp");
-    ASSERT_TRUE(file_util::CreateDirectory(bookmark_temp));
-    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name, bookmark_temp));
+    ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name));
   }
 
   virtual void TearDown() {

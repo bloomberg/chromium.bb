@@ -740,8 +740,6 @@
         'browser/history/shortcuts_backend_factory.h',
         'browser/history/shortcuts_database.cc',
         'browser/history/shortcuts_database.h',
-        'browser/history/starred_url_database.cc',
-        'browser/history/starred_url_database.h',
         'browser/history/text_database.cc',
         'browser/history/text_database.h',
         'browser/history/text_database_manager.cc',
