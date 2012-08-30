@@ -158,16 +158,21 @@ int LinuxSandbox::GetStatus() const {
     if (setuid_sandbox_client_->IsInNewNETNamespace())
       sandbox_flags |= kSandboxLinuxNetNS;
   }
-  if (seccomp_legacy_supported() &&
-      ShouldEnableSeccompLegacy(switches::kRendererProcess)) {
-    // We report whether the sandbox will be activated when renderers go
-    // through sandbox initialization.
-    sandbox_flags |= kSandboxLinuxSeccompLegacy;
-  }
+
   if (seccomp_bpf_supported() &&
       SandboxSeccompBpf::ShouldEnableSeccompBpf(switches::kRendererProcess)) {
-    // Same here, what we report is what we will do for the renderer.
+    // We report whether the sandbox will be activated when renderers go
+    // through sandbox initialization.
     sandbox_flags |= kSandboxLinuxSeccompBpf;
+  }
+
+  // We only try to enable seccomp-legacy when seccomp-bpf is not supported
+  // or not enabled.
+  if (!(sandbox_flags & kSandboxLinuxSeccompBpf) &&
+      seccomp_legacy_supported() &&
+      ShouldEnableSeccompLegacy(switches::kRendererProcess)) {
+    // Same here, what we report is what we will do for the renderer.
+    sandbox_flags |= kSandboxLinuxSeccompLegacy;
   }
   return sandbox_flags;
 }

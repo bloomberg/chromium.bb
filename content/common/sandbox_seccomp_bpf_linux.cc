@@ -906,13 +906,13 @@ bool IsSystemVSemaphores(int sysno) {
 
 #if defined(__x86_64__)
 // These give a lot of ambient authority and bypass the setuid sandbox.
-bool IsAllowedSystemVSharedMemory(int sysno) {
+bool IsSystemVSharedMemory(int sysno) {
   switch (sysno) {
     case __NR_shmat:
     case __NR_shmctl:
     case __NR_shmdt:
-      return true;
     case __NR_shmget:
+      return true;
     default:
       return false;
   }
@@ -1139,9 +1139,6 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
   if (IsAdminOperation(sysno) ||
       IsAdvancedScheduler(sysno) ||
       IsAdvancedTimer(sysno) ||
-#if defined(__x86_64__)
-      IsAllowedSystemVSharedMemory(sysno) ||
-#endif
       IsAsyncIo(sysno) ||
       IsDebug(sysno) ||
       IsEventFd(sysno) ||
@@ -1169,6 +1166,7 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
 #if defined(__x86_64__)
       IsSystemVMessageQueue(sysno) ||
       IsSystemVSemaphores(sysno) ||
+      IsSystemVSharedMemory(sysno) ||
 #elif defined(__i386__)
       IsSystemVIpc(sysno) ||
 #endif
@@ -1239,6 +1237,38 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   }
 }
 
+playground2::Sandbox::ErrorCode RendererProcessPolicy_x86_64(int sysno) {
+  switch (sysno) {
+    case __NR_ioctl:
+      return ENOTTY;
+    case __NR_fdatasync:
+    case __NR_fsync:
+#if defined(__i386__) || defined(__x86_64__)
+    case __NR_getrlimit:
+#endif
+    case __NR_pread64:
+    case __NR_pwrite64:
+    case __NR_sched_get_priority_max:
+    case __NR_sched_get_priority_min:
+    case __NR_sched_getparam:
+    case __NR_sched_getscheduler:
+    case __NR_sched_setscheduler:
+    case __NR_setpriority:
+    case __NR_sysinfo:
+    case __NR_times:
+    case __NR_uname:
+      return playground2::Sandbox::SB_ALLOWED;
+    default:
+#if defined(__x86_64__)
+      if (IsSystemVSharedMemory(sysno))
+        return playground2::Sandbox::SB_ALLOWED;
+#endif
+
+      // Default on the baseline policy.
+      return BaselinePolicy_x86_64(sysno);
+  }
+}
+
 // x86_64 only for now. Needs to be adapted and tested for i386.
 playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
@@ -1256,12 +1286,12 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
 #if defined(__x86_64__)
       // These are under investigation, and hopefully not here for the long
       // term.
-      if (IsAllowedSystemVSharedMemory(sysno))
+      if (IsSystemVSharedMemory(sysno))
         return playground2::Sandbox::SB_ALLOWED;
 #endif
 
       // Default on the baseline policy.
-      return  BaselinePolicy_x86_64(sysno);
+      return BaselinePolicy_x86_64(sysno);
   }
 }
 
@@ -1326,8 +1356,11 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     return FlashProcessPolicy_x86_64;
   }
 
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kWorkerProcess) {
+  if (process_type == switches::kRendererProcess) {
+    return RendererProcessPolicy_x86_64;
+  }
+
+  if (process_type == switches::kWorkerProcess) {
     return BlacklistDebugAndNumaPolicy;
   }
   NOTREACHED();

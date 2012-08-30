@@ -33,15 +33,12 @@ bool InitializeSandbox() {
     return false;
   }
 
-  // First, try to enable seccomp-legacy.
-  seccomp_legacy_started = linux_sandbox->StartSeccompLegacy(process_type);
+  // First, try to enable seccomp-bpf.
+  seccomp_bpf_started = linux_sandbox->StartSeccompBpf(process_type);
 
-  // Then, try to enable seccomp-bpf.
-  // If seccomp-legacy is enabled, seccomp-bpf initialization will crash
-  // instead of failing gracefully.
-  // TODO(markus): fix this (crbug.com/139872).
-  if (!seccomp_legacy_started) {
-    seccomp_bpf_started = linux_sandbox->StartSeccompBpf(process_type);
+  // If that fails, try to enable seccomp-legacy.
+  if (!seccomp_bpf_started) {
+    seccomp_legacy_started = linux_sandbox->StartSeccompLegacy(process_type);
   }
 
   return seccomp_legacy_started || seccomp_bpf_started;
