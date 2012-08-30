@@ -196,6 +196,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -1582,6 +1583,7 @@ void MetricsService::IncrementLongPrefsValue(const char* path) {
 }
 
 void MetricsService::LogLoadStarted() {
+  content::RecordAction(content::UserMetricsAction("PageLoad"));
   HISTOGRAM_ENUMERATION("Chrome.UmaPageloadCounter", 1, 2);
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
