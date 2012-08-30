@@ -6413,6 +6413,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_PATH_NOTFOUND" desc="label for the non-existent path on the about:version page">
         No such file or directory
       </message>
+      <message name="IDS_ABOUT_VERSION_VARIATIONS" desc="label for the variations list on the about:version page">
+        Variations
+      </message>
 
       <!-- JavaScript Dialog Box strings -->
       <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for JavaScript alert originating from a webpage if there is no hostname to display">
