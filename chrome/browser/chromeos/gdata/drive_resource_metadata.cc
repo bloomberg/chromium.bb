@@ -500,19 +500,19 @@ void DriveResourceMetadata::RefreshFile(
     return;
   }
 
-  DriveEntry* drive_entry = FromDocumentEntry(*doc_entry);
-  if (!drive_entry) {
+  scoped_ptr<DriveEntry> drive_entry(FromDocumentEntry(*doc_entry));
+  if (!drive_entry.get()) {
     PostGetEntryInfoWithFilePathCallbackError(
         callback, DRIVE_FILE_ERROR_FAILED);
     return;
   }
 
-  scoped_ptr<DriveFile> fresh_file(drive_entry->AsDriveFile());
-  if (!fresh_file.get()) {
+  if (!drive_entry->AsDriveFile()) {
     // This is a directory, return the directory info instead.
     GetEntryInfoByResourceId(drive_entry->resource_id(), callback);
     return;
   }
+  scoped_ptr<DriveFile> fresh_file(drive_entry.release()->AsDriveFile());
 
   // Need to get a reference here because Passed() could get evaluated first.
   const std::string& resource_id = fresh_file->resource_id();
