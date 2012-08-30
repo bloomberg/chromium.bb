@@ -21,9 +21,9 @@ HASHES_FILE="$VAR_DIR/hashes"
 
 case "$1" in
   "configure")
-    # Kill me2me host processes. The wrapper script will restart them.
-    echo "Shutting down remoting hosts (they will restart automatically)..."
-    killall -q chrome-remoting-host || true
+    # Kill host processes. The wrapper script will restart them.
+    echo "Shutting down Chrome Remote Desktop hosts (they will restart automatically)..."
+    killall -q chrome-remote-desktop-host || true
     # If any files have changed that require the user to restart their virtual
     # desktops (eg, the wrapper script itself) then notify them but don't do
     # anything that would result in them losing state.
