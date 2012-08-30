@@ -65,7 +65,7 @@ bool WebKitTestController::PrepareForLayoutTest(
   DCHECK(CalledOnValidThread());
   if (!main_window_)
     return false;
-  in_test_ = true;
+  output_finished_ = false;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
   main_window_->LoadURL(test_url);
@@ -74,7 +74,7 @@ bool WebKitTestController::PrepareForLayoutTest(
 
 bool WebKitTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
-  in_test_ = false;
+  output_finished_ = true;
   pumping_messages_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
@@ -126,13 +126,12 @@ void WebKitTestController::WaitUntilDone() {
 void WebKitTestController::NotImplemented(
     const std::string& object_name,
     const std::string& property_name) {
-  if (captured_dump_)
+  if (captured_dump_ || output_finished_)
     return;
   printf("FAIL: NOT IMPLEMENTED: %s.%s\n",
          object_name.c_str(), property_name.c_str());
   fprintf(stderr, "FAIL: NOT IMPLEMENTED: %s.%s\n",
           object_name.c_str(), property_name.c_str());
-  watchdog_.Cancel();
   FinishRemainingBlocks();
 }
 
@@ -149,25 +148,24 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
-  if (!in_test_)
+  if (output_finished_)
     return;
   printf("FAIL: renderer died\n");
   fprintf(stderr, "FAIL: renderer died\n");
-  watchdog_.Cancel();
   FinishRemainingBlocks();
 }
 
 void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
   main_window_ = NULL;
-  if (!in_test_)
+  if (output_finished_)
     return;
   printf("FAIL: main window was destroyed\n");
   fprintf(stderr, "FAIL: main window was destroyed\n");
-  watchdog_.Cancel();
   FinishRemainingBlocks();
 }
 
 void WebKitTestController::FinishRemainingBlocks() {
+  DCHECK(!output_finished_);
   if (!finished_text_block_) {
     printf("#EOF\n");
     fprintf(stderr, "#EOF\n");
@@ -176,11 +174,12 @@ void WebKitTestController::FinishRemainingBlocks() {
     printf("#EOF\n");
   finished_text_block_ = true;
   finished_pixel_block_ = true;
+  output_finished_ = true;
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void WebKitTestController::CaptureDump() {
-  if (captured_dump_ || !main_window_ || !in_test_)
+  if (captured_dump_ || !main_window_ || output_finished_)
     return;
   captured_dump_ = true;
 
@@ -200,6 +199,8 @@ void WebKitTestController::CaptureDump() {
 }
 
 void WebKitTestController::TimeoutHandler() {
+  if (output_finished_)
+    return;
   printf("FAIL: Timed out waiting for notifyDone to be called\n");
   fprintf(stderr, "FAIL: Timed out waiting for notifyDone to be called\n");
   FinishRemainingBlocks();
@@ -218,6 +219,9 @@ void WebKitTestController::OnDidFinishLoad() {
 void WebKitTestController::OnImageDump(
     const std::string& actual_pixel_hash,
     const SkBitmap& image) {
+  if (output_finished_)
+    return;
+
   SkAutoLockPixels image_lock(image);
 
   if (!finished_pixel_block_) {
@@ -268,6 +272,8 @@ void WebKitTestController::OnImageDump(
 }
 
 void WebKitTestController::OnTextDump(const std::string& dump) {
+  if (output_finished_)
+    return;
   if (!finished_text_block_) {
     printf("%s#EOF\n", dump.c_str());
     fprintf(stderr, "#EOF\n");

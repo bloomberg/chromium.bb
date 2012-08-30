@@ -76,7 +76,6 @@ class WebKitTestController : public base::NonThreadSafe,
 
   Shell* main_window_;
 
-  bool in_test_;
   bool pumping_messages_;
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
@@ -84,6 +83,7 @@ class WebKitTestController : public base::NonThreadSafe,
   bool captured_dump_;
   bool finished_text_block_;
   bool finished_pixel_block_;
+  bool output_finished_;
 
   bool dump_as_text_;
   bool dump_child_frames_;
