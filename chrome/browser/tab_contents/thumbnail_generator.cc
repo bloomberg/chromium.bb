@@ -483,8 +483,13 @@ SkBitmap ThumbnailGenerator::GetClippedBitmap(const SkBitmap& bitmap,
 
 void ThumbnailGenerator::UpdateThumbnailIfNecessary(
     WebContents* web_contents) {
-  // Skip if a pending entry exists. WidgetHidden can be called while navigaing
-  // pages and this is not a timing when thumbnails should be generated.
+  // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
+  // which would be unwise to attempt <http://crbug.com/130097>. If the
+  // WebContents is in the middle of destruction, do not risk it.
+  if (web_contents->IsBeingDestroyed())
+    return;
+  // Skip if a pending entry exists. WidgetHidden can be called while navigating
+  // pages and this is not a time when thumbnails should be generated.
   if (web_contents->GetController().GetPendingEntry())
     return;
   const GURL& url = web_contents->GetURL();
@@ -501,7 +506,6 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
 void ThumbnailGenerator::UpdateThumbnail(
     WebContents* web_contents, const SkBitmap& thumbnail,
     const ClipResult& clip_result) {
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   history::TopSites* top_sites = profile->GetTopSites();

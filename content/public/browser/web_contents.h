@@ -183,19 +183,17 @@ class WebContents : public PageNavigator,
 
   // This flag indicates whether the WebContents is currently being
   // screenshotted.
-  virtual void SetCapturingContents(bool cap)  = 0;
+  virtual void SetCapturingContents(bool cap) = 0;
 
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.
   virtual bool IsCrashed() const  = 0;
   virtual void SetIsCrashed(base::TerminationStatus status, int error_code) = 0;
 
-  virtual base::TerminationStatus GetCrashedStatus() const  = 0;
+  virtual base::TerminationStatus GetCrashedStatus() const = 0;
 
   // Whether the tab is in the process of being destroyed.
-  // Added as a tentative work-around for focus related bug #4633.  This allows
-  // us not to store focus when a tab is being closed.
-  virtual bool IsBeingDestroyed() const  = 0;
+  virtual bool IsBeingDestroyed() const = 0;
 
   // Convenience method for notifying the delegate of a navigation state
   // change. See InvalidateType enum.
