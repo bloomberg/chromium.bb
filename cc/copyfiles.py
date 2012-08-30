@@ -61,16 +61,15 @@ def Readfile(gypfile):
     obj = eval(cc_gyp.read())
     return obj
 
-def Main():
-  files = Readfile("cc.gyp")['variables']['cc_source_files']
+def CopyFiles(files):
   for f in files:
     dst = Copy(f)
     FixCopyrightHeader(dst)
 
-  files = Readfile("cc_tests.gyp")['variables']['cc_tests_source_files']
-  for f in files:
-    dst = Copy(f)
-    FixCopyrightHeader(dst)
+def Main():
+  CopyFiles(Readfile("cc.gyp")['variables']['cc_source_files'])
+  CopyFiles(Readfile("cc_tests.gyp")['variables']['cc_tests_source_files'])
+  CopyFiles(Readfile("cc_tests.gyp")['variables']['cc_tests_support_files'])
 
 if __name__ == '__main__':
   import sys

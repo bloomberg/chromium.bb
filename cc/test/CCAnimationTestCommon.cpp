@@ -65,6 +65,16 @@ FakeFloatAnimationCurve::~FakeFloatAnimationCurve()
 {
 }
 
+double FakeFloatAnimationCurve::duration() const
+{
+    return 1;
+}
+
+float FakeFloatAnimationCurve::getValue(double now) const
+{
+    return 0;
+}
+
 PassOwnPtr<WebCore::CCAnimationCurve> FakeFloatAnimationCurve::clone() const
 {
     return adoptPtr(new FakeFloatAnimationCurve);
@@ -77,6 +87,11 @@ FakeTransformTransition::FakeTransformTransition(double duration)
 
 FakeTransformTransition::~FakeTransformTransition()
 {
+}
+
+double FakeTransformTransition::duration() const
+{
+    return m_duration;
 }
 
 WebKit::WebTransformationMatrix FakeTransformTransition::getValue(double time) const
@@ -101,6 +116,11 @@ FakeFloatTransition::~FakeFloatTransition()
 {
 }
 
+double FakeFloatTransition::duration() const
+{
+    return m_duration;
+}
+
 float FakeFloatTransition::getValue(double time) const
 {
     time /= m_duration;
@@ -116,6 +136,31 @@ FakeLayerAnimationControllerClient::FakeLayerAnimationControllerClient()
 
 FakeLayerAnimationControllerClient::~FakeLayerAnimationControllerClient()
 {
+}
+
+int FakeLayerAnimationControllerClient::id() const
+{
+    return 0;
+}
+
+void FakeLayerAnimationControllerClient::setOpacityFromAnimation(float opacity)
+{
+    m_opacity = opacity;
+}
+
+float FakeLayerAnimationControllerClient::opacity() const
+{
+    return m_opacity;
+}
+
+void FakeLayerAnimationControllerClient::setTransformFromAnimation(const WebKit::WebTransformationMatrix& transform)
+{
+    m_transform = transform;
+}
+
+const WebKit::WebTransformationMatrix& FakeLayerAnimationControllerClient::transform() const
+{
+    return m_transform;
 }
 
 PassOwnPtr<WebCore::CCAnimationCurve> FakeFloatTransition::clone() const

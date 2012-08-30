@@ -10,7 +10,6 @@
 #include "CCLayerTreeHostImpl.h"
 #include "CCProxy.h"
 #include "CCScheduler.h"
-#include "CCTextureUpdateController.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {
@@ -20,10 +19,11 @@ class CCLayerTreeHost;
 class CCScheduler;
 class CCScopedThreadProxy;
 class CCTextureUpdateQueue;
+class CCTextureUpdateController;
 class CCThread;
 class CCThreadProxyContextRecreationTimer;
 
-class CCThreadProxy : public CCProxy, CCLayerTreeHostImplClient, CCSchedulerClient, CCTextureUpdateControllerClient {
+class CCThreadProxy : public CCProxy, CCLayerTreeHostImplClient, CCSchedulerClient {
 public:
     static PassOwnPtr<CCProxy> create(CCLayerTreeHost*);
 
@@ -64,6 +64,7 @@ public:
 
     // CCSchedulerClient implementation
     virtual bool canDraw() OVERRIDE;
+    virtual bool hasMoreResourceUpdates() const OVERRIDE;
     virtual void scheduledActionBeginFrame() OVERRIDE;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE;
@@ -71,9 +72,6 @@ public:
     virtual void scheduledActionCommit() OVERRIDE;
     virtual void scheduledActionBeginContextRecreation() OVERRIDE;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
-
-    // CCTextureUpdateControllerClient implementation
-    virtual void updateTexturesCompleted() OVERRIDE;
 
 private:
     explicit CCThreadProxy(CCLayerTreeHost*);
@@ -129,8 +127,9 @@ private:
     void setNeedsForcedCommitOnImplThread();
 
     // Accessed on main thread only.
-    bool m_animateRequested;
-    bool m_commitRequested;
+    bool m_animateRequested; // Set only when setNeedsAnimate is called.
+    bool m_commitRequested; // Set only when setNeedsCommit is called.
+    bool m_commitRequestSentToImplThread; // Set by setNeedsCommit and setNeedsAnimate.
     bool m_forcedCommitRequested;
     OwnPtr<CCThreadProxyContextRecreationTimer> m_contextRecreationTimer;
     CCLayerTreeHost* m_layerTreeHost;

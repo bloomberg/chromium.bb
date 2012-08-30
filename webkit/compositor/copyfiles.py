@@ -15,6 +15,8 @@ def Copy(name):
   src = name
   dst = name
   fullsrc = ""
+  if name.startswith("test/"):
+    src = src[5:]
   for prefix in prefixes:
     candidate = "%s/%s" % (prefix, src)
     if os.path.exists(candidate):

@@ -52,21 +52,21 @@
           'target_name': 'webkit_compositor',
           'type': 'static_library',
           'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/cc/cc.gyp:cc',
-            '<(DEPTH)/skia/skia.gyp:skia',
-            '<(DEPTH)/third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
+            '../../base/base.gyp:base',
+            '../../cc/cc.gyp:cc',
+            '../../skia/skia.gyp:skia',
+            '../../third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
             # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
-            '<(DEPTH)/third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+            '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
           ],
           'defines': [
             'WEBKIT_IMPLEMENTATION=1',
           ],
           'include_dirs': [
-            '<(DEPTH)/cc',
-            '<(DEPTH)/cc/stubs',
+            '../../cc',
+            '../../cc/stubs',
             'stubs',
-            '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/public',
+            '../../third_party/WebKit/Source/WebKit/chromium/public',
           ],
           'sources': [
             '<@(webkit_compositor_sources)',

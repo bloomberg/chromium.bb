@@ -749,6 +749,8 @@ void CCLayerTreeHostImpl::setDeviceScaleFactor(float deviceScaleFactor)
     if (deviceScaleFactor == m_deviceScaleFactor)
         return;
     m_deviceScaleFactor = deviceScaleFactor;
+
+    updateMaxScrollPosition();
 }
 
 
