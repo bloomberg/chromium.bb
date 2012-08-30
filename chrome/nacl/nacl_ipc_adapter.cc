@@ -176,10 +176,10 @@ class HandleConverter {
         params;
     if (!MessageType::ReadReplyParam(msg_, &params))
       return false;
-    out_msg->set_reply();
     // If we need to rewrite the message (i.e., on Windows), we need to make
     // sure we write the message id first.
     if (out_msg) {
+      out_msg->set_reply();
       int id = IPC::SyncMessage::GetMessageId(*msg_);
       out_msg->WriteInt(id);
     }
