@@ -799,8 +799,8 @@ class Coverage(object):
     positive_gfilter_list = []
     negative_gfilter_list = []
 
-    # Exclude all flaky and failing tests; they don't count for code coverage.
-    negative_gfilter_list += ('*.FLAKY_*', '*.FAILS_*')
+    # Run all tests including flaky tests to get the overall coverage.
+    negative_gfilter_list += ['*.FAILS_*']
 
     if not self.options.no_exclusions:
       exclusions = excl or gTestExclusions
