@@ -66,6 +66,7 @@
 // Current modes:
 // - Software RAF
 // - WebGL RAF
+// - WebGL RAF with Compositor Thread
 
 namespace {
 
@@ -367,6 +368,23 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
     // Do the actual test with input events.
     RunTestInternal(url, true, delay_us);
     latencies_[test_flags_] = CalculateLatency();
+
+    if (mode_ == kWebGLThread) {
+      // Print vsync info when in threaded mode.
+      Query query_vsync =
+          Query::EventName() ==
+              Query::String("CCThreadProxy::onVSyncParametersChanged") &&
+          Query::EventHasNumberArg("monotonicTimebase") &&
+          Query::EventHasNumberArg("intervalInSeconds");
+
+      const TraceEvent* vsync_info = analyzer_->FindOneEvent(query_vsync);
+      if (vsync_info) {
+        double timebase = vsync_info->GetKnownArgAsDouble("monotonicTimebase");
+        double interval = vsync_info->GetKnownArgAsDouble("intervalInSeconds");
+        printf("VSync scheduling: timebase = %f; interval = %f\n",
+               timebase, interval);
+      }
+    }
   }
 
   // Print summary if more than 1 behavior was tested in this run. This is only
@@ -399,7 +417,7 @@ void LatencyTest::RunTestInternal(const std::string& test_url,
                                   int input_delay_us) {
   mouse_x_ = 0;
 
-  ASSERT_TRUE(tracing::BeginTracing("test_gpu,test_latency"));
+  ASSERT_TRUE(tracing::BeginTracing("cc,test_gpu,test_latency"));
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(test_url), CURRENT_TAB,
