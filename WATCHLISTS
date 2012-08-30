@@ -70,9 +70,6 @@
     'browser_compositor': {
       'filepath': 'ui/compositor/'
     },
-    'browser_main': {
-      'filepath': 'chrome/browser/browser_main.cc',
-    },
     'browser_resources': {
       'filepath': 'chrome/browser/resources/',
     },
@@ -171,9 +168,6 @@
     },
     'gpu': {
       'filepath': 'gpu/',
-    },
-    'history': {
-      'filepath': 'chrome/browser/history/',
     },
     'history_ui': {
       'filepath': 'chrome/browser/resources/history',
@@ -434,7 +428,7 @@
                  'dyu@chromium.org'],
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
-    'base': ['brettw-cc@chromium.org', 'erikwright+watch@chromium.org'],
+    'base': ['erikwright+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
@@ -442,7 +436,6 @@
     'browser_components': ['browser-components-watch@chromium.org'],
     'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
                            'piman+watch@chromium.org'],
-    'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
@@ -474,7 +467,6 @@
     'gdata': ['achuith+watch@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
-    'history': ['brettw-cc@chromium.org'],
     'history_ui': ['dubroy@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
@@ -525,8 +517,7 @@
                  'wez+watch@chromium.org',
                  'amit@chromium.org',
                  'sanjeevr@chromium.org'],
-    'renderer': ['darin-cc@chromium.org',
-                 'brettw-cc@chromium.org'],
+    'renderer': ['darin-cc@chromium.org'],
     'search': ['dhollowa+watch@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'shell_window': ['jeremya+watch@chromium.org'],
@@ -534,7 +525,7 @@
     'speech': ['satish@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
              'akalin@chromium.org', 'rsimha@chromium.org'],
-    'tab_contents': ['brettw-cc@chromium.org', 'avi@chromium.org',
+    'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
     'tests': [],
