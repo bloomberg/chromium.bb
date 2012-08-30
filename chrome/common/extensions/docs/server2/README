@@ -14,21 +14,21 @@ documentation web pages dynamically.
 The goals of this system are:
 
 * Docs are generated from API definitions; it isn't possible to add or modify
-APIs without creating stub reference documentation at the same time.
+  APIs without creating stub reference documentation at the same time.
 
 * Docs are editable by anyone with Chrome commit access. This encourages
-developers to do their part to keep doc up to date, and allows part-time
-contributors to help too.
+  developers to do their part to keep doc up to date, and allows part-time
+  contributors to help too.
 
 * Docs go live automatically and immediately, upon check-in. There's no separate
-push process for docs.
+  push process for docs.
 
 * Docs are branched automatically with Chrome's source code; the docs for each
-Chrome release are kept with the corresponding source code.
+  Chrome release are kept with the corresponding source code.
 
 * Users can always find the current doc for any Chrome release channel (i.e.,
-/trunk/extensions/, /beta/apps/, etc.). These URLs are updated automatically
-with Chrome's release process.
+  /trunk/extensions/, /beta/apps/, etc.). These URLs are updated automatically
+  with Chrome's release process.
 
 
 Editing Docs
@@ -73,14 +73,17 @@ Once you have access:
 
 1. Increment the version in app.yaml so we can roll back if the update breaks.
 
-2. Run appcfg.py (supplied with the App Engine SDK) to upload the server code:
+2. Run build_server.py. This copies some depenencies from /third_party into the
+   server directory so that they get uploaded to App Engine.
+
+3. Run appcfg.py (supplied with the App Engine SDK) to upload the server code:
 
     appcfg.py update .
 
-3. When prompted for your credentials, enter the information for the account
+4. When prompted for your credentials, enter the information for the account
    that has access to the production app.
 
-4. Go to http://www.appspot.com, select the docs project, click "versions" in
+5. Go to http://www.appspot.com, select the docs project, click "versions" in
    the sidebar, and make the version you just deployed the "default" version.
 
    If you get an error about too many versions when deploying, go into this
