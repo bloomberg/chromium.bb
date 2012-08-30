@@ -2310,13 +2310,6 @@ class PageCyclerNetSimTest(BasePageCyclerTest):
       description: a string description for the test
     """
     replay_options = None
-    if self.IsMac():
-      # Adding --net=fios uses dummynet by default (which Macs have).
-      # Linux would work after installing ipfw/dummynet and ipfw kernel module.
-      # Windows is trickier. It would require running WPR on a separate machine
-      # because running on same machine does not work with Windows loopback.
-      # Adding --no-admin-check skips running the entire script as sudo.
-      replay_options = ('--no-admin-check', '--net', 'fios')
     with PageCyclerReplay.ReplayServer(test_name, replay_options) as server:
       if server.is_record_mode:
         self._num_iterations = 1
