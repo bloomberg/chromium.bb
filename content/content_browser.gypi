@@ -222,6 +222,8 @@
     'browser/android/sandboxed_process_launcher.h',
     'browser/android/touch_point.cc',
     'browser/android/touch_point.h',
+    'browser/android/web_contents_observer_android.cc',
+    'browser/android/web_contents_observer_android.h',
     'browser/appcache/appcache_dispatcher_host.cc',
     'browser/appcache/appcache_dispatcher_host.h',
     'browser/appcache/appcache_frontend_proxy.cc',

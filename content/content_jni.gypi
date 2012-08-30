@@ -24,6 +24,7 @@
     'public/android/java/src/org/chromium/content/browser/LocationProvider.java',
     'public/android/java/src/org/chromium/content/browser/SandboxedProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/TouchPoint.java',
+    'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',
     'public/android/java/src/org/chromium/content/common/CommandLine.java',
     'public/android/java/src/org/chromium/content/common/DeviceInfo.java',
     'public/android/java/src/org/chromium/content/common/SurfaceCallback.java',
