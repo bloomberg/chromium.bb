@@ -1280,18 +1280,17 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 
 WL_EXPORT void
 weston_surface_draw(struct weston_surface *es, struct weston_output *output,
-		    pixman_region32_t *damage)
+		    pixman_region32_t *damage) /* in global coordinates */
 {
 	struct weston_compositor *ec = es->compositor;
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
-	/* regions of surface to draw opaque/blended in surface coordinates: */
-	pixman_region32_t surface_opaque, surface_blend;
+	/* non-opaque region in surface coordinates: */
+	pixman_region32_t surface_blend;
 	GLint filter;
 	int i;
 
 	pixman_region32_init(&repaint);
-	pixman_region32_init(&surface_opaque);
 	pixman_region32_init(&surface_blend);
 
 	pixman_region32_intersect(&repaint,
@@ -1305,20 +1304,13 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 				 &ec->primary_plane.damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	if (1 || es->alpha < 1.0) {
-		/* blended region is whole surface minus opaque region: */
-		pixman_region32_init_rect(&surface_blend, 0, 0,
-				es->geometry.width, es->geometry.height);
-		pixman_region32_init(&surface_opaque);
-		pixman_region32_copy(&surface_opaque, &es->opaque);
+
+	/* blended region is whole surface minus opaque region: */
+	pixman_region32_init_rect(&surface_blend, 0, 0,
+				  es->geometry.width, es->geometry.height);
+	if (es->alpha >= 1.0)
 		pixman_region32_subtract(&surface_blend, &surface_blend,
-				&surface_opaque);
-	} else {
-		/* whole surface is opaque: */
-		pixman_region32_init_rect(&surface_opaque, 0, 0,
-				es->geometry.width, es->geometry.height);
-		pixman_region32_init(&surface_blend);
-	}
+					 &es->opaque);
 
 	if (ec->current_shader != es->shader) {
 		glUseProgram(es->shader->program);
@@ -1343,9 +1335,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		glTexParameteri(es->target, GL_TEXTURE_MAG_FILTER, filter);
 	}
 
-	if (pixman_region32_not_empty(&surface_opaque)) {
+	if (pixman_region32_not_empty(&es->opaque) && es->alpha >= 1.0) {
 		glDisable(GL_BLEND);
-		repaint_region(es, &repaint, &surface_opaque);
+		repaint_region(es, &repaint, &es->opaque);
 	}
 
 	if (pixman_region32_not_empty(&surface_blend)) {
@@ -1355,7 +1347,6 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 
 out:
 	pixman_region32_fini(&repaint);
-	pixman_region32_fini(&surface_opaque);
 	pixman_region32_fini(&surface_blend);
 }
 
