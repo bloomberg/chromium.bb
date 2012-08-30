@@ -390,7 +390,7 @@ void LocationBarView::SetAnimationOffset(int offset) {
 void LocationBarView::ModeChanged(const chrome::search::Mode& old_mode,
                                   const chrome::search::Mode& new_mode) {
 #if defined(USE_AURA)
-  if (new_mode.is_search() && new_mode.animate) {
+  if (new_mode.animate && old_mode.is_ntp() && new_mode.is_search()) {
     // Fade in so the icons don't pop.
     StartFadeAnimation();
   } else {
