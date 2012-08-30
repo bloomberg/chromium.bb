@@ -167,9 +167,10 @@ class WebIntentPickerController
   void WebIntentServicesForExplicitIntent(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
 
-  // Called when FaviconData is returned from the FaviconService.
-  void OnFaviconDataAvailable(FaviconService::Handle handle,
-                              history::FaviconData favicon_data);
+  // Called when a favicon is returned from the FaviconService.
+  void OnFaviconDataAvailable(
+      FaviconService::Handle handle,
+      const history::FaviconImageResult& image_result);
 
   // Called when IntentExtensionInfo is returned from the CWSIntentsRegistry.
   void OnCWSIntentServicesAvailable(

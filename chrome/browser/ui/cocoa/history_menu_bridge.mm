@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
@@ -454,16 +455,18 @@ HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
 void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  FaviconService::Handle handle = service->GetFaviconForURL(
-      profile_, item->url, history::FAVICON, &favicon_consumer_,
+  FaviconService::Handle handle = service->GetFaviconImageForURL(
+      profile_, item->url, history::FAVICON, gfx::kFaviconSize,
+      &favicon_consumer_,
       base::Bind(&HistoryMenuBridge::GotFaviconData, base::Unretained(this)));
   favicon_consumer_.SetClientData(service, handle, item);
   item->icon_handle = handle;
   item->icon_requested = true;
 }
 
-void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
-                                       history::FaviconData favicon) {
+void HistoryMenuBridge::GotFaviconData(
+    FaviconService::Handle handle,
+    const history::FaviconImageResult& image_result) {
   // Since we're going to do Cocoa-y things, make sure this is the main thread.
   DCHECK([NSThread isMainThread]);
 
@@ -475,18 +478,10 @@ void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
   item->icon_requested = false;
   item->icon_handle = 0;
 
-  // Convert the raw data to Skia and then to a NSImage.
-  // TODO(rsesek): Is there an easier way to do this?
-  SkBitmap icon;
-  if (favicon.is_valid() &&
-      gfx::PNGCodec::Decode(favicon.image_data->front(),
-          favicon.image_data->size(), &icon)) {
-    NSImage* image = gfx::SkBitmapToNSImage(icon);
-    if (image) {
-      // The conversion was successful.
-      item->icon.reset([image retain]);
-      [item->menu_item setImage:item->icon.get()];
-    }
+  NSImage* image = image_result.image.AsNSImage();
+  if (image) {
+    item->icon.reset([image retain]);
+    [item->menu_item setImage:item->icon.get()];
   }
 }
 

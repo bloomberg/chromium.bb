@@ -1889,30 +1889,26 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
   if (request->canceled())
     return;
 
-  FaviconData favicon;
+  std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
 
   if (thumbnail_db_.get()) {
+    IconType icon_type;
     const FaviconID favicon_id =
         thumbnail_db_->GetFaviconIDForFaviconURL(
-            icon_url, icon_types, &favicon.icon_type);
+            icon_url, icon_types, &icon_type);
     if (favicon_id) {
-      scoped_refptr<base::RefCountedMemory> data;
-      Time last_updated;
-      if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data,
-                                    NULL, NULL)) {
-        favicon.known_icon = true;
-        favicon.expired = (Time::Now() - last_updated) >
-            TimeDelta::FromDays(kFaviconRefetchDays);
-        favicon.image_data = data;
-      }
+      GetFaviconFromDB(favicon_id, &favicon_bitmap_results);
 
       if (page_url)
-        SetFaviconMapping(*page_url, favicon_id, favicon.icon_type);
+        SetFaviconMapping(*page_url, favicon_id, icon_type);
     }
     // else case, haven't cached entry yet. Caller is responsible for
     // downloading the favicon and invoking SetFavicon.
   }
-  request->ForwardResult(request->handle(), favicon);
+  // TODO(pkotwicz): Pass map of |icon_url| to the sizes available from the web
+  // at |icon_url| instead of an empty map.
+  request->ForwardResult(request->handle(), favicon_bitmap_results,
+                         IconURLSizesMap());
 }
 
 void HistoryBackend::GetFaviconForURL(
@@ -1922,12 +1918,16 @@ void HistoryBackend::GetFaviconForURL(
   if (request->canceled())
     return;
 
-  FaviconData favicon;
+  std::vector<FaviconBitmapResult> favicon_bitmap_results;
 
   // Get the favicon from DB.
-  GetFaviconFromDB(page_url, icon_types, &favicon);
+  GetFaviconFromDB(page_url, icon_types, &favicon_bitmap_results);
 
-  request->ForwardResult(request->handle(), favicon);
+  // TODO(pkotwicz): Pass map of matched icon URLs for |icon_types| to the
+  // sizes that each icon URL is available at from the web instead of an
+  // empty map.
+  request->ForwardResult(request->handle(), favicon_bitmap_results,
+                         IconURLSizesMap());
 }
 
 void HistoryBackend::GetFaviconForID(scoped_refptr<GetFaviconRequest> request,
@@ -1935,9 +1935,15 @@ void HistoryBackend::GetFaviconForID(scoped_refptr<GetFaviconRequest> request,
   if (request->canceled())
     return;
 
-  FaviconData favicon;
-  GetFaviconFromDB(id, &favicon);
-  request->ForwardResult(request->handle(), favicon);
+ std::vector<FaviconBitmapResult> favicon_bitmap_results;
+
+  // Get the favicon from DB.
+  GetFaviconFromDB(id, &favicon_bitmap_results);
+
+  // TODO(pkotwicz): Pass map of the matched icon URL to the sizes that it is
+  // available from the web instead of an empty map.
+  request->ForwardResult(request->handle(), favicon_bitmap_results,
+                         IconURLSizesMap());
 }
 
 void HistoryBackend::SetFavicon(
@@ -2439,8 +2445,8 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
 bool HistoryBackend::GetFaviconFromDB(
     const GURL& page_url,
     int icon_types,
-    FaviconData* favicon) {
-  DCHECK(favicon);
+    std::vector<FaviconBitmapResult>* favicon_bitmap_results) {
+  DCHECK(favicon_bitmap_results);
 
   if (!db_.get() || !thumbnail_db_.get())
     return false;
@@ -2456,7 +2462,7 @@ bool HistoryBackend::GetFaviconFromDB(
     for (std::vector<IconMapping>::iterator i = icon_mappings.begin();
          i != icon_mappings.end(); ++i) {
       if ((i->icon_type & icon_types) &&
-          GetFaviconFromDB(i->icon_id, favicon)) {
+          GetFaviconFromDB(i->icon_id, favicon_bitmap_results)) {
         success = true;
         break;
       }
@@ -2467,19 +2473,25 @@ bool HistoryBackend::GetFaviconFromDB(
   return success;
 }
 
-bool HistoryBackend::GetFaviconFromDB(FaviconID favicon_id,
-                                      FaviconData* favicon) {
+bool HistoryBackend::GetFaviconFromDB(
+    FaviconID favicon_id,
+    std::vector<history::FaviconBitmapResult>* favicon_bitmap_results) {
+  FaviconBitmapResult bitmap_result;
   Time last_updated;
-  scoped_refptr<base::RefCountedMemory> data;
-
-  if (!thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data,
-                                 &favicon->icon_url, &favicon->icon_type))
+  if (!thumbnail_db_->GetFavicon(favicon_id,
+                                 &last_updated,
+                                 &bitmap_result.bitmap_data,
+                                 &bitmap_result.icon_url,
+                                 &bitmap_result.icon_type)) {
     return false;
+  }
 
-  favicon->expired = (Time::Now() - last_updated) >
+  bitmap_result.expired = (Time::Now() - last_updated) >
       TimeDelta::FromDays(kFaviconRefetchDays);
-  favicon->known_icon = true;
-  favicon->image_data = data;
+
+  favicon_bitmap_results->clear();
+  if (bitmap_result.is_valid())
+    favicon_bitmap_results->push_back(bitmap_result);
   return true;
 }
 

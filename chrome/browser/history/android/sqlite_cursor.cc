@@ -11,6 +11,7 @@
 #include "chrome/browser/history/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SQLiteCursor_jni.h"
+#include "ui/gfx/favicon_size.h"
 #include "sql/statement.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -222,11 +223,13 @@ bool SQLiteCursor::GetFavicon(history::FaviconID id,
       test_observer_->OnPostGetFaviconTask();
 
     event_.Wait();
-    if (!favicon_.is_valid())
+    if (!favicon_bitmap_result_.is_valid())
       return false;
 
-    image_data->assign(favicon_.image_data->front(),
-        favicon_.image_data->front() + favicon_.image_data->size());
+    scoped_refptr<base::RefCountedMemory> bitmap_data =
+        favicon_bitmap_result_.bitmap_data;
+    image_data->assign(bitmap_data->front(),
+                       bitmap_data->front() + bitmap_data->size());
     return true;
   }
 
@@ -236,15 +239,17 @@ bool SQLiteCursor::GetFavicon(history::FaviconID id,
 void SQLiteCursor::GetFaviconForIDInUIThread(
     history::FaviconID id,
     CancelableRequestConsumerBase* consumer,
-    const FaviconService::FaviconDataCallback& callback) {
+    const FaviconService::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  favicon_service_->GetFaviconForID(id, consumer, callback);
+  favicon_service_->GetRawFaviconForID(id, gfx::kFaviconSize,
+      ui::SCALE_FACTOR_100P, consumer, callback);
 }
 
 
-void SQLiteCursor::OnFaviconData(FaviconService::Handle handle,
-                                 history::FaviconData favicon) {
-  favicon_ = favicon;
+void SQLiteCursor::OnFaviconData(
+    FaviconService::Handle handle,
+    const history::FaviconBitmapResult& bitmap_result) {
+  favicon_bitmap_result_ = bitmap_result;
   event_.Signal();
   if (test_observer_)
     test_observer_->OnGetFaviconResult();

@@ -64,8 +64,9 @@ class BookmarkFaviconFetcher: public content::NotificationObserver {
 
   // Favicon fetch callback. After all favicons are fetched executes
   // html output on the file thread.
-  void OnFaviconDataAvailable(FaviconService::Handle handle,
-                              history::FaviconData favicon);
+  void OnFaviconDataAvailable(
+      FaviconService::Handle handle,
+      const history::FaviconBitmapResult& bitmap_result);
 
   // The Profile object used for accessing FaviconService, bookmarks model.
   Profile* profile_;

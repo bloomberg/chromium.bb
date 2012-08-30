@@ -94,8 +94,9 @@ class BackForwardMenuModel : public ui::MenuModel {
   void FetchFavicon(content::NavigationEntry* entry);
 
   // Callback from the favicon service.
-  void OnFavIconDataAvailable(FaviconService::Handle handle,
-                              history::FaviconData favicon);
+  void OnFavIconDataAvailable(
+    FaviconService::Handle handle,
+    const history::FaviconImageResult& image_result);
 
   // Allows the unit test to use its own dummy tab contents.
   void set_test_web_contents(content::WebContents* test_web_contents) {

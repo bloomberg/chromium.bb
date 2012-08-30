@@ -414,8 +414,9 @@ class BookmarkModel : public content::NotificationObserver,
 
   // Notification that a favicon has finished loading. If we can decode the
   // favicon, FaviconLoaded is invoked.
-  void OnFaviconDataAvailable(FaviconService::Handle handle,
-                              history::FaviconData favicon);
+  void OnFaviconDataAvailable(
+      FaviconService::Handle handle,
+      const history::FaviconImageResult& image_result);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // favicon service.

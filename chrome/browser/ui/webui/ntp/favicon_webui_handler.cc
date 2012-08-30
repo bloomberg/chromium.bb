@@ -23,6 +23,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/favicon_size.h"
 
 namespace {
 
@@ -109,10 +110,12 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
   }
 
   dom_id_map_[id_] = dom_id;
-  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+  FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
       Profile::FromWebUI(web_ui()),
       url,
       history::FAVICON,
+      gfx::kFaviconSize,
+      ui::SCALE_FACTOR_100P,
       &consumer_,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
                  base::Unretained(this)));
@@ -121,14 +124,14 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
 
 void FaviconWebUIHandler::OnFaviconDataAvailable(
     FaviconService::Handle request_handle,
-    history::FaviconData favicon) {
+    const history::FaviconBitmapResult& bitmap_result) {
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
   int id = consumer_.GetClientData(favicon_service, request_handle);
   scoped_ptr<StringValue> color_value;
 
-  if (favicon.is_valid())
-    color_value.reset(GetDominantColorCssString(favicon.image_data));
+  if (bitmap_result.is_valid())
+    color_value.reset(GetDominantColorCssString(bitmap_result.bitmap_data));
   else
     color_value.reset(new StringValue("#919191"));
 

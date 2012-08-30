@@ -31,6 +31,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/favicon_size.h"
 
 using content::BrowserThread;
 
@@ -460,7 +461,8 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
     if (favicons_map_->end() == iter) {
       FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
           profile_, Profile::EXPLICIT_ACCESS);
-      favicon_service->GetFaviconForURL(profile_, GURL(url), history::FAVICON,
+      favicon_service->GetRawFaviconForURL(profile_, GURL(url),
+          history::FAVICON, gfx::kFaviconSize, ui::SCALE_FACTOR_100P,
           &favicon_consumer_,
           base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
                      base::Unretained(this)));
@@ -474,14 +476,15 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
 
 void BookmarkFaviconFetcher::OnFaviconDataAvailable(
     FaviconService::Handle handle,
-    history::FaviconData favicon) {
+    const history::FaviconBitmapResult& bitmap_result) {
   GURL url;
   if (!bookmark_urls_.empty()) {
     url = GURL(bookmark_urls_.front());
     bookmark_urls_.pop_front();
   }
-  if (favicon.is_valid() && !url.is_empty()) {
-    favicons_map_->insert(make_pair(url.spec(), favicon.image_data));
+  if (bitmap_result.is_valid() && !url.is_empty()) {
+    favicons_map_->insert(
+        make_pair(url.spec(), bitmap_result.bitmap_data));
   }
 
   if (FetchNextFavicon()) {

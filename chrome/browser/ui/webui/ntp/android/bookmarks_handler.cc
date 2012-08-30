@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/favicon_size.h"
 
 using base::Int64ToString;
 using content::BrowserThread;
@@ -353,10 +354,12 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
 
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
         profile, Profile::EXPLICIT_ACCESS);
-    FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+    FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
         profile,
         node->url(),
         history::FAVICON | history::TOUCH_ICON,
+        gfx::kFaviconSize,
+        ui::SCALE_FACTOR_100P,
         &cancelable_consumer_,
         base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
                    base::Unretained(this)));
@@ -366,13 +369,13 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
 
 void BookmarksHandler::OnShortcutFaviconDataAvailable(
     FaviconService::Handle handle,
-    history::FaviconData favicon) {
+    const history::FaviconBitmapResult& bitmap_result) {
   SkColor color = SK_ColorWHITE;
   SkBitmap favicon_bitmap;
-  if (favicon.is_valid()) {
-    color = GetDominantColorForFavicon(favicon.image_data);
-    gfx::PNGCodec::Decode(favicon.image_data->front(),
-                          favicon.image_data->size(),
+  if (bitmap_result.is_valid()) {
+    color = GetDominantColorForFavicon(bitmap_result.bitmap_data);
+    gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
+                          bitmap_result.bitmap_data->size(),
                           &favicon_bitmap);
   }
 

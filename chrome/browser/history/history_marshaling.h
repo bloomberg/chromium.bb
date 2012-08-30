@@ -57,7 +57,7 @@ typedef CancelableRequest<HistoryService::ThumbnailDataCallback>
 
 // Favicons -------------------------------------------------------------------
 
-typedef CancelableRequest<FaviconService::FaviconDataCallback>
+typedef CancelableRequest<FaviconService::FaviconResultsCallback>
     GetFaviconRequest;
 
 // Downloads ------------------------------------------------------------------
