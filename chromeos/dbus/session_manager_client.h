@@ -65,8 +65,14 @@ class CHROMEOS_EXPORT SessionManagerClient {
   // Locks the screen.
   virtual void RequestLockScreen() = 0;
 
+  // Notifies that the lock screen is shown.
+  virtual void NotifyLockScreenShown() = 0;
+
   // Unlocks the screen.
   virtual void RequestUnlockScreen() = 0;
+
+  // Notifies that the lock screen is dismissed.
+  virtual void NotifyLockScreenDismissed() = 0;
 
   // Returns whether or not the screen is locked. Implementation should cache
   // this state so that it can return immediately. Useful for observers that

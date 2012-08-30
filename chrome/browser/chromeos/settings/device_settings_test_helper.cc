@@ -79,7 +79,11 @@ void DeviceSettingsTestHelper::StopSession() {}
 
 void DeviceSettingsTestHelper::RequestLockScreen() {}
 
+void DeviceSettingsTestHelper::NotifyLockScreenShown() {}
+
 void DeviceSettingsTestHelper::RequestUnlockScreen() {}
+
+void DeviceSettingsTestHelper::NotifyLockScreenDismissed() {}
 
 bool DeviceSettingsTestHelper::GetIsScreenLocked() {
   return false;

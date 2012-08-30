@@ -131,9 +131,19 @@ class SessionManagerClientImpl : public SessionManagerClient {
     SimpleMethodCallToSessionManager(login_manager::kSessionManagerLockScreen);
   }
 
+  virtual void NotifyLockScreenShown() OVERRIDE {
+    SimpleMethodCallToSessionManager(
+        login_manager::kSessionManagerHandleLockScreenShown);
+  }
+
   virtual void RequestUnlockScreen() OVERRIDE {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerUnlockScreen);
+  }
+
+  virtual void NotifyLockScreenDismissed() OVERRIDE {
+    SimpleMethodCallToSessionManager(
+        login_manager::kSessionManagerHandleLockScreenDismissed);
   }
 
   virtual bool GetIsScreenLocked() OVERRIDE {
@@ -345,10 +355,12 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     screen_locked_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
+  virtual void NotifyLockScreenShown() OVERRIDE {}
   virtual void RequestUnlockScreen() OVERRIDE {
     screen_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
+  virtual void NotifyLockScreenDismissed() OVERRIDE {}
   virtual bool GetIsScreenLocked() OVERRIDE { return screen_locked_; }
   virtual void RetrieveDevicePolicy(
       const RetrievePolicyCallback& callback) OVERRIDE {
