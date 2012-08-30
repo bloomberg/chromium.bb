@@ -1201,7 +1201,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
       browser(),
       url,
       NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      0);
 
   // When the download finishes, we should still have one tab.
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());

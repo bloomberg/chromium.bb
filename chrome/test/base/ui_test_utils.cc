@@ -24,7 +24,9 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -43,6 +45,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/bookmark_load_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
@@ -59,6 +62,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_util.h"
@@ -260,7 +264,8 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     EXPECT_TRUE(web_contents != NULL)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";
-    return;
+    if (!web_contents)
+      return;
   } else if ((disposition == CURRENT_TAB) ||
       (disposition == NEW_FOREGROUND_TAB) ||
       (disposition == SINGLETON_TAB)) {
@@ -418,6 +423,23 @@ void WaitForHistoryToLoad(HistoryService* history_service) {
       content::NotificationService::AllSources());
   if (!history_service->BackendLoaded())
     history_loaded_observer.Wait();
+}
+
+void DownloadURL(Browser* browser, const GURL& download_url) {
+  ScopedTempDir downloads_directory;
+  ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
+  browser->profile()->GetPrefs()->SetFilePath(
+      prefs::kDownloadDefaultDirectory, downloads_directory.path());
+
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(browser->profile());
+  scoped_ptr<content::DownloadTestObserver> observer(
+      new content::DownloadTestObserverTerminal(
+          download_manager, 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+
+  ui_test_utils::NavigateToURL(browser, download_url);
+  observer->WaitForFinished();
 }
 
 bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {
@@ -713,26 +735,30 @@ void ClickTask(ui_controls::MouseButton button,
 
 }  // namespace internal
 
-HistoryEnumerator::HistoryEnumerator(HistoryService* history) {
-  CHECK(history);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&HistoryService::IterateURLs, history, this));
-  content::RunMessageLoop();
+HistoryEnumerator::HistoryEnumerator(Profile* profile) {
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
+  hs->QueryHistory(
+      string16(),
+      history::QueryOptions(),
+      &consumer_,
+      base::Bind(&HistoryEnumerator::HistoryQueryComplete,
+                 base::Unretained(this), message_loop_runner->QuitClosure()));
+  message_loop_runner->Run();
 }
 
 HistoryEnumerator::~HistoryEnumerator() {}
 
-void HistoryEnumerator::OnURL(const GURL& url) {
-  urls_.push_back(url);
-}
-
-void HistoryEnumerator::OnComplete(bool success) {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      MessageLoop::QuitClosure());
+void HistoryEnumerator::HistoryQueryComplete(
+    const base::Closure& quit_task,
+    HistoryService::Handle request_handle,
+    history::QueryResults* results) {
+  for (size_t i = 0; i < results->size(); ++i)
+    urls_.push_back((*results)[i].url());
+  quit_task.Run();
 }
 
 }  // namespace ui_test_utils

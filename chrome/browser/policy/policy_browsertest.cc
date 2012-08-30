@@ -14,8 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -364,10 +362,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
       FilePath(FILE_PATH_LITERAL("empty.html")));
   ui_test_utils::NavigateToURL(browser(), url);
   // Verify that the navigation wasn't saved in the history.
-  HistoryService* history = HistoryServiceFactory::GetForProfile(
-      browser()->profile(), Profile::EXPLICIT_ACCESS);
-  ASSERT_TRUE(history);
-  ui_test_utils::HistoryEnumerator enumerator1(history);
+  ui_test_utils::HistoryEnumerator enumerator1(browser()->profile());
   EXPECT_EQ(0u, enumerator1.urls().size());
 
   // Now flip the policy and try again.
@@ -376,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   provider_.UpdateChromePolicy(policies);
   ui_test_utils::NavigateToURL(browser(), url);
   // Verify that the navigation was saved in the history.
-  ui_test_utils::HistoryEnumerator enumerator2(history);
+  ui_test_utils::HistoryEnumerator enumerator2(browser()->profile());
   ASSERT_EQ(1u, enumerator2.urls().size());
   EXPECT_EQ(url, enumerator2.urls()[0]);
 }

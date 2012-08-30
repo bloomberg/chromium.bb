@@ -43,7 +43,6 @@
       'execute_javascript',
       'extensions',
       'fullscreen_mouselock',
-      'history',
       'gtalk.test_basic',
       'imports',
       'infobars',

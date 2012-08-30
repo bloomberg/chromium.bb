@@ -169,6 +169,9 @@ void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
 // Blocks until the |history_service|'s history finishes loading.
 void WaitForHistoryToLoad(HistoryService* history_service);
 
+// Download the given file and waits for the download to complete.
+void DownloadURL(Browser* browser, const GURL& download_url);
+
 // Brings the native window for |browser| to the foreground. Returns true on
 // success.
 bool BringBrowserWindowToFront(const Browser* browser) WARN_UNUSED_RESULT;
@@ -435,20 +438,24 @@ void ClickTask(ui_controls::MouseButton button,
 
 }  // namespace internal
 
-// Enumerates all history contents on the backend thread.
-class HistoryEnumerator : public HistoryService::URLEnumerator {
+// Enumerates all history contents on the backend thread. Returns them in
+// descending order by time.
+class HistoryEnumerator {
  public:
-  explicit HistoryEnumerator(HistoryService* history);
-  virtual ~HistoryEnumerator();
-
-  // HistoryService::URLEnumerator:
-  virtual void OnURL(const GURL& url) OVERRIDE;
-  virtual void OnComplete(bool success) OVERRIDE;
+  explicit HistoryEnumerator(Profile* profile);
+  ~HistoryEnumerator();
 
   std::vector<GURL>& urls() { return urls_; }
 
  private:
+  void HistoryQueryComplete(
+      const base::Closure& quit_task,
+      HistoryService::Handle request_handle,
+      history::QueryResults* results);
+
   std::vector<GURL> urls_;
+
+  CancelableRequestConsumer consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryEnumerator);
 };

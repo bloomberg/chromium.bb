@@ -42,16 +42,15 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  # Browser tests, by definition, need access to the browser objects.
+  '.*_(api|browser|extension_)test\.cc': [
+    "+chrome/browser",
+  ],
   # TODO(erikwright): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
     "!chrome/browser/bookmarks/bookmark_utils.h",
-    "!chrome/browser/extensions/extension_apitest.h",
-    "!chrome/browser/extensions/extension_function_test_utils.h",
-    "!chrome/browser/ui/browser.h",
-    "!chrome/browser/ui/browser_tabstrip.h",
-    "!chrome/browser/ui/view_ids.h",
   ]
 }

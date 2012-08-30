@@ -10,7 +10,6 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -35,7 +33,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/download_test_observer.h"
 #include "net/base/net_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -298,11 +295,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
-  ScopedTempDir downloads_directory;
-  ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
-  browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory, downloads_directory.path());
-
   TabContents* tab = chrome::GetActiveTabContents(browser());
 
   FilePath data_dir = ui_test_utils::GetTestFilePath(FilePath(), FilePath());
@@ -321,19 +313,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SearchWithinSpecialURL) {
             ui_test_utils::FindInPage(tab, query, kFwd, kIgnoreCase, NULL,
                                       NULL));
 
-  // Start a download.
-  content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser()->profile());
-  scoped_ptr<content::DownloadTestObserver> observer(
-      new content::DownloadTestObserverTerminal(
-          download_manager, 1,
-          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
-
   GURL download_url = ui_test_utils::GetTestUrl(
       FilePath().AppendASCII("downloads"),
       FilePath().AppendASCII("a_zip_file.zip"));
-  ui_test_utils::NavigateToURL(browser(), download_url);
-  observer->WaitForFinished();
+  ui_test_utils::DownloadURL(browser(), download_url);
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
   FlushHistoryService();
