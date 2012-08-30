@@ -40,7 +40,7 @@ const char kDuplexNoTumble[] = "DuplexNoTumble";
 class GtkPrinterList {
  public:
   GtkPrinterList() : default_printer_(NULL) {
-    gtk_enumerate_printers((GtkPrinterFunc)SetPrinter, this, NULL, TRUE);
+    gtk_enumerate_printers(SetPrinter, this, NULL, TRUE);
   }
 
   ~GtkPrinterList() {
@@ -75,14 +75,15 @@ class GtkPrinterList {
 
  private:
   // Callback function used by gtk_enumerate_printers() to get all printer.
-  static bool SetPrinter(GtkPrinter* printer, GtkPrinterList* printer_list) {
+  static gboolean SetPrinter(GtkPrinter* printer, gpointer data) {
+    GtkPrinterList *printer_list = (GtkPrinterList*)data;
     if (gtk_printer_is_default(printer))
       printer_list->default_printer_ = printer;
 
     g_object_ref(printer);
     printer_list->printers_.push_back(printer);
 
-    return false;
+    return FALSE;
   }
 
   std::vector<GtkPrinter*> printers_;
