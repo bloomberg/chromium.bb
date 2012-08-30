@@ -604,6 +604,9 @@ libs() {
   libs-clean
   libs-support newlib
   newlib
+  for arch in arm x86-32 x86-64; do
+    dummy-irt-shim ${arch}
+  done
   compiler-rt-all
   libgcc_eh-newlib
   libstdcpp newlib
@@ -740,7 +743,15 @@ translator-all() {
     translator universal srpc newlib
   fi
 
-  # Copy native libs to translator install dir
+  # Copy native libs to translator install dir.
+  # NOTE: Currently, sdk-irt-shim() has not yet been removed, so we run
+  # that here.  This will a real PPAPI libpnacl_irt_shim.a over the
+  # dummy version in the ${INSTALL_LIB_NATIVE} directory.  This gives us
+  # a way of making a browser-compatible translator for now.
+  # Once the PPAPI libpnacl_irt_shim.a is moved to the chromium repo we will
+  # need to supplement the translator build in chrome.  Once that is done, the
+  # translator build in the NaCl repo only works for commandline tests.
+  sdk-irt-shim
   cp -a ${INSTALL_LIB_NATIVE}* ${INSTALL_TRANSLATOR}
 
   driver-install-translator
@@ -2937,6 +2948,33 @@ libs-support-native() {
   ${PNACL_AR} rc "${destdir}"/libcrt_platform.a "${tmpdir}"/*.o
 }
 
+
+# Build the dummy "libpnacl_irt_shim.a", which is useful for building
+# commandline programs.  It cannot be used to build PPAPI programs
+# because it does not actually shim the PPAPI interfaces.
+# The library is named the same as the real PPAPI shim to ensure that
+# the commandlines are the same.
+# This must be built after newlib(), since it uses headers like <stdint.h>.
+dummy-irt-shim() {
+  local arch=$1
+  local destdir="${INSTALL_LIB_NATIVE}"${arch}
+  local label="DUMMY-IRT-SHIM (${arch})"
+  mkdir -p "${destdir}"
+
+  local flags="--pnacl-allow-native --pnacl-allow-translate"
+  local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
+
+  spushd "${PNACL_SUPPORT}"
+  StepBanner "${label}" "Install dummy libpnacl_irt_shim.a"
+  local tmpdir="${TC_BUILD}/dummy-irt-shim"
+  rm -rf "${tmpdir}"
+  mkdir -p "${tmpdir}"
+  ${cc_cmd} -c dummy_shim_entry.c -o "${tmpdir}"/dummy_shim_entry.o
+  spopd
+
+  ${PNACL_AR} rc "${destdir}"/libpnacl_irt_shim.a "${tmpdir}"/*.o
+}
+
 #########################################################################
 #     < SDK >
 #########################################################################
@@ -2970,7 +3008,6 @@ sdk() {
   sdk-clean
   sdk-headers
   sdk-libs
-  sdk-irt-shim
   sdk-verify
 }
 
@@ -3028,6 +3065,8 @@ sdk-libs() {
   spopd
 }
 
+# This provides a convenience function for building the "real" PPAPI shim.
+# TODO(jvoung): remove this once the sources have been moved to the chrome repo.
 sdk-irt-shim() {
   # NOTE: This uses the nacl-gcc toolchain, causing
   #       the pnacl toolchain to depend on it.
@@ -3157,6 +3196,16 @@ newlib-nacl-headers-check() {
     fi
   fi
 }
+
+
+#+ ppapi-all
+#+ Note: this is will be removed once we have cut ties to PPAPI in the NaCl
+#+ repository and confined PPAPI to the chromium repository.
+ppapi-all() {
+  sdk-irt-shim
+  ppapi-headers
+}
+
 
 #+ ppapi-headers
 #+ Note, this is experimental for now and must be called manually to avoid
