@@ -113,6 +113,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ClearHistory(JNIEnv* env, jobject obj);
   void SetClient(JNIEnv* env, jobject obj, jobject jclient);
   jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
   void AddJavascriptInterface(JNIEnv* env,
                               jobject obj,
                               jobject object,

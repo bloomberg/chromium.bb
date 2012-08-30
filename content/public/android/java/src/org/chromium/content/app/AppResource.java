@@ -30,6 +30,24 @@ public class AppResource {
     /** Id of the date picker view. */
     public static int ID_DATE_PICKER;
 
+    /** Id of the cancel button in Javascript modal dialogs. */
+    public static int ID_JS_MODAL_DIALOG_BUTTON_CANCEL;
+
+    /** Id of the confirm button in Javascript modal dialogs. */
+    public static int ID_JS_MODAL_DIALOG_BUTTON_CONFIRM;
+
+    /** Id of the CheckBox to suppress further modal dialogs in Javascript modal dialogs. */
+    public static int ID_JS_MODAL_DIALOG_CHECKBOX_SUPPRESS_DIALOGS;
+
+    /** Id of the message TextView in Javascript modal dialogs. */
+    public static int ID_JS_MODAL_DIALOG_TEXT_MESSAGE;
+
+    /** Id of the prompt EditText in Javascript modal dialogs. */
+    public static int ID_JS_MODAL_DIALOG_TEXT_PROMPT;
+
+    /** Id of the title TextView in Javascript modal dialogs. */
+    public static int ID_JS_MODAL_DIALOG_TEXT_TITLE;
+
     /** Id of the month picker view. */
     public static int ID_MONTH_PICKER;
 
@@ -44,6 +62,9 @@ public class AppResource {
 
     /** Layout of the date/time picker dialog. */
     public static int LAYOUT_DATE_TIME_PICKER_DIALOG;
+
+    /** Layout of the Javascript modal dialog. */
+    public static int LAYOUT_JS_MODAL_DIALOG;
 
     /** Layout of the month picker. */
     public static int LAYOUT_MONTH_PICKER;
@@ -68,6 +89,18 @@ public class AppResource {
 
     /** String for the title of the date/time picker dialog. */
     public static int STRING_DATE_TIME_PICKER_DIALOG_TITLE;
+
+    /** String for 'Don't reload this page' in Javascript modal dialogs. */
+    public static int STRING_JS_MODAL_DIALOG_DONT_RELOAD_THIS_PAGE;
+
+    /** String for 'Leave this page' in Javascript modal dialogs. */
+    public static int STRING_JS_MODAL_DIALOG_LEAVE_THIS_PAGE;
+
+    /** String for 'Reload this page' in Javascript modal dialogs. */
+    public static int STRING_JS_MODAL_DIALOG_RELOAD_THIS_PAGE;
+
+    /** String for 'Stay on this page' in Javascript modal dialogs. */
+    public static int STRING_JS_MODAL_DIALOG_STAY_ON_THIS_PAGE;
 
     /** String for the title of the month picker dialog. */
     public static int STRING_MONTH_PICKER_DIALOG_TITLE;

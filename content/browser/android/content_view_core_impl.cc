@@ -163,6 +163,11 @@ RenderWidgetHostViewAndroid*
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetJavaObject() {
+  JNIEnv* env = AttachCurrentThread();
+  return java_ref_.get(env);
+}
+
 // ----------------------------------------------------------------------------
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------

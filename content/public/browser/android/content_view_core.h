@@ -35,6 +35,8 @@ class ContentViewCore {
                                  WebContents* web_contents);
   static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
 
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
+
  protected:
   virtual ~ContentViewCore() {};
 };

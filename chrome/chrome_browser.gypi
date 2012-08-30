@@ -5024,6 +5024,7 @@
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
             'android/java/src/org/chromium/chrome/browser/ContentViewUtil.java',
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
+            'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',
             'android/java/src/org/chromium/chrome/browser/ProcessUtils.java',
             'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',
           ],
