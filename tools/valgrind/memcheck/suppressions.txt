@@ -6031,6 +6031,22 @@
    fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
 }
 {
+   bug_145706b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions53PlatformAppBrowserTest_AppWithContextMenuClicked_Test19RunTestOnMainThreadEv
+   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
+   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
+}
+{
+   bug_145706c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions44PlatformAppBrowserTest_EmptyContextMenu_Test19RunTestOnMainThreadEv
+   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
+   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
+}
+{
    bug_145708
    Memcheck:Leak
    fun:_Znw*
@@ -6068,6 +6084,83 @@
    fun:_ZN6WebKit25NotificationPresenterImpl17requestPermissionEPN7WebCore22ScriptExecutionContextEN3WTF10PassRefPtrINS1_12VoidCallbackEEE
    fun:_ZN7WebCore18NotificationCenter17requestPermissionEN3WTF10PassRefPtrINS_12VoidCallbackEEE
    fun:_ZN7WebCore20V8NotificationCenter25requestPermissionCallbackERKN2v89ArgumentsE
+}
+{
+   bug_145723
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z20NewExtensionFunctionI25TabsExecuteScriptFunctionEP17ExtensionFunctionv
+   fun:_ZN25ExtensionFunctionRegistry11NewFunctionERKSs
+   fun:_ZN27ExtensionFunctionDispatcher23CreateExtensionFunctionERK31ExtensionHostMsg_Request_ParamsPKN10extensions9ExtensionEiRKNS3_10ProcessMapEPNS3_12ExtensionAPIEPvPN3IPC6SenderEPN7content14RenderViewHostEi
+   fun:_ZN27ExtensionFunctionDispatcher8DispatchERK31ExtensionHostMsg_Request_ParamsPN7content14RenderViewHostE
+   fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
+}
+{
+   bug_145728
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base5Value17CreateStringValueERKSs
+   fun:_ZNK4base8internal12_GLOBAL__N_115JSONStringValue8DeepCopyEv
+   fun:_ZN12_GLOBAL__N_1L18MigratePreferencesEP11PrefService
+   fun:_ZN14PrefsTabHelper17RegisterUserPrefsEP11PrefService
+   fun:_ZN6chrome17RegisterUserPrefsEP11PrefService
+   fun:_ZN11ProfileImpl13OnPrefsLoadedEb
+}
+{
+   bug_145733
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25ExtensionInstallUIDefault35GetNewThemeInstalledInfoBarDelegateEP11TabContentsPKN10extensions9ExtensionERKSsb
+   fun:_ZN25ExtensionInstallUIDefault16ShowThemeInfoBarERKSsbPKN10extensions9ExtensionEP7Profile
+   fun:_ZN25ExtensionInstallUIDefault16OnInstallSuccessEPKN10extensions9ExtensionEP8SkBitmap
+   fun:_ZN22ExtensionInstallPrompt16OnInstallSuccessEPKN10extensions9ExtensionEP8SkBitmap
+   fun:_ZN10extensions12CrxInstaller25ReportSuccessFromUIThreadEv
+}
+{
+   bug_145735
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIcE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseIcSaIcEE11_M_allocateEm
+   fun:_ZNSt12_Vector_baseIcSaIcEEC2EmRKS0_
+   fun:_ZNSt6vectorIcSaIcEEC1EmRKcRKS0_
+   fun:_ZN4base5files12_GLOBAL__N_121InotifyReaderCallbackEPNS1_13InotifyReaderEii
+}
+{
+   bug_145738
+   Memcheck:Leak
+   fun:calloc
+   fun:ippNew
+   fun:ippNewRequest
+   obj:/usr/lib/libcups.so.2
+   fun:cupsGetDests2
+}
+{
+   bug_145742
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions35ExtensionWebstoreGetWebGLStatusTest7RunTestEb
+   fun:_ZN10extensions48ExtensionWebstoreGetWebGLStatusTest*Test19RunTestOnMainThreadEv
+   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
+   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
+}
+{
+   bug_145747a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP16InfoBarTabHelperP11PrefServiceRKSsS7_
+   fun:_ZN16TranslateManager14PageTranslatedEPN7content11WebContentsEP21PageTranslatedDetails
+   fun:_ZN16TranslateManager7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
+   fun:_ZN18TranslateTabHelper16OnPageTranslatedEiRKSsS1_N15TranslateErrors4TypeE
+}
+{
+   bug_145747b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP16InfoBarTabHelperP11PrefServiceRKSsS7_
+   fun:_ZN16TranslateManager18OnURLFetchCompleteEPKN3net10URLFetcherE
+   fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
 
 #-----------------------------------------------------------------------
