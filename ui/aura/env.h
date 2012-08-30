@@ -12,6 +12,10 @@
 #include "ui/aura/client/stacking_client.h"
 #include "ui/gfx/point.h"
 
+#if defined(USE_X11)
+#include "ui/aura/device_list_updater_aurax11.h"
+#endif
+
 namespace aura {
 class EnvObserver;
 class EventFilter;
@@ -96,7 +100,7 @@ class AURA_EXPORT Env {
   void NotifyWindowInitialized(Window* window);
 
   ObserverList<EnvObserver> observers_;
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
   scoped_ptr<MessageLoop::Dispatcher> dispatcher_;
 #endif
 
@@ -115,6 +119,7 @@ class AURA_EXPORT Env {
 
 #if defined(USE_X11)
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;
+  DeviceListUpdaterAuraX11 device_list_updater_aurax11_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Env);

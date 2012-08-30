@@ -12,7 +12,6 @@
 #include <X11/extensions/Xrandr.h>
 
 #include "base/message_pump_aurax11.h"
-#include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/display_manager.h"
 #include "ui/base/x/x11_util.h"
@@ -85,13 +84,11 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
       xrandr_event_base_(0) {
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
-  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      AddDispatcherForRootWindow(this);
+  base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(this);
 }
 
 DisplayChangeObserverX11::~DisplayChangeObserverX11() {
-  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      RemoveDispatcherForRootWindow(this);
+  base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(this);
 }
 
 bool DisplayChangeObserverX11::Dispatch(const base::NativeEvent& event) {

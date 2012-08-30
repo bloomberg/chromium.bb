@@ -15,6 +15,7 @@
 #include "ui/compositor/compositor_switches.h"
 
 #if defined(USE_X11)
+#include "base/message_pump_aurax11.h"
 #include "ui/aura/display_change_observer_x11.h"
 #endif
 
@@ -35,6 +36,11 @@ Env::Env()
 }
 
 Env::~Env() {
+#if defined(USE_X11)
+  base::MessagePumpAuraX11::Current()->RemoveObserver(
+      &device_list_updater_aurax11_);
+#endif
+
   ui::Compositor::Terminate();
 }
 
@@ -97,7 +103,11 @@ void Env::SetEventFilter(EventFilter* event_filter) {
 
 #if !defined(OS_MACOSX)
 MessageLoop::Dispatcher* Env::GetDispatcher() {
+#if defined(USE_X11)
+  return base::MessagePumpAuraX11::Current();
+#else
   return dispatcher_.get();
+#endif
 }
 #endif
 
@@ -105,11 +115,16 @@ MessageLoop::Dispatcher* Env::GetDispatcher() {
 // Env, private:
 
 void Env::Init() {
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
   dispatcher_.reset(CreateDispatcher());
 #endif
 #if defined(USE_X11)
   display_change_observer_.reset(new internal::DisplayChangeObserverX11);
+
+  // We can't do this with a root window listener because XI_HierarchyChanged
+  // messages don't have a target window.
+  base::MessagePumpAuraX11::Current()->AddObserver(
+      &device_list_updater_aurax11_);
 #endif
   ui::Compositor::Initialize(
       CommandLine::ForCurrentProcess()->HasSwitch(

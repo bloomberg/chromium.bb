@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
-#include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -42,9 +41,7 @@ X11DesktopHandler::X11DesktopHandler()
       focus_manager_(new aura::FocusManager),
       desktop_activation_client_(
           new aura::DesktopActivationClient(focus_manager_.get())) {
-  static_cast<aura::DispatcherLinux*>(
-      aura::Env::GetInstance()->GetDispatcher())->
-      AddDispatcherForRootWindow(this);
+  base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(this);
   aura::Env::GetInstance()->AddObserver(this);
 
   XWindowAttributes attr;
@@ -56,9 +53,7 @@ X11DesktopHandler::X11DesktopHandler()
 
 X11DesktopHandler::~X11DesktopHandler() {
   aura::Env::GetInstance()->RemoveObserver(this);
-  static_cast<aura::DispatcherLinux*>(
-      aura::Env::GetInstance()->GetDispatcher())->
-      RemoveDispatcherForRootWindow(this);
+  base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(this);
 }
 
 bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {

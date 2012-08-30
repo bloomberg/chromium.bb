@@ -20,7 +20,6 @@
 #include "grit/ui_resources.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/user_action_client.h"
-#include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
@@ -505,8 +504,7 @@ RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
       CopyFromParent,  // visual
       CWBackPixmap,
       &swa);
-  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      AddDispatcherForWindow(this, xwindow_);
+  base::MessagePumpAuraX11::Current()->AddDispatcherForWindow(this, xwindow_);
 
   prop_.reset(new ui::ViewProp(xwindow_, kRootWindowHostLinuxKey, this));
 
@@ -569,8 +567,7 @@ RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
 }
 
 RootWindowHostLinux::~RootWindowHostLinux() {
-  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      RemoveDispatcherForWindow(xwindow_);
+  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
 
   UnConfineCursor();
 
