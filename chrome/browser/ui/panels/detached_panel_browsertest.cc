@@ -57,7 +57,14 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnActive) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnInactive) {
+#if defined(OS_LINUX)
+// http://crbug.com/145740
+#define MAYBE_DrawAttentionOnInactive FLAKY_DrawAttentionOnInactive
+#else
+#define MAYBE_DrawAttentionOnInactive DrawAttentionOnInactive
+#endif
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
+                       MAYBE_DrawAttentionOnInactive) {
   // Create an inactive detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   panel->Deactivate();

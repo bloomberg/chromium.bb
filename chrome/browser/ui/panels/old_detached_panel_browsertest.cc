@@ -118,7 +118,13 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, ClickTitlebar) {
+#if defined(OS_LINUX)
+// http://crbug.com/145740
+#define MAYBE_ClickTitlebar FLAKY_ClickTitlebar
+#else
+#define MAYBE_ClickTitlebar ClickTitlebar
+#endif
+IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, MAYBE_ClickTitlebar) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
