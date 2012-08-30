@@ -15,6 +15,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "net/android/network_library.h"
+#include "media/base/android/media_player_bridge.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -46,6 +47,7 @@ void BeforeInitialize(bool unit_test_mode) {
   // which don't have Java capabilities. Init Java for only DumpRenderTree.
   if (!unit_test_mode) {
     JNIEnv* env = base::android::AttachCurrentThread();
+    media::MediaPlayerBridge::RegisterMediaPlayerListener(env);
     net::android::RegisterNetworkLibrary(env);
   }
 }
