@@ -560,7 +560,26 @@ def DoRun(command, stdin_data):
   return (0, stdout, stderr)
 
 
+def DisableCrashDialog():
+  """
+  Disable Windows' crash dialog box, which pops up when a process exits with
+  an unhandled fault. This causes the process to hang on the Buildbots. We
+  duplicate this function from SConstruct because ErrorMode flags are
+  overwritten in scons due to race conditions. See bug
+  https://code.google.com/p/nativeclient/issues/detail?id=2968
+  """
+  if sys.platform == 'win32':
+    import win32api
+    import win32con
+    # The double call is to preserve existing flags, as discussed at
+    # http://blogs.msdn.com/oldnewthing/archive/2004/07/27/198410.aspx
+    new_flags = win32con.SEM_NOGPFAULTERRORBOX
+    existing_flags = win32api.SetErrorMode(new_flags)
+    win32api.SetErrorMode(existing_flags | new_flags)
+
+
 def Main(argv):
+  DisableCrashDialog()
   command = ProcessOptions(argv)
 
   if GlobalSettings['report']:
