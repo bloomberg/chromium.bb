@@ -78,7 +78,6 @@ void ProxySettingsDialog::OnDialogClosed(const std::string& json_retval) {
     chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
     content::NotificationService::AllSources(),
     content::NotificationService::NoDetails());
-  delete this;
 }
 
 bool ProxySettingsDialog::IsShown() {

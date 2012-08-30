@@ -104,6 +104,7 @@ void LoginWebDialog::OnDialogClosed(const std::string& json_retval) {
   notification_registrar_.RemoveAll();
   if (delegate_)
     delegate_->OnDialogClosed();
+  delete this;
 }
 
 void LoginWebDialog::OnCloseContents(WebContents* source,

@@ -41,9 +41,6 @@ class HelpAppLauncher : public LoginWebDialog::Delegate,
   // Shows specified help topic.
   void ShowHelpTopic(HelpTopic help_topic_id);
 
-  // Returns true if the dialog is currently open.
-  bool is_open() const { return dialog_.get() && dialog_->is_open(); }
-
  protected:
   virtual ~HelpAppLauncher();
 
@@ -55,9 +52,6 @@ class HelpAppLauncher : public LoginWebDialog::Delegate,
 
   // Shows help topic dialog for specified GURL.
   void ShowHelpTopicDialog(const GURL& topic_url);
-
-  // Dialog used to display help like "Can't access your account".
-  scoped_ptr<LoginWebDialog> dialog_;
 
   // Parent window which is passed to help dialog.
   gfx::NativeWindow parent_window_;
