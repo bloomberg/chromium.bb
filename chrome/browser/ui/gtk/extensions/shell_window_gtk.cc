@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/extensions/shell_window_gtk.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -75,7 +76,6 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
   if (ui::GuessWindowManager() == ui::WM_COMPIZ)
     suppress_window_raise_ = true;
 
-  // TODO(mihaip): Mirror contents of <title> tag in window title
   gtk_window_set_title(window_, extension()->name().c_str());
 
   gtk_window_util::SetWindowCustomClass(window_,
@@ -275,7 +275,8 @@ bool ShellWindowGtk::IsFullscreenOrPending() const {
 }
 
 void ShellWindowGtk::UpdateWindowTitle() {
-  // TODO(jeremya): implement.
+  string16 title = shell_window_->GetTitle();
+  gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
 }
 
 void ShellWindowGtk::HandleKeyboardEvent(

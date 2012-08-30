@@ -357,7 +357,8 @@ void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
 }
 
 void ShellWindowCocoa::UpdateWindowTitle() {
-  // TODO(jeremya): implement.
+  string16 title = shell_window_->GetTitle();
+  [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
 void ShellWindowCocoa::UpdateDraggableRegions(

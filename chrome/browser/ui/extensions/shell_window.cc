@@ -255,7 +255,9 @@ string16 ShellWindow::GetTitle() const {
   if (!web_contents()->GetController().GetActiveEntry() ||
       web_contents()->GetController().GetActiveEntry()->GetTitle().empty())
     return UTF8ToUTF16(extension()->name());
-  return web_contents()->GetTitle();
+  string16 title = web_contents()->GetTitle();
+  Browser::FormatTitleForDisplay(&title);
+  return title;
 }
 
 bool ShellWindow::OnMessageReceived(const IPC::Message& message) {
