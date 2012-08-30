@@ -598,8 +598,6 @@ static const char usage_str[] =
       "--print_conditions\n"
       "\tPrint all pre/post conditions, including NaCl illegal instructions.\n"
 #endif
-      "--alignment=N\n"
-      "\tSet block alignment to N bytes (only 16 or 32 allowed).\n"
       "--annotate\n"
       "\tRun validator using annotations that will be understood\n"
       "\tby ncval_annotate.py.\n"
@@ -835,7 +833,7 @@ static int GrokFlags(int argc, const char *argv[]) {
   int new_argc;
   Bool help = FALSE;
 #if NACL_TARGET_SUBARCH == 64
-  Bool write_sandbox = !NACL_FLAGS_read_sandbox;
+  Bool only_write_sandbox;
 #endif
   if (argc == 0) return 0;
   new_argc = 1;
@@ -848,16 +846,17 @@ static int GrokFlags(int argc, const char *argv[]) {
       /* Valid processed flag, continue to next flag. */
     } else if (GrokBoolFlag("--help", arg, &help)) {
         usage(0);
+    }
 #if NACL_TARGET_SUBARCH == 64
-    } else if (0 == strcmp("--trace_verbose", arg)) {
+    else if (0 == strcmp("--trace_verbose", arg)) {
       NaClValidatorFlagsSetTraceVerbose();
-    } else if (GrokBoolFlag("--write_sfi", arg, &write_sandbox)) {
-      NACL_FLAGS_read_sandbox = !write_sandbox;
-    } else if (GrokBoolFlag("--readwrite_sfi", arg, &NACL_FLAGS_read_sandbox)) {
-      write_sandbox = !NACL_FLAGS_read_sandbox;
-      continue;
+    } else if (GrokBoolFlag("--write_sfi", arg, &only_write_sandbox)) {
+      NACL_FLAGS_read_sandbox = !only_write_sandbox;
+    } else if (GrokBoolFlag("--readwrite_sfi", arg,
+                            &NACL_FLAGS_read_sandbox)) {
+    }
 #endif
-    } else if (0 == strcmp("--cpuid-all", arg)) {
+    else if (0 == strcmp("--cpuid-all", arg)) {
       NaClSetAllCPUFeatures(&ncval_cpu_features);
     } else if (0 == strcmp("--cpuid-none", arg)) {
       NaClClearCPUFeatures(&ncval_cpu_features);
