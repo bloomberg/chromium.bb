@@ -346,15 +346,14 @@ void SearchViewController::SetState(State state) {
     return;
 
   State old_state = state_;
-  state_ = state;
-  switch (state_) {
+  switch (state) {
     case STATE_NOT_VISIBLE:
       DestroyViews();
       break;
 
     case STATE_NTP:
       DestroyViews();
-      CreateViews();
+      CreateViews(state);
       // In |CreateViews|, the main web contents view was reparented, so force
       // a search re-layout by |toolbar_view_| to re-position the omnibox per
       // the new bounds of web contents view.
@@ -369,10 +368,10 @@ void SearchViewController::SetState(State state) {
 
     case STATE_SUGGESTIONS:
       DestroyViews();
-      CreateViews();
-      ntp_view_->SetVisible(false);
+      CreateViews(state);
       break;
   }
+  state_ = state;
 }
 
 void SearchViewController::StartAnimation() {
@@ -415,7 +414,7 @@ void SearchViewController::StartAnimation() {
   }
 }
 
-void SearchViewController::CreateViews() {
+void SearchViewController::CreateViews(State state) {
   DCHECK(!ntp_view_);
 
   ntp_view_ = new views::View;
@@ -475,6 +474,9 @@ void SearchViewController::CreateViews() {
   search_container_->SetPaintToLayer(true);
   search_container_->SetLayoutManager(new views::FillLayout);
   search_container_->layer()->SetMasksToBounds(true);
+
+  if (state == STATE_SUGGESTIONS)
+    ntp_view_->SetVisible(false);
 
   contents_container_->SetOverlay(search_container_);
 }

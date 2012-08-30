@@ -102,8 +102,9 @@ class SearchViewController
   void StartAnimation();
 
   // Create the various views and installs them as an overlay on
-  // |contents_container_|.
-  void CreateViews();
+  // |contents_container_|.  |state| is used to determine visual style
+  // of the created views.
+  void CreateViews(State state);
 
   // Returns the logo image view, or a name label if an image is not available.
   views::View* GetLogoView() const;
