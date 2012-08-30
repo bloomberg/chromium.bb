@@ -1239,8 +1239,8 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
 
 playground2::Sandbox::ErrorCode RendererProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
-    case __NR_ioctl:
-      return ENOTTY;
+    case __NR_ioctl:  // TODO(jln) investigate legitimate use in the renderer
+                      // and see if alternatives can be used.
     case __NR_fdatasync:
     case __NR_fsync:
 #if defined(__i386__) || defined(__x86_64__)
