@@ -615,6 +615,10 @@ std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
       events.push_back(original_event);
       break;
 

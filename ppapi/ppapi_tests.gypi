@@ -302,6 +302,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_input',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/input/pointer_event_input.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_post_message',
       'dependencies': [
         'ppapi_example_skeleton',

@@ -54,6 +54,7 @@ TestInputEvent::TestInputEvent(TestingInstance* instance)
       mouse_input_event_interface_(NULL),
       wheel_input_event_interface_(NULL),
       keyboard_input_event_interface_(NULL),
+      touch_input_event_interface_(NULL),
       view_rect_(),
       expected_input_event_(0),
       received_expected_event_(false),
@@ -83,12 +84,16 @@ bool TestInputEvent::Init() {
   keyboard_input_event_interface_ = static_cast<const PPB_KeyboardInputEvent*>(
       pp::Module::Get()->GetBrowserInterface(
           PPB_KEYBOARD_INPUT_EVENT_INTERFACE));
+  touch_input_event_interface_ = static_cast<const PPB_TouchInputEvent*>(
+      pp::Module::Get()->GetBrowserInterface(
+          PPB_TOUCH_INPUT_EVENT_INTERFACE));
 
   bool success =
       input_event_interface_ &&
       mouse_input_event_interface_ &&
       wheel_input_event_interface_ &&
       keyboard_input_event_interface_ &&
+      touch_input_event_interface_ &&
       CheckTestingInterface();
 
   // Set up a listener for our message that signals that all input events have
@@ -157,6 +162,19 @@ pp::InputEvent TestInputEvent::CreateCharEvent(const std::string& text) {
       0,  // modifiers
       0,  // keycode
       pp::Var(text));
+}
+
+pp::InputEvent TestInputEvent::CreateTouchEvent(PP_InputEvent_Type type,
+                                                const pp::FloatPoint& point) {
+  PP_TouchPoint touch_point = PP_MakeTouchPoint();
+  touch_point.position = point;
+
+  pp::TouchInputEvent touch_event(instance_, type, 100, 0);
+  touch_event.AddTouchPoint(PP_TOUCHLIST_TYPE_TOUCHES, touch_point);
+  touch_event.AddTouchPoint(PP_TOUCHLIST_TYPE_CHANGEDTOUCHES, touch_point);
+  touch_event.AddTouchPoint(PP_TOUCHLIST_TYPE_TARGETTOUCHES, touch_point);
+
+  return touch_event;
 }
 
 // Simulates the input event and calls PostMessage to let us know when
@@ -232,6 +250,44 @@ bool TestInputEvent::AreEquivalentEvents(PP_Resource received,
           pp::Var(pp::PASS_REF,
               keyboard_input_event_interface_->GetCharacterText(expected));
 
+    case PP_INPUTEVENT_TYPE_TOUCHSTART:
+    case PP_INPUTEVENT_TYPE_TOUCHMOVE:
+    case PP_INPUTEVENT_TYPE_TOUCHEND:
+    case PP_INPUTEVENT_TYPE_TOUCHCANCEL: {
+      if (!touch_input_event_interface_->IsTouchInputEvent(received) ||
+          !touch_input_event_interface_->IsTouchInputEvent(expected))
+        return false;
+
+      uint32_t touch_count = touch_input_event_interface_->GetTouchCount(
+          received, PP_TOUCHLIST_TYPE_TOUCHES);
+      if (touch_count <= 0 ||
+          touch_count != touch_input_event_interface_->GetTouchCount(expected,
+              PP_TOUCHLIST_TYPE_TOUCHES))
+        return false;
+
+      for (uint32_t i = 0; i < touch_count; ++i) {
+        PP_TouchPoint expected_point = touch_input_event_interface_->
+            GetTouchByIndex(expected, PP_TOUCHLIST_TYPE_TOUCHES, i);
+        PP_TouchPoint received_point = touch_input_event_interface_->
+            GetTouchByIndex(received, PP_TOUCHLIST_TYPE_TOUCHES, i);
+
+        if (expected_point.id != received_point.id ||
+            expected_point.radius != received_point.radius ||
+            expected_point.rotation_angle != received_point.rotation_angle ||
+            expected_point.pressure != received_point.pressure)
+          return false;
+
+        // The expected position is in the page coordinate system, and the
+        // received event is in the plugins coordinate system.
+        if (expected_point.position.x != received_point.position.x +
+            view_rect_.x() ||
+            expected_point.position.y != received_point.position.y +
+            view_rect_.y())
+          return false;
+      }
+      return true;
+    }
+
     default:
       break;
   }
@@ -268,7 +324,8 @@ std::string TestInputEvent::TestEvents() {
   input_event_interface_->RequestInputEvents(instance_->pp_instance(),
                                              PP_INPUTEVENT_CLASS_MOUSE |
                                              PP_INPUTEVENT_CLASS_WHEEL |
-                                             PP_INPUTEVENT_CLASS_KEYBOARD);
+                                             PP_INPUTEVENT_CLASS_KEYBOARD |
+                                             PP_INPUTEVENT_CLASS_TOUCH);
   // Send the events and check that we received them.
   ASSERT_TRUE(
       SimulateInputEvent(CreateMouseEvent(PP_INPUTEVENT_TYPE_MOUSEDOWN,
@@ -280,7 +337,8 @@ std::string TestInputEvent::TestEvents() {
                                         kSpaceChar)));
   ASSERT_TRUE(
       SimulateInputEvent(CreateCharEvent(kSpaceString)));
-
+  ASSERT_TRUE(SimulateInputEvent(CreateTouchEvent(PP_INPUTEVENT_TYPE_TOUCHSTART,
+                                                  pp::FloatPoint(12, 23))));
   // Request only mouse events.
   input_event_interface_->ClearInputEventRequest(instance_->pp_instance(),
                                                  PP_INPUTEVENT_CLASS_WHEEL |

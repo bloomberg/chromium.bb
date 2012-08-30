@@ -238,6 +238,17 @@ TouchInputEvent::TouchInputEvent(const InputEvent& event) : InputEvent() {
   }
 }
 
+TouchInputEvent::TouchInputEvent(const InstanceHandle& instance,
+                                 PP_InputEvent_Type type,
+                                 PP_TimeTicks time_stamp,
+                                 uint32_t modifiers) {
+  // Type check the input event before setting it.
+  if (!has_interface<PPB_TouchInputEvent_1_0>())
+    return;
+  PassRefFromConstructor(get_interface<PPB_TouchInputEvent_1_0>()->Create(
+      instance.pp_instance(), type, time_stamp, modifiers));
+}
+
 void TouchInputEvent::AddTouchPoint(PP_TouchListType list,
                                     PP_TouchPoint point) {
   if (!has_interface<PPB_TouchInputEvent_1_0>())

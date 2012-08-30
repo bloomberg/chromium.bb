@@ -480,7 +480,7 @@ const PPB_IMEInputEvent_Dev_0_2* GetPPB_IMEInputEvent_Dev_0_2_Thunk() {
   return &g_ppb_ime_input_event_0_2_thunk;
 }
 
-const PPB_TouchInputEvent_1_0* GetPPB_TouchInputEvent_Thunk() {
+const PPB_TouchInputEvent_1_0* GetPPB_TouchInputEvent_1_0_Thunk() {
   return &g_ppb_touch_input_event_thunk;
 }
 

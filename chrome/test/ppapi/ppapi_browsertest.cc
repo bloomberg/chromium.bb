@@ -140,8 +140,10 @@ TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
 TEST_PPAPI_NACL_VIA_HTTP(Core)
 
+#if defined(OS_CHROMEOS)
+#define MAYBE_InputEvent InputEvent
+#elif defined(OS_LINUX)
 // Times out on Linux. http://crbug.com/108859
-#if defined(OS_LINUX)
 #define MAYBE_InputEvent DISABLED_InputEvent
 #elif defined(OS_MACOSX)
 // Flaky on Mac. http://crbug.com/109258
