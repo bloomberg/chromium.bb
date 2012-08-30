@@ -66,6 +66,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
+  virtual string16 GetTimeRemainingString(base::TimeDelta delta) OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,

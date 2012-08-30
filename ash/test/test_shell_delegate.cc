@@ -132,5 +132,9 @@ void TestShellDelegate::HandleMediaPlayPause() {
 void TestShellDelegate::HandleMediaPrevTrack() {
 }
 
+string16 TestShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
+  return string16();
+}
+
 }  // namespace test
 }  // namespace ash

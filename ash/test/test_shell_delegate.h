@@ -48,6 +48,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void HandleMediaNextTrack() OVERRIDE;
   virtual void HandleMediaPlayPause() OVERRIDE;
   virtual void HandleMediaPrevTrack() OVERRIDE;
+  virtual string16 GetTimeRemainingString(base::TimeDelta delta) OVERRIDE;
 
  private:
   bool locked_;

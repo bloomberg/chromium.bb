@@ -4,6 +4,8 @@
 
 #include "ash/system/power/power_status_view.h"
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
@@ -182,13 +184,16 @@ void PowerStatusView::UpdateTextForNotificationView() {
             base::IntToString16(hour),
             base::IntToString16(min)));
     } else {
-        // This is a low battery warning, which prompts user when battery
-        // time left is not much (ie in minutes).
-        min = hour * 60 + min;
-        time_label_->SetText(
-            l10n_util::GetStringFUTF16(
-                IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY,
-                base::IntToString16(min)));
+      // This is a low battery warning, which prompts user when battery
+      // time left is not much (ie in minutes).
+      min = hour * 60 + min;
+      ShellDelegate* delegate = Shell::GetInstance()->delegate();
+      if (delegate) {
+        time_label_->SetText(delegate->GetTimeRemainingString(
+                                 base::TimeDelta::FromMinutes(min)));
+      } else {
+        time_label_->SetText(string16());
+      }
     }
   } else {
     time_label_->SetText(string16());

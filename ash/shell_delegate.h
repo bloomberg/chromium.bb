@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/string16.h"
+#include "base/time.h"
 
 namespace app_list {
 class AppListViewDelegate;
@@ -150,6 +151,11 @@ class ASH_EXPORT ShellDelegate {
 
   // Handles the Previous Track Media shortcut key.
   virtual void HandleMediaPrevTrack() = 0;
+
+  // Produces l10n-ed text of remaining time, e.g.: "13 mins left" or
+  // "13 Minuten übrig".
+  // Used, for example, to display the remaining battery life.
+  virtual string16 GetTimeRemainingString(base::TimeDelta delta) = 0;
 };
 
 }  // namespace ash
