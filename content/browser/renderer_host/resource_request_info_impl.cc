@@ -41,7 +41,6 @@ void ResourceRequestInfo::AllocateForTesting(
           0,                                 // parent_frame_id
           resource_type,                     // resource_type
           PAGE_TRANSITION_LINK,              // transition_type
-          0,                                 // upload_size
           false,                             // is_download
           true,                              // allow_download
           false,                             // has_user_gesture
@@ -91,7 +90,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     int64 parent_frame_id,
     ResourceType::Type resource_type,
     PageTransition transition_type,
-    uint64 upload_size,
     bool is_download,
     bool allow_download,
     bool has_user_gesture,
@@ -113,7 +111,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       has_user_gesture_(has_user_gesture),
       resource_type_(resource_type),
       transition_type_(transition_type),
-      upload_size_(upload_size),
       memory_cost_(0),
       referrer_policy_(referrer_policy),
       context_(context) {
@@ -164,10 +161,6 @@ ResourceType::Type ResourceRequestInfoImpl::GetResourceType() const {
 
 WebKit::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
   return referrer_policy_;
-}
-
-uint64 ResourceRequestInfoImpl::GetUploadSize() const {
-  return upload_size_;
 }
 
 bool ResourceRequestInfoImpl::HasUserGesture() const {

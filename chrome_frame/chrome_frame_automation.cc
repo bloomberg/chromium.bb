@@ -1305,10 +1305,11 @@ void ChromeFrameAutomationClient::OnUnload(bool* should_unload) {
 // PluginUrlRequestDelegate implementation.
 // Forward network related responses to Chrome.
 
-void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
-    const char* mime_type,  const char* headers, int size,
+void ChromeFrameAutomationClient::OnResponseStarted(
+    int request_id, const char* mime_type,  const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
-    int redirect_status, const net::HostPortPair& socket_address) {
+    int redirect_status, const net::HostPortPair& socket_address,
+    uint64 upload_size) {
   AutomationURLResponse response;
   response.mime_type = mime_type;
   if (headers)
@@ -1318,6 +1319,7 @@ void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
   response.redirect_url = redirect_url;
   response.redirect_status = redirect_status;
   response.socket_address = socket_address;
+  response.upload_size = upload_size;
 
   automation_server_->Send(new AutomationMsg_RequestStarted(
       tab_->handle(), request_id, response));

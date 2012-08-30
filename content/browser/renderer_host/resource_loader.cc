@@ -107,31 +107,32 @@ void ResourceLoader::ReportUploadProgress() {
   if (waiting_for_upload_progress_ack_)
     return;  // Send one progress event at a time.
 
-  uint64 size = info->GetUploadSize();
-  if (!size)
+  net::UploadProgress progress = request_->GetUploadProgress();
+  if (!progress.size())
     return;  // Nothing to upload.
 
-  uint64 position = request_->GetUploadProgress();
-  if (position == last_upload_position_)
+  if (progress.position() == last_upload_position_)
     return;  // No progress made since last time.
 
   const uint64 kHalfPercentIncrements = 200;
   const TimeDelta kOneSecond = TimeDelta::FromMilliseconds(1000);
 
-  uint64 amt_since_last = position - last_upload_position_;
+  uint64 amt_since_last = progress.position() - last_upload_position_;
   TimeDelta time_since_last = TimeTicks::Now() - last_upload_ticks_;
 
-  bool is_finished = (size == position);
-  bool enough_new_progress = (amt_since_last > (size / kHalfPercentIncrements));
+  bool is_finished = (progress.size() == progress.position());
+  bool enough_new_progress =
+      (amt_since_last > (progress.size() / kHalfPercentIncrements));
   bool too_much_time_passed = time_since_last > kOneSecond;
 
   if (is_finished || enough_new_progress || too_much_time_passed) {
     if (request_->load_flags() & net::LOAD_ENABLE_UPLOAD_PROGRESS) {
-      handler_->OnUploadProgress(info->GetRequestID(), position, size);
+      handler_->OnUploadProgress(
+          info->GetRequestID(), progress.position(), progress.size());
       waiting_for_upload_progress_ack_ = true;
     }
     last_upload_ticks_ = TimeTicks::Now();
-    last_upload_position_ = position;
+    last_upload_position_ = progress.position();
   }
 }
 

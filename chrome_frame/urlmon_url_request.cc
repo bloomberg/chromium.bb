@@ -691,13 +691,14 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   headers_received_ = true;
   DCHECK_NE(id(), -1);
   delegate_->OnResponseStarted(id(),
-                    "",                   // mime_type
-                    raw_headers.c_str(),  // headers
-                    0,                    // size
-                    base::Time(),         // last_modified
-                    status_.get_redirection().utf8_url,
-                    status_.get_redirection().http_code,
-                    socket_address_);
+                               "",                   // mime_type
+                               raw_headers.c_str(),  // headers
+                               0,                    // size
+                               base::Time(),         // last_modified
+                               status_.get_redirection().utf8_url,
+                               status_.get_redirection().http_code,
+                               socket_address_,
+                               post_data_len());
   return S_OK;
 }
 
@@ -1323,10 +1324,11 @@ void UrlmonUrlRequestManager::StopAllRequestsHelper(
     request_map_lock->Release();
 }
 
-void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
-    const char* mime_type, const char* headers, int size,
+void UrlmonUrlRequestManager::OnResponseStarted(
+    int request_id, const char* mime_type, const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
-    int redirect_status, const net::HostPortPair& socket_address) {
+    int redirect_status, const net::HostPortPair& socket_address,
+    uint64 upload_size) {
   DCHECK_NE(request_id, -1);
   DVLOG(1) << __FUNCTION__;
 
@@ -1339,8 +1341,9 @@ void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
   }
   DCHECK(request != NULL);
 #endif  // NDEBUG
-  delegate_->OnResponseStarted(request_id, mime_type, headers, size,
-      last_modified, redirect_url, redirect_status, socket_address);
+  delegate_->OnResponseStarted(
+      request_id, mime_type, headers, size, last_modified, redirect_url,
+      redirect_status, socket_address, upload_size);
 }
 
 void UrlmonUrlRequestManager::OnReadComplete(int request_id,

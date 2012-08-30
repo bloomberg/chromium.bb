@@ -51,6 +51,7 @@ IPC_STRUCT_BEGIN(AutomationURLResponse)
   IPC_STRUCT_MEMBER(std::string, redirect_url)
   IPC_STRUCT_MEMBER(int, redirect_status)
   IPC_STRUCT_MEMBER(net::HostPortPair, socket_address)
+  IPC_STRUCT_MEMBER(uint64, upload_size)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ExternalTabSettings)

@@ -80,10 +80,6 @@ class ResourceRequestInfo {
   // Returns the associated referrer policy.
   virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const = 0;
 
-  // When there is upload data, this is the byte count of that data. When there
-  // is no upload, this will be 0.
-  virtual uint64 GetUploadSize() const = 0;
-
   // True if the request was initiated by a user action (like a tap to follow
   // a link).
   virtual bool HasUserGesture() const = 0;

@@ -65,6 +65,7 @@ URLRequestAutomationJob::URLRequestAutomationJob(
       redirect_status_(0),
       request_id_(request_id),
       is_pending_(is_pending),
+      upload_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DVLOG(1) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
   DCHECK(message_filter_ != NULL);
@@ -232,17 +233,15 @@ bool URLRequestAutomationJob::IsRedirectResponse(
   return true;
 }
 
-uint64 URLRequestAutomationJob::GetUploadProgress() const {
+net::UploadProgress URLRequestAutomationJob::GetUploadProgress() const {
+  uint64 progress = 0;
   if (request_ && request_->status().is_success()) {
     // We don't support incremental progress notifications in ChromeFrame. When
     // we receive a response for the POST request from Chromeframe, it means
     // that the upload is fully complete.
-    const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
-    if (info) {
-      return info->GetUploadSize();
-    }
+    progress = upload_size_;
   }
-  return 0;
+  return net::UploadProgress(progress, upload_size_);
 }
 
 net::HostPortPair URLRequestAutomationJob::GetSocketAddress() const {
@@ -305,6 +304,7 @@ void URLRequestAutomationJob::OnRequestStarted(
                                           response.headers.size()));
   }
   socket_address_ = response.socket_address;
+  upload_size_ = response.upload_size;
   NotifyHeadersComplete();
 }
 

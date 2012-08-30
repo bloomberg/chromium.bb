@@ -54,7 +54,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       int64 parent_frame_id,
       ResourceType::Type resource_type,
       PageTransition transition_type,
-      uint64 upload_size,
       bool is_download,
       bool allow_download,
       bool has_user_gesture,
@@ -74,7 +73,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual int64 GetParentFrameID() const OVERRIDE;
   virtual ResourceType::Type GetResourceType() const OVERRIDE;
   virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
-  virtual uint64 GetUploadSize() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const OVERRIDE;
@@ -113,8 +111,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   PageTransition transition_type() const { return transition_type_; }
 
-  void set_upload_size(uint64 upload_size) { upload_size_ = upload_size; }
-
   // The approximate in-memory size (bytes) that we credited this request
   // as consuming in |outstanding_requests_memory_cost_map_|.
   int memory_cost() const { return memory_cost_; }
@@ -146,7 +142,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool has_user_gesture_;
   ResourceType::Type resource_type_;
   PageTransition transition_type_;
-  uint64 upload_size_;
   int memory_cost_;
   scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
   WebKit::WebReferrerPolicy referrer_policy_;

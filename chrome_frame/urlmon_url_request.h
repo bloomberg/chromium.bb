@@ -96,12 +96,11 @@ class UrlmonUrlRequestManager
   virtual void SetCookiesForUrl(const GURL& url, const std::string& cookie);
 
   // PluginUrlRequestDelegate implementation
-  virtual void OnResponseStarted(int request_id, const char* mime_type,
-                                 const char* headers, int size,
-                                 base::Time last_modified,
-                                 const std::string& redirect_url,
-                                 int redirect_status,
-                                 const net::HostPortPair& socket_address);
+  virtual void OnResponseStarted(
+      int request_id, const char* mime_type, const char* headers, int size,
+      base::Time last_modified, const std::string& redirect_url,
+      int redirect_status, const net::HostPortPair& socket_address,
+      uint64 upload_size);
   virtual void OnReadComplete(int request_id, const std::string& data);
   virtual void OnResponseEnd(int request_id,
                              const net::URLRequestStatus& status);

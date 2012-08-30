@@ -25,10 +25,11 @@ class PluginUrlRequestManager;
 
 class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
  public:
-  virtual void OnResponseStarted(int request_id, const char* mime_type,
-    const char* headers, int size, base::Time last_modified,
-    const std::string& redirect_url, int redirect_status,
-    const net::HostPortPair& socket_address) = 0;
+  virtual void OnResponseStarted(
+      int request_id, const char* mime_type, const char* headers, int size,
+      base::Time last_modified, const std::string& redirect_url,
+      int redirect_status, const net::HostPortPair& socket_address,
+      uint64 upload_size) = 0;
   virtual void OnReadComplete(int request_id, const std::string& data) = 0;
   virtual void OnResponseEnd(int request_id,
                              const net::URLRequestStatus& status) = 0;
@@ -167,11 +168,6 @@ class PluginUrlRequest {
 
   void set_url(const std::string& url) {
     url_ = url;
-  }
-
-  void ClearPostData() {
-    upload_data_.Release();
-    post_data_len_ = 0;
   }
 
   void SendData();
