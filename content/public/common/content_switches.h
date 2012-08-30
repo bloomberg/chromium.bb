@@ -107,7 +107,6 @@ extern const char kEnablePointerLock[];
 extern const char kEnableGpuBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMediaSource[];
-extern const char kEnablePeerConnection[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnablePartialSwap[];
 extern const char kEnableUIReleaseFrontSurface[];

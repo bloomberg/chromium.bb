@@ -770,7 +770,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLogging,
     switches::kEnableMediaSource,
     switches::kEnablePartialSwap,
-    switches::kEnablePeerConnection,
     switches::kEnablePerTilePainting,
     switches::kEnableRendererSideMixing,
     switches::kEnableShadowDOM,

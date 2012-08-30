@@ -5851,12 +5851,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
         Don't fall back to a 3D software rasterizer when the GPU cannot be used.
       </message>
-      <message name="IDS_FLAGS_PEER_CONNECTION_NAME" desc="Name for the flag to enable PeerConnection.">
-        Enable PeerConnection.
-      </message>
-      <message name="IDS_FLAGS_PEER_CONNECTION_DESCRIPTION" desc="Description for the flag to enable PeerConnection.">
-        Enable PeerConnection APIs for WebRTC functionality. More info at webrtc.org.
-      </message>
       <message name="IDS_FLAGS_SHADOW_DOM_NAME" desc="Name for the flag to enable Shadow DOM.">
         Enable Shadow DOM.
       </message>

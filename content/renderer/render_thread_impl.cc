@@ -587,9 +587,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       media::IsMediaLibraryInitialized());
 
   WebKit::WebRuntimeFeatures::enableMediaStream(true);
-
-  WebKit::WebRuntimeFeatures::enablePeerConnection(
-      command_line.HasSwitch(switches::kEnablePeerConnection));
+  WebKit::WebRuntimeFeatures::enablePeerConnection(true);
 
   WebKit::WebRuntimeFeatures::enableFullScreenAPI(
       !command_line.HasSwitch(switches::kDisableFullScreen));
