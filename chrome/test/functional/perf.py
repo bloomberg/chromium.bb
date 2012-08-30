@@ -324,28 +324,27 @@ class BasePerfTest(pyauto.PyUITest):
         existing_lines = f.readlines()
     existing_lines = map(eval, map(lambda x: x.strip(), existing_lines))
 
-    seen_key = graph_name + '|' + description
+    seen_key = graph_name
+    # We assume that the first line |existing_lines[0]| is the latest.
     if units_x:
-      points = []
+      new_line = {
+        'rev': revision,
+        'traces': { description: [] }
+      }
       if seen_key in self._seen_graph_lines:
         # We've added points previously for this graph line in the current
         # test execution, so retrieve the original set of points specified in
         # the most recent revision in the data file.
-        points = existing_lines[0]['traces'][description]
+        new_line = existing_lines[0]
+        if not description in new_line['traces']:
+          new_line['traces'][description] = []
       for x_value, y_value in value:
-        points.append([str(x_value), str(y_value)])
-      new_traces = {
-        description: points
-      }
+        new_line['traces'][description].append([str(x_value), str(y_value)])
     else:
-      new_traces = {
-        description: [str(value), str(0.0)]
+      new_line = {
+        'rev': revision,
+        'traces': { description: [str(value), str(0.0)] }
       }
-
-    new_line = {
-      'rev': revision,
-      'traces': new_traces
-    }
 
     if seen_key in self._seen_graph_lines:
       # Update results for the most recent revision.
