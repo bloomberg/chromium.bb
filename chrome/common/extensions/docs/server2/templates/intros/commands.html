@@ -6,16 +6,14 @@ or sending a command to the extension.
 
 <h2 id="manifest">Manifest</h2>
 <p>
-In addition to the "experimental" permission you must declare the "commands"
-permission in your extension's manifest to use this API and set manifest_version
-to (at least) 2.
+You must declare the "commands" permission in your extension's manifest to use
+this API and set manifest_version to (at least) 2.
 </p>
 
 <pre>{
   "name": "My extension",
   ...
 <b>  "permissions": [
-    "experimental",
     "commands",
   ]</b>,
   ...
@@ -63,7 +61,7 @@ defined in the manifest (except for '_execute_browser_action' and
 '_execute_page_action') via onCommand.addListener. For example:</p>
 
 <pre>
-chrome.experimental.commands.onCommand.addListener(function(command) {
+chrome.commands.onCommand.addListener(function(command) {
   console.log('Command:', command);
 });
 </pre>

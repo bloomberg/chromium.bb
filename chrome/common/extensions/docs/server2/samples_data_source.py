@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import json
 import logging
 import re
@@ -137,6 +138,7 @@ class SamplesDataSource(object):
           icon_path = icon_base + '/' + manifest_data['icon']
         manifest_data.update({
           'icon': icon_path,
+          'id': hashlib.md5(url).hexdigest(),
           'download_url': download_url,
           'url': url,
           'files': [f.replace(sample_path + '/', '') for f in sample_files],
