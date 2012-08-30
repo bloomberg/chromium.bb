@@ -32,7 +32,7 @@ const int kMoveTimeMs = kFullOpenedTimeMs + 2 * kOpenTimeMs;
 const int kFrameRateHz = 60;
 // Margins for animated box.
 const int kTextMarginPixels = 4;
-const int kIconLeftMargin = 4;
+const int kIconLeftMargin = 2;
 
 
 // The fraction of the animation we'll spend animating the string into view, and
@@ -111,8 +111,6 @@ void ContentSettingImageView::Update(TabContents* tab_contents) {
     text_size_ = ui::ResourceBundle::GetSharedInstance().GetFont(
         ui::ResourceBundle::MediumFont).GetStringWidth(animated_text_);
     text_size_ += 2 * kTextMarginPixels + kIconLeftMargin;
-    if (border())
-      border()->GetInsets(&saved_insets_);
     slide_animator_->Show();
   }
 }
@@ -222,11 +220,8 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
     // is the kIconLeftMargin, so we need to animate border reduction when it
     // starts to disappear.
     int necessary_left_margin = std::min(kIconLeftMargin, visible_text_size_);
-    views::Border* empty_border = views::Border::CreateEmptyBorder(
-        saved_insets_.top(),
-        saved_insets_.left() + necessary_left_margin,
-        saved_insets_.bottom(),
-        saved_insets_.right());
+    views::Border* empty_border =
+        views::Border::CreateEmptyBorder(0, necessary_left_margin, 0, 0);
     set_border(empty_border);
     views::ImageView::OnPaint(canvas);
 
@@ -234,7 +229,7 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     canvas->DrawStringInt(animated_text_,
         rb.GetFont(ui::ResourceBundle::MediumFont), SK_ColorBLACK,
-        GetImageBounds().right() + kTextMarginPixels, y(),
+        GetImageBounds().right() + kTextMarginPixels, 0,
         width() - GetImageBounds().width(), height(),
         gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE);
   } else {

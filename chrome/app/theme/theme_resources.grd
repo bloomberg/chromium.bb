@@ -372,11 +372,11 @@
         <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" />
       </if>
       <if expr="not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="common/keyword_hint_tab.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="common/keyword_search_bubble_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="common/keyword_search_bubble_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="common/keyword_search_bubble_right.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_LOGIN_ADD_USER" file="login_add_user.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_ADD_USER_HOVER" file="login_add_user_hover.png" />
@@ -472,9 +472,9 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C" file="common/cs_bubble_center.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L" file="common/cs_bubble_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R" file="common/cs_bubble_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="common/ev_bubble_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="common/ev_bubble_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="common/ev_bubble_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP" file="omnibox_extension_app.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="omnibox_extension_app_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="omnibox_extension_app_selected.png" />

@@ -89,7 +89,6 @@ class ContentSettingImageView : public views::ImageView,
   bool pause_animation_;
   int text_size_;
   int visible_text_size_;
-  gfx::Insets saved_insets_;
   views::HorizontalPainter background_painter_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingImageView);

@@ -22,7 +22,7 @@
 #include "ui/views/controls/label.h"
 
 // Amount of space to offset the tab image from the top of the view by.
-static const int kTabImageYOffset = 4;
+static const int kTabImageYOffset = 1;
 
 // The tab key image.
 static const gfx::ImageSkia* kTabButtonImage = NULL;
