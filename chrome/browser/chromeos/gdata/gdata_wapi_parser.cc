@@ -985,10 +985,6 @@ bool DocumentFeed::GetNextFeedURL(GURL* url) {
   return false;
 }
 
-void DocumentFeed::ReleaseEntries(std::vector<DocumentEntry*>* entries) {
-  entries_.release(entries);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // InstalledApp implementation
 

@@ -512,8 +512,6 @@ void GDataWapiFeedLoader::SearchFromServer(
     const std::string& search_query,
     const GURL& next_feed,
     const LoadDocumentFeedCallback& feed_load_callback) {
-  DCHECK(!feed_load_callback.is_null());
-
   LoadFeedParams params(initial_origin, feed_load_callback);
   params.search_query = search_query;
   params.feed_to_load = next_feed;

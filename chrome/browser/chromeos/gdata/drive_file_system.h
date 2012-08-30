@@ -194,29 +194,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
 
-  // Struct used by UpdateEntryData.
-  struct UpdateEntryParams;
-
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
-  // |LoadFeedFromServer|. |callback| must not be null.
+  // |LoadFeedFromServer|.
   // |params| params used for getting document feed for content search.
   // |error| error code returned by |LoadFeedFromServer|.
   void OnSearch(const SearchCallback& callback,
                 GetDocumentsParams* params,
                 DriveFileError error);
-
-  // Callback for DriveResourceMetadata::RefreshFile, from OnSearch.
-  // Adds |drive_file_path| to |results|. When |entry_proto| is not present in
-  // the local file system snapshot, it is not added to |results|. Instead,
-  // CheckForUpdates is called. Runs |callback| with |results|.
-  // |callback| may be null.
-  void AddToSearchResults(
-      std::vector<SearchResultInfo>* results,
-      const base::Closure& callback,
-      DriveFileError error,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of TransferFileFromLocalToRemote(). Called after
   // GetEntryInfoByPath() is complete.
@@ -622,20 +607,13 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Callback for |drive_service_->GetDocumentEntry|.
   // It is called before file download. If GetDocumentEntry was successful,
   // file download procedure is started for the file. The file is downloaded
-  // from the content url extracted from the fetched metadata.
-  void OnGetDocumentEntry(const GetFileFromCacheParams& params,
+  // from the content url extracted from the fetched metadata to
+  // |cache_file_path|. Also, available space checks are done using file size
+  // from the fetched metadata.
+  void OnGetDocumentEntry(const FilePath& cache_file_path,
+                          const GetFileFromCacheParams& params,
                           GDataErrorCode status,
                           scoped_ptr<base::Value> data);
-
-  // Check available space using file size from the fetched metadata. Called
-  // from OnGetDocumentEntry after RefreshFile is complete.
-  void CheckForSpaceBeforeDownload(
-      const GetFileFromCacheParams& params,
-      int64 file_size,
-      const GURL& content_url,
-      DriveFileError error,
-      const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Starts downloading a file if we have enough disk space indicated by
   // |has_enough_space|.
@@ -698,7 +676,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void UpdateFileByEntryInfo(
       const FileOperationCallback& callback,
       DriveFileError error,
-      const FilePath& drive_file_path,
+      const FilePath& /* drive_file_path */,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId().
@@ -792,8 +770,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                  const FilePath& file_content_path,
                                  DriveCache::FileOperationType cache_operation,
                                  const base::Closure& callback);
-  void UpdateEntryDataOnUIThread(const UpdateEntryParams& params,
-                                 scoped_ptr<DocumentEntry> entry);
+  void UpdateEntryDataOnUIThread(const std::string& resource_id,
+                                 const std::string& md5,
+                                 scoped_ptr<DocumentEntry> entry,
+                                 const FilePath& file_content_path,
+                                 const base::Closure& callback);
 
   // Part of GetEntryInfoByResourceId(). Called after
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.
@@ -842,13 +823,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
       const FilePath& file_path,
       DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Part of UpdateEntryDataOnUIThread(). Called after RefreshFile is complete.
-  void UpdateCacheEntryOnUIThread(
-      const UpdateEntryParams& params,
-      DriveFileError error,
-      const FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a

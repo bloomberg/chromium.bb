@@ -237,6 +237,75 @@ TEST(DriveResourceMetadataTest, VersionCheck) {
   ASSERT_FALSE(resource_metadata.ParseFromString(serialized_proto));
 }
 
+TEST(DriveResourceMetadataTest, RefreshFile) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+
+  DriveResourceMetadata resource_metadata;
+  // Add a directory to the file system.
+  DriveDirectory* directory_entry = resource_metadata.CreateDriveDirectory();
+  directory_entry->set_resource_id("folder:directory_resource_id");
+  directory_entry->set_title("directory");
+  directory_entry->SetBaseNameFromTitle();
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath moved_file_path;
+  FilePath root_path(kDriveRootDirectory);
+  resource_metadata.MoveEntryToDirectory(
+      root_path,
+      directory_entry,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &moved_file_path));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(root_path.AppendASCII(directory_entry->base_name()),
+            moved_file_path);
+
+  // Add a new file to the directory.
+  DriveFile* initial_file_entry = resource_metadata.CreateDriveFile();
+  initial_file_entry->set_resource_id("file:file_resource_id");
+  initial_file_entry->set_title("file");
+  initial_file_entry->SetBaseNameFromTitle();
+  error = DRIVE_FILE_ERROR_FAILED;
+  moved_file_path.clear();
+  resource_metadata.MoveEntryToDirectory(
+      directory_entry->GetFilePath(),
+      initial_file_entry,
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &moved_file_path));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(directory_entry->GetFilePath().AppendASCII(
+                initial_file_entry->base_name()), moved_file_path);
+
+  ASSERT_EQ(directory_entry, initial_file_entry->parent());
+
+  // Initial file system state set, let's try refreshing entries.
+
+  // New value for the entry with resource id "file:file_resource_id".
+  DriveFile* new_file_entry = resource_metadata.CreateDriveFile();
+  new_file_entry->set_resource_id("file:file_resource_id");
+  resource_metadata.RefreshFile(scoped_ptr<DriveFile>(new_file_entry).Pass());
+  // Root should have |new_file_entry|, not |initial_file_entry|.
+  // If this is not true, |new_file_entry| has probably been destroyed, hence
+  // ASSERT (we're trying to access |new_file_entry| later on).
+  ASSERT_EQ(new_file_entry,
+      resource_metadata.GetEntryByResourceId("file:file_resource_id"));
+  // We have just verified new_file_entry exists inside root, so accessing
+  // |new_file_entry->parent()| should be safe.
+  EXPECT_EQ(directory_entry, new_file_entry->parent());
+
+  // Let's try refreshing file that didn't prviously exist.
+  DriveFile* non_existent_entry = resource_metadata.CreateDriveFile();
+  non_existent_entry->set_resource_id("file:does_not_exist");
+  resource_metadata.RefreshFile(
+      scoped_ptr<DriveFile>(non_existent_entry).Pass());
+  // File with non existent resource id should not be added.
+  EXPECT_FALSE(resource_metadata.GetEntryByResourceId("file:does_not_exist"));
+}
+
 TEST(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {
   DriveResourceMetadata resource_metadata;
   // Look up the root directory by its resource ID.
