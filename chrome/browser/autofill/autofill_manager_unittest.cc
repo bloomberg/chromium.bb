@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
@@ -442,7 +443,8 @@ class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(TabContents* tab_contents,
                       TestPersonalDataManager* personal_data)
-      : AutofillManager(tab_contents, personal_data),
+      : AutofillManager(&delegate_, tab_contents, personal_data),
+        delegate_(tab_contents),
         personal_data_(personal_data),
         autofill_enabled_(true),
         did_finish_async_form_submit_(false),
@@ -562,6 +564,8 @@ class TestAutofillManager : public AutofillManager {
  private:
   // AutofillManager is ref counted.
   virtual ~TestAutofillManager() {}
+
+  TabAutofillManagerDelegate delegate_;
 
   // Weak reference.
   TestPersonalDataManager* personal_data_;

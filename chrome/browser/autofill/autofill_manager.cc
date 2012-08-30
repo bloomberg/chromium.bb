@@ -20,6 +20,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_tab_service.h"
+#include "chrome/browser/autofill/api/autofill_manager_delegate.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
-#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -178,8 +178,10 @@ void DeterminePossibleFieldTypesForUpload(
 
 }  // namespace
 
-AutofillManager::AutofillManager(TabContents* tab_contents)
+AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
+                                 TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
+      manager_delegate_(delegate),
       tab_contents_(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents->profile(), this),
@@ -197,7 +199,7 @@ AutofillManager::AutofillManager(TabContents* tab_contents)
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
   RegisterWithSyncService();
-  registrar_.Init(PrefServiceBase::ForProfile(tab_contents->profile()));
+  registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
@@ -262,17 +264,13 @@ void AutofillManager::UpdatePasswordGenerationState(
       service->HasSyncSetupCompleted() && sync_set.Has(syncer::PASSWORDS);
   }
 
-  bool password_manager_enabled =
-      tab_contents_->password_manager()->IsSavingEnabled();
-
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-  bool preference_checked = PrefServiceBase::ForProfile(profile)->GetBoolean(
+  bool saving_passwords_enabled = manager_delegate_->IsSavingPasswordsEnabled();
+  bool preference_checked = manager_delegate_->GetPrefs()->GetBoolean(
       prefs::kPasswordGenerationEnabled);
 
   bool new_password_generation_enabled =
       password_sync_enabled &&
-      password_manager_enabled &&
+      saving_passwords_enabled &&
       preference_checked;
 
   if (new_password_generation_enabled != password_generation_enabled_ ||
@@ -813,10 +811,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  Profile* profile = Profile::FromBrowserContext(
-      const_cast<AutofillManager*>(this)->web_contents()->GetBrowserContext());
-  return PrefServiceBase::ForProfile(profile)->GetBoolean(
-      prefs::kAutofillEnabled);
+  return manager_delegate_->GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 void AutofillManager::SendAutofillTypePredictions(
@@ -845,8 +840,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && web_contents()) {
-    InfoBarTabService* infobar_service =
-        InfoBarTabService::ForTab(tab_contents_);
+    InfoBarTabService* infobar_service = manager_delegate_->GetInfoBarService();
     infobar_service->AddInfoBar(
         new AutofillCCInfoBarDelegate(infobar_service,
                                       scoped_credit_card.release(),
@@ -910,9 +904,11 @@ void AutofillManager::Reset() {
     external_delegate_->Reset();
 }
 
-AutofillManager::AutofillManager(TabContents* tab_contents,
+AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
+                                 TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
     : content::WebContentsObserver(tab_contents->web_contents()),
+      manager_delegate_(delegate),
       tab_contents_(tab_contents),
       personal_data_(personal_data),
       download_manager_(tab_contents->profile(), this),
@@ -926,7 +922,8 @@ AutofillManager::AutofillManager(TabContents* tab_contents,
       user_did_edit_autofilled_field_(false),
       password_generation_enabled_(false),
       external_delegate_(NULL) {
-  DCHECK(tab_contents);
+  DCHECK(tab_contents_);
+  DCHECK(manager_delegate_);
   RegisterWithSyncService();
   // Test code doesn't need registrar_.
 }

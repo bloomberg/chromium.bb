@@ -41,6 +41,7 @@ class TabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace autofill {
+class AutofillManagerDelegate;
 class PasswordGenerator;
 }
 
@@ -73,7 +74,10 @@ class AutofillManager : public content::NotificationObserver,
                         public ProfileSyncServiceObserver,
                         public base::RefCounted<AutofillManager> {
  public:
-  explicit AutofillManager(TabContents* tab_contents);
+  // Lifetime of |client| and |tab_contents| must exceed lifetime of
+  // AutofillManager.
+  explicit AutofillManager(autofill::AutofillManagerDelegate* delegate,
+                           TabContents* tab_contents);
 
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefServiceBase* prefs);
@@ -117,7 +121,8 @@ class AutofillManager : public content::NotificationObserver,
   typedef std::pair<std::string, size_t> GUIDPair;
 
   // Test code should prefer to use this constructor.
-  AutofillManager(TabContents* tab_contents,
+  AutofillManager(autofill::AutofillManagerDelegate* delegate,
+                  TabContents* tab_contents,
                   PersonalDataManager* personal_data);
 
   // Returns the value of the AutofillEnabled pref.
@@ -320,6 +325,8 @@ class AutofillManager : public content::NotificationObserver,
   // the appropriate command-line flag is not set.
   void SendAutofillTypePredictions(
       const std::vector<FormStructure*>& forms) const;
+
+  autofill::AutofillManagerDelegate* const manager_delegate_;
 
   // The owning TabContents.
   TabContents* tab_contents_;

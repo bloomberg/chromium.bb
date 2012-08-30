@@ -35,6 +35,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
+#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
@@ -111,7 +112,8 @@ TabContents::TabContents(WebContents* contents)
   restore_tab_helper_.reset(new RestoreTabHelper(contents));
 
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
-  autofill_manager_ = new AutofillManager(this);
+  autofill_delegate_.reset(new TabAutofillManagerDelegate(this));
+  autofill_manager_ = new AutofillManager(autofill_delegate_.get(), this);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExternalAutofillPopup)) {
     autofill_external_delegate_.reset(

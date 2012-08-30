@@ -56,6 +56,7 @@ class SadTabHelper;
 class SearchEngineTabHelper;
 class ShellWindow;
 class SnapshotTabHelper;
+class TabAutofillManagerDelegate;
 class TabContentsSSLHelper;
 class TabContentsTestHarness;
 class TabSpecificContentSettings;
@@ -347,6 +348,7 @@ class TabContents : public content::WebContentsObserver {
 
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
   scoped_refptr<AutofillManager> autofill_manager_;
+  scoped_ptr<TabAutofillManagerDelegate> autofill_delegate_;
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;

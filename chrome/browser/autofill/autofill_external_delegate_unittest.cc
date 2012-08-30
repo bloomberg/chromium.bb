@@ -9,6 +9,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
+#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -65,7 +66,9 @@ class MockAutofillManager : public AutofillManager {
   explicit MockAutofillManager(TabContents* tab_contents)
       // Force to use the constructor designated for unit test, but we don't
       // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(tab_contents, NULL) {}
+      : AutofillManager(&delegate_, tab_contents, NULL),
+        delegate_(tab_contents) {
+  }
 
   MOCK_METHOD4(OnFillAutofillFormData,
                void(int query_id,
@@ -75,6 +78,9 @@ class MockAutofillManager : public AutofillManager {
 
  protected:
   virtual ~MockAutofillManager() {}
+
+ private:
+  TabAutofillManagerDelegate delegate_;
 };
 
 }  // namespace
