@@ -62,6 +62,12 @@ void AddContentTypeHandler(WebPluginInfo* info,
 
 typedef testing::Test ChromeContentRendererClientTest;
 
+#if !defined(__arm__)
+// The ARM ABI is not quite stable, so we only allow NaCl for
+// unrestricted extensions (i.e. built-in and under development).
+// Disable this whole test for ARM; other ABIs give us content-type coverage.
+// See http://crbug.com/145694
+// TODO(dschuff): remove this when the ARM ABI is stable
 TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   // Unknown content types have no NaCl module.
   {
@@ -196,6 +202,7 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
         &params));
   }
 }
+#endif // !defined(__arm__)
 
 }  // namespace chrome
 

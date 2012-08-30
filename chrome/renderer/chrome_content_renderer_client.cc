@@ -609,6 +609,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 #if !defined(__arm__)
     // The ARM ABI is not quite stable, so only allow NaCl for
     // unrestricted extensions (i.e. built-in and under development).
+    // See http://crbug.com/145694
     // TODO(dschuff): remove this when the ABI is stable
     is_extension_from_webstore ||
     is_whitelisted_url ||
