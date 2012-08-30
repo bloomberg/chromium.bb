@@ -84,9 +84,6 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   // Checks if there is a master login token to mint tokens for the extension.
   virtual bool HasLoginToken() const;
 
-  // Gets the token mint flow mode based on a command-line flag.
-  OAuth2MintTokenFlow::Mode GetTokenFlowMode() const;
-
   bool interactive_;
   scoped_ptr<OAuth2MintTokenFlow> flow_;
 

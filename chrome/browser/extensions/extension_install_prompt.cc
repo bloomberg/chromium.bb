@@ -280,7 +280,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(
     gfx::NativeWindow parent,
     content::PageNavigator* navigator,
     Profile* profile)
-    : record_oauth2_grant_(ShouldAutomaticallyApproveScopes()),
+    : record_oauth2_grant_(false),
       parent_(parent),
       navigator_(navigator),
       ui_loop_(MessageLoop::current()),
@@ -445,8 +445,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 
 void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
   const Extension::OAuth2Info& oauth2_info = extension_->oauth2_info();
-  if (ShouldAutomaticallyApproveScopes() ||
-      prompt_.GetOAuthIssueCount() != 0U ||
+  if (prompt_.GetOAuthIssueCount() != 0U ||
       oauth2_info.client_id.empty() ||
       oauth2_info.scopes.empty() ||
       prompt_type_ == BUNDLE_INSTALL_PROMPT ||
@@ -510,12 +509,6 @@ void ExtensionInstallPrompt::ShowConfirmation() {
       NOTREACHED() << "Unknown message";
       break;
   }
-}
-
-// static
-bool ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDemandUserScopeApproval);
 }
 
 namespace chrome {

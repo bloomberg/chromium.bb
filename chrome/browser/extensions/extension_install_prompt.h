@@ -245,14 +245,10 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // Returns true if extension scopes should be approved without asking the
-  // user. This is controlled by a flag; before the identity api is taken out
-  // of experimental the flag should be removed and this should always be false.
-  static bool ShouldAutomaticallyApproveScopes();
-
  protected:
   friend class extensions::ExtensionWebstorePrivateApiTest;
   friend class WebstoreInlineInstallUnpackFailureTest;
+  friend class MockGetAuthTokenFunction;
 
   // Whether or not we should record the oauth2 grant upon successful install.
   bool record_oauth2_grant_;

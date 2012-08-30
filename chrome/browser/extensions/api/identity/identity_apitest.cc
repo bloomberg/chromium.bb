@@ -115,6 +115,7 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   virtual void ShowOAuthApprovalDialog(
       const IssueAdviceInfo& issue_advice) OVERRIDE {
     install_ui_shown_ = true;
+    install_ui_->record_oauth2_grant_ = true;
     // Call InstallUIProceed or InstallUIAbort based on the flag.
     if (install_ui_result_)
       InstallUIProceed();

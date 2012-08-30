@@ -75,7 +75,7 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
     }
   }
 
-  if (StartFlow(GetTokenFlowMode())) {
+  if (StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)) {
     return true;
   } else {
     Release();
@@ -115,7 +115,7 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
 void IdentityGetAuthTokenFunction::OnLoginUIClosed(
     LoginUIService::LoginUI* ui) {
   StopObservingLoginService();
-  if (!StartFlow(GetTokenFlowMode())) {
+  if (!StartFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE)) {
     SendResponse(false);
     Release();
   }
@@ -216,13 +216,6 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
 bool IdentityGetAuthTokenFunction::HasLoginToken() const {
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
   return token_service->HasOAuthLoginToken();
-}
-
-OAuth2MintTokenFlow::Mode IdentityGetAuthTokenFunction::GetTokenFlowMode()
-    const {
-  return ExtensionInstallPrompt::ShouldAutomaticallyApproveScopes() ?
-      OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE :
-      OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
 }
 
 IdentityLaunchWebAuthFlowFunction::IdentityLaunchWebAuthFlowFunction() {}
