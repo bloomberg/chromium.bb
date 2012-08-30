@@ -67,15 +67,10 @@ class PermissionSet
   // Gets the API permissions in this set as a set of strings.
   std::set<std::string> GetAPIsAsStrings() const;
 
-  // Gets the API permissions in this set, plus any that have implicit access
-  // (such as APIs that require no permissions, or APIs with functions that
-  // require no permissions).
-  std::set<std::string> GetAPIsWithAnyAccessAsStrings() const;
-
   // Returns whether this namespace has any functions which the extension has
   // permission to use.  For example, even though the extension may not have
   // the "tabs" permission, "tabs.create" requires no permissions so
-  // HasAnyAPIPermission("tabs") will return true.
+  // HasAnyAccessToAPI("tabs") will return true.
   bool HasAnyAccessToAPI(const std::string& api_name) const;
 
   // Gets the localized permission messages that represent this set.

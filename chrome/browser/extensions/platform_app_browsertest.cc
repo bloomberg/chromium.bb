@@ -219,6 +219,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApi) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
 }
 
+// Tests that extensions can't use platform-app-only APIs.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PlatformAppsOnly) {
+  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings(
+      "platform_apps/apps_only")) << message_;
+}
+
 // Tests that platform apps have isolated storage by default.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   ASSERT_TRUE(StartTestServer());

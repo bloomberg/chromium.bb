@@ -35,7 +35,6 @@ bool RcdBetterThan(const std::string& a, const std::string& b) {
 // Names of API modules that can be used without listing it in the
 // permissions section of the manifest.
 const char* kNonPermissionModuleNames[] = {
-  "app",
   "browserAction",
   "devtools",
   "events",
@@ -57,6 +56,12 @@ const size_t kNumNonPermissionModuleNames =
 // without asking for the module permission. In other words, functions you can
 // use with no permissions specified.
 const char* kNonPermissionFunctionNames[] = {
+  "app.getDetails",
+  "app.getDetailsForFrame",
+  "app.getIsInstalled",
+  "app.install",
+  "app.installState",
+  "app.runningState",
   "management.getPermissionWarningsByManifest",
   "tabs.create",
   "tabs.onRemoved",
@@ -224,16 +229,6 @@ std::set<std::string> PermissionSet::GetAPIsAsStrings() const {
   return apis_str;
 }
 
-std::set<std::string> PermissionSet::
-    GetAPIsWithAnyAccessAsStrings() const {
-  std::set<std::string> result = GetAPIsAsStrings();
-  for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i)
-    result.insert(kNonPermissionModuleNames[i]);
-  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i)
-    result.insert(GetPermissionName(kNonPermissionFunctionNames[i]));
-  return result;
-}
-
 bool PermissionSet::HasAnyAccessToAPI(
     const std::string& api_name) const {
   if (HasAccessToFunction(api_name))
@@ -356,17 +351,26 @@ bool PermissionSet::HasAccessToFunction(
       return true;
   }
 
-  std::string permission_name = GetPermissionName(function_name);
-  const APIPermissionInfo* permission_info =
-      PermissionsInfo::GetInstance()->GetByName(permission_name);
-  if (permission_info && apis_.count(permission_info->id()))
-    return true;
-
-  for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
-    if (permission_name == kNonPermissionModuleNames[i]) {
+  // Search for increasingly smaller substrings of |function_name| to see if we
+  // find a matching permission or non-permission module name. E.g. for
+  // "a.b.c", we'll search on "a.b.c", then "a.b", and finally "a".
+  std::string name = function_name;
+  size_t lastdot;
+  do {
+    const APIPermissionInfo* permission =
+        PermissionsInfo::GetInstance()->GetByName(name);
+    if (permission && apis_.count(permission->id()))
       return true;
+
+    for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
+      if (name == kNonPermissionModuleNames[i]) {
+        return true;
+      }
     }
-  }
+    lastdot = name.find_last_of("./");
+    if (lastdot != std::string::npos)
+      name = std::string(name, 0, lastdot);
+  } while (lastdot != std::string::npos);
 
   return false;
 }
