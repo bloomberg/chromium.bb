@@ -45,6 +45,15 @@ def main():
   tool_dir = os.path.dirname(os.path.abspath(__file__))
   parser = optparse.OptionParser(usage='<new webkit rev>')
   parser.add_option('-v', '--verbose', action='count', default=0)
+  parser.add_option('--commit', action='store_true', default=True,
+                    help='(default) Put change in commit queue on upload.')
+  parser.add_option('--no-commit', action='store_false', dest='commit',
+                    help='Don\'t put change in commit queue on upload.')
+  parser.add_option('--upstream', default='origin/master',
+                    help='(default "%default") Use given start point for change'
+                    ' to upload. For instance, if you use the old git workflow,'
+                    ' you might set it to "origin/trunk".')
+
   options, args = parser.parse_args()
   logging.basicConfig(
       level=
@@ -67,13 +76,16 @@ def main():
     parser.error(
         'Please delete the branch webkit_roll and move to a different branch')
   subprocess2.check_output(
-      ['git', 'checkout', '-b', 'webkit_roll', 'origin/master'])
+      ['git', 'checkout', '-b', 'webkit_roll', options.upstream])
   try:
     old_rev = process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
     commit_msg = 'Webkit roll %s:%s\n\nTBR=\n' % (old_rev, new_rev)
     subprocess2.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
-    subprocess2.check_call(['git', 'diff', 'origin/master'])
-    subprocess2.check_call(['git', 'cl', 'upload', '--use-commit-queue'])
+    subprocess2.check_call(['git', 'diff', options.upstream])
+    upload_cmd = ['git', 'cl', 'upload']
+    if options.commit:
+      upload_cmd.append('--use-commit-queue')
+    subprocess2.check_call(upload_cmd)
   finally:
     subprocess2.check_output(['git', 'checkout', old_branch])
     subprocess2.check_output(['git', 'branch', '-D', 'webkit_roll'])
