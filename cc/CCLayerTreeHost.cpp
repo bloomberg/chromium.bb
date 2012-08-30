@@ -219,10 +219,10 @@ void CCLayerTreeHost::finishCommitOnImplThread(CCLayerTreeHostImpl* hostImpl)
 
     hostImpl->setRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), hostImpl->detachLayerTree(), hostImpl));
 
-    if (!m_hudLayer)
-        hostImpl->setHudLayer(0);
-    else
+    if (m_rootLayer && m_hudLayer)
         hostImpl->setHudLayer(static_cast<CCHeadsUpDisplayLayerImpl*>(CCLayerTreeHostCommon::findLayerInSubtree(hostImpl->rootLayer(), m_hudLayer->id())));
+    else
+        hostImpl->setHudLayer(0);
 
     // We may have added an animation during the tree sync. This will cause both layer tree hosts
     // to visit their controllers.
@@ -255,10 +255,8 @@ void CCLayerTreeHost::willCommit()
         if (m_fontAtlas)
             m_hudLayer->setFontAtlas(m_fontAtlas.release());
 
-        if (m_hudLayer->parent() != m_rootLayer.get()) {
-            m_hudLayer->removeFromParent();
+        if (!m_hudLayer->parent())
             m_rootLayer->addChild(m_hudLayer);
-        }
     }
 }
 
@@ -358,6 +356,10 @@ void CCLayerTreeHost::setRootLayer(PassRefPtr<LayerChromium> rootLayer)
     m_rootLayer = rootLayer;
     if (m_rootLayer)
         m_rootLayer->setLayerTreeHost(this);
+
+    if (m_hudLayer)
+        m_hudLayer->removeFromParent();
+
     setNeedsCommit();
 }
 

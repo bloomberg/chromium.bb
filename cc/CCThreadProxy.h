@@ -10,6 +10,7 @@
 #include "CCLayerTreeHostImpl.h"
 #include "CCProxy.h"
 #include "CCScheduler.h"
+#include "CCTextureUpdateController.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {
@@ -19,11 +20,10 @@ class CCLayerTreeHost;
 class CCScheduler;
 class CCScopedThreadProxy;
 class CCTextureUpdateQueue;
-class CCTextureUpdateController;
 class CCThread;
 class CCThreadProxyContextRecreationTimer;
 
-class CCThreadProxy : public CCProxy, CCLayerTreeHostImplClient, CCSchedulerClient {
+class CCThreadProxy : public CCProxy, CCLayerTreeHostImplClient, CCSchedulerClient, CCTextureUpdateControllerClient {
 public:
     static PassOwnPtr<CCProxy> create(CCLayerTreeHost*);
 
@@ -64,7 +64,6 @@ public:
 
     // CCSchedulerClient implementation
     virtual bool canDraw() OVERRIDE;
-    virtual bool hasMoreResourceUpdates() const OVERRIDE;
     virtual void scheduledActionBeginFrame() OVERRIDE;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE;
@@ -72,6 +71,9 @@ public:
     virtual void scheduledActionCommit() OVERRIDE;
     virtual void scheduledActionBeginContextRecreation() OVERRIDE;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
+
+    // CCTextureUpdateControllerClient implementation
+    virtual void updateTexturesCompleted() OVERRIDE;
 
 private:
     explicit CCThreadProxy(CCLayerTreeHost*);

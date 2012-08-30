@@ -33,7 +33,6 @@ struct CCScheduledActionDrawAndSwapResult {
 class CCSchedulerClient {
 public:
     virtual bool canDraw() = 0;
-    virtual bool hasMoreResourceUpdates() const = 0;
 
     virtual void scheduledActionBeginFrame() = 0;
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() = 0;
@@ -73,7 +72,7 @@ public:
     // Like setNeedsRedraw(), but ensures the draw will definitely happen even if we are not visible.
     void setNeedsForcedRedraw();
 
-    void beginFrameComplete();
+    void beginFrameComplete(bool hasResourceUpdates);
     void beginFrameAborted();
 
     void setMaxFramesPending(int);
@@ -90,6 +89,8 @@ public:
     // CCFrameRateControllerClient implementation
     virtual void vsyncTick() OVERRIDE;
 
+    void updateResourcesComplete();
+
 private:
     CCScheduler(CCSchedulerClient*, PassOwnPtr<CCFrameRateController>);
 
@@ -99,6 +100,7 @@ private:
     CCSchedulerClient* m_client;
     OwnPtr<CCFrameRateController> m_frameRateController;
     CCSchedulerStateMachine m_stateMachine;
+    bool m_hasMoreResourceUpdates;
     bool m_updateMoreResourcesPending;
 };
 

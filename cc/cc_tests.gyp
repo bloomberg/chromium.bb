@@ -11,6 +11,7 @@
       'CCDamageTrackerTest.cpp',
       'CCDelayBasedTimeSourceTest.cpp',
       'CCFrameRateControllerTest.cpp',
+      'CCHeadsUpDisplayTest.cpp',
       'CCKeyframedAnimationCurveTest.cpp',
       'CCLayerAnimationControllerTest.cpp',
       'CCLayerImplTest.cpp',

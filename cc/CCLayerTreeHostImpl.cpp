@@ -956,7 +956,7 @@ void CCLayerTreeHostImpl::scrollBy(const IntPoint& viewportPoint, const IntSize&
             appliedDelta = scrollLayerWithLocalDelta(*layerImpl, pendingDelta);
 
         // If the layer wasn't able to move, try the next one in the hierarchy.
-        float moveThresholdSquared = 0.1 * 0.1;
+        float moveThresholdSquared = 0.1f * 0.1f;
         if (appliedDelta.diagonalLengthSquared() < moveThresholdSquared)
             continue;
 
@@ -1058,7 +1058,7 @@ void CCLayerTreeHostImpl::computePinchZoomDeltas(CCScrollAndScaleSet* scrollInfo
     // Only send fake scroll/zoom deltas if we're pinch zooming out by a
     // significant amount. This also ensures only one fake delta set will be
     // sent.
-    const float pinchZoomOutSensitivity = 0.95;
+    const float pinchZoomOutSensitivity = 0.95f;
     if (m_pageScaleDelta > pinchZoomOutSensitivity)
         return;
 
