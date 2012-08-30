@@ -861,74 +861,441 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 	}
 }
 
+
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#define min(a, b) (((a) > (b)) ? (b) : (a))
+#define clip(x, a, b)  min(max(x, a), b)
+#define sign(x)   ((x) >= 0)
+
 static int
-texture_region(struct weston_surface *es, pixman_region32_t *region)
+calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
+		pixman_box32_t *surf_rect, GLfloat *ex, GLfloat *ey)
 {
-	struct weston_compositor *ec = es->compositor;
-	GLfloat *v, inv_width, inv_height;
-	GLfloat sx, sy;
-	pixman_box32_t *rectangles;
-	unsigned int *p;
-	int i, n;
+	int i, n = 0;
+	GLfloat min_x, max_x, min_y, max_y;
+	GLfloat x[4] = {
+			surf_rect->x1, surf_rect->x2, surf_rect->x2, surf_rect->x1,
+	};
+	GLfloat y[4] = {
+			surf_rect->y1, surf_rect->y1, surf_rect->y2, surf_rect->y2,
+	};
+	GLfloat cx1 = rect->x1;
+	GLfloat cx2 = rect->x2;
+	GLfloat cy1 = rect->y1;
+	GLfloat cy2 = rect->y2;
 
-	rectangles = pixman_region32_rectangles(region, &n);
-	v = wl_array_add(&ec->vertices, n * 16 * sizeof *v);
-	p = wl_array_add(&ec->indices, n * 6 * sizeof *p);
-	inv_width = 1.0 / es->pitch;
-	inv_height = 1.0 / es->geometry.height;
+	GLfloat dist_squared(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
+	{
+		GLfloat dx = (x1 - x2);
+		GLfloat dy = (y1 - y2);
+		return dx * dx + dy * dy;
+	}
 
-	for (i = 0; i < n; i++, v += 16, p += 6) {
-		surface_from_global_float(es, rectangles[i].x1,
-					  rectangles[i].y1, &sx, &sy);
-		v[ 0] = rectangles[i].x1;
-		v[ 1] = rectangles[i].y1;
-		v[ 2] = sx * inv_width;
-		v[ 3] = sy * inv_height;
+	void append_vertex(GLfloat x, GLfloat y)
+	{
+		/* don't emit duplicate vertices: */
+		if ((n > 0) && (ex[n-1] == x) && (ey[n-1] == y))
+			return;
+		ex[n] = x;
+		ey[n] = y;
+		n++;
+	}
 
-		surface_from_global_float(es, rectangles[i].x1,
-					  rectangles[i].y2, &sx, &sy);
-		v[ 4] = rectangles[i].x1;
-		v[ 5] = rectangles[i].y2;
-		v[ 6] = sx * inv_width;
-		v[ 7] = sy * inv_height;
+	/* transform surface to screen space: */
+	for (i = 0; i < 4; i++)
+		weston_surface_to_global_float(es, x[i], y[i], &x[i], &y[i]);
 
-		surface_from_global_float(es, rectangles[i].x2,
-					  rectangles[i].y1, &sx, &sy);
-		v[ 8] = rectangles[i].x2;
-		v[ 9] = rectangles[i].y1;
-		v[10] = sx * inv_width;
-		v[11] = sy * inv_height;
+	/* find bounding box: */
+	min_x = max_x = x[0];
+	min_y = max_y = y[0];
 
-		surface_from_global_float(es, rectangles[i].x2,
-					  rectangles[i].y2, &sx, &sy);
-		v[12] = rectangles[i].x2;
-		v[13] = rectangles[i].y2;
-		v[14] = sx * inv_width;
-		v[15] = sy * inv_height;
+	for (i = 1; i < 4; i++) {
+		min_x = min(min_x, x[i]);
+		max_x = max(max_x, x[i]);
+		min_y = min(min_y, y[i]);
+		max_y = max(max_y, y[i]);
+	}
 
-		p[0] = i * 4 + 0;
-		p[1] = i * 4 + 1;
-		p[2] = i * 4 + 2;
-		p[3] = i * 4 + 2;
-		p[4] = i * 4 + 1;
-		p[5] = i * 4 + 3;
+	/* First, simple bounding box check to discard early transformed
+	 * surface rects that do not intersect with the clip region:
+	 */
+	if ((min_x > cx2) || (max_x < cx1) ||
+			(min_y > cy2) || (max_y < cy1))
+		return 0;
+
+	/* Simple case, bounding box edges are parallel to surface edges,
+	 * there will be only four edges.  We just need to clip the surface
+	 * vertices to the clip rect bounds:
+	 */
+	if (!es->transform.enabled) {
+		for (i = 0; i < 4; i++) {
+			ex[n] = clip(x[i], cx1, cx2);
+			ey[n] = clip(y[i], cy1, cy2);
+			n++;
+		}
+		return 4;
+	}
+
+	/* Hard case, transformation applied.  We need to find the vertices
+	 * of the shape that is the intersection of the clip rect and
+	 * transformed surface.  This can be anything from 3 to 8 sides.
+	 *
+	 * Observation: all the resulting vertices will be the intersection
+	 * points of the transformed surface and the clip rect, plus the
+	 * vertices of the clip rect which are enclosed by the transformed
+	 * surface and the vertices of the transformed surface which are
+	 * enclosed by the clip rect.
+	 *
+	 * Observation: there will be zero, one, or two resulting vertices
+	 * for each edge of the src rect.
+	 *
+	 * Loop over four edges of the transformed rect:
+	 */
+	for (i = 0; i < 4; i++) {
+		GLfloat x1, y1, x2, y2;
+		int last_n = n;
+
+		x1 = x[i];
+		y1 = y[i];
+
+		/* if this vertex is contained in the clip rect, use it as-is: */
+		if ((cx1 <= x1) && (x1 <= cx2) &&
+				(cy1 <= y1) && (y1 <= cy2))
+			append_vertex(x1, y1);
+
+		/* for remaining, we consider the point as part of a line: */
+		x2 = x[(i+1) % 4];
+		y2 = y[(i+1) % 4];
+
+		if (x1 == x2) {
+			append_vertex(clip(x1, cx1, cx2), clip(y1, cy1, cy2));
+			append_vertex(clip(x2, cx1, cx2), clip(y2, cy1, cy2));
+		} else if (y1 == y2) {
+			append_vertex(clip(x1, cx1, cx2), clip(y1, cy1, cy2));
+			append_vertex(clip(x2, cx1, cx2), clip(y2, cy1, cy2));
+		} else {
+			GLfloat m, c, p;
+			GLfloat tx[2], ty[2];
+			int tn = 0;
+
+			int intersect_horiz(GLfloat y, GLfloat *p)
+			{
+				GLfloat x;
+
+				/* if y does not lie between y1 and y2, no
+				 * intersection possible
+				 */
+				if (sign(y-y1) == sign(y-y2))
+					return 0;
+
+				x = (y - c) / m;
+
+				/* if x does not lie between cx1 and cx2, no
+				 * intersection:
+				 */
+				if (sign(x-cx1) == sign(x-cx2))
+					return 0;
+
+				*p = x;
+				return 1;
+			}
+
+			int intersect_vert(GLfloat x, GLfloat *p)
+			{
+				GLfloat y;
+
+				if (sign(x-x1) == sign(x-x2))
+					return 0;
+
+				y = m * x + c;
+
+				if (sign(y-cy1) == sign(y-cy2))
+					return 0;
+
+				*p = y;
+				return 1;
+			}
+
+			/* y = mx + c */
+			m = (y2 - y1) / (x2 - x1);
+			c = y1 - m * x1;
+
+			/* check for up to two intersections with the four edges
+			 * of the clip rect.  Note that we don't know the orientation
+			 * of the transformed surface wrt. the clip rect.  So if when
+			 * there are two intersection points, we need to put the one
+			 * closest to x1,y1 first:
+			 */
+
+			/* check top clip rect edge: */
+			if (intersect_horiz(cy1, &p)) {
+				ty[tn] = cy1;
+				tx[tn] = p;
+				tn++;
+			}
+
+			/* check right clip rect edge: */
+			if (intersect_vert(cx2, &p)) {
+				ty[tn] = p;
+				tx[tn] = cx2;
+				tn++;
+				if (tn == 2)
+					goto edge_check_done;
+			}
+
+			/* check bottom clip rect edge: */
+			if (intersect_horiz(cy2, &p)) {
+				ty[tn] = cy2;
+				tx[tn] = p;
+				tn++;
+				if (tn == 2)
+					goto edge_check_done;
+			}
+
+			/* check left clip rect edge: */
+			if (intersect_vert(cx1, &p)) {
+				ty[tn] = p;
+				tx[tn] = cx1;
+				tn++;
+			}
+
+edge_check_done:
+			if (tn == 1) {
+				append_vertex(tx[0], ty[0]);
+			} else if (tn == 2) {
+				if (dist_squared(x1, y1, tx[0], ty[0]) <
+						dist_squared(x1, y1, tx[1], ty[1])) {
+					append_vertex(tx[0], ty[0]);
+					append_vertex(tx[1], ty[1]);
+				} else {
+					append_vertex(tx[1], ty[1]);
+					append_vertex(tx[0], ty[0]);
+				}
+			}
+
+			if (n == last_n) {
+				GLfloat best_x=0, best_y=0;
+				uint32_t d, best_d = (unsigned int)-1; /* distance squared */
+				uint32_t max_d = dist_squared(x2, y2,
+						x[(i+2) % 4], y[(i+2) % 4]);
+
+				/* if there are no vertices on this line, it could be that
+				 * there is a vertex of the clip rect that is enclosed by
+				 * the transformed surface.  Find the vertex of the clip
+				 * rect that is reached by the shortest line perpendicular
+				 * to the current edge, if any.
+				 *
+				 * slope of perpendicular is 1/m, so
+				 *
+				 *   cy = -cx/m + c2
+				 *   c2 = cy + cx/m
+				 *
+				 */
+
+				int perp_intersect(GLfloat cx, GLfloat cy, uint32_t *d)
+				{
+					GLfloat c2 = cy + cx/m;
+					GLfloat x = (c2 - c) / (m + 1/m);
+
+					/* if the x position of the intersection of the
+					 * perpendicular with the transformed edge does
+					 * not lie within the bounds of the edge, then
+					 * no intersection:
+					 */
+					if (sign(x-x1) == sign(x-x2))
+						return 0;
+
+					*d = dist_squared(cx, cy, x, (m * x) + c);
+
+					/* if intersection distance is further away than
+					 * opposite edge of surface region, it is invalid:
+					 */
+					if (*d > max_d)
+						return 0;
+
+					return 1;
+				}
+
+				if (perp_intersect(cx1, cy1, &d)) {
+					best_x = cx1;
+					best_y = cy1;
+					best_d = d;
+				}
+
+				if (perp_intersect(cx1, cy2, &d) && (d < best_d)) {
+					best_x = cx1;
+					best_y = cy2;
+					best_d = d;
+				}
+
+				if (perp_intersect(cx2, cy2, &d) && (d < best_d)) {
+					best_x = cx2;
+					best_y = cy2;
+					best_d = d;
+				}
+
+				if (perp_intersect(cx2, cy1, &d) && (d < best_d)) {
+					best_x = cx2;
+					best_y = cy1;
+					best_d = d;
+				}
+
+				if (best_d != (unsigned int)-1)  // XXX can this happen?
+					append_vertex(best_x, best_y);
+			}
+		}
+
 	}
 
 	return n;
 }
 
+static int
+texture_region(struct weston_surface *es, pixman_region32_t *region,
+		pixman_region32_t *surf_region)
+{
+	struct weston_compositor *ec = es->compositor;
+	GLfloat *v, inv_width, inv_height;
+	unsigned int *vtxcnt, nvtx = 0;
+	pixman_box32_t *rects, *surf_rects;
+	int i, j, k, nrects, nsurf;
+
+	rects = pixman_region32_rectangles(region, &nrects);
+	surf_rects = pixman_region32_rectangles(surf_region, &nsurf);
+
+	/* worst case we can have 10 vertices per rect (ie. clipped into
+	 * an octagon):
+	 */
+	v = wl_array_add(&ec->vertices, nrects * nsurf * 10 * 4 * sizeof *v);
+	vtxcnt = wl_array_add(&ec->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
+
+	inv_width = 1.0 / es->pitch;
+	inv_height = 1.0 / es->geometry.height;
+
+	for (i = 0; i < nrects; i++) {
+		pixman_box32_t *rect = &rects[i];
+		for (j = 0; j < nsurf; j++) {
+			pixman_box32_t *surf_rect = &surf_rects[j];
+			GLfloat cx, cy;
+			GLfloat ex[8], ey[8];          /* edge points in screen space */
+			int n;
+
+			void emit_vertex(GLfloat gx, GLfloat gy)
+			{
+				GLfloat sx, sy;
+				surface_from_global_float(es, gx, gy, &sx, &sy);
+				/* In groups of 4 attributes, first two are 'position', 2nd two
+				 * are 'texcoord'.
+				 */
+				*(v++) = gx;
+				*(v++) = gy;
+				*(v++) = sx * inv_width;
+				*(v++) = sy * inv_height;
+			}
+
+			/* The transformed surface, after clipping to the clip region,
+			 * can have as many as eight sides, emitted as a triangle-fan.
+			 * The first vertex is the center, followed by each corner.
+			 *
+			 * If a corner of the transformed surface falls outside of the
+			 * clip region, instead of emitting one vertex for the corner
+			 * of the surface, up to two are emitted for two corresponding
+			 * intersection point(s) between the surface and the clip region.
+			 *
+			 * To do this, we first calculate the (up to eight) points that
+			 * form the intersection of the clip rect and the transformed
+			 * surface. After that we calculate the average to determine
+			 * the center point, and emit the center and edge vertices of
+			 * the fan.
+			 */
+			n = calculate_edges(es, rect, surf_rect, ex, ey);
+			if (n < 3)
+				continue;
+
+			/* calculate/emit center point: */
+			cx = 0;
+			cy = 0;
+			for (k = 0; k < n; k++) {
+				cx += ex[k];
+				cy += ey[k];
+			}
+			cx /= n;
+			cy /= n;
+			emit_vertex(cx, cy);
+
+			/* then emit edge points: */
+			for (k = 0; k < n; k++)
+				emit_vertex(ex[k], ey[k]);
+
+			/* and close the fan: */
+			emit_vertex(ex[0], ey[0]);
+
+			vtxcnt[nvtx++] = n + 2;
+		}
+	}
+
+	return nvtx;
+}
+
+static void
+repaint_region(struct weston_surface *es, pixman_region32_t *region,
+		pixman_region32_t *surf_region)
+{
+	struct weston_compositor *ec = es->compositor;
+	GLfloat *v;
+	unsigned int *vtxcnt;
+	int i, first, nfans;
+
+	/* The final region to be painted is the intersection of
+	 * 'region' and 'surf_region'. However, 'region' is in the global
+	 * coordinates, and 'surf_region' is in the surface-local
+	 * corodinates. texture_region() will iterate over all pairs of
+	 * rectangles from both regions, compute the intersection
+	 * polygon for each pair, and store it as a triangle fan if
+	 * it has a non-zero area.
+	 */
+	nfans = texture_region(es, region, surf_region);
+
+	v = ec->vertices.data;
+	vtxcnt = ec->vtxcnt.data;
+
+	/* position: */
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
+	glEnableVertexAttribArray(0);
+
+	/* texcoord: */
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
+	glEnableVertexAttribArray(1);
+
+	for (i = 0, first = 0; i < nfans; i++) {
+		glDrawArrays(GL_TRIANGLE_FAN, first, vtxcnt[i]);
+		first += vtxcnt[i];
+	}
+
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(0);
+
+	ec->vertices.size = 0;
+	ec->vtxcnt.size = 0;
+}
+
+
 WL_EXPORT void
 weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		    pixman_region32_t *damage)
 {
-	GLfloat surface_rect[4] = { 0.0, 1.0, 0.0, 1.0 };
 	struct weston_compositor *ec = es->compositor;
-	GLfloat *v;
+	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
+	/* regions of surface to draw opaque/blended in surface coordinates: */
+	pixman_region32_t surface_opaque, surface_blend;
 	GLint filter;
-	int i, n;
+	int i;
 
 	pixman_region32_init(&repaint);
+	pixman_region32_init(&surface_opaque);
+	pixman_region32_init(&surface_blend);
+
 	pixman_region32_intersect(&repaint,
 				  &es->transform.boundingbox, damage);
 	pixman_region32_subtract(&repaint, &repaint, &es->clip);
@@ -940,10 +1307,20 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 				 &ec->primary_plane.damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	if (es->blend || es->alpha < 1.0)
-		glEnable(GL_BLEND);
-	else
-		glDisable(GL_BLEND);
+	if (es->blend || es->alpha < 1.0) {
+		/* blended region is whole surface minus opaque region: */
+		pixman_region32_init_rect(&surface_blend, 0, 0,
+				es->geometry.width, es->geometry.height);
+		pixman_region32_init(&surface_opaque);
+		pixman_region32_copy(&surface_opaque, &es->opaque);
+		pixman_region32_subtract(&surface_blend, &surface_blend,
+				&surface_opaque);
+	} else {
+		/* whole surface is opaque: */
+		pixman_region32_init_rect(&surface_opaque, 0, 0,
+				es->geometry.width, es->geometry.height);
+		pixman_region32_init(&surface_blend);
+	}
 
 	if (ec->current_shader != es->shader) {
 		glUseProgram(es->shader->program);
@@ -954,19 +1331,11 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 			   1, GL_FALSE, output->matrix.d);
 	glUniform4fv(es->shader->color_uniform, 1, es->color);
 	glUniform1f(es->shader->alpha_uniform, es->alpha);
-	glUniform1f(es->shader->texwidth_uniform,
-		    (GLfloat)es->geometry.width / es->pitch);
-	if (es->blend)
-		glUniform4fv(es->shader->opaque_uniform, 1, es->opaque_rect);
-	else
-		glUniform4fv(es->shader->opaque_uniform, 1, surface_rect);
 
 	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
 	else
 		filter = GL_NEAREST;
-
-	n = texture_region(es, &repaint);
 
 	for (i = 0; i < es->num_textures; i++) {
 		glUniform1i(es->shader->tex_uniforms[i], i);
@@ -976,22 +1345,20 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		glTexParameteri(es->target, GL_TEXTURE_MAG_FILTER, filter);
 	}
 
-	v = ec->vertices.data;
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[2]);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
+	if (pixman_region32_not_empty(&surface_opaque)) {
+		glDisable(GL_BLEND);
+		repaint_region(es, &repaint, &surface_opaque);
+	}
 
-	glDrawElements(GL_TRIANGLES, n * 6, GL_UNSIGNED_INT, ec->indices.data);
-
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
-
-	ec->vertices.size = 0;
-	ec->indices.size = 0;
+	if (pixman_region32_not_empty(&surface_blend)) {
+		glEnable(GL_BLEND);
+		repaint_region(es, &repaint, &surface_blend);
+	}
 
 out:
 	pixman_region32_fini(&repaint);
+	pixman_region32_fini(&surface_opaque);
+	pixman_region32_fini(&surface_blend);
 }
 
 WL_EXPORT void
@@ -2819,39 +3186,23 @@ static const char vertex_shader[] =
 	"}\n";
 
 /* Declare common fragment shader uniforms */
-#define FRAGMENT_SHADER_UNIFORMS		\
-	"uniform float alpha;\n"		\
-	"uniform float texwidth;\n"		\
-	"uniform vec4 opaque;\n"
-
-/* Common fragment shader init code (check texture bounds) */
-#define FRAGMENT_SHADER_INIT						\
-	"   if (v_texcoord.x < 0.0 || v_texcoord.x > texwidth ||\n"	\
-	"       v_texcoord.y < 0.0 || v_texcoord.y > 1.0)\n"		\
-	"      discard;\n"
-
-#define FRAGMENT_SHADER_EXIT						\
-	"   if (opaque.x <= v_texcoord.x && v_texcoord.x < opaque.y &&\n" \
-	"       opaque.z <= v_texcoord.y && v_texcoord.y < opaque.w)\n"	\
-	"      gl_FragColor.a = 1.0;\n"					\
-	"   gl_FragColor = alpha * gl_FragColor;\n"
-
 #define FRAGMENT_CONVERT_YUV						\
+	"  y *= alpha;\n"						\
+	"  u *= alpha;\n"						\
+	"  v *= alpha;\n"						\
 	"  gl_FragColor.r = y + 1.59602678 * v;\n"			\
 	"  gl_FragColor.g = y - 0.39176229 * u - 0.81296764 * v;\n"	\
 	"  gl_FragColor.b = y + 2.01723214 * u;\n"			\
-	"  gl_FragColor.a = 1.0;\n"
+	"  gl_FragColor.a = alpha;\n"
 
 static const char texture_fragment_shader_rgba[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
-	FRAGMENT_SHADER_UNIFORMS
+	"uniform float alpha;\n"
 	"void main()\n"
 	"{\n"
-	FRAGMENT_SHADER_INIT
-	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
-	FRAGMENT_SHADER_EXIT
+	"   gl_FragColor = alpha * texture2D(tex, v_texcoord)\n;"
 	"}\n";
 
 static const char texture_fragment_shader_egl_external[] =
@@ -2859,12 +3210,10 @@ static const char texture_fragment_shader_egl_external[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
 	"uniform samplerExternalOES tex;\n"
-	FRAGMENT_SHADER_UNIFORMS
+	"uniform float alpha;\n"
 	"void main()\n"
 	"{\n"
-	FRAGMENT_SHADER_INIT
-	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
-	FRAGMENT_SHADER_EXIT
+	"   gl_FragColor = alpha * texture2D(tex, v_texcoord)\n;"
 	"}\n";
 
 static const char texture_fragment_shader_y_uv[] =
@@ -2872,14 +3221,12 @@ static const char texture_fragment_shader_y_uv[] =
 	"uniform sampler2D tex;\n"
 	"uniform sampler2D tex1;\n"
 	"varying vec2 v_texcoord;\n"
-	FRAGMENT_SHADER_UNIFORMS
+	"uniform float alpha;\n"
 	"void main() {\n"
-	FRAGMENT_SHADER_INIT
 	"  float y = 1.16438356 * (texture2D(tex, v_texcoord).x - 0.0625);\n"
 	"  float u = texture2D(tex1, v_texcoord).r - 0.5;\n"
 	"  float v = texture2D(tex1, v_texcoord).g - 0.5;\n"
 	FRAGMENT_CONVERT_YUV
-	FRAGMENT_SHADER_EXIT
 	"}\n";
 
 static const char texture_fragment_shader_y_u_v[] =
@@ -2888,14 +3235,12 @@ static const char texture_fragment_shader_y_u_v[] =
 	"uniform sampler2D tex1;\n"
 	"uniform sampler2D tex2;\n"
 	"varying vec2 v_texcoord;\n"
-	FRAGMENT_SHADER_UNIFORMS
+	"uniform float alpha;\n"
 	"void main() {\n"
-	FRAGMENT_SHADER_INIT
 	"  float y = 1.16438356 * (texture2D(tex, v_texcoord).x - 0.0625);\n"
 	"  float u = texture2D(tex1, v_texcoord).x - 0.5;\n"
 	"  float v = texture2D(tex2, v_texcoord).x - 0.5;\n"
 	FRAGMENT_CONVERT_YUV
-	FRAGMENT_SHADER_EXIT
 	"}\n";
 
 static const char texture_fragment_shader_y_xuxv[] =
@@ -2903,14 +3248,12 @@ static const char texture_fragment_shader_y_xuxv[] =
 	"uniform sampler2D tex;\n"
 	"uniform sampler2D tex1;\n"
 	"varying vec2 v_texcoord;\n"
-	FRAGMENT_SHADER_UNIFORMS
+	"uniform float alpha;\n"
 	"void main() {\n"
-	FRAGMENT_SHADER_INIT
 	"  float y = 1.16438356 * (texture2D(tex, v_texcoord).x - 0.0625);\n"
 	"  float u = texture2D(tex1, v_texcoord).g - 0.5;\n"
 	"  float v = texture2D(tex1, v_texcoord).a - 0.5;\n"
 	FRAGMENT_CONVERT_YUV
-	FRAGMENT_SHADER_EXIT
 	"}\n";
 
 static const char solid_fragment_shader[] =
@@ -2974,8 +3317,6 @@ weston_shader_init(struct weston_shader *shader,
 	shader->tex_uniforms[2] = glGetUniformLocation(shader->program, "tex2");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
 	shader->color_uniform = glGetUniformLocation(shader->program, "color");
-	shader->texwidth_uniform = glGetUniformLocation(shader->program, "texwidth");
-	shader->opaque_uniform = glGetUniformLocation(shader->program, "opaque");
 
 	return 0;
 }
@@ -3411,6 +3752,7 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 
 	wl_array_release(&ec->vertices);
 	wl_array_release(&ec->indices);
+	wl_array_release(&ec->vtxcnt);
 
 	wl_event_loop_destroy(ec->input_loop);
 }

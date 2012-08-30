@@ -248,8 +248,6 @@ struct weston_shader {
 	GLint tex_uniforms[3];
 	GLint alpha_uniform;
 	GLint color_uniform;
-	GLint texwidth_uniform;
-	GLint opaque_uniform;
 };
 
 enum {
@@ -319,7 +317,9 @@ struct weston_compositor {
 	int idle_time;			/* effective timeout, s */
 
 	/* Repaint state. */
-	struct wl_array vertices, indices;
+	struct wl_array vertices;
+	struct wl_array indices; /* only used in compositor-wayland */
+	struct wl_array vtxcnt;
 	struct weston_plane primary_plane;
 
 	uint32_t focus;
