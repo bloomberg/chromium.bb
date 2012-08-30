@@ -2381,6 +2381,7 @@ void TabStrip::SwapLayoutIfNecessary() {
   } else {
     touch_layout_.reset();
   }
+  PrepareForAnimation();
   GenerateIdealBounds();
   AnimateToIdealBounds();
 }
