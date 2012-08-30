@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_VALIDATOR_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -77,7 +78,9 @@ class CloudPolicyValidatorBase {
 
   // Instructs the validator to check that the policy timestamp is not before
   // |not_before| and not after |now| + grace interval.
-  void ValidateTimestamp(base::Time not_before, base::Time now);
+  void ValidateTimestamp(base::Time not_before,
+                         base::Time now,
+                         bool allow_missing_timestamp);
 
   // Validates the username in the policy blob matches |expected_user|.
   void ValidateUsername(const std::string& expected_user);
@@ -95,11 +98,12 @@ class CloudPolicyValidatorBase {
   // Validates that the payload can be decoded successfully.
   void ValidatePayload();
 
-  // Verifies that the signature on the policy blob verifies against |key|. If
-  // there is a key rotation present in the policy blob, this checks the
-  // signature on the new key against |key| and the policy blob against the new
-  // key.
-  void ValidateSignature(const std::string& key);
+  // Verifies that the signature on the policy blob verifies against |key|. If |
+  // |allow_key_rotation| is true and there is a key rotation present in the
+  // policy blob, this checks the signature on the new key against |key| and the
+  // policy blob against the new key.
+  void ValidateSignature(const std::vector<uint8>& key,
+                         bool allow_key_rotation);
 
   // Similar to StartSignatureVerification(), this checks the signature on the
   // policy blob. However, this variant expects a new policy key set in the
@@ -113,7 +117,8 @@ class CloudPolicyValidatorBase {
   // timestamp validation will drop the lower bound and no token validation will
   // be configured.
   void ValidateAgainstCurrentPolicy(
-      const enterprise_management::PolicyData* policy_data);
+      const enterprise_management::PolicyData* policy_data,
+      bool allow_missing_timestamp);
 
   // Kicks off validation. From this point on, the validator manages its own
   // lifetime. |completion_callback| is invoked when done.
@@ -174,13 +179,15 @@ class CloudPolicyValidatorBase {
   base::Closure completion_callback_;
 
   int validation_flags_;
-  base::Time timestamp_not_before_;
-  base::Time timestamp_not_after_;
+  int64 timestamp_not_before_;
+  int64 timestamp_not_after_;
+  bool allow_missing_timestamp_;
   std::string user_;
   std::string domain_;
   std::string token_;
   std::string policy_type_;
   std::string key_;
+  bool allow_key_rotation_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidatorBase);
 };

@@ -1070,6 +1070,12 @@ enum NotificationType {
   // Sent after UserManager checked ownership status of logged in user.
   NOTIFICATION_OWNERSHIP_CHECKED,
 
+  // Sent by DeviceSettingsService to indicate that the ownership status
+  // changed. If you can, please use DeviceSettingsService::Observer instead.
+  // Other singleton-based services can't use that because Observer
+  // unregistration is impossible due to unpredictable deletion order.
+  NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
+
   // This is sent to a ChromeOS settings observer when a system setting is
   // changed. The source is the CrosSettings and the details a std::string of
   // the changed setting.

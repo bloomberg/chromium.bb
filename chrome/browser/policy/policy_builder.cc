@@ -98,8 +98,7 @@ const char PolicyBuilder::kFakeUsername[] = "username@example.com";
 
 PolicyBuilder::PolicyBuilder()
     : policy_data_(new em::PolicyData()),
-      signing_key_(CreateTestSigningKey()),
-      new_signing_key_(CreateTestNewSigningKey()) {
+      signing_key_(CreateTestSigningKey()) {
   policy_data_->set_policy_type(kFakePolicyType);
   policy_data_->set_timestamp(kFakeTimestamp);
   policy_data_->set_request_token(kFakeToken);

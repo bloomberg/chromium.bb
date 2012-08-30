@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
@@ -35,13 +36,17 @@ const uint8 kSignatureAlgorithm[] = {
 CloudPolicyValidatorBase::~CloudPolicyValidatorBase() {}
 
 void CloudPolicyValidatorBase::ValidateTimestamp(base::Time not_before,
-                                                 base::Time now) {
+                                                 base::Time now,
+                                                 bool allow_missing_timestamp) {
   // Timestamp should be from the past. We allow for a 1-minute grace interval
   // to cover clock drift.
   validation_flags_ |= VALIDATE_TIMESTAMP;
-  timestamp_not_before_ = not_before;
+  timestamp_not_before_ =
+      (not_before - base::Time::UnixEpoch()).InMilliseconds();
   timestamp_not_after_ =
-      now + base::TimeDelta::FromSeconds(kTimestampGraceIntervalSeconds);
+      ((now + base::TimeDelta::FromSeconds(kTimestampGraceIntervalSeconds)) -
+          base::Time::UnixEpoch()).InMillisecondsRoundedUp();
+  allow_missing_timestamp_ = allow_missing_timestamp;
 }
 
 void CloudPolicyValidatorBase::ValidateUsername(
@@ -71,9 +76,12 @@ void CloudPolicyValidatorBase::ValidatePayload() {
   validation_flags_ |= VALIDATE_PAYLOAD;
 }
 
-void CloudPolicyValidatorBase::ValidateSignature(const std::string& key) {
+void CloudPolicyValidatorBase::ValidateSignature(const std::vector<uint8>& key,
+                                                 bool allow_key_rotation) {
   validation_flags_ |= VALIDATE_SIGNATURE;
-  key_ = key;
+  key_ = std::string(reinterpret_cast<const char*>(vector_as_array(&key)),
+                     key.size());
+  allow_key_rotation_ = allow_key_rotation;
 }
 
 void CloudPolicyValidatorBase::ValidateInitialKey() {
@@ -81,7 +89,8 @@ void CloudPolicyValidatorBase::ValidateInitialKey() {
 }
 
 void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
-    const em::PolicyData* policy_data) {
+    const em::PolicyData* policy_data,
+    bool allow_missing_timestamp) {
   base::Time last_policy_timestamp;
   std::string expected_dm_token;
   if (policy_data) {
@@ -90,7 +99,8 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
         base::TimeDelta::FromMilliseconds(policy_data->timestamp());
     expected_dm_token = policy_data->request_token();
   }
-  ValidateTimestamp(last_policy_timestamp, base::Time::NowFromSystemTime());
+  ValidateTimestamp(last_policy_timestamp, base::Time::NowFromSystemTime(),
+                    allow_missing_timestamp);
   if (!expected_dm_token.empty())
     ValidateDMToken(expected_dm_token);
 }
@@ -178,9 +188,9 @@ void CloudPolicyValidatorBase::RunChecks() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
-  std::string signature_key(key_);
-  if (policy_->has_new_public_key()) {
-    signature_key = policy_->new_public_key();
+  const std::string* signature_key = &key_;
+  if (policy_->has_new_public_key() && allow_key_rotation_) {
+    signature_key = &policy_->new_public_key();
     if (!policy_->has_new_public_key_signature() ||
         !VerifySignature(policy_->new_public_key(), key_,
                          policy_->new_public_key_signature())) {
@@ -190,7 +200,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
   }
 
   if (!policy_->has_policy_data_signature() ||
-      !VerifySignature(policy_->policy_data(), signature_key,
+      !VerifySignature(policy_->policy_data(), *signature_key,
                        policy_->policy_data_signature())) {
     LOG(ERROR) << "Policy signature validation failed";
     return VALIDATION_BAD_SIGNATURE;
@@ -222,19 +232,21 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckPolicyType() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
-  base::Time policy_time =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(policy_data_->timestamp());
   if (!policy_data_->has_timestamp()) {
-    LOG(ERROR) << "Policy timestamp missing";
-    return VALIDATION_BAD_TIMESTAMP;
+    if (allow_missing_timestamp_) {
+      return VALIDATION_OK;
+    } else {
+      LOG(ERROR) << "Policy timestamp missing";
+      return VALIDATION_BAD_TIMESTAMP;
+    }
   }
-  if (policy_time < timestamp_not_before_) {
+
+  if (policy_data_->timestamp() < timestamp_not_before_) {
     LOG(ERROR) << "Policy too old: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
-  if (policy_time > timestamp_not_after_) {
-    LOG(ERROR) << "Policy in the future: " << policy_data_->timestamp();
+  if (policy_data_->timestamp() > timestamp_not_after_) {
+    LOG(ERROR) << "Policy from the future: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
 

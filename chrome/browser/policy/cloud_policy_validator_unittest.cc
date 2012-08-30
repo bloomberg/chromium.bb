@@ -36,7 +36,11 @@ class CloudPolicyValidatorTest : public testing::Test {
         timestamp_(base::Time::UnixEpoch() +
                    base::TimeDelta::FromMilliseconds(
                        PolicyBuilder::kFakeTimestamp)),
-        file_thread_(content::BrowserThread::FILE, &loop_) {}
+        ignore_missing_timestamp_(false),
+        allow_key_rotation_(true),
+        file_thread_(content::BrowserThread::FILE, &loop_) {
+    policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
+  }
 
   void Validate(testing::Action<void(UserCloudPolicyValidator*)> check_action) {
     std::vector<uint8> public_key;
@@ -50,15 +54,16 @@ class CloudPolicyValidatorTest : public testing::Test {
             policy_.GetCopy(),
             base::Bind(&CloudPolicyValidatorTest::ValidationCompletion,
                        base::Unretained(this)));
-    validator->ValidateTimestamp(timestamp_, timestamp_);
+    validator->ValidateTimestamp(timestamp_, timestamp_,
+                                 ignore_missing_timestamp_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername);
     validator->ValidateDomain(PolicyBuilder::kFakeDomain);
     validator->ValidateDMToken(PolicyBuilder::kFakeToken);
     validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
     validator->ValidatePayload();
-    validator->ValidateSignature(std::string(public_key.begin(),
-                                             public_key.end()));
-    validator->ValidateInitialKey();
+    validator->ValidateSignature(public_key, allow_key_rotation_);
+    if (allow_key_rotation_)
+      validator->ValidateInitialKey();
 
     // Run validation and check the result.
     EXPECT_CALL(*this, ValidationCompletion(validator)).WillOnce(check_action);
@@ -79,7 +84,9 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   MessageLoop loop_;
   base::Time timestamp_;
+  bool ignore_missing_timestamp_;
   std::string signing_key_;
+  bool allow_key_rotation_;
 
   UserPolicyBuilder policy_;
 
@@ -114,6 +121,12 @@ TEST_F(CloudPolicyValidatorTest, ErrorWrongPolicyType) {
 TEST_F(CloudPolicyValidatorTest, ErrorNoTimestamp) {
   policy_.policy_data().clear_timestamp();
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_TIMESTAMP));
+}
+
+TEST_F(CloudPolicyValidatorTest, IgnoreMissingTimestamp) {
+  ignore_missing_timestamp_ = true;
+  policy_.policy_data().clear_timestamp();
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorOldTimestamp) {
@@ -215,6 +228,17 @@ TEST_F(CloudPolicyValidatorTest, ErrorInvalidPublicKeySignature) {
   policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
   policy_.policy().set_new_public_key_signature("invalid");
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
+}
+
+TEST_F(CloudPolicyValidatorTest, ErrorNoRotationAllowed) {
+  allow_key_rotation_ = false;
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_SIGNATURE));
+}
+
+TEST_F(CloudPolicyValidatorTest, NoRotation) {
+  allow_key_rotation_ = false;
+  policy_.set_new_signing_key(scoped_ptr<crypto::RSAPrivateKey>());
+  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_OK));
 }
 
 }  // namespace
