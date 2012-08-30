@@ -12,6 +12,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget_observer.h"
 
 class ContentSettingImageModel;
@@ -41,6 +42,7 @@ class ContentSettingImageView : public views::ImageView,
                                 public TouchableLocationBarView {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
+                          const int background_images[],
                           LocationBarView* parent);
   virtual ~ContentSettingImageView();
 
@@ -65,11 +67,6 @@ class ContentSettingImageView : public views::ImageView,
   virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
  protected:
-  // Provide styling colors for button look.
-  virtual SkColor ButtonBorderColor() const;
-  virtual SkColor GradientTopColor() const;
-  virtual SkColor GradientBottomColor() const;
-
   // Invoked when the user clicks on the control.
   virtual void OnClick();
 
@@ -93,6 +90,7 @@ class ContentSettingImageView : public views::ImageView,
   int text_size_;
   int visible_text_size_;
   gfx::Insets saved_insets_;
+  views::HorizontalPainter background_painter_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingImageView);
 };

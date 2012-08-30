@@ -138,6 +138,12 @@ const SkColor LocationBarView::kOmniboxBackgroundColor =
 const char LocationBarView::kViewClassName[] =
     "browser/ui/views/location_bar/LocationBarView";
 
+static const int kCSBubbleBackgroundImages[] = {
+  IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L,
+  IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C,
+  IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R,
+};
+
 static const int kEVBubbleBackgroundImages[] = {
   IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
   IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C,
@@ -274,7 +280,8 @@ void LocationBarView::Init(views::View* popup_parent_view) {
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
-        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this);
+        new ContentSettingImageView(static_cast<ContentSettingsType>(i),
+                                    kCSBubbleBackgroundImages, this);
     content_setting_views_.push_back(content_blocked_view);
     AddChildView(content_blocked_view);
     content_blocked_view->SetVisible(false);
@@ -804,8 +811,8 @@ void LocationBarView::Layout() {
       offset += (*i)->GetBuiltInHorizontalPadding();
       int content_blocked_width = (*i)->GetPreferredSize().width();
       offset -= content_blocked_width;
-      (*i)->SetBounds(offset, location_y, content_blocked_width,
-                      location_height);
+      (*i)->SetBounds(offset, location_y + kBubbleVerticalPadding,
+                      content_blocked_width, (*i)->GetPreferredSize().height());
       offset -= GetItemPadding() - (*i)->GetBuiltInHorizontalPadding();
     }
   }

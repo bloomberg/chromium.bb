@@ -469,6 +469,9 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SMS" file="notification_sms.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_UPDATE" file="notification_update.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_C" file="common/cs_bubble_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_L" file="common/cs_bubble_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CS_BUBBLE_BACKGROUND_R" file="common/cs_bubble_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" />

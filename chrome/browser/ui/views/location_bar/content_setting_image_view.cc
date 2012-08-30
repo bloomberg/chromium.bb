@@ -30,12 +30,6 @@ const int kOpenTimeMs = 150;
 const int kFullOpenedTimeMs = 3200;
 const int kMoveTimeMs = kFullOpenedTimeMs + 2 * kOpenTimeMs;
 const int kFrameRateHz = 60;
-// Colors for the animated box.
-const SkColor kTopBoxColor = SkColorSetRGB(0xff, 0xf8, 0xd4);
-const SkColor kBottomBoxColor = SkColorSetRGB(0xff, 0xe6, 0xaf);
-const SkColor kBorderColor = SkColorSetRGB(0xe9, 0xb9, 0x66);
-// Corner radius of the animated box.
-const SkScalar kBoxCornerRadius = 2;
 // Margins for animated box.
 const int kTextMarginPixels = 4;
 const int kIconLeftMargin = 4;
@@ -49,6 +43,7 @@ const double kAnimatingFraction = kOpenTimeMs * 1.0 / kMoveTimeMs;
 
 ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
+    const int background_images[],
     LocationBarView* parent)
     : content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
@@ -57,7 +52,8 @@ ContentSettingImageView::ContentSettingImageView(
       parent_(parent),
       pause_animation_(false),
       text_size_(0),
-      visible_text_size_(0) {
+      visible_text_size_(0),
+      background_painter_(background_images) {
   SetHorizontalAlignment(ImageView::LEADING);
   TouchableLocationBarView::Init(this);
 }
@@ -123,6 +119,8 @@ void ContentSettingImageView::Update(TabContents* tab_contents) {
 
 gfx::Size ContentSettingImageView::GetPreferredSize() {
   gfx::Size preferred_size(views::ImageView::GetPreferredSize());
+  preferred_size.set_height(std::max(preferred_size.height(),
+                                     background_painter_.height()));
   // When view is animated visible_text_size_ > 0, it is 0 otherwise.
   preferred_size.set_width(preferred_size.width() + visible_text_size_);
   return preferred_size;
@@ -246,29 +244,10 @@ void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
 
 void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
   if (slide_animator_.get() &&
-      (slide_animator_->is_animating() || pause_animation_)) {
-    // Paint yellow gradient background if in animation mode.
-    const int kEdgeThickness = 1;
-    SkPaint paint;
-    paint.setShader(gfx::CreateGradientShader(kEdgeThickness,
-                    height() - (2 * kEdgeThickness),
-                    GradientTopColor(), GradientBottomColor()));
-    SkSafeUnref(paint.getShader());
-    SkRect color_rect;
-    color_rect.iset(0, 0, width() - 1, height() - 1);
-    canvas->sk_canvas()->drawRoundRect(color_rect, kBoxCornerRadius,
-                                       kBoxCornerRadius, paint);
-    SkPaint outer_paint;
-    outer_paint.setStyle(SkPaint::kStroke_Style);
-    outer_paint.setColor(ButtonBorderColor());
-    color_rect.inset(SkIntToScalar(kEdgeThickness),
-                     SkIntToScalar(kEdgeThickness));
-    canvas->sk_canvas()->drawRoundRect(color_rect, kBoxCornerRadius,
-                                       kBoxCornerRadius, outer_paint);
-  } else {
+      (slide_animator_->is_animating() || pause_animation_))
+    background_painter_.Paint(canvas, size());
+  else
     views::ImageView::OnPaintBackground(canvas);
-    return;
-  }
 }
 
 void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
@@ -286,16 +265,4 @@ void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
 
 int ContentSettingImageView::GetBuiltInHorizontalPadding() const {
   return GetBuiltInHorizontalPaddingImpl();
-}
-
-SkColor ContentSettingImageView::ButtonBorderColor() const {
-  return kBorderColor;
-}
-
-SkColor ContentSettingImageView::GradientTopColor() const {
-  return kTopBoxColor;
-}
-
-SkColor ContentSettingImageView::GradientBottomColor() const {
-  return kBottomBoxColor;
 }
