@@ -68,8 +68,14 @@ void WaitForTabsAndPopups(Browser* browser,
       continue;
 
     // Check for TYPE_POPUP.
+#if defined(USE_ASH)
+    // On Ash, panel windows open as popup windows.
+    EXPECT_TRUE((*iter)->is_type_popup() || (*iter)->is_type_panel());
+#else
     EXPECT_TRUE((*iter)->is_type_popup());
+#endif
     ++num_popups_seen;
+
   }
   EXPECT_EQ(num_popups, num_popups_seen);
 }
@@ -220,8 +226,14 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        CloseNonExtensionPanelsOnUninstall) {
   if (!PanelManager::UseBrowserlessPanels())
     return;
+#if defined(USE_ASH)
+  // On Ash, new panel windows open as popup windows instead.
+  int num_popups = 4;
+  int num_panels = 0;
+#else
   int num_popups = 2;
   int num_panels = 2;
+#endif
   ASSERT_TRUE(StartTestServer());
 
   // Setup listeners to wait on strings we expect the extension pages to send.
@@ -259,16 +271,26 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   WaitForTabsAndPopups(browser(), 1, num_popups, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFromPanel) {
+#if defined(USE_ASH)
+// This test is not applicable on Ash. Ash opens panel windows as popup
+// windows. The modified window.open behavior only applies to panel windows.
+#define MAYBE_WindowOpenFromPanel DISABLED_WindowOpenFromPanel
+#else
+#define MAYBE_WindowOpenFromPanel WindowOpenFromPanel
+#endif
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenFromPanel) {
   if (!PanelManager::UseBrowserlessPanels())
     return;
 
   ASSERT_TRUE(StartTestServer());
 
-  // Load the extension that will open a panel. The panel then calls
-  // window.open which should open a tab.
+  // Load the extension that will open a panel which then calls window.open.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("window_open").
                             AppendASCII("panel_window_open")));
+
+  // Expect one panel (opened by extension) and one tab (from the panel calling
+  // window.open). Panels modify the WindowOpenDisposition in window.open
+  // to always open in a tab.
   WaitForTabsAndPopups(browser(), 1, 0, 1);
 }
 
