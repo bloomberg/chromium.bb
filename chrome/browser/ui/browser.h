@@ -744,11 +744,19 @@ class Browser : public TabStripModelObserver,
   // Returns true if the window can close, false otherwise.
   bool CanCloseWithInProgressDownloads();
 
-  // Assorted utility functions ///////////////////////////////////////////////
+  // Adoption functions ////////////////////////////////////////////////////////
 
-  // Sets the delegate of all the parts of the TabContents that
-  // are needed.
-  void SetAsDelegate(TabContents* tab, Browser* delegate);
+  // Adopts the specified WebContents as a full-fledged browser tab, attaching
+  // all the associated tab helpers that are needed for the WebContents to
+  // serve in that role. It is safe to call this on a WebContents that was
+  // already adopted.
+  static void AdoptAsTabContents(content::WebContents* web_contents);
+
+  // Sets the specified browser as the delegate of all the parts of the
+  // TabContents that are needed.
+  void SetAsDelegate(content::WebContents* web_contents, Browser* delegate);
+
+  // Assorted utility functions ///////////////////////////////////////////////
 
   // Shows the Find Bar, optionally selecting the next entry that matches the
   // existing search string for that Tab. |forward_direction| controls the
