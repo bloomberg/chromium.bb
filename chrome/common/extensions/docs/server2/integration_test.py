@@ -16,7 +16,7 @@ KNOWN_FAILURES = [
 
 BASE_PATH = '../..'
 
-ConfigureFakeFetchers()
+ConfigureFakeFetchers('.')
 
 # Import Handler later because it immediately makes a request to github. We need
 # the fake urlfetch to be in place first.

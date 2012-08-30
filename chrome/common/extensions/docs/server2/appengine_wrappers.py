@@ -55,7 +55,10 @@ except ImportError:
         self.status_code = 200
 
     def fetch(self, url, **kwargs):
-      return self._Response(_GetConfiguration(url).fetch(url))
+      response = self._Response(_GetConfiguration(url).fetch(url))
+      if response.content is None:
+        response.status_code = 404
+      return response
 
     def create_rpc(self):
       return _RPC()

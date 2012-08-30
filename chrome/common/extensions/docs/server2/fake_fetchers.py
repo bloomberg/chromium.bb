@@ -13,28 +13,42 @@ import appengine_wrappers
 from file_system import FileNotFoundError
 import url_constants
 
-def _ReadFile(path):
-  with open(path, 'r') as f:
-    return f.read()
+class _FakeFetcher(object):
+  def __init__(self, base_path):
+    self._base_path = base_path
 
-class FakeOmahaProxy(object):
+  def _ReadFile(self, path):
+    with open(os.path.join(self._base_path, path), 'r') as f:
+      return f.read()
+
+  def _ListDir(self, path):
+    return os.listdir(os.path.join(self._base_path, path))
+
+  def _IsDir(self, path):
+    return os.path.isdir(os.path.join(self._base_path, path))
+
+class FakeOmahaProxy(_FakeFetcher):
   def fetch(self, url):
-    return _ReadFile(os.path.join('test_data', 'branch_utility', 'first.json'))
+    return self._ReadFile(os.path.join('test_data',
+                                       'branch_utility',
+                                       'first.json'))
 
-class FakeSubversionServer(object):
-  def __init__(self):
+class FakeSubversionServer(_FakeFetcher):
+  def __init__(self, base_path):
+    _FakeFetcher.__init__(self, base_path)
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
 
   def fetch(self, url):
-    path = os.path.join(
-        os.pardir, os.pardir, self._base_pattern.match(url).group(1))
-    if os.path.isdir(path):
+    path = os.path.join(os.pardir,
+                        os.pardir,
+                        self._base_pattern.match(url).group(1))
+    if self._IsDir(path):
       html = ['<html>Revision 000000']
       try:
-        for f in os.listdir(path):
+        for f in self._ListDir(path):
           if f.startswith('.'):
             continue
-          if os.path.isdir(os.path.join(path, f)):
+          if self._IsDir(os.path.join(path, f)):
             html.append('<a>' + f + '/</a>')
           else:
             html.append('<a>' + f + '</a>')
@@ -43,46 +57,51 @@ class FakeSubversionServer(object):
       except OSError:
         raise FileNotFoundError(path)
     try:
-      return _ReadFile(path)
+      return self._ReadFile(path)
     except IOError:
       raise FileNotFoundError(path)
 
-class FakeViewvcServer(object):
-  def __init__(self):
+class FakeViewvcServer(_FakeFetcher):
+  def __init__(self, base_path):
+    _FakeFetcher.__init__(self, base_path)
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
 
   def fetch(self, url):
-    path = os.path.join(
-        os.pardir, os.pardir, self._base_pattern.match(url).group(1))
-    if os.path.isdir(path):
+    path = os.path.join(os.pardir,
+                        os.pardir,
+                        self._base_pattern.match(url).group(1))
+    if self._IsDir(path):
       html = ['<html><td>Directory revision:</td><td><a>000000</a></td>']
-      for f in os.listdir(path):
+      for f in self._ListDir(path):
         if f.startswith('.'):
           continue
         html.append('<td><a name="%s"></a></td>' % f)
-        if os.path.isdir(os.path.join(path, f)):
+        if self._IsDir(os.path.join(path, f)):
           html.append('<td><a title="dir"><strong>000000</strong></a></td>')
         else:
           html.append('<td><a title="file"><strong>000000</strong></a></td>')
       html.append('</html>')
       return '\n'.join(html)
-    return _ReadFile(path)
+    return self._ReadFile(path)
 
-class FakeGithubStat(object):
+class FakeGithubStat(_FakeFetcher):
   def fetch(self, url):
     return '{ "commit": { "tree": { "sha": 0} } }'
 
-class FakeGithubZip(object):
+class FakeGithubZip(_FakeFetcher):
   def fetch(self, url):
-    return _ReadFile(os.path.join('test_data',
-                                  'github_file_system',
-                                  'apps_samples.zip'))
+    try:
+      return self._ReadFile(os.path.join('test_data',
+                                         'github_file_system',
+                                         'apps_samples.zip'))
+    except IOError:
+      return None
 
-def ConfigureFakeFetchers():
+def ConfigureFakeFetchers(base_path):
   appengine_wrappers.ConfigureFakeUrlFetch({
-    url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(),
-    '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(),
-    '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(),
-    '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(),
-    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip()
+    url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(base_path),
+    '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(base_path),
+    '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(base_path),
+    '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(base_path),
+    '%s/zipball' % url_constants.GITHUB_URL: FakeGithubZip(base_path)
   })
