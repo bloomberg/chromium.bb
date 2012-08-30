@@ -253,9 +253,6 @@ class DriveResourceMetadata {
   void SaveToDB();
 
  private:
-  // Callback for GetEntryByResourceIdAsync.
-  typedef base::Callback<void(DriveEntry* entry)> GetEntryByResourceIdCallback;
-
   // Initializes the resource map using serialized_resources fetched from the
   // database.
   void InitResourceMap(CreateDBParams* create_params,
@@ -267,11 +264,6 @@ class DriveResourceMetadata {
   // Creates DriveEntry from serialized string.
   scoped_ptr<DriveEntry> FromProtoString(
       const std::string& serialized_proto);
-
-  // Returns the DriveEntry* in the callback with the corresponding
-  // |resource_id|.
-  void GetEntryByResourceIdAsync(const std::string& resource_id,
-                                 const GetEntryByResourceIdCallback& callback);
 
   // Continues with GetEntryInfoPairByPaths after the first DriveEntry has been
   // asynchronously fetched. This fetches the second DriveEntry only if the
@@ -291,27 +283,6 @@ class DriveResourceMetadata {
       scoped_ptr<EntryInfoPairResult> result,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
-
-  // These internal functions need friend access to private DriveDirectory
-  // methods.
-  // Replaces file entry |old_entry| with its fresh value |fresh_file|.
-  // |callback| is run with the error, file path and proto of |fresh_file|.
-  // |callback| must not be null.
-  static void RefreshFileInternal(
-      scoped_ptr<DriveFile> fresh_file,
-      const GetEntryInfoWithFilePathCallback& callback,
-      DriveEntry* old_entry);
-
-  // Removes all child files of |directory| and replace with file_map.
-  // |callback| must not be null.
-  static void RefreshDirectoryInternal(const ResourceMap& file_map,
-                                       const FileMoveCallback& callback,
-                                       DriveEntry* directory_entry);
-
-  // Removes |entry| from its parent and calls |callback|.
-  // |callback| must not be null.
-  static void RemoveEntryFromParentInternal(const FileMoveCallback& callback,
-                                            DriveEntry* entry);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

@@ -309,25 +309,13 @@ void DriveResourceMetadata::RemoveEntryFromParent(
 
   // Disallow deletion of root.
   if (resource_id == kDriveRootDirectoryResourceId) {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(callback, DRIVE_FILE_ERROR_ACCESS_DENIED, FilePath()));
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_ACCESS_DENIED);
     return;
   }
 
-  GetEntryByResourceIdAsync(resource_id,
-      base::Bind(&DriveResourceMetadata::RemoveEntryFromParentInternal,
-                 callback));
-}
-
-// static
-void DriveResourceMetadata::RemoveEntryFromParentInternal(
-    const FileMoveCallback& callback,
-    DriveEntry* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
+  DriveEntry* entry = GetEntryByResourceId(resource_id);
   if (!entry) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -336,7 +324,9 @@ void DriveResourceMetadata::RemoveEntryFromParentInternal(
 
   DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
   parent->RemoveEntry(entry);
-  callback.Run(DRIVE_FILE_OK, parent->GetFilePath());
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, DRIVE_FILE_OK, parent->GetFilePath()));
 }
 
 void DriveResourceMetadata::AddEntryToResourceMap(DriveEntry* entry) {
@@ -387,15 +377,6 @@ DriveEntry* DriveResourceMetadata::GetEntryByResourceId(
   return iter == resource_map_.end() ? NULL : iter->second;
 }
 
-void DriveResourceMetadata::GetEntryByResourceIdAsync(
-    const std::string& resource_id,
-    const GetEntryByResourceIdCallback& callback) {
-  DriveEntry* entry = GetEntryByResourceId(resource_id);
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, entry));
-}
-
 void DriveResourceMetadata::GetEntryInfoByResourceId(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) {
@@ -418,10 +399,7 @@ void DriveResourceMetadata::GetEntryInfoByResourceId(
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback,
-                 error,
-                 drive_file_path,
-                 base::Passed(&entry_proto)));
+      base::Bind(callback, error, drive_file_path, base::Passed(&entry_proto)));
 }
 
 void DriveResourceMetadata::GetEntryInfoByPath(
@@ -517,27 +495,12 @@ void DriveResourceMetadata::RefreshFile(
   // Need to get a reference here because Passed() could get evaluated first.
   const std::string& resource_id = fresh_file->resource_id();
   DVLOG(1) << "RefreshFile " << resource_id;
-  GetEntryByResourceIdAsync(
-      resource_id,
-      base::Bind(&DriveResourceMetadata::RefreshFileInternal,
-                 base::Passed(&fresh_file),
-                 callback));
-}
-
-// static
-void DriveResourceMetadata::RefreshFileInternal(
-    scoped_ptr<DriveFile> fresh_file,
-    const GetEntryInfoWithFilePathCallback& callback,
-    DriveEntry* old_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
+  DriveEntry* old_entry = GetEntryByResourceId(resource_id);
   DriveDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
 
   if (!entry_parent) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND,
-                 FilePath(),
-                 scoped_ptr<DriveEntryProto>());
+    PostGetEntryInfoWithFilePathCallbackError(
+        callback, DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -548,43 +511,36 @@ void DriveResourceMetadata::RefreshFileInternal(
   DriveEntry* new_entry = fresh_file.release();
   entry_parent->AddEntry(new_entry);
 
-  DVLOG(1) << "RefreshFileInternal";
   scoped_ptr<DriveEntryProto> entry_proto(new DriveEntryProto);
   new_entry->ToProtoFull(entry_proto.get());
-  callback.Run(DRIVE_FILE_OK, new_entry->GetFilePath(), entry_proto.Pass());
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 DRIVE_FILE_OK,
+                 new_entry->GetFilePath(),
+                 base::Passed(&entry_proto)));
 }
 
 void DriveResourceMetadata::RefreshDirectory(
     const std::string& directory_resource_id,
     const ResourceMap& file_map,
     const FileMoveCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  GetEntryByResourceIdAsync(
-      directory_resource_id,
-      base::Bind(&DriveResourceMetadata::RefreshDirectoryInternal,
-                 file_map,
-                 callback));
-}
 
-// static
-void DriveResourceMetadata::RefreshDirectoryInternal(
-    const ResourceMap& file_map,
-    const FileMoveCallback& callback,
-    DriveEntry* directory_entry) {
-  DCHECK(!callback.is_null());
+  DriveEntry* directory_entry = GetEntryByResourceId(directory_resource_id);
 
   if (!directory_entry) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
   DriveDirectory* directory = directory_entry->AsDriveDirectory();
   if (!directory) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, FilePath());
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
-  DVLOG(1) << "RefreshDirectoryInternal";
   directory->RemoveChildFiles();
   // Add files from file_map.
   for (ResourceMap::const_iterator it = file_map.begin();
@@ -596,7 +552,9 @@ void DriveResourceMetadata::RefreshDirectoryInternal(
     directory->AddEntry(entry.release());
   }
 
-  callback.Run(DRIVE_FILE_OK, directory->GetFilePath());
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, DRIVE_FILE_OK, directory->GetFilePath()));
 }
 
 void DriveResourceMetadata::InitFromDB(

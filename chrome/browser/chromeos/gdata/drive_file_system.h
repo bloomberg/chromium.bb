@@ -721,7 +721,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                           int64* file_size);
 
   // Part of UpdateFileByResourceId().
-  // Callback for GDataRootDirectory::GetEntryByResourceIdAsync.
+  // Callback for GDataRootDirectory::GetEntryInfoByResourceId.
   // |callback| must not be null.
   void OnGetFileCompleteForUpdateFileByEntry(
       const FileOperationCallback& callback,
