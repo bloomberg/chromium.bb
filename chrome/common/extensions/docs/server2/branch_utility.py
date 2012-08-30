@@ -14,9 +14,13 @@ class BranchUtility(object):
     self._fetcher = fetcher
     self._object_store = object_store
 
+  def GetAllBranchNames(self):
+    # TODO(aa): Do we need to include 'local'?
+    return ['dev', 'beta', 'stable', 'trunk', 'local']
+
   def GetAllBranchNumbers(self):
     return [(branch, self.GetBranchNumberForChannelName(branch))
-            for branch in ['dev', 'beta', 'stable', 'trunk', 'local']]
+            for branch in self.GetAllBranchNames()]
 
   def SplitChannelNameFromPath(self, path):
     try:

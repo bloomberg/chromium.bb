@@ -42,6 +42,7 @@ class Request(object):
   def __init__(self, path):
     self.headers = {}
     self.path = path
+    self.url = 'http://localhost' + path
 
 def _GetLocalPath():
   return os.path.join(sys.argv[0].rsplit('/', 1)[0], os.pardir, os.pardir)

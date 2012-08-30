@@ -155,6 +155,7 @@ class _MockRequest(object):
   def __init__(self, path):
     self.headers = {}
     self.path = path
+    self.url = 'http://localhost' + path
 
 class Handler(webapp.RequestHandler):
   def __init__(self, request, response, local_path=EXTENSIONS_PATH):
@@ -238,15 +239,41 @@ class Handler(webapp.RequestHandler):
 
     self.response.out.write('Success')
 
+  def _RedirectFromCodeDotGoogleDotCom(self, path):
+    if (not self.request.url.startswith(('http://code.google.com',
+                                         'https://code.google.com'))):
+      return False
+
+    newUrl = 'http://developer.chrome.com/'
+
+    # switch to https if necessary
+    if (self.request.url.startswith('https')):
+      newUrl = newUrl.replace('http', 'https', 1)
+
+    path = path.split('/')
+    if len(path) > 0 and path[0] == 'chrome':
+      path.pop(0)
+    for channel in BRANCH_UTILITY.GetAllBranchNames():
+      if channel in path:
+        position = path.index(channel)
+        path.pop(position)
+        path.insert(0, channel)
+    newUrl += '/'.join(path)
+    self.redirect(newUrl)
+    return True
+
   def get(self):
     path = self.request.path
     if path.startswith('/cron'):
       self._HandleCron(path)
-    else:
-      # Redirect paths like "directory" to "directory/". This is so relative
-      # file paths will know to treat this as a directory.
-      if os.path.splitext(path)[1] == '' and path[-1] != '/':
-        self.redirect(path + '/')
-      path = path.replace('/chrome/', '')
-      path = path.strip('/')
+      return
+
+    # Redirect paths like "directory" to "directory/". This is so relative
+    # file paths will know to treat this as a directory.
+    if os.path.splitext(path)[1] == '' and path[-1] != '/':
+      self.redirect(path + '/')
+      return
+
+    path = path.strip('/')
+    if not self._RedirectFromCodeDotGoogleDotCom(path):
       self._HandleGet(path)

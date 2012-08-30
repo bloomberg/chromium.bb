@@ -35,6 +35,7 @@ class _MockRequest(object):
   def __init__(self, path):
     self.headers = {}
     self.path = path
+    self.url = 'http://localhost' + path
 
 class IntegrationTest(unittest.TestCase):
   def testAll(self):
