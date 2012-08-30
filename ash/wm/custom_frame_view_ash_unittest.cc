@@ -12,7 +12,6 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/root_window.h"
@@ -482,131 +481,6 @@ TEST_F(CustomFrameViewAshTest, OnlyLeftButtonMaximizes) {
   generator.ReleaseRightButton();
   generator.ReleaseLeftButton();
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-}
-
-// Click a button of window maximize functionality.
-// If |snap_type| is SNAP_NONE the FrameMaximizeButton gets clicked, otherwise
-// the associated snap button.
-// |Window| is the window which owns the maximize button.
-// |maximize_button| is the FrameMaximizeButton which controls the window.
-void ClickMaxButton(
-    ash::FrameMaximizeButton* maximize_button,
-    aura::Window* window,
-    SnapType snap_type) {
-  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
-  gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
-
-  aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
-  generator.MoveMouseTo(off_pos);
-  EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_FALSE(maximize_button->phantom_window_open());
-
-  // Move the mouse cursor over the button.
-  generator.MoveMouseTo(button_pos);
-  EXPECT_TRUE(maximize_button->maximizer());
-  EXPECT_FALSE(maximize_button->phantom_window_open());
-
-  if (snap_type != SNAP_NONE) {
-    gfx::Point left_max_pos = maximize_button->maximizer()->
-        GetButtonForUnitTest(snap_type)->GetBoundsInScreen().CenterPoint();
-    generator.MoveMouseTo(left_max_pos);
-    EXPECT_TRUE(maximize_button->phantom_window_open());
-  }
-  // After pressing the left button the button should get triggered.
-  generator.ClickLeftButton();
-  EXPECT_FALSE(maximize_button->maximizer());
-}
-
-// Test that the restore from left/right maximize is properly done.
-TEST_F(CustomFrameViewAshTest, MaximizeLeftRestore) {
-  views::Widget* widget = CreateWidget();
-  aura::Window* window = widget->GetNativeWindow();
-  widget->SetBounds(gfx::Rect(10, 10, 100, 100));
-  gfx::Rect initial_bounds = widget->GetWindowBoundsInScreen();
-  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
-  CustomFrameViewAsh::TestApi test(frame);
-  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
-  maximize_button->set_bubble_appearance_delay_ms(0);
-
-  ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  // The window should not be maximized.
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-  // But the bounds should be different.
-  gfx::Rect new_bounds = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(0, new_bounds.x());
-  EXPECT_EQ(0, new_bounds.y());
-
-  // Now click the same button again to see that it restores.
-  ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  // But the bounds should be restored.
-  new_bounds = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(new_bounds.x(), initial_bounds.x());
-  EXPECT_EQ(new_bounds.y(), initial_bounds.x());
-  EXPECT_EQ(new_bounds.width(), initial_bounds.width());
-  EXPECT_EQ(new_bounds.height(), initial_bounds.height());
-  // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
-}
-
-// Maximize, left/right maximize and then restore should works.
-TEST_F(CustomFrameViewAshTest, MaximizeMaximizeLeftRestore) {
-  views::Widget* widget = CreateWidget();
-  aura::Window* window = widget->GetNativeWindow();
-  widget->SetBounds(gfx::Rect(10, 10, 100, 100));
-  gfx::Rect initial_bounds = widget->GetWindowBoundsInScreen();
-  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
-  CustomFrameViewAsh::TestApi test(frame);
-  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
-  maximize_button->set_bubble_appearance_delay_ms(0);
-
-  ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
-
-  ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-  gfx::Rect new_bounds = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(0, new_bounds.x());
-  EXPECT_EQ(0, new_bounds.y());
-
-  // Now click the same button again to see that it restores.
-  ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  RunAllPendingInMessageLoop();
-  // But the bounds should be restored.
-  new_bounds = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(new_bounds.x(), initial_bounds.x());
-  EXPECT_EQ(new_bounds.y(), initial_bounds.x());
-  EXPECT_EQ(new_bounds.width(), initial_bounds.width());
-  EXPECT_EQ(new_bounds.height(), initial_bounds.height());
-  // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
-}
-
-// Left/right maximize, maximize and then restore should work.
-TEST_F(CustomFrameViewAshTest, MaximizeLeftMaximizeRestore) {
-  views::Widget* widget = CreateWidget();
-  aura::Window* window = widget->GetNativeWindow();
-  widget->SetBounds(gfx::Rect(10, 10, 100, 100));
-  gfx::Rect initial_bounds = widget->GetWindowBoundsInScreen();
-  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
-  CustomFrameViewAsh::TestApi test(frame);
-  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
-  maximize_button->set_bubble_appearance_delay_ms(0);
-
-  ClickMaxButton(maximize_button, window, SNAP_LEFT);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-
-  ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
-
-  ClickMaxButton(maximize_button, window, SNAP_NONE);
-  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
-  gfx::Rect new_bounds = widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(new_bounds.x(), initial_bounds.x());
-  EXPECT_EQ(new_bounds.y(), initial_bounds.x());
-  EXPECT_EQ(new_bounds.width(), initial_bounds.width());
-  EXPECT_EQ(new_bounds.height(), initial_bounds.height());
-  // Make sure that there is no restore rectangle left.
-  EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
 }
 
 }  // namespace internal
