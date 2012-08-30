@@ -18,7 +18,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_constants.h"
@@ -33,9 +35,11 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "net/base/net_util.h"
+#include "ppapi/proxy/ppapi_messages.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -55,6 +59,7 @@
 using content::BrowserThread;
 using content::ChildProcessData;
 using content::ChildProcessHost;
+using ppapi::proxy::SerializedHandle;
 
 namespace {
 
@@ -114,6 +119,15 @@ struct NaClProcessHost::NaClInternal {
 
 // -----------------------------------------------------------------------------
 
+NaClProcessHost::PluginListener::PluginListener(NaClProcessHost* host)
+    : host_(host) {
+}
+
+bool NaClProcessHost::PluginListener::OnMessageReceived(
+    const IPC::Message& msg) {
+  return host_->OnUntrustedMessageForwarded(msg);
+}
+
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url, bool off_the_record)
     : manifest_url_(manifest_url),
 #if defined(OS_WIN)
@@ -129,7 +143,9 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url, bool off_the_record)
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       enable_exception_handling_(false),
       enable_debug_stub_(false),
-      off_the_record_(off_the_record) {
+      off_the_record_(off_the_record),
+      enable_ipc_proxy_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)) {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_LOADER, this));
 
@@ -681,10 +697,48 @@ bool NaClProcessHost::SendStart() {
   return StartNaClExecution();
 }
 
+// This method is called when NaClProcessHostMsg_PpapiChannelCreated is
+// received or PpapiHostMsg_ChannelCreated is forwarded by our plugin
+// listener.
 void NaClProcessHost::OnPpapiChannelCreated(
     const IPC::ChannelHandle& channel_handle) {
   DCHECK(enable_ipc_proxy_);
-  ReplyToRenderer(channel_handle);
+  // If the proxy channel is null, this must be the initial NaCl-Browser IPC
+  // channel.
+  if (!ipc_proxy_channel_.get()) {
+    ipc_proxy_channel_.reset(
+        new IPC::ChannelProxy(channel_handle,
+                              IPC::Channel::MODE_CLIENT,
+                              &ipc_plugin_listener_,
+                              base::MessageLoopProxy::current()));
+    // Send a message to create the NaCl-Renderer channel. The handle is just
+    // a place holder.
+    ipc_proxy_channel_->Send(
+        new PpapiMsg_CreateNaClChannel(
+            chrome_render_message_filter_->render_process_id(),
+            chrome_render_message_filter_->off_the_record(),
+            SerializedHandle(SerializedHandle::CHANNEL_HANDLE,
+                             IPC::InvalidPlatformFileForTransit())));
+  } else if (reply_msg_) {
+    // Otherwise, this must be a renderer channel.
+    ReplyToRenderer(channel_handle);
+  } else {
+    // Attempt to open more than 1 renderer channel is not supported.
+    // Shut down the NaCl process.
+    process_->GetHost()->ForceShutdown();
+  }
+}
+
+bool NaClProcessHost::OnUntrustedMessageForwarded(const IPC::Message& msg) {
+  // Handle messages that have been forwarded from our PluginListener.
+  // These messages come from untrusted code so should be handled with care.
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_ChannelCreated,
+                        OnPpapiChannelCreated)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 bool NaClProcessHost::StartWithLaunchedProcess() {

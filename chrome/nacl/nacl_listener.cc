@@ -198,22 +198,22 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   }
 
   if (params.enable_ipc_proxy) {
-    // Create the server side of the channel and notify the process host so it
-    // can reply to the renderer, which will connect as client.
-    IPC::ChannelHandle channel_handle =
+    // Create the initial PPAPI IPC channel between the NaCl IRT and the
+    // browser process. The IRT uses this channel to communicate with the
+    // browser and to create additional IPC channels to renderer processes.
+    IPC::ChannelHandle handle =
         IPC::Channel::GenerateVerifiedChannelID("nacl");
-
-    scoped_refptr<NaClIPCAdapter> ipc_adapter(new NaClIPCAdapter(
-        channel_handle, io_thread_.message_loop_proxy()));
-    args->initial_ipc_desc = ipc_adapter.get()->MakeNaClDesc();
-
+    scoped_refptr<NaClIPCAdapter> ipc_adapter(
+        new NaClIPCAdapter(handle, io_thread_.message_loop_proxy()));
+    // Pass a NaClDesc to the untrusted side. This will hold a ref to the
+    // NaClIPCAdapter.
+    args->initial_ipc_desc = ipc_adapter->MakeNaClDesc();
 #if defined(OS_POSIX)
-    channel_handle.socket = base::FileDescriptor(
-        ipc_adapter.get()->TakeClientFileDescriptor(), true);
+    handle.socket = base::FileDescriptor(
+        ipc_adapter->TakeClientFileDescriptor(), true);
 #endif
-
-    if (!Send(new NaClProcessHostMsg_PpapiChannelCreated(channel_handle)))
-      LOG(ERROR) << "Failed to send IPC channel handle to renderer.";
+    if (!Send(new NaClProcessHostMsg_PpapiChannelCreated(handle)))
+      LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
   }
 
   std::vector<nacl::FileDescriptor> handles = params.handles;

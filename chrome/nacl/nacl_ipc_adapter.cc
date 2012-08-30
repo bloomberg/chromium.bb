@@ -89,9 +89,9 @@ void DeleteChannel(IPC::Channel* channel) {
   delete channel;
 }
 
-void WriteFileDescriptor(int handle_index,
-                         const ppapi::proxy::SerializedHandle& handle,
-                         IPC::Message* message) {
+void WriteHandle(int handle_index,
+                 const ppapi::proxy::SerializedHandle& handle,
+                 IPC::Message* message) {
   ppapi::proxy::SerializedHandle::WriteHeader(handle.header(), message);
 
   // Now write the handle itself in POSIX style.
@@ -108,7 +108,7 @@ void ConvertHandle(const ppapi::proxy::SerializedHandle& handle,
                    Handles* handles, IPC::Message* msg, int* handle_index) {
   handles->push_back(handle);
   if (msg)
-    WriteFileDescriptor((*handle_index)++, handle, msg);
+    WriteHandle((*handle_index)++, handle, msg);
 }
 
 // This overload is to catch all types other than SerializedHandle. On Windows,
@@ -434,6 +434,7 @@ int NaClIPCAdapter::TakeClientFileDescriptor() {
           return false; \
         break; \
       }
+
 bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   {
     base::AutoLock lock(lock_);
@@ -443,12 +444,21 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
     // Pointer to the "new" message we will rewrite on Windows. On posix, this
     // isn't necessary, so it will stay NULL.
     IPC::Message* new_msg_ptr = NULL;
-#if defined(OS_WIN)
     IPC::Message new_msg(msg.routing_id(), msg.type(), msg.priority());
+#if defined(OS_WIN)
     new_msg_ptr = &new_msg;
+#else
+    // Even on POSIX, we have to rewrite messages to create channels, because
+    // these contain a handle with an invalid (place holder) descriptor. The
+    // message sending code sees this and doesn't pass the descriptor over
+    // correctly.
+    if (msg.type() == PpapiMsg_CreateNaClChannel::ID)
+      new_msg_ptr = &new_msg;
 #endif
+
     Handles handles;
     switch (msg.type()) {
+      CASE_FOR_MESSAGE(PpapiMsg_CreateNaClChannel)
       CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
       CASE_FOR_MESSAGE(PpapiMsg_PPBAudioInput_OpenACK)
       case IPC_REPLY_ID: {
@@ -502,10 +512,33 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
               iter->descriptor().fd
 #endif
           ));
+          break;
+        }
+        case ppapi::proxy::SerializedHandle::CHANNEL_HANDLE: {
+          // Check that this came from a PpapiMsg_CreateNaClChannel message.
+          // This code here is only appropriate for that message.
+          DCHECK(msg.type() == PpapiMsg_CreateNaClChannel::ID);
+          IPC::ChannelHandle channel_handle =
+              IPC::Channel::GenerateVerifiedChannelID("nacl");
+          scoped_refptr<NaClIPCAdapter> ipc_adapter(
+              new NaClIPCAdapter(channel_handle, task_runner_));
+#if defined(OS_POSIX)
+          channel_handle.socket = base::FileDescriptor(
+              ipc_adapter->TakeClientFileDescriptor(), true);
+#endif
+          nacl_desc.reset(factory.MakeGeneric(ipc_adapter->MakeNaClDesc()));
+          // Send back a message that the channel was created.
+          scoped_ptr<IPC::Message> response(
+              new PpapiHostMsg_ChannelCreated(channel_handle));
+          task_runner_->PostTask(FROM_HERE,
+              base::Bind(&NaClIPCAdapter::SendMessageOnIOThread, this,
+                         base::Passed(&response)));
+          break;
         }
         case ppapi::proxy::SerializedHandle::INVALID: {
           // Nothing to do. TODO(dmichael): Should we log this? Or is it
           // sometimes okay to pass an INVALID handle?
+          break;
         }
         // No default, so the compiler will warn us if new types get added.
       }
