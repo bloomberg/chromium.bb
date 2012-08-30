@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/chrome_switches.h"
@@ -172,8 +173,14 @@ void NetworkProfileBubble::RecordUmaEvent(MetricNetworkedProfileCheck event) {
 
 // static
 void NetworkProfileBubble::NotifyNetworkProfileDetected() {
-  if (BrowserList::GetLastActive())
-    ShowNotification(BrowserList::GetLastActive());
+  // TODO(robertshield): Eventually, we will need to figure out the correct
+  //                     desktop type for this for platforms that can have
+  //                     multiple desktop types (win8/metro).
+  Browser* browser = browser::FindLastActiveWithHostDesktopType(
+      chrome::HOST_DESKTOP_TYPE_NATIVE);
+
+  if (browser)
+    ShowNotification(browser);
   else
     BrowserList::AddObserver(new BrowserListObserver());
 }
