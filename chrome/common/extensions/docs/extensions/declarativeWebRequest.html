@@ -207,7 +207,11 @@
               <ol>
               </ol>
             </li><li>
-              <a href="#TODO">Todo</a>
+              <a href="#evaluation">Evaluation of conditions and actions</a>
+              <ol>
+              </ol>
+            </li><li>
+              <a href="#precedences">Using priorities to override rules</a>
               <ol>
               </ol>
             </li>
@@ -337,10 +341,10 @@ efficiency.
 </p>
 <h2 id="manifest">Manifest</h2>
 <p>
-You must declare the "declarative" and the "declarativeWebRequest" permission in
-the <a href="manifest.html">extension manifest</a> to use this API,
+You must declare the "declarativeWebRequest" permission in the
+<a href="manifest.html">extension manifest</a> to use this API,
 along with <a href="manifest.html#permissions">host permissions</a> for any
-hosts whose network requests you want to access. 
+hosts whose network requests you want to access.
 </p>
 <pre>{
   "name": "My extension",
@@ -417,14 +421,106 @@ individually because each of these operations recreates internal data
 structures.  This re-creation is computationally expensive but facilitates a
 very fast URL matching algorithm for hundreds of thousands of URLs.
 </p>
-<h2 id="TODO">Todo</h2>
-<ul>
-  <li>Explain precedences, once we can ignore rules based on their priority
-  (e.g. how can I cancel all requests except for a specific whitelist?)
-  </li><li>Explain when conditions can be evaluated, when actions can be executed,
-  and when rules can be executed (e.g. you cannot cancel a request when you
-  have received the response already)
-</li></ul>
+<h2 id="evaluation">Evaluation of conditions and actions</h2>
+<p>
+The Declarative Web Request API follows the
+<a href="webRequest.html#life_cycle">Life cycle model for web requests</a> of
+the <a href="webRequest.html">Web Request API</a>. This means that conditions
+can only be tested at specific stages of a web request and, likewise, actions
+can also only be executed at specific stages. The following tables list the
+request stages that are compatible to conditions and actions.
+</p>
+<p>
+</p><table>
+  <tbody><tr>
+    <th colspan="5">Request stages during which condition attributes can be processed.
+  </th></tr>
+  <tr>
+    <th>Condition attribute
+    </th><th>onBeforeRequest
+    </th><th>onBeforeSendHeaders
+    </th><th>onHeadersReceived
+    </th><th>onAuthRequired
+  </th></tr>
+  <tr><td>url</td><td>✓</td><td>✓</td><td>✓</td><td>✓
+  </td></tr><tr><td>resourceType</td><td>✓</td><td>✓</td><td>✓</td><td>✓
+  </td></tr><tr><td>contentType</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr><td>excludeContentType</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr>
+    <th colspan="5" style="padding-top:2em">Request stages during which actions can be executed.
+  </th></tr>
+  <tr>
+    <th>Event
+    </th><th>onBeforeRequest
+    </th><th>onBeforeSendHeaders
+    </th><th>onHeadersReceived
+    </th><th>onAuthRequired
+  </th></tr>
+  <tr><td>AddRequestCookie</td><td></td><td>✓</td><td></td><td>
+  </td></tr><tr><td>AddResponseCookie</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr><td>AddResponseHeader</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr><td>CancelRequest</td><td>✓</td><td>✓</td><td>✓</td><td>✓
+  </td></tr><tr><td>EditRequestCookie</td><td></td><td>✓</td><td></td><td>
+  </td></tr><tr><td>EditResponseCookie</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr><td>IgnoreRules</td><td>✓</td><td>✓</td><td>✓</td><td>✓
+  </td></tr><tr><td>RedirectByRegEx</td><td>✓</td><td></td><td></td><td>
+  </td></tr><tr><td>RedirectRequest</td><td>✓</td><td></td><td></td><td>
+  </td></tr><tr><td>RedirectToEmptyDocument</td><td>✓</td><td></td><td></td><td>
+  </td></tr><tr><td>RedirectToTransparentImage</td><td>✓</td><td></td><td></td><td>
+  </td></tr><tr><td>RemoveRequestCookie</td><td></td><td>✓</td><td></td><td>
+  </td></tr><tr><td>RemoveRequestHeader</td><td></td><td>✓</td><td></td><td>
+  </td></tr><tr><td>RemoveResponseCookie</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr><td>RemoveResponseHeader</td><td></td><td></td><td>✓</td><td>
+  </td></tr><tr><td>SetRequestHeader</td><td></td><td>✓</td><td></td><td>
+</td></tr></tbody></table>
+<p></p>
+<p>
+<strong>Example:</strong> It is possible to combine a
+<code>new chrome.declarativeWebRequest.RequestMatcher({contentType: ["image/jpeg"]})</code>
+condition with a <code>new chrome.declarativeWebRequest.CancelRequest()</code>
+action because both of them can be evaluated in the onHeadersReceived stage.
+It is, however, impossible to combine the request matcher with a
+<code>new chrome.declarativeWebRequest.RedirectToTransparentImage()</code>
+because redirects cannot be executed any more by the time when the content
+type has been determined.
+</p>
+<h2 id="precedences">Using priorities to override rules</h2>
+<p>
+Rules can be associated with priorities as described in the
+<a href="events.html#declarative">Events API</a>. This mechanism can be used
+to express exceptions. The following example will block all requests to
+images named "evil.jpg" except on the server "myserver.com".
+</p>
+<pre>var rule1 = {
+  priority: 100,
+  conditions: [
+    new chrome.declarativeWebRequest.RequestMatcher({
+        url: { pathEquals: 'evil.jpg' } })
+  ],
+  actions: [
+    new chrome.declarativeWebRequest.CancelRequest()
+  ]
+};
+var rule2 = {
+  priority: 1000,
+  conditions: [
+    new chrome.declarativeWebRequest.RequestMatcher({
+      url: { hostSuffix: '.myserver.com' } })
+  ],
+  actions: [
+    new chrome.declarativeWebRequest.IgnoreRules({
+      lowerPriorityThan: 1000 })
+  ]
+};
+chrome.declarativeWebRequest.onRequest.addRules([rule1, rule2]);
+</pre>
+<p>
+It is important to recognize that the <code>IgnoreRules</code> action is not
+persisted across <a href="#evaluation">request stages</a>. All conditions of
+all rules are evaluated in each stage of a web request. If an
+<code>IgnoreRules</code> action is executed, it applies only to other actions
+that are executed for the same web request in the same stage.
+</p>
 <!-- END AUTHORED CONTENT -->
 </div>
         <!-- API PAGE -->
@@ -1578,7 +1674,7 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage. TODO(battre): Explain network request stages.</dd>
+          <dd>If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

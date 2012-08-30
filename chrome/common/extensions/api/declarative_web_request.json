@@ -254,7 +254,7 @@
           },
           "lowerPriorityThan": {
             "type": "integer",
-            "description": "If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage. TODO(battre): Explain network request stages."
+            "description": "If set, rules with a lower priority than the specified value are ignored. This boundary is not persisted, it affects only rules and their actions of the same network request stage."
           }
         }
       },
