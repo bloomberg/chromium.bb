@@ -418,8 +418,8 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
       gesture_event.data.flingStart.velocityY = gesture.details().velocity_y();
       gesture_event.deltaX = gesture.details().velocity_x();
       gesture_event.deltaY = gesture.details().velocity_y();
+      break;
     case ui::ET_GESTURE_LONG_PRESS:
-      gesture_event.type = WebKit::WebInputEvent::GestureLongPress;
       gesture_event.data.longPress.width =
           gesture.details().bounding_box().width();
       gesture_event.data.longPress.height =
