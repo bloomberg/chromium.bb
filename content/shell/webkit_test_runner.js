@@ -21,9 +21,8 @@ var textInputController = textInputController || {};
   var DefaultHandler = function(name) {
     var handler = {
       get: function(receiver, property) {
-        return function() {
-          return NotImplemented(name, property);
-        }
+        NotImplemented(name, property);
+        return function() {}
       }
     }
     return Proxy.create(handler);
