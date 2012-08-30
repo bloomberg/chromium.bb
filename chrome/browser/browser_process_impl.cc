@@ -208,8 +208,10 @@ void BrowserProcessImpl::StartTearDown() {
   // Need to clear profiles (download managers) before the io_thread_.
   profile_manager_.reset();
 
+#if !defined(OS_ANDROID)
   // Debugger must be cleaned up before IO thread and NotificationService.
   remote_debugging_server_.reset();
+#endif
 
   ExtensionTabIdMap::GetInstance()->Shutdown();
 
@@ -477,12 +479,14 @@ void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
     int port,
     const std::string& frontend_url) {
   DCHECK(CalledOnValidThread());
+#if !defined(OS_ANDROID)
   // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser
   // is started with several profiles or existing browser process is reused.
   if (!remote_debugging_server_.get()) {
     remote_debugging_server_.reset(
         new RemoteDebuggingServer(profile, ip, port, frontend_url));
   }
+#endif
 }
 
 bool BrowserProcessImpl::IsShuttingDown() {

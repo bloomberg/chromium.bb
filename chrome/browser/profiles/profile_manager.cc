@@ -968,6 +968,9 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
 
 // static
 bool ProfileManager::IsMultipleProfilesEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#endif
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
     return false;

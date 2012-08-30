@@ -169,7 +169,9 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
 
+#if !defined(OS_ANDROID)
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
+#endif
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;

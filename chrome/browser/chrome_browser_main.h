@@ -81,8 +81,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void PreBrowserStart();
   virtual void PostBrowserStart();
 
+#if !defined(OS_ANDROID)
   // Runs the PageCycler; called if the switch kVisitURLs is present.
   virtual void RunPageCycler();
+#endif
 
   // Override this in subclasses to initialize platform specific field trials.
   virtual void SetupPlatformFieldTrials();
@@ -158,11 +160,17 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized after / released before main_message_loop_ ------------
 
-  scoped_ptr<StartupBrowserCreator> browser_creator_;
   scoped_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>
       tracking_synchronizer_;
+#if !defined(OS_ANDROID)
+  // Browser creation happens on the Java side in Android.
+  scoped_ptr<StartupBrowserCreator> browser_creator_;
+
+  // Android doesn't support multiple browser processes, so it doesn't implement
+  // ProcessSingleton.
   scoped_ptr<ProcessSingleton> process_singleton_;
+#endif
   scoped_ptr<first_run::MasterPrefs> master_prefs_;
   bool record_search_engine_;
   TranslateManager* translate_manager_;

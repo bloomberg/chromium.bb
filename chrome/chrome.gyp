@@ -216,7 +216,9 @@
         }],
         ['OS=="android"', {
           'sources!': [
+            'browser/debugger/browser_list_tabcontents_provider.cc',
             'browser/debugger/devtools_window.cc',
+            'browser/debugger/remote_debugging_server.cc',
           ],
         }],
       ],

@@ -678,7 +678,9 @@ int ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
   // These members must be initialized before returning from this function.
   DCHECK(master_prefs_.get());
+#if !defined(OS_ANDROID)
   DCHECK(browser_creator_.get());
+#endif
   return result_code_;
 }
 
@@ -696,6 +698,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       << "Must be able to get user data directory!";
 #endif
 
+  // Android's first run is done in Java instead of native.
+#if !defined(OS_ANDROID)
   process_singleton_.reset(new ProcessSingleton(user_data_dir_));
   // Ensure ProcessSingleton won't process messages too early. It will be
   // unlocked in PostBrowserStart().
@@ -705,6 +709,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       (first_run::IsChromeFirstRun() ||
           parsed_command_line().HasSwitch(switches::kFirstRun)) &&
       !HasImportSwitch(parsed_command_line());
+#endif
   browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
 
   if (parsed_command_line().HasSwitch(switches::kEnableProfiling)) {
@@ -731,8 +736,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
+
+#if !defined(OS_ANDROID)
+  // Android doesn't use StartupBrowserCreator.
   browser_creator_.reset(new StartupBrowserCreator);
+  // TODO(yfriedman): Refactor Android to re-use UMABrowsingActivityObserver
   chrome::UMABrowsingActivityObserver::Init();
+#endif
 
   // Convert active labs into switches. This needs to be done before
   // ResourceBundle::InitSharedInstanceWithLocale as some loaded resources are
@@ -815,6 +825,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif  // defined(OS_WIN)
   }
 
+  // Android does first run in Java instead of native.
+#if !defined(OS_ANDROID)
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
@@ -836,6 +848,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     if (parsed_command_line().HasSwitch(switches::kNoFirstRun))
       first_run::CreateSentinel();
   }
+#endif
 
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs))
@@ -917,15 +930,20 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {
+#if !defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kVisitURLs))
     RunPageCycler();
+#endif
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostBrowserStart();
+#if !defined(OS_ANDROID)
   // Allow ProcessSingleton to process messages.
   process_singleton_->Unlock();
+#endif
 }
 
+#if !defined(OS_ANDROID)
 void ChromeBrowserMainParts::RunPageCycler() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // We assume a native desktop for tests, but we will need to find a way to
@@ -945,14 +963,19 @@ void ChromeBrowserMainParts::RunPageCycler() {
   }
   page_cycler->Run();
 }
+#endif   // !defined(OS_ANDROID)
 
 void ChromeBrowserMainParts::SetupPlatformFieldTrials() {
   // Base class implementation of this does nothing.
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+  // Android updates the metrics service dynamically depending on whether the
+  // application is in the foreground or not. Do not start here.
+#if !defined(OS_ANDROID)
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
+#endif
 
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
@@ -990,6 +1013,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);
   }
 
+  // Android doesn't support extensions and doesn't implement ProcessSingleton.
+#if !defined(OS_ANDROID)
   // If the command line specifies --pack-extension, attempt the pack extension
   // startup action and exit.
   if (parsed_command_line().HasSwitch(switches::kPackExtension)) {
@@ -1048,6 +1073,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         NOTREACHED();
     }
   }
+#endif  // !defined(OS_ANDROID)
 
 #if defined(USE_X11)
   SetBrowserX11ErrorHandlers();
@@ -1068,13 +1094,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
 
+#if defined(ENABLE_BACKGROUND)
   // Autoload any profiles which are running background apps.
   // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
   browser_process_->profile_manager()->AutoloadProfiles();
-
+#endif
   // Post-profile init ---------------------------------------------------------
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
   // TODO(port): Port the Mac's IPC-based implementation to other platforms to
@@ -1103,17 +1130,20 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
+#if !defined(OS_ANDROID)
   // Create the TranslateManager singleton.
   translate_manager_ = TranslateManager::GetInstance();
   DCHECK(translate_manager_ != NULL);
 
   // Initialize Managed Mode.
   ManagedMode::Init(profile_);
+#endif
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
   PostProfileInit();
 
+#if !defined(OS_ANDROID)
   // Show the First Run UI if this is the first time Chrome has been run on
   // this computer, or we're being compelled to do so by a command line flag.
   // Note that this be done _after_ the PrefService is initialized and all
@@ -1148,6 +1178,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       browser_creator_->set_is_default_browser_dialog_suppressed(true);
     }
   }  // if (is_first_run_)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   // Sets things up so that if we crash from this point on, a dialog will
@@ -1322,6 +1353,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
 
+#if !defined(OS_ANDROID)
   // Most general initialization is behind us, but opening a
   // tab and/or session restore and such is still to be done.
   base::TimeTicks browser_open_start = base::TimeTicks::Now();
@@ -1392,6 +1424,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     run_message_loop_ = false;
   }
   browser_creator_.reset();
+#endif  // !defined(OS_ANDROID)
 
   PostBrowserStart();
 
@@ -1501,6 +1534,11 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainParts::PostDestroyThreads() {
+#if defined(OS_ANDROID)
+  // On Android, there is no quit/exit. So the browser's main message loop will
+  // not finish.
+  NOTREACHED();
+#else
   browser_process_->PostDestroyThreads();
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
@@ -1515,6 +1553,7 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   // to bypass this code.  Perhaps we need a *final* hook that is called on all
   // paths from content/browser/browser_main.
   CHECK(MetricsService::UmaMetricsProperlyShutdown());
+#endif
 }
 
 // Public members:

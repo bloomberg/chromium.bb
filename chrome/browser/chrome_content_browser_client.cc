@@ -114,6 +114,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
+#elif defined(OS_ANDROID)
+#include "chrome/browser/chrome_browser_main_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
@@ -366,10 +368,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #elif defined(OS_LINUX)
   main_parts = new ChromeBrowserMainPartsLinux(parameters);
 #elif defined(OS_ANDROID)
-  // Do nothing for Android.
-  // TODO(klobag): Android initialization should use the
-  // *BrowserMainParts class-hierarchy for setting up custom initialization.
-  main_parts = NULL;
+  main_parts = new ChromeBrowserMainPartsAndroid(parameters);
 #elif defined(OS_POSIX)
   main_parts = new ChromeBrowserMainPartsPosix(parameters);
 #else

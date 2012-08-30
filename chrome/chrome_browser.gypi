@@ -903,6 +903,7 @@
         'browser/io_thread.h',
         'browser/jankometer.cc',
         'browser/jankometer.h',
+        'browser/jankometer_android.cc',
         'browser/jankometer_mac.cc',
         'browser/jumplist_win.cc',
         'browser/jumplist_win.h',
@@ -4524,6 +4525,7 @@
             # Not used by Android
             'browser/chrome_browser_main_posix.cc',
             'browser/chrome_browser_main_posix.h',
+            'browser/process_singleton.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
@@ -4539,6 +4541,7 @@
             ['exclude', '^browser/ui/intents/'],
             ['exclude', '^browser/ui/omnibox/'],
             ['exclude', '^browser/ui/panels/'],
+            ['exclude', '^browser/ui/startup/'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/downloads_'],
