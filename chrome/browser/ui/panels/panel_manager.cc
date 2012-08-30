@@ -28,6 +28,10 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 namespace {
 // Width of spacing around panel strip and the left/right edges of the screen.
 const int kPanelStripLeftMargin = 6;
@@ -73,6 +77,12 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
     return false;
   }
 #endif  // TOOLKIT_GTK
+
+#if defined(OS_WIN)
+  // No panels in Metro mode.
+  if (base::win::IsMetroProcess())
+    return false;
+#endif // OS_WIN
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
