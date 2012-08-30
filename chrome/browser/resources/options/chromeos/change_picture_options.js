@@ -392,19 +392,20 @@ cr.define('options', function() {
         chrome.send('selectImage', [url]);
       }
       // Start/stop camera on (de)selection.
-      if (imageGrid.selectionType == 'camera' && !imageGrid.cameraOnline &&
-          !imageGrid.inProgramSelection) {
-        imageGrid.checkCameraPresence(
-            function() {  // When present.
-              // Start capture if camera is still the selected item.
-              return imageGrid.selectedItem == imageGrid.cameraImage;
-            },
-            function() {  // When absent.
-              return true;  // Check again after some time.
-            });
-      } else if (imageGrid.selectionType != 'camera' &&
-                 imageGrid.cameraOnline) {
-        imageGrid.stopCamera();
+      if (!imageGrid.inProgramSelection) {
+        if (imageGrid.selectionType == 'camera' && !imageGrid.cameraOnline) {
+            imageGrid.checkCameraPresence(
+              function() {  // When present.
+                // Start capture if camera is still the selected item.
+                return imageGrid.selectedItem == imageGrid.cameraImage;
+              },
+              function() {  // When absent.
+                return true;  // Check again after some time.
+              });
+        } else if (imageGrid.selectionType != 'camera' &&
+                   imageGrid.cameraOnline) {
+          imageGrid.stopCamera();
+        }
       }
       // Update image attribution text.
       var image = imageGrid.selectedItem;
