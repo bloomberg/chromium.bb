@@ -193,12 +193,15 @@ void ChromeShellDelegate::OpenCrosh() {
       browser->profile());
   if (!crosh_url.is_valid())
     return;
-  browser->OpenURL(
+  content::WebContents* page = browser->OpenURL(
       content::OpenURLParams(crosh_url,
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
                              content::PAGE_TRANSITION_GENERATED,
                              false));
+  browser->window()->Show();
+  browser->window()->Activate();
+  page->Focus();
 #endif
 }
 
