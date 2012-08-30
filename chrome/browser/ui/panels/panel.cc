@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/extensions/window_event_router.h"
@@ -80,7 +81,41 @@ std::string PanelExtensionWindowController::GetWindowTypeText() const {
 
 base::DictionaryValue*
 PanelExtensionWindowController::CreateWindowValueWithTabs() const {
-  return CreateWindowValue();
+  base::DictionaryValue* result = CreateWindowValue();
+
+  // Safe to include info about the web contents as this is only called
+  // by the extension that owns this window. See IsVisibleToExtension().
+  // TODO(jennb): DCHECK this after chebert's patch 10829186 lands.
+  content::WebContents* web_contents = panel_->GetWebContents();
+  if (web_contents) {
+    DictionaryValue* tab_value = new DictionaryValue();
+    // TabId must be >= 0. Use panel session id to avoid conflict with
+    // browser tab ids (which are also session ids).
+    tab_value->SetInteger(extensions::tabs_constants::kIdKey,
+                          panel_->session_id().id());
+    tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);
+    tab_value->SetInteger(
+        extensions::tabs_constants::kWindowIdKey, GetWindowId());
+    tab_value->SetString(
+        extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
+    tab_value->SetString(extensions::tabs_constants::kStatusKey,
+         ExtensionTabUtil::GetTabStatusText(web_contents->IsLoading()));
+    tab_value->SetBoolean(
+        extensions::tabs_constants::kActiveKey, panel_->IsActive());
+    tab_value->SetBoolean(extensions::tabs_constants::kSelectedKey, true);
+    tab_value->SetBoolean(extensions::tabs_constants::kHighlightedKey, true);
+    tab_value->SetBoolean(extensions::tabs_constants::kPinnedKey, false);
+    tab_value->SetString(
+        extensions::tabs_constants::kTitleKey, web_contents->GetTitle());
+    tab_value->SetBoolean(
+        extensions::tabs_constants::kIncognitoKey,
+        web_contents->GetBrowserContext()->IsOffTheRecord());
+
+    base::ListValue* tab_list = new ListValue();
+    tab_list->Append(tab_value);
+    result->Set(extensions::tabs_constants::kTabsKey, tab_list);
+  }
+  return result;
 }
 
 bool PanelExtensionWindowController::CanClose(Reason* reason) const {
