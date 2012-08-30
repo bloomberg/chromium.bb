@@ -278,10 +278,12 @@ toggle_fullscreen(struct window *window, int fullscreen)
 	window->configured = 0;
 
 	if (fullscreen) {
+		window->opaque = 1;
 		wl_shell_surface_set_fullscreen(window->shell_surface,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, NULL);
 	} else {
+		window->opaque = 0;
 		wl_shell_surface_set_toplevel(window->shell_surface);
 		handle_configure(window, window->shell_surface, 0,
 				 window->window_size.width,
@@ -587,7 +589,7 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
-	int i;
+	int i, opaque = 0;
 
 	window.display = &display;
 	display.window = &window;
@@ -598,7 +600,7 @@ main(int argc, char **argv)
 		if (strcmp("-f", argv[i]) == 0)
 			window.fullscreen = 1;
 		else if (strcmp("-o", argv[i]) == 0)
-			window.opaque = 1;
+			opaque = 1;
 		else if (strcmp("-h", argv[i]) == 0)
 			usage(EXIT_SUCCESS);
 		else
@@ -617,7 +619,7 @@ main(int argc, char **argv)
 	if (window.fullscreen)
 		window.opaque = 1;
 
-	init_egl(&display, window.opaque);
+	init_egl(&display, opaque);
 	create_surface(&window);
 	init_gl(&window);
 
