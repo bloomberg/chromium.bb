@@ -129,7 +129,9 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       launcher_(NULL),
       status_(status),
       workspace_controller_(NULL),
-      window_overlaps_shelf_(false) {
+      window_overlaps_shelf_(false),
+      gesture_drag_status_(GESTURE_DRAG_NONE),
+      gesture_drag_amount_(0.f) {
   Shell::GetInstance()->AddShellObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
 }
@@ -229,6 +231,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (delegate && delegate->IsScreenLocked()) {
     SetState(VISIBLE);
+  } else if (gesture_drag_status_ == GESTURE_DRAG_HIDE_IN_PROGRESS) {
+    SetState(AUTO_HIDE);
   } else {
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
     switch (window_state) {
@@ -285,6 +289,73 @@ void ShelfLayoutManager::AddObserver(Observer* observer) {
 
 void ShelfLayoutManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShelfLayoutManager, Gesture dragging:
+
+void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
+  gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
+  gesture_drag_amount_ = 0.f;
+  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+}
+
+void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
+  bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
+  gesture_drag_amount_ += horizontal ? gesture.details().scroll_y() :
+                                       gesture.details().scroll_x();
+  LayoutShelf();
+}
+
+void ShelfLayoutManager::HideFromGestureDrag(const ui::GestureEvent& gesture) {
+  bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
+  bool should_hide = false;
+  if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
+    // If the shelf was dragged X% towards the correct direction, then it is
+    // hidden.
+    const float kDragHideThreshold = 0.4f;
+    gfx::Rect bounds = GetIdealBounds();
+    if (horizontal)
+      should_hide = gesture_drag_amount_ > kDragHideThreshold * bounds.height();
+    else if (alignment() == SHELF_ALIGNMENT_LEFT)
+      should_hide = -gesture_drag_amount_ > kDragHideThreshold * bounds.width();
+    else
+      should_hide = gesture_drag_amount_ > kDragHideThreshold * bounds.width();
+  } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
+    if (horizontal)
+      should_hide = gesture.details().velocity_y() > 0;
+    else if (alignment() == SHELF_ALIGNMENT_LEFT)
+      should_hide = gesture.details().velocity_x() < 0;
+    else
+      should_hide = gesture.details().velocity_x() > 0;
+  } else {
+    NOTREACHED();
+  }
+
+  if (!should_hide) {
+    CancelGestureDrag();
+    return;
+  }
+
+  gesture_drag_status_ = GESTURE_DRAG_HIDE_IN_PROGRESS;
+  if (launcher_widget())
+    launcher_widget()->Deactivate();
+  status_->Deactivate();
+  if (auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  else
+    UpdateVisibilityState();
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
+}
+
+void ShelfLayoutManager::CancelGestureDrag() {
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
+  ui::ScopedLayerAnimationSettings
+      launcher_settings(GetLayer(launcher_widget())->GetAnimator()),
+      status_settings(GetLayer(status_)->GetAnimator());
+  LayoutShelf();
+  UpdateVisibilityState();
+  UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -507,8 +578,35 @@ void ShelfLayoutManager::CalculateTargetBounds(
     }
   }
   target_bounds->opacity =
-      (state.visibility_state == VISIBLE ||
+      (gesture_drag_status_ != GESTURE_DRAG_NONE ||
+       state.visibility_state == VISIBLE ||
        state.visibility_state == AUTO_HIDE) ? 1.0f : 0.0f;
+  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
+    UpdateTargetBoundsForGesture(target_bounds);
+}
+
+void ShelfLayoutManager::UpdateTargetBoundsForGesture(
+    TargetBounds* target_bounds) const {
+  CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
+  bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
+  bool resist = false;
+  if (horizontal)
+    resist = gesture_drag_amount_ < 0;
+  else if (alignment() == SHELF_ALIGNMENT_LEFT)
+    resist = gesture_drag_amount_ > 0;
+  else
+    resist = gesture_drag_amount_ < 0;
+
+  const float kDragResistanceFactor = 0.25f;
+  float translate = resist ? gesture_drag_amount_ * kDragResistanceFactor :
+                             gesture_drag_amount_;
+  if (horizontal) {
+    target_bounds->launcher_bounds_in_root.Offset(0, translate);
+    target_bounds->status_bounds_in_root.Offset(0, translate);
+  } else {
+    target_bounds->launcher_bounds_in_root.Offset(translate, 0);
+    target_bounds->status_bounds_in_root.Offset(translate, 0);
+  }
 }
 
 void ShelfLayoutManager::UpdateShelfBackground(
@@ -525,7 +623,8 @@ void ShelfLayoutManager::UpdateShelfBackground(
 }
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
-  return (!state_.is_screen_locked && window_overlaps_shelf_) ||
+  return gesture_drag_status_ != GESTURE_DRAG_NONE ||
+      (!state_.is_screen_locked && window_overlaps_shelf_) ||
       state_.visibility_state == AUTO_HIDE;
 }
 
@@ -536,6 +635,9 @@ void ShelfLayoutManager::UpdateAutoHideStateNow() {
 ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
     VisibilityState visibility_state) const {
   if (visibility_state != AUTO_HIDE || !launcher_widget())
+    return AUTO_HIDE_HIDDEN;
+
+  if (gesture_drag_status_ == GESTURE_DRAG_HIDE_IN_PROGRESS)
     return AUTO_HIDE_HIDDEN;
 
   Shell* shell = Shell::GetInstance();

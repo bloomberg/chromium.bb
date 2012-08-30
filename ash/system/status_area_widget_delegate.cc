@@ -62,6 +62,14 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
   return View::GetWidget();
 }
 
+ui::GestureStatus StatusAreaWidgetDelegate::OnGestureEvent(
+    const ui::GestureEvent& event) {
+  if (gesture_handler_.ProcessGestureEvent(event))
+    return ui::GESTURE_STATUS_CONSUMED;
+
+  return views::AccessiblePaneView::OnGestureEvent(event);
+}
+
 bool StatusAreaWidgetDelegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).

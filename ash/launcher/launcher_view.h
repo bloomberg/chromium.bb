@@ -10,6 +10,7 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
+#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/shelf_types.h"
 #include "base/observer_list.h"
 #include "ui/views/animation/bounds_animator_observer.h"
@@ -173,6 +174,8 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
 
@@ -272,6 +275,8 @@ class ASH_EXPORT LauncherView : public views::View,
   // Amount content is inset on the left edge (or top edge for vertical
   // alignment).
   int leading_inset_;
+
+  ShelfGestureHandler gesture_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

@@ -23,6 +23,10 @@ namespace aura {
 class RootWindow;
 }
 
+namespace ui {
+class GestureEvent;
+}
+
 namespace views {
 class Widget;
 }
@@ -116,7 +120,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // on the screen.
   bool IsVisible() const;
 
- public:
   // The launcher is typically created after the layout manager.
   void SetLauncher(Launcher* launcher);
   Launcher* launcher() { return launcher_; }
@@ -144,6 +147,12 @@ class ASH_EXPORT ShelfLayoutManager :
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Gesture dragging related functions:
+  void StartGestureDrag(const ui::GestureEvent& gesture);
+  void UpdateGestureDrag(const ui::GestureEvent& gesture);
+  void HideFromGestureDrag(const ui::GestureEvent& gesture);
+  void CancelGestureDrag();
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -217,6 +226,10 @@ class ASH_EXPORT ShelfLayoutManager :
   // Calculates the target bounds assuming visibility of |visible|.
   void CalculateTargetBounds(const State& state, TargetBounds* target_bounds);
 
+  // Updates the target bounds if a gesture-drag is in progress. This is only
+  // used by |CalculateTargetBounds()|.
+  void UpdateTargetBoundsForGesture(TargetBounds* target_bounds) const;
+
   // Updates the background of the shelf.
   void UpdateShelfBackground(BackgroundAnimator::ChangeType type);
 
@@ -274,6 +287,21 @@ class ASH_EXPORT ShelfLayoutManager :
   scoped_ptr<AutoHideEventFilter> event_filter_;
 
   ObserverList<Observer> observers_;
+
+  // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
+  // gestures. Some shelf behaviour (e.g. visibility state, background color
+  // etc.) are affected by various stages of the drag. The enum keeps track of
+  // the present status of the gesture drag.
+  enum GestureDragStatus {
+    GESTURE_DRAG_NONE,
+    GESTURE_DRAG_IN_PROGRESS,
+    GESTURE_DRAG_HIDE_IN_PROGRESS
+  };
+  GestureDragStatus gesture_drag_status_;
+
+  // Tracks the amount of the drag. The value is only valid when
+  // |gesture_drag_status_| is set to GESTURE_DRAG_IN_PROGRESS.
+  float gesture_drag_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
