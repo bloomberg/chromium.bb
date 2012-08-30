@@ -268,13 +268,14 @@ def MakeCommandLineParser():
   parser.add_option('--disable_tests', dest='disable_tests',
                     type='string', default='',
                     help='Comma-separated list of tests to omit')
-  # TODO(ncbray): don't default based on CWD.
-  pwd = os.environ.get('PWD', '')
-  is_integration_bot = 'nacl-chrome' in pwd
+  builder_name = os.environ.get('BUILDBOT_BUILDERNAME', '')
+  is_integration_bot = 'nacl-chrome' in builder_name
   parser.add_option('--integration_bot', dest='integration_bot',
                     type='int', default=int(is_integration_bot),
                     help='Is this an integration bot?')
-  is_morenacl_bot = 'morenacl' in pwd
+  is_morenacl_bot = (
+      'More NaCl' in builder_name or
+      'naclmore' in builder_name)
   parser.add_option('--morenacl_bot', dest='morenacl_bot',
                     type='int', default=int(is_morenacl_bot),
                     help='Is this a morenacl bot?')
