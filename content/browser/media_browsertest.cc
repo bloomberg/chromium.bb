@@ -137,8 +137,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
   PlayAudio("bear_mulaw.wav", GetParam());
 }
 
-// TODO(dalecurtis): Fails seek test.  http://crbug.com/141020
-IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearFlac) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
   PlayAudio("bear.flac", GetParam());
 }
 #endif
