@@ -3590,28 +3590,6 @@
    fun:_ZN3net19GetMimeTypeFromFileERK8FilePathPSs
 }
 {
-   bug_95931a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16UserScriptMaster9StartLoadEv
-   fun:_ZN16UserScriptMaster7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN16ExtensionService27OnLoadedInstalledExtensionsEv
-   fun:_ZN16ExtensionService17LoadAllExtensionsEv
-   fun:_ZN16ExtensionService4InitEv
-   fun:_ZN11ProfileImpl14InitExtensionsEb
-   ...
-   fun:_ZN14ProfileManager17GetDefaultProfileEv
-   fun:_ZN16browser_shutdown8ShutdownEv
-}
-{
-   bug_95931b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZL9SerializeRKSt6vectorI10UserScriptSaIS0_EE
-   fun:_ZN16UserScriptMaster14ScriptReloader7RunLoadERKSt6vectorI10UserScriptSaIS2_EE
-}
-{
    bug_96069
    Memcheck:Leak
    fun:_Znw*
