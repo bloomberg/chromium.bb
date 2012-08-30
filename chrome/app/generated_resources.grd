@@ -330,10 +330,10 @@ are declared in build/common.gypi.
         Use global default (Ask)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to allow.">
-        Always allow
+        Always allow on this site
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to allow.">
-        Always block
+        Always block on this site
       </message>
       <message name="IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL" desc="The label for the global default setting that is used in a permissions dropdown.">
         Use global default (<ph name="PERMISSION_VALUE">$1<ex>allow</ex></ph>)
