@@ -8,11 +8,13 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/in_memory_url_protocol.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioBus.h"
 
+using media::AudioBus;
 using media::AudioFileReader;
 using media::InMemoryUrlProtocol;
 using std::vector;
@@ -49,13 +51,6 @@ bool DecodeAudioFileData(
       file_sample_rate > media::limits::kMaxSampleRate)
     return false;
 
-  // TODO(crogers) : do sample-rate conversion with FFmpeg.
-  // For now, we're ignoring the requested 'sample_rate' and returning
-  // the WebAudioBus at the file's sample-rate.
-  // double destination_sample_rate =
-  //   (sample_rate != 0.0) ? sample_rate : file_sample_rate;
-  double destination_sample_rate = file_sample_rate;
-
   DVLOG(1) << "Decoding file data -"
            << " data: " << data
            << " data size: " << data_size
@@ -64,14 +59,10 @@ bool DecodeAudioFileData(
            << " sample rate: " << file_sample_rate
            << " number of channels: " << number_of_channels;
 
-  // Change to destination sample-rate.
-  number_of_frames = static_cast<size_t>(number_of_frames *
-      (destination_sample_rate / file_sample_rate));
-
   // Allocate and configure the output audio channel data.
   destination_bus->initialize(number_of_channels,
                               number_of_frames,
-                              destination_sample_rate);
+                              file_sample_rate);
 
   // Wrap the channel pointers which will receive the decoded PCM audio.
   vector<float*> audio_data;
@@ -80,8 +71,11 @@ bool DecodeAudioFileData(
     audio_data.push_back(destination_bus->channelData(i));
   }
 
+  scoped_ptr<AudioBus> audio_bus = AudioBus::WrapVector(
+      number_of_frames, audio_data);
+
   // Decode the audio file data.
-  return reader.Read(audio_data, number_of_frames);
+  return reader.Read(audio_bus.get());
 }
 
 }  // namespace webkit_media
