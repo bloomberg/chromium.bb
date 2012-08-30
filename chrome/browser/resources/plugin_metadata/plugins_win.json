@@ -62,9 +62,9 @@
         "status": "out_of_date"
       },
       {
-        "version": "10.5.1",
+        "version": "10.7.2",
         "status": "requires_authorization",
-        "comment": "Java SE 7u5"
+        "comment": "Java SE 7u7"
       }
     ],
     "lang": "en-US",
