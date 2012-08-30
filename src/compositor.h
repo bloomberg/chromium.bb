@@ -275,6 +275,7 @@ struct weston_compositor {
 	EGLConfig egl_config;
 	GLuint fbo;
 	struct weston_shader texture_shader_rgba;
+	struct weston_shader texture_shader_rgbx;
 	struct weston_shader texture_shader_egl_external;
 	struct weston_shader texture_shader_y_uv;
 	struct weston_shader texture_shader_y_u_v;
@@ -399,7 +400,6 @@ struct weston_surface {
 	GLfloat color[4];
 	GLfloat opaque_rect[4];
 	GLfloat alpha;
-	int blend;
 	struct weston_plane *plane;
 
 	/* Surface geometry state, mutable.

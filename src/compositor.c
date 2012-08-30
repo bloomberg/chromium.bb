@@ -240,7 +240,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
-	surface->blend = 1;
 	surface->opaque_rect[0] = 0.0;
 	surface->opaque_rect[1] = 0.0;
 	surface->opaque_rect[2] = 0.0;
@@ -790,7 +789,6 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
-		es->shader = &ec->texture_shader_rgba;
 		es->target = GL_TEXTURE_2D;
 
 		ensure_textures(es, 1);
@@ -799,9 +797,9 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 			     es->pitch, es->buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
 		if (wl_shm_buffer_get_format(buffer) == WL_SHM_FORMAT_XRGB8888)
-			es->blend = 0;
+			es->shader = &ec->texture_shader_rgbx;
 		else
-			es->blend = 1;
+			es->shader = &ec->texture_shader_rgba;
 	} else if (ec->query_buffer(ec->egl_display, buffer,
 				    EGL_TEXTURE_FORMAT, &format)) {
 		for (i = 0; i < es->num_images; i++)
@@ -1307,7 +1305,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 				 &ec->primary_plane.damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	if (es->blend || es->alpha < 1.0) {
+	if (1 || es->alpha < 1.0) {
 		/* blended region is whole surface minus opaque region: */
 		pixman_region32_init_rect(&surface_blend, 0, 0,
 				es->geometry.width, es->geometry.height);
@@ -3205,6 +3203,17 @@ static const char texture_fragment_shader_rgba[] =
 	"   gl_FragColor = alpha * texture2D(tex, v_texcoord)\n;"
 	"}\n";
 
+static const char texture_fragment_shader_rgbx[] =
+	"precision mediump float;\n"
+	"varying vec2 v_texcoord;\n"
+	"uniform sampler2D tex;\n"
+	"uniform float alpha;\n"
+	"void main()\n"
+	"{\n"
+	"   gl_FragColor.rgb = alpha * texture2D(tex, v_texcoord).rgb\n;"
+	"   gl_FragColor.a = alpha;\n"
+	"}\n";
+
 static const char texture_fragment_shader_egl_external[] =
 	"#extension GL_OES_EGL_image_external : require\n"
 	"precision mediump float;\n"
@@ -3708,6 +3717,9 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 
 	if (weston_shader_init(&ec->texture_shader_rgba,
 			     vertex_shader, texture_fragment_shader_rgba) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_rgbx,
+			     vertex_shader, texture_fragment_shader_rgbx) < 0)
 		return -1;
 	if (has_egl_image_external &&
 			weston_shader_init(&ec->texture_shader_egl_external,
