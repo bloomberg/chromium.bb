@@ -440,9 +440,11 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_http_factory_.reset(main_cache);
   main_context->set_http_transaction_factory(main_cache);
 
+#if !defined(DISABLE_FTP_SUPPORT)
   ftp_factory_.reset(
       new net::FtpNetworkLayer(io_thread_globals->host_resolver.get()));
   main_context->set_ftp_transaction_factory(ftp_factory_.get());
+#endif  // !defined(DISABLE_FTP_SUPPORT)
 
   main_context->set_chrome_url_data_manager_backend(
       chrome_url_data_manager_backend());
@@ -661,10 +663,12 @@ chrome_browser_net::LoadTimeStats* ProfileImplIOData::GetLoadTimeStats(
 void ProfileImplIOData::CreateFtpProtocolHandler(
     net::URLRequestJobFactory* job_factory,
     net::FtpAuthCache* ftp_auth_cache) const {
+#if !defined(DISABLE_FTP_SUPPORT)
   job_factory->SetProtocolHandler(
       chrome::kFtpScheme,
       new net::FtpProtocolHandler(ftp_factory_.get(),
                                   ftp_auth_cache));
+#endif  // !defined(DISABLE_FTP_SUPPORT)
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
