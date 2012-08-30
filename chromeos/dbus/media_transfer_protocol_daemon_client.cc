@@ -204,6 +204,40 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
+  virtual void GetFileInfoByPath(const std::string& handle,
+                                 const std::string& path,
+                                 const GetFileInfoCallback& callback,
+                                 const ErrorCallback& error_callback) {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, "GetFileInfoByPath");
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(handle);
+    writer.AppendString(path);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnGetFileInfo,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   error_callback));
+  }
+
+  // MediaTransferProtocolDaemonClient override.
+  virtual void GetFileInfoById(const std::string& handle,
+                               uint32 file_id,
+                               const GetFileInfoCallback& callback,
+                               const ErrorCallback& error_callback) {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, "GetFileInfoById");
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(handle);
+    writer.AppendUint32(file_id);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnGetFileInfo,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   error_callback));
+  }
+
+  // MediaTransferProtocolDaemonClient override.
   virtual void SetUpConnections(
       const MTPStorageEventHandler& handler) OVERRIDE {
     static const SignalEventTuple kSignalEventTuples[] = {
@@ -342,6 +376,20 @@ class MediaTransferProtocolDaemonClientImpl
     callback.Run(data);
   }
 
+  // Handles the result of GetFileInfoByPath/Id and calls |callback| or
+  // |error_callback|.
+  void OnGetFileInfo(const GetFileInfoCallback& callback,
+                     const ErrorCallback& error_callback,
+                     dbus::Response* response) {
+    if (!response) {
+      error_callback.Run();
+      return;
+    }
+
+    FileEntry file_entry(response);
+    callback.Run(file_entry);
+  }
+
   // Handles MTPStorageAttached/Dettached signals and calls |handler|.
   void OnMTPStorageSignal(MTPStorageEventHandler handler,
                           bool is_attach,
@@ -410,6 +458,15 @@ class MediaTransferProtocolDaemonClientStubImpl
                             uint32 file_id,
                             const ReadFileCallback& callback,
                             const ErrorCallback& error_callback) OVERRIDE {}
+  virtual void GetFileInfoByPath(
+      const std::string& handle,
+      const std::string& path,
+      const GetFileInfoCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
+  virtual void GetFileInfoById(const std::string& handle,
+                               uint32 file_id,
+                               const GetFileInfoCallback& callback,
+                               const ErrorCallback& error_callback) OVERRIDE {}
   virtual void SetUpConnections(
       const MTPStorageEventHandler& handler) OVERRIDE {}
 

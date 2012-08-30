@@ -196,6 +196,11 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
   // TODO(thestig) Consider using a file descriptor instead of the data.
   typedef base::Callback<void(const std::string& data)> ReadFileCallback;
 
+  // A callback to handle the result of GetFileInfoByPath/Id.
+  // The argument is a file entry.
+  typedef base::Callback<void(const FileEntry& file_entry)
+                         > GetFileInfoCallback;
+
   // A callback to handle storage attach/detach events.
   // The first argument is true for attach, false for detach.
   // The second argument is the storage name.
@@ -261,6 +266,21 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
                             uint32 file_id,
                             const ReadFileCallback& callback,
                             const ErrorCallback& error_callback) = 0;
+
+  // Calls GetFileInfoByPath method. |callback| is called after the method
+  // call succeeds, otherwise, |error_callback| is called.
+  virtual void GetFileInfoByPath(const std::string& handle,
+                                 const std::string& path,
+                                 const GetFileInfoCallback& callback,
+                                 const ErrorCallback& error_callback) = 0;
+
+  // Calls GetFileInfoById method. |callback| is called after the method
+  // call succeeds, otherwise, |error_callback| is called.
+  // |file_id| is a MTP-device specific id for a file.
+  virtual void GetFileInfoById(const std::string& handle,
+                               uint32 file_id,
+                               const GetFileInfoCallback& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // Registers given callback for events.
   // |storage_event_handler| is called when a mtp storage attach or detach

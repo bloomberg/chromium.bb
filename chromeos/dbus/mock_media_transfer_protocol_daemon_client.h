@@ -46,6 +46,14 @@ class MockMediaTransferProtocolDaemonClient
                                   uint32,
                                   const ReadFileCallback&,
                                   const ErrorCallback&));
+  MOCK_METHOD4(GetFileInfoByPath, void(const std::string&,
+                                       const std::string&,
+                                       const GetFileInfoCallback&,
+                                       const ErrorCallback&));
+  MOCK_METHOD4(GetFileInfoById, void(const std::string&,
+                                     uint32,
+                                     const GetFileInfoCallback&,
+                                     const ErrorCallback&));
   MOCK_METHOD1(SetUpConnections, void(const MTPStorageEventHandler&));
 };
 
