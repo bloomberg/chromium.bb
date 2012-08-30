@@ -19,8 +19,9 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_file_job.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_manager.h"
 
 using base::android::AttachCurrentThread;
@@ -64,6 +65,28 @@ class AndroidStreamReaderURLRequestJobDelegateImpl
   virtual ~AndroidStreamReaderURLRequestJobDelegateImpl();
 };
 
+class AssetFileProtocolInterceptor :
+      public net::URLRequestJobFactory::Interceptor {
+ public:
+  AssetFileProtocolInterceptor();
+  virtual ~AssetFileProtocolInterceptor() OVERRIDE;
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
+  virtual net::URLRequestJob* MaybeInterceptRedirect(
+      const GURL& location,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
+  virtual net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE;
+
+ private:
+  // file:///android_asset/
+  const std::string asset_prefix_;
+  // file:///android_res/
+  const std::string resource_prefix_;
+};
 
 } // namespace
 
@@ -77,24 +100,7 @@ net::URLRequestJob* AndroidProtocolAdapter::Factory(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     const std::string& scheme) {
-  DCHECK(scheme == chrome::kFileScheme ||
-         scheme == chrome::kContentScheme);
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  // If this is a file:// URL we cannot handle, fall back to the default
-  // handler.
-  const std::string& url = request->url().spec();
-  std::string assetPrefix = std::string(chrome::kFileScheme) + "://" +
-      chrome::kAndroidAssetPath;
-  std::string resourcePrefix = std::string(chrome::kFileScheme) + "://" +
-      chrome::kAndroidResourcePath;
-
-  if (scheme == chrome::kFileScheme &&
-      !StartsWithASCII(url, assetPrefix, /*case_sensitive=*/ true) &&
-      !StartsWithASCII(url, resourcePrefix,  /*case_sensitive=*/ true)) {
-    return net::URLRequestFileJob::Factory(request, network_delegate, scheme);
-  }
-
+  DCHECK(scheme == chrome::kContentScheme);
   return new AndroidStreamReaderURLRequestJob(
       request,
       network_delegate,
@@ -102,25 +108,40 @@ net::URLRequestJob* AndroidProtocolAdapter::Factory(
           new AndroidStreamReaderURLRequestJobDelegateImpl()));
 }
 
+static void AddFileSchemeInterceptorOnIOThread(
+    net::URLRequestContextGetter* context_getter) {
+  // The job factory takes ownership of the interceptor.
+  const_cast<net::URLRequestJobFactory*>(
+      context_getter->GetURLRequestContext()->job_factory())->AddInterceptor(
+          new AssetFileProtocolInterceptor());
+}
+
 // static
-bool AndroidProtocolAdapter::RegisterProtocols(JNIEnv* env) {
+void AndroidProtocolAdapter::RegisterProtocols(
+    JNIEnv* env, net::URLRequestContextGetter* context_getter) {
   DCHECK(env);
+  if (!InitJNIBindings(env)) {
+    // Must not fail.
+    NOTREACHED();
+  }
 
-  if (!InitJNIBindings(env))
-    return false;
-
-  // Register content:// and file://. Note that even though a scheme is
+  // Register content://. Note that even though a scheme is
   // registered here, it cannot be used by child processes until access to it is
   // granted via ChildProcessSecurityPolicy::GrantScheme(). This is done in
   // RenderViewHost.
+  //
+  // TODO(mnaganov): Convert into a ProtocolHandler.
   net::URLRequestJobManager* job_manager =
       net::URLRequestJobManager::GetInstance();
   job_manager->RegisterProtocolFactory(chrome::kContentScheme,
       &AndroidProtocolAdapter::Factory);
-  job_manager->RegisterProtocolFactory(
-      chrome::kFileScheme, &AndroidProtocolAdapter::Factory);
 
-  return true;
+  // Register a file: scheme interceptor for application assets.
+  context_getter->GetNetworkTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AddFileSchemeInterceptorOnIOThread,
+                 make_scoped_refptr(context_getter)));
+  // TODO(mnaganov): Add an interceptor for the incognito profile?
 }
 
 // Set a context object to be used for resolving resource queries. This can
@@ -224,4 +245,46 @@ bool AndroidStreamReaderURLRequestJobDelegateImpl::GetCharset(
     std::string* charset) {
   // TODO: We should probably be getting this from the managed side.
   return false;
+}
+
+AssetFileProtocolInterceptor::AssetFileProtocolInterceptor()
+    : asset_prefix_(std::string(chrome::kFileScheme) +
+                    std::string(content::kStandardSchemeSeparator) +
+                    chrome::kAndroidAssetPath),
+      resource_prefix_(std::string(chrome::kFileScheme) +
+                       std::string(content::kStandardSchemeSeparator) +
+                       chrome::kAndroidResourcePath) {
+}
+
+AssetFileProtocolInterceptor::~AssetFileProtocolInterceptor() {
+}
+
+net::URLRequestJob* AssetFileProtocolInterceptor::MaybeIntercept(
+    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
+  if (!request->url().SchemeIsFile()) return NULL;
+
+  const std::string& url = request->url().spec();
+  if (!StartsWithASCII(url, asset_prefix_, /*case_sensitive=*/ true) &&
+      !StartsWithASCII(url, resource_prefix_,  /*case_sensitive=*/ true)) {
+    return NULL;
+  }
+
+  return new AndroidStreamReaderURLRequestJob(
+      request,
+      network_delegate,
+      scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>(
+          new AndroidStreamReaderURLRequestJobDelegateImpl()));
+}
+
+net::URLRequestJob* AssetFileProtocolInterceptor::MaybeInterceptRedirect(
+    const GURL& location,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return NULL;
+}
+
+net::URLRequestJob* AssetFileProtocolInterceptor::MaybeInterceptResponse(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return NULL;
 }
