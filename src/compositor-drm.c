@@ -322,7 +322,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 }
 
 static void
-drm_output_render(struct drm_output *output, pixman_region32_t *damage)
+drm_output_render(struct drm_output *output, pixman_region32_t *damage, int flip)
 {
 	struct drm_compositor *compositor =
 		(struct drm_compositor *) output->base.compositor;
@@ -339,6 +339,9 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		if (surface->plane == &compositor->base.primary_plane)
 			weston_surface_draw(surface, &output->base, damage);
+
+	if (!flip)
+		return;
 
 	wl_signal_emit(&output->base.frame_signal, output);
 
@@ -359,7 +362,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 
 static void
 drm_output_repaint(struct weston_output *output_base,
-		   pixman_region32_t *damage)
+		   pixman_region32_t *damage, int flip)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *compositor =
@@ -369,8 +372,10 @@ drm_output_repaint(struct weston_output *output_base,
 	int ret = 0;
 
 	if (!output->next)
-		drm_output_render(output, damage);
+		drm_output_render(output, damage, flip);
 	if (!output->next)
+		return;
+	if (!flip)
 		return;
 
 	mode = container_of(output->base.current, struct drm_mode, base);

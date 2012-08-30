@@ -146,7 +146,8 @@ android_finish_frame(void *data)
 }
 
 static void
-android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
+android_output_repaint(struct weston_output *base, pixman_region32_t *damage,
+		int flip)
 {
 	struct android_output *output = to_android_output(base);
 	struct android_compositor *compositor = output->compositor;
@@ -160,6 +161,9 @@ android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base, damage);
+
+	if (!flip)
+		return;
 
 	wl_signal_emit(&output->base.frame_signal, output);
 

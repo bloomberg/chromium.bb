@@ -322,7 +322,7 @@ x11_compositor_fini_egl(struct x11_compositor *compositor)
 
 static void
 x11_output_repaint(struct weston_output *output_base,
-		   pixman_region32_t *damage)
+		   pixman_region32_t *damage, int flip)
 {
 	struct x11_output *output = (struct x11_output *)output_base;
 	struct x11_compositor *compositor =
@@ -338,6 +338,9 @@ x11_output_repaint(struct weston_output *output_base,
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base, damage);
+
+	if (!flip)
+		return;
 
 	wl_signal_emit(&output->base.frame_signal, output);
 

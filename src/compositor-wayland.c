@@ -330,7 +330,7 @@ static const struct wl_callback_listener frame_listener = {
 
 static void
 wayland_output_repaint(struct weston_output *output_base,
-		       pixman_region32_t *damage)
+		       pixman_region32_t *damage, int flip)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
 	struct wayland_compositor *compositor =
@@ -347,6 +347,9 @@ wayland_output_repaint(struct weston_output *output_base,
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
 		weston_surface_draw(surface, &output->base, damage);
+
+	if (!flip)
+		return;
 
 	draw_border(output);
 

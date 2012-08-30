@@ -55,6 +55,9 @@
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
 
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
+
+
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
 
@@ -1236,6 +1239,45 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 }
 
 static void
+triangle_fan_debug(struct weston_surface *surface, int first, int count)
+{
+	struct weston_compositor *compositor = surface->compositor;
+	int i;
+	GLushort *buffer;
+	GLushort *index;
+	int nelems;
+	static int color_idx = 0;
+	static const GLfloat color[][4] = {
+			{ 1.0, 0.0, 0.0, 1.0 },
+			{ 0.0, 1.0, 0.0, 1.0 },
+			{ 0.0, 0.0, 1.0, 1.0 },
+			{ 1.0, 1.0, 1.0, 1.0 },
+	};
+
+	nelems = (count - 1 + count - 2) * 2;
+
+	buffer = malloc(sizeof(GLushort) * nelems);
+	index = buffer;
+
+	for (i = 1; i < count; i++) {
+		*index++ = first;
+		*index++ = first + i;
+	}
+
+	for (i = 2; i < count; i++) {
+		*index++ = first + i - 1;
+		*index++ = first + i;
+	}
+
+	glUseProgram(compositor->solid_shader.program);
+	glUniform4fv(compositor->solid_shader.color_uniform, 1,
+			color[color_idx++ % ARRAY_SIZE(color)]);
+	glDrawElements(GL_LINES, nelems, GL_UNSIGNED_SHORT, buffer);
+	glUseProgram(surface->shader->program);
+	free(buffer);
+}
+
+static void
 repaint_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_region32_t *surf_region)
 {
@@ -1267,6 +1309,8 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 
 	for (i = 0, first = 0; i < nfans; i++) {
 		glDrawArrays(GL_TRIANGLE_FAN, first, vtxcnt[i]);
+		if (ec->fan_debug)
+			triangle_fan_debug(es, first, vtxcnt[i]);
 		first += vtxcnt[i];
 	}
 
@@ -1561,7 +1605,21 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	if (output->dirty)
 		weston_output_update_matrix(output);
 
-	output->repaint(output, &output_damage);
+	/* if debugging, redraw everything outside the damage to clean up
+	 * debug lines from the previous draw on this buffer:
+	 */
+	if (ec->fan_debug) {
+		pixman_region32_t undamaged;
+		pixman_region32_init(&undamaged);
+		pixman_region32_subtract(&undamaged, &output->region,
+				&output_damage);
+		ec->fan_debug = 0;
+		output->repaint(output, &undamaged, 0);
+		ec->fan_debug = 1;
+		pixman_region32_fini(&undamaged);
+	}
+
+	output->repaint(output, &output_damage, 1);
 
 	pixman_region32_fini(&output_damage);
 

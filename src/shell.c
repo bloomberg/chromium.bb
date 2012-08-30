@@ -3266,6 +3266,17 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 	}
 }
 
+
+static void
+fan_debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
+		      void *data)
+{
+	struct desktop_shell *shell = data;
+	struct weston_compositor *compositor = shell->compositor;
+	compositor->fan_debug = !compositor->fan_debug;
+	weston_compositor_damage_all(compositor);
+}
+
 static void
 force_kill_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		   void *data)
@@ -3400,6 +3411,8 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 				          backlight_binding, ec);
 	weston_compositor_add_key_binding(ec, KEY_SPACE, mod | MODIFIER_SHIFT,
 				          debug_repaint_binding, shell);
+	weston_compositor_add_key_binding(ec, KEY_SPACE, mod | MODIFIER_ALT,
+				          fan_debug_repaint_binding, shell);
 	weston_compositor_add_key_binding(ec, KEY_K, mod,
 				          force_kill_binding, shell);
 	weston_compositor_add_key_binding(ec, KEY_UP, mod,
