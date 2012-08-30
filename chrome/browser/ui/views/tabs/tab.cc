@@ -144,7 +144,7 @@ int tab_icon_size() {
 }
 
 // Width of touch tabs.
-static const int kTouchWidth = 180;
+static const int kTouchWidth = 120;
 
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
