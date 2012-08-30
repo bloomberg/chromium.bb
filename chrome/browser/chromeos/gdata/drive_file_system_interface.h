@@ -238,6 +238,7 @@ class DriveFileSystemInterface {
   // directories as needed just like mkdir -p does.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void CreateDirectory(const FilePath& directory_path,
                                bool is_exclusive,
                                bool is_recursive,

@@ -251,6 +251,7 @@ DriveFileSystem::CreateDirectoryParams::CreateDirectoryParams(
       is_exclusive(is_exclusive),
       is_recursive(is_recursive),
       callback(callback) {
+  DCHECK(!callback.is_null())
 }
 
 DriveFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
@@ -1241,6 +1242,8 @@ void DriveFileSystem::CreateDirectory(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&DriveFileSystem::CreateDirectoryOnUIThread,
                                ui_weak_ptr_,
                                directory_path,
@@ -1255,6 +1258,7 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
     bool is_recursive,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   FilePath last_parent_dir_path;
   FilePath first_missing_path;
@@ -1265,21 +1269,17 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
                                       &first_missing_path);
   switch (result) {
     case FOUND_INVALID: {
-      if (!callback.is_null()) {
-        base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-            base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
-      }
-
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
       return;
     }
     case DIRECTORY_ALREADY_PRESENT: {
-      if (!callback.is_null()) {
-        base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-            base::Bind(callback,
-                       is_exclusive ? DRIVE_FILE_ERROR_EXISTS :
-                                      DRIVE_FILE_OK));
-      }
-
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback,
+                     is_exclusive ? DRIVE_FILE_ERROR_EXISTS :
+                     DRIVE_FILE_OK));
       return;
     }
     case FOUND_MISSING: {
@@ -1296,10 +1296,9 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
   // Do we have a parent directory here as well? We can't then create target
   // directory if this is not a recursive operation.
   if (directory_path !=  first_missing_path && !is_recursive) {
-    if (!callback.is_null()) {
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-           base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
-    }
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -2147,11 +2146,11 @@ void DriveFileSystem::AddNewDirectory(
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params.callback.is_null());
 
   DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK) {
-    if (!params.callback.is_null())
-      params.callback.Run(error);
+    params.callback.Run(error);
     return;
   }
 
@@ -2168,10 +2167,10 @@ void DriveFileSystem::ContinueCreateDirectory(
     DriveFileError error,
     const FilePath& moved_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!params.callback.is_null());
 
   if (error != DRIVE_FILE_OK) {
-    if (!params.callback.is_null())
-      params.callback.Run(error);
+    params.callback.Run(error);
     return;
   }
 
@@ -2184,7 +2183,7 @@ void DriveFileSystem::ContinueCreateDirectory(
                     params.is_exclusive,
                     params.is_recursive,
                     params.callback);
-  } else if (!params.callback.is_null()) {
+  } else {
     // Finally done with the create request.
     params.callback.Run(DRIVE_FILE_OK);
   }
