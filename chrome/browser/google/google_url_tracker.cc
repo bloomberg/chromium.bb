@@ -387,12 +387,10 @@ void GoogleURLTracker::Observe(int type,
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
       TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       content::WebContents* web_contents = tab_contents->web_contents();
-      content::Source<content::NavigationController> source(
-          &web_contents->GetController());
-      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
-      OnNavigationPending(source, content::Source<TabContents>(tab_contents),
-                          infobar_helper, 0);
-      OnNavigationCommittedOrTabClosed(infobar_helper, web_contents->GetURL());
+      OnInstantCommitted(
+          content::Source<content::NavigationController>(
+              &web_contents->GetController()),
+          source, tab_contents->infobar_tab_helper(), web_contents->GetURL());
       break;
     }
 
@@ -436,32 +434,11 @@ void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
 }
 
 void GoogleURLTracker::InfoBarClosed(const InfoBarTabHelper* infobar_helper) {
-  DCHECK(!search_committed_);
   InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
   DCHECK(i != infobar_map_.end());
-  const MapEntry& map_entry = i->second;
 
-  UnregisterForEntrySpecificNotifications(map_entry, false);
+  UnregisterForEntrySpecificNotifications(i->second, false);
   infobar_map_.erase(i);
-
-  // Our global listeners for these other notifications should be in place iff
-  // we have any non-showing infobars.
-  for (InfoBarMap::const_iterator i(infobar_map_.begin());
-       i != infobar_map_.end(); ++i) {
-    if (!i->second.infobar->showing()) {
-      DCHECK(registrar_.IsRegistered(this,
-          content::NOTIFICATION_NAV_ENTRY_PENDING,
-          content::NotificationService::AllBrowserContextsAndSources()));
-      return;
-    }
-  }
-  if (registrar_.IsRegistered(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::NotificationService::AllBrowserContextsAndSources())) {
-    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-        content::NotificationService::AllBrowserContextsAndSources());
-    registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
-        content::NotificationService::AllBrowserContextsAndSources());
-  }
 }
 
 void GoogleURLTracker::SetNeedToFetch() {
@@ -605,6 +582,31 @@ void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
   map_entry.infobar->Show(search_url);
 }
 
+void GoogleURLTracker::OnInstantCommitted(
+    const content::NotificationSource& navigation_controller_source,
+    const content::NotificationSource& tab_contents_source,
+    InfoBarTabHelper* infobar_helper,
+    const GURL& search_url) {
+  // If this was the search we were listening for, OnNavigationPending() should
+  // ensure we're registered for NAV_ENTRY_COMMITTED, and we should call
+  // OnNavigationCommittedOrTabClosed() to simulate that firing.  Otherwise,
+  // this is some sort of non-search navigation, so while we should still call
+  // OnNavigationPending(), that function should then ensure that we're not
+  // listening for NAV_ENTRY_COMMITTED on this tab, and we should not call
+  // OnNavigationCommittedOrTabClosed() afterwards.  Note that we need to save
+  // off |search_committed_| here because OnNavigationPending() will reset it.
+  bool was_search_committed = search_committed_;
+  OnNavigationPending(navigation_controller_source, tab_contents_source,
+                      infobar_helper, 0);
+  InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
+  DCHECK_EQ(was_search_committed, (i != infobar_map_.end()) &&
+      registrar_.IsRegistered(this,
+          content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+          i->second.navigation_controller_source));
+  if (was_search_committed)
+    OnNavigationCommittedOrTabClosed(infobar_helper, search_url);
+}
+
 void GoogleURLTracker::CloseAllInfoBars(bool redo_searches) {
   // Close all infobars, whether they've been added to tabs or not.
   while (!infobar_map_.empty())
@@ -634,5 +636,29 @@ void GoogleURLTracker::UnregisterForEntrySpecificNotifications(
   if (registered_for_tab_contents_destroyed) {
     registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                       map_entry.tab_contents_source);
+  }
+
+  // Our global listeners for these other notifications should be in place iff
+  // we have any infobars still listening for commits.  These infobars are
+  // either not yet shown or have received a new pending search atop an existing
+  // infobar; in either case we want to catch subsequent pending non-search
+  // navigations. See the various cases inside OnNavigationPending().
+  for (InfoBarMap::const_iterator i(infobar_map_.begin());
+       i != infobar_map_.end(); ++i) {
+    if (registrar_.IsRegistered(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                                i->second.navigation_controller_source)) {
+      DCHECK(registrar_.IsRegistered(this,
+          content::NOTIFICATION_NAV_ENTRY_PENDING,
+          content::NotificationService::AllBrowserContextsAndSources()));
+      return;
+    }
+  }
+  if (registrar_.IsRegistered(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+      content::NotificationService::AllBrowserContextsAndSources())) {
+    DCHECK(!search_committed_);
+    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+        content::NotificationService::AllBrowserContextsAndSources());
+    registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+        content::NotificationService::AllBrowserContextsAndSources());
   }
 }
