@@ -369,7 +369,7 @@ class DownloadsTest(pyauto.PyUITest):
     resume_dict = self.PerformActionOnDownload(self._GetDownloadId(),
                                                'toggle_pause')
     self.assertFalse(resume_dict['is_paused'])
-    self.WaitForAllDownloadsToComplete(timeout=self.large_test_timeout_ms());
+    self.WaitForAllDownloadsToComplete(timeout=10 * 60 * 1000);
 
     # Verify that the file was correctly downloaded after pause and resume.
     self.assertTrue(os.path.exists(downloaded_pkg),

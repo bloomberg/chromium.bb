@@ -132,32 +132,9 @@ class CONTENT_EXPORT DownloadManager
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream) = 0;
 
-  // Notifications sent from the download thread to the UI thread
-  virtual void UpdateDownload(int32 download_id,
-                              int64 bytes_so_far,
-                              int64 bytes_per_sec,
-                              const std::string& hash_state) = 0;
-
-  // |download_id| is the ID of the download.
-  // |size| is the number of bytes that have been downloaded.
-  // |hash| is sha256 hash for the downloaded file. It is empty when the hash
-  // is not available.
-  virtual void OnResponseCompleted(int32 download_id, int64 size,
-                           const std::string& hash) = 0;
-
   // Offthread target for cancelling a particular download.  Will be a no-op
   // if the download has already been cancelled.
   virtual void CancelDownload(int32 download_id) = 0;
-
-  // Called when there is an error in the download.
-  // |download_id| is the ID of the download.
-  // |size| is the number of bytes that are currently downloaded.
-  // |hash_state| is the current state of the hash of the data that has been
-  // downloaded.
-  // |reason| is a download interrupt reason code.
-  virtual void OnDownloadInterrupted(
-      int32 download_id,
-      DownloadInterruptReason reason) = 0;
 
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete

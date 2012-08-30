@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
 namespace content {
@@ -24,6 +23,12 @@ class DownloadManager;
 // cancelled, the DownloadFile is destroyed.
 class CONTENT_EXPORT DownloadFile {
  public:
+  // Callback used with Initialize.  On a successful initialize, |reason| will
+  // be DOWNLOAD_INTERRUPT_REASON_NONE; on a failed initialize, it will be
+  // set to the reason for the failure.
+  typedef base::Callback<void(content::DownloadInterruptReason reason)>
+      InitializeCallback;
+
   // Callback used with Rename().  On a successful rename |reason| will be
   // DOWNLOAD_INTERRUPT_REASON_NONE and |path| the path the rename
   // was done to.  On a failed rename, |reason| will contain the
@@ -33,10 +38,10 @@ class CONTENT_EXPORT DownloadFile {
 
   virtual ~DownloadFile() {}
 
-  // If calculate_hash is true, sha256 hash will be calculated.
   // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a network
-  // error code on failure.
-  virtual DownloadInterruptReason Initialize() = 0;
+  // error code on failure.  Upon completion, |callback| will be
+  // called on the UI thread as per the comment above.
+  virtual void Initialize(const InitializeCallback& callback) = 0;
 
   // Rename the download file to |full_path|.  If that file exists and
   // |overwrite_existing_file| is false, |full_path| will be uniquified by
@@ -68,14 +73,11 @@ class CONTENT_EXPORT DownloadFile {
   // Returns the current (intermediate) state of the hash as a byte string.
   virtual std::string GetHashState() = 0;
 
-  // Cancels the download request associated with this file.
-  virtual void CancelDownloadRequest() = 0;
+  // For testing.  Must be called on FILE thread.
+  static int GetNumberOfDownloadFiles();
 
-  virtual int Id() const = 0;
-  virtual DownloadManager* GetDownloadManager() = 0;
-  virtual const DownloadId& GlobalId() const = 0;
-
-  virtual std::string DebugString() const = 0;
+ protected:
+  static int number_active_objects_;
 };
 
 }  // namespace content

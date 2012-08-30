@@ -6,18 +6,22 @@
 #define CONTENT_PUBLIC_TEST_TEST_FILE_ERROR_INJECTOR_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 
+class DownloadManagerImpl;
 class GURL;
 
 namespace content {
 
 class DownloadId;
 class DownloadFileWithErrorsFactory;
+class DownloadManager;
 
 // Test helper for injecting errors into download file operations.
 // All errors for a download must be injected before it starts.
@@ -36,7 +40,7 @@ class DownloadFileWithErrorsFactory;
 // FileErrorInfo b = { url2, ... };
 //
 // scoped_refptr<TestFileErrorInjector> injector =
-//     TestFileErrorInjector::Create();
+//     TestFileErrorInjector::Create(download_manager);
 //
 // injector->AddError(a);
 // injector->AddError(b);
@@ -67,7 +71,9 @@ class TestFileErrorInjector
   // Creates an instance.  May only be called once.
   // Lives until all callbacks (in the implementation) are complete and the
   // creator goes out of scope.
-  static scoped_refptr<TestFileErrorInjector> Create();
+  // TODO(rdsmith): Allow multiple calls for different download managers.
+  static scoped_refptr<TestFileErrorInjector> Create(
+      scoped_refptr<content::DownloadManager> download_manager);
 
   // Adds an error.
   // Must be called before |InjectErrors()| for a particular download file.
@@ -95,9 +101,6 @@ class TestFileErrorInjector
   // Returns whether or not a file matching |url| has been created.
   bool HadFile(const GURL& url) const;
 
-  // Gets the download ID associated with the file matching |url|.
-  const DownloadId GetId(const GURL& url) const;
-
   // Resets the found file list.
   void ClearFoundFiles();
 
@@ -106,24 +109,20 @@ class TestFileErrorInjector
  private:
   friend class base::RefCountedThreadSafe<TestFileErrorInjector>;
 
-  typedef std::map<GURL, DownloadId> FileMap;
+  typedef std::set<GURL> FileSet;
 
-  TestFileErrorInjector();
+  TestFileErrorInjector(
+      scoped_refptr<content::DownloadManager> download_manager);
 
   virtual ~TestFileErrorInjector();
 
-  void AddFactory(scoped_ptr<DownloadFileWithErrorsFactory> factory);
-
-  void InjectErrorsOnFileThread(ErrorMap map,
-                                DownloadFileWithErrorsFactory* factory);
-
   // Callbacks from the download file, to record lifetimes.
   // These may be called on any thread.
-  void RecordDownloadFileConstruction(const GURL& url, DownloadId id);
+  void RecordDownloadFileConstruction(const GURL& url);
   void RecordDownloadFileDestruction(const GURL& url);
 
   // These run on the UI thread.
-  void DownloadFileCreated(GURL url, DownloadId id);
+  void DownloadFileCreated(GURL url);
   void DestroyingDownloadFile(GURL url);
 
   // All the data is used on the UI thread.
@@ -131,13 +130,16 @@ class TestFileErrorInjector
   ErrorMap injected_errors_;
 
   // Keep track of active DownloadFiles.
-  FileMap files_;
+  FileSet files_;
 
   // Keep track of found DownloadFiles.
-  FileMap found_files_;
+  FileSet found_files_;
 
   // The factory we created.  May outlive this class.
   DownloadFileWithErrorsFactory* created_factory_;
+
+  // The download manager we set the factory on.
+  scoped_refptr<DownloadManagerImpl> download_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFileErrorInjector);
 };

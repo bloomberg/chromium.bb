@@ -25,7 +25,6 @@
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
-#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_file_resource_handler.h"
@@ -351,8 +350,7 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 }
 
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
-    : download_file_manager_(new DownloadFileManager(NULL)),
-      save_file_manager_(new SaveFileManager()),
+    : save_file_manager_(new SaveFileManager()),
       request_id_(-1),
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
