@@ -272,7 +272,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 }
 
 // Test that the oncancel event is dispatched upon clicking on the preview.
-IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
+#if defined(OS_WIN)
+// Fails frequently on the win_rel tryserver.  crbug.com/145754
+#define MAYBE_OnCancelEvent DISABLED_OnCancelEvent
+#else
+#define MAYBE_OnCancelEvent OnCancelEvent
+#endif
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   SetOmniboxText("search");
   WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
