@@ -8,8 +8,9 @@ OBJSSO    := $(WEBMOBJS:.o=_so.o)
 OBJECTS1  := sample.o
 OBJECTS2  := sample_muxer.o vttreader.o webvttparser.o sample_muxer_metadata.o
 OBJECTS3  := dumpvtt.o vttreader.o webvttparser.o
+OBJECTS4  := vttdemux.o webvttparser.o
 INCLUDES  := -I.
-EXES      := samplemuxer sample dumpvtt
+EXES      := samplemuxer sample dumpvtt vttdemux
 
 all: $(EXES)
 
@@ -23,6 +24,9 @@ dumpvtt: $(OBJECTS3)
 	$(CXX) $^ -o $@
 
 shared: $(LIBWEBMSO)
+
+vttdemux: $(OBJECTS4) $(LIBWEBMA)
+	$(CXX) $^ -o $@
 
 libwebm.a: $(OBJSA)
 	$(AR) rcs $@ $^
@@ -40,4 +44,4 @@ libwebm.so: $(OBJSSO)
 	$(CXX) -c $(CXXFLAGS) -fPIC $(INCLUDES) $< -o $@
 
 clean:
-	$(RM) -f $(OBJECTS1) $(OBJECTS2) $(OBJECTS3) $(OBJSA) $(OBJSSO) $(LIBWEBMA) $(LIBWEBMSO) $(EXES) Makefile.bak
+	$(RM) -f $(OBJECTS1) $(OBJECTS2) $(OBJECTS3) $(OBJECTS4) $(OBJSA) $(OBJSSO) $(LIBWEBMA) $(LIBWEBMSO) $(EXES) Makefile.bak
