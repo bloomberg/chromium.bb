@@ -811,13 +811,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(app_list::switches::kAppListShowAppsOnly),
   },
-  {
-    "ash-extended-desktop-disabled",
-    IDS_FLAGS_DISABLE_ASH_EXTENDED_DESKTOP_NAME,
-    IDS_FLAGS_DISABLE_ASH_EXTENDED_DESKTOP_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kAshExtendedDesktopDisabled)
-  },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {

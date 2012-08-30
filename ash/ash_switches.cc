@@ -19,8 +19,6 @@ const char kAshEnableOak[] = "ash-enable-oak";
 // Enables Workspace2.
 const char kAshEnableWorkspace2[] = "ash-enable-workspace2";
 
-const char kAshExtendedDesktopDisabled[] = "ash-extended-desktop-disabled";
-
 // Disable using Ash notifications.
 const char kAshNotifyDisabled[] = "ash-notify-disabled";
 

@@ -42,9 +42,7 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // Initializes primary display.
   void InitPrimaryDisplay();
 
-  // Initialize secondary display. This is separated because in non
-  // extended desktop mode, this creates background widgets, which
-  // requires other controllers.
+  // Initialize secondary displays.
   void InitSecondaryDisplays();
 
   // Returns the root window for primary display.
@@ -92,18 +90,12 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
-  // Is extended desktop enabled?
-  static bool IsExtendedDesktopEnabled();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, WarpMousePointer);
 
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
-  // TODO(oshima): remove |is_primary| when non extended desktop mode is
-  // removed.
-  aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display,
-                                            bool is_primary);
+  aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);
 
   void UpdateDisplayBoundsForLayout();
 

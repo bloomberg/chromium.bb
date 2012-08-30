@@ -218,9 +218,8 @@ static float ComputeDeviceScaleFactor(unsigned int width,
 
 }  // namespace
 
-OutputConfigurator::OutputConfigurator(bool is_extended_display_enabled)
+OutputConfigurator::OutputConfigurator()
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
-      is_extended_display_enabled_(is_extended_display_enabled),
       output_count_(0),
       output_cache_(NULL),
       mirror_supported_(false),
@@ -269,10 +268,8 @@ bool OutputConfigurator::CycleDisplayMode() {
   bool did_change = false;
   // Rules:
   // - if there are 0 or 1 displays, do nothing and return false.
-  // - use y-coord of CRTCs to determine if we are mirror, primary-first, or
-  // secondary-first.  The cycle order is:
-  //   mirror->primary->secondary->mirror.
-  // Note: If the extended desktop is enabled, the cycle order becomes,
+  // - use y-coord of CRTCs to determine if we are mirror or extended.
+  // The cycle order is:
   // mirror->extended->mirror
   OutputState new_state = STATE_INVALID;
   switch (output_state_) {
@@ -280,14 +277,10 @@ bool OutputConfigurator::CycleDisplayMode() {
       new_state = STATE_DUAL_PRIMARY_ONLY;
       break;
     case STATE_DUAL_PRIMARY_ONLY:
-      if (is_extended_display_enabled_) {
-        if (mirror_supported_)
-          new_state = STATE_DUAL_MIRROR;
-        else
-          new_state = STATE_INVALID;
-      } else {
-        new_state = STATE_DUAL_SECONDARY_ONLY;
-      }
+      if (mirror_supported_)
+        new_state = STATE_DUAL_MIRROR;
+      else
+        new_state = STATE_INVALID;
       break;
     case STATE_DUAL_SECONDARY_ONLY:
       new_state = mirror_supported_ ?
@@ -727,15 +720,11 @@ bool OutputConfigurator::RecacheAndUseDefaultState() {
 
 OutputState OutputConfigurator::GetDefaultState() const {
   OutputState state = STATE_HEADLESS;
-  if (-1 != primary_output_index_) {
-    if (-1 != secondary_output_index_) {
-      if (is_extended_display_enabled_ || !mirror_supported_)
-        state = STATE_DUAL_PRIMARY_ONLY;
-      else
-        state = STATE_DUAL_MIRROR;
-    } else {
+  if (primary_output_index_ != -1) {
+    if (secondary_output_index_ != -1)
+      state = STATE_DUAL_PRIMARY_ONLY;
+    else
       state = STATE_SINGLE;
-    }
   }
   return state;
 }

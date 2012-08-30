@@ -5973,12 +5973,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NEW_WALLPAPER_UI_DESCRIPTION" desc="Description of the flag to enable new wallpaper picker UI in ChromeOS.">
         Enables the new wallpaper picker UI.
       </message>
-      <message name="IDS_FLAGS_DISABLE_ASH_EXTENDED_DESKTOP_NAME" desc="Name of the flag to disable extended desktop in ash.">
-        Disable extended desktop support.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_ASH_EXTENDED_DESKTOP_DESCRIPTION" desc="Description of the flag to disable extended desktop in ash.">
-        Disable extended desktop, which allows you to open a browser in secondary displays.
-      </message>
       <message name="IDS_FLAGS_DISABLE_ASH_NOTIFY_NAME" desc="Name of the flag to enable applist v2 in ash.">
         Disable Ash notifications.
       </message>

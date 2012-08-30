@@ -184,8 +184,7 @@ Shell::Shell(ShellDelegate* delegate)
       env_filter_(NULL),
       delegate_(delegate),
 #if defined(OS_CHROMEOS)
-      output_configurator_(new chromeos::OutputConfigurator(
-          internal::DisplayController::IsExtendedDesktopEnabled())),
+      output_configurator_(new chromeos::OutputConfigurator()),
       output_configurator_animation_(
           new internal::OutputConfiguratorAnimation()),
 #endif  // defined(OS_CHROMEOS)
@@ -348,7 +347,6 @@ aura::Window* Shell::GetContainer(aura::RootWindow* root_window,
 
 // static
 std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
-  // TODO(oshima): Support multiple root windows.
   std::vector<aura::Window*> containers;
   aura::Window* container = GetPrimaryRootWindow()->GetChildById(container_id);
   if (container)
@@ -422,11 +420,9 @@ void Shell::Init() {
     AddEnvEventFilter(touch_observer_hud_.get());
   }
 
-  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
-    mouse_cursor_filter_.reset(
-        new internal::MouseCursorEventFilter(display_controller_.get()));
-    AddEnvEventFilter(mouse_cursor_filter_.get());
-  }
+  mouse_cursor_filter_.reset(
+      new internal::MouseCursorEventFilter(display_controller_.get()));
+  AddEnvEventFilter(mouse_cursor_filter_.get());
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
@@ -669,32 +665,15 @@ int Shell::GetGridSize() const {
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   root->set_focus_manager(focus_manager_.get());
-  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
-    internal::RootWindowController* controller =
-        new internal::RootWindowController(root);
-    controller->CreateContainers();
-    InitRootWindowController(controller);
-    controller->root_window_layout()->OnWindowResized();
-    desktop_background_controller_->OnRootWindowAdded(root);
-    root->ShowRootWindow();
-    // Activate new root for testing.
-    active_root_window_ = root;
-  } else {
-    root->SetFocusWhenShown(false);
-    root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
-    aura::Window* container = new aura::Window(NULL);
-    container->SetName("SecondaryDisplayContainer");
-    container->Init(ui::LAYER_NOT_DRAWN);
-    root->AddChild(container);
-    container->SetLayoutManager(new internal::BaseLayoutManager(root));
-    CreateSecondaryDisplayWidget(container);
-    container->Show();
-    root->layout_manager()->OnWindowResized();
-    aura::client::SetCaptureClient(root, capture_controller_.get());
-    aura::client::SetScreenPositionClient(
-        root, screen_position_controller_.get());
-    root->ShowRootWindow();
-  }
+  internal::RootWindowController* controller =
+      new internal::RootWindowController(root);
+  controller->CreateContainers();
+  InitRootWindowController(controller);
+  controller->root_window_layout()->OnWindowResized();
+  desktop_background_controller_->OnRootWindowAdded(root);
+  root->ShowRootWindow();
+  // Activate new root for testing.
+  active_root_window_ = root;
 }
 
 void Shell::InitRootWindowController(

@@ -93,15 +93,13 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   // On non-testing environment, when a secondary display is connected, a new
   // native (i.e. X) window for the display is always created below the previous
   // one for GPU performance reasons. Try to emulate the behavior.
-  if (internal::DisplayController::IsExtendedDesktopEnabled()) {
-    Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-    DCHECK_EQ(displays.size(), root_windows.size());
-    size_t next_y = 0;
-    for (size_t i = 0; i < root_windows.size(); ++i) {
-      const gfx::Size size = root_windows[i]->GetHostSize();
-      root_windows[i]->SetHostBounds(gfx::Rect(gfx::Point(0, next_y), size));
-      next_y += size.height();
-    }
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  DCHECK_EQ(displays.size(), root_windows.size());
+  size_t next_y = 0;
+  for (size_t i = 0; i < root_windows.size(); ++i) {
+    const gfx::Size size = root_windows[i]->GetHostSize();
+    root_windows[i]->SetHostBounds(gfx::Rect(gfx::Point(0, next_y), size));
+    next_y += size.height();
   }
 }
 

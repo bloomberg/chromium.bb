@@ -48,12 +48,8 @@ DisplayController::~DisplayController() {
            root_windows_.rbegin(); it != root_windows_.rend(); ++it) {
     internal::RootWindowController* controller =
         GetRootWindowController(it->second);
-    // RootWindow may not have RootWindowController in non
-    // extended desktop mode.
-    if (controller)
-      delete controller;
-    else
-      delete it->second;
+    DCHECK(controller);
+    delete controller;
   }
 }
 
@@ -61,7 +57,7 @@ void DisplayController::InitPrimaryDisplay() {
   aura::DisplayManager* display_manager =
       aura::Env::GetInstance()->display_manager();
   const gfx::Display* display = display_manager->GetDisplayAt(0);
-  aura::RootWindow* root = AddRootWindowForDisplay(*display, true);
+  aura::RootWindow* root = AddRootWindowForDisplay(*display);
   root->SetHostBounds(display->bounds_in_pixel());
 }
 
@@ -70,7 +66,7 @@ void DisplayController::InitSecondaryDisplays() {
       aura::Env::GetInstance()->display_manager();
   for (size_t i = 1; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
-    aura::RootWindow* root = AddRootWindowForDisplay(*display, false);
+    aura::RootWindow* root = AddRootWindowForDisplay(*display);
     Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   }
   UpdateDisplayBoundsForLayout();
@@ -197,7 +193,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     Shell::GetPrimaryRootWindow()->SetHostBounds(display.bounds_in_pixel());
     return;
   }
-  aura::RootWindow* root = AddRootWindowForDisplay(display, false);
+  aura::RootWindow* root = AddRootWindowForDisplay(display);
   Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   UpdateDisplayBoundsForLayout();
 }
@@ -222,34 +218,19 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   }
 }
 
-// static
-bool DisplayController::IsExtendedDesktopEnabled(){
-  static bool extended_desktop_disabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshExtendedDesktopDisabled);
-  return !extended_desktop_disabled;
-}
-
 aura::RootWindow* DisplayController::AddRootWindowForDisplay(
-    const gfx::Display& display, bool is_primary) {
+    const gfx::Display& display) {
   aura::RootWindow* root = aura::Env::GetInstance()->display_manager()->
       CreateRootWindowForDisplay(display);
   root_windows_[display.id()] = root;
-  // Confine the cursor within the window if
-  // 1) Extended desktop is enabled or
-  // 2) the display is primary display and the host window
-  // is set to be fullscreen (this is old behavior).
-  if (IsExtendedDesktopEnabled() ||
-      (aura::DisplayManager::use_fullscreen_host_window() && is_primary)) {
-    root->ConfineCursorToWindow();
-  }
+  root->ConfineCursorToWindow();
   return root;
 }
 
 void DisplayController::UpdateDisplayBoundsForLayout() {
-  if (!IsExtendedDesktopEnabled() || gfx::Screen::GetNumDisplays() <= 1) {
+  if (gfx::Screen::GetNumDisplays() <= 1)
     return;
-  }
+
   DCHECK_EQ(2, gfx::Screen::GetNumDisplays());
   aura::DisplayManager* display_manager =
       aura::Env::GetInstance()->display_manager();
@@ -257,8 +238,6 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
   gfx::Display* secondary_display = display_manager->GetDisplayAt(1);
   const gfx::Rect& secondary_bounds = secondary_display->bounds();
   gfx::Point new_secondary_origin = primary_bounds.origin();
-
-  // TODO(oshima|mukai): Implement more flexible layout.
 
   // Ignore the offset in case the secondary display doesn't share edges with
   // the primary display.

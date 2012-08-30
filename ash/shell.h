@@ -153,8 +153,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   // Returns the root window controller for the primary root window.
   static internal::RootWindowController* GetPrimaryRootWindowController();
 
-  // Returns all root window controllers. In non extended desktop
-  // mode, this return a RootWindowController for the primary root window only.
+  // Returns all root window controllers.
   static RootWindowControllerList GetAllRootWindowControllers();
 
   // Returns the primary RootWindow. The primary RootWindow is the one
@@ -167,8 +166,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   // until the another window who has a different root window becomes active.
   static aura::RootWindow* GetActiveRootWindow();
 
-  // Returns all root windows. In non extended desktop mode, this
-  // returns the primary root window only.
+  // Returns all root windows.
   static RootWindowList GetAllRootWindows();
 
   static aura::Window* GetContainer(aura::RootWindow* root_window,

@@ -26,6 +26,7 @@ typedef _XRRScreenResources XRRScreenResources;
 namespace chromeos {
 
 // Used to describe the state of a multi-display configuration.
+// TODO(oshima): remove DUAL_SECONDARY_ONLY
 enum OutputState {
   STATE_INVALID,
   STATE_HEADLESS,
@@ -48,7 +49,7 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
     virtual void OnDisplayModeChanged() = 0;
   };
 
-  explicit OutputConfigurator(bool is_extended_display_enabled);
+  OutputConfigurator();
   virtual ~OutputConfigurator();
 
   OutputState output_state() const { return output_state_; }
@@ -149,9 +150,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // If this flag is set to false, any attempts to change the output
   // configuration to immediately fail without changing the state.
   bool is_running_on_chrome_os_;
-
-  // Set to true if the extended display flag is enabled.
-  const bool is_extended_display_enabled_;
 
   // The number of outputs in the output_cache_ array.
   int output_count_;

@@ -93,7 +93,6 @@ void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
   chromeos::OutputState output_state =
       ash::Shell::GetInstance()->output_configurator()->output_state();
   base::FundamentalValue show_options(
-      DisplayController::IsExtendedDesktopEnabled() &&
       output_state != chromeos::STATE_INVALID &&
       output_state != chromeos::STATE_HEADLESS &&
       output_state != chromeos::STATE_SINGLE);

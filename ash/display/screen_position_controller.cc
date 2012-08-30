@@ -59,24 +59,20 @@ void ScreenPositionController::ConvertPointToScreen(
     gfx::Point* point) {
   const aura::RootWindow* root = window->GetRootWindow();
   aura::Window::ConvertPointToTarget(window, root, point);
-  if (DisplayController::IsExtendedDesktopEnabled()) {
-    const gfx::Point display_origin =
-        gfx::Screen::GetDisplayNearestWindow(
-            const_cast<aura::RootWindow*>(root)).bounds().origin();
-    point->Offset(display_origin.x(), display_origin.y());
-  }
+  const gfx::Point display_origin =
+      gfx::Screen::GetDisplayNearestWindow(
+          const_cast<aura::RootWindow*>(root)).bounds().origin();
+  point->Offset(display_origin.x(), display_origin.y());
 }
 
 void ScreenPositionController::ConvertPointFromScreen(
     const aura::Window* window,
     gfx::Point* point) {
   const aura::RootWindow* root = window->GetRootWindow();
-  if (DisplayController::IsExtendedDesktopEnabled()) {
-    const gfx::Point display_origin =
-        gfx::Screen::GetDisplayNearestWindow(
-            const_cast<aura::RootWindow*>(root)).bounds().origin();
-    point->Offset(-display_origin.x(), -display_origin.y());
-  }
+  const gfx::Point display_origin =
+      gfx::Screen::GetDisplayNearestWindow(
+          const_cast<aura::RootWindow*>(root)).bounds().origin();
+  point->Offset(-display_origin.x(), -display_origin.y());
   aura::Window::ConvertPointToTarget(root, window, point);
 }
 
@@ -84,8 +80,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
                                          const gfx::Rect& bounds,
                                          const gfx::Display& display) {
   DCHECK_NE(-1, display.id());
-  if (!DisplayController::IsExtendedDesktopEnabled() ||
-      !window->parent()->GetProperty(internal::kUsesScreenCoordinatesKey)) {
+  if (!window->parent()->GetProperty(internal::kUsesScreenCoordinatesKey)) {
     window->SetBounds(bounds);
     return;
   }
