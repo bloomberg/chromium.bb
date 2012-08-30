@@ -77,6 +77,7 @@
         'env.cc',
         'env.h',
         'env_observer.h',
+        'event_filter.cc',
         'event_filter.h',
         'focus_change_observer.h',
         'focus_manager.cc',

@@ -47,19 +47,30 @@ class AURA_EXPORT EventFilter {
   // filter may still perform some action, the return value simply indicates
   // that further processing can occur.
 
-  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) = 0;
-  virtual bool PreHandleMouseEvent(Window* target, ui::MouseEvent* event) = 0;
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event);
+  virtual bool PreHandleMouseEvent(Window* target, ui::MouseEvent* event);
 
   // Returns a value other than ui::TOUCH_STATUS_UNKNOWN if the event is
   // consumed.
   virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              ui::TouchEvent* event) = 0;
+                                              ui::TouchEvent* event);
 
   // Returns a value other than ui::GESTURE_STATUS_UNKNOWN if the gesture is
   // consumed.
-  virtual ui::GestureStatus PreHandleGestureEvent(
-      Window* target,
-      ui::GestureEvent* event) = 0;
+  virtual ui::GestureStatus PreHandleGestureEvent(Window* target,
+                                                  ui::GestureEvent* event);
+
+  // The following methods are called to handle events _after_ they have been
+  // handled by their target window's delegate. They will only be called if the
+  // window delegate handlers did not consume the event (i.e. they returned
+  // false). The return status of these methods is propagated back to
+  // RootWindow.
+  virtual bool PostHandleKeyEvent(Window* target, ui::KeyEvent* event);
+  virtual bool PostHandleMouseEvent(Window* target, ui::MouseEvent* event);
+  virtual ui::TouchStatus PostHandleTouchEvent(Window* target,
+                                               ui::TouchEvent* event);
+  virtual ui::GestureStatus PostHandleGestureEvent(Window* target,
+                                                   ui::GestureEvent* event);
 };
 
 }  // namespace aura

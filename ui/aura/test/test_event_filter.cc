@@ -11,9 +11,15 @@ TestEventFilter::TestEventFilter()
     : key_event_count_(0),
       mouse_event_count_(0),
       touch_event_count_(0),
+      post_key_event_count_(0),
+      post_mouse_event_count_(0),
+      post_touch_event_count_(0),
       consumes_key_events_(false),
       consumes_mouse_events_(false),
-      consumes_touch_events_(false) {
+      consumes_touch_events_(false),
+      consumes_key_events_post_(false),
+      consumes_mouse_events_post_(false),
+      consumes_touch_events_post_(false) {
 }
 
 TestEventFilter::~TestEventFilter() {
@@ -23,6 +29,9 @@ void TestEventFilter::ResetCounts() {
   key_event_count_ = 0;
   mouse_event_count_ = 0;
   touch_event_count_ = 0;
+  post_key_event_count_ = 0;
+  post_mouse_event_count_ = 0;
+  post_touch_event_count_ = 0;
 }
 
 bool TestEventFilter::PreHandleKeyEvent(Window* target, ui::KeyEvent* event) {
@@ -47,9 +56,35 @@ ui::TouchStatus TestEventFilter::PreHandleTouchEvent(
 ui::GestureStatus TestEventFilter::PreHandleGestureEvent(
     Window* target,
     ui::GestureEvent* event) {
-  // TODO(sad):
+  // TODO(sadrul): !
   return ui::GESTURE_STATUS_UNKNOWN;
 }
+
+bool TestEventFilter::PostHandleKeyEvent(Window* target, ui::KeyEvent* event) {
+  ++post_key_event_count_;
+  return consumes_key_events_post_;
+}
+
+bool TestEventFilter::PostHandleMouseEvent(Window* target,
+                                           ui::MouseEvent* event) {
+  ++post_mouse_event_count_;
+  return consumes_mouse_events_post_;
+}
+
+ui::TouchStatus TestEventFilter::PostHandleTouchEvent(Window* target,
+                                                      ui::TouchEvent* event) {
+  ++post_touch_event_count_;
+  // TODO(sadrul): !
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus TestEventFilter::PostHandleGestureEvent(
+    Window* target,
+    ui::GestureEvent* event) {
+  // TODO(sadrul): !
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
 
 }  // namespace test
 }  // namespace aura

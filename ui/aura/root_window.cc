@@ -26,6 +26,7 @@
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/event.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
@@ -621,6 +622,10 @@ bool RootWindow::ProcessMouseEvent(Window* target, ui::MouseEvent* event) {
   if (!target->IsVisible())
     return false;
 
+  // |target| can be deleted by any of the handlers below.
+  WindowTracker tracker;
+  tracker.Add(target);
+
   EventFilters filters;
   GetEventFiltersToNotify(target->parent(), &filters);
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
@@ -630,9 +635,21 @@ bool RootWindow::ProcessMouseEvent(Window* target, ui::MouseEvent* event) {
       return true;
   }
 
-  if (!target->delegate())
-    return false;
-  return target->delegate()->OnMouseEvent(event);
+  if (tracker.Contains(target) && target->delegate() &&
+      target->delegate()->OnMouseEvent(event)) {
+    return true;
+  }
+
+  if (tracker.Contains(target)) {
+    for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+      rend = filters.rend();
+      it != rend; ++it) {
+        if ((*it)->PostHandleMouseEvent(target, event))
+          return true;
+    }
+  }
+
+  return false;
 }
 
 bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
@@ -649,6 +666,10 @@ bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
     GetEventFiltersToNotify(target->parent(), &filters);
   }
 
+  // |target| can be deleted by any of the handlers below.
+  WindowTracker tracker;
+  tracker.Add(target);
+
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
            rend = filters.rend();
        it != rend; ++it) {
@@ -656,9 +677,21 @@ bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
       return true;
   }
 
-  if (!target->delegate())
-    return false;
-  return target->delegate()->OnKeyEvent(event);
+  if (tracker.Contains(target) && target->delegate() &&
+      target->delegate()->OnKeyEvent(event)) {
+    return true;
+  }
+
+  if (tracker.Contains(target)) {
+    for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+             rend = filters.rend();
+         it != rend; ++it) {
+      if ((*it)->PostHandleKeyEvent(target, event))
+        return true;
+    }
+  }
+
+  return false;
 }
 
 ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
@@ -671,6 +704,11 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
     GetEventFiltersToNotify(target, &filters);
   else
     GetEventFiltersToNotify(target->parent(), &filters);
+
+  // |target| can be deleted by any of the handlers below.
+  WindowTracker tracker;
+  tracker.Add(target);
+
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
            rend = filters.rend();
        it != rend; ++it) {
@@ -679,8 +717,21 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
       return status;
   }
 
-  if (target->delegate())
-    return target->delegate()->OnTouchEvent(event);
+  if (tracker.Contains(target) && target->delegate()) {
+    ui::TouchStatus status = target->delegate()->OnTouchEvent(event);
+    if (status != ui::TOUCH_STATUS_UNKNOWN)
+      return status;
+  }
+
+  if (tracker.Contains(target)) {
+    for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+             rend = filters.rend();
+         it != rend; ++it) {
+      ui::TouchStatus status = (*it)->PostHandleTouchEvent(target, event);
+      if (status != ui::TOUCH_STATUS_UNKNOWN)
+        return status;
+    }
+  }
 
   return ui::TOUCH_STATUS_UNKNOWN;
 }
@@ -696,6 +747,11 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
   else
     GetEventFiltersToNotify(target->parent(), &filters);
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+
+  // |target| can be deleted by any of the handlers below.
+  WindowTracker tracker;
+  tracker.Add(target);
+
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
            rend = filters.rend();
        it != rend; ++it) {
@@ -704,8 +760,21 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
       return status;
   }
 
-  if (target->delegate())
+  if (tracker.Contains(target) && target->delegate()) {
     status = target->delegate()->OnGestureEvent(event);
+    if (status != ui::GESTURE_STATUS_UNKNOWN)
+      return status;
+  }
+
+  if (tracker.Contains(target)) {
+    for (EventFilters::const_reverse_iterator it = filters.rbegin(),
+            rend = filters.rend();
+         it != rend; ++it) {
+      status = (*it)->PostHandleGestureEvent(target, event);
+      if (status != ui::GESTURE_STATUS_UNKNOWN)
+        return status;
+    }
+  }
 
   return status;
 }
