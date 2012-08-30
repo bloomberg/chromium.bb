@@ -49,7 +49,8 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
     # Wait for all iframes to load.
     self.WaitUntilResult(True,
         lambda: self.RunInViewer(
-            'window.document.getElementsByTagName("iframe") != null'),
+            'window.document.getElementsByTagName("iframe") != null && '
+            'window.document.getElementsByTagName("iframe").length > 0'),
             msg='Timed out waiting for iframes to load.')
 
     # Wait for viewer window to load the sign-in page.
