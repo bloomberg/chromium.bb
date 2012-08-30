@@ -53,7 +53,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual void IsMounted(const BoolDBusMethodCallback& callback) {
+  virtual void IsMounted(const BoolDBusMethodCallback& callback) OVERRIDE {
     INITIALIZE_METHOD_CALL(method_call, cryptohome::kCryptohomeIsMounted);
     CallBoolMethod(&method_call, callback);
   }

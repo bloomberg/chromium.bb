@@ -369,7 +369,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual void RemoveIBusEngineService(const dbus::ObjectPath& object_path) {
+  virtual void RemoveIBusEngineService(
+      const dbus::ObjectPath& object_path) OVERRIDE {
     if (ibus_engine_services_.find(object_path) !=
         ibus_engine_services_.end()) {
       LOG(WARNING) << "Object path not found: " << object_path.value();

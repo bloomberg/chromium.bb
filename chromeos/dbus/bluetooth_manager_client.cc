@@ -117,7 +117,7 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
 
   // BluetoothManagerClient override.
   virtual void FindAdapter(const std::string& address,
-                           const AdapterCallback& callback) {
+                           const AdapterCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
       bluetooth_manager::kBluetoothManagerInterface,
       bluetooth_manager::kFindAdapter);
@@ -333,7 +333,7 @@ class BluetoothManagerClientStubImpl : public BluetoothManagerClient {
 
   // BluetoothManagerClient override.
   virtual void FindAdapter(const std::string& address,
-                           const AdapterCallback& callback) {
+                           const AdapterCallback& callback) OVERRIDE {
     VLOG(1) << "FindAdapter: " << address;
     if (address == "hci0")
       callback.Run(dbus::ObjectPath("/fake/hci0"), true);

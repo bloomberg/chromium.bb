@@ -184,9 +184,9 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   }
 
   // IBusInputContextClient override.
-  void SetSurroundingText(const std::string& text,
-                          uint32 start_index,
-                          uint32 end_index) OVERRIDE {
+  virtual void SetSurroundingText(const std::string& text,
+                                  uint32 start_index,
+                                  uint32 end_index) OVERRIDE {
     dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
                                  ibus::input_context::kSetSurroundingText);
     dbus::MessageWriter writer(&method_call);
@@ -424,9 +424,9 @@ class IBusInputContextClientStubImpl : public IBusInputContextClient {
       const ErrorCallback& error_callback) OVERRIDE {
     callback.Run(false);
   }
-  void SetSurroundingText(const std::string& text,
-                          uint32 start_index,
-                          uint32 end_index) OVERRIDE {}
+  virtual void SetSurroundingText(const std::string& text,
+                                  uint32 start_index,
+                                  uint32 end_index) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientStubImpl);

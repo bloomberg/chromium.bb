@@ -199,7 +199,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  const DiskMap& disks() const OVERRIDE { return disks_; }
+  virtual const DiskMap& disks() const OVERRIDE { return disks_; }
 
   // DiskMountManager override.
   virtual const Disk* FindDiskBySourcePath(const std::string& source_path)
@@ -209,7 +209,9 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // DiskMountManager override.
-  const MountPointMap& mount_points() const OVERRIDE { return mount_points_; }
+  virtual const MountPointMap& mount_points() const OVERRIDE {
+    return mount_points_;
+  }
 
  private:
   struct UnmountDeviceRecursiveCallbackData {

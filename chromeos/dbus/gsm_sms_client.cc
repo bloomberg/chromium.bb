@@ -206,7 +206,7 @@ class GsmSMSClientImpl : public GsmSMSClient {
 
   // GsmSMSClient override.
   virtual void RequestUpdate(const std::string& service_name,
-                             const dbus::ObjectPath& object_path) {
+                             const dbus::ObjectPath& object_path) OVERRIDE {
   }
 
  private:
@@ -296,7 +296,7 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
 
   // GsmSMSClient override.
   virtual void RequestUpdate(const std::string& service_name,
-                             const dbus::ObjectPath& object_path) {
+                             const dbus::ObjectPath& object_path) OVERRIDE {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kSmsTestMessages))
       return;

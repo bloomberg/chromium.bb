@@ -141,7 +141,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kIncreaseKeyboardBrightness);
   }
 
-  virtual void SetScreenBrightnessPercent(double percent, bool gradual) {
+  virtual void SetScreenBrightnessPercent(double percent,
+                                          bool gradual) OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kSetScreenBrightnessPercent);
