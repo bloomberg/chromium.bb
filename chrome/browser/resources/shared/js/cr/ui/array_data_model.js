@@ -72,10 +72,6 @@ cr.define('cr.ui', function() {
       this.compareFunctions_[field] = compareFunction;
     },
 
-    isSortable: function(field) {
-      return this.compareFunctions_ && field in this.compareFunctions_;
-    },
-
     /**
      * Returns true if the field has a compare function.
      * @param {string} field The field to check.
