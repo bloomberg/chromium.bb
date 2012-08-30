@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
@@ -196,6 +197,13 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when GetFreeDiskSpace() is complete.
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
 
+  // Called when the page requests periodic update.
+  void OnPeriodicUpdate(const base::ListValue* args);
+
+  // Updates the summary about in-flight operations.
+  void UpdateInFlightOperations(
+      const gdata::DriveServiceInterface* drive_service);
+
   // The number of pending ReadDirectoryByPath() calls.
   int num_pending_reads_;
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
@@ -206,6 +214,10 @@ void DriveInternalsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "pageLoaded",
       base::Bind(&DriveInternalsWebUIHandler::OnPageLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "periodicUpdate",
+      base::Bind(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -374,6 +386,52 @@ void DriveInternalsWebUIHandler::OnGetFreeDiskSpace(
 
   web_ui()->CallJavascriptFunction(
       "updateLocalStorageUsage", *local_storage_summary);
+}
+
+void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  gdata::DriveSystemService* system_service = GetSystemService();
+  // |system_service| may be NULL in the guest/incognito mode.
+  if (!system_service)
+    return;
+
+  gdata::DriveServiceInterface* drive_service = system_service->drive_service();
+  DCHECK(drive_service);
+
+  UpdateInFlightOperations(drive_service);
+}
+
+void DriveInternalsWebUIHandler::UpdateInFlightOperations(
+    const gdata::DriveServiceInterface* drive_service) {
+  std::vector<gdata::OperationRegistry::ProgressStatus>
+      progress_status_list = drive_service->operation_registry()->
+      GetProgressStatusList();
+
+  base::ListValue in_flight_operations;
+  for (size_t i = 0; i < progress_status_list.size(); ++i) {
+    const gdata::OperationRegistry::ProgressStatus status =
+        progress_status_list[i];
+
+    base::DictionaryValue* dict = new DictionaryValue;
+    dict->SetInteger("operation_id", status.operation_id);
+    dict->SetString(
+        "operation_type",
+        gdata::OperationRegistry::OperationTypeToString(status.operation_type));
+    dict->SetString("file_path", status.file_path.AsUTF8Unsafe());
+    dict->SetString(
+        "transfer_state",
+        gdata::OperationRegistry::OperationTransferStateToString(
+            status.transfer_state));
+    dict->SetString(
+        "start_time",
+        gdata::util::FormatTimeAsStringLocaltime(status.start_time));
+    dict->SetDouble("progress_current", status.progress_current);
+    dict->SetDouble("progress_total", status.progress_total);
+    in_flight_operations.Append(dict);
+  }
+  web_ui()->CallJavascriptFunction("updateInFlightOperations",
+                                   in_flight_operations);
 }
 
 }  // namespace

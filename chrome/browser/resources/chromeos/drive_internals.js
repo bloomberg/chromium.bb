@@ -70,12 +70,49 @@ function updateCacheContents(cacheEntry) {
 
 /**
  * Updates the Local Storage summary.
- * @param {Object} localStorageSummary Dictionaty describing the status of local
+ * @param {Object} localStorageSummary Dictionary describing the status of local
  * stogage.
  */
 function updateLocalStorageUsage(localStorageSummary) {
   var freeSpaceInMB = localStorageSummary.free_space / (1 << 20);
   $('local-storage-freespace').innerText = freeSpaceInMB;
+}
+
+/**
+ * Updates the summary about in-flight operations.
+ * @param {Array} inFlightOperations List of dictionaries describing the status
+ * of in-flight operations.
+ */
+function updateInFlightOperations(inFlightOperations) {
+  var container = $('in-flight-operations-contents');
+
+  // Reset the table.
+  var existingNodes = container.childNodes;
+  for (var i = 0; i < existingNodes.length; i++) {
+    var node = existingNodes[i];
+    if (node.className == 'in-flight-operation')
+      container.removeChild(node);
+  }
+
+  // Add in-flight operations.
+  for (var i = 0; i < inFlightOperations.length; i++) {
+    var operation = inFlightOperations[i];
+    var tr = document.createElement('tr');
+    tr.className = 'in-flight-operation';
+    tr.appendChild(createElementFromText('td', operation.operation_id));
+    tr.appendChild(createElementFromText('td', operation.operation_type));
+    tr.appendChild(createElementFromText('td', operation.file_path));
+    tr.appendChild(createElementFromText('td', operation.transfer_state));
+    tr.appendChild(createElementFromText('td', operation.start_time));
+    var progress = operation.progress_current + '/' + operation.progress_total;
+    if (operation.progress_total > 0) {
+      progress += ' (' +
+          (operation.progress_current / operation.progress_total * 100) + '%)';
+    }
+    tr.appendChild(createElementFromText('td', progress));
+
+    container.appendChild(tr);
+  }
 }
 
 /**
@@ -92,4 +129,7 @@ function createElementFromText(elementName, text) {
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.send('pageLoaded');
+  window.setInterval(function() {
+      chrome.send('periodicUpdate');
+    }, 1000);
 });
