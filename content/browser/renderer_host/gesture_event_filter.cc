@@ -173,7 +173,7 @@ void GestureEventFilter::MergeOrInsertScrollEvent(
     last_gesture_event->deltaX += gesture_event.deltaX;
     last_gesture_event->deltaY += gesture_event.deltaY;
     DLOG_IF(WARNING,
-            gesture_event.timeStampSeconds >=
+            gesture_event.timeStampSeconds <=
             last_gesture_event->timeStampSeconds)
             << "Event time not monotonic?\n";
     DCHECK(last_gesture_event->type == WebInputEvent::GestureScrollUpdate);
