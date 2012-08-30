@@ -2024,7 +2024,10 @@ namespace {
 
 struct TapToClickLowPressureBeginOrEndInputs {
   stime_t now;
-  float x0, y0, p0, id0, x1, y1, p1, id1;  // (x, y), pressure, tracking id
+  float x0, y0, p0;  // (x, y), pressure
+  short id0;  // tracking id
+  float x1, y1, p1;  // (x, y), pressure
+  short id1;  // tracking id
 };
 
 }  // namespace {}
@@ -2096,7 +2099,7 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
       { 0, 0, 0, 0, input.p0, 0, input.x0, input.y0, input.id0, 0 },
       { 0, 0, 0, 0, input.p1, 0, input.x1, input.y1, input.id1, 0 },
     };
-    short finger_cnt = fs[0].tracking_id == -1 ? 0 :
+    unsigned short finger_cnt = fs[0].tracking_id == -1 ? 0 :
         (fs[1].tracking_id == -1 ? 1 : 2);
     HardwareState hs = { input.now, 0, finger_cnt, finger_cnt, fs };
     stime_t timeout = -1;

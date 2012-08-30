@@ -285,10 +285,12 @@ TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
 
 struct ThumbClickWiggleWithPalmTestInputs {
   stime_t now;
-  unsigned buttons_down;
+  int buttons_down;
   // finger data for two fingers:
-  float x0, y0, p0, flags0;
-  float x1, y1, p1, flags1;
+  float x0, y0, p0;
+  unsigned flags0;
+  float x1, y1, p1;
+  unsigned flags1;
 };
 
 // Based on a log from real use by Andrew de los Reyes, where a thumb was

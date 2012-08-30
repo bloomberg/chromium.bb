@@ -883,7 +883,8 @@ TEST(LookaheadFilterInterpreterTest, QuickSwipeTest) {
 struct CyapaDrumrollTestInputs {
   bool reset_;
   stime_t now_;
-  float x_, y_, pressure_, flags_;
+  float x_, y_, pressure_;
+  unsigned flags_;
   bool jump_here_;
 };
 

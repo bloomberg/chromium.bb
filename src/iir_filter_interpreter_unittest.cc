@@ -111,7 +111,7 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
     2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
   };
 
-  int kTestPressure = 100;
+  float kTestPressure = 100;
   FingerState fs_normal[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     { 0, 0, 0, 0, 30, 0, 5, 5, 1, 0 },

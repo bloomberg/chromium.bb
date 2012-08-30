@@ -76,8 +76,8 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
     133,  // screen_x_dpi
     133,  // screen_y_dpi
     5,  // max finger cnt
-    t5r2 ? 2 : 5,  // max touch cnt
-    t5r2 ? 1 : 0,  // supports_t5r2
+    static_cast<unsigned short>(t5r2 ? 2 : 5),  // max touch cnt
+    t5r2 ? 1u : 0u,  // supports_t5r2
     0,   // support_semi_mt
     1  // is_button_pad
   };
@@ -86,7 +86,7 @@ void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
   for (size_t i = 0; i < events_len; i++) {
     InputEventWithExpectations* event = &events[i];
     // Get finger count
-    short finger_cnt = 0;
+    unsigned short finger_cnt = 0;
     for (size_t fidx = 0;
          fidx < arraysize(event->fs) && event->fs[fidx].tracking_id >= 0;
          fidx++)
@@ -176,7 +176,7 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
   for (size_t i = 0; i < arraysize(inputs); i++) {
     const FalseMergeInputs& input = inputs[i];
     // Get finger count
-    size_t finger_cnt = 0;
+    unsigned short finger_cnt = 0;
     for (size_t fidx = 0;
          fidx < arraysize(input.in) && input.in[fidx].id_ >= 0;
          fidx++)

@@ -63,8 +63,8 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
   };
   pci.SetHardwareProperties(hwprops);
 
-  const int kBig = pci.palm_pressure_.val_ + 1;  // big (palm) pressure
-  const int kSml = pci.palm_pressure_.val_ - 1;  // low pressure
+  const float kBig = pci.palm_pressure_.val_ + 1;  // big (palm) pressure
+  const float kSml = pci.palm_pressure_.val_ - 1;  // low pressure
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -138,7 +138,7 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
   };
   pci.SetHardwareProperties(hwprops);
 
-  const int kPr = pci.palm_pressure_.val_ / 2;
+  const float kPr = pci.palm_pressure_.val_ / 2;
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -211,11 +211,11 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
     {0, 0, 0, 0, kBig, 0, 50, 40, 1, 0},
     {0, 0, 0, 0, kBig, 0, 50, 50, 1, 0},
     // under mid-pressure contact move at mid-width
-    {0, 0, 0, 0, kMid - 1.0, 0, kMidWidth, 40, 1, 0},
-    {0, 0, 0, 0, kMid - 1.0, 0, kMidWidth, 50, 1, 0},
+    {0, 0, 0, 0, kMid - 1.0f, 0, kMidWidth, 40, 1, 0},
+    {0, 0, 0, 0, kMid - 1.0f, 0, kMidWidth, 50, 1, 0},
     // over mid-pressure contact move at mid-width
-    {0, 0, 0, 0, kMid + 1.0, 0, kMidWidth, 40, 1, 0},
-    {0, 0, 0, 0, kMid + 1.0, 0, kMidWidth, 50, 1, 0},
+    {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 40, 1, 0},
+    {0, 0, 0, 0, kMid + 1.0f, 0, kMidWidth, 50, 1, 0},
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
