@@ -78,13 +78,6 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     return event.IsOnlyMiddleMouseButton() ? false : handled;
   }
 
-  // We need to let the parent know about mouse state so that it
-  // can highlight itself appropriately. Note that Exit events
-  // fire before Enter events, so this works.
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    CustomButton::OnMouseEntered(event);
-  }
-
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
     if (tab_->controller())
       tab_->controller()->OnMouseEventInTab(this, event);
@@ -95,10 +88,6 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     if (tab_->controller())
       tab_->controller()->OnMouseEventInTab(this, event);
     CustomButton::OnMouseReleased(event);
-  }
-
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
-    CustomButton::OnMouseExited(event);
   }
 
   virtual ui::GestureStatus OnGestureEvent(
