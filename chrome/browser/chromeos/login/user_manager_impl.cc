@@ -745,8 +745,6 @@ void UserManagerImpl::EnsureUsersLoaded() {
   const DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(UserManager::kUserDisplayEmail);
 
-  int user_image_size = GetCurrentUserImageSize();
-
   if (prefs_users) {
     for (ListValue::const_iterator it = prefs_users->begin();
          it != prefs_users->end(); ++it) {
@@ -772,7 +770,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
               DCHECK(!image_path.empty());
               // Load user image asynchronously.
               image_loader_->Start(
-                  image_path, user_image_size,
+                  image_path, 0  /* no resize */,
                   base::Bind(&UserManagerImpl::SetUserImage,
                              base::Unretained(this),
                              email, image_index, GURL()));
@@ -802,7 +800,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
               if (!image_path.empty()) {
                 // Load user image asynchronously.
                 image_loader_->Start(
-                    image_path, user_image_size,
+                    image_path, 0  /* no resize */,
                     base::Bind(&UserManagerImpl::SetUserImage,
                                base::Unretained(this),
                                email, image_index, image_gurl));
