@@ -5818,6 +5818,57 @@
    fun:_Znw*
    fun:_ZL21cachedDeviceLuminancef
 }
+{
+   bug_145650a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN14WebDataService10AddKeywordERK15TemplateURLData
+   fun:_ZN18TemplateURLService11AddNoNotifyEP11TemplateURLb
+}
+{
+   bug_145644a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN46ConstrainedWebDialogBrowserTest_BasicTest_Test19RunTestOnMainThreadEv
+   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
+   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
+}
+{
+   bug_145645
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore18InjectedScriptHostEEnwEm
+   fun:_ZN7WebCore18InjectedScriptHost6createEv
+   fun:_ZN7WebCore21InjectedScriptManagerC1EPFbPNS_11ScriptStateEE
+   fun:_ZN7WebCore21InjectedScriptManager15createForWorkerEv
+   fun:_ZN7WebCore25WorkerInspectorControllerC1EPNS_13WorkerContextE
+}
+{
+   bug_145644b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN68ConstrainedWebDialogBrowserTest_ReleaseTabContentsOnDialogClose_Test19RunTestOnMainThreadEv
+   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
+   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
+}
+{
+   bug_145650b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14WebDataService13RemoveKeywordEl
+   fun:_ZN18TemplateURLService14RemoveNoNotifyEP11TemplateURL
+   fun:_ZN18TemplateURLService6RemoveEP11TemplateURL
+   fun:_ZN9protector71DefaultSearchProviderChangeTest_CurrentSearchProviderRemovedByUser_Test19RunTestOnMainThreadEv
+}
+{
+   bug_145650c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14WebDataService13UpdateKeywordERK15TemplateURLData
+   fun:_ZN18TemplateURLService32SetDefaultSearchProviderNoNotifyEP11TemplateURL
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
