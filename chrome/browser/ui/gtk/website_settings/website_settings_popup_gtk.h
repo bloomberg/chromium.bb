@@ -57,6 +57,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
   virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
+  virtual void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) OVERRIDE;
 
   // PermissionSelectorObserver implementations.
   virtual void OnPermissionChanged(PermissionSelector* selector) OVERRIDE;
@@ -120,6 +121,9 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   // Container for the information about the first visit date of the website.
   GtkWidget* first_visit_contents_;
+
+  // The widget that contains the tabs display on the popup.
+  GtkWidget* notebook_;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.

@@ -417,6 +417,20 @@ void WebsiteSettings::Init(Profile* profile,
           IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE);
     }
   }
+
+  // By default select the permissions tab that displays all the site
+  // permissions. In case of a connection error or an issue with the
+  // certificate presented by the website, select the connection tab to draw
+  // the user's attention to the issue. If the site does not provide a
+  // certificate because it was loaded over an unencrypted connection, don't
+  // select the connection tab.
+  WebsiteSettingsUI::TabId tab_id = WebsiteSettingsUI::TAB_ID_PERMISSIONS;
+  if (site_connection_status_ == SITE_CONNECTION_STATUS_ENCRYPTED_ERROR ||
+      site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_CONTENT ||
+      site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
+      site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN)
+    tab_id = WebsiteSettingsUI::TAB_ID_CONNECTION;
+  ui_->SetSelectedTab(tab_id);
 }
 
 void WebsiteSettings::PresentSitePermissions() {

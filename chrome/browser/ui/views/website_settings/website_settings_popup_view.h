@@ -82,6 +82,7 @@ class WebsiteSettingsPopupView
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
   virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
+  virtual void SetSelectedTab(TabId tab_id) OVERRIDE;
 
   // Creates the contents of the "Permissions" tab. The ownership of the
   // returned view is transferred to the caller.
@@ -132,6 +133,8 @@ class WebsiteSettingsPopupView
   // "Permissions" tab.
   views::View* permissions_content_;
 
+  // The view that contains the connection tab contents.
+  views::View* connection_tab_;
   // The view that contains the ui elements for displaying information about
   // the site's identity.
   views::View* identity_info_content_;

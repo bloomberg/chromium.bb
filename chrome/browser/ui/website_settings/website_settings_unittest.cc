@@ -65,6 +65,7 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
                void(const PermissionInfoList& permission_info_list));
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
   MOCK_METHOD1(SetFirstVisit, void(const string16& first_visit));
+  MOCK_METHOD1(SetSelectedTab, void(TabId tab_id));
 };
 
 class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
@@ -189,6 +190,8 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 #else
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
 #endif
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   // Execute code under tests.
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
@@ -220,12 +223,16 @@ TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetFirstVisit(string16()));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   website_settings()->OnSiteDataAccessed();
 }
 
 TEST_F(WebsiteSettingsTest, HTTPConnection) {
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
             website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT,
@@ -244,6 +251,8 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -264,6 +273,7 @@ TEST_F(WebsiteSettingsTest, HTTPSMixedContent) {
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT,
             website_settings()->site_connection_status());
@@ -292,6 +302,7 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT,
             website_settings()->site_connection_status());
@@ -311,6 +322,7 @@ TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -330,6 +342,7 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   ssl_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,
             website_settings()->site_connection_status());
@@ -340,6 +353,8 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
 
 TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
   EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
   website_settings()->OnUIClosing();
   EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
@@ -359,6 +374,8 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
 #endif
 
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
   EXPECT_EQ(0u, infobar_tab_helper()->GetInfoBarCount());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);

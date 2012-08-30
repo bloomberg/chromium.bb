@@ -346,7 +346,7 @@ NSColor* IdentityVerifiedTextColor() {
       [[NSSegmentedControl alloc] initWithFrame:initialFrame]);
   [segmentedControl_ setCell:
       [[[WebsiteSettingsTabSegmentedCell alloc] init] autorelease]];
-  [segmentedControl_ setSegmentCount:2];
+  [segmentedControl_ setSegmentCount:WebsiteSettingsUI::NUM_TAB_IDS];
   [segmentedControl_ setTarget:self];
   [segmentedControl_ setAction:@selector(tabSelected:)];
 
@@ -363,6 +363,8 @@ NSColor* IdentityVerifiedTextColor() {
                    forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
   NSSize textSize = [label sizeWithAttributes:textAttributes];
   CGFloat tabWidth = textSize.width + 2 * kTabLabelXPadding;
+  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
+                   forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
 
   // Create the "Connection" tab.
   label = l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION);
@@ -370,13 +372,17 @@ NSColor* IdentityVerifiedTextColor() {
   [segmentedControl_ setLabel:label
                    forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
 
+  DCHECK_EQ([segmentedControl_ segmentCount], WebsiteSettingsUI::NUM_TAB_IDS);
+
   // Make both tabs the width of the widest. The first segment has some
   // additional padding that is not part of the tab, which is used for drawing
   // the background of the tab strip.
   tabWidth = std::max(tabWidth,
                       textSize.width + 2 * kTabLabelXPadding);
-  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding forSegment:0];
-  [segmentedControl_ setWidth:tabWidth forSegment:1];
+  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
+                   forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
+  [segmentedControl_ setWidth:tabWidth
+                   forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
 
   [segmentedControl_ setFont:smallSystemFont];
   [contentView_ addSubview:segmentedControl_];

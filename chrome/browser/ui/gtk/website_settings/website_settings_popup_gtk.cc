@@ -216,6 +216,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
       identity_contents_(NULL),
       connection_contents_(NULL),
       first_visit_contents_(NULL),
+      notebook_(NULL),
       presenter_(NULL) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
@@ -313,26 +314,29 @@ void WebsiteSettingsPopupGtk::InitContents() {
                      FALSE, 0);
 
   // Create tab container and add all tabs.
-  GtkWidget* notebook = gtk_notebook_new();
+  notebook_ = gtk_notebook_new();
   if (theme_service_->UsingNativeTheme())
-    gtk_widget_modify_bg(notebook, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_bg(notebook_, GTK_STATE_NORMAL, NULL);
   else
-    gtk_widget_modify_bg(notebook, GTK_STATE_NORMAL, &kBackgroundColor);
+    gtk_widget_modify_bg(notebook_, GTK_STATE_NORMAL, &kBackgroundColor);
 
   GtkWidget* label = theme_service_->BuildLabel(
       l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
       ui::kGdkBlack);
   gtk_widget_show(label);
-  gtk_notebook_append_page(
-      GTK_NOTEBOOK(notebook), permission_tab_contents, label);
+  gtk_notebook_insert_page(GTK_NOTEBOOK(notebook_), permission_tab_contents,
+                           label, TAB_ID_PERMISSIONS);
 
   label = theme_service_->BuildLabel(
       l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
       ui::kGdkBlack);
   gtk_widget_show(label);
-  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), connection_tab, label);
+  gtk_notebook_insert_page(GTK_NOTEBOOK(notebook_), connection_tab, label,
+                           TAB_ID_CONNECTION);
 
-  gtk_box_pack_start(GTK_BOX(contents_), notebook, FALSE, FALSE, 0);
+  DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)), NUM_TAB_IDS);
+
+  gtk_box_pack_start(GTK_BOX(contents_), notebook_, FALSE, FALSE, 0);
   gtk_widget_show_all(contents_);
 }
 
@@ -540,6 +544,12 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
   }
 
   gtk_widget_show_all(permissions_section_contents_);
+}
+
+void WebsiteSettingsPopupGtk::SetSelectedTab(TabId tab_id) {
+  DCHECK(notebook_);
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook_),
+                                static_cast<gint>(tab_id));
 }
 
 void WebsiteSettingsPopupGtk::OnCookiesLinkClicked(GtkWidget* widget) {

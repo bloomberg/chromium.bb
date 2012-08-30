@@ -37,8 +37,9 @@ class WebsiteSettingsUI {
   // The Website Settings UI contains several tabs. Each tab is assiciated with
   // a unique tab id. The enum |TabId| contains all the ids for the tabs.
   enum TabId {
-    TAB_ID_PERMISSIONS,
+    TAB_ID_PERMISSIONS = 0,
     TAB_ID_CONNECTION,
+    NUM_TAB_IDS,
   };
 
   // |CookieInfo| contains information about the cookies from a specific source.
@@ -142,9 +143,7 @@ class WebsiteSettingsUI {
   virtual void SetFirstVisit(const string16& first_visit) = 0;
 
   // Selects the tab with the given |tab_id|.
-  // TODO(markusheintz): Implement this on other platforms and make it a pure
-  // virtual function.
-  virtual void SetSelectedTab(TabId tab_id) {}
+  virtual void SetSelectedTab(TabId tab_id) = 0;
 };
 
 typedef WebsiteSettingsUI::CookieInfoList CookieInfoList;

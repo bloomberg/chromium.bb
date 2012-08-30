@@ -281,6 +281,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       site_data_content_(NULL),
       cookie_dialog_link_(NULL),
       permissions_content_(NULL),
+      connection_tab_(NULL),
       identity_info_content_(NULL),
       certificate_dialog_link_(NULL),
       cert_id_(0),
@@ -313,14 +314,19 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   // hierachy.  Adding the |tabbed_pane_| to the views hierachy triggers the
   // initialization of the native tab UI element. If the native tab UI
   // element is not initalized adding a tab will result in a NULL pointer
-  // excetion.
-  tabbed_pane_->AddTab(
+  // exception.
+  tabbed_pane_->AddTabAtIndex(
+      TAB_ID_PERMISSIONS,
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
-      CreatePermissionsTab());
-  tabbed_pane_->AddTab(
+      CreatePermissionsTab(),
+      true);
+  connection_tab_ = CreateConnectionTab();
+  tabbed_pane_->AddTabAtIndex(
+      TAB_ID_CONNECTION,
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION),
-      CreateConnectionTab());
-  tabbed_pane_->SelectTabAt(0);
+      connection_tab_,
+      true);
+  DCHECK_EQ(tabbed_pane_->GetTabCount(), NUM_TAB_IDS);
   tabbed_pane_->set_listener(this);
 
   set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
@@ -363,7 +369,7 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent =
         anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
-ShowCertificateViewerByID(tab_contents_->web_contents(), parent, cert_id_);
+    ShowCertificateViewerByID(tab_contents_->web_contents(), parent, cert_id_);
   }
   // The popup closes automatically when the collected cookies dialog or the
   // certificate viewer opens.
@@ -522,6 +528,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       UTF8ToUTF16(identity_info.connection_status_description),
       NULL);
 
+  connection_tab_->InvalidateLayout();
   Layout();
   SizeToContents();
 }
@@ -533,8 +540,13 @@ void WebsiteSettingsPopupView::SetFirstVisit(const string16& first_visit) {
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
       first_visit,
       NULL);
+  connection_tab_->InvalidateLayout();
   Layout();
   SizeToContents();
+}
+
+void WebsiteSettingsPopupView::SetSelectedTab(TabId tab_id) {
+  tabbed_pane_->SelectTabAt(tab_id);
 }
 
 views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
