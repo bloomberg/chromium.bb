@@ -164,6 +164,23 @@ bool TouchTabStripLayout::IsStacked(int index) const {
   return ideal_x(index + 1) != ideal_x(index) + tab_offset();
 }
 
+void TouchTabStripLayout::SetActiveTabLocation(int x) {
+  if (!requires_stacking())
+    return;
+
+  const int index = active_index();
+  if (index <= mini_tab_count_)
+    return;
+
+  x = std::min(GetMaxX(index), std::max(x, GetMinX(index)));
+  if (x == ideal_x(index))
+    return;
+
+  SetIdealBoundsAt(index, x);
+  LayoutByTabOffsetBefore(index);
+  LayoutByTabOffsetAfter(index);
+}
+
 #if !defined(NDEBUG)
 std::string TouchTabStripLayout::BoundsString() const {
   std::string result;

@@ -471,3 +471,29 @@ TEST_F(TouchTabStripLayoutTest, SetXAndMiniCount) {
   Reset(layout_.get(), 0, 400, 0, 0);
   layout_->SetXAndMiniCount(0, 1);
 }
+
+// Assertions around SetXAndMiniCount.
+TEST_F(TouchTabStripLayoutTest, SetActiveTabLocation) {
+  struct TestData {
+    struct CommonTestData common_data;
+    const int location;
+  } test_data[] = {
+    // Active tab is the first tab, can't be moved.
+    { { 0, 300, 100, -10, 2, 0, 0, "", "0 90 180 194 196 198 200" }, 50 },
+
+    // Active tab is pinned; should result in nothing.
+    { { 0, 300, 100, -10, 2, 2, 1, "", "0 0 0 90 180 198 200" }, 199 },
+
+    // Location is too far to the right, ends up being pushed in.
+    { { 0, 300, 100, -10, 2, 0, 3, "", "0 14 104 194 196 198 200" }, 199 },
+
+    // Location can be honored.
+    { { 0, 300, 100, -10, 2, 0, 3, "", "0 2 4 40 130 198 200" }, 40 },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    CreateLayout(test_data[i].common_data);
+    layout_->SetActiveTabLocation(test_data[i].location);
+    EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
+        " at " << i;
+  }
+}

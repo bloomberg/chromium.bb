@@ -81,6 +81,9 @@ class TouchTabStripLayout {
   // Returns true if the tab at index is stacked.
   bool IsStacked(int index) const;
 
+  // Sets the location of the active tab as close to |x| as possible.
+  void SetActiveTabLocation(int x);
+
 #if !defined(NDEBUG)
   std::string BoundsString() const;
 #endif
