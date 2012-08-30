@@ -103,8 +103,6 @@
       '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
       '-policy.PolicyTest.testApplicationLocaleValue',
-      # crbug.com/131258
-      '-policy.PolicyTest.testDefaultSearchProviderOptions',
       # crbug.com/96896
       '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
@@ -688,8 +686,6 @@
       # This tests the value "0" for the RestoreOnStartup policy, which is not
       # supported on ChromeOS.
       '-policy.PolicyTest.testStartupOptionsHomepage',
-      # crbug.com/131258 crosbug.com/32068
-      '-policy.PolicyTest.testDefaultSearchProviderOptions',
       # crosbug.com/32069
       '-policy.PolicyTest.testTranslateEnabled',
     ],
