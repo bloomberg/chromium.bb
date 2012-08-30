@@ -11032,6 +11032,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_WALLPAPER_MANAGER_DOWNLOADING_LABEL" desc="Downloading in progress label.">
         Downloading
       </message>
+      <message name="IDS_WALLPAPER_MANAGER_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
+        Your wallpaper will be shown on the login screens and your desktop background.
+      </message>
+      <message name="IDS_WALLPAPER_MANAGER_NOT_SHOW_CUSTOM_WALLPAPER_ON_START_WARNING" desc="The string displayed to user when set custom wallpaper">
+        Your wallpaper will be displayed on your desktop background only.
+      </message>
+
 
       <!-- File Browser -->
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
