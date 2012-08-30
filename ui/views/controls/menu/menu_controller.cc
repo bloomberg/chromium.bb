@@ -1877,11 +1877,6 @@ bool MenuController::SelectByChar(char16 character) {
   if (details.first_match != -1)
     return AcceptOrSelect(item, details);
 
-  if (item->GetRootMenuItem()->has_mnemonics()) {
-    // Don't guess at mnemonics if the menu explicitly has them.
-    return false;
-  }
-
   // If no mnemonics found, look at first character of titles.
   details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);
   if (details.first_match != -1)
