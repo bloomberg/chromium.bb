@@ -108,6 +108,17 @@
       <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_CENTER_V" file="constrained_top_center_v.png" />
       <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_LEFT_CORNER_V" file="constrained_top_left_corner_v.png" />
       <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_TOP_RIGHT_CORNER_V" file="constrained_top_right_corner_v.png" />
+      <if expr="pp_ifdef('chromeos')">
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_CHAT" file="contact_action_chat_base.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_CHAT_H" file="contact_action_chat_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_EMAIL" file="contact_action_email_base.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_EMAIL_H" file="contact_action_email_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_PHONE" file="contact_action_phone_base.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_PHONE_H" file="contact_action_phone_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_VIDEO" file="contact_action_video_base.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_ACTION_VIDEO_H" file="contact_action_video_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONTACT_DEFAULT_PHOTO" file="contact_default_photo.png" />
+      </if>
       <!-- Ash doesn't draw rounded content area, so needs a special top
            image. -->
       <if expr="not pp_ifdef('use_ash')">
