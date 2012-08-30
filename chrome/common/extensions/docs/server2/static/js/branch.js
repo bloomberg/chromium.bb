@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 (function() {
-  function redirectToBranch() {
+  var branchChooser = document.getElementById('branchChooser');
+  // No branch chooser on stable (for example).
+  if (!branchChooser)
+    return;
+
+  branchChooser.addEventListener('change', function() {
     var value = event.target.value;
     if (!value)
       return;
@@ -17,9 +22,5 @@
     else
       path.splice(0, 0, value);
     window.location = '/' + path.join('/');
-  }
-
-  document.getElementById('branchChooser').addEventListener(
-      'change',
-      redirectToBranch);
+  });
 })()
