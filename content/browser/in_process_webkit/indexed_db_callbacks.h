@@ -16,31 +16,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-class IndexedDBMsg_CallbacksSuccessIDBDatabase;
-class IndexedDBMsg_CallbacksSuccessIDBTransaction;
-class IndexedDBMsg_CallbacksUpgradeNeeded;
-
-// Template magic to figure out what message to send to the renderer based on
-// which (overloaded) onSuccess method we expect to be called.
-template <class Type> struct WebIDBToMsgHelper { };
-template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
-  typedef IndexedDBMsg_CallbacksSuccessIDBDatabase MsgType;
-};
-template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
-  typedef IndexedDBMsg_CallbacksSuccessIDBTransaction MsgType;
-};
-
-namespace {
-int32 kDatabaseNotAdded = -1;
-}
-
-// The code the following two classes share.
 class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
  public:
-  IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
-                         int32 thread_id,
-                         int32 response_id);
-
   virtual ~IndexedDBCallbacksBase();
 
   virtual void onError(const WebKit::WebIDBDatabaseError& error);
@@ -48,6 +25,9 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
   virtual void onBlocked(long long old_version);
 
  protected:
+  IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
+                         int32 thread_id,
+                         int32 response_id);
   IndexedDBDispatcherHost* dispatcher_host() const {
     return dispatcher_host_.get();
   }
@@ -62,47 +42,46 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksBase);
 };
 
-// A WebIDBCallbacks implementation that returns an object of WebObjectType.
+// TODO(dgrogan): Remove this class and change the remaining specializations
+// into subclasses of IndexedDBCallbacksBase.
 template <class WebObjectType>
 class IndexedDBCallbacks : public IndexedDBCallbacksBase {
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+class IndexedDBCallbacksTransaction : public IndexedDBCallbacksBase {
  public:
-  IndexedDBCallbacks(
+  IndexedDBCallbacksTransaction(
       IndexedDBDispatcherHost* dispatcher_host,
       int32 thread_id,
       int32 response_id,
-      const GURL& origin_url)
-      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
-    origin_url_(origin_url),
-    database_id_(kDatabaseNotAdded) {
-  }
+      const GURL& origin_url);
 
-  virtual void onSuccess(WebObjectType* idb_object) {
-    int32 object_id = database_id_;
-    if (object_id == kDatabaseNotAdded) {
-      object_id = dispatcher_host()->Add(idb_object, thread_id(), origin_url_);
-    } else {
-      // We already have this database and don't need a new copy of it.
-      delete idb_object;
-    }
+  virtual void onSuccess(WebKit::WebIDBTransaction* idb_object);
 
-    dispatcher_host()->Send(
-        new typename WebIDBToMsgHelper<WebObjectType>::MsgType(thread_id(),
-                                                               response_id(),
-                                                               object_id));
-  }
+ private:
+  GURL origin_url_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksTransaction);
+};
 
-  void onUpgradeNeeded(
+class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacksDatabase(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 thread_id,
+      int32 response_id,
+      const GURL& origin_url);
+
+  virtual void onSuccess(WebKit::WebIDBDatabase* idb_object);
+  virtual void onUpgradeNeeded(
       long long old_version,
       WebKit::WebIDBTransaction* transaction,
-      WebKit::WebIDBDatabase* database) {
-    NOTREACHED();
-  }
-
+      WebKit::WebIDBDatabase* database);
 
  private:
   GURL origin_url_;
   int32 database_id_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacksDatabase);
 };
 
 // WebIDBCursor uses:

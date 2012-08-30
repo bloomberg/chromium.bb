@@ -238,8 +238,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   Context()->GetIDBFactory()->open(
       params.name,
       params.version,
-      new IndexedDBCallbacks<WebIDBDatabase>(this, params.thread_id,
-                                             params.response_id, origin_url),
+      new IndexedDBCallbacksDatabase(this, params.thread_id,
+                                     params.response_id, origin_url),
       origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
@@ -420,7 +420,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetVersion(
   *ec = 0;
   idb_database->setVersion(
       version,
-      new IndexedDBCallbacks<WebIDBTransaction>(parent_, thread_id, response_id,
+      new IndexedDBCallbacksTransaction(parent_, thread_id, response_id,
           database_url_map_[idb_database_id]),
       *ec);
 }

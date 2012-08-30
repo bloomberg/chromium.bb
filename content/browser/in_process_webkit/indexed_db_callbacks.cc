@@ -11,6 +11,10 @@ using content::IndexedDBKey;
 using content::IndexedDBKeyPath;
 using content::SerializedScriptValue;
 
+namespace {
+const int32 kDatabaseNotAdded = -1;
+}
+
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(
     IndexedDBDispatcherHost* dispatcher_host,
     int32 thread_id,
@@ -37,8 +41,49 @@ void IndexedDBCallbacksBase::onBlocked() {
                                                            response_id_));
 }
 
-template<>
-void IndexedDBCallbacks<WebKit::WebIDBDatabase>::onUpgradeNeeded(
+IndexedDBCallbacksTransaction::IndexedDBCallbacksTransaction(
+      IndexedDBDispatcherHost* dispatcher_host,
+      int32 thread_id,
+      int32 response_id,
+      const GURL& origin_url)
+      : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
+        origin_url_(origin_url) {
+}
+
+void IndexedDBCallbacksTransaction::onSuccess(
+    WebKit::WebIDBTransaction* idb_object) {
+  int32 object_id =
+      dispatcher_host()->Add(idb_object, thread_id(), origin_url_);
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessIDBTransaction(thread_id(),
+          response_id(), object_id));
+}
+
+IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
+    IndexedDBDispatcherHost* dispatcher_host,
+    int32 thread_id,
+    int32 response_id,
+    const GURL& origin_url)
+    : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
+      origin_url_(origin_url),
+      database_id_(kDatabaseNotAdded) {
+}
+
+void IndexedDBCallbacksDatabase::onSuccess(
+    WebKit::WebIDBDatabase* idb_object) {
+  int32 object_id = database_id_;
+  if (object_id == kDatabaseNotAdded) {
+    object_id = dispatcher_host()->Add(idb_object, thread_id(), origin_url_);
+  } else {
+    // We already have this database and don't need a new copy of it.
+    delete idb_object;
+  }
+  dispatcher_host()->Send(
+      new IndexedDBMsg_CallbacksSuccessIDBDatabase(thread_id(), response_id(),
+          object_id));
+}
+
+void IndexedDBCallbacksDatabase::onUpgradeNeeded(
     long long old_version,
     WebKit::WebIDBTransaction* transaction,
     WebKit::WebIDBDatabase* database) {
