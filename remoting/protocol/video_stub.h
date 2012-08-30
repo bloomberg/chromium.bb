@@ -16,19 +16,13 @@ namespace protocol {
 
 class VideoStub {
  public:
-  virtual ~VideoStub() { }
+  virtual ~VideoStub() {}
 
-  // TODO(sergeyu): VideoPacket is the protobuf message that is used to send
-  // video packets in protobuf stream. It should not be used here. Add another
-  // struct and use it to represent video packets internally.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                                   const base::Closure& done) = 0;
 
-  // Returns number of packets currently pending in the buffer.
-  virtual int GetPendingVideoPackets() = 0;
-
  protected:
-  VideoStub() { }
+  VideoStub() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoStub);

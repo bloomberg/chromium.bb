@@ -6,9 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "ppapi/cpp/image_data.h"
 #include "remoting/base/util.h"
 #include "remoting/codec/video_decoder.h"
@@ -23,16 +24,6 @@ using remoting::protocol::SessionConfig;
 
 namespace remoting {
 
-RectangleUpdateDecoder::QueuedVideoPacket::QueuedVideoPacket(
-    scoped_ptr<VideoPacket> packet,
-    const base::Closure& done)
-    : packet(packet.release()),
-      done(done) {
-}
-
-RectangleUpdateDecoder::QueuedVideoPacket::~QueuedVideoPacket() {
-}
-
 RectangleUpdateDecoder::RectangleUpdateDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
@@ -45,7 +36,6 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(
       view_size_(SkISize::Make(0, 0)),
       clip_area_(SkIRect::MakeEmpty()),
       paint_scheduled_(false),
-      packet_being_processed_(false),
       latest_sequence_number_(0) {
 }
 
@@ -71,6 +61,7 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   base::ScopedClosureRunner done_runner(done);
+
   bool decoder_needs_reset = false;
   bool notify_size_or_dpi_change = false;
 
@@ -262,61 +253,28 @@ void RectangleUpdateDecoder::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
     stats_.round_trip_ms()->Record(round_trip_latency.InMilliseconds());
   }
 
-  received_packets_.push_back(QueuedVideoPacket(packet.Pass(), done));
-  if (!packet_being_processed_)
-    ProcessNextPacket();
-}
-
-int RectangleUpdateDecoder::GetPendingVideoPackets() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  return received_packets_.size();
-}
-
-void RectangleUpdateDecoder::DropAllPackets() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  while(!received_packets_.empty()) {
-    delete received_packets_.front().packet;
-    received_packets_.front().done.Run();
-    received_packets_.pop_front();
-  }
-}
-
-void RectangleUpdateDecoder::ProcessNextPacket() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  CHECK(!packet_being_processed_);
-
-  if (received_packets_.empty()) {
-    // Nothing to do!
-    return;
-  }
-
-  scoped_ptr<VideoPacket> packet(received_packets_.front().packet);
-  received_packets_.front().packet = NULL;
-  packet_being_processed_ = true;
-
   // Measure the latency between the last packet being received and presented.
   bool last_packet = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   base::Time decode_start;
   if (last_packet)
     decode_start = base::Time::Now();
 
-  base::Closure callback = base::Bind(&RectangleUpdateDecoder::OnPacketDone,
-                                      this,
-                                      last_packet,
-                                      decode_start);
+  base::Closure decode_done =
+      base::Bind(&RectangleUpdateDecoder::OnPacketDone, this,
+                 last_packet, decode_start, done);
 
   decode_task_runner_->PostTask(FROM_HERE, base::Bind(
       &RectangleUpdateDecoder::DecodePacket, this,
-      base::Passed(&packet), callback));
+      base::Passed(&packet), decode_done));
 }
 
 void RectangleUpdateDecoder::OnPacketDone(bool last_packet,
-                                          base::Time decode_start) {
+                                          base::Time decode_start,
+                                          const base::Closure& done) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(FROM_HERE, base::Bind(
         &RectangleUpdateDecoder::OnPacketDone, this,
-        last_packet, decode_start));
+        last_packet, decode_start, done));
     return;
   }
 
@@ -327,13 +285,7 @@ void RectangleUpdateDecoder::OnPacketDone(bool last_packet,
         (base::Time::Now() - decode_start).InMilliseconds());
   }
 
-  received_packets_.front().done.Run();
-  received_packets_.pop_front();
-
-  packet_being_processed_ = false;
-
-  // Process the next video packet.
-  ProcessNextPacket();
+  done.Run();
 }
 
 ChromotingStats* RectangleUpdateDecoder::GetStats() {

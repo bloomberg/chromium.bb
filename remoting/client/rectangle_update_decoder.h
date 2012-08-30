@@ -7,7 +7,7 @@
 
 #include <list>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/codec/video_decoder.h"
@@ -22,12 +22,11 @@ class SingleThreadTaskRunner;
 
 namespace pp {
 class ImageData;
-};
+}  // namespace pp
 
 namespace remoting {
 
 class ChromotingStats;
-class VideoPacket;
 
 namespace protocol {
 class SessionConfig;
@@ -54,9 +53,6 @@ class RectangleUpdateDecoder
   // Initializes decoder with the information from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
 
-  // Removes all video packets in the queue.
-  void DropAllPackets();
-
   // FrameProducer implementation.  These methods may be called before we are
   // Initialize()d, or we know the source screen size.
   virtual void DrawBuffer(pp::ImageData* buffer) OVERRIDE;
@@ -68,20 +64,11 @@ class RectangleUpdateDecoder
   // VideoStub implementation.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                   const base::Closure& done) OVERRIDE;
-  virtual int GetPendingVideoPackets() OVERRIDE;
 
   // Return the stats recorded by this client.
   ChromotingStats* GetStats();
 
  private:
-  struct QueuedVideoPacket {
-    QueuedVideoPacket(scoped_ptr<VideoPacket> packet,
-                      const base::Closure& done);
-    ~QueuedVideoPacket();
-    VideoPacket* packet;
-    base::Closure done;
-  };
-
   friend class base::RefCountedThreadSafe<RectangleUpdateDecoder>;
   virtual ~RectangleUpdateDecoder();
 
@@ -89,10 +76,6 @@ class RectangleUpdateDecoder
   // to the consumer.
   void SchedulePaint();
   void DoPaint();
-
-  // If a packet is not being processed, dispatches a single message from the
-  // |received_packets_| queue.
-  void ProcessNextPacket();
 
   // Decodes the contents of |packet|. DecodePacket may keep a reference to
   // |packet| so the |packet| must remain alive and valid until |done| is
@@ -102,7 +85,9 @@ class RectangleUpdateDecoder
   // Callback method when a VideoPacket is processed.
   // If |last_packet| is true then |decode_start| contains the timestamp when
   // the packet will start to be processed.
-  void OnPacketDone(bool last_packet, base::Time decode_start);
+  void OnPacketDone(bool last_packet,
+                    base::Time decode_start,
+                    const base::Closure& done);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
@@ -124,17 +109,6 @@ class RectangleUpdateDecoder
 
   // Flag used to coalesce runs of SchedulePaint()s into a single DoPaint().
   bool paint_scheduled_;
-
-  // Contains all video packets that have been received, but have not yet been
-  // processed.
-  //
-  // Used to serialize sending of messages to the client.
-  // TODO(sergeyu): Simplify this code and remove this list.
-  std::list<QueuedVideoPacket> received_packets_;
-
-  // True if a message is being processed. Can be used to determine if it is
-  // safe to dispatch another message.
-  bool packet_being_processed_;
 
   ChromotingStats stats_;
 

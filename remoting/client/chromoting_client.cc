@@ -67,9 +67,6 @@ void ChromotingClient::Start(
 void ChromotingClient::Stop(const base::Closure& shutdown_task) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // Drop all pending packets.
-  rectangle_decoder_->DropAllPackets();
-
   connection_->Disconnect(base::Bind(&ChromotingClient::OnDisconnected,
                                      weak_ptr_, shutdown_task));
 }
