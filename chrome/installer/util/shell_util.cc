@@ -617,6 +617,13 @@ bool AreEntriesRegistered(const ScopedVector<RegistryEntry>& entries,
 
 // Checks that all required registry entries for Chrome are already present
 // on this computer.
+// Note: between r133333 and r154145 we were registering parts of Chrome in HKCU
+// and parts in HKLM for user-level installs; we now always register everything
+// under a single registry root. Not doing so caused http://crbug.com/144910 for
+// users who first-installed Chrome in that revision range (those users are
+// still impacted by http://crbug.com/144910). This method will keep returning
+// true for affected users (i.e. who have all the registrations, but over both
+// registry roots).
 bool IsChromeRegistered(BrowserDistribution* dist,
                         const string16& chrome_exe,
                         const string16& suffix) {
