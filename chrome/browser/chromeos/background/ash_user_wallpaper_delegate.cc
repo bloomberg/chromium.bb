@@ -59,7 +59,8 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
         HasSwitch(switches::kDisableBootAnimation);
     bool disable_oobe_animation = command_line->
         HasSwitch(switches::kDisableOobeAnimation);
-    if (disable_oobe_animation || (is_registered && disable_boot_animation))
+    if ((!is_registered && disable_oobe_animation) ||
+        (is_registered && disable_boot_animation))
       return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
 
     return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;

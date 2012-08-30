@@ -99,9 +99,8 @@ cr.define('login', function() {
       // is reduced. See http://crosbug.com/11116 http://crosbug.com/18307
       // $('pod-row').startInitAnimation();
 
-      // TODO(altimofeev): Call it after animation has stoped when animation
-      // is enabled.
       chrome.send('accountPickerReady');
+      chrome.send('loginVisible');
     },
 
      /**

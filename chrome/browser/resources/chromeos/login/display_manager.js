@@ -236,17 +236,16 @@ cr.define('cr.ui.login', function() {
         }
       } else {
         // First screen on OOBE launch.
-        innerContainer.classList.remove('down');
-        innerContainer.addEventListener(
-            'webkitTransitionEnd', function f(e) {
-              innerContainer.removeEventListener('webkitTransitionEnd', f);
-              $('progress-dots').classList.remove('down');
-            });
+        if (innerContainer.classList.contains('down')) {
+          innerContainer.classList.remove('down');
+          innerContainer.addEventListener(
+              'webkitTransitionEnd', function f(e) {
+                innerContainer.removeEventListener('webkitTransitionEnd', f);
+                $('progress-dots').classList.remove('down');
+                chrome.send('loginVisible');
+              });
+        }
         newHeader.classList.remove('right');  // Old OOBE.
-        // Report back first OOBE screen being painted.
-        window.webkitRequestAnimationFrame(function() {
-          chrome.send('loginVisible');
-        });
       }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;

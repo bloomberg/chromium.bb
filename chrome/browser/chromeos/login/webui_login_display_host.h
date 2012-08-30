@@ -90,21 +90,23 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // received.
   bool is_wallpaper_loaded_;
 
-  // True if WebUI is initialized hidden in parallel with wallpaper animation.
-  // Otherwise it is postponed and only starts initializing when animation
-  // finishes. Makes sense only if |waiting_for_wallpaper_load_| is true.
-  // By default is true. Could be used to tune performance if needed.
-  bool initialize_webui_in_parallel_;
-
   // Stores status area current visibility to be applied once login WebUI
   // is shown.
   bool status_area_saved_visibility_;
 
-  // True if should not show WebUI on first StartWizard/StartSignInScreen call
-  // but wait for wallpaper load animation to finish.
-  // OOBE/sign in WebUI is either initialized hidden or postponed i.e. loaded
-  // only when wallpaper animation finishes.
+  // If true, WebUI is initialized in a hidden state and shown after the
+  // wallpaper animation is finished (when it is enabled) or the user pods have
+  // been loaded (otherwise).
+  // By default is true. Could be used to tune performance if needed.
+  bool initialize_webui_hidden_;
+
+  // True if WebUI is initialized in hidden state and we're waiting for
+  // wallpaper load animation to finish.
   bool waiting_for_wallpaper_load_;
+
+  // True if WebUI is initialized in hidden state and we're waiting for user
+  // pods to load.
+  bool waiting_for_user_pods_;
 
   content::NotificationRegistrar registrar_;
 

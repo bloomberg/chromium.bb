@@ -118,6 +118,9 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       mouse_button_flags_(0),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
+      // TODO(ivankr): this currently tracks the default state in
+      // RootWindowHostLinux. Other platforms do not implement ShowCursor().
+      cursor_shown_(true),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       mouse_event_dispatch_target_(NULL),

@@ -455,7 +455,9 @@ void Shell::Init() {
   // Initialize Primary RootWindow specific items.
   status_area_widget_ = new internal::StatusAreaWidget();
   status_area_widget_->CreateTrayViews(delegate_.get());
-  status_area_widget_->Show();
+  // Login screen manages status area visibility by itself.
+  if (delegate_.get() && delegate_->IsSessionStarted())
+    status_area_widget_->Show();
 
   focus_cycler_.reset(new internal::FocusCycler());
   focus_cycler_->AddWidget(status_area_widget_);

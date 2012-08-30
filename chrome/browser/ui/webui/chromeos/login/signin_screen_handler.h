@@ -294,6 +294,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 
+  // Set to true once |LOGIN_WEBUI_VISIBLE| notification is observed.
+  bool webui_visible_;
+
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };
 

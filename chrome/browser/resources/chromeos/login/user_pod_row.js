@@ -33,7 +33,7 @@ cr.define('login', function() {
    * @type {number}
    * @const
    */
-  var WALLPAPER_BOOT_LOAD_DELAY_MS = 500;
+  var WALLPAPER_BOOT_LOAD_DELAY_MS = 100;
 
   /**
    * Maximum time for which the pod row remains hidden until all user images
@@ -451,6 +451,10 @@ cr.define('login', function() {
     // Whether this user pod row is shown for the first time.
     firstShown_: true,
 
+    // Whether the initial wallpaper load after boot has been requested. Used
+    // only if |Oobe.getInstance().shouldLoadWallpaperOnBoot()| is true.
+    bootWallpaperLoaded_: false,
+
     // True if inside focusPod().
     insideFocusPod_: false,
 
@@ -694,21 +698,11 @@ cr.define('login', function() {
           // Delay wallpaper loading to let user tab through pods without lag.
           this.loadWallpaperTimeout_ = window.setTimeout(
               this.loadWallpaper_.bind(this), WALLPAPER_LOAD_DELAY_MS);
-        } else {
-          if (!this.firstShown_) {
-            // Load wallpaper immediately if there no pod was focused
-            // previously, and it is not a boot into user pod list case.
-            this.loadWallpaper_();
-          } else {
-            // Boot transition. Delay wallpaper load to remove jank
-            // happening when wallpaper load is competing for resources with
-            // login WebUI.
-            if (Oobe.getInstance().shouldLoadWallpaperOnBoot()) {
-              this.loadWallpaperTimeout_ = window.setTimeout(
-                  this.loadWallpaper_.bind(this), WALLPAPER_BOOT_LOAD_DELAY_MS);
-            }
-            this.firstShown_ = false;
-          }
+        } else if (!this.firstShown_) {
+          // Load wallpaper immediately if there no pod was focused
+          // previously, and it is not a boot into user pod list case.
+          this.loadWallpaper_();
+          this.firstShown_ = false;
         }
       } else {
         chrome.send('userDeselected');
@@ -893,12 +887,20 @@ cr.define('login', function() {
       if (this.focusedPod_) {
         var focusedPod = this.focusedPod_;
         var screen = this.parentNode;
+        var self = this;
         focusedPod.addEventListener('webkitTransitionEnd', function f(e) {
           if (e.target == focusedPod) {
             focusedPod.removeEventListener('webkitTransitionEnd', f);
             focusedPod.reset(true);
             // Notify screen that it is ready.
             screen.onShow();
+            // Boot transition: load wallpaper.
+            if (!self.bootWallpaperLoaded_ &&
+                Oobe.getInstance().shouldLoadWallpaperOnBoot()) {
+              self.loadWallpaperTimeout_ = window.setTimeout(
+                  self.loadWallpaper_.bind(self), WALLPAPER_BOOT_LOAD_DELAY_MS);
+              self.bootWallpaperLoaded_ = true;
+            }
           }
         });
       }
@@ -941,10 +943,6 @@ cr.define('login', function() {
       if (this.podsWithPendingImages_.length == 0) {
         this.classList.remove('images-loading');
         chrome.send('userImagesLoaded');
-        // Report back user pods being painted.
-        window.webkitRequestAnimationFrame(function() {
-          chrome.send('loginVisible');
-        });
       }
     }
   };

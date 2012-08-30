@@ -1076,10 +1076,15 @@ void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+  if (!webui_visible_) {
+    // There might be multiple messages from OOBE UI so send notifications after
+    // the first one only.
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  }
+  webui_visible_ = true;
   if (ScreenLocker::default_screen_locker())
     web_ui()->CallJavascriptFunction("login.AccountPickerScreen.setWallpaper");
 }
