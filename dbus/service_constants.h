@@ -1154,7 +1154,8 @@ const char kPermissionBrokerServicePath[] = "/org/chromium/PermissionBroker";
 const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
 
 // Methods
-const char kRequestAccess[] = "RequestAccess";
+const char kRequestPathAccess[] = "RequestPathAccess";
+const char kRequestUsbAccess[] = "RequestUsbAccess";
 }  // namespace permission_broker
 
 #endif  // DBUS_SERVICE_CONSTANTS_H_
