@@ -24,7 +24,6 @@
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
-#include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -41,10 +40,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -675,13 +670,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
 }
 
 void AutofillManager::OnShowAutofillDialog() {
-#if defined(OS_ANDROID)
-  NOTIMPLEMENTED();
-#else
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
-  if (browser)
-    chrome::ShowSettingsSubPage(browser, chrome::kAutofillSubPage);
-#endif  // #if defined(OS_ANDROID)
+  manager_delegate_->ShowAutofillSettings();
 }
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
@@ -733,14 +722,9 @@ void AutofillManager::OnShowPasswordGenerationPopup(
     const gfx::Rect& bounds,
     int max_length,
     const webkit::forms::PasswordForm& form) {
-#if defined(OS_ANDROID)
-  NOTIMPLEMENTED();
-#else
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
   password_generator_.reset(new autofill::PasswordGenerator(max_length));
-  browser->window()->ShowPasswordGenerationBubble(
-      bounds, password_generator_.get(), form);
-#endif  // #if defined(OS_ANDROID)
+  manager_delegate_->ShowPasswordGenerationBubble(
+      bounds, form, password_generator_.get());
 }
 
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {

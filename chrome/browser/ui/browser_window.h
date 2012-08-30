@@ -372,8 +372,8 @@ class BrowserWindow : public BaseWindow {
   // available on mac.
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      autofill::PasswordGenerator* password_generator,
-      const webkit::forms::PasswordForm& form) {}
+      const webkit::forms::PasswordForm& form,
+      autofill::PasswordGenerator* password_generator) {}
 
  protected:
   friend void browser::CloseAllBrowsers();

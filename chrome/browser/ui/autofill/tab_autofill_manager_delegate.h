@@ -20,6 +20,11 @@ class TabAutofillManagerDelegate : public autofill::AutofillManagerDelegate {
   virtual InfoBarService* GetInfoBarService() OVERRIDE;
   virtual PrefServiceBase* GetPrefs() OVERRIDE;
   virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
+  virtual void ShowAutofillSettings() OVERRIDE;
+  virtual void ShowPasswordGenerationBubble(
+      const gfx::Rect& bounds,
+      const webkit::forms::PasswordForm& form,
+      autofill::PasswordGenerator* generator) OVERRIDE;
 
  private:
   TabContents* const tab_;

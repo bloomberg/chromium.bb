@@ -5,6 +5,20 @@
 #ifndef CHROME_BROWSER_AUTOFILL_API_AUTOFILL_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_AUTOFILL_API_AUTOFILL_MANAGER_DELEGATE_H_
 
+namespace autofill {
+class PasswordGenerator;
+}
+
+namespace gfx {
+class Rect;
+}
+
+namespace webkit {
+namespace forms {
+struct PasswordForm;
+}
+}
+
 class InfoBarService;
 class PrefServiceBase;
 
@@ -31,6 +45,16 @@ class AutofillManagerDelegate {
   // Returns true if saving passwords is currently enabled for the
   // delegate.
   virtual bool IsSavingPasswordsEnabled() const = 0;
+
+  // Causes the Autofill settings UI to be shown.
+  virtual void ShowAutofillSettings() = 0;
+
+  // Causes the password generation bubble UI to be shown using the
+  // specified form with the given bounds.
+  virtual void ShowPasswordGenerationBubble(
+      const gfx::Rect& bounds,
+      const webkit::forms::PasswordForm& form,
+      autofill::PasswordGenerator* generator) = 0;
 };
 
 }  // namespace autofill

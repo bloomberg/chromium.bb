@@ -205,8 +205,6 @@
         'browser/autofill/autofill_download.h',
         'browser/autofill/autofill_external_delegate.cc',
         'browser/autofill/autofill_external_delegate.h',
-        'browser/autofill/autofill_feedback_infobar_delegate.cc',
-        'browser/autofill/autofill_feedback_infobar_delegate.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
         'browser/autofill/autofill_ie_toolbar_import_win.cc',

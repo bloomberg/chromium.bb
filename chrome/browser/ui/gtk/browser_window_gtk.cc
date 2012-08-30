@@ -1171,8 +1171,8 @@ void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {
 
 void BrowserWindowGtk::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
-    autofill::PasswordGenerator* password_generator,
-    const webkit::forms::PasswordForm& form) {
+    const webkit::forms::PasswordForm& form,
+    autofill::PasswordGenerator* password_generator) {
   WebContents* web_contents = chrome::GetActiveWebContents(browser_.get());
   if (!web_contents || !web_contents->GetContentNativeView()) {
     return;

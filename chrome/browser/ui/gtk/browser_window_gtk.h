@@ -167,8 +167,8 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;
   virtual void ShowPasswordGenerationBubble(
       const gfx::Rect& rect,
-      autofill::PasswordGenerator* password_generator,
-      const webkit::forms::PasswordForm& form) OVERRIDE;
+      const webkit::forms::PasswordForm& form,
+      autofill::PasswordGenerator* password_generator) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
