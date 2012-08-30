@@ -150,14 +150,11 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
   }
 
   switch (type) {
-    case MTP_OR_PTP:  // Fall through
-    case REMOVABLE_MASS_STORAGE_WITH_DCIM:
-      // We should be able to find media devices in SystemMonitor.
-      callback.Run(!FindRemovableStorageLocationById(device_id).empty());
-      break;
+    case MTP_OR_PTP:  // Fall through.
+    case REMOVABLE_MASS_STORAGE_WITH_DCIM: // Fall through.
     case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      FindUSBDeviceById(device_id,
-                        base::Bind(&EmptyPathIsFalseCallback, callback));
+      // We should be able to find removable storage in SystemMonitor.
+      callback.Run(!FindRemovableStorageLocationById(device_id).empty());
       break;
     case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
@@ -172,6 +169,7 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
   callback.Run(false);
 }
 
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
 void MediaStorageUtil::GetDeviceInfoFromPath(
     const FilePath& path, const DeviceInfoCallback& callback) {
@@ -179,15 +177,16 @@ void MediaStorageUtil::GetDeviceInfoFromPath(
   // worse than what the code already does.
   // * Find mount point parent (determines relative file path)
   // * Search System monitor, just in case.
-  // * If it's a USB device, generate device id, else use device root path as id
+  // * If it's a removable device, generate device id, else use device root
+  //   path as id
   std::string device_id =
       MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
   FilePath relative_path = MakePathRelative(path);
   string16 display_name = path.BaseName().LossyDisplayName();
 
   callback.Run(device_id, relative_path, display_name);
-  return;
 }
+#endif
 
 // static
 void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
@@ -199,10 +198,12 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
 
   switch (type) {
     case MTP_OR_PTP:
+      // TODO(kmadhusu) We may want to return the MTP device location here.
       callback.Run(FilePath());
       break;
+    case REMOVABLE_MASS_STORAGE_WITH_DCIM:  // Fall through.
     case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      FindUSBDeviceById(device_id, callback);
+      callback.Run(FilePath(FindRemovableStorageLocationById(device_id)));
       break;
     case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
@@ -211,24 +212,11 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
           base::Bind(&ValidatePathOnFileThread,
                      FilePath::FromUTF8Unsafe(unique_id), callback));
       break;
-    case REMOVABLE_MASS_STORAGE_WITH_DCIM:
-      callback.Run(FilePath(FindRemovableStorageLocationById(device_id)));
-      break;
   }
   NOTREACHED();
   callback.Run(FilePath());
 }
 
 MediaStorageUtil::MediaStorageUtil() {}
-
-// static
-void MediaStorageUtil::FindUSBDeviceById(const std::string& device_id,
-                                         const FilePathCallback& callback) {
-  // TODO(vandebo) This needs to be implemented per platform.
-  // Type is REMOVABLE_MASS_STORAGE_NO_DCIM, so it's a device possibly mounted
-  // somewhere...
-  NOTREACHED();
-  callback.Run(FilePath());
-}
 
 }  // namespace chrome

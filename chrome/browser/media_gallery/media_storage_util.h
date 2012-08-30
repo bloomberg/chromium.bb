@@ -71,10 +71,6 @@ class MediaStorageUtil {
   // All methods are static, this class should not be instantiated.
   MediaStorageUtil();
 
-  // A platform specific helper.
-  static void FindUSBDeviceById(const std::string& device_id,
-                                const FilePathCallback& callback);
-
   DISALLOW_COPY_AND_ASSIGN(MediaStorageUtil);
 };
 

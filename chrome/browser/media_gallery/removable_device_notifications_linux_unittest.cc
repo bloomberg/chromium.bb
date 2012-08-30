@@ -671,24 +671,31 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(0);
   AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
-  FilePath mount_point;
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1),
-            notifier()->GetDeviceIdForPath(test_path_a, &mount_point));
-  EXPECT_EQ(test_path_a.value(), mount_point.value());
-  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM),
-            notifier()->GetDeviceIdForPath(test_path_b, &mount_point));
-  EXPECT_EQ(test_path_b.value(), mount_point.value());
-  EXPECT_EQ(GetDeviceId(kDeviceFixed),
-            notifier()->GetDeviceIdForPath(test_path_c, NULL));
+  base::SystemMonitor::RemovableStorageInfo device_info;
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_a, &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
+  EXPECT_EQ(test_path_a.value(), device_info.location);
+  EXPECT_EQ(GetDeviceName(kDeviceDCIM1), device_info.name);
+
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_b, &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), device_info.device_id);
+  EXPECT_EQ(test_path_b.value(), device_info.location);
+  EXPECT_EQ(GetDeviceName(kDeviceNoDCIM), device_info.name);
+
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_c, &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
+  EXPECT_EQ(test_path_c.value(), device_info.location);
+  EXPECT_EQ(GetDeviceName(kDeviceFixed), device_info.name);
 
   // An invalid path.
-  EXPECT_EQ(std::string(),
-            notifier()->GetDeviceIdForPath(FilePath(kInvalidPath), NULL));
+  EXPECT_FALSE(notifier()->GetDeviceInfoForPath(FilePath(kInvalidPath), NULL));
 
   // Test filling in of the mount point.
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), notifier()->GetDeviceIdForPath(
-      test_path_a.Append("some/other/path"), &mount_point));
-  EXPECT_EQ(test_path_a.value(), mount_point.value());
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(
+      test_path_a.Append("some/other/path"), &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
+  EXPECT_EQ(test_path_a.value(), device_info.location);
+  EXPECT_EQ(GetDeviceName(kDeviceDCIM1), device_info.name);
 
   // One device attached at multiple points.
   // kDeviceDCIM1 -> kMountPointA *
@@ -703,12 +710,14 @@ TEST_F(RemovableDeviceNotificationLinuxTest, DeviceLookUp) {
   EXPECT_CALL(observer(), OnRemovableStorageDetached(_)).Times(1);
   AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
-  EXPECT_EQ(GetDeviceId(kDeviceDCIM1),
-            notifier()->GetDeviceIdForPath(test_path_a, NULL));
-  EXPECT_EQ(GetDeviceId(kDeviceFixed),
-            notifier()->GetDeviceIdForPath(test_path_b, NULL));
-  EXPECT_EQ(GetDeviceId(kDeviceFixed),
-            notifier()->GetDeviceIdForPath(test_path_c, NULL));
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_a, &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id);
+
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_b, &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
+
+  EXPECT_TRUE(notifier()->GetDeviceInfoForPath(test_path_c, &device_info));
+  EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id);
 }
 
 }  // namespace

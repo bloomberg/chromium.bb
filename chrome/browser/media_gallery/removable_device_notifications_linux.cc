@@ -307,10 +307,11 @@ FilePath RemovableDeviceNotificationsLinux::GetDeviceMountPoint(
   return FilePath(referenced_info.begin()->first);
 }
 
-std::string RemovableDeviceNotificationsLinux::GetDeviceIdForPath(
-    const FilePath& path, FilePath* mount_point) const {
+bool RemovableDeviceNotificationsLinux::GetDeviceInfoForPath(
+    const FilePath& path,
+    SystemMonitor::RemovableStorageInfo* device_info) const {
   if (!path.IsAbsolute())
-    return std::string();
+    return false;
 
   FilePath current = path;
   while (!ContainsKey(mount_info_map_, current) && current != current.DirName())
@@ -318,12 +319,14 @@ std::string RemovableDeviceNotificationsLinux::GetDeviceIdForPath(
 
   MountMap::const_iterator mount_info = mount_info_map_.find(current);
   if (mount_info == mount_info_map_.end())
-    return std::string();
+    return false;
 
-  if (mount_point)
-    *mount_point = current;
-
-  return mount_info->second.device_id;
+  if (device_info) {
+    device_info->device_id = mount_info->second.device_id;
+    device_info->name = mount_info->second.device_name;
+    device_info->location = current.value();
+  }
+  return true;
 }
 
 void RemovableDeviceNotificationsLinux::OnFilePathChanged(const FilePath& path,

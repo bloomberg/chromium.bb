@@ -22,6 +22,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
+#include "base/system_monitor/system_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
 class FilePath;
@@ -49,11 +50,11 @@ class RemovableDeviceNotificationsLinux
   // Use |device_id| to find and return where the device is mounted.
   FilePath GetDeviceMountPoint(const std::string& device_id) const;
 
-  // Determines which device |path| is located on and returns the unique id
-  // for that device, otherwise returns an empty string.  If |mount_point| is
-  // not NULL, set it to the mount point of the device.
-  std::string GetDeviceIdForPath(const FilePath& path,
-                                 FilePath* mount_point) const;
+  // Finds the device that contains |path| and populates |device_info|.
+  // Returns false if unable to find the device.
+  bool GetDeviceInfoForPath(
+      const FilePath& path,
+      base::SystemMonitor::RemovableStorageInfo* device_info) const;
 
  protected:
   // Only for use in unit tests.
