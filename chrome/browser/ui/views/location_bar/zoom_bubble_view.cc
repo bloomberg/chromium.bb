@@ -87,13 +87,7 @@ void ZoomBubbleView::Refresh() {
   int zoom_percent = tab_contents_->zoom_controller()->zoom_percent();
   label_->SetText(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
-
-  if (auto_close_) {
-    // If the bubble should be closed automatically, reset the timer so that
-    // it will show for the full amount of time instead of only what remained
-    // from the previous time.
-    timer_.Reset();
-  }
+  StartTimerIfNecessary();
 }
 
 void ZoomBubbleView::Close() {
@@ -102,11 +96,15 @@ void ZoomBubbleView::Close() {
 
 void ZoomBubbleView::StartTimerIfNecessary() {
   if (auto_close_) {
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
-        this,
-        &ZoomBubbleView::Close);
+    if (timer_.IsRunning()) {
+      timer_.Reset();
+    } else {
+      timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
+          this,
+          &ZoomBubbleView::Close);
+    }
   }
 }
 
@@ -150,6 +148,8 @@ void ZoomBubbleView::Init() {
 }
 
 void ZoomBubbleView::WindowClosing() {
-  DCHECK(zoom_bubble_ == this);
-  zoom_bubble_ = NULL;
+  // |zoom_bubble_| can be a new bubble by this point (as Close(); doesn't
+  // call this right away). Only set to NULL when it's this bubble.
+  if (zoom_bubble_ == this)
+    zoom_bubble_ = NULL;
 }
