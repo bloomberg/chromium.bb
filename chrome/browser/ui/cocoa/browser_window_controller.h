@@ -296,6 +296,10 @@ class WebContents;
 // Show the Chrome To Mobile bubble (e.g. user just clicked on the icon)
 - (void)showChromeToMobileBubble;
 
+// Nil out the weak Chrome To Mobile bubble controller reference.
+// This should be called by the ChromeToMobileBubbleController on close.
+- (void)chromeToMobileBubbleWindowWillClose;
+
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
@@ -326,10 +330,6 @@ class WebContents;
 // Return the point to which a bubble window's arrow should point, in window
 // coordinates.
 - (NSPoint)bookmarkBubblePoint;
-
-// Return the Chrome To Mobile bubble window's arrow anchor point, in window
-// coordinates.
-- (NSPoint)chromeToMobileBubblePoint;
 
 // Shows or hides the Instant preview contents.
 - (void)showInstant:(content::WebContents*)previewContents;

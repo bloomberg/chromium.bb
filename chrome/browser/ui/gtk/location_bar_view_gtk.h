@@ -16,7 +16,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/command_observer.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -61,8 +60,7 @@ class AcceleratorGtk;
 class LocationBarViewGtk : public OmniboxEditController,
                            public LocationBar,
                            public LocationBarTesting,
-                           public content::NotificationObserver,
-                           public CommandObserver {
+                           public content::NotificationObserver {
  public:
   explicit LocationBarViewGtk(Browser* browser);
   virtual ~LocationBarViewGtk();
@@ -162,9 +160,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
   // Edit background color.
   static const GdkColor kBackgroundColor;
@@ -373,8 +368,6 @@ class LocationBarViewGtk : public OmniboxEditController,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
-                       OnChromeToMobileButtonPress, GdkEventButton*);
 
   // Updates the site type area: changes the icon and shows/hides the EV
   // certificate information.
@@ -401,7 +394,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   // available horizontal space in the location bar.
   void AdjustChildrenVisibility();
 
-  // Build the zoom, star, and Chrome To Mobile icons.
+  // Build the zoom, and star icons.
   GtkWidget* CreateIconButton(
       GtkWidget** image,
       int image_id,
@@ -410,16 +403,12 @@ class LocationBarViewGtk : public OmniboxEditController,
       gboolean (click_callback)(GtkWidget*, GdkEventButton*, gpointer));
   void CreateZoomButton();
   void CreateStarButton();
-  void CreateChromeToMobileButton();
 
   // Update the zoom icon after zoom changes.
   void UpdateZoomIcon();
 
   // Update the star icon after it is toggled or the theme changes.
   void UpdateStarIcon();
-
-  // Update the chrome to mobile icon after the theme changes, etc.
-  void UpdateChromeToMobileIcon();
 
   // Returns true if we should only show the URL and none of the extras like
   // the star button or page actions.
@@ -436,10 +425,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   ui::OwnedWidgetGtk star_;
   GtkWidget* star_image_;
   bool starred_;
-
-  // The Chrome To Mobile button and image.
-  ui::OwnedWidgetGtk chrome_to_mobile_view_;
-  GtkWidget* chrome_to_mobile_image_;
 
   // An icon to the left of the address bar.
   GtkWidget* site_type_alignment_;

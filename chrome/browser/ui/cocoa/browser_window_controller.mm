@@ -1648,10 +1648,6 @@ enum {
   bookmarkBubbleController_ = nil;
 }
 
-- (NSPoint)chromeToMobileBubblePoint {
-  return [toolbarController_ chromeToMobileBubblePoint];
-}
-
 // Show the Chrome To Mobile bubble (e.g. user just clicked on the icon).
 - (void)showChromeToMobileBubble {
   // Do nothing if the bubble is already showing.
@@ -1663,27 +1659,11 @@ enum {
           initWithParentWindow:[self window]
                        browser:browser_.get()];
   [chromeToMobileBubbleController_ showWindow:self];
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserver:self
-             selector:@selector(chromeToMobileBubbleWindowWillClose:)
-                 name:NSWindowWillCloseNotification
-               object:[chromeToMobileBubbleController_ window]];
-  // Show the lit Chrome To Mobile icon while the bubble is visible.
-  [self locationBarBridge]->SetChromeToMobileDecorationLit(true);
 }
 
 // Nil out the weak Chrome To Mobile bubble controller reference.
-- (void)chromeToMobileBubbleWindowWillClose:(NSNotification*)notification {
-  DCHECK_EQ([notification object], [chromeToMobileBubbleController_ window]);
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self
-                    name:NSWindowWillCloseNotification
-                  object:[chromeToMobileBubbleController_ window]];
+- (void)chromeToMobileBubbleWindowWillClose {
   chromeToMobileBubbleController_ = nil;
-  // Restore the dimmed Chrome To Mobile icon when the bubble closes.
-  [self locationBarBridge]->SetChromeToMobileDecorationLit(false);
 }
 
 // Handle the editBookmarkNode: action sent from bookmark bubble controllers.

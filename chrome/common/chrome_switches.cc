@@ -276,9 +276,6 @@ const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 // Disables the bundled PPAPI version of Flash (if it's enabled by default).
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 
-// Disables Chrome To Mobile.
-const char kDisableChromeToMobile[]         = "disable-chrome-to-mobile";
-
 // Disables the client-side phishing detection feature. Note that even if
 // client-side phishing detection is enabled, it will only be active if the
 // user has opted in to UMA stats and SafeBrowsing is enabled in the
@@ -486,10 +483,6 @@ const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 // Enables the new ClientOAuth signin flow for connecting a profile a Google
 // account.  When disabled, Chrome will use the ClientLogin flow instead.
 const char kEnableClientOAuthSignin[]       = "enable-client-oauth-signin";
-
-// Enables Chrome To Mobile.
-// This switch is not currently respected; use the disable switch instead.
-const char kEnableChromeToMobile[]          = "enable-chrome-to-mobile";
 
 // Enables the new cloud policy stack.
 const char kEnableCloudPolicyService[]      = "enable-cloud-policy-service";

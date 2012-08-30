@@ -390,7 +390,6 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : zoom_image_(NULL),
       star_image_(NULL),
       starred_(false),
-      chrome_to_mobile_image_(NULL),
       site_type_alignment_(NULL),
       site_type_event_box_(NULL),
       location_icon_image_(NULL),
@@ -426,7 +425,6 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should be children of / owned by the alignment.
   zoom_.Destroy();
   star_.Destroy();
-  chrome_to_mobile_view_.Destroy();
   hbox_.Destroy();
   content_setting_hbox_.Destroy();
   page_action_hbox_.Destroy();
@@ -560,20 +558,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     gtk_box_pack_end(GTK_BOX(hbox_.get()), alignment,
                      FALSE, FALSE, 0);
   } else if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
-    // Hide the star and Chrome To Mobile icons in popups, app windows, etc.
+    // Hide the star icon in popups, app windows, etc.
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
-
-    // Disable Chrome To Mobile for off-the-record and non-synced profiles,
-    // or if the feature is disabled by a command line flag or chrome://flags.
-    if (!profile->IsOffTheRecord() && profile->IsSyncAccessible() &&
-        ChromeToMobileService::IsChromeToMobileEnabled()) {
-      CreateChromeToMobileButton();
-      gtk_box_pack_end(GTK_BOX(hbox_.get()), chrome_to_mobile_view_.get(),
-                       FALSE, FALSE, 0);
-      command_updater_->AddCommandObserver(IDC_CHROME_TO_MOBILE_PAGE, this);
-      UpdateChromeToMobileIcon();
-    }
   }
 
   CreateZoomButton();
@@ -735,7 +722,6 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateZoomIcon();
   UpdateStarIcon();
-  UpdateChromeToMobileIcon();
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
@@ -856,15 +842,6 @@ void LocationBarViewGtk::CreateStarButton() {
                              VIEW_ID_STAR_BUTTON,
                              IDS_TOOLTIP_STAR,
                              OnStarButtonPressThunk));
-}
-
-void LocationBarViewGtk::CreateChromeToMobileButton() {
-  chrome_to_mobile_view_.Own(
-      CreateIconButton(&chrome_to_mobile_image_,
-                       IDR_MOBILE,
-                       VIEW_ID_CHROME_TO_MOBILE_BUTTON,
-                       IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP,
-                       OnChromeToMobileButtonPressThunk));
 }
 
 void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
@@ -1108,12 +1085,10 @@ void LocationBarViewGtk::Observe(int type,
       std::string* pref_name_in = content::Details<std::string>(details).ptr();
       DCHECK(pref_name_in);
 
-      if (*pref_name_in == prefs::kEditBookmarksEnabled) {
+      if (*pref_name_in == prefs::kEditBookmarksEnabled)
         UpdateStarIcon();
-        UpdateChromeToMobileIcon();
-      } else {
+      else
         NOTREACHED();
-      }
       break;
     }
 
@@ -1168,7 +1143,6 @@ void LocationBarViewGtk::Observe(int type,
 
       UpdateZoomIcon();
       UpdateStarIcon();
-      UpdateChromeToMobileIcon();
       UpdateSiteTypeArea();
       UpdateContentSettingsIcons();
       UpdateWebIntentsButton();
@@ -1494,16 +1468,6 @@ gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
-gboolean LocationBarViewGtk::OnChromeToMobileButtonPress(
-    GtkWidget* widget,
-    GdkEventButton* event) {
-  if (event->button == 1) {
-    chrome::ExecuteCommand(browser_, IDC_CHROME_TO_MOBILE_PAGE);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 void LocationBarViewGtk::ShowZoomBubble() {
   if (!zoom_.get() || toolbar_model_->input_in_progress())
     return;
@@ -1521,7 +1485,9 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
 }
 
 void LocationBarViewGtk::ShowChromeToMobileBubble() {
-  ChromeToMobileBubbleGtk::Show(GTK_IMAGE(chrome_to_mobile_image_), browser_);
+  // TODO(msw): Chrome to Mobile is currently disabled on GTK.
+  // ChromeToMobileBubbleGtk::Show(GTK_WIDGET(action_box_button_->widget()),
+  //                               browser_);
 }
 
 void LocationBarViewGtk::SetStarred(bool starred) {
@@ -1578,17 +1544,6 @@ void LocationBarViewGtk::UpdateStarIcon() {
   } else {
     gtk_widget_hide_all(star_.get());
   }
-}
-
-void LocationBarViewGtk::UpdateChromeToMobileIcon() {
-  if (!chrome_to_mobile_view_.get())
-    return;
-
-  Profile* profile = browser_->profile();
-  bool enabled = !toolbar_model_->input_in_progress() &&
-      ChromeToMobileServiceFactory::GetForProfile(profile)->HasMobiles();
-  gtk_widget_set_visible(chrome_to_mobile_view_.get(), enabled);
-  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 }
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {
@@ -1933,12 +1888,6 @@ void LocationBarViewGtk::PageActionViewGtk::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_WINDOW_CLOSED);
   DisconnectPageActionAccelerator();
-}
-
-void LocationBarViewGtk::EnabledStateChangedForCommand(int id, bool enabled) {
-  DCHECK_EQ(id, IDC_CHROME_TO_MOBILE_PAGE);
-  if (enabled != gtk_widget_get_visible(chrome_to_mobile_view_.get()))
-    UpdateChromeToMobileIcon();
 }
 
 void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {

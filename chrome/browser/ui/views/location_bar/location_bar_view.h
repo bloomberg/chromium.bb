@@ -31,7 +31,6 @@
 #endif
 
 class ActionBoxButtonView;
-class ChromeToMobileView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class ContentSettingImageView;
@@ -528,9 +527,6 @@ class LocationBarView : public LocationBar,
 
   // The action box button (plus).
   ActionBoxButtonView* action_box_button_view_;
-
-  // The Chrome To Mobile page action icon view.
-  ChromeToMobileView* chrome_to_mobile_view_;
 
   // The mode that dictates how the bar shows.
   Mode mode_;

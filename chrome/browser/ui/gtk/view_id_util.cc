@@ -80,9 +80,6 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_STAR_BUTTON:
       return "chrome-toolbar-star-button";
 
-    case VIEW_ID_CHROME_TO_MOBILE_BUTTON:
-      return "chrome-toolbar-chrome-to-mobile-button";
-
     case VIEW_ID_LOCATION_BAR:
       return "chrome-location-bar";
 

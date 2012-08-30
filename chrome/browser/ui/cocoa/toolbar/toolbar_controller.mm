@@ -717,10 +717,6 @@ class NotificationBridge : public content::NotificationObserver {
   return locationBarView_->GetBookmarkBubblePoint();
 }
 
-- (NSPoint)chromeToMobileBubblePoint {
-  return locationBarView_->GetChromeToMobileBubblePoint();
-}
-
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
   // With no toolbar, just ignore the compression.
   return hasToolbar_ ? kBaseToolbarHeight - compressByHeight :

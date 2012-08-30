@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/command_observer.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
@@ -24,7 +23,6 @@
 #include "chrome/common/content_settings_types.h"
 
 @class AutocompleteTextField;
-class ChromeToMobileDecoration;
 class CommandUpdater;
 class ContentSettingDecoration;
 class EVBubbleDecoration;
@@ -46,8 +44,7 @@ class ZoomDecoration;
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public OmniboxEditController,
-                           public content::NotificationObserver,
-                           public CommandObserver {
+                           public content::NotificationObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
@@ -90,8 +87,8 @@ class LocationBarViewMac : public LocationBar,
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
 
-  // Set ChromeToMobileDecoration's lit state (to update the icon).
-  void SetChromeToMobileDecorationLit(bool lit);
+  // Set the icon image resource for the action box plus decoration.
+  void SetActionBoxIcon(int image_id);
 
   // Happens when the zoom changes for the active tab. |can_show_bubble| is
   // false when the change in zoom for the active tab wasn't an explicit user
@@ -107,10 +104,6 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates on the Action Box icon for
   // anchoring its bubbles.
   NSPoint GetActionBoxAnchorPoint() const;
-
-  // Get the point in window coordinates on the Chrome To Mobile icon for
-  // anchoring its bubble.
-  NSPoint GetChromeToMobileBubblePoint() const;
 
   // Get the point in window coordinates in the security icon at which the page
   // info bubble aims.
@@ -183,9 +176,6 @@ class LocationBarViewMac : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
-
  private:
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);
@@ -209,7 +199,7 @@ class LocationBarViewMac : public LocationBar,
   // Checks if the bookmark star should be enabled or not.
   bool IsStarEnabled();
 
-  // Update the Chrome To Mobile page action visibility and command state.
+  // Update the Chrome To Mobile page action command state.
   void UpdateChromeToMobileEnabled();
 
   // Updates the zoom decoration in the omnibox with the current zoom level.
@@ -247,9 +237,6 @@ class LocationBarViewMac : public LocationBar,
 
   // Bookmark star right of page actions.
   scoped_ptr<StarDecoration> star_decoration_;
-
-  // Chrome To Mobile page action icon.
-  scoped_ptr<ChromeToMobileDecoration> chrome_to_mobile_decoration_;
 
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.

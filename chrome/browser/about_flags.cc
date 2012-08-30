@@ -685,13 +685,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableDiscoveryInNewTabPage)
   },
-  {
-    "disable-chrome-to-mobile",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_NAME,
-    IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableChromeToMobile)
-  },
 #if defined(GOOGLE_CHROME_BUILD)
   {
     "disable-asynchronous-spellchecking",

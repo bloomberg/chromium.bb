@@ -5911,18 +5911,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
         Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
       </message>
-      <message name="IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_NAME" desc="Name for the flag to disable Chrome To Mobile">
-        Disable Chrome To Mobile.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_DESCRIPTION" desc="Description for the flag to disable Chrome To Mobile.">
-        Disable the Chrome To Mobile page action, which allows you to send page URLs and offline copies to Chrome on your mobile device.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_CHROME_TO_MOBILE_NAME" desc="Name for the flag to enable Chrome To Mobile">
-        Enable Chrome To Mobile.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_CHROME_TO_MOBILE_DESCRIPTION" desc="Description for the flag to enable Chrome To Mobile.">
-        Enable the Chrome To Mobile page action, which allows you to send page URLs and offline copies to Chrome on your mobile device.
-      </message>
       <message name="IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING" desc="Title for the flag to disable asynchronous spellchecking.">
         Disable Asynchronous Spellchecking
       </message>

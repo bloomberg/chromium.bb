@@ -37,7 +37,6 @@
 #import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
-#import "chrome/browser/ui/cocoa/location_bar/chrome_to_mobile_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
@@ -102,7 +101,6 @@ LocationBarViewMac::LocationBarViewMac(
                                  OmniboxViewMac::GetFieldFont())),
       plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
-      chrome_to_mobile_decoration_(NULL),
       zoom_decoration_(new ZoomDecoration(toolbar_model)),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
@@ -113,16 +111,6 @@ LocationBarViewMac::LocationBarViewMac(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
-  // Disable Chrome To Mobile for off-the-record and non-synced profiles,
-  // or if the feature is disabled by a command line flag or chrome://flags.
-  if (!profile_->IsOffTheRecord() && profile_->IsSyncAccessible() &&
-      ChromeToMobileService::IsChromeToMobileEnabled()) {
-    command_updater_->AddCommandObserver(IDC_CHROME_TO_MOBILE_PAGE, this);
-    chrome_to_mobile_decoration_.reset(
-        new ChromeToMobileDecoration(profile, command_updater));
-    UpdateChromeToMobileEnabled();
-  }
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
     plus_decoration_.reset(new PlusDecoration(this, command_updater, browser_));
   }
@@ -502,8 +490,8 @@ void LocationBarViewMac::SetStarred(bool starred) {
   OnDecorationsChanged();
 }
 
-void LocationBarViewMac::SetChromeToMobileDecorationLit(bool lit) {
-  chrome_to_mobile_decoration_->SetLit(lit);
+void LocationBarViewMac::SetActionBoxIcon(int image_id) {
+  plus_decoration_->SetImage(OmniboxViewMac::ImageForResource(image_id));
   OnDecorationsChanged();
 }
 
@@ -525,16 +513,6 @@ NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   const NSRect frame = [cell frameForDecoration:star_decoration_.get()
                                         inFrame:[field_ bounds]];
   const NSPoint point = star_decoration_->GetBubblePointInFrame(frame);
-  return [field_ convertPoint:point toView:nil];
-}
-
-NSPoint LocationBarViewMac::GetChromeToMobileBubblePoint() const {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect frame =
-      [cell frameForDecoration:chrome_to_mobile_decoration_.get()
-                       inFrame:[field_ bounds]];
-  const NSPoint point =
-      chrome_to_mobile_decoration_->GetBubblePointInFrame(frame);
   return [field_ convertPoint:point toView:nil];
 }
 
@@ -598,12 +576,6 @@ void LocationBarViewMac::Observe(int type,
       NOTREACHED() << "Unexpected notification";
       break;
   }
-}
-
-void LocationBarViewMac::EnabledStateChangedForCommand(int id, bool enabled) {
-  DCHECK_EQ(id, IDC_CHROME_TO_MOBILE_PAGE);
-  UpdateChromeToMobileEnabled();
-  OnChanged();
 }
 
 void LocationBarViewMac::PostNotification(NSString* notification) {
@@ -683,8 +655,6 @@ void LocationBarViewMac::Layout() {
     [cell addRightDecoration:plus_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
   [cell addRightDecoration:zoom_decoration_.get()];
-  if (chrome_to_mobile_decoration_.get())
-    [cell addRightDecoration:chrome_to_mobile_decoration_.get()];
 
   // Note that display order is right to left.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
@@ -755,13 +725,9 @@ bool LocationBarViewMac::IsStarEnabled() {
 }
 
 void LocationBarViewMac::UpdateChromeToMobileEnabled() {
-  if (!chrome_to_mobile_decoration_.get())
-    return;
-
-  DCHECK(ChromeToMobileService::IsChromeToMobileEnabled());
-  bool enabled = [field_ isEditable] && !toolbar_model_->input_in_progress() &&
+  bool enabled = ChromeToMobileService::IsChromeToMobileEnabled() &&
+      [field_ isEditable] && !toolbar_model_->input_in_progress() &&
       ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles();
-  chrome_to_mobile_decoration_->SetVisible(enabled);
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
 }
 

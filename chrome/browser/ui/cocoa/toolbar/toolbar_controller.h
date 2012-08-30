@@ -146,10 +146,6 @@ class NotificationBridge;
 // associated window's coordinate system.
 - (NSPoint)bookmarkBubblePoint;
 
-// Return the anchor point for the Chrome To Mobile bubble on its icon.
-// The returned value is in the associated window's coordinate system.
-- (NSPoint)chromeToMobileBubblePoint;
-
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;
 

@@ -48,9 +48,6 @@
 
 namespace {
 
-// The default enabled/disabled state of the Chrome To Mobile feature.
-const bool kChromeToMobileEnabled = true;
-
 // The maximum number of retries for the URLFetcher requests.
 const size_t kMaxRetries = 1;
 
@@ -165,15 +162,9 @@ ChromeToMobileService::JobData::~JobData() {}
 
 // static
 bool ChromeToMobileService::IsChromeToMobileEnabled() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  if (command_line->HasSwitch(switches::kDisableChromeToMobile))
-    return false;
-
-  if (command_line->HasSwitch(switches::kEnableChromeToMobile))
-    return true;
-
-  return kChromeToMobileEnabled;
+  // Chrome To Mobile is currently gated on the Action Box UI.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableActionBox);
 }
 
 // static
