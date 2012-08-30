@@ -2731,17 +2731,17 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
   DCHECK(doc_entry.get());
 
   const std::string& resource_id = doc_entry->resource_id();
-  AddUploadedFileParams* params =
+  scoped_ptr<AddUploadedFileParams> params(
       new AddUploadedFileParams(upload_mode,
                                 directory_path,
                                 doc_entry.Pass(),
                                 file_content_path,
                                 cache_operation,
-                                callback);
+                                callback));
 
   const FileMoveCallback file_move_callback =
       base::Bind(&DriveFileSystem::ContinueAddUploadedFile,
-                 ui_weak_ptr_, params);
+                 ui_weak_ptr_, base::Passed(&params));
 
   if (upload_mode == UPLOAD_EXISTING_FILE) {
     // Remove the existing entry.
@@ -2752,7 +2752,7 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
 }
 
 void DriveFileSystem::ContinueAddUploadedFile(
-    AddUploadedFileParams* params,
+    scoped_ptr<AddUploadedFileParams> params,
     DriveFileError error,
     const FilePath& /* file_path */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2764,16 +2764,20 @@ void DriveFileSystem::ContinueAddUploadedFile(
   DCHECK(!params->resource_id.empty());
   DCHECK(!params->md5.empty());
 
+  // Get parameters before base::Passed() invalidates |params|.
+  const FilePath& directory_path = params->directory_path;
+  scoped_ptr<DocumentEntry> doc_entry(params->doc_entry.Pass());
+
   resource_metadata_->AddEntryToDirectory(
-      params->directory_path,
-      params->doc_entry.Pass(),
+      directory_path,
+      doc_entry.Pass(),
       base::Bind(&DriveFileSystem::AddUploadedFileToCache,
                  ui_weak_ptr_,
-                 base::Owned(params)));
+                 base::Passed(&params)));
 }
 
 void DriveFileSystem::AddUploadedFileToCache(
-    AddUploadedFileParams* params,
+    scoped_ptr<AddUploadedFileParams> params,
     DriveFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
