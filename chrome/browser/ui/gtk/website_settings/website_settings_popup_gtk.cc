@@ -43,6 +43,9 @@ const int kPopupWidth = 400;
 // The max width of the text labels on the connection tab.
 const int kConnectionTabTextWidth = 300;
 
+// The padding used for sections on the connection tab.
+const int kConnectionTabSectionPadding = 10;
+
 // The background color of the tabs if a theme other than the native GTK theme
 // is selected.
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
@@ -69,13 +72,13 @@ void ClearContainer(GtkWidget* container) {
   }
 }
 
-void  SetConnectionSection(GtkWidget* section_box,
-                           const gfx::Image& icon,
-                           GtkWidget* content_box) {
+void SetConnectionSection(GtkWidget* section_box,
+                          const gfx::Image& icon,
+                          GtkWidget* content_box) {
   DCHECK(section_box);
   ClearContainer(section_box);
-  const int kSectionPadding = 10;
-  gtk_container_set_border_width(GTK_CONTAINER(section_box), kSectionPadding);
+  gtk_container_set_border_width(GTK_CONTAINER(section_box),
+                                 kConnectionTabSectionPadding);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
 
@@ -312,6 +315,18 @@ void WebsiteSettingsPopupGtk::InitContents() {
   first_visit_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(connection_tab), first_visit_contents_, FALSE,
                      FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(connection_tab), gtk_hseparator_new(), FALSE,
+                     FALSE, 0);
+
+  GtkWidget* help_link = theme_service_->BuildChromeLinkButton(
+      l10n_util::GetStringUTF8(IDS_PAGE_INFO_HELP_CENTER_LINK));
+  GtkWidget* help_link_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_container_set_border_width(GTK_CONTAINER(help_link_hbox),
+                                 kConnectionTabSectionPadding);
+  gtk_box_pack_start(GTK_BOX(help_link_hbox), help_link, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(connection_tab), help_link_hbox, FALSE, FALSE, 0);
+  g_signal_connect(help_link, "clicked",
+                   G_CALLBACK(OnHelpLinkClickedThunk), this);
 
   // Create tab container and add all tabs.
   notebook_ = gtk_notebook_new();
@@ -566,5 +581,14 @@ void WebsiteSettingsPopupGtk::OnViewCertLinkClicked(GtkWidget* widget) {
 }
 
 void WebsiteSettingsPopupGtk::OnCloseButtonClicked(GtkWidget* widget) {
+  bubble_->Close();
+}
+
+void WebsiteSettingsPopupGtk::OnHelpLinkClicked(GtkWidget* widget) {
+  browser_->OpenURL(OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
+                    content::Referrer(),
+                    NEW_FOREGROUND_TAB,
+                    content::PAGE_TRANSITION_LINK,
+                     false));
   bubble_->Close();
 }

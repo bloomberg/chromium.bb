@@ -75,6 +75,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCookiesLinkClicked);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnViewCertLinkClicked);
   CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnCloseButtonClicked);
+  CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnHelpLinkClicked);
 
   // Parent window.
   GtkWindow* parent_;
