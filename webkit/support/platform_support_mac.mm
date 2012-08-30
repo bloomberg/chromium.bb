@@ -124,8 +124,15 @@ void AfterInitialize(bool unit_test_mode) {
   // Load font files in the resource folder.
   static const char* const fontFileNames[] = {
       "AHEM____.TTF",
-      // We don't register WebKitWeightWather fonts because of
-      // webkit.org/b/50709.
+      "WebKitWeightWatcher100.ttf",
+      "WebKitWeightWatcher200.ttf",
+      "WebKitWeightWatcher300.ttf",
+      "WebKitWeightWatcher400.ttf",
+      "WebKitWeightWatcher500.ttf",
+      "WebKitWeightWatcher600.ttf",
+      "WebKitWeightWatcher700.ttf",
+      "WebKitWeightWatcher800.ttf",
+      "WebKitWeightWatcher900.ttf",
   };
 
   NSMutableArray* font_urls = [NSMutableArray array];
