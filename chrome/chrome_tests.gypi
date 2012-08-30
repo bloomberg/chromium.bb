@@ -1259,6 +1259,7 @@
         'browser/extensions/component_loader_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
+        'browser/extensions/default_apps_unittest.cc',
         'browser/extensions/event_listener_map_unittest.cc',
         'browser/extensions/event_router_forwarder_unittest.cc',
         'browser/extensions/extension_creator_filter_unittest.cc',

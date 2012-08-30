@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
@@ -3838,54 +3837,6 @@ TEST_F(ExtensionServiceTest, ExternalInstallPref) {
   AddMockExternalProvider(pref_provider);
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF);
 }
-
-#if !defined(OS_CHROMEOS)
-// Chrome OS has different way of installing default apps.
-TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
-  scoped_ptr<TestingProfile> profile(new TestingProfile());
-
-  // The default apps should be installed if kDefaultAppsInstallState
-  // is unknown.
-  EXPECT_TRUE(default_apps::ShouldInstallInProfile(profile.get()));
-  int state = profile->GetPrefs()->GetInteger(prefs::kDefaultAppsInstallState);
-  EXPECT_TRUE(state == default_apps::kAlreadyInstalledDefaultApps);
-
-  // The default apps should only be installed once.
-  EXPECT_FALSE(default_apps::ShouldInstallInProfile(profile.get()));
-  state = profile->GetPrefs()->GetInteger(prefs::kDefaultAppsInstallState);
-  EXPECT_TRUE(state == default_apps::kAlreadyInstalledDefaultApps);
-
-  // The default apps should not be installed if the state is
-  // kNeverProvideDefaultApps
-  profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
-      default_apps::kNeverInstallDefaultApps);
-  EXPECT_FALSE(default_apps::ShouldInstallInProfile(profile.get()));
-  state = profile->GetPrefs()->GetInteger(prefs::kDefaultAppsInstallState);
-  EXPECT_TRUE(state == default_apps::kNeverInstallDefaultApps);
-
-  // The old default apps with kAlwaysInstallDefaultAppss should be migrated.
-  profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
-      default_apps::kProvideLegacyDefaultApps);
-  EXPECT_TRUE(default_apps::ShouldInstallInProfile(profile.get()));
-  state = profile->GetPrefs()->GetInteger(prefs::kDefaultAppsInstallState);
-  EXPECT_TRUE(state == default_apps::kAlreadyInstalledDefaultApps);
-
-  class DefaultTestingProfile : public TestingProfile {
-    virtual  bool WasCreatedByVersionOrLater(
-        const std::string& version) OVERRIDE {
-      return false;
-    }
-  };
-  profile.reset(new DefaultTestingProfile);
-  // The old default apps with kProvideLegacyDefaultApps should be migrated
-  // even if the profile version is older than Chrome version.
-  profile->GetPrefs()->SetInteger(prefs::kDefaultAppsInstallState,
-      default_apps::kProvideLegacyDefaultApps);
-  EXPECT_TRUE(default_apps::ShouldInstallInProfile(profile.get()));
-  state = profile->GetPrefs()->GetInteger(prefs::kDefaultAppsInstallState);
-  EXPECT_TRUE(state == default_apps::kAlreadyInstalledDefaultApps);
-}
-#endif
 
 TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
   // This should all work, even when normal extension installation is disabled.

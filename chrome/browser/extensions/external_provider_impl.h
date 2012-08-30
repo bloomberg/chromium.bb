@@ -52,7 +52,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
 
   // Sets underlying prefs and notifies provider. Only to be called by the
   // owned ExternalLoader instance.
-  void SetPrefs(base::DictionaryValue* prefs);
+  virtual void SetPrefs(base::DictionaryValue* prefs);
 
   // ExternalProvider implementation:
   virtual void ServiceShutdown() OVERRIDE;

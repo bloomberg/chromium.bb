@@ -15,6 +15,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace base {
+class DictionaryValue;
+}
+
 // Functions and types related to installing default apps.
 namespace default_apps {
 
@@ -27,10 +31,6 @@ enum InstallState {
   kNeverInstallDefaultApps,
   kAlreadyInstalledDefaultApps
 };
-
-bool ShouldInstallInProfile(Profile* profile);
-
-bool isLocaleSupported();
 
 // Register preference properties used by default apps to maintain
 // install state.
@@ -48,11 +48,15 @@ class Provider : public extensions::ExternalProviderImpl {
            extensions::Extension::Location download_location,
            int creation_flags);
 
+  bool ShouldInstallInProfile();
+
   // ExternalProviderImpl overrides:
   virtual void VisitRegisteredExtension() OVERRIDE;
+  virtual void SetPrefs(base::DictionaryValue* prefs) OVERRIDE;
 
  private:
   Profile* profile_;
+  bool is_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(Provider);
 };
