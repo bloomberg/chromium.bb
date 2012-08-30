@@ -46,6 +46,12 @@
 #define MAYBE_UpdateWindowResize UpdateWindowResize
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
+// http://crbug.com/145639
+#if defined(OS_CHROMEOS)
+#define MAYBE_TabEvents DISABLED_TabEvents
+#else
+#define MAYBE_TabEvents TabEvents
+#endif  // defined(OS_CHROMEOS)
 
 class ExtensionApiNewTabTest : public ExtensionApiTest {
  public:
@@ -85,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMove) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabEvents) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
 }
 
