@@ -64,9 +64,9 @@ class HistoryDatabase : public DownloadDatabase,
 
   virtual ~HistoryDatabase();
 
-  // Must call this function to complete initialization. Will return true on
-  // success. On false, no other function should be called. You may want to call
-  // BeginExclusiveMode after this when you are ready.
+  // Must call this function to complete initialization. Will return
+  // sql::INIT_OK on success. Otherwise, no other function should be called. You
+  // may want to call BeginExclusiveMode after this when you are ready.
   sql::InitStatus Init(const FilePath& history_name);
 
   // Call to set the mode on the database to exclusive. The default locking mode
@@ -166,9 +166,8 @@ class HistoryDatabase : public DownloadDatabase,
   // Migration -----------------------------------------------------------------
 
   // Makes sure the version is up-to-date, updating if necessary. If the
-  // database is too old to migrate, the user will be notified. In this case, or
-  // for other errors, false will be returned. True means it is up-to-date and
-  // ready for use.
+  // database is too old to migrate, the user will be notified. Returns
+  // sql::INIT_OK iff  the DB is up-to-date and ready for use.
   //
   // This assumes it is called from the init function inside a transaction. It
   // may commit the transaction and start a new one if migration requires it.

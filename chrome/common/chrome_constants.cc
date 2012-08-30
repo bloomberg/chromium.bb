@@ -136,8 +136,6 @@ const FilePath::CharType kCustomDictionaryFileName[] =
     FPL("Custom Dictionary.txt");
 const FilePath::CharType kExtensionsCookieFilename[] = FPL("Extension Cookies");
 const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
-const FilePath::CharType kHistoryBookmarksFileName[] =
-    FPL("Bookmarks From History");
 const FilePath::CharType kHistoryFilename[] = FPL("History");
 const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
