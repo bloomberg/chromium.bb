@@ -6,6 +6,13 @@
 
 Import('env')
 
+# The PNaCl - Glibc ABI isn't stable and matching right now
+# (especially in threading libraries), unless we add an architecture bias.
+# http://code.google.com/p/nativeclient/issues/detail?id=2447
+# http://code.google.com/p/nativeclient/issues/detail?id=3009
+if env.Bit('bitcode') and env.Bit('nacl_glibc'):
+  env.AddBiasForPNaCl()
+
 atomic_ops_test_nexe = env.ComponentProgram(
     'atomic_ops_test_nexe',
     'atomic_ops_test.c',
