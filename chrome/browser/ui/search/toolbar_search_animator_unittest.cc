@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -16,6 +17,12 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/animation/multi_animation.h"
+
+// Avoid tests on branded Chrome where channel is set to CHANNEL_STABLE.
+#define AVOID_TEST_ON_BRANDED_CHROME() { \
+  if (!chrome::search::IsInstantExtendedAPIEnabled(profile())) \
+    return; \
+}
 
 namespace chrome {
 namespace search {
@@ -45,6 +52,8 @@ class ToolbarSearchAnimatorTestObserver : public ToolbarSearchAnimatorObserver {
     if (!cancel_halfway_)
       QuitMessageLoopIfDone();
   }
+
+  virtual void OnToolbarSeparatorChanged() OVERRIDE {}
 
   void set_cancel_halfway(bool cancel) {
     cancel_halfway_ = cancel;
@@ -141,11 +150,17 @@ class ToolbarSearchAnimatorTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(ToolbarSearchAnimatorTest, StateWithoutAnimation) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
   SetMode(Mode::MODE_NTP, false);
   EXPECT_FALSE(IsBackgroundChanging());
   EXPECT_EQ(0.0f, GetGradientOpacity());
 
-  SetMode(Mode::MODE_SEARCH, false);
+  SetMode(Mode::MODE_SEARCH_SUGGESTIONS, false);
+  EXPECT_FALSE(IsBackgroundChanging());
+  EXPECT_EQ(1.0f, GetGradientOpacity());
+
+  SetMode(Mode::MODE_SEARCH_RESULTS, false);
   EXPECT_FALSE(IsBackgroundChanging());
   EXPECT_EQ(1.0f, GetGradientOpacity());
 
@@ -153,7 +168,7 @@ TEST_F(ToolbarSearchAnimatorTest, StateWithoutAnimation) {
   EXPECT_FALSE(IsBackgroundChanging());
   EXPECT_EQ(1.0f, GetGradientOpacity());
 
-  SetMode(Mode::MODE_SEARCH, false);
+  SetMode(Mode::MODE_SEARCH_RESULTS, false);
   EXPECT_FALSE(IsBackgroundChanging());
   EXPECT_EQ(1.0f, GetGradientOpacity());
 
@@ -162,10 +177,12 @@ TEST_F(ToolbarSearchAnimatorTest, StateWithoutAnimation) {
   EXPECT_EQ(0.0f, GetGradientOpacity());
 }
 
-TEST_F(ToolbarSearchAnimatorTest, NTPToSearch) {
+TEST_F(ToolbarSearchAnimatorTest, NTPToSearchSuggestions) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
   SetMode(Mode::MODE_NTP, false);
-  // Set mode to |SEARCH| to start background change animation.
-  SetMode(Mode::MODE_SEARCH, true);
+  // Set mode to |SEARCH_SUGGESTIONS| to start background change animation.
+  SetMode(Mode::MODE_SEARCH_SUGGESTIONS, true);
 
   // Verify the opacity before letting animation run in message loop.
   EXPECT_EQ(0.0f, GetGradientOpacity());
@@ -178,8 +195,10 @@ TEST_F(ToolbarSearchAnimatorTest, NTPToSearch) {
   EXPECT_EQ(1.0f, GetGradientOpacity());
 }
 
-TEST_F(ToolbarSearchAnimatorTest, SearchToNTP) {
-  SetMode(Mode::MODE_SEARCH, false);
+TEST_F(ToolbarSearchAnimatorTest, SearchSuggestionsToNTP) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
+  SetMode(Mode::MODE_SEARCH_SUGGESTIONS, false);
   SetMode(Mode::MODE_NTP, true);
 
   // TODO(kuan): check with UX folks if we should animate from gradient to flat
@@ -188,23 +207,49 @@ TEST_F(ToolbarSearchAnimatorTest, SearchToNTP) {
   EXPECT_EQ(0.0f, GetGradientOpacity());
 }
 
-TEST_F(ToolbarSearchAnimatorTest, SearchToDefault) {
-  SetMode(Mode::MODE_SEARCH, false);
+TEST_F(ToolbarSearchAnimatorTest, SearchSuggestionsToDefault) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
+  SetMode(Mode::MODE_SEARCH_SUGGESTIONS, false);
   SetMode(Mode::MODE_DEFAULT, true);
 
   EXPECT_FALSE(IsBackgroundChanging());
   EXPECT_EQ(1.0f, GetGradientOpacity());
 }
 
-TEST_F(ToolbarSearchAnimatorTest, DefaultToSearch) {
+TEST_F(ToolbarSearchAnimatorTest, DefaultToSearchSuggestions) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
   // chrome::search::Mode is initialized to |DEFAULT|.
-  SetMode(Mode::MODE_SEARCH, true);
+  SetMode(Mode::MODE_SEARCH_SUGGESTIONS, true);
+
+  EXPECT_FALSE(IsBackgroundChanging());
+  EXPECT_EQ(1.0f, GetGradientOpacity());
+}
+
+TEST_F(ToolbarSearchAnimatorTest, SearchResultsToDefault) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
+  SetMode(Mode::MODE_SEARCH_RESULTS, false);
+  SetMode(Mode::MODE_DEFAULT, true);
+
+  EXPECT_FALSE(IsBackgroundChanging());
+  EXPECT_EQ(1.0f, GetGradientOpacity());
+}
+
+TEST_F(ToolbarSearchAnimatorTest, DefaultToSearchResults) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
+  // chrome::search::Mode is initialized to |DEFAULT|.
+  SetMode(Mode::MODE_SEARCH_RESULTS, true);
 
   EXPECT_FALSE(IsBackgroundChanging());
   EXPECT_EQ(1.0f, GetGradientOpacity());
 }
 
 TEST_F(ToolbarSearchAnimatorTest, NTPToDefault) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
   SetMode(Mode::MODE_NTP, false);
   SetMode(Mode::MODE_DEFAULT, true);
 
@@ -215,6 +260,8 @@ TEST_F(ToolbarSearchAnimatorTest, NTPToDefault) {
 }
 
 TEST_F(ToolbarSearchAnimatorTest, DefaultToNTP) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
   // chrome::search::Mode is initialized to |DEFAULT|.
   SetMode(Mode::MODE_NTP, true);
 
@@ -225,11 +272,13 @@ TEST_F(ToolbarSearchAnimatorTest, DefaultToNTP) {
 }
 
 TEST_F(ToolbarSearchAnimatorTest, Observer) {
+  AVOID_TEST_ON_BRANDED_CHROME();
+
   EXPECT_FALSE(default_observer()->has_progressed());
   EXPECT_FALSE(default_observer()->has_canceled());
 
   SetMode(Mode::MODE_NTP, false);
-  SetMode(Mode::MODE_SEARCH, true);
+  SetMode(Mode::MODE_SEARCH_SUGGESTIONS, true);
   SetMode(Mode::MODE_DEFAULT, true);
 
   RunMessageLoop(false);
