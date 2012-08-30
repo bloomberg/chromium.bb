@@ -36,8 +36,9 @@ class DefaultAppsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 };
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Chrome OS has different way of installing default apps.
+// Android does not currently support installing apps via Chrome.
 TEST_F(DefaultAppsTest, Install) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   extensions::ExternalLoader* loader = new MockExternalLoader();
