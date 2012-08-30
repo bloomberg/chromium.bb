@@ -354,6 +354,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE));
   RegisterSchema("cloudPrintPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_CLOUDPRINTPRIVATE));
+  RegisterSchema("commands", ReadFromResource(
+      IDR_EXTENSION_API_JSON_COMMANDS));
   RegisterSchema("contentSettings", ReadFromResource(
       IDR_EXTENSION_API_JSON_CONTENTSETTINGS));
   RegisterSchema("contextMenus", ReadFromResource(
@@ -374,8 +376,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
   RegisterSchema("experimental.bookmarkManager", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER));
-  RegisterSchema("experimental.commands", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_COMMANDS));
   RegisterSchema("experimental.infobars", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(

@@ -558,7 +558,7 @@ void BrowserEventRouter::CommandExecuted(Profile* profile,
 
   DispatchEventToExtension(profile,
                            extension_id,
-                           "experimental.commands.onCommand",
+                           "commands.onCommand",
                            args.Pass(),
                            EventRouter::USER_GESTURE_ENABLED);
 }

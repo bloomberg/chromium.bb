@@ -20,10 +20,7 @@ using content::WebContents;
 
 class CommandsApiTest : public ExtensionApiTest {
  public:
-  CommandsApiTest() {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-  }
+  CommandsApiTest() {}
   virtual ~CommandsApiTest() {}
 
  protected:

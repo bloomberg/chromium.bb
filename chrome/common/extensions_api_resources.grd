@@ -15,6 +15,7 @@
       <include name="IDR_EXTENSION_API_JSON_BROWSINGDATA" file="extensions\api\browsing_data.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CHROMEOSINFOPRIVATE" file="extensions\api\chromeos_info_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CLOUDPRINTPRIVATE" file="extensions\api\cloud_print_private.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_COMMANDS" file="extensions\api\commands.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CONTENTSETTINGS" file="extensions\api\content_settings.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_CONTEXTMENUS" file="extensions\api\context_menus.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COOKIES" file="extensions\api\cookies.json" type="BINDATA" />
@@ -26,7 +27,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY" file="extensions\api\experimental_accessibility.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental_app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental_bookmark_manager.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_COMMANDS" file="extensions\api\experimental_commands.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS" file="extensions\api\experimental_infobars.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental_input_virtual_keyboard.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS" file="extensions\api\experimental_offscreen_tabs.json" type="BINDATA" />

@@ -80,7 +80,7 @@
     "whitelist": ["mfehgcgbbipciphmccgaenjidiccnmng"]
   },
   "commands": {
-    "channel": "stable",
+    "channel": "beta",
     "extension_types": ["extension", "packaged_app"]
   },
   "contentSettings": {

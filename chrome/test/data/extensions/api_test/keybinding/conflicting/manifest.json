@@ -6,7 +6,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "tabs", "http://*/*", "experimental", "commands"
+    "tabs", "http://*/*", "commands"
   ],
   "browser_action": {
     "default_title": "Make this page green"

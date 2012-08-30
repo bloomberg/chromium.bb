@@ -8,7 +8,7 @@ chrome.browserAction.onClicked.addListener(function(windowId) {
 });
 
 // Called when the user activates the command.
-chrome.experimental.commands.onCommand.addListener(function(command) {
+chrome.commands.onCommand.addListener(function(command) {
   chrome.tabs.executeScript(null, { code: "document.body.bgColor='blue'" });
 });
 
