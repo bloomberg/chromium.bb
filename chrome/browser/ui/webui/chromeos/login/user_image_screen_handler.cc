@@ -233,7 +233,7 @@ void UserImageScreenHandler::HandlePhotoTaken(const base::ListValue* args) {
   if (image_decoder_.get())
     image_decoder_->set_delegate(NULL);
   image_decoder_ = new ImageDecoder(this, raw_data,
-                                    ImageDecoder::ROBUST_JPEG_CODEC);
+                                    ImageDecoder::DEFAULT_CODEC);
   image_decoder_->Start();
 }
 
