@@ -84,7 +84,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                  jlong time_ms,
                  jint x,
                  jint y,
-                 jboolean link_preview_tap);
+                 jboolean disambiguation_popup_tap);
   void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
   void DoubleTap(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y) ;
   void LongPress(JNIEnv* env,
@@ -92,7 +92,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                  jlong time_ms,
                  jint x,
                  jint y,
-                 jboolean link_preview_tap);
+                 jboolean disambiguation_popup_tap);
   void PinchBegin(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
   void PinchEnd(JNIEnv* env, jobject obj, jlong time_ms);
   void PinchBy(JNIEnv* env,
@@ -183,7 +183,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SendGestureEvent(WebKit::WebInputEvent::Type type, long time_ms,
                         int x, int y,
-                        float dx, float dy, bool link_preview_tap);
+                        float dx, float dy, bool disambiguation_popup_tap);
 
   void PostLoadUrl(const GURL& url);
 

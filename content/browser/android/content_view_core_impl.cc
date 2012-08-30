@@ -277,9 +277,18 @@ jboolean ContentViewCoreImpl::TouchEvent(JNIEnv* env,
 void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
                                            long time_ms, int x, int y,
                                            float dx, float dy,
-                                           bool link_preview_tap) {
+                                           bool disambiguation_popup_tap) {
   WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
       type, time_ms / 1000.0, x, y, dx, dy, 0);
+
+  // TODO(trchen): derive a proper padding value from device dpi
+  const int touchPadding = 48;
+  if ((type == WebInputEvent::GestureTap
+      || type == WebInputEvent::GestureLongPress)
+      && !disambiguation_popup_tap)
+    event.boundingBox = WebKit::WebRect(x - touchPadding, y - touchPadding,
+                                        2 * touchPadding, 2 * touchPadding);
+
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
@@ -312,9 +321,10 @@ void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
 }
 
 void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
-                                    jint x, jint y, jboolean link_preview_tap) {
+                                    jint x, jint y,
+                                    jboolean disambiguation_popup_tap) {
   SendGestureEvent(
-      WebInputEvent::GestureTap, time_ms, x, y, 0, 0, link_preview_tap);
+      WebInputEvent::GestureTap, time_ms, x, y, 0, 0, disambiguation_popup_tap);
 }
 
 void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
@@ -329,9 +339,11 @@ void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
 }
 
 void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
-                                    jint x, jint y, jboolean link_preview_tap) {
+                                    jint x, jint y,
+                                    jboolean disambiguation_popup_tap) {
   SendGestureEvent(
-      WebInputEvent::GestureLongPress, time_ms, x, y, 0, 0, link_preview_tap);
+      WebInputEvent::GestureLongPress, time_ms, x, y, 0, 0,
+      disambiguation_popup_tap);
 }
 
 void ContentViewCoreImpl::PinchBegin(JNIEnv* env, jobject obj, jlong time_ms,
