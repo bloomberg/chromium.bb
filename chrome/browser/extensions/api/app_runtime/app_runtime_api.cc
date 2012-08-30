@@ -87,6 +87,13 @@ void AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
       // client code.
       args->Append(intent_data);
       break;
+    case webkit_glue::WebIntentData::FILESYSTEM:
+      intent_data = new DictionaryValue();
+      intent_data->SetString("format", "filesystem");
+      intent_data->SetString("fileSystemId", web_intent_data.filesystem_id);
+      intent_data->SetString("baseName", web_intent_data.root_name);
+      args->Append(intent_data);
+      break;
     default:
       NOTREACHED();
       break;

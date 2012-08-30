@@ -35,6 +35,13 @@ chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
           dispatch([]);
         }
         break;
+      case('filesystem'):
+        launchData.intent.data = GetIsolatedFileSystem(intentData.fileSystemId,
+                                                       intentData.baseName);
+        launchData.intent.postResult = function() {};
+        launchData.intent.postFailure = function() {};
+        dispatch([launchData]);
+        break;
       case('serialized'):
         var deserializedData = DeserializeString(intentData.data);
         launchData.intent.data = deserializedData;

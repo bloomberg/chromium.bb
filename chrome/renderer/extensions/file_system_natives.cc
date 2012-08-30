@@ -21,7 +21,7 @@ namespace {
 
 static v8::Handle<v8::Value> GetIsolatedFileSystem(
     const v8::Arguments& args) {
-  DCHECK(args.Length() == 1);
+  DCHECK(args.Length() == 1 || args.Length() == 2);
   DCHECK(args[0]->IsString());
   std::string file_system_id(*v8::String::Utf8Value(args[0]));
   WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
@@ -40,10 +40,19 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
   root.append(file_system_id);
   root.append("/");
 
+  // The optional second argument is the subfolder within the isolated file
+  // system at which to root the DOMFileSystem we're returning to the caller.
+  if (args.Length() == 2) {
+    DCHECK(args[1]->IsString());
+    name = *v8::String::Utf8Value(args[1]);
+    root.append(name);
+    root.append("/");
+  }
+
   return webframe->createFileSystem(
       WebKit::WebFileSystem::TypeIsolated,
-      WebKit::WebString::fromUTF8(name.c_str()),
-      WebKit::WebString::fromUTF8(root.c_str()));
+      WebKit::WebString::fromUTF8(name),
+      WebKit::WebString::fromUTF8(root));
 }
 
 }  // namespace
