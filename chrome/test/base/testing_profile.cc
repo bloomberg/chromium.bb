@@ -50,6 +50,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/bookmark_load_observer.h"
+#include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -436,6 +437,24 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   run_loop.Run();
   bookmark_model->RemoveObserver(&observer);
   DCHECK(bookmark_model->IsLoaded());
+}
+
+void TestingProfile::BlockUntilHistoryIndexIsRefreshed() {
+  // Only get the history service if it actually exists since the caller of the
+  // test should explicitly call CreateHistoryService to build it.
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(this);
+  DCHECK(history_service);
+  history::InMemoryURLIndex* index = history_service->InMemoryIndex();
+  if (!index || index->restored())
+    return;
+  base::RunLoop run_loop;
+  HistoryIndexRestoreObserver observer(
+      content::GetQuitTaskForRunLoop(&run_loop));
+  index->set_restore_cache_observer(&observer);
+  run_loop.Run();
+  index->set_restore_cache_observer(NULL);
+  DCHECK(index->restored());
 }
 
 // TODO(phajdan.jr): Doesn't this hang if Top Sites are already loaded?

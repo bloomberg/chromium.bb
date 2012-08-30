@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExtensionAppProviderTest : public testing::Test {
@@ -21,7 +22,9 @@ class ExtensionAppProviderTest : public testing::Test {
     const GURL output[3];
   };
 
-  ExtensionAppProviderTest() : history_service_(NULL) { }
+  ExtensionAppProviderTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        history_service_(NULL) { }
   virtual ~ExtensionAppProviderTest() { }
 
   virtual void SetUp() OVERRIDE;
@@ -31,6 +34,7 @@ class ExtensionAppProviderTest : public testing::Test {
 
  protected:
   MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
   scoped_refptr<ExtensionAppProvider> app_provider_;
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;

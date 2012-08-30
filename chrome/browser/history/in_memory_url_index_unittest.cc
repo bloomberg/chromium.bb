@@ -24,6 +24,7 @@
 #include "chrome/browser/history/url_index_private_data.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -66,28 +67,6 @@ CacheFileSaverObserver::CacheFileSaverObserver(MessageLoop* loop)
 }
 
 void CacheFileSaverObserver::OnCacheSaveFinished(bool succeeded) {
-  succeeded_ = succeeded;
-  loop_->Quit();
-}
-
-// Observer class so the unit tests can wait while the cache is being restored.
-class CacheFileReaderObserver : public InMemoryURLIndex::RestoreCacheObserver {
- public:
-  explicit CacheFileReaderObserver(MessageLoop* loop);
-  virtual void OnCacheRestoreFinished(bool succeeded) OVERRIDE;
-
-  MessageLoop* loop_;
-  bool succeeded_;
-  DISALLOW_COPY_AND_ASSIGN(CacheFileReaderObserver);
-};
-
-CacheFileReaderObserver::CacheFileReaderObserver(MessageLoop* loop)
-    : loop_(loop),
-      succeeded_(false) {
-  DCHECK(loop);
-}
-
-void CacheFileReaderObserver::OnCacheRestoreFinished(bool succeeded) {
   succeeded_ = succeeded;
   loop_->Quit();
 }
@@ -1101,11 +1080,12 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_TRUE(private_data.history_info_map_.empty());
   EXPECT_TRUE(private_data.word_starts_map_.empty());
 
-  CacheFileReaderObserver read_observer(&message_loop_);
-  url_index_->set_restore_cache_observer(&read_observer);
+  HistoryIndexRestoreObserver restore_observer(
+      base::Bind(&MessageLoop::Quit, base::Unretained(&message_loop_)));
+  url_index_->set_restore_cache_observer(&restore_observer);
   PostRestoreFromCacheFileTask();
   message_loop_.Run();
-  EXPECT_TRUE(read_observer.succeeded_);
+  EXPECT_TRUE(restore_observer.succeeded());
 
   URLIndexPrivateData& new_data(*GetPrivateData());
 

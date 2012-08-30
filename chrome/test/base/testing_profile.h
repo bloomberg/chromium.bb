@@ -167,6 +167,10 @@ class TestingProfile : public Profile {
   // CreateBookmarkModel.
   void BlockUntilBookmarkModelLoaded();
 
+  // Blocks until the HistoryService finishes restoring its in-memory cache.
+  // This is NOT invoked from CreateHistoryService.
+  void BlockUntilHistoryIndexIsRefreshed();
+
   // Blocks until TopSites finishes loading.
   void BlockUntilTopSitesLoaded();
 

@@ -137,6 +137,7 @@ void HistoryQuickProviderTest::SetUp() {
   profile_->CreateHistoryService(true, false);
   profile_->CreateBookmarkModel(true);
   profile_->BlockUntilBookmarkModelLoaded();
+  profile_->BlockUntilHistoryIndexIsRefreshed();
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile_.get(),
                                            Profile::EXPLICIT_ACCESS);

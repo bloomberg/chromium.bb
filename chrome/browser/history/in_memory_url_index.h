@@ -130,6 +130,11 @@ class InMemoryURLIndex : public content::NotificationObserver,
     save_cache_observer_ = save_cache_observer;
   }
 
+  // Indicates that the index restoration is complete.
+  bool restored() const {
+    return restored_;
+  }
+
  private:
   friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
@@ -265,6 +270,9 @@ class InMemoryURLIndex : public content::NotificationObserver,
 
   // Set to true once the shutdown process has begun.
   bool shutdown_;
+
+  // Set to true once the index restoration is complete.
+  bool restored_;
 
   // Set to true when changes to the index have been made and the index needs
   // to be cached. Set to false when the index has been cached. Used as a
