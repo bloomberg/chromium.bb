@@ -51,6 +51,8 @@
 
         <include name="IDR_FILE_MANAGER_PHOTO_IMPORT" file="file_manager/photo_import.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_PHOTO_IMPORT_JS" file="file_manager/js/photo/photo_import_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ACTION_CHOICE" file="file_manager/action_choice.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ACTION_CHOICE_SCRIPT_JS" file="file_manager/js/action_choice_scripts.js" flattenhtml="true" type="BINDATA" />
 
         <!-- Scripts working in background page. -->
         <include name="IDR_FILE_MANAGER_FILE_COPY_MANAGER_JS" file="file_manager/js/file_copy_manager.js" flattenhtml="false" type="BINDATA" />
