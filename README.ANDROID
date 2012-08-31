@@ -9,6 +9,9 @@ Note that this release only supports ARM-based Android systems.
 We're working on adding support for x86 and MIPS, but that might
 require an udpated NDK release.
 
+IMPORTANT: Currently, Minidump generation only works when a signal is
+           handled by Breakpad. I.e. calling WriteMinidump() directly
+           at runtime will not work.
 
 I. Building the client library:
 ===============================
@@ -52,6 +55,9 @@ value, and disable the processor and tools, as in:
 
 The library will be under src/client/linux/libbreakpad_client.a
 
+You can also use 'make check' to run the test suite on a connected
+Android device. This requires the Android 'adb' tool to be in your
+path.
 
 II. Using the client library in Android:
 ========================================
@@ -64,7 +70,10 @@ found at http://code.google.com/p/google-breakpad/wiki/LinuxStarterGuide
 
 2/ If you're not using ndk-build, you also need to:
 
-   - add $GOOGLE_BREAKPAD_PATH to your compiler include path
+   - add the following to your compiler include search paths:
+       $GOOGLE_BREAKPAD_PATH/src
+       $GOOGLE_BREAKPAD_PATH/src/common/android/include
+
    - add -llog to your linker flags
 
    Note that ndk-build does that for your automatically.
@@ -118,17 +127,18 @@ IV. Verifying the Android build library:
 ========================================
 
 If you modify Google Breakpad and want to check that it still works correctly
-on Android, please run the android/run-test-program.sh script which will do all
+on Android, please run the android/run-checks.sh script which will do all
 necessary verifications for you. This includes:
 
-  - Rebuilding the full host package
-  - Rebuilding the client library with configure/make
-  - Rebuilding the client library with ndk-build
-  - Building, installing and running a test crasher program on a device
+  - Rebuilding the full host binaries.
+  - Rebuilding the full Android binaries with configure/make.
+  - Rebuilding the client library unit tests, and running them on a device.
+  - Rebuilding the client library with ndk-build.
+  - Building, installing and running a test crasher program on a device.
   - Extracting the corresponding minidump, dumping the test program symbols
     and generating a stack trace.
-  - Checking the stack trace for valid source locations.
+  - Checking the generated stack trace for valid source locations.
 
 For more details, please run:
 
-  android/run-test-program.sh --help-all
+  android/run-checks.sh --help-all

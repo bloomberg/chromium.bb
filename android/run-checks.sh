@@ -40,59 +40,14 @@ PROGDIR=$(dirname "$0")
 PROGDIR=$(cd "$PROGDIR" && pwd)
 PROGNAME=$(basename "$0")
 
-# Utility functions
-
-TMPDIR=
-
-# Used to exit the program after removing the temporary directory.
-clean_exit () {
-  if [ "$TMPDIR" ]; then
-    if [ -z "$NO_CLEANUP" ]; then
-      log "Cleaning up: $TMPDIR"
-      rm -rf "$TMPDIR"
-    else
-      dump "Temporary directory contents preserved: $TMPDIR"
-    fi
-  fi
-  exit "$@"
-}
-
-# Dump a panic message then exit.
-panic () {
-  echo "ERROR: $@"
-  clean_exit 1;
-}
-
-# If the previous command failed, dump a panic message then exit.
-fail_panic () {
-  if [ $? != 0 ]; then
-    panic "$@"
-  fi;
-}
-
-# Extract number of cores to speed up the builds
-get_core_count () {
-  case $(uname -s) in
-    Linux)
-      grep -c -e '^processor' /proc/cpuinfo
-      ;;
-    Darwin)
-      sysctl -n hw.ncpu
-      ;;
-    CYGWIN*|*_NT-*)
-      echo $NUMBER_OF_PROCESSORS
-      ;;
-    *)
-      echo 1
-      ;;
-  esac
-}
+. $PROGDIR/common-functions.sh
 
 DEFAULT_ABI="armeabi"
 VALID_ABIS="armeabi armeabi-v7a x86 mips"
 
 ABI=
 ADB=
+ALL_TESTS=
 ENABLE_M32=
 HELP=
 HELP_ALL=
@@ -101,7 +56,6 @@ NO_CLEANUP=
 NO_DEVICE=
 NUM_JOBS=$(get_core_count)
 TMPDIR=
-VERBOSE=0
 
 for opt do
   # The following extracts the value if the option is like --name=<value>.
@@ -109,6 +63,7 @@ for opt do
   case $opt in
     --abi=*) ABI=$optarg;;
     --adb=*) ADB=$optarg;;
+    --all-tests) ALL_TESTS=true;;
     --enable-m32) ENABLE_M32=true;;
     --help|-h|-?) HELP=TRUE;;
     --help-all) HELP_ALL=true;;
@@ -117,8 +72,8 @@ for opt do
     --tmp-dir=*) TMPDIR=$optarg;;
     --no-cleanup) NO_CLEANUP=true;;
     --no-device) NO_DEVICE=true;;
-    --quiet) VERBOSE=$(( $VERBOSE - 1 ));;
-    --verbose) VERBOSE=$(( $VERBOSE + 1 ));;
+    --quiet) decrease_verbosity;;
+    --verbose) increase_verbosity;;
     -*) panic "Invalid option '$opt', see --help for details.";;
     *) panic "This script doesn't take any parameters. See --help for details."
        ;;
@@ -180,6 +135,12 @@ if [ "$HELP" -o "$HELP_ALL" ]; then
     --abi=<name> to override this. Valid ABI names are:
 
         $VALID_ABIS
+
+    The script will only run the client library unit test on the device
+    by default. You can use --all-tests to also build and run the unit
+    tests for the Breakpad tools and processor, but be warned that this
+    adds several minutes of testing time. --all-tests will also run the
+    host unit tests suite.
 "
 
   fi  # HELP_ALL
@@ -197,66 +158,12 @@ if [ "$HELP" -o "$HELP_ALL" ]; then
       --adb=<path>     Specify adb program path.
       --no-cleanup     Don't remove temporary directory after completion.
       --no-device      Do not try to detect devices, nor run crash test.
+      --all-tests      Run all unit tests (i.e. tools and processor ones too).
       --verbose        Increase verbosity.
       --quiet          Decrease verbosity."
 
-  clean_exit 0
+  exit 0
 fi
-
-# Dump message to stdout, unless verbosity is < 0, i.e. --quiet was called
-dump () {
-  if [ "$VERBOSE" -ge 0 ]; then
-    echo "$@"
-  fi
-}
-
-# If --verbose was used, dump a message to stdout.
-log () {
-  if [ "$VERBOSE" -ge 1 ]; then
-    echo "$@"
-  fi
-}
-
-# Run a command. Output depends on $VERBOSE:
-#   $VERBOSE <= 0:  Run command, store output into the run log
-#   $VERBOSE >= 1:  Dump command, run it, output goest to stdout
-# Note: Ideally, the command's output would go to the run log for $VERBOSE >= 1
-#       but the 'tee' tool doesn't preserve the status code of its input pipe
-#       in case of error.
-run () {
-  local LOGILE
-  if [ "$RUN_LOG" ]; then
-    LOGFILE=$RUN_LOG
-  else
-    LOGFILE=/dev/null
-  fi
-
-  if [ "$VERBOSE" -ge 1 ]; then
-    echo "COMMAND: $@"
-    "$@"
-  else
-    "$@" >>$LOGFILE 2>&1
-  fi
-}
-
-# Same as run(), but only dump command output for $VERBOSE >= 2
-run2 () {
-  local LOGILE
-  if [ "$RUN_LOG" ]; then
-    LOGFILE=$RUN_LOG
-  else
-    LOGFILE=/dev/null
-  fi
-
-  if [ "$VERBOSE" -ge 1 ]; then
-    echo "COMMAND: $@"
-  fi
-  if [ "$VERBOSE" -ge 2 ]; then
-    "$@"
-  else
-    "$@" >>$LOGFILE 2>&1
-  fi
-}
 
 TESTAPP_DIR=$PROGDIR/sample_app
 
@@ -277,6 +184,23 @@ if [ ! -f "$NDK_BUILD" ]; then
   panic "Your NDK directory is not valid (missing ndk-build): $NDK_DIR"
 fi
 
+# Ensure the temporary directory is deleted on exit, except if the --no-cleanup
+# option is used.
+
+clean_tmpdir () {
+  if [ "$TMPDIR" ]; then
+    if [ -z "$NO_CLEANUP" ]; then
+      log "Cleaning up: $TMPDIR"
+      rm -rf "$TMPDIR"
+    else
+      dump "Temporary directory contents preserved: $TMPDIR"
+    fi
+  fi
+  exit "$@"
+}
+
+atexit clean_tmpdir
+
 # If --tmp-dir=<path> is not used, create a temporary directory.
 # Otherwise, start by cleaning up the user-provided path.
 if [ -z "$TMPDIR" ]; then
@@ -294,101 +218,26 @@ else
   fi
 fi
 
-# Ensure a clean exit when the script is:
-#  - Interrupted by Ctrl-C (INT)
-#  - Interrupted by log out (HUP)
-#  - Being asked to quit nicely (TERM)
-#  - Being asked to quit and dump core (QUIT)
-trap "clean_exit 1" INT HUP TERM QUIT
-
-# The 'adb shell' command is pretty hopeless, try to make sense of it by:
-#   1/ Removing trailing \r from line endings.
-#   2/ Ensuring the function returns the command's status code.
-#
-adb_shell () {
-  local RET ADB_LOG
-  ADB_LOG=$(mktemp "$TMPDIR/adb-XXXXXXXX")
-  "$ADB" shell "$@" ";" echo \$? > "$ADB_LOG" 2>&1
-  sed -i -e 's![[:cntrl:]]!!g' "$ADB_LOG"  # Remove \r.
-  RET=$(sed -e '$!d' "$ADB_LOG")           # Last line contains status code.
-  sed -e '$d' "$ADB_LOG"                   # Print everything except last line.
-  rm -f "$ADB_LOG"
-  return $RET
-}
-
-check_for_adb () {
-  local ADB_VERSION ADB_DEVICES NUM_DEVICES FINGERPRINT
-
-  # Auto-detect ADB in current path when needed.
-  if [ -z "$ADB" ]; then
-    ADB=$(which adb 2>/dev/null)
-    if [ -z "$ADB" ]; then
-      panic "The 'adb' tool is not in your path! Use either --no-device to\
- only check the builds, or --adb=<path> to specify the tool path."
-    fi
-    log "Found ADB path: $ADB"
-  else
-    log "Using ADB path: $ADB"
-  fi
-
-  # Check that it works.
-  ADB_VERSION=$("$ADB" version 2>/dev/null)
-  case $ADB_VERSION in
-    "Android Debug Bridge "*) # Pass.
-      log "Found ADB version: $ADB_VERSION"
-      ;;
-    *) # Fail.
-      panic "Your ADB binary does not seem to work: $ADB"
-      ;;
-  esac
-
-  # Count the number of connected devices.
-  ADB_DEVICES=$("$ADB" devices 2>/dev/null | awk '$2 == "device" { print $1; }')
-  if [ "$ADB_DEVICES" ]; then
-    NUM_DEVICES=$(echo "$ADB_DEVICES" | wc -l)
-  else
-    NUM_DEVICES=0
-  fi
-  case $NUM_DEVICES in
-    0)
-      panic "No Android device connected! Connect one, or use --no-device \
-to only check the builds."
-      ;;
-    1)
-      export ANDROID_SERIAL=$ADB_DEVICES
-      ;;
-    *)
-      if [ "$ANDROID_SERIAL" ]; then
-        ADB_DEVICES=$ANDROID_SERIAL
-        NUM_DEVICES=1
-      else
-        dump "ERROR: More than one Android device connected. Please define \
-ANDROID_SERIAL"
-        dump "       in your environment, or use --no-device to only check \
-the builds."
-        clean_exit 1
-      fi
-      ;;
-  esac
-
-  FINGERPRINT=$(adb_shell getprop ro.build.fingerprint)
-  dump "Using device: $ANDROID_SERIAL ($FINGERPRINT)"
-}
-
 if [ -z "$NO_DEVICE" ]; then
-  check_for_adb
+  if ! adb_check_device $ADB; then
+    echo "$(adb_get_error)"
+    echo "Use --no-device to build the code without running any tests."
+    exit 1
+  fi
 fi
 
 BUILD_LOG="$TMPDIR/build.log"
 RUN_LOG="$TMPDIR/run.log"
 CRASH_LOG="$TMPDIR/crash.log"
 
+set_run_log "$RUN_LOG"
+
 TMPHOST="$TMPDIR/host-local"
 
 cd "$TMPDIR"
 
 # Build host version of the tools
-dump "Building host tools."
+dump "Building host binaries."
 CONFIGURE_FLAGS=
 if [ "$ENABLE_M32" ]; then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-m32"
@@ -399,14 +248,23 @@ fi
   run2 "$PROGDIR/../configure" --prefix="$TMPHOST" $CONFIGURE_FLAGS &&
   run2 make -j$NUM_JOBS install
 )
-fail_panic "Can't build host-tools!"
+fail_panic "Can't build host binaries!"
+
+if [ "$ALL_TESTS" ]; then
+  dump "Running host unit tests."
+  (
+    run cd "$TMPDIR/build-host" &&
+    run2 make -j$NUM_JOBS check
+  )
+  fail_panic "Host unit tests failed!!"
+fi
 
 TMPBIN=$TMPHOST/bin
 
 # Generate a stand-alone NDK toolchain
 
 # Extract CPU ABI and architecture from device, if any.
-if [ "$ADB" ]; then
+if adb_check_device; then
   DEVICE_ABI=$(adb_shell getprop ro.product.cpu.abi)
   DEVICE_ABI2=$(adb_shell getprop ro.product.cpu.abi2)
   if [ -z "$DEVICE_ABI" ]; then
@@ -477,15 +335,17 @@ esac
 NDK_STANDALONE="$TMPDIR/ndk-$ARCH-toolchain"
 echo "Generating NDK standalone toolchain installation"
 mkdir -p "$NDK_STANDALONE"
+# NOTE: The --platform=android-9 is required to provide <regex.h> for GTest.
 run "$NDK_DIR/build/tools/make-standalone-toolchain.sh" \
       --arch="$ARCH" \
+      --platform=android-9 \
       --install-dir="$NDK_STANDALONE"
 fail_panic "Can't generate standalone NDK toolchain installation!"
 
 # Rebuild the client library, processor and tools with the auto-tools based
 # build system. Even though it's not going to be used, this checks that this
 # still works correctly.
-echo "Building Android binaries with configure/make"
+echo "Building full Android binaries with configure/make"
 TMPTARGET="$TMPDIR/target-local"
 (
   PATH="$NDK_STANDALONE/bin:$PATH"
@@ -497,6 +357,40 @@ TMPTARGET="$TMPDIR/target-local"
   run2 make -j$NUM_JOBS install
 )
 fail_panic "Could not rebuild Android binaries!"
+
+# Build and/or run unit test suite.
+# If --no-device is used, only rebuild it, otherwise, run in on the
+# connected device.
+if [ "$NO_DEVICE" ]; then
+  ACTION="Building"
+  # This is a trick to force the Makefile to ignore running the scripts.
+  TESTS_ENVIRONMENT="TESTS_ENVIRONMENT=true"
+else
+  ACTION="Running"
+  TESTS_ENVIRONMENT=
+fi
+if [ "$ALL_TESTS" ]; then
+  dump "$ACTION full Android unit tests."
+else
+  dump "$ACTION Android client library unit tests."
+fi
+
+(
+  PATH="$NDK_STANDALONE/bin:$PATH"
+  run cd "$TMPDIR"/build-target &&
+  if [ -z "$ALL_TESTS" ]; then
+    # Reconfigure to avoid building the unit tests for the tools
+    # and processor, unless --all-tests is used.
+    run2 "$PROGDIR"/../configure --prefix="$TMPTARGET" \
+                                  --host="$GNU_CONFIG" \
+                                  --disable-tools \
+                                  --disable-processor
+  fi &&
+  run make -j$NUM_JOBS check $TESTS_ENVIRONMENT
+)
+if [ -z "$NO_DEVICE" ] && verbosity_is_lower_than 2; then
+  dump "  Unit tests failed as expected. Use --verbose to see results."
+fi
 
 # Copy sources to temporary directory
 PROJECT_DIR=$TMPDIR/project
@@ -510,7 +404,7 @@ fail_panic "Could not copy test program sources to: $PROJECT_DIR"
 dump "Building test program with ndk-build"
 export NDK_MODULE_PATH="$PROGDIR"
 NDK_BUILD_FLAGS="-j$NUM_JOBS"
-if [ "$VERBOSE" -ge 2 ]; then
+if verbosity_is_higher_than 1; then
   NDK_BUILD_FLAGS="$NDK_BUILD_FLAGS NDK_LOG=1 V=1"
 fi
 run "$NDK_DIR/ndk-build" -C "$PROJECT_DIR" $NDK_BUILD_FLAGS APP_ABI=$ABI
@@ -533,7 +427,7 @@ fi
 # Run the program there
 dump "Installing test program on device"
 DEVICE_TMP=/data/local/tmp
-run "$ADB" push "$TESTAPP_FILE" "$DEVICE_TMP/"
+adb_push "$TESTAPP_FILE" "$DEVICE_TMP/"
 fail_panic "Cannot push test program to device!"
 
 dump "Running test program on device"
@@ -541,7 +435,7 @@ adb_shell cd "$DEVICE_TMP" "&&" ./$TESTAPP > "$CRASH_LOG" 2>/dev/null
 if [ $? = 0 ]; then
   panic "Test program did *not* crash as expected!"
 fi
-if [ "$VERBOSE" -ge 1 ]; then
+if verbosity_is_higher_than 0; then
   echo -n "Crash log: "
   cat "$CRASH_LOG"
 fi
@@ -554,11 +448,11 @@ if [ -z "$MINIDUMP_NAME" ]; then
 fi
 
 dump "Extracting minidump: $MINIDUMP_NAME"
-run "$ADB" pull "$DEVICE_TMP/$MINIDUMP_NAME" .
+adb_pull "$DEVICE_TMP/$MINIDUMP_NAME" .
 fail_panic "Can't extract minidump!"
 
 dump "Parsing test program symbols"
-if [ "$VERBOSE" -ge 1 ]; then
+if verbosity_is_higher_than 1; then
   log "COMMAND: $TMPBIN/dump_syms \
                 $PROJECT_DIR/obj/local/$ABI/$TESTAPP >$TESTAPP.sym"
 fi
@@ -586,7 +480,7 @@ fail_panic "minidump_stackwalk doesn't work!"
 
 dump "Checking stack trace content"
 
-if [ "$VERBOSE" -ge 1 ]; then
+if verbosity_is_higher_than 1; then
   cat "$BUILD_LOG"
 fi
 
@@ -622,7 +516,7 @@ fi
 LOCATIONS=$(awk '$2 ~ "^test_google_breakpad!.*" { print $3; }' "$BUILD_LOG")
 
 if [ -z "$LOCATIONS" ]; then
-  if [ "$VERBOSE" -lt 1 ]; then
+  if verbosity_is_lower_than 1; then
     cat "$BUILD_LOG"
   fi
   panic "No source location found in stack trace!"
@@ -646,8 +540,8 @@ if [ "$BAD_LOCATIONS" ]; then
   dump "ERROR: Generated stack trace doesn't contain valid source locations:"
   cat "$BUILD_LOG"
   echo "Bad locations are: $BAD_LOCATIONS"
-  clean_exit 1
+  exit 1
 fi
 
 echo "All clear! Congratulations."
-clean_exit 0
+

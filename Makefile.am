@@ -301,7 +301,13 @@ check_SCRIPTS = \
 endif
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
+
+if ANDROID_HOST
+# Wrapper script to run unit test programs on a connected Android device.
+TESTS_ENVIRONMENT = $(top_srcdir)/android/test-shell.sh
+else
 TESTS_ENVIRONMENT =
+endif
 
 if LINUX_HOST
 src_client_linux_linux_dumper_unittest_helper_SOURCES = \
@@ -314,10 +320,12 @@ src_client_linux_linux_client_unittest_SOURCES = \
 	src/client/linux/handler/exception_handler_unittest.cc \
 	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 	src/client/linux/minidump_writer/line_reader_unittest.cc \
+	src/client/linux/minidump_writer/linux_core_dumper.cc \
 	src/client/linux/minidump_writer/linux_core_dumper_unittest.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper_unittest.cc \
 	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
 	src/client/linux/minidump_writer/minidump_writer_unittest_utils.cc \
+	src/common/linux/elf_core_dump.cc \
 	src/common/linux/linux_libc_support_unittest.cc \
 	src/common/linux/tests/crash_generator.cc \
 	src/common/memory_unittest.cc \
@@ -342,13 +350,11 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/client/linux/log/log.o \
 	src/client/linux/crash_generation/crash_generation_client.o \
 	src/client/linux/minidump_writer/linux_dumper.o \
-	src/client/linux/minidump_writer/linux_core_dumper.o \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.o \
 	src/client/linux/minidump_writer/minidump_writer.o \
 	src/client/minidump_file_writer.o \
 	src/common/convert_UTF.o \
 	src/common/md5.o \
-	src/common/linux/elf_core_dump.o \
 	src/common/linux/elfutils.o \
 	src/common/linux/file_id.o \
 	src/common/linux/guid_creator.o \
