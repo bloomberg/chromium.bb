@@ -258,9 +258,10 @@ void LoginPerformer::Observe(int type,
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
-void LoginPerformer::CompleteLogin(const std::string& username,
-                                   const std::string& password) {
-  auth_mode_ = AUTH_MODE_EXTENSION;
+void LoginPerformer::PerformLogin(const std::string& username,
+                                  const std::string& password,
+                                  AuthorizationMode auth_mode) {
+  auth_mode_ = auth_mode;
   username_ = username;
   password_ = password;
 
@@ -271,9 +272,9 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   if (!ScreenLocker::default_screen_locker()) {
     CrosSettingsProvider::TrustedStatus status =
         cros_settings->PrepareTrustedValues(
-            base::Bind(&LoginPerformer::CompleteLogin,
+            base::Bind(&LoginPerformer::PerformLogin,
                        weak_factory_.GetWeakPtr(),
-                       username, password));
+                       username, password, auth_mode));
     // Must not proceed without signature verification.
     if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
       if (delegate_)
@@ -291,50 +292,14 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   bool is_whitelisted = LoginUtils::IsWhitelisted(
       gaia::CanonicalizeEmail(username));
   if (ScreenLocker::default_screen_locker() || is_whitelisted) {
-    // Starts authentication if guest login is allowed or online auth pending.
-    StartLoginCompletion();
-  } else {
-    if (delegate_)
-      delegate_->WhiteListCheckFailed(username);
-    else
-      NOTREACHED();
-  }
-}
-
-void LoginPerformer::Login(const std::string& username,
-                           const std::string& password) {
-  auth_mode_ = AUTH_MODE_INTERNAL;
-  username_ = username;
-  password_ = password;
-
-  CrosSettings* cros_settings = CrosSettings::Get();
-
-  // Whitelist check is always performed during initial login and
-  // should not be performed when ScreenLock is active (pending online auth).
-  if (!ScreenLocker::default_screen_locker()) {
-    CrosSettingsProvider::TrustedStatus status =
-        cros_settings->PrepareTrustedValues(
-            base::Bind(&LoginPerformer::Login,
-                       weak_factory_.GetWeakPtr(),
-                       username, password));
-    // Must not proceed without signature verification.
-    if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-      if (delegate_)
-        delegate_->PolicyLoadFailed();
-      else
-        NOTREACHED();
-      return;
-    } else if (status != CrosSettingsProvider::TRUSTED) {
-      // Value of AllowNewUser setting is still not verified.
-      // Another attempt will be invoked after verification completion.
-      return;
+    switch (auth_mode_) {
+      case AUTH_MODE_EXTENSION:
+        StartLoginCompletion();
+        break;
+      case AUTH_MODE_INTERNAL:
+        StartAuthentication();
+        break;
     }
-  }
-
-  bool is_whitelisted = LoginUtils::IsWhitelisted(username);
-  if (ScreenLocker::default_screen_locker() || is_whitelisted) {
-    // Starts authentication if guest login is allowed or online auth pending.
-    StartAuthentication();
   } else {
     if (delegate_)
       delegate_->WhiteListCheckFailed(username);

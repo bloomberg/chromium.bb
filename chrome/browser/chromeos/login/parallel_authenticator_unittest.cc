@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,13 +35,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using content::BrowserThread;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::_;
+using content::BrowserThread;
 
 namespace chromeos {
 
@@ -208,8 +209,10 @@ class ParallelAuthenticatorTest : public testing::Test {
   std::string password_;
   std::string hash_ascii_;
 
+  ScopedDeviceSettingsTestHelper device_settings_test_helper_;
+
   // Initializes / shuts down a stub CrosLibrary.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedStubCrosEnabler stub_cros_enabler_;
 
   // Mocks, destroyed by CrosLibrary class.
   MockCertLibrary* mock_cert_library_;
@@ -340,8 +343,8 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
 
   EXPECT_EQ(ParallelAuthenticator::CONTINUE,
             SetAndResolveState(auth_, state_.release()));
-  // Let the owner verification run on the FILE thread...
-  message_loop_.RunAllPending();
+  // Let the owner verification run.
+  device_settings_test_helper_.Flush();
   // and test that the mount has succeeded.
   state_.reset(new TestAttemptState(username_,
                                     password_,

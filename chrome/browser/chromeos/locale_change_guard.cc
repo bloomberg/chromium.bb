@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -60,7 +60,7 @@ LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
       note_(NULL),
       reverted_(false) {
   DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_CHECKED,
+  registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
                  content::NotificationService::AllSources());
 }
 
@@ -112,8 +112,8 @@ void LocaleChangeGuard::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_OWNERSHIP_CHECKED: {
-      if (UserManager::Get()->IsCurrentUserOwner()) {
+    case chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED: {
+      if (DeviceSettingsService::Get()->HasPrivateOwnerKey()) {
         PrefService* local_state = g_browser_process->local_state();
         if (local_state) {
           PrefService* prefs = profile_->GetPrefs();

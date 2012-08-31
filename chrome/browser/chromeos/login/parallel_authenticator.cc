@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/ownership_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_util.h"
@@ -201,9 +200,6 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
       using_oauth_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSkipOAuthLogin)) {
-  // If not already owned, this is a no-op.  If it is, this loads the owner's
-  // public key off of disk.
-  OwnershipService::GetSharedInstance()->StartLoadOwnerKeyAttempt();
 }
 
 void ParallelAuthenticator::AuthenticateToLogin(
@@ -222,11 +218,8 @@ void ParallelAuthenticator::AuthenticateToLogin(
           login_token,
           login_captcha,
           !UserManager::Get()->IsKnownUser(canonicalized)));
-  {
-    // Reset the verified flag.
-    base::AutoLock for_this_block(owner_verified_lock_);
-    owner_is_verified_ = false;
-  }
+  // Reset the verified flag.
+  owner_is_verified_ = false;
 
   const bool create_if_missing = false;
   BrowserThread::PostTask(
@@ -257,11 +250,9 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
           password,
           HashPassword(password),
           !UserManager::Get()->IsKnownUser(canonicalized)));
-  {
-    // Reset the verified flag.
-    base::AutoLock for_this_block(owner_verified_lock_);
-    owner_is_verified_ = false;
-  }
+
+  // Reset the verified flag.
+  owner_is_verified_ = false;
 
   const bool create_if_missing = false;
   BrowserThread::PostTask(
@@ -415,7 +406,6 @@ void ParallelAuthenticator::ResyncEncryptedData() {
 }
 
 bool ParallelAuthenticator::VerifyOwner() {
-  base::AutoLock for_this_block(owner_verified_lock_);
   if (owner_is_verified_)
     return true;
   // Check if policy data is fine and continue in safe mode if needed.
@@ -430,21 +420,19 @@ bool ParallelAuthenticator::VerifyOwner() {
   // First we have to make sure the current user's cert store is available.
   CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
   // Now we can continue reading the private key.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ParallelAuthenticator::FinishVerifyOwnerOnFileThread, this));
+  DeviceSettingsService::Get()->SetUsername(current_state_->username);
+  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+      base::Bind(&ParallelAuthenticator::OnOwnershipChecked, this));
   return false;
 }
 
-void ParallelAuthenticator::FinishVerifyOwnerOnFileThread() {
-  base::AutoLock for_this_block(owner_verified_lock_);
+void ParallelAuthenticator::OnOwnershipChecked(
+    DeviceSettingsService::OwnershipStatus status,
+    bool is_owner) {
   // Now we can check if this user is the owner.
-  user_can_login_ =
-      OwnershipService::GetSharedInstance()->IsCurrentUserOwner();
+  user_can_login_ = is_owner;
   owner_is_verified_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ParallelAuthenticator::Resolve, this));
+  Resolve();
 }
 
 void ParallelAuthenticator::RetryAuth(Profile* profile,
@@ -803,7 +791,6 @@ void ParallelAuthenticator::ResolveLoginCompletionStatus() {
 
 void ParallelAuthenticator::SetOwnerState(bool owner_check_finished,
                                           bool check_result) {
-  base::AutoLock for_this_block(owner_verified_lock_);
   owner_is_verified_ = owner_check_finished;
   user_can_login_ = check_result;
 }

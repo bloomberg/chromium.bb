@@ -4,15 +4,27 @@
 
 #include "chrome/browser/policy/device_policy_cache.h"
 
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chromeos/settings/mock_signed_settings_helper.h"
+#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
+#include "chrome/browser/policy/policy_builder.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Mock;
 
 namespace em = enterprise_management;
 
@@ -20,61 +32,13 @@ namespace policy {
 
 namespace {
 
-// Test registration user name.
-const char kTestUser[] = "test@example.com";
-
-using ::chromeos::SignedSettings;
-using ::testing::InSequence;
-using ::testing::Mock;
-using ::testing::SaveArg;
-using ::testing::_;
-
 class MockCloudPolicyCacheObserver : public CloudPolicyCacheBase::Observer {
  public:
+  virtual ~MockCloudPolicyCacheObserver() {}
+
   MOCK_METHOD1(OnCacheGoingAway, void(CloudPolicyCacheBase*));
   MOCK_METHOD1(OnCacheUpdate, void(CloudPolicyCacheBase*));
 };
-
-void CreatePolicy(em::PolicyFetchResponse* policy,
-                  const std::string& user,
-                  em::ChromeDeviceSettingsProto& settings) {
-  // This method omits a few fields which currently aren't needed by tests:
-  // timestamp, machine_name, public key info.
-  em::PolicyData signed_response;
-  signed_response.set_username(user);
-  signed_response.set_request_token("dmtoken");
-  signed_response.set_device_id("deviceid");
-  EXPECT_TRUE(
-      settings.SerializeToString(signed_response.mutable_policy_value()));
-  std::string serialized_signed_response;
-  EXPECT_TRUE(signed_response.SerializeToString(&serialized_signed_response));
-  policy->set_policy_data(serialized_signed_response);
-}
-
-void CreateRefreshRatePolicy(em::PolicyFetchResponse* policy,
-                             const std::string& user,
-                             int refresh_rate) {
-  em::ChromeDeviceSettingsProto settings;
-  settings.mutable_device_policy_refresh_rate()->
-      set_device_policy_refresh_rate(refresh_rate);
-  CreatePolicy(policy, user, settings);
-}
-
-void CreateProxyPolicy(em::PolicyFetchResponse* policy,
-                       const std::string& user,
-                       const std::string& proxy_mode,
-                       const std::string& proxy_server,
-                       const std::string& proxy_pac_url,
-                       const std::string& proxy_bypass_list) {
-  em::ChromeDeviceSettingsProto settings;
-  em::DeviceProxySettingsProto* proxy_settings =
-      settings.mutable_device_proxy_settings();
-  proxy_settings->set_proxy_mode(proxy_mode);
-  proxy_settings->set_proxy_server(proxy_server);
-  proxy_settings->set_proxy_pac_url(proxy_pac_url);
-  proxy_settings->set_proxy_bypass_list(proxy_bypass_list);
-  CreatePolicy(policy, user, settings);
-}
 
 }  // namespace
 
@@ -82,28 +46,50 @@ class DevicePolicyCacheTest : public testing::Test {
  protected:
   DevicePolicyCacheTest()
       : cryptohome_(chromeos::CryptohomeLibrary::GetImpl(true)),
+        owner_key_util_(new chromeos::MockOwnerKeyUtil()),
         install_attributes_(cryptohome_.get()),
         message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_) {}
 
-  virtual void SetUp() {
-    data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
+  virtual void SetUp() OVERRIDE {
+    policy_.payload().mutable_device_policy_refresh_rate()->
+        set_device_policy_refresh_rate(120);
+    policy_.Build();
+    device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+
+    owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
+
+    device_settings_service_.Initialize(&device_settings_test_helper_,
+                                        owner_key_util_);
+
+    data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
     cache_.reset(new DevicePolicyCache(data_store_.get(),
                                        &install_attributes_,
-                                       &signed_settings_helper_));
+                                       &device_settings_service_));
     cache_->AddObserver(&observer_);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
+    device_settings_test_helper_.Flush();
+    device_settings_service_.Shutdown();
+
     cache_->RemoveObserver(&observer_);
     cache_.reset();
   }
 
-  void MakeEnterpriseDevice(const char* registration_user) {
+  void Startup() {
+    EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
+    device_settings_service_.Load();
+    device_settings_test_helper_.Flush();
+    cache_->Load();
+    Mock::VerifyAndClearExpectations(&observer_);
+  }
+
+  void MakeEnterpriseDevice() {
     ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
               install_attributes_.LockDevice(
-                  registration_user,
+                  policy_.policy_data().username(),
                   DEVICE_MODE_ENTERPRISE,
                   std::string()));
   }
@@ -113,11 +99,16 @@ class DevicePolicyCacheTest : public testing::Test {
   }
 
   MockCloudPolicyCacheObserver observer_;
+
   scoped_ptr<chromeos::CryptohomeLibrary> cryptohome_;
+  scoped_refptr<chromeos::MockOwnerKeyUtil> owner_key_util_;
+  chromeos::DeviceSettingsTestHelper device_settings_test_helper_;
+  chromeos::DeviceSettingsService device_settings_service_;
   EnterpriseInstallAttributes install_attributes_;
+
   scoped_ptr<CloudPolicyDataStore> data_store_;
-  chromeos::MockSignedSettingsHelper signed_settings_helper_;
   scoped_ptr<DevicePolicyCache> cache_;
+  DevicePolicyBuilder policy_;
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -127,192 +118,134 @@ class DevicePolicyCacheTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCacheTest);
 };
 
-TEST_F(DevicePolicyCacheTest, Startup) {
-  em::PolicyFetchResponse policy;
-  CreateRefreshRatePolicy(&policy, kTestUser, 120);
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
+TEST_F(DevicePolicyCacheTest, ColdStartup) {
+  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get())).Times(0);
   cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
+  device_settings_service_.Load();
+  device_settings_test_helper_.Flush();
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  base::FundamentalValue expected(120);
+  EXPECT_TRUE(Value::Equals(&expected,
+                            GetPolicy(key::kDevicePolicyRefreshRate)));
+}
+
+TEST_F(DevicePolicyCacheTest, WarmStartup) {
+  Startup();
+
   base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetPolicy(key::kDevicePolicyRefreshRate)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicy) {
-  InSequence s;
+  MakeEnterpriseDevice();
+  Startup();
 
-  MakeEnterpriseDevice(kTestUser);
-
-  // Startup.
-  em::PolicyFetchResponse policy;
-  CreateRefreshRatePolicy(&policy, kTestUser, 120);
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
-  Mock::VerifyAndClearExpectations(&observer_);
   base::FundamentalValue expected(120);
   EXPECT_TRUE(Value::Equals(&expected,
                             GetPolicy(key::kDevicePolicyRefreshRate)));
 
   // Set new policy information.
-  chromeos::SignedSettingsHelper::StorePolicyCallback store_callback;
-  em::PolicyFetchResponse new_policy;
-  CreateRefreshRatePolicy(&new_policy, kTestUser, 300);
-  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).WillOnce(
-      SaveArg<1>(&store_callback));
+  policy_.payload().mutable_device_policy_refresh_rate()->
+      set_device_policy_refresh_rate(300);
+  policy_.Build();
   EXPECT_CALL(observer_, OnCacheUpdate(cache_.get())).Times(0);
-  EXPECT_TRUE(cache_->SetPolicy(new_policy));
+  EXPECT_TRUE(cache_->SetPolicy(policy_.policy()));
   cache_->SetFetchingDone();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
   Mock::VerifyAndClearExpectations(&observer_);
-  ASSERT_FALSE(store_callback.is_null());
 
-  chromeos::SignedSettingsHelper::RetrievePolicyCallback retrieve_callback;
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      SaveArg<0>(&retrieve_callback));
   EXPECT_CALL(observer_, OnCacheUpdate(cache_.get())).Times(0);
-  store_callback.Run(chromeos::SignedSettings::SUCCESS);
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  device_settings_test_helper_.FlushStore();
   Mock::VerifyAndClearExpectations(&observer_);
-  ASSERT_FALSE(retrieve_callback.is_null());
 
   // Cache update notification should only fire in the retrieve callback.
   EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  retrieve_callback.Run(chromeos::SignedSettings::SUCCESS, new_policy);
+  device_settings_test_helper_.Flush();
+  Mock::VerifyAndClearExpectations(&observer_);
+
   base::FundamentalValue updated_expected(300);
   EXPECT_TRUE(Value::Equals(&updated_expected,
                             GetPolicy(key::kDevicePolicyRefreshRate)));
-  Mock::VerifyAndClearExpectations(&observer_);
 
   cache_->RemoveObserver(&observer_);
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyOtherUserSameDomain) {
-  InSequence s;
-
-  MakeEnterpriseDevice(kTestUser);
-
-  // Startup.
-  em::PolicyFetchResponse policy;
-  CreateRefreshRatePolicy(&policy, kTestUser, 120);
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  MakeEnterpriseDevice();
+  Startup();
 
   // Set new policy information. This should succeed as the domain is the same.
-  chromeos::SignedSettingsHelper::StorePolicyCallback store_callback;
-  em::PolicyFetchResponse new_policy;
-  CreateRefreshRatePolicy(&new_policy, "another_user@example.com", 300);
-  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).WillOnce(
-      SaveArg<1>(&store_callback));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get())).Times(1);
-  EXPECT_TRUE(cache_->SetPolicy(new_policy));
-  cache_->SetFetchingDone();
-  store_callback.Run(chromeos::SignedSettings::OPERATION_FAILED);
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  policy_.policy_data().set_username("another_user@example.com");
+  policy_.Build();
+
+  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
+  EXPECT_TRUE(cache_->SetPolicy(policy_.policy()));
+  device_settings_test_helper_.Flush();
   Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_EQ(policy_.GetBlob(), device_settings_test_helper_.policy_blob());
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyOtherUserOtherDomain) {
-  InSequence s;
-
-  MakeEnterpriseDevice(kTestUser);
-
-  // Startup.
-  em::PolicyFetchResponse policy;
-  CreateRefreshRatePolicy(&policy, kTestUser, 120);
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  MakeEnterpriseDevice();
+  Startup();
 
   // Set new policy information. This should fail because the user is from
   // different domain.
-  em::PolicyFetchResponse new_policy;
-  CreateRefreshRatePolicy(&new_policy, "foreign_user@hackers.com", 300);
-  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(0);
-  EXPECT_FALSE(cache_->SetPolicy(new_policy));
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  policy_.policy_data().set_username("foreign_user@hackers.com");
+  policy_.Build();
+  EXPECT_NE(policy_.GetBlob(), device_settings_test_helper_.policy_blob());
 
-  base::FundamentalValue expected(120);
-  EXPECT_TRUE(Value::Equals(&expected,
-                            GetPolicy(key::kDevicePolicyRefreshRate)));
+  EXPECT_FALSE(cache_->SetPolicy(policy_.policy()));
+  device_settings_test_helper_.Flush();
+  EXPECT_NE(policy_.GetBlob(), device_settings_test_helper_.policy_blob());
 }
 
 TEST_F(DevicePolicyCacheTest, SetPolicyNonEnterpriseDevice) {
-  InSequence s;
-
-  // Startup.
-  em::PolicyFetchResponse policy;
-  CreateRefreshRatePolicy(&policy, kTestUser, 120);
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  Startup();
 
   // Set new policy information. This should fail due to invalid user.
-  em::PolicyFetchResponse new_policy;
-  CreateRefreshRatePolicy(&new_policy, kTestUser, 120);
-  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(0);
-  EXPECT_FALSE(cache_->SetPolicy(new_policy));
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  device_settings_test_helper_.set_policy_blob(std::string());
 
-  base::FundamentalValue expected(120);
-  EXPECT_TRUE(Value::Equals(&expected,
-                            GetPolicy(key::kDevicePolicyRefreshRate)));
+  EXPECT_FALSE(cache_->SetPolicy(policy_.policy()));
+  device_settings_test_helper_.Flush();
+  EXPECT_TRUE(device_settings_test_helper_.policy_blob().empty());
 }
 
 TEST_F(DevicePolicyCacheTest, SetProxyPolicy) {
-  MakeEnterpriseDevice(kTestUser);
+  MakeEnterpriseDevice();
 
-  // Startup.
-  em::PolicyFetchResponse policy;
-  CreateProxyPolicy(&policy, kTestUser, "direct", "http://proxy:8080",
-                    "http://proxy:8080/pac.js", "127.0.0.1,example.com");
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  em::DeviceProxySettingsProto proxy_settings;
+  proxy_settings.set_proxy_mode("direct");
+  proxy_settings.set_proxy_server("http://proxy:8080");
+  proxy_settings.set_proxy_pac_url("http://proxy:8080/pac.js");
+  proxy_settings.set_proxy_bypass_list("127.0.0.1,example.com");
+  policy_.payload().mutable_device_proxy_settings()->CopyFrom(proxy_settings);
+  policy_.Build();
+  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  Startup();
+
   DictionaryValue expected;
-  expected.SetString(key::kProxyMode, "direct");
-  expected.SetString(key::kProxyServer, "http://proxy:8080");
-  expected.SetString(key::kProxyPacUrl, "http://proxy:8080/pac.js");
-  expected.SetString(key::kProxyBypassList, "127.0.0.1,example.com");
-  EXPECT_TRUE(Value::Equals(&expected,
-                            GetPolicy(key::kProxySettings)));
+  expected.SetString(key::kProxyMode, proxy_settings.proxy_mode());
+  expected.SetString(key::kProxyServer, proxy_settings.proxy_server());
+  expected.SetString(key::kProxyPacUrl, proxy_settings.proxy_pac_url());
+  expected.SetString(key::kProxyBypassList, proxy_settings.proxy_bypass_list());
+  EXPECT_TRUE(Value::Equals(&expected, GetPolicy(key::kProxySettings)));
 }
 
 TEST_F(DevicePolicyCacheTest, SetDeviceNetworkConfigurationPolicy) {
-  MakeEnterpriseDevice(kTestUser);
+  MakeEnterpriseDevice();
 
-  // Startup.
   std::string fake_config("{ 'NetworkConfigurations': [] }");
-  em::PolicyFetchResponse policy;
-  em::ChromeDeviceSettingsProto settings;
-  settings.mutable_open_network_configuration()->set_open_network_configuration(
-      fake_config);
-  CreatePolicy(&policy, kTestUser, settings);
-  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
-      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
-                                             policy));
-  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
-  cache_->Load();
-  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+  policy_.payload().mutable_open_network_configuration()->
+      set_open_network_configuration(fake_config);
+  policy_.Build();
+  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  Startup();
+
   StringValue expected_config(fake_config);
   EXPECT_TRUE(
       Value::Equals(&expected_config,
