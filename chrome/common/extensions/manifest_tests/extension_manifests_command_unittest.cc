@@ -16,10 +16,15 @@ TEST_F(ExtensionManifestTest, CommandManifestSimple) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  const ui::Accelerator ctrl_f =
-      ui::Accelerator(ui::VKEY_F, ui::EF_CONTROL_DOWN);
+#if defined(OS_MACOSX)
+  int ctrl = ui::EF_COMMAND_DOWN;
+#else
+  int ctrl = ui::EF_CONTROL_DOWN;
+#endif
+
+  const ui::Accelerator ctrl_f = ui::Accelerator(ui::VKEY_F, ctrl);
   const ui::Accelerator ctrl_shift_f =
-      ui::Accelerator(ui::VKEY_F, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+      ui::Accelerator(ui::VKEY_F, ctrl | ui::EF_SHIFT_DOWN);
   const ui::Accelerator alt_shift_f =
       ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
 

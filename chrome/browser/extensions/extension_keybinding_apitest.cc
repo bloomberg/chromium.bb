@@ -118,9 +118,9 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
   ASSERT_TRUE(action);
   EXPECT_EQ("Make this page red", action->GetTitle(tab_id));
 
-  // Activate the shortcut (Ctrl+Shift+F).
+  // Activate the shortcut (Alt+Shift+F).
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_F, true, true, false, false));
+      browser(), ui::VKEY_F, false, true, true, false));
 
   // Verify the command worked (the page action turns the page red).
   WebContents* tab = chrome::GetActiveWebContents(browser());

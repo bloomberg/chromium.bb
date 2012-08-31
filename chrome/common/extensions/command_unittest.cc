@@ -18,15 +18,19 @@ TEST(CommandTest, ExtensionCommandParsing) {
   const ui::Accelerator none = ui::Accelerator();
   const ui::Accelerator shift_f = ui::Accelerator(ui::VKEY_F,
                                                   ui::EF_SHIFT_DOWN);
-  const ui::Accelerator ctrl_f = ui::Accelerator(ui::VKEY_F,
-                                                ui::EF_CONTROL_DOWN);
+#if defined(OS_MACOSX)
+  int ctrl = ui::EF_COMMAND_DOWN;
+#else
+  int ctrl = ui::EF_CONTROL_DOWN;
+#endif
+
+  const ui::Accelerator ctrl_f = ui::Accelerator(ui::VKEY_F, ctrl);
   const ui::Accelerator alt_f = ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN);
   const ui::Accelerator ctrl_shift_f =
-      ui::Accelerator(ui::VKEY_F, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+      ui::Accelerator(ui::VKEY_F, ctrl | ui::EF_SHIFT_DOWN);
   const ui::Accelerator alt_shift_f =
       ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
-  const ui::Accelerator ctrl_1 = ui::Accelerator(ui::VKEY_1,
-                                                 ui::EF_CONTROL_DOWN);
+  const ui::Accelerator ctrl_1 = ui::Accelerator(ui::VKEY_1, ctrl);
 
   const struct {
     bool expected_result;
@@ -57,7 +61,7 @@ TEST(CommandTest, ExtensionCommandParsing) {
     { true, ctrl_shift_f, "command", "Ctrl+Shift+F", "description" },
     { true, alt_shift_f,  "command", "Alt+Shift+F",  "description" },
     { true, ctrl_1,       "command", "Ctrl+1",       "description" },
-    // Order tests.
+    // Shortcut token order tests.
     { true, ctrl_f,       "command", "F+Ctrl",       "description" },
     { true, alt_f,        "command", "F+Alt",        "description" },
     { true, ctrl_shift_f, "command", "F+Ctrl+Shift", "description" },
@@ -71,8 +75,6 @@ TEST(CommandTest, ExtensionCommandParsing) {
     { true, ctrl_f, "_execute_browser_action", "Ctrl+F", "" },
     { true, ctrl_f, "_execute_page_action",    "Ctrl+F", "" },
   };
-
-  // TODO(finnur): test Command/Options on Mac when implemented.
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     // First parse the command as a simple string.
@@ -147,7 +149,7 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #elif defined(OS_MACOSX)
   ui::Accelerator accelerator(ui::VKEY_M,
-                              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+                              ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
 #elif defined(OS_CHROMEOS)
   ui::Accelerator accelerator(ui::VKEY_C,
                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
@@ -179,6 +181,14 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   EXPECT_TRUE(key_dict->Remove("default", NULL));
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 
+  // Make sure Command is not supported for non-Mac platforms.
+  key_dict->SetString("default", "Command+M");
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
+  EXPECT_TRUE(key_dict->Remove("default", NULL));
+  key_dict->SetString("windows", "Command+M");
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
+  EXPECT_TRUE(key_dict->Remove("windows", NULL));
+
   // Now add only a valid platform that we are not running on to make sure devs
   // are notified of errors on other platforms.
 #if defined(OS_WIN)
@@ -191,8 +201,6 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   // Make sure Mac specific keys are not processed on other platforms.
 #if !defined(OS_MACOSX)
   key_dict->SetString("windows", "Command+Shift+M");
-  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
-  key_dict->SetString("windows", "Options+Shift+M");
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 #endif
 }

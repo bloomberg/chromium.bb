@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -19,6 +20,12 @@ namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 
 namespace {
+
+static const char kMissing[] = "Missing";
+
+static const char kCommandKeyNotSupported[] =
+    "Command key is not supported. Note: Ctrl means Command on Mac";
+
 
 ui::Accelerator ParseImpl(const std::string& accelerator,
                           const std::string& platform_key,
@@ -53,13 +60,30 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   for (size_t i = 0; i < tokens.size(); i++) {
     if (tokens[i] == "Ctrl") {
       modifiers |= ui::EF_CONTROL_DOWN;
-    } else if (tokens[i] == "Alt" ||
-               (tokens[i] == "Option" && platform_key == "mac")) {
+    } else if (tokens[i] == "Command") {
+      if (platform_key == "mac") {
+        // Either the developer specified Command+foo in the manifest for Mac or
+        // they specified Ctrl and it got normalized to Command (to get Ctrl on
+        // Mac the developer has to specify MacCtrl). Therefore we treat this
+        // as Command.
+        modifiers |= ui::EF_COMMAND_DOWN;
+#if defined(OS_MACOSX)
+      } else if (platform_key == "default") {
+        // If we see "Command+foo" in the Default section it can mean two
+        // things, depending on the platform:
+        // The developer specified "Ctrl+foo" for Default and it got normalized
+        // on Mac to "Command+foo". This is fine. Treat it as Command.
+        modifiers |= ui::EF_COMMAND_DOWN;
+#endif
+      } else {
+        // No other platform supports Command.
+        key = ui::VKEY_UNKNOWN;
+        break;
+      }
+    } else if (tokens[i] == "Alt") {
       modifiers |= ui::EF_ALT_DOWN;
     } else if (tokens[i] == "Shift") {
       modifiers |= ui::EF_SHIFT_DOWN;
-    } else if (tokens[i] == "Command" && platform_key == "mac") {
-      modifiers |= ui::EF_COMMAND_DOWN;
     } else if (tokens[i].size() == 1) {
       if (key != ui::VKEY_UNKNOWN) {
         // Multiple key assignments.
@@ -94,7 +118,7 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx.
   // On Mac Command can also be used in combination with Shift or on its own,
   // as a modifier.
-  if (key == ui::VKEY_UNKNOWN || (ctrl && alt) ||
+  if (key == ui::VKEY_UNKNOWN || (ctrl && alt) || (command && alt) ||
       (shift && !ctrl && !alt && !command)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
@@ -105,6 +129,34 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   }
 
   return ui::Accelerator(key, modifiers);
+}
+
+// For Mac, we convert "Ctrl" to "Command" and "MacCtrl" to "Ctrl". Other
+// platforms leave the shortcut untouched.
+std::string NormalizeShortcutSuggestion(std::string suggestion,
+                                        std::string platform) {
+  bool normalize = false;
+  if (platform == "mac") {
+    normalize = true;
+  } else if (platform == "default") {
+#if defined(OS_MACOSX)
+    normalize = true;
+#endif
+  }
+
+  if (!normalize)
+    return suggestion;
+
+  std::string key;
+  std::vector<std::string> tokens;
+  base::SplitString(suggestion, '+', &tokens);
+  for (size_t i = 0; i < tokens.size(); i++) {
+    if (tokens[i] == "Ctrl")
+      tokens[i] = "Command";
+    else if (tokens[i] == "MacCtrl")
+      tokens[i] = "Ctrl";
+  }
+  return JoinString(tokens, '+');
 }
 
 }  // namespace
@@ -155,7 +207,8 @@ bool Command::Parse(DictionaryValue* command,
   DCHECK(!command_name.empty());
 
   // We'll build up a map of platform-to-shortcut suggestions.
-  std::map<const std::string, std::string> suggestions;
+  typedef std::map<const std::string, std::string> SuggestionMap;
+  SuggestionMap suggestions;
 
   // First try to parse the |suggested_key| as a dictionary.
   DictionaryValue* suggested_key_dict;
@@ -173,7 +226,7 @@ bool Command::Parse(DictionaryValue* command,
             errors::kInvalidKeyBinding,
             base::IntToString(index),
             keys::kSuggestedKey,
-            "Missing");
+            kMissing);
         return false;
       }
     }
@@ -191,9 +244,30 @@ bool Command::Parse(DictionaryValue* command,
           errors::kInvalidKeyBinding,
           base::IntToString(index),
           keys::kSuggestedKey,
-          "Missing");
+          kMissing);
        return false;
     }
+  }
+
+  // Normalize the suggestions.
+  for (SuggestionMap::iterator iter = suggestions.begin();
+       iter != suggestions.end(); ++iter) {
+    // Before we normalize Ctrl to Command we must detect when the developer
+    // specified Command in the Default section, which will work on Mac after
+    // normalization but only fail on other platforms when they try it out on
+    // other platforms, which is not what we want.
+    if (iter->first == "default" &&
+        iter->second.find("Command+") != std::string::npos) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidKeyBinding,
+          base::IntToString(index),
+          keys::kSuggestedKey,
+          kCommandKeyNotSupported);
+      return false;
+    }
+
+    suggestions[iter->first] = NormalizeShortcutSuggestion(iter->second,
+                                                           iter->first);
   }
 
   std::string platform = CommandPlatform();
