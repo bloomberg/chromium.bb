@@ -13,6 +13,7 @@
 #include "base/metrics/stats_counters.h"
 #include "base/stringprintf.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
