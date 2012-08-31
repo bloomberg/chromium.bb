@@ -57,11 +57,36 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
   Browser *app_browser_;
 };
 
+// Confirm that we can bring up an app window.
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, Basic) {
+  AppNonClientFrameViewAura* frame_view = GetAppFrameView();
+  EXPECT_FALSE(frame_view->IsShowingControls());
+}
+
+// Show the controls. We can't test hiding them because it depends on
+// MouseWatcher which uses the MessageLoop which is bypassed by EventGenerator.
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ShowControls) {
+  AppNonClientFrameViewAura* frame_view = GetAppFrameView();
+  aura::RootWindow* root_window = GetRootWindow();
+  aura::test::EventGenerator eg(root_window, gfx::Point(0, 1));
+  EXPECT_FALSE(frame_view->IsShowingControls());
+  eg.MoveMouseTo(0, 0);
+  EXPECT_TRUE(frame_view->IsShowingControls());
+}
+
 // Ensure that we can click the close button when the controls are shown.
 // In particular make sure that we can click it on the top pixel of the button.
 IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ClickClose) {
+  AppNonClientFrameViewAura* frame_view = GetAppFrameView();
   aura::RootWindow* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window, gfx::Point(0, 1));
+  EXPECT_FALSE(frame_view->IsShowingControls());
+
+  // Show controls.
+  // Don't animate the controls so we'll be able to click on them.
+  frame_view->set_animate_controls(false);
+  eg.MoveMouseTo(0, 0);
+  EXPECT_TRUE(frame_view->IsShowingControls());
 
   // Click close button.
   eg.MoveMouseTo(root_window->bounds().width() - 1, 0);
