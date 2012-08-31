@@ -10,6 +10,7 @@ import logging
 import optparse
 import os
 import sys
+import urllib2
 
 import breakpad  # pylint: disable=W0611
 
@@ -51,6 +52,9 @@ def main():
     parser.error('Extra argument(s) "%s" not understood' % ' '.join(args))
   if not options.issue:
     parser.error('Require --issue')
+  options.server = options.server.rstrip('/')
+  if not options.server:
+    parser.error('Require a valid server')
 
   # TODO(rogerta): Remove me, it's ugly.
   if options.email == '=':
@@ -64,7 +68,15 @@ def main():
     print('No patchset specified. Using patchset %d' % options.patchset)
 
   print('Downloading the patch.')
-  patchset = obj.get_patch(options.issue, options.patchset)
+  try:
+    patchset = obj.get_patch(options.issue, options.patchset)
+  except urllib2.HTTPError, e:
+    print >> sys.stderr, (
+        'Failed to fetch the patch for issue %d, patchset %d.\n'
+        'Try visiting %s/%d') % (
+            options.issue, options.patchset,
+            options.server, options.issue)
+    return 1
   for patch in patchset.patches:
     print(patch)
   scm_type = scm.determine_scm(options.root_dir)
