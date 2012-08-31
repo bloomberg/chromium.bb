@@ -35,7 +35,7 @@
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
         '../media/media.gyp:media',
-        '../net/net.gyp:net',
+        '../net/net.gyp:net_with_v8',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',

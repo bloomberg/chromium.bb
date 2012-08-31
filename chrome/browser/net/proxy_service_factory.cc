@@ -17,6 +17,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/proxy/proxy_service_v8.h"
 #include "net/url_request/url_request_context.h"
 
 #if defined(OS_CHROMEOS)
@@ -108,7 +109,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
       dhcp_factory.set_enabled(false);
     }
 
-    proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
+    proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
         proxy_config_service,
         num_pac_threads,
         new net::ProxyScriptFetcherImpl(context),

@@ -31,6 +31,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/proxy/proxy_service_v8.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -192,14 +193,14 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     }
 
     experiment_proxy_service->reset(
-        net::ProxyService::CreateUsingV8ProxyResolver(
-        proxy_config_service->release(),
-        0u,
-        new net::ProxyScriptFetcherImpl(proxy_request_context_),
-        dhcp_factory.Create(proxy_request_context_),
-        host_resolver(),
-        NULL,
-        NULL));
+        net::CreateProxyServiceUsingV8ProxyResolver(
+            proxy_config_service->release(),
+            0u,
+            new net::ProxyScriptFetcherImpl(proxy_request_context_),
+            dhcp_factory.Create(proxy_request_context_),
+            host_resolver(),
+            NULL,
+            NULL));
 
     return net::OK;
   }
