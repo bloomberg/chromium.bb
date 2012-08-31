@@ -62,11 +62,11 @@
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/info_private_api.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/media/media_player_extension_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
-#include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
 #include "chrome/browser/extensions/extension_input_method_api.h"
 #endif
 
@@ -341,7 +341,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // ChromeOS-specific part of the API.
 #if defined(OS_CHROMEOS)
   // Device Customization.
-  RegisterFunction<GetChromeosInfoFunction>();
+  RegisterFunction<extensions::GetChromeosInfoFunction>();
 
   // FileBrowserPrivate functions.
   // TODO(jamescook): Expose these on non-ChromeOS platforms so we can use

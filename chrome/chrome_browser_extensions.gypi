@@ -385,8 +385,6 @@
         'browser/extensions/extension_icon_manager.h',
         'browser/extensions/extension_info_map.cc',
         'browser/extensions/extension_info_map.h',
-        'browser/extensions/extension_info_private_api_chromeos.cc',
-        'browser/extensions/extension_info_private_api_chromeos.h',
         'browser/extensions/extension_infobar_delegate.cc',
         'browser/extensions/extension_infobar_delegate.h',
         'browser/extensions/extension_input_api.cc',

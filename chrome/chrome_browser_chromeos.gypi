@@ -211,6 +211,8 @@
         'browser/chromeos/extensions/file_handler_util.h',
         'browser/chromeos/extensions/file_manager_util.cc',
         'browser/chromeos/extensions/file_manager_util.h',
+        'browser/chromeos/extensions/info_private_api.cc',
+        'browser/chromeos/extensions/info_private_api.h',
         'browser/chromeos/extensions/input_method_event_router.cc',
         'browser/chromeos/extensions/input_method_event_router.h',
         'browser/chromeos/extensions/media_player_event_router.cc',

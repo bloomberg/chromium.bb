@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
+#include "chrome/browser/chromeos/extensions/info_private_api.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -13,6 +13,8 @@
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
+
+namespace extensions {
 
 namespace {
 
@@ -90,3 +92,5 @@ bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
   }
   return true;
 }
+
+}  // namespace extensions
