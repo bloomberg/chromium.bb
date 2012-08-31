@@ -28,11 +28,16 @@ body {
 <body id="t" onload="notifyDidFinishLoading();">
 <div i18n-values="title:name" id="outer">
 <div id="inner">
-<div><img id="plugin_icon" src="plugin_blocked.png" /></div>
+<if expr="not pp_ifdef('android')">
+  <div><img id="plugin_icon" src="plugin_blocked.png"></div>
+</if>
+<if expr="pp_ifdef('android')">
+  <img id="plugin_icon" src="plugin_blocked_android.png">
+</if>
 <h1 id="message" i18n-content="message"></h1>
 <p id="debug"> </p>
 </div>
-<div id="close" i18n-values="title:hide" onclick="plugin.hide();" />
+<div id="close" i18n-values="title:hide" onclick="plugin.hide();"></div>
 </div>
 </body>
 </html>
