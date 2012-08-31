@@ -152,20 +152,6 @@ def Main():
     # containing an expected function name can be extracted from the
     # crash dump.
 
-  # This is a temporary hack because on 32-bit Windows we are getting
-  # an unexpected extra crash dump (without a corresponding .txt file,
-  # so we can't tell what process is producing it).
-  # TODO(mseaborn): Debug this problem and remove this hack.
-  # See http://code.google.com/p/chromium/issues/detail?id=143413
-  if (sys.platform == 'win32' and
-      not options.win64 and
-      len(dmp_files) == options.expected_crash_dumps + 1):
-    sys.stdout.write('@@@STEP_WARNINGS@@@\n')
-    sys.stdout.write('@@@STEP_TEXT@Received an excess Breakpad crash dump@@@\n')
-    sys.stdout.write('crash_dump_tester: Ignoring failure caused by '
-                     'excess crash dump on 32-bit Windows\n')
-    failed = False
-
   if failed:
     sys.stdout.write('crash_dump_tester: FAILED\n')
     result = 1
