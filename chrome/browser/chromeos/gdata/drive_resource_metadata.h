@@ -149,13 +149,13 @@ class DriveResourceMetadata {
   void set_origin(ContentOrigin value) { origin_ = value; }
 
   // Creates a DriveEntry from a DocumentEntry.
-  DriveEntry* FromDocumentEntry(const DocumentEntry& doc);
+  scoped_ptr<DriveEntry> FromDocumentEntry(const DocumentEntry& doc);
 
   // Creates a DriveFile instance.
-  DriveFile* CreateDriveFile();
+  scoped_ptr<DriveFile> CreateDriveFile();
 
   // Creates a DriveDirectory instance.
-  DriveDirectory* CreateDriveDirectory();
+  scoped_ptr<DriveDirectory> CreateDriveDirectory();
 
   // Sets root directory resource id and initialize the root entry.
   void InitializeRootEntry(const std::string& root_id);

@@ -33,7 +33,7 @@ const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 DriveDirectory* AddDirectory(DriveDirectory* parent,
                              DriveResourceMetadata* resource_metadata,
                              int sequence_id) {
-  DriveDirectory* dir = resource_metadata->CreateDriveDirectory();
+  scoped_ptr<DriveDirectory> dir = resource_metadata->CreateDriveDirectory();
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
@@ -43,14 +43,14 @@ DriveDirectory* AddDirectory(DriveDirectory* parent,
   FilePath moved_file_path;
   resource_metadata->MoveEntryToDirectory(
       parent->GetFilePath(),
-      dir,
+      dir.get(),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error,
                  &moved_file_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(parent->GetFilePath().AppendASCII(dir_name), moved_file_path);
-  return dir;
+  return dir.release();
 }
 
 // Add a file to |parent| and return that file. The name and
@@ -58,7 +58,7 @@ DriveDirectory* AddDirectory(DriveDirectory* parent,
 DriveFile* AddFile(DriveDirectory* parent,
                    DriveResourceMetadata* resource_metadata,
                    int sequence_id) {
-  DriveFile* file = resource_metadata->CreateDriveFile();
+  scoped_ptr<DriveFile> file = resource_metadata->CreateDriveFile();
   const std::string title = "file" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("file_resource_id:") +
                                   title;
@@ -69,14 +69,14 @@ DriveFile* AddFile(DriveDirectory* parent,
   FilePath moved_file_path;
   resource_metadata->MoveEntryToDirectory(
       parent->GetFilePath(),
-      file,
+      file.get(),
       base::Bind(&test_util::CopyResultsFromFileMoveCallback,
                  &error,
                  &moved_file_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
   EXPECT_EQ(parent->GetFilePath().AppendASCII(title), moved_file_path);
-  return file;
+  return file.release();
 }
 
 // Creates the following files/directories

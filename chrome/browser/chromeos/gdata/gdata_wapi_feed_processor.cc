@@ -270,9 +270,10 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
              feed->entries().begin();
          iter != feed->entries().end(); ++iter) {
       DocumentEntry* doc = *iter;
-      DriveEntry* entry = resource_metadata_->FromDocumentEntry(*doc);
+      scoped_ptr<DriveEntry> entry =
+          resource_metadata_->FromDocumentEntry(*doc);
       // Some document entries don't map into files (i.e. sites).
-      if (!entry)
+      if (!entry.get())
         continue;
       // Count the number of files.
       DriveFile* as_file = entry->AsDriveFile();
@@ -297,8 +298,10 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
         delete map_entry->second;
         file_map->erase(map_entry);
       }
-      file_map->insert(
-          std::pair<std::string, DriveEntry*>(entry->resource_id(), entry));
+      // Must use this temporary because entry.release() may be evaluated
+      // first in make_pair.
+      const std::string& resource_id = entry->resource_id();
+      file_map->insert(std::make_pair(resource_id, entry.release()));
     }
   }
 

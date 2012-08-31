@@ -185,7 +185,7 @@ DriveResourceMetadata::DriveResourceMetadata()
       largest_changestamp_(0),
       origin_(UNINITIALIZED),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  root_.reset(CreateDriveDirectory());
+  root_ = CreateDriveDirectory().Pass();
   if (!util::IsDriveV2ApiEnabled())
     InitializeRootEntry(kDriveRootDirectoryResourceId);
 }
@@ -199,28 +199,29 @@ DriveResourceMetadata::~DriveResourceMetadata() {
                                       resource_metadata_db_.release());
 }
 
-DriveEntry* DriveResourceMetadata::FromDocumentEntry(const DocumentEntry& doc) {
-  DriveEntry* entry = NULL;
+scoped_ptr<DriveEntry> DriveResourceMetadata::FromDocumentEntry(
+    const DocumentEntry& doc) {
+  scoped_ptr<DriveEntry> entry;
   if (doc.is_folder())
-    entry = CreateDriveDirectory();
+    entry = CreateDriveDirectory().Pass();
   else if (doc.is_hosted_document() || doc.is_file())
-    entry = CreateDriveFile();
+    entry = CreateDriveFile().Pass();
 
-  if (entry)
+  if (entry.get())
     entry->InitFromDocumentEntry(doc);
-  return entry;
+  return entry.Pass();
 }
 
-DriveFile* DriveResourceMetadata::CreateDriveFile() {
-  return new DriveFile(this);
+scoped_ptr<DriveFile> DriveResourceMetadata::CreateDriveFile() {
+  return scoped_ptr<DriveFile>(new DriveFile(this));
 }
 
-DriveDirectory* DriveResourceMetadata::CreateDriveDirectory() {
-  return new DriveDirectory(this);
+scoped_ptr<DriveDirectory> DriveResourceMetadata::CreateDriveDirectory() {
+  return scoped_ptr<DriveDirectory>(new DriveDirectory(this));
 }
 
 void DriveResourceMetadata::InitializeRootEntry(const std::string& root_id) {
-  root_.reset(CreateDriveDirectory());
+  root_ = CreateDriveDirectory().Pass();
   root_->set_title(kDriveRootDirectory);
   root_->SetBaseNameFromTitle();
   root_->set_resource_id(root_id);
@@ -249,8 +250,8 @@ void DriveResourceMetadata::AddEntryToDirectory(
     return;
   }
 
-  DriveEntry* new_entry = FromDocumentEntry(*doc_entry);
-  if (!new_entry) {
+  scoped_ptr<DriveEntry> new_entry = FromDocumentEntry(*doc_entry);
+  if (!new_entry.get()) {
     PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_FAILED);
     return;
   }
@@ -267,10 +268,11 @@ void DriveResourceMetadata::AddEntryToDirectory(
     return;
   }
 
-  directory->AddEntry(new_entry);
-  DVLOG(1) << "AddEntryToDirectory " << new_entry->GetFilePath().value();
+  DriveEntry* added_entry = new_entry.release();
+  directory->AddEntry(added_entry);  // Transfers ownership.
+  DVLOG(1) << "AddEntryToDirectory " << added_entry->GetFilePath().value();
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(callback, DRIVE_FILE_OK, new_entry->GetFilePath()));
+      base::Bind(callback, DRIVE_FILE_OK, added_entry->GetFilePath()));
 }
 
 void DriveResourceMetadata::MoveEntryToDirectory(
@@ -763,7 +765,7 @@ scoped_ptr<DriveEntry> DriveResourceMetadata::FromProtoString(
 
   scoped_ptr<DriveEntry> entry;
   if (entry_proto.file_info().is_directory()) {
-    entry.reset(CreateDriveDirectory());
+    entry = CreateDriveDirectory().Pass();
     // Call DriveEntry::FromProto instead of DriveDirectory::FromProto because
     // the proto does not include children.
     entry->FromProto(entry_proto);
