@@ -13,7 +13,6 @@ AboutProtocolHandler::AboutProtocolHandler() {
 
 URLRequestJob* AboutProtocolHandler::MaybeCreateJob(
     URLRequest* request, NetworkDelegate* network_delegate) const {
-  DCHECK(false);
   return new URLRequestAboutJob(request, network_delegate);
 }
 
