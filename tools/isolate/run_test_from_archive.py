@@ -798,10 +798,10 @@ def run_tha_test(manifest_hash, cache_dir, remote, policies):
 
         # Remaining files to be processed.
         # Note that files could still be not be downloaded yet here.
-        remaining = dict(
-            (props['sha-1'], (filepath, props))
-            for filepath, props in settings.files.iteritems()
-            if 'sha-1' in props)
+        remaining = dict()
+        for filepath, props in settings.files.iteritems():
+          if 'sha-1' in props:
+            remaining.setdefault(props['sha-1'], []).append((filepath, props))
 
         # Do bookkeeping while files are being downloaded in the background.
         cwd = os.path.join(outdir, settings.relative_cwd)
@@ -815,12 +815,12 @@ def run_tha_test(manifest_hash, cache_dir, remote, policies):
         # Now block on the remaining files to be downloaded and mapped.
         while remaining:
           obj = cache.wait_for(remaining)
-          filepath, properties = remaining.pop(obj)
-          outfile = os.path.join(outdir, filepath)
-          link_file(outfile, cache.path(obj), HARDLINK)
-          if 'mode' in properties:
-            # It's not set on Windows.
-            os.chmod(outfile, properties['mode'])
+          for filepath, properties in remaining.pop(obj):
+            outfile = os.path.join(outdir, filepath)
+            link_file(outfile, cache.path(obj), HARDLINK)
+            if 'mode' in properties:
+              # It's not set on Windows.
+              os.chmod(outfile, properties['mode'])
 
       if settings.read_only:
         make_writable(outdir, True)

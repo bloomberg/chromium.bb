@@ -109,6 +109,17 @@ class RunTestFromArchive(unittest.TestCase):
     shutil.copyfile(filepath, os.path.join(self.table, h))
     return h
 
+  def _generate_args(self, sha1_hash):
+    """Generates the standard arguments used with sha1_hash as the hash.
+
+    Returns a list of the required arguments.
+    """
+    return [
+      '--hash', sha1_hash,
+      '--cache', self.cache,
+      '--remote', self.table,
+    ]
+
   def test_result(self):
     # Loads an arbitrary manifest on the file system.
     manifest = os.path.join(self.data_dir, 'gtest_fake.results')
@@ -157,12 +168,7 @@ class RunTestFromArchive(unittest.TestCase):
       'state.json',
       result_sha1,
     ]
-    args = [
-      '--hash', result_sha1,
-      '--cache', self.cache,
-      '--remote', self.table,
-    ]
-    out, err, returncode = self._run(args)
+    out, err, returncode = self._run(self._generate_args(result_sha1))
     if not VERBOSE:
       self.assertEquals('', out)
       self.assertEquals('No command to run\n', err)
@@ -189,12 +195,26 @@ class RunTestFromArchive(unittest.TestCase):
       self._store('manifest2.results'),
       result_sha1,
     ]
-    args = [
-      '--hash', result_sha1,
-      '--cache', self.cache,
-      '--remote', self.table,
+    out, err, returncode = self._run(self._generate_args(result_sha1))
+    if not VERBOSE:
+      self.assertEquals('', err)
+      self.assertEquals('Success\n', out)
+    self.assertEquals(0, returncode)
+    actual = list_files_tree(self.cache)
+    self.assertEquals(sorted(expected), actual)
+
+  def test_link_all_hash_instances(self):
+    # Load a manifest file with the same file (same sha-1 hash), listed under
+    # two different names and ensure both are created.
+    result_sha1 = self._store('repeated_files.results')
+    expected = [
+        'state.json',
+        result_sha1,
+        self._store('file1.txt'),
+        self._store('repeated_files.py')
     ]
-    out, err, returncode = self._run(args)
+
+    out, err, returncode = self._run(self._generate_args(result_sha1))
     if not VERBOSE:
       self.assertEquals('', err)
       self.assertEquals('Success\n', out)
