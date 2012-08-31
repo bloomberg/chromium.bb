@@ -292,10 +292,6 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
   FilePath flash_path;
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
     return false;
-  // It is an error to have FLAPPER_AVAILABLE defined but then not having the
-  // plugin file in place, but this happens in Chrome OS builds.
-  // Use --disable-bundled-ppapi-flash to skip this.
-  DCHECK(file_util::PathExists(flash_path));
 
   bool force_enable = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBundledPpapiFlash);
