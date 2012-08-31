@@ -357,8 +357,8 @@ void WebsiteSettingsPopupGtk::InitContents() {
 
 void WebsiteSettingsPopupGtk::OnPermissionChanged(
     PermissionSelector* selector) {
-  presenter_->OnSitePermissionChanged(selector->type(),
-                                      selector->setting());
+  presenter_->OnSitePermissionChanged(selector->GetType(),
+                                      selector->GetSetting());
 }
 
 void WebsiteSettingsPopupGtk::OnComboboxShown() {
@@ -550,9 +550,10 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
            theme_service_,
            permission->type,
            permission->setting,
-           permission->default_setting);
+           permission->default_setting,
+           permission->source);
     selector->AddObserver(this);
-    GtkWidget* hbox = selector->CreateUI();
+    GtkWidget* hbox = selector->widget();
     selectors_.push_back(selector);
     gtk_box_pack_start(GTK_BOX(permissions_section_contents_), hbox, FALSE,
                        FALSE, 0);

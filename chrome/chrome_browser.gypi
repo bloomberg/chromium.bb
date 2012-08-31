@@ -3451,6 +3451,8 @@
         'browser/ui/views/wrench_menu.h',
         'browser/ui/web_applications/web_app_ui.cc',
         'browser/ui/web_applications/web_app_ui.h',
+        'browser/ui/website_settings/permission_menu_model.cc',
+        'browser/ui/website_settings/permission_menu_model.h',
         'browser/ui/website_settings/website_settings.cc',
         'browser/ui/website_settings/website_settings.h',
         'browser/ui/website_settings/website_settings_infobar_delegate.cc',
