@@ -25,11 +25,13 @@ namespace performance_monitor {
 namespace {
 const char kDbDir[] = "Performance Monitor Databases";
 const char kRecentDb[] = "Recent Metrics";
+const char kMaxValueDb[] = "Max Value Metrics";
 const char kEventDb[] = "Events";
 const char kStateDb[] = "Configuration";
 const char kActiveIntervalDb[] = "Active Interval";
 const char kMetricDb[] = "Metrics";
 const char kDelimiter = '!';
+const double kDefaultMaxValue = 0.0;
 
 struct RecentKey {
   RecentKey(const std::string& recent_time,
@@ -41,6 +43,17 @@ struct RecentKey {
   ~RecentKey() {}
 
   const std::string time;
+  const MetricType type;
+  const std::string activity;
+};
+
+struct MaxValueKey {
+  MaxValueKey(MetricType max_value_type,
+              const std::string& max_value_activity)
+      : type(max_value_type),
+        activity(max_value_activity) {}
+  ~MaxValueKey() {}
+
   const MetricType type;
   const std::string activity;
 };
@@ -70,6 +83,12 @@ enum RecentKeyPosition {
   RECENT_TIME,  // The time the stat was gathered.
   RECENT_TYPE,  // The unique identifier for the type of metric gathered.
   RECENT_ACTIVITY  // The unique identifier for the activity.
+};
+
+// The position of different elements in the key for the max value db.
+enum MaxValueKeyPosition {
+  MAX_VALUE_TYPE,  // The unique identifier for the type of metric gathered.
+  MAX_VALUE_ACTIVITY  // The unique identifier for the activity.
 };
 
 // The position of different elements in the key for a metric db.
@@ -105,6 +124,14 @@ std::string CreateRecentKey(const base::Time& time,
                       kDelimiter, metric_type, kDelimiter, activity.c_str());
 }
 
+// Create the database key for a certain metric to go in the "Max Value"
+// database.
+// Key Schema: <Metric>-<Activity>
+std::string CreateMaxValueKey(MetricType metric_type,
+                              const std::string& activity) {
+  return StringPrintf("%04d%c%s", metric_type, kDelimiter, activity.c_str());
+}
+
 EventType EventKeyToEventType(const std::string& event_key) {
   std::vector<std::string> split;
   base::SplitString(event_key, kDelimiter, &split);
@@ -124,6 +151,13 @@ RecentKey SplitRecentKey(const std::string& key) {
   base::SplitString(key, kDelimiter, &split);
   return RecentKey(split[RECENT_TIME], StringToMetricType(split[RECENT_TYPE]),
                    split[RECENT_ACTIVITY]);
+}
+
+MaxValueKey SplitMaxValueKey(const std::string& key) {
+  std::vector<std::string> split;
+  base::SplitString(key, kDelimiter, &split);
+  return MaxValueKey(StringToMetricType(split[MAX_VALUE_TYPE]),
+                     split[MAX_VALUE_ACTIVITY]);
 }
 
 // Create the database key for a statistic of a certain metric.
@@ -157,6 +191,13 @@ TimeRange ActiveIntervalToTimeRange(const std::string& start_time,
   base::StringToInt64(end_time, &end_time_int);
   return TimeRange(base::Time::FromInternalValue(start_time_int),
                    base::Time::FromInternalValue(end_time_int));
+}
+
+double StringToDouble(const std::string& s) {
+  double value = 0.0;
+  if (!base::StringToDouble(s, &value))
+    LOG(ERROR) << "Failed to convert " << s << " to double.";
+  return value;
 }
 
 }  // namespace
@@ -310,7 +351,23 @@ bool Database::AddMetric(const std::string& activity,
       recent_db_->Put(write_options_, recent_key, value);
   leveldb::Status metric_status =
       metric_db_->Put(write_options_, metric_key, value);
-  return recent_status.ok() && metric_status.ok();
+
+  bool max_value_success = UpdateMaxValue(activity, metric, value);
+  return recent_status.ok() && metric_status.ok() && max_value_success;
+}
+
+bool Database::UpdateMaxValue(const std::string& activity,
+                              MetricType metric,
+                              const std::string& value) {
+  std::string max_value_key(CreateMaxValueKey(metric, activity));
+  bool has_key = ContainsKey(max_value_map_, max_value_key);
+  if ((has_key && StringToDouble(value) > max_value_map_[max_value_key]) ||
+      !has_key) {
+    max_value_map_[max_value_key] = StringToDouble(value);
+    return max_value_db_->Put(write_options_, max_value_key, value).ok();
+  }
+
+  return true;
 }
 
 Database::MetricTypeSet Database::GetActiveMetrics(const base::Time& start,
@@ -378,6 +435,15 @@ std::set<std::string> Database::GetActiveActivities(MetricType metric_type,
   return results;
 }
 
+double Database::GetMaxStatsForActivityAndMetric(const std::string& activity,
+                                                 MetricType metric) {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::string max_value_key(CreateMaxValueKey(metric, activity));
+  if (ContainsKey(max_value_map_, max_value_key))
+    return max_value_map_[max_value_key];
+  return kDefaultMaxValue;
+}
+
 bool Database::GetRecentStatsForActivityAndMetric(const std::string& activity,
                                                   MetricType metric_type,
                                                   Metric* metric) {
@@ -443,6 +509,7 @@ Database::Database(const FilePath& path)
       write_options_(leveldb::WriteOptions()) {
   InitDBs();
   LoadRecents();
+  LoadMaxValues();
   clock_ = scoped_ptr<Clock>(new SystemClock());
 }
 
@@ -459,6 +526,10 @@ void Database::InitDBs() {
   leveldb::DB::Open(open_options, path_.AppendASCII(kRecentDb).value(),
                     &new_db);
   recent_db_ = scoped_ptr<leveldb::DB>(new_db);
+  leveldb::DB::Open(open_options,
+                    path_.AppendASCII(kMaxValueDb).value(),
+                    &new_db);
+  max_value_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options, path_.AppendASCII(kStateDb).value(),
                     &new_db);
   state_db_ = scoped_ptr<leveldb::DB>(new_db);
@@ -475,6 +546,10 @@ void Database::InitDBs() {
   leveldb::DB::Open(open_options,
                     WideToUTF8(path_.AppendASCII(kRecentDb).value()), &new_db);
   recent_db_ = scoped_ptr<leveldb::DB>(new_db);
+  leveldb::DB::Open(open_options,
+                    WideToUTF8(path_.AppendASCII(kMaxValueDb).value()),
+                    &new_db);
+  max_value_db_ = scoped_ptr<leveldb::DB>(new_db);
   leveldb::DB::Open(open_options,
                     WideToUTF8(path_.AppendASCII(kStateDb).value()), &new_db);
   state_db_ = scoped_ptr<leveldb::DB>(new_db);
@@ -495,6 +570,7 @@ bool Database::Close() {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   metric_db_.reset();
   recent_db_.reset();
+  max_value_db_.reset();
   state_db_.reset();
   active_interval_db_.reset();
   start_time_key_.clear();
@@ -509,6 +585,16 @@ void Database::LoadRecents() {
     RecentKey split_key = SplitRecentKey(it->key().ToString());
     recent_map_[CreateRecentMapKey(split_key.type, split_key.activity)] =
         it->key().ToString();
+  }
+}
+
+void Database::LoadMaxValues() {
+  CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  max_value_map_.clear();
+  scoped_ptr<leveldb::Iterator> it(max_value_db_->NewIterator(read_options_));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    max_value_map_[it->key().ToString()] =
+        StringToDouble(it->value().ToString());
   }
 }
 

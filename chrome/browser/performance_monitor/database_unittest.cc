@@ -217,6 +217,25 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetAllEvents) {
   EXPECT_TRUE(events[3]->data()->Equals(uninstall_event_2_->data()));
 }
 
+TEST_F(PerformanceMonitorDatabaseMetricTest, GetMaxMetric) {
+  Metric stat;
+  EXPECT_EQ(0.0, db_->GetMaxStatsForActivityAndMetric(activity_,
+                                                      METRIC_PAGE_LOAD_TIME));
+
+  EXPECT_EQ(1000000,
+            db_->GetMaxStatsForActivityAndMetric(METRIC_PRIVATE_MEMORY_USAGE));
+
+  db_->AddMetric(kProcessChromeAggregate, METRIC_PRIVATE_MEMORY_USAGE,
+                 std::string("99"));
+  EXPECT_EQ(1000000,
+            db_->GetMaxStatsForActivityAndMetric(METRIC_PRIVATE_MEMORY_USAGE));
+
+  db_->AddMetric(kProcessChromeAggregate, METRIC_PRIVATE_MEMORY_USAGE,
+                 std::string("6000000"));
+  EXPECT_EQ(6000000,
+            db_->GetMaxStatsForActivityAndMetric(METRIC_PRIVATE_MEMORY_USAGE));
+}
+
 TEST_F(PerformanceMonitorDatabaseEventTest, GetAllEventTypes) {
   Database::EventTypeSet types = db_->GetEventTypes();
   ASSERT_EQ(2u, types.size());

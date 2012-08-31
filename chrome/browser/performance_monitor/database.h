@@ -70,13 +70,21 @@ struct TimeRange {
 // Recent DB:
 // Stores the most recent metric statistics to go into the database. There is
 // only ever one entry per (metric, activity) pair. |recent_map_| keeps an
-// in-memory version of this table with a mapping from a concatenation of metric
-// and activity to the key used in the recent db. |recent_map_| allows us to
-// quickly find the key that must be replaced in the recent db. This
+// in-memory version of this database with a mapping from a concatenation of
+// metric and activity to the key used in the recent db. |recent_map_| allows us
+// to quickly find the key that must be replaced in the recent db. This
 // database becomes useful when it is necessary to find all the active metrics
 // within a timerange. Without it, all the metric databases would need to be
 // searched to see if that metric is active.
 // Key: Time - Metric - Activity
+// Value: Statistic
+//
+// Max Value DB:
+// Stores the max metric statistics that have been inserted into the database.
+// There is only ever one entry per (metric, activity) pair. |max_value_map_|
+// keeps an in-memory version of this database with a mapping from a
+// concatenation of metric and activity to the max metric.
+// Key: Metric - Activity
 // Value: Statistic
 //
 // Metric DB:
@@ -159,6 +167,14 @@ class Database {
   std::set<std::string> GetActiveActivities(MetricType metric_type,
                                             const base::Time& start);
 
+  // Get the max value for the given metric in the db.
+  double GetMaxStatsForActivityAndMetric(const std::string& activity,
+                                         MetricType metric_type);
+  double GetMaxStatsForActivityAndMetric(MetricType metric_type) {
+    return GetMaxStatsForActivityAndMetric(kProcessChromeAggregate,
+                                           metric_type);
+  }
+
   // Populate info with the most recent activity. Return false if populate
   // was unsuccessful.
   bool GetRecentStatsForActivityAndMetric(const std::string& activity,
@@ -222,6 +238,7 @@ class Database {
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, ActiveInterval);
 
   typedef std::map<std::string, std::string> RecentMap;
+  typedef std::map<std::string, double> MaxValueMap;
 
   // By default, the database uses a clock that simply returns the current time.
   class SystemClock : public Clock {
@@ -239,14 +256,24 @@ class Database {
 
   // Load recent info from the db into recent_map_.
   void LoadRecents();
+  // Load max values from the db into the max_value_map_.
+  void LoadMaxValues();
 
   // Mark the database as being active for the current time.
   void UpdateActiveInterval();
+
+  // Updates the max_value_map_ and max_value_db_ if the value is greater than
+  // the current max value for the given activity and metric.
+  bool UpdateMaxValue(const std::string& activity,
+                      MetricType metric,
+                      const std::string& value);
 
   // A mapping of id,metric to the last inserted key for those parameters
   // is maintained to prevent having to search through the recent db every
   // insert.
   RecentMap recent_map_;
+
+  MaxValueMap max_value_map_;
 
   // The directory where all the databases will reside.
   FilePath path_;
@@ -260,6 +287,8 @@ class Database {
   scoped_ptr<Clock> clock_;
 
   scoped_ptr<leveldb::DB> recent_db_;
+
+  scoped_ptr<leveldb::DB> max_value_db_;
 
   scoped_ptr<leveldb::DB> state_db_;
 
