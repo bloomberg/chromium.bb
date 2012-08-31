@@ -492,8 +492,8 @@ class MemcheckAnalyzer:
         found = log_is_finished(f, False)
         if not running and not found:
           logging.warn("Valgrind process PID = %s is not running but its "
-                       "XML log has not been finished correctly.\nMake it up"
-                       "by adding some closing tags manually." % pid)
+                       "XML log has not been finished correctly.\n"
+                       "Make it up by adding some closing tags manually." % pid)
           found = log_is_finished(f, not running)
         if running and not found:
           time.sleep(1)

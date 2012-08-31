@@ -363,6 +363,8 @@ class ValgrindTool(BaseTool):
 
     if self._options.trace_children:
       proc += ["--trace-children=yes"]
+      proc += ["--trace-children-skip='*dbus-daemon*'"]
+      proc += ["--trace-children-skip='*dbus-launch*'"]
       proc += ["--trace-children-skip='*perl*'"]
       proc += ["--trace-children-skip='*python*'"]
 
