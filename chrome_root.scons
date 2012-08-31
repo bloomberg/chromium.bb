@@ -15,7 +15,7 @@ import test_lib
 Import(['pre_base_env'])
 
 # Underlay things migrating to ppapi repo.
-Dir('..').addRepository(Dir('#/../ppapi'))
+Dir('#/..').addRepository(Dir('#/../ppapi'))
 
 # Load a config file from the Chrome repo. This allows scons files to be added
 # and removed in Chrome without requiring a DEPS roll.
