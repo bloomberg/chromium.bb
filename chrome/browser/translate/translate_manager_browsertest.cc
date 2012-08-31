@@ -18,24 +18,17 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -62,35 +55,6 @@ using testing::_;
 using testing::Pointee;
 using testing::Property;
 using WebKit::WebContextMenuData;
-
-// An observer that keeps track of whether a navigation entry was committed.
-class NavEntryCommittedObserver : public content::NotificationObserver {
- public:
-  explicit NavEntryCommittedObserver(WebContents* web_contents) {
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::Source<NavigationController>(
-                      &web_contents->GetController()));
-  }
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
-    details_ =
-        *(content::Details<content::LoadCommittedDetails>(details).ptr());
-  }
-
-  const content::LoadCommittedDetails&
-      get_load_commited_details() const {
-    return details_;
-  }
-
- private:
-  content::LoadCommittedDetails details_;
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
-};
 
 class TranslateManagerTest : public TabContentsTestHarness,
                              public content::NotificationObserver {
@@ -190,21 +154,6 @@ class TranslateManagerTest : public TabContentsTestHarness,
     infobar->TranslationDeclined();
     infobar_tab_helper()->RemoveInfoBar(infobar);
     return true;
-  }
-
-  void ReloadAndWait() {
-    NavEntryCommittedObserver nav_observer(contents());
-    Reload();
-
-    // Ensures it is really handled a reload.
-    const content::LoadCommittedDetails& nav_details =
-        nav_observer.get_load_commited_details();
-    EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
-    EXPECT_EQ(content::NAVIGATION_TYPE_EXISTING_PAGE, nav_details.type);
-
-    // The TranslateManager class processes the navigation entry committed
-    // notification in a posted task; process that task.
-    MessageLoop::current()->RunAllPending();
   }
 
   virtual void Observe(int type,
@@ -313,6 +262,35 @@ class TranslateManagerTest : public TabContentsTestHarness,
   std::set<InfoBarDelegate*> removed_infobars_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerTest);
+};
+
+// An observer that keeps track of whether a navigation entry was committed.
+class NavEntryCommittedObserver : public content::NotificationObserver {
+ public:
+  explicit NavEntryCommittedObserver(WebContents* web_contents) {
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                   content::Source<NavigationController>(
+                      &web_contents->GetController()));
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+    DCHECK(type == content::NOTIFICATION_NAV_ENTRY_COMMITTED);
+    details_ =
+        *(content::Details<content::LoadCommittedDetails>(details).ptr());
+  }
+
+  const content::LoadCommittedDetails&
+      get_load_commited_details() const {
+    return details_;
+  }
+
+ private:
+  content::LoadCommittedDetails details_;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavEntryCommittedObserver);
 };
 
 namespace {
@@ -432,12 +410,6 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   // infobar is now invalid.
   new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
-
-  // Verify reload keeps the same settings.
-  ReloadAndWait();
-  new_infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(new_infobar != NULL);
-  ASSERT_EQ(new_target_lang, infobar->GetTargetLanguageCode());
 }
 
 TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
@@ -782,7 +754,18 @@ TEST_F(TranslateManagerTest, Reload) {
   EXPECT_TRUE(CloseTranslateInfoBar());
 
   // Reload should bring back the infobar.
-  ReloadAndWait();
+  NavEntryCommittedObserver nav_observer(contents());
+  Reload();
+
+  // Ensures it is really handled a reload.
+  const content::LoadCommittedDetails& nav_details =
+      nav_observer.get_load_commited_details();
+  EXPECT_TRUE(nav_details.entry != NULL);  // There was a navigation.
+  EXPECT_EQ(content::NAVIGATION_TYPE_EXISTING_PAGE, nav_details.type);
+
+  // The TranslateManager class processes the navigation entry committed
+  // notification in a posted task; process that task.
+  MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
 
@@ -860,6 +843,8 @@ TEST_F(TranslateManagerTest, CloseInfoBarInSubframeNavigation) {
   SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
+
+
 
 // Tests that denying translation is sticky when navigating in page.
 TEST_F(TranslateManagerTest, DenyTranslateInPageNavigation) {
@@ -1480,47 +1465,4 @@ TEST_F(TranslateManagerTest, ScriptExpires) {
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ("es", original_lang);
   EXPECT_EQ("en", target_lang);
-}
-
-TEST_F(TranslateManagerTest, DownloadsAndHistoryNotTranslated) {
-  ASSERT_FALSE(TranslateManager::IsTranslatableURL(
-      GURL(chrome::kChromeUIDownloadsURL)));
-  ASSERT_FALSE(TranslateManager::IsTranslatableURL(
-      GURL(chrome::kChromeUIHistoryURL)));
-}
-
-// Test that session restore restores the translate infobar and other translate
-// settings.
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, PRE_TranslateSessionRestore) {
-  SessionStartupPref pref(SessionStartupPref::LAST);
-  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
-
-  WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
-  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser());
-  TranslateTabHelper* helper = current_tab_contents->translate_tab_helper();
-  content::Source<WebContents> source(current_web_contents);
-
-  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
-      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                                  source);
-
-  GURL french_url = ui_test_utils::GetTestUrl(
-      FilePath(), FilePath(FILE_PATH_LITERAL("french_page.html")));
-  ui_test_utils::NavigateToURL(browser(), french_url);
-  fr_language_detected_signal.Wait();
-  std::string lang;
-  EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
-        source.map_key(), &lang));
-  EXPECT_EQ("fr", lang);
-  EXPECT_EQ("fr", helper->language_state().original_language());
-}
-
-IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, TranslateSessionRestore) {
-  WebContents* current_web_contents = chrome::GetActiveWebContents(browser());
-  content::Source<WebContents> source(current_web_contents);
-
-  ui_test_utils::WindowedNotificationObserverWithDetails<std::string>
-      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-                                  source);
-  fr_language_detected_signal.Wait();
 }

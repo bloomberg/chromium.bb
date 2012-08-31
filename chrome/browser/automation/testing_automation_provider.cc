@@ -89,6 +89,8 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -1876,6 +1878,8 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
 
   browser_handler_map_["GetHistoryInfo"] =
       &TestingAutomationProvider::GetHistoryInfo;
+  browser_handler_map_["AddHistoryItem"] =
+      &TestingAutomationProvider::AddHistoryItem;
 
   browser_handler_map_["GetOmniboxInfo"] =
       &TestingAutomationProvider::GetOmniboxInfo;
@@ -1943,6 +1947,11 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GetThemeInfo;
 
   browser_handler_map_["FindInPage"] = &TestingAutomationProvider::FindInPage;
+
+  browser_handler_map_["SelectTranslateOption"] =
+      &TestingAutomationProvider::SelectTranslateOption;
+  browser_handler_map_["GetTranslateInfo"] =
+      &TestingAutomationProvider::GetTranslateInfo;
 
   browser_handler_map_["GetAllNotifications"] =
       &TestingAutomationProvider::GetAllNotifications;
@@ -2189,6 +2198,14 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
       infobar_item->SetString("type", "link_infobar");
       LinkInfoBarDelegate* link_infobar = infobar->AsLinkInfoBarDelegate();
       infobar_item->SetString("link_text", link_infobar->GetLinkText());
+    } else if (infobar->AsTranslateInfoBarDelegate()) {
+      infobar_item->SetString("type", "translate_infobar");
+      TranslateInfoBarDelegate* translate_infobar =
+          infobar->AsTranslateInfoBarDelegate();
+      infobar_item->SetString("original_lang_code",
+                              translate_infobar->GetOriginalLanguageCode());
+      infobar_item->SetString("target_lang_code",
+                              translate_infobar->GetTargetLanguageCode());
     } else if (infobar->AsExtensionInfoBarDelegate()) {
       infobar_item->SetString("type", "extension_infobar");
     } else {
@@ -2616,6 +2633,53 @@ void TestingAutomationProvider::GetHistoryInfo(Browser* browser,
       &consumer_,
       base::Bind(&AutomationProviderHistoryObserver::HistoryQueryComplete,
                  base::Unretained(history_observer)));
+}
+
+// Sample json input: { "command": "AddHistoryItem",
+//                      "item": { "URL": "http://www.google.com",
+//                                "title": "Google",   # optional
+//                                "time": 12345        # optional (time_t)
+//                               } }
+// Refer chrome/test/pyautolib/pyauto.py for details on input.
+void TestingAutomationProvider::AddHistoryItem(Browser* browser,
+                                               DictionaryValue* args,
+                                               IPC::Message* reply_message) {
+  DictionaryValue* item = NULL;
+  args->GetDictionary("item", &item);
+  string16 url_text;
+  string16 title;
+  base::Time time = base::Time::Now();
+  AutomationJSONReply reply(this, reply_message);
+
+  if (!item->GetString("url", &url_text)) {
+    reply.SendError("bad args (no URL in dict?)");
+    return;
+  }
+  GURL gurl(url_text);
+  item->GetString("title", &title);  // Don't care if it fails.
+  int it;
+  double dt;
+  if (item->GetInteger("time", &it))
+    time = base::Time::FromTimeT(it);
+  else if (item->GetDouble("time", &dt))
+    time = base::Time::FromDoubleT(dt);
+
+  // Ideas for "dummy" values (e.g. id_scope) came from
+  // chrome/browser/autocomplete/history_contents_provider_unittest.cc
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      browser->profile(), Profile::EXPLICIT_ACCESS);
+  const void* id_scope = reinterpret_cast<void*>(1);
+  hs->AddPage(gurl, time,
+              id_scope,
+              0,
+              GURL(),
+              content::PAGE_TRANSITION_LINK,
+              history::RedirectList(),
+              history::SOURCE_BROWSED,
+              false);
+  if (title.length())
+    hs->SetPageTitle(gurl, title);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetDownloadsInfo" }
@@ -3634,6 +3698,20 @@ TabContents* GetTabContentsFromDict(const Browser* browser,
   return tab_contents;
 }
 
+// Get the TranslateInfoBarDelegate from WebContents.
+TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
+    WebContents* web_contents) {
+  InfoBarTabHelper* infobar_helper =
+      TabContents::FromWebContents(web_contents)->infobar_tab_helper();
+  for (size_t i = 0; i < infobar_helper->GetInfoBarCount(); i++) {
+    InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
+    if (infobar->AsTranslateInfoBarDelegate())
+      return infobar->AsTranslateInfoBarDelegate();
+  }
+  // No translate infobar.
+  return NULL;
+}
+
 }  // namespace
 
 void TestingAutomationProvider::FindInPage(
@@ -3711,6 +3789,161 @@ void TestingAutomationProvider::IsFindInPageVisible(
   DictionaryValue dict;
   dict.SetBoolean("is_visible", visible);
   reply.SendSuccess(&dict);
+}
+
+// See GetTranslateInfo() in chrome/test/pyautolib/pyauto.py for sample json
+// input and output.
+void TestingAutomationProvider::GetTranslateInfo(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string error_message;
+  TabContents* tab_contents =
+      GetTabContentsFromDict(browser, args, &error_message);
+  if (!tab_contents) {
+    AutomationJSONReply(this, reply_message).SendError(error_message);
+    return;
+  }
+
+  WebContents* web_contents = tab_contents->web_contents();
+  // Get the translate bar if there is one and pass it to the observer.
+  // The observer will check for null and populate the information accordingly.
+  TranslateInfoBarDelegate* translate_bar =
+      GetTranslateInfoBarDelegate(web_contents);
+
+  TabLanguageDeterminedObserver* observer = new TabLanguageDeterminedObserver(
+      this, reply_message, web_contents, translate_bar);
+  // If the language for the page hasn't been loaded yet, then just make
+  // the observer, otherwise call observe directly.
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents)->translate_tab_helper();
+  std::string language = helper->language_state().original_language();
+  if (!language.empty()) {
+    observer->Observe(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+                      content::Source<WebContents>(web_contents),
+                      content::Details<std::string>(&language));
+  }
+}
+
+// See SelectTranslateOption() in chrome/test/pyautolib/pyauto.py for sample
+// json input.
+// Sample json output: {}
+void TestingAutomationProvider::SelectTranslateOption(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  std::string option;
+  std::string error_message;
+  TabContents* tab_contents =
+      GetTabContentsFromDict(browser, args, &error_message);
+  if (!tab_contents) {
+    AutomationJSONReply(this, reply_message).SendError(error_message);
+    return;
+  }
+
+  WebContents* web_contents = tab_contents->web_contents();
+  TranslateInfoBarDelegate* translate_bar =
+      GetTranslateInfoBarDelegate(web_contents);
+  if (!translate_bar) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("There is no translate bar open.");
+    return;
+  }
+
+  if (!args->GetString("option", &option)) {
+    AutomationJSONReply(this, reply_message).SendError("Must include option");
+    return;
+  }
+
+  if (option == "translate_page") {
+    // Make a new notification observer which will send the reply.
+    new PageTranslatedObserver(this, reply_message, web_contents);
+    translate_bar->Translate();
+    return;
+  } else if (option == "set_target_language") {
+    string16 target_language;
+    if (!args->GetString("target_language", &target_language)) {
+       AutomationJSONReply(this, reply_message)
+           .SendError("Must include target_language string.");
+      return;
+    }
+    // Get the target language index based off of the language name.
+    size_t target_language_index = TranslateInfoBarDelegate::kNoIndex;
+    for (size_t i = 0; i < translate_bar->GetLanguageCount(); i++) {
+      if (translate_bar->GetLanguageDisplayableNameAt(i) == target_language) {
+        target_language_index = i;
+        break;
+      }
+    }
+    if (target_language_index == TranslateInfoBarDelegate::kNoIndex) {
+       AutomationJSONReply(this, reply_message)
+           .SendError("Invalid target language string.");
+       return;
+    }
+    // If the page has already been translated it will be translated again to
+    // the new language. The observer will wait until the page has been
+    // translated to reply.
+    if (translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE) {
+      new PageTranslatedObserver(this, reply_message, web_contents);
+      translate_bar->SetTargetLanguage(target_language_index);
+      return;
+    }
+    // Otherwise just send the reply back immediately.
+    translate_bar->SetTargetLanguage(target_language_index);
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetBoolean("translation_success", true);
+    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+    return;
+  } else if (option == "click_always_translate_lang_button") {
+    if (!translate_bar->ShouldShowAlwaysTranslateButton()) {
+      AutomationJSONReply(this, reply_message)
+          .SendError("Always translate button not showing.");
+      return;
+    }
+    // Clicking 'Always Translate' triggers a translation. The observer will
+    // wait until the translation is complete before sending the reply.
+    new PageTranslatedObserver(this, reply_message, web_contents);
+    translate_bar->AlwaysTranslatePageLanguage();
+    return;
+  }
+
+  AutomationJSONReply reply(this, reply_message);
+  if (option == "never_translate_language") {
+    if (translate_bar->IsLanguageBlacklisted()) {
+      reply.SendError("The language was already blacklisted.");
+      return;
+    }
+    translate_bar->ToggleLanguageBlacklist();
+    reply.SendSuccess(NULL);
+  } else if (option == "never_translate_site") {
+    if (translate_bar->IsSiteBlacklisted()) {
+      reply.SendError("The site was already blacklisted.");
+      return;
+    }
+    translate_bar->ToggleSiteBlacklist();
+    reply.SendSuccess(NULL);
+  } else if (option == "toggle_always_translate") {
+    translate_bar->ToggleAlwaysTranslate();
+    reply.SendSuccess(NULL);
+  } else if (option == "revert_translation") {
+    translate_bar->RevertTranslation();
+    reply.SendSuccess(NULL);
+  } else if (option == "click_never_translate_lang_button") {
+    if (!translate_bar->ShouldShowNeverTranslateButton()) {
+      reply.SendError("Always translate button not showing.");
+      return;
+    }
+    translate_bar->NeverTranslatePageLanguage();
+    reply.SendSuccess(NULL);
+  } else if (option == "decline_translation") {
+    // This is the function called when an infobar is dismissed or when the
+    // user clicks the 'Nope' translate button.
+    translate_bar->TranslationDeclined();
+    tab_contents->infobar_tab_helper()->RemoveInfoBar(translate_bar);
+    reply.SendSuccess(NULL);
+  } else {
+    reply.SendError("Invalid string found for option.");
+  }
 }
 
 // Sample json input: { "command": "GetBlockedPopupsInfo",

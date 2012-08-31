@@ -53,6 +53,9 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/translate/page_translated_details.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -1256,6 +1259,104 @@ void MetricEventDurationObserver::Observe(
       content::Details<MetricEventDurationDetails>(details).ptr();
   durations_[metric_event_duration->event_name] =
       metric_event_duration->duration_ms;
+}
+
+PageTranslatedObserver::PageTranslatedObserver(AutomationProvider* automation,
+                                               IPC::Message* reply_message,
+                                               WebContents* web_contents)
+  : automation_(automation->AsWeakPtr()),
+    reply_message_(reply_message) {
+  registrar_.Add(this, chrome::NOTIFICATION_PAGE_TRANSLATED,
+                 content::Source<WebContents>(web_contents));
+}
+
+PageTranslatedObserver::~PageTranslatedObserver() {}
+
+void PageTranslatedObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  DCHECK(type == chrome::NOTIFICATION_PAGE_TRANSLATED);
+  AutomationJSONReply reply(automation_, reply_message_.release());
+
+  PageTranslatedDetails* translated_details =
+      content::Details<PageTranslatedDetails>(details).ptr();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean(
+      "translation_success",
+      translated_details->error_type == TranslateErrors::NONE);
+  reply.SendSuccess(return_value.get());
+  delete this;
+}
+
+TabLanguageDeterminedObserver::TabLanguageDeterminedObserver(
+    AutomationProvider* automation, IPC::Message* reply_message,
+    WebContents* web_contents, TranslateInfoBarDelegate* translate_bar)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      web_contents_(web_contents),
+      translate_bar_(translate_bar) {
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+                 content::Source<WebContents>(web_contents_));
+}
+
+TabLanguageDeterminedObserver::~TabLanguageDeterminedObserver() {}
+
+void TabLanguageDeterminedObserver::Observe(
+    int type, const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED);
+
+  if (!automation_) {
+    delete this;
+    return;
+  }
+
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents_)->translate_tab_helper();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetBoolean("page_translated",
+                           helper->language_state().IsPageTranslated());
+  return_value->SetBoolean(
+      "can_translate_page", TranslatePrefs::CanTranslate(
+          automation_->profile()->GetPrefs(),
+          helper->language_state().original_language(),
+          web_contents_->GetURL()));
+  return_value->SetString("original_language",
+                          helper->language_state().original_language());
+  if (translate_bar_) {
+    DictionaryValue* bar_info = new DictionaryValue;
+    std::map<TranslateInfoBarDelegate::Type, std::string> type_to_string;
+    type_to_string[TranslateInfoBarDelegate::BEFORE_TRANSLATE] =
+        "BEFORE_TRANSLATE";
+    type_to_string[TranslateInfoBarDelegate::TRANSLATING] =
+        "TRANSLATING";
+    type_to_string[TranslateInfoBarDelegate::AFTER_TRANSLATE] =
+        "AFTER_TRANSLATE";
+    type_to_string[TranslateInfoBarDelegate::TRANSLATION_ERROR] =
+        "TRANSLATION_ERROR";
+
+    if (translate_bar_->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE) {
+      bar_info->SetBoolean("always_translate_lang_button_showing",
+                           translate_bar_->ShouldShowAlwaysTranslateButton());
+      bar_info->SetBoolean("never_translate_lang_button_showing",
+                           translate_bar_->ShouldShowNeverTranslateButton());
+    }
+    bar_info->SetString("bar_state", type_to_string[translate_bar_->type()]);
+    bar_info->SetString("target_lang_code",
+                        translate_bar_->GetTargetLanguageCode());
+    bar_info->SetString("original_lang_code",
+                        translate_bar_->GetOriginalLanguageCode());
+    return_value->Set("translate_bar", bar_info);
+  }
+  AutomationJSONReply(automation_, reply_message_.release())
+      .SendSuccess(return_value.get());
+  delete this;
 }
 
 InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,

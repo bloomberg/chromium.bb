@@ -113,6 +113,8 @@
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
+      # crbug.com/95140
+      '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
       # crbug.com/124913
       '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/124280
@@ -417,6 +419,7 @@
       'about_plugins_ui.ChromeAboutPluginsUITest',
       'media.media_basic_playback',
       'nacl_sdk',
+      'translate',
       'youtube',
 
       # ===========================
@@ -433,6 +436,10 @@
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # crbug.com/132285
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
+      # crbug.com/129802
+      '-translate.TranslateTest.testAlwaysTranslateLanguageButton',
+      '-translate.TranslateTest.testChangeTargetLanguageAlwaysTranslate',
+      '-translate.TranslateTest.testToggleTranslateOption',
     ],
 
     'win': [
@@ -459,6 +466,8 @@
       '-gpu.GpuTest.test2dCanvas',
       # crbug.com/125424
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
+      # crbug.com/115646
+      '-translate.TranslateTest.testSeveralLanguages',
       # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
     ],
@@ -515,6 +524,14 @@
       # ===========================
       # No NaCl support on ChromeOS.
       '-nacl_sdk',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # Session restore not working with PyAuto.  crosbug.com/12648
+      '-translate.TranslateTest.testSessionRestore',
+      # Deal with i18n chars.  crosbug.com/12639
+      '-translate.TranslateTest.testDownloadsNotTranslated',
     ],
   },
 
@@ -766,6 +783,8 @@
       '-omnibox',
       '-special_tabs',
       '-youtube.YoutubeTest.testPlayerStatus',
+      '-translate.TranslateTest.testSeveralLanguages',
+      '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       '-ntp.NTPTest.testLaunchAppFullScreen',
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
       '-policy_prefs_ui.PolicyPrefsUITest.testNoUserPoliciesNoBanner',

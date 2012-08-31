@@ -64,6 +64,7 @@ class Notification;
 class Profile;
 class SavePackage;
 class TabContents;
+class TranslateInfoBarDelegate;
 
 namespace automation {
 class Error;
@@ -648,6 +649,49 @@ class MetricEventDurationObserver : public content::NotificationObserver {
   EventDurationMap durations_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricEventDurationObserver);
+};
+
+class PageTranslatedObserver : public content::NotificationObserver {
+ public:
+  PageTranslatedObserver(AutomationProvider* automation,
+                         IPC::Message* reply_message,
+                         content::WebContents* web_contents);
+  virtual ~PageTranslatedObserver();
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageTranslatedObserver);
+};
+
+class TabLanguageDeterminedObserver : public content::NotificationObserver {
+ public:
+  TabLanguageDeterminedObserver(AutomationProvider* automation,
+                                IPC::Message* reply_message,
+                                content::WebContents* web_contents,
+                                TranslateInfoBarDelegate* translate_bar);
+  virtual ~TabLanguageDeterminedObserver();
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  content::WebContents* web_contents_;
+  TranslateInfoBarDelegate* translate_bar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabLanguageDeterminedObserver);
 };
 
 class InfoBarCountObserver : public content::NotificationObserver {

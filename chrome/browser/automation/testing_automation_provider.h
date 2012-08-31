@@ -332,6 +332,12 @@ class TestingAutomationProvider : public AutomationProvider,
                       base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
+  // Add an item to the history service.
+  // Uses the JSON interface for input/output.
+  void AddHistoryItem(Browser* browser,
+                      base::DictionaryValue* args,
+                      IPC::Message* reply_message);
+
   // Invoke loading of template url model.
   // Uses the JSON interface for input/output.
   void LoadSearchEngineInfo(Browser* browser,
@@ -607,6 +613,18 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "is_visible": true }
   void IsFindInPageVisible(base::DictionaryValue* args,
                            IPC::Message* reply_message);
+
+  // Returns information about translation for a given tab. Includes
+  // information about the translate bar if it is showing.
+  void GetTranslateInfo(Browser* browser,
+                        base::DictionaryValue* args,
+                        IPC::Message* reply_message);
+
+  // Takes the specified action on the translate bar.
+  // Uses the JSON interface for input/output.
+  void SelectTranslateOption(Browser* browser,
+                             base::DictionaryValue* args,
+                             IPC::Message* reply_message);
 
   // Signs in to sync using the given username and password.
   // Uses the JSON interface for input/output.
