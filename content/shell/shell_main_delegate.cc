@@ -15,6 +15,8 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_renderer_client.h"
 #include "content/shell/shell_switches.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/http/http_stream_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -87,6 +89,10 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAllowFileAccessFromFiles);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kForceCompositingMode);
+    net::HttpStreamFactory::set_ignore_certificate_errors(true);
+    net::CookieMonster::EnableFileScheme();
   }
   SetContentClient(&content_client_);
   return false;
