@@ -380,7 +380,7 @@
         <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="common/browser_omnibox_border.png" />
       </if>
       <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="mac/keyword_hint_tab.png" />
       </if>
       <if expr="not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="common/keyword_hint_tab.png" />
