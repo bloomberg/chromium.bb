@@ -419,8 +419,6 @@ cr.define('print_preview', function() {
      * @private
      */
     openSystemPrintDialog_: function() {
-      assert(this.uiState_ == PrintPreview.UiState_.READY,
-             'Opening system dialog when not in ready state: ' + this.uiState_);
       setIsVisible($('system-dialog-throbber'), true);
       this.setIsEnabled_(false);
       this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
@@ -697,6 +695,7 @@ cr.define('print_preview', function() {
      */
     onSettingsInvalid_: function() {
       this.uiState_ = PrintPreview.UiState_.ERROR;
+      console.error('Invalid settings error reported from native layer');
       this.previewArea_.showCustomMessage(
           localStrings.getString('invalidPrinterSettings'));
     },
