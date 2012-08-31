@@ -3396,18 +3396,18 @@ bool Binary4RegisterDualOpTesterop1_24To20Is11000_op2_7To5Is000_NotRd_15To12Is11
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1101x_op2_7To5Isx10
-    : public Binary2RegisterBitRangeNotRnIsPcTester {
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1101x_op2_7To5Isx10RegsNotPc
+    : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc {
  public:
-  Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1101x_op2_7To5Isx10(const NamedClassDecoder& decoder)
-    : Binary2RegisterBitRangeNotRnIsPcTester(decoder) {}
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1101x_op2_7To5Isx10RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1101x_op2_7To5Isx10
+bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1101x_op2_7To5Isx10RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3417,22 +3417,22 @@ bool Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1101x_op2_7To5Isx10
   if ((inst.Bits() & 0x00000060) != 0x00000040 /* op2(7:5) == ~x10 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary2RegisterBitRangeNotRnIsPcTester::
+  return Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary1RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111
-    : public Unary1RegisterBitRangeTester {
+class Unary1RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc
+    : public Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc {
  public:
-  Unary1RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111(const NamedClassDecoder& decoder)
-    : Unary1RegisterBitRangeTester(decoder) {}
+  Unary1RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary1RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111
+bool Unary1RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3443,22 +3443,22 @@ bool Unary1RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111
   if ((inst.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0) == ~1111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary1RegisterBitRangeTester::
+  return Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary2RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111
-    : public Binary2RegisterBitRangeTester {
+class Binary2RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc
+    : public Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc {
  public:
-  Binary2RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111(const NamedClassDecoder& decoder)
-    : Binary2RegisterBitRangeTester(decoder) {}
+  Binary2RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary2RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111
+bool Binary2RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3469,22 +3469,22 @@ bool Binary2RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is11
   if ((inst.Bits() & 0x0000000F) == 0x0000000F /* Rn(3:0) == 1111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary2RegisterBitRangeTester::
+  return Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1111x_op2_7To5Isx10
-    : public Binary2RegisterBitRangeNotRnIsPcTester {
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1111x_op2_7To5Isx10RegsNotPc
+    : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc {
  public:
-  Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1111x_op2_7To5Isx10(const NamedClassDecoder& decoder)
-    : Binary2RegisterBitRangeNotRnIsPcTester(decoder) {}
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1111x_op2_7To5Isx10RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1111x_op2_7To5Isx10
+bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1111x_op2_7To5Isx10RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3494,7 +3494,32 @@ bool Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1111x_op2_7To5Isx10
   if ((inst.Bits() & 0x00000060) != 0x00000040 /* op2(7:5) == ~x10 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary2RegisterBitRangeNotRnIsPcTester::
+  return Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class RoadblockTesterop1_24To20Is11111_op2_7To5Is111
+    : public RoadblockTester {
+ public:
+  RoadblockTesterop1_24To20Is11111_op2_7To5Is111(const NamedClassDecoder& decoder)
+    : RoadblockTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool RoadblockTesterop1_24To20Is11111_op2_7To5Is111
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x01F00000) != 0x01F00000 /* op1(24:20) == ~11111 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x000000E0 /* op2(7:5) == ~111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return RoadblockTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -3680,18 +3705,18 @@ bool PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0
       PassesParsePreconditions(inst, decoder);
 }
 
-class PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
-    : public PreloadRegisterPairOpRAndRnNotPcTester {
+class PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
+    : public PreloadRegisterPairOpWAndRnNotPcTester {
  public:
-  PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpRAndRnNotPcTester(decoder) {}
+  PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
+bool PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3701,22 +3726,22 @@ bool PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
   if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4) == ~xxx0 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpRAndRnNotPcTester::
+  return PreloadRegisterPairOpWAndRnNotPcTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-class PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
-    : public PreloadRegisterPairOpRAndRnNotPcTester {
+class PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
+    : public PreloadRegisterPairOpWAndRnNotPcTester {
  public:
-  PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpRAndRnNotPcTester(decoder) {}
+  PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
+bool PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -3726,7 +3751,7 @@ bool PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
   if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4) == ~xxx0 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpRAndRnNotPcTester::
+  return PreloadRegisterPairOpWAndRnNotPcTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -5011,18 +5036,95 @@ bool Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Isxx0RegsNotPc
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0
-    : public Unary2RegisterSatImmedShiftedOpTester {
+class Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+    : public Binary3RegisterImmedShiftedOpTesterRegsNotPc {
  public:
-  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0(const NamedClassDecoder& decoder)
-    : Unary2RegisterSatImmedShiftedOpTester(decoder) {}
+  Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterImmedShiftedOpTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0
+bool Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20) == ~000 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Binary3RegisterImmedShiftedOpTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc
+    : public Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc {
+ public:
+  Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20) == ~000 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is000_op2_7To5Is101RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is000_op2_7To5Is101RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is000_op2_7To5Is101RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20) == ~000 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5) == ~101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0RegsNotPc
+    : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
+ public:
+  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterSatImmedShiftedOpTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5032,22 +5134,253 @@ bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0
   if ((inst.Bits() & 0x00000020) != 0x00000000 /* op2(7:5) == ~xx0 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterSatImmedShiftedOpTester::
+  return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0
-    : public Unary2RegisterSatImmedShiftedOpTester {
+class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001RegsNotPc
+    : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
  public:
-  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0(const NamedClassDecoder& decoder)
-    : Unary2RegisterSatImmedShiftedOpTester(decoder) {}
+  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterSatImmedShiftedOpTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0
+bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20) == ~010 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20) == ~010 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc
+    : public Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc {
+ public:
+  Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20) == ~010 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
+ public:
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
+ public:
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
+ public:
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5) == ~101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+ public:
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00400000 /* op1(22:20) == ~100 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
+ public:
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00700000) != 0x00400000 /* op1(22:20) == ~100 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0RegsNotPc
+    : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
+ public:
+  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterSatImmedShiftedOpTesterRegsNotPc(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5057,330 +5390,22 @@ bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0
   if ((inst.Bits() & 0x00000020) != 0x00000000 /* op2(7:5) == ~xx0 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterSatImmedShiftedOpTester::
+  return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc
-    : public Binary3RegisterImmedShiftedOpTesterNotRnIsPcAndRegsNotPc {
+class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001RegsNotPc
+    : public Unary2RegisterSatImmedShiftedOpTesterRegsNotPc {
  public:
-  Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRnIsPcAndRegsNotPc(decoder) {}
+  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterSatImmedShiftedOpTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20) == ~000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRnIsPcAndRegsNotPc::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111
-    : public Unary2RegisterImmedShiftedOpRegsNotPcTester {
- public:
-  Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpRegsNotPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20) == ~000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpRegsNotPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Binary3RegisterOpAltBTesterop1_22To20Is000_op2_7To5Is101RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
- public:
-  Binary3RegisterOpAltBTesterop1_22To20Is000_op2_7To5Is101RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Binary3RegisterOpAltBTesterop1_22To20Is000_op2_7To5Is101RegsNotPc
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20) == ~000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5) == ~101 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001
-    : public Unary2RegisterSatImmedShiftedOpTester {
- public:
-  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001(const NamedClassDecoder& decoder)
-    : Unary2RegisterSatImmedShiftedOpTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20) == ~010 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterSatImmedShiftedOpTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Binary3RegisterOpAltBTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc
-    : public Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc {
- public:
-  Binary3RegisterOpAltBTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Binary3RegisterOpAltBTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20) == ~010 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111
-    : public Unary2RegisterImmedShiftedOpRegsNotPcTester {
- public:
-  Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpRegsNotPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20) == ~010 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpRegsNotPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001
-    : public Unary2RegisterOpNotRmIsPcTester {
- public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc {
- public:
-  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111
-    : public Unary2RegisterOpNotRmIsPcTester {
- public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101
-    : public Unary2RegisterOpNotRmIsPcTester {
- public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20) == ~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5) == ~101 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc {
- public:
-  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00400000 /* op1(22:20) == ~100 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111
-    : public Unary2RegisterOpNotRmIsPcTester {
- public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00400000 /* op1(22:20) == ~100 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-class Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001
-    : public Unary2RegisterSatImmedShiftedOpTester {
- public:
-  Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001(const NamedClassDecoder& decoder)
-    : Unary2RegisterSatImmedShiftedOpTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
-};
-
-bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001
+bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5390,22 +5415,22 @@ bool Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001
   if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterSatImmedShiftedOpTester::
+  return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5416,22 +5441,22 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_
   if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111
-    : public Unary2RegisterOpNotRmIsPcTester {
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5442,22 +5467,22 @@ bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111
   if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001
-    : public Unary2RegisterOpNotRmIsPcTester {
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5467,22 +5492,22 @@ bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001
   if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5493,22 +5518,22 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_
   if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111
-    : public Unary2RegisterOpNotRmIsPcTester {
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5519,22 +5544,22 @@ bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111
   if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101
-    : public Unary2RegisterOpNotRmIsPcTester {
+class Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101RegsNotPc
+    : public Unary2RegisterOpNotRmIsPcTesterRegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpNotRmIsPcTester(decoder) {}
+  Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101RegsNotPc(const NamedClassDecoder& decoder)
+    : Unary2RegisterOpNotRmIsPcTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101
+bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5544,22 +5569,22 @@ bool Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101
   if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5) == ~101 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpNotRmIsPcTester::
+  return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is000RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is000RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is000RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is000RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is000RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is000RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5569,22 +5594,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is000RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000000 /* op2(7:5) == ~000 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is001RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is001RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is001RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is001RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5594,22 +5619,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is001RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is010RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is010RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is010RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is010RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is010RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is010RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5619,22 +5644,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is010RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000040 /* op2(7:5) == ~010 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is011RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is011RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is011RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is011RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is011RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is011RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5644,22 +5669,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is011RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is100RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is100RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is100RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is100RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is100RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is100RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5669,22 +5694,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is100RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000080 /* op2(7:5) == ~100 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is111RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is111RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is111RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5694,22 +5719,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is111RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x000000E0 /* op2(7:5) == ~111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is000RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is000RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is000RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is000RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is000RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is000RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5719,22 +5744,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is000RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000000 /* op2(7:5) == ~000 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is001RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is001RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is001RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is001RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is001RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5744,22 +5769,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is001RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5) == ~001 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is010RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is010RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is010RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is010RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is010RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is010RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5769,22 +5794,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is010RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000040 /* op2(7:5) == ~010 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is011RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is011RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is011RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is011RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is011RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is011RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5794,22 +5819,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is011RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5) == ~011 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is100RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is100RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is100RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is100RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is100RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is100RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5819,22 +5844,22 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is100RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x00000080 /* op2(7:5) == ~100 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is111RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is111RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is111RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is111RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is111RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is111RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -5844,7 +5869,7 @@ bool Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is111RegsNotPc
   if ((inst.Bits() & 0x000000E0) != 0x000000E0 /* op2(7:5) == ~111 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -5998,18 +6023,18 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is11_op2_7To5Is111RegsNot
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop_22To21Is00RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is00RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop_22To21Is00RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is00RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop_22To21Is00RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is00RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -6018,22 +6043,22 @@ bool Binary3RegisterOpAltBTesterop_22To21Is00RegsNotPc
   if ((inst.Bits() & 0x00600000) != 0x00000000 /* op(22:21) == ~00 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop_22To21Is01RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is01RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop_22To21Is01RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is01RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop_22To21Is01RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is01RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -6042,22 +6067,22 @@ bool Binary3RegisterOpAltBTesterop_22To21Is01RegsNotPc
   if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21) == ~01 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop_22To21Is10RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is10RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop_22To21Is10RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is10RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop_22To21Is10RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is10RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -6066,22 +6091,22 @@ bool Binary3RegisterOpAltBTesterop_22To21Is10RegsNotPc
   if ((inst.Bits() & 0x00600000) != 0x00400000 /* op(22:21) == ~10 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
-class Binary3RegisterOpAltBTesterop_22To21Is11RegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is11RegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  Binary3RegisterOpAltBTesterop_22To21Is11RegsNotPc(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
+  Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is11RegsNotPc(const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
 };
 
-bool Binary3RegisterOpAltBTesterop_22To21Is11RegsNotPc
+bool Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is11RegsNotPc
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -6090,7 +6115,7 @@ bool Binary3RegisterOpAltBTesterop_22To21Is11RegsNotPc
   if ((inst.Bits() & 0x00600000) != 0x00600000 /* op(22:21) == ~11 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -8224,39 +8249,48 @@ class Binary4RegisterDualOpTester_op1_24To20Is11000_op2_7To5Is000_NotRd_15To12Is
   {}
 };
 
-class Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1101x_op2_7To5Isx10_Sbfx_Rule_154_A1_P308
-    : public Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1101x_op2_7To5Isx10 {
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1101x_op2_7To5Isx10RegsNotPc_Sbfx_Rule_154_A1_P308
+    : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1101x_op2_7To5Isx10RegsNotPc {
  public:
-  Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1101x_op2_7To5Isx10_Sbfx_Rule_154_A1_P308()
-    : Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1101x_op2_7To5Isx10(
-      state_.Binary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308_instance_)
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1101x_op2_7To5Isx10RegsNotPc_Sbfx_Rule_154_A1_P308()
+    : Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1101x_op2_7To5Isx10RegsNotPc(
+      state_.Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_Sbfx_Rule_154_A1_P308_instance_)
   {}
 };
 
-class Unary1RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111_Bfc_17_A1_P46
-    : public Unary1RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111 {
+class Unary1RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc_Bfc_17_A1_P46
+    : public Unary1RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc {
  public:
-  Unary1RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111_Bfc_17_A1_P46()
-    : Unary1RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111(
-      state_.Unary1RegisterBitRange_Bfc_17_A1_P46_instance_)
+  Unary1RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc_Bfc_17_A1_P46()
+    : Unary1RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc(
+      state_.Unary1RegisterBitRangeMsbGeLsb_Bfc_17_A1_P46_instance_)
   {}
 };
 
-class Binary2RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111_Bfi_Rule_18_A1_P48
-    : public Binary2RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111 {
+class Binary2RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc_Bfi_Rule_18_A1_P48
+    : public Binary2RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc {
  public:
-  Binary2RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111_Bfi_Rule_18_A1_P48()
-    : Binary2RegisterBitRangeTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111(
-      state_.Binary2RegisterBitRange_Bfi_Rule_18_A1_P48_instance_)
+  Binary2RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc_Bfi_Rule_18_A1_P48()
+    : Binary2RegisterBitRangeMsbGeLsbTesterop1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc(
+      state_.Binary2RegisterBitRangeMsbGeLsb_Bfi_Rule_18_A1_P48_instance_)
   {}
 };
 
-class Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1111x_op2_7To5Isx10_Ubfx_Rule_236_A1_P466
-    : public Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1111x_op2_7To5Isx10 {
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1111x_op2_7To5Isx10RegsNotPc_Ubfx_Rule_236_A1_P466
+    : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1111x_op2_7To5Isx10RegsNotPc {
  public:
-  Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1111x_op2_7To5Isx10_Ubfx_Rule_236_A1_P466()
-    : Binary2RegisterBitRangeNotRnIsPcTesterop1_24To20Is1111x_op2_7To5Isx10(
-      state_.Binary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466_instance_)
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1111x_op2_7To5Isx10RegsNotPc_Ubfx_Rule_236_A1_P466()
+    : Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterop1_24To20Is1111x_op2_7To5Isx10RegsNotPc(
+      state_.Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_Ubfx_Rule_236_A1_P466_instance_)
+  {}
+};
+
+class RoadblockTester_op1_24To20Is11111_op2_7To5Is111_Udf_Rule_A1
+    : public RoadblockTesterop1_24To20Is11111_op2_7To5Is111 {
+ public:
+  RoadblockTester_op1_24To20Is11111_op2_7To5Is111_Udf_Rule_A1()
+    : RoadblockTesterop1_24To20Is11111_op2_7To5Is111(
+      state_.Roadblock_Udf_Rule_A1_instance_)
   {}
 };
 
@@ -8323,21 +8357,21 @@ class PreloadRegisterPairOpTester_op1_26To20Is110x101_op2_7To4Isxxx0_Pli_Rule_12
   {}
 };
 
-class PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240
-    : public PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0 {
+class PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240
+    : public PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0 {
  public:
-  PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240()
-    : PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0(
-      state_.PreloadRegisterPairOpRAndRnNotPc_Pldw_Rule_119_A1_P240_instance_)
+  PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240()
+    : PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0(
+      state_.PreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240_instance_)
   {}
 };
 
-class PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240
-    : public PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0 {
+class PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240
+    : public PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0 {
  public:
-  PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240()
-    : PreloadRegisterPairOpRAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0(
-      state_.PreloadRegisterPairOpRAndRnNotPc_Pld_Rule_119_A1_P240_instance_)
+  PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240()
+    : PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0(
+      state_.PreloadRegisterPairOpWAndRnNotPc_Pld_Rule_119_A1_P240_instance_)
   {}
 };
 
@@ -8800,300 +8834,300 @@ class Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Isxx0
   {}
 };
 
-class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0_Ssat_Rule_183_A1_P362
-    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0 {
+class Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab16_Rule_221_A1_P436
+    : public Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0_Ssat_Rule_183_A1_P362()
-    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0(
-      state_.Unary2RegisterSatImmedShiftedOp_Ssat_Rule_183_A1_P362_instance_)
-  {}
-};
-
-class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0_Usat_Rule_255_A1_P504
-    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0 {
- public:
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0_Usat_Rule_255_A1_P504()
-    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0(
-      state_.Unary2RegisterSatImmedShiftedOp_Usat_Rule_255_A1_P504_instance_)
-  {}
-};
-
-class Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab16_Rule_221_A1_P436
-    : public Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc {
- public:
-  Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab16_Rule_221_A1_P436()
-    : Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc(
+  Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab16_Rule_221_A1_P436()
+    : Binary3RegisterImmedShiftedOpTesterop1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(
       state_.Binary3RegisterImmedShiftedOpRegsNotPc_Sxtab16_Rule_221_A1_P436_instance_)
   {}
 };
 
-class Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111_Sxtb16_Rule_224_A1_P442
-    : public Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111 {
+class Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb16_Rule_224_A1_P442
+    : public Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111_Sxtb16_Rule_224_A1_P442()
-    : Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111(
+  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb16_Rule_224_A1_P442()
+    : Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc(
       state_.Unary2RegisterImmedShiftedOpRegsNotPc_Sxtb16_Rule_224_A1_P442_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312
-    : public Binary3RegisterOpAltBTesterop1_22To20Is000_op2_7To5Is101RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is000_op2_7To5Is101RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312()
-    : Binary3RegisterOpAltBTesterop1_22To20Is000_op2_7To5Is101RegsNotPc(
-      state_.Binary3RegisterOpAltB_Sel_Rule_156_A1_P312_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is000_op2_7To5Is101RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Sel_Rule_156_A1_P312_instance_)
   {}
 };
 
-class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001_Ssat16_Rule_184_A1_P364
-    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001 {
+class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0RegsNotPc_Ssat_Rule_183_A1_P362
+    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0RegsNotPc {
  public:
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001_Ssat16_Rule_184_A1_P364()
-    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001(
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0RegsNotPc_Ssat_Rule_183_A1_P362()
+    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is01x_op2_7To5Isxx0RegsNotPc(
+      state_.Unary2RegisterSatImmedShiftedOp_Ssat_Rule_183_A1_P362_instance_)
+  {}
+};
+
+class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001RegsNotPc_Ssat16_Rule_184_A1_P364
+    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001RegsNotPc {
+ public:
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001RegsNotPc_Ssat16_Rule_184_A1_P364()
+    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is010_op2_7To5Is001RegsNotPc(
       state_.Unary2RegisterSatImmedShiftedOp_Ssat16_Rule_184_A1_P364_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab_Rule_220_A1_P434
-    : public Binary3RegisterOpAltBTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab_Rule_220_A1_P434
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab_Rule_220_A1_P434()
-    : Binary3RegisterOpAltBTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc(
-      state_.Binary3RegisterOpAltB_Sxtab_Rule_220_A1_P434_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab_Rule_220_A1_P434()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Sxtab_Rule_220_A1_P434_instance_)
   {}
 };
 
-class Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111_Sxtb_Rule_223_A1_P440
-    : public Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111 {
+class Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb_Rule_223_A1_P440
+    : public Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111_Sxtb_Rule_223_A1_P440()
-    : Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111(
+  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb_Rule_223_A1_P440()
+    : Unary2RegisterImmedShiftedOpRegsNotPcTesterop1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc(
       state_.Unary2RegisterImmedShiftedOpRegsNotPc_Sxtb_Rule_223_A1_P440_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001_Rev_Rule_135_A1_P272
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001RegsNotPc_Rev_Rule_135_A1_P272
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001_Rev_Rule_135_A1_P272()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001(
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001RegsNotPc_Rev_Rule_135_A1_P272()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is001RegsNotPc(
       state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Rev_Rule_135_A1_P272_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Sxtah_Rule_222_A1_P438
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtah_Rule_222_A1_P438
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc {
  public:
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Sxtah_Rule_222_A1_P438()
-    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtah_Rule_222_A1_P438()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(
       state_.Binary3RegisterOpAltBNoCondUpdates_Sxtah_Rule_222_A1_P438_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111_Sxth_Rule_225_A1_P444
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxth_Rule_225_A1_P444
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111_Sxth_Rule_225_A1_P444()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111(
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxth_Rule_225_A1_P444()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc(
       state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Sxth_Rule_225_A1_P444_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101_Rev16_Rule_136_A1_P274
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101RegsNotPc_Rev16_Rule_136_A1_P274
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101_Rev16_Rule_136_A1_P274()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101(
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101RegsNotPc_Rev16_Rule_136_A1_P274()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is011_op2_7To5Is101RegsNotPc(
       state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Rev16_Rule_136_A1_P274_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P516
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab16_Rule_262_A1_P516
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc {
  public:
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P516()
-    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uxtah_Rule_262_A1_P516_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab16_Rule_262_A1_P516()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Uxtab16_Rule_262_A1_P516_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111_Uxtb16_Rule_264_A1_P522
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb16_Rule_264_A1_P522
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111_Uxtb16_Rule_264_A1_P522()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111(
-      state_.Unary2RegisterOpNotRmIsPc_Uxtb16_Rule_264_A1_P522_instance_)
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb16_Rule_264_A1_P522()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc(
+      state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Uxtb16_Rule_264_A1_P522_instance_)
   {}
 };
 
-class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001_Usat16_Rule_256_A1_P506
-    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001 {
+class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0RegsNotPc_Usat_Rule_255_A1_P504
+    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0RegsNotPc {
  public:
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001_Usat16_Rule_256_A1_P506()
-    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001(
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0RegsNotPc_Usat_Rule_255_A1_P504()
+    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is11x_op2_7To5Isxx0RegsNotPc(
+      state_.Unary2RegisterSatImmedShiftedOp_Usat_Rule_255_A1_P504_instance_)
+  {}
+};
+
+class Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001RegsNotPc_Usat16_Rule_256_A1_P506
+    : public Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001RegsNotPc {
+ public:
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001RegsNotPc_Usat16_Rule_256_A1_P506()
+    : Unary2RegisterSatImmedShiftedOpTesterop1_22To20Is110_op2_7To5Is001RegsNotPc(
       state_.Unary2RegisterSatImmedShiftedOp_Usat16_Rule_256_A1_P506_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtab_Rule_260_A1_P514
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab_Rule_260_A1_P514
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc {
  public:
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtab_Rule_260_A1_P514()
-    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab_Rule_260_A1_P514()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(
       state_.Binary3RegisterOpAltBNoCondUpdates_Uxtab_Rule_260_A1_P514_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111_Uxtb_Rule_263_A1_P520
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb_Rule_263_A1_P520
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111_Uxtb_Rule_263_A1_P520()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111(
-      state_.Unary2RegisterOpNotRmIsPc_Uxtb_Rule_263_A1_P520_instance_)
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb_Rule_263_A1_P520()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc(
+      state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Uxtb_Rule_263_A1_P520_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is001_Rbit_Rule_134_A1_P270
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is001RegsNotPc_Rbit_Rule_134_A1_P270
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is001_Rbit_Rule_134_A1_P270()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001(
-      state_.Unary2RegisterOpNotRmIsPc_Rbit_Rule_134_A1_P270_instance_)
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is001RegsNotPc_Rbit_Rule_134_A1_P270()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is001RegsNotPc(
+      state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Rbit_Rule_134_A1_P270_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P518
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtah_Rule_262_A1_P518
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc {
  public:
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P518()
-    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc(
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtah_Rule_262_A1_P518()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc(
       state_.Binary3RegisterOpAltBNoCondUpdates_Uxtah_Rule_262_A1_P518_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111_Uxth_Rule_265_A1_P524
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxth_Rule_265_A1_P524
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111_Uxth_Rule_265_A1_P524()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111(
-      state_.Unary2RegisterOpNotRmIsPc_Uxth_Rule_265_A1_P524_instance_)
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxth_Rule_265_A1_P524()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc(
+      state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Uxth_Rule_265_A1_P524_instance_)
   {}
 };
 
-class Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is101_Revsh_Rule_137_A1_P276
-    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101 {
+class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is101RegsNotPc_Revsh_Rule_137_A1_P276
+    : public Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101RegsNotPc {
  public:
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is101_Revsh_Rule_137_A1_P276()
-    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101(
-      state_.Unary2RegisterOpNotRmIsPc_Revsh_Rule_137_A1_P276_instance_)
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is101RegsNotPc_Revsh_Rule_137_A1_P276()
+    : Unary2RegisterOpNotRmIsPcTesterop1_22To20Is111_op2_7To5Is101RegsNotPc(
+      state_.Unary2RegisterOpNotRmIsPcNoCondUpdates_Revsh_Rule_137_A1_P276_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296
-    : public Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is000RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is000RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296()
-    : Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is000RegsNotPc(
-      state_.Binary3RegisterOpAltB_Sadd16_Rule_148_A1_P296_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is000RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Sadd16_Rule_148_A1_P296_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300
-    : public Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is001RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is001RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300()
-    : Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is001RegsNotPc(
-      state_.Binary3RegisterOpAltB_Sasx_Rule_150_A1_P300_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is001RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Sasx_Rule_150_A1_P300_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366
-    : public Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is010RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is010RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366()
-    : Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is010RegsNotPc(
-      state_.Binary3RegisterOpAltB_Ssax_Rule_185_A1_P366_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is010RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Ssax_Rule_185_A1_P366_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368
-    : public Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is011RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is011RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368()
-    : Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is011RegsNotPc(
-      state_.Binary3RegisterOpAltB_Ssub16_Rule_186_A1_P368_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is011RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Ssub16_Rule_186_A1_P368_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Ssad8_Rule_149_A1_P298
-    : public Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is100RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Sadd8_Rule_149_A1_P298
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is100RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Ssad8_Rule_149_A1_P298()
-    : Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is100RegsNotPc(
-      state_.Binary3RegisterOpAltB_Ssad8_Rule_149_A1_P298_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Sadd8_Rule_149_A1_P298()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is100RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Sadd8_Rule_149_A1_P298_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370
-    : public Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is111RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is111RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370()
-    : Binary3RegisterOpAltBTesterop1_21To20Is01_op2_7To5Is111RegsNotPc(
-      state_.Binary3RegisterOpAltB_Ssub8_Rule_187_A1_P370_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is01_op2_7To5Is111RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Ssub8_Rule_187_A1_P370_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252
-    : public Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is000RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is000RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252()
-    : Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is000RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qadd16_Rule_125_A1_P252_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is000RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qadd16_Rule_125_A1_P252_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256
-    : public Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is001RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is001RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256()
-    : Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is001RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qasx_Rule_127_A1_P256_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is001RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qasx_Rule_127_A1_P256_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262
-    : public Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is010RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is010RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262()
-    : Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is010RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qsax_Rule_130_A1_P262_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is010RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qsax_Rule_130_A1_P262_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266
-    : public Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is011RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is011RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266()
-    : Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is011RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qsub16_Rule_132_A1_P266_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is011RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qsub16_Rule_132_A1_P266_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254
-    : public Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is100RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is100RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254()
-    : Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is100RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qadd8_Rule_126_A1_P254_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is100RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qadd8_Rule_126_A1_P254_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268
-    : public Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is111RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is111RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268()
-    : Binary3RegisterOpAltBTesterop1_21To20Is10_op2_7To5Is111RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qsub8_Rule_133_A1_P268_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop1_21To20Is10_op2_7To5Is111RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qsub8_Rule_133_A1_P268_instance_)
   {}
 };
 
@@ -9151,39 +9185,39 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is11_op2_7To5Is111RegsN
   {}
 };
 
-class Binary3RegisterOpAltBTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250
-    : public Binary3RegisterOpAltBTesterop_22To21Is00RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is00RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250()
-    : Binary3RegisterOpAltBTesterop_22To21Is00RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qadd_Rule_124_A1_P250_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is00RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qadd_Rule_124_A1_P250_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264
-    : public Binary3RegisterOpAltBTesterop_22To21Is01RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is01RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264()
-    : Binary3RegisterOpAltBTesterop_22To21Is01RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qsub_Rule_131_A1_P264_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is01RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qsub_Rule_131_A1_P264_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258
-    : public Binary3RegisterOpAltBTesterop_22To21Is10RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is10RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258()
-    : Binary3RegisterOpAltBTesterop_22To21Is10RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qdadd_Rule_128_A1_P258_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is10RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qdadd_Rule_128_A1_P258_instance_)
   {}
 };
 
-class Binary3RegisterOpAltBTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260
-    : public Binary3RegisterOpAltBTesterop_22To21Is11RegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is11RegsNotPc {
  public:
-  Binary3RegisterOpAltBTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260()
-    : Binary3RegisterOpAltBTesterop_22To21Is11RegsNotPc(
-      state_.Binary3RegisterOpAltB_Qdsub_Rule_129_A1_P260_instance_)
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260()
+    : Binary3RegisterOpAltBNoCondUpdatesTesterop_22To21Is11RegsNotPc(
+      state_.Binary3RegisterOpAltBNoCondUpdates_Qdsub_Rule_129_A1_P260_instance_)
   {}
 };
 
@@ -10579,33 +10613,39 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1101x_op2_7To5Isx10_Sbfx_Rule_154_A1_P308_cccc0111101wwwwwddddlllll101nnnn_Test) {
-  Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1101x_op2_7To5Isx10_Sbfx_Rule_154_A1_P308 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Sbfx_Rule_154_A1_P308 actual;
+       Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1101x_op2_7To5Isx10RegsNotPc_Sbfx_Rule_154_A1_P308_cccc0111101wwwwwddddlllll101nnnn_Test) {
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1101x_op2_7To5Isx10RegsNotPc_Sbfx_Rule_154_A1_P308 baseline_tester;
+  NamedDefs12To15CondsDontCareRdRnNotPcBitfieldExtract_Sbfx_Rule_154_A1_P308 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0111101wwwwwddddlllll101nnnn");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary1RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111_Bfc_17_A1_P46_cccc0111110mmmmmddddlllll0011111_Test) {
-  Unary1RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111_Bfc_17_A1_P46 tester;
+       Unary1RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc_Bfc_17_A1_P46_cccc0111110mmmmmddddlllll0011111_Test) {
+  Unary1RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_Rn_3To0Is1111RegsNotPc_Bfc_17_A1_P46 tester;
   tester.Test("cccc0111110mmmmmddddlllll0011111");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111_Bfi_Rule_18_A1_P48_cccc0111110mmmmmddddlllll001nnnn_Test) {
-  Binary2RegisterBitRangeTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111_Bfi_Rule_18_A1_P48 baseline_tester;
-  NamedDefs12To15CondsDontCare_Bfi_Rule_18_A1_P48 actual;
+       Binary2RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc_Bfi_Rule_18_A1_P48_cccc0111110mmmmmddddlllll001nnnn_Test) {
+  Binary2RegisterBitRangeMsbGeLsbTester_op1_24To20Is1110x_op2_7To5Isx00_NotRn_3To0Is1111RegsNotPc_Bfi_Rule_18_A1_P48 baseline_tester;
+  NamedDefs12To15CondsDontCareMsbGeLsb_Bfi_Rule_18_A1_P48 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0111110mmmmmddddlllll001nnnn");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1111x_op2_7To5Isx10_Ubfx_Rule_236_A1_P466_cccc0111111mmmmmddddlllll101nnnn_Test) {
-  Binary2RegisterBitRangeNotRnIsPcTester_op1_24To20Is1111x_op2_7To5Isx10_Ubfx_Rule_236_A1_P466 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Ubfx_Rule_236_A1_P466 actual;
+       Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1111x_op2_7To5Isx10RegsNotPc_Ubfx_Rule_236_A1_P466_cccc0111111mmmmmddddlllll101nnnn_Test) {
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_op1_24To20Is1111x_op2_7To5Isx10RegsNotPc_Ubfx_Rule_236_A1_P466 baseline_tester;
+  NamedDefs12To15CondsDontCareRdRnNotPcBitfieldExtract_Ubfx_Rule_236_A1_P466 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0111111mmmmmddddlllll101nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       RoadblockTester_op1_24To20Is11111_op2_7To5Is111_Udf_Rule_A1_cccc01111111iiiiiiiiiiii1111iiii_Test) {
+  RoadblockTester_op1_24To20Is11111_op2_7To5Is111_Udf_Rule_A1 tester;
+  tester.Test("cccc01111111iiiiiiiiiiii1111iiii");
 }
 
 TEST_F(Arm32DecoderStateTests,
@@ -10663,14 +10703,14 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240_11110111u001nnnn1111iiiiitt0mmmm_Test) {
-  PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240 tester;
+       PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240_11110111u001nnnn1111iiiiitt0mmmm_Test) {
+  PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x001_op2_7To4Isxxx0_Pldw_Rule_119_A1_P240 tester;
   tester.Test("11110111u001nnnn1111iiiiitt0mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240_11110111u101nnnn1111iiiiitt0mmmm_Test) {
-  PreloadRegisterPairOpRAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240 tester;
+       PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240_11110111u101nnnn1111iiiiitt0mmmm_Test) {
+  PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_Pld_Rule_119_A1_P240 tester;
   tester.Test("11110111u101nnnn1111iiiiitt0mmmm");
 }
 
@@ -11073,264 +11113,264 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0_Ssat_Rule_183_A1_P362_cccc0110101iiiiiddddiiiiis01nnnn_Test) {
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0_Ssat_Rule_183_A1_P362 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Ssat_Rule_183_A1_P362 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0110101iiiiiddddiiiiis01nnnn");
-}
-
-TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0_Usat_Rule_255_A1_P504_cccc0110111iiiiiddddiiiiis01nnnn_Test) {
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0_Usat_Rule_255_A1_P504 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Usat_Rule_255_A1_P504 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0110111iiiiiddddiiiiis01nnnn");
-}
-
-TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab16_Rule_221_A1_P436_cccc01101000nnnnddddrr000111mmmm_Test) {
-  Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab16_Rule_221_A1_P436 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Sxtab16_Rule_221_A1_P436 actual;
+       Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab16_Rule_221_A1_P436_cccc01101000nnnnddddrr000111mmmm_Test) {
+  Binary3RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab16_Rule_221_A1_P436 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Sxtab16_Rule_221_A1_P436 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101000nnnnddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111_Sxtb16_Rule_224_A1_P442_cccc011010001111ddddrr000111mmmm_Test) {
-  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111_Sxtb16_Rule_224_A1_P442 baseline_tester;
+       Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb16_Rule_224_A1_P442_cccc011010001111ddddrr000111mmmm_Test) {
+  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is000_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb16_Rule_224_A1_P442 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Sxtb16_Rule_224_A1_P442 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011010001111ddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312_cccc01101000nnnndddd11111011mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312_cccc01101000nnnndddd11111011mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is000_op2_7To5Is101RegsNotPc_Sel_Rule_156_A1_P312 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Sel_Rule_156_A1_P312 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101000nnnndddd11111011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001_Ssat16_Rule_184_A1_P364_cccc01101010iiiidddd11110011nnnn_Test) {
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001_Ssat16_Rule_184_A1_P364 baseline_tester;
+       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0RegsNotPc_Ssat_Rule_183_A1_P362_cccc0110101iiiiiddddiiiiis01nnnn_Test) {
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is01x_op2_7To5Isxx0RegsNotPc_Ssat_Rule_183_A1_P362 baseline_tester;
+  NamedDefs12To15CondsDontCareRdRnNotPc_Ssat_Rule_183_A1_P362 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0110101iiiiiddddiiiiis01nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001RegsNotPc_Ssat16_Rule_184_A1_P364_cccc01101010iiiidddd11110011nnnn_Test) {
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is010_op2_7To5Is001RegsNotPc_Ssat16_Rule_184_A1_P364 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Ssat16_Rule_184_A1_P364 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101010iiiidddd11110011nnnn");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab_Rule_220_A1_P434_cccc01101010nnnnddddrr000111mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111NotRnIsPcAndRegsNotPc_Sxtab_Rule_220_A1_P434 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Sxtab_Rule_220_A1_P434 actual;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab_Rule_220_A1_P434_cccc01101010nnnnddddrr000111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is010_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtab_Rule_220_A1_P434 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Sxtab_Rule_220_A1_P434 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101010nnnnddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111_Sxtb_Rule_223_A1_P440_cccc011010101111ddddrr000111mmmm_Test) {
-  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111_Sxtb_Rule_223_A1_P440 baseline_tester;
+       Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb_Rule_223_A1_P440_cccc011010101111ddddrr000111mmmm_Test) {
+  Unary2RegisterImmedShiftedOpRegsNotPcTester_op1_22To20Is010_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxtb_Rule_223_A1_P440 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Sxtb_Rule_223_A1_P440 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011010101111ddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001_Rev_Rule_135_A1_P272_cccc011010111111dddd11110011mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001_Rev_Rule_135_A1_P272 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001RegsNotPc_Rev_Rule_135_A1_P272_cccc011010111111dddd11110011mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is001RegsNotPc_Rev_Rule_135_A1_P272 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Rev_Rule_135_A1_P272 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011010111111dddd11110011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Sxtah_Rule_222_A1_P438_cccc01101011nnnnddddrr000111mmmm_Test) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Sxtah_Rule_222_A1_P438 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Sxtah_Rule_222_A1_P438 actual;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtah_Rule_222_A1_P438_cccc01101011nnnnddddrr000111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Sxtah_Rule_222_A1_P438 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Sxtah_Rule_222_A1_P438 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101011nnnnddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111_Sxth_Rule_225_A1_P444_cccc011010111111ddddrr000111mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111_Sxth_Rule_225_A1_P444 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxth_Rule_225_A1_P444_cccc011010111111ddddrr000111mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is011_A_19To16Is1111RegsNotPc_Sxth_Rule_225_A1_P444 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Sxth_Rule_225_A1_P444 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011010111111ddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101_Rev16_Rule_136_A1_P274_cccc011010111111dddd11111011mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101_Rev16_Rule_136_A1_P274 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101RegsNotPc_Rev16_Rule_136_A1_P274_cccc011010111111dddd11111011mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is011_op2_7To5Is101RegsNotPc_Rev16_Rule_136_A1_P274 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Rev16_Rule_136_A1_P274 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011010111111dddd11111011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P516_cccc01101100nnnnddddrr000111mmmm_Test) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P516 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Uxtah_Rule_262_A1_P516 actual;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab16_Rule_262_A1_P516_cccc01101100nnnnddddrr000111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab16_Rule_262_A1_P516 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uxtab16_Rule_262_A1_P516 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101100nnnnddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111_Uxtb16_Rule_264_A1_P522_cccc011011001111ddddrr000111mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111_Uxtb16_Rule_264_A1_P522 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb16_Rule_264_A1_P522_cccc011011001111ddddrr000111mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is100_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb16_Rule_264_A1_P522 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Uxtb16_Rule_264_A1_P522 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011011001111ddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001_Usat16_Rule_256_A1_P506_cccc01101110iiiidddd11110011nnnn_Test) {
-  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001_Usat16_Rule_256_A1_P506 baseline_tester;
+       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0RegsNotPc_Usat_Rule_255_A1_P504_cccc0110111iiiiiddddiiiiis01nnnn_Test) {
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is11x_op2_7To5Isxx0RegsNotPc_Usat_Rule_255_A1_P504 baseline_tester;
+  NamedDefs12To15CondsDontCareRdRnNotPc_Usat_Rule_255_A1_P504 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0110111iiiiiddddiiiiis01nnnn");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001RegsNotPc_Usat16_Rule_256_A1_P506_cccc01101110iiiidddd11110011nnnn_Test) {
+  Unary2RegisterSatImmedShiftedOpTester_op1_22To20Is110_op2_7To5Is001RegsNotPc_Usat16_Rule_256_A1_P506 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Usat16_Rule_256_A1_P506 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101110iiiidddd11110011nnnn");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtab_Rule_260_A1_P514_cccc01101110nnnnddddrr000111mmmm_Test) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtab_Rule_260_A1_P514 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Uxtab_Rule_260_A1_P514 actual;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab_Rule_260_A1_P514_cccc01101110nnnnddddrr000111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtab_Rule_260_A1_P514 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uxtab_Rule_260_A1_P514 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101110nnnnddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111_Uxtb_Rule_263_A1_P520_cccc011011101111ddddrr000111mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111_Uxtb_Rule_263_A1_P520 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb_Rule_263_A1_P520_cccc011011101111ddddrr000111mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is110_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxtb_Rule_263_A1_P520 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Uxtb_Rule_263_A1_P520 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011011101111ddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is001_Rbit_Rule_134_A1_P270_cccc011011111111dddd11110011mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is001_Rbit_Rule_134_A1_P270 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is001RegsNotPc_Rbit_Rule_134_A1_P270_cccc011011111111dddd11110011mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is001RegsNotPc_Rbit_Rule_134_A1_P270 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Rbit_Rule_134_A1_P270 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011011111111dddd11110011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P518_cccc01101111nnnnddddrr000111mmmm_Test) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111NotRnIsPc_Uxtah_Rule_262_A1_P518 baseline_tester;
-  NamedDefs12To15CondsDontCareRdRnNotPc_Uxtah_Rule_262_A1_P518 actual;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtah_Rule_262_A1_P518_cccc01101111nnnnddddrr000111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_NotA_19To16Is1111RegsNotPc_Uxtah_Rule_262_A1_P518 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uxtah_Rule_262_A1_P518 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01101111nnnnddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111_Uxth_Rule_265_A1_P524_cccc011011111111ddddrr000111mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111_Uxth_Rule_265_A1_P524 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxth_Rule_265_A1_P524_cccc011011111111ddddrr000111mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is011_A_19To16Is1111RegsNotPc_Uxth_Rule_265_A1_P524 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Uxth_Rule_265_A1_P524 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011011111111ddddrr000111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is101_Revsh_Rule_137_A1_P276_cccc011011111111dddd11111011mmmm_Test) {
-  Unary2RegisterOpNotRmIsPcTester_op1_22To20Is111_op2_7To5Is101_Revsh_Rule_137_A1_P276 baseline_tester;
+       Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is101RegsNotPc_Revsh_Rule_137_A1_P276_cccc011011111111dddd11111011mmmm_Test) {
+  Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_op1_22To20Is111_op2_7To5Is101RegsNotPc_Revsh_Rule_137_A1_P276 baseline_tester;
   NamedDefs12To15CondsDontCareRdRnNotPc_Revsh_Rule_137_A1_P276 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc011011111111dddd11111011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296_cccc01100001nnnndddd11110001mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296_cccc01100001nnnndddd11110001mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is000RegsNotPc_Sadd16_Rule_148_A1_P296 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Sadd16_Rule_148_A1_P296 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100001nnnndddd11110001mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300_cccc01100001nnnndddd11110011mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300_cccc01100001nnnndddd11110011mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is001RegsNotPc_Sasx_Rule_150_A1_P300 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Sasx_Rule_150_A1_P300 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100001nnnndddd11110011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366_cccc01100001nnnndddd11110101mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366_cccc01100001nnnndddd11110101mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is010RegsNotPc_Ssax_Rule_185_A1_P366 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Ssax_Rule_185_A1_P366 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100001nnnndddd11110101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368_cccc01100001nnnndddd11110111mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368_cccc01100001nnnndddd11110111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is011RegsNotPc_Ssub16_Rule_186_A1_P368 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Ssub16_Rule_186_A1_P368 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100001nnnndddd11110111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Ssad8_Rule_149_A1_P298_cccc01100001nnnndddd11111001mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Ssad8_Rule_149_A1_P298 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Ssad8_Rule_149_A1_P298 actual;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Sadd8_Rule_149_A1_P298_cccc01100001nnnndddd11111001mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is100RegsNotPc_Sadd8_Rule_149_A1_P298 baseline_tester;
+  NamedDefs12To15CondsDontCareRnRdRmNotPc_Sadd8_Rule_149_A1_P298 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100001nnnndddd11111001mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370_cccc01100001nnnndddd11111111mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370_cccc01100001nnnndddd11111111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is01_op2_7To5Is111RegsNotPc_Ssub8_Rule_187_A1_P370 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Ssub8_Rule_187_A1_P370 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100001nnnndddd11111111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252_cccc01100010nnnndddd11110001mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252_cccc01100010nnnndddd11110001mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is000RegsNotPc_Qadd16_Rule_125_A1_P252 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd16_Rule_125_A1_P252 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11110001mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256_cccc01100010nnnndddd11110011mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256_cccc01100010nnnndddd11110011mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is001RegsNotPc_Qasx_Rule_127_A1_P256 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qasx_Rule_127_A1_P256 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11110011mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262_cccc01100010nnnndddd11110101mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262_cccc01100010nnnndddd11110101mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is010RegsNotPc_Qsax_Rule_130_A1_P262 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsax_Rule_130_A1_P262 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11110101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266_cccc01100010nnnndddd11110111mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266_cccc01100010nnnndddd11110111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is011RegsNotPc_Qsub16_Rule_132_A1_P266 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub16_Rule_132_A1_P266 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11110111mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254_cccc01100010nnnndddd11111001mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254_cccc01100010nnnndddd11111001mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is100RegsNotPc_Qadd8_Rule_126_A1_P254 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd8_Rule_126_A1_P254 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11111001mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268_cccc01100010nnnndddd11111111mmmm_Test) {
-  Binary3RegisterOpAltBTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268_cccc01100010nnnndddd11111111mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op1_21To20Is10_op2_7To5Is111RegsNotPc_Qsub8_Rule_133_A1_P268 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub8_Rule_133_A1_P268 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc01100010nnnndddd11111111mmmm");
@@ -11385,32 +11425,32 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250_cccc00010000nnnndddd00000101mmmm_Test) {
-  Binary3RegisterOpAltBTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250_cccc00010000nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is00RegsNotPc_Qadd_Rule_124_A1_P250 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qadd_Rule_124_A1_P250 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00010000nnnndddd00000101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264_cccc00010010nnnndddd00000101mmmm_Test) {
-  Binary3RegisterOpAltBTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264_cccc00010010nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is01RegsNotPc_Qsub_Rule_131_A1_P264 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qsub_Rule_131_A1_P264 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00010010nnnndddd00000101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258_cccc00010100nnnndddd00000101mmmm_Test) {
-  Binary3RegisterOpAltBTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258_cccc00010100nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is10RegsNotPc_Qdadd_Rule_128_A1_P258 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdadd_Rule_128_A1_P258 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00010100nnnndddd00000101mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterOpAltBTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260_cccc00010110nnnndddd00000101mmmm_Test) {
-  Binary3RegisterOpAltBTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260 baseline_tester;
+       Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260_cccc00010110nnnndddd00000101mmmm_Test) {
+  Binary3RegisterOpAltBNoCondUpdatesTester_op_22To21Is11RegsNotPc_Qdsub_Rule_129_A1_P260 baseline_tester;
   NamedDefs12To15CondsDontCareRnRdRmNotPc_Qdsub_Rule_129_A1_P260 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00010110nnnndddd00000101mmmm");

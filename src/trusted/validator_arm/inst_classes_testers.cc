@@ -365,12 +365,13 @@ ApplySanityChecks(Instruction inst,
   return Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder);
 }
 
-// Unary1RegisterBitRangeTester
-Unary1RegisterBitRangeTester::Unary1RegisterBitRangeTester(
+// Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc
+Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc::
+Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc(
     const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
 
-bool Unary1RegisterBitRangeTester::
+bool Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -383,15 +384,20 @@ ApplySanityChecks(Instruction inst,
   EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(kRegisterPc))
         << "Expected UNPREDICTABLE for " << InstContents();
 
+  EXPECT_FALSE(expected_decoder_.msb.value(inst) <
+               expected_decoder_.lsb.value(inst))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
   return true;
 }
 
-// Binary2RegisterBitRangeTester
-Binary2RegisterBitRangeTester::Binary2RegisterBitRangeTester(
+// Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc
+Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc::
+Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc(
     const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
 
-bool Binary2RegisterBitRangeTester::
+bool Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -401,39 +407,39 @@ ApplySanityChecks(Instruction inst,
   EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(3, 0)));
   EXPECT_TRUE(expected_decoder_.d.reg(inst).Equals(inst.Reg(15, 12)));
   EXPECT_EQ(expected_decoder_.lsb.value(inst), inst.Bits(11, 7));
-  EXPECT_EQ(expected_decoder_.imm5.value(inst), inst.Bits(20, 16));
+  EXPECT_EQ(expected_decoder_.msb.value(inst), inst.Bits(20, 16));
+  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc))
+        << "Expected UNPREDICTABLE for " << InstContents();
   EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(kRegisterPc))
         << "Expected UNPREDICTABLE for " << InstContents();
 
+  EXPECT_FALSE(expected_decoder_.msb.value(inst) <
+               expected_decoder_.lsb.value(inst))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
   return true;
 }
 
-// Binary2RegisterBitRangeNotRnIsPcTester
-Binary2RegisterBitRangeNotRnIsPcTester::Binary2RegisterBitRangeNotRnIsPcTester(
+// Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc
+Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc::
+Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc(
     const NamedClassDecoder& decoder)
-    : Binary2RegisterBitRangeTester(decoder) {}
+    : CondDecoderTester(decoder) {}
 
-bool Binary2RegisterBitRangeNotRnIsPcTester::
+bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary2RegisterBitRangeTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc))
-        << "Expected UNPREDICTABLE for " << InstContents();
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.lsb.value(inst) +
+               expected_decoder_.widthm1.value(inst) > 31)
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   return true;
-}
-
-// Binary2RegisterBitRangeTesterNotRnIsPc
-Binary2RegisterBitRangeTesterNotRnIsPc::Binary2RegisterBitRangeTesterNotRnIsPc(
-    const NamedClassDecoder& decoder)
-    : Binary2RegisterBitRangeNotRnIsPcTester(decoder) {}
-
-bool Binary2RegisterBitRangeTesterNotRnIsPc::
-PassesParsePreconditions(Instruction inst,
-                         const NamedClassDecoder& decoder) {
-  NC_PRECOND(!(expected_decoder_.n.reg(inst).Equals(kRegisterPc)));
-  return Binary2RegisterBitRangeTester::PassesParsePreconditions(inst, decoder);
 }
 
 // Binary2RegisterImmediateOpTester
@@ -753,11 +759,12 @@ ApplySanityChecks(Instruction inst,
 }
 
 // Binary3RegisterOpTesterAltB
-Binary3RegisterOpAltBTester::Binary3RegisterOpAltBTester(
+Binary3RegisterOpAltBNoCondUpdatesTester::
+Binary3RegisterOpAltBNoCondUpdatesTester(
     const NamedClassDecoder& decoder)
-    : CondDecoderTester(decoder), test_conditions_(true) {}
+    : CondDecoderTester(decoder), test_conditions_(false) {}
 
-bool Binary3RegisterOpAltBTester::
+bool Binary3RegisterOpAltBNoCondUpdatesTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -767,16 +774,6 @@ ApplySanityChecks(Instruction inst,
   EXPECT_TRUE(expected_decoder_.m.reg(inst).Equals(inst.Reg(3, 0)));
   EXPECT_TRUE(expected_decoder_.d.reg(inst).Equals(inst.Reg(15, 12)));
   EXPECT_TRUE(expected_decoder_.n.reg(inst).Equals(inst.Reg(19, 16)));
-  EXPECT_EQ(expected_decoder_.conditions.is_updated(inst), inst.Bit(20));
-  if (test_conditions_) {
-    if (expected_decoder_.conditions.is_updated(inst)) {
-      EXPECT_TRUE(expected_decoder_.conditions.conds_if_updated(inst).
-                  Equals(kConditions));
-    } else {
-      EXPECT_TRUE(expected_decoder_.conditions.conds_if_updated(inst).
-                  Equals(kRegisterNone));
-    }
-  }
 
   // Other NaCl constraints about this instruction.
   EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(kRegisterPc))
@@ -785,71 +782,11 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Binary3RegisterOpAltBTesterRegsNotPc
-Binary3RegisterOpAltBTesterRegsNotPc::Binary3RegisterOpAltBTesterRegsNotPc(
-    const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTester(decoder) {}
-
-bool Binary3RegisterOpAltBTesterRegsNotPc::
-ApplySanityChecks(Instruction inst,
-                  const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterOpAltBTester::ApplySanityChecks(inst, decoder));
-
-  // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder_.m.reg(inst).Equals(kRegisterPc))
-      << "Expected Unpredictable for " << InstContents();
-  EXPECT_FALSE(expected_decoder_.d.reg(inst).Equals(kRegisterPc))
-      << "Expected Unpredictable for " << InstContents();
-  EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc))
-      << "Expected Unpredictable for " << InstContents();
-
-  return true;
-}
-
-// Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc
-Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc::
-Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc(
-    const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTesterRegsNotPc(decoder) {}
-
-bool Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc::
-PassesParsePreconditions(
-    Instruction inst,
-    const NamedClassDecoder& decoder) {
-  NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterPc));
-  return Binary3RegisterOpAltBTesterRegsNotPc::
-      PassesParsePreconditions(inst, decoder);
-}
-
-// Binary3RegisterOpAltBNoCondUpdatesTester
-Binary3RegisterOpAltBNoCondUpdatesTester::
-Binary3RegisterOpAltBNoCondUpdatesTester(
-    const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBTester(decoder) {
-  test_conditions_ = false;
-}
-
-// Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc
-Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
-Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc(
-    const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
-
-bool Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
-PassesParsePreconditions(
-    Instruction inst,
-    const NamedClassDecoder& decoder) {
-  NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterPc));
-  return Binary3RegisterOpAltBNoCondUpdatesTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
 // Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc
 Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
 Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(
     const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {
-}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
 ApplySanityChecks(Instruction inst,
@@ -866,6 +803,36 @@ ApplySanityChecks(Instruction inst,
       << "Expected Unpredictable for " << InstContents();
 
   return true;
+}
+
+// Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc
+Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc::
+Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc::
+PassesParsePreconditions(
+    Instruction inst,
+    const NamedClassDecoder& decoder) {
+  NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterPc));
+  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc
+Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
+Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc(
+    const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc::
+PassesParsePreconditions(
+    Instruction inst,
+    const NamedClassDecoder& decoder) {
+  NC_PRECOND(!expected_decoder_.n.reg(inst).Equals(kRegisterPc));
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
+      PassesParsePreconditions(inst, decoder);
 }
 
 // Binary4RegisterDualOpTester
@@ -1236,17 +1203,17 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// PreloadRegisterPairOpRAndRnNotPcTester
-bool PreloadRegisterPairOpRAndRnNotPcTester::
+// PreloadRegisterPairOpWAndRnNotPcTester
+bool PreloadRegisterPairOpWAndRnNotPcTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check that it passes base tests.
   NC_PRECOND(PreloadRegisterPairOpTester::
              ApplySanityChecks(inst, decoder));
 
-  // Check that we don't parse when Rn=15 and R=1
+  // Check that we don't parse when Rn=15 and R=0
   EXPECT_FALSE(expected_decoder_.n.reg(inst).Equals(kRegisterPc)
-               && expected_decoder_.read.IsDefined(inst));
+               && !expected_decoder_.read.IsDefined(inst));
 
   return true;
 }
@@ -1774,13 +1741,13 @@ ApplySanityChecks(Instruction inst,
       ApplySanityChecks(inst, decoder);
 }
 
-// Unary2RegisterImmedShiftedOpRegsNotPcTester
-Unary2RegisterImmedShiftedOpRegsNotPcTester::
-Unary2RegisterImmedShiftedOpRegsNotPcTester(
+// Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc
+Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc::
+Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc(
     const NamedClassDecoder& decoder)
     : Unary2RegisterImmedShiftedOpTester(decoder) {}
 
-bool Unary2RegisterImmedShiftedOpRegsNotPcTester::
+bool Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   NC_PRECOND(Unary2RegisterImmedShiftedOpTester::
@@ -1794,13 +1761,13 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// Unary2RegisterSatImmedShiftedOpTester
-Unary2RegisterSatImmedShiftedOpTester::
-Unary2RegisterSatImmedShiftedOpTester(
+// Unary2RegisterSatImmedShiftedOpTesterRegsNotPc
+Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
+Unary2RegisterSatImmedShiftedOpTesterRegsNotPc(
     const NamedClassDecoder& decoder)
     : CondDecoderTester(decoder) {}
 
-bool Unary2RegisterSatImmedShiftedOpTester::
+bool Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
   // Check if expected class name found.
@@ -2328,6 +2295,15 @@ ApplySanityChecks(Instruction inst,
 
   EXPECT_EQ(static_cast<uint32_t>(0xF), expected_decoder_.option.value(inst))
       << "Expected forbidden operands for option" << InstContents();
+
+  return true;
+}
+
+// RoadblockTester
+bool RoadblockTester::ApplySanityChecks(Instruction inst,
+                                        const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
 
   return true;
 }

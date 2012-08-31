@@ -364,21 +364,21 @@ class Unary1RegisterImmediateOpTesterNotRdIsPcAndS
 //    msb = lsb + width - 1 - The most significant bit to be modified
 //    width = msb - lsb + 1 - The number of bits to be modified.
 //
-// If Rd is R15, the instruction is unpredictable.
+// If Rd is R15 or msb < lsb, the instruction is unpredictable.
 // NaCl disallows writing to PC to cause a jump.
 // Note: Currently, only implements bfc. (A8-46).
-class Unary1RegisterBitRangeTester : public CondDecoderTester {
+class Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc : public CondDecoderTester {
  public:
-  explicit Unary1RegisterBitRangeTester(
+  explicit Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::Unary1RegisterBitRange expected_decoder_;
+  nacl_arm_dec::Unary1RegisterBitRangeMsbGeLsb expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeMsbGeLsbTesterRegsNotPc);
 };
 
 // Models a 2-register binary operation with two immediate values
@@ -387,60 +387,49 @@ class Unary1RegisterBitRangeTester : public CondDecoderTester {
 // +--------+--------------+----------+--------+----------+------+--------+
 // |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4| 3 2 1 0|
 // +--------+--------------+----------+--------+----------+------+--------+
-// |  cond  |              |  widthm1 |   Rd   |    lsb   |      |   Rn   |
+// |  cond  |              |    msb   |   Rd   |    lsb   |      |   Rn   |
 // +--------+--------------+----------+--------+----------+------+--------+
 // Definitions:
 //   Rd = The destination register.
 //   Rn = The first operand
 //   lsb = The least significant bit to be modified.
-//   width = widthm1 + 1 = The width of the bitfield.
+//   msb = The most significant bit to be modified.
 //
-// If Rd=R15, the instruction is unpredictable.
+// If Rd=R15 or msb < lsb, the instruction is unpredictable.
 //
 // NaCl disallows writing Pc to cause a jump.
-//
-// Note: The instruction SBFX (an instance of this instruction) sign extends.
-// Hence, we do not assume that this instruction can be used to clear bits.
-class Binary2RegisterBitRangeTester : public CondDecoderTester {
+class Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc
+    : public CondDecoderTester {
  public:
-  explicit Binary2RegisterBitRangeTester(
+  explicit Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::Binary2RegisterBitRange expected_decoder_;
+  nacl_arm_dec::Binary2RegisterBitRangeMsbGeLsb expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary2RegisterBitRangeMsbGeLsbTesterRegsNotPc);
 };
 
-// Implements a Binary2RegisterBitRangeNotRnIsPc tester.
-class Binary2RegisterBitRangeNotRnIsPcTester
-    : public Binary2RegisterBitRangeTester {
+// Implements a Binary2RegisterBitRangeNotRnIsPcBitfieldExtract tester.
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc
+    : public CondDecoderTester {
  public:
-  explicit Binary2RegisterBitRangeNotRnIsPcTester(
+  explicit Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeNotRnIsPcTester);
-};
-
-// Implements a Binary2RegisterBitRangeTester with parse constraint
-// that Rn!=PC.
-class Binary2RegisterBitRangeTesterNotRnIsPc
-    : public Binary2RegisterBitRangeNotRnIsPcTester {
- public:
-  explicit Binary2RegisterBitRangeTesterNotRnIsPc(
-      const NamedClassDecoder& decoder);
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
+ protected:
+  nacl_arm_dec::Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+  expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeTesterNotRnIsPc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder BinaryRegisterImmediateTest
@@ -704,9 +693,9 @@ class Binary3RegisterOpAltATesterRegsNotPc
 //    Rn - The first operand
 //    Rm - The second operand
 //    S - Defines if the flags regsiter is updated.
-class Binary3RegisterOpAltBTester : public CondDecoderTester {
+class Binary3RegisterOpAltBNoCondUpdatesTester : public CondDecoderTester {
  public:
-  explicit Binary3RegisterOpAltBTester(
+  explicit Binary3RegisterOpAltBNoCondUpdatesTester(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
@@ -714,35 +703,36 @@ class Binary3RegisterOpAltBTester : public CondDecoderTester {
  protected:
   // When true, tester should test conditions flag S.
   bool test_conditions_;
-  nacl_arm_dec::Binary3RegisterOpAltB expected_decoder_;
+  nacl_arm_dec::Binary3RegisterOpAltBNoCondUpdates expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBNoCondUpdatesTester);
 };
 
-// Implements a decoder tester for Binary3RegisterOpAltB with a
+// Implements a decoder tester for Binary3RegisterOpAltBNoCondUpdates with a
 // constraint that if Rd, Rm, or Rn is R15, the instruction is
 // unpredictable.
-class Binary3RegisterOpAltBTesterRegsNotPc
-    : public Binary3RegisterOpAltBTester {
+class Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
-  explicit Binary3RegisterOpAltBTesterRegsNotPc(
+  explicit Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBTesterRegsNotPc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc);
 };
 
-// Implements a decoder tester for Binary3RegisterOpAltB with a parse
-// constraint that Rn!=R15, and if Rm or Rd is R15, the instruction is
+// Implements a decoder tester for Binary3RegisterOpAltBNoCondUpdates with a
+// parse constraint that Rn!=R15, and if Rm or Rd is R15, the instruction is
 // unpredictable.
-class Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc
-    : public Binary3RegisterOpAltBTesterRegsNotPc {
+class Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc
+    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
  public:
-  explicit Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc(
+  explicit Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -750,19 +740,7 @@ class Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
-      Binary3RegisterOpAltBTesterNotRnIsPcAndRegsNotPc);
-};
-
-// Implements a decoder tester for Binary3RegisterOpAltB, except
-// that conditions flags are not checked.
-class Binary3RegisterOpAltBNoCondUpdatesTester
-    : public Binary3RegisterOpAltBTester {
- public:
-  explicit Binary3RegisterOpAltBNoCondUpdatesTester(
-      const NamedClassDecoder& decoder);
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltBNoCondUpdatesTester);
+      Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPcAndRegsNotPc);
 };
 
 // Implements a decoder tester for Binary3RegisterOpAltBNoCondUpdates
@@ -779,23 +757,6 @@ class Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Binary3RegisterOpAltBNoCondUpdatesTesterNotRnIsPc);
-};
-
-// Implements a decoder tester for Binary3RegisterOpAltB with a
-// constraint that if Rd, Rm, or Rn is R15, the instruction is
-// unpredictable, and that condition flags are not checked.
-class Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc
-    : public Binary3RegisterOpAltBNoCondUpdatesTester {
- public:
-  explicit Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(
-      const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Binary4RegisterDualOp
@@ -1112,11 +1073,11 @@ class PreloadRegisterPairOpTester : public UncondDecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpTester);
 };
 
-// Implements a tester for PreloadRegisterPairOpRAndRnNotPc
-class PreloadRegisterPairOpRAndRnNotPcTester
+// Implements a tester for PreloadRegisterPairOpWAndRnNotPc
+class PreloadRegisterPairOpWAndRnNotPcTester
     : public PreloadRegisterPairOpTester {
  public:
-  explicit PreloadRegisterPairOpRAndRnNotPcTester(
+  explicit PreloadRegisterPairOpWAndRnNotPcTester(
       const NamedClassDecoder& decoder)
       : PreloadRegisterPairOpTester(decoder) {}
   virtual bool ApplySanityChecks(
@@ -1124,7 +1085,7 @@ class PreloadRegisterPairOpRAndRnNotPcTester
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpRAndRnNotPcTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpWAndRnNotPcTester);
 };
 
 // Models a 2-register load/store 12-bit immediate operation of the forms:
@@ -1540,15 +1501,16 @@ class Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS);
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS);
 };
 
 // Implements a decoder tester for Unary2RegisterImmedShiftedOpRegsNotPc, which
 // should not accept when Rd or Rm is pc.
-class Unary2RegisterImmedShiftedOpRegsNotPcTester
+class Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc
     : public Unary2RegisterImmedShiftedOpTester {
  public:
-  explicit Unary2RegisterImmedShiftedOpRegsNotPcTester(
+  explicit Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
@@ -1558,7 +1520,8 @@ class Unary2RegisterImmedShiftedOpRegsNotPcTester
   nacl_arm_dec::Unary2RegisterImmedShiftedOpRegsNotPc expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpRegsNotPcTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Unary2RegisterSatImmedShiftedOp.
@@ -1577,9 +1540,10 @@ class Unary2RegisterImmedShiftedOpRegsNotPcTester
 // If Rd or Rn is R15, the instruction is unpredictable.
 //
 // NaCl disallows writing to PC to cause a jump.
-class Unary2RegisterSatImmedShiftedOpTester : public CondDecoderTester {
+class Unary2RegisterSatImmedShiftedOpTesterRegsNotPc
+    : public CondDecoderTester {
  public:
-  explicit Unary2RegisterSatImmedShiftedOpTester(
+  explicit Unary2RegisterSatImmedShiftedOpTesterRegsNotPc(
       const NamedClassDecoder& decoder);
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
@@ -1589,7 +1553,7 @@ class Unary2RegisterSatImmedShiftedOpTester : public CondDecoderTester {
   nacl_arm_dec::Unary2RegisterSatImmedShiftedOp expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterSatImmedShiftedOpTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterSatImmedShiftedOpTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Unary3RegisterShiftedOp.
@@ -1965,11 +1929,11 @@ class VectorBinary3RegisterImmOpTester
 
 // Implements a decoder tester for VectorBinary3RegisterLookupOp
 // Op<c> <Dd>, <list>, <Dm>
-// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
-// |31302928|2726252423|22|2120|19181716|15141312|1110| 9 8| 7| 6| 5| 4| 3 2 1 0|
-// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
-// |  cond  |          | D|    |   Vn   |   Vd   |    | len| N|op| M|  |   Vm   |
-// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------
+// |31302928|2726252423|22|2120|19181716|15141312|1110| 9 8| 7| 6| 5| 4| 3 2 1 0
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------
+// |  cond  |          | D|    |   Vn   |   Vd   |    | len| N|op| M|  |   Vm
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------
 // <Dd> - The destination register.
 // <list> - The list of up to 4 consecutive registers starting at <Dn>
 // len - The number of registers (minus 1).
@@ -2188,6 +2152,19 @@ class InstructionBarrierTester : public BarrierInstTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(InstructionBarrierTester);
+};
+
+// Implements a decoder tester for a Roadblock.
+class RoadblockTester : public CondDecoderTester {
+ public:
+  explicit RoadblockTester(const NamedClassDecoder& decoder)
+      : CondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RoadblockTester);
 };
 
 }  // namespace nacl_arm_test

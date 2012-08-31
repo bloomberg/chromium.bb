@@ -333,49 +333,71 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
 // +--------+--------------+----------+--------+----------+------+--------+
 // |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4| 3 2 1 0|
 // +--------+--------------+----------+--------+----------+------+--------+
-// |  cond  |              |    imm5  |   Rd   |    lsb   |      |   Rn   |
+// |  cond  |              |    msb   |   Rd   |    lsb   |      |   Rn   |
 // +--------+--------------+----------+--------+----------+------+--------+
 // Definitions:
 //   Rd = The destination register.
 //   Rn = The first operand
 //   lsb = The least significant bit to be used.
-//   imm5 = Constant where either:
-//      width = imm5 + 1 = The width of the bitfield.
-//      msb = imm5 = The most significant bit to be used.
+//   msb = The most significant bit to be used.
 //
-// If Rd=R15, the instruction is unpredictable.
+// If Rd=R15 or msb < lsb, the instruction is unpredictable.
 //
 // NaCl disallows writing Pc to cause a jump.
-//
-// Note: The instruction SBFX (an instance of this instruction) sign extends.
-// Hence, we do not assume that this instruction can be used to clear bits.
-class Binary2RegisterBitRange : public ClassDecoder {
+class Binary2RegisterBitRangeMsbGeLsb : public ClassDecoder {
  public:
   // Interface for components of the instruction.
   static const RegBits0To3Interface n;
   static const Imm5Bits7To11Interface lsb;
   static const RegBits12To15Interface d;
-  static const Imm5Bits16To20Interface imm5;
+  static const Imm5Bits16To20Interface msb;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  Binary2RegisterBitRange() {}
+  Binary2RegisterBitRangeMsbGeLsb() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRange);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeMsbGeLsb);
 };
 
-// A Binary2RegisterBitRange with the additional constraint that
-// if Rn=R15, the instruction is unpredictable.
-class Binary2RegisterBitRangeNotRnIsPc : public Binary2RegisterBitRange {
+// Models a 2-register binary operation with two immediate values
+// defining a bit range.
+// Op<c> Rd, Rn, #<lsb>, #width
+// +--------+--------------+----------+--------+----------+------+--------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4| 3 2 1 0|
+// +--------+--------------+----------+--------+----------+------+--------+
+// |  cond  |              | widthm1  |   Rd   |    lsb   |      |   Rn   |
+// +--------+--------------+----------+--------+----------+------+--------+
+// Definitions:
+//   Rd = The destination register.
+//   Rn = The first operand
+//   lsb = The least significant bit to be used.
+//   widthm1 = The width of the bitfield minus 1.
+//      msb = imm5 = The most significant bit to be used.
+//
+// If Rd=R15, Rn=15, or lsbit + widthminus1 > 31, the instruction is
+// unpredictable.
+//
+// NaCl disallows writing Pc to cause a jump.
+class Binary2RegisterBitRangeNotRnIsPcBitfieldExtract : public ClassDecoder {
  public:
-  Binary2RegisterBitRangeNotRnIsPc() {}
+  // Interface for components of the instruction.
+  static const RegBits0To3Interface n;
+  static const Imm5Bits7To11Interface lsb;
+  static const RegBits12To15Interface d;
+  static const Imm5Bits16To20Interface widthm1;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  Binary2RegisterBitRangeNotRnIsPcBitfieldExtract() {}
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeNotRnIsPc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary2RegisterBitRangeNotRnIsPcBitfieldExtract);
 };
 
 // Models a 2-register binary operation with an immediate value.
@@ -803,13 +825,13 @@ class PreloadRegisterPairOp : public ClassDecoder {
 
 // Defines a PreloadRegisterPairOp where if Rn=Pc and R=1 (i.e. is for
 // write).
-class PreloadRegisterPairOpRAndRnNotPc : public PreloadRegisterPairOp {
+class PreloadRegisterPairOpWAndRnNotPc : public PreloadRegisterPairOp {
  public:
-  PreloadRegisterPairOpRAndRnNotPc() {}
+  PreloadRegisterPairOpWAndRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpRAndRnNotPc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(PreloadRegisterPairOpWAndRnNotPc);
 };
 
 // Models a 2-register load/store 12-bit immediate operation of the forms:
@@ -1140,39 +1162,26 @@ class Binary3RegisterOpAltA : public ClassDecoder {
 // +--------+--------------+--+--------+--------+----------------+--------+
 // |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4| 3 2 1 0|
 // +--------+--------------+--+--------+--------+----------------+--------+
-// |  cond  |              | S|   Rn   |   Rd   |                |   Rm   |
+// |  cond  |                 |   Rn   |   Rd   |                |   Rm   |
 // +--------+--------------+--+--------+--------+----------------+--------+
 // Definitions:
 //    Rd - The destination register.
 //    Rn - The first operand
 //    Rm - The second operand
-//    S - Defines if the flags register is updated.
 //
 // If Rd, Rm, or Rn is R15, the instruction is unpredictable.
 // NaCl disallows writing to PC to cause a jump.
-class Binary3RegisterOpAltB : public ClassDecoder {
+class Binary3RegisterOpAltBNoCondUpdates : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const RegBits0To3Interface m;
   static const RegBits12To15Interface d;
   static const RegBits16To19Interface n;
-  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  Binary3RegisterOpAltB() : ClassDecoder() {}
+  Binary3RegisterOpAltBNoCondUpdates() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltB);
-};
-
-// A Binary3RegisterOpAltB where the conditions flags are not set,
-// even though bit S is true.
-class Binary3RegisterOpAltBNoCondUpdates : public Binary3RegisterOpAltB {
- public:
-  Binary3RegisterOpAltBNoCondUpdates() {}
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -1951,11 +1960,11 @@ class VectorBinary3RegisterImmOp : public VectorBinary3RegisterOpBase {
 
 // Vector table lookup
 // Op<c> <Dd>, <list>, <Dm>
-// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
-// |31302928|2726252423|22|2120|19181716|15141312|1110| 9 8| 7| 6| 5| 4| 3 2 1 0|
-// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
-// |  cond  |          | D|    |   Vn   |   Vd   |    | len| N|op| M|  |   Vm   |
-// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------
+// |31302928|2726252423|22|2120|19181716|15141312|1110| 9 8| 7| 6| 5| 4| 3 2 1 0
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------
+// |  cond  |          | D|    |   Vn   |   Vd   |    | len| N|op| M|  |   Vm
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------
 // <Dd> - The destination register.
 // <list> - The list of up to 4 consecutive registers starting at <Dn>
 // len - The number of registers (minus 1).

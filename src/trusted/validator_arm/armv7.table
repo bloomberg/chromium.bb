@@ -533,21 +533,24 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                  cccc0000111shhhhllllmmmm1001nnnn RegsNotPc
 +--
 
+# None of the instructions in the following table set NZCV flags,
+# they only set the APSR's sticky Q bit (for saturation), but we
+# don't model it.
 +-- saturating_addition_and_subtraction (See Section A5.2.6)
 | op(22:21)
-| 00        = Binary3RegisterOpAltB
+| 00        = Binary3RegisterOpAltBNoCondUpdates
               => Defs12To15CondsDontCareRnRdRmNotPc
               Qadd_Rule_124_A1_P250
               cccc00010000nnnndddd00000101mmmm RegsNotPc (v5TE)
-| 01        = Binary3RegisterOpAltB
+| 01        = Binary3RegisterOpAltBNoCondUpdates
               => Defs12To15CondsDontCareRnRdRmNotPc
               Qsub_Rule_131_A1_P264
               cccc00010010nnnndddd00000101mmmm RegsNotPc (v5TE)
-| 10        = Binary3RegisterOpAltB
+| 10        = Binary3RegisterOpAltBNoCondUpdates
               => Defs12To15CondsDontCareRnRdRmNotPc
               Qdadd_Rule_128_A1_P258
               cccc00010100nnnndddd00000101mmmm RegsNotPc (v5TE)
-| 11        = Binary3RegisterOpAltB
+| 11        = Binary3RegisterOpAltBNoCondUpdates
               => Defs12To15CondsDontCareRnRdRmNotPc
               Qdsub_Rule_129_A1_P260
               cccc00010110nnnndddd00000101mmmm RegsNotPc (v5TE)
@@ -910,7 +913,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         Usad8_Rule_253_A1_P500
                                         cccc01111000dddd1111mmmm0001nnnn
                                         RegsNotPc (v6)
-| "          000      ~1111     -     = Binary4RegisterDualOp
+| "          "        ~1111     -     = Binary4RegisterDualOp
                                         => Defs16To19CondsDontCareRdRaRmRnNotPc
                                         Usada8_Rule_254_A1_P502
                                         cccc01111000ddddaaaammmm0001nnnn
@@ -918,87 +921,87 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                                         # is Ra (not Rd as column name
                                         # suggests).
                                         RegsNotPc (v6)
-| 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
-                                        => Defs12To15CondsDontCareRdRnNotPc
-# TODO(karl) Add (explicit) restriction:
-#   mdbit = lsbit + widthminus1
-#   if msbit <= 32 then
-#      R[d] = SignExtend(R[n]<msbit:lsbit>, 32)
-#   else
-#      UNPREDICTABLE.
+| 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+                                        => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract
                                         Sbfx_Rule_154_A1_P308
-                                        cccc0111101wwwwwddddlllll101nnnn (v6T2)
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
-| 1110x      x00      -         1111  = Unary1RegisterBitRange
+                                        cccc0111101wwwwwddddlllll101nnnn
+                                        RegsNotPc (v6T2)
+| 1110x      x00      -         1111  = Unary1RegisterBitRangeMsbGeLsb
                                         # Note: Alternative form for clearing
                                         # bits in a memory address (i.e.
                                         # alternative for bic).
                                         Bfc_17_A1_P46
-                                        cccc0111110mmmmmddddlllll0011111 (v6T2)
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
-| "          x00      -         ~1111 = Binary2RegisterBitRange
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
-                                        => Defs12To15CondsDontCare
+                                        cccc0111110mmmmmddddlllll0011111
+                                        RegsNotPc (v6T2)
+| "          "        -         ~1111 = Binary2RegisterBitRangeMsbGeLsb
+                                        => Defs12To15CondsDontCareMsbGeLsb
                                         Bfi_Rule_18_A1_P48
                                         cccc0111110mmmmmddddlllll001nnnn
-                                        (v6T2)
-| 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
-                                        => Defs12To15CondsDontCareRdRnNotPc
-# TODO(karl) Add same restriction as for Sbfx_Rule_154_A1_P308
+                                        RegsNotPc (v6T2)
+| 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+                                        => Defs12To15CondsDontCareRdRnNotPcBitfieldExtract
                                         Ubfx_Rule_236_A1_P466
-                                        cccc0111111mmmmmddddlllll101nnnn (v6T2)
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
+                                        cccc0111111mmmmmddddlllll101nnnn
+                                        RegsNotPc (v6T2)
 | 11111      111      -         -     = Roadblock  # Permanently Undefined
+                                        # Note: the UDF mnemonic only applies
+                                        #   when cond == 0b1110, but all
+                                        #   encodings are permanently undefined.
+                                        Udf_Rule_A1
+                                        cccc01111111iiiiiiiiiiii1111iiii
 | else:                               = Undefined  # Note on page A5-21
 +--
 
+# None of the instructions in the following table set NZCV flags.
+# Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
+# but we don't model them.
 +-- parallel_addition_and_subtraction_signed (See Section A5.4.1)
 | op1(21:20) op2(7:5)
-| 01         000      = Binary3RegisterOpAltB
+| 01         000      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Sadd16_Rule_148_A1_P296
                         cccc01100001nnnndddd11110001mmmm RegsNotPc (v6)
-| 01         001      = Binary3RegisterOpAltB
+| 01         001      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Sasx_Rule_150_A1_P300
                         cccc01100001nnnndddd11110011mmmm RegsNotPc (v6)
-| 01         010      = Binary3RegisterOpAltB
+| 01         010      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Ssax_Rule_185_A1_P366
                         cccc01100001nnnndddd11110101mmmm RegsNotPc (v6)
-| 01         011      = Binary3RegisterOpAltB
+| 01         011      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Ssub16_Rule_186_A1_P368
                         cccc01100001nnnndddd11110111mmmm RegsNotPc (v6)
-| 01         100      = Binary3RegisterOpAltB
+| 01         100      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
-                        Ssad8_Rule_149_A1_P298
+                        Sadd8_Rule_149_A1_P298
                         cccc01100001nnnndddd11111001mmmm RegsNotPc (v6)
-| 01         111      = Binary3RegisterOpAltB
+| 01         111      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Ssub8_Rule_187_A1_P370
                         cccc01100001nnnndddd11111111mmmm RegsNotPc (v6)
-| 10         000      = Binary3RegisterOpAltB
+| 10         000      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Qadd16_Rule_125_A1_P252
                         cccc01100010nnnndddd11110001mmmm RegsNotPc (v6)
-| 10         001      = Binary3RegisterOpAltB
+| 10         001      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Qasx_Rule_127_A1_P256
                         cccc01100010nnnndddd11110011mmmm RegsNotPc (v6)
-| 10         010      = Binary3RegisterOpAltB
+| 10         010      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Qsax_Rule_130_A1_P262
                         cccc01100010nnnndddd11110101mmmm RegsNotPc (v6)
-| 10         011      = Binary3RegisterOpAltB
+| 10         011      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Qsub16_Rule_132_A1_P266
                         cccc01100010nnnndddd11110111mmmm RegsNotPc (v6)
-| 10         100      = Binary3RegisterOpAltB
+| 10         100      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Qadd8_Rule_126_A1_P254
                         cccc01100010nnnndddd11111001mmmm RegsNotPc (v6)
-| 10         111      = Binary3RegisterOpAltB
+| 10         111      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Qsub8_Rule_133_A1_P268
                         cccc01100010nnnndddd11111111mmmm RegsNotPc (v6)
@@ -1029,53 +1032,56 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:               = Undefined  # Note on page A5-23
 +--
 
+# None of the instructions in the following table set NZCV flags.
+# Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
+# but we don't model them.
 +-- parallel_addition_and_subtraction_unsigned (See Section A5.4.2)
 | op1(21:20) op2(7:5)
-| 01         000      = Binary3RegisterOpAltB
+| 01         000      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uadd16_Rule_233_A1_P460
                         cccc01100101nnnndddd11110001mmmm RegsNotPc (v6)
-| 01         001      = Binary3RegisterOpAltB
+| 01         001      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uasx_Rule_235_A1_P464
                         cccc01100101nnnndddd11110011mmmm RegsNotPc (v6)
-| 01         010      = Binary3RegisterOpAltB
+| 01         010      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Usax_Rule_257_A1_P508
                         cccc01100101nnnndddd11110101mmmm RegsNotPc (v6)
-| 01         011      = Binary3RegisterOpAltB
+| 01         011      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Usub16_Rule_258_A1_P510
                         cccc01100101nnnndddd11110111mmmm RegsNotPc (v6)
-| 01         100      = Binary3RegisterOpAltB
+| 01         100      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uadd8_Rule_234_A1_P462
                         cccc01100101nnnndddd11111001mmmm RegsNotPc (v6)
-| 01         111      = Binary3RegisterOpAltB
+| 01         111      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Usub8_Rule_259_A1_P512
                         cccc01100101nnnndddd11111111mmmm RegsNotPc (v6)
-| 10         000      = Binary3RegisterOpAltB
+| 10         000      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uqadd16_Rule_247_A1_P488
                         cccc01100110nnnndddd11110001mmmm RegsNotPc (v6)
-| 10         001      = Binary3RegisterOpAltB
+| 10         001      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uqasx_Rule_249_A1_P492
                         cccc01100110nnnndddd11110011mmmm RegsNotPc (v6)
-| 10         010      = Binary3RegisterOpAltB
+| 10         010      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uqsax_Rule_250_A1_P494
                         cccc01100110nnnndddd11110101mmmm RegsNotPc (v6)
-| 10         011      = Binary3RegisterOpAltB
+| 10         011      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uqsub16_Rule_251_A1_P496
                         cccc01100110nnnndddd11110111mmmm RegsNotPc (v6)
-| 10         100      = Binary3RegisterOpAltB
+| 10         100      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uqadd8_Rule_248_A1_P490
                         cccc01100110nnnndddd11111001mmmm RegsNotPc (v6)
-| 10         111      = Binary3RegisterOpAltB
+| 10         111      = Binary3RegisterOpAltBNoCondUpdates
                         => Defs12To15CondsDontCareRnRdRmNotPc
                         Uqsub8_Rule_252_A1_P498
                         cccc01100110nnnndddd11111111mmmm RegsNotPc (v6)
@@ -1106,104 +1112,99 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | else:               = Undefined  # Note on page A5-23
 +--
 
+# None of the instructions in the following table set NZCV flags.
+# Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
+# but we don't model them.
 +-- packing_unpacking_saturation_and_reversal (See Section A5.4.3)
 | op1(22:20) op2(7:5) A(19:16)
 | 000        xx0      -        = Binary3RegisterImmedShiftedOpRegsNotPc
                                  => Defs12To15CondsDontCareRnRdRmNotPc
                                  Pkh_Rule_116_A1_P234
-                                 cccc01101000nnnnddddiiiiit01mmmm
-                                 RegsNotPc (v6)
-| 01x        xx0      -        = Unary2RegisterSatImmedShiftedOp
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Ssat_Rule_183_A1_P362
-                                 cccc0110101iiiiiddddiiiiis01nnnn (v6)
-| 11x        xx0      -        = Unary2RegisterSatImmedShiftedOp
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Usat_Rule_255_A1_P504
-                                 cccc0110111iiiiiddddiiiiis01nnnn (v6)
-| 000        011      ~1111    = Binary3RegisterImmedShiftedOpRegsNotPc
-                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 cccc01101000nnnnddddiiiiit01mmmm RegsNotPc (v6)
+| "          011      ~1111    = Binary3RegisterImmedShiftedOpRegsNotPc
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
                                  Sxtab16_Rule_221_A1_P436
-                                 cccc01101000nnnnddddrr000111mmmm
-                                 NotRnIsPcAndRegsNotPc (v6)
+                                 cccc01101000nnnnddddrr000111mmmm RegsNotPc (v6)
 | "          "        1111     = Unary2RegisterImmedShiftedOpRegsNotPc
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Sxtb16_Rule_224_A1_P442
-                                 cccc011010001111ddddrr000111mmmm (v6)
-| "          101      -        = Binary3RegisterOpAltB
+                                 cccc011010001111ddddrr000111mmmm RegsNotPc (v6)
+| "          101      -        = Binary3RegisterOpAltBNoCondUpdates
                                  => Defs12To15CondsDontCareRnRdRmNotPc
                                  Sel_Rule_156_A1_P312
-                                 cccc01101000nnnndddd11111011mmmm
-                                 RegsNotPc (v6)
+                                 cccc01101000nnnndddd11111011mmmm RegsNotPc (v6)
+| 01x        xx0      -        = Unary2RegisterSatImmedShiftedOp
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Ssat_Rule_183_A1_P362
+                                 cccc0110101iiiiiddddiiiiis01nnnn RegsNotPc (v6)
 | 010        001      -        = Unary2RegisterSatImmedShiftedOp
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Ssat16_Rule_184_A1_P364
-                                 cccc01101010iiiidddd11110011nnnn (v6)
-| "          011      ~1111    = Binary3RegisterOpAltB
-                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 cccc01101010iiiidddd11110011nnnn RegsNotPc (v6)
+| "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
                                  Sxtab_Rule_220_A1_P434
-                                 cccc01101010nnnnddddrr000111mmmm
-                                 NotRnIsPcAndRegsNotPc (v6)
+                                 cccc01101010nnnnddddrr000111mmmm RegsNotPc (v6)
 | "          "        1111     = Unary2RegisterImmedShiftedOpRegsNotPc
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Sxtb_Rule_223_A1_P440
-                                 cccc011010101111ddddrr000111mmmm (v6)
+                                 cccc011010101111ddddrr000111mmmm RegsNotPc (v6)
 | 011        001      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Rev_Rule_135_A1_P272
-                                 cccc011010111111dddd11110011mmmm (v6)
+                                 cccc011010111111dddd11110011mmmm RegsNotPc (v6)
 | "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
                                  Sxtah_Rule_222_A1_P438
-                                 cccc01101011nnnnddddrr000111mmmm
-                                 NotRnIsPc (v6)
+                                 cccc01101011nnnnddddrr000111mmmm RegsNotPc (v6)
 | "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Sxth_Rule_225_A1_P444
-                                 cccc011010111111ddddrr000111mmmm (v6)
-| 011        101      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
+                                 cccc011010111111ddddrr000111mmmm RegsNotPc (v6)
+| "          101      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Rev16_Rule_136_A1_P274
-                                 cccc011010111111dddd11111011mmmm (v6)
+                                 cccc011010111111dddd11111011mmmm RegsNotPc (v6)
 | 100        011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
-                                 Uxtah_Rule_262_A1_P516
-                                 cccc01101100nnnnddddrr000111mmmm
-                                 NotRnIsPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPc
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
+                                 Uxtab16_Rule_262_A1_P516
+                                 cccc01101100nnnnddddrr000111mmmm RegsNotPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Uxtb16_Rule_264_A1_P522
-                                 cccc011011001111ddddrr000111mmmm (v6)
+                                 cccc011011001111ddddrr000111mmmm RegsNotPc (v6)
+| 11x        xx0      -        = Unary2RegisterSatImmedShiftedOp
+                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 Usat_Rule_255_A1_P504
+                                 cccc0110111iiiiiddddiiiiis01nnnn RegsNotPc (v6)
 | 110        001      -        = Unary2RegisterSatImmedShiftedOp
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Usat16_Rule_256_A1_P506
-                                 cccc01101110iiiidddd11110011nnnn (v6)
+                                 cccc01101110iiiidddd11110011nnnn RegsNotPc (v6)
 | "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
                                  Uxtab_Rule_260_A1_P514
-                                 cccc01101110nnnnddddrr000111mmmm
-                                 NotRnIsPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPc
+                                 cccc01101110nnnnddddrr000111mmmm RegsNotPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Uxtb_Rule_263_A1_P520
-                                 cccc011011101111ddddrr000111mmmm (v6)
-| 111        001      -        = Unary2RegisterOpNotRmIsPc
+                                 cccc011011101111ddddrr000111mmmm RegsNotPc (v6)
+| 111        001      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Rbit_Rule_134_A1_P270
-                                 cccc011011111111dddd11110011mmmm (v6T2)
+                                 cccc011011111111dddd11110011mmmm RegsNotPc (v6T2)
 | "          011      ~1111    = Binary3RegisterOpAltBNoCondUpdates
-                                 => Defs12To15CondsDontCareRdRnNotPc
+                                 => Defs12To15CondsDontCareRnRdRmNotPc
                                  Uxtah_Rule_262_A1_P518
-                                 cccc01101111nnnnddddrr000111mmmm
-                                 NotRnIsPc (v6)
-| "          "        1111     = Unary2RegisterOpNotRmIsPc
+                                 cccc01101111nnnnddddrr000111mmmm RegsNotPc (v6)
+| "          "        1111     = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Uxth_Rule_265_A1_P524
-                                 cccc011011111111ddddrr000111mmmm (v6)
-| "          101      -        = Unary2RegisterOpNotRmIsPc
+                                 cccc011011111111ddddrr000111mmmm RegsNotPc (v6)
+| "          101      -        = Unary2RegisterOpNotRmIsPcNoCondUpdates
                                  => Defs12To15CondsDontCareRdRnNotPc
                                  Revsh_Rule_137_A1_P276
-                                 cccc011011111111dddd11111011mmmm (v6)
+                                 cccc011011111111dddd11111011mmmm RegsNotPc (v6)
 | else:                        = Undefined  # Note on page A5-24
 +--
 
@@ -1731,12 +1732,12 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                               11110110u101nnnn1111iiiiitt0mmmm
 # TODO(karl) Add (explicit) safety constraint that Rm can't be PC.
                               (v7)
-| 111_x001   xxx0     -     = PreloadRegisterPairOpRAndRnNotPc
+| 111_x001   xxx0     -     = PreloadRegisterPairOpWAndRnNotPc
                               Pldw_Rule_119_A1_P240
                               11110111u001nnnn1111iiiiitt0mmmm
 # TODO(karl) Add (explicit) safety constraint that Rn and Rm can't be PC.
                               (MP)
-| 111_x101   xxx0     -     = PreloadRegisterPairOpRAndRnNotPc
+| 111_x101   xxx0     -     = PreloadRegisterPairOpWAndRnNotPc
                               Pld_Rule_119_A1_P240
                               11110111u101nnnn1111iiiiitt0mmmm
 # TODO(karl) Add (explicit) xsafety constraint that Rn and Rm can't be PC.

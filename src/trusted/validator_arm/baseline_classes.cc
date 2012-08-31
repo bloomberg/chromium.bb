@@ -132,25 +132,30 @@ RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
-// Binary2RegisterBitRange
-SafetyLevel Binary2RegisterBitRange::safety(Instruction i) const {
-  if (d.reg(i).Equals(kRegisterPc))
-    return UNPREDICTABLE;
-
-  // Note: We would restrict out PC as well for Rd in NaCl, but no need
-  // since the ARM restriction doesn't allow it anyway.
-  return MAY_BE_SAFE;
+// Binary2RegisterBitRangeMsbGeLsb
+SafetyLevel Binary2RegisterBitRangeMsbGeLsb::safety(Instruction i) const {
+  return (d.reg(i).Equals(kRegisterPc) ||
+          (msb.value(i) < lsb.value(i)))
+      ? UNPREDICTABLE
+      : MAY_BE_SAFE;
 }
 
-RegisterList Binary2RegisterBitRange::defs(Instruction i) const {
+RegisterList Binary2RegisterBitRangeMsbGeLsb::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
-// Binary2RegisterBitRangeNotRnIsPc
-SafetyLevel Binary2RegisterBitRangeNotRnIsPc::safety(Instruction i) const {
-  if (n.reg(i).Equals(kRegisterPc))
-    return UNPREDICTABLE;
-  return Binary2RegisterBitRange::safety(i);
+// Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+SafetyLevel Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+::safety(Instruction i) const {
+  return (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc) ||
+          (lsb.value(i) + widthm1.value(i) > 31))
+      ? UNPREDICTABLE
+      : MAY_BE_SAFE;
+}
+
+RegisterList Binary2RegisterBitRangeNotRnIsPcBitfieldExtract
+::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
 }
 
 // Binary2RegisterImmediateOp
@@ -254,8 +259,9 @@ RegisterList Binary3RegisterOpAltA::defs(const Instruction i) const {
 }
 
 
-// Binary3RegisterOpAltB
-SafetyLevel Binary3RegisterOpAltB::safety(const Instruction i) const {
+// Binary3RegisterOpAltBNoCondUpdates
+SafetyLevel Binary3RegisterOpAltBNoCondUpdates::
+safety(const Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
       Contains(kRegisterPc)) {
@@ -267,13 +273,8 @@ SafetyLevel Binary3RegisterOpAltB::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-RegisterList Binary3RegisterOpAltB::defs(const Instruction i) const {
-  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
-}
-
-// Binary3RegisterOpAltBNoCondUpdates
-RegisterList Binary3RegisterOpAltBNoCondUpdates::
-defs(const Instruction i) const {
+RegisterList Binary3RegisterOpAltBNoCondUpdates
+::defs(const Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
@@ -477,11 +478,11 @@ RegisterList PreloadRegisterPairOp::defs(const Instruction i) const {
   return kCondsDontCare;
 }
 
-// PreloadRegisterPairOpRAndRnNotPc
-SafetyLevel PreloadRegisterPairOpRAndRnNotPc::safety(Instruction i) const {
+// PreloadRegisterPairOpWAndRnNotPc
+SafetyLevel PreloadRegisterPairOpWAndRnNotPc::safety(Instruction i) const {
   // Defined in version C of ARM ARM v7 manual.
   // if m==15 || (n==15 && is_pldw) then UNPREDICTABLE;
-  if (read.IsDefined(i) and n.reg(i).Equals(kRegisterPc))
+  if (!read.IsDefined(i) && n.reg(i).Equals(kRegisterPc))
     return FORBIDDEN_OPERANDS;
   return PreloadRegisterPairOp::safety(i);
 }

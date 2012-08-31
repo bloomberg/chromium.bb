@@ -19,7 +19,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , DataBarrier_instance_()
   , Defs12To15_instance_()
   , Defs12To15CondsDontCare_instance_()
+  , Defs12To15CondsDontCareMsbGeLsb_instance_()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
+  , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
   , Defs12To15CondsDontCareRdRnRsRmNotPc_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Defs12To15RdRmRnNotPc_instance_()
@@ -50,7 +52,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , NotImplemented_instance_()
   , PreloadRegisterPairOp_instance_()
-  , PreloadRegisterPairOpRAndRnNotPc_instance_()
+  , PreloadRegisterPairOpWAndRnNotPc_instance_()
   , Roadblock_instance_()
   , Store2RegisterImm12OpRnNotRtOnWriteback_instance_()
   , StoreBasedImmedMemory_instance_()
@@ -63,7 +65,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreVectorRegister_instance_()
   , StoreVectorRegisterList_instance_()
   , TestIfAddressMasked_instance_()
-  , Unary1RegisterBitRange_instance_()
+  , Unary1RegisterBitRangeMsbGeLsb_instance_()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
   , Undefined_instance_()
@@ -811,18 +813,18 @@ const ClassDecoder& Arm32DecoderState::decode_media_instructions(
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
       (insn.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0) == ~1111 */) {
-    return Defs12To15CondsDontCare_instance_;
+    return Defs12To15CondsDontCareMsbGeLsb_instance_;
   }
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
       (insn.Bits() & 0x0000000F) == 0x0000000F /* Rn(3:0) == 1111 */) {
-    return Unary1RegisterBitRange_instance_;
+    return Unary1RegisterBitRangeMsbGeLsb_instance_;
   }
 
   if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20) == 11x1x */ &&
       (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */) {
-    return Defs12To15CondsDontCareRdRnNotPc_instance_;
+    return Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
   }
 
   if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */) {
@@ -907,13 +909,13 @@ const ClassDecoder& Arm32DecoderState::decode_memory_hints_advanced_simd_instruc
   if ((insn.Bits() & 0x07700000) == 0x07100000 /* op1(26:20) == 111x001 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
       (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOpRAndRnNotPc_instance_;
+    return PreloadRegisterPairOpWAndRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x07700000) == 0x07500000 /* op1(26:20) == 111x101 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
       (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return PreloadRegisterPairOpRAndRnNotPc_instance_;
+    return PreloadRegisterPairOpWAndRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x06300000) == 0x04300000 /* op1(26:20) == 10xxx11 */) {
@@ -1307,12 +1309,28 @@ const ClassDecoder& Arm32DecoderState::decode_packing_unpacking_saturation_and_r
 
   if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(22:20) == x11 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */ &&
+      (insn.Bits() & 0x00000300) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+  }
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(22:20) == x11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */ &&
       (insn.Bits() & 0x00000300) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
     return Defs12To15CondsDontCareRdRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x00100000) == 0x00000000 /* op1(22:20) == xx0 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16) == ~1111 */ &&
+      (insn.Bits() & 0x00000300) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+  }
+
+  if ((insn.Bits() & 0x00100000) == 0x00000000 /* op1(22:20) == xx0 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16) == 1111 */ &&
       (insn.Bits() & 0x00000300) == 0x00000000 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) {
     return Defs12To15CondsDontCareRdRnNotPc_instance_;
   }

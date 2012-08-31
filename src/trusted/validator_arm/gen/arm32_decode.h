@@ -133,7 +133,9 @@ class Arm32DecoderState : DecoderState {
   const DataBarrier DataBarrier_instance_;
   const Defs12To15 Defs12To15_instance_;
   const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
+  const Defs12To15CondsDontCareMsbGeLsb Defs12To15CondsDontCareMsbGeLsb_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
+  const Defs12To15CondsDontCareRdRnNotPcBitfieldExtract Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;
   const Defs12To15CondsDontCareRdRnRsRmNotPc Defs12To15CondsDontCareRdRnRsRmNotPc_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Defs12To15RdRmRnNotPc Defs12To15RdRmRnNotPc_instance_;
@@ -164,7 +166,7 @@ class Arm32DecoderState : DecoderState {
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const NotImplemented NotImplemented_instance_;
   const PreloadRegisterPairOp PreloadRegisterPairOp_instance_;
-  const PreloadRegisterPairOpRAndRnNotPc PreloadRegisterPairOpRAndRnNotPc_instance_;
+  const PreloadRegisterPairOpWAndRnNotPc PreloadRegisterPairOpWAndRnNotPc_instance_;
   const Roadblock Roadblock_instance_;
   const Store2RegisterImm12OpRnNotRtOnWriteback Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
@@ -177,7 +179,7 @@ class Arm32DecoderState : DecoderState {
   const StoreVectorRegister StoreVectorRegister_instance_;
   const StoreVectorRegisterList StoreVectorRegisterList_instance_;
   const TestIfAddressMasked TestIfAddressMasked_instance_;
-  const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
+  const Unary1RegisterBitRangeMsbGeLsb Unary1RegisterBitRangeMsbGeLsb_instance_;
   const Unary1RegisterSet Unary1RegisterSet_instance_;
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;

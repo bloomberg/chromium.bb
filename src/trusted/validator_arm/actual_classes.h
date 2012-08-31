@@ -166,6 +166,37 @@ class Defs12To15CondsDontCareRdRnNotPc : public Defs12To15CondsDontCare {
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCareRdRnNotPc);
 };
 
+// Extra bitfield insert checks:
+//   if msb < lsb then UNPREDICTABLE
+class Defs12To15CondsDontCareMsbGeLsb : public Defs12To15CondsDontCare {
+ public:
+  static const Imm5Bits7To11Interface lsb;
+  static const Imm5Bits16To20Interface msb;
+
+  Defs12To15CondsDontCareMsbGeLsb() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCareMsbGeLsb);
+};
+
+// Extra bitfield extract checks:
+//   msbit = lsbit + widthminus1
+//   if msbit > 31 then UNPREDICTABLE
+class Defs12To15CondsDontCareRdRnNotPcBitfieldExtract
+    : public Defs12To15CondsDontCareRdRnNotPc {
+ public:
+  static const Imm5Bits7To11Interface lsb;
+  static const Imm5Bits16To20Interface widthm1;
+
+  Defs12To15CondsDontCareRdRnNotPcBitfieldExtract() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Defs12To15CondsDontCareRdRnNotPcBitfieldExtract);
+};
+
 // Defs12To15 where registers Rd(15:12) and Rn(3:0) are not PC.
 //
 // Note: Some instructions may use other names for the registers,
@@ -1116,11 +1147,11 @@ class Unary1RegisterUse : public ClassDecoder {
 //    msb = lsb + width - 1 - The most significant bit to be modified
 //    width = msb - lsb + 1 - The number of bits to be modified.
 //
-// If Rd is R15, the instruction is unpredictable.
+// If Rd is R15 or msbit < lsbit, the instruction is unpredictable.
 // NaCl disallows writing to PC to cause a jump.
 // Note: Currently, only implements bfc. (A8-46), which is used as an
 // alternative form of masking to that of bic.
-class Unary1RegisterBitRange : public ClassDecoder {
+class Unary1RegisterBitRangeMsbGeLsb : public ClassDecoder {
  public:
   // Interface for components of the instruction.
   static const Imm5Bits7To11Interface lsb;
@@ -1129,13 +1160,13 @@ class Unary1RegisterBitRange : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  Unary1RegisterBitRange() : ClassDecoder() {}
+  Unary1RegisterBitRangeMsbGeLsb() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual bool clears_bits(Instruction i, uint32_t mask) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRange);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeMsbGeLsb);
 };
 
 }  // namespace nacl_arm_dec
