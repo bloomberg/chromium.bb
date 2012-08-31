@@ -387,16 +387,18 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewAura::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  if (text_input_type_ != params.type
-      || can_compose_inline_ != params.can_compose_inline) {
+  if (text_input_type_ != params.type ||
+      can_compose_inline_ != params.can_compose_inline) {
     text_input_type_ = params.type;
     can_compose_inline_ = params.can_compose_inline;
-    GetInputMethod()->OnTextInputTypeChanged(this);
+    if (GetInputMethod())
+      GetInputMethod()->OnTextInputTypeChanged(this);
   }
 }
 
 void RenderWidgetHostViewAura::ImeCancelComposition() {
-  GetInputMethod()->CancelComposition(this);
+  if (GetInputMethod())
+    GetInputMethod()->CancelComposition(this);
   has_composition_text_ = false;
 }
 
@@ -472,7 +474,8 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
   selection_start_rect_ = start_rect;
   selection_end_rect_ = end_rect;
 
-  GetInputMethod()->OnCaretBoundsChanged(this);
+  if (GetInputMethod())
+    GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
@@ -1082,7 +1085,8 @@ void RenderWidgetHostViewAura::OnInputMethodChanged() {
   if (!host_)
     return;
 
-  host_->SetInputMethodActive(GetInputMethod()->IsActive());
+  if (GetInputMethod())
+    host_->SetInputMethodActive(GetInputMethod()->IsActive());
 
   // TODO(suzhe): implement the newly added “locale” property of HTML DOM
   // TextEvent.
