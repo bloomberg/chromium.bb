@@ -268,7 +268,7 @@ class SimpleHost : public HeartbeatSender::Listener {
           this, host_id_, signal_strategy_.get(), &key_pair_));
     }
 
-    host_->Start();
+    host_->Start(xmpp_login_);
 
     // Create a Me2Me authenticator factory.
     if (!is_it2me_) {

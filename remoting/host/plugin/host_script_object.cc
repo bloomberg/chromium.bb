@@ -607,7 +607,7 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   }
 
   signal_strategy_->Connect();
-  host_->Start();
+  host_->Start(uid);
 
   SetState(kRequestedAccessCode);
   return;

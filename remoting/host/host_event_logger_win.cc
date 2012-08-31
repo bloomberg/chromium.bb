@@ -38,6 +38,7 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
       const std::string& jid,
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
+  virtual void OnStart(const std::string& xmpp_login) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
@@ -101,6 +102,11 @@ void HostEventLoggerWin::OnClientRouteChange(
 }
 
 void HostEventLoggerWin::OnShutdown() {
+  // TODO(rmsousa): Fix host shutdown to actually call this, and add a log line.
+}
+
+void HostEventLoggerWin::OnStart(const std::string& xmpp_login) {
+  LogString(EVENTLOG_INFORMATION_TYPE, MSG_HOST_STARTED, xmpp_login);
 }
 
 void HostEventLoggerWin::Log(WORD type,

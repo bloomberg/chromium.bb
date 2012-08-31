@@ -80,7 +80,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // network and start listening for incoming connections.
   //
   // This method can only be called once during the lifetime of this object.
-  void Start();
+  void Start(const std::string& xmpp_login);
 
   // Asynchronously shutdown the host process. |shutdown_task| is
   // called after shutdown is completed.

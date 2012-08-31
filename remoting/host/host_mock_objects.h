@@ -149,6 +149,7 @@ class MockHostStatusObserver : public HostStatusObserver {
                void(const std::string& jid,
                     const std::string& channel_name,
                     const protocol::TransportRoute& route));
+  MOCK_METHOD1(OnStart, void(const std::string& xmpp_login));
   MOCK_METHOD0(OnShutdown, void());
 };
 

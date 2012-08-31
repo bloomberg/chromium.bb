@@ -51,3 +51,11 @@ SymbolicName=MSG_HOST_CLIENT_ROUTING_CHANGED
 Language=English
 Channel IP for client: %1 ip='%2' host_ip='%3' channel='%4' connection='%5'.
 .
+
+MessageId=5
+Severity=Informational
+Facility=Host
+SymbolicName=MSG_HOST_STARTED
+Language=English
+Host started for user: %1.
+.

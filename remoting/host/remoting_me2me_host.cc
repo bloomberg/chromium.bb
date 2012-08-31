@@ -541,7 +541,7 @@ class HostProcess
     }
 #endif
 
-    host_->Start();
+    host_->Start(xmpp_login_);
 
     CreateAuthenticatorFactory();
   }

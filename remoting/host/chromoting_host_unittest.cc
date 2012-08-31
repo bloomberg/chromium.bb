@@ -109,6 +109,7 @@ class ChromotingHostTest : public testing::Test {
         scoped_ptr<ContinueWindow>(continue_window_),
         scoped_ptr<LocalInputMonitor>(local_input_monitor_));
 
+    xmpp_login_ = "host@domain";
     session1_ = new MockSession();
     session2_ = new MockSession();
     session_unowned1_.reset(new MockSession());
@@ -286,6 +287,7 @@ class ChromotingHostTest : public testing::Test {
   // that the session manager has started.
   Expectation ExpectHostAndSessionManagerStart() {
     ExpectHostStart();
+    EXPECT_CALL(host_status_observer_, OnStart(xmpp_login_));
     return EXPECT_CALL(*session_manager_, Init(_, host_.get()));
   }
 
@@ -375,6 +377,7 @@ class ChromotingHostTest : public testing::Test {
   MockHostStatusObserver host_status_observer_;
   MockChromotingHostContext context_;
   protocol::MockSessionManager* session_manager_;
+  std::string xmpp_login_;
   MockConnectionToClient* connection1_;
   scoped_ptr<MockConnectionToClient> owned_connection1_;
   ClientSession* client1_;
@@ -429,7 +432,7 @@ TEST_F(ChromotingHostTest, StartAndShutdown) {
   Expectation start = ExpectHostAndSessionManagerStart();
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(start);
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   message_loop_.PostTask(
       FROM_HERE, base::Bind(
           &ChromotingHost::Shutdown, host_.get(),
@@ -447,7 +450,7 @@ TEST_F(ChromotingHostTest, Connect) {
       0, true, video_packet_sent, InvokeWithoutArgs(DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected);
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
@@ -462,7 +465,7 @@ TEST_F(ChromotingHostTest, RejectAuthenticatingClient) {
       InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, true);
   message_loop_.Run();
 }
@@ -473,7 +476,7 @@ TEST_F(ChromotingHostTest, AuthenticationFailed) {
       .WillOnce(InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, false, false);
   message_loop_.Run();
 }
@@ -497,7 +500,7 @@ TEST_F(ChromotingHostTest, Reconnect) {
       1, true, video_packet_sent2, InvokeWithoutArgs(DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected2);
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
   SimulateClientConnection(1, true, false);
@@ -523,7 +526,7 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
       1, true, video_packet_sent2, InvokeWithoutArgs(DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown()).After(client_disconnected2);
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
@@ -544,7 +547,7 @@ TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
 
   host_->set_protocol_config(
       protocol::CandidateSessionConfig::CreateDefault().release());
-  host_->Start();
+  host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::ACCEPT;
@@ -566,7 +569,7 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
 
   host_->set_protocol_config(
       protocol::CandidateSessionConfig::CreateDefault().release());
-  host_->Start();
+  host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
@@ -588,7 +591,7 @@ TEST_F(ChromotingHostTest, IncomingSessionOverload) {
 
   host_->set_protocol_config(
       protocol::CandidateSessionConfig::CreateDefault().release());
-  host_->Start();
+  host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::DECLINE;
@@ -617,7 +620,7 @@ TEST_F(ChromotingHostTest, OnSessionRouteChange) {
   ExpectClientDisconnected(0, true, route_change, InvokeWithoutArgs(DoNothing));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }
@@ -630,7 +633,7 @@ TEST_F(ChromotingHostTest, DisconnectAllClients) {
       InvokeWithoutArgs(this, &ChromotingHostTest::ShutdownHost));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->Start();
+  host_->Start(xmpp_login_);
   SimulateClientConnection(0, true, false);
   message_loop_.Run();
 }

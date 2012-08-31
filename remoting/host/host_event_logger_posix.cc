@@ -37,6 +37,7 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
       const std::string& jid,
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
+  virtual void OnStart(const std::string& xmpp_login) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
  private:
@@ -56,7 +57,6 @@ HostEventLoggerPosix::HostEventLoggerPosix(ChromotingHost* host,
       application_name_(application_name) {
   openlog(application_name_.c_str(), 0, LOG_USER);
   host_->AddStatusObserver(this);
-  Log("Started");
 }
 
 HostEventLoggerPosix::~HostEventLoggerPosix() {
@@ -89,6 +89,11 @@ void HostEventLoggerPosix::OnClientRouteChange(
 }
 
 void HostEventLoggerPosix::OnShutdown() {
+  // TODO(rmsousa): Fix host shutdown to actually call this, and add a log line.
+}
+
+void HostEventLoggerPosix::OnStart(const std::string& xmpp_login) {
+  Log("Host started for user: " + xmpp_login);
 }
 
 void HostEventLoggerPosix::Log(const std::string& message) {

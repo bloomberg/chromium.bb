@@ -44,6 +44,9 @@ class HostStatusObserver {
                                    const std::string& channel_name,
                                    const protocol::TransportRoute& route) {}
 
+  // Called when hosting is started for an account.
+  virtual void OnStart(const std::string& xmpp_login) {}
+
   // Called when the host shuts down.
   virtual void OnShutdown() {}
 };
