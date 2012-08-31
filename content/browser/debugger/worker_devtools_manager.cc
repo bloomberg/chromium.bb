@@ -138,9 +138,9 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
   static void ForwardToWorkerDevToolsAgent(
       int worker_process_id,
       int worker_route_id,
-      const IPC::Message& message) {
+      IPC::Message* message) {
     WorkerDevToolsManager::GetInstance()->ForwardToWorkerDevToolsAgent(
-        worker_process_id, worker_route_id, message);
+        worker_process_id, worker_route_id, *message);
   }
 
   // DevToolsAgentHost implementation.
@@ -151,7 +151,7 @@ class WorkerDevToolsManager::WorkerDevToolsAgentHost
             &WorkerDevToolsAgentHost::ForwardToWorkerDevToolsAgent,
             worker_id_.first,
             worker_id_.second,
-            *message));
+            base::Owned(message)));
   }
   virtual void NotifyClientAttaching() OVERRIDE {}
   virtual void NotifyClientDetaching() OVERRIDE {}

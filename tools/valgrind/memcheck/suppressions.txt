@@ -5887,30 +5887,6 @@
    fun:_ZN19OAuth2MintTokenFlow13FireAndForgetEv
 }
 {
-   bug_145700a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content17DevToolsAgentHost6DetachEv
-   fun:_ZN7content19DevToolsManagerImpl16UnbindClientHostEPNS_17DevToolsAgentHostEPNS_18DevToolsClientHostE
-   fun:_ZN7content19DevToolsManagerImpl17ClientHostClosingEPNS_18DevToolsClientHostE
-}
-{
-   bug_145700b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content17DevToolsAgentHost6AttachEv
-   fun:_ZN7content19DevToolsManagerImpl29RegisterDevToolsClientHostForEPNS_17DevToolsAgentHostEPNS_18DevToolsClientHostE
-   fun:_ZN12_GLOBAL__N_124WorkerDevToolsSanityTest33OpenDevToolsWindowForSharedWorkerEPNS0_10WorkerDataE
-}
-{
-   bug_145700c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content17DevToolsAgentHost25DipatchOnInspectorBackendERKSs
-   fun:_ZN7content19DevToolsManagerImpl26DispatchOnInspectorBackendEPNS_18DevToolsClientHostERKSs
-   fun:_ZN7content20DevToolsFrontendHost28OnDispatchOnInspectorBackendERKSs
-}
-{
    bug_145701
    Memcheck:Leak
    fun:_Znw*
