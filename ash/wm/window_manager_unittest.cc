@@ -383,56 +383,81 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
   // Create two mouse movement events we can switch between.
   gfx::Point point1(kWindowLeft, kWindowTop);
   aura::Window::ConvertPointToTarget(window->parent(), root_window, &point1);
-  ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
 
   gfx::Point point2(kWindowLeft + 1, kWindowTop + 1);
   aura::Window::ConvertPointToTarget(window->parent(), root_window, &point2);
-  ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
 
   // Cursor starts as a pointer (set during Shell::Init()).
   EXPECT_EQ(ui::kCursorPointer, root_window->last_cursor().native_type());
 
-  // Resize edges and corners show proper cursors.
-  window_delegate.set_hittest_code(HTBOTTOM);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
-  EXPECT_EQ(ui::kCursorSouthResize, root_window->last_cursor().native_type());
+  {
+    // Resize edges and corners show proper cursors.
+    window_delegate.set_hittest_code(HTBOTTOM);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
+    EXPECT_EQ(ui::kCursorSouthResize, root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTBOTTOMLEFT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
-  EXPECT_EQ(ui::kCursorSouthWestResize,
-      root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTBOTTOMLEFT);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
+    EXPECT_EQ(ui::kCursorSouthWestResize,
+              root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTBOTTOMRIGHT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
-  EXPECT_EQ(ui::kCursorSouthEastResize,
-      root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTBOTTOMRIGHT);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
+    EXPECT_EQ(ui::kCursorSouthEastResize,
+              root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTLEFT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
-  EXPECT_EQ(ui::kCursorWestResize, root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTLEFT);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
+    EXPECT_EQ(ui::kCursorWestResize, root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTRIGHT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
-  EXPECT_EQ(ui::kCursorEastResize, root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTRIGHT);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
+    EXPECT_EQ(ui::kCursorEastResize, root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTTOP);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
-  EXPECT_EQ(ui::kCursorNorthResize, root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTTOP);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
+    EXPECT_EQ(ui::kCursorNorthResize, root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTTOPLEFT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
-  EXPECT_EQ(ui::kCursorNorthWestResize,
-      root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTTOPLEFT);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
+    EXPECT_EQ(ui::kCursorNorthWestResize,
+              root_window->last_cursor().native_type());
+  }
 
-  window_delegate.set_hittest_code(HTTOPRIGHT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
-  EXPECT_EQ(ui::kCursorNorthEastResize,
-      root_window->last_cursor().native_type());
+  {
+    window_delegate.set_hittest_code(HTTOPRIGHT);
+    ui::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move2);
+    EXPECT_EQ(ui::kCursorNorthEastResize,
+              root_window->last_cursor().native_type());
+  }
 
-  // Client area uses null cursor.
-  window_delegate.set_hittest_code(HTCLIENT);
-  root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
-  EXPECT_EQ(ui::kCursorNull, root_window->last_cursor().native_type());
+  {
+    // Client area uses null cursor.
+    window_delegate.set_hittest_code(HTCLIENT);
+    ui::MouseEvent move1(ui::ET_MOUSE_MOVED, point1, point1, 0x0);
+    root_window->AsRootWindowHostDelegate()->OnHostMouseEvent(&move1);
+    EXPECT_EQ(ui::kCursorNull, root_window->last_cursor().native_type());
+  }
 }
 
 #if defined(OS_MACOSX)

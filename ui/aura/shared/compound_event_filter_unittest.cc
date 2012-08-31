@@ -100,16 +100,16 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   TestVisibleClient cursor_client;
   aura::client::SetCursorClient(root_window(), &cursor_client);
 
-  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
-      gfx::Point(10, 10), 0);
-  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
+  ui::MouseEvent mouse0(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse0);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
-  ui::TouchEvent press(
+  ui::TouchEvent press0(
       ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press0);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
@@ -121,14 +121,18 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), 0);
   // Move the cursor again. The cursor should be visible.
-  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // Now activate the window and press on it again.
+  ui::TouchEvent press1(
+      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
   aura::client::GetActivationClient(
       root_window())->ActivateWindow(window.get());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
 
