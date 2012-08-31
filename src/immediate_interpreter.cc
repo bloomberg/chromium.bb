@@ -1765,7 +1765,12 @@ void ImmediateInterpreter::FillResultGesture(
       if (prev_scroll_fingers_ != fingers)
         scroll_buffer_.Clear();
       prev_scroll_fingers_ = fingers;
-      scroll_buffer_.Insert(dx, dy, hwstate.timestamp - prev_state_.timestamp);
+      // Some platforms report fingers as perfectly stationary for a few frames
+      // before they report lift off. We don't include these non-movement
+      // frames in the scroll buffer, because that would suppress fling.
+      if (!FloatEq(dx, 0.0) || !FloatEq(dy, 0.0))
+        scroll_buffer_.Insert(dx, dy,
+                              hwstate.timestamp - prev_state_.timestamp);
       if (max_mag_sq > 0) {
         result_ = Gesture(kGestureScroll,
                           prev_state_.timestamp,
