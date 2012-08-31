@@ -35,6 +35,7 @@
           'storage.json',
           'tabs.json',
           'web_navigation.json',
+          'web_request.json',
           'windows.json',
         ],
         'idl_schema_files': [

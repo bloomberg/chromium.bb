@@ -805,21 +805,26 @@ class BookmarksQuotaLimitFactory {
  private:
   static void BuildWithMappers(QuotaLimitHeuristics* heuristics,
       BucketMapper* short_mapper, BucketMapper* long_mapper) {
-    const Config kShortLimitConfig = {
-      2,                         // 2 tokens per interval.
-      TimeDelta::FromMinutes(1)  // 1 minute long refill interval.
+    const Config kSustainedLimitConfig = {
+      // See bookmarks.json for current value.
+      bookmarks::MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE,
+      TimeDelta::FromMinutes(1)
     };
-    const Config kLongLimitConfig = {
-      100,                       // 100 tokens per interval.
-      TimeDelta::FromHours(1)    // 1 hour long refill interval.
-    };
+    heuristics->push_back(new SustainedLimit(
+        TimeDelta::FromMinutes(10),
+        kSustainedLimitConfig,
+        short_mapper,
+        "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE"));
 
-    TimedLimit* timed = new TimedLimit(kLongLimitConfig, long_mapper);
-    // A max of two operations per minute, sustained over 10 minutes.
-    SustainedLimit* sustained = new SustainedLimit(TimeDelta::FromMinutes(10),
-        kShortLimitConfig, short_mapper);
-    heuristics->push_back(timed);
-    heuristics->push_back(sustained);
+    const Config kTimedLimitConfig = {
+      // See bookmarks.json for current value.
+      bookmarks::MAX_WRITE_OPERATIONS_PER_HOUR,
+      TimeDelta::FromHours(1)
+    };
+    heuristics->push_back(new TimedLimit(
+        kTimedLimitConfig,
+        long_mapper,
+        "MAX_WRITE_OPERATIONS_PER_HOUR"));
   }
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BookmarksQuotaLimitFactory);

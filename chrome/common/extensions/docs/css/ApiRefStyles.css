@@ -1,3 +1,8 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 .todo, .comment { /* while we're working on doc, comment out display */
   color: rgb(255, 0, 0);
   display: none;
@@ -332,6 +337,7 @@ div#toc {
   margin: 5px 0px 5px 20px;
   padding: 5px;
   width: 250px;
+  word-break: break-all;
 }
 
 #toc p {

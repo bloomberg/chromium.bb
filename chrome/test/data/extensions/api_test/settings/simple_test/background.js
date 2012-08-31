@@ -356,7 +356,8 @@ chrome.test.runTests([
     var local = chrome.storage.local;
     var sync = chrome.storage.sync;
     var test = chrome.test;
-    var quotaError = "This request exceeds available quota.";
+    var quotaError =
+        "This request exceeds the MAX_WRITE_OPERATIONS_PER_HOUR quota.";
 
     clearNTimes(local, 1001, test.callbackPass(function() {
       clearNTimes(sync, 1001, test.callbackFail(quotaError, function() {

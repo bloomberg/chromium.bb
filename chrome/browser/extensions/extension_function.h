@@ -118,7 +118,7 @@ class ExtensionFunction
 
   // Called when the quota limit has been exceeded. The default implementation
   // returns an error.
-  virtual void OnQuotaExceeded();
+  virtual void OnQuotaExceeded(const std::string& violation_error);
 
   // Specifies the raw arguments to the function, as a JSON value.
   virtual void SetArgs(const base::ListValue* args);

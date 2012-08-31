@@ -180,6 +180,16 @@
                 <a href="#apiReference">API reference: chrome.bookmarks</a>
                 <ol>
                   <li>
+            <a href="#properties">Properties</a>
+            <ol>
+              <li>
+                <a href="#property-MAX_WRITE_OPERATIONS_PER_HOUR">MAX_WRITE_OPERATIONS_PER_HOUR</a>
+              </li><li>
+                <a href="#property-MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE">MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
             <a href="#global-methods">Methods</a>
             <ol>
               <li>
@@ -327,7 +337,65 @@ For other examples and for help in viewing the source code, see
         <a name="apiReference"></a>
         <h2>API reference: chrome.bookmarks</h2>
           <!-- PROPERTIES -->
-           <!-- /apiGroup -->
+          <div class="apiGroup">
+            <a name="properties"></a>
+            <h3 id="properties">Properties</h3>
+            <div>
+              <a name="property-MAX_WRITE_OPERATIONS_PER_HOUR"></a>
+              <h4>MAX_WRITE_OPERATIONS_PER_HOUR</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.bookmarks.</span><span>MAX_WRITE_OPERATIONS_PER_HOUR</span>
+              </div>
+              <div>
+          <dt>
+            <var>MAX_WRITE_OPERATIONS_PER_HOUR</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <code>100</code>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The maximum number of <code>move</code>, <code>update</code>, <code>create</code>, or <code>remove</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div>
+              <a name="property-MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE"></a>
+              <h4>MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span>chrome.bookmarks.</span><span>MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE</span>
+              </div>
+              <div>
+          <dt>
+            <var>MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <code>2</code>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The maximum number of <code>move</code>, <code>update</code>, <code>create</code>, or <code>remove</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </div> <!-- /apiGroup -->
           <!-- METHODS -->
           <div id="methodsTemplate" class="apiGroup">
             <a name="global-methods"></a>

@@ -10,12 +10,13 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 
 namespace extensions {
 
 namespace {
 
-const char* kExceededQuotaErrorMessage = "Quota exceeded";
+const char* kQuotaExceededError = "* quota exceeded.";
 
 // Resources there are a quota for.
 enum Resource {
@@ -54,23 +55,28 @@ void Free(
 
 // Returns an error result and logs the quota exceeded to UMA.
 ValueStore::WriteResult QuotaExceededFor(Resource resource) {
+  std::string name;
   switch (resource) {
     case QUOTA_BYTES:
+      name = "QUOTA_BYTES";
       UMA_HISTOGRAM_COUNTS_100(
           "Extensions.SettingsQuotaExceeded.TotalBytes", 1);
       break;
     case QUOTA_BYTES_PER_ITEM:
+      name = "QUOTA_BYTES_PER_ITEM";
       UMA_HISTOGRAM_COUNTS_100(
           "Extensions.SettingsQuotaExceeded.BytesPerSetting", 1);
       break;
     case MAX_ITEMS:
+      name = "MAX_ITEMS";
       UMA_HISTOGRAM_COUNTS_100(
           "Extensions.SettingsQuotaExceeded.KeyCount", 1);
       break;
     default:
       NOTREACHED();
   }
-  return ValueStore::MakeWriteResult(kExceededQuotaErrorMessage);
+  return ValueStore::MakeWriteResult(
+      ExtensionErrorUtils::FormatErrorMessage(kQuotaExceededError, name));
 }
 
 }  // namespace

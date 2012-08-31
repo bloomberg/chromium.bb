@@ -152,12 +152,15 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map->IsIncognitoEnabled(extension->id()));
 
   ExtensionsQuotaService* quota = extension_info_map->GetQuotaService();
-  if (quota->Assess(extension->id(), function, &params.arguments,
-                    base::TimeTicks::Now())) {
+  std::string violation_error = quota->Assess(extension->id(),
+                                              function,
+                                              &params.arguments,
+                                              base::TimeTicks::Now());
+  if (violation_error.empty()) {
     function->Run();
     LogSuccess(extension, params);
   } else {
-    function->OnQuotaExceeded();
+    function->OnQuotaExceeded(violation_error);
     LogFailure(extension, params.name, kQuotaExceeded);
   }
 }
@@ -209,15 +212,18 @@ void ExtensionFunctionDispatcher::Dispatch(
   function->set_include_incognito(service->CanCrossIncognito(extension));
 
   ExtensionsQuotaService* quota = service->quota_service();
-  if (quota->Assess(extension->id(), function, &params.arguments,
-                    base::TimeTicks::Now())) {
+  std::string violation_error = quota->Assess(extension->id(),
+                                              function,
+                                              &params.arguments,
+                                              base::TimeTicks::Now());
+  if (violation_error.empty()) {
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
 
     function->Run();
     LogSuccess(extension, params);
   } else {
-    function->OnQuotaExceeded();
+    function->OnQuotaExceeded(violation_error);
     LogFailure(extension, params.name, kQuotaExceeded);
   }
 

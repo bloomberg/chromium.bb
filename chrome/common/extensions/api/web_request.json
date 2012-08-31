@@ -5,6 +5,12 @@
 [
   {
     "namespace": "webRequest",
+    "properties": {
+      "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES": {
+        "value": 20,
+        "description": "The maximum number of times that <code>handlerBehaviorChanged</code> can be called per 10 minute sustained interval. <code>handlerBehaviorChanged</code> is an expensive function call that shouldn't be called often."
+      }
+    },
     "types": [
       {
         "id": "RequestFilter",
@@ -28,6 +34,7 @@
       },
       {
         "id": "HttpHeaders",
+        "nocompile": true,
         "type": "array",
         "description": "An array of HTTP headers. Each header is represented as a dictionary containing the keys <code>name</code> and either <code>value</code> or <code>binaryValue</code>.",
         "items": {
@@ -46,6 +53,7 @@
       },
       {
         "id": "BlockingResponse",
+        "nocompile": true,
         "type": "object",
         "description": "Returns value for event handlers that have the 'blocking' extraInfoSpec applied. Allows the event handler to modify network requests.",
         "properties": {
@@ -137,6 +145,7 @@
       },
       {
         "name": "onBeforeSendHeaders",
+        "nocompile": true,
         "type": "function",
         "description": "Fired before sending an HTTP request, once the request headers are available. This may occur after a TCP connection is made to the server, but before any HTTP data is sent. ",
         "parameters": [
@@ -181,6 +190,7 @@
       },
       {
         "name": "onSendHeaders",
+        "nocompile": true,
         "type": "function",
         "description": "Fired just before a request is going to be sent to the server (modifications of previous onBeforeSendHeaders callbacks are visible by the time onSendHeaders is fired).",
         "parameters": [
@@ -220,6 +230,7 @@
       },
       {
         "name": "onHeadersReceived",
+        "nocompile": true,
         "type": "function",
         "description": "Fired when HTTP response headers of a request have been received.",
         "parameters": [
@@ -265,6 +276,7 @@
       },
       {
         "name": "onAuthRequired",
+        "nocompile": true,
         "type": "function",
         "description": "Fired when an authentication failure is received. The listener has three options: it can provide authentication credentials, it can cancel the request and display the error page, or it can take no action on the challenge. If bad user credentials are provided, this may be called multiple times for the same request.",
         "parameters": [
@@ -322,6 +334,7 @@
       },
       {
         "name": "onResponseStarted",
+        "nocompile": true,
         "type": "function",
         "description": "Fired when the first byte of the response body is received. For HTTP requests, this means that the status line and response headers are available.",
         "parameters": [
@@ -366,6 +379,7 @@
       {
         "name": "onBeforeRedirect",
         "type": "function",
+        "nocompile": true,
         "description": "Fired when a server-initiated redirect is about to occur.",
         "parameters": [
           {
@@ -410,6 +424,7 @@
       {
         "name": "onCompleted",
         "type": "function",
+        "nocompile": true,
         "description": "Fired when a request is completed.",
         "parameters": [
           {

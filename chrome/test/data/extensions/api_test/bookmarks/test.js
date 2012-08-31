@@ -392,8 +392,9 @@ chrome.test.runTests([
         expected[0].children[0].children.push(results);
       }));
     }
-    chrome.bookmarks.create(node,
-                            fail("This request exceeds available quota."));
+    chrome.bookmarks.create(
+        node,
+        fail("This request exceeds the MAX_WRITE_OPERATIONS_PER_HOUR quota."));
 
     chrome.test.resetQuota();
 
@@ -424,7 +425,7 @@ chrome.test.runTests([
       ));
     }
     chrome.bookmarks.update(quota_node1.id, {"title": title},
-        fail("This request exceeds available quota."));
+        fail("This request exceeds the MAX_WRITE_OPERATIONS_PER_HOUR quota."));
 
     chrome.test.resetQuota();
   },

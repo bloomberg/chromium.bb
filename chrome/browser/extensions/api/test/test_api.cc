@@ -80,7 +80,7 @@ bool TestResetQuotaFunction::RunImpl() {
   ExtensionService* service = profile()->GetExtensionService();
   ExtensionsQuotaService* quota = service->quota_service();
   quota->Purge();
-  quota->violators_.clear();
+  quota->violation_errors_.clear();
   return true;
 }
 
