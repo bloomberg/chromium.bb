@@ -17,6 +17,7 @@
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace remoting {
 
@@ -30,6 +31,17 @@ using protocol::MouseEvent;
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, mac}
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
+
+// skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
+SkIRect CGRectToSkIRect(const CGRect& rect) {
+  SkIRect sk_rect = {
+    SkScalarRound(rect.origin.x),
+    SkScalarRound(rect.origin.y),
+    SkScalarRound(rect.origin.x + rect.size.width),
+    SkScalarRound(rect.origin.y + rect.size.height)
+  };
+  return sk_rect;
+}
 
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
@@ -307,11 +319,40 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
 
 void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   if (event.has_x() && event.has_y()) {
-    // TODO(wez): This code assumes that MouseEvent(0,0) (top-left of client view)
-    // corresponds to local (0,0) (top-left of primary monitor).  That won't in
-    // general be true on multi-monitor systems, though.
-    VLOG(3) << "Moving mouse to " << event.x() << "," << event.y();
+    // On multi-monitor systems (0,0) refers to the top-left of the "main"
+    // display, whereas our coordinate scheme places (0,0) at the top-left of
+    // the bounding rectangle around all the displays, so we need to translate
+    // accordingly.
+    // TODO(wez): Move display config tracking into a separate class used both
+    // here and in the Capturer.
+
+    // Set the mouse position assuming single-monitor.
     mouse_pos_ = SkIPoint::Make(event.x(), event.y());
+
+    // Determine how many active displays there are.
+    CGDisplayCount display_count;
+    CGError error = CGGetActiveDisplayList(0, NULL, &display_count);
+    CHECK_EQ(error, CGDisplayNoErr);
+
+    if (display_count > 1) {
+      // Determine the bounding box of the displays, to get the top-left origin.
+      std::vector<CGDirectDisplayID> display_ids(display_count);
+      error = CGGetActiveDisplayList(display_count, &display_ids[0],
+                                     &display_count);
+      CHECK_EQ(error, CGDisplayNoErr);
+      CHECK_EQ(display_count, display_ids.size());
+
+      SkIRect desktop_bounds = SkIRect::MakeEmpty();
+      for (unsigned int d = 0; d < display_count; ++d) {
+        CGRect display_bounds = CGDisplayBounds(display_ids[d]);
+        desktop_bounds.join(CGRectToSkIRect(display_bounds));
+      }
+
+      // Adjust the injected mouse event position.
+      mouse_pos_ += SkIPoint::Make(desktop_bounds.left(), desktop_bounds.top());
+    }
+
+    VLOG(3) << "Moving mouse to " << event.x() << "," << event.y();
   }
   if (event.has_button() && event.has_button_down()) {
     if (event.button() >= 1 && event.button() <= 3) {

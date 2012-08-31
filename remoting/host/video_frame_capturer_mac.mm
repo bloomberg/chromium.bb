@@ -28,6 +28,7 @@ namespace remoting {
 
 namespace {
 
+// skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
 SkIRect CGRectToSkIRect(const CGRect& rect) {
   SkIRect sk_rect = {
     SkScalarRound(rect.origin.x),
@@ -54,18 +55,18 @@ class VideoFrameBuffer {
   // If the buffer is marked as needing to be updated (for example after the
   // screen mode changes) and is the wrong size, then release the old buffer
   // and create a new one.
-  void Update() {
+  void Update(const SkISize& size) {
     if (needs_update_) {
       needs_update_ = false;
-      CGDirectDisplayID mainDevice = CGMainDisplayID();
-      int width = CGDisplayPixelsWide(mainDevice);
-      int height = CGDisplayPixelsHigh(mainDevice);
-      if (width != size_.width() || height != size_.height()) {
-        size_.set(width, height);
-        bytes_per_row_ = width * sizeof(uint32_t);
-        size_t buffer_size = width * height * sizeof(uint32_t);
+      size_t buffer_size = size.width() * size.height() * sizeof(uint32_t);
+      if (size != size_) {
+        size_ = size;
+        bytes_per_row_ = size.width() * sizeof(uint32_t);
         ptr_.reset(new uint8[buffer_size]);
       }
+      memset(ptr(), 0, buffer_size);
+
+      // TODO(wez): Move the ugly DPI code into a helper.
       NSScreen* screen = [NSScreen mainScreen];
       NSDictionary* attr = [screen deviceDescription];
       NSSize resolution = [[attr objectForKey: NSDeviceResolution] sizeValue];
@@ -143,6 +144,10 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   static const int kNumBuffers = 2;
   ScopedPixelBufferObject pixel_buffer_object_;
   VideoFrameBuffer buffers_[kNumBuffers];
+
+  // Current display configuration.
+  std::vector<CGDirectDisplayID> display_ids_;
+  SkIRect desktop_bounds_;
 
   // A thread-safe list of invalid rectangles, and the size of the most
   // recently captured screen.
@@ -291,7 +296,8 @@ void VideoFrameCapturerMac::CaptureInvalidRegion(
   SkRegion region;
   helper_.SwapInvalidRegion(&region);
   VideoFrameBuffer& current_buffer = buffers_[current_buffer_];
-  current_buffer.Update();
+  current_buffer.Update(SkISize::Make(desktop_bounds_.width(),
+                                      desktop_bounds_.height()));
 
   bool flip = false;  // GL capturers need flipping.
   if (base::mac::IsOSLionOrLater()) {
@@ -504,35 +510,48 @@ void VideoFrameCapturerMac::GlBlitSlow(const VideoFrameBuffer& buffer) {
 void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
                                           const SkRegion& region) {
   const int buffer_height = buffer.size().height();
-  const int buffer_width = buffer.size().width();
 
-    // Clip to the size of our current screen.
-  SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
-
+  // Copy the entire contents of the previous capture buffer, to capture over.
+  // TODO(wez): Get rid of this as per crbug.com/145064, or implement
+  // crbug.com/92354.
   if (last_buffer_)
     memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
   last_buffer_ = buffer.ptr();
-  CGDirectDisplayID main_display = CGMainDisplayID();
+
+  for (unsigned int d = 0; d < display_ids_.size(); ++d) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  uint8* display_base_address =
-      reinterpret_cast<uint8*>(CGDisplayBaseAddress(main_display));
-  CHECK(display_base_address);
-  int src_bytes_per_row = CGDisplayBytesPerRow(main_display);
-  int src_bytes_per_pixel = CGDisplayBitsPerPixel(main_display) / 8;
+    uint8* display_base_address =
+        reinterpret_cast<uint8*>(CGDisplayBaseAddress(display_ids_[d]));
+    CHECK(display_base_address);
+    int src_bytes_per_row = CGDisplayBytesPerRow(display_ids_[d]);
+    int src_bytes_per_pixel = CGDisplayBitsPerPixel(display_ids_[d]) / 8;
 #pragma clang diagnostic pop
-  // TODO(hclam): We can reduce the amount of copying here by subtracting
-  // |capturer_helper_|s region from |last_invalid_region_|.
-  // http://crbug.com/92354
-  for(SkRegion::Iterator i(region); !i.done(); i.next()) {
-    SkIRect copy_rect = i.rect();
-    if (copy_rect.intersect(clip_rect)) {
+    // Determine the position of the display in the buffer.
+    SkIRect display_bounds = CGRectToSkIRect(CGDisplayBounds(display_ids_[d]));
+    display_bounds.offset(-desktop_bounds_.left(), -desktop_bounds_.top());
+
+    // Determine which parts of the blit region, if any, lay within the monitor.
+    SkRegion copy_region;
+    if (!copy_region.op(region, display_bounds, SkRegion::kIntersect_Op))
+      continue;
+
+    // Translate the region to be copied into display-relative coordinates.
+    copy_region.translate(-display_bounds.left(), -display_bounds.top());
+
+    // Calculate where in the output buffer the display's origin is.
+    uint8* out_ptr = buffer.ptr() +
+         (display_bounds.left() * src_bytes_per_pixel) +
+         (display_bounds.top() * buffer.bytes_per_row());
+
+    // Copy the dirty region from the display buffer into our desktop buffer.
+    for(SkRegion::Iterator i(copy_region); !i.done(); i.next()) {
       CopyRect(display_base_address,
                src_bytes_per_row,
-               buffer.ptr(),
+               out_ptr,
                buffer.bytes_per_row(),
                src_bytes_per_pixel,
-               copy_rect);
+               i.rect());
     }
   }
 }
@@ -540,38 +559,57 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
 void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrameBuffer& buffer,
                                            const SkRegion& region) {
   const int buffer_height = buffer.size().height();
-  const int buffer_width = buffer.size().width();
 
-  // Clip to the size of our current screen.
-  SkIRect clip_rect = SkIRect::MakeWH(buffer_width, buffer_height);
-
+  // Copy the entire contents of the previous capture buffer, to capture over.
+  // TODO(wez): Get rid of this as per crbug.com/145064, or implement
+  // crbug.com/92354.
   if (last_buffer_)
     memcpy(buffer.ptr(), last_buffer_, buffer.bytes_per_row() * buffer_height);
   last_buffer_ = buffer.ptr();
-  CGDirectDisplayID display = CGMainDisplayID();
-  base::mac::ScopedCFTypeRef<CGImageRef> image(
-      CGDisplayCreateImage(display));
-  if (image.get() == NULL)
-    return;
-  CGDataProviderRef provider = CGImageGetDataProvider(image);
-  base::mac::ScopedCFTypeRef<CFDataRef> data(CGDataProviderCopyData(provider));
-  if (data.get() == NULL)
-    return;
-  const uint8* display_base_address = CFDataGetBytePtr(data);
-  int src_bytes_per_row = CGImageGetBytesPerRow(image);
-  int src_bytes_per_pixel = CGImageGetBitsPerPixel(image) / 8;
-  // TODO(hclam): We can reduce the amount of copying here by subtracting
-  // |capturer_helper_|s region from |last_invalid_region_|.
-  // http://crbug.com/92354
-  for(SkRegion::Iterator i(region); !i.done(); i.next()) {
-    SkIRect copy_rect = i.rect();
-    if (copy_rect.intersect(clip_rect)) {
+
+  for (unsigned int d = 0; d < display_ids_.size(); ++d) {
+    // Determine the position of the display in the buffer.
+    SkIRect display_bounds = CGRectToSkIRect(CGDisplayBounds(display_ids_[d]));
+    display_bounds.offset(-desktop_bounds_.left(), -desktop_bounds_.top());
+
+    // Determine which parts of the blit region, if any, lay within the monitor.
+    SkRegion copy_region;
+    if (!copy_region.op(region, display_bounds, SkRegion::kIntersect_Op))
+      continue;
+
+    // Translate the region to be copied into display-relative coordinates.
+    copy_region.translate(-display_bounds.left(), -display_bounds.top());
+
+    // Create an image containing a snapshot of the display.
+    base::mac::ScopedCFTypeRef<CGImageRef> image(
+        CGDisplayCreateImage(display_ids_[d]));
+    if (image.get() == NULL)
+      continue;
+
+    // Request access to the raw pixel data via the image's DataProvider.
+    CGDataProviderRef provider = CGImageGetDataProvider(image);
+    base::mac::ScopedCFTypeRef<CFDataRef> data(
+        CGDataProviderCopyData(provider));
+    if (data.get() == NULL)
+      continue;
+
+    const uint8* display_base_address = CFDataGetBytePtr(data);
+    int src_bytes_per_row = CGImageGetBytesPerRow(image);
+    int src_bytes_per_pixel = CGImageGetBitsPerPixel(image) / 8;
+
+    // Calculate where in the output buffer the display's origin is.
+    uint8* out_ptr = buffer.ptr() +
+        (display_bounds.left() * src_bytes_per_pixel) +
+        (display_bounds.top() * buffer.bytes_per_row());
+
+    // Copy the dirty region from the display buffer into our desktop buffer.
+    for(SkRegion::Iterator i(copy_region); !i.done(); i.next()) {
       CopyRect(display_base_address,
                src_bytes_per_row,
-               buffer.ptr(),
+               out_ptr,
                buffer.bytes_per_row(),
                src_bytes_per_pixel,
-               copy_rect);
+               i.rect());
     }
   }
 }
@@ -581,14 +619,33 @@ const SkISize& VideoFrameCapturerMac::size_most_recent() const {
 }
 
 void VideoFrameCapturerMac::ScreenConfigurationChanged() {
+  // Release existing buffers, which will be of the wrong size.
   ReleaseBuffers();
-  helper_.ClearInvalidRegion();
   last_buffer_ = NULL;
 
-  CGDirectDisplayID mainDevice = CGMainDisplayID();
-  int width = CGDisplayPixelsWide(mainDevice);
-  int height = CGDisplayPixelsHigh(mainDevice);
-  helper_.InvalidateScreen(SkISize::Make(width, height));
+  // Clear the dirty region, in case the display is down-sizing.
+  helper_.ClearInvalidRegion();
+
+  // Fetch the list if active displays and calculate their bounds.
+  CGDisplayCount display_count;
+  CGError error = CGGetActiveDisplayList(0, NULL, &display_count);
+  CHECK_EQ(error, CGDisplayNoErr);
+
+  display_ids_.resize(display_count);
+  error = CGGetActiveDisplayList(display_count, &display_ids_[0],
+                                 &display_count);
+  CHECK_EQ(error, CGDisplayNoErr);
+  CHECK_EQ(display_count, display_ids_.size());
+
+  desktop_bounds_ = SkIRect::MakeEmpty();
+  for (unsigned int d = 0; d < display_count; ++d) {
+    CGRect display_bounds = CGDisplayBounds(display_ids_[d]);
+    desktop_bounds_.join(CGRectToSkIRect(display_bounds));
+  }
+
+  // Re-mark the entire desktop as dirty.
+  helper_.InvalidateScreen(SkISize::Make(desktop_bounds_.width(),
+                                         desktop_bounds_.height()));
 
   if (base::mac::IsOSLionOrLater()) {
     LOG(INFO) << "Using CgBlitPostLion.";
@@ -596,8 +653,14 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
     return;
   }
 
+  if (display_ids_.size() > 1) {
+    LOG(INFO) << "Using CgBlitPreLion (Multi-monitor).";
+    return;
+  }
+
+  CGDirectDisplayID mainDevice = CGMainDisplayID();
   if (!CGDisplayUsesOpenGLAcceleration(mainDevice)) {
-    LOG(INFO) << "Using CgBlitPreLion.";
+    LOG(INFO) << "Using CgBlitPreLion (OpenGL unavailable).";
     return;
   }
 
@@ -629,7 +692,8 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
 #pragma clang diagnostic pop
   CGLSetCurrentContext(cgl_context_);
 
-  size_t buffer_size = width * height * sizeof(uint32_t);
+  size_t buffer_size = desktop_bounds_.width() * desktop_bounds_.height() *
+                       sizeof(uint32_t);
   pixel_buffer_object_.Init(cgl_context_, buffer_size);
 }
 
@@ -638,6 +702,7 @@ void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,
   SkIRect skirect_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
     skirect_array[i] = CGRectToSkIRect(rect_array[i]);
+    skirect_array[i].offset(-desktop_bounds_.left(), -desktop_bounds_.top());
   }
   SkRegion region;
   region.setRects(skirect_array, count);
@@ -647,14 +712,15 @@ void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,
 void VideoFrameCapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                                              size_t count,
                                              const CGRect* rect_array) {
-  SkIRect skirect_new_array[count];
+  SkIRect skirect_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
     rect = CGRectOffset(rect, delta.dX, delta.dY);
-    skirect_new_array[i] = CGRectToSkIRect(rect);
+    skirect_array[i] = CGRectToSkIRect(rect);
+    skirect_array[i].offset(-desktop_bounds_.left(), -desktop_bounds_.top());
   }
   SkRegion region;
-  region.setRects(skirect_new_array, count);
+  region.setRects(skirect_array, count);
   InvalidateRegion(region);
 }
 
