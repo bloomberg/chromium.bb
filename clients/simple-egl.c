@@ -262,7 +262,9 @@ configure_callback(void *data, struct wl_callback *callback, uint32_t  time)
 	wl_callback_destroy(callback);
 
 	window->configured = 1;
-	redraw(data, NULL, time);
+
+	if (window->callback == NULL)
+		redraw(data, NULL, time);
 }
 
 static struct wl_callback_listener configure_callback_listener = {
@@ -362,6 +364,9 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	static const int32_t speed_div = 5;
 	static uint32_t start_time = 0;
 	struct wl_region *region;
+
+	assert(window->callback == callback);
+	window->callback = NULL;
 
 	if (callback)
 		wl_callback_destroy(callback);
