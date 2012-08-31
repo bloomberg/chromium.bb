@@ -201,6 +201,10 @@ class UserView : public views::View,
       size = user_info_->GetPreferredSize();
     if (signout_) {
       gfx::Size signout_size = signout_->GetPreferredSize();
+      // Make sure the user default view item at least as tall as the other
+      // tray popup items.
+      if (size.height() == 0)
+        size.set_height(kTrayPopupItemHeight);
       size.set_height(std::max(size.height(), signout_size.height()));
       size.set_width(size.width() + signout_size.width() +
           kTrayPopupPaddingHorizontal * 2 + kTrayPopupPaddingBetweenItems);
