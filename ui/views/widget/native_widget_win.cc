@@ -249,12 +249,7 @@ bool NativeWidgetWin::HasCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-#if !defined(USE_AURA)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
-    return NULL;
-#endif
-  return new InputMethodWin(GetMessageHandler());
+  return message_handler_->CreateInputMethod();
 }
 
 internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
@@ -475,7 +470,7 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
 }
 
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
+  return message_handler_->GetWorkAreaBoundsInScreen();
 }
 
 void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
@@ -751,16 +746,10 @@ void NativeWidgetWin::HandleFrameChanged() {
 
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
   delegate_->OnNativeFocus(last_focused_window);
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->OnFocus();
 }
 
 void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->OnBlur();
 }
 
 bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
@@ -769,38 +758,6 @@ bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
 
 bool NativeWidgetWin::HandleKeyEvent(const ui::KeyEvent& event) {
   return delegate_->OnKeyEvent(event);
-}
-
-bool NativeWidgetWin::HandleUntranslatedKeyEvent(const ui::KeyEvent& event) {
-  InputMethod* input_method = GetInputMethod();
-  if (input_method)
-    input_method->DispatchKeyEvent(event);
-  return !!input_method;
-}
-
-bool NativeWidgetWin::HandleIMEMessage(UINT message,
-                                       WPARAM w_param,
-                                       LPARAM l_param,
-                                       LRESULT* result) {
-  InputMethod* input_method = GetInputMethod();
-  if (!input_method || input_method->IsMock()) {
-    *result = 0;
-    return false;
-  }
-
-  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
-  BOOL handled = FALSE;
-  *result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
-  return !!handled;
-}
-
-void NativeWidgetWin::HandleInputLanguageChange(DWORD character_set,
-                                                HKL input_language_id) {
-  InputMethod* input_method = GetInputMethod();
-  if (input_method && !input_method->IsMock()) {
-    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
-        character_set, input_language_id);
-  }
 }
 
 bool NativeWidgetWin::HandlePaintAccelerated(const gfx::Rect& invalid_rect) {

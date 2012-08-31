@@ -229,13 +229,6 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void HandleNativeBlur(HWND focused_window) OVERRIDE;
   virtual bool HandleMouseEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual bool HandleKeyEvent(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool HandleUntranslatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool HandleIMEMessage(UINT message,
-                                WPARAM w_param,
-                                LPARAM l_param,
-                                LRESULT* result) OVERRIDE;
-  virtual void HandleInputLanguageChange(DWORD character_set,
-                                         HKL input_language_id) OVERRIDE;
   virtual bool HandlePaintAccelerated(const gfx::Rect& invalid_rect) OVERRIDE;
   virtual void HandlePaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void HandleScreenReaderDetected() OVERRIDE;

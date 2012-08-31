@@ -156,25 +156,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // handled by the delegate.
   virtual bool HandleMouseEvent(const ui::MouseEvent& event) = 0;
 
-  // Called when a translated key event is received (i.e. post IME translation.)
-  // Returns true if the event was handled by the delegate.
+  // Called when a key event is received. Returns true if the event was handled
+  // by the delegate.
   virtual bool HandleKeyEvent(const ui::KeyEvent& event) = 0;
-
-  // Called when an untranslated key event is received (i.e. pre-IME
-  // translation). Returns true if the event was sent to the input method.
-  virtual bool HandleUntranslatedKeyEvent(const ui::KeyEvent& event) = 0;
-
-  // Called when an IME message needs to be processed by the delegate. Returns
-  // true if the event was handled and no default processing should be
-  // performed.
-  virtual bool HandleIMEMessage(UINT message,
-                                WPARAM w_param,
-                                LPARAM l_param,
-                                LRESULT* result) = 0;
-
-  // Called when the system input language changes.
-  virtual void HandleInputLanguageChange(DWORD character_set,
-                                         HKL input_language_id) = 0;
 
   // Called to compel the delegate to paint |invalid_rect| accelerated. Returns
   // true if accelerated painting was performed.
