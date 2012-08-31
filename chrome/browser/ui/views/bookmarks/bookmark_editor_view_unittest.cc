@@ -65,11 +65,11 @@ class BookmarkEditorViewTest : public testing::Test {
                                          configuration));
   }
 
-  void SetTitleText(const std::wstring& title) {
+  void SetTitleText(const string16& title) {
     editor_->title_tf_->SetText(title);
   }
 
-  void SetURLText(const std::wstring& text) {
+  void SetURLText(const string16& text) {
     if (editor_->details_.type != BookmarkEditor::EditDetails::NEW_FOLDER)
       editor_->url_tf_->SetText(text);
   }

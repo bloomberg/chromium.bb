@@ -96,10 +96,6 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // The bookmark URL.
   const GURL url_;
 
-  // Title of the bookmark. This is initially the title supplied to the
-  // constructor, which is typically the title of the page.
-  std::wstring title_;
-
   // If true, the page was just bookmarked.
   const bool newly_bookmarked_;
 
