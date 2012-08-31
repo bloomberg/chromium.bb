@@ -271,6 +271,7 @@
         'browser/geolocation/wifi_data_provider_unittest_win.cc',
         'browser/geolocation/win7_location_api_unittest_win.cc',
         'browser/geolocation/win7_location_provider_unittest_win.cc',
+        'browser/gpu/gpu_data_manager_impl_unittest.cc',
         'browser/host_zoom_map_impl_unittest.cc',
         'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         'browser/in_process_webkit/indexed_db_unittest.cc',

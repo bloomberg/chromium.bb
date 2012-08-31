@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
@@ -78,7 +79,14 @@ class CONTENT_EXPORT GpuDataManagerImpl
   typedef ObserverListThreadSafe<content::GpuDataManagerObserver>
       GpuDataManagerObserverList;
 
+  friend class GpuDataManagerImplTest;
   friend struct DefaultSingletonTraits<GpuDataManagerImpl>;
+
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuSideBlacklisting);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, BlacklistCard);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuInfoUpdate);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
+                           GPUVideoMemoryUsageStatsUpdate);
 
   GpuDataManagerImpl();
   virtual ~GpuDataManagerImpl();
