@@ -44,7 +44,7 @@
   </a> article on HTML5Rocks.
 </p>
 
-<h2>Default Policy Restrictions</h2>
+<h2 id="restrictions">Default Policy Restrictions</h2>
 
 <p>
   Packages that do not define a <a href="manifestVersion.html">
@@ -60,7 +60,7 @@
   This policy adds security by limiting extensions and applications in two ways:
 </p>
 
-<h3>Inline JavaScript will not be executed</h3>
+<h3 id="JSExecution">Inline JavaScript will not be executed</h3>
 
 <p>
   Inline JavaScript, as well as dangerous string-to-JavaScript methods like
@@ -187,7 +187,7 @@ function main() {
 <p>
 
 
-<h3>Only local script and and object resources are loaded</h3>
+<h3 id="resourceLoading">Only local script and and object resources are loaded</h3>
 
 <p>
   Script and object resources can only be loaded from the extension's
@@ -228,7 +228,7 @@ function main() {
   &lt;/body&gt;
 &lt;/html&gt;</pre>
 
-<h2>Relaxing the default policy</h2>
+<h2 id="relaxing">Relaxing the default policy</h2>
 
 <p>
   There is no mechanism for relaxing the restriction against executing inline
@@ -293,7 +293,7 @@ function main() {
 <a href="tut_analytics.html">brief tutorial</a> that goes into more detail.
 </p>
 
-<h2>Tightening the default policy</h2>
+<h2 id="tightening">Tightening the default policy</h2>
 
 <p>
   You may, of course, tighten this policy to whatever extent your extension
