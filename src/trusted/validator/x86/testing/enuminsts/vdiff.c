@@ -306,8 +306,7 @@ static void TestAllWithPrefix(const unsigned int prefix,
   /* set up prefix */
   memcpy(itext, &prefix, prefix_length);
   /* set up filler bytes */
-  for (i = prefix_length + kIterByteCount;
-       i < NACL_ENUM_MAX_INSTRUCTION_BYTES; i++) {
+  for (i = prefix_length + kIterByteCount; i < kInstByteCount; i++) {
     itext[i] = (uint8_t)i;
   }
   if (gOpcode < 0) {
@@ -319,11 +318,49 @@ static void TestAllWithPrefix(const unsigned int prefix,
   }
   for (op = min_op; op < max_op; op++) {
     itext[prefix_length] = op;
-    PrintProgress("%02x 00 00\n", op);
+    if (!gEasyDiffMode) PrintProgress("%02x 00 00\n", op);
     for (modrm = 0; modrm < 256; modrm++) {
       itext[prefix_length + 1] = modrm;
       for (sib = 0; sib < 256; sib++) {
         itext[prefix_length + 2] = sib;
+        TryOneInstruction(itext, kInstByteCount);
+      }
+    }
+  }
+}
+
+/* For 3DNow!, the operand byte goes at the end. Format is:
+ *   0F 0F [ModRM] [SIB] [displacement] imm8_opcode
+ * See AMD doc 24594, page 435.
+ */
+static void TestAll3DNow(const unsigned int prefix,
+                         const size_t prefix_length,
+                         const char* print_prefix) {
+  const size_t kInstByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
+  const size_t kIterByteCount = 3;
+  InstByteArray itext;
+  size_t i;
+  int op, modrm, sib;
+
+  if ((gPrefix > 0) && (gPrefix != prefix)) return;
+
+  PrintProgress("TestAll3DNow(%s)\n", print_prefix);
+  /* set up prefix */
+  memcpy(itext, &prefix, prefix_length);
+  /* set up filler bytes */
+  for (i = prefix_length + kIterByteCount; i < kInstByteCount; i++) {
+    itext[i] = (uint8_t)i;
+  }
+
+  for (op = 0; op < 256; op++) {
+    if (!gEasyDiffMode) PrintProgress("%02x 00 00\n", op);
+    /* Use opcode as fill byte, forcing iteration through 3DNow opcodes. */
+    for (i = prefix_length + 2; i < kIterByteCount; i++) itext[i] = op;
+
+    for (modrm = 0; modrm < 256; modrm++) {
+      itext[prefix_length] = modrm;
+      for (sib = 0; sib < 256; sib++) {
+        itext[prefix_length + 1] = sib;
         TryOneInstruction(itext, kInstByteCount);
       }
     }
@@ -407,6 +444,7 @@ static void TestAllInstructions() {
   WithREX(TestAllWithPrefix, 0x380f66, 3); /* SSE4+ */
   WithREX(TestAllWithPrefix, 0x380ff2, 3); /* SSE4+ */
   WithREX(TestAllWithPrefix, 0x3a0f66, 3); /* SSE4+ */
+  WithREX(TestAll3DNow, 0x0f0f, 2);
 }
 
 /* Used to test one instruction at a time, for example, in regression
@@ -464,6 +502,14 @@ static void RunRegressionTests() {
   /* Reset the opcode repeat test, so as not to silence errors */
   /* that happened in the regression suite. */
   (void)NotOpcodeRepeat("");
+
+  /* And some tests for degenerate prefix patterns */
+  TestOneInstruction("666690");
+  TestOneInstruction("6690");
+  TestOneInstruction("666666666666666666666690");
+  TestOneInstruction("66454490");
+  TestOneInstruction("66454f90");
+  TestOneInstruction("456690");
 }
 
 /* Define decoders that can be registered. */
@@ -512,4 +558,7 @@ int main(const int argc, const char *argv[]) {
     }
   }
   PrintStats();
+
+  /* exit with non-zero error code if there were errors. */
+  exit(gVDiffStats.errors != 0);
 }
