@@ -106,8 +106,6 @@ ui::Layer* RecreateWindowLayers(aura::Window* window) {
   const gfx::Rect bounds = window->bounds();
   ui::Layer* old_layer = window->RecreateLayer();
   DCHECK(old_layer);
-  // Resize the window to the new size, which will force a layout and paint.
-  window->SetBounds(bounds);
   for (aura::Window::Windows::const_iterator it = window->children().begin();
        it != window->children().end();
        ++it) {

@@ -592,6 +592,9 @@ bool WorkspaceWindowResizer::ShouldAllowMouseWarp() const {
 void WorkspaceWindowResizer::RecreateWindowLayers() {
   DCHECK(!layer_);
   layer_ = wm::RecreateWindowLayers(window());
+  // RecreateWindowLayers() creates fresh layers. Reset the bounds so the layers
+  // get the right bounds and are updated.
+  window()->SetBounds(layer_->bounds());
   layer_->set_delegate(window()->layer()->delegate());
   // Place the layer at (0, 0) of the PhantomWindowController's window.
   gfx::Rect layer_bounds = layer_->bounds();

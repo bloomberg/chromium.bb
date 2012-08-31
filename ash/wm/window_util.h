@@ -66,6 +66,10 @@ ASH_EXPORT void CenterWindow(aura::Window* window);
 // a new layer for |window| and all its descendants. This is intended for
 // animations that want to animate between the existing visuals and a new window
 // state. The caller owns the return value.
+//
+// As a result of this |window| has freshly created layers, meaning the layers
+// are all empty (nothing has been painted to them) and are sized to 0x0. Soon
+// after this call you need to reset the bounds of the window.
 ASH_EXPORT ui::Layer* RecreateWindowLayers(
     aura::Window* window) WARN_UNUSED_RESULT;
 
