@@ -17,7 +17,6 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/transform_util.h"
 
 namespace ash {
 namespace internal {
@@ -25,8 +24,7 @@ namespace internal {
 namespace {
 
 const int kAnimationDurationInMs = 600;
-const float kAnimationOpacity[] = { 0.4f, 0.8f, 0.4f };
-const float kAnimationScale[] = { 0.8f, 1.0f, 0.8f };
+const float kAnimationOpacity[] = { 1.0f, 0.4f, 1.0f };
 
 }  // namespace
 
@@ -54,29 +52,17 @@ AppListButton::~AppListButton() {
 }
 
 void AppListButton::StartLoadingAnimation() {
-  // The two animation set should have the same size.
-  DCHECK_EQ(arraysize(kAnimationOpacity), arraysize(kAnimationScale));
-
   layer()->GetAnimator()->StopAnimating();
 
   scoped_ptr<ui::LayerAnimationSequence> opacity_sequence(
       new ui::LayerAnimationSequence());
-  scoped_ptr<ui::LayerAnimationSequence> transform_sequence(
-      new ui::LayerAnimationSequence());
 
-  // The animations loop infinitely.
   opacity_sequence->set_is_cyclic(true);
-  transform_sequence->set_is_cyclic(true);
 
   for (size_t i = 0; i < arraysize(kAnimationOpacity); ++i) {
     opacity_sequence->AddElement(
         ui::LayerAnimationElement::CreateOpacityElement(
             kAnimationOpacity[i],
-            base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
-    transform_sequence->AddElement(
-        ui::LayerAnimationElement::CreateTransformElement(
-            ui::GetScaleTransform(GetLocalBounds().CenterPoint(),
-                                  kAnimationScale[i]),
             base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
   }
 
@@ -87,18 +73,8 @@ void AppListButton::StartLoadingAnimation() {
           opacity_properties,
           base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
 
-  ui::LayerAnimationElement::AnimatableProperties transform_properties;
-  transform_properties.insert(ui::LayerAnimationElement::TRANSFORM);
-  transform_sequence->AddElement(
-      ui::LayerAnimationElement::CreatePauseElement(
-          transform_properties,
-          base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
-
-  std::vector<ui::LayerAnimationSequence*> animations;
-  // LayerAnimator::ScheduleTogether takes ownership of the sequences.
-  animations.push_back(opacity_sequence.release());
-  animations.push_back(transform_sequence.release());
-  layer()->GetAnimator()->ScheduleTogether(animations);
+  // LayerAnimator takes ownership of the sequences.
+  layer()->GetAnimator()->ScheduleAnimation(opacity_sequence.release());
 }
 
 void AppListButton::StopLoadingAnimation() {
