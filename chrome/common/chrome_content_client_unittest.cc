@@ -65,14 +65,16 @@ TEST(ChromeContentClientTest, Basic) {
 #if !defined(OS_ANDROID)
   CheckUserAgentStringOrdering(false);
 #else
-  // Do it once for mobile devices and once for other devices.
   const char* kArguments[] = {"chrome"};
+  CommandLine::Reset();
+  CommandLine::Init(1, kArguments);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->Reset();
-  command_line->Init(1, kArguments);
+
+  // Do it for regular devices.
   ASSERT_FALSE(command_line->HasSwitch(switches::kUseMobileUserAgent));
   CheckUserAgentStringOrdering(false);
 
+  // Do it for mobile devices.
   command_line->AppendSwitch(switches::kUseMobileUserAgent);
   ASSERT_TRUE(command_line->HasSwitch(switches::kUseMobileUserAgent));
   CheckUserAgentStringOrdering(true);
