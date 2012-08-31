@@ -8,6 +8,8 @@
 #include <gtk/gtk.h>
 #include "ui/gfx/rect.h"
 
+class BaseWindow;
+
 namespace content {
 class WebContents;
 }
@@ -48,6 +50,12 @@ void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass);
 // where setting the window size to the monitor size causes the WM to set the
 // EWMH for full screen mode.
 void SetWindowSize(GtkWindow* window, const gfx::Size& size);
+
+// Update the origin of |bounds| and |restored_bounds| with values gotten
+// from GTK.
+void UpdateWindowPosition(BaseWindow* window,
+                          gfx::Rect* bounds,
+                          gfx::Rect* restored_bounds);
 
 }  // namespace gtk_window_util
 

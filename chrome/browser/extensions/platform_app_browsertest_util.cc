@@ -47,13 +47,21 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstShellWindowWebContents() {
+  ShellWindow* window = GetFirstShellWindow();
+  if (window)
+    return window->web_contents();
+
+  return NULL;
+}
+
+ShellWindow* PlatformAppBrowserTest::GetFirstShellWindow() {
   ShellWindowRegistry* app_registry =
       ShellWindowRegistry::Get(browser()->profile());
   ShellWindowRegistry::const_iterator iter;
   ShellWindowRegistry::ShellWindowSet shell_windows =
       app_registry->shell_windows();
   for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter) {
-    return (*iter)->web_contents();
+    return *iter;
   }
 
   return NULL;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
@@ -417,5 +419,76 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/mutation_events")) << message_;
 }
+
+// Only implemented in GTK so far.
+#if defined(TOOLKIT_GTK)
+// Test that windows created with an id will remember and restore their
+// geometry when opening new windows.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ShellWindowRestorePosition) {
+  ExtensionTestMessageListener page2_listener("WaitForPage2", true);
+  ExtensionTestMessageListener page3_listener("WaitForPage3", true);
+  ExtensionTestMessageListener done_listener("Done1", false);
+  ExtensionTestMessageListener done2_listener("Done2", false);
+  ExtensionTestMessageListener done3_listener("Done3", false);
+
+  ASSERT_TRUE(LoadAndLaunchPlatformApp("geometry"));
+
+  // Wait for the app to be launched (although this is mostly to have a
+  // message to reply to to let the script know it should create its second
+  // window.
+  ASSERT_TRUE(page2_listener.WaitUntilSatisfied());
+
+  // Wait for the first window to verify its geometry was correctly set
+  // from the default* attributes passed to the create function.
+  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
+
+  // Programatically move and resize the window.
+  ShellWindow* window = GetFirstShellWindow();
+  ASSERT_TRUE(window);
+  gfx::Rect bounds(137, 143, 203, 187);
+  window->GetBaseWindow()->SetBounds(bounds);
+
+#if defined(TOOLKIT_GTK)
+  // TODO(mek): On GTK we have to wait for a roundtrip to the X server before
+  // a resize actually happens:
+  // "if you call gtk_window_resize() then immediately call
+  //  gtk_window_get_size(), the size won't have taken effect yet. After the
+  //  window manager processes the resize request, GTK+ receives notification
+  //  that the size has changed via a configure event, and the size of the
+  //  window gets updated."
+  // Because of this we have to wait for an unknown time for the resize to
+  // actually take effect. So wait some time or until the resize got
+  // handled.
+  base::TimeTicks end_time = base::TimeTicks::Now() +
+                             TestTimeouts::action_timeout();
+  while (base::TimeTicks::Now() < end_time &&
+         bounds != window->GetBaseWindow()->GetBounds()) {
+    content::RunAllPendingInMessageLoop();
+  }
+
+  // In the GTK ShellWindow implementation there also is a delay between
+  // getting the correct bounds and it calling SaveWindowPosition, so call that
+  // method explicitly to make sure the value was stored.
+  window->SaveWindowPosition();
+#endif  // defined(TOOLKIT_GTK)
+
+  // Make sure the window was properly moved&resized.
+  ASSERT_EQ(bounds, window->GetBaseWindow()->GetBounds());
+
+  // Tell javascript to open a second window.
+  page2_listener.Reply("continue");
+
+  // Wait for javascript to verify that the second window got the updated
+  // coordinates, ignoring the default coordinates passed to the create method.
+  ASSERT_TRUE(done2_listener.WaitUntilSatisfied());
+
+  // Tell javascript to open a third window.
+  page3_listener.Reply("continue");
+
+  // Wait for javascript to verify that the third window got the restored size
+  // and explicitly specified coordinates.
+  ASSERT_TRUE(done3_listener.WaitUntilSatisfied());
+}
+#endif  // defined(TOOLKIT_GTK)
 
 }  // namespace extensions

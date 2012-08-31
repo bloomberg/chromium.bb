@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/timer.h"
 #include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
@@ -80,6 +81,8 @@ class ShellWindowGtk : public NativeShellWindow,
   CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
+  void OnDebouncedBoundsChanged();
+
   ShellWindow* shell_window_;  // weak - ShellWindow owns NativeShellWindow.
 
   GtkWindow* window_;
@@ -110,6 +113,9 @@ class ShellWindowGtk : public NativeShellWindow,
 
   // True if the window shows without frame.
   bool frameless_;
+
+  // The timer used to save the window position for session restore.
+  base::OneShotTimer<ShellWindowGtk> window_configure_debounce_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowGtk);
 };

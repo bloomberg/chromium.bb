@@ -33,6 +33,10 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // enough).
   content::WebContents* GetFirstShellWindowWebContents();
 
+  // Gets the first shell window that is found (most tests only deal with one
+  // platform app window, so this is good enough).
+  ShellWindow* GetFirstShellWindow();
+
   // Runs chrome.windows.getAll for the given extension and returns the number
   // of windows that the function returns.
   size_t RunGetWindowsFunctionForExtension(const Extension* extension);

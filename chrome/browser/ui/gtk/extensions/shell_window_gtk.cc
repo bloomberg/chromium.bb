@@ -17,6 +17,14 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/rect.h"
 
+namespace {
+
+// The timeout in milliseconds before we'll get the true window position with
+// gtk_window_get_position() after the last GTK configure-event signal.
+const int kDebounceTimeoutMilliseconds = 100;
+
+} // namespace
+
 ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
                                const ShellWindow::CreateParams& params)
     : shell_window_(shell_window),
@@ -30,6 +38,9 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
       web_contents()->GetView()->GetNativeView();
   gtk_container_add(GTK_CONTAINER(window_), native_view);
 
+  if (params.bounds.x() >= 0 && params.bounds.y() >= 0)
+    gtk_window_move(window_, params.bounds.x(), params.bounds.y());
+
   // This is done to avoid a WM "feature" where setting the window size to
   // the monitor size causes the WM to set the EWMH for full screen mode.
   if (frameless_ &&
@@ -40,6 +51,13 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
     gtk_window_set_default_size(
         window_, params.bounds.width(), params.bounds.height());
   }
+
+  // make sure bounds_ and restored_bounds_ have correct values until we
+  // get our first configure-event
+  bounds_ = restored_bounds_ = params.bounds;
+  gint x, y;
+  gtk_window_get_position(window_, &x, &y);
+  bounds_.set_origin(gfx::Point(x, y));
 
   // Hide titlebar when {frame: 'none'} specified on ShellWindow.
   if (frameless_)
@@ -137,6 +155,11 @@ void ShellWindowGtk::ShowInactive() {
 }
 
 void ShellWindowGtk::Close() {
+  shell_window_->SaveWindowPosition();
+
+  // Cancel any pending callback from the window configure debounce timer.
+  window_configure_debounce_timer_.Stop();
+
   GtkWidget* window = GTK_WIDGET(window_);
   // To help catch bugs in any event handlers that might get fired during the
   // destruction, set window_ to NULL before any handlers will run.
@@ -207,13 +230,34 @@ gboolean ShellWindowGtk::OnMainWindowDeleteEvent(GtkWidget* widget,
 
 gboolean ShellWindowGtk::OnConfigure(GtkWidget* widget,
                                      GdkEventConfigure* event) {
-  // TODO(mihaip): Do we need an explicit gtk_window_get_position call like in
-  // in BrowserWindowGtk::OnConfigure?
+  // We update |bounds_| but not |restored_bounds_| here.  The latter needs
+  // to be updated conditionally when the window is non-maximized and non-
+  // fullscreen, but whether those state updates have been processed yet is
+  // window-manager specific.  We update |restored_bounds_| in the debounced
+  // handler below, after the window state has been updated.
   bounds_.SetRect(event->x, event->y, event->width, event->height);
-  if (!IsMaximized())
-    restored_bounds_ = bounds_;
+
+  // The GdkEventConfigure* we get here doesn't have quite the right
+  // coordinates though (they're relative to the drawable window area, rather
+  // than any window manager decorations, if enabled), so we need to call
+  // gtk_window_get_position() to get the right values. (Otherwise session
+  // restore, if enabled, will restore windows to incorrect positions.) That's
+  // a round trip to the X server though, so we set a debounce timer and only
+  // call it (in OnDebouncedBoundsChanged() below) after we haven't seen a
+  // reconfigure event in a short while.
+  // We don't use Reset() because the timer may not yet be running.
+  // (In that case Stop() is a no-op.)
+  window_configure_debounce_timer_.Stop();
+  window_configure_debounce_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
+      &ShellWindowGtk::OnDebouncedBoundsChanged);
 
   return FALSE;
+}
+
+void ShellWindowGtk::OnDebouncedBoundsChanged() {
+  gtk_window_util::UpdateWindowPosition(this, &bounds_, &restored_bounds_);
+  shell_window_->SaveWindowPosition();
 }
 
 gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,

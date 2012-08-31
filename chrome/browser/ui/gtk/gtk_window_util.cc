@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 
 #include <dlfcn.h>
+#include "chrome/browser/ui/base_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
@@ -239,6 +240,16 @@ void SetWindowSize(GtkWindow* window, const gfx::Size& size) {
   }
 
   gtk_window_resize(window, new_size.width(), new_size.height());
+}
+
+void UpdateWindowPosition(BaseWindow* window,
+                          gfx::Rect* bounds,
+                          gfx::Rect* restored_bounds) {
+  gint x, y;
+  gtk_window_get_position(window->GetNativeWindow(), &x, &y);
+  (*bounds).set_origin(gfx::Point(x, y));
+  if (!window->IsFullscreen() && !window->IsMaximized())
+    *restored_bounds = *bounds;
 }
 
 }  // namespace gtk_window_util
