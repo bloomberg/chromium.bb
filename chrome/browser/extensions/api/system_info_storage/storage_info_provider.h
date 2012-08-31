@@ -23,9 +23,11 @@ extern const char kStorageTypeRemovable[];
 
 }  // namespace systeminfo
 
+typedef std::vector<linked_ptr<
+    api::experimental_system_info_storage::StorageUnitInfo> > StorageInfo;
+
 class StorageInfoProvider
-    : public SystemInfoProvider<
-          api::experimental_system_info_storage::StorageInfo> {
+    : public SystemInfoProvider<StorageInfo> {
  public:
   virtual ~StorageInfoProvider() {}
 

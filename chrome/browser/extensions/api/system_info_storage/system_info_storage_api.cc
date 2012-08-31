@@ -3,11 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/extensions/api/system_info_storage/system_info_storage_api.h"
 
-#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
-
 namespace extensions {
 
-using api::experimental_system_info_storage::StorageInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 
 SystemInfoStorageGetFunction::SystemInfoStorageGetFunction() {
@@ -25,10 +22,14 @@ bool SystemInfoStorageGetFunction::RunImpl() {
 
 void SystemInfoStorageGetFunction::OnGetStorageInfoCompleted(
     const StorageInfo& info, bool success) {
-  if (success)
-    SetResult(info.ToValue().release());
-  else
+
+  if (success) {
+    results_ =
+      api::experimental_system_info_storage::Get::Results::Create(info);
+  } else {
     SetError("Error occurred when querying storage information.");
+  }
+
   SendResponse(success);
 }
 

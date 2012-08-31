@@ -8,7 +8,6 @@ namespace extensions {
 
 namespace {
 
-using api::experimental_system_info_storage::StorageInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 
 // StorageInfoProvider implementation on Macdows platform.

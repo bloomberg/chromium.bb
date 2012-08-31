@@ -4,8 +4,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_SYSTEM_INFO_STORAGE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_STORAGE_SYSTEM_INFO_STORAGE_API_H_
 
+#include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/api/experimental_system_info_storage.h"
 
 namespace extensions {
 
@@ -20,9 +20,7 @@ class SystemInfoStorageGetFunction : public AsyncExtensionFunction {
   virtual ~SystemInfoStorageGetFunction();
   virtual bool RunImpl() OVERRIDE;
 
-  void OnGetStorageInfoCompleted(
-      const api::experimental_system_info_storage::StorageInfo& info,
-      bool success);
+  void OnGetStorageInfoCompleted(const StorageInfo& info, bool success);
 };
 
 }  // namespace extensions

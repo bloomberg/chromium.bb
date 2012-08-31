@@ -12,7 +12,6 @@ namespace extensions {
 
 namespace {
 
-using api::experimental_system_info_storage::StorageInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 
 // Logical drive string length is 4. It contains one driver letter character,
@@ -31,7 +30,7 @@ class StorageInfoProviderWin : public StorageInfoProvider {
 };
 
 bool StorageInfoProviderWin::QueryInfo(StorageInfo* info) {
-  info->units.clear();
+  info->clear();
 
   WCHAR logical_drive_strings[kMaxLogicalDriveString];
 
@@ -48,7 +47,7 @@ bool StorageInfoProviderWin::QueryInfo(StorageInfo* info) {
   for (unsigned int i = 0; i < string_length; i += 4) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     if (QueryUnitInfo(WideToUTF8(&logical_drive_strings[i]), unit.get())) {
-      info->units.push_back(unit);
+      info->push_back(unit);
     }
   }
   return true;

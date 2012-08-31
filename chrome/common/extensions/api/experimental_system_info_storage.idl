@@ -25,12 +25,7 @@ namespace experimental.systemInfo.storage {
     double availableCapacity;
   };
 
-  dictionary StorageInfo {
-    // The array of storage units connected to the system.
-    StorageUnitInfo[] units;
-  };
-
-  callback StorageInfoCallback = void (StorageInfo info);
+  callback StorageInfoCallback = void (StorageUnitInfo[] info);
 
   interface Functions {
     // Get the storage information from the system.

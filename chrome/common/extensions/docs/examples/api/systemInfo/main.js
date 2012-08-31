@@ -33,16 +33,16 @@ function init() {
   document.getElementById("start-btn").onclick = startMonitor;
   document.getElementById("stop-btn").onclick = stopMonitor;
 
-  chrome.experimental.systemInfo.storage.get(function(info) {
+  chrome.experimental.systemInfo.storage.get(function(units) {
     var table = "<table width=65% border=\"1\">\n" +
       "<tr><td><b>ID</b></td>" +
       "<td>Type</td>" +
       "<td>Capacity (bytes)</td>" +
       "<td>Available (bytes)</td>" +
       "</tr>\n";
-    for (var i = 0; i < info.units.length; i++) {
-      indicator[info.units[i].id] = 0;
-      table += showStorageInfo(info.units[i]);
+    for (var i = 0; i < units.length; i++) {
+      indicator[units[i].id] = 0;
+      table += showStorageInfo(units[i]);
     }
     table += "</table>\n";
     var div = document.getElementById("storage-list");

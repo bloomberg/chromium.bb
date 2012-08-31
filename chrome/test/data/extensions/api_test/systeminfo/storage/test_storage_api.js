@@ -8,9 +8,9 @@ chrome.systemInfo = chrome.experimental.systemInfo;
 
 chrome.test.runTests([
   function testGet() {
-    chrome.systemInfo.storage.get(chrome.test.callbackPass(function(info) {
-      chrome.test.assertTrue(info.units.length == 1);
-      var unit = info.units[0];
+    chrome.systemInfo.storage.get(chrome.test.callbackPass(function(units) {
+      chrome.test.assertTrue(units.length == 1);
+      var unit = units[0];
       chrome.test.assertTrue(unit.id == "0xbeaf");
       chrome.test.assertTrue(unit.type == "unknown");
       chrome.test.assertTrue(unit.capacity == 4098);

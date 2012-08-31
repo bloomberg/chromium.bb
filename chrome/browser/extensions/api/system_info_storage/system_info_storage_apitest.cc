@@ -9,7 +9,6 @@
 
 namespace extensions {
 
-using api::experimental_system_info_storage::StorageInfo;
 using api::experimental_system_info_storage::StorageUnitInfo;
 
 class MockStorageInfoProvider : public StorageInfoProvider {
@@ -18,7 +17,7 @@ class MockStorageInfoProvider : public StorageInfoProvider {
   virtual ~MockStorageInfoProvider() {}
 
   virtual bool QueryInfo(StorageInfo* info) OVERRIDE {
-    info->units.clear();
+    info->clear();
 
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     unit->id = "0xbeaf";
@@ -26,7 +25,7 @@ class MockStorageInfoProvider : public StorageInfoProvider {
     unit->capacity = 4098;
     unit->available_capacity = 1024;
 
-    info->units.push_back(unit);
+    info->push_back(unit);
     return true;
   }
 
