@@ -10,6 +10,7 @@
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/stacking_client.h"
@@ -636,7 +637,10 @@ void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   cursor_ = cursor;
-  window_->GetRootWindow()->SetCursor(cursor);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  if (cursor_client)
+    cursor_client->SetCursor(cursor);
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
