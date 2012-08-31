@@ -122,6 +122,7 @@ class Shell : public WebContentsDelegate,
                                    const string16& message,
                                    int32 line_no,
                                    const string16& source_id) OVERRIDE;
+  virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
 
  private:
   enum UIControl {

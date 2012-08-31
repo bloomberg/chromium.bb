@@ -67,6 +67,8 @@ class WebKitTestController : public base::NonThreadSafe,
   // True if the controller was reset successfully.
   bool ResetAfterLayoutTest();
 
+  void RendererUnresponsive();
+
   WebKitTestResultPrinter& printer() { return printer_; }
 
   // Interface for WebKitTestRunnerHost.
@@ -92,9 +94,9 @@ class WebKitTestController : public base::NonThreadSafe,
   bool is_printing() const { return is_printing_; }
   void set_is_printing(bool is_printing) { is_printing_ = is_printing; }
 
-
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void PluginCrashed(const FilePath& plugin_path) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
@@ -114,6 +116,7 @@ class WebKitTestController : public base::NonThreadSafe,
   Shell* main_window_;
 
   bool pumping_messages_;
+  bool renderer_crashed_;
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
 

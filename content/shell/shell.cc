@@ -228,6 +228,12 @@ bool Shell::AddMessageToConsole(WebContents* source,
   return true;
 }
 
+void Shell::RendererUnresponsive(WebContents* source) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  WebKitTestController::Get()->RendererUnresponsive();
+}
+
 void Shell::Observe(int type,
                     const NotificationSource& source,
                     const NotificationDetails& details) {

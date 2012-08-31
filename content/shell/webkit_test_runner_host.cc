@@ -157,19 +157,24 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   should_stay_on_page_after_handling_before_unload_ = false;
   wait_until_done_ = false;
   watchdog_.Cancel();
-  if (main_window_) {
-    if (main_window_->web_contents()->GetController().GetEntryCount() > 0) {
-      // Reset the WebContents for the next test.
-      // TODO(jochen): Reset it more thoroughly.
-      main_window_->web_contents()->GetController().GoToIndex(0);
-    }
-    // Wait for the main_window_ to finish loading.
-    pumping_messages_ = true;
-    base::RunLoop run_loop;
-    run_loop.Run();
-    pumping_messages_ = false;
+  if (!main_window_)
+    return false;
+  if (main_window_->web_contents()->GetController().GetEntryCount() > 0) {
+    // Reset the WebContents for the next test.
+    // TODO(jochen): Reset it more thoroughly.
+    main_window_->web_contents()->GetController().GoToIndex(0);
   }
-  return main_window_ != NULL;
+  renderer_crashed_ = false;
+  // Wait for the main_window_ to finish loading.
+  pumping_messages_ = true;
+  base::RunLoop run_loop;
+  run_loop.Run();
+  pumping_messages_ = false;
+  return !renderer_crashed_;
+}
+
+void WebKitTestController::RendererUnresponsive() {
+  printer_.AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
 }
 
 void WebKitTestController::NotifyDone() {
@@ -213,8 +218,13 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
+  printer_.AddErrorMessage("#CRASHED - plugin");
+}
+
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
-  printer_.AddErrorMessage("FAIL: renderer died");
+  renderer_crashed_ = true;
+  printer_.AddErrorMessage("#CRASHED - renderer");
 }
 
 void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
