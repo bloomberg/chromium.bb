@@ -941,7 +941,7 @@ class LocalPatch(GitRepoPatch):
     format_string = '%n'.join([code for _, code in fields] + ['%B'])
     result = cros_build_lib.RunGitCommand(
         self.project_url,
-        ['log', '--format=%s' % format_string, '-z', '-n1', self.sha1])
+        ['log', '--format=%s' % format_string, '-n1', self.sha1])
     lines = result.output.splitlines()
     field_value = dict(zip([name for name, _ in fields],
                            [line.strip() for line in lines]))
