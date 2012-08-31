@@ -39,6 +39,7 @@
 #define EGL_TEXTURE_Y_U_V_WL            0x31D7
 #define EGL_TEXTURE_Y_UV_WL             0x31D8
 #define EGL_TEXTURE_Y_XUXV_WL           0x31D9
+#define EGL_TEXTURE_EXTERNAL_WL         0x31DA
 
 struct wl_display;
 struct wl_buffer;
@@ -51,6 +52,10 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLBINDWAYLANDDISPLAYWL) (EGLDisplay dpy, st
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLUNBINDWAYLANDDISPLAYWL) (EGLDisplay dpy, struct wl_display *display);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYWAYLANDBUFFERWL) (EGLDisplay dpy, struct wl_buffer *buffer, EGLint attribute, EGLint *value);
 
+#endif
+
+#ifndef EGL_TEXTURE_EXTERNAL_WL
+#define EGL_TEXTURE_EXTERNAL_WL         0x31DA
 #endif
 
 #endif

@@ -739,14 +739,14 @@ ensure_textures(struct weston_surface *es, int num_textures)
 
 	for (i = es->num_textures; i < num_textures; i++) {
 		glGenTextures(1, &es->textures[i]);
-		glBindTexture(GL_TEXTURE_2D, es->textures[i]);
-		glTexParameteri(GL_TEXTURE_2D,
+		glBindTexture(es->target, es->textures[i]);
+		glTexParameteri(es->target,
 				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,
+		glTexParameteri(es->target,
 				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 	es->num_textures = num_textures;
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(es->target, 0);
 }
 
 static void
@@ -791,6 +791,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
 		es->shader = &ec->texture_shader_rgba;
+		es->target = GL_TEXTURE_2D;
 
 		ensure_textures(es, 1);
 		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
@@ -806,13 +807,18 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 		for (i = 0; i < es->num_images; i++)
 			ec->destroy_image(ec->egl_display, es->images[i]);
 		es->num_images = 0;
-
+		es->target = GL_TEXTURE_2D;
 		switch (format) {
 		case EGL_TEXTURE_RGB:
 		case EGL_TEXTURE_RGBA:
 		default:
 			num_planes = 1;
 			es->shader = &ec->texture_shader_rgba;
+			break;
+		case EGL_TEXTURE_EXTERNAL_WL:
+			num_planes = 1;
+			es->target = GL_TEXTURE_EXTERNAL_OES;
+			es->shader = &ec->texture_shader_egl_external;
 			break;
 		case EGL_TEXTURE_Y_UV_WL:
 			num_planes = 2;
@@ -844,8 +850,8 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 			es->num_images++;
 
 			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, es->textures[i]);
-			ec->image_target_texture_2d(GL_TEXTURE_2D,
+			glBindTexture(es->target, es->textures[i]);
+			ec->image_target_texture_2d(es->target,
 						    es->images[i]);
 		}
 
@@ -965,9 +971,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	for (i = 0; i < es->num_textures; i++) {
 		glUniform1i(es->shader->tex_uniforms[i], i);
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, es->textures[i]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+		glBindTexture(es->target, es->textures[i]);
+		glTexParameteri(es->target, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(es->target, GL_TEXTURE_MAG_FILTER, filter);
 	}
 
 	v = ec->vertices.data;
@@ -2848,6 +2854,19 @@ static const char texture_fragment_shader_rgba[] =
 	FRAGMENT_SHADER_EXIT
 	"}\n";
 
+static const char texture_fragment_shader_egl_external[] =
+	"#extension GL_OES_EGL_image_external : require\n"
+	"precision mediump float;\n"
+	"varying vec2 v_texcoord;\n"
+	"uniform samplerExternalOES tex;\n"
+	FRAGMENT_SHADER_UNIFORMS
+	"void main()\n"
+	"{\n"
+	FRAGMENT_SHADER_INIT
+	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
+	FRAGMENT_SHADER_EXIT
+	"}\n";
+
 static const char texture_fragment_shader_y_uv[] =
 	"precision mediump float;\n"
 	"uniform sampler2D tex;\n"
@@ -3287,6 +3306,7 @@ WL_EXPORT int
 weston_compositor_init_gl(struct weston_compositor *ec)
 {
 	const char *extensions;
+	int has_egl_image_external = 0;
 
 	log_egl_gl_info(ec->egl_display);
 
@@ -3322,6 +3342,9 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 	if (strstr(extensions, "GL_EXT_unpack_subimage"))
 		ec->has_unpack_subimage = 1;
 
+	if (strstr(extensions, "GL_OES_EGL_image_external"))
+		has_egl_image_external = 1;
+
 	extensions =
 		(const char *) eglQueryString(ec->egl_display, EGL_EXTENSIONS);
 	if (!extensions) {
@@ -3344,6 +3367,10 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 
 	if (weston_shader_init(&ec->texture_shader_rgba,
 			     vertex_shader, texture_fragment_shader_rgba) < 0)
+		return -1;
+	if (has_egl_image_external &&
+			weston_shader_init(&ec->texture_shader_egl_external,
+				vertex_shader, texture_fragment_shader_egl_external) < 0)
 		return -1;
 	if (weston_shader_init(&ec->texture_shader_y_uv,
 			       vertex_shader, texture_fragment_shader_y_uv) < 0)

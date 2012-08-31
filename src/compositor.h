@@ -277,6 +277,7 @@ struct weston_compositor {
 	EGLConfig egl_config;
 	GLuint fbo;
 	struct weston_shader texture_shader_rgba;
+	struct weston_shader texture_shader_egl_external;
 	struct weston_shader texture_shader_y_uv;
 	struct weston_shader texture_shader_y_u_v;
 	struct weston_shader texture_shader_y_xuxv;
@@ -448,6 +449,7 @@ struct weston_surface {
 	struct wl_list frame_callback_list;
 
 	EGLImageKHR images[3];
+	GLenum target;
 	int num_images;
 
 	struct wl_buffer *buffer;
