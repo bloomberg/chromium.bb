@@ -133,10 +133,6 @@ const char kUpdateUrlData[] = "update_url_data";
 // Whether the browser action is visible in the toolbar.
 const char kBrowserActionVisible[] = "browser_action_visible";
 
-// Whether the browser action is pinned in the toolbar. This will eventually
-// replace kBrowserActionVisible.
-const char kBrowserActionPinned[] = "browser_action_pinned";
-
 // Preferences that hold which permissions the user has granted the extension.
 // We explicitly keep track of these so that extensions can contain unknown
 // permissions, for backwards compatibility reasons, and we can still prompt
@@ -291,11 +287,6 @@ bool ScopeToPrefKey(ExtensionPrefsScope scope, std::string* result) {
 const char* GetToolbarOrderKeyName() {
   return switch_utils::IsExtensionsInActionBoxEnabled() ?
       kExtensionActionBoxBar : kExtensionToolbar;
-}
-
-const char* GetToolbarVisibilityKeyName() {
-  return switch_utils::IsExtensionsInActionBoxEnabled() ?
-      kBrowserActionPinned : kBrowserActionVisible;
 }
 
 // Reads a boolean pref from |ext| with key |pref_key|.
@@ -1483,19 +1474,18 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
-  bool extensions_in_action_box_enabled =
-      switch_utils::IsExtensionsInActionBoxEnabled();
-  bool default_value = !extensions_in_action_box_enabled;
+  if (switch_utils::IsExtensionsInActionBoxEnabled()) {
+    ExtensionIds ids = GetToolbarOrder();
+    return find(ids.begin(), ids.end(), extension->id()) != ids.end();
+  }
 
   const DictionaryValue* extension_prefs = GetExtensionPref(extension->id());
   if (!extension_prefs)
-    return default_value;
+    return true;
 
   bool visible = false;
-  bool pref_exists = extension_prefs->GetBoolean(GetToolbarVisibilityKeyName(),
-                                                 &visible);
-  if (!pref_exists)
-    return default_value;
+  if (!extension_prefs->GetBoolean(kBrowserActionVisible, &visible))
+    return true;
 
   return visible;
 }
@@ -1505,8 +1495,14 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
   if (GetBrowserActionVisibility(extension) == visible)
     return;
 
-  UpdateExtensionPref(extension->id(), GetToolbarVisibilityKeyName(),
-                      Value::CreateBooleanValue(visible));
+  if (switch_utils::IsExtensionsInActionBoxEnabled()) {
+    ExtensionIds ids = GetToolbarOrder();
+    ids.push_back(extension->id());
+    SetToolbarOrder(ids);
+  } else {
+    UpdateExtensionPref(extension->id(), kBrowserActionVisible,
+                        Value::CreateBooleanValue(visible));
+  }
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(this),
