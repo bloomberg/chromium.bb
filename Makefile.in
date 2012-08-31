@@ -88,21 +88,24 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@am__append_3 = src/libbreakpad.a
 @DISABLE_PROCESSOR_FALSE@am__append_4 = src/third_party/libdisasm/libdisasm.a
 @LINUX_HOST_TRUE@am__append_5 = src/client/linux/libbreakpad_client.a
-@DISABLE_PROCESSOR_FALSE@am__append_6 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_6 = \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext.S
+
+@DISABLE_PROCESSOR_FALSE@am__append_7 = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk
 
-@LINUX_HOST_TRUE@am__append_7 = \
+@LINUX_HOST_TRUE@am__append_8 = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_dumper_unittest_helper
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_8 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_9 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/core2md/core2md \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/dump_syms/dump_syms \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/minidump_upload \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/symupload/sym_upload
 
-@DISABLE_PROCESSOR_FALSE@am__append_9 = \
+@DISABLE_PROCESSOR_FALSE@am__append_10 = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/address_map_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/binarystream_unittest \
@@ -127,16 +130,18 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86_unittest \
 @DISABLE_PROCESSOR_FALSE@	src/processor/synth_minidump_unittest
 
-@LINUX_HOST_TRUE@am__append_10 = \
+@LINUX_HOST_TRUE@am__append_11 = \
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest
 
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_11 = \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am__append_12 = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dumper_unittest \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_2_core_unittest
 
-@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_12 = \
+@DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@am__append_13 = \
 @DISABLE_PROCESSOR_FALSE@@SELFTEST_TRUE@	src/processor/stackwalker_selftest
 
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__append_14 = src/common/android/breakpad_getcontext.S \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/breakpad_getcontext_unittest.cc
 noinst_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_doc_DATA) \
@@ -198,8 +203,10 @@ am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/common/linux/guid_creator.cc \
 	src/common/linux/linux_libc_support.cc \
 	src/common/linux/memory_mapped_file.cc \
-	src/common/linux/safe_readlink.cc
+	src/common/linux/safe_readlink.cc \
+	src/common/android/breakpad_getcontext.S
 am__dirstamp = $(am__leading_dot)dirstamp
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_1 = src/common/android/breakpad_getcontext.$(OBJEXT)
 @LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_a_OBJECTS = src/client/linux/crash_generation/crash_generation_client.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.$(OBJEXT) \
@@ -216,7 +223,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/linux/linux_libc_support.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/linux/memory_mapped_file.$(OBJEXT) \
-@LINUX_HOST_TRUE@	src/common/linux/safe_readlink.$(OBJEXT)
+@LINUX_HOST_TRUE@	src/common/linux/safe_readlink.$(OBJEXT) \
+@LINUX_HOST_TRUE@	$(am__objects_1)
 src_client_linux_libbreakpad_client_a_OBJECTS =  \
 	$(am_src_client_linux_libbreakpad_client_a_OBJECTS)
 src_libbreakpad_a_AR = $(AR) $(ARFLAGS)
@@ -427,7 +435,11 @@ am__src_client_linux_linux_client_unittest_SOURCES_DIST =  \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc \
 	src/processor/basic_code_modules.cc src/processor/logging.cc \
-	src/processor/minidump.cc src/processor/pathname_stripper.cc
+	src/processor/minidump.cc src/processor/pathname_stripper.cc \
+	src/common/android/breakpad_getcontext.S \
+	src/common/android/breakpad_getcontext_unittest.cc
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_2 = src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.$(OBJEXT) \
+@ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@	src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.$(OBJEXT)
 @LINUX_HOST_TRUE@am_src_client_linux_linux_client_unittest_OBJECTS = src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT) \
@@ -447,7 +459,8 @@ am__src_client_linux_linux_client_unittest_SOURCES_DIST =  \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest-basic_code_modules.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest-logging.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest-minidump.$(OBJEXT) \
-@LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest-pathname_stripper.$(OBJEXT)
+@LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest-pathname_stripper.$(OBJEXT) \
+@LINUX_HOST_TRUE@	$(am__objects_2)
 src_client_linux_linux_client_unittest_OBJECTS =  \
 	$(am_src_client_linux_linux_client_unittest_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -1031,6 +1044,8 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/autotools/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -1140,6 +1155,9 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
+CCAS = @CCAS@
+CCASDEPMODE = @CCASDEPMODE@
+CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
@@ -1253,8 +1271,7 @@ dist_doc_DATA = \
 
 noinst_LIBRARIES = $(am__append_4)
 lib_LIBRARIES = $(am__append_3) $(am__append_5)
-@LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = \
-@LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.cc \
+@LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.cc \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.cc \
@@ -1262,16 +1279,15 @@ lib_LIBRARIES = $(am__append_3) $(am__append_5)
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.cc \
 @LINUX_HOST_TRUE@	src/client/minidump_file_writer.cc \
-@LINUX_HOST_TRUE@	src/common/convert_UTF.c \
-@LINUX_HOST_TRUE@	src/common/md5.cc \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.c src/common/md5.cc \
 @LINUX_HOST_TRUE@	src/common/string_conversion.cc \
 @LINUX_HOST_TRUE@	src/common/linux/elfutils.cc \
 @LINUX_HOST_TRUE@	src/common/linux/file_id.cc \
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.cc \
 @LINUX_HOST_TRUE@	src/common/linux/linux_libc_support.cc \
 @LINUX_HOST_TRUE@	src/common/linux/memory_mapped_file.cc \
-@LINUX_HOST_TRUE@	src/common/linux/safe_readlink.cc
-
+@LINUX_HOST_TRUE@	src/common/linux/safe_readlink.cc \
+@LINUX_HOST_TRUE@	$(am__append_6)
 @DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/breakpad_types.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/minidump_format.h \
@@ -1410,8 +1426,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CXXFLAGS = $(PTHREAD_CFLAGS)
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_LDFLAGS = $(PTHREAD_CFLAGS)
 @LINUX_HOST_TRUE@src_client_linux_linux_dumper_unittest_helper_CC = $(PTHREAD_CC)
-@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = \
-@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler_unittest.cc \
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_SOURCES = src/client/linux/handler/exception_handler_unittest.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/line_reader_unittest.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_core_dumper.cc \
@@ -1430,8 +1445,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/processor/basic_code_modules.cc \
 @LINUX_HOST_TRUE@	src/processor/logging.cc \
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
-@LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc
-
+@LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
+@LINUX_HOST_TRUE@	$(am__append_14)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_CPPFLAGS = \
 @LINUX_HOST_TRUE@	-I$(top_srcdir)/src \
 @LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing/include \
@@ -2160,7 +2175,7 @@ EXTRA_DIST = \
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .cc .o .obj
+.SUFFIXES: .S .c .cc .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -2334,6 +2349,15 @@ src/common/linux/memory_mapped_file.$(OBJEXT):  \
 src/common/linux/safe_readlink.$(OBJEXT):  \
 	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/android/$(am__dirstamp):
+	@$(MKDIR_P) src/common/android
+	@: > src/common/android/$(am__dirstamp)
+src/common/android/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/common/android/$(DEPDIR)
+	@: > src/common/android/$(DEPDIR)/$(am__dirstamp)
+src/common/android/breakpad_getcontext.$(OBJEXT):  \
+	src/common/android/$(am__dirstamp) \
+	src/common/android/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux
 	@: > src/client/linux/$(am__dirstamp)
@@ -2599,6 +2623,12 @@ src/processor/src_client_linux_linux_client_unittest-minidump.$(OBJEXT):  \
 src/processor/src_client_linux_linux_client_unittest-pathname_stripper.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.$(OBJEXT):  \
+	src/common/android/$(am__dirstamp) \
+	src/common/android/$(DEPDIR)/$(am__dirstamp)
+src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.$(OBJEXT):  \
+	src/common/android/$(am__dirstamp) \
+	src/common/android/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/linux_client_unittest$(EXEEXT): $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_DEPENDENCIES) src/client/linux/$(am__dirstamp)
 	@rm -f src/client/linux/linux_client_unittest$(EXEEXT)
 	$(src_client_linux_linux_client_unittest_LINK) $(src_client_linux_linux_client_unittest_OBJECTS) $(src_client_linux_linux_client_unittest_LDADD) $(LIBS)
@@ -3194,6 +3224,9 @@ mostlyclean-compile:
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest_utils.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
 	-rm -f src/client/minidump_file_writer.$(OBJEXT)
+	-rm -f src/common/android/breakpad_getcontext.$(OBJEXT)
+	-rm -f src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.$(OBJEXT)
+	-rm -f src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.$(OBJEXT)
 	-rm -f src/common/convert_UTF.$(OBJEXT)
 	-rm -f src/common/dwarf/bytereader.$(OBJEXT)
 	-rm -f src/common/dwarf/dwarf2diehandler.$(OBJEXT)
@@ -3457,6 +3490,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/stabs_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/stabs_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/string_conversion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/android/$(DEPDIR)/breakpad_getcontext.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/bytereader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/dwarf2diehandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/dwarf/$(DEPDIR)/dwarf2reader.Po@am__quote@
@@ -3630,6 +3666,36 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/md2core/$(DEPDIR)/src_tools_linux_md2core_minidump_2_core_unittest-minidump_memory_range_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/symupload/$(DEPDIR)/minidump_upload.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/tools/linux/symupload/$(DEPDIR)/sym_upload.Po@am__quote@
+
+.S.o:
+@am__fastdepCCAS_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCCAS_TRUE@	$(CPPASCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCCAS_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(CPPASCOMPILE) -c -o $@ $<
+
+.S.obj:
+@am__fastdepCCAS_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCCAS_TRUE@	$(CPPASCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCCAS_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(CPPASCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.o: src/common/android/breakpad_getcontext.S
+@am__fastdepCCAS_TRUE@	$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -MT src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.o -MD -MP -MF src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Tpo -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.o `test -f 'src/common/android/breakpad_getcontext.S' || echo '$(srcdir)/'`src/common/android/breakpad_getcontext.S
+@am__fastdepCCAS_TRUE@	$(am__mv) src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Tpo src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='src/common/android/breakpad_getcontext.S' object='src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.o `test -f 'src/common/android/breakpad_getcontext.S' || echo '$(srcdir)/'`src/common/android/breakpad_getcontext.S
+
+src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.obj: src/common/android/breakpad_getcontext.S
+@am__fastdepCCAS_TRUE@	$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -MT src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.obj -MD -MP -MF src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Tpo -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.obj `if test -f 'src/common/android/breakpad_getcontext.S'; then $(CYGPATH_W) 'src/common/android/breakpad_getcontext.S'; else $(CYGPATH_W) '$(srcdir)/src/common/android/breakpad_getcontext.S'; fi`
+@am__fastdepCCAS_TRUE@	$(am__mv) src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Tpo src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='src/common/android/breakpad_getcontext.S' object='src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext.obj `if test -f 'src/common/android/breakpad_getcontext.S'; then $(CYGPATH_W) 'src/common/android/breakpad_getcontext.S'; else $(CYGPATH_W) '$(srcdir)/src/common/android/breakpad_getcontext.S'; fi`
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -3942,6 +4008,20 @@ src/processor/src_client_linux_linux_client_unittest-pathname_stripper.obj: src/
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/pathname_stripper.cc' object='src/processor/src_client_linux_linux_client_unittest-pathname_stripper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest-pathname_stripper.obj `if test -f 'src/processor/pathname_stripper.cc'; then $(CYGPATH_W) 'src/processor/pathname_stripper.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/pathname_stripper.cc'; fi`
+
+src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.o: src/common/android/breakpad_getcontext_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.o -MD -MP -MF src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Tpo -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.o `test -f 'src/common/android/breakpad_getcontext_unittest.cc' || echo '$(srcdir)/'`src/common/android/breakpad_getcontext_unittest.cc
+@am__fastdepCXX_TRUE@	$(am__mv) src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Tpo src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/common/android/breakpad_getcontext_unittest.cc' object='src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.o `test -f 'src/common/android/breakpad_getcontext_unittest.cc' || echo '$(srcdir)/'`src/common/android/breakpad_getcontext_unittest.cc
+
+src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.obj: src/common/android/breakpad_getcontext_unittest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.obj -MD -MP -MF src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Tpo -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.obj `if test -f 'src/common/android/breakpad_getcontext_unittest.cc'; then $(CYGPATH_W) 'src/common/android/breakpad_getcontext_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/android/breakpad_getcontext_unittest.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Tpo src/common/android/$(DEPDIR)/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/common/android/breakpad_getcontext_unittest.cc' object='src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/android/src_client_linux_linux_client_unittest-breakpad_getcontext_unittest.obj `if test -f 'src/common/android/breakpad_getcontext_unittest.cc'; then $(CYGPATH_W) 'src/common/android/breakpad_getcontext_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/android/breakpad_getcontext_unittest.cc'; fi`
 
 src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o: src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o -MD -MP -MF src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Tpo -c -o src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.o `test -f 'src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc' || echo '$(srcdir)/'`src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc
@@ -5992,6 +6072,8 @@ distclean-generic:
 	-rm -f src/client/linux/minidump_writer/$(am__dirstamp)
 	-rm -f src/common/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/common/$(am__dirstamp)
+	-rm -f src/common/android/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/common/android/$(am__dirstamp)
 	-rm -f src/common/dwarf/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/common/dwarf/$(am__dirstamp)
 	-rm -f src/common/linux/$(DEPDIR)/$(am__dirstamp)
@@ -6028,7 +6110,7 @@ clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -6076,7 +6158,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
+	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/log/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/android/$(DEPDIR) src/common/dwarf/$(DEPDIR) src/common/linux/$(DEPDIR) src/common/linux/tests/$(DEPDIR) src/common/tests/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR) src/tools/linux/core2md/$(DEPDIR) src/tools/linux/dump_syms/$(DEPDIR) src/tools/linux/md2core/$(DEPDIR) src/tools/linux/symupload/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

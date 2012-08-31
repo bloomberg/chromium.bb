@@ -100,6 +100,10 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/common/linux/linux_libc_support.cc \
 	src/common/linux/memory_mapped_file.cc \
 	src/common/linux/safe_readlink.cc
+if ANDROID_HOST
+src_client_linux_libbreakpad_client_a_SOURCES += \
+	src/common/android/breakpad_getcontext.S
+endif
 endif LINUX_HOST
 
 if !DISABLE_PROCESSOR
@@ -337,6 +341,10 @@ src_client_linux_linux_client_unittest_SOURCES = \
 	src/processor/logging.cc \
 	src/processor/minidump.cc \
 	src/processor/pathname_stripper.cc
+if ANDROID_HOST
+src_client_linux_linux_client_unittest_SOURCES += \
+	src/common/android/breakpad_getcontext.S
+endif
 
 src_client_linux_linux_client_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
@@ -364,6 +372,8 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/string_conversion.o \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 if ANDROID_HOST
+src_client_linux_linux_client_unittest_SOURCES += \
+	src/common/android/breakpad_getcontext_unittest.cc
 src_client_linux_linux_client_unittest_LDFLAGS = \
 	-llog
 endif

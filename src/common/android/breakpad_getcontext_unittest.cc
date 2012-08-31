@@ -27,30 +27,50 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_UCONTEXT_H
-#define GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_UCONTEXT_H
-
-#include <sys/cdefs.h>
-
-#ifdef __BIONIC_UCONTEXT_H
-#include <ucontext.h>
-#else
-
 #include <sys/ucontext.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
+#include "breakpad_googletest_includes.h"
+#include "common/android/ucontext_constants.h"
 
-// Provided by src/android/common/breakpad_getcontext.S
-int breakpad_getcontext(ucontext_t* ucp);
+TEST(AndroidUContext, GRegsOffset) {
+#ifdef __arm__
+  // There is no gregs[] array on ARM, so compare to the offset of
+  // first register fields, since they're stored in order.
+  ASSERT_EQ(MCONTEXT_GREGS_OFFSET, offsetof(ucontext_t,uc_mcontext.arm_r0));
+#elif defined(__i386__)
+  ASSERT_EQ(MCONTEXT_GREGS_OFFSET, offsetof(ucontext_t,uc_mcontext.gregs));
+#define CHECK_REG(x) \
+  ASSERT_EQ(MCONTEXT_##x##_OFFSET, \
+            offsetof(ucontext_t,uc_mcontext.gregs[REG_##x]))
+  CHECK_REG(GS);
+  CHECK_REG(FS);
+  CHECK_REG(ES);
+  CHECK_REG(DS);
+  CHECK_REG(EDI);
+  CHECK_REG(ESI);
+  CHECK_REG(EBP);
+  CHECK_REG(ESP);
+  CHECK_REG(EBX);
+  CHECK_REG(EDX);
+  CHECK_REG(ECX);
+  CHECK_REG(EAX);
+  CHECK_REG(TRAPNO);
+  CHECK_REG(ERR);
+  CHECK_REG(EIP);
+  CHECK_REG(CS);
+  CHECK_REG(EFL);
+  CHECK_REG(UESP);
+  CHECK_REG(SS);
 
-#define getcontext(x)   breakpad_getcontext(x)
+  ASSERT_EQ(UCONTEXT_FPREGS_OFFSET, offsetof(ucontext_t,uc_mcontext.fpregs));
 
-#ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
+  ASSERT_EQ(UCONTEXT_FPREGS_MEM_OFFSET,
+            offsetof(ucontext_t,__fpregs_mem));
+#else
+  ASSERT_EQ(MCONTEXT_GREGS_OFFSET, offsetof(ucontext_t,uc_mcontext.gregs));
+#endif
+}
 
-#endif  // __BIONIC_UCONTEXT_H
-
-#endif  // GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_UCONTEXT_H
+TEST(AndroidUContext, SigmakOffset) {
+  ASSERT_EQ(UCONTEXT_SIGMASK_OFFSET, offsetof(ucontext_t,uc_sigmask));
+}

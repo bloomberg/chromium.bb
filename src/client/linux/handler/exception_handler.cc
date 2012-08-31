@@ -324,16 +324,11 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
 // This is a public interface to HandleSignal that allows the client to
 // generate a crash dump. This function may run in a compromised context.
 bool ExceptionHandler::SimulateSignalDelivery(int sig) {
-#ifdef __ANDROID__
-  // Android doesn't provide getcontext().
-  return false;
-#else
   siginfo_t siginfo;
   my_memset(&siginfo, 0, sizeof(siginfo_t));
   struct ucontext context;
   getcontext(&context);
   return HandleSignal(sig, &siginfo, &context);
-#endif
 }
 
 // This function may run in a compromised context: see the top of the file.
@@ -457,7 +452,6 @@ bool ExceptionHandler::WriteMinidump(const string& dump_path,
 }
 
 bool ExceptionHandler::WriteMinidump() {
-#if !defined(__ARM_EABI__) && !defined(__ANDROID__)
   if (!IsOutOfProcess() && !minidump_descriptor_.IsFD()) {
     // Update the path of the minidump so that this can be called multiple times
     // and new files are created for each minidump.  This is done before the
@@ -478,14 +472,14 @@ bool ExceptionHandler::WriteMinidump() {
   int getcontext_result = getcontext(&context.context);
   if (getcontext_result)
     return false;
+#if !defined(__ARM_EABI__)
+  // FPU state is not part of ARM EABI ucontext_t.
   memcpy(&context.float_state, context.context.uc_mcontext.fpregs,
          sizeof(context.float_state));
+#endif
   context.tid = sys_gettid();
 
   return GenerateDump(&context);
-#else
-  return false;
-#endif  // !defined(__ARM_EABI__) && !defined(__ANDROID__)
 }
 
 void ExceptionHandler::AddMappingInfo(const string& name,
