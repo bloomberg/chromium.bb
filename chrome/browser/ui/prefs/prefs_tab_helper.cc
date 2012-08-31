@@ -248,6 +248,14 @@ UScriptCode GetScriptForFontPrefMatching(UScriptCode scriptCode) {
 UScriptCode GetScriptOfBrowserLocale() {
   std::string locale = g_browser_process->GetApplicationLocale();
 
+  // For Chinese locales, uscript_getCode() just returns USCRIPT_HAN but our
+  // per-script fonts are for USCRIPT_SIMPLIFIED_HAN and
+  // USCRIPT_TRADITIONAL_HAN.
+  if (locale == "zh-CN")
+    return USCRIPT_SIMPLIFIED_HAN;
+  if (locale == "zh-TW")
+    return USCRIPT_TRADITIONAL_HAN;
+
   UScriptCode code = USCRIPT_INVALID_CODE;
   UErrorCode err = U_ZERO_ERROR;
   uscript_getCode(locale.c_str(), &code, 1, &err);
