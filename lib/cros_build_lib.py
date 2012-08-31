@@ -785,7 +785,6 @@ class Manifest(object):
     if attrs['pushable']:
       if remote == constants.EXTERNAL_REMOTE:
         attrs['push_remote'] = EXTERNAL_GERRIT_SSH_REMOTE
-        attrs['push_remote_url'] = constants.GERRIT_SSH_URL
         if rev.startswith('refs/heads/'):
           attrs['push_remote_local'] = 'refs/remotes/%s/%s' % (
               EXTERNAL_GERRIT_SSH_REMOTE, StripLeadingRefsHeads(rev))
@@ -795,7 +794,6 @@ class Manifest(object):
         # For cros-internal, it's already accessing gerrit directly; thus
         # just use that.
         attrs['push_remote'] = attrs['remote']
-        attrs['push_remote_url'] = constants.GERRIT_INT_SSH_URL
         attrs['push_remote_local'] = attrs['local_revision']
 
       attrs['push_remote_url'] = constants.CROS_REMOTES[remote]
