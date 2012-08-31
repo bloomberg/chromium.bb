@@ -155,7 +155,7 @@ void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
 
 }  // namespace
 
-namespace browser {
+namespace chrome {
 
 void MaybeShowInvertBubbleView(Browser* browser, views::View* anchor_view) {
   PrefService* pref_service = browser->profile()->GetPrefs();
@@ -168,4 +168,4 @@ void MaybeShowInvertBubbleView(Browser* browser, views::View* anchor_view) {
   }
 }
 
-}  // namespace browser
+}  // namespace chrome

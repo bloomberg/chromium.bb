@@ -11,7 +11,7 @@ namespace views {
 class View;
 }
 
-namespace browser {
+namespace chrome {
 
 // Show a bubble telling the user that they're using Windows high-constrast mode
 // with a light-on-dark scheme, so they may be interested in a high-contrast
@@ -19,6 +19,6 @@ namespace browser {
 // this condition for a particular profile.
 void MaybeShowInvertBubbleView(Browser* browser, views::View* anchor_view);
 
-}  // namespace browser
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_INVERT_BUBBLE_VIEW_H_

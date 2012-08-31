@@ -580,7 +580,7 @@ void BrowserView::Show() {
 
   browser()->OnWindowDidShow();
 
-  browser::MaybeShowInvertBubbleView(browser_.get(), contents_);
+  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_);
 }
 
 void BrowserView::ShowInactive() {
@@ -1878,7 +1878,7 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
 }
 
 void BrowserView::OnSysColorChange() {
-  browser::MaybeShowInvertBubbleView(browser_.get(), contents_);
+  chrome::MaybeShowInvertBubbleView(browser_.get(), contents_);
 }
 
 int BrowserView::GetOTRIconResourceID() const {
