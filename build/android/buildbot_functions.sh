@@ -226,8 +226,15 @@ function bb_run_tests_emulator {
 # Run tests on an actual device.  (Better have one plugged in!)
 function bb_run_unit_tests {
   python build/android/device_status_check.py
+  local LOGCAT_DUMP_DIR="$CHROME_SRC/out/logcat"
+  rm -rf "$LOGCAT_DUMP_DIR"
+  python build/android/adb_logcat_monitor.py "$LOGCAT_DUMP_DIR" &
+
   echo "@@@BUILD_STEP Run Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose
+
+  echo "@@@BUILD_STEP Logcat dump@@@"
+  python build/android/adb_logcat_printer.py "$LOGCAT_DUMP_DIR"
 }
 
 # Run instrumentation test.
