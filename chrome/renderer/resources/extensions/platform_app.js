@@ -76,11 +76,6 @@ function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
 disableMethods(HTMLDocument.prototype, 'document',
     ['open', 'clear', 'close', 'write', 'writeln']);
 
-// Deprecated document properties from
-// https://developer.mozilla.org/en/DOM/document.
-disableGetters(document, 'document',
-    ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor', 'vlinkColor']);
-
 // Disable history.
 window.history = {};
 disableMethods(window.history, 'history',
@@ -103,6 +98,23 @@ disableGetters(window, 'window',
 disableGetters(window, 'window',
     ['localStorage'],
     'Use chrome.storage.local instead.');
+
+// Document instance properties that we wish to disable need to be set when
+// the document begins loading, since only then will the "document" reference
+// point to the page's document (it will be reset between now and then).
+// We can't listen for the "readystatechange" event on the document (because
+// the object that it's dispatched on doesn't exist yet), but we can instead
+// do it at the window level in the capturing phase.
+window.addEventListener('readystatechange', function(event) {
+  if (document.readyState != 'loading')
+    return;
+
+  // Deprecated document properties from
+  // https://developer.mozilla.org/en/DOM/document.
+  disableGetters(document, 'document',
+      ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor',
+       'vlinkColor']);
+}, true);
 
 // Disable onunload, onbeforeunload.
 Window.prototype.__defineSetter__(
