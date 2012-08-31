@@ -399,8 +399,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   // shown below, without polling for infobars for some indeterminate amount
   // of time.
   GURL url = ui_test_utils::GetTestUrl(
-      FilePath(FILE_PATH_LITERAL("translate/es")),
-      FilePath(FILE_PATH_LITERAL("google.html")));
+      FilePath(), FilePath(FILE_PATH_LITERAL("french_page.html")));
   content::WindowedNotificationObserver language_observer1(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
       content::NotificationService::AllSources());
@@ -413,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
       infobar_delegate->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, delegate->type());
-  EXPECT_EQ("es", delegate->GetOriginalLanguageCode());
+  EXPECT_EQ("fr", delegate->GetOriginalLanguageCode());
 
   // Now force disable translate.
   ui_test_utils::CloseAllInfoBars(tab_contents);
