@@ -114,67 +114,95 @@ cr.define('options', function() {
         y: mousePosition.y - this.dragging_.clickLocation.y
       };
 
-      var primaryDiv = this.displays_[0].div;
-      var display = this.dragging_.display;
+      var baseDiv = this.displays_[this.dragging_.isPrimary ? 1 : 0].div;
+      var draggingDiv = this.dragging_.display.div;
 
       // Separate the area into four (LEFT/RIGHT/TOP/BOTTOM) by the diagonals of
       // the primary display, and decide which area the display should reside.
-      var diagonalSlope = primaryDiv.offsetHeight / primaryDiv.offsetWidth;
+      var diagonalSlope = baseDiv.offsetHeight / baseDiv.offsetWidth;
       var topDownIntercept =
-          primaryDiv.offsetTop - primaryDiv.offsetLeft * diagonalSlope;
-      var bottomUpIntercept = primaryDiv.offsetTop +
-          primaryDiv.offsetHeight + primaryDiv.offsetLeft * diagonalSlope;
+          baseDiv.offsetTop - baseDiv.offsetLeft * diagonalSlope;
+      var bottomUpIntercept = baseDiv.offsetTop +
+          baseDiv.offsetHeight + baseDiv.offsetLeft * diagonalSlope;
 
       if (mousePosition.y >
           topDownIntercept + mousePosition.x * diagonalSlope) {
         if (mousePosition.y >
             bottomUpIntercept - mousePosition.x * diagonalSlope)
-          this.layout_ = SecondaryDisplayLayout.BOTTOM;
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
         else
-          this.layout_ = SecondaryDisplayLayout.LEFT;
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
       } else {
         if (mousePosition.y >
             bottomUpIntercept - mousePosition.x * diagonalSlope)
-          this.layout_ = SecondaryDisplayLayout.RIGHT;
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
         else
-          this.layout_ = SecondaryDisplayLayout.TOP;
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
       }
 
       if (this.layout_ == SecondaryDisplayLayout.LEFT ||
           this.layout_ == SecondaryDisplayLayout.RIGHT) {
-        if (newPosition.y > primaryDiv.offsetTop + primaryDiv.offsetHeight)
-          this.layout_ = SecondaryDisplayLayout.BOTTOM;
-        else if (newPosition.y + display.div.offsetHeight <
-                 primaryDiv.offsetTop)
-          this.layout_ = SecondaryDisplayLayout.TOP;
+        if (newPosition.y > baseDiv.offsetTop + baseDiv.offsetHeight)
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
+        else if (newPosition.y + draggingDiv.offsetHeight <
+                 baseDiv.offsetTop)
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
       } else {
-        if (newPosition.y > primaryDiv.offsetLeft + primaryDiv.offsetWidth)
-          this.layout_ = SecondaryDisplayLayout.RIGHT;
-        else if (newPosition.y + display.div.offsetWidth <
-                   primaryDiv.offstLeft)
-          this.layout_ = SecondaryDisplayLayout.LEFT;
+        if (newPosition.y > baseDiv.offsetLeft + baseDiv.offsetWidth)
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
+        else if (newPosition.y + draggingDiv.offsetWidth <
+                   baseDiv.offstLeft)
+          this.layout_ = this.dragging_.isPrimary ?
+              SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
       }
 
-      switch (this.layout_) {
+      var layout_to_base;
+      if (!this.dragging_.isPrimary) {
+        layout_to_base = this.layout_;
+      } else {
+        switch (this.layout_) {
+        case SecondaryDisplayLayout.RIGHT:
+          layout_to_base = SecondaryDisplayLayout.LEFT;
+          break;
+        case SecondaryDisplayLayout.LEFT:
+          layout_to_base = SecondaryDisplayLayout.RIGHT;
+          break;
+        case SecondaryDisplayLayout.TOP:
+          layout_to_base = SecondaryDisplayLayout.BOTTOM;
+          break;
+        case SecondaryDisplayLayout.BOTTOM:
+          layout_to_base = SecondaryDisplayLayout.TOP;
+          break;
+        }
+      }
+
+      switch (layout_to_base) {
       case SecondaryDisplayLayout.RIGHT:
-        display.div.style.left =
-            primaryDiv.offsetLeft + primaryDiv.offsetWidth + 'px';
-        display.div.style.top = newPosition.y + 'px';
+        draggingDiv.style.left =
+            baseDiv.offsetLeft + baseDiv.offsetWidth + 'px';
+        draggingDiv.style.top = newPosition.y + 'px';
         break;
       case SecondaryDisplayLayout.LEFT:
-        display.div.style.left =
-            primaryDiv.offsetLeft - display.div.offsetWidth + 'px';
-        display.div.style.top = newPosition.y + 'px';
+        draggingDiv.style.left =
+            baseDiv.offsetLeft - draggingDiv.offsetWidth + 'px';
+        draggingDiv.style.top = newPosition.y + 'px';
         break;
       case SecondaryDisplayLayout.TOP:
-        display.div.style.top =
-            primaryDiv.offsetTop - display.div.offsetHeight + 'px';
-        display.div.style.left = newPosition.x + 'px';
+        draggingDiv.style.top =
+            baseDiv.offsetTop - draggingDiv.offsetHeight + 'px';
+        draggingDiv.style.left = newPosition.x + 'px';
         break;
       case SecondaryDisplayLayout.BOTTOM:
-        display.div.style.top =
-            primaryDiv.offsetTop + primaryDiv.offsetHeight + 'px';
-        display.div.style.left = newPosition.x + 'px';
+        draggingDiv.style.top =
+            baseDiv.offsetTop + baseDiv.offsetHeight + 'px';
+        draggingDiv.style.left = newPosition.x + 'px';
         break;
       }
 
@@ -210,12 +238,9 @@ cr.define('options', function() {
           continue;
 
         display.div.classList.add('displays-focused');
-        // Do not drag the primary monitor.
-        if (i == 0)
-          continue;
-
         this.dragging_ = {
             display: display,
+            isPrimary: i == 0,
             clickLocation: {x: e.offsetX, y: e.offsetY},
             offset: {x: e.pageX - e.offsetX - display.div.offsetLeft,
                      y: e.pageY - e.offsetY - display.div.offsetTop}
