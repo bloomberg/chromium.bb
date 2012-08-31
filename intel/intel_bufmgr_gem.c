@@ -3112,7 +3112,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		bufmgr_gem->has_llc = (IS_GEN6(bufmgr_gem->pci_device) |
 				IS_GEN7(bufmgr_gem->pci_device));
 	} else
-		bufmgr_gem->has_llc = ret == 0;
+		bufmgr_gem->has_llc = gp.value;
 
 	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
