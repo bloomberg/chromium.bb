@@ -110,7 +110,7 @@ Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                           &FingerState::width_major,
                                           &FingerState::width_minor,
                                           &FingerState::orientation };
-    for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++)
+    for (size_t f_idx = 0; f_idx < arraysize(pass_fields); f_idx++)
       hist->NextOut()->*pass_fields[f_idx] = fs->*pass_fields[f_idx];
     hist->NextOut()->flags = fs->flags;
     *hist->NextIn() = *fs;
