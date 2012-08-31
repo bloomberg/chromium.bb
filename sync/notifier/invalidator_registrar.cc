@@ -63,6 +63,19 @@ void InvalidatorRegistrar::UnregisterHandler(InvalidationHandler* handler) {
   handlers_.RemoveObserver(handler);
 }
 
+ObjectIdSet InvalidatorRegistrar::GetRegisteredIds(
+    InvalidationHandler* handler) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ObjectIdSet registered_ids;
+  for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
+       it != id_to_handler_map_.end(); ++it) {
+    if (it->second == handler) {
+      registered_ids.insert(it->first);
+    }
+  }
+  return registered_ids;
+}
+
 ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdSet registered_ids;
@@ -118,19 +131,6 @@ bool InvalidatorRegistrar::IsHandlerRegisteredForTest(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return handlers_.HasObserver(handler);
-}
-
-ObjectIdSet InvalidatorRegistrar::GetRegisteredIdsForTest(
-    InvalidationHandler* handler) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ObjectIdSet registered_ids;
-  for (IdHandlerMap::const_iterator it = id_to_handler_map_.begin();
-       it != id_to_handler_map_.end(); ++it) {
-    if (it->second == handler) {
-      registered_ids.insert(it->first);
-    }
-  }
-  return registered_ids;
 }
 
 void InvalidatorRegistrar::DetachFromThreadForTest() {

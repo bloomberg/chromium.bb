@@ -1009,9 +1009,9 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
         (event.snapshot.model_neutral_state().num_successful_commits > 0);
     if (is_notifiable_commit) {
       if (invalidator_.get()) {
-        const ModelTypeSet changed_types =
-            ModelTypeStateMapToSet(event.snapshot.source().types);
-        invalidator_->SendNotification(changed_types);
+        const ObjectIdStateMap& id_state_map =
+            ModelTypeStateMapToObjectIdStateMap(event.snapshot.source().types);
+        invalidator_->SendNotification(id_state_map);
       } else {
         DVLOG(1) << "Not sending notification: invalidator_ is NULL";
       }

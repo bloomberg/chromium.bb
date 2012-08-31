@@ -29,7 +29,7 @@ class PushClient;
 namespace syncer {
 
 // The channel to use for sync notifications.
-extern const char* kSyncP2PNotificationChannel;
+extern const char kSyncP2PNotificationChannel[];
 
 // The intended recipient(s) of a P2P notification.
 enum P2PNotificationTarget {
@@ -56,14 +56,17 @@ class P2PNotificationData {
   P2PNotificationData();
   P2PNotificationData(const std::string& sender_id,
                       P2PNotificationTarget target,
-                      ModelTypeSet changed_types);
+                      const ObjectIdStateMap& id_state_map,
+                      IncomingNotificationSource source);
 
   ~P2PNotificationData();
 
   // Returns true if the given ID is targeted by this notification.
   bool IsTargeted(const std::string& id) const;
 
-  ModelTypeSet GetChangedTypes() const;
+  const ObjectIdStateMap& GetIdStateMap() const;
+
+  IncomingNotificationSource GetSource() const;
 
   bool Equals(const P2PNotificationData& other) const;
 
@@ -78,8 +81,10 @@ class P2PNotificationData {
   std::string sender_id_;
   // The intendent recipient(s) of the notification.
   P2PNotificationTarget target_;
-  // The types the notification is for.
-  ModelTypeSet changed_types_;
+  // The state map for the notification.
+  ObjectIdStateMap id_state_map_;
+  // The source of the notification.
+  IncomingNotificationSource source_;
 };
 
 class P2PInvalidator : public Invalidator,
@@ -104,7 +109,7 @@ class P2PInvalidator : public Invalidator,
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
+  virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
   // PushClientObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
@@ -132,8 +137,6 @@ class P2PInvalidator : public Invalidator,
   bool notifications_enabled_;
   // Which set of clients should be sent notifications.
   P2PNotificationTarget send_notification_target_;
-
-  ModelTypeSet enabled_types_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PInvalidator);
 };

@@ -38,4 +38,19 @@ NotificationsDisabledReason FromNotifierReason(
   }
 }
 
+notifier::NotificationsDisabledReason ToNotifierReasonForTest(
+    NotificationsDisabledReason reason) {
+  switch (reason) {
+    case NO_NOTIFICATION_ERROR:
+      return notifier::NO_NOTIFICATION_ERROR;
+    case TRANSIENT_NOTIFICATION_ERROR:
+      return notifier::TRANSIENT_NOTIFICATION_ERROR;
+    case NOTIFICATION_CREDENTIALS_REJECTED:
+      return notifier::NOTIFICATION_CREDENTIALS_REJECTED;
+    default:
+      NOTREACHED();
+      return notifier::TRANSIENT_NOTIFICATION_ERROR;
+  }
+}
+
 }  // namespace syncer

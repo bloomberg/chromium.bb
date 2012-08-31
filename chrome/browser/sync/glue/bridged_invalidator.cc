@@ -57,9 +57,9 @@ void BridgedInvalidator::UpdateCredentials(
 }
 
 void BridgedInvalidator::SendNotification(
-    syncer::ModelTypeSet changed_types) {
+    const syncer::ObjectIdStateMap& id_state_map) {
   if (delegate_.get())
-    delegate_->SendNotification(changed_types);
+    delegate_->SendNotification(id_state_map);
 }
 
 }  // namespace browser_sync

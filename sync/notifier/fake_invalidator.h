@@ -25,7 +25,12 @@ class FakeInvalidator : public Invalidator {
   const std::string& GetStateDeprecated() const;
   const std::string& GetCredentialsEmail() const;
   const std::string& GetCredentialsToken() const;
-  ModelTypeSet GetLastChangedTypes() const;
+  const ObjectIdStateMap& GetLastSentIdStateMap() const;
+
+  void EmitOnNotificationsEnabled();
+  void EmitOnIncomingNotification(const ObjectIdStateMap& id_state_map,
+                                  IncomingNotificationSource source);
+  void EmitOnNotificationsDisabled(NotificationsDisabledReason reason);
 
   virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
@@ -35,7 +40,7 @@ class FakeInvalidator : public Invalidator {
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
+  virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
  private:
   InvalidatorRegistrar registrar_;
@@ -43,7 +48,7 @@ class FakeInvalidator : public Invalidator {
   std::string state_;
   std::string email_;
   std::string token_;
-  ModelTypeSet last_changed_types_;
+  ObjectIdStateMap last_sent_id_state_map_;
 };
 
 }  // namespace syncer

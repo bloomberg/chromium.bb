@@ -35,14 +35,14 @@ SYNC_EXPORT ModelTypeStateMap ModelTypeSetToStateMap(
     ModelTypeSet model_types, const std::string& payload);
 
 ModelTypeSet ModelTypeStateMapToSet(
-    const ModelTypeStateMap& payload_map);
+    const ModelTypeStateMap& type_state_map);
 
 std::string ModelTypeStateMapToString(
-    const ModelTypeStateMap& model_type_payloads);
+    const ModelTypeStateMap& type_state_map);
 
 // Caller takes ownership of the returned dictionary.
 base::DictionaryValue* ModelTypeStateMapToValue(
-    const ModelTypeStateMap& model_type_payloads);
+    const ModelTypeStateMap& type_state_map);
 
 // Coalesce |update| into |original|, overwriting only when |update| has
 // a non-empty payload.

@@ -7,6 +7,9 @@
 #include <ostream>
 #include <sstream>
 
+#include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 
@@ -40,6 +43,35 @@ bool ObjectIdToRealModelType(const invalidation::ObjectId& object_id,
   return NotificationTypeToRealModelType(object_id.name(), model_type);
 }
 
+scoped_ptr<base::DictionaryValue> ObjectIdToValue(
+    const invalidation::ObjectId& object_id) {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetInteger("source", object_id.source());
+  value->SetString("name", object_id.name());
+  return value.Pass();
+}
+
+bool ObjectIdFromValue(const base::DictionaryValue& value,
+                       invalidation::ObjectId* out) {
+  *out = invalidation::ObjectId();
+  std::string name;
+  int source = 0;
+  if (!value.GetInteger("source", &source) ||
+      !value.GetString("name", &name)) {
+    return false;
+  }
+  *out = invalidation::ObjectId(source, name);
+  return true;
+}
+
+std::string ObjectIdToString(
+    const invalidation::ObjectId& object_id) {
+  scoped_ptr<base::DictionaryValue> value(ObjectIdToValue(object_id));
+  std::string str;
+  base::JSONWriter::Write(value.get(), &str);
+  return str;
+}
+
 ObjectIdSet ModelTypeSetToObjectIdSet(const ModelTypeSet& model_types) {
   ObjectIdSet ids;
   for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
@@ -64,16 +96,6 @@ ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids) {
     model_types.Put(model_type);
   }
   return model_types;
-}
-
-std::string ObjectIdToString(
-    const invalidation::ObjectId& object_id) {
-  std::stringstream ss;
-  ss << "{ ";
-  ss << "name: " << object_id.name() << ", ";
-  ss << "source: " << object_id.source();
-  ss << " }";
-  return ss.str();
 }
 
 std::string InvalidationToString(

@@ -1258,7 +1258,6 @@ void SyncBackendHost::Core::DoFinishConfigureDataTypes(
   syncer::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   const syncer::ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
-  chrome_sync_notification_bridge_->UpdateEnabledTypes(enabled_types);
   sync_manager_->UpdateEnabledTypes(enabled_types);
 
   const syncer::ModelTypeSet failed_configuration_types =

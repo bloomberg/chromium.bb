@@ -94,7 +94,8 @@ void InvalidationNotifier::UpdateCredentials(
   invalidation_client_.UpdateCredentials(email, token);
 }
 
-void InvalidationNotifier::SendNotification(ModelTypeSet changed_types) {
+void InvalidationNotifier::SendNotification(
+    const ObjectIdStateMap& id_state_map) {
   DCHECK(CalledOnValidThread());
   // Do nothing.
 }

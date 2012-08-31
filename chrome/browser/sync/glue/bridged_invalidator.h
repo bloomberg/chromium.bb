@@ -39,7 +39,7 @@ class BridgedInvalidator : public syncer::Invalidator {
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendNotification(
-      syncer::ModelTypeSet changed_types) OVERRIDE;
+      const syncer::ObjectIdStateMap& id_state_map) OVERRIDE;
 
  private:
   // The notification bridge that we register the observers with.

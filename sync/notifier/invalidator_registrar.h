@@ -44,6 +44,8 @@ class InvalidatorRegistrar {
   // associated with |handler|.
   void UnregisterHandler(InvalidationHandler* handler);
 
+  ObjectIdSet GetRegisteredIds(InvalidationHandler* handler) const;
+
   // Returns the set of all IDs that are registered to some handler (even
   // handlers that have been unregistered).
   ObjectIdSet GetAllRegisteredIds() const;
@@ -60,7 +62,6 @@ class InvalidatorRegistrar {
   void EmitOnNotificationsDisabled(NotificationsDisabledReason reason);
 
   bool IsHandlerRegisteredForTest(InvalidationHandler* handler) const;
-  ObjectIdSet GetRegisteredIdsForTest(InvalidationHandler* handler) const;
 
   // Needed for death tests.
   void DetachFromThreadForTest();

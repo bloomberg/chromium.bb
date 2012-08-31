@@ -239,7 +239,8 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
   }
 }
 
-void NonBlockingInvalidator::SendNotification(ModelTypeSet changed_types) {
+void NonBlockingInvalidator::SendNotification(
+    const ObjectIdStateMap& id_state_map) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.

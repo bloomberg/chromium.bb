@@ -13,6 +13,7 @@
 
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/object_id_state_map.h"
 
 namespace syncer {
 class InvalidationHandler;
@@ -82,7 +83,7 @@ class Invalidator {
   // which is still used by sync integration tests.
   // TODO(akalin): Remove this once we move the integration tests off p2p
   // notifications.
-  virtual void SendNotification(ModelTypeSet changed_types) = 0;
+  virtual void SendNotification(const ObjectIdStateMap& id_state_map) = 0;
 };
 }  // namespace syncer
 

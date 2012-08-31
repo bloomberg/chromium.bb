@@ -41,6 +41,7 @@
       'sources': [
         'base/sync_export.h',
         'internal_api/public/base/enum_set.h',
+        'internal_api/public/base/invalidation_state.cc',
         'internal_api/public/base/invalidation_state.h',
         'internal_api/public/base/model_type.h',
         'internal_api/public/base/model_type_state_map.cc',
@@ -488,6 +489,7 @@
         'notifier/fake_invalidator.h',
         'notifier/fake_invalidation_handler.cc',
         'notifier/fake_invalidation_handler.h',
+        'notifier/invalidator_test_template.h',
         'notifier/object_id_state_map_test_util.cc',
         'notifier/object_id_state_map_test_util.h',
       ],
@@ -577,7 +579,6 @@
         'test_support_sync',
       ],
       'direct_dependent_settings': {
-        'variables': { 'enable_wexit_time_destructors': 1, },
         'include_dirs': [
           '..',
         ],
@@ -664,7 +665,6 @@
         'test_support_sync_notifier',
       ],
       'direct_dependent_settings': {
-        'variables': { 'enable_wexit_time_destructors': 1, },
         'include_dirs': [
           '..',
         ],
@@ -676,6 +676,7 @@
             'sources': [
               'notifier/chrome_invalidation_client_unittest.cc',
               'notifier/chrome_system_resources_unittest.cc',
+              'notifier/fake_invalidator_unittest.cc',
               'notifier/invalidation_notifier_unittest.cc',
               'notifier/invalidator_registrar_unittest.cc',
               'notifier/non_blocking_invalidator_unittest.cc',
@@ -724,7 +725,6 @@
         'test_support_syncapi_core',
       ],
       'direct_dependent_settings': {
-        'variables': { 'enable_wexit_time_destructors': 1, },
         'include_dirs': [
           '..',
         ],
@@ -770,7 +770,6 @@
         'test_support_syncapi_service',
       ],
       'direct_dependent_settings': {
-        'variables': { 'enable_wexit_time_destructors': 1, },
         'include_dirs': [
           '..',
         ],
@@ -785,6 +784,8 @@
     {
       'target_name': 'sync_unit_tests',
       'type': '<(gtest_target_type)',
+      # Typed-parametrized tests generate exit-time destructors.
+      'variables': { 'enable_wexit_time_destructors': 0, },
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         'sync_tests',

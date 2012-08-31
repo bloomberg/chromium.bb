@@ -16,11 +16,7 @@ bool FakeInvalidator::IsHandlerRegistered(InvalidationHandler* handler) const {
 
 ObjectIdSet FakeInvalidator::GetRegisteredIds(
     InvalidationHandler* handler) const {
-  return registrar_.GetRegisteredIdsForTest(handler);
-}
-
-void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {
-  registrar_.RegisterHandler(handler);
+  return registrar_.GetRegisteredIds(handler);
 }
 
 const std::string& FakeInvalidator::GetUniqueId() const {
@@ -39,8 +35,27 @@ const std::string& FakeInvalidator::GetCredentialsToken() const {
   return token_;
 }
 
-ModelTypeSet FakeInvalidator::GetLastChangedTypes() const {
-  return last_changed_types_;
+const ObjectIdStateMap& FakeInvalidator::GetLastSentIdStateMap() const {
+  return last_sent_id_state_map_;
+}
+
+void FakeInvalidator::EmitOnNotificationsEnabled() {
+  registrar_.EmitOnNotificationsEnabled();
+}
+
+void FakeInvalidator::EmitOnIncomingNotification(
+    const ObjectIdStateMap& id_state_map,
+    IncomingNotificationSource source) {
+  registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
+}
+
+void FakeInvalidator::EmitOnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  registrar_.EmitOnNotificationsDisabled(reason);
+}
+
+void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {
+  registrar_.RegisterHandler(handler);
 }
 
 void FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
@@ -66,8 +81,8 @@ void FakeInvalidator::UpdateCredentials(
   token_ = token;
 }
 
-void FakeInvalidator::SendNotification(ModelTypeSet changed_types) {
-  last_changed_types_ = changed_types;
+void FakeInvalidator::SendNotification(const ObjectIdStateMap& id_state_map) {
+  last_sent_id_state_map_ = id_state_map;
 }
 
 }  // namespace syncer

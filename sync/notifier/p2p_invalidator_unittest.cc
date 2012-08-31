@@ -10,6 +10,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
 #include "sync/notifier/fake_invalidation_handler.h"
+#include "sync/notifier/invalidator_test_template.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,19 +18,83 @@ namespace syncer {
 
 namespace {
 
+class P2PInvalidatorTestDelegate {
+ public:
+  P2PInvalidatorTestDelegate() : fake_push_client_(NULL) {}
+
+  ~P2PInvalidatorTestDelegate() {
+    DestroyInvalidator();
+  }
+
+  void CreateInvalidator(
+      const std::string& initial_state,
+      const base::WeakPtr<InvalidationStateTracker>&
+          invalidation_state_tracker) {
+    DCHECK(!fake_push_client_);
+    DCHECK(!invalidator_.get());
+    fake_push_client_ = new notifier::FakePushClient();
+    invalidator_.reset(
+        new P2PInvalidator(
+            scoped_ptr<notifier::PushClient>(fake_push_client_),
+            NOTIFY_OTHERS));
+  }
+
+  P2PInvalidator* GetInvalidator() {
+    return invalidator_.get();
+  }
+
+  notifier::FakePushClient* GetPushClient() {
+    return fake_push_client_;
+  }
+
+  void DestroyInvalidator() {
+    invalidator_.reset();
+    fake_push_client_ = NULL;
+  }
+
+  void WaitForInvalidator() {
+    // Do Nothing.
+  }
+
+  void TriggerOnNotificationsEnabled() {
+    fake_push_client_->EnableNotifications();
+  }
+
+  void TriggerOnIncomingNotification(const ObjectIdStateMap& id_state_map,
+                                     IncomingNotificationSource source) {
+    const P2PNotificationData notification_data(
+        "", NOTIFY_ALL, id_state_map, source);
+    notifier::Notification notification;
+    notification.channel = kSyncP2PNotificationChannel;
+    notification.data = notification_data.ToString();
+    fake_push_client_->SimulateIncomingNotification(notification);
+  }
+
+  void TriggerOnNotificationsDisabled(NotificationsDisabledReason reason) {
+    fake_push_client_->DisableNotifications(ToNotifierReasonForTest(reason));
+  }
+
+  static bool InvalidatorHandlesDeprecatedState() {
+    return false;
+  }
+
+ private:
+  // Owned by |invalidator_|.
+  notifier::FakePushClient* fake_push_client_;
+  scoped_ptr<P2PInvalidator> invalidator_;
+};
+
 class P2PInvalidatorTest : public testing::Test {
  protected:
   P2PInvalidatorTest()
-      : fake_push_client_(new notifier::FakePushClient()),
-        p2p_notifier_(
-            scoped_ptr<notifier::PushClient>(fake_push_client_),
-            NOTIFY_OTHERS),
-        next_sent_notification_to_reflect_(0) {
-    p2p_notifier_.RegisterHandler(&fake_handler_);
+      : next_sent_notification_to_reflect_(0) {
+    delegate_.CreateInvalidator("fake_state",
+                                base::WeakPtr<InvalidationStateTracker>());
+    delegate_.GetInvalidator()->RegisterHandler(&fake_handler_);
   }
 
   virtual ~P2PInvalidatorTest() {
-    p2p_notifier_.UnregisterHandler(&fake_handler_);
+    delegate_.GetInvalidator()->UnregisterHandler(&fake_handler_);
   }
 
   ModelTypeStateMap MakeStateMap(ModelTypeSet types) {
@@ -40,18 +105,16 @@ class P2PInvalidatorTest : public testing::Test {
   // time this was called.
   void ReflectSentNotifications() {
     const std::vector<notifier::Notification>& sent_notifications =
-        fake_push_client_->sent_notifications();
+        delegate_.GetPushClient()->sent_notifications();
     for(size_t i = next_sent_notification_to_reflect_;
         i < sent_notifications.size(); ++i) {
-      p2p_notifier_.OnIncomingNotification(sent_notifications[i]);
+      delegate_.GetInvalidator()->OnIncomingNotification(sent_notifications[i]);
     }
     next_sent_notification_to_reflect_ = sent_notifications.size();
   }
 
-  // Owned by |p2p_notifier_|.
-  notifier::FakePushClient* fake_push_client_;
-  P2PInvalidator p2p_notifier_;
   FakeInvalidationHandler fake_handler_;
+  P2PInvalidatorTestDelegate delegate_;
 
  private:
   size_t next_sent_notification_to_reflect_;
@@ -73,21 +136,21 @@ TEST_F(P2PInvalidatorTest, P2PNotificationTarget) {
 TEST_F(P2PInvalidatorTest, P2PNotificationDataIsTargeted) {
   {
     const P2PNotificationData notification_data(
-        "sender", NOTIFY_SELF, ModelTypeSet());
+        "sender", NOTIFY_SELF, ObjectIdStateMap(), REMOTE_NOTIFICATION);
     EXPECT_TRUE(notification_data.IsTargeted("sender"));
     EXPECT_FALSE(notification_data.IsTargeted("other1"));
     EXPECT_FALSE(notification_data.IsTargeted("other2"));
   }
   {
     const P2PNotificationData notification_data(
-        "sender", NOTIFY_OTHERS, ModelTypeSet());
+        "sender", NOTIFY_OTHERS, ObjectIdStateMap(), REMOTE_NOTIFICATION);
     EXPECT_FALSE(notification_data.IsTargeted("sender"));
     EXPECT_TRUE(notification_data.IsTargeted("other1"));
     EXPECT_TRUE(notification_data.IsTargeted("other2"));
   }
   {
     const P2PNotificationData notification_data(
-        "sender", NOTIFY_ALL, ModelTypeSet());
+        "sender", NOTIFY_ALL, ObjectIdStateMap(), REMOTE_NOTIFICATION);
     EXPECT_TRUE(notification_data.IsTargeted("sender"));
     EXPECT_TRUE(notification_data.IsTargeted("other1"));
     EXPECT_TRUE(notification_data.IsTargeted("other2"));
@@ -101,11 +164,11 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataDefault) {
   EXPECT_TRUE(notification_data.IsTargeted(""));
   EXPECT_FALSE(notification_data.IsTargeted("other1"));
   EXPECT_FALSE(notification_data.IsTargeted("other2"));
-  EXPECT_TRUE(notification_data.GetChangedTypes().Empty());
+  EXPECT_TRUE(notification_data.GetIdStateMap().empty());
   const std::string& notification_data_str = notification_data.ToString();
   EXPECT_EQ(
-      "{\"changedTypes\":[],\"notificationType\":\"notifySelf\","
-      "\"senderId\":\"\"}", notification_data_str);
+      "{\"idStateMap\":[],\"notificationType\":\"notifySelf\",\"senderId\":"
+      "\"\",\"source\":0}", notification_data_str);
 
   P2PNotificationData notification_data_parsed;
   EXPECT_TRUE(notification_data_parsed.ResetFromString(notification_data_str));
@@ -115,18 +178,24 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataDefault) {
 // Make sure the P2PNotificationData <-> string conversions work for a
 // non-default-constructed P2PNotificationData.
 TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
-  const ModelTypeSet changed_types(BOOKMARKS, THEMES);
+  const ObjectIdStateMap& id_state_map =
+      ObjectIdSetToStateMap(
+          ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, THEMES)), "");
   const P2PNotificationData notification_data(
-      "sender", NOTIFY_ALL, changed_types);
+      "sender", NOTIFY_ALL, id_state_map, LOCAL_NOTIFICATION);
   EXPECT_TRUE(notification_data.IsTargeted("sender"));
   EXPECT_TRUE(notification_data.IsTargeted("other1"));
   EXPECT_TRUE(notification_data.IsTargeted("other2"));
-  EXPECT_TRUE(notification_data.GetChangedTypes().Equals(changed_types));
+  EXPECT_THAT(id_state_map, Eq(notification_data.GetIdStateMap()));
   const std::string& notification_data_str = notification_data.ToString();
   EXPECT_EQ(
-      "{\"changedTypes\":[\"Bookmarks\",\"Themes\"],"
-      "\"notificationType\":\"notifyAll\","
-      "\"senderId\":\"sender\"}", notification_data_str);
+      "{\"idStateMap\":["
+      "{\"objectId\":{\"name\":\"BOOKMARK\",\"source\":1004},"
+      "\"state\":{\"ackHandle\":{},\"payload\":\"\"}},"
+      "{\"objectId\":{\"name\":\"THEME\",\"source\":1004},"
+      "\"state\":{\"ackHandle\":{},\"payload\":\"\"}}"
+      "],\"notificationType\":\"notifyAll\","
+      "\"senderId\":\"sender\",\"source\":1}", notification_data_str);
 
   P2PNotificationData notification_data_parsed;
   EXPECT_TRUE(notification_data_parsed.ResetFromString(notification_data_str));
@@ -140,27 +209,30 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
 TEST_F(P2PInvalidatorTest, NotificationsBasic) {
   const ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES);
 
-  p2p_notifier_.UpdateRegisteredIds(&fake_handler_,
-                                    ModelTypeSetToObjectIdSet(enabled_types));
+  P2PInvalidator* const invalidator = delegate_.GetInvalidator();
+  notifier::FakePushClient* const push_client = delegate_.GetPushClient();
 
-  p2p_notifier_.SetUniqueId("sender");
+  invalidator->UpdateRegisteredIds(&fake_handler_,
+                                   ModelTypeSetToObjectIdSet(enabled_types));
+
+  invalidator->SetUniqueId("sender");
 
   const char kEmail[] = "foo@bar.com";
   const char kToken[] = "token";
-  p2p_notifier_.UpdateCredentials(kEmail, kToken);
+  invalidator->UpdateCredentials(kEmail, kToken);
   {
     notifier::Subscription expected_subscription;
     expected_subscription.channel = kSyncP2PNotificationChannel;
     expected_subscription.from = kEmail;
     EXPECT_TRUE(notifier::SubscriptionListsEqual(
-        fake_push_client_->subscriptions(),
+        push_client->subscriptions(),
         notifier::SubscriptionList(1, expected_subscription)));
   }
-  EXPECT_EQ(kEmail, fake_push_client_->email());
-  EXPECT_EQ(kToken, fake_push_client_->token());
+  EXPECT_EQ(kEmail, push_client->email());
+  EXPECT_EQ(kToken, push_client->token());
 
   ReflectSentNotifications();
-  fake_push_client_->EnableNotifications();
+  push_client->EnableNotifications();
   EXPECT_EQ(NO_NOTIFICATION_ERROR,
             fake_handler_.GetNotificationsDisabledReason());
 
@@ -174,8 +246,10 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
   // Sent with target NOTIFY_OTHERS so should not be propagated to
   // |fake_handler_|.
   {
-    ModelTypeSet changed_types(THEMES, APPS);
-    p2p_notifier_.SendNotification(changed_types);
+    const ObjectIdStateMap& id_state_map =
+        ObjectIdSetToStateMap(
+            ModelTypeSetToObjectIdSet(ModelTypeSet(THEMES, APPS)), "");
+    invalidator->SendNotification(id_state_map);
   }
 
   ReflectSentNotifications();
@@ -190,14 +264,21 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
   const ModelTypeSet changed_types(THEMES, APPS);
   const ModelTypeSet expected_types(THEMES);
 
-  p2p_notifier_.UpdateRegisteredIds(&fake_handler_,
-                                    ModelTypeSetToObjectIdSet(enabled_types));
+  const ObjectIdStateMap& id_state_map =
+      ObjectIdSetToStateMap(
+          ModelTypeSetToObjectIdSet(changed_types), "");
 
-  p2p_notifier_.SetUniqueId("sender");
-  p2p_notifier_.UpdateCredentials("foo@bar.com", "fake_token");
+  P2PInvalidator* const invalidator = delegate_.GetInvalidator();
+  notifier::FakePushClient* const push_client = delegate_.GetPushClient();
+
+  invalidator->UpdateRegisteredIds(&fake_handler_,
+                                   ModelTypeSetToObjectIdSet(enabled_types));
+
+  invalidator->SetUniqueId("sender");
+  invalidator->UpdateCredentials("foo@bar.com", "fake_token");
 
   ReflectSentNotifications();
-  fake_push_client_->EnableNotifications();
+  push_client->EnableNotifications();
   EXPECT_EQ(NO_NOTIFICATION_ERROR,
             fake_handler_.GetNotificationsDisabledReason());
 
@@ -209,7 +290,7 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
   EXPECT_EQ(REMOTE_NOTIFICATION, fake_handler_.GetLastNotificationSource());
 
   // Should be dropped.
-  p2p_notifier_.SendNotificationDataForTest(P2PNotificationData());
+  invalidator->SendNotificationDataForTest(P2PNotificationData());
   ReflectSentNotifications();
   EXPECT_EQ(1, fake_handler_.GetNotificationCount());
 
@@ -217,8 +298,9 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
       ModelTypeStateMapToObjectIdStateMap(MakeStateMap(expected_types));
 
   // Should be propagated.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender", NOTIFY_SELF, changed_types));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender", NOTIFY_SELF,
+                          id_state_map, REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(2, fake_handler_.GetNotificationCount());
   EXPECT_THAT(
@@ -226,26 +308,30 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
       Eq(fake_handler_.GetLastNotificationIdStateMap()));
 
   // Should be dropped.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_SELF, changed_types));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender2", NOTIFY_SELF,
+                          id_state_map, REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(2, fake_handler_.GetNotificationCount());
 
   // Should be dropped.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender", NOTIFY_SELF, ModelTypeSet()));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender", NOTIFY_SELF,
+                          ObjectIdStateMap(), REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(2, fake_handler_.GetNotificationCount());
 
   // Should be dropped.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender", NOTIFY_OTHERS, changed_types));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender", NOTIFY_OTHERS,
+                          id_state_map, REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(2, fake_handler_.GetNotificationCount());
 
   // Should be propagated.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_OTHERS, changed_types));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender2", NOTIFY_OTHERS,
+                          id_state_map, REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(3, fake_handler_.GetNotificationCount());
   EXPECT_THAT(
@@ -253,14 +339,16 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
       Eq(fake_handler_.GetLastNotificationIdStateMap()));
 
   // Should be dropped.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_OTHERS, ModelTypeSet()));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender2", NOTIFY_OTHERS,
+                          ObjectIdStateMap(), REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(3, fake_handler_.GetNotificationCount());
 
   // Should be propagated.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender", NOTIFY_ALL, changed_types));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender", NOTIFY_ALL,
+                          id_state_map, REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(4, fake_handler_.GetNotificationCount());
   EXPECT_THAT(
@@ -268,8 +356,9 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
       Eq(fake_handler_.GetLastNotificationIdStateMap()));
 
   // Should be propagated.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_ALL, changed_types));
+  invalidator->SendNotificationDataForTest(
+      P2PNotificationData("sender2", NOTIFY_ALL,
+                          id_state_map, REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(5, fake_handler_.GetNotificationCount());
   EXPECT_THAT(
@@ -277,11 +366,16 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
       Eq(fake_handler_.GetLastNotificationIdStateMap()));
 
   // Should be dropped.
-  p2p_notifier_.SendNotificationDataForTest(
-      P2PNotificationData("sender2", NOTIFY_ALL, ModelTypeSet()));
+  invalidator->SendNotificationDataForTest(
+  P2PNotificationData("sender2", NOTIFY_ALL,
+                      ObjectIdStateMap(), REMOTE_NOTIFICATION));
   ReflectSentNotifications();
   EXPECT_EQ(5, fake_handler_.GetNotificationCount());
 }
+
+INSTANTIATE_TYPED_TEST_CASE_P(
+    P2PInvalidatorTest, InvalidatorTest,
+    P2PInvalidatorTestDelegate);
 
 }  // namespace
 

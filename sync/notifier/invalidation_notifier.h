@@ -58,7 +58,7 @@ class InvalidationNotifier
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(ModelTypeSet changed_types) OVERRIDE;
+  virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
   // ChromeInvalidationClient::Listener implementation.
   virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE;

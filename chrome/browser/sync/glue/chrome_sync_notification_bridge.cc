@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_handler.h"
 #include "sync/notifier/invalidator_registrar.h"
 
@@ -30,15 +31,18 @@ class ChromeSyncNotificationBridge::Core
   void InitializeOnSyncThread();
   void CleanupOnSyncThread();
 
-  void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
   void RegisterHandler(syncer::InvalidationHandler* handler);
   void UpdateRegisteredIds(syncer::InvalidationHandler* handler,
                            const syncer::ObjectIdSet& ids);
   void UnregisterHandler(syncer::InvalidationHandler* handler);
 
   void EmitNotification(
-      const syncer::ModelTypeStateMap& state_map,
+      const syncer::ObjectIdStateMap& state_map,
       syncer::IncomingNotificationSource notification_source);
+
+  bool IsHandlerRegisteredForTest(syncer::InvalidationHandler* handler) const;
+  syncer::ObjectIdSet GetRegisteredIdsForTest(
+      syncer::InvalidationHandler* handler) const;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
@@ -49,8 +53,7 @@ class ChromeSyncNotificationBridge::Core
   const scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
 
   // Used only on |sync_task_runner_|.
-  syncer::ModelTypeSet enabled_types_;
-  scoped_ptr<syncer::InvalidatorRegistrar> notifier_registrar_;
+  scoped_ptr<syncer::InvalidatorRegistrar> invalidator_registrar_;
 };
 
 ChromeSyncNotificationBridge::Core::Core(
@@ -63,54 +66,61 @@ ChromeSyncNotificationBridge::Core::Core(
 ChromeSyncNotificationBridge::Core::~Core() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          sync_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!notifier_registrar_.get());
+  DCHECK(!invalidator_registrar_.get());
 }
 
 void ChromeSyncNotificationBridge::Core::InitializeOnSyncThread() {
-  notifier_registrar_.reset(new syncer::InvalidatorRegistrar());
+  invalidator_registrar_.reset(new syncer::InvalidatorRegistrar());
 }
 
 void ChromeSyncNotificationBridge::Core::CleanupOnSyncThread() {
-  notifier_registrar_.reset();
-}
-
-void ChromeSyncNotificationBridge::Core::UpdateEnabledTypes(
-    syncer::ModelTypeSet types) {
-  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  enabled_types_ = types;
+  invalidator_registrar_.reset();
 }
 
 void ChromeSyncNotificationBridge::Core::RegisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  notifier_registrar_->RegisterHandler(handler);
+  invalidator_registrar_->RegisterHandler(handler);
 }
 
 void ChromeSyncNotificationBridge::Core::UpdateRegisteredIds(
     syncer::InvalidationHandler* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  notifier_registrar_->UpdateRegisteredIds(handler, ids);
+  invalidator_registrar_->UpdateRegisteredIds(handler, ids);
 }
 
 void ChromeSyncNotificationBridge::Core::UnregisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  notifier_registrar_->UnregisterHandler(handler);
+  invalidator_registrar_->UnregisterHandler(handler);
 }
 
 void ChromeSyncNotificationBridge::Core::EmitNotification(
-    const syncer::ModelTypeStateMap& state_map,
+    const syncer::ObjectIdStateMap& state_map,
     syncer::IncomingNotificationSource notification_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  const syncer::ModelTypeStateMap& effective_state_map =
+  const syncer::ObjectIdStateMap& effective_state_map =
       state_map.empty() ?
-      syncer::ModelTypeSetToStateMap(enabled_types_, std::string()) :
+      ObjectIdSetToStateMap(
+          invalidator_registrar_->GetAllRegisteredIds(), std::string()) :
       state_map;
 
-  notifier_registrar_->DispatchInvalidationsToHandlers(
-      ModelTypeStateMapToObjectIdStateMap(effective_state_map),
-      notification_source);
+  invalidator_registrar_->DispatchInvalidationsToHandlers(
+      effective_state_map, notification_source);
+}
+
+bool ChromeSyncNotificationBridge::Core::IsHandlerRegisteredForTest(
+    syncer::InvalidationHandler* handler) const {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  return invalidator_registrar_->IsHandlerRegisteredForTest(handler);
+}
+
+syncer::ObjectIdSet
+ChromeSyncNotificationBridge::Core::GetRegisteredIdsForTest(
+    syncer::InvalidationHandler* handler) const {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  return invalidator_registrar_->GetRegisteredIds(handler);
 }
 
 ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
@@ -140,12 +150,6 @@ void ChromeSyncNotificationBridge::StopForShutdown() {
   }
 }
 
-void ChromeSyncNotificationBridge::UpdateEnabledTypes(
-    syncer::ModelTypeSet types) {
-  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  core_->UpdateEnabledTypes(types);
-}
-
 void ChromeSyncNotificationBridge::RegisterHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
@@ -165,6 +169,18 @@ void ChromeSyncNotificationBridge::UnregisterHandler(
   core_->UnregisterHandler(handler);
 }
 
+bool ChromeSyncNotificationBridge::IsHandlerRegisteredForTest(
+    syncer::InvalidationHandler* handler) const {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  return core_->IsHandlerRegisteredForTest(handler);
+}
+
+syncer::ObjectIdSet ChromeSyncNotificationBridge::GetRegisteredIdsForTest(
+    syncer::InvalidationHandler* handler) const {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  return core_->GetRegisteredIdsForTest(handler);
+}
+
 void ChromeSyncNotificationBridge::Observe(
     int type,
     const content::NotificationSource& source,
@@ -181,13 +197,18 @@ void ChromeSyncNotificationBridge::Observe(
     return;
   }
 
+  // TODO(akalin): Use ObjectIdStateMap here instead.  We'll have to
+  // make sure all emitters of the relevant notifications also use
+  // ObjectIdStateMap.
   content::Details<const syncer::ModelTypeStateMap>
       state_details(details);
   const syncer::ModelTypeStateMap& state_map = *(state_details.ptr());
   if (!sync_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&Core::EmitNotification,
-                     core_, state_map, notification_source))) {
+                     core_,
+                     ModelTypeStateMapToObjectIdStateMap(state_map),
+                     notification_source))) {
     NOTREACHED();
   }
 }

@@ -7,41 +7,107 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google/cacheinvalidation/include/types.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidator.h"
-#include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_test_template.h"
+#include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace syncer {
+class InvalidationStateTracker;
+}  // namespace syncer
+
 namespace browser_sync {
-namespace {
 
-using ::testing::NiceMock;
-using ::testing::StrictMock;
-using content::BrowserThread;
-using syncer::HasModelTypes;
-
-class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
+// BridgedInvalidatorTestDelegate has to be visible from the syncer
+// namespace (where InvalidatorTest lives).
+class BridgedInvalidatorTestDelegate {
  public:
-  MockChromeSyncNotificationBridge(
-      const Profile* profile,
-      const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner)
-      : ChromeSyncNotificationBridge(profile, sync_task_runner) {}
-  virtual ~MockChromeSyncNotificationBridge() {}
+  BridgedInvalidatorTestDelegate()
+      : ui_thread_(content::BrowserThread::UI, &ui_loop_),
+        bridge_(&mock_profile_, ui_loop_.message_loop_proxy()),
+        fake_delegate_(NULL) {
+    // Pump |ui_loop_| to fully initialize |bridge_|.
+    ui_loop_.RunAllPending();
+  }
 
-  MOCK_METHOD1(RegisterHandler, void(syncer::InvalidationHandler*));
-  MOCK_METHOD2(UpdateRegisteredIds,
-               void(syncer::InvalidationHandler*,
-                    const syncer::ObjectIdSet&));
-  MOCK_METHOD1(UnregisterHandler, void(syncer::InvalidationHandler*));
+  ~BridgedInvalidatorTestDelegate() {
+    DestroyInvalidator();
+  }
+
+  void CreateInvalidator(
+      const std::string& /* initial_state (unused) */,
+      const base::WeakPtr<syncer::InvalidationStateTracker>&
+      /* invalidation_state_tracker (unused) */) {
+    DCHECK(!fake_delegate_);
+    DCHECK(!invalidator_.get());
+    fake_delegate_ = new syncer::FakeInvalidator();
+    invalidator_.reset(new BridgedInvalidator(&bridge_, fake_delegate_));
+  }
+
+  BridgedInvalidator* GetInvalidator() {
+    return invalidator_.get();
+  }
+
+  ChromeSyncNotificationBridge* GetBridge() {
+    return &bridge_;
+  }
+
+  syncer::FakeInvalidator* GetFakeDelegate() {
+    return fake_delegate_;
+  }
+
+  void DestroyInvalidator() {
+    invalidator_.reset();
+    fake_delegate_ = NULL;
+    bridge_.StopForShutdown();
+    ui_loop_.RunAllPending();
+  }
+
+  void WaitForInvalidator() {
+    // Do nothing.
+  }
+
+  void TriggerOnNotificationsEnabled() {
+    fake_delegate_->EmitOnNotificationsEnabled();
+  }
+
+  void TriggerOnIncomingNotification(
+      const syncer::ObjectIdStateMap& id_state_map,
+      syncer::IncomingNotificationSource source) {
+    fake_delegate_->EmitOnIncomingNotification(id_state_map, source);
+  }
+
+  void TriggerOnNotificationsDisabled(
+      syncer::NotificationsDisabledReason reason) {
+    fake_delegate_->EmitOnNotificationsDisabled(reason);
+  }
+
+  static bool InvalidatorHandlesDeprecatedState() {
+    return false;
+  }
+
+ private:
+  MessageLoop ui_loop_;
+  content::TestBrowserThread ui_thread_;
+  ::testing::NiceMock<ProfileMock> mock_profile_;
+  ChromeSyncNotificationBridge bridge_;
+  // Owned by |invalidator_|.
+  syncer::FakeInvalidator* fake_delegate_;
+  scoped_ptr<BridgedInvalidator> invalidator_;
 };
+
+namespace {
 
 // All tests just verify that each call is passed through to the delegate, with
 // the exception of RegisterHandler, UnregisterHandler, and
@@ -49,69 +115,76 @@ class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
 // bridge.
 class BridgedInvalidatorTest : public testing::Test {
  public:
-  BridgedInvalidatorTest()
-      : ui_thread_(BrowserThread::UI, &ui_loop_),
-        mock_bridge_(&mock_profile_, ui_loop_.message_loop_proxy()),
-        // Owned by bridged_invalidator_.
-        fake_delegate_(new syncer::FakeInvalidator()),
-        bridged_invalidator_(&mock_bridge_, fake_delegate_) {}
+  BridgedInvalidatorTest() {
+    delegate_.CreateInvalidator(
+        "fake_state", base::WeakPtr<syncer::InvalidationStateTracker>());
+  }
+
   virtual ~BridgedInvalidatorTest() {}
 
  protected:
-  MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  NiceMock<ProfileMock> mock_profile_;
-  StrictMock<MockChromeSyncNotificationBridge> mock_bridge_;
-  syncer::FakeInvalidator* fake_delegate_;
-  BridgedInvalidator bridged_invalidator_;
+  BridgedInvalidatorTestDelegate delegate_;
 };
 
 TEST_F(BridgedInvalidatorTest, RegisterHandler) {
-  const syncer::ObjectIdSet& ids =
-      syncer::ModelTypeSetToObjectIdSet(
-          syncer::ModelTypeSet(syncer::APPS, syncer::PREFERENCES));
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(1, "id1"));
 
   syncer::FakeInvalidationHandler handler;
-  EXPECT_CALL(mock_bridge_, RegisterHandler(&handler));
-  EXPECT_CALL(mock_bridge_, UpdateRegisteredIds(&handler, ids));
-  EXPECT_CALL(mock_bridge_, UnregisterHandler(&handler));
 
-  bridged_invalidator_.RegisterHandler(&handler);
-  EXPECT_TRUE(fake_delegate_->IsHandlerRegistered(&handler));
+  delegate_.GetInvalidator()->RegisterHandler(&handler);
+  EXPECT_TRUE(delegate_.GetFakeDelegate()->IsHandlerRegistered(&handler));
+  EXPECT_TRUE(delegate_.GetBridge()->IsHandlerRegisteredForTest(&handler));
 
-  bridged_invalidator_.UpdateRegisteredIds(&handler, ids);
-  EXPECT_EQ(ids, fake_delegate_->GetRegisteredIds(&handler));
+  delegate_.GetInvalidator()->UpdateRegisteredIds(&handler, ids);
+  EXPECT_EQ(ids, delegate_.GetFakeDelegate()->GetRegisteredIds(&handler));
+  EXPECT_EQ(ids, delegate_.GetBridge()->GetRegisteredIdsForTest(&handler));
 
-  bridged_invalidator_.UnregisterHandler(&handler);
-  EXPECT_FALSE(fake_delegate_->IsHandlerRegistered(&handler));
+  delegate_.GetInvalidator()->UnregisterHandler(&handler);
+  EXPECT_FALSE(delegate_.GetFakeDelegate()->IsHandlerRegistered(&handler));
+  EXPECT_FALSE(delegate_.GetBridge()->IsHandlerRegisteredForTest(&handler));
 }
 
 TEST_F(BridgedInvalidatorTest, SetUniqueId) {
   const std::string& unique_id = "unique id";
-  bridged_invalidator_.SetUniqueId(unique_id);
-  EXPECT_EQ(unique_id, fake_delegate_->GetUniqueId());
+  delegate_.GetInvalidator()->SetUniqueId(unique_id);
+  EXPECT_EQ(unique_id, delegate_.GetFakeDelegate()->GetUniqueId());
 }
 
 TEST_F(BridgedInvalidatorTest, SetStateDeprecated) {
   const std::string& state = "state";
-  bridged_invalidator_.SetStateDeprecated(state);
-  EXPECT_EQ(state, fake_delegate_->GetStateDeprecated());
+  delegate_.GetInvalidator()->SetStateDeprecated(state);
+  EXPECT_EQ(state, delegate_.GetFakeDelegate()->GetStateDeprecated());
 }
 
 TEST_F(BridgedInvalidatorTest, UpdateCredentials) {
   const std::string& email = "email";
   const std::string& token = "token";
-  bridged_invalidator_.UpdateCredentials(email, token);
-  EXPECT_EQ(email, fake_delegate_->GetCredentialsEmail());
-  EXPECT_EQ(token, fake_delegate_->GetCredentialsToken());
+  delegate_.GetInvalidator()->UpdateCredentials(email, token);
+  EXPECT_EQ(email, delegate_.GetFakeDelegate()->GetCredentialsEmail());
+  EXPECT_EQ(token, delegate_.GetFakeDelegate()->GetCredentialsToken());
 }
 
 TEST_F(BridgedInvalidatorTest, SendNotification) {
-  const syncer::ModelTypeSet changed_types(
-      syncer::SESSIONS, syncer::EXTENSIONS);
-  bridged_invalidator_.SendNotification(changed_types);
-  EXPECT_TRUE(fake_delegate_->GetLastChangedTypes().Equals(changed_types));
+  syncer::ObjectIdSet ids;
+  ids.insert(invalidation::ObjectId(1, "id1"));
+  ids.insert(invalidation::ObjectId(2, "id2"));
+  const syncer::ObjectIdStateMap& id_state_map =
+      syncer::ObjectIdSetToStateMap(ids, "payload");
+  delegate_.GetInvalidator()->SendNotification(id_state_map);
+  EXPECT_THAT(id_state_map,
+              Eq(delegate_.GetFakeDelegate()->GetLastSentIdStateMap()));
 }
 
 }  // namespace
 }  // namespace browser_sync
+
+namespace syncer {
+namespace {
+
+INSTANTIATE_TYPED_TEST_CASE_P(
+    BridgedInvalidatorTest, InvalidatorTest,
+    ::browser_sync::BridgedInvalidatorTestDelegate);
+
+}  // namespace
+}  // namespace syncer

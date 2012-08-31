@@ -17,7 +17,7 @@
 
 namespace syncer {
 
-const char* kSyncP2PNotificationChannel = "http://www.google.com/chrome/sync";
+const char kSyncP2PNotificationChannel[] = "http://www.google.com/chrome/sync";
 
 namespace {
 
@@ -27,7 +27,8 @@ const char kNotifyAll[] = "notifyAll";
 
 const char kSenderIdKey[] = "senderId";
 const char kNotificationTypeKey[] = "notificationType";
-const char kChangedTypesKey[] = "changedTypes";
+const char kIdStateMapKey[] = "idStateMap";
+const char kSourceKey[] = "source";
 
 }  // namespace
 
@@ -60,15 +61,25 @@ P2PNotificationTarget P2PNotificationTargetFromString(
   return NOTIFY_SELF;
 }
 
-P2PNotificationData::P2PNotificationData() : target_(NOTIFY_SELF) {}
+IncomingNotificationSource P2PNotificationSourceFromInteger(int source_num) {
+  if (source_num == LOCAL_NOTIFICATION) {
+    return LOCAL_NOTIFICATION;
+  }
+  return REMOTE_NOTIFICATION;
+}
+
+P2PNotificationData::P2PNotificationData()
+    : target_(NOTIFY_SELF), source_(REMOTE_NOTIFICATION) {}
 
 P2PNotificationData::P2PNotificationData(
     const std::string& sender_id,
     P2PNotificationTarget target,
-    ModelTypeSet changed_types)
+    const ObjectIdStateMap& id_state_map,
+    IncomingNotificationSource source)
     : sender_id_(sender_id),
       target_(target),
-      changed_types_(changed_types) {}
+      id_state_map_(id_state_map),
+      source_(source) {}
 
 P2PNotificationData::~P2PNotificationData() {}
 
@@ -86,15 +97,20 @@ bool P2PNotificationData::IsTargeted(const std::string& id) const {
   }
 }
 
-ModelTypeSet P2PNotificationData::GetChangedTypes() const {
-  return changed_types_;
+const ObjectIdStateMap& P2PNotificationData::GetIdStateMap() const {
+  return id_state_map_;
+}
+
+IncomingNotificationSource P2PNotificationData::GetSource() const {
+  return source_;
 }
 
 bool P2PNotificationData::Equals(const P2PNotificationData& other) const {
   return
       (sender_id_ == other.sender_id_) &&
       (target_ == other.target_) &&
-      changed_types_.Equals(other.changed_types_);
+      ObjectIdStateMapEquals(id_state_map_, other.id_state_map_) &&
+      (source_ == other.source_);
 }
 
 std::string P2PNotificationData::ToString() const {
@@ -102,7 +118,8 @@ std::string P2PNotificationData::ToString() const {
   dict->SetString(kSenderIdKey, sender_id_);
   dict->SetString(kNotificationTypeKey,
                   P2PNotificationTargetToString(target_));
-  dict->Set(kChangedTypesKey, ModelTypeSetToValue(changed_types_));
+  dict->Set(kIdStateMapKey, ObjectIdStateMapToValue(id_state_map_).release());
+  dict->SetInteger(kSourceKey, source_);
   std::string json;
   base::JSONWriter::Write(dict.get(), &json);
   return json;
@@ -110,18 +127,11 @@ std::string P2PNotificationData::ToString() const {
 
 bool P2PNotificationData::ResetFromString(const std::string& str) {
   scoped_ptr<Value> data_value(base::JSONReader::Read(str));
-  if (!data_value.get()) {
-    LOG(WARNING) << "Could not parse " << str;
-    return false;
-  }
-  if (!data_value->IsType(Value::TYPE_DICTIONARY)) {
+  const base::DictionaryValue* data_dict = NULL;
+  if (!data_value.get() || !data_value->GetAsDictionary(&data_dict)) {
     LOG(WARNING) << "Could not parse " << str << " as a dictionary";
     return false;
   }
-  // TODO(akalin): Use Values::AsDictionary() when it becomes
-  // available.
-  DictionaryValue* data_dict =
-      static_cast<DictionaryValue*>(data_value.get());
   if (!data_dict->GetString(kSenderIdKey, &sender_id_)) {
     LOG(WARNING) << "Could not find string value for " << kSenderIdKey;
   }
@@ -131,13 +141,16 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
                  << kNotificationTypeKey;
   }
   target_ = P2PNotificationTargetFromString(target_str);
-  ListValue* changed_types_list = NULL;
-  if (!data_dict->GetList(kChangedTypesKey, &changed_types_list)) {
-    LOG(WARNING) << "Could not find list value for "
-                 << kChangedTypesKey;
-    return false;
+  const base::ListValue* id_state_map_list = NULL;
+  if (!data_dict->GetList(kIdStateMapKey, &id_state_map_list) ||
+      !ObjectIdStateMapFromValue(*id_state_map_list, &id_state_map_)) {
+    LOG(WARNING) << "Could not parse " << kIdStateMapKey;
   }
-  changed_types_ = ModelTypeSetFromValue(*changed_types_list);
+  int source_num = 0;
+  if (!data_dict->GetInteger(kSourceKey, &source_num)) {
+    LOG(WARNING) << "Could not find integer value for " << kSourceKey;
+  }
+  source_ = P2PNotificationSourceFromInteger(source_num);
   return true;
 }
 
@@ -166,15 +179,17 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                       const ObjectIdSet& ids) {
   // TODO(akalin): Handle arbitrary object IDs (http://crbug.com/140411).
   DCHECK(thread_checker_.CalledOnValidThread());
+  ObjectIdSet new_ids;
+  const ObjectIdSet& old_ids = registrar_.GetRegisteredIds(handler);
+  std::set_difference(ids.begin(), ids.end(),
+                      old_ids.begin(), old_ids.end(),
+                      std::inserter(new_ids, new_ids.end()),
+                      ObjectIdLessThan());
   registrar_.UpdateRegisteredIds(handler, ids);
-  const ModelTypeSet enabled_types =
-      ObjectIdSetToModelTypeSet(registrar_.GetAllRegisteredIds());
-  const ModelTypeSet new_enabled_types =
-      Difference(enabled_types, enabled_types_);
   const P2PNotificationData notification_data(
-      unique_id_, NOTIFY_SELF, new_enabled_types);
+      unique_id_, NOTIFY_SELF, ObjectIdSetToStateMap(new_ids, ""),
+      REMOTE_NOTIFICATION);
   SendNotificationData(notification_data);
-  enabled_types_ = enabled_types;
 }
 
 void P2PInvalidator::UnregisterHandler(InvalidationHandler* handler) {
@@ -209,10 +224,11 @@ void P2PInvalidator::UpdateCredentials(
   logged_in_ = true;
 }
 
-void P2PInvalidator::SendNotification(ModelTypeSet changed_types) {
+void P2PInvalidator::SendNotification(const ObjectIdStateMap& id_state_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
-      unique_id_, send_notification_target_, changed_types);
+      unique_id_, send_notification_target_, id_state_map,
+      REMOTE_NOTIFICATION);
   SendNotificationData(notification_data);
 }
 
@@ -223,7 +239,9 @@ void P2PInvalidator::OnNotificationsEnabled() {
   registrar_.EmitOnNotificationsEnabled();
   if (just_turned_on) {
     const P2PNotificationData notification_data(
-        unique_id_, NOTIFY_SELF, enabled_types_);
+        unique_id_, NOTIFY_SELF,
+        ObjectIdSetToStateMap(registrar_.GetAllRegisteredIds(), ""),
+        REMOTE_NOTIFICATION);
     SendNotificationData(notification_data);
   }
 }
@@ -255,23 +273,18 @@ void P2PInvalidator::OnIncomingNotification(
     LOG(WARNING) << "Could not parse notification data from "
                  << notification.data;
     notification_data =
-        P2PNotificationData(unique_id_, NOTIFY_ALL, enabled_types_);
+        P2PNotificationData(
+            unique_id_, NOTIFY_ALL,
+            ObjectIdSetToStateMap(registrar_.GetAllRegisteredIds(), ""),
+            REMOTE_NOTIFICATION);
   }
   if (!notification_data.IsTargeted(unique_id_)) {
     DVLOG(1) << "Not a target of the notification -- "
              << "not emitting notification";
     return;
   }
-  const ModelTypeSet types_to_notify =
-      Intersection(enabled_types_, notification_data.GetChangedTypes());
-  if (types_to_notify.Empty()) {
-    DVLOG(1) << "No enabled and changed types -- not emitting notification";
-    return;
-  }
-  const ModelTypeStateMap& type_state_map = ModelTypeSetToStateMap(
-      notification_data.GetChangedTypes(), std::string());
   registrar_.DispatchInvalidationsToHandlers(
-      ModelTypeStateMapToObjectIdStateMap(type_state_map),
+      notification_data.GetIdStateMap(),
       REMOTE_NOTIFICATION);
 }
 
@@ -284,8 +297,8 @@ void P2PInvalidator::SendNotificationDataForTest(
 void P2PInvalidator::SendNotificationData(
     const P2PNotificationData& notification_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (notification_data.GetChangedTypes().Empty()) {
-    DVLOG(1) << "Not sending XMPP notification with no changed types: "
+  if (notification_data.GetIdStateMap().empty()) {
+    DVLOG(1) << "Not sending XMPP notification with empty state map: "
              << notification_data.ToString();
     return;
   }

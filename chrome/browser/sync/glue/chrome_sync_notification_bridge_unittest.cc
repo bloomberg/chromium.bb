@@ -6,14 +6,15 @@
 
 #include <cstddef>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
@@ -22,7 +23,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_state_map.h"
-#include "sync/notifier/invalidation_handler.h"
+#include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,88 +31,21 @@
 namespace browser_sync {
 namespace {
 
-using ::testing::Mock;
 using ::testing::NiceMock;
-using ::testing::StrictMock;
-using content::BrowserThread;
 
-// Receives a ChromeSyncNotificationBridge to register to, and an expected
-// ModelTypeStateMap. ReceivedProperNotification() will return true only
-// if the observer has received a notification with the proper source and
-// state.
-// Note: Because this object lives on the sync thread, we use a fake
-// (vs a mock) so we don't have to worry about possible thread safety
-// issues within GTest/GMock.
-class FakeInvalidationHandler : public syncer::InvalidationHandler {
- public:
-  FakeInvalidationHandler(
-      const scoped_refptr<base::SequencedTaskRunner>& sync_task_runner,
-      ChromeSyncNotificationBridge* bridge,
-      const syncer::ObjectIdStateMap& expected_states,
-      syncer::IncomingNotificationSource expected_source)
-      : sync_task_runner_(sync_task_runner),
-        bridge_(bridge),
-        received_improper_notification_(false),
-        notification_count_(0),
-        expected_states_(expected_states),
-        expected_source_(expected_source) {
-    DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    bridge_->RegisterHandler(this);
-    const syncer::ObjectIdSet& ids =
-        syncer::ObjectIdStateMapToSet(expected_states);
-    bridge_->UpdateRegisteredIds(this, ids);
-  }
+// Needed by BlockForSyncThread().
+void DoNothing() {}
 
-  virtual ~FakeInvalidationHandler() {
-    DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    bridge_->UnregisterHandler(this);
-  }
-
-  // InvalidationHandler implementation.
-  virtual void OnIncomingNotification(
-      const syncer::ObjectIdStateMap& id_state_map,
-      syncer::IncomingNotificationSource source) OVERRIDE {
-    DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    notification_count_++;
-    if (source != expected_source_) {
-      LOG(ERROR) << "Received notification with wrong source";
-      received_improper_notification_ = true;
-    }
-    if (!::testing::Matches(Eq(expected_states_))(id_state_map)) {
-      LOG(ERROR) << "Received wrong state";
-      received_improper_notification_ = true;
-    }
-  }
-  virtual void OnNotificationsEnabled() OVERRIDE {
-    NOTREACHED();
-  }
-  virtual void OnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) OVERRIDE {
-    NOTREACHED();
-  }
-
-  bool ReceivedProperNotification() const {
-    DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    return (notification_count_ == 1) && !received_improper_notification_;
-  }
-
- private:
-  const scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
-  ChromeSyncNotificationBridge* const bridge_;
-  bool received_improper_notification_;
-  size_t notification_count_;
-  const syncer::ObjectIdStateMap expected_states_;
-  const syncer::IncomingNotificationSource expected_source_;
-};
+// Since all the interesting stuff happens on the sync thread, we have
+// to be careful to use GTest/GMock only on the main thread since they
+// are not thread-safe.
 
 class ChromeSyncNotificationBridgeTest : public testing::Test {
  public:
   ChromeSyncNotificationBridgeTest()
-      : ui_thread_(BrowserThread::UI),
+      : ui_thread_(content::BrowserThread::UI, &ui_loop_),
         sync_thread_("Sync thread"),
-        sync_handler_(NULL),
-        sync_handler_notification_failure_(false),
-        done_(true, false) {}
+        sync_handler_notification_success_(false) {}
 
   virtual ~ChromeSyncNotificationBridgeTest() {}
 
@@ -128,41 +62,39 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
     sync_thread_.Stop();
     // Must be reset only after the sync thread is stopped.
     bridge_.reset();
-    EXPECT_EQ(NULL, sync_handler_);
-    if (sync_handler_notification_failure_)
-      ADD_FAILURE() << "Sync Observer did not receive proper notification.";
+    EXPECT_EQ(NULL, sync_handler_.get());
+    if (!sync_handler_notification_success_)
+      ADD_FAILURE() << "Sync handler did not receive proper notification.";
   }
 
-  void VerifyAndDestroyObserver() {
+  void VerifyAndDestroyObserver(
+      const syncer::ModelTypeStateMap& expected_states,
+      syncer::IncomingNotificationSource expected_source) {
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&ChromeSyncNotificationBridgeTest::
                        VerifyAndDestroyObserverOnSyncThread,
-                   base::Unretained(this))));
+                   base::Unretained(this),
+                   expected_states,
+                   expected_source)));
     BlockForSyncThread();
   }
 
-  void CreateObserverWithExpectations(
-      const syncer::ModelTypeStateMap& expected_states,
-      syncer::IncomingNotificationSource expected_source) {
-    const syncer::ObjectIdStateMap& expected_id_state_map =
-        syncer::ModelTypeStateMapToObjectIdStateMap(expected_states);
+  void CreateObserver() {
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(
             &ChromeSyncNotificationBridgeTest::CreateObserverOnSyncThread,
-            base::Unretained(this),
-            expected_id_state_map,
-            expected_source)));
+            base::Unretained(this))));
     BlockForSyncThread();
   }
 
-  void UpdateBridgeEnabledTypes(syncer::ModelTypeSet enabled_types) {
+  void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types) {
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(
             &ChromeSyncNotificationBridgeTest::
-                UpdateBridgeEnabledTypesOnSyncThread,
+                UpdateEnabledTypesOnSyncThread,
             base::Unretained(this),
             enabled_types)));
     BlockForSyncThread();
@@ -175,62 +107,60 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
         type,
         content::Source<Profile>(&mock_profile_),
         content::Details<const syncer::ModelTypeStateMap>(&state_map));
+    BlockForSyncThread();
   }
 
  private:
-  void VerifyAndDestroyObserverOnSyncThread() {
-    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    if (!sync_handler_) {
-      sync_handler_notification_failure_ = true;
-    } else {
-      sync_handler_notification_failure_ =
-          !sync_handler_->ReceivedProperNotification();
-      delete sync_handler_;
-      sync_handler_ = NULL;
-    }
-  }
-
-  void CreateObserverOnSyncThread(
-      const syncer::ObjectIdStateMap& expected_states,
+  void VerifyAndDestroyObserverOnSyncThread(
+      const syncer::ModelTypeStateMap& expected_states,
       syncer::IncomingNotificationSource expected_source) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    sync_handler_ = new FakeInvalidationHandler(
-        sync_thread_.message_loop_proxy(),
-        bridge_.get(),
-        expected_states,
-        expected_source);
+    if (sync_handler_.get()) {
+      sync_handler_notification_success_ =
+          (sync_handler_->GetNotificationCount() == 1) &&
+          ObjectIdStateMapEquals(
+              sync_handler_->GetLastNotificationIdStateMap(),
+              syncer::ModelTypeStateMapToObjectIdStateMap(expected_states)) &&
+          (sync_handler_->GetLastNotificationSource() == expected_source);
+      bridge_->UnregisterHandler(sync_handler_.get());
+    } else {
+      sync_handler_notification_success_ = false;
+    }
+    sync_handler_.reset();
   }
 
-  void UpdateBridgeEnabledTypesOnSyncThread(
+  void CreateObserverOnSyncThread() {
+    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
+    sync_handler_.reset(new syncer::FakeInvalidationHandler());
+    bridge_->RegisterHandler(sync_handler_.get());
+  }
+
+  void UpdateEnabledTypesOnSyncThread(
       syncer::ModelTypeSet enabled_types) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    bridge_->UpdateEnabledTypes(enabled_types);
-  }
-
-  void SignalOnSyncThread() {
-    DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
-    done_.Signal();
+    bridge_->UpdateRegisteredIds(
+        sync_handler_.get(), ModelTypeSetToObjectIdSet(enabled_types));
   }
 
   void BlockForSyncThread() {
-    done_.Reset();
-    ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
+    // Post a task to the sync thread's message loop and block until
+    // it runs.
+    base::RunLoop run_loop;
+    ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&ChromeSyncNotificationBridgeTest::SignalOnSyncThread,
-                   base::Unretained(this))));
-    done_.TimedWait(TestTimeouts::action_timeout());
-    if (!done_.IsSignaled())
-      ADD_FAILURE() << "Timed out waiting for sync thread.";
+        base::Bind(&DoNothing),
+        run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
+  MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
   base::Thread sync_thread_;
   NiceMock<ProfileMock> mock_profile_;
   // Created/used/destroyed on sync thread.
-  FakeInvalidationHandler* sync_handler_;
-  bool sync_handler_notification_failure_;
+  scoped_ptr<syncer::FakeInvalidationHandler> sync_handler_;
+  bool sync_handler_notification_success_;
   scoped_ptr<ChromeSyncNotificationBridge> bridge_;
-  base::WaitableEvent done_;
 };
 
 // Adds an observer on the sync thread, triggers a local refresh
@@ -240,10 +170,11 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotification) {
   syncer::ModelTypeStateMap state_map;
   state_map.insert(
       std::make_pair(syncer::SESSIONS, syncer::InvalidationState()));
-  CreateObserverWithExpectations(state_map, syncer::LOCAL_NOTIFICATION);
+  CreateObserver();
+  UpdateEnabledTypes(syncer::ModelTypeSet(syncer::SESSIONS));
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                              state_map);
-  VerifyAndDestroyObserver();
+  VerifyAndDestroyObserver(state_map, syncer::LOCAL_NOTIFICATION);
 }
 
 // Adds an observer on the sync thread, triggers a remote refresh
@@ -253,10 +184,11 @@ TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotification) {
   syncer::ModelTypeStateMap state_map;
   state_map.insert(
       std::make_pair(syncer::SESSIONS, syncer::InvalidationState()));
-  CreateObserverWithExpectations(state_map, syncer::REMOTE_NOTIFICATION);
+  CreateObserver();
+  UpdateEnabledTypes(syncer::ModelTypeSet(syncer::SESSIONS));
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              state_map);
-  VerifyAndDestroyObserver();
+  VerifyAndDestroyObserver(state_map, syncer::REMOTE_NOTIFICATION);
 }
 
 // Adds an observer on the sync thread, triggers a local refresh
@@ -267,12 +199,12 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotificationEmptyPayloadMap) {
       syncer::BOOKMARKS, syncer::PASSWORDS);
   const syncer::ModelTypeStateMap enabled_types_state_map =
       syncer::ModelTypeSetToStateMap(enabled_types, std::string());
-  CreateObserverWithExpectations(
-      enabled_types_state_map, syncer::LOCAL_NOTIFICATION);
-  UpdateBridgeEnabledTypes(enabled_types);
+  CreateObserver();
+  UpdateEnabledTypes(enabled_types);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                              syncer::ModelTypeStateMap());
-  VerifyAndDestroyObserver();
+  VerifyAndDestroyObserver(
+      enabled_types_state_map, syncer::LOCAL_NOTIFICATION);
 }
 
 // Adds an observer on the sync thread, triggers a remote refresh
@@ -283,12 +215,12 @@ TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotificationEmptyPayloadMap) {
       syncer::BOOKMARKS, syncer::TYPED_URLS);
   const syncer::ModelTypeStateMap enabled_types_state_map =
       syncer::ModelTypeSetToStateMap(enabled_types, std::string());
-  CreateObserverWithExpectations(
-      enabled_types_state_map, syncer::REMOTE_NOTIFICATION);
-  UpdateBridgeEnabledTypes(enabled_types);
+  CreateObserver();
+  UpdateEnabledTypes(enabled_types);
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              syncer::ModelTypeStateMap());
-  VerifyAndDestroyObserver();
+  VerifyAndDestroyObserver(
+      enabled_types_state_map, syncer::REMOTE_NOTIFICATION);
 }
 
 }  // namespace

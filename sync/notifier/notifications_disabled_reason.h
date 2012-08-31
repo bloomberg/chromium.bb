@@ -27,6 +27,9 @@ const char* NotificationsDisabledReasonToString(
 NotificationsDisabledReason FromNotifierReason(
     notifier::NotificationsDisabledReason reason);
 
+notifier::NotificationsDisabledReason ToNotifierReasonForTest(
+    NotificationsDisabledReason reason);
+
 }  // namespace syncer
 
 #endif  // SYNC_NOTIFIER_NOTIFICATIONS_DISABLED_REASON_H_
