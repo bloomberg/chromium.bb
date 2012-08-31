@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/tracing_ui.h"
-#include "chrome/browser/ui/webui/uber/uber_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
@@ -66,6 +65,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/welcome_ui_android.h"
+#else
+#include "chrome/browser/ui/webui/uber/uber_ui.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -230,10 +231,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WebDialogUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
-  if (url.host() == chrome::kChromeUIUberFrameHost)
-    return &NewWebUI<UberFrameUI>;
-  if (url.host() == chrome::kChromeUIUberHost)
-    return &NewWebUI<UberUI>;
 
   /****************************************************************************
    * OS Specific #defines
@@ -253,6 +250,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<options::OptionsUI>;
   if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
     return &NewWebUI<SuggestionsInternalsUI>;
+  if (url.host() == chrome::kChromeUIUberFrameHost)
+    return &NewWebUI<UberFrameUI>;
+  if (url.host() == chrome::kChromeUIUberHost)
+    return &NewWebUI<UberUI>;
   // chrome://flags is currently unsupported on Android.
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
