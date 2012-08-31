@@ -75,10 +75,14 @@ bool Provider::ShouldInstallInProfile() {
 
   switch (state) {
     case kUnknown: {
-      // This is the first time the default apps feature runs on this profile.
-      // Determine if we want to install them or not.
+      // Only new installations and profiles get default apps. In theory the
+      // new profile checks should catch new installations, but that is not
+      // always the case (http:/crbug.com/145351).
       chrome::VersionInfo version_info;
-      if (!profile_->WasCreatedByVersionOrLater(version_info.Version().c_str()))
+      bool is_new_profile =
+          profile_->WasCreatedByVersionOrLater(version_info.Version().c_str());
+      bool is_first_run = first_run::IsChromeFirstRun();
+      if (!is_first_run && !is_new_profile)
         install_apps = false;
       break;
     }
