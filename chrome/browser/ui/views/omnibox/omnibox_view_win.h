@@ -55,7 +55,7 @@ class OmniboxViewWin
     const CHARRANGE saved_selection_for_focus_change;
   };
 
-  DECLARE_WND_CLASS(L"Chrome_OmniboxView");
+  DECLARE_WND_SUPERCLASS(L"Chrome_OmniboxView", MSFTEDIT_CLASS);
 
   OmniboxViewWin(OmniboxEditController* controller,
                  ToolbarModel* toolbar_model,
@@ -147,6 +147,7 @@ class OmniboxViewWin
     MSG_WM_CHAR(OnChar)
     MSG_WM_CONTEXTMENU(OnContextMenu)
     MSG_WM_COPY(OnCopy)
+    MSG_WM_CREATE(OnCreate)
     MSG_WM_CUT(OnCut)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
@@ -235,7 +236,7 @@ class OmniboxViewWin
   // Replacement word-breaking proc for the rich edit control.
   static int CALLBACK WordBreakProc(LPTSTR edit_text,
                                     int current_pos,
-                                    int num_bytes,
+                                    int length,
                                     int action);
 
   // Returns true if |edit_text| starting at |current_pos| is "://".
@@ -245,6 +246,7 @@ class OmniboxViewWin
   void OnChar(TCHAR ch, UINT repeat_count, UINT flags);
   void OnContextMenu(HWND window, const CPoint& point);
   void OnCopy();
+  LRESULT OnCreate(const CREATESTRUCTW* create_struct);
   void OnCut();
   LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
@@ -384,6 +386,9 @@ class OmniboxViewWin
 
   // Common implementation for performing a drop on the edit view.
   int OnPerformDropImpl(const ui::DropTargetEvent& event, bool in_drag);
+
+  // Handle of RichEdit dll.
+  static HMODULE loaded_library_module_;
 
   scoped_ptr<OmniboxPopupView> popup_view_;
 

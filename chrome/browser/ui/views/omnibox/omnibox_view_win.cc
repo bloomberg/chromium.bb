@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/iat_patch_function.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/windows_version.h"
@@ -66,12 +67,17 @@
 #include "ui/views/widget/widget.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
-#pragma comment(lib, "riched20.lib")  // Needed for the richedit control.
 
 using content::UserMetricsAction;
 using content::WebContents;
 
 namespace {
+
+const char kAutocompleteEditStateKey[] = "AutocompleteEditState";
+
+// msftedit.dll is RichEdit ver 4.1.
+// This version is available from WinXP SP1 and has TSF support.
+const wchar_t* kRichEditDLLName = L"msftedit.dll";
 
 // A helper method for determining a valid DROPEFFECT given the allowed
 // DROPEFFECTS.  We prefer copy over link.
@@ -92,8 +98,6 @@ int CopyOrLinkDragOperation(int drag_operation) {
     return ui::DragDropTypes::DRAG_LINK;
   return ui::DragDropTypes::DRAG_NONE;
 }
-
-const char kAutocompleteEditStateKey[] = "AutocompleteEditState";
 
 // The AutocompleteEditState struct contains enough information about the
 // OmniboxEditModel and OmniboxViewWin to save/restore a user's
@@ -405,9 +409,9 @@ void PaintPatcher::RefPatch() {
   if (refcount_ == 0) {
     DCHECK(!begin_paint_.is_patched());
     DCHECK(!end_paint_.is_patched());
-    begin_paint_.Patch(L"riched20.dll", "user32.dll", "BeginPaint",
+    begin_paint_.Patch(kRichEditDLLName, "user32.dll", "BeginPaint",
                        &BeginPaintIntercept);
-    end_paint_.Patch(L"riched20.dll", "user32.dll", "EndPaint",
+    end_paint_.Patch(kRichEditDLLName, "user32.dll", "EndPaint",
                      &EndPaintIntercept);
   }
   ++refcount_;
@@ -430,6 +434,8 @@ base::LazyInstance<PaintPatcher> g_paint_patcher = LAZY_INSTANCE_INITIALIZER;
 const int kTwipsPerInch = 1440;
 
 }  // namespace
+
+HMODULE OmniboxViewWin::loaded_library_module_ = NULL;
 
 OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                ToolbarModel* toolbar_model,
@@ -462,9 +468,8 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
           ToolbarModel::NONE, LocationBarView::BACKGROUND))),
       security_level_(ToolbarModel::NONE),
       text_object_model_(NULL) {
-  // Dummy call to a function exported by riched20.dll to ensure it sets up an
-  // import dependency on the dll.
-  CreateTextServices(NULL, NULL, NULL);
+  if (!loaded_library_module_)
+    loaded_library_module_ = LoadLibrary(kRichEditDLLName);
 
   saved_selection_for_focus_change_.cpMin = -1;
 
@@ -1154,14 +1159,10 @@ void OmniboxViewWin::ExecuteCommand(int command_id) {
 // static
 int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
                                            int current_pos,
-                                           int num_bytes,
+                                           int length,
                                            int action) {
   // TODO(pkasting): http://b/1111308 We should let other people, like ICU and
   // GURL, do the work for us here instead of writing all this ourselves.
-
-  // Sadly, even though the MSDN docs claim that the third parameter here is a
-  // number of characters, they lie.  It's a number of bytes.
-  const int length = num_bytes / sizeof(wchar_t);
 
   // With no clear guidance from the MSDN docs on how to handle "not found" in
   // the "find the nearest xxx..." cases below, I cap the return values at
@@ -1184,10 +1185,10 @@ int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
       // which would mean we'd return current_pos -- which isn't "before the
       // current position".)
       const int prev_delim =
-          WordBreakProc(edit_text, current_pos - 1, num_bytes, WB_LEFTBREAK);
+          WordBreakProc(edit_text, current_pos - 1, length, WB_LEFTBREAK);
 
       if ((prev_delim == 0) &&
-          !WordBreakProc(edit_text, 0, num_bytes, WB_ISDELIMITER)) {
+          !WordBreakProc(edit_text, 0, length, WB_ISDELIMITER)) {
         // Got back 0, but position 0 isn't a delimiter.  This was a "not
         // found" 0, so return one of our own.
         return 0;
@@ -1199,7 +1200,7 @@ int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
     // Find nearest character after current position that begins a word.
     case WB_RIGHT:
     case WB_MOVEWORDRIGHT: {
-      if (WordBreakProc(edit_text, current_pos, num_bytes, WB_ISDELIMITER)) {
+      if (WordBreakProc(edit_text, current_pos, length, WB_ISDELIMITER)) {
         // The current character is a delimiter, so the next character starts
         // a new word.  Done.
         return current_pos + 1;
@@ -1208,7 +1209,7 @@ int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
       // Look for a delimiter after the current character; the next word starts
       // immediately after.
       const int next_delim =
-          WordBreakProc(edit_text, current_pos, num_bytes, WB_RIGHTBREAK);
+          WordBreakProc(edit_text, current_pos, length, WB_RIGHTBREAK);
       if (next_delim == length) {
         // Didn't find a delimiter.  Return length to signal "not found".
         return length;
@@ -1219,7 +1220,7 @@ int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
 
     // Determine if the current character delimits words.
     case WB_ISDELIMITER:
-      return !!(WordBreakProc(edit_text, current_pos, num_bytes, WB_CLASSIFY) &
+      return !!(WordBreakProc(edit_text, current_pos, length, WB_CLASSIFY) &
                 WBF_BREAKLINE);
 
     // Return the classification of the current character.
@@ -1251,7 +1252,7 @@ int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
     // Finds nearest delimiter before current position.
     case WB_LEFTBREAK:
       for (int i = current_pos - 1; i >= 0; --i) {
-        if (WordBreakProc(edit_text, i, num_bytes, WB_ISDELIMITER))
+        if (WordBreakProc(edit_text, i, length, WB_ISDELIMITER))
           return i;
       }
       return 0;
@@ -1259,7 +1260,7 @@ int CALLBACK OmniboxViewWin::WordBreakProc(LPTSTR edit_text,
     // Finds nearest delimiter after current position.
     case WB_RIGHTBREAK:
       for (int i = current_pos + 1; i < length; ++i) {
-        if (WordBreakProc(edit_text, i, num_bytes, WB_ISDELIMITER))
+        if (WordBreakProc(edit_text, i, length, WB_ISDELIMITER))
           return i;
       }
       return length;
@@ -1337,6 +1338,15 @@ void OmniboxViewWin::OnCopy() {
   scw.WriteText(text);
   if (write_url)
     scw.WriteBookmark(text, url.spec());
+}
+
+LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
+  if (base::win::IsTsfAwareRequired()) {
+    // Enable TSF support of RichEdit.
+    SetEditStyle(SES_USECTF, SES_USECTF);
+  }
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void OmniboxViewWin::OnCut() {
