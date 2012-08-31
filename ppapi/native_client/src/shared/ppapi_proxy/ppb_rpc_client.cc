@@ -2797,6 +2797,27 @@ NaClSrpcError PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_IsUDPSocket(
   return retval;
 }
 
+NaClSrpcError PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_SetSocketFeature(
+    NaClSrpcChannel* channel,
+    PP_Resource udp_socket,
+    int32_t name,
+    nacl_abi_size_t value_bytes, char* value,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_UDPSocket_Private_SetSocketFeature:iiC:i",
+      udp_socket,
+      name,
+      value_bytes, value,
+      pp_error
+  );
+  return retval;
+}
+
 NaClSrpcError PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_Bind(
     NaClSrpcChannel* channel,
     PP_Resource udp_socket,

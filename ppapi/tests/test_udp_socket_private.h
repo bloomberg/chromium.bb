@@ -21,13 +21,26 @@ class TestUDPSocketPrivate : public TestCase {
 
  private:
   std::string GetLocalAddress(PP_NetAddress_Private* address);
+  std::string SetBroadcastOptions(pp::UDPSocketPrivate* socket);
   std::string BindUDPSocket(pp::UDPSocketPrivate* socket,
                             PP_NetAddress_Private *address);
+  std::string LookupPortAndBindUDPSocket(pp::UDPSocketPrivate* socket,
+                                         PP_NetAddress_Private* address);
   std::string BindUDPSocketFailure(pp::UDPSocketPrivate* socket,
                                    PP_NetAddress_Private *address);
+  std::string ReadSocket(pp::UDPSocketPrivate* socket,
+                         PP_NetAddress_Private* address,
+                         size_t size,
+                         std::string* message);
+  std::string PassMessage(pp::UDPSocketPrivate* target,
+                          pp::UDPSocketPrivate* source,
+                          PP_NetAddress_Private* address,
+                          const std::string& message);
 
   std::string TestConnect();
   std::string TestConnectFailure();
+  std::string TestBroadcast();
+  std::string TestSetSocketFeatureErrors();
 
   std::string host_;
   uint16_t port_;

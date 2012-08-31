@@ -16,13 +16,14 @@
 #include "base/process.h"
 #include "base/time.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -152,6 +153,10 @@ class PepperMessageFilter
   void OnUDPCreate(int32 routing_id,
                    uint32 plugin_dispatcher_id,
                    uint32* socket_id);
+  void OnUDPSetBoolSocketFeature(int32 routing_id,
+                                 uint32 socket_id,
+                                 int32_t name,
+                                 bool value);
   void OnUDPBind(int32 routing_id,
                  uint32 socket_id,
                  const PP_NetAddress_Private& addr);

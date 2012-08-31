@@ -13,6 +13,7 @@ namespace pp {
 
 class CompletionCallback;
 class InstanceHandle;
+class Var;
 
 class UDPSocketPrivate : public Resource {
  public:
@@ -21,6 +22,7 @@ class UDPSocketPrivate : public Resource {
   // Returns true if the required interface is available.
   static bool IsAvailable();
 
+  int32_t SetSocketFeature(PP_UDPSocketFeature_Private name, const Var& value);
   int32_t Bind(const PP_NetAddress_Private* addr,
                const CompletionCallback& callback);
   bool GetBoundAddress(PP_NetAddress_Private* addr);

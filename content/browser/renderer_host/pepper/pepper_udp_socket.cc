@@ -27,7 +27,9 @@ PepperUDPSocket::PepperUDPSocket(
     : manager_(manager),
       routing_id_(routing_id),
       plugin_dispatcher_id_(plugin_dispatcher_id),
-      socket_id_(socket_id) {
+      socket_id_(socket_id),
+      allow_address_reuse_(false),
+      allow_broadcast_(false) {
   DCHECK(manager);
 }
 
@@ -35,6 +37,14 @@ PepperUDPSocket::~PepperUDPSocket() {
   // Make sure there are no further callbacks from socket_.
   if (socket_.get())
     socket_->Close();
+}
+
+void PepperUDPSocket::AllowAddressReuse(bool value) {
+  allow_address_reuse_ = value;
+}
+
+void PepperUDPSocket::AllowBroadcast(bool value) {
+  allow_broadcast_ = value;
 }
 
 void PepperUDPSocket::Bind(const PP_NetAddress_Private& addr) {
@@ -46,6 +56,11 @@ void PepperUDPSocket::Bind(const PP_NetAddress_Private& addr) {
     SendBindACKError();
     return;
   }
+
+  if (allow_address_reuse_)
+    socket_->AllowAddressReuse();
+  if (allow_broadcast_)
+    socket_->AllowBroadcast();
 
   int result = socket_->Listen(address);
 

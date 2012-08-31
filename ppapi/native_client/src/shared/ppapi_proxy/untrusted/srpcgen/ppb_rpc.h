@@ -992,6 +992,12 @@ class PpbUDPSocketPrivateRpcClient {
       NaClSrpcChannel* channel,
       PP_Resource resource_id,
       int32_t* is_udp_socket_private);
+  static NaClSrpcError PPB_UDPSocket_Private_SetSocketFeature(
+      NaClSrpcChannel* channel,
+      PP_Resource udp_socket,
+      int32_t name,
+      nacl_abi_size_t value_bytes, char* value,
+      int32_t* pp_error);
   static NaClSrpcError PPB_UDPSocket_Private_Bind(
       NaClSrpcChannel* channel,
       PP_Resource udp_socket,

@@ -2234,6 +2234,22 @@ static void PPB_UDPSocket_Private_IsUDPSocketDispatcher(
   );
 }
 
+static void PPB_UDPSocket_Private_SetSocketFeatureDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_SetSocketFeature(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_UDPSocket_Private_BindDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -2985,6 +3001,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Testing_GetDocumentURL:i:CC", PPB_Testing_GetDocumentURLDispatcher },
   { "PPB_UDPSocket_Private_Create:i:i", PPB_UDPSocket_Private_CreateDispatcher },
   { "PPB_UDPSocket_Private_IsUDPSocket:i:i", PPB_UDPSocket_Private_IsUDPSocketDispatcher },
+  { "PPB_UDPSocket_Private_SetSocketFeature:iiC:i", PPB_UDPSocket_Private_SetSocketFeatureDispatcher },
   { "PPB_UDPSocket_Private_Bind:iCi:i", PPB_UDPSocket_Private_BindDispatcher },
   { "PPB_UDPSocket_Private_GetBoundAddress:i:Ci", PPB_UDPSocket_Private_GetBoundAddressDispatcher },
   { "PPB_UDPSocket_Private_RecvFrom:iii:Ci", PPB_UDPSocket_Private_RecvFromDispatcher },

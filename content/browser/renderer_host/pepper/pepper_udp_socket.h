@@ -34,6 +34,8 @@ class PepperUDPSocket {
 
   int routing_id() { return routing_id_; }
 
+  void AllowAddressReuse(bool value);
+  void AllowBroadcast(bool value);
   void Bind(const PP_NetAddress_Private& addr);
   void RecvFrom(int32_t num_bytes);
   void SendTo(const std::string& data, const PP_NetAddress_Private& addr);
@@ -51,6 +53,8 @@ class PepperUDPSocket {
   int32 routing_id_;
   uint32 plugin_dispatcher_id_;
   uint32 socket_id_;
+  bool allow_address_reuse_;
+  bool allow_broadcast_;
 
   scoped_ptr<net::UDPServerSocket> socket_;
 

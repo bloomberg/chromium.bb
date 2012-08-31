@@ -298,6 +298,13 @@ uint32 MockPluginDelegate::UDPSocketCreate() {
   return 0;
 }
 
+void MockPluginDelegate::UDPSocketSetBoolSocketFeature(
+    PPB_UDPSocket_Private_Impl* socket,
+    uint32 socket_id,
+    int32_t name,
+    bool value) {
+}
+
 void MockPluginDelegate::UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
                                        uint32 socket_id,
                                        const PP_NetAddress_Private& addr) {

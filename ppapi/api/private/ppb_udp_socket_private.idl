@@ -9,7 +9,24 @@
 
 label Chrome {
   M17 = 0.2,
-  M19 = 0.3
+  M19 = 0.3,
+  M23 = 0.4
+};
+
+[assert_size(4)]
+enum PP_UDPSocketFeature_Private {
+  // Allow the socket to share the local address to which socket will
+  // be bound with other processes. Value's type should be
+  // PP_VARTYPE_BOOL.
+  PP_UDPSOCKETFEATURE_ADDRESS_REUSE = 0,
+
+  // Allow sending and receiving packets sent to and from broadcast
+  // addresses. Value's type should be PP_VARTYPE_BOOL.
+  PP_UDPSOCKETFEATURE_BROADCAST = 1,
+
+  // Special value for counting the number of available
+  // features. Should not be passed to SetSocketFeature().
+  PP_UDPSOCKETFEATURE_COUNT = 2
 };
 
 interface PPB_UDPSocket_Private {
@@ -22,6 +39,20 @@ interface PPB_UDPSocket_Private {
    * Determines if a given resource is a UDP socket.
    */
   PP_Bool IsUDPSocket([in] PP_Resource resource_id);
+
+  /**
+   * Sets a socket feature to |udp_socket|. Should be called before
+   * Bind(). Possible values for |name|, |value| and |value|'s type
+   * are described in PP_UDPSocketFeature_Private description. If no
+   * error occurs, returns PP_OK. Otherwise, returns
+   * PP_ERROR_BADRESOURCE (if bad |udp_socket| provided),
+   * PP_ERROR_BADARGUMENT (if bad name/value/value's type provided)
+   * or PP_ERROR_FAILED in the case of internal errors.
+   */
+  [version=0.4]
+  int32_t SetSocketFeature([in] PP_Resource udp_socket,
+                           [in] PP_UDPSocketFeature_Private name,
+                           [in] PP_Var value);
 
   /* Creates a socket and binds to the address given by |addr|. */
   int32_t Bind([in] PP_Resource udp_socket,

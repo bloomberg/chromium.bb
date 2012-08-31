@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
@@ -29,6 +30,7 @@ class UDPSocket : public UDPSocketPrivateImpl {
   UDPSocket(const HostResource& resource, uint32 socket_id);
   virtual ~UDPSocket();
 
+  virtual void SendBoolSocketFeature(int32_t name, bool value) OVERRIDE;
   virtual void SendBind(const PP_NetAddress_Private& addr) OVERRIDE;
   virtual void SendRecvFrom(int32_t num_bytes) OVERRIDE;
   virtual void SendSendTo(const std::string& data,
@@ -51,6 +53,11 @@ UDPSocket::UDPSocket(const HostResource& resource, uint32 socket_id)
 
 UDPSocket::~UDPSocket() {
   Close();
+}
+
+void UDPSocket::SendBoolSocketFeature(int32_t name, bool value) {
+  SendToBrowser(new PpapiHostMsg_PPBUDPSocket_SetBoolSocketFeature(
+      API_ID_PPB_UDPSOCKET_PRIVATE, socket_id_, name, value));
 }
 
 void UDPSocket::SendBind(const PP_NetAddress_Private& addr) {

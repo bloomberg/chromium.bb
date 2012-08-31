@@ -30,6 +30,15 @@ PP_Bool IsUDPSocket(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
+int32_t SetSocketFeature(PP_Resource udp_socket,
+                         PP_UDPSocketFeature_Private name,
+                         PP_Var value) {
+  EnterUDP enter(udp_socket, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.object()->SetSocketFeature(name, value);
+}
+
 int32_t Bind(PP_Resource udp_socket,
              const PP_NetAddress_Private *addr,
              PP_CompletionCallback callback) {
@@ -109,6 +118,18 @@ const PPB_UDPSocket_Private_0_3 g_ppb_udp_socket_thunk_0_3 = {
   &Close
 };
 
+const PPB_UDPSocket_Private_0_4 g_ppb_udp_socket_thunk_0_4 = {
+  &Create,
+  &IsUDPSocket,
+  &SetSocketFeature,
+  &Bind,
+  &GetBoundAddress,
+  &RecvFrom,
+  &GetRecvFromAddress,
+  &SendTo,
+  &Close
+};
+
 }  // namespace
 
 const PPB_UDPSocket_Private_0_2* GetPPB_UDPSocket_Private_0_2_Thunk() {
@@ -117,6 +138,10 @@ const PPB_UDPSocket_Private_0_2* GetPPB_UDPSocket_Private_0_2_Thunk() {
 
 const PPB_UDPSocket_Private_0_3* GetPPB_UDPSocket_Private_0_3_Thunk() {
   return &g_ppb_udp_socket_thunk_0_3;
+}
+
+const PPB_UDPSocket_Private_0_4* GetPPB_UDPSocket_Private_0_4_Thunk() {
+  return &g_ppb_udp_socket_thunk_0_4;
 }
 
 }  // namespace thunk

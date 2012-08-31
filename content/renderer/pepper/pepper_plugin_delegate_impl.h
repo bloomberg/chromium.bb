@@ -304,6 +304,11 @@ class PepperPluginDelegateImpl
       uint32 socket_id) OVERRIDE;
 
   virtual uint32 UDPSocketCreate() OVERRIDE;
+  virtual void UDPSocketSetBoolSocketFeature(
+      webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
+      uint32 socket_id,
+      int32_t name,
+      bool value) OVERRIDE;
   virtual void UDPSocketBind(
       webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
       uint32 socket_id,

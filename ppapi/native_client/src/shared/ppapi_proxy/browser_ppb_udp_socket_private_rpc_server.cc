@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/browser_callback.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -18,6 +19,7 @@
 
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::DeleteRemoteCallbackInfo;
+using ppapi_proxy::DeserializeTo;
 using ppapi_proxy::MakeRemoteCompletionCallback;
 using ppapi_proxy::PPBUDPSocketPrivateInterface;
 
@@ -52,6 +54,39 @@ void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_IsUDPSocket(
   *is_udp_socket = PP_ToBool(pp_success);
   DebugPrintf("PPB_UDPSocket_Private::IsUDPSocket: "
               "is_udp_socket=%d\n", *is_udp_socket);
+}
+
+void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_SetSocketFeature(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    // inputs
+    PP_Resource udp_socket,
+    int32_t name,
+    nacl_abi_size_t value_bytes, char* value,
+    // output
+    int32_t* pp_error) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  if (name < 0 || name >= PP_UDPSOCKETFEATURE_COUNT) {
+    *pp_error = PP_ERROR_BADARGUMENT;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
+  }
+
+  PP_Var pp_value = PP_MakeUndefined();
+  if (!DeserializeTo(value, value_bytes, 1, &pp_value))
+    return;
+
+  *pp_error = PPBUDPSocketPrivateInterface()->SetSocketFeature(
+      udp_socket,
+      static_cast<PP_UDPSocketFeature_Private>(name),
+      pp_value);
+
+  DebugPrintf("PPB_UDPSocket_Private::SetSocketFeature: "
+              "pp_error=%"NACL_PRId32"\n", *pp_error);
+
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 void PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Bind(

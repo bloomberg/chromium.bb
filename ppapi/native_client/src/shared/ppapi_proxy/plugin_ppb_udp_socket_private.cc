@@ -5,8 +5,11 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_udp_socket_private.h"
 
 #include <string.h>
+
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_callback.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
@@ -55,6 +58,32 @@ PP_Bool IsUDPSocket(PP_Resource resource_id) {
   if (srpc_result == NACL_SRPC_RESULT_OK && is_udp_socket)
     return PP_TRUE;
   return PP_FALSE;
+}
+
+int32_t SetSocketFeature(PP_Resource udp_socket,
+                         PP_UDPSocketFeature_Private name,
+                         struct PP_Var value) {
+  DebugPrintf("PPB_UDPSocket_Private::SetSocketFeature: ",
+              "udp_socket=%"NACL_PRId32"\n", udp_socket);
+
+  nacl_abi_size_t value_size;
+  nacl::scoped_array<char> value_bytes(Serialize(&value, 1, &value_size));
+
+  int32_t pp_error = PP_ERROR_FAILED;
+  NaClSrpcError srpc_result =
+      PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_SetSocketFeature(
+          GetMainSrpcChannel(),
+          udp_socket,
+          name,
+          value_size, value_bytes.get(),
+          &pp_error);
+
+  DebugPrintf("PPB_UDPSocket_Private::SetSocketFeature: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
+  if (srpc_result != NACL_SRPC_RESULT_OK)
+    pp_error = PP_ERROR_FAILED;
+  return pp_error;
 }
 
 int32_t Bind(PP_Resource udp_socket, const struct PP_NetAddress_Private* addr,
@@ -238,6 +267,21 @@ const PPB_UDPSocket_Private_0_3* PluginUDPSocketPrivate::GetInterface0_3() {
   static const PPB_UDPSocket_Private_0_3 udpsocket_private_interface = {
     Create,
     IsUDPSocket,
+    Bind,
+    GetBoundAddress,
+    RecvFrom,
+    GetRecvFromAddress,
+    SendTo,
+    Close
+  };
+  return &udpsocket_private_interface;
+}
+
+const PPB_UDPSocket_Private_0_4* PluginUDPSocketPrivate::GetInterface0_4() {
+  static const PPB_UDPSocket_Private_0_4 udpsocket_private_interface = {
+    Create,
+    IsUDPSocket,
+    SetSocketFeature,
     Bind,
     GetBoundAddress,
     RecvFrom,

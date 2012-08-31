@@ -134,6 +134,8 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 
     // UDP messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_Create, OnUDPCreate)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_SetBoolSocketFeature,
+                        OnUDPSetBoolSocketFeature)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_Bind, OnUDPBind)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_RecvFrom, OnUDPRecvFrom)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBUDPSocket_SendTo, OnUDPSendTo)
@@ -379,6 +381,36 @@ void PepperMessageFilter::OnUDPCreate(int32 routing_id,
 
   udp_sockets_[*socket_id] = linked_ptr<PepperUDPSocket>(
       new PepperUDPSocket(this, routing_id, plugin_dispatcher_id, *socket_id));
+}
+
+void PepperMessageFilter::OnUDPSetBoolSocketFeature(
+    int32 routing_id,
+    uint32 socket_id,
+    int32_t name,
+    bool value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  UDPSocketMap::iterator iter = udp_sockets_.find(socket_id);
+  if (iter == udp_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (routing_id != iter->second->routing_id()) {
+    NOTREACHED();
+    return;
+  }
+
+  switch(static_cast<PP_UDPSocketFeature_Private>(name)) {
+    case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
+      iter->second->AllowAddressReuse(value);
+      break;
+    case PP_UDPSOCKETFEATURE_BROADCAST:
+      iter->second->AllowBroadcast(value);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void PepperMessageFilter::OnUDPBind(int32 routing_id,

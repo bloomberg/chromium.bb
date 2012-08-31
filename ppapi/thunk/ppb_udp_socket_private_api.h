@@ -19,6 +19,8 @@ class PPAPI_THUNK_EXPORT PPB_UDPSocket_Private_API {
  public:
   virtual ~PPB_UDPSocket_Private_API() {}
 
+  virtual int32_t SetSocketFeature(PP_UDPSocketFeature_Private name,
+                                   PP_Var value) = 0;
   virtual int32_t Bind(const PP_NetAddress_Private* addr,
                        scoped_refptr<TrackedCallback> callback) = 0;
   virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) = 0;

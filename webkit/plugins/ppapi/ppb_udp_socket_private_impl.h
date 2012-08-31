@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ class PPB_UDPSocket_Private_Impl : public ::ppapi::UDPSocketPrivateImpl {
  public:
   static PP_Resource CreateResource(PP_Instance instance);
 
+  virtual void SendBoolSocketFeature(int32_t name, bool value) OVERRIDE;
   virtual void SendBind(const PP_NetAddress_Private& addr) OVERRIDE;
   virtual void SendRecvFrom(int32_t num_bytes) OVERRIDE;
   virtual void SendSendTo(const std::string& buffer,

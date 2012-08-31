@@ -20,6 +20,14 @@
      'outputs': [['is_udp_socket_private', 'int32_t'], # PP_Bool
                  ]
     },
+    {'name': 'PPB_UDPSocket_Private_SetSocketFeature',
+     'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
+                ['name', 'int32_t'],               # PP_UDPSocketFeature_Private
+                ['value', 'char[]'],                   # PP_Var
+                ],
+     'outputs': [['pp_error', 'int32_t'],
+                ]
+    },
     {'name': 'PPB_UDPSocket_Private_Bind',
      'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
                 ['addr', 'char[]'],                    # PP_NetAddress_Private*

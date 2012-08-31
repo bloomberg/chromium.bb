@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/message_loop_proxy.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
@@ -26,6 +26,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -524,6 +525,10 @@ class PluginDelegate {
 
   // For PPB_UDPSocket_Private.
   virtual uint32 UDPSocketCreate() = 0;
+  virtual void UDPSocketSetBoolSocketFeature(PPB_UDPSocket_Private_Impl* socket,
+                                             uint32 socket_id,
+                                             int32_t name,
+                                             bool value) = 0;
   virtual void UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
                              uint32 socket_id,
                              const PP_NetAddress_Private& addr) = 0;

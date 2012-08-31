@@ -15,6 +15,7 @@ class PluginUDPSocketPrivate {
  public:
   static const PPB_UDPSocket_Private_0_2* GetInterface0_2();
   static const PPB_UDPSocket_Private_0_3* GetInterface0_3();
+  static const PPB_UDPSocket_Private_0_4* GetInterface0_4();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginUDPSocketPrivate);

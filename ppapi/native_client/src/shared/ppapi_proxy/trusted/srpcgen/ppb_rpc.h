@@ -1137,6 +1137,13 @@ class PpbUDPSocketPrivateRpcServer {
       NaClSrpcClosure* done,
       PP_Resource resource_id,
       int32_t* is_udp_socket_private);
+  static void PPB_UDPSocket_Private_SetSocketFeature(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket,
+      int32_t name,
+      nacl_abi_size_t value_bytes, char* value,
+      int32_t* pp_error);
   static void PPB_UDPSocket_Private_Bind(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

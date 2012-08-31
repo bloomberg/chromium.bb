@@ -132,6 +132,8 @@ InterfaceMapElement interface_map[] = {
     PluginUDPSocketPrivate::GetInterface0_2(), true },
   { PPB_UDPSOCKET_PRIVATE_INTERFACE_0_3,
     PluginUDPSocketPrivate::GetInterface0_3(), true },
+  { PPB_UDPSOCKET_PRIVATE_INTERFACE_0_4,
+    PluginUDPSocketPrivate::GetInterface0_4(), true },
   { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },
   { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),

@@ -58,6 +58,8 @@ PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_2,
               PPB_UDPSocket_Private_0_2)
 PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_3,
               PPB_UDPSocket_Private_0_3)
+PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE_0_4,
+              PPB_UDPSocket_Private_0_4)
 PROXIED_IFACE(PPB_X509Certificate_Private,
               PPB_X509CERTIFICATE_PRIVATE_INTERFACE_0_1,
               PPB_X509Certificate_Private_0_1)

@@ -24,8 +24,8 @@
 #include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/pepper_plugin_registry.h"
 #include "content/common/pepper_messages.h"
+#include "content/common/pepper_plugin_registry.h"
 #include "content/common/quota_dispatcher.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -85,9 +85,9 @@
 #include "ui/gfx/size.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
@@ -1177,11 +1177,22 @@ uint32 PepperPluginDelegateImpl::UDPSocketCreate() {
   return socket_id;
 }
 
+void PepperPluginDelegateImpl::UDPSocketSetBoolSocketFeature(
+    webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
+    uint32 socket_id,
+    int32_t name,
+    bool value) {
+  render_view_->Send(
+      new PpapiHostMsg_PPBUDPSocket_SetBoolSocketFeature(
+          render_view_->routing_id(), socket_id, name, value));
+}
+
 void PepperPluginDelegateImpl::UDPSocketBind(
     webkit::ppapi::PPB_UDPSocket_Private_Impl* socket,
     uint32 socket_id,
     const PP_NetAddress_Private& addr) {
-  udp_sockets_.AddWithID(socket, socket_id);
+  if (!udp_sockets_.Lookup(socket_id))
+    udp_sockets_.AddWithID(socket, socket_id);
   render_view_->Send(new PpapiHostMsg_PPBUDPSocket_Bind(
       render_view_->routing_id(), socket_id, addr));
 }

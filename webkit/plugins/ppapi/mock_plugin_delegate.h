@@ -141,6 +141,10 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id);
   virtual uint32 UDPSocketCreate();
+  virtual void UDPSocketSetBoolSocketFeature(PPB_UDPSocket_Private_Impl* socket,
+                                             uint32 socket_id,
+                                             int32_t name,
+                                             bool value);
   virtual void UDPSocketBind(PPB_UDPSocket_Private_Impl* socket,
                              uint32 socket_id,
                              const PP_NetAddress_Private& addr);

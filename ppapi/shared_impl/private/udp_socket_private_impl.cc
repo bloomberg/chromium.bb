@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -38,6 +39,25 @@ UDPSocketPrivateImpl::~UDPSocketPrivateImpl() {
 thunk::PPB_UDPSocket_Private_API*
 UDPSocketPrivateImpl::AsPPB_UDPSocket_Private_API() {
   return this;
+}
+
+int32_t UDPSocketPrivateImpl::SetSocketFeature(PP_UDPSocketFeature_Private name,
+                                               PP_Var value) {
+  if (bound_ || closed_)
+    return PP_ERROR_FAILED;
+
+  switch (name) {
+    case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
+    case PP_UDPSOCKETFEATURE_BROADCAST:
+      if (value.type != PP_VARTYPE_BOOL)
+        return PP_ERROR_BADARGUMENT;
+      SendBoolSocketFeature(static_cast<int32_t>(name),
+                            PP_ToBool(value.value.as_bool));
+      break;
+    default:
+      return PP_ERROR_BADARGUMENT;
+  }
+  return PP_OK;
 }
 
 int32_t UDPSocketPrivateImpl::Bind(const PP_NetAddress_Private* addr,
