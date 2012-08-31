@@ -259,7 +259,8 @@ void MoveToDeviceControlBezelStartPosition(
 }
 
 // Ensure that the device control operation gets properly handled.
-TEST_F(SystemGestureEventFilterTest, DeviceControl) {
+// Disabled: http://crbug.com/145892.
+TEST_F(SystemGestureEventFilterTest, DISABLED_DeviceControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   gfx::Rect screen = gfx::Screen::GetPrimaryDisplay().bounds();
