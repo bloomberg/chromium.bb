@@ -12,6 +12,7 @@ import json
 import browser_finder
 import inspector_backend
 import tab
+import util
 
 DEFAULT_PORT = 9273
 
@@ -56,12 +57,14 @@ class DesktopBrowserBackend(object):
     self.Close()
 
   def _WaitForBrowserToComeUp(self):
-    while True:
+    def IsBrowserUp():
       try:
         self._ListTabs()
-        break
-      except urllib2.URLError, ex:
-        pass
+      except urllib2.URLError:
+        return False
+      else:
+        return True
+    util.WaitFor(IsBrowserUp)
 
   def _ListTabs(self):
     req = urllib2.urlopen("http://localhost:%i/json" % self._port)
@@ -72,7 +75,7 @@ class DesktopBrowserBackend(object):
   def num_tabs(self):
     return len(self._ListTabs())
 
-  def GetNthTabURL(self, index):
+  def GetNthTabUrl(self, index):
     return self._ListTabs()[index]["url"]
 
   def ConnectToNthTab(self, index):

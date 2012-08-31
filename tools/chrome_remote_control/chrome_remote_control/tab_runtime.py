@@ -1,6 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import inspector_backend
 
 class EvaluateException(Exception):
   pass
@@ -29,7 +30,7 @@ class TabRuntime(object):
       }
     res = self._inspector_backend.SyncRequest(request)
     if "error" in res:
-      raise EvaluateException(res["error"]["message"])
+      raise inspector_backend.InspectorException(res["error"]["message"])
 
     if res["result"]["wasThrown"]:
       # TODO(nduca): propagate stacks from javascript up to the python

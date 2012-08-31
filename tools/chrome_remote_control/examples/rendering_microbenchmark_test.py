@@ -38,7 +38,7 @@ def Main(args):
   with browser_to_create.Create() as b:
     with b.ConnectToNthTab(0) as tab:
       # Check browser for benchmark API. Can only be done on non-chrome URLs.
-      tab.BeginToLoadURL("http://www.google.com")
+      tab.BeginToLoadUrl("http://www.google.com")
       tab.WaitForDocumentReadyStateToBeComplete()
       if tab.runtime.Evaluate("window.chrome.gpuBenchmarking === undefined"):
         print "Browser does not support gpu benchmarks API."
@@ -64,7 +64,7 @@ def Main(args):
         print ",".join(cols)
 
       for u in urls:
-        tab.BeginToLoadURL(u)
+        tab.BeginToLoadUrl(u)
         tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
         results = tab.runtime.Evaluate(
             "window.chrome.gpuBenchmarking.runRenderingBenchmarks();")

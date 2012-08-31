@@ -6,6 +6,9 @@ import time
 import websocket
 import socket
 
+class InspectorException(Exception):
+  pass
+
 class InspectorBackend(object):
   def __init__(self, backend, descriptor):
     self._backend = backend

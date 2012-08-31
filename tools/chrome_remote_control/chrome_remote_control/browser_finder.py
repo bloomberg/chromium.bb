@@ -10,13 +10,10 @@ import desktop_browser_backend
 
 """Finds browsers that can be controlled by chrome_remote_control."""
 
-ALL_BROWSER_TYPES = "exact,release,debug,canary,system"
-DEFAULT_BROWSER_TYPES_TO_RUN = "exact,release,canary,system"
-
 class PossibleBrowser(object):
   """A browser that can be controlled.
 
-  Call connect() to launch the browser and begin manipulating it..
+  Call Create() to launch the browser and begin manipulating it.
   """
 
   def __init__(self, type, options, executable):
@@ -34,10 +31,8 @@ class PossibleBrowser(object):
       return browser.Browser(backend)
     raise Exception("Not implemented.")
 
-def FindBestPossibleBrowser(options,
-                            os = real_os,
-                            sys = real_sys,
-                            subprocess = real_subprocess):
+def FindBestPossibleBrowser(options, os=real_os, sys=real_sys,
+                            subprocess=real_subprocess):
   """Finds the best PossibleBrowser object to run given the provided
   BrowserOptions object. The returned possiblity object can then be used to
   connect to and control the located browser."""
@@ -55,10 +50,8 @@ def GetAllAvailableBrowserTypes(options):
   type_list.sort()
   return type_list
 
-def FindAllPossibleBrowsers(options,
-                    os = real_os,
-                    sys = real_sys,
-                    subprocess = real_subprocess):
+def FindAllPossibleBrowsers(options, os=real_os, sys=real_sys,
+                            subprocess=real_subprocess):
   """Finds all browsers that can be created given the options. Returns an array
   of PossibleBrowser objects, sorted and filtered by
   options.browser_types_to_use."""
@@ -74,10 +67,8 @@ def FindAllPossibleBrowsers(options,
   selected_browsers.sort(compare_browsers_on_priority)
   return selected_browsers
 
-def _UnsortedFindAllLocalBrowserPossibilities(options,
-                                              os = real_os,
-                                              sys = real_sys,
-                                              subprocess = real_subprocess):
+def _UnsortedFindAllLocalBrowserPossibilities(options, os=real_os, sys=real_sys,
+                                              subprocess=real_subprocess):
   browsers = []
 
   # Add the explicit browser executable if given.

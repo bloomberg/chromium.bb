@@ -8,3 +8,4 @@ from browser_finder import *
 from browser_options import *
 from browser import *
 from tab import *
+from util import *

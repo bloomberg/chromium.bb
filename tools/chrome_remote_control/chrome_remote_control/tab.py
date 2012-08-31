@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import json
-import time
 import websocket
 import socket
+import time
 
 import tab_runtime
+import util
 
 class Tab(object):
   def __init__(self, inspector_backend):
@@ -27,26 +28,31 @@ class Tab(object):
   def __exit__(self, *args):
     self.Close()
 
-  def BeginToLoadURL(self, url):
+  def BeginToLoadUrl(self, url):
     # In order to tell when the document has actually changed,
     # we go to about:blank first and wait. When that has happened, we
     # to go the new URL and detect the document being non-about:blank as
     # indication that the new document is loading.
-    self.runtime.Evaluate("document.location = 'about:blank';")
-    while self.runtime.Evaluate("document.location.href") != "about:blank":
-      time.sleep(0.01)
+    self.runtime.Evaluate('document.location = "about:blank";')
+    util.WaitFor(lambda:
+        self.runtime.Evaluate('document.location.href') == 'about:blank')
 
-    self.runtime.Evaluate("document.location = '%s';" % url)
-    while self.runtime.Evaluate("document.location.href") == "about:blank":
-      time.sleep(0.01)
+    self.runtime.Evaluate('document.location = "%s";' % url)
+    util.WaitFor(lambda:
+        self.runtime.Evaluate('document.location.href') != 'about:blank')
+
+  def LoadUrl(self, url):
+    self.BeginToLoadUrl(url)
+    # TODO(dtu): Detect HTTP redirects.
+    time.sleep(2)  # Wait for unpredictable redirects.
+    self.WaitForDocumentReadyStateToBeInteractiveOrBetter()
 
   def WaitForDocumentReadyStateToBeComplete(self):
-    while self.runtime.Evaluate("document.readyState") != 'complete':
-      time.sleep(0.01)
+    util.WaitFor(
+        lambda: self.runtime.Evaluate('document.readyState') == 'complete')
 
   def WaitForDocumentReadyStateToBeInteractiveOrBetter(self):
-    while True:
-      rs = self.runtime.Evaluate("document.readyState")
-      if rs == 'complete' or rs == 'interactive':
-        break
-      time.sleep(0.01)
+    def IsReadyStateInteractiveOrBetter():
+      rs = self.runtime.Evaluate('document.readyState')
+      return rs == 'complete' or rs == 'interactive'
+    util.WaitFor(IsReadyStateInteractiveOrBetter)

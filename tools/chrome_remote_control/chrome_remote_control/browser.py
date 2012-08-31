@@ -34,8 +34,8 @@ class Browser(object):
   def num_tabs(self):
     return self._backend.num_tabs
 
-  def GetNthTabURL(self, index):
-    return self._backend.GetNthTabURL(index)
+  def GetNthTabUrl(self, index):
+    return self._backend.GetNthTabUrl(index)
 
   def ConnectToNthTab(self, index):
     return self._backend.ConnectToNthTab(index)
