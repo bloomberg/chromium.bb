@@ -4846,8 +4846,14 @@ class EnumBaseArgument(Argument):
   def WriteValidationCode(self, file, func):
     file.Write("  if (!validators_->%s.IsValid(%s)) {\n" %
         (ToUnderscore(self.type_name), self.name))
-    file.Write("    SetGLError(%s, \"gl%s\", \"%s %s\");\n" %
-               (self.gl_error, func.original_name, self.name, self.gl_error))
+    if self.gl_error == "GL_INVALID_ENUM":
+      file.Write(
+          "    SetGLErrorInvalidEnum(\"gl%s\", %s, \"%s\");\n" %
+          (func.original_name, self.name, self.name))
+    else:
+      file.Write(
+          "    SetGLError(%s, \"gl%s\", \"%s %s\");\n" %
+          (self.gl_error, func.original_name, self.name, self.gl_error))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 

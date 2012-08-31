@@ -677,6 +677,13 @@ void GLES2Implementation::SetGLError(
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 }
 
+void GLES2Implementation::SetGLErrorInvalidEnum(
+    const char* function_name, GLenum value, const char* label) {
+  SetGLError(GL_INVALID_ENUM, function_name,
+             (std::string(label) + " was " +
+              GLES2Util::GetStringEnum(value)).c_str());
+}
+
 bool GLES2Implementation::GetBucketContents(uint32 bucket_id,
                                             std::vector<int8>* data) {
   TRACE_EVENT0("gpu", "GLES2::GetBucketContents");
@@ -2353,8 +2360,8 @@ void GLES2Implementation::ActiveTexture(GLenum texture) {
   GLuint texture_index = texture - GL_TEXTURE0;
   if (texture_index >= static_cast<GLuint>(
       gl_state_.int_state.max_combined_texture_image_units)) {
-    SetGLError(
-        GL_INVALID_ENUM, "glActiveTexture", "texture_unit out of range.");
+    SetGLErrorInvalidEnum(
+        "glActiveTexture", texture, "texture");
     return;
   }
 
@@ -2623,7 +2630,7 @@ bool GLES2Implementation::GetVertexAttribHelper(
     case GL_CURRENT_VERTEX_ATTRIB:
       return false;  // pass through to service side.
     default:
-      SetGLError(GL_INVALID_ENUM, "glGetVertexAttrib", "invalid enum");
+      SetGLErrorInvalidEnum("glGetVertexAttrib", pname, "pname");
       break;
   }
   return true;
@@ -2724,8 +2731,8 @@ void* GLES2Implementation::MapBufferSubDataCHROMIUM(
   // NOTE: target is NOT checked because the service will check it
   // and we don't know what targets are valid.
   if (access != GL_WRITE_ONLY) {
-    SetGLError(
-        GL_INVALID_ENUM, "glMapBufferSubDataCHROMIUM", "bad access mode");
+    SetGLErrorInvalidEnum(
+        "glMapBufferSubDataCHROMIUM", access, "access");
     return NULL;
   }
   if (offset < 0 || size < 0) {
@@ -2786,8 +2793,8 @@ void* GLES2Implementation::MapTexSubImage2DCHROMIUM(
       << GLES2Util::GetStringPixelType(type) << ", "
       << GLES2Util::GetStringEnum(access) << ")");
   if (access != GL_WRITE_ONLY) {
-    SetGLError(
-        GL_INVALID_ENUM, "glMapTexSubImage2DCHROMIUM", "bad access mode");
+    SetGLErrorInvalidEnum(
+        "glMapTexSubImage2DCHROMIUM", access, "access");
     return NULL;
   }
   // NOTE: target is NOT checked because the service will check it
@@ -2919,7 +2926,8 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
   for (GLuint ii = 0; ii < count; ++ii) {
     int num = util_.GLGetNumValuesReturned(pnames[ii]);
     if (!num) {
-      SetGLError(GL_INVALID_ENUM, "glGetMultipleIntegervCHROMIUM", "bad pname");
+      SetGLErrorInvalidEnum(
+          "glGetMultipleIntegervCHROMIUM", pnames[ii], "pname");
       return;
     }
     num_results += num;
@@ -3181,7 +3189,7 @@ void GLES2Implementation::GetQueryivEXT(
                  << static_cast<const void*>(params) << ")");
 
   if (pname != GL_CURRENT_QUERY_EXT) {
-    SetGLError(GL_INVALID_ENUM, "glGetQueryivEXT", "invalid pname");
+    SetGLErrorInvalidEnum("glGetQueryivEXT", pname, "pname");
     return;
   }
   *params = (current_query_ && current_query_->target() == target) ?
@@ -3232,7 +3240,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
       *params = query->CheckResultsAvailable(helper_);
       break;
     default:
-      SetGLError(GL_INVALID_ENUM, "glQueryObjectuivEXT", "unknown pname");
+      SetGLErrorInvalidEnum("glQueryObjectuivEXT", pname, "pname");
       break;
   }
   GPU_CLIENT_LOG("  " << *params);
