@@ -545,8 +545,6 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_H" file="panel_restore_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_PLUGIN" file="plugin.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="prerender_succeed_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_PRERENDER_FAIL_ICON" file="prerender_fail_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_PRERENDER_SUCCEED_ICON" file="prerender_succeed_icon.png" />
       <if expr="not pp_ifdef('_google_chrome')">
         <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" />
         <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" />
