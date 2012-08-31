@@ -528,6 +528,7 @@ extern const char kNtpCustomLogoStart[];
 extern const char kNtpCustomLogoEnd[];
 extern const char kNtpPromoVersion[];
 extern const char kNtpPromoLocale[];
+extern const char kNtpPromoDesktopSessionFound[];
 extern const char kNtpWebStoreEnabled[];
 extern const char kNtpAppPageNames[];
 

@@ -62,6 +62,7 @@
 #else
 #include "chrome/browser/ui/webui/ntp/android/bookmarks_handler.h"
 #include "chrome/browser/ui/webui/ntp/android/context_menu_handler.h"
+#include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #endif
 
 using content::BrowserThread;
@@ -132,8 +133,10 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 
 #if defined(OS_ANDROID)
   // These handlers are specific to the Android NTP page.
-  web_ui->AddMessageHandler((new BookmarksHandler()));
-  web_ui->AddMessageHandler((new ContextMenuHandler()));
+  web_ui->AddMessageHandler(new BookmarksHandler());
+  web_ui->AddMessageHandler(new ContextMenuHandler());
+  if (!GetProfile()->IsOffTheRecord())
+    web_ui->AddMessageHandler(new PromoHandler());
 #else
   // Android uses native UI for sync setup.
   if (NTPLoginHandler::ShouldShow(GetProfile()))

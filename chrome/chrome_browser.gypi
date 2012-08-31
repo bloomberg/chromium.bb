@@ -4441,6 +4441,8 @@
             'browser/ui/webui/ntp/android/context_menu_handler.h',
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.cc',
             'browser/ui/webui/ntp/android/partner_bookmarks_shim.h',
+            'browser/ui/webui/ntp/android/promo_handler.cc',
+            'browser/ui/webui/ntp/android/promo_handler.h',
             'browser/web_resource/notification_promo_mobile_ntp.cc',
             'browser/web_resource/notification_promo_mobile_ntp.h',
           ],

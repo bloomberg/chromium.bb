@@ -1483,6 +1483,9 @@ const char kNtpPromoVersion[] = "ntp.promo_version";
 // The last locale the promo was fetched for.
 const char kNtpPromoLocale[] = "ntp.promo_locale";
 
+// True if a desktop sync session was found for this user.
+const char kNtpPromoDesktopSessionFound[] = "ntp.promo_desktop_session_found";
+
 // Boolean indicating whether the web store is active for the current locale.
 const char kNtpWebStoreEnabled[] = "ntp.webstore_enabled";
 

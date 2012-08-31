@@ -214,6 +214,36 @@ cr.define('ntp', function() {
    */
   var promoIsAllowed = false;
 
+  /**
+   * Whether promo should be shown on Most Visited page (externally set).
+   * @type {boolean}
+   */
+  var promoIsAllowedOnMostVisited = false;
+
+  /**
+   * Whether promo should be shown on Open Tabs page (externally set).
+   * @type {boolean}
+   */
+  var promoIsAllowedOnOpenTabs = false;
+
+  /**
+   * Whether promo should show a virtual computer on Open Tabs (externally set).
+   * @type {boolean}
+   */
+  var promoIsAllowedAsVirtualComputer = false;
+
+  /**
+   * Promo-injected title of a virtual computer on an open tabs pane.
+   * @type {string}
+   */
+  var promoInjectedComputerTitleText = '';
+
+  /**
+   * Promo-injected last synced text of a virtual computer on an open tabs pane.
+   * @type {string}
+   */
+  var promoInjectedComputerLastSyncedText = '';
+
   function setIncognitoMode(incognito) {
     isIncognito = incognito;
   }
@@ -223,15 +253,14 @@ cr.define('ntp', function() {
    * @enum {number}
    */
   var SectionType = {
-    BOOKMARKS: 0,
-    INCOGNITO: 1,
-    MOST_VISITED: 2,
-    RECENTLY_CLOSED: 3,
-    SYNCED_DEVICES: 4,
-    FOREIGN_SESSION: 5,
-    FOREIGN_SESSION_HEADER: 6,
-    SNAPSHOTS: 7,
-    UNKNOWN: 100,
+    BOOKMARKS: 'bookmarks',
+    FOREIGN_SESSION: 'foreign_session',
+    FOREIGN_SESSION_HEADER: 'foreign_session_header',
+    MOST_VISITED: 'most_visited',
+    PROMO_VC_SESSION_HEADER: 'promo_vc_session_header',
+    RECENTLY_CLOSED: 'recently_closed',
+    SNAPSHOTS: 'snapshots',
+    UNKNOWN: 'unknown',
   };
 
   /**
@@ -255,6 +284,8 @@ cr.define('ntp', function() {
     RECENTLY_CLOSED_REMOVE: 22,
 
     FOREIGN_SESSIONS_REMOVE: 30,
+
+    PROMO_VC_SESSION_REMOVE: 40,
   };
 
   /**
@@ -278,7 +309,7 @@ cr.define('ntp', function() {
     WAITING_FOR_DATA: 1,
     DISPLAYING_LOADING: 2,
     DISPLAYED_LOADING: 3,
-    LOADED: 3,
+    LOADED: 4,
   };
 
   /**
@@ -397,6 +428,9 @@ cr.define('ntp', function() {
         document.getElementsByClassName('section-title-wrapper');
     for (var i = 0, len = titleScrollers.length; i < len; i++)
       initializeTitleScroller(titleScrollers[i]);
+
+    // Initialize virtual computers for the sync promo.
+    createPromoVirtualComputers();
 
     chrome.send('getMostVisited');
     chrome.send('getRecentlyClosedTabs');
@@ -827,11 +861,13 @@ cr.define('ntp', function() {
 
     var title = createDiv('session-name');
     title.textContent = item.title;
+    title.id = item.titleId || '';
     sessionInnerDiv.appendChild(title);
 
     var lastSynced = createDiv('session-last-synced');
     lastSynced.textContent =
         templateData.opentabslastsynced + ': ' + item.userVisibleTimestamp;
+    lastSynced.id = item.userVisibleTimestampId || '';
     sessionInnerDiv.appendChild(lastSynced);
 
     sessionOuterDiv.addEventListener('click', function(evt) {
@@ -848,7 +884,7 @@ cr.define('ntp', function() {
    */
   function setNumberOfMostVisitedPages(n) {
     numberOfMostVisitedPages = n;
-    promoSetVisibility();
+    updatePromoVisibility();
   }
 
   /**
@@ -857,7 +893,7 @@ cr.define('ntp', function() {
    */
   function setHasRecentlyClosedTabs(anyTabs) {
     hasRecentlyClosedTabs = anyTabs;
-    promoSetVisibility();
+    updatePromoVisibility();
   }
 
   /**
@@ -967,9 +1003,8 @@ cr.define('ntp', function() {
    * @return {boolean} Whether the promo should be shown on most_visited.
    */
   function shouldPromoBeShownOnMostVisited() {
-    return promoIsAllowed &&
-        (numberOfMostVisitedPages >= 2) &&
-        (!hasRecentlyClosedTabs);
+    return promoIsAllowed && promoIsAllowedOnMostVisited &&
+        numberOfMostVisitedPages >= 2 && !hasRecentlyClosedTabs;
   }
 
   /**
@@ -980,7 +1015,7 @@ cr.define('ntp', function() {
     var snapshotsCount =
         currentSnapshots == null ? 0 : currentSnapshots.length;
     var sessionsCount = currentSessions == null ? 0 : currentSessions.length;
-    return promoIsAllowed &&
+    return promoIsAllowed && promoIsAllowedOnOpenTabs &&
         (snapshotsCount + sessionsCount != 0);
   }
 
@@ -988,11 +1023,11 @@ cr.define('ntp', function() {
    * Checks if promo is allowed and SyncPromo requirements are satisfied.
    * @return {boolean} Whether the promo should be shown on sync_promo.
    */
-  function shouldPromoBeShownOnSyncPromo() {
+  function shouldPromoBeShownOnSync() {
     var snapshotsCount =
         currentSnapshots == null ? 0 : currentSnapshots.length;
     var sessionsCount = currentSessions == null ? 0 : currentSessions.length;
-    return promoIsAllowed &&
+    return promoIsAllowed && promoIsAllowedOnOpenTabs &&
         (snapshotsCount + sessionsCount == 0);
   }
 
@@ -1001,30 +1036,62 @@ cr.define('ntp', function() {
    * @param {string} section Active section name to check.
    */
   function promoUpdateImpressions(section) {
-    if (section == 'most_visited' && shouldPromoBeShownOnMostVisited()) {
+    if (section == 'most_visited' && shouldPromoBeShownOnMostVisited())
       chrome.send('recordImpression', ['most_visited']);
-    } else if (section == 'open_tabs' && shouldPromoBeShownOnOpenTabs()) {
+    else if (section == 'open_tabs' && shouldPromoBeShownOnOpenTabs())
       chrome.send('recordImpression', ['open_tabs']);
-    } else if (section == 'open_tabs' && shouldPromoBeShownOnSyncPromo()) {
+    else if (section == 'open_tabs' && shouldPromoBeShownOnSync())
       chrome.send('recordImpression', ['sync_promo']);
-    }
   }
 
   /**
-   * Sets the visibility on all promo-related items as necessary.
+   * Updates the visibility on all promo-related items as necessary.
    */
-  function promoSetVisibility() {
-    var mostVisited = $('promo_message_on_most_visited');
-    var openTabs = $('promo_message_on_open_tabs');
-    if (shouldPromoBeShownOnMostVisited()) {
-      mostVisited.style.display = 'block';
-    } else {
-      mostVisited.style.display = 'none';
-    }
-    if (shouldPromoBeShownOnOpenTabs()) {
-      openTabs.style.display = 'block';
-    } else {
-      openTabs.style.display = 'none';
+  function updatePromoVisibility() {
+    var mostVisitedEl = $('promo_message_on_most_visited');
+    var openTabsVCEl = $('promo_vc_list');
+    var syncPromoLegacyEl = $('promo_message_on_sync_promo_legacy');
+    var syncPromoReceivedEl = $('promo_message_on_sync_promo_received');
+    mostVisitedEl.style.display =
+        shouldPromoBeShownOnMostVisited() ? 'block' : 'none';
+    syncPromoReceivedEl.style.display =
+        shouldPromoBeShownOnSync() ? 'block' : 'none';
+    syncPromoLegacyEl.style.display =
+        shouldPromoBeShownOnSync() ? 'none' : 'block';
+    openTabsVCEl.style.display =
+        (shouldPromoBeShownOnOpenTabs() && promoIsAllowedAsVirtualComputer) ?
+            'block' : 'none';
+  }
+
+  /**
+   * Called from native.
+   * Clears the promotion.
+   */
+  function clearPromotions() {
+    setPromotions({});
+  }
+
+  /**
+   * Set the element to a parsed and sanitized promotion HTML string.
+   * @param {Element} el The element to set the promotion string to.
+   * @param {string} html The promotion HTML string.
+   * @throws {Error} In case of non supported markup.
+   */
+  function setPromotionHtml(el, html) {
+    if (!el) return;
+    el.innerHTML = '';
+    if (!html) return;
+    var tags = ['BR', 'DIV', 'BUTTON', 'SPAN'];
+    var attrs = {
+      class: function(node, value) { return true; },
+      style: function(node, value) { return true; },
+    };
+    try {
+      var fragment = parseHtmlSubset(html, tags, attrs);
+      el.appendChild(fragment);
+    } catch (err) {
+      console.error(err.toString());
+      // Ignore all errors while parsing or setting the element.
     }
   }
 
@@ -1036,24 +1103,37 @@ cr.define('ntp', function() {
    * @param {Object} promotions Dictionary used to fill-in the text.
    */
   function setPromotions(promotions) {
-    var mostVisited = $('promo_message_on_most_visited');
-    var openTabs = $('promo_message_on_open_tabs');
-    var syncPromoLegacy = $('promo_message_on_sync_promo_legacy');
-    mostVisited.innerHTML = promotions['promoMessage'];
-    openTabs.innerHTML = promotions['promoMessage'];
-    if (promotions['promoMessageLong']) {
-      syncPromoLegacy.innerHTML = promotions['promoMessageLong'];
-    }
-    promoIsAllowed = promotions['promoIsAllowed'] === true;
+    var mostVisitedEl = $('promo_message_on_most_visited');
+    var openTabsEl = $('promo_message_on_open_tabs');
+    var syncPromoReceivedEl = $('promo_message_on_sync_promo_received');
+
+    promoIsAllowed = !!promotions.promoIsAllowed;
+    promoIsAllowedOnMostVisited = !!promotions.promoIsAllowedOnMostVisited;
+    promoIsAllowedOnOpenTabs = !!promotions.promoIsAllowedOnOpenTabs;
+    promoIsAllowedAsVirtualComputer = !!promotions.promoIsAllowedAsVC;
+
+    setPromotionHtml(mostVisitedEl, promotions.promoMessage);
+    setPromotionHtml(openTabsEl, promotions.promoMessage);
+    setPromotionHtml(syncPromoReceivedEl, promotions.promoMessageLong);
+
+    promoInjectedComputerTitleText = promotions.promoVCTitle || '';
+    promoInjectedComputerLastSyncedText = promotions.promoVCLastSynced || '';
+    var openTabsVCTitleEl = $('promo_vc_title');
+    if (openTabsVCTitleEl)
+      openTabsVCTitleEl.textContent = promoInjectedComputerTitleText;
+    var openTabsVCLastSyncEl = $('promo_vc_lastsync');
+    if (openTabsVCLastSyncEl)
+      openTabsVCLastSyncEl.textContent = promoInjectedComputerLastSyncedText;
+
     if (promoIsAllowed) {
-      var promoTargets =
-          document.getElementsByClassName('promo-action-target');
-      for (var i = 0, len = promoTargets.length; i < len; i++) {
-        promoTargets[i].href = 'javascript:void(0)';
-        promoTargets[i].onclick = promoAction;
+      var promoButtonEls =
+          document.getElementsByClassName('promo-button');
+      for (var i = 0, len = promoButtonEls.length; i < len; i++) {
+        promoButtonEls[i].onclick = executePromoAction;
+        addActiveTouchListener(promoButtonEls[i], 'promo-button-active');
       }
     }
-    promoSetVisibility();
+    updatePromoVisibility();
   }
 
   /**
@@ -1061,7 +1141,7 @@ cr.define('ntp', function() {
    * Performs the promo action "send email".
    * @param {Object} evt User interface event that triggered the action.
    */
-  function promoAction(evt) {
+  function executePromoAction(evt) {
     if (evt.preventDefault)
       evt.preventDefault();
     evt.returnValue = false;
@@ -1120,6 +1200,10 @@ cr.define('ntp', function() {
               'deleteForeignSession', [contextMenuItem.sessionTag]);
           chrome.send('getForeignSessions');
         }
+        break;
+
+      case ContextMenuItemIds.PROMO_VC_SESSION_REMOVE:
+        chrome.send('promoDisabled');
         break;
 
       default:
@@ -1349,6 +1433,7 @@ cr.define('ntp', function() {
       } else {
         localStorage.removeItem(SYNC_ENABLED_KEY);
       }
+      updatePromoVisibility();
 
       if (bookmarkData) {
         // Bookmark data can now be displayed (or needs to be refiltered)
@@ -1428,7 +1513,7 @@ cr.define('ntp', function() {
       openTabsList.style.display = sessionsCount == 0 ? 'none' : 'block';
       snapshotsList.style.display = snapshotsCount == 0 ? 'none' : 'block';
     }
-    promoSetVisibility();
+    updatePromoVisibility();
   }
 
   /**
@@ -1536,6 +1621,45 @@ cr.define('ntp', function() {
         expando.className = 'expando open';
       }
     }
+  }
+
+  /**
+   * Initializes the promo_vc_list div to look like a foreign session
+   * with a desktop.
+   */
+  function createPromoVirtualComputers() {
+    var list = findList('promo_vc');
+    list.innerHTML = '';
+
+    // Set up the container and the "virtual computer" session header.
+    var sessionEl = createDiv();
+    list.appendChild(sessionEl);
+    var sessionHeader = createDiv('session-header');
+    sessionEl.appendChild(sessionHeader);
+
+    // Set up the session children container and the promo as a child.
+    var sessionChildren = createDiv('session-children-container');
+    var promoMessage = createDiv('promo-message');
+    promoMessage.id = 'promo_message_on_open_tabs';
+    sessionChildren.appendChild(promoMessage);
+    sessionEl.appendChild(sessionChildren);
+
+    // Add support for expanding and collapsing the children.
+    var expando = createDiv();
+    var expandoFunction = createExpandoFunction(expando, sessionChildren);
+
+    // Fill-in the contents of the "virtual computer" session header.
+    var headerList = [{
+      'title': promoInjectedComputerTitleText,
+      'titleId': 'promo_vc_title',
+      'userVisibleTimestamp': promoInjectedComputerLastSyncedText,
+      'userVisibleTimestampId': 'promo_vc_lastsync',
+      'iconStyle': 'laptop'
+    }];
+
+    populateData(sessionHeader, SectionType.PROMO_VC_SESSION_HEADER, headerList,
+        makeForeignSessionListEntry, expandoFunction);
+    sessionHeader.appendChild(expando);
   }
 
   /**
@@ -1742,25 +1866,6 @@ cr.define('ntp', function() {
   }
 
   /**
-   * Gets the SectionType String from the enum SectionType.
-   */
-  function getSectionTypeString(section) {
-    switch (section) {
-      case SectionType.BOOKMARKS:
-        return 'bookmarks';
-      case SectionType.MOST_VISITED:
-        return 'most_visited';
-      case SectionType.RECENTLY_CLOSED:
-        return 'recently_closed';
-      case SectionType.SYNCED_DEVICES:
-        return 'synced_devices';
-      case SectionType.UNKNOWN:
-      default:
-        return 'unknown';
-    }
-  }
-
-  /**
    * Render the given data into the given list, and hide or show the entire
    * container based on whether there are any elements.  The decorator function
    * is used to create the element to be inserted based on the given data
@@ -1786,7 +1891,7 @@ cr.define('ntp', function() {
       data.forEach(function(item) {
         var el = decorator(item, opt_clickCallback);
         el.setAttribute(SECTION_KEY, section);
-        el.id = getSectionTypeString(section) + fragment.childNodes.length;
+        el.id = section + fragment.childNodes.length;
         fragment.appendChild(el);
       });
     }
@@ -2272,13 +2377,20 @@ cr.define('ntp', function() {
       node = node.parentNode;
     }
 
+    var menuOptions;
+
     if (section == SectionType.BOOKMARKS &&
         !contextMenuItem.folder && !isIncognito) {
-      var menuOptions = [
-          [ContextMenuItemIds.BOOKMARK_OPEN_IN_NEW_TAB,
-              templateData.elementopeninnewtab],
-          [ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB,
-              templateData.elementopeninincognitotab]];
+      menuOptions = [
+        [
+          ContextMenuItemIds.BOOKMARK_OPEN_IN_NEW_TAB,
+          templateData.elementopeninnewtab
+        ],
+        [
+          ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB,
+          templateData.elementopeninincognitotab
+        ]
+      ];
       if (contextMenuItem.editable) {
         menuOptions.push(
             [ContextMenuItemIds.BOOKMARK_EDIT, templateData.bookmarkedit],
@@ -2286,49 +2398,74 @@ cr.define('ntp', function() {
       }
       if (contextMenuUrl.search('chrome://') == -1 &&
           contextMenuUrl.search('about://') == -1) {
-        menuOptions.push(
-            [ContextMenuItemIds.BOOKMARK_SHORTCUT,
-                templateData.bookmarkshortcut]);
+        menuOptions.push([
+          ContextMenuItemIds.BOOKMARK_SHORTCUT,
+          templateData.bookmarkshortcut
+        ]);
       }
-      chrome.send('showContextMenu', menuOptions);
     } else if (section == SectionType.BOOKMARKS &&
                !contextMenuItem.folder &&
                isIncognito) {
-      chrome.send('showContextMenu', [
-          [ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB,
-              templateData.elementopeninincognitotab]
-      ]);
+      menuOptions = [
+        [
+          ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB,
+          templateData.elementopeninincognitotab
+        ]
+      ];
     } else if (section == SectionType.BOOKMARKS &&
                contextMenuItem.folder &&
                contextMenuItem.editable &&
                !isIncognito) {
-      chrome.send('showContextMenu', [
-          [ContextMenuItemIds.BOOKMARK_EDIT, templateData.editfolder],
-          [ContextMenuItemIds.BOOKMARK_DELETE, templateData.deletefolder],
-      ]);
+      menuOptions = [
+        [ContextMenuItemIds.BOOKMARK_EDIT, templateData.editfolder],
+        [ContextMenuItemIds.BOOKMARK_DELETE, templateData.deletefolder]
+      ];
     } else if (section == SectionType.MOST_VISITED) {
-      chrome.send('showContextMenu', [
-          [ContextMenuItemIds.MOST_VISITED_OPEN_IN_NEW_TAB,
-              templateData.elementopeninnewtab],
-          [ContextMenuItemIds.MOST_VISITED_OPEN_IN_INCOGNITO_TAB,
-              templateData.elementopeninincognitotab],
-          [ContextMenuItemIds.MOST_VISITED_REMOVE, templateData.elementremove]
-      ]);
+      menuOptions = [
+        [
+          ContextMenuItemIds.MOST_VISITED_OPEN_IN_NEW_TAB,
+          templateData.elementopeninnewtab
+        ],
+        [
+          ContextMenuItemIds.MOST_VISITED_OPEN_IN_INCOGNITO_TAB,
+          templateData.elementopeninincognitotab
+        ],
+        [ContextMenuItemIds.MOST_VISITED_REMOVE, templateData.elementremove]
+      ];
     } else if (section == SectionType.RECENTLY_CLOSED) {
-      chrome.send('showContextMenu', [
-          [ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_NEW_TAB,
-              templateData.elementopeninnewtab],
-          [ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_INCOGNITO_TAB,
-              templateData.elementopeninincognitotab],
-          [ContextMenuItemIds.RECENTLY_CLOSED_REMOVE,
-              templateData.elementremove]
-      ]);
+      menuOptions = [
+        [
+          ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_NEW_TAB,
+          templateData.elementopeninnewtab
+        ],
+        [
+          ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_INCOGNITO_TAB,
+          templateData.elementopeninincognitotab
+        ],
+        [
+          ContextMenuItemIds.RECENTLY_CLOSED_REMOVE,
+          templateData.elementremove
+        ]
+      ];
     } else if (section == SectionType.FOREIGN_SESSION_HEADER) {
-      chrome.send('showContextMenu', [
-          [ContextMenuItemIds.FOREIGN_SESSIONS_REMOVE,
-              templateData.elementremove]
-      ]);
+      menuOptions = [
+        [
+          ContextMenuItemIds.FOREIGN_SESSIONS_REMOVE,
+          templateData.elementremove
+        ]
+      ];
+    } else if (section == SectionType.PROMO_VC_SESSION_HEADER) {
+      menuOptions = [
+        [
+          ContextMenuItemIds.PROMO_VC_SESSION_REMOVE,
+          templateData.elementremove
+        ]
+      ];
     }
+
+    if (menuOptions)
+      chrome.send('showContextMenu', menuOptions);
+
     return false;
   }
 
@@ -2336,11 +2473,12 @@ cr.define('ntp', function() {
   return {
     bookmarks: bookmarks,
     bookmarkChanged: bookmarkChanged,
-    setForeignSessions: setForeignSessions,
+    clearPromotions: clearPromotions,
     init: init,
     onCustomMenuSelected: onCustomMenuSelected,
     openSection: openSection,
     setFaviconDominantColor: setFaviconDominantColor,
+    setForeignSessions: setForeignSessions,
     setIncognitoMode: setIncognitoMode,
     setMostVisitedPages: setMostVisitedPages,
     setPromotions: setPromotions,

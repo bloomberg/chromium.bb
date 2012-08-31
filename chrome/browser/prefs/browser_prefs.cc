@@ -111,6 +111,10 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
+#endif
+
 namespace {
 
 enum MigratedPreferences {
@@ -232,6 +236,10 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if defined(OS_ANDROID)
   geolocation::RegisterUserPrefs(user_prefs);
+#endif
+
+#if defined(OS_ANDROID)
+  PromoHandler::RegisterUserPrefs(user_prefs);
 #endif
 
 #if defined(USE_ASH)
