@@ -53,6 +53,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
+  virtual ShellWindowGeometryCache* shell_window_geometry_cache() OVERRIDE;
   virtual ExtensionInfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual MessageService* message_service() OVERRIDE;
@@ -74,6 +75,7 @@ class TestExtensionSystem : public ExtensionSystem {
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<StateStore> state_store_;
+  scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;

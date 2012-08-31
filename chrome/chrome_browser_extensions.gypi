@@ -543,6 +543,8 @@
         'browser/extensions/settings/value_store_cache.h',
         'browser/extensions/settings/weak_unlimited_settings_storage.cc',
         'browser/extensions/settings/weak_unlimited_settings_storage.h',
+        'browser/extensions/shell_window_geometry_cache.cc',
+        'browser/extensions/shell_window_geometry_cache.h',
         'browser/extensions/shell_window_registry.cc',
         'browser/extensions/shell_window_registry.h',
         'browser/extensions/startup_helper.cc',

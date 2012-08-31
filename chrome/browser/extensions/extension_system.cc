@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/navigation_observer.h"
+#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -88,6 +89,10 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   state_store_.reset(new StateStore(
       profile_,
       profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName)));
+
+  shell_window_geometry_cache_.reset(new ShellWindowGeometryCache(
+    profile_, state_store_.get()));
+
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
@@ -198,6 +203,11 @@ void ExtensionSystemImpl::Shared::Shutdown() {
 
 StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
+}
+
+ShellWindowGeometryCache* ExtensionSystemImpl::Shared::
+    shell_window_geometry_cache() {
+  return shell_window_geometry_cache_.get();
 }
 
 ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
@@ -325,6 +335,10 @@ AlarmManager* ExtensionSystemImpl::alarm_manager() {
 
 StateStore* ExtensionSystemImpl::state_store() {
   return shared_->state_store();
+}
+
+ShellWindowGeometryCache* ExtensionSystemImpl::shell_window_geometry_cache() {
+  return shared_->shell_window_geometry_cache();
 }
 
 ExtensionInfoMap* ExtensionSystemImpl::info_map() {

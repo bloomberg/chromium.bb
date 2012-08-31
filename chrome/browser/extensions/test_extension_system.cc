@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,6 +76,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       install_directory,
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));
   state_store_.reset(new StateStore(profile_, new TestingValueStore()));
+  shell_window_geometry_cache_.reset(
+      new ShellWindowGeometryCache(profile_, state_store_.get()));
   extension_prefs_->Init(extensions_disabled);
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
@@ -124,6 +127,10 @@ AlarmManager* TestExtensionSystem::alarm_manager() {
 
 StateStore* TestExtensionSystem::state_store() {
   return state_store_.get();
+}
+
+ShellWindowGeometryCache* TestExtensionSystem::shell_window_geometry_cache() {
+  return shell_window_geometry_cache_.get();
 }
 
 ExtensionInfoMap* TestExtensionSystem::info_map() {

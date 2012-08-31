@@ -26,6 +26,8 @@ namespace app_window_constants {
 const char kNoAssociatedShellWindow[] =
     "The context from which the function was called did not have an "
     "associated shell window.";
+const char kInvalidWindowId[] =
+    "The window id can not be more than 256 characters long.";
 };
 
 bool AppWindowExtensionFunction::RunImpl() {
@@ -58,14 +60,42 @@ bool AppWindowCreateFunction::RunImpl() {
   ShellWindow::CreateParams create_params;
   app_window::CreateWindowOptions* options = params->options.get();
   if (options) {
-    if (options->width.get())
-      create_params.bounds.set_width(*options->width.get());
-    if (options->height.get())
-      create_params.bounds.set_height(*options->height.get());
-    if (options->left.get())
-      create_params.bounds.set_x(*options->left.get());
-    if (options->top.get())
-      create_params.bounds.set_y(*options->top.get());
+    if (options->id.get()) {
+      // TODO(mek): use URL if no id specified?
+      // Limit length of id to 256 characters.
+      if (options->id->length() > 256) {
+        error_ = app_window_constants::kInvalidWindowId;
+        return false;
+      }
+
+      create_params.window_key = *options->id;
+    }
+
+    if (options->default_width.get())
+      create_params.bounds.set_width(*options->default_width.get());
+    if (options->default_height.get())
+      create_params.bounds.set_height(*options->default_height.get());
+    if (options->default_left.get())
+      create_params.bounds.set_x(*options->default_left.get());
+    if (options->default_top.get())
+      create_params.bounds.set_y(*options->default_top.get());
+
+
+    if (options->width.get() || options->height.get()) {
+      if (options->width.get())
+        create_params.bounds.set_width(*options->width.get());
+      if (options->height.get())
+        create_params.bounds.set_height(*options->height.get());
+      create_params.restore_size = false;
+    }
+
+    if (options->left.get() || options->top.get()) {
+      if (options->left.get())
+        create_params.bounds.set_x(*options->left.get());
+      if (options->top.get())
+        create_params.bounds.set_y(*options->top.get());
+      create_params.restore_position = false;
+    }
 
     if (options->frame.get()) {
       create_params.frame = *options->frame == kNoneFrameOption ?

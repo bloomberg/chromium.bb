@@ -1312,6 +1312,7 @@
         'browser/extensions/settings/settings_sync_unittest.cc',
         'browser/extensions/settings/settings_test_util.cc',
         'browser/extensions/settings/settings_test_util.h',
+        'browser/extensions/shell_window_geometry_cache_unittest.cc',
         'browser/extensions/updater/extension_updater_unittest.cc',
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',

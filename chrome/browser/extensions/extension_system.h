@@ -35,6 +35,7 @@ class ManagementPolicy;
 class MessageService;
 class NavigationObserver;
 class RulesRegistryService;
+class ShellWindowGeometryCache;
 class StateStore;
 class UserScriptMaster;
 
@@ -84,6 +85,9 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The StateStore is created at startup.
   virtual StateStore* state_store() = 0;
+
+  // The ShellWindowGeometryCache is created at startup.
+  virtual ShellWindowGeometryCache* shell_window_geometry_cache() = 0;
 
   // Returns the IO-thread-accessible extension data.
   virtual ExtensionInfoMap* info_map() = 0;
@@ -151,6 +155,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
+  virtual ShellWindowGeometryCache* shell_window_geometry_cache() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
@@ -191,6 +196,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     virtual void Shutdown() OVERRIDE;
 
     StateStore* state_store();
+    ShellWindowGeometryCache* shell_window_geometry_cache();
     ExtensionService* extension_service();
     ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
@@ -205,6 +211,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // The services that are shared between normal and incognito profiles.
 
     scoped_ptr<StateStore> state_store_;
+    scoped_ptr<ShellWindowGeometryCache> shell_window_geometry_cache_;
     scoped_ptr<ExtensionPrefs> extension_prefs_;
     // ExtensionService depends on the 2 above.
     scoped_ptr<ExtensionService> extension_service_;

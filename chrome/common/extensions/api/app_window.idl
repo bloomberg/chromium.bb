@@ -6,6 +6,23 @@
 
 namespace app.window {
   dictionary CreateWindowOptions {
+    // Id to identify the window. This will be used to remember the size
+    // and position of the window and restore that geometry when a window
+    // with the same id (and no explicit size or position) is later opened.
+    DOMString? id;
+
+    // Default width of the window.
+    long? defaultWidth;
+
+    // Default height of the window.
+    long? defaultHeight;
+
+    // Default X coordinate of the window.
+    long? defaultLeft;
+
+    // Default Y coordinate of the window.
+    long? defaultTop;
+
     // Width of the window.
     long? width;
 
@@ -41,6 +58,31 @@ namespace app.window {
       void ([instanceOf=global] object created_window);
 
   interface Functions {
+    // The size and position of a window can be specified in a number of
+    // different ways. The most simple option is not specifying anything at
+    // all, in which case a default size and platform dependent position will
+    // be used.
+    //
+    // Another option is to use the top/left and width/height properties,
+    // which will always put the window at the specified coordinates with the
+    // specified size.
+    //
+    // Yet another option is to give the window a (unique) id. This id is then
+    // used to remember the size and position of the window whenever it is
+    // moved or resized. This size and position is then used on subsequent
+    // opening of a window with the same id. The defaultLeft/defaultTop and
+    // defaultWidth/defaultHeight properties can be used to specify a position
+    // and size when no geometry has been stored for the window yet.
+    //
+    // You can also combine these various options, explicitly specifying for
+    // example the size while having the position be remembered or other
+    // combinations like that. Size and position are dealt with seperately,
+    // but individual coordinates are not. So if you specify a top (or left)
+    // coordinate, you should also specify a left (or top) coordinate, and
+    // similar for size.
+    //
+    // If you specify both a regular and a default value for the same option
+    // the regular value is the only one that takes effect.
     static void create(DOMString url,
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);

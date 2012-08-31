@@ -6,6 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -63,7 +65,11 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 
 ShellWindow::CreateParams::CreateParams()
   : frame(ShellWindow::CreateParams::FRAME_CHROME),
-    bounds(10, 10, kDefaultWidth, kDefaultHeight) {
+    bounds(-1, -1, kDefaultWidth, kDefaultHeight),
+    restore_position(true), restore_size(true) {
+}
+
+ShellWindow::CreateParams::~CreateParams() {
 }
 
 ShellWindow* ShellWindow::Create(Profile* profile,
@@ -100,6 +106,29 @@ void ShellWindow::Init(const GURL& url,
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   native_window_.reset(NativeShellWindow::Create(this, params));
+
+  if (!params.window_key.empty()) {
+    window_key_ = params.window_key;
+
+    if (params.restore_position || params.restore_size) {
+      extensions::ShellWindowGeometryCache* cache =
+          extensions::ExtensionSystem::Get(profile())->
+            shell_window_geometry_cache();
+      gfx::Rect cached_bounds;
+      if (cache->GetGeometry(extension()->id(), params.window_key,
+                             &cached_bounds)) {
+        gfx::Rect bounds = native_window_->GetBounds();
+
+        if (params.restore_position)
+          bounds.set_origin(cached_bounds.origin());
+        if (params.restore_size)
+          bounds.set_size(cached_bounds.size());
+
+        native_window_->SetBounds(bounds);
+      }
+    }
+  }
+
 
   // Block the created RVH from loading anything until the background page
   // has had a chance to do any initialization it wants.
@@ -378,3 +407,17 @@ void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
   rvh->Send(new ExtensionMsg_AddMessageToConsole(
       rvh->GetRoutingID(), level, message));
 }
+
+void ShellWindow::SaveWindowPosition()
+{
+  if (window_key_.empty())
+    return;
+
+  extensions::ShellWindowGeometryCache* cache =
+      extensions::ExtensionSystem::Get(profile())->
+          shell_window_geometry_cache();
+
+  gfx::Rect bounds = native_window_->GetBounds();
+  cache->SaveGeometry(extension()->id(), window_key_, bounds);
+}
+

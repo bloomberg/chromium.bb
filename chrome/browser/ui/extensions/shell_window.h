@@ -47,13 +47,20 @@ class ShellWindow : public content::NotificationObserver,
     };
 
     CreateParams();
+    ~CreateParams();
 
     Frame frame;
     // Specify the initial bounds of the window. If empty, the window will be a
     // default size.
     gfx::Rect bounds;
+    // Specify if bounds should be restored from a previous time.
+    bool restore_position;
+    bool restore_size;
+
     gfx::Size minimum_size;
     gfx::Size maximum_size;
+
+    std::string window_key;
   };
 
   static ShellWindow* Create(Profile* profile,
@@ -79,6 +86,9 @@ class ShellWindow : public content::NotificationObserver,
   // Call to notify ShellRegistry and delete the window. Subclasses should
   // invoke this method instead of using "delete this".
   void OnNativeClose();
+
+  // Save the window position in the prefs.
+  virtual void SaveWindowPosition();
 
  protected:
   ShellWindow(Profile* profile,
@@ -153,6 +163,10 @@ class ShellWindow : public content::NotificationObserver,
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
   const extensions::Extension* extension_;
+
+  // Identifier that is used when saving and restoring geometry for this
+  // window.
+  std::string window_key_;
 
   const SessionID session_id_;
   scoped_ptr<TabContents> contents_;
