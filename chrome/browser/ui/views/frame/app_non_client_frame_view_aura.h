@@ -6,23 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_AURA_H_
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/mouse_watcher.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace aura {
 class Window;
 }
 
-namespace ui {
-class SlideAnimation;
-}
-
 // NonClientFrameViewAura implementation for apps.
-class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
-                                  public views::MouseWatcherListener,
-                                  public views::WidgetObserver {
+class AppNonClientFrameViewAura : public BrowserNonClientFrameView {
  public:
   AppNonClientFrameViewAura(
       BrowserFrame* frame, BrowserView* browser_view);
@@ -47,13 +38,7 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
   // View:
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-
-  // views::MouseWatcherListener.
-  virtual void MouseMovedOutOfHost() OVERRIDE;
-
-  // views::WidgetObserver.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // Close the app window.
   void Close();
@@ -61,16 +46,8 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   // Restore the app window (will result in switching the frame_view back).
   void Restore();
 
-  // Returns true if the app controls are being displayed.
-  bool IsShowingControls() const;
-
-  void set_animate_controls(bool animate_controls) {
-    animate_controls_ = animate_controls;
-  }
-
  private:
   class ControlView;
-  class Host;
 
   gfx::Rect GetControlBounds() const;
 
@@ -78,10 +55,6 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   ControlView* control_view_;
   // The widget holding the control_view_.
   views::Widget* control_widget_;
-  // Tracks the mouse and causes the controls to slide back up when it exits.
-  views::MouseWatcher mouse_watcher_;
-  // Should controls be animated.
-  bool animate_controls_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNonClientFrameViewAura);
 };
