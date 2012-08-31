@@ -214,7 +214,6 @@ void WebUILoginDisplayHost::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  BaseLoginDisplayHost::Observe(type, source, details);
   if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
     is_wallpaper_loaded_ = true;
     ash::Shell::GetInstance()->user_wallpaper_delegate()->
@@ -241,7 +240,7 @@ void WebUILoginDisplayHost::Observe(
                       chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
   } else {
-    NOTREACHED();
+    BaseLoginDisplayHost::Observe(type, source, details);
   }
 }
 
