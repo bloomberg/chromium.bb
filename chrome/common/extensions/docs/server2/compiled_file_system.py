@@ -7,8 +7,10 @@ import os
 import object_store
 
 APPS                      = 'Apps'
+APPS_FS                   = 'AppsFileSystem'
 CRON                      = 'Cron'
 EXTENSIONS                = 'Extensions'
+EXTENSIONS_FS             = 'ExtensionsFileSystem'
 CRON_FILE_LISTING         = 'Cron.FileListing'
 CRON_GITHUB_INVALIDATION  = 'Cron.GithubInvalidation'
 CRON_INVALIDATION         = 'Cron.Invalidation'

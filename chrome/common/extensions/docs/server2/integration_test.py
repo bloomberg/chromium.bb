@@ -43,6 +43,8 @@ class IntegrationTest(unittest.TestCase):
     base_path = os.path.join('templates', 'public')
     for path, dirs, files in os.walk(base_path):
       for name in files:
+        if name == '404.html':
+          continue
         filename = os.path.join(path, name)
         if (filename.split(os.sep, 2)[-1] in KNOWN_FAILURES or
             '.' in path or
@@ -55,7 +57,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertTrue(response.out.getvalue())
 
   def test404(self):
-    request = _MockRequest('junk.html')
+    request = _MockRequest('extensions/junk.html')
     bad_response = _MockResponse()
     Handler(request, bad_response, local_path=BASE_PATH).get()
     self.assertEqual(404, bad_response.status)

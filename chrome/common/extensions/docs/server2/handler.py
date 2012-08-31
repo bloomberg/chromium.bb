@@ -28,6 +28,7 @@ from samples_data_source import SamplesDataSource
 from server_instance import ServerInstance
 from subversion_file_system import SubversionFileSystem
 from template_data_source import TemplateDataSource
+from third_party.json_schema_compiler.model import UnixName
 import url_constants
 
 # The branch that the server will default to when no branch is specified in the
@@ -66,6 +67,14 @@ EXAMPLES_PATH = DOCS_PATH + '/examples'
 # Global cache of instances because Handler is recreated for every request.
 SERVER_INSTANCES = {}
 
+def _GetURLFromBranch(branch):
+    if branch == 'trunk':
+      return url_constants.SVN_TRUNK_URL + '/src'
+    return url_constants.SVN_BRANCH_URL + '/' + branch + '/src'
+
+def _SplitFilenameUnix(files):
+  return [UnixName(os.path.splitext(f.split('/')[-1])[0]) for f in files]
+
 def _CreateMemcacheFileSystem(branch, branch_memcache):
   svn_url = _GetURLFromBranch(branch) + '/' + EXTENSIONS_PATH
   stat_fetcher = AppEngineUrlFetcher(
@@ -73,6 +82,23 @@ def _CreateMemcacheFileSystem(branch, branch_memcache):
   fetcher = AppEngineUrlFetcher(svn_url)
   return MemcacheFileSystem(SubversionFileSystem(fetcher, stat_fetcher),
                             branch_memcache)
+
+APPS_BRANCH = BRANCH_UTILITY.GetBranchNumberForChannelName(
+    DEFAULT_BRANCHES['apps'])
+APPS_MEMCACHE = InMemoryObjectStore(APPS_BRANCH)
+APPS_FILE_SYSTEM = _CreateMemcacheFileSystem(APPS_BRANCH, APPS_MEMCACHE)
+APPS_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(
+    APPS_FILE_SYSTEM,
+    APPS_MEMCACHE).Create(_SplitFilenameUnix, compiled_fs.APPS_FS)
+
+EXTENSIONS_BRANCH = BRANCH_UTILITY.GetBranchNumberForChannelName(
+    DEFAULT_BRANCHES['extensions'])
+EXTENSIONS_MEMCACHE = InMemoryObjectStore(EXTENSIONS_BRANCH)
+EXTENSIONS_FILE_SYSTEM = _CreateMemcacheFileSystem(EXTENSIONS_BRANCH,
+                                                   EXTENSIONS_MEMCACHE)
+EXTENSIONS_COMPILED_FILE_SYSTEM = CompiledFileSystem.Factory(
+    EXTENSIONS_FILE_SYSTEM,
+    EXTENSIONS_MEMCACHE).Create(_SplitFilenameUnix, compiled_fs.EXTENSIONS_FS)
 
 def _MakeInstanceKey(branch, number):
   return '%s/%s' % (branch, number)
@@ -130,11 +156,6 @@ def _GetInstanceForBranch(channel_name, local_path):
   SERVER_INSTANCES[instance_key] = instance
   return instance
 
-def _GetURLFromBranch(branch):
-    if branch == 'trunk':
-      return url_constants.SVN_TRUNK_URL + '/src'
-    return url_constants.SVN_BRANCH_URL + '/' + branch + '/src'
-
 def _CleanBranches():
   keys = [_MakeInstanceKey(branch, number)
           for branch, number in BRANCH_UTILITY.GetAllBranchNumbers()]
@@ -163,12 +184,20 @@ class Handler(webapp.RequestHandler):
     super(Handler, self).__init__(request, response)
 
   def _HandleGet(self, path):
-    channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
+    channel_name, real_path, default = BRANCH_UTILITY.SplitChannelNameFromPath(
+        path)
     # TODO: Detect that these are directories and serve index.html out of them.
     if real_path.strip('/') == 'apps':
       real_path = 'apps/index.html'
     if real_path.strip('/') == 'extensions':
       real_path = 'extensions/index.html'
+
+    if (not real_path.startswith('extensions/') and
+        not real_path.startswith('apps/') and
+        not real_path.startswith('static/')):
+      if self._RedirectBadPaths(real_path, channel_name, default):
+        return
+
     _CleanBranches()
     _GetInstanceForBranch(channel_name, self._local_path).Get(real_path,
                                                               self.request,
@@ -250,6 +279,28 @@ class Handler(webapp.RequestHandler):
       return True
 
     return False
+
+  def _RedirectBadPaths(self, path, channel_name, default):
+    if '/' in path:
+      return False
+    apps_templates = APPS_COMPILED_FILE_SYSTEM.GetFromFileListing(
+        PUBLIC_TEMPLATE_PATH + '/apps')
+    extensions_templates = EXTENSIONS_COMPILED_FILE_SYSTEM.GetFromFileListing(
+        PUBLIC_TEMPLATE_PATH + '/extensions')
+    unix_path = UnixName(os.path.splitext(path)[0])
+    if default:
+      apps_path = '/apps/%s' % path
+      extensions_path = '/extensions/%s' % path
+    else:
+      apps_path = '/%s/apps/%s' % (channel_name, path)
+      extensions_path = '/%s/extensions/%s' % (channel_name, path)
+    if unix_path in extensions_templates:
+      self.redirect(extensions_path)
+    elif unix_path in apps_templates:
+      self.redirect(apps_path)
+    else:
+      self.redirect(extensions_path)
+    return True
 
   def _RedirectFromCodeDotGoogleDotCom(self, path):
     if (not self.request.url.startswith(('http://code.google.com',

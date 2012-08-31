@@ -29,12 +29,12 @@ class BranchUtility(object):
       first = path
       second = ''
     if first in ['trunk', 'dev', 'beta', 'stable']:
-      return (first, second)
+      return (first, second, False)
     else:
       doc_type = path.split('/')[0]
       if doc_type in self._default_branches:
-        return (self._default_branches[doc_type], path)
-      return (self._default_branches['extensions'], path)
+        return (self._default_branches[doc_type], path, False)
+      return (self._default_branches['extensions'], path, True)
 
   def GetBranchNumberForChannelName(self, channel_name):
     """Returns the branch number for a channel name. If the |channel_name| is
