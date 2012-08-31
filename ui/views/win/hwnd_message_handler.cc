@@ -23,10 +23,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/accessibility/native_view_accessibility_win.h"
-#include "ui/views/ime/input_method_win.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/widget/child_window_message_processor.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
@@ -35,8 +32,8 @@
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 
 #if !defined(USE_AURA)
-#include "base/command_line.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/views/accessibility/native_view_accessibility_win.h"
+#include "ui/views/widget/child_window_message_processor.h"
 #endif
 
 namespace views {
@@ -189,12 +186,15 @@ struct FindOwnedWindowsData {
 };
 
 BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
+  // TODO(beng): resolve wrt aura.
+#if !defined(USE_AURA)
   FindOwnedWindowsData* data = reinterpret_cast<FindOwnedWindowsData*>(param);
   if (GetWindow(hwnd, GW_OWNER) == data->window) {
     Widget* widget = Widget::GetWidgetForNativeView(hwnd);
     if (widget)
       data->owned_widgets.push_back(widget);
   }
+#endif
   return TRUE;
 }
 
@@ -239,6 +239,8 @@ static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
   return TRUE;
 }
 
+#if !defined(USE_AURA)
+
 // Get the source HWND of the specified message. Depending on the message, the
 // source HWND is encoded in either the WPARAM or the LPARAM value.
 HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
@@ -282,6 +284,8 @@ bool ProcessChildWindowMessage(UINT message,
 
   return false;
 }
+
+#endif
 
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
@@ -507,10 +511,6 @@ void HWNDMessageHandler::GetWindowPlacement(
   }
 }
 
-gfx::Rect HWNDMessageHandler::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetDisplayNearestWindow(hwnd()).work_area();
-}
-
 void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds) {
   LONG style = GetWindowLong(hwnd(), GWL_STYLE);
   if (style & WS_MAXIMIZE)
@@ -734,30 +734,26 @@ void HWNDMessageHandler::SetVisibilityChangedAnimationsEnabled(bool enabled) {
   }
 }
 
-InputMethod* HWNDMessageHandler::CreateInputMethod() {
-#if !defined(USE_AURA)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
-    return NULL;
-#endif
-  return new InputMethodWin(this);
-}
-
 void HWNDMessageHandler::SetTitle(const string16& title) {
   SetWindowText(hwnd(), title.c_str());
   SetAccessibleName(title);
 }
 
 void HWNDMessageHandler::SetAccessibleName(const string16& name) {
+  // TODO(beng): figure out vis-a-vis aura.
+#if !defined(USE_AURA)
   base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr))
     hr = pAccPropServices->SetHwndPropStr(hwnd(), OBJID_CLIENT, CHILDID_SELF,
                                           PROPID_ACC_NAME, name.c_str());
+#endif
 }
 
 void HWNDMessageHandler::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
+  // TODO(beng): figure out vis-a-vis aura.
+#if !defined(USE_AURA)
   base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
@@ -770,10 +766,13 @@ void HWNDMessageHandler::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
                                          PROPID_ACC_ROLE, var);
     }
   }
+#endif
 }
 
 void HWNDMessageHandler::SetAccessibleState(
     ui::AccessibilityTypes::State state) {
+  // TODO(beng): figure out vis-a-vis aura.
+#if !defined(USE_AURA)
   base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
@@ -786,11 +785,14 @@ void HWNDMessageHandler::SetAccessibleState(
                                          PROPID_ACC_STATE, var);
     }
   }
+#endif
 }
 
 void HWNDMessageHandler::SendNativeAccessibilityEvent(
     int id,
     ui::AccessibilityTypes::Event event_type) {
+  // TODO(beng): figure out vis-a-vis aura.
+#if !defined(USE_AURA)
   // Now call the Windows-specific method to notify MSAA clients of this
   // event.  The widget gives us a temporary unique child ID to associate
   // with this view so that clients can call get_accChild in
@@ -798,6 +800,7 @@ void HWNDMessageHandler::SendNativeAccessibilityEvent(
   // with this view.
   ::NotifyWinEvent(NativeViewAccessibilityWin::MSAAEvent(event_type), hwnd(),
                    OBJID_CLIENT, id);
+#endif
 }
 
 void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
@@ -909,11 +912,13 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_->PreHandleMSG(message, w_param, l_param, &result))
     return result;
 
+#if !defined(USE_AURA)
   // First allow messages sent by child controls to be processed directly by
   // their associated views. If such a view is present, it will handle the
   // message *instead of* this NativeWidgetWin.
   if (ProcessChildWindowMessage(message, w_param, l_param, &result))
     return result;
+#endif
 
   // Otherwise we handle everything else.
   if (!ProcessWindowMessage(window, message, w_param, l_param, result))
@@ -1114,7 +1119,10 @@ void HWNDMessageHandler::ResetWindowRegion(bool force) {
     gfx::Path window_mask;
     delegate_->GetWindowMask(
       gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    // TODO(beng): resolve wrt aura.
+#if !defined(USE_AURA)
     new_region = window_mask.CreateNativeRegion();
+#endif
   }
 
   if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
@@ -1396,16 +1404,9 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
 LRESULT HWNDMessageHandler::OnImeMessages(UINT message,
                                           WPARAM w_param,
                                           LPARAM l_param) {
-  InputMethod* input_method = delegate_->GetInputMethod();
-  if (!input_method || input_method->IsMock()) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-
-  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
-  BOOL handled = FALSE;
-  LRESULT result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
-  SetMsgHandled(handled);
+  LRESULT result = 0;
+  SetMsgHandled(delegate_->HandleIMEMessage(
+      message, w_param, l_param, &result));
   return result;
 }
 
@@ -1427,32 +1428,22 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
 
 void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
                                            HKL input_language_id) {
-  InputMethod* input_method = delegate_->GetInputMethod();
-  if (input_method && !input_method->IsMock()) {
-    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
-        character_set, input_language_id);
-  }
+  delegate_->HandleInputLanguageChange(character_set, input_language_id);
 }
 
 LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
+
   MSG msg = { hwnd(), message, w_param, l_param };
   ui::KeyEvent key(msg, message == WM_CHAR);
-  InputMethod* input_method = delegate_->GetInputMethod();
-  if (input_method)
-    input_method->DispatchKeyEvent(key);
-  else
+  if (!delegate_->HandleUntranslatedKeyEvent(key))
     DispatchKeyEventPostIME(key);
   return 0;
 }
 
 void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
   delegate_->HandleNativeBlur(focused_window);
-
-  InputMethod* input_method = delegate_->GetInputMethod();
-  if (input_method)
-    input_method->OnBlur();
   SetMsgHandled(FALSE);
 }
 
@@ -1839,9 +1830,12 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
     if (delegate_->HandlePaintAccelerated(gfx::Rect(dirty_rect))) {
       ValidateRect(hwnd(), NULL);
     } else {
+      // TODO(beng): resolve vis-a-vis aura
+#if !defined(USE_AURA)
       scoped_ptr<gfx::CanvasPaint> canvas(
           gfx::CanvasPaint::CreateCanvasPaint(hwnd()));
       delegate_->HandlePaint(canvas->AsCanvas());
+#endif
     }
   } else {
     // TODO(msw): Find a better solution for this crbug.com/93530 workaround.
@@ -1878,9 +1872,6 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
 
 void HWNDMessageHandler::OnSetFocus(HWND last_focused_window) {
   delegate_->HandleNativeFocus(last_focused_window);
-  InputMethod* input_method = delegate_->GetInputMethod();
-  if (input_method)
-    input_method->OnFocus();
   SetMsgHandled(FALSE);
 }
 
@@ -1972,7 +1963,10 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 }
 
 void HWNDMessageHandler::OnThemeChanged() {
+  // TODO(beng): resolve vis-a-vis aura.
+#if !defined(USE_AURA)
   ui::NativeThemeWin::instance()->CloseHandles();
+#endif
 }
 
 LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,

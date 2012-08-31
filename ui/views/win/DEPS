@@ -8,7 +8,6 @@ include_rules = [
   "+ui/gfx",
   "+ui/views/accessibility/native_view_accessibility_win.h",
   "+ui/views/ime/input_method_delegate.h",
-  "+ui/views/ime/input_method_win.h",
   "+ui/views/views_delegate.h",
   "+ui/views/views_export.h",
   "+ui/views/widget/child_window_message_processor.h",
