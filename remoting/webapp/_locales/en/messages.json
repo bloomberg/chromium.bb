@@ -448,7 +448,11 @@
   },
   "SEND_KEYS": {
     "message": "Send keys",
-    "description": "Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. These are currently limited to Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected."
+    "description": "Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. For example, Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected."
+  },
+  "SEND_PRINT_SCREEN": {
+    "message": "PrtScn",
+    "description": "Label for the client-side menu button that sends a PrtScn key press to the host. The 'PrtScn' abbreviation (as typically printed on the keycap on English keyboards) is preferred over 'Print Screen', to make it clearer that this refers to the physical PrtScn key, and not the OS-specific keyboard shortcut for the screen capture functionality."
   },
   "SHRINK_TO_FIT": {
     "message": "Shrink to fit",

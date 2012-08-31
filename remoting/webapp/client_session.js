@@ -280,14 +280,14 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
     return;
   }
 
-  // Show the Send Keys menu and Ctrl-Alt-Del button only in Me2Me mode, and
-  // only if the plugin has the injectKeyEvent feature.
-  if (!this.plugin.hasFeature(remoting.ClientPlugin.Feature.INJECT_KEY_EVENT) ||
-      this.mode != remoting.ClientSession.Mode.ME2ME) {
-    var sendCadElement = document.getElementById('send-ctrl-alt-del');
-    sendCadElement.hidden = true;
+  // Show the Send Keys menu only if the plugin has the injectKeyEvent feature,
+  // and the Ctrl-Alt-Del button only in Me2Me mode.
+  if (!this.plugin.hasFeature(remoting.ClientPlugin.Feature.INJECT_KEY_EVENT)) {
     var sendKeysElement = document.getElementById('send-keys-menu');
     sendKeysElement.hidden = true;
+  } else if (this.mode != remoting.ClientSession.Mode.ME2ME) {
+    var sendCadElement = document.getElementById('send-ctrl-alt-del');
+    sendCadElement.hidden = true;
   }
 
   // Remap the right Control key to the right Win / Cmd key on ChromeOS
@@ -374,17 +374,38 @@ remoting.ClientSession.prototype.disconnect = function() {
 };
 
 /**
+ * Sends a key combination to the remoting client, by sending down events for
+ * the given keys, followed by up events in reverse order.
+ *
+ * @private
+ * @param {[number]} keys Key codes to be sent.
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.sendKeyCombination_ = function(keys) {
+  for (var i = 0; i < keys.length; i++) {
+    this.plugin.injectKeyEvent(keys[i], true);
+  }
+  for (var i = arguments.length -1; i >= 0; i--) {
+    this.plugin.injectKeyEvent(keys[i], false);
+  }
+}
+
+/**
  * Sends a Ctrl-Alt-Del sequence to the remoting client.
  *
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendCtrlAltDel = function() {
-  this.plugin.injectKeyEvent(0x0700e0, true);
-  this.plugin.injectKeyEvent(0x0700e2, true);
-  this.plugin.injectKeyEvent(0x07004c, true);
-  this.plugin.injectKeyEvent(0x07004c, false);
-  this.plugin.injectKeyEvent(0x0700e2, false);
-  this.plugin.injectKeyEvent(0x0700e0, false);
+  this.sendKeyCombination_([0x0700e0, 0x0700e2, 0x07004c]);
+}
+
+/**
+ * Sends a Print Screen keypress to the remoting client.
+ *
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.sendPrintScreen = function() {
+  this.sendKeyCombination_([0x070046]);
 }
 
 /**

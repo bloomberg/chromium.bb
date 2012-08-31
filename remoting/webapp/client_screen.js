@@ -156,6 +156,18 @@ remoting.sendCtrlAltDel = function() {
 };
 
 /**
+ * Sends a Print Screen keypress to the remoting client.
+ *
+ * @return {void} Nothing.
+ */
+remoting.sendPrintScreen = function() {
+  if (remoting.clientSession) {
+    console.log('Sending Print Screen.');
+    remoting.clientSession.sendPrintScreen();
+  }
+};
+
+/**
  * If WCS was successfully loaded, proceed with the connection, otherwise
  * report an error.
  *
