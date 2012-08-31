@@ -10,11 +10,15 @@
 #include "base/i18n/time_formatting.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
+#include "unicode/dtptngen.h"
+#include "unicode/smpdtfmt.h"
 
 namespace ash {
 namespace internal {
@@ -39,16 +43,22 @@ string16 FormatDate(const base::Time& time) {
 }
 
 string16 FormatDayOfWeek(const base::Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(
-      icu::DateFormat::createDateInstance(icu::DateFormat::kFull));
+  UErrorCode status = U_ZERO_ERROR;
+  scoped_ptr<icu::DateTimePatternGenerator> generator(
+      icu::DateTimePatternGenerator::createInstance(status));
+  DCHECK(U_SUCCESS(status));
+  const char kBasePattern[] = "EEE";
+  icu::UnicodeString generated_pattern =
+      generator->getBestPattern(icu::UnicodeString(kBasePattern), status);
+  DCHECK(U_SUCCESS(status));
+  icu::SimpleDateFormat simple_formatter(generated_pattern, status);
+  DCHECK(U_SUCCESS(status));
   icu::UnicodeString date_string;
-  icu::FieldPosition position;
-  position.setField(UDAT_DAY_OF_WEEK_FIELD);
-  formatter->format(
-      static_cast<UDate>(time.ToDoubleT() * 1000), date_string, position);
-  icu::UnicodeString day = date_string.retainBetween(position.getBeginIndex(),
-                                                     position.getEndIndex());
-  return string16(day.getBuffer(), static_cast<size_t>(day.length()));
+  simple_formatter.format(
+      static_cast<UDate>(time.ToDoubleT() * 1000), date_string, status);
+  DCHECK(U_SUCCESS(status));
+  return string16(
+      date_string.getBuffer(), static_cast<size_t>(date_string.length()));
 }
 
 views::Label* CreateLabel() {
@@ -109,15 +119,11 @@ void BaseDateTimeView::OnLocaleChanged() {
 DateView::DateView() : actionable_(false) {
   SetLayoutManager(
       new views::BoxLayout(
-          views::BoxLayout::kVertical, 0, 0, kTrayPopupTextSpacingVertical));
+          views::BoxLayout::kVertical, 0, 0, 0));
   date_label_ = CreateLabel();
-  date_label_->SetFont(date_label_->font().DeriveFont(0, gfx::Font::BOLD));
-  day_of_week_label_ = CreateLabel();
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
-  day_of_week_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
-  AddChildView(day_of_week_label_);
   set_focusable(actionable_);
 }
 
@@ -130,8 +136,9 @@ void DateView::SetActionable(bool actionable) {
 }
 
 void DateView::UpdateTextInternal(const base::Time& now) {
-  date_label_->SetText(FormatDate(now));
-  day_of_week_label_->SetText(FormatDayOfWeek(now));
+  date_label_->SetText(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
 }
 
 bool DateView::PerformAction(const ui::Event& event) {
@@ -146,7 +153,6 @@ void DateView::OnMouseEntered(const ui::MouseEvent& event) {
   if (!actionable_)
     return;
   date_label_->SetEnabledColor(kHeaderTextColorHover);
-  day_of_week_label_->SetEnabledColor(kHeaderTextColorHover);
   SchedulePaint();
 }
 
@@ -154,7 +160,6 @@ void DateView::OnMouseExited(const ui::MouseEvent& event) {
   if (!actionable_)
     return;
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
-  day_of_week_label_->SetEnabledColor(kHeaderTextColorNormal);
   SchedulePaint();
 }
 

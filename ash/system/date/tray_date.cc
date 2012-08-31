@@ -38,7 +38,7 @@
 
 namespace {
 
-const int kPaddingVertical = 6;
+const int kPaddingVertical = 19;
 
 class DateDefaultView : public views::View,
                         public views::ButtonListener {
@@ -53,9 +53,8 @@ class DateDefaultView : public views::View,
         new ash::internal::tray::DateView();
     date_view->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
         ash::kTrayPopupPaddingHorizontal,
-        kPaddingVertical,
-        ash::kTrayPopupPaddingHorizontal));
-
+        0,
+        0));
     ash::internal::SpecialPopupRow* view = new ash::internal::SpecialPopupRow();
     view->SetContent(date_view);
     AddChildView(view);
@@ -64,7 +63,7 @@ class DateDefaultView : public views::View,
         login == ash::user::LOGGED_IN_NONE)
       return;
 
-    date_view->SetActionable(true);
+    date_view->SetActionable(false);
 
     help_ = new ash::internal::TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_HELP,

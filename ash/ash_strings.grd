@@ -407,6 +407,9 @@ Press Search or Shift to cancel.
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DATE" desc="The date displayed on ash system bubble, Depending on launguage, please choose the best separator(eg ',') between abbreviated weekday and date">
+        <ph name="short_weekday">$1<ex>Fri</ex></ph>, <ph name="date">$2<ex>Aug 31, 2012</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
         Shutdown
       </message>

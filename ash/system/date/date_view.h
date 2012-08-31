@@ -71,7 +71,6 @@ class DateView : public BaseDateTimeView {
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
   views::Label* date_label_;
-  views::Label* day_of_week_label_;
 
   bool actionable_;
 
