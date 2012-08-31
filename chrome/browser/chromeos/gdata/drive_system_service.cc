@@ -122,6 +122,7 @@ void DriveSystemService::AddBackDriveMountPoint(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  file_system_->Initialize();
   AddDriveMountPoint();
 
   if (!callback.is_null())
@@ -141,7 +142,6 @@ void DriveSystemService::AddDriveMountPoint() {
         new DriveFileSystemProxy(file_system_.get()));
   }
 
-  file_system_->Initialize();
   file_system_->NotifyFileSystemMounted();
 }
 
