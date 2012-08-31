@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -32,11 +33,17 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
                             one_click_signin::HISTOGRAM_MAX);
 
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(browser_->profile());
   // Let the sync service know that setup is in progress so it doesn't start
   // syncing until the user has finished any configuration.
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(browser_->profile());
   profile_sync_service->SetSetupInProgress(true);
+
+  // Make sure the syncing is not suppressed, otherwise the SigninManager
+  // will not be able to compelte sucessfully.
+  browser_sync::SyncPrefs sync_prefs(browser_->profile()->GetPrefs());
+  sync_prefs.SetStartSuppressed(false);
+
   SigninManager* manager = SigninManagerFactory::GetForProfile(
       browser_->profile());
   manager->StartSignInWithCredentials(session_index, email, password);
@@ -64,7 +71,6 @@ void OneClickSigninSyncStarter::SigninSuccess() {
     // Just kick off the sync machine, no need to configure it first.
     profile_sync_service->SetSyncSetupCompleted();
     profile_sync_service->SetSetupInProgress(false);
-    profile_sync_service->UnsuppressAndStart();
   } else {
     // Give the user a chance to configure things. We don't clear the
     // ProfileSyncService::setup_in_progress flag because we don't want sync
