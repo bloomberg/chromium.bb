@@ -1096,13 +1096,14 @@ def main(argv):
   # Set umask to 022 so files created by buildbot are readable.
   os.umask(022)
 
-  if cros_build_lib.IsInsideChroot():
-    cros_build_lib.Die('Please run cbuildbot from outside the chroot.')
-
   parser = _CreateParser()
   (options, args) = _ParseCommandLine(parser, argv)
 
   _PostParseCheck(options, args)
+
+  if cros_build_lib.IsInsideChroot():
+    cros_build_lib.Die('Please run cbuildbot from outside the chroot.')
+
 
   if options.remote:
     cros_build_lib.logger.setLevel(logging.WARNING)
