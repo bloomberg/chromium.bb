@@ -99,7 +99,12 @@ bool GetMatchingExtensionVoice(
     return false;
 
   ExtensionService* service = utterance->profile()->GetExtensionService();
-  DCHECK(service);
+
+  // If speech is generated when Chrome OS first starts up, it's possible
+  // the extension service isn't even available.
+  if (!service)
+    return false;
+
   extensions::EventRouter* event_router =
       utterance->profile()->GetExtensionEventRouter();
   DCHECK(event_router);
