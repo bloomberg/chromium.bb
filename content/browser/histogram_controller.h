@@ -57,7 +57,9 @@ class HistogramController {
  private:
   friend struct DefaultSingletonTraits<HistogramController>;
 
-  // Contact child processes and get their histogram data.
+  // Contact PLUGIN and GPU child processes and get their histogram data.
+  // TODO(rtenneti): Enable getting histogram data for other processes like
+  // PPAPI and NACL.
   void GetHistogramDataFromChildProcesses(int sequence_number);
 
   HistogramSubscriber* subscriber_;

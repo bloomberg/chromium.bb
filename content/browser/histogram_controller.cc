@@ -71,6 +71,9 @@ void HistogramController::GetHistogramDataFromChildProcesses(
 
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+    content::ProcessType type = iter.GetData().type;
+    if (type != PROCESS_TYPE_PLUGIN && type != PROCESS_TYPE_GPU)
+      continue;
     ++pending_processes;
     if (!iter.Send(new ChildProcessMsg_GetChildHistogramData(sequence_number)))
       --pending_processes;
