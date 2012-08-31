@@ -8,12 +8,13 @@
 
 #include "mkvmuxerutil.hpp"
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
+#include <limits>
 #include <new>
 
 #include "mkvwriter.hpp"
@@ -306,10 +307,28 @@ bool WriteEbmlElement(IMkvWriter* writer,
 uint64 WriteSimpleBlock(IMkvWriter* writer,
                         const uint8* data,
                         uint64 length,
-                        char track_number,
-                        int16 timecode,
+                        uint64 track_number,
+                        int64 timecode,
                         bool is_key) {
-  if (!writer || !data || length < 1 || track_number < 1 || timecode < 0)
+  if (!writer)
+    return false;
+
+  if (!data || length < 1)
+    return false;
+
+  //  Here we only permit track number values to be no greater than
+  //  126, which the largest value we can store having a Matroska
+  //  integer representation of only 1 byte.
+
+  if (track_number < 1 || track_number > 126)
+    return false;
+
+  //  Technically the timestamp for a block can be less than the
+  //  timestamp for the cluster itself (remember that block timestamp
+  //  is a signed, 16-bit integer).  However, as a simplification we
+  //  only permit non-negative cluster-relative timestamps for blocks.
+
+  if (timecode < 0 || timecode > std::numeric_limits<int16>::max())
     return false;
 
   if (WriteID(writer, kMkvSimpleBlock))
@@ -322,7 +341,7 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
   if (WriteUInt(writer, static_cast<uint64>(track_number)))
     return 0;
 
-  if (SerializeInt(writer, static_cast<uint64>(timecode), 2))
+  if (SerializeInt(writer, timecode, 2))
     return 0;
 
   uint64 flags = 0;
@@ -339,6 +358,102 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
     GetUIntSize(kMkvSimpleBlock) + GetCodedUIntSize(size) + 4 + length;
 
   return element_size;
+}
+
+// We must write the metadata (key)frame as a BlockGroup element,
+// because we need to specify a duration for the frame.  The
+// BlockGroup element comprises the frame itself and its duration,
+// and is laid out as follows:
+//
+//   BlockGroup tag
+//   BlockGroup size
+//     Block tag
+//     Block size
+//     (the frame is the block payload)
+//     Duration tag
+//     Duration size
+//     (duration payload)
+//
+uint64 WriteMetadataBlock(IMkvWriter* writer,
+                          const uint8* data,
+                          uint64 length,
+                          uint64 track_number,
+                          int64 timecode,
+                          uint64 duration) {
+  // We don't backtrack when writing to the stream, so we must
+  // pre-compute the BlockGroup size, by summing the sizes of each
+  // sub-element (the block and the duration).
+
+  // We use a single byte for the track number of the block, which
+  // means the block header is exactly 4 bytes.
+
+  const uint64 block_payload_size = 4 + length;
+  const int32 block_size = GetCodedUIntSize(block_payload_size);
+  const uint64 block_elem_size = 1 + block_size + block_payload_size;
+
+  const int32 duration_payload_size = GetUIntSize(duration);
+  const int32 duration_size = GetCodedUIntSize(duration_payload_size);
+  const uint64 duration_elem_size = 1 + duration_size + duration_payload_size;
+
+  const uint64 blockg_payload_size = block_elem_size + duration_elem_size;
+  const int32 blockg_size = GetCodedUIntSize(blockg_payload_size);
+  const uint64 blockg_elem_size = 1 + blockg_size + blockg_payload_size;
+
+  if (WriteID(writer, kMkvBlockGroup))  // 1-byte ID size
+    return 0;
+
+  if (WriteUInt(writer, blockg_payload_size))
+    return 0;
+
+  //  Write Block element
+
+  if (WriteID(writer, kMkvBlock))  // 1-byte ID size
+    return 0;
+
+  if (WriteUInt(writer, block_payload_size))
+    return 0;
+
+  // Byte 1 of 4
+
+  if (WriteUInt(writer, track_number))
+    return 0;
+
+  // Bytes 2 & 3 of 4
+
+  if (SerializeInt(writer, timecode, 2))
+    return 0;
+
+  // Byte 4 of 4
+
+  const uint64 flags = 0;
+
+  if (SerializeInt(writer, flags, 1))
+    return 0;
+
+  // Now write the actual frame (of metadata)
+
+  if (writer->Write(data, static_cast<uint32>(length)))
+    return 0;
+
+  // Write Duration element
+
+  if (WriteID(writer, kMkvDuration))  // 1-byte ID size
+    return 0;
+
+  if (WriteUInt(writer, duration_payload_size))
+    return 0;
+
+  if (SerializeInt(writer, duration, duration_payload_size))
+    return 0;
+
+  // Note that we don't write a reference time as part of the block
+  // group; no reference time(s) indicates that this block is a
+  // keyframe.  (Unlike the case for a SimpleBlock element, the header
+  // bits of the Block sub-element of a BlockGroup element do not
+  // indicate keyframe status.  The keyframe status is inferred from
+  // the absence of reference time sub-elements.)
+
+  return blockg_elem_size;
 }
 
 uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {

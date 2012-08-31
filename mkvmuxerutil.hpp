@@ -58,15 +58,34 @@ bool WriteEbmlElement(IMkvWriter* writer,
 //   data:         Pointer to the data.
 //   length:       Length of the data.
 //   track_number: Track to add the data to. Value returned by Add track
-//                 functions.
-//   timecode:     Relative timecode of the Block.
+//                  functions.  Only values in the range [1, 126] are
+//                  permitted.
+//   timecode:     Relative timecode of the Block.  Only values in the
+//                  range [0, 2^15) are permitted.
 //   is_key:       Flag telling whether or not this frame is a key frame.
 uint64 WriteSimpleBlock(IMkvWriter* writer,
                         const uint8* data,
                         uint64 length,
-                        char track_number,
-                        short timecode,
+                        uint64 track_number,
+                        int64 timecode,
                         bool is_key);
+
+// Output a metadata keyframe, using a Block Group element.
+// Inputs:
+//   data:         Pointer to the (meta)data.
+//   length:       Length of the (meta)data.
+//   track_number: Track to add the data to. Value returned by Add track
+//                  functions.  Only values in the range [1, 126] are
+//                  permitted.
+//   timecode      Timecode of frame, relative to cluster timecode.  Only
+//                  values in the range [0, 2^15) are permitted.
+//   duration_timecode  Duration of frame, using timecode units.
+uint64 WriteMetadataBlock(IMkvWriter* writer,
+                          const uint8* data,
+                          uint64 length,
+                          uint64 track_number,
+                          int64 timecode,
+                          uint64 duration_timecode);
 
 // Output a void element. |size| must be the entire size in bytes that will be
 // void. The function will calculate the size of the void header and subtract
