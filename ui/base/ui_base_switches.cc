@@ -7,7 +7,7 @@
 namespace switches {
 
 // Disable support for bezel touch.
-const char kDisableBezelTouch[] = "disable-bezel-touch";
+const char kEnableBezelTouch[] = "enable-bezel-touch";
 
 // Whether or not ImageSkiaOperations methods can scale one of images
 // if they don't have the same scale factor.

@@ -111,6 +111,9 @@ class BezelGestureHandler {
   // This is the counter which keeps track of the number of events passed.
   int initiation_delay_events_;
 
+  // True if device control bezel operations (brightness, volume) are enabled.
+  bool enable_bezel_device_control_;
+
   DISALLOW_COPY_AND_ASSIGN(BezelGestureHandler);
 };
 

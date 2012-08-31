@@ -5390,11 +5390,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION" desc="Description of the enable touch-events flag.">
         Enables experimental support for touch screens.
       </message>
-      <message name="IDS_DISABLE_BEZEL_TOUCH_NAME" desc="Title of the disable bezel touch actions flag." >
-        Disable bezel touch actions
+      <message name="IDS_ENABLE_BEZEL_TOUCH_NAME" desc="Title of the enble bezel touch actions flag." >
+        Enable bezel touch actions
       </message>
-      <message name="IDS_DISABLE_BEZEL_TOUCH_DESCRIPTION" desc="Description of the disable bezel touch actions flag.">
-        Disable bezel touch actions.
+      <message name="IDS_ENABLE_BEZEL_TOUCH_DESCRIPTION" desc="Description of the enable bezel touch actions flag.">
+        Enable bezel touch actions.
       </message>
       <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
         Check for known conflicts with 3rd party modules.

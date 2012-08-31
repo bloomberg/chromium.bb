@@ -710,11 +710,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
-    "disable-bezel-touch",
-    IDS_DISABLE_BEZEL_TOUCH_NAME,
-    IDS_DISABLE_BEZEL_TOUCH_DESCRIPTION,
+    "enable-bezel-touch",
+    IDS_ENABLE_BEZEL_TOUCH_NAME,
+    IDS_ENABLE_BEZEL_TOUCH_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableBezelTouch)
+    SINGLE_VALUE_TYPE(switches::kEnableBezelTouch)
   },
   {
     "no-discard-tabs",

@@ -12,7 +12,7 @@
 
 namespace switches {
 
-UI_EXPORT extern const char kDisableBezelTouch[];
+UI_EXPORT extern const char kEnableBezelTouch[];
 UI_EXPORT extern const char kDisableScalingInImageSkiaOperations[];
 UI_EXPORT extern const char kEnableTextSubpixelPositioning[];
 UI_EXPORT extern const char kEnableTouchCalibration[];

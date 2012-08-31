@@ -59,6 +59,9 @@ BezelGestureHandler::BezelGestureHandler()
       orientation_(SCROLL_ORIENTATION_UNSET),
       is_scrubbing_(false),
       initiation_delay_events_(0) {
+  enable_bezel_device_control_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+                ::switches::kEnableBezelTouch);
 }
 
 BezelGestureHandler::~BezelGestureHandler() {
@@ -200,8 +203,7 @@ void BezelGestureHandler::HandleBezelGestureUpdate(
         start_location_ = BEZEL_START_UNSET;
     } else {
       // Check if device gestures should be performed or not.
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              ::switches::kDisableBezelTouch)) {
+      if (!enable_bezel_device_control_) {
         start_location_ = BEZEL_START_UNSET;
         return;
       }
