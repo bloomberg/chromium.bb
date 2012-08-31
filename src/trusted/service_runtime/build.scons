@@ -311,8 +311,7 @@ sel_ldr_libs = ['sel',
                 'validators',
                 ]
 
-if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
-    not env.CrossToolsBuild()):
+if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   sel_main_objs = [env.ComponentObject('sel_main.c')]
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_objs,
                                       EXTRA_LIBS=['sel', 'debug_stub'])
@@ -347,8 +346,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
 env.EnsureRequiredBuildWarnings()
 
 # Bootstrap loader used on Linux.
-if (env.Bit('linux') and not env.CrossToolsBuild() and
-    not env.Bit('built_elsewhere')):
+if env.Bit('linux') and not env.Bit('built_elsewhere'):
   bootstrap_env = env.Clone()
   bootstrap_env.Replace(CLANG_OPTS='')
   bootstrap_env.FilterOut(CCFLAGS=['-fstack-protector', '-fPIC', '-fPIE',
@@ -461,8 +459,7 @@ unittest_inputs = [
     'thread_suspension_test.cc',
 ]
 
-if (not env.CrossToolsBuild() and
-    (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
+if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   unit_tests_exe = gtest_env.ComponentProgram(
       'service_runtime_tests',
       unittest_inputs,
@@ -515,8 +512,7 @@ else:
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
-if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
-    not env.CrossToolsBuild()):
+if not env.Bit('windows') or not env.Bit('coverage_enabled'):
   # NOTE: uses validator
   mmap_test_objs = [env.ComponentObject('mmap_test.c')]
   mmap_test_exe = env.ComponentProgram(
@@ -758,14 +754,13 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_sel_ldr_exe_not_found_test')
 
 # Do not run when building tools to run on x86-32 but to analyze the
 # arm instruction set
-if not env.CrossToolsBuild():
-  node = env.CommandSelLdrTestNacl(
-      'fuzz_nullptr_test.out',
-      env.File(arch_testdata_dir + '/nullptr.nexe'),
-      sel_ldr_flags=['-F'])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
+node = env.CommandSelLdrTestNacl(
+    'fuzz_nullptr_test.out',
+    env.File(arch_testdata_dir + '/nullptr.nexe'),
+    sel_ldr_flags=['-F'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
-if env.Bit('target_x86_64') and not env.CrossToolsBuild():
+if env.Bit('target_x86_64'):
   node = env.CommandSelLdrTestNacl(
       'hello_x32.out',
       env.File(os.path.join(arch_testdata_dir, 'hello_x32.nexe')),
@@ -789,11 +784,10 @@ if env.Bit('validator_ragel') and env.Bit('target_x86'):
   env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
                          'run_dfa_validator_hello_world_test')
 
-if not env.CrossToolsBuild():
-  node = env.CommandSelLdrTestNacl(
-      'unaligned_data.out',
-      env.File(os.path.join(arch_testdata_dir, 'unaligned_data.nexe')))
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
+node = env.CommandSelLdrTestNacl(
+    'unaligned_data.out',
+    env.File(os.path.join(arch_testdata_dir, 'unaligned_data.nexe')))
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_test')
 
 # ----------------------------------------------------------
 # Integration Tests With Canned x86 Binaries
@@ -913,8 +907,7 @@ if env.Bit('target_x86'):
 # ----------------------------------------------------------
 # More Death Tests
 # ----------------------------------------------------------
-if (not env.CrossToolsBuild() and
-    (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
+if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   # NOTE: uses validator
   sel_ldr_thread_death_test_exe = env.ComponentProgram(
       'sel_ldr_thread_death_test',

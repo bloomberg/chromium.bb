@@ -1002,15 +1002,6 @@ def RunningUnderLeakCheck():
 if RunningUnderLeakCheck():
   pre_base_env.SetBits('with_leakcheck')
 
-# This method indicates that the binaries we are building will validate code
-# for an architecture different than the one the binaries will run on.
-# NOTE Currently (2010/11/17) this is 'x86' vs. 'arm', and  x86-32 vs. x86-64
-# is not considered to be a cross-tools build.
-def CrossToolsBuild(env):
-  return env['BUILD_ARCHITECTURE'] != env['TARGET_ARCHITECTURE']
-
-pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
-
 
 def HasSuffix(item, suffix):
   if isinstance(item, str):

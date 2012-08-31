@@ -7,10 +7,6 @@
 Import('env')
 
 
-if env.CrossToolsBuild():
-  Return()
-
-
 # NOTE: Probably because of GetPluginDir()
 if env.Bit('linux') and env.Bit('target_x86'):
   env.Append(LIBS=['dl'])

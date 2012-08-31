@@ -24,8 +24,7 @@ env.DualLibrary('gio_wrapped_desc',
 # Unit Tests
 # ----------------------------------------------------------
 
-if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
-    not env.CrossToolsBuild()):
+if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   gio_shm_test_exe = env.ComponentProgram('gio_shm_test',
                                               ['gio_shm_test.c'],
                                               EXTRA_LIBS=['gio_wrapped_desc',
