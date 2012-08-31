@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
+#if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
+#endif
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,10 +77,21 @@ bool Provider::ShouldInstallInProfile() {
 
   switch (state) {
     case kUnknown: {
-      // This is the first time the default apps feature runs on this profile.
-      // Determine if we want to install them or not.
+      // Only new installations and profiles get default apps. In theory the
+      // new profile checks should catch new installations, but that is not
+      // always the case (http:/crbug.com/145351).
       chrome::VersionInfo version_info;
-      if (!profile_->WasCreatedByVersionOrLater(version_info.Version().c_str()))
+      bool is_new_profile =
+          profile_->WasCreatedByVersionOrLater(version_info.Version().c_str());
+      // Android excludes most of the first run code, so it can't determine
+      // if this is a first run. That's OK though, because Android doesn't
+      // use default apps in general.
+#if defined(OS_ANDROID)
+      bool is_first_run = false;
+#else
+      bool is_first_run = first_run::IsChromeFirstRun();
+#endif
+      if (!is_first_run && !is_new_profile)
         install_apps = false;
       break;
     }
