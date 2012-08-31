@@ -7,6 +7,9 @@
 namespace ash {
 namespace switches {
 
+// Constrains the pointer movement within a root window on desktop.
+const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
+
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
