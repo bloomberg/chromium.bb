@@ -11,10 +11,15 @@
 
 class FilePath;
 
+namespace base {
+class Value;
+}
+
 namespace gdata {
 
 class DriveCacheEntry;
 class DriveEntryProto;
+class DriveFileSystem;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
@@ -93,6 +98,19 @@ void CopyResultsFromGetEntryInfoWithFilePathCallback(
 void CopyResultsFromGetEntryInfoPairCallback(
     scoped_ptr<EntryInfoPairResult>* out_result,
     scoped_ptr<EntryInfoPairResult> result);
+
+// Returns the absolute path for a test file stored under
+// chrome/test/data/chromeos/gdata.
+FilePath GetTestFilePath(const FilePath::StringType& base_name);
+
+// Loads a test JSON file as a base::Value.
+base::Value* LoadJSONFile(const std::string& base_name);
+
+// Loads a test json file as root ("/drive") element.
+void LoadChangeFeed(const std::string& filename,
+                    DriveFileSystem* file_system,
+                    int64 start_changestamp,
+                    int64 root_feed_changestamp);
 
 }  // namespace test_util
 }  // namespace gdata

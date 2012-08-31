@@ -27,6 +27,8 @@
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_web_apps_registry.h"
+#include "chrome/browser/chromeos/gdata/mock_free_disk_space_getter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -105,32 +107,6 @@ ACTION_P2(MockCopyDocument, status, value) {
       base::Bind(arg2, status, base::Passed(value)));
 }
 
-// Returns the absolute path for a test file stored under
-// chrome/test/data/chromeos/gdata.
-FilePath GetTestFilePath(const FilePath::StringType& base_name) {
-  FilePath path;
-  std::string error;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("chromeos")
-      .AppendASCII("gdata")
-      .AppendASCII(base_name.c_str());
-  EXPECT_TRUE(file_util::PathExists(path)) <<
-      "Couldn't find " << path.value();
-  return path;
-}
-
-// Loads a test JSON file as a base::Value.
-base::Value* LoadJSONFile(const std::string& base_name) {
-  FilePath path = GetTestFilePath(base_name);
-
-  std::string error;
-  JSONFileValueSerializer serializer(path);
-  base::Value* value = serializer.Deserialize(NULL, &error);
-  EXPECT_TRUE(value) <<
-      "Parse error " << path.value() << ": " << error;
-  return value;
-}
-
 // Counts the number of files (not directories) in |entries|.
 int CountFiles(const DriveEntryProtoVector& entries) {
   int num_files = 0;
@@ -143,12 +119,6 @@ int CountFiles(const DriveEntryProtoVector& entries) {
 
 }  // namespace
 
-class MockFreeDiskSpaceGetter : public FreeDiskSpaceGetterInterface {
- public:
-  virtual ~MockFreeDiskSpaceGetter() {}
-  MOCK_CONST_METHOD0(AmountOfFreeDiskSpace, int64());
-};
-
 class MockGDataUploader : public GDataUploaderInterface {
  public:
   virtual ~MockGDataUploader() {}
@@ -157,7 +127,8 @@ class MockGDataUploader : public GDataUploaderInterface {
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
     // Set a document entry for an uploaded file.
     // Used for TransferFileFromLocalToRemote_RegularFile test.
-    scoped_ptr<base::Value> value(LoadJSONFile("uploaded_file.json"));
+    scoped_ptr<base::Value> value(
+        test_util::LoadJSONFile("uploaded_file.json"));
     scoped_ptr<DocumentEntry> document_entry(
         DocumentEntry::ExtractAndParse(*value));
     upload_file_info->entry = document_entry.Pass();
@@ -187,19 +158,6 @@ class MockGDataUploader : public GDataUploaderInterface {
   MOCK_METHOD2(UpdateUpload, void(int upload_id,
                                   content::DownloadItem* download));
   MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));
-};
-
-class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
- public:
-  virtual ~MockDriveWebAppsRegistry() {}
-
-  MOCK_METHOD3(GetWebAppsForFile, void(const FilePath& file,
-                                       const std::string& mime_type,
-                                       ScopedVector<DriveWebAppInfo>* apps));
-  MOCK_METHOD1(GetExtensionsForWebStoreApp,
-               std::set<std::string>(const std::string& web_store_id));
-  MOCK_METHOD1(UpdateFromFeed, void(const AccountMetadataFeed& metadata));
-  MOCK_METHOD1(UpdateFromApplicationList, void(const AppList& applist));
 };
 
 class DriveFileSystemTest : public testing::Test {
@@ -291,21 +249,16 @@ class DriveFileSystemTest : public testing::Test {
 
   void LoadChangeFeed(const std::string& filename,
                       int largest_changestamp) {
-    std::string error;
-    scoped_ptr<Value> document(LoadJSONFile(filename));
-    ASSERT_TRUE(document.get());
-    ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-    scoped_ptr<DocumentFeed> document_feed(
-        DocumentFeed::ExtractAndParse(*document));
-    ASSERT_TRUE(document_feed.get());
-    std::vector<DocumentFeed*> feed_list;
-    feed_list.push_back(document_feed.get());
-    ASSERT_TRUE(UpdateContent(feed_list, largest_changestamp));
+    test_util::LoadChangeFeed(filename,
+                              file_system_,
+                              largest_changestamp,
+                              root_feed_changestamp_);
+    root_feed_changestamp_++;
   }
 
   void AddDirectoryFromFile(const FilePath& directory_path,
                             const std::string& filename) {
-    scoped_ptr<Value> atom(LoadJSONFile(filename));
+    scoped_ptr<Value> atom(test_util::LoadJSONFile(filename));
     ASSERT_TRUE(atom.get());
     ASSERT_TRUE(atom->GetType() == Value::TYPE_DICTIONARY);
 
@@ -332,17 +285,6 @@ class DriveFileSystemTest : public testing::Test {
     file_system_->AddNewDirectory(params, HTTP_SUCCESS, atom.Pass());
     test_util::RunBlockingPoolTask();
     EXPECT_EQ(DRIVE_FILE_OK, error);
-  }
-
-  // Updates the content of directory under |directory_path| with parsed feed
-  // |value|.
-  bool UpdateContent(const std::vector<DocumentFeed*>& list,
-                     int largest_changestamp) {
-    GURL unused;
-    return file_system_->UpdateFromFeedForTesting(
-        list,
-        largest_changestamp,
-        root_feed_changestamp_++) == DRIVE_FILE_OK;
   }
 
   bool RemoveEntry(const FilePath& file_path) {
@@ -1251,7 +1193,7 @@ TEST_F(DriveFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   // SaveTestFileSystem and "account_metadata.json" have the same changestamp,
   // so no request for new feeds (i.e., call to GetDocuments) should happen.
   mock_drive_service_->set_account_metadata(
-      LoadJSONFile("account_metadata.json"));
+      test_util::LoadJSONFile("account_metadata.json"));
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_drive_service_, GetDocuments(_, _, _, _, _)).Times(0);
@@ -1263,7 +1205,7 @@ TEST_F(DriveFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   // it should change its state to FROM_SERVER, which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
   mock_drive_service_->set_account_metadata(
-      LoadJSONFile("account_metadata.json"));
+      test_util::LoadJSONFile("account_metadata.json"));
   EXPECT_CALL(*mock_drive_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
@@ -1334,7 +1276,8 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 
   // We'll copy a hosted document using CopyDocument.
   // ".gdoc" suffix should be stripped when copying.
-  scoped_ptr<base::Value> document(LoadJSONFile("uploaded_document.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("uploaded_document.json"));
   EXPECT_CALL(*mock_drive_service_,
               CopyDocument(kResourceId,
                            FILE_PATH_LITERAL("Document 1"),
@@ -1387,7 +1330,8 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
@@ -2001,7 +1945,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
@@ -2041,7 +1986,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is not obtained with the mock DriveService, because of no space.
@@ -2086,7 +2032,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   // Store something in the temporary cache directory.
   TestStoreToCache("<resource_id>",
                    "<md5>",
-                   GetTestFilePath("root_feed.json"),
+                   test_util::GetTestFilePath("root_feed.json"),
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
@@ -2095,7 +2041,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService, because of we freed up the
@@ -2147,7 +2094,8 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.
@@ -2185,7 +2133,7 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   // Store something as cached version of this file.
   TestStoreToCache(entry_proto->resource_id(),
                    entry_proto->file_specific_info().file_md5(),
-                   GetTestFilePath("root_feed.json"),
+                   test_util::GetTestFilePath("root_feed.json"),
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
@@ -2252,7 +2200,8 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService, because it's not stored in
@@ -2293,7 +2242,7 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   // Store something as cached version of this file.
   TestStoreToCache(entry_proto->resource_id(),
                    entry_proto->file_specific_info().file_md5(),
-                   GetTestFilePath("root_feed.json"),
+                   test_util::GetTestFilePath("root_feed.json"),
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
@@ -2340,7 +2289,8 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       .AppendASCII(kResourceId + "." + kMd5);
   TestStoreToCache(kResourceId,
                    kMd5,
-                   GetTestFilePath("root_feed.json"),  // Anything works.
+                   // Anything works.
+                   test_util::GetTestFilePath("root_feed.json"),
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
@@ -2394,7 +2344,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   // GDataUploaderInterface::UploadExistingFile().
   // TODO(satorux): This should be cleaned up. crbug.com/134240.
   DocumentEntry* document_entry = NULL;
-  scoped_ptr<base::Value> value(LoadJSONFile("root_feed.json"));
+  scoped_ptr<base::Value> value(test_util::LoadJSONFile("root_feed.json"));
   ASSERT_TRUE(value.get());
   base::DictionaryValue* as_dict = NULL;
   base::ListValue* entry_list = NULL;
@@ -2607,7 +2557,8 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
 
   // Before Download starts metadata from server will be fetched.
   // We will read content url from the result.
-  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  scoped_ptr<base::Value> document(
+      test_util::LoadJSONFile("document_to_download.json"));
   SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
 
   // The file is obtained with the mock DriveService.

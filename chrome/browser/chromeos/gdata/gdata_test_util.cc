@@ -4,10 +4,17 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 
+#include "base/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace gdata {
 namespace test_util {
@@ -127,6 +134,53 @@ void CopyResultsFromGetEntryInfoPairCallback(
   DCHECK(out_result);
 
   *out_result = result.Pass();
+}
+
+// Returns the absolute path for a test file stored under
+// chrome/test/data/chromeos/gdata.
+FilePath GetTestFilePath(const FilePath::StringType& base_name) {
+  FilePath path;
+  std::string error;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+  path = path.AppendASCII("chromeos")
+      .AppendASCII("gdata")
+      .AppendASCII(base_name.c_str());
+  EXPECT_TRUE(file_util::PathExists(path)) <<
+      "Couldn't find " << path.value();
+  return path;
+}
+
+base::Value* LoadJSONFile(const std::string& base_name) {
+  FilePath path = GetTestFilePath(base_name);
+
+  std::string error;
+  JSONFileValueSerializer serializer(path);
+  base::Value* value = serializer.Deserialize(NULL, &error);
+  EXPECT_TRUE(value) <<
+      "Parse error " << path.value() << ": " << error;
+  return value;
+}
+
+void LoadChangeFeed(const std::string& filename,
+                    DriveFileSystem* file_system,
+                    int64 start_changestamp,
+                    int64 root_feed_changestamp) {
+  std::string error;
+  scoped_ptr<Value> document(test_util::LoadJSONFile(filename));
+  ASSERT_TRUE(document.get());
+  ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
+  scoped_ptr<DocumentFeed> document_feed(
+      DocumentFeed::ExtractAndParse(*document));
+  ASSERT_TRUE(document_feed.get());
+  std::vector<DocumentFeed*> feed_list;
+  feed_list.push_back(document_feed.get());
+
+  GURL unused;
+  DriveFileError file_error = file_system->UpdateFromFeedForTesting(
+      feed_list,
+      start_changestamp,
+      root_feed_changestamp);
+  ASSERT_EQ(DRIVE_FILE_OK, file_error);
 }
 
 }  // namespace test_util
