@@ -798,6 +798,14 @@ class DriveFileSystemTest : public testing::Test {
     friend class base::RefCountedThreadSafe<CallbackHelper>;
   };
 
+  // Copy the result from FindFirstMissingParentDirectory().
+  static void CopyResultFromFindFirstMissingParentDirectory(
+      DriveFileSystem::FindFirstMissingParentDirectoryResult* out_result,
+      const DriveFileSystem::FindFirstMissingParentDirectoryResult& result) {
+    DCHECK(out_result);
+    *out_result = result;
+  }
+
   MessageLoopForUI message_loop_;
   // The order of the test threads is important, do not change the order.
   // See also content/browser/browser_thread_impl.cc.
@@ -1850,57 +1858,60 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
 TEST_F(DriveFileSystemTest, FindFirstMissingParentDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
-  GURL last_dir_content_url;
-  FilePath first_missing_parent_path;
+  DriveFileSystem::FindFirstMissingParentDirectoryResult result;
 
   // Create directory in root.
   FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
-  EXPECT_EQ(
-      DriveFileSystem::FOUND_MISSING,
-      file_system_->FindFirstMissingParentDirectory(dir_path,
-          &last_dir_content_url,
-          &first_missing_parent_path));
+  file_system_->FindFirstMissingParentDirectory(
+      dir_path,
+      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
+                 &result));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/New Folder 1")),
-            first_missing_parent_path);
-  EXPECT_TRUE(last_dir_content_url.is_empty());    // root directory.
+            result.first_missing_parent_path);
+  EXPECT_TRUE(result.last_dir_content_url.is_empty());  // root directory.
 
   // Missing folders in subdir of an existing folder.
   FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
-  EXPECT_EQ(
-      DriveFileSystem::FOUND_MISSING,
-      file_system_->FindFirstMissingParentDirectory(dir_path2,
-          &last_dir_content_url,
-          &first_missing_parent_path));
+  file_system_->FindFirstMissingParentDirectory(
+      dir_path2,
+      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
+                 &result));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
-            first_missing_parent_path);
-  EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
+            result.first_missing_parent_path);
+  EXPECT_FALSE(result.last_dir_content_url.is_empty());  // non-root dir.
 
   // Missing two folders on the path.
   FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
-  EXPECT_EQ(
-      DriveFileSystem::FOUND_MISSING,
-      file_system_->FindFirstMissingParentDirectory(dir_path3,
-          &last_dir_content_url,
-          &first_missing_parent_path));
+  file_system_->FindFirstMissingParentDirectory(
+      dir_path3,
+      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
+                 &result));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_MISSING, result.error);
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
-            first_missing_parent_path);
-  EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
+            result.first_missing_parent_path);
+  EXPECT_FALSE(result.last_dir_content_url.is_empty());  // non-root dir.
 
   // Folders on top of an existing file.
-  EXPECT_EQ(
-      DriveFileSystem::FOUND_INVALID,
-      file_system_->FindFirstMissingParentDirectory(
-          FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
-          &last_dir_content_url,
-          &first_missing_parent_path));
+  file_system_->FindFirstMissingParentDirectory(
+      FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
+      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
+                 &result));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DriveFileSystem::FIND_FIRST_FOUND_INVALID, result.error);
 
   // Existing folder.
-  EXPECT_EQ(
-      DriveFileSystem::DIRECTORY_ALREADY_PRESENT,
-      file_system_->FindFirstMissingParentDirectory(
-          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
-          &last_dir_content_url,
-          &first_missing_parent_path));
+  file_system_->FindFirstMissingParentDirectory(
+      FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
+      base::Bind(&CopyResultFromFindFirstMissingParentDirectory,
+                 &result));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DriveFileSystem::FIND_FIRST_DIRECTORY_ALREADY_PRESENT,
+            result.error);
 }
 
 // Create a directory through the document service

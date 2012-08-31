@@ -152,16 +152,46 @@ class DriveFileSystem : public DriveFileSystemInterface,
   friend class DriveFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(DriveFileSystemTest,
                            FindFirstMissingParentDirectory);
-
   // Defines possible search results of FindFirstMissingParentDirectory().
-  enum FindMissingDirectoryResult {
+  enum FindFirstMissingParentDirectoryError {
     // Target directory found, it's not a directory.
-    FOUND_INVALID,
+    FIND_FIRST_FOUND_INVALID,
     // Found missing directory segment while searching for given directory.
-    FOUND_MISSING,
+    FIND_FIRST_FOUND_MISSING,
     // Found target directory, it already exists.
-    DIRECTORY_ALREADY_PRESENT,
+    FIND_FIRST_DIRECTORY_ALREADY_PRESENT,
   };
+
+  // The result struct for FindFirstMissingParentDirectory().
+  struct FindFirstMissingParentDirectoryResult {
+    FindFirstMissingParentDirectoryResult();
+    ~FindFirstMissingParentDirectoryResult();
+
+    // Initializes the struct.
+    void Init(FindFirstMissingParentDirectoryError error,
+              FilePath first_missing_parent_path,
+              GURL last_dir_content_url);
+
+    FindFirstMissingParentDirectoryError error;
+    // The following two fields are provided when |error| is set to
+    // FIND_FIRST_FOUND_MISSING. Otherwise, the two fields are undefined.
+
+    // Suppose "drive/foo/bar/baz/qux" is being checked, and only
+    // "drive/foo/bar" is present, "drive/foo/bar/baz" is the first missing
+    // parent path.
+    FilePath first_missing_parent_path;
+
+    // The content URL of the last found directory. In the above example, the
+    // content URL of "drive/foo/bar". Note that this value is empty if the
+    // last found directory is the root of Drive.
+    GURL last_dir_content_url;
+  };
+
+  // Callback for FindFirstMissingParentDirectory().
+  typedef base::Callback<void(
+      const FindFirstMissingParentDirectoryResult& result)>
+      FindFirstMissingParentDirectoryCallback;
+
 
   // Defines set of parameters passes to intermediate callbacks during
   // execution of CreateDirectory() method.
@@ -569,10 +599,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Given non-existing |directory_path|, finds the first missing parent
   // directory of |directory_path|.
-  FindMissingDirectoryResult FindFirstMissingParentDirectory(
+  // |callback| must not be null.
+  void FindFirstMissingParentDirectory(
       const FilePath& directory_path,
-      GURL* last_dir_content_url,
-      FilePath* first_missing_parent_path);
+      const FindFirstMissingParentDirectoryCallback& callback);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates(). This callback checks whether feed is successfully
@@ -794,6 +824,16 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                  const base::Closure& callback);
   void UpdateEntryDataOnUIThread(const UpdateEntryParams& params,
                                  scoped_ptr<DocumentEntry> entry);
+
+  // Part of CreateDirectory(). Called after
+  // FindFirstMissingParentDirectory() is complete.
+  // |callback| must not be null.
+  void CreateDirectoryAfterFindFirstMissingPath(
+      const FilePath& directory_path,
+      bool is_exclusive,
+      bool is_recursive,
+      const FileOperationCallback& callback,
+      const FindFirstMissingParentDirectoryResult& result);
 
   // Part of GetEntryInfoByResourceId(). Called after
   // DriveResourceMetadata::GetEntryInfoByResourceId() is complete.

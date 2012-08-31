@@ -239,6 +239,25 @@ void RunGetEntryInfoWithFilePathCallback(
 
 }  // namespace
 
+// DriveFileSystem::FindFirstMissingParentDirectoryResult implementation.
+DriveFileSystem::FindFirstMissingParentDirectoryResult::
+FindFirstMissingParentDirectoryResult()
+    : error(DriveFileSystem::FIND_FIRST_FOUND_INVALID) {
+}
+
+void DriveFileSystem::FindFirstMissingParentDirectoryResult::Init(
+    FindFirstMissingParentDirectoryError in_error,
+    FilePath in_first_missing_parent_path,
+    GURL in_last_dir_content_url) {
+  error = in_error;
+  first_missing_parent_path = in_first_missing_parent_path;
+  last_dir_content_url = in_last_dir_content_url;
+}
+
+DriveFileSystem::FindFirstMissingParentDirectoryResult::
+~FindFirstMissingParentDirectoryResult() {
+}
+
 // DriveFileSystem::CreateDirectoryParams struct implementation.
 DriveFileSystem::CreateDirectoryParams::CreateDirectoryParams(
     const FilePath& created_directory_path,
@@ -1260,29 +1279,35 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FilePath last_parent_dir_path;
-  FilePath first_missing_path;
-  GURL last_parent_dir_url;
-  FindMissingDirectoryResult result =
-      FindFirstMissingParentDirectory(directory_path,
-                                      &last_parent_dir_url,
-                                      &first_missing_path);
-  switch (result) {
-    case FOUND_INVALID: {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
+  FindFirstMissingParentDirectory(
+      directory_path,
+      base::Bind(&DriveFileSystem::CreateDirectoryAfterFindFirstMissingPath,
+                 ui_weak_ptr_,
+                 directory_path,
+                 is_exclusive,
+                 is_recursive,
+                 callback));
+}
+
+void DriveFileSystem::CreateDirectoryAfterFindFirstMissingPath(
+    const FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    const FindFirstMissingParentDirectoryResult& result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  switch (result.error) {
+    case FIND_FIRST_FOUND_INVALID: {
+      callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
       return;
     }
-    case DIRECTORY_ALREADY_PRESENT: {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback,
-                     is_exclusive ? DRIVE_FILE_ERROR_EXISTS :
-                     DRIVE_FILE_OK));
+    case FIND_FIRST_DIRECTORY_ALREADY_PRESENT: {
+      callback.Run(is_exclusive ? DRIVE_FILE_ERROR_EXISTS : DRIVE_FILE_OK);
       return;
     }
-    case FOUND_MISSING: {
+    case FIND_FIRST_FOUND_MISSING: {
       // There is a missing folder to be created here, move on with the rest of
       // this function.
       break;
@@ -1295,20 +1320,18 @@ void DriveFileSystem::CreateDirectoryOnUIThread(
 
   // Do we have a parent directory here as well? We can't then create target
   // directory if this is not a recursive operation.
-  if (directory_path !=  first_missing_path && !is_recursive) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, DRIVE_FILE_ERROR_NOT_FOUND));
+  if (directory_path !=  result.first_missing_parent_path && !is_recursive) {
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
   drive_service_->CreateDirectory(
-      last_parent_dir_url,
-      first_missing_path.BaseName().value(),
+      result.last_dir_content_url,
+      result.first_missing_parent_path.BaseName().value(),
       base::Bind(&DriveFileSystem::AddNewDirectory,
                  ui_weak_ptr_,
                  CreateDirectoryParams(
-                     first_missing_path,
+                     result.first_missing_parent_path,
                      directory_path,
                      is_exclusive,
                      is_recursive,
@@ -2663,12 +2686,11 @@ void DriveFileSystem::NotifyInitialLoadFinishedAndRun(
   callback.Run(error);
 }
 
-DriveFileSystem::FindMissingDirectoryResult
-DriveFileSystem::FindFirstMissingParentDirectory(
+void DriveFileSystem::FindFirstMissingParentDirectory(
     const FilePath& directory_path,
-    GURL* last_dir_content_url,
-    FilePath* first_missing_parent_path) {
+    const FindFirstMissingParentDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // Let's find which how deep is the existing directory structure and
   // get the first element that's missing.
@@ -2676,6 +2698,8 @@ DriveFileSystem::FindFirstMissingParentDirectory(
   directory_path.GetComponents(&path_parts);
   FilePath current_path;
 
+  GURL last_dir_content_url;
+  FindFirstMissingParentDirectoryResult result;
   for (std::vector<FilePath::StringType>::const_iterator iter =
           path_parts.begin();
        iter != path_parts.end(); ++iter) {
@@ -2683,17 +2707,29 @@ DriveFileSystem::FindFirstMissingParentDirectory(
     DriveEntry* entry = resource_metadata_->FindEntryByPathSync(current_path);
     if (entry) {
       if (entry->file_info().is_directory) {
-        *last_dir_content_url = entry->content_url();
+        last_dir_content_url = entry->content_url();
       } else {
         // Huh, the segment found is a file not a directory?
-        return FOUND_INVALID;
+        result.Init(FIND_FIRST_FOUND_INVALID, FilePath(), GURL());
+        base::MessageLoopProxy::current()->PostTask(
+            FROM_HERE,
+            base::Bind(callback, result));
+        return;
       }
     } else {
-      *first_missing_parent_path = current_path;
-      return FOUND_MISSING;
+      // The current path is missing.
+      result.Init(FIND_FIRST_FOUND_MISSING, current_path, last_dir_content_url);
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, result));
+      return;
     }
   }
-  return DIRECTORY_ALREADY_PRESENT;
+
+  result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, FilePath(), GURL());
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, result));
 }
 
 void DriveFileSystem::AddUploadedFile(
