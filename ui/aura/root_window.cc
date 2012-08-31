@@ -300,8 +300,9 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
   }
 
   if (target) {
-    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    ui::GestureStatus status = ProcessGestureEvent(target, event);
+    ui::GestureEvent translated_event(
+        *event, static_cast<Window*>(this), target);
+    ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
     return status != ui::GESTURE_STATUS_UNKNOWN;
   }
 
@@ -931,9 +932,9 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
     Window::ConvertPointToTarget(this, target, &location_in_window);
     if (IsNonClientLocation(target, location_in_window))
       flags |= ui::EF_IS_NON_CLIENT;
-    event->set_flags(flags);
-    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    return ProcessMouseEvent(target, event);
+    ui::ScrollEvent translated_event(
+        *event, static_cast<Window*>(this), target, event->type(), flags);
+    return ProcessMouseEvent(target, &translated_event);
   }
   return false;
 }
@@ -1096,9 +1097,16 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
     Window::ConvertPointToTarget(this, target, &location_in_window);
     if (IsNonClientLocation(target, location_in_window))
       flags |= ui::EF_IS_NON_CLIENT;
-    event->set_flags(flags);
-    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    return ProcessMouseEvent(target, event);
+    if (event->type() == ui::ET_MOUSEWHEEL) {
+      ui::MouseWheelEvent translated_event(
+          *static_cast<ui::MouseWheelEvent*>(event),
+          static_cast<Window*>(this), target, event->type(), flags);
+      return ProcessMouseEvent(target, &translated_event);
+    } else {
+      ui::MouseEvent translated_event(
+          *event, static_cast<Window*>(this), target, event->type(), flags);
+      return ProcessMouseEvent(target, &translated_event);
+    }
   }
   return false;
 }

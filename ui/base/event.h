@@ -147,11 +147,6 @@ class UI_EXPORT LocatedEvent : public Event {
   // This is applied to both |location_| and |root_location_|.
   virtual void UpdateForRootTransform(const Transform& root_transform);
 
-  template <class T> void ConvertLocationToTarget(T* source, T* target) {
-    if (target && target != source)
-      T::ConvertPointToTarget(source, target, &location_);
-  }
-
  protected:
   explicit LocatedEvent(const base::NativeEvent& native_event);
 
@@ -167,7 +162,8 @@ class UI_EXPORT LocatedEvent : public Event {
         system_location_(model.system_location_) {
     // TODO(erg): May need to create system_location_ by converting location to
     // system coordinates here.
-    ConvertLocationToTarget(source, target);
+    if (target && target != source)
+      T::ConvertPointToTarget(source, target, &location_);
   }
 
   // Used for synthetic events in testing.
