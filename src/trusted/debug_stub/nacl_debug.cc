@@ -111,12 +111,6 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
 }
 
 void NaClDebugStop(int ErrCode) throw() {
-  /*
-   * We check if debugging is enabled since this check is the only
-   * mechanism for allocating the state object.  We free the
-   * resources but not the object itself.  Instead we mark it as
-   * STOPPED to prevent it from getting recreated.
-   */
   g_target->Exit(ErrCode);
   try {
     NaClDebugStubFini();

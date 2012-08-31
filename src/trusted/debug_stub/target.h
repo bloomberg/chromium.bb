@@ -48,13 +48,6 @@ class Target {
     FAILED = 3
   };
 
-  enum State {
-    UNINIT = 0,
-    RUNNING = 1,
-    STOPPED = 2
-  };
-
-  typedef ErrDef (*QFunc_t)(Target *, stringvec&, std::string);
   typedef std::map<uint32_t, port::IThread*> ThreadMap_t;
   typedef std::map<std::string, std::string> PropertyMap_t;
   typedef std::map<uint64_t, uint8_t*> BreakMap_t;

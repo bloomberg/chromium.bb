@@ -6,13 +6,8 @@
 
 
 // This module defines the interface for interacting with platform specific
-// threads  .  This API provides a mechanism to query for a thread, by using
-// the acquire method with the ID of a pre-existing thread.   The register
-// accessors are expected to return false if the thread is not in a state
-// where the registers can be accessed, such RUNNING or SYSCALL. This API
-// will throw:
-//   std::exception - if a unexpected OS Error is encountered.
-//   std::out_of_range - if the register index is out of range.
+// threads.  This API provides a mechanism to query for a thread, by using
+// the acquire method with the ID of a pre-existing thread.
 
 #ifndef NATIVE_CLIENT_PORT_THREAD_H_
 #define NATIVE_CLIENT_PORT_THREAD_H_ 1
