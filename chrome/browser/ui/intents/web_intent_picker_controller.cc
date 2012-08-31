@@ -306,8 +306,6 @@ void WebIntentPickerController::OnServiceChosen(
       break;
 
     case webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW: {
-      Browser* browser = browser::FindBrowserWithWebContents(
-          tab_contents_->web_contents());
       TabContents* contents = chrome::TabContentsFactory(
           tab_contents_->profile(),
           tab_util::GetSiteInstanceForNewTab(
@@ -325,7 +323,7 @@ void WebIntentPickerController::OnServiceChosen(
       // This call performs all the tab strip manipulation, notifications, etc.
       // Since we're passing in a target_contents, it assumes that we will
       // navigate the page ourselves, though.
-      chrome::NavigateParams params(browser, url,
+      chrome::NavigateParams params(tab_contents_->profile(), url,
                                     content::PAGE_TRANSITION_AUTO_BOOKMARK);
       params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
@@ -368,10 +366,8 @@ void WebIntentPickerController::OnExtensionInstallRequested(
 
 void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
   // Navigate from source tab.
-  Browser* browser =
-      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
   GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
-  chrome::NavigateParams params(browser, extension_url,
+  chrome::NavigateParams params(tab_contents_->profile(), extension_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
@@ -379,12 +375,10 @@ void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
 
 void WebIntentPickerController::OnSuggestionsLinkClicked() {
   // Navigate from source tab.
-  Browser* browser =
-      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
   GURL query_url = extension_urls::GetWebstoreIntentQueryURL(
       UTF16ToUTF8(picker_model_->action()),
       UTF16ToUTF8(picker_model_->type()));
-  chrome::NavigateParams params(browser, query_url,
+  chrome::NavigateParams params(tab_contents_->profile(), query_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
