@@ -1226,7 +1226,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
+#if defined(OS_WIN)
+// Flakes regularly on Windows XP
+// http://crbug.com/146040
+#define MAYBE_PageZoom DISABLED_PageZoom
+#else
+#define MAYBE_PageZoom PageZoom
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
   WebContents* contents = chrome::GetActiveWebContents(browser());
   bool enable_plus, enable_minus;
 
