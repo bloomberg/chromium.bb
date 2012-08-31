@@ -28,6 +28,8 @@ var TestExpectations = function(fileExtension, expectedTasks,
     fileVerifierFunction) {
   this.fileText_ = undefined;
   this.file_ = undefined;
+
+  // TODO(tbarzic): Get rid of this.expectedTasks_, since it's not used anymore.
   this.expectedTasks_ = expectedTasks;
   this.fileExtension_ = fileExtension;
   this.fileVerifierFunction_ = fileVerifierFunction;
@@ -62,42 +64,6 @@ TestExpectations.prototype.verifyHandlerRequest = function(request, callback) {
 
   this.fileVerifierFunction_(this.file_, this.fileText_, request,
                              callback);
-};
-
-// Verifies that list of tasks |tasks| contains tasks specified in
-// expectedTasks_. |successCallback| expects to be passed |tasks|.
-// |errorCallback| expects error object.
-TestExpectations.prototype.verifyTasks = function(tasks,
-                                                  successCallback,
-                                                  errorCallback) {
-  if (tasks.length != Object.keys(this.expectedTasks_).length) {
-    errorCallback({message: 'Wrong number of tasks found.'});
-    return;
-  }
-
-  for (var i = 0; i < tasks.length; ++i) {
-    var taskName = /^.*[|](\w+)$/.exec(tasks[i].taskId)[1];
-    var patterns = tasks[i].patterns;
-    var expectedPatterns = this.expectedTasks_[taskName];
-    if (!expectedPatterns) {
-      errorCallback({message: 'Wrong task from getFileTasks(): ' + task_name});
-      return;
-    }
-    patterns = patterns.sort();
-    expectedPatterns = expectedPatterns.sort();
-    for (var j = 0; j < patterns.length; ++j) {
-      var translatedPattern = expectedPatterns[j].replace(
-          /^filesystem:/, "chrome-extension://*/");
-      if (patterns[j] != translatedPattern) {
-        errorCallback({message: 'Wrong patterns set for task ' +
-                                taskName + '. ' +
-                                'Got: ' + patterns +
-                                ' expected: ' + expectedPatterns});
-        return;
-      }
-    }
-  }
-  successCallback(tasks);
 };
 
 // Class that is in charge for running the test.
@@ -163,14 +129,8 @@ TestRunner.prototype.onGetTasks_ = function(fileUrl, tasks) {
 
   console.log('DONE fetching ' + tasks.length + ' tasks');
 
-  this.expectations_.verifyTasks(tasks,
-                                 this.onTasksVerified_.bind(this, fileUrl),
-                                 this.errorCallback_.bind(this));
-}
-
-TestRunner.prototype.onTasksVerified_ = function(fileUrl, tasks) {
   chrome.fileBrowserPrivate.executeTask(tasks[0].taskId, [fileUrl]);
-};
+}
 
 TestRunner.prototype.errorCallback_ = function(error) {
   var msg = '';

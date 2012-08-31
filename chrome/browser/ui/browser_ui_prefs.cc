@@ -141,9 +141,12 @@ void RegisterBrowserUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kImportSavedPasswords,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  // The map of timestamps of the last used file browser handlers.
-  prefs->RegisterDictionaryPref(prefs::kLastUsedFileBrowserHandlers,
-                                PrefService::UNSYNCABLE_PREF);
+
+  // Dictionaries to keep track of default tasks in the file browser.
+  prefs->RegisterDictionaryPref(prefs::kDefaultTasksByMimeType,
+                                PrefService::SYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kDefaultTasksBySuffix,
+                                PrefService::SYNCABLE_PREF);
 
   // We need to register the type of these preferences in order to query
   // them even though they're only typically controlled via policy.

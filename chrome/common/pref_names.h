@@ -454,7 +454,8 @@ extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];
 
 extern const char kAllowFileSelectionDialogs[];
-extern const char kLastUsedFileBrowserHandlers[];
+extern const char kDefaultTasksByMimeType[];
+extern const char kDefaultTasksBySuffix[];
 
 extern const char kSelectFileLastDirectory[];
 

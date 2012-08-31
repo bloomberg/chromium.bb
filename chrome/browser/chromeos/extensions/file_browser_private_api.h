@@ -148,15 +148,27 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 
   // Takes a map of app_id to application information in |app_info|, and the set
   // of |available_apps| and adds Drive tasks to the |result_list| for each of
-  // the |available_apps|.
+  // the |available_apps|.  If a default task is set in the result list,
+  // then |default_already_set| is set to true.
   static void CreateDriveTasks(gdata::DriveWebAppsRegistry* registry,
                                const WebAppInfoMap& app_info,
                                const std::set<std::string>& available_apps,
-                               ListValue* result_list);
+                               const std::set<std::string>& default_apps,
+                               ListValue* result_list,
+                               bool* default_already_set);
 
-  // Find the list of drive apps that can be used with the given file types.
+  // Looks in the preferences and finds any of the available apps that are
+  // also listed as default apps for any of the files in the info list.
+  void FindDefaultDriveTasks(const FileInfoList& file_info_list,
+                             const std::set<std::string>& available_apps,
+                             std::set<std::string>* default_apps);
+
+  // Find the list of drive apps that can be used with the given file types. If
+  // a default task is set in the result list, then |default_already_set| is set
+  // to true.
   bool FindDriveAppTasks(const FileInfoList& file_info_list,
-                         ListValue* result_list);
+                         ListValue* result_list,
+                         bool* default_already_set);
 
 };
 

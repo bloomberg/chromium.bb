@@ -16,11 +16,7 @@
           "title": {"type": "string", "description": "Task title."},
           "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"},
           "driveApp": {"type": "boolean", "description": "True if this is Drive App."},
-          "patterns": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "The list of URL patterns supported by the task that matched at least one file."
-          }
+          "isDefault": {"type": "boolean", "description": "True if this task is a default task for the selected files."}
         }
       },
       {
@@ -404,12 +400,25 @@
       },
       {
         "name": "setDefaultTask",
-        "description": "Sets default task.",
+        "description": "Sets the default task for the supplied MIME types and suffixes of the supplied file URLs. Lists of MIME types and URLs may contain duplicates.",
         "parameters": [
           {
             "name": "taskId",
             "type": "string",
             "description": "The unique identifier of task to mark as default."
+          },
+          {
+            "name": "fileURLs",
+            "type": "array",
+            "description": "Array of selected file URLs to extract suffixes from.",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "mimeTypes",
+            "type": "array",
+            "optional": true,
+            "description": "Array of selected file MIME types.",
+            "items": { "type": "string" }
           },
           {
             "name": "callback",

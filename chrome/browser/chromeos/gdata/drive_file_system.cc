@@ -2988,6 +2988,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(entry_proto.get() || error != DRIVE_FILE_OK);
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = DRIVE_FILE_ERROR_NOT_FOUND;

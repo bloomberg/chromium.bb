@@ -10,16 +10,29 @@
 #include "base/callback.h"
 #include "base/platform_file.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
 class Browser;
-class FileBrowserHandler;
 class GURL;
 class Profile;
 
 namespace file_handler_util {
 
-void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
+// Update the default file handler for the given sets of suffixes and MIME
+// types.
+void UpdateDefaultTask(Profile* profile,
+                       const std::string& task_id,
+                       const std::set<std::string>& suffixes,
+                       const std::set<std::string>& mime_types);
+
+// Returns the task ID of the default task for the given |mime_type|/|suffix|
+// combination. If it finds a MIME type match, then it prefers that over a
+// suffix match. If it a default can't be found, then it returns the empty
+// string.
+std::string GetDefaultTaskIdFromPrefs(Profile* profile,
+                                      const std::string& mime_type,
+                                      const std::string& suffix);
 
 // Gets read-write file access permission flags.
 int GetReadWritePermissions();
@@ -34,32 +47,32 @@ std::string MakeTaskID(const std::string& extension_id,
 std::string MakeDriveTaskID(const std::string& app_id,
                             const std::string& action_id);
 
-// Extracts action and extension id bound to the file task.
+// Returns the |target_id| and |action_id| of a drive app or extension, given
+// the drive |task_id| created by MakeDriveTaskID. If the |task_id| is a drive
+// task_id then it will return true. If not, or if parsing fails, will return
+// false and not set |app_id| or |action_id|.
+bool CrackDriveTaskID(const std::string& task_id,
+                      std::string* app_id,
+                      std::string* action_id);
+
+// Extracts action and extension id bound to the file task. Either
+// |target_extension_id| or |action_id| are allowed to be NULL if caller isn't
+// interested in those values.  Returns false on failure to parse.
 bool CrackTaskID(const std::string& task_id,
                  std::string* target_extension_id,
                  std::string* action_id);
 
-// Struct that keeps track of when a handler was `last used.
-// It is used to determine default file action for a file.
-struct LastUsedHandler {
-  LastUsedHandler(int t, const FileBrowserHandler* h, URLPatternSet p)
-      : timestamp(t),
-        handler(h),
-        patterns(p) {
-  }
+// This generates a list of default tasks (tasks set as default by the user in
+// prefs) from the |common_tasks|.
+void FindDefaultTasks(Profile* profile,
+                      const std::vector<GURL>& files_list,
+                      const std::set<const FileBrowserHandler*>& common_tasks,
+                      std::set<const FileBrowserHandler*>* default_tasks);
 
-  int timestamp;
-  const FileBrowserHandler* handler;
-  URLPatternSet patterns;
-};
-
-typedef std::vector<LastUsedHandler> LastUsedHandlerList;
-
-// Generates list of tasks common for all files in |file_list|.
-// The resulting list is sorted by last usage time.
+// This generates list of tasks common for all files in |file_list|.
 bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
-                     LastUsedHandlerList* named_action_list);
+                     std::set<const FileBrowserHandler*>* common_tasks);
 
 // Find the default task for a file whose url is |url|. (The default task is the
 // task that is assigned to file browser task button by default).

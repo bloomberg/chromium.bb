@@ -1286,9 +1286,13 @@ const char kSelectFileLastDirectory[] = "selectfile.last_directory";
 // Boolean that specifies if file selection dialogs are shown.
 const char kAllowFileSelectionDialogs[] = "select_file_dialogs.allowed";
 
-// Map of timestamps of the last used file browser tasks.
-const char kLastUsedFileBrowserHandlers[] =
-    "filebrowser.handler.lastused";
+// Map of default tasks, associated by MIME type.
+const char kDefaultTasksByMimeType[] =
+    "filebrowser.tasks.default_by_mime_type";
+
+// Map of default tasks, associated by file suffix.
+const char kDefaultTasksBySuffix[] =
+    "filebrowser.tasks.default_by_suffix";
 
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";

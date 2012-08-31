@@ -54,6 +54,7 @@ const size_t FileTaskExecutor::kDriveTaskExtensionPrefixLength =
     arraysize(FileTaskExecutor::kDriveTaskExtensionPrefix) - 1;
 
 namespace {
+typedef std::set<const FileBrowserHandler*> FileBrowserHandlerSet;
 
 const int kReadWriteFilePermissions = base::PLATFORM_FILE_OPEN |
                                       base::PLATFORM_FILE_CREATE |
@@ -86,26 +87,6 @@ int ExtractProcessFromExtensionId(const std::string& extension_id,
 
   return process->GetID();
 }
-
-URLPatternSet GetAllMatchingPatterns(const FileBrowserHandler* handler,
-                                     const std::vector<GURL>& files_list) {
-  URLPatternSet matching_patterns;
-  const URLPatternSet& patterns = handler->file_url_patterns();
-  for (URLPatternSet::const_iterator pattern_it = patterns.begin();
-       pattern_it != patterns.end(); ++pattern_it) {
-    for (std::vector<GURL>::const_iterator file_it = files_list.begin();
-         file_it != files_list.end(); ++file_it) {
-      if (pattern_it->MatchesURL(*file_it)) {
-        matching_patterns.AddPattern(*pattern_it);
-        break;
-      }
-    }
-  }
-
-  return matching_patterns;
-}
-
-typedef std::set<const FileBrowserHandler*> ActionSet;
 
 const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
                                                  const std::string& action_id) {
@@ -145,7 +126,7 @@ std::string EscapedUtf8ToLower(const std::string& str) {
 
 bool GetFileBrowserHandlers(Profile* profile,
                             const GURL& selected_file_url,
-                            ActionSet* results) {
+                            FileBrowserHandlerSet* results) {
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return false;  // In unit-tests, we may not have an ExtensionService.
@@ -178,38 +159,69 @@ bool GetFileBrowserHandlers(Profile* profile,
   return true;
 }
 
-bool SortByLastUsedTimestampDesc(const LastUsedHandler& a,
-                                 const LastUsedHandler& b) {
-  return a.timestamp > b.timestamp;
-}
+}  // namespace
 
-// TODO(zelidrag): Wire this with ICU to make this sort I18N happy.
-bool SortByTaskName(const LastUsedHandler& a, const LastUsedHandler& b) {
-  return base::strcasecmp(a.handler->title().c_str(),
-                          b.handler->title().c_str()) > 0;
-}
+void UpdateDefaultTask(Profile* profile,
+                       const std::string& task_id,
+                       const std::set<std::string>& suffixes,
+                       const std::set<std::string>& mime_types) {
+  if (!profile || !profile->GetPrefs())
+    return;
 
-void SortLastUsedHandlerList(LastUsedHandlerList *list) {
-  // Sort by the last used descending.
-  std::sort(list->begin(), list->end(), SortByLastUsedTimestampDesc);
-  if (list->size() > 1) {
-    // Sort the rest by name.
-    std::sort(list->begin() + 1, list->end(), SortByTaskName);
+  if (!mime_types.empty()) {
+    DictionaryPrefUpdate mime_type_pref(profile->GetPrefs(),
+                                        prefs::kDefaultTasksByMimeType);
+    for (std::set<std::string>::const_iterator iter = mime_types.begin();
+        iter != mime_types.end(); ++iter) {
+      base::StringValue* value = new base::StringValue(task_id);
+      mime_type_pref->SetWithoutPathExpansion(*iter, value);
+    }
+  }
+
+  if (!suffixes.empty()) {
+    DictionaryPrefUpdate mime_type_pref(profile->GetPrefs(),
+                                        prefs::kDefaultTasksBySuffix);
+    for (std::set<std::string>::const_iterator iter = suffixes.begin();
+        iter != suffixes.end(); ++iter) {
+      base::StringValue* value = new base::StringValue(task_id);
+      // Suffixes are case insensitive.
+      std::string lower_suffix = StringToLowerASCII(*iter);
+      mime_type_pref->SetWithoutPathExpansion(lower_suffix, value);
+    }
   }
 }
 
-}  // namespace
+std::string GetDefaultTaskIdFromPrefs(Profile* profile,
+                                      const std::string& mime_type,
+                                      const std::string& suffix) {
+  VLOG(1) << "Looking for default for MIME type: " << mime_type
+      << " and suffix: " << suffix;
+  std::string task_id;
+  if (!mime_type.empty()) {
+    const DictionaryValue* mime_task_prefs =
+        profile->GetPrefs()->GetDictionary(prefs::kDefaultTasksByMimeType);
+    DCHECK(mime_task_prefs);
+    if (!mime_task_prefs) {
+      LOG(WARNING) << "Unable to open MIME type prefs";
+      return std::string();
+    }
+    if (mime_task_prefs->GetStringWithoutPathExpansion(mime_type, &task_id)) {
+      VLOG(1) << "Found MIME default handler: " << task_id;
+      return task_id;
+    }
+  }
 
-// Update file handler usage stats.
-void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
-  if (!profile || !profile->GetPrefs())
-    return;
-  DictionaryPrefUpdate prefs_usage_update(profile->GetPrefs(),
-      prefs::kLastUsedFileBrowserHandlers);
-  prefs_usage_update->SetWithoutPathExpansion(task_id,
-      new base::FundamentalValue(
-          static_cast<int>(base::Time::Now().ToInternalValue()/
-                           base::Time::kMicrosecondsPerSecond)));
+  const DictionaryValue* suffix_task_prefs =
+      profile->GetPrefs()->GetDictionary(prefs::kDefaultTasksBySuffix);
+  DCHECK(suffix_task_prefs);
+  if (!suffix_task_prefs) {
+    LOG(WARNING) << "Unable to open suffix prefs";
+    return std::string();
+  }
+  std::string lower_suffix = StringToLowerASCII(suffix);
+  suffix_task_prefs->GetStringWithoutPathExpansion(lower_suffix, &task_id);
+  VLOG_IF(1, !task_id.empty()) << "Found suffix default handler: " << task_id;
+  return task_id;
 }
 
 int GetReadWritePermissions() {
@@ -231,11 +243,31 @@ std::string MakeDriveTaskID(const std::string& app_id,
                     action_id);
 }
 
+bool CrackDriveTaskID(const std::string& task_id,
+                      std::string* app_id,
+                      std::string* action_id) {
+  std::string app_id_tmp;
+  std::string action_id_tmp;
+  if (!CrackTaskID(task_id, &app_id_tmp, &action_id_tmp))
+    return false;
+  if (StartsWithASCII(app_id_tmp,
+                      FileTaskExecutor::kDriveTaskExtensionPrefix,
+                      false)) {
+    // Strip off the prefix from the extension ID so we convert it to an app id.
+    if (app_id) {
+      *app_id = app_id_tmp.substr(
+          FileTaskExecutor::kDriveTaskExtensionPrefixLength);
+    }
+    if (action_id)
+      *action_id = action_id_tmp;
+    return true;
+  }
+  return false;
+}
 
 // Breaks down task_id that is used between getFileTasks() and executeTask() on
 // its building blocks. task_id field the following structure:
 //     <extension-id>|<task-action-id>
-// Currently, the only supported task-type is of 'context'.
 bool CrackTaskID(const std::string& task_id,
                  std::string* extension_id,
                  std::string* action_id) {
@@ -243,96 +275,121 @@ bool CrackTaskID(const std::string& task_id,
   int count = Tokenize(task_id, std::string("|"), &result);
   if (count != 2)
     return false;
-  *extension_id = result[0];
-  *action_id = result[1];
+  if (extension_id)
+    *extension_id = result[0];
+  if (action_id)
+    *action_id = result[1];
   return true;
 }
 
 // Find a specific handler in the handler list.
-LastUsedHandlerList::iterator FindHandler(
-    LastUsedHandlerList* list,
+FileBrowserHandlerSet::iterator FindHandler(
+    FileBrowserHandlerSet* handler_set,
     const std::string& extension_id,
     const std::string& id) {
-  LastUsedHandlerList::iterator iter = list->begin();
-  while (iter != list->end() &&
-         !(iter->handler->extension_id() == extension_id &&
-           iter->handler->id() == id)) {
+  FileBrowserHandlerSet::iterator iter = handler_set->begin();
+  while (iter != handler_set->end() &&
+         !((*iter)->extension_id() == extension_id &&
+           (*iter)->id() == id)) {
     iter++;
   }
   return iter;
+}
+
+void FindDefaultTasks(Profile* profile,
+                      const std::vector<GURL>& files_list,
+                      const FileBrowserHandlerSet& common_tasks,
+                      FileBrowserHandlerSet* default_tasks) {
+  DCHECK(default_tasks);
+  default_tasks->clear();
+
+  std::set<std::string> default_ids;
+  for (std::vector<GURL>::const_iterator it = files_list.begin();
+       it != files_list.end(); ++it) {
+    // Get the default task for this file based only on the extension (since
+    // we don't have MIME types here), and add it to the set of default tasks.
+    fileapi::FileSystemURL filesystem_url(*it);
+    if (filesystem_url.is_valid() &&
+        (filesystem_url.type() == fileapi::kFileSystemTypeDrive ||
+         filesystem_url.type() == fileapi::kFileSystemTypeNativeMedia ||
+         filesystem_url.type() == fileapi::kFileSystemTypeNativeLocal)) {
+      std::string task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+          profile, "", filesystem_url.virtual_path().Extension());
+      if (!task_id.empty())
+        default_ids.insert(task_id);
+    }
+  }
+
+  // Convert the default task IDs collected above to one of the handler pointers
+  // from common_tasks.
+  for (FileBrowserHandlerSet::const_iterator task_iter = common_tasks.begin();
+       task_iter != common_tasks.end(); ++task_iter) {
+    std::string task_id = MakeTaskID((*task_iter)->extension_id(),
+                                     (*task_iter)->id());
+    for (std::set<std::string>::iterator default_iter = default_ids.begin();
+         default_iter != default_ids.end(); ++default_iter) {
+      if (task_id == *default_iter) {
+        default_tasks->insert(*task_iter);
+        break;
+      }
+    }
+  }
 }
 
 // Given the list of selected files, returns array of context menu tasks
 // that are shared
 bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
-                     LastUsedHandlerList* named_action_list) {
-  named_action_list->clear();
-  ActionSet common_tasks;
+                     FileBrowserHandlerSet* common_tasks) {
+  DCHECK(common_tasks);
+  common_tasks->clear();
+
+  FileBrowserHandlerSet common_task_set;
+  std::set<std::string> default_task_ids;
   for (std::vector<GURL>::const_iterator it = files_list.begin();
        it != files_list.end(); ++it) {
-    ActionSet file_actions;
+    FileBrowserHandlerSet file_actions;
     if (!GetFileBrowserHandlers(profile, *it, &file_actions))
       return false;
     // If there is nothing to do for one file, the intersection of tasks for all
-    // files will be empty at the end.
-    if (!file_actions.size())
+    // files will be empty at the end, and so will the default tasks.
+    if (file_actions.empty())
       return true;
 
-    // For the very first file, just copy elements.
+    // For the very first file, just copy all the elements.
     if (it == files_list.begin()) {
-      common_tasks = file_actions;
+      common_task_set = file_actions;
     } else {
-      if (common_tasks.size()) {
-        // For all additional files, find intersection between the accumulated
-        // and file specific set.
-        ActionSet intersection;
-        std::set_intersection(common_tasks.begin(), common_tasks.end(),
-                              file_actions.begin(), file_actions.end(),
-                              std::inserter(intersection,
-                                            intersection.begin()));
-        common_tasks = intersection;
-      }
+      // For all additional files, find intersection between the accumulated and
+      // file specific set.
+      FileBrowserHandlerSet intersection;
+      std::set_intersection(common_task_set.begin(), common_task_set.end(),
+                            file_actions.begin(), file_actions.end(),
+                            std::inserter(intersection,
+                                          intersection.begin()));
+      common_task_set = intersection;
+      if (common_task_set.empty())
+        return true;
     }
   }
 
-  const DictionaryValue* prefs_tasks =
-      profile->GetPrefs()->GetDictionary(prefs::kLastUsedFileBrowserHandlers);
-  for (ActionSet::const_iterator iter = common_tasks.begin();
-       iter != common_tasks.end(); ++iter) {
-    // Get timestamp of when this task was used last time.
-    int last_used_timestamp = 0;
-
-    if ((*iter)->extension_id() == kFileBrowserDomain) {
-      // Give a little bump to the action from File Browser extension
-      // to make sure it is the default on a fresh profile.
-      last_used_timestamp = 1;
-    }
-    prefs_tasks->GetInteger(MakeTaskID((*iter)->extension_id(), (*iter)->id()),
-                            &last_used_timestamp);
-    URLPatternSet matching_patterns = GetAllMatchingPatterns(*iter, files_list);
-    named_action_list->push_back(LastUsedHandler(last_used_timestamp, *iter,
-                                                 matching_patterns));
-  }
-
-  LastUsedHandlerList::iterator watch_iter = FindHandler(
-      named_action_list, kFileBrowserDomain, kFileBrowserWatchTaskId);
-  LastUsedHandlerList::iterator gallery_iter = FindHandler(
-      named_action_list, kFileBrowserDomain, kFileBrowserGalleryTaskId);
-  if (watch_iter != named_action_list->end() &&
-      gallery_iter != named_action_list->end()) {
-    // Both "watch" and "gallery" actions are applicable which means that
-    // the selection is all videos. Showing them both is confusing. We only keep
+  FileBrowserHandlerSet::iterator watch_iter = FindHandler(
+      &common_task_set, kFileBrowserDomain, kFileBrowserWatchTaskId);
+  FileBrowserHandlerSet::iterator gallery_iter = FindHandler(
+      &common_task_set, kFileBrowserDomain, kFileBrowserGalleryTaskId);
+  if (watch_iter != common_task_set.end() &&
+      gallery_iter != common_task_set.end()) {
+    // Both "watch" and "gallery" actions are applicable which means that the
+    // selection is all videos. Showing them both is confusing, so we only keep
     // the one that makes more sense ("watch" for single selection, "gallery"
     // for multiple selection).
-
     if (files_list.size() == 1)
-      named_action_list->erase(gallery_iter);
+      common_task_set.erase(gallery_iter);
     else
-      named_action_list->erase(watch_iter);
+      common_task_set.erase(watch_iter);
   }
 
-  SortLastUsedHandlerList(named_action_list);
+  common_tasks->swap(common_task_set);
   return true;
 }
 
@@ -341,14 +398,18 @@ bool GetDefaultTask(
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
 
-  LastUsedHandlerList common_tasks;
+  FileBrowserHandlerSet default_tasks;
+  FileBrowserHandlerSet common_tasks;
   if (!FindCommonTasks(profile, file_urls, &common_tasks))
     return false;
+  FindDefaultTasks(profile, file_urls, common_tasks, &default_tasks);
 
-  if (common_tasks.size() == 0)
+  // If there's none, or more than one, then we don't have a canonical default.
+  if (default_tasks.size() != 1)
     return false;
 
-  *handler = common_tasks[0].handler;
+  // Return the one and only default task.
+  *handler = *default_tasks.begin();
   return true;
 }
 

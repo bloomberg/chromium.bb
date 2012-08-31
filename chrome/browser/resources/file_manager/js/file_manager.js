@@ -1808,11 +1808,21 @@ FileManager.prototype = {
     }
 
     if (gdata.driveApps.length > 0) {
-      var url = gdata.driveApps[0].docIcon;
       var iconDiv = listItem.querySelector('.detail-icon');
-      if (url && iconDiv) {
-        iconDiv.style.backgroundImage = 'url(' + url + ')';
+      if (!iconDiv)
+        return;
+      // Find the default app for this file.  If there is none, then
+      // leave it as the base icon for the file type.
+      var url;
+      for (var i = 0; i < gdata.driveApps.length; ++i) {
+        var app = gdata.driveApps[i];
+        if (app && app.docIcon && app.isPrimary) {
+          url = app.docIcon;
+          break;
+        }
       }
+      if (url)
+        iconDiv.style.backgroundImage = 'url(' + url + ')';
     }
   };
 
@@ -2460,7 +2470,8 @@ FileManager.prototype = {
    * @param {Object} task Task to set as default.
    */
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
-    chrome.fileBrowserPrivate.setDefaultTask(task.taskId);
+    chrome.fileBrowserPrivate.setDefaultTask(task.taskId,
+      this.selection.urls, this.selection.mimeTypes);
     this.selection.tasks = new FileTasks(
         this, this.selection.urls, this.selection.mimeTypes).
             display(this.taskItems_);

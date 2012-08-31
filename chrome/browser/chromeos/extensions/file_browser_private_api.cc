@@ -91,16 +91,6 @@ const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
     net::UnescapeRule::URL_SPECIAL_CHARS |
     net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 
-ListValue* URLPatternSetToStringList(const URLPatternSet& patterns) {
-  ListValue* list = new ListValue();
-  for (URLPatternSet::const_iterator it = patterns.begin();
-       it != patterns.end(); ++it) {
-    list->Append(new StringValue(it->GetAsString()));
-  }
-
-  return list;
-}
-
 const DiskMountManager::Disk* GetVolumeAsDisk(const std::string& mount_path) {
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
 
@@ -226,16 +216,6 @@ void AddGDataMountPoint(
     provider->GrantFileAccessToExtension(extension_id, mount_point_virtual);
 }
 
-// Given a file url, find the virtual FilePath associated with it.
-FilePath GetVirtualPathFromURL(const GURL& file_url) {
-  fileapi::FileSystemURL url(file_url);
-  if (!chromeos::CrosMountPointProvider::CanHandleURL(url)) {
-    NOTREACHED();
-    return FilePath();
-  }
-  return url.virtual_path();
-}
-
 // Finds an icon in the list of icons. If unable to find an icon of the exact
 // size requested, returns one with the next larger size. If all icons are
 // smaller than the preferred size, we'll return the largest one available.
@@ -272,6 +252,85 @@ void GetSizeStatsOnFileThread(const std::string& mount_path,
   }
   *total_size_kb = static_cast<size_t>(total_size_in_bytes / 1024);
   *remaining_size_kb = static_cast<size_t>(remaining_size_in_bytes / 1024);
+}
+
+// Given a |url| and a file system type |desired_type|, return the virtual
+// FilePath associated with it. If the file isn't of the |desired_type| or can't
+// be parsed, then return an empty FilePath.
+FilePath GetVirtualPathFromURL(const GURL& url) {
+  fileapi::FileSystemURL filesystem_url(url);
+  if (!filesystem_url.is_valid() ||
+      (filesystem_url.type() != fileapi::kFileSystemTypeDrive &&
+       filesystem_url.type() != fileapi::kFileSystemTypeNativeMedia &&
+       filesystem_url.type() != fileapi::kFileSystemTypeNativeLocal)) {
+    return FilePath();
+  }
+  return filesystem_url.virtual_path();
+}
+
+// Make a set of unique filename suffixes out of the list of file URLs.
+std::set<std::string> GetUniqueSuffixes(base::ListValue* file_url_list) {
+  std::set<std::string> suffixes;
+  for (size_t i = 0; i < file_url_list->GetSize(); ++i) {
+    std::string url;
+    if (!file_url_list->GetString(i, &url))
+      return std::set<std::string>();
+    FilePath path = GetVirtualPathFromURL(GURL(url));
+    if (path.empty())
+      return std::set<std::string>();
+    // We'll skip empty suffixes.
+    if (!path.Extension().empty())
+      suffixes.insert(path.Extension());
+  }
+  return suffixes;
+}
+
+// Make a set of unique MIME types out of the list of MIME types.
+std::set<std::string> GetUniqueMimeTypes(base::ListValue* mime_type_list) {
+  std::set<std::string> mime_types;
+  for (size_t i = 0; i < mime_type_list->GetSize(); ++i) {
+    std::string mime_type;
+    if (!mime_type_list->GetString(i, &mime_type))
+      return std::set<std::string>();
+    // We'll skip empty MIME types.
+    if (!mime_type.empty())
+      mime_types.insert(mime_type);
+  }
+  return mime_types;
+}
+
+void LogDefaultTask(const std::set<std::string>& mime_types,
+                    const std::set<std::string>& suffixes,
+                    const std::string& task_id) {
+  if (!mime_types.empty()) {
+    std::string mime_types_str;
+    for (std::set<std::string>::const_iterator iter = mime_types.begin();
+        iter != mime_types.end(); ++iter) {
+      if (iter == mime_types.begin()) {
+        mime_types_str = *iter;
+      } else {
+        mime_types_str += ", " + *iter;
+      }
+    }
+    VLOG(1) << "Associating task " << task_id
+            << " with the following MIME types: ";
+    VLOG(1) << "  " << mime_types_str;
+  }
+
+  if (!suffixes.empty()) {
+    std::string suffixes_str;
+    for (std::set<std::string>::const_iterator iter = suffixes.begin();
+        iter != suffixes.end(); ++iter) {
+      if (iter == suffixes.begin()) {
+        suffixes_str = *iter;
+      } else {
+        suffixes_str += ", " + *iter;
+      }
+    }
+    VLOG(1) << "Associating task " << task_id
+            << " with the following suffixes: ";
+    VLOG(1) << "  " << suffixes_str;
+  }
 }
 
 }  // namespace
@@ -524,7 +583,7 @@ void GetFileTasksFileBrowserFunction::IntersectAvailableDriveTasks(
     gdata::DriveWebAppsRegistry* registry,
     const FileInfoList& file_info_list,
     WebAppInfoMap* app_info,
-    std::set<std::string>* available_apps) {
+    std::set<std::string>* available_tasks) {
   for (FileInfoList::const_iterator file_iter = file_info_list.begin();
        file_iter != file_info_list.end(); ++file_iter) {
     if (file_iter->file_path.empty())
@@ -534,28 +593,49 @@ void GetFileTasksFileBrowserFunction::IntersectAvailableDriveTasks(
                                 file_iter->mime_type, &info);
     std::vector<gdata::DriveWebAppInfo*> info_ptrs;
     info.release(&info_ptrs);  // so they don't go away prematurely.
-    std::set<std::string> apps_for_this_file;
+    std::set<std::string> tasks_for_this_file;
     for (std::vector<gdata::DriveWebAppInfo*>::iterator
-        apps = info_ptrs.begin(); apps != info_ptrs.end(); ++apps) {
+         apps = info_ptrs.begin(); apps != info_ptrs.end(); ++apps) {
       std::pair<WebAppInfoMap::iterator, bool> insert_result =
           app_info->insert(std::make_pair((*apps)->app_id, *apps));
-     apps_for_this_file.insert((*apps)->app_id);
-     // If we failed to insert an app_id because there was a duplicate, then we
-     // must delete it (since we own it).
-     if (!insert_result.second)
-       delete *apps;
+      // TODO(gspencer): For now, the action id is always "open-with", but we
+      // could add any actions that the drive app supports.
+      std::string task_id =
+          file_handler_util::MakeDriveTaskID((*apps)->app_id, "open-with");
+      tasks_for_this_file.insert(task_id);
+      // If we failed to insert a task_id because there was a duplicate, then we
+      // must delete it (since we own it).
+      if (!insert_result.second)
+        delete *apps;
     }
     if (file_iter == file_info_list.begin()) {
-      *available_apps = apps_for_this_file;
+      *available_tasks = tasks_for_this_file;
     } else {
       std::set<std::string> intersection;
-      std::set_intersection(available_apps->begin(),
-                            available_apps->end(),
-                            apps_for_this_file.begin(),
-                            apps_for_this_file.end(),
+      std::set_intersection(available_tasks->begin(),
+                            available_tasks->end(),
+                            tasks_for_this_file.begin(),
+                            tasks_for_this_file.end(),
                             std::inserter(intersection,
                                           intersection.begin()));
-      *available_apps = intersection;
+      *available_tasks = intersection;
+    }
+  }
+}
+
+void GetFileTasksFileBrowserFunction::FindDefaultDriveTasks(
+    const FileInfoList& file_info_list,
+    const std::set<std::string>& available_tasks,
+    std::set<std::string>* default_tasks) {
+  std::set<std::string> default_task_ids;
+  for (FileInfoList::const_iterator file_iter = file_info_list.begin();
+       file_iter != file_info_list.end(); ++file_iter) {
+    std::string task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+        profile_, file_iter->mime_type, file_iter->file_path.Extension());
+    if (available_tasks.find(task_id) != available_tasks.end()) {
+      VLOG(1) << "Found default task for " << file_iter->file_path.value()
+              << ": " << task_id;
+      default_tasks->insert(task_id);
     }
   }
 }
@@ -564,40 +644,43 @@ void GetFileTasksFileBrowserFunction::IntersectAvailableDriveTasks(
 void GetFileTasksFileBrowserFunction::CreateDriveTasks(
     gdata::DriveWebAppsRegistry* registry,
     const WebAppInfoMap& app_info,
-    const std::set<std::string>& available_apps,
-    ListValue* result_list) {
+    const std::set<std::string>& available_tasks,
+    const std::set<std::string>& default_tasks,
+    ListValue* result_list,
+    bool* default_already_set) {
+  *default_already_set = false;
   // OK, now we traverse the intersection of available applications for this
   // list of files, adding a task for each one that is found.
-  for (std::set<std::string>::iterator app_iter = available_apps.begin();
-       app_iter != available_apps.end(); ++app_iter) {
-    WebAppInfoMap::const_iterator info_iter = app_info.find(*app_iter);
+  for (std::set<std::string>::const_iterator app_iter = available_tasks.begin();
+       app_iter != available_tasks.end(); ++app_iter) {
+    std::string app_id;
+    bool result = file_handler_util::CrackDriveTaskID(*app_iter, &app_id, NULL);
+    DCHECK(result) << "Unable to parse Drive task id: " << *app_iter;
+    if (!result)
+      continue;
+    WebAppInfoMap::const_iterator info_iter = app_info.find(app_id);
     DCHECK(info_iter != app_info.end());
     gdata::DriveWebAppInfo* info = info_iter->second;
     DictionaryValue* task = new DictionaryValue;
-    // TODO(gspencer): For now, the action id is always "open-with", but we
-    // could add any actions that the drive app supports.
-    std::string task_id =
-        file_handler_util::MakeDriveTaskID(*app_iter, "open-with");
-    task->SetString("taskId", task_id);
+
+    task->SetString("taskId", *app_iter);
     task->SetString("title", info->app_name);
 
-    // Create the list of extensions as patterns registered for this
-    // application. (Extensions here refers to filename suffixes (extensions),
-    // not Chrome or Drive extensions.)
-    ListValue* pattern_list = new ListValue;
-    std::set<std::string> extensions =
-        registry->GetExtensionsForWebStoreApp(*app_iter);
-    for (std::set<std::string>::iterator ext_iter = extensions.begin();
-         ext_iter != extensions.end(); ++ext_iter) {
-      pattern_list->Append(new StringValue("filesystem:*." + *ext_iter));
-    }
-    task->Set("patterns", pattern_list);
     GURL best_icon = FindPreferredIcon(info->app_icons,
                                        kPreferredIconSize);
     if (!best_icon.is_empty()) {
       task->SetString("iconUrl", best_icon.spec());
     }
     task->SetBoolean("driveApp", true);
+
+    // Once we set a default app, we don't want to set any more.
+    if (!(*default_already_set) &&
+        default_tasks.find(*app_iter) != default_tasks.end()) {
+      task->SetBoolean("isDefault", true);
+      *default_already_set = true;
+    } else {
+      task->SetBoolean("isDefault", false);
+    }
     result_list->Append(task);
   }
 }
@@ -608,7 +691,8 @@ void GetFileTasksFileBrowserFunction::CreateDriveTasks(
 // begin with kDriveTaskExtensionPrefix.
 bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
     const FileInfoList& file_info_list,
-    ListValue* result_list) {
+    ListValue* result_list,
+    bool* default_already_set) {
 
   if (file_info_list.empty())
     return true;
@@ -629,11 +713,14 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
   std::map<std::string, gdata::DriveWebAppInfo*> app_info;
   // Set of application IDs. This will end up with the intersection of the
   // application IDs that apply to the paths in |file_paths|.
-  std::set<std::string> available_apps;
+  std::set<std::string> available_tasks;
 
   IntersectAvailableDriveTasks(registry, file_info_list,
-                               &app_info, &available_apps);
-  CreateDriveTasks(registry, app_info, available_apps, result_list);
+                               &app_info, &available_tasks);
+  std::set<std::string> default_tasks;
+  FindDefaultDriveTasks(file_info_list, available_tasks, &default_tasks);
+  CreateDriveTasks(registry, app_info, available_tasks, default_tasks,
+                   result_list, default_already_set);
 
   // We own the pointers in |app_info|, so we need to delete them.
   STLDeleteContainerPairSecondPointers(app_info.begin(), app_info.end());
@@ -682,16 +769,31 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   ListValue* result_list = new ListValue();
   SetResult(result_list);
 
-  file_handler_util::LastUsedHandlerList common_tasks;
-  if (!file_handler_util::FindCommonTasks(profile_, file_urls, &common_tasks))
+  // Find the Drive apps first, because we want them to take precedence
+  // when setting the default app.
+  bool default_already_set = false;
+  if (!FindDriveAppTasks(info_list, result_list, &default_already_set))
     return false;
 
+  // Take the union of Drive and extension tasks: Because any Drive tasks we
+  // found must apply to all of the files (intersection), and because the same
+  // is true of the extensions, we simply take the union of two lists by adding
+  // the extension tasks to the Drive task list. We know there aren't duplicates
+  // because they're entirely different kinds of tasks, but there could be both
+  // kinds of tasks for a file type (an image file, for instance).
+  std::set<const FileBrowserHandler*> common_tasks;
+  std::set<const FileBrowserHandler*> default_tasks;
+  if (!file_handler_util::FindCommonTasks(profile_, file_urls, &common_tasks))
+    return false;
+  file_handler_util::FindDefaultTasks(profile_, file_urls,
+                                      common_tasks, &default_tasks);
+
   ExtensionService* service = profile_->GetExtensionService();
-  for (file_handler_util::LastUsedHandlerList::const_iterator iter =
+  for (std::set<const FileBrowserHandler*>::const_iterator iter =
            common_tasks.begin();
        iter != common_tasks.end();
        ++iter) {
-    const FileBrowserHandler* handler = iter->handler;
+    const FileBrowserHandler* handler = *iter;
     const std::string extension_id = handler->extension_id();
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
@@ -699,7 +801,6 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     task->SetString("taskId",
         file_handler_util::MakeTaskID(extension_id, handler->id()));
     task->SetString("title", handler->title());
-    task->Set("patterns", URLPatternSetToStringList(iter->patterns));
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
     GURL icon =
@@ -709,17 +810,18 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
                                         false, NULL);     // grayscale
     task->SetString("iconUrl", icon.spec());
     task->SetBoolean("driveApp", false);
+
+    // Only set the default if there isn't already a default set.
+    if (!default_already_set &&
+        default_tasks.find(*iter) != default_tasks.end()) {
+      task->SetBoolean("isDefault", true);
+      default_already_set = true;
+    } else {
+      task->SetBoolean("isDefault", false);
+    }
+
     result_list->Append(task);
   }
-
-  // Take the union of Drive and extension tasks: Because any extension tasks we
-  // found must apply to all of the files (intersection), and because the same
-  // is true of the drive apps, we simply take the union of two lists by adding
-  // the drive tasks to the extension task list. We know there aren't duplicates
-  // because they're entirely different kinds of tasks, but there could be both
-  // kinds of tasks for a file type (an image file, for instance).
-  if (!FindDriveAppTasks(info_list, result_list))
-    return false;
 
   if (VLOG_IS_ON(1)) {
     std::string result_json;
@@ -805,11 +907,39 @@ bool SetDefaultTaskFileBrowserFunction::RunImpl() {
   if (!args_->GetString(0, &task_id) || !task_id.size())
     return false;
 
+  base::ListValue* file_url_list;
+  if (!args_->GetList(1, &file_url_list))
+    return false;
+  std::set<std::string> suffixes = GetUniqueSuffixes(file_url_list);
+
+  // MIME types are an optional parameter.
+  base::ListValue* mime_type_list;
+  std::set<std::string> mime_types;
+  if (args_->GetList(2, &mime_type_list) && !mime_type_list->empty()) {
+    if (mime_type_list->GetSize() != file_url_list->GetSize())
+      return false;
+    mime_types = GetUniqueMimeTypes(mime_type_list);
+  }
+
+  if (VLOG_IS_ON(1))
+    LogDefaultTask(mime_types, suffixes, task_id);
+
+  // If there weren't any mime_types, and all the suffixes were blank,
+  // then we "succeed", but don't actually associate with anything.
+  // Otherwise, any time we set the default on a file with no extension
+  // on the local drive, we'd fail.
+  // TODO(gspencer): Fix file manager so that it never tries to set default in
+  // cases where extensionless local files are part of the selection.
+  if (suffixes.empty() && mime_types.empty()) {
+    SetResult(new base::FundamentalValue(true));
+    return true;
+  }
+
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
-            &file_handler_util::UpdateFileHandlerUsageStats,
-            profile_, task_id));
+            &file_handler_util::UpdateDefaultTask,
+            profile_, task_id, suffixes, mime_types));
 
   SetResult(new base::FundamentalValue(true));
   return true;
@@ -1868,6 +1998,13 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
   system_service->webapps_registry()->GetWebAppsForFile(
           file_path, file_specific_info.content_mime_type(), &web_apps);
   if (!web_apps.empty()) {
+    std::string default_task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+        profile_,
+        file_specific_info.content_mime_type(),
+        file_path.Extension());
+    std::string default_app_id;
+    file_handler_util::CrackDriveTaskID(default_task_id, &default_app_id, NULL);
+
     ListValue* apps = new ListValue();
     property_dict->Set("driveApps", apps);
     for (ScopedVector<gdata::DriveWebAppInfo>::const_iterator it =
@@ -1886,7 +2023,7 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
       if (!doc_icon.is_empty())
         app->SetString("docIcon", doc_icon.spec());
       app->SetString("objectType", webapp_info->object_type);
-      app->SetBoolean("isPrimary", webapp_info->is_primary_selector);
+      app->SetBoolean("isPrimary", default_app_id == webapp_info->app_id);
       apps->Append(app);
     }
   }
