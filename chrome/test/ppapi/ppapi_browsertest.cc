@@ -525,6 +525,9 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen)
 #if defined(OS_MACOSX)
 // http://crbug.com/103912
 #define MAYBE_Fullscreen DISABLED_Fullscreen
+#elif defined(OS_LINUX)
+// http://crbug.com/146008
+#define MAYBE_Fullscreen DISABLED_Fullscreen
 #else
 #define MAYBE_Fullscreen Fullscreen
 #endif
