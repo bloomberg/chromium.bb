@@ -86,6 +86,8 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
             manager->GetBlacklistedFeatures());
   EXPECT_FALSE(manager->GpuAccessAllowed());
+
+  delete manager;
 }
 
 TEST_F(GpuDataManagerImplTest, BlacklistCard) {
@@ -101,6 +103,8 @@ TEST_F(GpuDataManagerImplTest, BlacklistCard) {
   // GPU process is still allowed.
   manager->software_rendering_ = true;
   EXPECT_TRUE(manager->GpuAccessAllowed());
+
+  delete manager;
 }
 
 TEST_F(GpuDataManagerImplTest, GpuInfoUpdate) {
@@ -118,6 +122,8 @@ TEST_F(GpuDataManagerImplTest, GpuInfoUpdate) {
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_TRUE(observer.gpu_info_updated());
+
+  delete manager;
 }
 
 TEST_F(GpuDataManagerImplTest, GPUVideoMemoryUsageStatsUpdate) {
@@ -135,5 +141,7 @@ TEST_F(GpuDataManagerImplTest, GPUVideoMemoryUsageStatsUpdate) {
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_TRUE(observer.video_memory_usage_stats_updated());
+
+  delete manager;
 }
 
