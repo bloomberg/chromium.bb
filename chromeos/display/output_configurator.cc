@@ -221,6 +221,7 @@ static float ComputeDeviceScaleFactor(unsigned int width,
 OutputConfigurator::OutputConfigurator()
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
       output_count_(0),
+      connected_output_count_(0),
       output_cache_(NULL),
       mirror_supported_(false),
       primary_output_index_(-1),
@@ -359,6 +360,9 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
 }
 
 bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
+  if (output_state_ == new_state)
+    return true;
+
   if (output_state_ == STATE_INVALID ||
       output_state_ == STATE_HEADLESS ||
       output_state_ == STATE_SINGLE)
@@ -421,8 +425,6 @@ void OutputConfigurator::RemoveObserver(Observer* observer) {
 bool OutputConfigurator::TryRecacheOutputs(Display* display,
                                            XRRScreenResources* screen) {
   bool outputs_did_change = false;
-  int previous_connected_count = 0;
-  int new_connected_count = 0;
 
   if (output_count_ != screen->noutput) {
     outputs_did_change = true;
@@ -435,11 +437,6 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
       bool now_connected = (RR_Connected == output->connection);
       outputs_did_change = (now_connected != output_cache_[i].is_connected);
       XRRFreeOutputInfo(output);
-
-      if (output_cache_[i].is_connected)
-        previous_connected_count += 1;
-      if (now_connected)
-        new_connected_count += 1;
     }
   }
 
@@ -811,17 +808,17 @@ void OutputConfigurator::CheckIsProjectingAndNotify() {
   // Determine if there is an "internal" output and how many outputs are
   // connected.
   bool has_internal_output = false;
-  int connected_output_count = 0;
+  connected_output_count_ = 0;
   for (int i = 0; i < output_count_; ++i) {
     if (output_cache_[i].is_connected) {
-      connected_output_count += 1;
+      connected_output_count_ += 1;
       has_internal_output |= output_cache_[i].is_internal;
     }
   }
 
   // "Projecting" is defined as having more than 1 output connected while at
   // least one of them is an internal output.
-  bool is_projecting = has_internal_output && (connected_output_count > 1);
+  bool is_projecting = has_internal_output && (connected_output_count_ > 1);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
       ->SetIsProjecting(is_projecting);
 }

@@ -52,6 +52,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
+  int connected_output_count() const { return connected_output_count_; }
+
   OutputState output_state() const { return output_state_; }
 
   // Called when the user hits ctrl-F4 to request a display mode change.
@@ -153,6 +155,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
 
   // The number of outputs in the output_cache_ array.
   int output_count_;
+
+  // The number of outputs that are connected.
+  int connected_output_count_;
 
   // The list of cached output descriptions (|output_count_| elements long).
   scoped_array<CachedOutputDescription> output_cache_;

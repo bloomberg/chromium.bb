@@ -441,12 +441,15 @@ bool AcceleratorController::PerformAction(int action,
         Shell::GetInstance()->tray_delegate()->ToggleWifi();
       return true;
     case CYCLE_DISPLAY_MODE: {
-      internal::OutputConfiguratorAnimation* animation =
-          Shell::GetInstance()->output_configurator_animation();
-      animation->StartFadeOutAnimation(base::Bind(
-          base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
-          base::Unretained(Shell::GetInstance()->output_configurator())));
-      return true;
+      Shell* shell = Shell::GetInstance();
+      if (shell->output_configurator()->connected_output_count() > 1) {
+        internal::OutputConfiguratorAnimation* animation =
+            shell->output_configurator_animation();
+        animation->StartFadeOutAnimation(base::Bind(
+            base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
+            base::Unretained(shell->output_configurator())));
+        return true;
+      }
     }
 #endif
     case OPEN_FEEDBACK_PAGE:
