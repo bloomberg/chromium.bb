@@ -88,16 +88,15 @@ function bb_baseline_setup {
 
   if [ "$NEED_CLOBBER" -eq 1 ]; then
     echo "@@@BUILD_STEP Clobber@@@"
+    # Sdk key expires, delete android folder.
+    # crbug.com/145860
+    rm -rf ~/.android
     rm -rf "${SRC_ROOT}"/out
     if [ -e "${SRC_ROOT}"/out ] ; then
       echo "Clobber appeared to fail?  ${SRC_ROOT}/out still exists."
       echo "@@@STEP_WARNINGS@@@"
     fi
   fi
-
-  # Sdk key expires, delete android folder to be sure it is fresh
-  # crbug.com/145860
-  rm -rf ~/.android
 
   # Should be called only after envsetup is done.
   bb_run_gclient_hooks
