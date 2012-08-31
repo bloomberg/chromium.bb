@@ -401,6 +401,7 @@ class SimpleBuilder(Builder):
 
     # TODO(sosa): Split these out into classes.
     if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
+      self._RunStage(stages.SDKPackageStage)
       self._RunStage(stages.SDKTestStage)
       self._RunStage(stages.UploadPrebuiltsStage,
                      constants.CHROOT_BUILDER_BOARD, None)

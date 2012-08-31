@@ -1238,8 +1238,8 @@ class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
     return self._HandleExceptionAsSuccess(exception)
 
 
-class SDKTestStage(bs.BuilderStage):
-  """Stage that performs testing an SDK created in a previous stage"""
+class SDKPackageStage(bs.BuilderStage):
+  """Stage that performs preparing and packaging SDK files"""
   def _PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
     chroot_location = os.path.join(self._build_root, 'chroot')
@@ -1260,8 +1260,13 @@ class SDKTestStage(bs.BuilderStage):
     cmd = ['chmod', 'a+r', tarball_location]
     cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
 
+
+class SDKTestStage(bs.BuilderStage):
+  """Stage that performs testing an SDK created in a previous stage"""
+  def _PerformStage(self):
+    tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
     new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
-    # Build a new SDK using the tarball.
+    # Build a new SDK using the provided tarball.
     cmd = new_chroot_cmd + ['--download', '--replace', '--nousepkg',
         '--url', 'file://' + tarball_location]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root)

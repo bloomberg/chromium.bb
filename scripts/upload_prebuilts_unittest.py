@@ -409,7 +409,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     self.mox.StubOutWithMock(multiprocessing.Process, 'start')
     self.mox.StubOutWithMock(multiprocessing.Process, 'join')
     multiprocessing.Process.__init__(target=mox.IgnoreArg(),
-        args=(board_path, url_suffix, self.version))
+        args=(board_path, url_suffix, self.version, None))
     multiprocessing.Process.start()
     prebuilt.PrebuiltUploader._UploadPrebuilt(package_path,
         packages_url_suffix).AndReturn(True)
@@ -429,7 +429,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
         self.build_path, [], False, 'foo', False, target, slave_targets)
-    uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True)
+    uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True, None)
 
 
 class TestMain(unittest.TestCase):
@@ -456,6 +456,7 @@ class TestMain(unittest.TestCase):
     options.sync_host = True
     options.git_sync = True
     options.upload_board_tarball = True
+    options.prepackaged_tarball = None
     options.upload = 'gs://upload/'
     options.binhost_base_url = options.upload
     options.prepend_version = True
@@ -488,7 +489,7 @@ class TestMain(unittest.TestCase):
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncBoardPrebuilts')
     prebuilt.PrebuiltUploader.SyncBoardPrebuilts(
         mox.IgnoreArg(), options.key, options.git_sync,
-        options.sync_binhost_conf, options.upload_board_tarball)
+        options.sync_binhost_conf, options.upload_board_tarball, None)
     self.mox.ReplayAll()
     prebuilt.main([])
 

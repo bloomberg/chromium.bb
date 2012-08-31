@@ -389,28 +389,34 @@ class PrebuiltUploader(object):
 
     RemoteUpload(self._acl, upload_files)
 
-  def _UploadBoardTarball(self, board_path, url_suffix, version):
+  def _UploadBoardTarball(self, board_path, url_suffix, version, prepackaged):
     """Upload a tarball of the board at the specified path to Google Storage.
 
     Args:
       board_path: The path to the board dir.
       url_suffix: The remote subdirectory where we should upload the packages.
       version: The version of the board.
+      prepackaged: If given, a tarball that has been packaged outside of this
+                   script and should be used.
     """
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
     assert remote_location.startswith('gs://')
     cwd, boardname = os.path.split(board_path.rstrip(os.path.sep))
-    tmpdir = tempfile.mkdtemp()
     try:
-      tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
-      bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
-      cmd = ['tar', '-I', bzip2, '-cf', tarfile]
-      excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
-                        'tmp')
-      for path in excluded_paths:
-        cmd.append('--exclude=%s/*' % path)
-      cmd.append('.')
-      cros_build_lib.SudoRunCommand(cmd, cwd=os.path.join(cwd, boardname))
+      tmpdir = tempfile.mkdtemp()
+      if prepackaged is None:
+        tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
+        bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
+        cmd = ['tar', '-I', bzip2, '-cf', tarfile]
+        excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
+                          'tmp')
+        for path in excluded_paths:
+          cmd.append('--exclude=%s/*' % path)
+        cmd.append('.')
+        cros_build_lib.SudoRunCommand(cmd, cwd=os.path.join(cwd, boardname))
+      else:
+        tarfile = prepackaged
+
       remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
       # FIXME(zbehan): Temporary hack to upload amd64-host chroots to a
       # different gs bucket. The right way is to do the upload in a separate
@@ -481,7 +487,7 @@ class PrebuiltUploader(object):
       UpdateBinhostConfFile(binhost_conf, key, binhost)
 
   def SyncBoardPrebuilts(self, version, key, git_sync, sync_binhost_conf,
-                         upload_board_tarball):
+                         upload_board_tarball, prepackaged_board):
     """Synchronize board prebuilt files.
 
     Args:
@@ -493,6 +499,7 @@ class PrebuiltUploader(object):
       sync_binhost_conf: If set, update binhost config file in
           chromiumos-overlay for the current board.
       upload_board_tarball: Include a tarball of the board in our upload.
+      prepackaged_board: A tarball of the board built outside of this script.
     """
     for target in self._GetTargets():
       board_path = os.path.join(self._build_path,
@@ -506,7 +513,8 @@ class PrebuiltUploader(object):
         if upload_board_tarball:
           tar_process = multiprocessing.Process(target=self._UploadBoardTarball,
                                                 args=(board_path, url_suffix,
-                                                      version))
+                                                      version,
+                                                      prepackaged_board))
           tar_process.start()
 
         # Upload prebuilts.
@@ -572,6 +580,9 @@ def ParseOptions():
                     help='Previous binhost URL')
   parser.add_option('-b', '--board', dest='board', default=None,
                     help='Board type that was built on this machine')
+  parser.add_option('-B', '--prepackaged-tarball', dest='prepackaged_tarball',
+                    default=None,
+                    help='Board tarball prebuilt outside of this script.')
   parser.add_option('', '--profile', dest='profile', default=None,
                     help='Profile that was built on this machine')
   parser.add_option('', '--slave-board', default=[], action='callback',
@@ -724,4 +735,5 @@ def main(_argv):
   if options.board or options.slave_targets:
     uploader.SyncBoardPrebuilts(version, options.key, options.git_sync,
                                 options.sync_binhost_conf,
-                                options.upload_board_tarball)
+                                options.upload_board_tarball,
+                                options.prepackaged_tarball)
