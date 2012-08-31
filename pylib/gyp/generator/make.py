@@ -937,6 +937,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                    rules (used to make other pieces dependent on these rules)
     part_of_all: flag indicating this target is part of 'all'
     """
+    env = self.GetSortedXcodeEnv()
     for rule in rules:
       name = StringToMakefileVariable('%s_%s' % (self.qualified_target,
                                                  rule['rule_name']))
@@ -976,6 +977,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           # amount of pain.
           actions += ['@touch --no-create $@']
 
+        # See the comment in WriteCopies about expanding env vars.
+        outputs = [gyp.xcode_emulation.ExpandEnvVars(o, env) for o in outputs]
+        inputs = [gyp.xcode_emulation.ExpandEnvVars(i, env) for i in inputs]
+
         outputs = map(self.Absolutify, outputs)
         all_outputs += outputs
         # Only write the 'obj' and 'builddir' rules for the "primary" output
@@ -1000,6 +1005,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         # action, cd_action, and mkdirs get written to a toplevel variable
         # called cmd_foo. Toplevel variables can't handle things that change
         # per makefile like $(TARGET), so hardcode the target.
+        if self.flavor == 'mac':
+          action = [gyp.xcode_emulation.ExpandEnvVars(command, env)
+                    for command in action]
         action = gyp.common.EncodePOSIXShellList(action)
         action = action.replace('$(TARGET)', self.target)
         cd_action = cd_action.replace('$(TARGET)', self.target)

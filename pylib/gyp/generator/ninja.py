@@ -570,6 +570,7 @@ class NinjaWriter:
 
   def WriteRules(self, rules, extra_sources, prebuild,
                  extra_mac_bundle_resources):
+    env = self.GetSortedXcodeEnv()
     all_outputs = []
     for rule in rules:
       # First write out a rule for the rule action.
@@ -586,7 +587,7 @@ class NinjaWriter:
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(rule)
                    if self.flavor == 'win' else False)
       rule_name, args = self.WriteNewNinjaRule(
-          name, args, description, is_cygwin)
+          name, args, description, is_cygwin, env=env)
 
       # TODO: if the command references the outputs directly, we should
       # simplify it to just use $out.
@@ -643,8 +644,8 @@ class NinjaWriter:
           else:
             assert var == None, repr(var)
 
-        inputs = map(self.GypPathToNinja, inputs)
-        outputs = map(self.GypPathToNinja, outputs)
+        inputs = [self.GypPathToNinja(i, env) for i in inputs]
+        outputs = [self.GypPathToNinja(o, env) for o in outputs]
         extra_bindings.append(('unique_name',
             re.sub('[^a-zA-Z0-9_]', '_', outputs[0])))
         self.ninja.build(outputs, rule_name, self.GypPathToNinja(source),
@@ -1143,7 +1144,7 @@ class NinjaWriter:
       values = []
     self.ninja.variable(var, ' '.join(values))
 
-  def WriteNewNinjaRule(self, name, args, description, is_cygwin, env=[]):
+  def WriteNewNinjaRule(self, name, args, description, is_cygwin, env):
     """Write out a new ninja "rule" statement for a given command.
 
     Returns the name of the new rule, and a copy of |args| with variables
@@ -1156,6 +1157,7 @@ class NinjaWriter:
       description = self.msvs_settings.ConvertVSMacros(
           description, config=self.config_name)
     elif self.flavor == 'mac':
+      # |env| is an empty list on non-mac.
       args = [gyp.xcode_emulation.ExpandEnvVars(arg, env) for arg in args]
       description = gyp.xcode_emulation.ExpandEnvVars(description, env)
 
@@ -1190,10 +1192,6 @@ class NinjaWriter:
     else:
       env = self.ComputeExportEnvString(env)
       command = gyp.common.EncodePOSIXShellList(args)
-      if env:
-        # If an environment is passed in, variables in the command should be
-        # read from it, instead of from ninja's internal variables.
-        command = ninja_syntax.escape(command)
       command = 'cd %s; ' % self.build_to_base + env + command
 
     # GYP rules/actions express being no-ops by not touching their outputs.
