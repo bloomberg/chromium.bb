@@ -16,6 +16,7 @@
 #include "CCSingleThreadProxy.h"
 #include "CCThread.h"
 #include "ContentLayerChromium.h"
+#include "ContentLayerChromiumClient.h"
 #include "LayerChromium.h"
 
 #include <gmock/gmock.h>
@@ -3360,14 +3361,14 @@ TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     EXPECT_EQ(4, resultLayer->id());
 }
 
-class MockContentLayerDelegate : public ContentLayerDelegate {
+class MockContentLayerChromiumClient : public ContentLayerChromiumClient {
 public:
-    MockContentLayerDelegate() { }
-    virtual ~MockContentLayerDelegate() { }
+    MockContentLayerChromiumClient() { }
+    virtual ~MockContentLayerChromiumClient() { }
     virtual void paintContents(SkCanvas*, const IntRect& clip, FloatRect& opaque) OVERRIDE { }
 };
 
-PassRefPtr<ContentLayerChromium> createDrawableContentLayerChromium(ContentLayerDelegate* delegate)
+PassRefPtr<ContentLayerChromium> createDrawableContentLayerChromium(ContentLayerChromiumClient* delegate)
 {
     RefPtr<ContentLayerChromium> toReturn = ContentLayerChromium::create(delegate);
     toReturn->setIsDrawable(true);
@@ -3377,7 +3378,7 @@ PassRefPtr<ContentLayerChromium> createDrawableContentLayerChromium(ContentLayer
 TEST(CCLayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
 {
     // Verify draw and screen space transforms of layers not in a surface.
-    MockContentLayerDelegate delegate;
+    MockContentLayerChromiumClient delegate;
     WebTransformationMatrix identityMatrix;
 
     RefPtr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
@@ -3449,7 +3450,7 @@ TEST(CCLayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
 
 TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 {
-    MockContentLayerDelegate delegate;
+    MockContentLayerChromiumClient delegate;
     WebTransformationMatrix identityMatrix;
 
     RefPtr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);

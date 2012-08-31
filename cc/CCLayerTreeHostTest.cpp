@@ -15,6 +15,7 @@
 #include "CCThreadedTest.h"
 #include "CCTimingFunction.h"
 #include "ContentLayerChromium.h"
+#include "ContentLayerChromiumClient.h"
 #include "Extensions3DChromium.h"
 #include "FakeWebCompositorOutputSurface.h"
 #include <gmock/gmock.h>
@@ -1169,7 +1170,7 @@ TEST_F(CCLayerTreeHostTestSetVisible, runMultiThread)
     runTest(true);
 }
 
-class TestOpacityChangeLayerDelegate : public ContentLayerDelegate {
+class TestOpacityChangeLayerDelegate : public ContentLayerChromiumClient {
 public:
     TestOpacityChangeLayerDelegate(CCLayerTreeHostTest* test)
         : m_test(test)
@@ -1188,7 +1189,7 @@ private:
 
 class ContentLayerChromiumWithUpdateTracking : public ContentLayerChromium {
 public:
-    static PassRefPtr<ContentLayerChromiumWithUpdateTracking> create(ContentLayerDelegate *delegate) { return adoptRef(new ContentLayerChromiumWithUpdateTracking(delegate)); }
+    static PassRefPtr<ContentLayerChromiumWithUpdateTracking> create(ContentLayerChromiumClient* client) { return adoptRef(new ContentLayerChromiumWithUpdateTracking(client)); }
 
     int paintContentsCount() { return m_paintContentsCount; }
     void resetPaintContentsCount() { m_paintContentsCount = 0; }
@@ -1200,8 +1201,8 @@ public:
     }
 
 private:
-    explicit ContentLayerChromiumWithUpdateTracking(ContentLayerDelegate* delegate)
-        : ContentLayerChromium(delegate)
+    explicit ContentLayerChromiumWithUpdateTracking(ContentLayerChromiumClient* client)
+        : ContentLayerChromium(client)
         , m_paintContentsCount(0)
     {
         setAnchorPoint(FloatPoint(0, 0));
@@ -1253,7 +1254,7 @@ TEST_F(CCLayerTreeHostTestOpacityChange, runMultiThread)
     runTest(true);
 }
 
-class MockContentLayerDelegate : public ContentLayerDelegate {
+class MockContentLayerChromiumClient : public ContentLayerChromiumClient {
 public:
     bool drawsContent() const { return true; }
     MOCK_CONST_METHOD0(preserves3D, bool());
@@ -1265,8 +1266,8 @@ class CCLayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers : public CCLay
 public:
 
     CCLayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers()
-        : m_rootLayer(ContentLayerChromium::create(&m_delegate))
-        , m_childLayer(ContentLayerChromium::create(&m_delegate))
+        : m_rootLayer(ContentLayerChromium::create(&m_client))
+        , m_childLayer(ContentLayerChromium::create(&m_client))
     {
     }
 
@@ -1356,7 +1357,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_delegate;
+    MockContentLayerChromiumClient m_client;
     RefPtr<ContentLayerChromium> m_rootLayer;
     RefPtr<ContentLayerChromium> m_childLayer;
 };
@@ -1370,7 +1371,7 @@ TEST_F(CCLayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThre
 class CCLayerTreeHostTestAtomicCommit : public CCLayerTreeHostTest {
 public:
     CCLayerTreeHostTestAtomicCommit()
-        : m_layer(ContentLayerChromiumWithUpdateTracking::create(&m_delegate))
+        : m_layer(ContentLayerChromiumWithUpdateTracking::create(&m_client))
     {
         // Make sure partial texture updates are turned off.
         m_settings.maxPartialTextureUpdates = 0;
@@ -1444,7 +1445,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_delegate;
+    MockContentLayerChromiumClient m_client;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_layer;
 };
 
@@ -1468,8 +1469,8 @@ static void setLayerPropertiesForTesting(LayerChromium* layer, LayerChromium* pa
 class CCLayerTreeHostTestAtomicCommitWithPartialUpdate : public CCLayerTreeHostTest {
 public:
     CCLayerTreeHostTestAtomicCommitWithPartialUpdate()
-        : m_parent(ContentLayerChromiumWithUpdateTracking::create(&m_delegate))
-        , m_child(ContentLayerChromiumWithUpdateTracking::create(&m_delegate))
+        : m_parent(ContentLayerChromiumWithUpdateTracking::create(&m_client))
+        , m_child(ContentLayerChromiumWithUpdateTracking::create(&m_client))
         , m_numCommits(0)
     {
         // Allow one partial texture update.
@@ -1591,7 +1592,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_delegate;
+    MockContentLayerChromiumClient m_client;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_parent;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_child;
     int m_numCommits;
@@ -2270,7 +2271,7 @@ public:
 private:
     const IntSize m_scrollAmount;
     IntSize m_reportedScrollAmount;
-    MockContentLayerDelegate m_mockDelegate;
+    MockContentLayerChromiumClient m_mockDelegate;
     RefPtr<LayerChromium> m_childLayer;
     RefPtr<LayerChromium> m_rootScrollLayer;
 };
@@ -2372,7 +2373,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_mockDelegate;
+    MockContentLayerChromiumClient m_mockDelegate;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_rootLayer;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_surfaceLayer1;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_replicaLayer1;
@@ -2620,7 +2621,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_delegate;
+    MockContentLayerChromiumClient m_client;
     RefPtr<EvictionTestLayer> m_layer;
     CCLayerTreeHostImpl* m_implForEvictTextures;
     int m_numCommits;
@@ -2716,7 +2717,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_delegate;
+    MockContentLayerChromiumClient m_client;
     RefPtr<EvictionTestLayer> m_layer;
     CCLayerTreeHostImpl* m_implForEvictTextures;
     int m_numCommits;
@@ -2763,11 +2764,11 @@ private:
 class CCLayerTreeHostTestLostContextWhileUpdatingResources : public CCLayerTreeHostTest {
 public:
     CCLayerTreeHostTestLostContextWhileUpdatingResources()
-        : m_parent(ContentLayerChromiumWithUpdateTracking::create(&m_delegate))
+        : m_parent(ContentLayerChromiumWithUpdateTracking::create(&m_client))
         , m_numChildren(50)
     {
         for (int i = 0; i < m_numChildren; i++)
-            m_children.append(ContentLayerChromiumWithUpdateTracking::create(&m_delegate));
+            m_children.append(ContentLayerChromiumWithUpdateTracking::create(&m_client));
     }
 
     virtual PassOwnPtr<WebKit::WebCompositorOutputSurface> createOutputSurface()
@@ -2805,7 +2806,7 @@ public:
     }
 
 private:
-    MockContentLayerDelegate m_delegate;
+    MockContentLayerChromiumClient m_client;
     RefPtr<ContentLayerChromiumWithUpdateTracking> m_parent;
     int m_numChildren;
     Vector<RefPtr<ContentLayerChromiumWithUpdateTracking> > m_children;

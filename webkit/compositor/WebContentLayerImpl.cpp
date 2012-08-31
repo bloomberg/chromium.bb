@@ -5,6 +5,7 @@
 #include "config.h"
 #include "WebContentLayerImpl.h"
 
+#include "ContentLayerChromium.h"
 #include "SkMatrix44.h"
 #include <public/WebContentLayerClient.h>
 #include <public/WebFloatPoint.h>
@@ -30,7 +31,7 @@ WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
 
 WebContentLayerImpl::~WebContentLayerImpl()
 {
-    static_cast<ContentLayerChromium*>(m_webLayerImpl->layer())->clearDelegate();
+    static_cast<ContentLayerChromium*>(m_webLayerImpl->layer())->clearClient();
 }
 
 WebLayer* WebContentLayerImpl::layer()
