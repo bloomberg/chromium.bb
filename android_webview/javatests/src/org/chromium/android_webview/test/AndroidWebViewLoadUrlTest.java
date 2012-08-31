@@ -19,16 +19,6 @@ import java.util.concurrent.Callable;
  * Test suite for loadUrl().
  */
 public class AndroidWebViewLoadUrlTest extends AndroidWebViewTestBase {
-
-    private String getTitleOnUiThread(final ContentViewCore contentViewCore) throws Throwable {
-        return runTestOnUiThreadAndGetResult(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return contentViewCore.getTitle();
-            }
-        });
-    }
-
     @SmallTest
     @Feature({"Android-WebView"})
     public void testDataUrl() throws Throwable {

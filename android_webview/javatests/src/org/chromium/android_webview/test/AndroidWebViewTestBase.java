@@ -35,6 +35,8 @@ import java.util.concurrent.TimeoutException;
 public class AndroidWebViewTestBase
         extends ActivityInstrumentationTestCase2<AndroidWebViewTestRunnerActivity> {
     protected static int WAIT_TIMEOUT_SECONDS = 15;
+    protected static final boolean NORMAL_VIEW = false;
+    protected static final boolean INCOGNITO_VIEW = true;
 
     public AndroidWebViewTestBase() {
         super(AndroidWebViewTestRunnerActivity.class);
@@ -149,15 +151,30 @@ public class AndroidWebViewTestBase
 
     protected AwTestContainerView createAwTestContainerViewOnMainSync(
             final AwContentsClient client) throws Exception {
+        return createAwTestContainerViewOnMainSync(NORMAL_VIEW, client);
+    }
+
+    protected AwTestContainerView createAwTestContainerViewOnMainSync(
+            final boolean incognito,
+            final AwContentsClient client) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
             new AtomicReference<AwTestContainerView>();
         final Context context = getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createAwTestContainerView(false, client));
+                testContainerView.set(createAwTestContainerView(incognito, client));
             }
         });
         return testContainerView.get();
+    }
+
+    protected String getTitleOnUiThread(final ContentViewCore contentViewCore) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return contentViewCore.getTitle();
+            }
+        });
     }
 }
