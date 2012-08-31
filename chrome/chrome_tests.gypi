@@ -3012,6 +3012,7 @@
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
+        'browser/ui/views/search_view_controller_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/web_dialog_view_browsertest.cc',

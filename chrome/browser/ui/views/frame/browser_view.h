@@ -226,8 +226,16 @@ class BrowserView : public BrowserWindow,
   gfx::ImageSkia* GetToolbarBackgroundImage(chrome::search::Mode::Type mode);
 
 #if defined(USE_ASH)
+  // Test support.
   BrowserLauncherItemController* launcher_item_controller() const {
     return launcher_item_controller_.get();
+  }
+#endif
+
+#if defined(USE_AURA)
+  // Test support.
+  SearchViewController* search_view_controller() const {
+    return search_view_controller_.get();
   }
 #endif
 

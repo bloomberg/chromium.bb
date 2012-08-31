@@ -1941,19 +1941,19 @@ void BrowserView::Init() {
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
 
-  views::View* omnibox_popup_view_parent = NULL;
+  views::View* omnibox_popup_parent = NULL;
   // SearchViewController doesn't work on windows yet.
 #if defined(USE_AURA)
   Profile* profile = browser_->profile();
   if (chrome::search::IsInstantExtendedAPIEnabled(profile)) {
     search_view_controller_.reset(new SearchViewController(profile, contents_,
         &browser()->search_delegate()->toolbar_search_animator(), toolbar_));
-    omnibox_popup_view_parent =
-        search_view_controller_->omnibox_popup_view_parent();
+    omnibox_popup_parent =
+        search_view_controller_->omnibox_popup_parent();
   }
 #endif
 
-  toolbar_->Init(this, omnibox_popup_view_parent);
+  toolbar_->Init(this, omnibox_popup_parent);
 
 #if defined(USE_AURA)
   if (search_view_controller_.get()) {

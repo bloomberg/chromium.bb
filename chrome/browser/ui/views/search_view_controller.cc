@@ -56,52 +56,47 @@ void StackWebViewLayerAtTop(views::WebView* view) {
 
 // SearchContainerView ---------------------------------------------------------
 
-// SearchContainerView contains the |ntp_view_| and
-// |omnibox_popup_view_parent_|. |ntp_view_| is given the full size and
-// the |omnibox_popup_view_parent_| is gives its preferred height.
+// SearchContainerView contains the |ntp_container_| and
+// |omnibox_popup_parent_|. |ntp_container_| is given the full size and the
+// |omnibox_popup_parent_| is given its preferred height.
 class SearchContainerView : public views::View {
  public:
-  SearchContainerView(views::View* ntp_view,
-                      views::View* omnibox_popup_view_parent)
-      : ntp_view_(ntp_view),
-        omnibox_popup_view_parent_(omnibox_popup_view_parent) {
-    AddChildView(ntp_view);
-    AddChildView(omnibox_popup_view_parent);
+  SearchContainerView(views::View* ntp_container,
+                      views::View* omnibox_popup_parent)
+      : ntp_container_(ntp_container),
+        omnibox_popup_parent_(omnibox_popup_parent) {
+    AddChildView(ntp_container);
+    AddChildView(omnibox_popup_parent);
   }
 
   virtual void Layout() OVERRIDE {
-    ntp_view_->SetBounds(0, 0, width(), height());
+    ntp_container_->SetBounds(0, 0, width(), height());
 
-    gfx::Size omnibox_popup_view_parent_pref(
-        omnibox_popup_view_parent_->GetPreferredSize());
-    int old_omnibox_popup_view_parent_height(
-        omnibox_popup_view_parent_->height());
-    omnibox_popup_view_parent_->SetBounds(
-        0, 0, width(), omnibox_popup_view_parent_pref.height());
+    gfx::Size preferred_size(omnibox_popup_parent_->GetPreferredSize());
+    int old_height = omnibox_popup_parent_->height();
+    omnibox_popup_parent_->SetBounds(0, 0, width(), preferred_size.height());
 
     // Schedule paints the line below the popup (painted in
     // OnPaintBackground()).
-    int border_y =
-        std::max(old_omnibox_popup_view_parent_height,
-                 omnibox_popup_view_parent_pref.height()) + 1;
+    int border_y = std::max(old_height, preferred_size.height()) + 1;
     SchedulePaintInRect(gfx::Rect(0, 0, width(), border_y));
   }
 
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawColor(chrome::search::kSearchBackgroundColor);
-    gfx::Size omnibox_pref(omnibox_popup_view_parent_->GetPreferredSize());
+    gfx::Size preferred_size = omnibox_popup_parent_->GetPreferredSize();
     // The color for this rect must be the same as that used as background for
     // InlineOmniboxPopupView.
-    canvas->FillRect(gfx::Rect(0, 0, width(), omnibox_pref.height()),
+    canvas->FillRect(gfx::Rect(0, 0, width(), preferred_size.height()),
                      chrome::search::kSuggestBackgroundColor);
     canvas->FillRect(
-        gfx::Rect(0, omnibox_pref.height(), width(), 1),
+        gfx::Rect(0, preferred_size.height(), width(), 1),
         chrome::search::kResultsSeparatorColor);
   }
 
  private:
-  views::View* ntp_view_;
-  views::View* omnibox_popup_view_parent_;
+  views::View* ntp_container_;
+  views::View* omnibox_popup_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchContainerView);
 };
@@ -143,12 +138,12 @@ class NTPViewLayoutManager : public views::LayoutManager {
 
   // views::LayoutManager overrides:
   virtual void Layout(views::View* host) OVERRIDE {
-    gfx::Size logo_pref = logo_view_->GetPreferredSize();
+    gfx::Size preferred_size = logo_view_->GetPreferredSize();
     logo_view_->SetBounds(
-        (host->width() - logo_pref.width()) / 2,
-        chrome::search::kOmniboxYPosition - 20 - logo_pref.height(),
-        logo_pref.width(),
-        logo_pref.height());
+        (host->width() - preferred_size.width()) / 2,
+        chrome::search::kOmniboxYPosition - 20 - preferred_size.height(),
+        preferred_size.width(),
+        preferred_size.height());
 
     const int kContentTop = chrome::search::kOmniboxYPosition + 50;
     content_view_->SetBounds(0,
@@ -156,10 +151,9 @@ class NTPViewLayoutManager : public views::LayoutManager {
                              host->width(),
                              host->height() - kContentTop);
 
-    // TODO(dhollowa): This is a hack to patch up ordering of native layer.
-    // Changes to the view hierarchy can |ReorderLayers| which messes with
-    // layer stacking.  Layout typically follows reorderings, so we patch
-    // things up here.
+    // This is a hack to patch up ordering of native layer.  Changes to the view
+    // hierarchy can |ReorderLayers| which messes with layer stacking.  Layout
+    // typically follows reorderings, so we patch things up here.
     StackWebViewLayerAtTop(content_view_);
   }
 
@@ -177,14 +171,16 @@ class NTPViewLayoutManager : public views::LayoutManager {
 
 }  // namespace
 
-// SearchViewController::OmniboxPopupViewParent --------------------------------
+namespace internal {
+
+// OmniboxPopupContainer -------------------------------------------------------
 
 // View the omnibox is added to. Listens for changes to the visibility of the
 // omnibox and updates the SearchViewController appropriately.
-class SearchViewController::OmniboxPopupViewParent : public views::View {
+class OmniboxPopupContainer : public views::View {
  public:
-  explicit OmniboxPopupViewParent(SearchViewController* search_view_controller);
-  virtual ~OmniboxPopupViewParent();
+  explicit OmniboxPopupContainer(SearchViewController* search_view_controller);
+  virtual ~OmniboxPopupContainer();
 
   bool is_child_visible() { return child_count() && child_at(0)->visible(); }
 
@@ -197,20 +193,20 @@ class SearchViewController::OmniboxPopupViewParent : public views::View {
 
   bool child_visible_;
 
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewParent);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContainer);
 };
 
-SearchViewController::OmniboxPopupViewParent::OmniboxPopupViewParent(
+OmniboxPopupContainer::OmniboxPopupContainer(
     SearchViewController* search_view_controller)
     : search_view_controller_(search_view_controller),
       child_visible_(false) {
   SetLayoutManager(new views::FillLayout);
 }
 
-SearchViewController::OmniboxPopupViewParent::~OmniboxPopupViewParent() {
+OmniboxPopupContainer::~OmniboxPopupContainer() {
 }
 
-void SearchViewController::OmniboxPopupViewParent::ChildPreferredSizeChanged(
+void OmniboxPopupContainer::ChildPreferredSizeChanged(
     views::View* child) {
   if (parent() && (child->visible() || child_visible_))
     parent()->Layout();
@@ -219,6 +215,8 @@ void SearchViewController::OmniboxPopupViewParent::ChildPreferredSizeChanged(
     search_view_controller_->PopupVisibilityChanged();
   }
 }
+
+}  // namespace internal
 
 // SearchViewController --------------------------------------------------------
 
@@ -235,10 +233,10 @@ SearchViewController::SearchViewController(
       state_(STATE_NOT_VISIBLE),
       tab_contents_(NULL),
       search_container_(NULL),
-      ntp_view_(NULL),
+      ntp_container_(NULL),
       content_view_(NULL),
-      omnibox_popup_view_parent_(NULL) {
-  omnibox_popup_view_parent_ = new OmniboxPopupViewParent(this);
+      omnibox_popup_parent_(NULL) {
+  omnibox_popup_parent_ = new internal::OmniboxPopupContainer(this);
 }
 
 SearchViewController::~SearchViewController() {
@@ -247,12 +245,12 @@ SearchViewController::~SearchViewController() {
 
   // If the |omnibox_popup_view_| isn't parented, delete it. Otherwise it'll be
   // deleted by its parent.
-  if (!omnibox_popup_view_parent_->parent())
-    delete omnibox_popup_view_parent_;
+  if (!omnibox_popup_parent_->parent())
+    delete omnibox_popup_parent_;
 }
 
-views::View* SearchViewController::omnibox_popup_view_parent() {
-  return omnibox_popup_view_parent_;
+views::View* SearchViewController::omnibox_popup_parent() {
+  return omnibox_popup_parent_;
 }
 
 void SearchViewController::SetTabContents(TabContents* tab_contents) {
@@ -272,7 +270,7 @@ void SearchViewController::StackAtTop() {
 #if defined(USE_AURA)
   if (search_container_) {
     StackViewsLayerAtTop(search_container_);
-    StackViewsLayerAtTop(ntp_view_);
+    StackViewsLayerAtTop(ntp_container_);
     StackViewsLayerAtTop(GetLogoView());
     StackWebViewLayerAtTop(content_view_);
   }
@@ -294,7 +292,7 @@ void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,
   // the animated retraction of the omnibox popup.
   if (!(old_mode.mode == chrome::search::Mode::MODE_SEARCH_SUGGESTIONS &&
         new_mode.is_default() &&
-        omnibox_popup_view_parent_->is_child_visible())) {
+        omnibox_popup_parent_->is_child_visible())) {
     UpdateState();
   }
 }
@@ -302,15 +300,15 @@ void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,
 void SearchViewController::OnImplicitAnimationsCompleted() {
   DCHECK_EQ(STATE_NTP_ANIMATING, state_);
   state_ = STATE_SUGGESTIONS;
-  ntp_view_->SetVisible(false);
-  // While |ntp_view_| was fading out, location bar was animating from the
+  ntp_container_->SetVisible(false);
+  // While |ntp_container_| was fading out, location bar was animating from the
   // middle of the NTP page to the top toolbar, at the same rate.
   // Suggestions need to be aligned with the final location of the location bar.
   // So if omnibox popup view (InlineOmniboxPopupView) is visible, force a
   // re-layout of its children (i.e. the suggestions) to align with the location
   // bar's final bounds.
-  if (omnibox_popup_view_parent_->is_child_visible())
-    omnibox_popup_view_parent_->child_at(0)->Layout();
+  if (omnibox_popup_parent_->is_child_visible())
+    omnibox_popup_parent_->child_at(0)->Layout();
 }
 
 void SearchViewController::UpdateState() {
@@ -330,7 +328,7 @@ void SearchViewController::UpdateState() {
     case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
       if (search_model()->mode().animate && state_ == STATE_NTP)
         new_state = STATE_NTP_ANIMATING;
-      else if (omnibox_popup_view_parent_->is_child_visible())
+      else if (omnibox_popup_parent_->is_child_visible())
         new_state = STATE_SUGGESTIONS;
       break;
 
@@ -377,7 +375,7 @@ void SearchViewController::SetState(State state) {
 void SearchViewController::StartAnimation() {
   int factor = InstantUI::GetSlowAnimationScaleFactor();
   {
-    ui::Layer* ntp_layer = ntp_view_->layer();
+    ui::Layer* ntp_layer = ntp_container_->layer();
     ui::ScopedLayerAnimationSettings settings(ntp_layer->GetAnimator());
     settings.AddObserver(this);
     settings.SetTransitionDuration(
@@ -415,12 +413,12 @@ void SearchViewController::StartAnimation() {
 }
 
 void SearchViewController::CreateViews(State state) {
-  DCHECK(!ntp_view_);
+  DCHECK(!ntp_container_);
 
-  ntp_view_ = new views::View;
-  ntp_view_->set_background(new NTPViewBackground);
-  ntp_view_->SetPaintToLayer(true);
-  ntp_view_->layer()->SetMasksToBounds(true);
+  ntp_container_ = new views::View;
+  ntp_container_->set_background(new NTPViewBackground);
+  ntp_container_->SetPaintToLayer(true);
+  ntp_container_->layer()->SetMasksToBounds(true);
 
   const TemplateURL* default_provider =
       TemplateURLServiceFactory::GetForProfile(
@@ -457,26 +455,26 @@ void SearchViewController::CreateViews(State state) {
   }
 
   // Reparent the main web contents view out of |contents_container_| and
-  // in to |ntp_view_| below.  Reparent back in destructor.
+  // in to |ntp_container_| below.  Reparent back in destructor.
   content_view_ = contents_container_->active();
   DCHECK(content_view_);
   contents_container_->SetActive(NULL);
 
   views::View* logo_view = GetLogoView();
   DCHECK(logo_view);
-  ntp_view_->SetLayoutManager(
+  ntp_container_->SetLayoutManager(
       new NTPViewLayoutManager(logo_view, content_view_));
-  ntp_view_->AddChildView(logo_view);
-  ntp_view_->AddChildView(content_view_);
+  ntp_container_->AddChildView(logo_view);
+  ntp_container_->AddChildView(content_view_);
 
   search_container_ =
-      new SearchContainerView(ntp_view_, omnibox_popup_view_parent_);
+      new SearchContainerView(ntp_container_, omnibox_popup_parent_);
   search_container_->SetPaintToLayer(true);
   search_container_->SetLayoutManager(new views::FillLayout);
   search_container_->layer()->SetMasksToBounds(true);
 
   if (state == STATE_SUGGESTIONS)
-    ntp_view_->SetVisible(false);
+    ntp_container_->SetVisible(false);
 
   contents_container_->SetOverlay(search_container_);
 }
@@ -493,13 +491,13 @@ void SearchViewController::DestroyViews() {
 
   // We persist the parent of the omnibox so that we don't have to inject a new
   // parent into ToolbarView.
-  omnibox_popup_view_parent_->parent()->RemoveChildView(
-      omnibox_popup_view_parent_);
+  omnibox_popup_parent_->parent()->RemoveChildView(
+      omnibox_popup_parent_);
 
   // Restore control/parenting of the web_contents back to the
   // |main_contents_view_|.
-  ntp_view_->SetLayoutManager(NULL);
-  ntp_view_->RemoveChildView(content_view_);
+  ntp_container_->SetLayoutManager(NULL);
+  ntp_container_->RemoveChildView(content_view_);
   if (content_view_->web_contents())
     content_view_->web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
   contents_container_->SetActive(content_view_);
@@ -507,7 +505,7 @@ void SearchViewController::DestroyViews() {
 
   delete search_container_;
   search_container_ = NULL;
-  ntp_view_ = NULL;
+  ntp_container_ = NULL;
   default_provider_logo_.reset();
   default_provider_name_.reset();
   content_view_ = NULL;
@@ -519,9 +517,9 @@ void SearchViewController::PopupVisibilityChanged() {
   // Don't do anything while animating if the child is visible. Otherwise we'll
   // prematurely cancel the animation.
   if (state_ != STATE_NTP_ANIMATING ||
-      !omnibox_popup_view_parent_->is_child_visible()) {
+      !omnibox_popup_parent_->is_child_visible()) {
     UpdateState();
-    if (!omnibox_popup_view_parent_->is_child_visible())
+    if (!omnibox_popup_parent_->is_child_visible())
       toolbar_search_animator_->OnOmniboxPopupClosed();
   }
 }
