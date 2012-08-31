@@ -249,6 +249,7 @@ public class ContentViewCore implements MotionEventDelegate {
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
 
+        HeapStatsLogger.init(mContext.getApplicationContext());
         initialize(context, nativeWebContents, personality, false);
     }
 
