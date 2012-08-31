@@ -19,6 +19,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -419,24 +420,17 @@ FilePath UITestBase::ComputeTypicalUserDataSource(
   source_history_file = source_history_file.AppendASCII("profiles");
   switch (profile_type) {
     case UITestBase::DEFAULT_THEME:
-      source_history_file = source_history_file.AppendASCII("typical_history");
+      source_history_file = source_history_file.AppendASCII(
+          "profile_with_default_theme");
       break;
     case UITestBase::COMPLEX_THEME:
-      source_history_file = source_history_file.AppendASCII("complex_theme");
-      break;
-    case UITestBase::NATIVE_THEME:
-      source_history_file = source_history_file.AppendASCII("gtk_theme");
-      break;
-    case UITestBase::CUSTOM_FRAME:
-      source_history_file = source_history_file.AppendASCII("custom_frame");
-      break;
-    case UITestBase::CUSTOM_FRAME_NATIVE_THEME:
-      source_history_file =
-          source_history_file.AppendASCII("custom_frame_gtk_theme");
+      source_history_file = source_history_file.AppendASCII(
+          "profile_with_complex_theme");
       break;
     default:
       NOTREACHED();
   }
+
   return source_history_file;
 }
 

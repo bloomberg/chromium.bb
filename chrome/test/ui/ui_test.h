@@ -49,9 +49,6 @@ class UITestBase {
   enum ProfileType {
     DEFAULT_THEME = 0,
     COMPLEX_THEME = 1,
-    NATIVE_THEME = 2,
-    CUSTOM_FRAME = 3,
-    CUSTOM_FRAME_NATIVE_THEME = 4,
   };
 
   // ********* Utility functions *********

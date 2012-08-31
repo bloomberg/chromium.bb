@@ -468,21 +468,4 @@ TEST_F(StartupTest, ProfilingScript1) {
                  UITestBase::DEFAULT_THEME, 1, 0);
 }
 
-#if defined(TOOLKIT_GTK)
-TEST_F(StartupTest, PerfGtkTheme) {
-  RunStartupTest("warm", "gtk-theme", WARM, NOT_IMPORTANT,
-                 UITestBase::NATIVE_THEME, 0, 0);
-}
-
-TEST_F(StartupTest, PrefNativeFrame) {
-  RunStartupTest("warm", "custom-frame", WARM, NOT_IMPORTANT,
-                 UITestBase::CUSTOM_FRAME, 0, 0);
-}
-
-TEST_F(StartupTest, PerfNativeFrameGtkTheme) {
-  RunStartupTest("warm", "custom-frame-gtk-theme", WARM, NOT_IMPORTANT,
-                 UITestBase::CUSTOM_FRAME_NATIVE_THEME, 0, 0);
-}
-#endif
-
 }  // namespace

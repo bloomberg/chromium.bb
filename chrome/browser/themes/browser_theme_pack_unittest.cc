@@ -137,7 +137,7 @@ class BrowserThemePackTest : public ::testing::Test {
     }
 
     test_path = test_path.AppendASCII("profiles");
-    test_path = test_path.AppendASCII("complex_theme");
+    test_path = test_path.AppendASCII("profile_with_complex_theme");
     test_path = test_path.AppendASCII("Default");
     test_path = test_path.AppendASCII("Extensions");
     test_path = test_path.AppendASCII("mblmlcbknbnfebdfjnolmcapmdofhmme");

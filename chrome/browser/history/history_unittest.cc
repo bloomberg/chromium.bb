@@ -937,13 +937,13 @@ TEST_F(HistoryTest, MostVisitedURLs) {
 // history" example file or it will be imported on startup, throwing off timing
 // measurements.
 //
-// See test/data/profiles/typical_history/README.txt for instructions on
-// how to up the version.
+// See test/data/profiles/profile_with_default_theme/README.txt for
+// instructions on how to up the version.
 TEST(HistoryProfileTest, TypicalProfileVersion) {
   FilePath file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file));
   file = file.AppendASCII("profiles");
-  file = file.AppendASCII("typical_history");
+  file = file.AppendASCII("profile_with_default_theme");
   file = file.AppendASCII("Default");
   file = file.AppendASCII("History");
 
