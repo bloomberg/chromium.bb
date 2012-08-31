@@ -308,7 +308,7 @@ gyp-arm-build() {
   export AS=arm-linux-gnueabi-as
   export CC="arm-linux-gnueabi-gcc-4.5 ${extra} "
   export CXX="arm-linux-gnueabi-g++-4.5 ${extra} "
-  export LD=arm-linux-gnueabi-ld
+  export LD="arm-linux-gnueabi-g++-4.5 ${extra} "
   export RANLIB=arm-linux-gnueabi-ranlib
   export SYSROOT
   export GYP_DEFINES="target_arch=arm \
