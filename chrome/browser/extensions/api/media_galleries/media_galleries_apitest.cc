@@ -18,16 +18,9 @@
 #include "base/scoped_temp_dir.h"
 #endif
 
-namespace {
+using extensions::PlatformAppBrowserTest;
 
-class ExperimentalMediaGalleriesAppBrowserTest
-    : public extensions::PlatformAppBrowserTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
-  }
-};
+namespace {
 
 class ExperimentalMediaGalleriesApiTest : public ExtensionApiTest {
  public:
@@ -76,20 +69,18 @@ class EnsurePictureDirectoryExists {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesAppBrowserTest, NoGalleries) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NoGalleries) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_galleries"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesAppBrowserTest,
-                       MediaGalleriesRead) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MediaGalleriesRead) {
   EnsurePictureDirectoryExists picture_directory;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/read_access"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesAppBrowserTest,
-                       MediaGalleriesNoAccess) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MediaGalleriesNoAccess) {
   EnsurePictureDirectoryExists picture_directory;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
       << message_;

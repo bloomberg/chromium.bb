@@ -41,7 +41,7 @@ Editing Docs
 
      - Otherwise, they will be in
        chrome/common/extensions/docs/server2/templates/. See the
-       "Overview of ./tempaltes Directory" section for more information.
+       "Overview of ./templates Directory" section for more information.
 
      - Files in templates directory use the Handlebar template language. It is
        extremely simple, essentially: write HTML.

@@ -47,7 +47,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS" file="resources\extensions\declarative_webrequest_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DEVTOOLS_CUSTOM_BINDINGS_JS" file="resources\extensions\devtools_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_BLUETOOTH_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.bluetooth_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_EXPERIMENTAL_MEDIA_GALLERY_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.media_galleries_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_EXPERIMENTAL_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.media_galleries_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.offscreenTabs_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.usb_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXTENSION_CUSTOM_BINDINGS_JS" file="resources\extensions\extension_custom_bindings.js" type="BINDATA" />
@@ -56,6 +56,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS" file="resources\extensions\file_system_custom_bindings.js" type="BINDATA" />
         <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="resources\extensions\i18n_custom_bindings.js" type="BINDATA" />
         <include name="IDR_INPUT_IME_CUSTOM_BINDINGS_JS" file="resources\extensions\input.ime_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS" file="resources\extensions\media_galleries_custom_bindings.js" type="BINDATA" />
         <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="resources\extensions\omnibox_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="resources\extensions\page_actions_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="resources\extensions\page_action_custom_bindings.js" type="BINDATA" />

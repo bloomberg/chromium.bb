@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var mediaGalleries = chrome.experimental.mediaGalleries;
+var mediaGalleries = chrome.mediaGalleries;
 
 var mediaFileSystemsListCallback = function(results) {
   chrome.test.assertEq(0, results.length);

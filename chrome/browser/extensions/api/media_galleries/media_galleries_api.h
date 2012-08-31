@@ -18,8 +18,7 @@ namespace extensions {
 class MediaGalleriesGetMediaFileSystemsFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.mediaGalleries.getMediaFileSystems")
+  DECLARE_EXTENSION_FUNCTION_NAME("mediaGalleries.getMediaFileSystems")
 
  protected:
   virtual ~MediaGalleriesGetMediaFileSystemsFunction();

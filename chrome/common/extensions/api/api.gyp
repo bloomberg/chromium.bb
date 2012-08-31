@@ -53,6 +53,7 @@
           'experimental_system_info_storage.idl',
           'experimental_usb.idl',
           'file_system.idl',
+          'media_galleries.idl',
           'serial.idl',
           'socket.idl',
         ],

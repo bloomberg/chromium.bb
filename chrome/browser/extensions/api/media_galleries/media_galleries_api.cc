@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
+#include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -55,7 +56,7 @@ bool ApiIsAccessible(std::string* error) {
 using chrome::MediaFileSystemRegistry;
 using content::ChildProcessSecurityPolicy;
 
-namespace MediaGalleries = extensions::api::experimental_media_galleries;
+namespace MediaGalleries = extensions::api::media_galleries;
 namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 
 MediaGalleriesGetMediaFileSystemsFunction::

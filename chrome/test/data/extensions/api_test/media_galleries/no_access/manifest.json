@@ -2,11 +2,11 @@
   "name": "chrome.mediaGalleries.no_access",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "test having no access for chrome.experimental.mediaGalleries.getMediaFileSystems fails appropriately",
+  "description": "test having no access for chrome.mediaGalleries.getMediaFileSystems fails appropriately",
   "app": {
     "background": {
       "scripts": ["test.js"]
     }
   },
-  "permissions": ["experimental", "mediaGalleries", "mediaGalleriesAllGalleries"]
+  "permissions": ["mediaGalleries", "mediaGalleriesAllGalleries"]
 }

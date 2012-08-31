@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/media_gallery_custom_bindings.h"
+#include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 
 #include <string>
 
@@ -16,19 +16,19 @@
 
 namespace extensions {
 
-MediaGalleryCustomBindings::MediaGalleryCustomBindings()
+MediaGalleriesCustomBindings::MediaGalleriesCustomBindings()
     : ChromeV8Extension(NULL) {
   RouteFunction(
       "GetMediaFileSystemObject",
-      base::Bind(&MediaGalleryCustomBindings::GetMediaFileSystemObject,
+      base::Bind(&MediaGalleriesCustomBindings::GetMediaFileSystemObject,
                  base::Unretained(this)));
   RouteFunction(
       "ExtractEmbeddedThumbnails",
-      base::Bind(&MediaGalleryCustomBindings::ExtractEmbeddedThumbnails,
+      base::Bind(&MediaGalleriesCustomBindings::ExtractEmbeddedThumbnails,
                  base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
+v8::Handle<v8::Value> MediaGalleriesCustomBindings::GetMediaFileSystemObject(
     const v8::Arguments& args) {
   if (args.Length() != 2) {
     NOTREACHED();
@@ -66,7 +66,7 @@ v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
                                     WebKit::WebString::fromUTF8(url));
 }
 
-v8::Handle<v8::Value> MediaGalleryCustomBindings::ExtractEmbeddedThumbnails(
+v8::Handle<v8::Value> MediaGalleriesCustomBindings::ExtractEmbeddedThumbnails(
     const v8::Arguments& args) {
   if (args.Length() != 1) {
     NOTREACHED() << "Bad arguments";
