@@ -272,7 +272,7 @@ class GerritQueryTests(mox.MoxTestBase):
 
   def testLooseQuery(self):
     """verify it complaints if an ID matches multiple"""
-    self._test_missing(['Icb8e1', 'ICeb8e1d'])
+    self._test_missing(['Icb8e1d', 'ICeb8e1d3'])
 
   def testFirstNotFound(self):
     """verify it complains if the previous ID didn't match, but second did"""
@@ -324,13 +324,13 @@ class GerritQueryTests(mox.MoxTestBase):
                       constants.INTERNAL_REMOTE)
 
   def testInternalUnique(self):
-    self._common_test(['*2144', '*Icb8e1'], 'gerrit-int.chromium.org',
+    self._common_test(['*2144', '*Icb8e1d'], 'gerrit-int.chromium.org',
                       constants.INTERNAL_REMOTE, calls_allowed=2)
 
   def testExternalUnique(self):
     """ensure that if two unique queries that point to the same cl, just one
        patch is returned"""
-    self._common_test(['2144', 'Icb8e1'], calls_allowed=2)
+    self._common_test(['2144', 'Icb8e1d'], calls_allowed=2)
 
   def testPatchInfoParsing(self):
     """Test parsing of the JSON results."""
