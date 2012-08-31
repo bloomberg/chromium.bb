@@ -745,6 +745,31 @@ html[oobe=old] .step-controls {
   display: none;
 }
 
+.step.loading .step-contents,
+.step.loading .step-controls {
+  visibility: hidden;
+}
+
+.step:not(.loading) #user-images-loading {
+  visibility: hidden;
+}
+
+.step-loading {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.step-loading .spinner {
+  height: 32px;
+  width: 32px;
+}
+
 #oobe.connect #continue-button,
 #oobe.eula #back-button,
 #oobe.eula #accept-button,

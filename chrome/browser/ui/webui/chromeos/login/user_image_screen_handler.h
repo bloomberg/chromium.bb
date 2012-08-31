@@ -62,6 +62,9 @@ class UserImageScreenHandler : public UserImageScreenActor,
   // Sends profile image as a data URL to the page.
   void SendProfileImage(const std::string& data_url);
 
+  // Sends image data to the page.
+  void HandleGetImages(const base::ListValue* args);
+
   // Opens the camera capture dialog.
   void HandleTakePhoto(const base::ListValue* args);
 

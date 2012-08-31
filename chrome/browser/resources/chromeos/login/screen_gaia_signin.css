@@ -69,22 +69,6 @@ html[oobe=new] #signin-frame {
   border-right: 1px solid lightgray;
 }
 
-#gaia-loading {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-#gaia-loading .spinner {
-  height: 32px;
-  width: 32px;
-}
-
 /* Position to be aligned with the login box in iframe  */
 #login-box {
   height: 31px;

@@ -13,6 +13,7 @@
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
+/** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -254,12 +255,26 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Make sure that screen is initialized and decorated.
+     * @param {Object} screen Screen params dict, e.g. {id: screenId, data: {}}.
+     */
+    preloadScreen: function(screen) {
+      var screenEl = $(screen.id);
+      if (screenEl.deferredDecorate !== undefined) {
+        screenEl.deferredDecorate();
+        delete screenEl.deferredDecorate;
+      }
+    },
+
+    /**
      * Show screen of given screen id.
-     * @param {Object} screen Screen params dict,
-     *     e.g. {id: screenId, data: data}.
+     * @param {Object} screen Screen params dict, e.g. {id: screenId, data: {}}.
      */
     showScreen: function(screen) {
-      if (typeof(screen.data) != 'undefined' && screen.data.disableAddUser)
+      // Make sure the screen is decorated.
+      this.preloadScreen(screen);
+
+      if (screen.data !== undefined && screen.data.disableAddUser)
         DisplayManager.updateAddUserButtonStatus(true);
 
       var screenId = screen.id;

@@ -362,11 +362,6 @@ void WebUILoginView::OnLoginPromptVisible() {
   }
   login_prompt_visible_handled_ = true;
 
-  OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
-  // Notify OOBE that the login frame has been rendered. Currently
-  // this is used to start camera presence check.
-  oobe_ui->OnLoginPromptVisible();
-
   // Let RenderWidgetHostViewAura::OnPaint() show white background when
   // loading page and when backing store is not present.
   aura::Env::GetInstance()->set_render_white_bg(true);

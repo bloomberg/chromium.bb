@@ -282,8 +282,4 @@ void OobeUI::ResetSigninScreenHandlerDelegate() {
   signin_screen_handler_->SetDelegate(NULL);
 }
 
-void OobeUI::OnLoginPromptVisible() {
-  user_image_screen_actor_->CheckCameraPresence();
-}
-
 }  // namespace chromeos

@@ -28,13 +28,21 @@ cr.define('oobe', function() {
 
   /**
    * Registers with Oobe.
+   * @param {boolean} lazyInit If true, screen is decorated on first show.
    */
-  UserImageScreen.register = function() {
+  UserImageScreen.register = function(lazyInit) {
     var screen = $('user-image');
     var isWebRTC = document.documentElement.getAttribute('camera') == 'webrtc';
     UserImageScreen.prototype = isWebRTC ? UserImageScreenWebRTCProto :
         UserImageScreenOldProto;
-    UserImageScreen.decorate(screen);
+    if (lazyInit) {
+      screen.__proto__ = UserImageScreen.prototype;
+      screen.deferredDecorate = function() {
+        UserImageScreen.decorate(screen);
+      };
+    } else {
+      UserImageScreen.decorate(screen);
+    }
     Oobe.getInstance().registerScreen(screen);
   };
 
@@ -90,6 +98,8 @@ cr.define('oobe', function() {
       this.profileImageLoading = true;
 
       this.updateLocalizedContent();
+
+      chrome.send('getImages');
     },
 
     /**
@@ -297,6 +307,7 @@ cr.define('oobe', function() {
       for (var i = 0, data; data = imagesData[i]; i++) {
         imageGrid.addItem(data.url, data.title);
       }
+      this.classList.remove('loading');
     },
 
     /**
@@ -397,6 +408,8 @@ cr.define('oobe', function() {
           });
 
       this.updateLocalizedContent();
+
+      chrome.send('getImages');
     },
 
     /**
@@ -578,6 +591,7 @@ cr.define('oobe', function() {
         item.author = data.author || '';
         item.website = data.website || '';
       }
+      this.classList.remove('loading');
     },
 
     /**

@@ -292,6 +292,10 @@ cr.define('login', function() {
         this.clearRetry_();
         chrome.send('loginWebuiReady');
         chrome.send('loginVisible');
+        // Warm up the user images screen.
+        window.setTimeout(function() {
+            Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
+        }, 0);
       } else if (msg.method == 'offlineLogin') {
         this.email = msg.email;
         chrome.send('authenticateUser', [msg.email, msg.password]);

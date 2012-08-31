@@ -82,28 +82,6 @@ void UserImageScreenHandler::GetLocalizedStrings(
 }
 
 void UserImageScreenHandler::Initialize() {
-  base::ListValue image_urls;
-  for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
-    scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
-    image_data->SetString("url", GetDefaultImageUrl(i));
-    image_data->SetString(
-        "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
-    image_data->SetString(
-        "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title", GetDefaultImageDescription(i));
-    image_urls.Append(image_data.release());
-  }
-  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setDefaultImages",
-                                   image_urls);
-
-  if (selected_image_ != User::kInvalidImageIndex)
-    SelectImage(selected_image_);
-
-  if (profile_picture_data_url_ != chrome::kAboutBlankURL)
-    SendProfileImage(profile_picture_data_url_);
-  else if (profile_picture_absent_)
-    OnProfileImageAbsent();
-
   if (show_on_init_) {
     Show();
     show_on_init_ = false;
@@ -122,8 +100,8 @@ void UserImageScreenHandler::Show() {
   }
   screen_show_time_ = base::Time::Now();
   ShowScreen(kUserImageScreen, NULL);
-  // When shown, query camera presence again (first-time query is done by
-  // OobeUI::OnLoginPromptVisible).
+
+  // When shown, query camera presence.
   CheckCameraPresence();
 }
 
@@ -168,6 +146,9 @@ bool UserImageScreenHandler::IsCapturing() const {
 }
 
 void UserImageScreenHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("getImages",
+      base::Bind(&UserImageScreenHandler::HandleGetImages,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("takePhoto",
       base::Bind(&UserImageScreenHandler::HandleTakePhoto,
                  base::Unretained(this)));
@@ -214,6 +195,32 @@ void UserImageScreenHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   base::StringValue data_url(user_photo_data_url_);
   web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",
                                    data_url);
+}
+
+void UserImageScreenHandler::HandleGetImages(const base::ListValue* args) {
+  DCHECK(args && !args->GetSize());
+
+  base::ListValue image_urls;
+  for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
+    scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
+    image_data->SetString("url", GetDefaultImageUrl(i));
+    image_data->SetString(
+        "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
+    image_data->SetString(
+        "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title", GetDefaultImageDescription(i));
+    image_urls.Append(image_data.release());
+  }
+  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setDefaultImages",
+                                   image_urls);
+
+  if (selected_image_ != User::kInvalidImageIndex)
+    SelectImage(selected_image_);
+
+  if (profile_picture_data_url_ != chrome::kAboutBlankURL)
+    SendProfileImage(profile_picture_data_url_);
+  else if (profile_picture_absent_)
+    OnProfileImageAbsent();
 }
 
 void UserImageScreenHandler::HandlePhotoTaken(const base::ListValue* args) {

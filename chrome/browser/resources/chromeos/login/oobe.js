@@ -71,7 +71,7 @@ cr.define('cr.ui', function() {
     oobe.OAuthEnrollmentScreen.register();
     login.AccountPickerScreen.register();
     login.GaiaSigninScreen.register();
-    oobe.UserImageScreen.register();
+    oobe.UserImageScreen.register(/* lazyInit= */ false);
     login.ErrorMessageScreen.register();
 
     cr.ui.Bubble.decorate($('bubble'));
