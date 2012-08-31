@@ -467,6 +467,10 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   return cmd_result
 
 
+class DieSystemExit(SystemExit):
+  """Custom Exception used so we can intercept this if necessary."""
+
+
 def Die(message, *args):
   """Emits an error message with a stack trace and halts execution.
 
@@ -474,7 +478,7 @@ def Die(message, *args):
     message: The message to be emitted before exiting.
   """
   logger.exception(message, *args)
-  sys.exit(1)
+  raise DieSystemExit(1)
 
 
 def Error(message, *args, **kwargs):

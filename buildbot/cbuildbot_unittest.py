@@ -482,7 +482,7 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
   def testMultipleConfigsError(self):
     """Test that multiple configs cause error if --remote is not used."""
     self.mox.ReplayAll()
-    self.assertRaises(TestExitedException, self.assertMain,
+    self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
                       ['--local',
                       '-r', self.buildroot,
                       'arm-generic-paladin',
@@ -541,7 +541,7 @@ class FullInterfaceTest(cros_test_lib.TempDirMixin, unittest.TestCase):
     new_is_inside_chroot().InAnyOrder().AndReturn(True)
     cros_build_lib.IsInsideChroot = new_is_inside_chroot
     self.mox.ReplayAll()
-    self.assertRaises(TestExitedException, self.assertMain,
+    self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
                       ['--local', '-r', self.buildroot, 'x86-generic-paladin'])
 
 
