@@ -158,10 +158,8 @@ class WebstoreInstaller :public content::NotificationObserver,
   content::NavigationController* controller_;
   std::string id_;
   // The DownloadItem is owned by the DownloadManager and is valid from when
-  // OnDownloadStarted is called (with no error) until the DownloadItem
-  // transitions to state REMOVING.
+  // OnDownloadStarted is called (with no error) until OnDownloadDestroyed().
   content::DownloadItem* download_item_;
-  int flags_;
   scoped_ptr<Approval> approval_;
   GURL download_url_;
 };
