@@ -1085,6 +1085,7 @@ const char kMTPStorageAttached[] = "MTPStorageAttached";
 const char kMTPStorageDetached[] = "MTPStorageDetached";
 
 // For MTPStorage struct:
+// TODO(thestig) Remove this section after the protobuf conversion.
 const char kVendor[] = "Vendor";
 const char kVendorId[] = "VendorId";
 const char kProduct[] = "Product";
@@ -1100,6 +1101,8 @@ const char kStorageDescription[] = "StorageDescription";
 const char kVolumeIdentifier[] = "VolumeIdentifier";
 
 // For FileEntry struct:
+const uint32 kInvalidFileId = 0xffffffff;
+// TODO(thestig) Remove the rest of this section after the protobuf conversion.
 const char kItemId[] = "ItemId";
 const char kParentId[] = "ParentId";
 const char kFileName[] = "FileName";

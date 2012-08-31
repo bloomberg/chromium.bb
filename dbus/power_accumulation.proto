@@ -8,9 +8,9 @@ option optimize_for = LITE_RUNTIME;
 // browser. During a session the browser will be regularly asking powerd for the
 // amount of power used since the last time we asked for this information. This
 // is the amount of power drain accumalated since the last call. This
-// information only makes sense once the associated variables are intiaiized and
-// the device is on battery. Thus the value for |battery_energy_delta| is only
-// usable if |initialized| and |on_battery| are true.
+// information only makes sense once the associated variables are initialized
+// and the device is on battery. Thus the value for |battery_energy_delta| is
+// only usable if |initialized| and |on_battery| are true.
 message PowerAccumulation {
   // Was the accumulator already initialized?
   optional bool initialized = 1;
