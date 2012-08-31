@@ -91,6 +91,8 @@ class APIDataSource(object):
       return None
     if api_perms['channel'] == 'dev':
       api_perms['dev'] = True
+    elif api_perms['channel'] == 'beta':
+      api_perms['beta'] = True
     return api_perms
 
   def _GenerateHandlebarContext(self, handlebar, path):

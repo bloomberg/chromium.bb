@@ -11,7 +11,8 @@
       {{+partials.apps_sidenav}}
       <div id="gc-pagecontent">
         <h1 class="page_title">chrome.{{api.name}}</h1>
-        {{?api.permissions.dev}}{{+partials.warning}}{{/}}
+        {{?api.permissions.dev}}{{+partials.warning_dev}}{{/}}
+        {{?api.permissions.beta}}{{+partials.warning_beta}}{{/}}
         {{+partials.table_of_contents toc:intro.toc
                                       samples_list:api.samples.apps
                                       title:apps_title}}

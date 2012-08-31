@@ -104,7 +104,7 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "declarativeWebRequest": {
-    "channel": "dev",
+    "channel": "beta",
     "extension_types": ["extension", "packaged_app"]
   },
   "dns": {
