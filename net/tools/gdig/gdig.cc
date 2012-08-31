@@ -252,8 +252,8 @@ void GDig::Start() {
     OnDnsConfig(dns_config);
   } else {
     dns_config_service_ = DnsConfigService::CreateSystemService();
-    dns_config_service_->Read(base::Bind(&GDig::OnDnsConfig,
-                                         base::Unretained(this)));
+    dns_config_service_->ReadConfig(base::Bind(&GDig::OnDnsConfig,
+                                               base::Unretained(this)));
     timeout_closure_.Reset(base::Bind(&GDig::OnTimeout,
                                       base::Unretained(this)));
     MessageLoop::current()->PostDelayedTask(
@@ -277,12 +277,14 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
 
   if (timeout_.InMilliseconds() > 0)
     dns_config.timeout = timeout_;
-  if (print_config_)
+  if (print_config_) {
     printf("# Dns Configuration\n"
            "%s", DnsConfigToString(dns_config).c_str());
-  if (print_hosts_)
+  }
+  if (print_hosts_) {
     printf("# Host Database\n"
            "%s", DnsHostsToString(dns_config.hosts).c_str());
+  }
 
   // If the user didn't specify a name to resolve we can stop here.
   if (domain_name_.length() == 0) {
@@ -297,7 +299,6 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config_const) {
           HostCache::CreateDefaultCache(),
           PrioritizedDispatcher::Limits(NUM_PRIORITIES, 1),
           HostResolverImpl::ProcTaskParams(NULL, 1),
-          scoped_ptr<DnsConfigService>(NULL),
           dns_client.Pass(),
           log_.get()));
 

@@ -100,7 +100,7 @@ void Login::OnConnectionTypeChanged(
   OnNetworkEvent();
 }
 
-void Login::OnDNSChanged(unsigned detail) {
+void Login::OnDNSChanged() {
   DVLOG(1) << "Detected DNS change";
   OnNetworkEvent();
 }

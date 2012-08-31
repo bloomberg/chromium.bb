@@ -90,7 +90,7 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
-  virtual void OnDNSChanged(unsigned detail) OVERRIDE;
+  virtual void OnDNSChanged() OVERRIDE;
 
   // SingleLoginAttempt::Delegate implementation.
   virtual void OnConnect(
