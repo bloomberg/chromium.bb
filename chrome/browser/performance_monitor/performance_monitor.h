@@ -189,7 +189,7 @@ class PerformanceMonitor : public content::NotificationObserver {
   scoped_ptr<Database> database_;
 
   // A map of currently running ProcessHandles to ProcessMetrics.
-  MetricsMap metrics_map_;
+  scoped_ptr<MetricsMap> metrics_map_;
 
   // The timer to signal PerformanceMonitor to perform its timed collections.
   base::RepeatingTimer<PerformanceMonitor> timer_;

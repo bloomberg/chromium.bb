@@ -68,7 +68,8 @@ PerformanceMonitor::PerformanceDataForIOThread::PerformanceDataForIOThread()
     : network_bytes_read(0) {
 }
 
-PerformanceMonitor::PerformanceMonitor() : database_(NULL) {
+PerformanceMonitor::PerformanceMonitor() : database_(NULL),
+                                           metrics_map_(new MetricsMap) {
 }
 
 PerformanceMonitor::~PerformanceMonitor() {
@@ -275,10 +276,10 @@ void PerformanceMonitor::GatherStatisticsOnBackgroundThread() {
 }
 
 void PerformanceMonitor::GatherCPUUsageOnBackgroundThread() {
-  if (metrics_map_.size()) {
+  if (metrics_map_->size()) {
     double cpu_usage = 0;
-    for (MetricsMap::const_iterator iter = metrics_map_.begin();
-         iter != metrics_map_.end(); ++iter) {
+    for (MetricsMap::const_iterator iter = metrics_map_->begin();
+         iter != metrics_map_->end(); ++iter) {
       cpu_usage += iter->second->GetCPUUsage();
     }
 
@@ -289,8 +290,8 @@ void PerformanceMonitor::GatherCPUUsageOnBackgroundThread() {
 void PerformanceMonitor::GatherMemoryUsageOnBackgroundThread() {
   size_t private_memory_sum = 0;
   size_t shared_memory_sum = 0;
-  for (MetricsMap::const_iterator iter = metrics_map_.begin();
-       iter != metrics_map_.end(); ++iter) {
+  for (MetricsMap::const_iterator iter = metrics_map_->begin();
+       iter != metrics_map_->end(); ++iter) {
     size_t private_memory = 0;
     size_t shared_memory = 0;
     if (iter->second->GetMemoryBytes(&private_memory, &shared_memory)) {
@@ -308,43 +309,37 @@ void PerformanceMonitor::GatherMemoryUsageOnBackgroundThread() {
 }
 
 void PerformanceMonitor::UpdateMetricsMapOnBackgroundThread() {
-  // Remove old process handles. Use two iterators to safely call erase() on the
-  // current element.
-  for (MetricsMap::iterator iter_next = metrics_map_.begin();
-       iter_next != metrics_map_.end();) {
-    MetricsMap::iterator iter = iter_next++;
+  MetricsMap* new_map = new MetricsMap;
 
-    if (base::GetTerminationStatus(iter->first, NULL) !=
-        base::TERMINATION_STATUS_STILL_RUNNING) {
-      base::CloseProcessHandle(iter->first);
-      metrics_map_.erase(iter);
-    }
-  }
-
-  // Add new process handles.
   base::ProcessId browser_pid = base::GetCurrentProcId();
   ChromeProcessList chrome_processes(GetRunningChromeProcesses(browser_pid));
   for (ChromeProcessList::const_iterator pid_iter = chrome_processes.begin();
        pid_iter != chrome_processes.end(); ++pid_iter) {
-    base::ProcessHandle process_handle;
-    if (base::OpenProcessHandleWithAccess(*pid_iter,
-                                          kAccessFlags,
-                                          &process_handle) &&
-        !ContainsKey(metrics_map_, process_handle)) {
-#if defined(OS_MACOSX)
+    base::ProcessHandle handle;
+    if (base::OpenProcessHandleWithAccess(*pid_iter, kAccessFlags, &handle)) {
+      // If we were already watching this process, transfer it to the new map.
+      if (ContainsKey(*metrics_map_, handle)) {
+        (*new_map)[handle] = (*metrics_map_)[handle];
+        continue;
+      }
+
+      // Otherwise, gather information and prime the CPU usage to be gathered.
+#if defined (OS_MACOSX)
       linked_ptr<base::ProcessMetrics> process_metrics(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle,
-              content::BrowserChildProcessHost::GetPortProvider()));
+          base::ProcessMetrics::CreateProcessMetrics(
+              handle, content::BrowserChildProcessHost::GetPortProvider()));
 #else
       linked_ptr<base::ProcessMetrics> process_metrics(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle));
+          base::ProcessMetrics::CreateProcessMetrics(handle));
 #endif
-      // Prime the CPUUsage to be gathered next time.
+
       process_metrics->GetCPUUsage();
 
-      metrics_map_[process_handle] = process_metrics;
+      (*new_map)[handle] = process_metrics;
     }
   }
+
+  metrics_map_.reset(new_map);
 }
 
 void PerformanceMonitor::UpdateLiveProfiles() {
